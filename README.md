@@ -35,7 +35,6 @@ cd SKKAI_VOICE_AI_whisper
 mkdir audio_data
 mkdir weights
 
-```
 SKKAI_VOICE_AI_whisper/
 ├── STT.py              
 ├── audio_data/         # 오디오 파일 디렉토리. 변환하고 싶은 오디오 파일은 해당 폴더 내부에 위치시킬 것
@@ -43,7 +42,6 @@ SKKAI_VOICE_AI_whisper/
 ├── whisper/           # 실제 모델 폴더
 ├── README.md          # 이 파일
 └──  ...
-```
 
 # 가중치 준비
 python weight_download.py
