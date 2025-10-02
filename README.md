@@ -28,6 +28,23 @@ conda activate whisper
 # 필수 패키지 설치
 pip install -r requirements.txt
 
+
+# 폴더 준비
+'audio_data', 'weights' 폴더 직접 만들기
+cd SKKAI_VOICE_AI_whisper
+mkdir audio_data
+mkdir weights
+
+```
+SKKAI_VOICE_AI_whisper/
+├── STT.py              
+├── audio_data/         # 오디오 파일 디렉토리. 변환하고 싶은 오디오 파일은 해당 폴더 내부에 위치시킬 것
+├── weights/           # 사전학습 가중치 디렉토리
+├── whisper/           # 실제 모델 폴더
+├── README.md          # 이 파일
+└──  ...
+```
+
 # 가중치 준비
 python weight_download.py
 
