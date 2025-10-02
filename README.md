@@ -1,160 +1,291 @@
-# Whisper
+# 🎤 Whisper STT 최종 통합 버전
 
-[[Blog]](https://openai.com/blog/whisper)
-[[Paper]](https://arxiv.org/abs/2212.04356)
-[[Model card]](https://github.com/openai/whisper/blob/main/model-card.md)
-[[Colab example]](https://colab.research.google.com/github/openai/whisper/blob/master/notebooks/LibriSpeech.ipynb)
+OpenAI Whisper를 활용한 **오프라인 음성 인식(STT)** 도구입니다.  
+**macOS**와 **Windows** 모두에서 안정적으로 작동하도록 최적화되었습니다.
 
-Whisper is a general-purpose speech recognition model. It is trained on a large dataset of diverse audio and is also a multitasking model that can perform multilingual speech recognition, speech translation, and language identification.
+> 🔧 **수정된 버전**: 이 코드는 OpenAI Whisper를 기반으로 오프라인 환경과 실시간 STT용으로 최적화되었습니다.
 
+## ✨ 주요 기능
 
-## Approach
+- 🛡️ **메모리 안전성**: Segmentation Fault 방지 및 자동 메모리 관리
+- 🌍 **크로스 플랫폼**: macOS (Intel/Apple Silicon) + Windows 완벽 지원  
+- 📁 **스마트 파일 탐지**: 확장자 자동 감지, 한글 파일명 지원
+- 🔧 **모델별 안정성**: 안전한 모델 추천 및 위험 모델 경고
+- 📊 **청크 처리**: 긴 오디오 자동 분할 처리
+- 🎵 **다양한 포맷**: mp3, wav, flac, m4a, ogg, mp4, aac 지원
 
-![Approach](https://raw.githubusercontent.com/openai/whisper/main/approach.png)
+## 🚀 빠른 시작
 
-A Transformer sequence-to-sequence model is trained on various speech processing tasks, including multilingual speech recognition, speech translation, spoken language identification, and voice activity detection. These tasks are jointly represented as a sequence of tokens to be predicted by the decoder, allowing a single model to replace many stages of a traditional speech-processing pipeline. The multitask training format uses a set of special tokens that serve as task specifiers or classification targets.
-
-
-## Setup
-
-We used Python 3.9.9 and [PyTorch](https://pytorch.org/) 1.10.1 to train and test our models, but the codebase is expected to be compatible with Python 3.8-3.11 and recent PyTorch versions. The codebase also depends on a few Python packages, most notably [OpenAI's tiktoken](https://github.com/openai/tiktoken) for their fast tokenizer implementation. You can download and install (or update to) the latest release of Whisper with the following command:
-
-    pip install -U openai-whisper
-
-Alternatively, the following command will pull and install the latest commit from this repository, along with its Python dependencies:
-
-    pip install git+https://github.com/openai/whisper.git 
-
-To update the package to the latest version of this repository, please run:
-
-    pip install --upgrade --no-deps --force-reinstall git+https://github.com/openai/whisper.git
-
-It also requires the command-line tool [`ffmpeg`](https://ffmpeg.org/) to be installed on your system, which is available from most package managers:
+### 1. 초기 설정
 
 ```bash
-# on Ubuntu or Debian
-sudo apt update && sudo apt install ffmpeg
+# Python 가상환경 생성 (권장)
+conda create -n whisper
 
-# on Arch Linux
-sudo pacman -S ffmpeg
+# 가상환경 활성화
+conda activate whisper
 
-# on MacOS using Homebrew (https://brew.sh/)
-brew install ffmpeg
+# 필수 패키지 설치
+pip install -r requirements.txt
 
-# on Windows using Chocolatey (https://chocolatey.org/)
-choco install ffmpeg
+# 가중치 준비
+python weight_download.py
 
-# on Windows using Scoop (https://scoop.sh/)
-scoop install ffmpeg
-```
 
-You may need [`rust`](http://rust-lang.org) installed as well, in case [tiktoken](https://github.com/openai/tiktoken) does not provide a pre-built wheel for your platform. If you see installation errors during the `pip install` command above, please follow the [Getting started page](https://www.rust-lang.org/learn/get-started) to install Rust development environment. Additionally, you may need to configure the `PATH` environment variable, e.g. `export PATH="$HOME/.cargo/bin:$PATH"`. If the installation fails with `No module named 'setuptools_rust'`, you need to install `setuptools_rust`, e.g. by running:
+### 2. 기본 사용법
 
 ```bash
-pip install setuptools-rust
+# 기본 실행
+python STT.py --model base --audio "파일명" --language ko
+
+# 상세 정보와 함께
+python STT.py --model medium --audio "파일명" --language ko --info
+
+# 사용 가능한 모델 목록 확인
+python STT.py --list-models
 ```
 
+## 📋 명령어 옵션
 
-## Available models and languages
+| 옵션 | 기본값 | 설명 |
+|------|--------|------|
+| `--model` | `base` | 사용할 모델 (tiny, base, small, medium, large-v1/v2/v3) |
+| `--audio` | **필수** | 오디오 파일명 (확장자 제외) |
+| `--language` | `ko` | 언어 코드 (ko, en, ja, zh 등) |
+| `--audio_dir` | `audio_data` | 오디오 파일 디렉토리 |
+| `--chunk_duration` | `30` | 청크 길이(초) |
+| `--force` | - | 위험한 모델도 강제 사용 |
+| `--info` | - | 상세 정보 출력 |
+| `--list-models` | - | 모델 목록 출력 |
 
-There are six model sizes, four with English-only versions, offering speed and accuracy tradeoffs.
-Below are the names of the available models and their approximate memory requirements and inference speed relative to the large model.
-The relative speeds below are measured by transcribing English speech on a A100, and the real-world speed may vary significantly depending on many factors including the language, the speaking speed, and the available hardware.
+## 🎯 모델 선택 가이드
 
-|  Size  | Parameters | English-only model | Multilingual model | Required VRAM | Relative speed |
-|:------:|:----------:|:------------------:|:------------------:|:-------------:|:--------------:|
-|  tiny  |    39 M    |     `tiny.en`      |       `tiny`       |     ~1 GB     |      ~10x      |
-|  base  |    74 M    |     `base.en`      |       `base`       |     ~1 GB     |      ~7x       |
-| small  |   244 M    |     `small.en`     |      `small`       |     ~2 GB     |      ~4x       |
-| medium |   769 M    |    `medium.en`     |      `medium`      |     ~5 GB     |      ~2x       |
-| large  |   1550 M   |        N/A         |      `large`       |    ~10 GB     |       1x       |
-| turbo  |   809 M    |        N/A         |      `turbo`       |     ~6 GB     |      ~8x       |
+### 📊 모델별 특성
 
-The `.en` models for English-only applications tend to perform better, especially for the `tiny.en` and `base.en` models. We observed that the difference becomes less significant for the `small.en` and `medium.en` models.
-Additionally, the `turbo` model is an optimized version of `large-v3` that offers faster transcription speed with a minimal degradation in accuracy.
+| 모델 | 크기 | 메모리 | 정확도 | 속도 | 안정성 | 권장 용도 |
+|------|------|--------|--------|------|--------|----------|
+| **tiny** | 100MB | ~150MB | 낮음 | 매우 빠름 | ✅ 안전 | 빠른 테스트, 실시간 |
+| **base** | 300MB | ~400MB | 보통 | 빠름 | ✅ 안전 | 일반적 용도 |
+| **small** | 800MB | ~1GB | 좋음 | 보통 | ✅ 안전 | 품질 중시 |
+| **medium** | 2GB | ~3GB | 매우 좋음 | 느림 | ✅ 안전 | 고품질 필요 |
+| **large-v1/v2/v3** | 3.5GB | ~5GB | 최고 | 매우 느림 | ⚠️ 불안정 | 최고 품질 (주의) |
 
-Whisper's performance varies widely depending on the language. The figure below shows a performance breakdown of `large-v3` and `large-v2` models by language, using WERs (word error rates) or CER (character error rates, shown in *Italic*) evaluated on the Common Voice 15 and Fleurs datasets. Additional WER/CER metrics corresponding to the other models and datasets can be found in Appendix D.1, D.2, and D.4 of [the paper](https://arxiv.org/abs/2212.04356), as well as the BLEU (Bilingual Evaluation Understudy) scores for translation in Appendix D.3.
+### 💡 권장 사항
 
-![WER breakdown by language](https://github.com/openai/whisper/assets/266841/f4619d66-1058-4005-8f67-a9d811b77c62)
+- **첫 사용**: `tiny` 또는 `base` 모델로 시작
+- **일반 용도**: `base` 또는 `small` 모델 
+- **고품질**: `medium` 모델 (메모리 충분한 경우)
+- **최고 품질**: `large` 모델 (`--force` 옵션 필요, 불안정 위험)
 
-## Command-line usage
+## 📁 파일 구조
 
-The following command will transcribe speech in audio files, using the `turbo` model:
+```
+whisper/
+├── STT.py              # 메인 실행 파일
+├── audio_data/         # 오디오 파일 디렉토리
+│   ├── 파일1.mp3
+│   ├── 파일2.wav
+│   └── ...
+├── whisper/           # Whisper 라이브러리 (수정됨)
+└── README.md          # 이 파일
+```
+
+## 🎵 지원 오디오 형식
+
+- **MP3** (.mp3)
+- **WAV** (.wav) 
+- **FLAC** (.flac)
+- **M4A** (.m4a)
+- **OGG** (.ogg)
+- **MP4** (.mp4)
+- **AAC** (.aac)
+
+## 🌍 지원 언어
+
+주요 언어 코드:
+
+| 언어 | 코드 | 언어 | 코드 |
+|------|------|------|------|
+| 한국어 | `ko` | 영어 | `en` |
+| 일본어 | `ja` | 중국어 | `zh` |
+| 스페인어 | `es` | 프랑스어 | `fr` |
+| 독일어 | `de` | 러시아어 | `ru` |
+
+> 💡 언어를 지정하지 않으면 자동 감지됩니다.
+
+## 📖 사용 예시
+
+### 기본 사용
 
 ```bash
-whisper audio.flac audio.mp3 audio.wav --model turbo
+# 한국어 음성 인식
+python STT.py --model base --audio "회의록_2024" --language ko
+
+# 영어 음성 인식  
+python STT.py --model small --audio "interview_english" --language en
+
+# 자동 언어 감지
+python STT.py --model base --audio "multilingual_audio"
 ```
 
-The default setting (which selects the `turbo` model) works well for transcribing English. However, **the `turbo` model is not trained for translation tasks**. If you need to **translate non-English speech into English**, use one of the **multilingual models** (`tiny`, `base`, `small`, `medium`, `large`) instead of `turbo`. 
-
-For example, to transcribe an audio file containing non-English speech, you can specify the language:
+### 고급 사용
 
 ```bash
-whisper japanese.wav --language Japanese
+# 상세 정보와 함께 실행
+python STT.py --model medium --audio "긴_강의" --language ko --info
+
+# 청크 크기 조정 (긴 오디오용)
+python STT.py --model small --audio "장시간_녹음" --chunk_duration 60
+
+# 위험한 대형 모델 강제 사용
+python STT.py --model large-v3 --audio "고품질_필요" --language ko --force
 ```
 
-To **translate** speech into English, use:
+### 파일명 특수 문자 처리
 
 ```bash
-whisper japanese.wav --model medium --language Japanese --task translate
+# 괄호나 공백이 포함된 파일명
+python STT.py --model base --audio "노이즈없는단일화자(한어)2" --language ko
+
+# Windows에서 특수 문자
+python STT.py --model base --audio "회의_2024-10-02(최종)" --language ko
 ```
 
-> **Note:** The `turbo` model will return the original language even if `--task translate` is specified. Use `medium` or `large` for the best translation results.
+## 🛠️ 문제 해결
 
-Run the following to view all available options:
+### 자주 발생하는 문제
+
+#### 1. Segmentation Fault
+```bash
+# 해결 방법: 더 작은 모델 사용
+python STT.py --model tiny --audio "파일명" --language ko
+
+# 또는 환경 변수 설정 후 실행 (macOS)
+export OMP_NUM_THREADS=1
+python STT.py --model base --audio "파일명" --language ko
+```
+
+#### 2. 파일을 찾을 수 없음
+```bash
+# 파일 존재 확인
+ls audio_data/
+
+# 확장자 없이 파일명만 입력
+python STT.py --model base --audio "파일명만" --language ko  # ✅ 맞음
+python STT.py --model base --audio "파일명.mp3" --language ko  # ❌ 틀림
+```
+
+#### 3. 메모리 부족
+```bash
+# 더 작은 모델 사용
+python STT.py --model tiny --audio "파일명" --language ko
+
+# 청크 크기 줄이기
+python STT.py --model base --audio "파일명" --chunk_duration 15
+```
+
+#### 4. 라이브러리 오류
+```bash
+# 가상환경 재생성
+rm -rf .venv
+python -m venv .venv
+source .venv/bin/activate  # macOS
+# 또는
+.venv\Scripts\activate     # Windows
+
+pip install torch openai-whisper librosa
+```
+
+### 플랫폼별 최적화
+
+#### macOS
+```bash
+# Apple Silicon 최적화가 자동 적용됩니다
+# M1/M2 Mac에서 최적 성능을 위해 base 모델 권장
+python STT.py --model base --audio "파일명" --language ko
+```
+
+#### Windows  
+```bash
+# GPU 사용 비활성화로 안정성 확보
+# medium 모델까지 안정적 사용 가능
+python STT.py --model medium --audio "파일명" --language ko
+```
+
+## 📈 성능 튜닝
+
+### 속도 우선
+```bash
+python STT.py --model tiny --audio "파일명" --language ko
+```
+
+### 품질 우선  
+```bash
+python STT.py --model medium --audio "파일명" --language ko --info
+```
+
+### 안정성 우선
+```bash
+python STT.py --model base --audio "파일명" --language ko
+```
+
+## 🔧 고급 설정
+
+### 환경 변수 (선택사항)
 
 ```bash
-whisper --help
+# macOS 최적화
+export OMP_NUM_THREADS=1
+export VECLIB_MAXIMUM_THREADS=1
+
+# Windows 최적화  
+set OMP_NUM_THREADS=1
+set MKL_NUM_THREADS=1
 ```
 
-See [tokenizer.py](https://github.com/openai/whisper/blob/main/whisper/tokenizer.py) for the list of all available languages.
+## 📄 라이선스
 
+이 프로젝트는 OpenAI Whisper의 수정 버전으로, 원본 라이선스를 따릅니다.
 
-## Python usage
+---
 
-Transcription can also be performed within Python: 
+## 🎉 성공적인 실행 예시
 
-```python
-import whisper
+```bash
+$ python STT.py --model base --audio "테스트파일" --language ko
 
-model = whisper.load_model("turbo")
-result = model.transcribe("audio.mp3")
-print(result["text"])
+🎤 Whisper STT 최종 통합 버전 (크로스 플랫폼)
+==================================================
+🖥️  플랫폼: Darwin (Apple Silicon)
+🔧 환경 최적화: macOS 모드
+📁 오디오 파일 검색: 테스트파일
+✅ 파일 발견: 테스트파일.mp3
+📊 파일 크기: 0.4MB
+
+🎵 오디오 로드 중...
+✅ librosa로 오디오 로드: 5.2초
+📥 base 모델 로드 중...
+📊 예상 크기: 300MB, 정확도: 보통
+✅ base 로드 성공
+
+🔒 안전 모드로 음성 인식 시작...
+
+🗣️ 음성 인식 시작 (언어: ko)...
+
+==================================================
+🎉 음성 인식 완료!
+🌍 감지 언어: ko
+📝 인식 결과:
+   안녕하세요. 이것은 테스트 음성 파일입니다.
+==================================================
+🧹 모델 메모리 정리 완료
 ```
 
-Internally, the `transcribe()` method reads the entire file and processes the audio with a sliding 30-second window, performing autoregressive sequence-to-sequence predictions on each window.
+---
 
-Below is an example usage of `whisper.detect_language()` and `whisper.decode()` which provide lower-level access to the model.
+## 📋 원본 OpenAI Whisper 정보
 
-```python
-import whisper
-
-model = whisper.load_model("turbo")
-
-# load audio and pad/trim it to fit 30 seconds
-audio = whisper.load_audio("audio.mp3")
-audio = whisper.pad_or_trim(audio)
-
-# make log-Mel spectrogram and move to the same device as the model
-mel = whisper.log_mel_spectrogram(audio, n_mels=model.dims.n_mels).to(model.device)
-
-# detect the spoken language
-_, probs = model.detect_language(mel)
-print(f"Detected language: {max(probs, key=probs.get)}")
-
-# decode the audio
-options = whisper.DecodingOptions()
-result = whisper.decode(model, mel, options)
-
-# print the recognized text
-print(result.text)
-```
-
-## More examples
-
-Please use the [🙌 Show and tell](https://github.com/openai/whisper/discussions/categories/show-and-tell) category in Discussions for sharing more example usages of Whisper and third-party extensions such as web demos, integrations with other tools, ports for different platforms, etc.
-
-
-## License
-
-Whisper's code and model weights are released under the MIT License. See [LICENSE](https://github.com/openai/whisper/blob/main/LICENSE) for further details.
+이 수정 버전은 다음 원본을 기반으로 합니다:
+- **Blog**: [OpenAI Whisper](https://openai.com/blog/whisper)
+- **Paper**: [Robust Speech Recognition via Large-Scale Weak Supervision](https://arxiv.org/abs/2212.04356)
+- **Original Repository**: [openai/whisper](https://github.com/openai/whisper)

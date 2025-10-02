@@ -1,7 +1,21 @@
-numba
-numpy
-torch
-tqdm
-more-itertools
-tiktoken
-triton>=2.0.0;platform_machine=="x86_64" and sys_platform=="linux" or sys_platform=="linux2"
+# 핵심 패키지
+torch>=1.10.0
+torchaudio>=0.10.0
+openai-whisper>=20231117
+
+# 오디오 처리
+librosa>=0.9.0
+soundfile>=0.12.0
+scipy>=1.9.0
+
+# 기본 의존성
+numpy>=1.21.0
+numba>=0.56.0
+tiktoken>=0.3.0
+more-itertools>=8.0.0
+tqdm>=4.64.0
+
+# 플랫폼별 최적화 (선택사항)
+# Linux x86_64에서만 설치됨
+triton>=2.0.0; platform_machine=="x86_64" and (sys_platform=="linux" or sys_platform=="linux2")
+

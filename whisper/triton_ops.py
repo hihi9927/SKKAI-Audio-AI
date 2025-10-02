@@ -3,45 +3,74 @@ from functools import lru_cache
 import numpy as np
 import torch
 
+# Triton을 선택적으로 import (없어도 오류 발생하지 않음)
+TRITON_AVAILABLE = False
 try:
     import triton
     import triton.language as tl
+    TRITON_AVAILABLE = True
 except ImportError:
-    raise RuntimeError("triton import failed; try `pip install --pre triton`")
+    # Triton이 없어도 오류를 발생시키지 않음
+    triton = None
+    tl = None
 
 
-@triton.jit
-def dtw_kernel(
-    cost, trace, x, x_stride, cost_stride, trace_stride, N, M, BLOCK_SIZE: tl.constexpr
-):
-    offsets = tl.arange(0, BLOCK_SIZE)
-    mask = offsets < M
+def is_triton_available() -> bool:
+    """Triton 사용 가능 여부 반환"""
+    return TRITON_AVAILABLE
 
-    for k in range(1, N + M + 1):  # k = i + j
-        tl.debug_barrier()
 
-        p0 = cost + (k - 1) * cost_stride
-        p1 = cost + k * cost_stride
-        p2 = cost + k * cost_stride + 1
+def _check_triton():
+    """Triton 사용 가능 여부 확인"""
+    if not TRITON_AVAILABLE:
+        raise RuntimeError(
+            "Triton is not available. For better performance with word timestamps, "
+            "install with: pip install --pre triton"
+        )
 
-        c0 = tl.load(p0 + offsets, mask=mask)
-        c1 = tl.load(p1 + offsets, mask=mask)
-        c2 = tl.load(p2 + offsets, mask=mask)
 
-        x_row = tl.load(x + (k - 1) * x_stride + offsets, mask=mask, other=0)
-        cost_row = x_row + tl.minimum(tl.minimum(c0, c1), c2)
+@lru_cache(maxsize=None)
+def dtw_kernel(cost, trace, x, x_stride, cost_stride, trace_stride, N, M, BLOCK_SIZE):
+    """Dynamic Time Warping kernel for Triton"""
+    _check_triton()
+    
+    @triton.jit
+    def _dtw_kernel(
+        cost, trace, x, x_stride, cost_stride, trace_stride, N, M, BLOCK_SIZE: tl.constexpr
+    ):
+        offsets = tl.arange(0, BLOCK_SIZE)
+        mask = offsets < M
 
-        cost_ptr = cost + (k + 1) * cost_stride + 1
-        tl.store(cost_ptr + offsets, cost_row, mask=mask)
+        for k in range(1, N + M + 1):  # k = i + j
+            tl.debug_barrier()
 
-        trace_ptr = trace + (k + 1) * trace_stride + 1
-        tl.store(trace_ptr + offsets, 2, mask=mask & (c2 <= c0) & (c2 <= c1))
-        tl.store(trace_ptr + offsets, 1, mask=mask & (c1 <= c0) & (c1 <= c2))
-        tl.store(trace_ptr + offsets, 0, mask=mask & (c0 <= c1) & (c0 <= c2))
+            p0 = cost + (k - 1) * cost_stride
+            p1 = cost + k * cost_stride
+            p2 = cost + k * cost_stride + 1
+
+            c0 = tl.load(p0 + offsets, mask=mask)
+            c1 = tl.load(p1 + offsets, mask=mask)
+            c2 = tl.load(p2 + offsets, mask=mask)
+
+            x_row = tl.load(x + (k - 1) * x_stride + offsets, mask=mask, other=0)
+            cost_row = x_row + tl.minimum(tl.minimum(c0, c1), c2)
+
+            cost_ptr = cost + (k + 1) * cost_stride + 1
+            tl.store(cost_ptr + offsets, cost_row, mask=mask)
+
+            trace_ptr = trace + (k + 1) * trace_stride + 1
+            tl.store(trace_ptr + offsets, 2, mask=mask & (c2 <= c0) & (c2 <= c1))
+            tl.store(trace_ptr + offsets, 1, mask=mask & (c1 <= c0) & (c1 <= c2))
+            tl.store(trace_ptr + offsets, 0, mask=mask & (c0 <= c1) & (c0 <= c2))
+    
+    return _dtw_kernel
 
 
 @lru_cache(maxsize=None)
 def median_kernel(filter_width: int):
+    """Median filter kernel for Triton"""
+    _check_triton()
+    
     @triton.jit
     def kernel(
         y, x, x_stride, y_stride, BLOCK_SIZE: tl.constexpr
@@ -105,6 +134,11 @@ def median_kernel(filter_width: int):
 
 def median_filter_cuda(x: torch.Tensor, filter_width: int):
     """Apply a median filter of given width along the last dimension of x"""
+    if not TRITON_AVAILABLE:
+        raise RuntimeError(
+            "Triton is not available. Using CPU fallback in timing.py instead."
+        )
+    
     slices = x.contiguous().unfold(-1, filter_width, 1)
     grid = np.prod(slices.shape[:-2])
 

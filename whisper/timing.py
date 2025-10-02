@@ -1,5 +1,4 @@
 import itertools
-import subprocess
 import warnings
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, List
@@ -35,12 +34,15 @@ def median_filter(x: torch.Tensor, filter_width: int):
     x = F.pad(x, (filter_width // 2, filter_width // 2, 0, 0), mode="reflect")
     if x.is_cuda:
         try:
-            from .triton_ops import median_filter_cuda
-
-            result = median_filter_cuda(x, filter_width)
-        except (RuntimeError, subprocess.CalledProcessError):
+            from .triton_ops import median_filter_cuda, is_triton_available
+            
+            if is_triton_available():
+                result = median_filter_cuda(x, filter_width)
+            else:
+                result = None
+        except (ImportError, RuntimeError):
             warnings.warn(
-                "Failed to launch Triton kernels, likely due to missing CUDA toolkit; "
+                "Failed to launch Triton kernels, likely due to missing CUDA toolkit or Triton; "
                 "falling back to a slower median kernel implementation..."
             )
 
@@ -106,7 +108,10 @@ def dtw_cpu(x: np.ndarray):
 
 
 def dtw_cuda(x, BLOCK_SIZE=1024):
-    from .triton_ops import dtw_kernel
+    from .triton_ops import dtw_kernel, is_triton_available
+    
+    if not is_triton_available():
+        raise RuntimeError("Triton is not available for DTW CUDA acceleration")
 
     M, N = x.shape
     assert M < BLOCK_SIZE, f"M should be smaller than {BLOCK_SIZE=}"
@@ -141,10 +146,15 @@ def dtw_cuda(x, BLOCK_SIZE=1024):
 def dtw(x: torch.Tensor) -> np.ndarray:
     if x.is_cuda:
         try:
-            return dtw_cuda(x)
-        except (RuntimeError, subprocess.CalledProcessError):
+            from .triton_ops import is_triton_available
+            if is_triton_available():
+                return dtw_cuda(x)
+            else:
+                # Triton not available, fall back to CPU
+                pass
+        except (ImportError, RuntimeError):
             warnings.warn(
-                "Failed to launch Triton kernels, likely due to missing CUDA toolkit; "
+                "Failed to launch Triton DTW kernels, likely due to missing CUDA toolkit or Triton; "
                 "falling back to a slower DTW implementation..."
             )
 

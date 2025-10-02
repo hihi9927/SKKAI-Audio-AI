@@ -340,6 +340,66 @@ class Whisper(nn.Module):
         self.decoder.apply(install_hooks)
         return cache, hooks
 
+    def clear_cache(self, cache: dict = None, hooks: list = None):
+        """
+        Clear KV cache and remove hooks for memory optimization in real-time STT.
+        
+        Parameters
+        ----------
+        cache : dict, optional
+            Cache dictionary to clear
+        hooks : list, optional
+            List of hooks to remove
+        """
+        if cache is not None:
+            cache.clear()
+        
+        if hooks is not None:
+            for hook in hooks:
+                hook.remove()
+            hooks.clear()
+
+    def get_memory_usage(self) -> dict:
+        """
+        Get current memory usage statistics for real-time STT monitoring.
+        
+        Returns
+        -------
+        dict
+            Memory usage statistics including model parameters and cache size
+        """
+        stats = {}
+        
+        # Model parameters memory
+        param_memory = sum(p.numel() * p.element_size() for p in self.parameters())
+        stats['model_params_mb'] = param_memory / (1024 * 1024)
+        
+        # Try to get GPU memory if available
+        if torch.cuda.is_available() and next(self.parameters()).is_cuda:
+            stats['gpu_allocated_mb'] = torch.cuda.memory_allocated() / (1024 * 1024)
+            stats['gpu_reserved_mb'] = torch.cuda.memory_reserved() / (1024 * 1024)
+        
+        return stats
+
+    def optimize_for_realtime(self, enable_half_precision: bool = True):
+        """
+        Apply optimizations for real-time STT performance.
+        
+        Parameters
+        ----------
+        enable_half_precision : bool
+            Whether to use half precision (fp16) for better performance
+        """
+        if enable_half_precision and torch.cuda.is_available():
+            self.half()
+            
+        # Set to eval mode for inference
+        self.eval()
+        
+        # Disable gradient computation
+        for param in self.parameters():
+            param.requires_grad = False
+
     detect_language = detect_language_function
     transcribe = transcribe_function
     decode = decode_function
