@@ -18,4 +18,18 @@ tqdm>=4.64.0
 # 플랫폼별 최적화 (선택사항)
 # Linux x86_64에서만 설치됨
 triton>=2.0.0; platform_machine=="x86_64" and (sys_platform=="linux" or sys_platform=="linux2")
+googletrans
 
+# 서버
+flask>=2.0.0
+flask-cors>=3.0.0
+fastapi>=0.100.0
+uvicorn>=0.23.0
+websockets>=11.0
+
+# 클라이언트
+pyaudio>=0.2.11
+requests>=2.28.0
+
+# 번역
+deep-translator>=1.11.0
