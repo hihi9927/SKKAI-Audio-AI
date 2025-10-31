@@ -108,6 +108,10 @@ python client.py --audio audio_data/test.wav --server http://192.168.0.10:8000/s
 client.html/ STT자막.exe 실행 후 서버 주소 란에
 'https://abc123.ngrok-free.app/stt'를 입력해주세요.
 
+#### MAC에서 실행시 exe파일이 실행되지 않으므로 따로 빌드해야함
+pip install pyinstaller pywebview
+pyinstaller --onefile --windowed --name="STT자막" app.py
+
 ## 🎯 실행 결과 예시
 
 ### 클라이언트 출력:
