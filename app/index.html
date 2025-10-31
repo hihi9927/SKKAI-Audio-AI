@@ -39,10 +39,7 @@
     transition: background .2s;
     font-size: 0.9rem;
   }
-  
-  .close-btn:hover{
-    background:rgba(255,50,50,.7);
-  }
+  .close-btn:hover{ background:rgba(255,50,50,.7); }
   
   .opacity-control{
     display: flex;
@@ -53,145 +50,60 @@
     border-radius: 6px;
     border: 1px solid rgba(255,255,255,.2);
   }
-  
-  .opacity-control label{
-    font-size: 0.8rem;
-    opacity: 0.9;
-  }
-  
+  .opacity-control label{ font-size: 0.8rem; opacity: 0.9; }
   .opacity-control input[type="range"]{
-    width: 80px;
-    height: 4px;
-    background: rgba(255,255,255,.3);
-    border-radius: 2px;
-    outline: none;
-    -webkit-appearance: none;
+    width: 80px; height: 4px; background: rgba(255,255,255,.3);
+    border-radius: 2px; outline: none; -webkit-appearance: none;
   }
-  
   .opacity-control input[type="range"]::-webkit-slider-thumb{
-    -webkit-appearance: none;
-    width: 12px;
-    height: 12px;
+    -webkit-appearance: none; width: 12px; height: 12px;
     background: linear-gradient(135deg, var(--accent1), var(--accent2));
-    border-radius: 50%;
-    cursor: pointer;
+    border-radius: 50%; cursor: pointer;
   }
-  
   .opacity-control input[type="range"]::-moz-range-thumb{
-    width: 12px;
-    height: 12px;
+    width: 12px; height: 12px;
     background: linear-gradient(135deg, var(--accent1), var(--accent2));
-    border-radius: 50%;
-    border: none;
-    cursor: pointer;
+    border-radius: 50%; border: none; cursor: pointer;
   }
-  
-  .opacity-control span{
-    font-size: 0.8rem;
-    min-width: 25px;
-    text-align: right;
-    opacity: 0.9;
-  }
+  .opacity-control span{ font-size: 0.8rem; min-width: 25px; text-align: right; opacity: 0.9; }
   
   .server-status{
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 10px;
-    background: rgba(0,0,0,.5);
-    border-radius: 6px;
-    border: 1px solid rgba(255,255,255,.2);
+    display: flex; align-items: center; gap: 6px; padding: 6px 10px;
+    background: rgba(0,0,0,.5); border-radius: 6px; border: 1px solid rgba(255,255,255,.2);
   }
-  
   .server-indicator{
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: #ff3232;
-    transition: background 0.3s ease;
-    box-shadow: 0 0 8px rgba(255, 50, 50, 0.5);
+    width: 12px; height: 12px; border-radius: 50%; background: #ff3232;
+    transition: background 0.3s ease; box-shadow: 0 0 8px rgba(255, 50, 50, 0.5);
   }
+  .server-indicator.connected{ background: #4caf50; box-shadow: 0 0 8px rgba(76, 175, 80, 0.5); }
+  .server-status label{ font-size: 0.8rem; opacity: 0.9; }
   
-  .server-indicator.connected{
-    background: #4caf50;
-    box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
-  }
-  
-  .server-status label{
-    font-size: 0.8rem;
-    opacity: 0.9;
-  }
-  
-  .content{
-    flex: 1;
-    display:flex; 
-    align-items:flex-end; 
-    justify-content:center;
-    overflow:hidden;
-  }
-  
-  .wrap{
-    position: relative;
-    width:min(92vw,1100px); 
-    margin:0 auto 10vh; 
-    padding:0 12px;
-    -webkit-app-region: drag;
-  }
+  .content{ flex: 1; display:flex; align-items:flex-end; justify-content:center; overflow:hidden; }
+  .wrap{ position: relative; width:min(92vw,1100px); margin:0 auto 10vh; padding:0 12px; -webkit-app-region: drag; }
   
   .panel{
     background:var(--glass);
-    backdrop-filter:blur(10px);
-    -webkit-backdrop-filter:blur(10px);
-    border-radius:var(--radius); 
-    box-shadow:0 4px 12px rgba(0,0,0,.3);
+    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    border-radius:var(--radius); box-shadow:0 4px 12px rgba(0,0,0,.3);
     border: 1px solid rgba(255,255,255,.15);
     padding: clamp(10px,2.2vmin,20px) clamp(14px,3vmin,32px);
     transition: background 0.3s ease, border 0.3s ease;
     -webkit-app-region: no-drag;
   }
-  
   .current{
-    font-weight:500;
-    font-size: clamp(20px,3.6vmin,40px); 
-    line-height:1.45;
-    letter-spacing:.2px; 
-    text-shadow:0 2px 10px rgba(0,0,0,.8);
-    min-height:1.2em;
+    font-weight:500; font-size: clamp(20px,3.6vmin,40px); line-height:1.45;
+    letter-spacing:.2px; text-shadow:0 2px 10px rgba(0,0,0,.8); min-height:1.2em;
   }
-  
   .current.typing .caret{
-    display:inline-block; 
-    width:.6ch; 
-    height:1.05em; 
-    transform:translateY(3px);
-    background:linear-gradient(180deg,var(--accent1),var(--accent2)); 
-    opacity:.8; 
-    margin-left:.1ch;
+    display:inline-block; width:.6ch; height:1.05em; transform:translateY(3px);
+    background:linear-gradient(180deg,var(--accent1),var(--accent2)); opacity:.8; margin-left:.1ch;
     animation:blink 1s step-end infinite;
   }
-  
   @keyframes blink{50%{opacity:0}}
-  
-  .rule{ 
-    margin:8px 0 10px; 
-    height:2px; 
-    opacity:.55; 
-    border-radius:999px;
-    background:linear-gradient(90deg,var(--accent1),var(--accent2)); 
-  }
-  
-  .status{
-    margin-top: 12px;
-    padding: 8px 12px;
-    background: transparent;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    opacity: 0.8;
-  }
-  
-  .status.recording{
-    background: rgba(76,175,80,.3);
-  }
+  .rule{ margin:8px 0 10px; height:2px; opacity:.55; border-radius:999px;
+         background:linear-gradient(90deg,var(--accent1),var(--accent2)); }
+  .status{ margin-top: 12px; padding: 8px 12px; background: transparent; border-radius: 8px; font-size: 0.9rem; opacity: 0.8; }
+  .status.recording{ background: rgba(76,175,80,.3); }
 </style>
 </head>
 <body>
@@ -216,19 +128,23 @@
           <span class="caret"></span>
         </div>
         <div class="rule"></div>
-        <div id="status" class="status">
-          Space 키를 눌러 녹음을 시작/중지하세요
-        </div>
+        <div id="status" class="status">Space 키를 눌러 녹음을 시작/중지하세요</div>
       </div>
     </div>
   </div>
 
 <script>
-const SILENCE_THRESHOLD = 0.01;
-const SILENCE_DURATION = 100;
-const MIN_RECORD_DURATION = 500;
+/* ======= 설정 ======= */
+// 시간영역 RMS 임계치(0~1). 0.015~0.03 사이에서 시작해 보정 권장
+const SILENCE_THRESHOLD_RMS = 0.02;
+// 침묵 지속 시간(ms). 너무 잘게 끊기면 200~400으로 올리기
+const SILENCE_DURATION = 200;
+// 최소 녹음 시간(ms). 문장 단위 원하면 1200~1800 권장
+const MIN_RECORD_DURATION = 900;
+// 서버 URL
 const SERVER_URL = 'https://edra-raspiest-eagerly.ngrok-free.dev/stt';
 
+/* ======= DOM ======= */
 const currEl = document.getElementById('currText');
 const current = document.getElementById('current');
 const statusEl = document.getElementById('status');
@@ -238,6 +154,7 @@ const opacityValue = document.getElementById('opacityValue');
 const mainPanel = document.getElementById('mainPanel');
 const serverIndicator = document.getElementById('serverIndicator');
 
+/* ======= 상태 ======= */
 let isRecording = false;
 let mediaRecorder = null;
 let audioChunks = [];
@@ -249,75 +166,53 @@ let stream = null;
 let recordStartTime = null;
 let recordingEnabled = false;
 let isServerConnected = false;
+let mimeType = 'audio/webm;codecs=opus';
 
+/* ======= 유틸/UI ======= */
 function updateServerStatus(connected) {
   isServerConnected = connected;
-  if (connected) {
-    serverIndicator.classList.add('connected');
-  } else {
-    serverIndicator.classList.remove('connected');
-  }
+  serverIndicator.classList.toggle('connected', connected);
 }
-
 function loadOpacity() {
   const saved = localStorage.getItem('panelOpacity');
-  if (saved) {
-    opacitySlider.value = saved;
-  }
-  updateOpacity(saved || 0);
+  if (saved) opacitySlider.value = saved;
+  updateOpacity(opacitySlider.value || 0);
 }
-
 function updateOpacity(value) {
-  const transparency = value / 100; // 0 = 불투명(원본), 1 = 완전 투명
-  const bgOpacity = 1 * (1 - transparency); // 투명도가 높아질수록 배경 투명해짐
-  const borderOpacity = 0.15 * (1 - transparency); // 투명도가 높아질수록 테두리 투명해짐
-  
+  const transparency = value / 100;
+  const bgOpacity = 1 * (1 - transparency);
+  const borderOpacity = 0.15 * (1 - transparency);
   mainPanel.style.background = `rgba(0,0,0,${bgOpacity})`;
   mainPanel.style.borderColor = `rgba(255,255,255,${borderOpacity})`;
   opacityValue.textContent = value + '%';
   localStorage.setItem('panelOpacity', value);
 }
-
-closeBtn.addEventListener('click', () => {
-  window.close();
-});
-
-opacitySlider.addEventListener('input', (e) => {
-  updateOpacity(e.target.value);
-});
-
 function renderPartial(text){
   current.classList.add('typing');
   currEl.textContent = text || '';
 }
-
 function showResult(text){
   const t = (text ?? '').trim();
   if(!t) return;
-  
   current.classList.add('typing');
   currEl.textContent = t;
 }
-
 function updateStatus(text, isRec = false) {
   statusEl.textContent = text;
-  if (isRec) {
-    statusEl.classList.add('recording');
-  } else {
-    statusEl.classList.remove('recording');
-  }
+  statusEl.classList.toggle('recording', isRec);
 }
 
+/* ======= 서버 통신 ======= */
 async function sendToServer(audioBlob){
   try {
     const formData = new FormData();
-    formData.append('audio', audioBlob, 'recording.webm');
+    // 서버가 webm/mp4 둘 다 받을 수 있다면 파일 확장자만 맞춰주면 됨
+    const filename = mimeType.includes('mp4') ? 'recording.mp4' : 'recording.webm';
+    formData.append('audio', audioBlob, filename);
     
     const response = await fetch(SERVER_URL, {
       method: 'POST',
-      headers: {
-        'ngrok-skip-browser-warning': 'true'
-      },
+      headers: { 'ngrok-skip-browser-warning': 'true' },
       body: formData
     });
     
@@ -332,31 +227,31 @@ async function sendToServer(audioBlob){
     updateServerStatus(true);
     
     if(result.success){
-      if(result.translated && result.translated !== '(번역 실패)'){
-        showResult(result.translated);
-      } else {
-        showResult(result.original);
-      }
+      showResult(result.translated && result.translated !== '(번역 실패)' ? result.translated : result.original);
     } else {
       throw new Error(result.error || '서버 처리 실패');
     }
-    
   } catch(error){
     console.error('STT 에러:', error);
     updateServerStatus(false);
   }
 }
 
+/* ======= 오디오/침묵 판정(RMS) ======= */
 function checkAudioLevel() {
   if (!analyser) return;
-  
-  const bufferLength = analyser.frequencyBinCount;
-  const dataArray = new Uint8Array(bufferLength);
-  analyser.getByteFrequencyData(dataArray);
-  
-  const average = dataArray.reduce((a, b) => a + b) / bufferLength / 255;
-  
-  if (average < SILENCE_THRESHOLD) {
+  const size = analyser.fftSize; // 예: 2048
+  const buf = new Uint8Array(size);
+  analyser.getByteTimeDomainData(buf);
+  // 128이 무신호 기준. -1..1로 정규화 후 RMS 계산
+  let sum = 0;
+  for (let i = 0; i < size; i++) {
+    const v = (buf[i] - 128) / 128; // -1..1
+    sum += v * v;
+  }
+  const rms = Math.sqrt(sum / size); // 0..1
+
+  if (rms < SILENCE_THRESHOLD_RMS) {
     if (!silenceStart) {
       silenceStart = Date.now();
     } else if (Date.now() - silenceStart >= SILENCE_DURATION) {
@@ -365,123 +260,122 @@ function checkAudioLevel() {
       }
     }
   } else {
-    silenceStart = null;
+    silenceStart = null; // 소리 감지되면 타이머 리셋
   }
 }
 
+/* ======= 스트림 초기화 ======= */
 async function initStream() {
-  if (!stream) {
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      
-      audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      analyser = audioContext.createAnalyser();
-      const source = audioContext.createMediaStreamSource(stream);
-      source.connect(analyser);
-      analyser.fftSize = 2048;
-      
-    } catch(error) {
-      console.error('마이크 접근 에러:', error);
-      alert('마이크 접근이 거부되었습니다.\n브라우저 설정에서 마이크 권한을 허용해주세요.');
-      throw error;
+  if (stream) return;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    // MIME 자동선택: webm 우선, 불가하면 mp4 (Safari)
+    if (window.MediaRecorder) {
+      if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+        mimeType = 'audio/webm;codecs=opus';
+      } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+        mimeType = 'audio/mp4';
+      } else {
+        // 브라우저가 아무 것도 명시 지원 안 하면 기본값으로 시도
+        mimeType = '';
+      }
     }
+
+    // 분석용 오디오 노드 구성
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioContext.createAnalyser();
+    analyser.fftSize = 2048;
+    const source = audioContext.createMediaStreamSource(stream);
+    source.connect(analyser);
+  } catch (error) {
+    console.error('마이크 접근 에러:', error);
+    alert('마이크 접근이 거부되었습니다.\n브라우저 설정에서 마이크 권한을 허용해주세요.');
+    throw error;
   }
 }
 
+/* ======= 녹음 ======= */
 async function startRecording(){
   if(isRecording) return;
-  
   try {
     await initStream();
-    
-    mediaRecorder = new MediaRecorder(stream, {
-      mimeType: 'audio/webm'
-    });
+
+    // MediaRecorder 생성
+    mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
     audioChunks = [];
     recordStartTime = Date.now();
-    
+
     mediaRecorder.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        audioChunks.push(event.data);
-      }
+      if (event.data && event.data.size > 0) audioChunks.push(event.data);
     };
-    
+
     mediaRecorder.onstop = async () => {
       const duration = Date.now() - recordStartTime;
-      
       if (duration >= MIN_RECORD_DURATION && audioChunks.length > 0) {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        const blobType = mimeType || 'audio/webm';
+        const audioBlob = new Blob(audioChunks, { type: blobType });
         await sendToServer(audioBlob);
       }
-      
       isRecording = false;
       audioChunks = [];
       silenceStart = null;
       recordStartTime = null;
-      
-      if (recordingEnabled) {
-        setTimeout(() => startRecording(), 100);
-      }
+
+      // 연속 녹음
+      if (recordingEnabled) setTimeout(() => startRecording(), 100);
     };
-    
-    mediaRecorder.start();
+
+    // 250ms 타임슬라이스로 더 촘촘히 수집(침묵 시 stop해서 하나의 세그먼트로 업로드)
+    mediaRecorder.start(250);
     isRecording = true;
     updateStatus('🎤 녹음 중... (침묵 감지 시 자동 전송)', true);
-    
-    if (!checkInterval) {
-      checkInterval = setInterval(checkAudioLevel, 10);
-    }
-    
+
+    // 10ms마다 레벨 체크
+    if (!checkInterval) checkInterval = setInterval(checkAudioLevel, 10);
+
   } catch(error){
     console.error('녹음 시작 에러:', error);
   }
 }
-
 function stopRecording() {
-  if (mediaRecorder && mediaRecorder.state === 'recording') {
-    mediaRecorder.stop();
-  }
+  if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
 }
-
 function cleanupRecording() {
-  if (stream) {
-    stream.getTracks().forEach(track => track.stop());
-    stream = null;
-  }
-  
-  if (audioContext) {
-    audioContext.close();
-    audioContext = null;
-  }
-  
-  if (checkInterval) {
-    clearInterval(checkInterval);
-    checkInterval = null;
-  }
-  
+  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+  if (audioContext) { audioContext.close(); audioContext = null; }
+  if (checkInterval) { clearInterval(checkInterval); checkInterval = null; }
   isRecording = false;
   silenceStart = null;
   updateStatus('Space 키를 눌러 녹음을 시작/중지하세요');
 }
 
+/* ======= 이벤트 ======= */
+closeBtn.addEventListener('click', () => { try { window.close(); } catch(_) {} });
+opacitySlider.addEventListener('input', (e) => updateOpacity(e.target.value));
+
 window.addEventListener('keydown', (e) => {
   if(e.code === 'Space' && !e.target.matches('input')){
     e.preventDefault();
-    
     if (!recordingEnabled) {
       recordingEnabled = true;
       startRecording();
     } else {
       recordingEnabled = false;
-      if (isRecording) {
-        stopRecording();
-      }
+      if (isRecording) stopRecording();
       cleanupRecording();
     }
   }
 });
 
+/* ======= 초기화 ======= */
 loadOpacity();
+// (선택) 최초에 서버 헬스체크하고 상태등 표시하고 싶다면 아래 주석 해제
+// ;(async () => {
+//   try {
+//     const r = await fetch(SERVER_URL, { method: 'OPTIONS', headers: { 'ngrok-skip-browser-warning': 'true' } });
+//     updateServerStatus(r.ok);
+//   } catch { updateServerStatus(false); }
+// })();
 </script>
 </body>
 </html>
