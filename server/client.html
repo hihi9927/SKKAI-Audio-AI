@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>실시간 자막 입력창 (서버 STT 연동)</title>
+<style>
+  :root{ --fg:#fff; --glass:rgba(0,0,0,.35); --shadow:rgba(0,0,0,.55);
+         --accent1:#c9a6ff; --accent2:#7ad7ff; --radius:18px; }
+  html,body{height:100%;margin:0}
+  body{
+    display:flex; align-items:flex-end; justify-content:center;
+    background: radial-gradient(1200px 600px at 50% 20%, #0f1220 0%, #070910 55%, #05070c 100%);
+    color:var(--fg);
+    font-family: "Malgun Gothic","맑은 고딕","Apple SD Gothic Neo","Nanum Gothic",sans-serif;
+    overflow:hidden;
+  }
+  :lang(en), .en{ font-family: Arial, Helvetica, sans-serif; }
+  body::before{content:"";position:fixed;inset:0;box-shadow:inset 0 0 220px rgba(0,0,0,.65);pointer-events:none}
+  .wrap{width:min(92vw,1100px); margin:0 auto 10vh; padding:0 12px}
+  .panel{
+    background:var(--glass); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+    border-radius:var(--radius); box-shadow:0 8px 28px var(--shadow);
+    padding: clamp(10px,2.2vmin,20px) clamp(14px,3vmin,32px);
+  }
+  .current{
+    font-weight:500;
+    font-size: clamp(20px,3.6vmin,40px); line-height:1.45;
+    letter-spacing:.2px; text-shadow:0 2px 10px rgba(0,0,0,.45);
+    min-height:1.2em;
+  }
+  .current.typing .caret{
+    display:inline-block; width:.6ch; height:1.05em; transform:translateY(3px);
+    background:linear-gradient(180deg,var(--accent1),var(--accent2)); opacity:.8; margin-left:.1ch;
+    animation:blink 1s step-end infinite;
+  }
+  @keyframes blink{50%{opacity:0}}
+  .rule{ margin:8px 0 10px; height:2px; opacity:.55; border-radius:999px;
+         background:linear-gradient(90deg,var(--accent1),var(--accent2)); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="panel" role="region" aria-live="polite" aria-atomic="false">
+      <!-- 실시간(임시) 줄 -->
+      <div id="current" class="current typing"><span id="currText"></span><span class="caret"></span></div>
+      <div class="rule"></div>
+    </div>
+  </div>
+
+<script>
+/* ===== 설정 ===== */
+const RECORD_DURATION = 5; // 녹음 시간 (초)
+const SERVER_URL = 'https://edra-raspiest-eagerly.ngrok-free.dev/stt'; // 고정된 서버 주소
+
+/* ===== DOM ===== */
+const currEl   = document.getElementById('currText');
+const current  = document.getElementById('current');
+
+/* ===== 상태 ===== */
+let isRecording = false;
+let mediaRecorder = null;
+let audioChunks = [];
+
+/* ===== UI 함수 ===== */
+function renderPartial(text){
+  current.classList.add('typing');
+  currEl.textContent = text || '';
+}
+
+function showResult(text){
+  const t = (text ?? '').trim();
+  if(!t) return;
+  
+  current.classList.add('typing');
+  currEl.textContent = t;
+}
+
+/* ===== STT 서버 통신 ===== */
+async function sendToServer(audioBlob){
+  try {
+    const formData = new FormData();
+    formData.append('audio', audioBlob, 'recording.wav');
+    
+    const response = await fetch(SERVER_URL, {
+      method: 'POST',
+      body: formData
+    });
+    
+    if(!response.ok){
+      throw new Error(`HTTP ${response.status}`);
+    }
+    
+    const result = await response.json();
+    
+    if(result.success){
+      // 번역이 있으면 번역문만 표시, 없으면 원문 표시
+      if(result.translated && result.translated !== '(번역 실패)'){
+        showResult(result.translated);
+      } else {
+        showResult(result.original);
+      }
+    } else {
+      throw new Error(result.error || '서버 처리 실패');
+    }
+    
+  } catch(error){
+    console.error('STT 에러:', error);
+    showResult(`[오류: ${error.message}]`);
+  }
+}
+
+/* ===== 녹음 기능 ===== */
+async function startRecording(){
+  if(isRecording) return;
+  
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    
+    mediaRecorder = new MediaRecorder(stream);
+    audioChunks = [];
+    
+    mediaRecorder.ondataavailable = (event) => {
+      audioChunks.push(event.data);
+    };
+    
+    mediaRecorder.onstop = async () => {
+      const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+      
+      // 스트림 정리
+      stream.getTracks().forEach(track => track.stop());
+      
+      // 서버로 전송
+      await sendToServer(audioBlob);
+      
+      isRecording = false;
+    };
+    
+    mediaRecorder.start();
+    isRecording = true;
+    
+    // 지정 시간 후 자동 중지
+    setTimeout(() => {
+      if(mediaRecorder && mediaRecorder.state === 'recording'){
+        mediaRecorder.stop();
+      }
+    }, RECORD_DURATION * 1000);
+    
+  } catch(error){
+    console.error('마이크 접근 에러:', error);
+    alert('마이크 접근이 거부되었습니다.\n브라우저 설정에서 마이크 권한을 허용해주세요.');
+  }
+}
+
+/* ===== 키보드 단축키 ===== */
+window.addEventListener('keydown', (e) => {
+  // Space: 녹음 시작
+  if(e.code === 'Space' && !e.target.matches('input')){
+    e.preventDefault();
+    startRecording();
+  }
+});
+
+/* ===== 초기화 ===== */
+// 준비 완료
+</script>
+</body>
+</html>
+
