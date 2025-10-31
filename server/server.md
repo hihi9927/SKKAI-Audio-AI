@@ -110,6 +110,7 @@ client.html/ STT자막.exe 실행 후 서버 주소 란에
 
 #### MAC에서 실행시 exe파일이 실행되지 않으므로 따로 빌드해야함
 pip install pyinstaller pywebview
+
 pyinstaller --onefile --windowed --name="STT자막" app.py
 
 ## 🎯 실행 결과 예시
