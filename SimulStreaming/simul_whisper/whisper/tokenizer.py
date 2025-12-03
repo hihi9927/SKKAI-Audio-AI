@@ -296,11 +296,20 @@ class Tokenizer:
             current_tokens.append(token)
             decoded = self.decode_with_timestamps(current_tokens)
 
-            if (
-                replacement_char not in decoded
-                or decoded_full[unicode_offset + decoded.index(replacement_char)]
-                == replacement_char
-            ):
+            try:
+                if replacement_char not in decoded:
+                    is_replacement_at_boundary = True
+                else:
+                    idx = unicode_offset + decoded.index(replacement_char)
+                    is_replacement_at_boundary = idx < len(decoded_full) and decoded_full[idx] == replacement_char
+
+                if replacement_char not in decoded or is_replacement_at_boundary:
+                    words.append(decoded)
+                    word_tokens.append(current_tokens)
+                    current_tokens = []
+                    unicode_offset += len(decoded)
+            except (ValueError, IndexError):
+                # Handle edge cases with Unicode boundaries
                 words.append(decoded)
                 word_tokens.append(current_tokens)
                 current_tokens = []

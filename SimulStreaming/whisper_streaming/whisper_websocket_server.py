@@ -15,38 +15,56 @@ logger = logging.getLogger(__name__)
 
 SAMPLING_RATE = 16000
 
-# Load spaCy models for sentence boundary detection
-try:
-    nlp_ko = spacy.load("ko_core_news_sm")
-    logger.info("Loaded Korean spaCy model for sentence boundary detection")
-except OSError:
-    logger.warning("Korean spaCy model not found. Install with: python -m spacy download ko_core_news_sm")
-    nlp_ko = None
+# Initialize spaCy models as None (loaded only when --use-spacy is specified)
+nlp_ko = None
+nlp_en = None
 
-try:
-    nlp_en = spacy.load("en_core_web_sm")
-    logger.info("Loaded English spaCy model for sentence boundary detection")
-except OSError:
-    logger.warning("English spaCy model not found. Install with: python -m spacy download en_core_web_sm")
-    nlp_en = None
+
+def load_spacy_models():
+    """Load spaCy models for sentence boundary detection (optional feature)."""
+    global nlp_ko, nlp_en
+
+    try:
+        nlp_ko = spacy.load("ko_core_news_sm")
+        logger.info("Loaded Korean spaCy model for sentence boundary detection")
+    except OSError:
+        logger.warning("Korean spaCy model not found. Install with: python -m spacy download ko_core_news_sm")
+        nlp_ko = None
+
+    try:
+        nlp_en = spacy.load("en_core_web_sm")
+        logger.info("Loaded English spaCy model for sentence boundary detection")
+    except OSError:
+        logger.warning("English spaCy model not found. Install with: python -m spacy download en_core_web_sm")
+        nlp_en = None
 
 
 def load_denoiser_model():
-    """Load SpeechBrain FullSubNet+ denoiser once at server startup."""
+    """Load SpeechBrain MetricGAN+ denoiser once at server startup."""
     try:
         import torch  # noqa: F401
-        from speechbrain.pretrained import SpectralMaskEnhancement
-        logger.info("[Denoiser] Loading FullSubNet+ model (one-time)...")
+        from speechbrain.inference import SpectralMaskEnhancement
+        from speechbrain.utils.fetching import LocalStrategy
+        logger.info("[Denoiser] Loading MetricGAN+ model (one-time)...")
+
+        # Determine device
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+
+        # Load model with COPY strategy (no symlinks - Windows compatible)
         model = SpectralMaskEnhancement.from_hparams(
-            source="speechbrain/mtl-mimic-voicebank",
-            savedir="pretrained_models/mtl-mimic-voicebank"
+            source="speechbrain/metricgan-plus-voicebank",
+            savedir="pretrained_models/metricgan-plus-voicebank",
+            run_opts={"device": device},
+            local_strategy=LocalStrategy.COPY  # Use COPY instead of SYMLINK for Windows
         )
-        logger.info("[Denoiser] Model loaded successfully!")
+        logger.info(f"[Denoiser] Model loaded successfully on {device}!")
         return model
     except ImportError:
         logger.error("[Denoiser] Failed to import speechbrain. Install with: pip install speechbrain")
     except Exception as e:
         logger.error(f"[Denoiser] Failed to load model: {e}")
+        import traceback
+        traceback.print_exc()
     return None
 
 
@@ -1120,6 +1138,10 @@ def main_websocket_server(factory, add_args):
     parser.add_argument("--denoise", action="store_true",
             help="Enable real-time noise reduction using FullSubNet+ (SpeechBrain). Effective for background conversations and murmuring. Requires: pip install speechbrain")
 
+    # spaCy sentence boundary detection option
+    parser.add_argument("--use-spacy", action="store_true", dest="use_spacy",
+            help="Enable spaCy-based sentence boundary detection (slower but more accurate). Requires: python -m spacy download ko_core_news_sm en_core_web_sm")
+
     # options from whisper_online
     processor_args(parser)
 
@@ -1129,12 +1151,24 @@ def main_websocket_server(factory, add_args):
 
     set_logging(args, logger)
 
+    # Load spaCy models if enabled
+    if args.use_spacy:
+        logger.info("[spaCy] Loading spaCy models for sentence boundary detection...")
+        load_spacy_models()
+    else:
+        logger.info("[spaCy] Sentence boundary detection disabled (use --use-spacy to enable)")
+
     # setting whisper object by args
     asr, online = asr_factory(args, factory)
     if args.vac:
         min_chunk = args.vac_chunk_size
     else:
         min_chunk = args.min_chunk_size
+
+    # Preload denoiser once (if enabled) - BEFORE warmup
+    denoiser_model = load_denoiser_model() if args.denoise else None
+    if args.denoise and denoiser_model is None:
+        logger.warning("[Denoiser] Disabled because model failed to load.")
 
     # warm up the ASR because the very first transcribe takes more time than the others.
     msg = "Whisper is not warmed up. The first chunk processing may take longer."
@@ -1148,11 +1182,6 @@ def main_websocket_server(factory, add_args):
             sys.exit(1)
     else:
         logger.warning(msg)
-
-    # Preload denoiser once (if enabled)
-    denoiser_model = load_denoiser_model() if args.denoise else None
-    if args.denoise and denoiser_model is None:
-        logger.warning("[Denoiser] Disabled because model failed to load.")
 
     # Start WebSocket server
     async def server_handler(websocket):

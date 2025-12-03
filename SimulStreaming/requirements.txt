@@ -1,11 +1,13 @@
+# PyTorch with CUDA 12.1 support (for GPU acceleration)
+# For CPU-only, remove the --extra-index-url line below
+--extra-index-url https://download.pytorch.org/whl/cu121
+torch
+torchaudio
+
 # dependency from WhisperStreaming:
 librosa
 
-# for using Silero VAD with WhisperStreaming, torchaudio is needed
-torchaudio
-
 # from SimulWhisper
-torch
 transformers
 
 # from Whisper

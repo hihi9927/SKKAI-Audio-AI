@@ -35,15 +35,15 @@ def processor_args(parser):
                         help='Minimum audio chunk size in seconds. It waits up to this time to do processing. If the processing takes shorter '
                         'time, it waits, otherwise it processes the whole segment that was received by this time.')
 
-    group.add_argument('--lan', '--language', type=str, default="en", 
+    group.add_argument('--lan', '--language', type=str, default="auto",
                         help="Source language code, e.g. en, de, cs, or auto for automatic language detection from speech.")
     group.add_argument('--task', type=str, default='transcribe', 
                         choices=["transcribe","translate"],
                         help="Transcribe or translate.")
 
-    group.add_argument('--vac', action="store_true", default=False, 
+    group.add_argument('--vac', action="store_true", default=True,
                         help='Use VAC = voice activity controller. Recommended. Requires torch.')
-    group.add_argument('--vac-chunk-size', type=float, default=0.04, 
+    group.add_argument('--vac-chunk-size', type=float, default=0.04,
                         help='VAC sample size in seconds.')
 
     parser.add_argument("-l", "--log-level", dest="log_level", 

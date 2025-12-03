@@ -12,7 +12,14 @@
       "Bash(git remote add:*)",
       "Bash(git push:*)",
       "Bash(npm run build:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(pip uninstall:*)",
+      "Bash(pip install:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(python:*)",
+      "Bash(timeout 120 python:*)",
+      "Bash(timeout 180 python:*)",
+      "Bash(timeout 300 python:*)"
     ],
     "deny": [],
     "ask": []

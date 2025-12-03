@@ -26,14 +26,14 @@ def librispeech_streaming_args(parser):
                         "If beams > 1 and greedy: invalid.")
 
     group = parser.add_argument_group('Audio buffer')
-    group.add_argument('--audio_max_len', type=float, default=30.0,
+    group.add_argument('--audio_max_len', type=float, default=15.0,
                         help='Max length of the audio buffer, in seconds.')
     group.add_argument('--audio_min_len', type=float, default=0.0,
                         help='Skip processing if the audio buffer is shorter than this length, in seconds. Useful when the --min-chunk-size is small.')
 
 
     group = parser.add_argument_group('AlignAtt argument')
-    group.add_argument('--frame_threshold', type=int, default=25,
+    group.add_argument('--frame_threshold', type=int, default=32,
                         help='Threshold for the attention-guided decoding. The AlignAtt policy will decode only ' \
                             'until this number of frames from the end of audio. In frames: one frame is 0.02 seconds for large-v3 model. ')
 
@@ -49,15 +49,19 @@ def librispeech_streaming_args(parser):
     group = parser.add_argument_group("Prompt and context")
     group.add_argument("--init_prompt",type=str, default=None, help="Init prompt for the model. It should be in the target language.")
     group.add_argument("--static_init_prompt",type=str, default=None, help="Do not scroll over this text. It can contain terminology that should be relevant over all document.")
-    group.add_argument("--max_context_tokens",type=int, default=None, help="Max context tokens for the model. Default is 0.")
+    group.add_argument("--max_context_tokens",type=int, default=0, help="Max context tokens for the model. Default is 0.")
 
     group = parser.add_argument_group("Speculative decoding")
-    group.add_argument("--use_speculative_decoding", action="store_true", default=False,
+    group.add_argument("--use_speculative_decoding", action=argparse.BooleanOptionalAction, default=True,
                        help="Enable speculative decoding with distil-whisper for faster inference (only works with greedy decoder)")
-    group.add_argument("--assistant_model_path", type=str, default=None,
-                       help="Path to assistant model (e.g., distil-large-v3.pt) for speculative decoding")
+    group.add_argument("--assistant_model_path", type=str, default="distil-whisper/distil-large-v2",
+                       help="Path to assistant model or HuggingFace model ID (e.g., distil-whisper/distil-large-v2) for speculative decoding")
     group.add_argument("--num_assistant_tokens", type=int, default=5,
                        help="Number of tokens to predict ahead with assistant model (default: 5)")
+
+    group = parser.add_argument_group("Audio enhancement")
+    group.add_argument('--denoise', action="store_true", default=True,
+                       help='Enable audio denoising using SpeechBrain MetricGAN+. Reduces background noise.')
 
 
 def librispeech_streaming_factory(args):
@@ -100,6 +104,7 @@ def librispeech_streaming_factory(args):
     if a["use_speculative_decoding"]:
         logger.info(f"[STREAMING MODE] Speculative decoding enabled with assistant model: {a['assistant_model_path']}")
     logger.info(f"Arguments: {a}")
+    logger.info(f"[STREAMING MODE] Audio enhancement - denoise: {args.denoise}")
 
     # Import the base ASR classes from librispeech_whisper
     from librispeech_whisper import LibriSpeechWhisperASR, LibriSpeechWhisperOnline

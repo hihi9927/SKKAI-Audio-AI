@@ -243,10 +243,21 @@ def main_websocket_server(factory, add_args):
     else:
         logger.warning(msg)
 
+    # Load denoiser model if denoise is enabled
+    denoiser_model = None
+    if hasattr(args, 'denoise') and args.denoise:
+        try:
+            from whisper_streaming.whisper_websocket_server import load_denoiser_model
+            denoiser_model = load_denoiser_model()
+            logger.info("Denoiser model loaded successfully")
+        except Exception as e:
+            logger.warning(f"Failed to load denoiser model: {e}")
+
     # Start WebSocket server
     async def server_handler(websocket):
         # warmup된 online 객체를 직접 사용 (단일 클라이언트만 지원)
-        await websocket_server(websocket, online, min_chunk)
+        use_denoiser = hasattr(args, 'denoise') and args.denoise and denoiser_model is not None
+        await websocket_server(websocket, online, min_chunk, use_denoiser=use_denoiser, denoiser_model=denoiser_model)
 
     async def main():
         logger.info(f'Starting WebSocket server on ws://{args.host}:{args.port}')

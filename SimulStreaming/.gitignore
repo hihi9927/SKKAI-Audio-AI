@@ -25,6 +25,7 @@ MANIFEST
 
 # PyTorch models
 *.pt
+!cif_models/*cif.pt
 *.pth
 *.ckpt
 *.bin

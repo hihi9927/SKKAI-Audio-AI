@@ -1,1 +1,36 @@
-C:/Users/VRSTUDIO3/.cache/huggingface/hub/models--speechbrain--mtl-mimic-voicebank/snapshots/5142933779578738d62d0d1f79290e824c8cd2fb/hyperparams.yaml
+# STFT arguments
+sample_rate: 16000
+n_fft: 512
+win_length: 32
+hop_length: 16
+
+mask_weight: 0.99
+
+# STFT computation
+compute_stft: !new:speechbrain.nnet.stft.STFT
+    n_fft: !ref <n_fft>
+    hop_length: !ref <hop_length>
+    win_length: !ref <win_length>
+    sample_rate: !ref <sample_rate>
+
+# Enhancement model args
+enhance_model: !new:speechbrain.lobes.models.EnhanceResnet.EnhanceResnet
+    n_fft: !ref <n_fft>
+    win_length: !ref <win_length>
+    hop_length: !ref <hop_length>
+    sample_rate: !ref <sample_rate>
+    channel_counts: [128, 128, 256, 256, 512, 512]
+    normalization: !name:speechbrain.nnet.normalization.BatchNorm2d
+    activation: !new:torch.nn.GELU
+    dense_count: 2
+    dense_nodes: 1024
+    dropout: 0.1
+    mask_weight: !ref <mask_weight>
+
+modules:
+    enhance_model: !ref <enhance_model>
+    compute_stft: !ref <compute_stft>
+
+pretrainer: !new:speechbrain.utils.parameter_transfer.Pretrainer
+    loadables:
+        enhance_model: !ref <enhance_model>

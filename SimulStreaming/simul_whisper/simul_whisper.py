@@ -57,7 +57,12 @@ class PaddedAlignAttWhisper:
             os.makedirs(cfg.logdir)
         model_name = os.path.basename(cfg.model_path).replace(".pt", "")
         model_path = os.path.dirname(os.path.abspath(cfg.model_path))
-        self.model = load_model(name=model_name, download_root=model_path)
+
+        # Use full path if file exists to avoid downloading
+        if os.path.isfile(cfg.model_path):
+            self.model = load_model(name=cfg.model_path)
+        else:
+            self.model = load_model(name=model_name, download_root=model_path)
 
         logger.info(f"Model dimensions: {self.model.dims}")
 
@@ -74,7 +79,8 @@ class PaddedAlignAttWhisper:
         self.tokenizer_is_multilingual = not model_name.endswith(".en")
         self.create_tokenizer(cfg.language if cfg.language != "auto" else None)
         self.detected_language = cfg.language if cfg.language != "auto" else None
-        
+        self.detected_language_probs = None
+
         self.max_text_len = self.model.dims.n_text_ctx
         self.num_decoder_layers = len(self.model.decoder.blocks)
         self.cfg = cfg
@@ -591,7 +597,7 @@ class PaddedAlignAttWhisper:
 
             # language detection info
             "language": self.detected_language,
-            "language_probs": self.detected_language_probs,
+            "language_probs": self.detected_language_probs if self.detected_language_probs is not None else {},
 
             # to be filled in the loop
             "progress": generation_progress,
