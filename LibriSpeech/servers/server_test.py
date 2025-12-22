@@ -189,7 +189,7 @@ class WebSocketHandler:
             logger.info("WebSocket connection closed")
 
 
-async def websocket_server(websocket, online_asr_proc, min_chunk):
+async def websocket_server(websocket, online_asr_proc, min_chunk, use_denoiser=False, denoiser_model=None):
     """WebSocket server handler"""
     handler = WebSocketHandler(websocket, online_asr_proc, min_chunk)
     await handler.handle()
