@@ -35,7 +35,7 @@ class WebSocketHandler:
 
     async def send_result(self, iteration_output):
         """Send transcription result to client"""
-        if iteration_output:
+        if iteration_output and 'start' in iteration_output and 'end' in iteration_output and 'text' in iteration_output:
             start_ms = int(iteration_output['start'] * 1000)
             end_ms = int(iteration_output['end'] * 1000)
             text = iteration_output['text'].strip()
