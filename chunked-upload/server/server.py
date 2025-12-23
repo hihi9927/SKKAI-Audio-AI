@@ -402,6 +402,13 @@ async def ws_endpoint(ws: WebSocket):
                                         "polish":state.do_polish, "translate":state.do_translate,
                                         "displayMode":state.display_mode})
 
+                elif t == "finish":
+                    print("VAD: 'finish' command received, flushing all buffers.")
+                    await ws.send_json({"type":"status","message":"finalizing","time":now_iso()})
+                    await finalize_and_flush(state, ws)
+                    # Send finish_complete confirmation (compatible with SimulStreaming client)
+                    await ws.send_json({"type":"finish_complete","time":now_iso()})
+
                 elif t == "stop":
                     print("VAD: Manual 'stop' received, flushing all buffers.")
                     await ws.send_json({"type":"status","message":"finalizing","time":now_iso()})
@@ -410,45 +417,58 @@ async def ws_endpoint(ws: WebSocket):
                 else:
                     await ws.send_json({"type":"error","message":"unknown command"})
 
-            # ---- 바이너리 (Raw PCM: Float32 or Int16, or WebM/Opus) ----
+            # ---- 바이너리 (Raw PCM: Int16 preferred, Float32 auto-converted, or WebM/Opus) ----
             elif "bytes" in frame and frame["bytes"] is not None:
                 data: bytes = frame["bytes"]
                 if data:
-                    # Detect if this is raw PCM or WebM by checking data pattern
-                    # Raw PCM will have consistent size (Float32=4 bytes/sample, Int16=2 bytes/sample)
-                    # WebM starts with specific header bytes
+                    # Detect audio format: Int16 PCM (preferred), Float32 PCM, or WebM
+                    # SimulStreaming compatibility: expects Int16 PCM (16kHz, mono, s16le)
+                    # Auto-converts Float32 to Int16 for compatibility
 
                     is_raw_pcm = False
                     data_len = len(data)
 
-                    # Check if Float32 raw PCM (divisible by 4, reasonable size for audio chunk)
-                    if data_len % 4 == 0 and data_len >= 4 and data_len <= 100000:
-                        # Check if values are in Float32 range (-1.0 to 1.0)
+                    # Priority 1: Check if Int16 raw PCM (divisible by 2, preferred format)
+                    if data_len % 2 == 0 and data_len >= 2 and data_len <= 100000:
+                        # Try to detect if this is Int16 by checking if Float32 detection fails
+                        is_likely_int16 = True
+
+                        # Check if it might be Float32 instead
+                        if data_len % 4 == 0 and data_len >= 4:
+                            try:
+                                sample = struct.unpack('f', data[0:4])[0]
+                                if -2.0 <= sample <= 2.0:  # Float32 range check
+                                    is_likely_int16 = False
+                                    pcm_format = "float32"
+                            except:
+                                pass
+
+                        if is_likely_int16:
+                            is_raw_pcm = True
+                            pcm_format = "int16"
+
+                    # Priority 2: Check if Float32 raw PCM (less common, auto-convert to Int16)
+                    if not is_raw_pcm and data_len % 4 == 0 and data_len >= 4 and data_len <= 100000:
                         try:
-                            import struct
                             sample = struct.unpack('f', data[0:4])[0]
-                            if -2.0 <= sample <= 2.0:  # Allow some margin
+                            if -2.0 <= sample <= 2.0:
                                 is_raw_pcm = True
                                 pcm_format = "float32"
                         except:
                             pass
 
-                    # Check if Int16 raw PCM (divisible by 2)
-                    if not is_raw_pcm and data_len % 2 == 0 and data_len >= 2 and data_len <= 100000:
-                        is_raw_pcm = True
-                        pcm_format = "int16"
-
                     if is_raw_pcm:
-                        # Direct raw PCM - convert to Int16 if needed and push to queue
+                        # Raw PCM detected - normalize to Int16 format
                         try:
                             if pcm_format == "float32":
-                                # Convert Float32 to Int16
+                                # Convert Float32 to Int16 (SimulStreaming compatibility)
                                 float_data = np.frombuffer(data, dtype=np.float32)
                                 # Clamp to [-1.0, 1.0] and convert to Int16
                                 int16_data = (np.clip(float_data, -1.0, 1.0) * 32767).astype(np.int16)
                                 pcm_data = int16_data.tobytes()
+                                # print(f"🔄 Converted Float32 → Int16 ({len(float_data)} samples)")
                             else:
-                                # Already Int16
+                                # Already Int16 - use directly (optimal path)
                                 pcm_data = data
 
                             # Push to PCM queue
@@ -538,8 +558,9 @@ async def ws_endpoint(ws: WebSocket):
 if __name__ == "__main__":
     PORT = int(os.getenv("PORT","8001"))
     print("="*60)
-    print(f"🚀 Chunked WS server (model={_MODEL_NAME}, VAD, SimulStreaming compatible)")
-    print(f"   Supports: Raw PCM (Float32/Int16) & WebM/Opus")
+    print(f"🚀 Chunked WS server (model={_MODEL_NAME}, VAD)")
+    print(f"   SimulStreaming compatible - Int16 PCM unified")
+    print(f"   Supports: finish command, Int16/Float32/WebM")
     print("="*60)
     print(f"WS: ws://0.0.0.0:{PORT}/ws")
     print(f"Health: http://0.0.0.0:{PORT}/health")
