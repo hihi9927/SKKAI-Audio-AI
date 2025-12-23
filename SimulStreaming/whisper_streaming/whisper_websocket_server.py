@@ -192,10 +192,17 @@ class WebSocketHandler:
                 'language': lang
             }
 
-        if ko_text:
-            result_msg['ko'] = ko_text
-        if en_text:
-            result_msg['en'] = en_text
+        # Set ko/en fields based on what was transcribed vs translated
+        # If language is 'ko', then full_text is Korean (transcription) and en_text is translation
+        # If language is 'en', then full_text is English (transcription) and ko_text is translation
+        if lang == 'ko':
+            result_msg['ko'] = full_text  # Korean transcription
+            if en_text:
+                result_msg['en'] = en_text  # English translation
+        else:
+            result_msg['en'] = full_text  # English transcription
+            if ko_text:
+                result_msg['ko'] = ko_text  # Korean translation
 
         await self.send_message(result_msg)
 
@@ -254,9 +261,9 @@ class WebSocketHandler:
                 return True, f"meta_phrase:{phrase}"
 
         # Check for repeated phrase patterns
-        # Split by punctuation (including comma) to find repeated phrases
+        # Split by sentence-ending punctuation only (NOT comma) to find repeated phrases
         import re
-        sentences = re.split(r'[.!?,。!?]\s*', text)  # Added comma to split pattern
+        sentences = re.split(r'[.!?。!?]\s*', text)  # Removed comma from split pattern
         sentences = [s.strip() for s in sentences if s.strip()]
 
         if len(sentences) >= 3:
