@@ -63,24 +63,28 @@ def polish(text: str) -> str:
         s += "."
     return s
 
-# ====== 번역 (deep_translator 사용; 실패시 빈문자열) ======
-def translate_auto(text: str, src_lang: str) -> Tuple[str, str]:
+# ====== 번역 (deep_translator 사용; 실패시 None) ======
+def translate_auto(text: str, src_lang: str) -> Tuple[str | None, str | None]:
+    """Translate text based on source language.
+    Returns: (ko_text, en_text) where one is the translation and the other is None
+    """
     if not text.strip():
-        return "", ""
+        return None, None
     try:
         if src_lang == "ko":
             en = GoogleTranslator(source="ko", target="en").translate(text)
-            return "", en
+            return None, en  # Korean input -> English translation
         elif src_lang == "en":
             ko = GoogleTranslator(source="en", target="ko").translate(text)
-            return ko, ""
+            return ko, None  # English input -> Korean translation
         else:
+            # Other languages: translate to both
             en = GoogleTranslator(source=src_lang, target="en").translate(text)
             ko = GoogleTranslator(source="en", target="ko").translate(en)
             return ko, en
     except Exception as e:
         print("⚠️ translate fail:", e)
-        return "", ""
+        return None, None
 
 # ====== Whisper 래퍼 ======
 def transcribe_path(path: str, lang_hint: str = "auto") -> Tuple[str, str]:
@@ -127,6 +131,7 @@ class State:
         self.user_lang_pref = "auto"
         self.do_polish = True
         self.do_translate = True
+        self.display_mode = "both"  # "translateOnly", "transcriptOnly", "both"
 
         # ★ 발화 경계 관리
         self.utt_id: int = 0
@@ -166,19 +171,94 @@ async def finalize_and_flush(state: State, ws: WebSocket):
         state.last_speech_ms = None
         return
 
+    # Get timestamps
+    start_ms = state.segments[0].start_ms
+    end_ms = state.segments[-1].end_ms
+
     wav_path = await build_wav_from_segments(state, include_tail=False, use_tail_only=False)
     final_text, lang = await transcribe_async(wav_path, state.user_lang_pref)
     try: os.remove(wav_path)
     except: pass
 
-    out = final_text
-    if state.do_polish: out = polish(out)
-    ko, en = ("","")
-    if state.do_translate:
-        ko, en = translate_auto(out, lang)
+    # transcriptOnly mode: don't translate, just send original text
+    if state.display_mode == "transcriptOnly":
+        result_msg = {
+            "type": "final",
+            "start": start_ms,
+            "end": end_ms,
+            "original": final_text,
+            "polished": final_text,  # Same as original in transcriptOnly mode
+            "language": lang,
+            "time": now_iso()
+        }
+        await ws.send_json(result_msg)
+        # Clear state
+        state.segments.clear()
+        state.cur_pcm.clear()
+        state.utt_start_ms = None
+        state.last_speech_ms = None
+        return
 
-    await ws.send_json({"type":"final","time":now_iso(),"language":lang,
-                        "original":final_text, "polished":out, "ko":ko, "en":en})
+    # Apply polishing
+    out = final_text
+    if state.do_polish:
+        out = polish(out)
+
+    # Translate (for translateOnly and both modes)
+    ko_text, en_text = (None, None)
+    if state.do_translate:
+        ko_text, en_text = translate_auto(out, lang)
+
+    # Determine polished text based on display mode
+    polished = out
+    if state.display_mode == "translateOnly":
+        # translateOnly mode: only show translation
+        if lang == "ko":
+            polished = en_text if en_text and en_text.strip() != out.strip() else ""
+        else:
+            polished = ko_text if ko_text and ko_text.strip() != out.strip() else ""
+    else:
+        # both mode: show translation or fallback to original
+        if lang == "ko" and en_text:
+            polished = en_text
+        elif lang == "en" and ko_text:
+            polished = ko_text
+
+    # Build result message
+    if state.display_mode == "translateOnly":
+        result_msg = {
+            "type": "final",
+            "start": start_ms,
+            "end": end_ms,
+            "original": "",  # Don't show original in translateOnly mode
+            "polished": polished,
+            "language": lang,
+            "time": now_iso()
+        }
+    else:
+        result_msg = {
+            "type": "final",
+            "start": start_ms,
+            "end": end_ms,
+            "original": final_text,
+            "polished": polished,
+            "language": lang,
+            "time": now_iso()
+        }
+
+    # Set ko/en fields based on what was transcribed vs translated
+    # If language is 'ko', then final_text is Korean (transcription) and en_text is translation
+    # If language is 'en', then final_text is English (transcription) and ko_text is translation
+    if lang == "ko":
+        result_msg["ko"] = final_text  # Korean transcription
+        if en_text:
+            result_msg["en"] = en_text  # English translation
+    else:
+        result_msg["en"] = final_text  # English transcription
+        if ko_text:
+            result_msg["ko"] = ko_text  # Korean translation
+
+    await ws.send_json(result_msg)
 
     # flush
     state.segments.clear()
@@ -328,8 +408,12 @@ async def ws_endpoint(ws: WebSocket):
                     state.user_lang_pref = msg.get("lang", "auto")
                     state.do_polish = bool(msg.get("polish", True))
                     state.do_translate = bool(msg.get("translate", True))
+                    # Support displayMode from SimulStreaming client
+                    if "displayMode" in msg:
+                        state.display_mode = msg.get("displayMode", "both")
                     await ws.send_json({"type":"ready","lang":state.user_lang_pref,
-                                        "polish":state.do_polish, "translate":state.do_translate})
+                                        "polish":state.do_polish, "translate":state.do_translate,
+                                        "displayMode":state.display_mode})
 
                 elif t == "update_config":
                     # 설정 업데이트 처리
@@ -339,9 +423,12 @@ async def ws_endpoint(ws: WebSocket):
                         state.do_polish = bool(msg.get("polish", True))
                     if "translate" in msg:
                         state.do_translate = bool(msg.get("translate", True))
-                    print(f"⚙️ Config updated: lang={state.user_lang_pref}, polish={state.do_polish}, translate={state.do_translate}")
+                    if "displayMode" in msg:
+                        state.display_mode = msg.get("displayMode", "both")
+                    print(f"⚙️ Config updated: lang={state.user_lang_pref}, polish={state.do_polish}, translate={state.do_translate}, displayMode={state.display_mode}")
                     await ws.send_json({"type":"config_updated","lang":state.user_lang_pref,
-                                        "polish":state.do_polish, "translate":state.do_translate})
+                                        "polish":state.do_polish, "translate":state.do_translate,
+                                        "displayMode":state.display_mode})
 
                 elif t == "stop":
                     print("VAD: Manual 'stop' received, flushing all buffers.")
