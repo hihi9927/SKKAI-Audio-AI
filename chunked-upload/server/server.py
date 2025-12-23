@@ -3,6 +3,7 @@ import os, io, json, re, asyncio, tempfile, wave, contextlib
 from datetime import datetime
 from typing import Tuple, List
 import struct
+import numpy as np
 
 import torch, whisper
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -344,7 +345,7 @@ async def ws_endpoint(ws: WebSocket):
     state = State()
     running = True
 
-    # PCM 파이프: ffmpeg stdin<-webm bytes, stdout->pcm_queue
+    # PCM queue: receives PCM data (either raw or from ffmpeg)
     pcm_queue: asyncio.Queue = asyncio.Queue(maxsize=32)
 
     async def pinger():
@@ -356,40 +357,11 @@ async def ws_endpoint(ws: WebSocket):
                 break
     ping_task = asyncio.create_task(pinger())
 
-    # [수정] ffmpeg 명령어에 highpass 필터 추가
-    ff = await asyncio.create_subprocess_exec(
-        "ffmpeg", "-hide_banner", "-loglevel", "error",
-        "-i", "pipe:0",
-        
-        # [수정] 150Hz 이하의 저주파 노이즈(PC 팬, 에어컨 험) 제거 필터
-        "-af", "highpass=f=150",
-        
-        "-f", "s16le", "-acodec", "pcm_s16le", "-ac", "1", "-ar", str(SAMPLE_RATE),
-        "pipe:1",
-        stdin=asyncio.subprocess.PIPE,
-        stdout=asyncio.subprocess.PIPE
-    )
+    # Initialize ffmpeg process as None (will be created if needed for WebM)
+    ff = None
+    rtask = None
 
-    async def reader_task():
-        try:
-            while True:
-                data = await ff.stdout.read(4096)
-                if not data:
-                    await asyncio.sleep(0.005)
-                    continue
-                # push to queue
-                try:
-                    pcm_queue.put_nowait(data)
-                except asyncio.QueueFull:
-                    # drop oldest to keep latency low
-                    _ = await pcm_queue.get()
-                    await pcm_queue.put(data)
-        except Exception as e:
-            print("⚠️ pcm reader error:", e)
-        finally:
-            await pcm_queue.put(None)
-
-    rtask = asyncio.create_task(reader_task())
+    # Create VAD processing task
     vtask = asyncio.create_task(process_pcm_stream(state, ws, pcm_queue))
 
     try:
@@ -438,16 +410,97 @@ async def ws_endpoint(ws: WebSocket):
                 else:
                     await ws.send_json({"type":"error","message":"unknown command"})
 
-            # ---- 바이너리(WebM/Opus 바이트) ----
+            # ---- 바이너리 (Raw PCM: Float32 or Int16, or WebM/Opus) ----
             elif "bytes" in frame and frame["bytes"] is not None:
                 data: bytes = frame["bytes"]
                 if data:
-                    try:
-                        ff.stdin.write(data)
-                        await ff.stdin.drain()
-                    except Exception as e:
-                        print("❌ ffmpeg stdin error:", e)
-                        break
+                    # Detect if this is raw PCM or WebM by checking data pattern
+                    # Raw PCM will have consistent size (Float32=4 bytes/sample, Int16=2 bytes/sample)
+                    # WebM starts with specific header bytes
+
+                    is_raw_pcm = False
+                    data_len = len(data)
+
+                    # Check if Float32 raw PCM (divisible by 4, reasonable size for audio chunk)
+                    if data_len % 4 == 0 and data_len >= 4 and data_len <= 100000:
+                        # Check if values are in Float32 range (-1.0 to 1.0)
+                        try:
+                            import struct
+                            sample = struct.unpack('f', data[0:4])[0]
+                            if -2.0 <= sample <= 2.0:  # Allow some margin
+                                is_raw_pcm = True
+                                pcm_format = "float32"
+                        except:
+                            pass
+
+                    # Check if Int16 raw PCM (divisible by 2)
+                    if not is_raw_pcm and data_len % 2 == 0 and data_len >= 2 and data_len <= 100000:
+                        is_raw_pcm = True
+                        pcm_format = "int16"
+
+                    if is_raw_pcm:
+                        # Direct raw PCM - convert to Int16 if needed and push to queue
+                        try:
+                            if pcm_format == "float32":
+                                # Convert Float32 to Int16
+                                float_data = np.frombuffer(data, dtype=np.float32)
+                                # Clamp to [-1.0, 1.0] and convert to Int16
+                                int16_data = (np.clip(float_data, -1.0, 1.0) * 32767).astype(np.int16)
+                                pcm_data = int16_data.tobytes()
+                            else:
+                                # Already Int16
+                                pcm_data = data
+
+                            # Push to PCM queue
+                            try:
+                                pcm_queue.put_nowait(pcm_data)
+                            except asyncio.QueueFull:
+                                # Drop oldest to keep latency low
+                                _ = await pcm_queue.get()
+                                await pcm_queue.put(pcm_data)
+                        except Exception as e:
+                            print(f"❌ Error processing raw PCM: {e}")
+                    else:
+                        # WebM/Opus data - need ffmpeg
+                        if ff is None:
+                            # Create ffmpeg process on first WebM data
+                            print("📦 Detected WebM/Opus format, starting ffmpeg...")
+                            ff = await asyncio.create_subprocess_exec(
+                                "ffmpeg", "-hide_banner", "-loglevel", "error",
+                                "-i", "pipe:0",
+                                "-af", "highpass=f=150",
+                                "-f", "s16le", "-acodec", "pcm_s16le", "-ac", "1", "-ar", str(SAMPLE_RATE),
+                                "pipe:1",
+                                stdin=asyncio.subprocess.PIPE,
+                                stdout=asyncio.subprocess.PIPE
+                            )
+
+                            async def reader_task():
+                                try:
+                                    while True:
+                                        data = await ff.stdout.read(4096)
+                                        if not data:
+                                            await asyncio.sleep(0.005)
+                                            continue
+                                        try:
+                                            pcm_queue.put_nowait(data)
+                                        except asyncio.QueueFull:
+                                            _ = await pcm_queue.get()
+                                            await pcm_queue.put(data)
+                                except Exception as e:
+                                    print("⚠️ pcm reader error:", e)
+                                finally:
+                                    await pcm_queue.put(None)
+
+                            rtask = asyncio.create_task(reader_task())
+
+                        # Send to ffmpeg
+                        try:
+                            ff.stdin.write(data)
+                            await ff.stdin.drain()
+                        except Exception as e:
+                            print("❌ ffmpeg stdin error:", e)
+                            break
 
             elif frame.get("type") == "websocket.disconnect":
                 break
@@ -485,7 +538,8 @@ async def ws_endpoint(ws: WebSocket):
 if __name__ == "__main__":
     PORT = int(os.getenv("PORT","8001"))
     print("="*60)
-    print(f"🚀 Local Subtitle WS server (model={_MODEL_NAME}, VAD, Final-Only, Buffering 1.5s, HPF 150Hz)")
+    print(f"🚀 Chunked WS server (model={_MODEL_NAME}, VAD, SimulStreaming compatible)")
+    print(f"   Supports: Raw PCM (Float32/Int16) & WebM/Opus")
     print("="*60)
     print(f"WS: ws://0.0.0.0:{PORT}/ws")
     print(f"Health: http://0.0.0.0:{PORT}/health")
