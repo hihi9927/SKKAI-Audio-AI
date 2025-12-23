@@ -104,13 +104,19 @@ async def process_single_file(ws, audio_data, file_id, mode):
 
         # Collect all results
         results = []
-        timeout = 30  # 30 seconds timeout
+        timeout = 120  # 120 seconds total timeout
         start_time = time.time()
+        first_message_timeout = 60.0  # Wait up to 60s for first result
+        subsequent_timeout = 15.0  # Wait 15s between subsequent results
 
+        message_count = 0
         while time.time() - start_time < timeout:
             try:
-                message = await asyncio.wait_for(ws.recv(), timeout=5.0)
+                # Use longer timeout for first message
+                current_timeout = first_message_timeout if message_count == 0 else subsequent_timeout
+                message = await asyncio.wait_for(ws.recv(), timeout=current_timeout)
 
+                message_count += 1
                 if isinstance(message, str):
                     data = json.loads(message)
                     if data.get('type') == 'final':

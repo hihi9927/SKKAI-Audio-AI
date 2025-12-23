@@ -100,7 +100,7 @@ class LibriSpeechStreamingClient:
 
         return transcripts
 
-    async def receive_responses(self, websocket):
+    async def receive_responses(self, websocket, finish_event=None):
         """Receive and display server responses"""
         try:
             while True:
@@ -120,12 +120,21 @@ class LibriSpeechStreamingClient:
 
                         # Store just the text (without "Whisper: " prefix)
                         self.output_lines.append(original)
+                    elif msg_type == 'finish_complete':
+                        print(f"✓ Server finished processing all segments")
+                        if finish_event:
+                            finish_event.set()
+                        return  # Exit cleanly after finish_complete
                 except json.JSONDecodeError:
                     pass
         except websockets.exceptions.ConnectionClosed:
-            pass
+            # Connection closed - set finish_event to unblock waiting
+            if finish_event:
+                finish_event.set()
         except Exception as e:
             print(f"\nError receiving response: {e}")
+            if finish_event:
+                finish_event.set()
 
     async def stream_audio(self, subset, speaker_id, chapter_id, show_transcript=True, show_recognition=True):
         """
@@ -153,10 +162,13 @@ class LibriSpeechStreamingClient:
             async with websockets.connect(self.server_url) as websocket:
                 print(f"Connected to {self.server_url}\n")
 
+                # Create finish event to signal when server completes finish processing
+                finish_event = asyncio.Event()
+
                 # Start receiving responses in background
                 receive_task = None
                 if show_recognition:
-                    receive_task = asyncio.create_task(self.receive_responses(websocket))
+                    receive_task = asyncio.create_task(self.receive_responses(websocket, finish_event))
 
                 # Start timing
                 self.start_time = time.time()
@@ -232,16 +244,21 @@ class LibriSpeechStreamingClient:
                     if not show_recognition:
                         print(f"  Progress: 100.0% ({num_chunks}/{num_chunks} chunks) - Complete!")
 
-                    # Small gap between files
+                    # Small gap between files (don't send finish - maintain context)
                     await asyncio.sleep(self.interval_ms / 1000.0)
 
-                # Send finish signal to flush remaining audio
+                # Send finish signal to flush remaining audio after entire chapter
                 print(f"\nSending finish signal to server...")
                 await websocket.send(json.dumps({'type': 'finish'}))
 
-                # Wait for final server responses to complete
-                print(f"Waiting for final server responses...")
-                await asyncio.sleep(5.0)
+                # Wait for server to signal finish complete
+                print(f"Waiting for server to finish processing...")
+                try:
+                    # Wait up to 30 seconds for finish to complete
+                    await asyncio.wait_for(finish_event.wait(), timeout=30.0)
+                    print(f"Server finished processing!")
+                except asyncio.TimeoutError:
+                    print(f"Warning: Timeout waiting for finish complete (waited 30s)")
 
                 # End timing
                 self.end_time = time.time()

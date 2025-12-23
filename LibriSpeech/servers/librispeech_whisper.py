@@ -215,11 +215,21 @@ class LibriSpeechWhisperOnline(OnlineProcessorInterface):
         for sw,st in zip(split_words,split_tokens):
             b = None
             for stt in st:
+                # Check if tokens and frames are available
+                if not tokens or not frames:
+                    logger.warning(f"Ran out of tokens or frames. tokens left: {len(tokens)}, frames left: {len(frames)}")
+                    break
+
                 t,f = tokens.pop(0), frames.pop(0)
                 if t != stt:
                     raise ValueError(f"Token mismatch: {t} != {stt} at frame {f}.")
                 if b is None:
                     b = f
+
+            # Skip if we didn't get any frames for this word
+            if b is None:
+                continue
+
             e = f
             out = {
                 'start': b * 0.02 + self.audio_bufer_offset,

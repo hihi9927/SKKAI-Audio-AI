@@ -35,6 +35,10 @@ class WebSocketHandler:
 
     async def send_result(self, iteration_output):
         """Send transcription result to client"""
+        # Debug: log what we received
+        if iteration_output:
+            logger.debug(f"iteration_output keys: {iteration_output.keys() if isinstance(iteration_output, dict) else type(iteration_output)}")
+
         if iteration_output and 'start' in iteration_output and 'end' in iteration_output and 'text' in iteration_output:
             start_ms = int(iteration_output['start'] * 1000)
             end_ms = int(iteration_output['end'] * 1000)
@@ -150,11 +154,24 @@ class WebSocketHandler:
 
                         if msg_type == 'finish':
                             logger.info("Received finish command - flushing buffer")
-                            # Flush remaining audio buffer
-                            result = self.online_asr_proc.finish()
-                            if result:
-                                await self.send_result(result)
+                            # Flush remaining audio buffer - may return multiple segments
+                            # Keep calling finish() until no more segments
+                            max_finish_iterations = 10  # Prevent infinite loop
+                            for i in range(max_finish_iterations):
+                                result = self.online_asr_proc.finish()
+                                if result:
+                                    logger.info(f"Finish iteration {i+1}: got result")
+                                    await self.send_result(result)
+                                else:
+                                    logger.info(f"Finish iteration {i+1}: no more results")
+                                    break
                             logger.info("Buffer flushed")
+
+                            # Send finish complete signal to client
+                            await self.send_message({
+                                'type': 'finish_complete',
+                                'message': 'All remaining segments processed'
+                            })
                         elif msg_type == 'stop':
                             logger.info("Received stop command")
                             self.running = False
@@ -236,7 +253,25 @@ def main_websocket_server(factory, add_args):
         if os.path.isfile(args.warmup_file):
             a = load_audio_chunk(args.warmup_file, 0, 1)
             asr.warmup(a)
-            logger.info("Whisper is warmed up.")
+            logger.info("Main Whisper model is warmed up.")
+
+            # Warm up assistant model for speculative decoding
+            if hasattr(asr, 'assistant_model') and asr.assistant_model is not None:
+                logger.info("Warming up assistant model for speculative decoding...")
+                try:
+                    # Warm up assistant model with same audio
+                    import torch
+                    # Get encoder features from main model
+                    mel = asr.log_mel_spectrogram(a)
+                    if hasattr(asr, 'model'):
+                        with torch.no_grad():
+                            encoder_output = asr.model.encode(mel)
+                            # Run a dummy forward pass on assistant model
+                            dummy_tokens = torch.tensor([[asr.tokenizer.sot]], dtype=torch.long, device=encoder_output.device)
+                            _ = asr.assistant_model.logits(dummy_tokens, encoder_output)
+                    logger.info("Assistant model warmed up successfully.")
+                except Exception as e:
+                    logger.warning(f"Failed to warm up assistant model: {e}")
         else:
             logger.critical("The warm up file is not available. "+msg)
             sys.exit(1)
@@ -253,11 +288,26 @@ def main_websocket_server(factory, add_args):
         except Exception as e:
             logger.warning(f"Failed to load denoiser model: {e}")
 
+    # Connection semaphore to limit concurrent connections
+    # Only 1 concurrent connection allowed (single ASR instance)
+    connection_semaphore = asyncio.Semaphore(1)
+
     # Start WebSocket server
     async def server_handler(websocket):
-        # warmup된 online 객체를 직접 사용 (단일 클라이언트만 지원)
-        use_denoiser = hasattr(args, 'denoise') and args.denoise and denoiser_model is not None
-        await websocket_server(websocket, online, min_chunk, use_denoiser=use_denoiser, denoiser_model=denoiser_model)
+        logger.info(f"New client attempting to connect: {websocket.remote_address}")
+
+        # Wait for available slot (only 1 connection at a time)
+        async with connection_semaphore:
+            logger.info(f"Client connected (processing): {websocket.remote_address}")
+            try:
+                # Use the shared warmup ASR instance
+                # Reset the online processor state for new audio
+                online.init()
+
+                use_denoiser = hasattr(args, 'denoise') and args.denoise and denoiser_model is not None
+                await websocket_server(websocket, online, min_chunk, use_denoiser=use_denoiser, denoiser_model=denoiser_model)
+            finally:
+                logger.info(f"Client disconnected: {websocket.remote_address}")
 
     async def main():
         logger.info(f'Starting WebSocket server on ws://{args.host}:{args.port}')
