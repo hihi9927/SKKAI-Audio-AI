@@ -33,6 +33,43 @@ _MODEL_NAME = "small"
 model = whisper.load_model(_MODEL_NAME, device=device)
 print(f"✅ Whisper ready on {device} (model={_MODEL_NAME})")
 
+# ================= Warm-up Function =================
+def warmup_model():
+    """Warm up Whisper model with a short audio to improve first transcription speed"""
+    try:
+        # Create a short silent audio file for warmup
+        duration = 1.0  # 1 second
+        sample_rate = 16000
+        samples = int(duration * sample_rate)
+
+        # Generate silent audio (small random noise to simulate speech)
+        audio = np.random.randn(samples).astype(np.float32) * 0.001
+
+        # Create temporary wav file
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
+            tmp_path = tmp.name
+            with wave.open(tmp_path, "wb") as wf:
+                wf.setnchannels(1)
+                wf.setsampwidth(2)
+                wf.setframerate(sample_rate)
+                # Convert float32 to int16
+                int16_audio = (np.clip(audio, -1.0, 1.0) * 32767).astype(np.int16)
+                wf.writeframes(int16_audio.tobytes())
+
+        # Warmup transcription
+        print("🔥 Warming up Whisper model...")
+        _ = model.transcribe(tmp_path, fp16=False)
+
+        # Clean up
+        os.unlink(tmp_path)
+        print("✅ Whisper model warmed up successfully")
+
+    except Exception as e:
+        print(f"⚠️ Warmup failed (non-critical): {e}")
+
+# Warm up model on startup
+warmup_model()
+
 # ================= 설정 =================
 PING_INTERVAL = 20.0
 
@@ -463,6 +500,8 @@ async def ws_endpoint(ws: WebSocket):
                             if pcm_format == "float32":
                                 # Convert Float32 to Int16 (SimulStreaming compatibility)
                                 float_data = np.frombuffer(data, dtype=np.float32)
+                                # Replace NaN and inf values with 0 to avoid runtime warnings
+                                float_data = np.nan_to_num(float_data, nan=0.0, posinf=0.0, neginf=0.0)
                                 # Clamp to [-1.0, 1.0] and convert to Int16
                                 int16_data = (np.clip(float_data, -1.0, 1.0) * 32767).astype(np.int16)
                                 pcm_data = int16_data.tobytes()
