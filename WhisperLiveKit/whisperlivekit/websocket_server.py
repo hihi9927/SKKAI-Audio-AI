@@ -21,6 +21,7 @@ class WebSocketHandler:
         self.transcription_engine = transcription_engine
         self.audio_processor = audio_processor
         self.running = False
+        self.last_translation = ''  # Keep last translation result
 
     async def send_message(self, message_dict):
         """Send JSON message to client"""
@@ -78,7 +79,7 @@ class WebSocketHandler:
     async def handle_results(self, results_generator):
         """Handle results from AudioProcessor - send FrontData directly to client"""
         try:
-            TIME_WINDOW_SECONDS = 10  # Keep only last 10 seconds of lines
+            TIME_WINDOW_SECONDS = 3  # Keep only last 3 seconds of lines
 
             async for response in results_generator:
                 # Get the response as dict
@@ -87,6 +88,13 @@ class WebSocketHandler:
                 # Filter old lines based on time
                 lines = response_dict.get('lines', [])
                 if lines:
+                    # Get language from original lines first (before filtering)
+                    detected_lang = None
+                    for line in lines:
+                        if line and line.get('detected_language'):
+                            detected_lang = line['detected_language']
+                            break
+
                     # Find the latest end time
                     latest_end_time = 0
                     for line in lines:
@@ -113,15 +121,13 @@ class WebSocketHandler:
 
                     # Translate the combined text from filtered lines + buffer
                     all_texts = []
-                    detected_lang = 'en'
 
+                    # Collect text from filtered lines only
                     for line in filtered_lines:
-                        text = line.get('text', '').strip()
+                        text = line.get('text', '') or ''  # Handle None case
+                        text = text.strip()
                         if text:
                             all_texts.append(text)
-                            # Get language from the last non-empty line
-                            if line.get('detected_language'):
-                                detected_lang = line['detected_language']
 
                     # Add buffer text if present
                     buffer_text = response_dict.get('buffer_transcription', '').strip()
@@ -131,13 +137,19 @@ class WebSocketHandler:
                     # Combine all texts
                     combined_text = ' '.join(all_texts)
 
+                    # Default to Korean if no language detected (since server is running with --lan ko)
+                    if not detected_lang:
+                        detected_lang = 'ko'
+
                     # Translate the combined text
                     if combined_text:
                         translation = await self.translate_text(combined_text, detected_lang)
+                        self.last_translation = translation  # Save for later use
                         response_dict['translation'] = translation
                         logger.info(f"Translated ({detected_lang}): {combined_text[:50]}... → {translation[:50]}...")
                     else:
-                        response_dict['translation'] = ''
+                        # Keep last translation even when filtered_lines is empty
+                        response_dict['translation'] = self.last_translation
 
                 # Send filtered response to client
                 await self.send_message(response_dict)

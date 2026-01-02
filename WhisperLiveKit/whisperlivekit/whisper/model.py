@@ -163,7 +163,15 @@ class MultiHeadAttention(nn.Module):
         else:
             qk = (q * scale) @ (k * scale).transpose(-1, -2)
             if mask is not None:
-                qk = qk + mask[:n_ctx, :n_ctx]
+                # Handle mask size mismatch by checking both dimensions
+                mask_size = mask.size(-1)
+                qk_size = qk.size(-1)
+
+                # Use the minimum size to avoid out of bounds
+                min_size = min(mask_size, qk_size, n_ctx)
+
+                if min_size > 0:
+                    qk[:, :, :min_size, :min_size] = qk[:, :, :min_size, :min_size] + mask[:min_size, :min_size]
             qk = qk.float()
 
             w = F.softmax(qk, dim=-1).to(q.dtype)

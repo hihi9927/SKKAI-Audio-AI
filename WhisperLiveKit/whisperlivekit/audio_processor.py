@@ -513,6 +513,20 @@ class AudioProcessor:
             except Exception as e:
                 logger.error(f"Error in watchdog task: {e}", exc_info=True)
 
+    async def finish(self) -> None:
+        """Signal end of audio stream and flush buffers (for testing)."""
+        logger.info("Finishing audio processing - sending SENTINEL to flush buffers")
+        # Send SENTINEL to all queues to signal end of stream
+        if self.transcription_queue:
+            await self.transcription_queue.put(SENTINEL)
+            logger.info("SENTINEL sent to transcription queue")
+        if self.diarization_queue:
+            await self.diarization_queue.put(SENTINEL)
+            logger.info("SENTINEL sent to diarization queue")
+        if self.translation_queue:
+            await self.translation_queue.put(SENTINEL)
+            logger.info("SENTINEL sent to translation queue")
+
     async def cleanup(self) -> None:
         """Clean up resources when processing is complete."""
         logger.info("Starting cleanup of AudioProcessor resources.")

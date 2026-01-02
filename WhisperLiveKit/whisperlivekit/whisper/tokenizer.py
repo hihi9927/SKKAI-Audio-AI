@@ -296,11 +296,18 @@ class Tokenizer:
             current_tokens.append(token)
             decoded = self.decode_with_timestamps(current_tokens)
 
-            if (
-                replacement_char not in decoded
-                or decoded_full[unicode_offset + decoded.index(replacement_char)]
-                == replacement_char
-            ):
+            # Check if we should commit this token
+            should_commit = False
+            if replacement_char not in decoded:
+                should_commit = True
+            else:
+                # Check bounds before indexing
+                replacement_index = decoded.index(replacement_char)
+                full_index = unicode_offset + replacement_index
+                if full_index < len(decoded_full) and decoded_full[full_index] == replacement_char:
+                    should_commit = True
+
+            if should_commit:
                 words.append(decoded)
                 word_tokens.append(current_tokens)
                 current_tokens = []
