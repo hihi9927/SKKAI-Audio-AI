@@ -28,6 +28,14 @@ from .token_buffer import TokenBuffer
 DEC_PAD = 50257
 logger = logging.getLogger(__name__)
 
+# Rule-based sentence breaking: punctuation and conjunctions
+SENTENCE_END_PUNCTUATION = {'.', '!', '?', '。', '！', '？'}  # Period, exclamation, question marks (EN/KO/ZH)
+SENTENCE_BREAK_PUNCTUATION = {',', ';', ':', '、', '，', '；', '：'}  # Comma, semicolon, colon (EN/KO/ZH)
+# Conjunctions that signal a good breaking point (break BEFORE the conjunction)
+CONJUNCTIONS_EN = {'but', 'so', 'yet', 'nor', 'however', 'therefore', 'moreover', 'furthermore', 'meanwhile', 'otherwise', 'nevertheless'}
+CONJUNCTIONS_KO = {'그리고', '하지만', '그러나', '그래서', '따라서', '그러므로', '또한', '게다가', '그런데', '한편', '그렇지만', '그럼에도'}
+ALL_CONJUNCTIONS = CONJUNCTIONS_EN | CONJUNCTIONS_KO
+
 if mlx_backend_available():
     from mlx_whisper.audio import \
         log_mel_spectrogram as mlx_log_mel_spectrogram
@@ -280,11 +288,62 @@ class AlignAtt:
         self.state.pending_incomplete_tokens = []
 
     def fire_at_boundary(self, chunked_encoder_feature: torch.Tensor):
-        if self.state.always_fire: 
+        if self.state.always_fire:
             return True
-        if self.state.never_fire: 
+        if self.state.never_fire:
             return False
         return fire_at_boundary(chunked_encoder_feature, self.state.CIFLinear)
+
+    def check_rule_based_break(self, tokens_list: List[int], min_tokens: int = 5) -> Tuple[bool, int]:
+        """
+        Check if current tokens contain a natural sentence break point.
+
+        Returns:
+            (should_break, break_offset):
+                - should_break: True if a break point was found
+                - break_offset: Number of tokens to strip from the end (0 = keep all, >0 = break before conjunction)
+        """
+        if len(tokens_list) < min_tokens:
+            return False, 0
+
+        # Decode tokens to text
+        text = self.tokenizer.decode(tokens_list)
+        logger.debug(f"[Rule-based] Checking text: '{text}'")
+
+        # Check for sentence-ending punctuation
+        for punct in SENTENCE_END_PUNCTUATION:
+            if punct in text:
+                logger.info(f"[Rule-based break] Found sentence-ending punctuation: '{punct}' in text: '{text}'")
+                return True, 0  # Keep all tokens including punctuation
+
+        # Check for sentence-break punctuation (commas, semicolons)
+        for punct in SENTENCE_BREAK_PUNCTUATION:
+            if punct in text:
+                logger.info(f"[Rule-based break] Found sentence-break punctuation: '{punct}' in text: '{text}'")
+                return True, 0  # Break after punctuation
+
+        # Check for conjunctions (break BEFORE the conjunction)
+        words = text.strip().lower().split()
+        if len(words) >= 2:
+            # Check last few words for conjunctions
+            for i in range(max(0, len(words) - 3), len(words)):
+                word = words[i].strip('.,!?;:')
+                if word in ALL_CONJUNCTIONS:
+                    # Find how many tokens correspond to words after the conjunction
+                    words_after = words[i:]
+                    tokens_after_text = ' '.join(words_after)
+
+                    # Estimate tokens to strip (rough approximation)
+                    # We want to break BEFORE the conjunction
+                    split_words, split_tokens = self.tokenizer.split_to_word_tokens(tokens_list)
+                    for word_idx, (split_word, split_token) in enumerate(zip(split_words, split_tokens)):
+                        if word in split_word.lower():
+                            # Calculate offset from the end
+                            tokens_to_strip = sum(len(st) for st in split_tokens[word_idx:])
+                            logger.info(f"[Rule-based break] Found conjunction '{word}' at position {i}, stripping {tokens_to_strip} tokens")
+                            return True, tokens_to_strip
+
+        return False, 0
 
     def _current_tokens(self):
         toks = self.state.tokens
@@ -528,6 +587,21 @@ class AlignAtt:
             logger.debug(f"Decoding completed: {completed}, sum_logprobs: {sum_logprobs.tolist()}, tokens: ")
             self.debug_print_tokens(current_tokens)
 
+            # Check for rule-based sentence breaking (punctuation, conjunctions)
+            if not is_last and not completed:
+                tokens_so_far = current_tokens[0, token_len_before_decoding:].tolist()
+                should_break, break_offset = self.check_rule_based_break(tokens_so_far, min_tokens=5)
+                if should_break:
+                    if break_offset > 0:
+                        # Break before conjunction - strip tokens after the break point
+                        logger.info(f"[Rule-based break] Breaking before conjunction, stripping {break_offset} tokens")
+                        current_tokens = current_tokens[:, :-break_offset]
+                    else:
+                        # Break after punctuation - keep all tokens
+                        logger.info(f"[Rule-based break] Breaking after punctuation")
+                    completed = True
+                    break
+
             # Process accumulated cross-attention weights for alignment
             attn_of_alignment_heads = self._process_cross_attention(accumulated_cross_attns, content_mel_len)
 
@@ -569,9 +643,19 @@ class AlignAtt:
 
             if content_mel_len - most_attended_frame <= (4 if is_last else self.cfg.frame_threshold):
                 logger.debug(f"attention reaches the end: {most_attended_frame}/{content_mel_len}")
-                # stripping the last token, the one that is attended too close to the end
-                current_tokens = current_tokens[:, :-1]
-                break
+                # Check if the last token contains sentence-ending punctuation
+                last_token_text = self.tokenizer.decode([current_tokens[0, -1].item()])
+                has_sentence_end = any(p in last_token_text for p in SENTENCE_END_PUNCTUATION)
+
+                if has_sentence_end:
+                    # Keep the last token if it contains sentence-ending punctuation
+                    logger.info(f"[Attention] Keeping last token '{last_token_text}' (contains punctuation)")
+                    # Don't strip, just break
+                    break
+                else:
+                    # stripping the last token, the one that is attended too close to the end
+                    current_tokens = current_tokens[:, :-1]
+                    break
         
             # debug print
             for i in range(self.cfg.beam_size):
