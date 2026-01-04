@@ -9,6 +9,7 @@ import torch.nn.functional as F
 
 from whisperlivekit.backend_support import (faster_backend_available,
                                             mlx_backend_available)
+from whisperlivekit.sentence_segmentation import create_segmenter
 from whisperlivekit.timed_objects import ASRToken
 from whisperlivekit.whisper import DecodingOptions, tokenizer
 from whisperlivekit.whisper.audio import (N_FRAMES, N_SAMPLES,
@@ -173,6 +174,17 @@ class AlignAtt:
         sup_tokens = SuppressTokens(suppress_tokens)
         self.state.suppress_tokens_fn = lambda logits: sup_tokens.apply(logits, None)
 
+        # Initialize sentence segmenter
+        if cfg.enable_sentence_segmentation:
+            self.state.sentence_segmenter = create_segmenter(
+                mode=cfg.segmentation_mode,
+                min_tokens=cfg.min_tokens_before_break
+            )
+            logger.info(f"Sentence segmentation enabled: mode={cfg.segmentation_mode}, min_tokens={cfg.min_tokens_before_break}")
+        else:
+            self.state.sentence_segmenter = None
+            logger.info("Sentence segmentation disabled")
+
         # Initialize tokens
         self.init_tokens()
         self.init_context()
@@ -275,7 +287,7 @@ class AlignAtt:
     def refresh_segment(self, complete=False):
         logger.debug("Refreshing segment:")
         self.init_tokens()
-        self.state.last_attend_frame = -self.cfg.rewind_threshold       
+        self.state.last_attend_frame = -self.cfg.rewind_threshold
         self.state.cumulative_time_offset = 0.0
         self.init_context()
         logger.debug(f"Context: {self.state.context}")
@@ -287,6 +299,10 @@ class AlignAtt:
         self.state.log_segments += 1
         self.state.pending_incomplete_tokens = []
 
+        # Reset sentence segmenter for new segment
+        if self.state.sentence_segmenter is not None:
+            self.state.sentence_segmenter.reset()
+
     def fire_at_boundary(self, chunked_encoder_feature: torch.Tensor):
         if self.state.always_fire:
             return True
@@ -297,6 +313,10 @@ class AlignAtt:
     def should_break_at_punctuation(self, tokens_list: List[int]) -> Tuple[bool, int]:
         """
         Check if we should break the sentence based on punctuation or conjunctions.
+
+        If sentence segmenter is enabled (new mode), uses the enhanced segmenter.
+        Otherwise, falls back to original rule-based logic (legacy mode).
+
         Returns (should_break, break_offset)
         - should_break: True if we should stop decoding
         - break_offset: number of tokens to remove from the end (negative value means remove, 0 means keep all)
@@ -306,18 +326,32 @@ class AlignAtt:
 
         # Decode tokens to text
         text = self.tokenizer.decode(tokens_list)
-        logger.debug(f"[Rule-based] Checking text: '{text}'")
+        logger.debug(f"[Sentence segmentation] Checking text: '{text}'")
 
+        # NEW MODE: Use enhanced sentence segmenter if enabled
+        if self.state.sentence_segmenter is not None:
+            # Check each token incrementally
+            # For simplicity, we check the complete text so far
+            if self.state.sentence_segmenter.is_sentence_boundary(text, token_count=len(tokens_list)):
+                logger.info(f"[New segmentation] Sentence boundary detected in: '{text}'")
+                # Increment counter for next iteration
+                self.state.sentence_segmenter.increment_token_count()
+                return True, 0  # Keep all tokens
+            # Increment token count
+            self.state.sentence_segmenter.increment_token_count()
+            return False, 0
+
+        # LEGACY MODE: Original rule-based logic (when segmenter is disabled)
         # Check for sentence-ending punctuation
         for punct in SENTENCE_END_PUNCTUATION:
             if punct in text:
-                logger.info(f"[Rule-based break] Found sentence-ending punctuation: '{punct}' in text: '{text}'")
+                logger.info(f"[Legacy mode] Found sentence-ending punctuation: '{punct}' in text: '{text}'")
                 return True, 0  # Keep all tokens including punctuation
 
         # Check for sentence-break punctuation (commas, semicolons) at the end
         for punct in SENTENCE_BREAK_PUNCTUATION:
             if text.endswith(punct) or text.endswith(punct + ' '):
-                logger.info(f"[Rule-based break] Found sentence-break punctuation: '{punct}'")
+                logger.info(f"[Legacy mode] Found sentence-break punctuation: '{punct}'")
                 return True, 0  # Keep all tokens including punctuation
 
         # Check for conjunctions - break BEFORE the conjunction
@@ -326,14 +360,14 @@ class AlignAtt:
             # Check if the last word (or last few words) is a conjunction
             last_word = words[-1].strip('.,;:!?').lower()
             if last_word in ALL_CONJUNCTIONS:
-                logger.info(f"[Rule-based break] Found conjunction at end: '{last_word}' - breaking BEFORE it")
+                logger.info(f"[Legacy mode] Found conjunction at end: '{last_word}' - breaking BEFORE it")
                 # We need to find how many tokens to exclude (the conjunction tokens)
                 # Decode all tokens except the last few to find the split point
                 for i in range(1, min(5, len(tokens_list)) + 1):  # Check last 5 tokens max
                     text_without_last = self.tokenizer.decode(tokens_list[:-i])
                     if last_word not in text_without_last.lower():
                         # Found the split point - exclude last i tokens
-                        logger.info(f"[Rule-based break] Excluding last {i} tokens (conjunction)")
+                        logger.info(f"[Legacy mode] Excluding last {i} tokens (conjunction)")
                         return True, -i
 
         return False, 0

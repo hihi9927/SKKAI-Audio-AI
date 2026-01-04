@@ -207,6 +207,11 @@ class SimulStreamingASR:
             if not hasattr(self, '_full_mlx_disabled'):
                 self.use_full_mlx = True
                     
+        # Get sentence segmentation settings
+        enable_sentence_seg = getattr(self, 'enable_sentence_segmentation', False)
+        seg_mode = getattr(self, 'segmentation_mode', 'full')
+        min_tokens_break = getattr(self, 'min_tokens_before_break', 3)
+
         self.cfg = AlignAttConfig(
                 tokenizer_is_multilingual= is_multilingual,
                 segment_length=self.min_chunk_size,
@@ -222,6 +227,9 @@ class SimulStreamingASR:
                 init_prompt=self.init_prompt,
                 max_context_tokens=self.max_context_tokens,
                 static_init_prompt=self.static_init_prompt,
+                enable_sentence_segmentation=enable_sentence_seg,
+                segmentation_mode=seg_mode,
+                min_tokens_before_break=min_tokens_break,
         )  
         
         # Set up tokenizer for translation if needed

@@ -21,4 +21,16 @@ class AlignAttConfig():
     init_prompt: str = field(default=None)
     static_init_prompt: str = field(default=None)
     max_context_tokens: int = field(default=None)
-    
+    # Sentence segmentation options
+    enable_sentence_segmentation: bool = field(
+        default=False,
+        metadata={"help": "Enable sentence-level segmentation (breaks at sentence boundaries)"}
+    )
+    segmentation_mode: Literal["off", "punctuation", "korean", "full"] = field(
+        default="full",
+        metadata={"help": "Sentence segmentation mode: off (disabled), punctuation (only punctuation), korean (punct + Korean endings), full (all methods)"}
+    )
+    min_tokens_before_break: int = field(
+        default=3,
+        metadata={"help": "Minimum number of tokens before allowing sentence break"}
+    )
