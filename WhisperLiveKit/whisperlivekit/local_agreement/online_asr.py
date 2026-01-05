@@ -4,6 +4,7 @@ from typing import List, Optional, Tuple
 
 import numpy as np
 
+from whisperlivekit.sentence_segmentation import create_segmenter
 from whisperlivekit.timed_objects import ASRToken, Sentence, Transcript
 
 logger = logging.getLogger(__name__)
@@ -135,6 +136,15 @@ class OnlineASRProcessor:
             logger.warning(
                 f"buffer_trimming_sec is set to {self.buffer_trimming_sec}, which is very long. It may cause OOM."
             )
+
+        # Initialize sentence segmenter for enhanced sentence detection
+        enable_seg = getattr(asr, 'enable_sentence_segmentation', False)
+        seg_mode = getattr(asr, 'segmentation_mode', 'full')
+        if enable_seg:
+            self.sentence_segmenter = create_segmenter(mode=seg_mode, min_tokens=3)
+            logger.info(f"LocalAgreement sentence segmentation enabled: mode={seg_mode}")
+        else:
+            self.sentence_segmenter = None
 
     def init(self, offset: Optional[float] = None):
         """Initialize or reset the processing buffers."""
@@ -351,12 +361,19 @@ class OnlineASRProcessor:
 
     def words_to_sentences(self, tokens: List[ASRToken]) -> List[Sentence]:
         """
-        Converts a list of tokens to a list of Sentence objects using the provided
-        sentence tokenizer.
+        Converts a list of tokens to a list of Sentence objects.
+
+        If sentence_segmenter is enabled, uses the enhanced segmentation logic.
+        Otherwise, falls back to the legacy tokenizer-based approach.
         """
         if not tokens:
             return []
 
+        # NEW MODE: Use enhanced sentence segmenter if enabled
+        if self.sentence_segmenter is not None:
+            return self._words_to_sentences_with_segmenter(tokens)
+
+        # LEGACY MODE: Original tokenizer-based approach
         full_text = " ".join(token.text for token in tokens)
 
         if self.tokenize:
@@ -392,6 +409,54 @@ class OnlineASRProcessor:
                     text=" ".join(t.text for t in sent_tokens),
                 )
                 sentences.append(sentence)
+        return sentences
+
+    def _words_to_sentences_with_segmenter(self, tokens: List[ASRToken]) -> List[Sentence]:
+        """
+        Enhanced sentence segmentation using the sentence_segmenter.
+
+        Builds sentences by checking each token for sentence boundaries.
+        """
+        if not tokens:
+            return []
+
+        sentences: List[Sentence] = []
+        current_sentence_tokens: List[ASRToken] = []
+        accumulated_text = ""
+
+        self.sentence_segmenter.reset()
+
+        for token in tokens:
+            current_sentence_tokens.append(token)
+            accumulated_text = (accumulated_text + " " + token.text).strip() if accumulated_text else token.text
+
+            # Check if this is a sentence boundary
+            if self.sentence_segmenter.should_break_at_token(token.text):
+                # Create a sentence from accumulated tokens
+                if current_sentence_tokens:
+                    sentence = Sentence(
+                        start=current_sentence_tokens[0].start,
+                        end=current_sentence_tokens[-1].end,
+                        text=accumulated_text,
+                    )
+                    sentences.append(sentence)
+                    logger.debug(f"[Enhanced segmentation] Created sentence: {accumulated_text}")
+
+                # Reset for next sentence
+                current_sentence_tokens = []
+                accumulated_text = ""
+                self.sentence_segmenter.reset()
+
+        # Add any remaining tokens as the last sentence
+        if current_sentence_tokens:
+            sentence = Sentence(
+                start=current_sentence_tokens[0].start,
+                end=current_sentence_tokens[-1].end,
+                text=accumulated_text,
+            )
+            sentences.append(sentence)
+            logger.debug(f"[Enhanced segmentation] Created final sentence: {accumulated_text}")
+
         return sentences
     
     def finish(self) -> Tuple[List[ASRToken], float]:

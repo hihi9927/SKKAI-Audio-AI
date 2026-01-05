@@ -15,6 +15,8 @@ from pathlib import Path
 import time
 from datetime import datetime
 import logging
+import subprocess
+import signal
 
 logging.basicConfig(
     format='%(levelname)s\t%(message)s',
@@ -23,6 +25,130 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 SAMPLING_RATE = 16000
+
+
+class ServerManager:
+    """Manages WhisperLiveKit server lifecycle"""
+
+    def __init__(self, server_script, host='localhost', port=8001, model='large-v3', lan='en'):
+        self.server_script = server_script
+        self.host = host
+        self.port = port
+        self.model = model
+        self.lan = lan
+        self.process = None
+
+    def start_server(self, policy, additional_args=None):
+        """Start WhisperLiveKit server with specified policy"""
+        if self.process is not None:
+            logger.warning("Server already running, stopping first...")
+            self.stop_server()
+
+        # Build command
+        cmd = [
+            sys.executable,
+            self.server_script,
+            '--host', self.host,
+            '--port', str(self.port),
+            '--model', self.model,
+            '--lan', self.lan,
+            '--backend-policy', str(policy),
+        ]
+
+        # Add additional arguments
+        if additional_args:
+            cmd.extend(additional_args)
+
+        logger.info(f"Starting server with policy {policy}...")
+        logger.debug(f"Command: {' '.join(cmd)}")
+
+        try:
+            # Start server process
+            self.process = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                bufsize=1,
+                universal_newlines=True
+            )
+
+            # Wait for server to be ready
+            if not self._wait_for_server_ready(timeout=60):
+                logger.error("Server failed to start within timeout")
+                self.stop_server()
+                return False
+
+            logger.info(f"Server started successfully (PID: {self.process.pid})")
+            return True
+
+        except Exception as e:
+            logger.error(f"Failed to start server: {e}")
+            return False
+
+    def _wait_for_server_ready(self, timeout=60):
+        """Wait for server to be ready by checking WebSocket connection"""
+        start_time = time.time()
+        ws_url = f'ws://{self.host}:{self.port}/asr'
+
+        while time.time() - start_time < timeout:
+            try:
+                # Check if process is still running
+                if self.process.poll() is not None:
+                    logger.error("Server process terminated unexpectedly")
+                    return False
+
+                # Try to connect
+                async def check_connection():
+                    try:
+                        async with websockets.connect(ws_url, ping_interval=None, open_timeout=2) as ws:
+                            # Wait for hello message
+                            await asyncio.wait_for(ws.recv(), timeout=2.0)
+                            return True
+                    except:
+                        return False
+
+                if asyncio.run(check_connection()):
+                    logger.info("Server is ready!")
+                    return True
+
+            except Exception as e:
+                logger.debug(f"Waiting for server... ({e})")
+
+            time.sleep(1)
+
+        return False
+
+    def stop_server(self):
+        """Stop the running server"""
+        if self.process is None:
+            logger.debug("No server process to stop")
+            return
+
+        logger.info(f"Stopping server (PID: {self.process.pid})...")
+
+        try:
+            # Try graceful termination first
+            self.process.terminate()
+
+            # Wait up to 10 seconds for graceful shutdown
+            try:
+                self.process.wait(timeout=10)
+                logger.info("Server stopped gracefully")
+            except subprocess.TimeoutExpired:
+                logger.warning("Server did not stop gracefully, forcing...")
+                self.process.kill()
+                self.process.wait()
+                logger.info("Server force stopped")
+
+        except Exception as e:
+            logger.error(f"Error stopping server: {e}")
+        finally:
+            self.process = None
+
+    def __del__(self):
+        """Cleanup on deletion"""
+        self.stop_server()
 
 
 def find_audio_files(test_dir):
@@ -591,6 +717,17 @@ def main():
     parser.add_argument('--log-level', type=str, default='INFO',
                         choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'],
                         help='Log level (default: INFO)')
+    parser.add_argument('--auto-server', action='store_true',
+                        help='Automatically start/stop server for each policy (requires --server-script)')
+    parser.add_argument('--server-script', type=str,
+                        default='whisperlivekit/websocket_server.py',
+                        help='Path to server script (default: whisperlivekit/websocket_server.py)')
+    parser.add_argument('--server-model', type=str, default='large-v3',
+                        help='Model to use for server (default: large-v3)')
+    parser.add_argument('--server-lan', type=str, default='en',
+                        help='Language for server (default: en)')
+    parser.add_argument('--server-args', type=str, default='',
+                        help='Additional server arguments (space-separated)')
 
     args = parser.parse_args()
 
@@ -621,6 +758,27 @@ def main():
         logger.error("No audio files found")
         sys.exit(1)
 
+    # Initialize server manager if auto-server is enabled
+    server_manager = None
+    if args.auto_server:
+        if not os.path.exists(args.server_script):
+            logger.error(f"Server script not found: {args.server_script}")
+            sys.exit(1)
+
+        # Parse additional server arguments
+        additional_args = args.server_args.split() if args.server_args else []
+
+        server_manager = ServerManager(
+            server_script=args.server_script,
+            host=args.host,
+            port=args.port,
+            model=args.server_model,
+            lan=args.server_lan
+        )
+        logger.info("Auto-server mode enabled")
+        logger.info(f"Server script: {args.server_script}")
+        logger.info(f"Server model: {args.server_model}, language: {args.server_lan}\n")
+
     # Process each policy
     all_results = {}
     try:
@@ -631,9 +789,18 @@ def main():
             logger.info(f"({policy_name})")
             logger.info(f"{'='*70}\n")
 
+            # Start server if auto-server is enabled
+            if server_manager:
+                if not server_manager.start_server(policy, additional_args):
+                    logger.error(f"Failed to start server for policy {policy}")
+                    sys.exit(1)
+            else:
+                # Manual mode: wait for user
+                ws_url = f'ws://{args.host}:{args.port}/asr'
+                logger.info(f"Connecting to: {ws_url}")
+                logger.info(f"NOTE: Make sure server is running with --backend-policy {policy}\n")
+
             ws_url = f'ws://{args.host}:{args.port}/asr'
-            logger.info(f"Connecting to: {ws_url}")
-            logger.info(f"NOTE: Make sure server is running with --backend-policy {policy}\n")
 
             # Process batch
             results = asyncio.run(
@@ -646,16 +813,27 @@ def main():
 
             all_results[f'policy_{policy}'] = results
 
+            # Stop server after processing (if auto-server)
+            if server_manager:
+                server_manager.stop_server()
+                logger.info(f"Server stopped for policy {policy}\n")
+
             # Wait between policies
             if policy_idx < len(policies_to_test) - 1:
                 next_policy = policies_to_test[policy_idx + 1]
                 logger.info(f"\n{'='*70}")
                 logger.info(f"Completed policy {policy}")
                 logger.info(f"Next: policy {next_policy}")
-                logger.info(f"Please restart server with --backend-policy {next_policy}")
-                logger.info(f"{'='*70}\n")
 
-                input("Press Enter when server is ready with new policy...")
+                if not server_manager:
+                    # Manual mode: wait for user to restart server
+                    logger.info(f"Please restart server with --backend-policy {next_policy}")
+                    logger.info(f"{'='*70}\n")
+                    input("Press Enter when server is ready with new policy...")
+                else:
+                    logger.info(f"Auto-starting server with policy {next_policy}")
+                    logger.info(f"{'='*70}\n")
+                    time.sleep(2)  # Brief pause between restarts
 
         # Final summary
         logger.info(f"\n{'='*70}")
@@ -673,12 +851,22 @@ def main():
     except KeyboardInterrupt:
         logger.info("\n\nInterrupted by user")
         logger.info(f"Partial results saved to: {args.output}")
+        if server_manager:
+            logger.info("Stopping server...")
+            server_manager.stop_server()
         sys.exit(1)
     except Exception as e:
         logger.error(f"Error: {e}")
         import traceback
         traceback.print_exc()
+        if server_manager:
+            logger.info("Stopping server...")
+            server_manager.stop_server()
         sys.exit(1)
+    finally:
+        # Ensure server is stopped
+        if server_manager:
+            server_manager.stop_server()
 
 
 if __name__ == "__main__":
