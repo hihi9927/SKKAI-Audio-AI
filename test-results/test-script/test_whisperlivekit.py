@@ -17,6 +17,7 @@ from datetime import datetime
 import logging
 import subprocess
 import signal
+import random
 
 logging.basicConfig(
     format='%(levelname)s\t%(message)s',
@@ -354,6 +355,25 @@ async def process_single_file(ws, audio_data, file_id):
     except Exception as e:
         logger.error(f"Error processing {file_id}: {e}")
         return None
+
+
+def load_common_file_ids(common_files_json):
+    """Load common file IDs from the common-files JSON"""
+    try:
+        with open(common_files_json, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+
+        # Extract file IDs from raw_results
+        if 'raw_results' in data:
+            file_ids = {r['file_id'] for r in data['raw_results']}
+            logger.info(f"Loaded {len(file_ids)} common file IDs from {common_files_json}")
+            return file_ids
+        else:
+            logger.warning(f"No raw_results found in {common_files_json}")
+            return set()
+    except Exception as e:
+        logger.error(f"Error loading common files: {e}")
+        return set()
 
 
 def load_processed_files(output_file, policy):
@@ -728,6 +748,12 @@ def main():
                         help='Language for server (default: en)')
     parser.add_argument('--server-args', type=str, default='',
                         help='Additional server arguments (space-separated)')
+    parser.add_argument('--common-files', type=str, default=None,
+                        help='Path to common files JSON (e.g., chunked-common-files.json) to filter test files')
+    parser.add_argument('--random-sample', type=int, default=None,
+                        help='Randomly sample N files from the filtered set (uses fixed seed for reproducibility)')
+    parser.add_argument('--random-seed', type=int, default=42,
+                        help='Random seed for sampling (default: 42)')
 
     args = parser.parse_args()
 
@@ -752,11 +778,53 @@ def main():
     # Find all audio files
     logger.info("Scanning test directory...")
     audio_files = find_audio_files(args.test_dir)
-    logger.info(f"Found {len(audio_files)} audio files\n")
+    logger.info(f"Found {len(audio_files)} audio files in test directory\n")
 
     if len(audio_files) == 0:
         logger.error("No audio files found")
         sys.exit(1)
+
+    # Filter by common files if specified
+    if args.common_files:
+        if not os.path.exists(args.common_files):
+            logger.error(f"Common files JSON not found: {args.common_files}")
+            sys.exit(1)
+
+        common_file_ids = load_common_file_ids(args.common_files)
+        if len(common_file_ids) == 0:
+            logger.error("No common file IDs loaded")
+            sys.exit(1)
+
+        # Filter audio files to only include common files
+        audio_files = [f for f in audio_files if f['file_id'] in common_file_ids]
+        logger.info(f"Filtered to {len(audio_files)} common files")
+
+        if len(audio_files) == 0:
+            logger.error("No matching audio files found in common set")
+            sys.exit(1)
+
+    # Random sampling if specified
+    if args.random_sample is not None:
+        if args.random_sample > len(audio_files):
+            logger.warning(f"Requested sample size {args.random_sample} exceeds available files {len(audio_files)}")
+            logger.info(f"Using all {len(audio_files)} files instead")
+        else:
+            # Set random seed for reproducibility
+            random.seed(args.random_seed)
+            logger.info(f"Random sampling {args.random_sample} files from {len(audio_files)} (seed={args.random_seed})")
+
+            # Sort files by file_id for consistent ordering before sampling
+            audio_files_sorted = sorted(audio_files, key=lambda x: x['file_id'])
+
+            # Sample
+            audio_files = random.sample(audio_files_sorted, args.random_sample)
+
+            # Re-sort by file_id for consistent processing order
+            audio_files = sorted(audio_files, key=lambda x: x['file_id'])
+
+            logger.info(f"Selected {len(audio_files)} files for testing")
+            logger.info(f"First file: {audio_files[0]['file_id']}")
+            logger.info(f"Last file: {audio_files[-1]['file_id']}\n")
 
     # Initialize server manager if auto-server is enabled
     server_manager = None
