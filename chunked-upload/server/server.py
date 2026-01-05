@@ -29,7 +29,7 @@ app.add_middleware(
 # ================= Whisper (1회 로드) =================
 print("🤖 Loading Whisper...")
 device = "cuda" if torch.cuda.is_available() else "cpu"
-_MODEL_NAME = "large-v3"
+_MODEL_NAME = "small"
 model = whisper.load_model(_MODEL_NAME, device=device)
 print(f"✅ Whisper ready on {device} (model={_MODEL_NAME})")
 

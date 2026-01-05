@@ -16,7 +16,7 @@ const state = {
   isServerConnected: false,
   translationHistory: [],
   recordingEnabled: false,
-  SERVER_URL: 'ws://localhost:8001',
+  SERVER_URL: 'wss://edra-raspiest-eagerly.ngrok-free.dev',
   currentOriginal: '',
   currentTranslated: '',
   isConnecting: false,

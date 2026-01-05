@@ -134,18 +134,64 @@ async def process_single_file(ws, audio_data, file_id):
                         if first_result_time is None:
                             first_result_time = time.time()
 
-                        # Collect transcription from lines (keep only the longest/latest text)
+                        # Collect segments by their start/end time to track unique sentences
+                        # WhisperLiveKit filters old lines (keeps only last 3 seconds), so we need to
+                        # accumulate segments by their timestamps to avoid losing earlier sentences
                         lines = data.get('lines', [])
                         for line in lines:
                             text = line.get('text', '').strip()
-                            if text:
-                                # Replace with longest text (streaming updates)
-                                if not results or len(text) > len(results[-1]):
-                                    if results:
-                                        results[-1] = text
+                            start_raw = line.get('start', 0)
+                            end_raw = line.get('end', 0)
+
+                            if not text:
+                                continue
+
+                            # Convert start/end to float (they might be strings like "0:00:01.234")
+                            try:
+                                if isinstance(start_raw, str):
+                                    # Parse time format like "0:00:01.234"
+                                    parts = start_raw.split(':')
+                                    if len(parts) == 3:
+                                        h, m, s = parts
+                                        start = float(h) * 3600 + float(m) * 60 + float(s)
                                     else:
-                                        results.append(text)
-                                    logger.debug(f"Received: {text}")
+                                        start = float(start_raw)
+                                else:
+                                    start = float(start_raw)
+
+                                if isinstance(end_raw, str):
+                                    parts = end_raw.split(':')
+                                    if len(parts) == 3:
+                                        h, m, s = parts
+                                        end = float(h) * 3600 + float(m) * 60 + float(s)
+                                    else:
+                                        end = float(end_raw)
+                                else:
+                                    end = float(end_raw)
+                            except (ValueError, TypeError) as e:
+                                logger.debug(f"Failed to parse timestamps: start={start_raw}, end={end_raw}, error={e}")
+                                continue
+
+                            # Create unique key based on approximate start time (rounded to 0.1s)
+                            seg_key = round(start * 10) / 10
+
+                            # Store as tuple (key, end_time, text) to maintain order
+                            # Check if this segment already exists
+                            found = False
+                            for i, (existing_key, existing_end, _) in enumerate(results):
+                                if abs(existing_key - seg_key) < 0.2:  # Same segment (within 200ms)
+                                    # Update with longer text (streaming update)
+                                    if len(text) >= len(results[i][2]):
+                                        results[i] = (seg_key, end, text)
+                                    found = True
+                                    break
+
+                            if not found:
+                                # New segment - add it in sorted order by start time
+                                results.append((seg_key, end, text))
+                                results.sort(key=lambda x: x[0])
+
+                            logger.debug(f"Segment at {start:.1f}s: {text}")
 
             except asyncio.TimeoutError:
                 logger.debug(f"Timeout waiting for results")
@@ -160,11 +206,21 @@ async def process_single_file(ws, audio_data, file_id):
         total_time = processing_end - processing_start
         first_token_latency = (first_result_time - processing_start) if first_result_time else None
 
-        # Combine all results
-        full_transcript = ' '.join(results).strip()
+        # Extract text from tuples (key, end_time, text) or handle plain strings
+        valid_results = []
+        for r in results:
+            if isinstance(r, tuple) and len(r) == 3:
+                # Tuple format: (seg_key, end_time, text)
+                valid_results.append(r[2])
+            elif isinstance(r, str) and r.strip():
+                # Plain string format (from 'final' messages)
+                valid_results.append(r.strip())
+
+        full_transcript = ' '.join(valid_results).strip()
 
         return {
             'transcript': full_transcript,
+            'segments': valid_results,  # Individual segmented sentences
             'total_time': total_time,
             'first_token_latency': first_token_latency
         }
@@ -283,6 +339,13 @@ async def process_batch(audio_files, ws_url, output_file, policy, limit=None):
                     })
                     logger.info(f"  REF: {reference}")
                     logger.info(f"  HYP: {hypothesis}")
+
+                    # Show segmented sentences if available
+                    if 'segments' in result and result['segments']:
+                        logger.info(f"  Segments ({len(result['segments'])}):")
+                        for i, seg in enumerate(result['segments'], 1):
+                            logger.info(f"    [{i}] {seg}")
+
                     logger.info(f"  First token: {first_token_latency:.2f}s, Total: {total_time:.2f}s")
                 else:
                     logger.warning(f"No result for {file_id}")
@@ -345,6 +408,14 @@ def save_results_structured(results, output_file, policy):
     from collections import defaultdict
     import os
 
+    # Define text normalization transformation
+    transformation = jiwer.Compose([
+        jiwer.ToLowerCase(),
+        jiwer.RemoveMultipleSpaces(),
+        jiwer.RemovePunctuation(),
+        jiwer.Strip()
+    ])
+
     # Load existing data if file exists
     existing_data = {}
     if os.path.exists(output_file):
@@ -363,12 +434,24 @@ def save_results_structured(results, output_file, policy):
     # Calculate metrics for each folder
     folder_stats = {}
     for speaker_id, folder_results in sorted(folders.items()):
-        references = [r['reference'] for r in folder_results]
-        hypotheses = [r['hypothesis'] for r in folder_results]
+        # Filter out empty results
+        valid_results = [r for r in folder_results if r.get('reference', '').strip() and r.get('hypothesis', '').strip()]
+
+        if len(valid_results) == 0:
+            folder_stats[speaker_id] = {
+                'num_files': len(folder_results),
+                'wer': None,
+                'first_token_latency': None,
+                'avg_processing_time': None
+            }
+            continue
+
+        references = [r['reference'] for r in valid_results]
+        hypotheses = [r['hypothesis'] for r in valid_results]
 
         # Calculate WER for this folder
         try:
-            folder_wer = jiwer.wer(references, hypotheses)
+            folder_wer = jiwer.wer(references, hypotheses, truth_transform=transformation, hypothesis_transform=transformation)
         except:
             folder_wer = None
 
@@ -386,14 +469,19 @@ def save_results_structured(results, output_file, policy):
             'avg_processing_time': avg_processing_time
         }
 
-    # Calculate overall metrics
-    all_references = [r['reference'] for r in results]
-    all_hypotheses = [r['hypothesis'] for r in results]
+    # Calculate overall metrics - filter out empty results
+    valid_results_overall = [r for r in results if r.get('reference', '').strip() and r.get('hypothesis', '').strip()]
 
-    try:
-        overall_wer = jiwer.wer(all_references, all_hypotheses)
-    except:
+    if len(valid_results_overall) == 0:
         overall_wer = None
+    else:
+        all_references = [r['reference'] for r in valid_results_overall]
+        all_hypotheses = [r['hypothesis'] for r in valid_results_overall]
+
+        try:
+            overall_wer = jiwer.wer(all_references, all_hypotheses, truth_transform=transformation, hypothesis_transform=transformation)
+        except:
+            overall_wer = None
 
     all_first_token_latencies = [r['first_token_latency'] for r in results if r['first_token_latency'] is not None]
     overall_first_token_latency = sum(all_first_token_latencies) / len(all_first_token_latencies) if all_first_token_latencies else None
@@ -429,10 +517,25 @@ def calculate_wer(results, policy):
         import jiwer
         from collections import defaultdict
 
-        references = [r['reference'] for r in results]
-        hypotheses = [r['hypothesis'] for r in results]
+        # Define text normalization transformation
+        transformation = jiwer.Compose([
+            jiwer.ToLowerCase(),
+            jiwer.RemoveMultipleSpaces(),
+            jiwer.RemovePunctuation(),
+            jiwer.Strip()
+        ])
 
-        overall_wer = jiwer.wer(references, hypotheses)
+        # Filter out empty results
+        valid_results = [r for r in results if r.get('reference', '').strip() and r.get('hypothesis', '').strip()]
+
+        if len(valid_results) == 0:
+            logger.warning("No valid results to calculate WER")
+            return None
+
+        references = [r['reference'] for r in valid_results]
+        hypotheses = [r['hypothesis'] for r in valid_results]
+
+        overall_wer = jiwer.wer(references, hypotheses, truth_transform=transformation, hypothesis_transform=transformation)
 
         # Calculate average metrics
         first_token_latencies = [r['first_token_latency'] for r in results if r['first_token_latency'] is not None]
@@ -479,8 +582,8 @@ def main():
                         help='WebSocket server host (default: localhost)')
     parser.add_argument('--port', type=int, default=8001,
                         help='WebSocket server port (default: 8001)')
-    parser.add_argument('--output', type=str, default='whisperlivekit_results.json',
-                        help='Output JSON file (default: whisperlivekit_results.json)')
+    parser.add_argument('--output', type=str, default='whisperlivekit_results2.json',
+                        help='Output JSON file (default: whisperlivekit_results2.json)')
     parser.add_argument('--limit', type=int, default=None,
                         help='Limit number of NEW files to process per policy')
     parser.add_argument('--calculate-wer', action='store_true',
