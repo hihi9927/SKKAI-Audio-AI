@@ -84,6 +84,9 @@ def backend_factory(
             confidence_validation,
             warmup_file=None,
             min_chunk_size=None,
+            enable_sentence_segmentation=False,
+            segmentation_mode="full",
+            min_tokens_before_break=3,
         ):
     backend_choice = backend
     custom_reference = model_path or model_dir
@@ -156,12 +159,18 @@ def backend_factory(
         tokenizer = None
     
     warmup_asr(asr, warmup_file)
-    
+
     asr.confidence_validation = confidence_validation
     asr.tokenizer = tokenizer
     asr.buffer_trimming = buffer_trimming
     asr.buffer_trimming_sec = buffer_trimming_sec
     asr.backend_choice = backend_choice
+
+    # Sentence segmentation settings (for compatibility with SimulStreaming)
+    asr.enable_sentence_segmentation = enable_sentence_segmentation
+    asr.segmentation_mode = segmentation_mode
+    asr.min_tokens_before_break = min_tokens_before_break
+
     return asr
 
 

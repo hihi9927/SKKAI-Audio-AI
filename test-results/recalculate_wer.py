@@ -126,6 +126,6 @@ def recalculate_wer(input_file, output_file):
 
 if __name__ == "__main__":
     recalculate_wer(
-        'whisperlivekit_results2.json',
-        'simul_results_meaning.json'
+        'test-script/simul_sentence_100_results.json',
+        'simul_results_sentence-100.json'
     )
