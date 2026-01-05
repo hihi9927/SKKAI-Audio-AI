@@ -595,10 +595,19 @@ def save_results_structured(results, output_file, policy):
         references = [r['reference'] for r in valid_results]
         hypotheses = [r['hypothesis'] for r in valid_results]
 
-        # Calculate WER for this folder
+        # Calculate WER for this folder - apply transformation and filter
         try:
-            folder_wer = jiwer.wer(references, hypotheses, truth_transform=transformation, hypothesis_transform=transformation)
-        except:
+            trans_refs = [transformation(r) for r in references]
+            trans_hyps = [transformation(h) for h in hypotheses]
+
+            valid_pairs = [(r, h) for r, h in zip(trans_refs, trans_hyps) if r.strip() and h.strip()]
+            if not valid_pairs:
+                folder_wer = None
+            else:
+                folder_refs, folder_hyps = zip(*valid_pairs)
+                folder_wer = jiwer.wer(list(folder_refs), list(folder_hyps))
+        except Exception as e:
+            logger.warning(f"Error calculating WER for folder {speaker_id}: {e}")
             folder_wer = None
 
         # Calculate average metrics
@@ -625,8 +634,18 @@ def save_results_structured(results, output_file, policy):
         all_hypotheses = [r['hypothesis'] for r in valid_results_overall]
 
         try:
-            overall_wer = jiwer.wer(all_references, all_hypotheses, truth_transform=transformation, hypothesis_transform=transformation)
-        except:
+            # Apply transformation and filter out empty results
+            trans_refs = [transformation(r) for r in all_references]
+            trans_hyps = [transformation(h) for h in all_hypotheses]
+
+            valid_pairs = [(r, h) for r, h in zip(trans_refs, trans_hyps) if r.strip() and h.strip()]
+            if not valid_pairs:
+                overall_wer = None
+            else:
+                final_refs, final_hyps = zip(*valid_pairs)
+                overall_wer = jiwer.wer(list(final_refs), list(final_hyps))
+        except Exception as e:
+            logger.warning(f"Error calculating overall WER: {e}")
             overall_wer = None
 
     all_first_token_latencies = [r['first_token_latency'] for r in results if r['first_token_latency'] is not None]
@@ -681,7 +700,26 @@ def calculate_wer(results, policy):
         references = [r['reference'] for r in valid_results]
         hypotheses = [r['hypothesis'] for r in valid_results]
 
-        overall_wer = jiwer.wer(references, hypotheses, truth_transform=transformation, hypothesis_transform=transformation)
+        # Apply transformation and filter out any that become empty
+        transformed_refs = [transformation(r) for r in references]
+        transformed_hyps = [transformation(h) for h in hypotheses]
+
+        # Filter out empty after transformation
+        final_pairs = [(r, h, orig_result)
+                       for r, h, orig_result in zip(transformed_refs, transformed_hyps, valid_results)
+                       if r.strip() and h.strip()]
+
+        if not final_pairs:
+            logger.warning("All results became empty after normalization")
+            return None
+
+        final_refs = [p[0] for p in final_pairs]
+        final_hyps = [p[1] for p in final_pairs]
+        valid_results = [p[2] for p in final_pairs]  # Update valid_results to match filtered pairs
+
+        logger.info(f"Valid results after normalization: {len(valid_results)} out of {len(results)}")
+
+        overall_wer = jiwer.wer(final_refs, final_hyps)
 
         # Calculate average metrics
         first_token_latencies = [r['first_token_latency'] for r in results if r['first_token_latency'] is not None]
