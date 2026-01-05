@@ -317,6 +317,34 @@ def parse_args():
         help="600M or 1.3B",
     )
 
+    # Sentence Segmentation arguments
+    segmentation_group = parser.add_argument_group('Sentence Segmentation arguments')
+
+    segmentation_group.add_argument(
+        "--enable-sentence-segmentation",
+        action="store_true",
+        default=False,
+        dest="enable_sentence_segmentation",
+        help="Enable sentence segmentation to stop decoding at sentence boundaries (periods, question marks, Korean/English sentence endings).",
+    )
+
+    segmentation_group.add_argument(
+        "--segmentation-mode",
+        type=str,
+        default="full",
+        dest="segmentation_mode",
+        choices=["off", "punctuation", "korean", "full"],
+        help="Sentence segmentation detection mode: 'off' (disabled), 'punctuation' (only punctuation marks), 'korean' (punctuation + Korean endings), 'full' (all detection methods including English).",
+    )
+
+    segmentation_group.add_argument(
+        "--min-tokens-before-break",
+        type=int,
+        default=3,
+        dest="min_tokens_before_break",
+        help="Minimum number of tokens required before allowing sentence break. Prevents breaking too early.",
+    )
+
     args = parser.parse_args()
     
     args.transcription = not args.no_transcription

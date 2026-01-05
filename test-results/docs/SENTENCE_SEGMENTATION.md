@@ -18,7 +18,34 @@ WhisperLiveKit의 문장 분절 기능 사용 가이드입니다.
 
 ## 사용 방법
 
-### SimulStreaming
+### CLI 옵션 (test_server.py)
+
+**가장 간단한 방법**: test_server 실행 시 CLI 옵션으로 활성화
+
+```bash
+# 한국어 문장 분절 활성화
+python -m whisperlivekit.test_server \
+  --host localhost \
+  --port 8001 \
+  --model large-v3 \
+  --lan ko \
+  --backend-policy simulstreaming \
+  --enable-sentence-segmentation \
+  --segmentation-mode korean \
+  --min-tokens-before-break 3
+
+# 영어 문장 부호만 감지
+python -m whisperlivekit.test_server \
+  --host localhost \
+  --port 8001 \
+  --model large-v3 \
+  --lan en \
+  --backend-policy simulstreaming \
+  --enable-sentence-segmentation \
+  --segmentation-mode punctuation
+```
+
+### Python 코드 (SimulStreaming)
 
 ```python
 from whisperlivekit.simul_whisper.backend import SimulStreamingASR, SimulStreamingOnlineProcessor
@@ -36,7 +63,7 @@ processor = SimulStreamingOnlineProcessor(asr)
 # 이후 사용법은 기존과 동일
 ```
 
-### LocalAgreement
+### Python 코드 (LocalAgreement)
 
 ```python
 from whisperlivekit.local_agreement.backends import WhisperASR

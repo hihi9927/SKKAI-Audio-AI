@@ -93,7 +93,7 @@ class TranscriptionEngine:
                 )
         backend_policy = self.args.backend_policy
         if self.args.transcription:
-            if backend_policy == "simulstreaming":                 
+            if backend_policy == "simulstreaming":
                 simulstreaming_params = {
                     "disable_fast_encoder": False,
                     "custom_alignment_heads": None,
@@ -107,10 +107,13 @@ class TranscriptionEngine:
                     "init_prompt": None,
                     "static_init_prompt": None,
                     "max_context_tokens": None,
+                    "enable_sentence_segmentation": False,
+                    "segmentation_mode": "full",
+                    "min_tokens_before_break": 3,
                 }
                 simulstreaming_params = update_with_kwargs(simulstreaming_params, kwargs)
-                
-                self.tokenizer = None        
+
+                self.tokenizer = None
                 self.asr = SimulStreamingASR(
                     **transcription_common_params,
                     **simulstreaming_params,
@@ -121,14 +124,17 @@ class TranscriptionEngine:
                     getattr(self.asr, "encoder_backend", "whisper"),
                 )
             else:
-                
+
                 whisperstreaming_params = {
                     "buffer_trimming": "segment",
                     "confidence_validation": False,
                     "buffer_trimming_sec": 15,
+                    "enable_sentence_segmentation": False,
+                    "segmentation_mode": "full",
+                    "min_tokens_before_break": 3,
                 }
                 whisperstreaming_params = update_with_kwargs(whisperstreaming_params, kwargs)
-                
+
                 self.asr = backend_factory(
                     backend=self.args.backend,
                     **transcription_common_params,
