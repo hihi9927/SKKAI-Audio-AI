@@ -332,33 +332,64 @@ async function connectWebSocket() {
         console.log('📥 서버 메시지:', t, data);
 
         if (t === 'hello') {
+          // Don't show hello message as subtitle - it's just a connection confirmation
           console.log('👋', data.message);
         } else if (t === 'ready') {
           console.log('✅ 서버 준비 완료', data);
-        } else if (t === 'active_transcription' || t === 'no_audio_detected') {
-          // WLK FrontData format:
+        } else if (t === 'partial') {
+          // Partial result - real-time transcription (no translation yet)
           // {
-          //   status: 'active_transcription',
-          //   lines: [{text: string, detected_language: string, ...}],  // Now contains only LAST line
-          //   buffer_transcription: string,
-          //   buffer_translation: string,
-          //   translation: string  // Server-side translation
+          //   type: 'partial',
+          //   original: string,  // Current incomplete transcription
+          //   last_translation: string,  // Last completed translation (for display continuity)
+          //   language: string
           // }
 
+          const partialText = (data.original || '').trim();
+          const lastTranslation = data.last_translation || '';
+
+          console.log('⏳ Partial:', partialText.substring(0, 50) + '...');
+
+          // Show partial transcription with last completed translation
+          if (partialText) {
+            showResult(partialText, lastTranslation);
+          }
+        } else if (t === 'final') {
+          // Final result - complete sentence with translation
+          // {
+          //   type: 'final',
+          //   start: string,
+          //   end: string,
+          //   original: string,  // Complete sentence
+          //   translation: string,  // Full translation
+          //   language: string
+          // }
+
+          const finalText = (data.original || '').trim();
+          const translation = data.translation || '';
+
+          console.log('✅ Final:', {
+            text: finalText.substring(0, 50) + '...',
+            translation: translation.substring(0, 30) + '...'
+          });
+
+          // Show complete sentence with translation (only once!)
+          if (finalText) {
+            showResult(finalText, translation);
+          }
+        } else if (t === 'active_transcription' || t === 'no_audio_detected') {
+          // Legacy format support (for backwards compatibility)
           const lines = data.lines || [];
           const bufferText = data.buffer_transcription || '';
-          const serverTranslation = data.translation || ''; // Server-side translation
+          const serverTranslation = data.translation || '';
 
-          // Server now sends only the last complete line, so we just display it
           let displayText = '';
 
           if (lines.length > 0) {
-            // Get the last (and only) line from server
             const lastLine = lines[lines.length - 1];
             displayText = (lastLine.text || '').trim();
           }
 
-          // Add buffer text if present
           if (bufferText.trim()) {
             if (displayText) {
               displayText = displayText + ' ' + bufferText.trim();
@@ -373,7 +404,6 @@ async function connectWebSocket() {
             translation: serverTranslation.substring(0, 30) + '...'
           });
 
-          // Show result (one sentence at a time)
           if (displayText) {
             showResult(displayText, serverTranslation);
           }

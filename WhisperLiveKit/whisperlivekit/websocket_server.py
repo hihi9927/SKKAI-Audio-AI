@@ -21,7 +21,15 @@ class WebSocketHandler:
         self.transcription_engine = transcription_engine
         self.audio_processor = audio_processor
         self.running = False
-        self.last_translation = ''  # Keep last translation result
+
+        # Translation buffer: accumulate text segments until sentence is complete
+        self.translation_buffer = []  # List of {text, start, end, language} dicts
+        self.last_translation = ''  # Last completed translation for showing in partials
+        self.last_translation_lang = None  # Language of last translation
+        self.detected_language = None  # Current detected language
+
+        # Track last sent line IDs to avoid duplicates
+        self.sent_line_ids = set()  # Set of line IDs we've already sent as 'final'
 
     async def send_message(self, message_dict):
         """Send JSON message to client"""
@@ -76,8 +84,52 @@ class WebSocketHandler:
             logger.error(f"Translation error: {e}")
             return ''
 
+    def is_sentence_complete(self, text):
+        """Check if text ends with sentence-ending punctuation"""
+        if not text:
+            return False
+        text = text.strip()
+        sentence_end_punctuation = {'.', '!', '?', '。', '！', '？'}
+        return any(text.endswith(p) for p in sentence_end_punctuation)
+
+    async def flush_translation_buffer(self, trigger_reason="unknown"):
+        """Flush translation buffer and send as 'final' message"""
+        if not self.translation_buffer:
+            return
+
+        logger.info(f"[Translation] Flushing buffer ({len(self.translation_buffer)} segments) - reason: {trigger_reason}")
+
+        # Combine all buffered text
+        full_text = ' '.join(seg['text'] for seg in self.translation_buffer)
+        first_start = self.translation_buffer[0]['start']
+        last_end = self.translation_buffer[-1]['end']
+        language = self.translation_buffer[0].get('language', 'ko')
+
+        # Translate the complete text
+        translation = await self.translate_text(full_text, language)
+        self.last_translation = translation
+        self.last_translation_lang = 'en' if language == 'ko' else 'ko'
+
+        logger.info(f"[Translation] Complete - {language}: {full_text[:50]}... → {translation[:50]}...")
+
+        # Send as 'final' message (complete sentence)
+        final_msg = {
+            'type': 'final',
+            'start': first_start,
+            'end': last_end,
+            'original': full_text,
+            'translation': translation,
+            'language': language
+        }
+
+        await self.send_message(final_msg)
+
+        # Clear the buffer
+        self.translation_buffer = []
+        logger.info(f"[Translation] Buffer cleared after {trigger_reason}")
+
     async def handle_results(self, results_generator):
-        """Handle results from AudioProcessor - send FrontData directly to client"""
+        """Handle results from AudioProcessor - SimulStreaming style (partial vs final)"""
         try:
             async for response in results_generator:
                 # Get the response as dict
@@ -87,57 +139,85 @@ class WebSocketHandler:
                 lines = response_dict.get('lines', [])
                 buffer_text = response_dict.get('buffer_transcription', '').strip()
 
-                # Strategy: Send only the LAST complete line + current buffer
-                # This ensures client shows one sentence at a time
+                # Detect language from lines
                 detected_lang = None
-                last_complete_line = None
+                for line in lines:
+                    if line and line.get('detected_language'):
+                        detected_lang = line['detected_language']
+                        break
 
-                if lines:
-                    # Get language and last complete line
-                    for line in lines:
-                        if line and line.get('detected_language'):
-                            detected_lang = line['detected_language']
-                        # Keep updating to get the last line
-                        if line and line.get('text'):
-                            last_complete_line = line
-
-                    # Send only the last complete line
-                    if last_complete_line:
-                        response_dict['lines'] = [last_complete_line]
-                        logger.debug(f"Sending last complete line: {last_complete_line.get('text', '')[:50]}...")
-                    else:
-                        response_dict['lines'] = []
-                else:
-                    response_dict['lines'] = []
-
-                # Prepare text for translation
-                text_to_translate = ''
-                if last_complete_line:
-                    text_to_translate = (last_complete_line.get('text', '') or '').strip()
-
-                # Add buffer text if present
-                if buffer_text:
-                    if text_to_translate:
-                        text_to_translate = text_to_translate + ' ' + buffer_text
-                    else:
-                        text_to_translate = buffer_text
-
-                # Default to Korean if no language detected
                 if not detected_lang:
-                    detected_lang = 'ko'
+                    detected_lang = 'ko'  # Default
 
-                # Translate the text
-                if text_to_translate:
-                    translation = await self.translate_text(text_to_translate, detected_lang)
-                    self.last_translation = translation  # Save for later use
-                    response_dict['translation'] = translation
-                    logger.info(f"[Single Line] Translated ({detected_lang}): {text_to_translate[:50]}... → {translation[:50]}...")
-                else:
-                    # Keep last translation even when no text
-                    response_dict['translation'] = self.last_translation
+                # Update detected language
+                if self.detected_language != detected_lang:
+                    if self.detected_language is not None:
+                        logger.info(f"[Language] Changed from {self.detected_language} to {detected_lang} - clearing buffer")
+                        self.translation_buffer = []
+                    self.detected_language = detected_lang
 
-                # Send response to client
-                await self.send_message(response_dict)
+                # Process each NEW complete line (not seen before)
+                new_complete_lines = []
+                for line in lines:
+                    if not line or not line.get('text'):
+                        continue
+
+                    # Create unique ID for this line (using text + start time)
+                    line_id = f"{line.get('text', '')}_{line.get('start', '')}"
+
+                    # Skip if we've already sent this line as 'final'
+                    if line_id in self.sent_line_ids:
+                        continue
+
+                    text = line['text'].strip()
+                    if not text:
+                        continue
+
+                    # Check if this line completes a sentence
+                    if self.is_sentence_complete(text):
+                        # This is a complete sentence
+                        new_complete_lines.append({
+                            'id': line_id,
+                            'text': text,
+                            'start': line.get('start', ''),
+                            'end': line.get('end', ''),
+                            'language': detected_lang
+                        })
+                        self.sent_line_ids.add(line_id)
+                    else:
+                        # Incomplete line - add to buffer for partial display
+                        pass
+
+                # Process new complete lines
+                for complete_line in new_complete_lines:
+                    # Add to buffer
+                    self.translation_buffer.append({
+                        'text': complete_line['text'],
+                        'start': complete_line['start'],
+                        'end': complete_line['end'],
+                        'language': complete_line['language']
+                    })
+
+                    # Flush immediately (each complete line is sent as final)
+                    logger.info(f"[Complete Line] Detected: {complete_line['text'][:50]}...")
+                    await self.flush_translation_buffer("sentence_complete")
+
+                # Send partial for buffer + current incomplete text
+                if buffer_text:
+                    # Calculate cumulative partial text
+                    partial_text = buffer_text
+
+                    # Send partial message (no translation yet)
+                    partial_msg = {
+                        'type': 'partial',
+                        'original': partial_text,
+                        'last_translation': self.last_translation,  # Show last completed translation
+                        'language': detected_lang
+                    }
+
+                    await self.send_message(partial_msg)
+                    logger.debug(f"[Partial] Sent: {partial_text[:50]}...")
+
             logger.info("Results generator finished.")
         except Exception as e:
             logger.error(f"Error in results handler: {e}")
