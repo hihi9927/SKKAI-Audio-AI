@@ -565,18 +565,23 @@ class AlignAtt:
         most_attended_frame = None
 
         token_len_before_decoding = current_tokens.shape[1]
-        
+
         l_absolute_timestamps = []
-        
+
         accumulated_cross_attns = []
-        
+
         audio_duration_s = self.segments_len()
         max_tokens_per_chunk = max(50, int(audio_duration_s * TOKENS_PER_SECOND * 2.0))  # 2x margin, min 50
         tokens_produced_this_chunk = 0
-        
+
+        # Hallucination detection variables
+        recent_tokens = []
+        consecutive_token_count = 1
+        last_token = None
+
         while not completed and current_tokens.shape[1] < self.max_text_len:  # bos is 3 tokens
             tokens_produced_this_chunk += 1
-            
+
             if tokens_produced_this_chunk > max_tokens_per_chunk:
                 logger.warning(f"[Loop Detection] Too many tokens ({tokens_produced_this_chunk}) for {audio_duration_s:.2f}s audio. Breaking.")
                 current_tokens = current_tokens[:, :token_len_before_decoding]  # Discard all new tokens
@@ -616,7 +621,8 @@ class AlignAtt:
 
             # Rule-based sentence breaking (punctuation and conjunctions)
             # Check tokens generated so far (excluding initial prompt tokens)
-            if not is_last:  # Only apply rule-based breaking during streaming, not at the end
+            # Only apply if meaning segmentation is enabled OR sentence segmentation is enabled
+            if not is_last and (self.cfg.enable_meaning_segmentation or self.state.sentence_segmenter is not None):
                 new_tokens_so_far = current_tokens[0, token_len_before_decoding:].tolist()
                 should_break, break_offset = self.should_break_at_punctuation(new_tokens_so_far)
                 if should_break:
@@ -630,7 +636,46 @@ class AlignAtt:
                     completed = True
                     break
 
-            # Process accumulated cross-attention weights for alignment
+            # Hallucination detection
+            current_token = current_tokens[0, -1].item()
+
+            # Check for consecutive identical tokens (5 or more)
+            if current_token == last_token:
+                consecutive_token_count += 1
+                if consecutive_token_count >= 5:
+                    logger.warning(f"[Hallucination] 5+ consecutive identical tokens ({current_token}). Stopping.")
+                    completed = True
+                    current_tokens = current_tokens[:, :-1]
+                    break
+            else:
+                consecutive_token_count = 1
+                last_token = current_token
+
+            # Track recent tokens for unique word check
+            recent_tokens.append(current_token)
+            if len(recent_tokens) > 10:
+                recent_tokens.pop(0)
+
+            # Check if recent 10 tokens have less than 2 unique words
+            if len(recent_tokens) >= 10:
+                # Decode recent tokens to text and split by words
+                recent_text = self.tokenizer.decode(recent_tokens)
+                words = recent_text.strip().split()
+                unique_words = set(words)
+                if len(unique_words) < 2:
+                    logger.warning(f"[Hallucination] Less than 2 unique words in recent 10 tokens. Flushing.")
+                    completed = True
+                    current_tokens = current_tokens[:, :-len(recent_tokens)]
+                    break
+
+            # Check total token count limit (200 tokens ≈ 30 seconds)
+            total_tokens = current_tokens.shape[1] - token_len_before_decoding
+            if total_tokens >= 200:
+                logger.warning(f"[Hallucination] Token limit reached: {total_tokens} tokens. Stopping to prevent runaway generation.")
+                completed = True
+                break
+
+            # Process accumulated cross-attention weights for alignment (AlignAtt)
             attn_of_alignment_heads = self._process_cross_attention(accumulated_cross_attns, content_mel_len)
 
             # for each beam, the most attended frame is:
@@ -653,7 +698,8 @@ class AlignAtt:
                 # stripping the last token, the eot
                 current_tokens = current_tokens[:, :-1]
                 break
-            
+
+            # AlignAtt-based checks (rewind detection and frame threshold)
             # for some rare cases where the attention fails
             if not is_last and self.state.last_attend_frame - most_attended_frame > self.cfg.rewind_threshold:
                 if current_tokens.shape[1] > 1 and current_tokens[0, -2] >= DEC_PAD:

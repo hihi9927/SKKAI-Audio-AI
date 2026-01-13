@@ -212,6 +212,9 @@ class SimulStreamingASR:
         seg_mode = getattr(self, 'segmentation_mode', 'full')
         min_tokens_break = getattr(self, 'min_tokens_before_break', 3)
 
+        # Get meaning segmentation setting
+        enable_meaning_seg = getattr(self, 'enable_meaning_segmentation', True)
+
         self.cfg = AlignAttConfig(
                 tokenizer_is_multilingual= is_multilingual,
                 segment_length=self.min_chunk_size,
@@ -230,6 +233,7 @@ class SimulStreamingASR:
                 enable_sentence_segmentation=enable_sentence_seg,
                 segmentation_mode=seg_mode,
                 min_tokens_before_break=min_tokens_break,
+                enable_meaning_segmentation=enable_meaning_seg,
         )  
         
         # Set up tokenizer for translation if needed

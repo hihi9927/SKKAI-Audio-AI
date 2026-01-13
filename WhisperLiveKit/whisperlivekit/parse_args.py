@@ -1,4 +1,5 @@
 
+import argparse
 from argparse import ArgumentParser
 
 
@@ -343,6 +344,14 @@ def parse_args():
         default=3,
         dest="min_tokens_before_break",
         help="Minimum number of tokens required before allowing sentence break. Prevents breaking too early.",
+    )
+
+    segmentation_group.add_argument(
+        "--enable-meaning-segmentation",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        dest="enable_meaning_segmentation",
+        help="Enable legacy meaning-based segmentation (rule-based punctuation and conjunction breaking). Default is True. Use --no-enable-meaning-segmentation to disable.",
     )
 
     args = parser.parse_args()

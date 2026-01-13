@@ -34,3 +34,8 @@ class AlignAttConfig():
         default=3,
         metadata={"help": "Minimum number of tokens before allowing sentence break"}
     )
+    # Meaning-based segmentation options (legacy rule-based logic)
+    enable_meaning_segmentation: bool = field(
+        default=True,
+        metadata={"help": "Enable meaning-based segmentation (punctuation, conjunctions - legacy mode)"}
+    )

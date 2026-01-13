@@ -79,79 +79,64 @@ class WebSocketHandler:
     async def handle_results(self, results_generator):
         """Handle results from AudioProcessor - send FrontData directly to client"""
         try:
-            TIME_WINDOW_SECONDS = 3  # Keep only last 3 seconds of lines
-
             async for response in results_generator:
                 # Get the response as dict
                 response_dict = response.to_dict()
 
-                # Filter old lines based on time
+                # Get lines and buffer
                 lines = response_dict.get('lines', [])
+                buffer_text = response_dict.get('buffer_transcription', '').strip()
+
+                # Strategy: Send only the LAST complete line + current buffer
+                # This ensures client shows one sentence at a time
+                detected_lang = None
+                last_complete_line = None
+
                 if lines:
-                    # Get language from original lines first (before filtering)
-                    detected_lang = None
+                    # Get language and last complete line
                     for line in lines:
                         if line and line.get('detected_language'):
                             detected_lang = line['detected_language']
-                            break
+                        # Keep updating to get the last line
+                        if line and line.get('text'):
+                            last_complete_line = line
 
-                    # Find the latest end time
-                    latest_end_time = 0
-                    for line in lines:
-                        if line.get('end'):
-                            end_time = self.parse_time_to_seconds(line['end'])
-                            if end_time > latest_end_time:
-                                latest_end_time = end_time
-
-                    # Remove lines older than TIME_WINDOW_SECONDS
-                    cutoff_time = latest_end_time - TIME_WINDOW_SECONDS
-                    filtered_lines = []
-                    for line in lines:
-                        if line.get('end'):
-                            end_time = self.parse_time_to_seconds(line['end'])
-                            if end_time >= cutoff_time:
-                                filtered_lines.append(line)
-                        else:
-                            filtered_lines.append(line)
-
-                    if len(filtered_lines) < len(lines):
-                        logger.info(f"Filtered {len(lines) - len(filtered_lines)} old lines (cutoff: {cutoff_time}s)")
-
-                    response_dict['lines'] = filtered_lines
-
-                    # Translate the combined text from filtered lines + buffer
-                    all_texts = []
-
-                    # Collect text from filtered lines only
-                    for line in filtered_lines:
-                        text = line.get('text', '') or ''  # Handle None case
-                        text = text.strip()
-                        if text:
-                            all_texts.append(text)
-
-                    # Add buffer text if present
-                    buffer_text = response_dict.get('buffer_transcription', '').strip()
-                    if buffer_text:
-                        all_texts.append(buffer_text)
-
-                    # Combine all texts
-                    combined_text = ' '.join(all_texts)
-
-                    # Default to Korean if no language detected (since server is running with --lan ko)
-                    if not detected_lang:
-                        detected_lang = 'ko'
-
-                    # Translate the combined text
-                    if combined_text:
-                        translation = await self.translate_text(combined_text, detected_lang)
-                        self.last_translation = translation  # Save for later use
-                        response_dict['translation'] = translation
-                        logger.info(f"Translated ({detected_lang}): {combined_text[:50]}... → {translation[:50]}...")
+                    # Send only the last complete line
+                    if last_complete_line:
+                        response_dict['lines'] = [last_complete_line]
+                        logger.debug(f"Sending last complete line: {last_complete_line.get('text', '')[:50]}...")
                     else:
-                        # Keep last translation even when filtered_lines is empty
-                        response_dict['translation'] = self.last_translation
+                        response_dict['lines'] = []
+                else:
+                    response_dict['lines'] = []
 
-                # Send filtered response to client
+                # Prepare text for translation
+                text_to_translate = ''
+                if last_complete_line:
+                    text_to_translate = (last_complete_line.get('text', '') or '').strip()
+
+                # Add buffer text if present
+                if buffer_text:
+                    if text_to_translate:
+                        text_to_translate = text_to_translate + ' ' + buffer_text
+                    else:
+                        text_to_translate = buffer_text
+
+                # Default to Korean if no language detected
+                if not detected_lang:
+                    detected_lang = 'ko'
+
+                # Translate the text
+                if text_to_translate:
+                    translation = await self.translate_text(text_to_translate, detected_lang)
+                    self.last_translation = translation  # Save for later use
+                    response_dict['translation'] = translation
+                    logger.info(f"[Single Line] Translated ({detected_lang}): {text_to_translate[:50]}... → {translation[:50]}...")
+                else:
+                    # Keep last translation even when no text
+                    response_dict['translation'] = self.last_translation
+
+                # Send response to client
                 await self.send_message(response_dict)
             logger.info("Results generator finished.")
         except Exception as e:

@@ -26,10 +26,7 @@ const state = {
   autoAdjustOpacity: false,
   isFirstMessage: true,
   loadingInterval: null,
-  lastLoggedText: '', // Track last logged text to avoid duplicates
-  displayedLines: [], // FIFO queue for displayed lines
-  maxLinesToKeep: 5, // Maximum number of lines to keep on screen
-  seenLineTexts: new Set() // Track unique line texts we've seen
+  lastLoggedText: '' // Track last logged text to avoid duplicates
 };
 
 // 그라데이션 바 색상 업데이트 (서버 연결 + 녹음 상태 모두 확인)
@@ -342,116 +339,43 @@ async function connectWebSocket() {
           // WLK FrontData format:
           // {
           //   status: 'active_transcription',
-          //   lines: [{text: string, detected_language: string, ...}],
+          //   lines: [{text: string, detected_language: string, ...}],  // Now contains only LAST line
           //   buffer_transcription: string,
           //   buffer_translation: string,
-          //   ...
+          //   translation: string  // Server-side translation
           // }
 
           const lines = data.lines || [];
           const bufferText = data.buffer_transcription || '';
-          const bufferTranslation = data.buffer_translation || '';
           const serverTranslation = data.translation || ''; // Server-side translation
 
-          // Helper function to parse time string to seconds
-          const parseTime = (timeStr) => {
-            if (!timeStr) return 0;
-            const parts = timeStr.split(':');
-            return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseFloat(parts[2]);
-          };
+          // Server now sends only the last complete line, so we just display it
+          let displayText = '';
 
-          // Get the latest end time from all lines (current "tick")
-          let latestEndTime = 0;
-          for (const line of lines) {
-            if (line.end) {
-              const endTime = parseTime(line.end);
-              if (endTime > latestEndTime) {
-                latestEndTime = endTime;
-              }
-            }
+          if (lines.length > 0) {
+            // Get the last (and only) line from server
+            const lastLine = lines[lines.length - 1];
+            displayText = (lastLine.text || '').trim();
           }
 
-          // Process each line and check if it's new
-          for (const line of lines) {
-            const text = (line.text || '').trim();
-            if (!text) continue;
-
-            // Check if this text is a continuation/update of the last line
-            let isUpdate = false;
-            if (state.displayedLines.length > 0) {
-              const lastLine = state.displayedLines[state.displayedLines.length - 1];
-
-              // If new text contains the last line (it's an extension), replace it
-              if (text.includes(lastLine.text) && text.length > lastLine.text.length) {
-                console.log(`🔄 마지막 라인 업데이트: "${lastLine.text.substring(0, 30)}..." → "${text.substring(0, 30)}..."`);
-                state.seenLineTexts.delete(lastLine.text); // Remove old version from seen set
-                state.seenLineTexts.add(text);
-                state.displayedLines[state.displayedLines.length - 1] = {
-                  text: text,
-                  language: line.detected_language || 'en',
-                  endTime: parseTime(line.end)
-                };
-                isUpdate = true;
-              }
-              // If last line contains new text (new text is shorter), it might be a correction - skip it
-              else if (lastLine.text.includes(text)) {
-                console.log(`⏭️ 이미 포함된 텍스트 스킵: "${text.substring(0, 30)}..."`);
-                isUpdate = true; // Don't add as new line
-              }
-            }
-
-            // If it's not an update and we haven't seen it before, add as new line
-            if (!isUpdate && !state.seenLineTexts.has(text)) {
-              state.seenLineTexts.add(text);
-
-              state.displayedLines.push({
-                text: text,
-                language: line.detected_language || 'en',
-                endTime: parseTime(line.end)
-              });
-
-              console.log('➕ 새로운 라인 추가:', text.substring(0, 50) + '...');
-            }
-          }
-
-          // Remove old lines based on time (keep only recent N seconds worth of content)
-          // or keep only last N lines, whichever is more restrictive
-          const timeWindowSeconds = 5; // Keep last 5 seconds of content
-          const cutoffTime = latestEndTime - timeWindowSeconds;
-
-          // First remove by time
-          while (state.displayedLines.length > 0 && state.displayedLines[0].endTime < cutoffTime) {
-            const removed = state.displayedLines.shift();
-            console.log(`⏰ 시간 초과로 라인 제거 (${removed.endTime}s < ${cutoffTime}s): ${removed.text.substring(0, 30)}...`);
-          }
-
-          // Then enforce max lines limit
-          if (state.displayedLines.length > state.maxLinesToKeep) {
-            const toRemove = state.displayedLines.length - state.maxLinesToKeep;
-            const removed = state.displayedLines.splice(0, toRemove);
-            console.log(`🗑️ ${removed.length}개 라인 제거 (FIFO), 유지: ${state.maxLinesToKeep}`);
-          }
-
-          // Combine displayed lines + current buffer
-          let allTexts = state.displayedLines.map(l => l.text);
+          // Add buffer text if present
           if (bufferText.trim()) {
-            allTexts.push(bufferText.trim());
+            if (displayText) {
+              displayText = displayText + ' ' + bufferText.trim();
+            } else {
+              displayText = bufferText.trim();
+            }
           }
-
-          const combinedText = allTexts.join(' ').trim();
 
           console.log('🔄 실시간 결과:', {
-            displayedLines: state.displayedLines.length,
-            seenCount: state.seenLineTexts.size,
-            text: combinedText.substring(0, 50) + '...',
-            buffer: bufferText.substring(0, 30) + '...'
+            lines: lines.length,
+            text: displayText.substring(0, 50) + '...',
+            translation: serverTranslation.substring(0, 30) + '...'
           });
 
-          // Show result
-          if (combinedText) {
-            // Use server-side translation if available, otherwise use buffer translation
-            const translation = serverTranslation || bufferTranslation;
-            showResult(combinedText, translation);
+          // Show result (one sentence at a time)
+          if (displayText) {
+            showResult(displayText, serverTranslation);
           }
         } else if (t === 'error') {
           console.error('❗ 서버 오류:', data.error || data.message);
