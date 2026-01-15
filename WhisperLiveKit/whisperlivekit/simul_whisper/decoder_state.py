@@ -44,7 +44,12 @@ class DecoderState:
     decoder_type: str = "greedy"
     
     inference: Any = None
-    
+
+    # Track recently output text to prevent repetition
+    recent_outputs: List[str] = field(default_factory=list)
+
+    sentence_segmenter: Any = None
+
     def clean_cache(self):
         """Clean the kv_cache after each inference step."""
         self.kv_cache = {}

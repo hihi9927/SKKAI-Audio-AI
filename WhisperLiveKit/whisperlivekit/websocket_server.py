@@ -28,8 +28,25 @@ class WebSocketHandler:
         self.last_translation_lang = None  # Language of last translation
         self.detected_language = None  # Current detected language
 
-        # Track last sent line IDs to avoid duplicates
-        self.sent_line_ids = set()  # Set of line IDs we've already sent as 'final'
+        # Track sent sentences to avoid duplicates (use set for O(1) lookup)
+        self.sent_sentences = set()  # Set of sentence strings we've already sent
+        self.connection_initialized = False  # Track if we've initialized for this connection
+
+    def initialize_buffers(self):
+        """Initialize/clear all buffers for a new connection session"""
+        logger.info("[Buffer Init] Clearing all buffers for new connection session")
+        self.translation_buffer = []
+        self.last_translation = ''
+        self.last_translation_lang = None
+        self.detected_language = None
+        self.sent_sentences.clear()  # Clear the set of sent sentences
+        self.connection_initialized = True
+
+        # Clear the transcription backend's internal state if available
+        if hasattr(self.audio_processor, 'transcription') and self.audio_processor.transcription:
+            if hasattr(self.audio_processor.transcription, 'init_context'):
+                logger.info("[Buffer Init] Resetting transcription backend context")
+                self.audio_processor.transcription.init_context()
 
     async def send_message(self, message_dict):
         """Send JSON message to client"""
@@ -42,6 +59,10 @@ class WebSocketHandler:
     async def process_audio_chunk(self, audio_data):
         """Process incoming audio data"""
         try:
+            # Initialize buffers on first audio chunk
+            if not self.connection_initialized:
+                self.initialize_buffers()
+
             logger.debug(f"Received audio chunk: {len(audio_data)} bytes")
             # Pass audio directly to AudioProcessor (PCM mode)
             await self.audio_processor.process_audio(audio_data)
@@ -91,6 +112,51 @@ class WebSocketHandler:
         text = text.strip()
         sentence_end_punctuation = {'.', '!', '?', '。', '！', '？'}
         return any(text.endswith(p) for p in sentence_end_punctuation)
+
+    def split_into_sentences(self, text):
+        """Split text into individual sentences"""
+        import re
+        # Split by sentence-ending punctuation (including ellipsis ...)
+        # Matches: . ! ? 。 ！ ？ or ... followed by space
+        # Pattern: sentence-ending punctuation + optional space
+        pattern = r'([.]{3}|[.!?。！？])\s+'
+        parts = re.split(pattern, text)
+
+        sentences = []
+        current = ''
+
+        i = 0
+        while i < len(parts):
+            part = parts[i]
+
+            # Skip empty parts
+            if not part or not part.strip():
+                i += 1
+                continue
+
+            # Check if this looks like punctuation
+            if part in ['.', '!', '?', '。', '！', '？', '...']:
+                current += part
+                sentences.append(current.strip())
+                current = ''
+                i += 1
+            else:
+                # This is text content
+                current += part
+                # Check if next part is punctuation
+                if i + 1 < len(parts) and parts[i + 1] in ['.', '!', '?', '。', '！', '？', '...']:
+                    current += parts[i + 1]
+                    sentences.append(current.strip())
+                    current = ''
+                    i += 2
+                else:
+                    i += 1
+
+        # Add any remaining text (incomplete sentence)
+        if current.strip():
+            sentences.append(current.strip())
+
+        return [s for s in sentences if s]  # Filter empty strings
 
     async def flush_translation_buffer(self, trigger_reason="unknown"):
         """Flush translation buffer and send as 'final' message"""
@@ -146,77 +212,70 @@ class WebSocketHandler:
                         detected_lang = line['detected_language']
                         break
 
-                if not detected_lang:
-                    detected_lang = 'ko'  # Default
+                # Don't default to 'ko' - wait for actual language detection
+                # This prevents sending wrong language transcriptions as 'final'
 
                 # Update detected language
-                if self.detected_language != detected_lang:
+                if detected_lang and self.detected_language != detected_lang:
                     if self.detected_language is not None:
                         logger.info(f"[Language] Changed from {self.detected_language} to {detected_lang} - clearing buffer")
                         self.translation_buffer = []
+                        self.sent_sentences.clear()  # Clear sent sentences on language change
                     self.detected_language = detected_lang
 
-                # Process each NEW complete line (not seen before)
-                new_complete_lines = []
-                for line in lines:
-                    if not line or not line.get('text'):
-                        continue
+                # Process complete lines (ONLY if language is detected)
+                # This prevents sending wrong-language transcriptions as 'final'
+                if lines and detected_lang:
+                    # Only look at the last line (most recent)
+                    last_line = lines[-1]
 
-                    # Create unique ID for this line (using text + start time)
-                    line_id = f"{line.get('text', '')}_{line.get('start', '')}"
+                    if last_line and last_line.get('text'):
+                        text = last_line['text'].strip()
 
-                    # Skip if we've already sent this line as 'final'
-                    if line_id in self.sent_line_ids:
-                        continue
+                        if text and self.is_sentence_complete(text):
+                            # This line has sentence-ending punctuation
+                            # It might contain multiple sentences - split them
+                            sentences = self.split_into_sentences(text)
 
-                    text = line['text'].strip()
-                    if not text:
-                        continue
+                            # Find new sentences that haven't been sent yet
+                            for sentence in sentences:
+                                # Skip incomplete sentences (no ending punctuation)
+                                if not self.is_sentence_complete(sentence):
+                                    logger.debug(f"[Incomplete] Skipping: {sentence[:30]}...")
+                                    continue
 
-                    # Check if this line completes a sentence
-                    if self.is_sentence_complete(text):
-                        # This is a complete sentence
-                        new_complete_lines.append({
-                            'id': line_id,
-                            'text': text,
-                            'start': line.get('start', ''),
-                            'end': line.get('end', ''),
-                            'language': detected_lang
-                        })
-                        self.sent_line_ids.add(line_id)
-                    else:
-                        # Incomplete line - add to buffer for partial display
-                        pass
+                                # Check if we already sent this exact sentence (set lookup - O(1))
+                                if sentence in self.sent_sentences:
+                                    # Silently skip duplicates (no log to reduce noise)
+                                    continue
 
-                # Process new complete lines
-                for complete_line in new_complete_lines:
-                    # Add to buffer
-                    self.translation_buffer.append({
-                        'text': complete_line['text'],
-                        'start': complete_line['start'],
-                        'end': complete_line['end'],
-                        'language': complete_line['language']
-                    })
+                                # New complete sentence - send it
+                                logger.info(f"[New Complete Sentence] {sentence[:50]}...")
 
-                    # Flush immediately (each complete line is sent as final)
-                    logger.info(f"[Complete Line] Detected: {complete_line['text'][:50]}...")
-                    await self.flush_translation_buffer("sentence_complete")
+                                self.translation_buffer.append({
+                                    'text': sentence,
+                                    'start': last_line.get('start', ''),
+                                    'end': last_line.get('end', ''),
+                                    'language': detected_lang
+                                })
 
-                # Send partial for buffer + current incomplete text
-                if buffer_text:
-                    # Calculate cumulative partial text
-                    partial_text = buffer_text
+                                # Mark this sentence as sent
+                                self.sent_sentences.add(sentence)
+                                await self.flush_translation_buffer("sentence_complete")
 
+                # Send partial for current incomplete text (buffer)
+                # Only send if language is detected
+                if buffer_text and detected_lang:
                     # Send partial message (no translation yet)
                     partial_msg = {
                         'type': 'partial',
-                        'original': partial_text,
+                        'original': buffer_text,
                         'last_translation': self.last_translation,  # Show last completed translation
                         'language': detected_lang
                     }
 
                     await self.send_message(partial_msg)
-                    logger.debug(f"[Partial] Sent: {partial_text[:50]}...")
+                    logger.debug(f"[Partial] Sent: {buffer_text[:50]}...")
 
             logger.info("Results generator finished.")
         except Exception as e:

@@ -299,6 +299,9 @@ class AlignAtt:
         self.state.log_segments += 1
         self.state.pending_incomplete_tokens = []
 
+        # Clear recent outputs to allow fresh generation
+        self.state.recent_outputs = []
+
         # Reset sentence segmenter for new segment
         if self.state.sentence_segmenter is not None:
             self.state.sentence_segmenter.reset()
@@ -643,9 +646,10 @@ class AlignAtt:
             if current_token == last_token:
                 consecutive_token_count += 1
                 if consecutive_token_count >= 5:
-                    logger.warning(f"[Hallucination] 5+ consecutive identical tokens ({current_token}). Stopping.")
+                    logger.warning(f"[Hallucination] 5+ consecutive identical tokens ({current_token}). Discarding all new tokens.")
+                    # Discard ALL tokens generated in this chunk to prevent repetition
+                    current_tokens = current_tokens[:, :token_len_before_decoding]
                     completed = True
-                    current_tokens = current_tokens[:, :-1]
                     break
             else:
                 consecutive_token_count = 1
@@ -657,15 +661,21 @@ class AlignAtt:
                 recent_tokens.pop(0)
 
             # Check if recent 10 tokens have less than 2 unique words
-            if len(recent_tokens) >= 10:
+            # Only trigger if we have generated a significant amount (20+ tokens)
+            if len(recent_tokens) >= 10 and total_tokens >= 20:
                 # Decode recent tokens to text and split by words
                 recent_text = self.tokenizer.decode(recent_tokens)
                 words = recent_text.strip().split()
-                unique_words = set(words)
-                if len(unique_words) < 2:
-                    logger.warning(f"[Hallucination] Less than 2 unique words in recent 10 tokens. Flushing.")
+                # Filter out very short words (like punctuation marks counted as words)
+                meaningful_words = [w for w in words if len(w) > 1 or w in ['이', '그', '저', '네', '아']]
+                unique_words = set(meaningful_words)
+
+                # Only trigger if VERY repetitive (only 1 unique word)
+                if len(unique_words) < 2 and len(meaningful_words) >= 8:
+                    logger.warning(f"[Hallucination] Less than 2 unique words in recent 10 tokens: '{recent_text}'. Discarding all new tokens.")
+                    # Discard ALL tokens generated in this chunk to prevent repetition
+                    current_tokens = current_tokens[:, :token_len_before_decoding]
                     completed = True
-                    current_tokens = current_tokens[:, :-len(recent_tokens)]
                     break
 
             # Check total token count limit (200 tokens ≈ 30 seconds)
@@ -763,10 +773,30 @@ class AlignAtt:
         new_tokens = torch.tensor([new_hypothesis], dtype=torch.long).repeat_interleave(self.cfg.beam_size, dim=0).to(
             device=self.device,
         )
+        # Check for repeated output before committing
+        output_text = self.tokenizer.decode(new_hypothesis).strip()
+
+        # Check if we've output this exact text recently
+        if output_text and output_text in self.state.recent_outputs:
+            logger.warning(f"[Output Repetition] Detected repeated output: '{output_text}' - discarding")
+            logger.debug(f"[Output Repetition] Recent outputs: {self.state.recent_outputs}")
+            # Don't add these tokens, return empty result
+            self._clean_cache()
+            return []
+
+        # Track this output (keep last 5 outputs)
+        if output_text:
+            self.state.recent_outputs.append(output_text)
+            if len(self.state.recent_outputs) > 5:
+                self.state.recent_outputs.pop(0)
+
         self.state.tokens.append(new_tokens)
 
-        logger.info(f"Output: {self.tokenizer.decode(new_hypothesis)}")
-        
+        if output_text:
+            logger.info(f"Output: {output_text}")
+        else:
+            logger.debug(f"[Empty Output] No hypothesis generated (fire_detected={fire_detected}, is_last={is_last})")
+
         self._clean_cache()
 
         if len(l_absolute_timestamps) >= 2 and self.state.first_timestamp is None:
