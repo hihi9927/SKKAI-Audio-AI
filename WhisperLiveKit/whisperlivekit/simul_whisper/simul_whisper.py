@@ -313,67 +313,105 @@ class AlignAtt:
             return False
         return fire_at_boundary(chunked_encoder_feature, self.state.CIFLinear)
 
-    def should_break_at_punctuation(self, tokens_list: List[int]) -> Tuple[bool, int]:
+    def should_break_at_punctuation(self, tokens_list: List[int], vad_silence_detected: bool = False, cif_fire_detected: bool = False) -> Tuple[bool, int, str]:
         """
-        Check if we should break the sentence based on punctuation or conjunctions.
+        의미 분절 기반 조기 출력(커밋) 메커니즘 - PDF 3장 구현
 
-        If sentence segmenter is enabled (new mode), uses the enhanced segmenter.
-        Otherwise, falls back to original rule-based logic (legacy mode).
+        계층적 적용 순서 (PDF 부록 A3):
+        1순위: 종결부호 → 즉시 커밋
+        2순위: VAD 공백 + CIF 신호 결합
+        3순위: 접속/전환어 + 음향 신호 결합
 
-        Returns (should_break, break_offset)
-        - should_break: True if we should stop decoding
-        - break_offset: number of tokens to remove from the end (negative value means remove, 0 means keep all)
+        Args:
+            tokens_list: 현재까지 생성된 토큰 리스트
+            vad_silence_detected: VAD로 감지된 침묵 여부
+            cif_fire_detected: CIF fire 이벤트 발생 여부
+
+        Returns (should_break, break_offset, break_reason)
+        - should_break: 커밋 여부
+        - break_offset: 제거할 토큰 수 (음수=뒤에서부터 제거, 0=모두 유지)
+        - break_reason: 커밋 사유 (로깅용)
         """
         if len(tokens_list) == 0:
-            return False, 0
+            return False, 0, ""
 
         # Decode tokens to text
         text = self.tokenizer.decode(tokens_list)
-        logger.debug(f"[Sentence segmentation] Checking text: '{text}'")
+        logger.debug(f"[Semantic Segmentation] Checking text: '{text}' | VAD={vad_silence_detected}, CIF={cif_fire_detected}")
 
         # NEW MODE: Use enhanced sentence segmenter if enabled
         if self.state.sentence_segmenter is not None:
-            # Check each token incrementally
-            # For simplicity, we check the complete text so far
             if self.state.sentence_segmenter.is_sentence_boundary(text, token_count=len(tokens_list)):
-                logger.info(f"[New segmentation] Sentence boundary detected in: '{text}'")
-                # Increment counter for next iteration
+                logger.info(f"[Enhanced Segmentation] Sentence boundary detected: '{text}'")
                 self.state.sentence_segmenter.increment_token_count()
-                return True, 0  # Keep all tokens
-            # Increment token count
+                return True, 0, "enhanced_segmenter"
             self.state.sentence_segmenter.increment_token_count()
-            return False, 0
+            return False, 0, ""
 
-        # LEGACY MODE: Original rule-based logic (when segmenter is disabled)
-        # Check for sentence-ending punctuation
+        # ========== PDF 3.4 계층적 적용 순서 ==========
+
+        # 1순위: 종결부호 기반 경계 (PDF 3.3.1)
+        # 종결부호는 의미 완결성이 높은 강한 신호 → 즉시 커밋
         for punct in SENTENCE_END_PUNCTUATION:
             if punct in text:
-                logger.info(f"[Legacy mode] Found sentence-ending punctuation: '{punct}' in text: '{text}'")
-                return True, 0  # Keep all tokens including punctuation
+                # 예외 처리: 소수점 (0.5 같은 경우)
+                import re
+                # "숫자.숫자" 패턴 체크
+                if re.search(r'\d+\.\d+', text) and punct == '.':
+                    logger.debug(f"[Priority 1] Decimal point detected, not a sentence boundary")
+                    continue
 
-        # Check for sentence-break punctuation (commas, semicolons) at the end
-        for punct in SENTENCE_BREAK_PUNCTUATION:
-            if text.endswith(punct) or text.endswith(punct + ' '):
-                logger.info(f"[Legacy mode] Found sentence-break punctuation: '{punct}'")
-                return True, 0  # Keep all tokens including punctuation
+                logger.info(f"[Priority 1: Punctuation] '{punct}' detected → IMMEDIATE COMMIT: '{text}'")
+                return True, 0, f"punctuation_{punct}"
 
-        # Check for conjunctions - break BEFORE the conjunction
+        # 2순위: 음향 신호 기반 경계 (VAD + CIF 결합) (PDF 3.2)
+        # 충분한 침묵(VAD) + CIF fire 신호 결합
+        if vad_silence_detected and cif_fire_detected:
+            logger.info(f"[Priority 2: Acoustic] VAD silence + CIF fire → COMMIT: '{text}'")
+            return True, 0, "acoustic_vad_cif"
+
+        # VAD만 있어도 경계 후보 (침묵이 충분히 길면)
+        if vad_silence_detected:
+            logger.info(f"[Priority 2: Acoustic] VAD silence only → COMMIT: '{text}'")
+            return True, 0, "acoustic_vad_only"
+
+        # CIF fire만 있어도 커밋 (음향 경계 신호)
+        if cif_fire_detected:
+            logger.info(f"[Priority 2: Acoustic] CIF fire only → COMMIT: '{text}'")
+            return True, 0, "acoustic_cif_only"
+
+        # 3순위: 접속/전환어 기반 경계 (PDF 3.3.2)
+        # 키워드는 음향 신호와 결합될 때만 커밋
         words = text.strip().split()
         if len(words) > 0:
-            # Check if the last word (or last few words) is a conjunction
+            # 정규화: 구어체 고려 ("그리구" → "그리고")
             last_word = words[-1].strip('.,;:!?').lower()
-            if last_word in ALL_CONJUNCTIONS:
-                logger.info(f"[Legacy mode] Found conjunction at end: '{last_word}' - breaking BEFORE it")
-                # We need to find how many tokens to exclude (the conjunction tokens)
-                # Decode all tokens except the last few to find the split point
-                for i in range(1, min(5, len(tokens_list)) + 1):  # Check last 5 tokens max
-                    text_without_last = self.tokenizer.decode(tokens_list[:-i])
-                    if last_word not in text_without_last.lower():
-                        # Found the split point - exclude last i tokens
-                        logger.info(f"[Legacy mode] Excluding last {i} tokens (conjunction)")
-                        return True, -i
+            # 정규화 매핑
+            normalization_map = {
+                '그리구': '그리고',
+                '글구': '그리고',
+                '근데': '그런데',
+                '걍': '그냥',
+                '그래서': '그래서',
+                '쟤': '저애'
+            }
+            last_word_normalized = normalization_map.get(last_word, last_word)
 
-        return False, 0
+            if last_word_normalized in ALL_CONJUNCTIONS:
+                # 키워드 발견 - 음향 신호와 결합 여부 확인
+                if vad_silence_detected or cif_fire_detected:
+                    logger.info(f"[Priority 3: Conjunction + Acoustic] Conjunction '{last_word}' + acoustic signal → COMMIT BEFORE")
+                    # 접속사 **이전**에서 분절 (break BEFORE)
+                    for i in range(1, min(5, len(tokens_list)) + 1):
+                        text_without_last = self.tokenizer.decode(tokens_list[:-i])
+                        if last_word_normalized not in text_without_last.lower():
+                            logger.info(f"[Priority 3] Excluding last {i} tokens (conjunction)")
+                            return True, -i, f"conjunction_{last_word}_before"
+                else:
+                    logger.debug(f"[Priority 3] Conjunction '{last_word}' found but NO acoustic signal → No commit")
+
+        # 경계 신호 없음
+        return False, 0, ""
 
     def _current_tokens(self):
         toks = self.state.tokens
@@ -622,21 +660,34 @@ class AlignAtt:
             logger.debug(f"Decoding completed: {completed}, sum_logprobs: {sum_logprobs.tolist()}, tokens: ")
             self.debug_print_tokens(current_tokens)
 
-            # Rule-based sentence breaking (punctuation and conjunctions)
-            # Check tokens generated so far (excluding initial prompt tokens)
+            # ========== PDF 3장: 의미 분절 기반 조기 출력(커밋) 메커니즘 ==========
+            # 계층적 경계 탐지: 종결부호 → VAD/CIF → 접속어+음향
             # Only apply if meaning segmentation is enabled OR sentence segmentation is enabled
             if not is_last and (self.cfg.enable_meaning_segmentation or self.state.sentence_segmenter is not None):
                 new_tokens_so_far = current_tokens[0, token_len_before_decoding:].tolist()
-                should_break, break_offset = self.should_break_at_punctuation(new_tokens_so_far)
+
+                # 음향 신호 전달 (VAD는 외부에서 감지되어야 하지만, 여기서는 fire_detected 사용)
+                # VAD 신호는 실제로는 AudioProcessor에서 제공되어야 하지만,
+                # 현재 구조에서는 CIF fire를 기본 음향 신호로 사용
+
+                should_break, break_offset, break_reason = self.should_break_at_punctuation(
+                    new_tokens_so_far,
+                    vad_silence_detected=False,  # VAD
+                    cif_fire_detected=fire_detected
+                )
+
                 if should_break:
                     if break_offset < 0:
-                        # Break before conjunction - trim the conjunction tokens
-                        logger.info(f"[Rule-based break] Breaking before conjunction, trimming {-break_offset} tokens")
+                        # 접속사 이전에서 분절 - 접속사 토큰 제거
+                        logger.info(f"[Semantic Segmentation] {break_reason} → Breaking BEFORE conjunction, trimming {-break_offset} tokens")
                         current_tokens = current_tokens[:, :break_offset]
                     else:
-                        # Break after punctuation - keep all tokens
-                        logger.info(f"[Rule-based break] Breaking after punctuation")
+                        # 종결부호/음향 신호 - 모든 토큰 유지
+                        logger.info(f"[Semantic Segmentation] {break_reason} → Breaking AFTER, keeping all tokens")
+
+                    # 커밋 확정 - PDF 부록 A3.2: 버퍼 flush 및 재구성은 refresh_segment에서 처리
                     completed = True
+                    # TODO: 번역 버퍼 flush (websocket_server.py에서 처리)
                     break
 
             # Hallucination detection
@@ -765,9 +816,12 @@ class AlignAtt:
             # going to truncate the tokens after the last space
             split_words, split_tokens = self.tokenizer.split_to_word_tokens(tokens_to_split.tolist())
             if len(split_words) > 1:
-                new_hypothesis = [i for sublist in split_tokens[:-1] for i in sublist]  
+                new_hypothesis = [i for sublist in split_tokens[:-1] for i in sublist]
             else:
-                new_hypothesis = []
+                # CHANGED: Keep single word instead of discarding it
+                # Empty hypothesis causes empty timestamped_words and breaks output
+                logger.debug(f"[Single Word] Only 1 word, keeping it: {split_words}")
+                new_hypothesis = tokens_to_split.flatten().tolist()
 
         logger.debug(f"new_hypothesis: {new_hypothesis}")
         new_tokens = torch.tensor([new_hypothesis], dtype=torch.long).repeat_interleave(self.cfg.beam_size, dim=0).to(
@@ -805,12 +859,20 @@ class AlignAtt:
         timestamped_words = []
         timestamp_idx = 0
         replacement_char = "\ufffd"
-        for word, word_tokens in zip(split_words, split_tokens):
-            # Skip words containing incomplete UTF-8 from client output
+
+        for idx, (word, word_tokens) in enumerate(zip(split_words, split_tokens)):
+            # Only skip LAST word if it contains incomplete UTF-8
+            # (중간 단어는 모두 포함시켜야 함)
+            is_last_word = (idx == len(split_words) - 1)
             if replacement_char in word:
-                logger.warning(f"[UTF-8 Filter] Skipping incomplete word from client output: {repr(word)}")
-                timestamp_idx += len(word_tokens)
-                continue
+                if is_last_word:
+                    # 마지막 단어만 스킵 (다음 청크로 이월)
+                    logger.debug(f"[UTF-8 Filter] Holding last incomplete word for next chunk: {repr(word)}")
+                    timestamp_idx += len(word_tokens)
+                    continue
+                else:
+                    # 중간 단어는 경고만 하고 포함시킴 (데이터 손실 방지)
+                    logger.warning(f"[UTF-8 Filter] Middle word contains replacement char but keeping: {repr(word)}")
 
             try:
                 current_timestamp = l_absolute_timestamps[timestamp_idx]

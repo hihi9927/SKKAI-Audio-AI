@@ -31,6 +31,7 @@ class WebSocketHandler:
         # Track sent sentences to avoid duplicates (use set for O(1) lookup)
         self.sent_sentences = set()  # Set of sentence strings we've already sent
         self.connection_initialized = False  # Track if we've initialized for this connection
+        self.last_sent_buffer = ''  # Track last sent partial buffer to prevent duplicates
 
     def initialize_buffers(self):
         """Initialize/clear all buffers for a new connection session"""
@@ -40,13 +41,12 @@ class WebSocketHandler:
         self.last_translation_lang = None
         self.detected_language = None
         self.sent_sentences.clear()  # Clear the set of sent sentences
+        self.last_sent_buffer = ''  # Clear last sent buffer
         self.connection_initialized = True
 
-        # Clear the transcription backend's internal state if available
-        if hasattr(self.audio_processor, 'transcription') and self.audio_processor.transcription:
-            if hasattr(self.audio_processor.transcription, 'init_context'):
-                logger.info("[Buffer Init] Resetting transcription backend context")
-                self.audio_processor.transcription.init_context()
+        # DO NOT clear AudioProcessor state - it's managed by the transcription engine
+        # The buffer_transcription updates automatically with new audio
+        # Old state gets cleared by refresh_segment() in simul_whisper when needed
 
     async def send_message(self, message_dict):
         """Send JSON message to client"""
@@ -59,10 +59,6 @@ class WebSocketHandler:
     async def process_audio_chunk(self, audio_data):
         """Process incoming audio data"""
         try:
-            # Initialize buffers on first audio chunk
-            if not self.connection_initialized:
-                self.initialize_buffers()
-
             logger.debug(f"Received audio chunk: {len(audio_data)} bytes")
             # Pass audio directly to AudioProcessor (PCM mode)
             await self.audio_processor.process_audio(audio_data)
@@ -159,24 +155,34 @@ class WebSocketHandler:
         return [s for s in sentences if s]  # Filter empty strings
 
     async def flush_translation_buffer(self, trigger_reason="unknown"):
-        """Flush translation buffer and send as 'final' message"""
+        """
+        번역 버퍼 flush 및 잔여 버퍼 재구성 - PDF 부록 A3.2 구현
+
+        커밋 시점에 호출되어:
+        1) 커밋 구간 확정 및 출력 고정
+        2) 번역 버퍼 flush (확정 구간만 번역)
+        3) 잔여 버퍼 분리 및 재구성
+        4) 상태 동기화
+        """
         if not self.translation_buffer:
             return
 
-        logger.info(f"[Translation] Flushing buffer ({len(self.translation_buffer)} segments) - reason: {trigger_reason}")
+        logger.info(f"[Translation Flush - PDF A3.2] Flushing buffer ({len(self.translation_buffer)} segments) - reason: {trigger_reason}")
 
-        # Combine all buffered text
+        # 1) 커밋 구간 확정 및 출력 고정
         full_text = ' '.join(seg['text'] for seg in self.translation_buffer)
         first_start = self.translation_buffer[0]['start']
         last_end = self.translation_buffer[-1]['end']
         language = self.translation_buffer[0].get('language', 'ko')
 
-        # Translate the complete text
+        logger.info(f"[Commit] Fixed output: '{full_text}' (no rewrite after this)")
+
+        # 2) 번역 버퍼 flush (확정 구간만 번역)
         translation = await self.translate_text(full_text, language)
         self.last_translation = translation
         self.last_translation_lang = 'en' if language == 'ko' else 'ko'
 
-        logger.info(f"[Translation] Complete - {language}: {full_text[:50]}... → {translation[:50]}...")
+        logger.info(f"[Translation Complete] {language}: {full_text[:50]}... → {translation[:50]}...")
 
         # Send as 'final' message (complete sentence)
         final_msg = {
@@ -185,14 +191,22 @@ class WebSocketHandler:
             'end': last_end,
             'original': full_text,
             'translation': translation,
-            'language': language
+            'language': language,
+            'commit_reason': trigger_reason  # 커밋 사유 추가 (디버깅용)
         }
 
         await self.send_message(final_msg)
 
-        # Clear the buffer
+        # 3) 잔여 버퍼 분리 및 재구성
+        # 현재 구현에서는 translation_buffer를 완전히 비우고,
+        # 다음 입력을 위해 clean slate로 시작
         self.translation_buffer = []
-        logger.info(f"[Translation] Buffer cleared after {trigger_reason}")
+
+        # 4) 상태 동기화
+        # 과도한 문맥 누적 방지 - 최소한의 컨텍스트만 유지
+        # (현재 구조에서는 이미 TranscriptionEngine에서 처리됨)
+
+        logger.info(f"[Buffer Management] Buffer cleared and reset for next segment")
 
     async def handle_results(self, results_generator):
         """Handle results from AudioProcessor - SimulStreaming style (partial vs final)"""
@@ -204,6 +218,12 @@ class WebSocketHandler:
                 # Get lines and buffer
                 lines = response_dict.get('lines', [])
                 buffer_text = response_dict.get('buffer_transcription', '').strip()
+
+                # DEBUG: Log what we received
+                logger.debug(f"[WebSocket] Received lines={len(lines)}, buffer='{buffer_text[:50] if buffer_text else ''}'")
+                if lines:
+                    for idx, line in enumerate(lines):
+                        logger.debug(f"[WebSocket] Line {idx}: text='{line.get('text', '')[:50]}', lang={line.get('detected_language')}")
 
                 # Detect language from lines
                 detected_lang = None
@@ -226,10 +246,11 @@ class WebSocketHandler:
                 # Process complete lines (ONLY if language is detected)
                 # This prevents sending wrong-language transcriptions as 'final'
                 if lines and detected_lang:
-                    # Only look at the last line (most recent)
-                    last_line = lines[-1]
+                    # Filter out empty lines and get the last non-empty line
+                    non_empty_lines = [line for line in lines if line.get('text', '').strip()]
 
-                    if last_line and last_line.get('text'):
+                    if non_empty_lines:
+                        last_line = non_empty_lines[-1]
                         text = last_line['text'].strip()
 
                         if text and self.is_sentence_complete(text):
@@ -252,6 +273,7 @@ class WebSocketHandler:
                                 # New complete sentence - send it
                                 logger.info(f"[New Complete Sentence] {sentence[:50]}...")
 
+
                                 self.translation_buffer.append({
                                     'text': sentence,
                                     'start': last_line.get('start', ''),
@@ -264,18 +286,20 @@ class WebSocketHandler:
                                 await self.flush_translation_buffer("sentence_complete")
 
                 # Send partial for current incomplete text (buffer)
-                # Only send if language is detected
-                if buffer_text and detected_lang:
+                # Send partial even if language is not detected yet (language detection takes ~2 seconds)
+                # CRITICAL: Only send if buffer content has CHANGED to prevent infinite loop
+                if buffer_text and buffer_text != self.last_sent_buffer:
                     # Send partial message (no translation yet)
                     partial_msg = {
                         'type': 'partial',
                         'original': buffer_text,
                         'last_translation': self.last_translation,  # Show last completed translation
-                        'language': detected_lang
+                        'language': self.detected_language or 'unknown'  # Use 'unknown' if not detected yet
                     }
 
                     await self.send_message(partial_msg)
                     logger.debug(f"[Partial] Sent: {buffer_text[:50]}...")
+                    self.last_sent_buffer = buffer_text  # Track this buffer to prevent duplicates
 
             logger.info("Results generator finished.")
         except Exception as e:
@@ -287,6 +311,10 @@ class WebSocketHandler:
         """Main handler for WebSocket connection"""
         try:
             logger.info(f"New WebSocket connection from {self.websocket.remote_address}")
+
+            # CRITICAL: Initialize buffers at the START of every connection
+            # This ensures old state doesn't persist across connections
+            self.initialize_buffers()
 
             # Send hello message
             await self.send_message({

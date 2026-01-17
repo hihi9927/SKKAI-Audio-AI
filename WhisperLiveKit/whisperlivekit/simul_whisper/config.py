@@ -11,8 +11,8 @@ class AlignAttConfig():
     audio_max_len: float = 20.0
     cif_ckpt_path: str = ""
     never_fire: bool = False
-    language: str = field(default="zh")
-    nonspeech_prob: float = 0.5
+    language: str = field(default="auto")
+    nonspeech_prob: float = 0.8
     audio_min_len: float = 1.0
     decoder_type: Literal["greedy","beam"] = "greedy"
     beam_size: int = 5
