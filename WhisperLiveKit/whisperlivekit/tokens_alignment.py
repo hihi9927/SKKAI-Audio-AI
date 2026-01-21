@@ -42,10 +42,23 @@ class TokensAlignment:
         self.new_translation, self.state.new_translation = self.state.new_translation, []
         self.new_tokens_buffer, self.state.new_tokens_buffer = self.state.new_tokens_buffer, []
 
+        # 디버그: new_tokens 내용 확인
+        if self.new_tokens:
+            silence_count = sum(1 for t in self.new_tokens if hasattr(t, 'is_silence') and t.is_silence())
+            token_texts = [getattr(t, 'text', '[SILENCE]') if not (hasattr(t, 'is_silence') and t.is_silence()) else '[SILENCE]' for t in self.new_tokens]
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.debug(f"[TokensAlignment] update() - new_tokens: {len(self.new_tokens)} items, {silence_count} silences, texts: {token_texts[:5]}...")
+
         self.all_tokens.extend(self.new_tokens)
         self.all_diarization_segments.extend(self.new_diarization)
         self.all_translation_segments.extend(self.new_translation)
         self.new_translation_buffer = self.state.new_translation_buffer
+
+        # 메모리 최적화: 다이어리제이션이 꺼져 있으면 오래된 토큰 정리
+        # 최근 1000개 토큰만 유지 (약 10-15분 분량)
+        if not self.diarization and len(self.all_tokens) > 1000:
+            self.all_tokens = self.all_tokens[-500:]
 
     def add_translation(self, segment: Segment) -> None:
         """Append translated text segments that overlap with a segment."""
@@ -174,46 +187,46 @@ class TokensAlignment:
 
 
     def get_lines(
-            self, 
+            self,
             diarization: bool = False,
             translation: bool = False,
             current_silence: Optional[Silence] = None
         ) -> Tuple[List[Segment], str, Union[str, TimedText]]:
         """Return the formatted segments plus buffers, optionally with diarization/translation."""
+        import logging
+        logger = logging.getLogger(__name__)
+
         if diarization:
             segments, diarization_buffer = self.get_lines_diarization()
         else:
             diarization_buffer = ''
             for token in self.new_tokens:
                 if token.is_silence():
+                    logger.debug(f"[get_lines] SILENCE detected! current_line_tokens has {len(self.current_line_tokens)} tokens")
                     if self.current_line_tokens:
                         self.validated_segments.append(Segment().from_tokens(self.current_line_tokens))
                         self.current_line_tokens = []
-                    
-                    end_silence = token.end if token.has_ended else time() - self.beg_loop
-                    if self.validated_segments and self.validated_segments[-1].is_silence():
-                        self.validated_segments[-1].end = end_silence
-                    else:
-                        self.validated_segments.append(SilentSegment(
-                            start=token.start,
-                            end=end_silence
-                        ))
+                        logger.debug(f"[get_lines] Moved to validated_segments, now has {len(self.validated_segments)} segments")
+
+                    # SilentSegment는 더 이상 추가하지 않음 (클라이언트에서 빈 라인으로 표시되므로)
+                    # 대신 침묵 감지 시 이전 세그먼트를 완료 처리만 함
                 else:
                     self.current_line_tokens.append(token)
-            
-            segments = list(self.validated_segments)
+
+            # 실시간 자막: 완료된 세그먼트는 유지하지 않음 (현재 진행 중인 문장만 출력)
+            # 번역이 켜져 있을 때만 validated_segments 유지 (번역 정렬용)
+            if not translation:
+                self.validated_segments = []
+
+            segments = []
             if self.current_line_tokens:
                 segments.append(Segment().from_tokens(self.current_line_tokens))
 
         if current_silence:
-            end_silence = current_silence.end if current_silence.has_ended else time() - self.beg_loop
-            if segments and segments[-1].is_silence():
-                segments[-1] = SilentSegment(start=segments[-1].start, end=end_silence)
-            else:
-                segments.append(SilentSegment(
-                    start=current_silence.start,
-                    end=end_silence
-                ))
+            # 현재 침묵 중일 때도 SilentSegment를 추가하지 않음
+            # 필요시 타임스탬프 정보만 마지막 세그먼트에 반영
+            pass
+
         if translation:
             [self.add_translation(segment) for segment in segments if not segment.is_silence()]
         return segments, diarization_buffer, self.new_translation_buffer.text

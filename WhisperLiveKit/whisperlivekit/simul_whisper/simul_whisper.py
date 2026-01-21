@@ -313,19 +313,18 @@ class AlignAtt:
             return False
         return fire_at_boundary(chunked_encoder_feature, self.state.CIFLinear)
 
-    def should_break_at_punctuation(self, tokens_list: List[int], vad_silence_detected: bool = False, cif_fire_detected: bool = False) -> Tuple[bool, int, str]:
+    def should_break_at_punctuation(self, tokens_list: List[int]) -> Tuple[bool, int, str]:
         """
         의미 분절 기반 조기 출력(커밋) 메커니즘 - PDF 3장 구현
 
-        계층적 적용 순서 (PDF 부록 A3):
-        1순위: 종결부호 → 즉시 커밋
-        2순위: VAD 공백 + CIF 신호 결합
-        3순위: 접속/전환어 + 음향 신호 결합
+        계층적 적용 순서:
+        1순위: 종결부호 (.!?) → 즉시 커밋
+        2순위: 접속/전환어 → 접속사 이전에서 커밋
+
+        (VAD 침묵 감지는 audio_processor.py에서 별도로 처리됨)
 
         Args:
             tokens_list: 현재까지 생성된 토큰 리스트
-            vad_silence_detected: VAD로 감지된 침묵 여부
-            cif_fire_detected: CIF fire 이벤트 발생 여부
 
         Returns (should_break, break_offset, break_reason)
         - should_break: 커밋 여부
@@ -337,7 +336,7 @@ class AlignAtt:
 
         # Decode tokens to text
         text = self.tokenizer.decode(tokens_list)
-        logger.debug(f"[Semantic Segmentation] Checking text: '{text}' | VAD={vad_silence_detected}, CIF={cif_fire_detected}")
+        logger.debug(f"[Semantic Segmentation] Checking text: '{text}'")
 
         # NEW MODE: Use enhanced sentence segmenter if enabled
         if self.state.sentence_segmenter is not None:
@@ -364,26 +363,10 @@ class AlignAtt:
                 logger.info(f"[Priority 1: Punctuation] '{punct}' detected → IMMEDIATE COMMIT: '{text}'")
                 return True, 0, f"punctuation_{punct}"
 
-        # 2순위: 음향 신호 기반 경계 (VAD + CIF 결합) (PDF 3.2)
-        # 충분한 침묵(VAD) + CIF fire 신호 결합
-        if vad_silence_detected and cif_fire_detected:
-            logger.info(f"[Priority 2: Acoustic] VAD silence + CIF fire → COMMIT: '{text}'")
-            return True, 0, "acoustic_vad_cif"
-
-        # VAD만 있어도 경계 후보 (침묵이 충분히 길면)
-        if vad_silence_detected:
-            logger.info(f"[Priority 2: Acoustic] VAD silence only → COMMIT: '{text}'")
-            return True, 0, "acoustic_vad_only"
-
-        # CIF fire만 있어도 커밋 (음향 경계 신호)
-        if cif_fire_detected:
-            logger.info(f"[Priority 2: Acoustic] CIF fire only → COMMIT: '{text}'")
-            return True, 0, "acoustic_cif_only"
-
-        # 3순위: 접속/전환어 기반 경계 (PDF 3.3.2)
-        # 키워드는 음향 신호와 결합될 때만 커밋
+        # 2순위: 접속/전환어 기반 경계 (PDF 3.3.2)
+        # 접속사가 나오면 그 이전에서 분절
         words = text.strip().split()
-        if len(words) > 0:
+        if len(words) > 1:  # 접속사만 있으면 분절 안함 (최소 2단어 이상)
             # 정규화: 구어체 고려 ("그리구" → "그리고")
             last_word = words[-1].strip('.,;:!?').lower()
             # 정규화 매핑
@@ -398,17 +381,13 @@ class AlignAtt:
             last_word_normalized = normalization_map.get(last_word, last_word)
 
             if last_word_normalized in ALL_CONJUNCTIONS:
-                # 키워드 발견 - 음향 신호와 결합 여부 확인
-                if vad_silence_detected or cif_fire_detected:
-                    logger.info(f"[Priority 3: Conjunction + Acoustic] Conjunction '{last_word}' + acoustic signal → COMMIT BEFORE")
-                    # 접속사 **이전**에서 분절 (break BEFORE)
-                    for i in range(1, min(5, len(tokens_list)) + 1):
-                        text_without_last = self.tokenizer.decode(tokens_list[:-i])
-                        if last_word_normalized not in text_without_last.lower():
-                            logger.info(f"[Priority 3] Excluding last {i} tokens (conjunction)")
-                            return True, -i, f"conjunction_{last_word}_before"
-                else:
-                    logger.debug(f"[Priority 3] Conjunction '{last_word}' found but NO acoustic signal → No commit")
+                # 접속사 발견 → 접속사 **이전**에서 분절
+                logger.info(f"[Priority 2: Conjunction] Conjunction '{last_word}' detected → COMMIT BEFORE")
+                for i in range(1, min(5, len(tokens_list)) + 1):
+                    text_without_last = self.tokenizer.decode(tokens_list[:-i])
+                    if last_word_normalized not in text_without_last.lower():
+                        logger.info(f"[Priority 2] Excluding last {i} tokens (conjunction)")
+                        return True, -i, f"conjunction_{last_word}_before"
 
         # 경계 신호 없음
         return False, 0, ""
@@ -661,20 +640,15 @@ class AlignAtt:
             self.debug_print_tokens(current_tokens)
 
             # ========== PDF 3장: 의미 분절 기반 조기 출력(커밋) 메커니즘 ==========
-            # 계층적 경계 탐지: 종결부호 → VAD/CIF → 접속어+음향
-            # Only apply if meaning segmentation is enabled OR sentence segmentation is enabled
+            # 계층적 경계 탐지: 종결부호 → 접속사
+            # (VAD 침묵 감지는 audio_processor.py에서 별도로 처리됨)
             if not is_last and (self.cfg.enable_meaning_segmentation or self.state.sentence_segmenter is not None):
                 new_tokens_so_far = current_tokens[0, token_len_before_decoding:].tolist()
 
-                # 음향 신호 전달 (VAD는 외부에서 감지되어야 하지만, 여기서는 fire_detected 사용)
-                # VAD 신호는 실제로는 AudioProcessor에서 제공되어야 하지만,
-                # 현재 구조에서는 CIF fire를 기본 음향 신호로 사용
-
                 should_break, break_offset, break_reason = self.should_break_at_punctuation(
-                    new_tokens_so_far,
-                    vad_silence_detected=False,  # VAD
-                    cif_fire_detected=fire_detected
+                    new_tokens_so_far
                 )
+        
 
                 if should_break:
                     if break_offset < 0:
@@ -710,6 +684,13 @@ class AlignAtt:
             recent_tokens.append(current_token)
             if len(recent_tokens) > 10:
                 recent_tokens.pop(0)
+            
+             # Check total token count limit (200 tokens ≈ 30 seconds)
+            total_tokens = current_tokens.shape[1] - token_len_before_decoding
+            if total_tokens >= 200:
+                logger.warning(f"[Hallucination] Token limit reached: {total_tokens} tokens. Stopping to prevent runaway generation.")
+                completed = True
+                break
 
             # Check if recent 10 tokens have less than 2 unique words
             # Only trigger if we have generated a significant amount (20+ tokens)
@@ -728,13 +709,6 @@ class AlignAtt:
                     current_tokens = current_tokens[:, :token_len_before_decoding]
                     completed = True
                     break
-
-            # Check total token count limit (200 tokens ≈ 30 seconds)
-            total_tokens = current_tokens.shape[1] - token_len_before_decoding
-            if total_tokens >= 200:
-                logger.warning(f"[Hallucination] Token limit reached: {total_tokens} tokens. Stopping to prevent runaway generation.")
-                completed = True
-                break
 
             # Process accumulated cross-attention weights for alignment (AlignAtt)
             attn_of_alignment_heads = self._process_cross_attention(accumulated_cross_attns, content_mel_len)
@@ -810,18 +784,19 @@ class AlignAtt:
             tokens_to_split = torch.cat([pending_tensor, tokens_to_split])
 
         if fire_detected or is_last:
+            # CIF 감지 또는 마지막 청크: 모든 토큰 출력
             new_hypothesis = tokens_to_split.flatten().tolist()
             split_words, split_tokens = self.tokenizer.split_to_word_tokens(new_hypothesis)
         else:
-            # going to truncate the tokens after the last space
+            # CIF 미감지: 마지막 단어는 불완전할 수 있으므로 제외
             split_words, split_tokens = self.tokenizer.split_to_word_tokens(tokens_to_split.tolist())
             if len(split_words) > 1:
                 new_hypothesis = [i for sublist in split_tokens[:-1] for i in sublist]
             else:
-                # CHANGED: Keep single word instead of discarding it
-                # Empty hypothesis causes empty timestamped_words and breaks output
-                logger.debug(f"[Single Word] Only 1 word, keeping it: {split_words}")
-                new_hypothesis = tokens_to_split.flatten().tolist()
+                # 단어가 1개뿐이면 출력하지 않음
+                logger.debug(f"[Single Word] Only 1 word '{split_words}', waiting for CIF or more tokens")
+                self._clean_cache()
+                return []
 
         logger.debug(f"new_hypothesis: {new_hypothesis}")
         new_tokens = torch.tensor([new_hypothesis], dtype=torch.long).repeat_interleave(self.cfg.beam_size, dim=0).to(
@@ -859,6 +834,7 @@ class AlignAtt:
         timestamped_words = []
         timestamp_idx = 0
         replacement_char = "\ufffd"
+        current_timestamp = self.state.cumulative_time_offset  # 기본값 설정
 
         for idx, (word, word_tokens) in enumerate(zip(split_words, split_tokens)):
             # Only skip LAST word if it contains incomplete UTF-8
@@ -874,16 +850,20 @@ class AlignAtt:
                     # 중간 단어는 경고만 하고 포함시킴 (데이터 손실 방지)
                     logger.warning(f"[UTF-8 Filter] Middle word contains replacement char but keeping: {repr(word)}")
 
-            try:
+            if timestamp_idx < len(l_absolute_timestamps):
                 current_timestamp = l_absolute_timestamps[timestamp_idx]
-            except:
-                pass
             timestamp_idx += len(word_tokens)
+
+            # 특수문자 제거 (replacement character 등)
+            cleaned_word = word.replace(replacement_char, '')
+            if not cleaned_word.strip():
+                # 특수문자만 있던 단어는 스킵
+                continue
 
             timestamp_entry = ASRToken(
                 start=round(current_timestamp, 2),
                 end=round(current_timestamp + 0.1, 2),
-                text=word,
+                text=cleaned_word,
                 speaker=self.state.speaker,
                 detected_language=self.state.detected_language
             ).with_offset(
