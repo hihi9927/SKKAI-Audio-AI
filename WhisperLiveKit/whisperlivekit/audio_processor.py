@@ -93,19 +93,18 @@ class AudioProcessor:
                 self.vac = FixedVADIterator(vac_model)
             else:
                 self.vac = FixedVADIterator(load_jit_vad())
-        self.ffmpeg_manager: Optional[FFmpegManager] = None
         self.ffmpeg_reader_task: Optional[asyncio.Task] = None
         self._ffmpeg_error: Optional[str] = None
 
-        if not self.is_pcm_input:
-            self.ffmpeg_manager = FFmpegManager(
-                sample_rate=self.sample_rate,
-                channels=self.channels
-            )
-            async def handle_ffmpeg_error(error_type: str):
-                logger.error(f"FFmpeg error: {error_type}")
-                self._ffmpeg_error = error_type
-            self.ffmpeg_manager.on_error_callback = handle_ffmpeg_error
+        # Always create ffmpeg_manager (lazy start in create_tasks based on is_pcm_input)
+        self.ffmpeg_manager = FFmpegManager(
+            sample_rate=self.sample_rate,
+            channels=self.channels
+        )
+        async def handle_ffmpeg_error(error_type: str):
+            logger.error(f"FFmpeg error: {error_type}")
+            self._ffmpeg_error = error_type
+        self.ffmpeg_manager.on_error_callback = handle_ffmpeg_error
 
         self.transcription_queue: Optional[asyncio.Queue] = asyncio.Queue() if self.args.transcription else None
         self.diarization_queue: Optional[asyncio.Queue] = asyncio.Queue() if self.args.diarization else None
@@ -129,6 +128,11 @@ class AudioProcessor:
             self.diarization = online_diarization_factory(self.args, models.diarization_model)
         if models.translation_model:
             self.translation = online_translation_factory(self.args, models.translation_model)
+
+    def set_pcm_input(self, is_pcm: bool) -> None:
+        """Set audio input mode (called before create_tasks based on client's audioFormat)."""
+        self.is_pcm_input = is_pcm
+        logger.info(f"Audio input mode set to: {'PCM' if is_pcm else 'encoded (ffmpeg)'}")
 
     async def _push_silence_event(self) -> None:
         if self.transcription_queue:
@@ -450,20 +454,10 @@ class AudioProcessor:
         self.all_tasks_for_cleanup = []
         processing_tasks_for_watchdog: List[asyncio.Task] = []
 
-        # If using FFmpeg (non-PCM input), start it and spawn stdout reader
+        # Non-PCM input uses per-chunk ffmpeg decoding in process_audio(),
+        # so we do NOT start the continuous ffmpeg pipe here.
         if not self.is_pcm_input:
-            success = await self.ffmpeg_manager.start()
-            if not success:
-                logger.error("Failed to start FFmpeg manager")
-                async def error_generator() -> AsyncGenerator[FrontData, None]:
-                    yield FrontData(
-                        status="error",
-                        error="FFmpeg failed to start. Please check that FFmpeg is installed."
-                    )
-                return error_generator()
-            self.ffmpeg_reader_task = asyncio.create_task(self.ffmpeg_stdout_reader())
-            self.all_tasks_for_cleanup.append(self.ffmpeg_reader_task)
-            processing_tasks_for_watchdog.append(self.ffmpeg_reader_task)
+            logger.info("Non-PCM mode: using per-chunk ffmpeg decoding (no continuous pipe)")
 
         if self.transcription:
             self.transcription_task = asyncio.create_task(self.transcription_processor())
@@ -540,7 +534,7 @@ class AudioProcessor:
             await asyncio.gather(*created_tasks, return_exceptions=True)
         logger.info("All processing tasks cancelled or finished.")
 
-        if not self.is_pcm_input and self.ffmpeg_manager:
+        if self.ffmpeg_manager:
             try:
                 await self.ffmpeg_manager.stop()
                 logger.info("FFmpeg manager stopped.")
@@ -561,6 +555,38 @@ class AudioProcessor:
         return all(task.done() for task in tasks_to_check if task)
 
 
+    async def _decode_audio_chunk(self, data: bytes) -> Optional[bytes]:
+        """Decode a single encoded audio chunk (e.g. AAC_ADTS) to raw PCM using a short-lived ffmpeg process."""
+        try:
+            proc = await asyncio.create_subprocess_exec(
+                'ffmpeg', '-hide_banner', '-loglevel', 'error',
+                '-i', 'pipe:0',
+                # AAC encoder priming delay (~128ms / 2048 samples) creates silence at the
+                # start of each decoded chunk. Trim 100ms to remove most priming silence.
+                '-af', 'atrim=start=0.1',
+                '-f', 's16le', '-acodec', 'pcm_s16le',
+                '-ac', str(self.channels), '-ar', str(self.sample_rate),
+                'pipe:1',
+                stdin=asyncio.subprocess.PIPE,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+            stdout, stderr = await asyncio.wait_for(proc.communicate(input=data), timeout=5.0)
+            if proc.returncode != 0:
+                err_msg = stderr.decode(errors='ignore').strip()
+                logger.warning(f"Per-chunk ffmpeg decode failed (rc={proc.returncode}): {err_msg}")
+                return None
+            return stdout if stdout else None
+        except asyncio.TimeoutError:
+            logger.warning("Per-chunk ffmpeg decode timed out")
+            return None
+        except FileNotFoundError:
+            logger.error("ffmpeg not found for per-chunk decoding")
+            return None
+        except Exception as e:
+            logger.warning(f"Per-chunk ffmpeg decode error: {e}")
+            return None
+
     async def process_audio(self, message: Optional[bytes]) -> None:
         """Process incoming audio data."""
 
@@ -576,7 +602,7 @@ class AudioProcessor:
             if self.transcription_queue:
                 await self.transcription_queue.put(SENTINEL)
 
-            if not self.is_pcm_input and self.ffmpeg_manager:
+            if self.ffmpeg_manager and not self.is_pcm_input:
                 await self.ffmpeg_manager.stop()
 
             return
@@ -589,16 +615,15 @@ class AudioProcessor:
             self.pcm_buffer.extend(message)
             await self.handle_pcm_data()
         else:
-            if not self.ffmpeg_manager:
-                logger.error("FFmpeg manager not initialized for non-PCM input.")
-                return
-            success = await self.ffmpeg_manager.write_data(message)
-            if not success:
-                ffmpeg_state = await self.ffmpeg_manager.get_state()
-                if ffmpeg_state == FFmpegState.FAILED:
-                    logger.error("FFmpeg is in FAILED state, cannot process audio")
-                else:
-                    logger.warning("Failed to write audio data to FFmpeg")
+            # Per-chunk decoding: spawn ffmpeg per received chunk to avoid
+            # ADTS concatenation issues with the continuous pipe approach
+            pcm_data = await self._decode_audio_chunk(message)
+            if pcm_data and len(pcm_data) > 0:
+                logger.debug(f"Per-chunk decode: {len(message)} encoded → {len(pcm_data)} PCM bytes")
+                self.pcm_buffer.extend(pcm_data)
+                await self.handle_pcm_data()
+            else:
+                logger.warning(f"Per-chunk decode produced no data from {len(message)} bytes")
 
     async def handle_pcm_data(self) -> None:
         # Process when enough data

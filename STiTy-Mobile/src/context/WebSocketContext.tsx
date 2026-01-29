@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
+import { Platform } from 'react-native';
 
 interface WebSocketConfig {
   myLang: string;
@@ -65,6 +66,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                   lang: config.myLang,
                   targetLang: config.targetLang,
                   displayMode: 'both',
+                  audioFormat: Platform.OS === 'ios' ? 'pcm' : 'aac_adts',
                 };
                 ws.send(JSON.stringify(startMessage));
                 resolve();

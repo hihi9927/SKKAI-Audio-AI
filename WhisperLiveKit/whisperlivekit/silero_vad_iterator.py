@@ -196,7 +196,7 @@ class VADIterator:
                  model,
                  threshold: float = 0.5,
                  sampling_rate: int = 16000,
-                 min_silence_duration_ms: int = 100,
+                 min_silence_duration_ms: int = 500,  # Increased from 100 for mobile clients with longer chunk intervals
                  speech_pad_ms: int = 30
                  ):
 
@@ -214,8 +214,9 @@ class VADIterator:
         sampling_rate: int (default - 16000)
             Currently silero VAD models support 8000 and 16000 sample rates
 
-        min_silence_duration_ms: int (default - 100 milliseconds)
-            In the end of each speech chunk wait for min_silence_duration_ms before separating it
+        min_silence_duration_ms: int (default - 500 milliseconds)
+            In the end of each speech chunk wait for min_silence_duration_ms before separating it.
+            Increased from 100ms for mobile clients with larger chunk intervals (e.g., Android AAC 2000ms).
 
         speech_pad_ms: int (default - 30 milliseconds)
             Final speech chunks are padded by speech_pad_ms each side

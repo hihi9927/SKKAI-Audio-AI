@@ -32,6 +32,7 @@ class WebSocketHandler:
         self.sent_sentences = set()  # Set of sentence strings we've already sent
         self.connection_initialized = False  # Track if we've initialized for this connection
         self.last_sent_buffer = ''  # Track last sent partial buffer to prevent duplicates
+        self.last_logged_state = ''  # Track last logged state to reduce noise
 
     def initialize_buffers(self):
         """Initialize/clear all buffers for a new connection session"""
@@ -42,6 +43,7 @@ class WebSocketHandler:
         self.detected_language = None
         self.sent_sentences.clear()  # Clear the set of sent sentences
         self.last_sent_buffer = ''  # Clear last sent buffer
+        self.last_logged_state = ''  # Clear last logged state
         self.connection_initialized = True
 
         # DO NOT clear AudioProcessor state - it's managed by the transcription engine
@@ -219,11 +221,16 @@ class WebSocketHandler:
                 lines = response_dict.get('lines', [])
                 buffer_text = response_dict.get('buffer_transcription', '').strip()
 
-                # DEBUG: Log what we received
-                logger.debug(f"[WebSocket] Received lines={len(lines)}, buffer='{buffer_text[:50] if buffer_text else ''}'")
+                # DEBUG: Log only when content changes (reduce noise)
+                current_state = f"{len(lines)}:{buffer_text[:50] if buffer_text else ''}"
                 if lines:
-                    for idx, line in enumerate(lines):
-                        logger.debug(f"[WebSocket] Line {idx}: text='{line.get('text', '')[:50]}', lang={line.get('detected_language')}")
+                    current_state += ':' + '|'.join(l.get('text', '')[:30] for l in lines)
+                if current_state != self.last_logged_state:
+                    logger.debug(f"[WebSocket] Received lines={len(lines)}, buffer='{buffer_text[:50] if buffer_text else ''}'")
+                    if lines:
+                        for idx, line in enumerate(lines):
+                            logger.debug(f"[WebSocket] Line {idx}: text='{line.get('text', '')[:50]}', lang={line.get('detected_language')}")
+                    self.last_logged_state = current_state
 
                 # Detect language from lines
                 detected_lang = None
@@ -309,6 +316,7 @@ class WebSocketHandler:
 
     async def handle(self):
         """Main handler for WebSocket connection"""
+        results_task = None
         try:
             logger.info(f"New WebSocket connection from {self.websocket.remote_address}")
 
@@ -322,19 +330,14 @@ class WebSocketHandler:
                 'message': 'Connected to WhisperLiveKit Streaming Server'
             })
 
-            # Create tasks for processing
-            results_generator = await self.audio_processor.create_tasks()
-
-            # Start background task to handle results
-            results_task = asyncio.create_task(self.handle_results(results_generator))
-
             self.running = True
+            tasks_created = False
 
             # Process incoming messages
             async for message in self.websocket:
                 if isinstance(message, bytes):
                     # Binary data = audio
-                    if self.running:
+                    if self.running and tasks_created:
                         await self.process_audio_chunk(message)
                 else:
                     # Text data = JSON command
@@ -343,7 +346,26 @@ class WebSocketHandler:
                         msg_type = data.get('type', '')
 
                         if msg_type == 'start':
-                            logger.info("Received start command")
+                            # 클라이언트가 보낸 audioFormat에 따라 처리 모드 설정
+                            audio_format = data.get('audioFormat', 'pcm')
+                            is_pcm = (audio_format == 'pcm')
+                            self.audio_processor.set_pcm_input(is_pcm)
+
+                            # 모바일 클라이언트의 경우 VAD 비활성화 옵션
+                            # (청크 녹음 방식은 오디오 갭이 발생하여 VAD 오작동)
+                            disable_vad = data.get('disableVAD', False)
+                            if disable_vad:
+                                self.audio_processor.vac = None
+                                logger.info("VAD disabled by client request (chunked audio mode)")
+
+                            logger.info(f"Received start command (audioFormat={audio_format}, pcm_input={is_pcm}, disableVAD={disable_vad})")
+
+                            # Create tasks for processing (after knowing the audio format)
+                            if not tasks_created:
+                                results_generator = await self.audio_processor.create_tasks()
+                                results_task = asyncio.create_task(self.handle_results(results_generator))
+                                tasks_created = True
+
                             # Send ready message
                             await self.send_message({
                                 'type': 'ready',
@@ -365,7 +387,7 @@ class WebSocketHandler:
                         logger.warning(f"Invalid JSON: {message}")
 
             # Cancel results task
-            if not results_task.done():
+            if results_task and not results_task.done():
                 results_task.cancel()
                 try:
                     await results_task
@@ -394,8 +416,10 @@ async def main_server(args):
     """Main server entry point"""
     logger.info("Initializing transcription engine...")
 
-    # Force pcm_input mode since client sends raw PCM data
-    args.pcm_input = True
+    # Audio format is now auto-detected per connection via client's start message
+    # Default to PCM for backward compatibility (browser clients)
+    if not hasattr(args, 'pcm_input'):
+        args.pcm_input = True
 
     transcription_engine = TranscriptionEngine(**vars(args))
     logger.info("Transcription engine initialized")

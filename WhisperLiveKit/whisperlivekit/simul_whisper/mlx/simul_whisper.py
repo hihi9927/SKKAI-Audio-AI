@@ -475,10 +475,14 @@ class MLXAlignAtt:
         if len(self.state.segments) == 0:
             logger.debug("No segments, nothing to do")
             return []
-            
-        if not self._apply_minseglen():
+
+        # Skip minimum length check when is_last=True (VAD silence detected)
+        # This ensures partial transcriptions are output even for short utterances
+        if not is_last and not self._apply_minseglen():
             logger.debug(f"applied minseglen {self.cfg.audio_min_len} > {self.segments_len()}.")
             return []
+        elif is_last and self.segments_len() < self.cfg.audio_min_len:
+            logger.info(f"[VAD Flush] Bypassing min_len check: {self.segments_len():.2f}s < {self.cfg.audio_min_len}s (is_last=True)")
 
         if len(self.state.segments) > 1:
             input_segments = np.concatenate(self.state.segments, axis=0)

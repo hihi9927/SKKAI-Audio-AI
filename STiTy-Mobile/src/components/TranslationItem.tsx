@@ -20,11 +20,25 @@ export const TranslationItem: React.FC<TranslationItemProps> = ({
   const getLabelColor = (lang: string) => {
     switch (lang) {
       case 'ko':
-        return COLORS.gradientStart; // Purple
-      case 'id':
-        return COLORS.gradientEnd;   // Cyan
+        return COLORS.gradientStart;  // Purple
       case 'en':
         return COLORS.gradientMiddle; // Blue
+      case 'es':
+        return '#E94E77';             // Spanish - Red/Pink
+      case 'ja':
+        return '#FF6B6B';             // Japanese - Coral
+      case 'zh':
+        return '#4ECDC4';             // Chinese - Teal
+      case 'id':
+        return COLORS.gradientEnd;    // Indonesian - Cyan
+      case 'vi':
+        return '#45B7D1';             // Vietnamese - Sky Blue
+      case 'th':
+        return '#96CEB4';             // Thai - Sage Green
+      case 'fr':
+        return '#DDA0DD';             // French - Plum
+      case 'de':
+        return '#FFB347';             // German - Orange
       default:
         return COLORS.gradientMiddle;
     }

@@ -109,7 +109,7 @@ const LanguagePickerModal: React.FC<{
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const [myLanguage, setMyLanguage] = useState<Language>(LANGUAGES[0]);
-  const [targetLanguage, setTargetLanguage] = useState<Language>(LANGUAGES[4]);
+  const [targetLanguage, setTargetLanguage] = useState<Language>(LANGUAGES[7]);  // Spanish
   const [conversationMode] = useState(CONVERSATION_MODES[0]);
 
   const [myLangModal, setMyLangModal] = useState(false);

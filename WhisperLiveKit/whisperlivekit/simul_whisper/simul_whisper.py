@@ -148,6 +148,11 @@ class AlignAtt:
             device=self.model.device
         )
 
+        self.state.CIFLinear = None
+        self.state.always_fire = False
+        self.state.never_fire = True
+        logger.info("[CIF] Disabled (never_fire=True)")
+
         # Build alignment source mapping from model's alignment_heads
         self.state.align_source = {}
         self.state.num_align_heads = 0
@@ -494,10 +499,14 @@ class AlignAtt:
         if len(self.state.segments) == 0:
             logger.debug("No segments, nothing to do")
             return []
-        if not self._apply_minseglen():
+        # Skip minimum length check when is_last=True (VAD silence detected)
+        # This ensures partial transcriptions are output even for short utterances
+        if not is_last and not self._apply_minseglen():
             logger.debug(f"applied minseglen {self.cfg.audio_min_len} > {self.segments_len()}.")
             input_segments = torch.cat(self.state.segments, dim=0)
             return []
+        elif is_last and self.segments_len() < self.cfg.audio_min_len:
+            logger.info(f"[VAD Flush] Bypassing min_len check: {self.segments_len():.2f}s < {self.cfg.audio_min_len}s (is_last=True)")
 
         # input_segments is concatenation of audio, it's one array
         if len(self.state.segments) > 1:

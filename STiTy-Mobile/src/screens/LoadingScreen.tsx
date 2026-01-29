@@ -17,7 +17,7 @@ import { useAudioRecording } from '../hooks/useAudioRecording';
 type RootStackParamList = {
   Home: undefined;
   Loading: { myLang: Language; targetLang: Language; mode: string };
-  Conversation: { myLang: Language; targetLang: Language; mode: string };
+  Conversation: { myLang: Language; targetLang: Language; mode: string; initialMessage?: any };
 };
 
 type LoadingScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Loading'>;
@@ -30,9 +30,9 @@ interface LoadingScreenProps {
 
 export const LoadingScreen: React.FC<LoadingScreenProps> = ({ navigation, route }) => {
   const { myLang, targetLang, mode } = route.params;
-  const [status, setStatus] = useState<'loading' | 'error' | 'success'>('loading');
+  const [status, setStatus] = useState<'connecting' | 'waiting' | 'error' | 'success'>('connecting');
   const [errorMessage, setErrorMessage] = useState<string>('');
-  const { connect, disconnect, sendAudio } = useWebSocketContext();
+  const { connect, disconnect, sendAudio, lastMessage } = useWebSocketContext();
   const hasNavigated = useRef(false);
 
   const { startRecording, stopRecording } = useAudioRecording({
@@ -52,8 +52,26 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ navigation, route 
     };
   }, []);
 
+  // 서버에서 첫 partial/final 메시지가 오면 대화 화면으로 전환
+  useEffect(() => {
+    if (
+      status === 'waiting' &&
+      !hasNavigated.current &&
+      lastMessage &&
+      (lastMessage.type === 'partial' || lastMessage.type === 'final')
+    ) {
+      setStatus('success');
+      hasNavigated.current = true;
+
+      setTimeout(() => {
+        // 첫 메시지를 ConversationScreen에 전달하여 즉시 표시
+        navigation.replace('Conversation', { myLang, targetLang, mode, initialMessage: lastMessage });
+      }, 300);
+    }
+  }, [lastMessage, status]);
+
   const connectToServer = async () => {
-    setStatus('loading');
+    setStatus('connecting');
     setErrorMessage('');
 
     try {
@@ -63,15 +81,9 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ navigation, route 
         mode,
       });
 
-      // 연결 성공 → 바로 녹음 시작
+      // 연결 성공 → 녹음 시작, 첫 출력 대기
       await startRecording();
-
-      setStatus('success');
-      hasNavigated.current = true;
-
-      setTimeout(() => {
-        navigation.replace('Conversation', { myLang, targetLang, mode });
-      }, 500);
+      setStatus('waiting');
 
     } catch (error: any) {
       setStatus('error');
@@ -92,7 +104,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ navigation, route 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        {status === 'loading' && (
+        {(status === 'connecting' || status === 'waiting') && (
           <>
             <Text style={styles.loadingText}>로딩 중 ...</Text>
             <Text style={styles.hintText}>아무말이나 해주세요</Text>
