@@ -39,10 +39,11 @@ class TimedText(Timed):
 
 @dataclass()
 class ASRToken(TimedText):
-    
+    is_segment_end: bool = False  # True when this token marks the end of a segment (for clearing buffers)
+
     def with_offset(self, offset: float) -> "ASRToken":
         """Return a new token with the time offset added."""
-        return ASRToken(self.start + offset, self.end + offset, self.text, self.speaker, detected_language=self.detected_language)
+        return ASRToken(self.start + offset, self.end + offset, self.text, self.speaker, detected_language=self.detected_language, is_segment_end=self.is_segment_end)
 
     def is_silence(self) -> bool:
         return False
