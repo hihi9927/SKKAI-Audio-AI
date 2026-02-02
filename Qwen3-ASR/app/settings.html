@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Settings</title>
+<link rel="stylesheet" href="settings-styles.css">
+</head>
+<body>
+  <div class="settings-panel">
+    <div class="settings-header">
+      <h2>Settings</h2>
+      <div class="header-controls">
+        <div class="status-indicators">
+          <div class="indicator-dot server-indicator-mini" id="serverIndicatorMini" data-tooltip="Server Connection Status"></div>
+          <div class="indicator-dot recording-indicator-mini" id="recordingIndicatorMini" data-tooltip="Recording Status"></div>
+        </div>
+        <button class="close-settings" id="closeSettings" aria-label="Close Settings">✕</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <label class="settings-label" for="serverUrlInput">Server URL</label>
+      <div class="server-url-row">
+        <input type="text" class="server-url-input" id="serverUrlInput"
+               value="ws://localhost:8765"
+               placeholder="ws://localhost:8765">
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <label class="settings-label">Display Mode</label>
+      <div class="settings-row" style="gap: 20px;">
+        <div class="radio-option">
+          <input type="radio" id="modeTranslateOnly" name="displayMode" value="translateOnly">
+          <label for="modeTranslateOnly" class="settings-label" style="margin:0">Translation Only</label>
+        </div>
+        <div class="radio-option">
+          <input type="radio" id="modeTranscriptOnly" name="displayMode" value="transcriptOnly">
+          <label for="modeTranscriptOnly" class="settings-label" style="margin:0">Transcript Only</label>
+        </div>
+        <div class="radio-option">
+          <input type="radio" id="modeBoth" name="displayMode" value="both" checked>
+          <label for="modeBoth" class="settings-label" style="margin:0">Both</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <label class="settings-label" for="opacitySlider">Background Opacity</label>
+      <div class="opacity-row">
+        <input type="range" id="opacitySlider" min="0" max="100" value="100">
+        <span class="opacity-value" id="opacityValue">100%</span>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <label class="settings-label" for="textSizeSlider">Text Size</label>
+      <div class="opacity-row">
+        <input type="range" id="textSizeSlider" min="50" max="400" value="100">
+        <span class="opacity-value" id="textSizeValue">100%</span>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <label class="settings-label">Text Color</label>
+      <div class="settings-row" style="gap: 20px;">
+        <div class="radio-option">
+          <input type="radio" id="textColorWhite" name="textColor" value="white" checked>
+          <label for="textColorWhite" class="settings-label" style="margin:0">White</label>
+        </div>
+        <div class="radio-option">
+          <input type="radio" id="textColorBlack" name="textColor" value="black">
+          <label for="textColorBlack" class="settings-label" style="margin:0">Black</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <label class="settings-label">Language Hint</label>
+      <div class="settings-row" style="gap: 20px;">
+        <div class="radio-option">
+          <input type="radio" id="languageAuto" name="languageHint" value="auto" checked>
+          <label for="languageAuto" class="settings-label" style="margin:0">Auto Detect</label>
+        </div>
+        <div class="radio-option">
+          <input type="radio" id="languageEnglish" name="languageHint" value="en">
+          <label for="languageEnglish" class="settings-label" style="margin:0">English</label>
+        </div>
+        <div class="radio-option">
+          <input type="radio" id="languageKorean" name="languageHint" value="ko">
+          <label for="languageKorean" class="settings-label" style="margin:0">Korean</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <label class="settings-label">Translation Log</label>
+      <div class="translation-log" id="translationLog">
+        <div class="log-empty">No translation history yet</div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <button class="close-app-btn" id="closeAppBtn">Close App</button>
+    </div>
+  </div>
+
+  <script src="settings.js"></script>
+</body>
+</html>
