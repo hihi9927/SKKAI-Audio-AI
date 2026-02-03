@@ -109,22 +109,32 @@ class SimulStreamingOnlineProcessor:
     def process_iter(self, is_last=False) -> Tuple[List[ASRToken], float]:
         """
         Process accumulated audio chunks using SimulStreaming.
-        
+
         Returns a tuple: (list of committed ASRToken objects, float representing the audio processed up to time).
         """
         try:
             timestamped_words = self.model.infer(is_last=is_last)
-            
+
             if not timestamped_words:
                 return [], self.end
-            
+
             if self.model.cfg.language == "auto" and timestamped_words[0].detected_language is None:
                 self.buffer.extend(timestamped_words)
                 return [], self.end
-            
-            self.committed.extend(timestamped_words)
+
+            # Language detected - also include buffered tokens that were waiting for language detection
+            detected_lang = timestamped_words[0].detected_language
+            if self.buffer:
+                # Update detected_language for buffered tokens
+                for token in self.buffer:
+                    token.detected_language = detected_lang
+                logger.info(f"[Language Detected] Moving {len(self.buffer)} buffered tokens to committed (lang={detected_lang})")
+
+            # Combine buffer + new tokens
+            all_tokens = self.buffer + timestamped_words
+            self.committed.extend(all_tokens)
             self.buffer = []
-            return timestamped_words, self.end
+            return all_tokens, self.end
         except Exception as e:
             logger.exception(f"SimulStreaming processing error: {e}")
             return [], self.end

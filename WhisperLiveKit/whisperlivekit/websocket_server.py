@@ -103,59 +103,6 @@ class WebSocketHandler:
             logger.error(f"Translation error: {e}")
             return ''
 
-    def is_sentence_complete(self, text):
-        """Check if text ends with sentence-ending punctuation"""
-        if not text:
-            return False
-        text = text.strip()
-        sentence_end_punctuation = {'.', '!', '?', '。', '！', '？'}
-        return any(text.endswith(p) for p in sentence_end_punctuation)
-
-    def split_into_sentences(self, text):
-        """Split text into individual sentences"""
-        import re
-        # Split by sentence-ending punctuation (including ellipsis ...)
-        # Matches: . ! ? 。 ！ ？ or ... followed by space
-        # Pattern: sentence-ending punctuation + optional space
-        pattern = r'([.]{3}|[.!?。！？])\s+'
-        parts = re.split(pattern, text)
-
-        sentences = []
-        current = ''
-
-        i = 0
-        while i < len(parts):
-            part = parts[i]
-
-            # Skip empty parts
-            if not part or not part.strip():
-                i += 1
-                continue
-
-            # Check if this looks like punctuation
-            if part in ['.', '!', '?', '。', '！', '？', '...']:
-                current += part
-                sentences.append(current.strip())
-                current = ''
-                i += 1
-            else:
-                # This is text content
-                current += part
-                # Check if next part is punctuation
-                if i + 1 < len(parts) and parts[i + 1] in ['.', '!', '?', '。', '！', '？', '...']:
-                    current += parts[i + 1]
-                    sentences.append(current.strip())
-                    current = ''
-                    i += 2
-                else:
-                    i += 1
-
-        # Add any remaining text (incomplete sentence)
-        if current.strip():
-            sentences.append(current.strip())
-
-        return [s for s in sentences if s]  # Filter empty strings
-
     async def flush_translation_buffer(self, trigger_reason="unknown"):
         """
         번역 버퍼 flush 및 잔여 버퍼 재구성 - PDF 부록 A3.2 구현
@@ -250,58 +197,44 @@ class WebSocketHandler:
                         self.sent_sentences.clear()  # Clear sent sentences on language change
                     self.detected_language = detected_lang
 
-                # Process complete lines (ONLY if language is detected)
-                # This prevents sending wrong-language transcriptions as 'final'
+                # Process lines (ONLY if language is detected)
+                # SimulStreaming에서 분절 완료 시에만 lines에 포함됨 (is_segment_end=True)
+                # 따라서 lines의 각 항목을 바로 final로 보냄
                 if lines and detected_lang:
-                    # Filter out empty lines and get the last non-empty line
-                    non_empty_lines = [line for line in lines if line.get('text', '').strip()]
+                    for line in lines:
+                        text = line.get('text', '').strip()
+                        # Skip silence segments (speaker == -2) and empty lines
+                        if not text or line.get('speaker') == -2:
+                            continue
 
-                    if non_empty_lines:
-                        last_line = non_empty_lines[-1]
-                        text = last_line['text'].strip()
+                        # Check if we already sent this exact text (duplicate prevention)
+                        if text in self.sent_sentences:
+                            continue
 
-                        if text and self.is_sentence_complete(text):
-                            # This line has sentence-ending punctuation
-                            # It might contain multiple sentences - split them
-                            sentences = self.split_into_sentences(text)
+                        # New segment - send as final (decoding already handled segmentation)
+                        logger.info(f"[Final Segment] {text[:50]}...")
 
-                            # Find new sentences that haven't been sent yet
-                            for sentence in sentences:
-                                # Skip incomplete sentences (no ending punctuation)
-                                if not self.is_sentence_complete(sentence):
-                                    logger.debug(f"[Incomplete] Skipping: {sentence[:30]}...")
-                                    continue
+                        self.translation_buffer.append({
+                            'text': text,
+                            'start': line.get('start', ''),
+                            'end': line.get('end', ''),
+                            'language': detected_lang
+                        })
 
-                                # Check if we already sent this exact sentence (set lookup - O(1))
-                                if sentence in self.sent_sentences:
-                                    # Silently skip duplicates (no log to reduce noise)
-                                    continue
-
-                                # New complete sentence - send it
-                                logger.info(f"[New Complete Sentence] {sentence[:50]}...")
-
-
-                                self.translation_buffer.append({
-                                    'text': sentence,
-                                    'start': last_line.get('start', ''),
-                                    'end': last_line.get('end', ''),
-                                    'language': detected_lang
-                                })
-
-                                # Mark this sentence as sent
-                                self.sent_sentences.add(sentence)
-                                await self.flush_translation_buffer("sentence_complete")
+                        self.sent_sentences.add(text)
+                        await self.flush_translation_buffer("decoding_commit")
 
                 # Send partial for current incomplete text (buffer)
-                # Send partial even if language is not detected yet (language detection takes ~2 seconds)
+                # ONLY send partial after language is detected to prevent wrong-language output
+                # (e.g., Korean speech being transcribed as English before detection)
                 # CRITICAL: Only send if buffer content has CHANGED to prevent infinite loop
-                if buffer_text and buffer_text != self.last_sent_buffer:
+                if buffer_text and buffer_text != self.last_sent_buffer and self.detected_language:
                     # Send partial message (no translation yet)
                     partial_msg = {
                         'type': 'partial',
                         'original': buffer_text,
                         'last_translation': self.last_translation,  # Show last completed translation
-                        'language': self.detected_language or 'unknown'  # Use 'unknown' if not detected yet
+                        'language': self.detected_language
                     }
 
                     await self.send_message(partial_msg)

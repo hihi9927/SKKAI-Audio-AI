@@ -1,5 +1,8 @@
+import csv
+import json
 import logging
 import os
+from datetime import datetime
 from time import time
 from typing import List, Optional, Tuple
 
@@ -189,6 +192,15 @@ class AlignAtt:
         else:
             self.state.sentence_segmenter = None
             logger.info("Sentence segmentation disabled")
+
+        # Initialize attention logging for hallucination analysis
+        self.attention_log_file = os.path.join(
+            os.path.dirname(__file__),
+            f"attention_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        )
+        self.attention_log_initialized = False
+        self.current_segment_attention_data = []  # Collect per-token attention data
+        logger.info(f"[Attention Log] Will save to: {self.attention_log_file}")
 
         # Initialize tokens
         self.init_tokens()
@@ -737,10 +749,32 @@ class AlignAtt:
             most_attended_frame = most_attended_frames[0].item()
             l_absolute_timestamps.append(absolute_timestamps[0])
 
+            # Collect attention data for hallucination analysis
+            current_token_id = current_tokens[0, -1].item()
+            current_token_text = self.tokenizer.decode([current_token_id])
+            # Get max attention value (probability) for this token
+            max_attention_value = torch.max(attn_of_alignment_heads[:, -1, :]).item()
+            # Get attention distribution entropy (higher = more uncertain)
+            attn_probs = attn_of_alignment_heads[0, -1, :]
+            attn_entropy = -torch.sum(attn_probs * torch.log(attn_probs + 1e-10)).item()
+
+            self.current_segment_attention_data.append({
+                'token_id': current_token_id,
+                'token_text': current_token_text,
+                'peak_frame': most_attended_frame,
+                'max_attention': max_attention_value,
+                'attention_entropy': attn_entropy,
+                'content_mel_len': content_mel_len,
+                'timestamp': absolute_timestamps[0]
+            })
+
             logger.debug("current tokens" + str(current_tokens.shape))
             if completed:
-                # stripping the last token, the eot
-                current_tokens = current_tokens[:, :-1]
+                # Only strip the last token if it's EOT (end of transcript)
+                # Don't strip punctuation marks from semantic segmentation
+                last_token = current_tokens[0, -1].item()
+                if last_token == self.tokenizer.eot:
+                    current_tokens = current_tokens[:, :-1]
                 break
 
             # AlignAtt-based checks (rewind detection and frame threshold)
@@ -792,18 +826,22 @@ class AlignAtt:
             pending_tensor = torch.tensor(self.state.pending_incomplete_tokens, dtype=torch.long, device=self.device)
             tokens_to_split = torch.cat([pending_tensor, tokens_to_split])
 
-        if fire_detected or is_last:
-            # CIF 감지 또는 마지막 청크: 모든 토큰 출력
+        if fire_detected or is_last or completed:
+            # CIF 감지, 마지막 청크, 또는 의미 분절 완료: 모든 토큰 출력 (구둣점 포함)
             new_hypothesis = tokens_to_split.flatten().tolist()
             split_words, split_tokens = self.tokenizer.split_to_word_tokens(new_hypothesis)
         else:
             # CIF 미감지: 마지막 단어는 불완전할 수 있으므로 제외
-            split_words, split_tokens = self.tokenizer.split_to_word_tokens(tokens_to_split.tolist())
-            if len(split_words) > 1:
-                new_hypothesis = [i for sublist in split_tokens[:-1] for i in sublist]
+            all_split_words, all_split_tokens = self.tokenizer.split_to_word_tokens(tokens_to_split.tolist())
+            if len(all_split_words) > 1:
+                # 마지막 단어를 출력과 state.tokens 모두에서 제외
+                split_words = all_split_words[:-1]
+                split_tokens = all_split_tokens[:-1]
+                new_hypothesis = [i for sublist in split_tokens for i in sublist]
+                logger.debug(f"[Word Buffer] Holding last word '{all_split_words[-1]}' for next chunk")
             else:
                 # 단어가 1개뿐이면 출력하지 않음
-                logger.debug(f"[Single Word] Only 1 word '{split_words}', waiting for CIF or more tokens")
+                logger.debug(f"[Single Word] Only 1 word '{all_split_words}', waiting for CIF or more tokens")
                 self._clean_cache()
                 return []
 
@@ -890,11 +928,90 @@ class AlignAtt:
             else:
                 logger.warning(f"[UTF-8 Fix] Skipping {len(split_tokens[-1])} tokens (exceeds limit of {MAX_PENDING_TOKENS}, likely hallucination)")
 
+        # Mark segment end if this is a completed segment (meaning segmentation or VAD silence)
+        # This signals tokens_alignment to clear current_line_tokens
+        if (completed or is_last) and timestamped_words:
+            timestamped_words[-1].is_segment_end = True
+            logger.debug(f"[Segment End] Marked last token as segment end (completed={completed}, is_last={is_last})")
+            # Refresh segment for next chunk to start fresh (prevents duplicate punctuation output)
+            if completed:
+                self.refresh_segment(complete=False)
+
+        # Save attention data to CSV for hallucination analysis
+        if self.current_segment_attention_data and (completed or is_last):
+            self._save_attention_log(timestamped_words, completed, is_last)
+
         return timestamped_words
 
+    def _save_attention_log(self, timestamped_words: List[ASRToken], completed: bool, is_last: bool):
+        """Save attention data for the current segment to CSV for hallucination analysis."""
+        try:
+            # Build the full sentence text
+            sentence_text = ' '.join(w.text for w in timestamped_words if hasattr(w, 'text'))
+
+            # Calculate aggregate statistics
+            if self.current_segment_attention_data:
+                peak_frames = [d['peak_frame'] for d in self.current_segment_attention_data]
+                max_attentions = [d['max_attention'] for d in self.current_segment_attention_data]
+                entropies = [d['attention_entropy'] for d in self.current_segment_attention_data]
+
+                avg_peak_frame = sum(peak_frames) / len(peak_frames)
+                avg_max_attention = sum(max_attentions) / len(max_attentions)
+                min_max_attention = min(max_attentions)
+                max_max_attention = max(max_attentions)
+                avg_entropy = sum(entropies) / len(entropies)
+
+                # Check if monotonic (frames should increase for normal speech)
+                is_monotonic = all(peak_frames[i] <= peak_frames[i+1] for i in range(len(peak_frames)-1))
+                # Count rewinds (frame going backward)
+                rewind_count = sum(1 for i in range(len(peak_frames)-1) if peak_frames[i] > peak_frames[i+1])
+            else:
+                avg_peak_frame = avg_max_attention = min_max_attention = max_max_attention = avg_entropy = 0
+                is_monotonic = True
+                rewind_count = 0
+
+            # Initialize CSV with header if first write
+            write_header = not self.attention_log_initialized
+            with open(self.attention_log_file, 'a', newline='', encoding='utf-8') as f:
+                writer = csv.writer(f)
+                if write_header:
+                    writer.writerow([
+                        'timestamp', 'sentence', 'token_count', 'completed', 'is_last',
+                        'avg_peak_frame', 'avg_max_attention', 'min_max_attention', 'max_max_attention',
+                        'avg_entropy', 'is_monotonic', 'rewind_count',
+                        'per_token_data'
+                    ])
+                    self.attention_log_initialized = True
+
+                # Write row
+                writer.writerow([
+                    datetime.now().isoformat(),
+                    sentence_text,
+                    len(self.current_segment_attention_data),
+                    completed,
+                    is_last,
+                    f'{avg_peak_frame:.2f}',
+                    f'{avg_max_attention:.4f}',
+                    f'{min_max_attention:.4f}',
+                    f'{max_max_attention:.4f}',
+                    f'{avg_entropy:.4f}',
+                    is_monotonic,
+                    rewind_count,
+                    json.dumps(self.current_segment_attention_data, ensure_ascii=False)
+                ])
+
+            logger.info(f"[Attention Log] Saved: '{sentence_text[:50]}...' | avg_attn={avg_max_attention:.4f}, monotonic={is_monotonic}, rewinds={rewind_count}")
+
+            # Clear for next segment
+            self.current_segment_attention_data = []
+
+        except Exception as e:
+            logger.error(f"[Attention Log] Failed to save: {e}")
+            self.current_segment_attention_data = []
+
     def _process_cross_attention(
-        self, 
-        cross_attns: List[torch.Tensor], 
+        self,
+        cross_attns: List[torch.Tensor],
         content_mel_len: int
     ) -> torch.Tensor:
         """

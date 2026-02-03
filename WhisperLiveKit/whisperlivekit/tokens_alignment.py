@@ -200,11 +200,17 @@ class TokensAlignment:
             segments, diarization_buffer = self.get_lines_diarization()
         else:
             diarization_buffer = ''
+            # Track segments completed by silence in this update
+            silence_completed_segments = []
+
             for token in self.new_tokens:
                 if token.is_silence():
                     logger.debug(f"[get_lines] SILENCE detected! current_line_tokens has {len(self.current_line_tokens)} tokens")
                     if self.current_line_tokens:
-                        self.validated_segments.append(Segment().from_tokens(self.current_line_tokens))
+                        completed_segment = Segment().from_tokens(self.current_line_tokens)
+                        self.validated_segments.append(completed_segment)
+                        # Also track for immediate return (so silence-completed segments are sent)
+                        silence_completed_segments.append(completed_segment)
                         self.current_line_tokens = []
                         logger.debug(f"[get_lines] Moved to validated_segments, now has {len(self.validated_segments)} segments")
 
@@ -212,15 +218,21 @@ class TokensAlignment:
                     # 대신 침묵 감지 시 이전 세그먼트를 완료 처리만 함
                 else:
                     self.current_line_tokens.append(token)
+                    # Check for segment end marker (from simul_whisper meaning segmentation)
+                    if getattr(token, 'is_segment_end', False):
+                        logger.debug(f"[get_lines] SEGMENT END detected! Completing segment with {len(self.current_line_tokens)} tokens")
+                        if self.current_line_tokens:
+                            completed_segment = Segment().from_tokens(self.current_line_tokens)
+                            silence_completed_segments.append(completed_segment)
+                            self.current_line_tokens = []
+
+            # Build segments list: completed segments only (current_line_tokens should be empty after segment end)
+            segments = silence_completed_segments.copy()
 
             # 실시간 자막: 완료된 세그먼트는 유지하지 않음 (현재 진행 중인 문장만 출력)
             # 번역이 켜져 있을 때만 validated_segments 유지 (번역 정렬용)
             if not translation:
                 self.validated_segments = []
-
-            segments = []
-            if self.current_line_tokens:
-                segments.append(Segment().from_tokens(self.current_line_tokens))
 
         if current_silence:
             # 현재 침묵 중일 때도 SilentSegment를 추가하지 않음
