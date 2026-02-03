@@ -1,9 +1,8 @@
 import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
 
+// ===== Qwen3-ASR 서버 설정 =====
 interface WebSocketConfig {
-  myLang: string;
-  targetLang: string;
-  mode: string;
+  lang: string;  // 언어 코드: 'auto', 'ko', 'en', 'zh', 'ja' 등
 }
 
 interface WebSocketContextType {
@@ -18,10 +17,10 @@ interface WebSocketContextType {
 
 const WebSocketContext = createContext<WebSocketContextType | null>(null);
 
-// ===== 서버 URL 설정 =====
-// ngrok 터널 사용 시: 터미널에서 `ngrok http 8001` 실행 후 URL 입력
-// 로컬 네트워크 사용 시: 'ws://192.168.x.x:8001'
-const SERVER_URL = 'wss://sportless-postpituitary-ludie.ngrok-free.dev';
+// ===== Qwen3-ASR 서버 URL 설정 =====
+// ngrok 터널 사용 시: `ngrok http 8765` 실행 후 URL 입력
+// 로컬 네트워크 사용 시: 'ws://192.168.x.x:8765'
+const SERVER_URL = 'ws://localhost:8765';
 
 export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isConnected, setIsConnected] = useState(false);
@@ -60,12 +59,10 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 setIsConnected(true);
                 setError(null);
 
+                // Qwen3-ASR start 메시지
                 const startMessage = {
                   type: 'start',
-                  lang: config.myLang,
-                  targetLang: config.targetLang,
-                  displayMode: 'both',
-                  audioFormat: 'pcm',  // react-native-live-audio-stream은 raw PCM 전송
+                  lang: config.lang,  // 'auto', 'ko', 'en', 'zh', 'ja' 등
                 };
                 ws.send(JSON.stringify(startMessage));
                 resolve();

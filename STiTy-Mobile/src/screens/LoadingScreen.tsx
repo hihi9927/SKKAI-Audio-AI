@@ -14,10 +14,11 @@ import { Language } from '../constants/languages';
 import { useWebSocketContext } from '../context/WebSocketContext';
 import { useAudioRecording } from '../hooks/useAudioRecording';
 
+// Qwen3-ASR 전용 - 번역 없이 ASR만
 type RootStackParamList = {
   Home: undefined;
-  Loading: { myLang: Language; targetLang: Language; mode: string };
-  Conversation: { myLang: Language; targetLang: Language; mode: string; initialMessage?: any };
+  Loading: { myLang: Language; targetLang: Language; mode: string };  // HomeScreen 호환
+  Conversation: { myLang: Language; targetLang: Language; mode: string; initialMessage?: any };  // HomeScreen 호환
 };
 
 type LoadingScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Loading'>;
@@ -75,10 +76,9 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ navigation, route 
     setErrorMessage('');
 
     try {
+      // Qwen3-ASR 서버에 연결
       await connect({
-        myLang: myLang.code,
-        targetLang: targetLang.code,
-        mode,
+        lang: myLang.code,  // 'auto', 'ko', 'en' 등
       });
 
       // 연결 성공 → 녹음 시작, 첫 출력 대기

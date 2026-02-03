@@ -30,18 +30,17 @@ interface ConversationScreenProps {
   route: ConversationScreenRouteProp;
 }
 
-interface TranslationEntry {
+// Qwen3-ASR은 번역 없이 ASR만 지원
+interface TranscriptionEntry {
   id: string;
-  sourceLang: string;
-  targetLang: string;
-  sourceText: string;
-  targetText: string;
+  language: string;
+  text: string;
   timestamp: number;
 }
 
 export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigation, route }) => {
-  const { myLang, targetLang, mode, initialMessage } = route.params;
-  const [translations, setTranslations] = useState<TranslationEntry[]>([]);
+  const { myLang, initialMessage } = route.params;
+  const [transcriptions, setTranscriptions] = useState<TranscriptionEntry[]>([]);
   const [isPaused, setIsPaused] = useState(false);
   const flatListRef = useRef<FlatList>(null);
 
@@ -81,22 +80,16 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
   }, [lastMessage]);
 
   const handleIncomingMessage = (message: any) => {
+    // Qwen3-ASR 서버 메시지: partial 또는 final
     if (message.type === 'final' && message.original) {
-      // 서버가 보내는 필드: original, translation, language
-      const detectedLang = message.language || myLang.code;
-      // 번역 대상 언어: 감지된 언어가 내 언어면 상대 언어로, 아니면 내 언어로
-      const translationTargetLang = detectedLang === myLang.code ? targetLang.code : myLang.code;
-
-      const newEntry: TranslationEntry = {
+      const newEntry: TranscriptionEntry = {
         id: Date.now().toString(),
-        sourceLang: detectedLang,
-        targetLang: translationTargetLang,
-        sourceText: message.original,
-        targetText: message.translation || '',  // 서버는 'translation' 필드 사용
+        language: message.language || 'auto',
+        text: message.original,
         timestamp: Date.now(),
       };
 
-      setTranslations((prev) => [newEntry, ...prev]);
+      setTranscriptions((prev) => [newEntry, ...prev]);
 
       setTimeout(() => {
         flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
@@ -133,12 +126,12 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     );
   };
 
-  const renderTranslationItem = ({ item, index }: { item: TranslationEntry; index: number }) => (
+  const renderTranscriptionItem = ({ item, index }: { item: TranscriptionEntry; index: number }) => (
     <TranslationItem
-      sourceLang={item.sourceLang}
-      targetLang={item.targetLang}
-      sourceText={item.sourceText}
-      targetText={item.targetText}
+      sourceLang={item.language}
+      targetLang=""
+      sourceText={item.text}
+      targetText=""
       isLatest={index === 0}
     />
   );
@@ -146,7 +139,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.translationContainer}>
-        {translations.length === 0 ? (
+        {transcriptions.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>
               {!isPaused ? '말씀해 주세요...' : '대기 중...'}
@@ -155,8 +148,8 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
         ) : (
           <FlatList
             ref={flatListRef}
-            data={translations}
-            renderItem={renderTranslationItem}
+            data={transcriptions}
+            renderItem={renderTranscriptionItem}
             keyExtractor={(item) => item.id}
             inverted={false}
             showsVerticalScrollIndicator={false}

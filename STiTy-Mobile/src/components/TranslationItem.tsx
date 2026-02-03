@@ -46,7 +46,7 @@ export const TranslationItem: React.FC<TranslationItemProps> = ({
 
   return (
     <View style={[styles.container, isLatest && styles.latestContainer]}>
-      {/* Source language row */}
+      {/* Source language row (transcription) */}
       <View style={styles.row}>
         <Text style={[styles.langLabel, { color: getLabelColor(sourceLang) }]}>
           {sourceLang}
@@ -56,15 +56,17 @@ export const TranslationItem: React.FC<TranslationItemProps> = ({
         </Text>
       </View>
 
-      {/* Target language row */}
-      <View style={styles.row}>
-        <Text style={[styles.langLabel, { color: getLabelColor(targetLang) }]}>
-          {targetLang}
-        </Text>
-        <Text style={[styles.translatedText, isLatest && styles.latestTranslatedText]}>
-          {targetText}
-        </Text>
-      </View>
+      {/* Target language row - 번역이 있을 때만 표시 */}
+      {targetText && targetText.length > 0 && (
+        <View style={styles.row}>
+          <Text style={[styles.langLabel, { color: getLabelColor(targetLang) }]}>
+            {targetLang}
+          </Text>
+          <Text style={[styles.translatedText, isLatest && styles.latestTranslatedText]}>
+            {targetText}
+          </Text>
+        </View>
+      )}
     </View>
   );
 };
