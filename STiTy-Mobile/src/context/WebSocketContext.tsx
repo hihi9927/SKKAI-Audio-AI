@@ -1,5 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
-import { Platform } from 'react-native';
+import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
 
 interface WebSocketConfig {
   myLang: string;
@@ -66,7 +65,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                   lang: config.myLang,
                   targetLang: config.targetLang,
                   displayMode: 'both',
-                  audioFormat: Platform.OS === 'ios' ? 'pcm' : 'aac_adts',
+                  audioFormat: 'pcm',  // react-native-live-audio-stream은 raw PCM 전송
                 };
                 ws.send(JSON.stringify(startMessage));
                 resolve();
