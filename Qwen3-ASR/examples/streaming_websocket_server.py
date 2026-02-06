@@ -300,6 +300,7 @@ class Qwen3ASRStreamingServer:
             model=self.config.model_path,
             gpu_memory_utilization=self.config.gpu_memory_utilization,
             max_new_tokens=self.config.max_new_tokens,
+            max_model_len=8192,
         )
         logger.info("Model loaded successfully")
 
