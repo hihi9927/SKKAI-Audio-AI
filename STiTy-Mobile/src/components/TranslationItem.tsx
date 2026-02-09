@@ -51,7 +51,7 @@ export const TranslationItem: React.FC<TranslationItemProps> = ({
         <Text style={[styles.langLabel, { color: getLabelColor(sourceLang) }]}>
           {sourceLang}
         </Text>
-        <Text style={[styles.text, isLatest && styles.latestText]}>
+        <Text style={styles.text}>
           {sourceText}
         </Text>
       </View>
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     marginVertical: SPACING.xs,
   },
   langLabel: {
-    fontSize: FONTS.sizes.sm,
+    fontSize: FONTS.sizes.lg,
     fontWeight: '700',
     width: 30,
     marginRight: SPACING.md,

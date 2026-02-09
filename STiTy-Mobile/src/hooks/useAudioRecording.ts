@@ -17,10 +17,27 @@ interface UseAudioRecordingReturn {
 }
 
 const SAMPLE_RATE = 16000;
-// 웹앱과 동일하게 연속 스트리밍 - 100ms마다 데이터 전송
-// bufferSize = sampleRate * (ms / 1000) * bytesPerSample
-// 16000 * 0.1 * 2 = 3200 bytes per 100ms
 const BUFFER_SIZE = 3200;
+
+// ===== 모듈 레벨 싱글톤 상태 =====
+// LiveAudioStream은 글로벌 싱글톤이므로 훅 인스턴스가 아닌 모듈 레벨에서 관리
+let _nativeInitialized = false;  // native stream init 여부
+let _streamRunning = false;      // start() 호출 여부
+
+// 현재 활성 콜백 - 화면 전환 시 새 훅 인스턴스의 콜백으로 교체됨
+let _activeCallback: ((base64Data: string) => void) | null = null;
+
+// base64 → ArrayBuffer 변환
+const base64ToArrayBuffer = (base64: string): ArrayBuffer => {
+  const binaryString = atob(base64);
+  const len = binaryString.length;
+  const buffer = new ArrayBuffer(len);
+  const view = new Uint8Array(buffer);
+  for (let i = 0; i < len; i++) {
+    view[i] = binaryString.charCodeAt(i);
+  }
+  return buffer;
+};
 
 export const useAudioRecording = ({
   onAudioData,
@@ -29,7 +46,6 @@ export const useAudioRecording = ({
 }: UseAudioRecordingOptions): UseAudioRecordingReturn => {
   const [isRecordingActive, setIsRecordingActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const isInitializedRef = useRef(false);
   const onAudioDataRef = useRef(onAudioData);
 
   useEffect(() => {
@@ -60,53 +76,45 @@ export const useAudioRecording = ({
         return false;
       }
     }
-    // iOS는 Info.plist에서 처리됨
     return true;
   };
 
-  // base64 → ArrayBuffer 변환
-  const base64ToArrayBuffer = (base64: string): ArrayBuffer => {
-    const binaryString = atob(base64);
-    const len = binaryString.length;
-    const buffer = new ArrayBuffer(len);
-    const view = new Uint8Array(buffer);
-    for (let i = 0; i < len; i++) {
-      view[i] = binaryString.charCodeAt(i);
-    }
-    return buffer;
-  };
-
-  // LiveAudioStream 초기화
+  // LiveAudioStream 초기화 (싱글톤)
   const initializeStream = () => {
-    if (isInitializedRef.current) return;
+    // 이전 data 리스너 모두 제거 (화면 전환 시 중복 방지)
+    try {
+      LiveAudioStream.removeAllListeners?.('data');
+    } catch (e) {
+      // removeAllListeners 미지원 시 무시
+    }
 
-    // wavFile은 필수 옵션이지만 실시간 스트리밍에서는 사용하지 않음
-    const tempWavPath = `${FileSystem.cacheDirectory}temp_audio.wav`;
+    // native stream은 한 번만 init
+    if (!_nativeInitialized) {
+      const tempWavPath = `${FileSystem.cacheDirectory}temp_audio.wav`;
+      LiveAudioStream.init({
+        sampleRate: sampleRate,
+        channels: 1,
+        bitsPerSample: 16,
+        audioSource: 6,
+        bufferSize: bufferSize,
+        wavFile: tempWavPath,
+      });
+      _nativeInitialized = true;
+      console.log(`LiveAudioStream native init (sampleRate: ${sampleRate}, bufferSize: ${bufferSize})`);
+    }
 
-    LiveAudioStream.init({
-      sampleRate: sampleRate,
-      channels: 1,
-      bitsPerSample: 16,
-      audioSource: 6, // VOICE_RECOGNITION (Android) - 노이즈 캔슬링 적용
-      bufferSize: bufferSize,
-      wavFile: tempWavPath,
-    });
-
-    // 오디오 데이터 이벤트 리스너
-    LiveAudioStream.on('data', (base64Data: string) => {
+    // 새 data 리스너 등록 (현재 훅 인스턴스의 콜백 사용)
+    _activeCallback = (base64Data: string) => {
       try {
         const audioBuffer = base64ToArrayBuffer(base64Data);
         if (audioBuffer.byteLength > 0) {
-          // 웹앱과 동일하게 Int16 PCM을 직접 전송
           onAudioDataRef.current(audioBuffer);
         }
       } catch (e) {
         console.error('Error processing audio data:', e);
       }
-    });
-
-    isInitializedRef.current = true;
-    console.log(`LiveAudioStream initialized (sampleRate: ${sampleRate}, bufferSize: ${bufferSize})`);
+    };
+    LiveAudioStream.on('data', _activeCallback);
   };
 
   const startRecording = useCallback(async (): Promise<void> => {
@@ -117,12 +125,18 @@ export const useAudioRecording = ({
       }
 
       initializeStream();
-      LiveAudioStream.start();
+
+      // 이미 실행 중이면 start() 생략 (화면 전환 시 스트림 끊김 방지)
+      if (!_streamRunning) {
+        LiveAudioStream.start();
+        _streamRunning = true;
+        console.log('LiveAudioStream.start() called');
+      } else {
+        console.log('LiveAudioStream already running, listener swapped');
+      }
 
       setIsRecordingActive(true);
       setError(null);
-      console.log('LiveAudioStream recording started (continuous streaming mode)');
-
     } catch (e: any) {
       console.error('Failed to start recording:', e);
       setError(e.message || '녹음 시작 실패');
@@ -134,21 +148,21 @@ export const useAudioRecording = ({
   const stopRecording = useCallback(async (): Promise<void> => {
     try {
       LiveAudioStream.stop();
+      try {
+        LiveAudioStream.removeAllListeners?.('data');
+      } catch (e) { /* ignore */ }
+      _activeCallback = null;
+      _nativeInitialized = false;
+      _streamRunning = false;
       setIsRecordingActive(false);
-      console.log('LiveAudioStream recording stopped');
+      console.log('LiveAudioStream fully stopped and cleaned up');
     } catch (e) {
       console.error('Error stopping recording:', e);
     }
   }, []);
 
-  useEffect(() => {
-    return () => {
-      // 컴포넌트 언마운트 시 정리
-      if (isRecordingActive) {
-        LiveAudioStream.stop();
-      }
-    };
-  }, [isRecordingActive]);
+  // auto-cleanup 제거: 화면 전환 시 싱글톤 스트림을 죽이지 않도록
+  // 각 화면이 명시적으로 stopRecording()을 호출해야 함
 
   return {
     isRecordingActive,

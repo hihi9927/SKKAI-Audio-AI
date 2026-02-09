@@ -13,20 +13,20 @@ interface WebSocketContextType {
   disconnect: () => void;
   sendAudio: (audioData: ArrayBuffer) => void;
   sendMessage: (message: object) => void;
+  addMessageListener: (listener: (msg: any) => void) => () => void;
 }
 
 const WebSocketContext = createContext<WebSocketContextType | null>(null);
 
 // ===== Qwen3-ASR 서버 URL 설정 =====
-// ngrok 터널 사용 시: `ngrok http 8765` 실행 후 URL 입력
-// 로컬 네트워크 사용 시: 'ws://192.168.x.x:8765'
-const SERVER_URL = 'ws://localhost:8765';
+const SERVER_URL = 'wss://edra-raspiest-eagerly.ngrok-free.dev';
 
 export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isConnected, setIsConnected] = useState(false);
   const [lastMessage, setLastMessage] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
+  const listenersRef = useRef<Set<(msg: any) => void>>(new Set());
 
   const connect = useCallback(async (config: WebSocketConfig): Promise<void> => {
     return new Promise((resolve, reject) => {
@@ -62,7 +62,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 // Qwen3-ASR start 메시지
                 const startMessage = {
                   type: 'start',
-                  lang: config.lang,  // 'auto', 'ko', 'en', 'zh', 'ja' 등
+                  lang: config.lang,
                 };
                 ws.send(JSON.stringify(startMessage));
                 resolve();
@@ -70,6 +70,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
               }
 
               setLastMessage(data);
+              listenersRef.current.forEach(l => l(data));
             }
           } catch (e) {
             console.error('Failed to parse message:', e);
@@ -129,6 +130,11 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }, []);
 
+  const addMessageListener = useCallback((listener: (msg: any) => void) => {
+    listenersRef.current.add(listener);
+    return () => { listenersRef.current.delete(listener); };
+  }, []);
+
   const sendMessage = useCallback((message: object) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       try {
@@ -142,7 +148,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   return (
     <WebSocketContext.Provider value={{
       isConnected, lastMessage, error,
-      connect, disconnect, sendAudio, sendMessage,
+      connect, disconnect, sendAudio, sendMessage, addMessageListener,
     }}>
       {children}
     </WebSocketContext.Provider>

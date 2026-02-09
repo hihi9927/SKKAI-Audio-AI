@@ -4,8 +4,9 @@ import {
   Text,
   StyleSheet,
   SafeAreaView,
-  FlatList,
+  ScrollView,
   Alert,
+  AppState,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
@@ -30,7 +31,6 @@ interface ConversationScreenProps {
   route: ConversationScreenRouteProp;
 }
 
-// Qwen3-ASR은 번역 없이 ASR만 지원
 interface TranscriptionEntry {
   id: string;
   language: string;
@@ -38,67 +38,108 @@ interface TranscriptionEntry {
   timestamp: number;
 }
 
+const langToCode = (lang: string): string => {
+  const map: Record<string, string> = {
+    'Korean': 'ko', 'English': 'en', 'Japanese': 'ja',
+    'Chinese': 'zh', 'Indonesian': 'id', 'Vietnamese': 'vi',
+    'Thai': 'th', 'French': 'fr', 'German': 'de', 'Spanish': 'es',
+  };
+  return map[lang] || lang.toLowerCase().substring(0, 2);
+};
+
+const MAX_VISIBLE = 3;
+
 export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigation, route }) => {
   const { myLang, initialMessage } = route.params;
+  const [displayText, setDisplayText] = useState<{ lang: string; text: string } | null>(null);
   const [transcriptions, setTranscriptions] = useState<TranscriptionEntry[]>([]);
   const [isPaused, setIsPaused] = useState(false);
-  const flatListRef = useRef<FlatList>(null);
 
-  const { isConnected, sendAudio, lastMessage, disconnect } = useWebSocketContext();
+  const { isConnected, connect, sendAudio, disconnect, addMessageListener } = useWebSocketContext();
+  const isConnectedRef = useRef(isConnected);
+  const isPausedRef = useRef(isPaused);
+  const sendAudioRef = useRef(sendAudio);
+
+  useEffect(() => { isConnectedRef.current = isConnected; }, [isConnected]);
+  useEffect(() => { isPausedRef.current = isPaused; }, [isPaused]);
+  useEffect(() => { sendAudioRef.current = sendAudio; }, [sendAudio]);
+
   const { startRecording, stopRecording, isRecordingActive } = useAudioRecording({
     onAudioData: (audioData) => {
-      if (isConnected && !isPaused) {
-        sendAudio(audioData);
+      if (isConnectedRef.current && !isPausedRef.current) {
+        sendAudioRef.current(audioData);
       }
     },
   });
 
-  // LoadingScreen에서 이미 연결+녹음이 시작된 상태로 진입
-
-  // 초기 메시지 처리 (로딩 화면에서 받은 첫 번째 출력)
   const processedInitialRef = useRef(false);
+  const entryIdRef = useRef(0);
+
+  const handleMessage = useRef((message: any) => {
+    const text = (message.original || '').trim();
+    if (!text) return;
+    const lang = langToCode(message.language || 'auto');
+
+    if (message.type === 'partial') {
+      // 웹앱과 동일: original 텍스트를 그대로 표시
+      setDisplayText({ lang, text });
+    } else if (message.type === 'final') {
+      // final: 확정된 텍스트를 기록에 추가
+      entryIdRef.current += 1;
+      setTranscriptions((prev) => [...prev, {
+        id: entryIdRef.current.toString(),
+        language: lang,
+        text,
+        timestamp: Date.now(),
+      }].slice(-MAX_VISIBLE));
+      setDisplayText(null);
+    }
+  });
 
   useEffect(() => {
     if (initialMessage && !processedInitialRef.current) {
       processedInitialRef.current = true;
-      handleIncomingMessage(initialMessage);
+      handleMessage.current(initialMessage);
     }
   }, []);
 
+  // LoadingScreen에서 넘어올 때 LiveAudioStream이 정리되므로 다시 시작
   useEffect(() => {
+    startRecording();
     return () => {
       stopRecording();
       disconnect();
     };
   }, []);
 
+  // 앱이 백그라운드로 갈 때 정지, 돌아오면 일시정지 상태로 전환
   useEffect(() => {
-    // initialMessage와 동일한 메시지면 중복 처리 방지
-    if (lastMessage && lastMessage !== initialMessage) {
-      handleIncomingMessage(lastMessage);
-    }
-  }, [lastMessage]);
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'background' || nextAppState === 'inactive') {
+        if (!isPausedRef.current) {
+          stopRecording();
+          disconnect();
+          setIsPaused(true);
+        }
+      }
+    });
+    return () => subscription.remove();
+  }, []);
 
-  const handleIncomingMessage = (message: any) => {
-    // Qwen3-ASR 서버 메시지: partial 또는 final
-    if (message.type === 'final' && message.original) {
-      const newEntry: TranscriptionEntry = {
-        id: Date.now().toString(),
-        language: message.language || 'auto',
-        text: message.original,
-        timestamp: Date.now(),
-      };
-
-      setTranscriptions((prev) => [newEntry, ...prev]);
-
-      setTimeout(() => {
-        flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
-      }, 100);
-    }
-  };
+  // 리스너 패턴으로 메시지 수신 (React 배칭으로 인한 메시지 유실 방지)
+  useEffect(() => {
+    const unsubscribe = addMessageListener((message: any) => {
+      handleMessage.current(message);
+    });
+    return unsubscribe;
+  }, [addMessageListener]);
 
   const handleStopResume = async () => {
     if (isPaused) {
+      // 연결이 끊어졌으면 재연결
+      if (!isConnectedRef.current) {
+        await connect({ lang: myLang.code });
+      }
       await startRecording();
       setIsPaused(false);
     } else {
@@ -119,45 +160,49 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
           onPress: async () => {
             await stopRecording();
             disconnect();
-            navigation.navigate('Home');
+            setTranscriptions([]);
+            setDisplayText(null);
+            navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
           },
         },
       ]
     );
   };
 
-  const renderTranscriptionItem = ({ item, index }: { item: TranscriptionEntry; index: number }) => (
-    <TranslationItem
-      sourceLang={item.language}
-      targetLang=""
-      sourceText={item.text}
-      targetText=""
-      isLatest={index === 0}
-    />
-  );
-
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.translationContainer}>
-        {transcriptions.length === 0 ? (
+      <ScrollView style={styles.transcriptionArea} contentContainerStyle={styles.transcriptionContent}>
+        {!displayText && transcriptions.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>
               {!isPaused ? '말씀해 주세요...' : '대기 중...'}
             </Text>
           </View>
         ) : (
-          <FlatList
-            ref={flatListRef}
-            data={transcriptions}
-            renderItem={renderTranscriptionItem}
-            keyExtractor={(item) => item.id}
-            inverted={false}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.listContent}
-            ItemSeparatorComponent={() => <View style={styles.separator} />}
-          />
+          <>
+            {transcriptions.map((item) => (
+              <TranslationItem
+                key={item.id}
+                sourceLang={item.language}
+                targetLang=""
+                sourceText={item.text}
+                targetText=""
+                isLatest={false}
+              />
+            ))}
+            {displayText && (
+              <TranslationItem
+                key="live"
+                sourceLang={displayText.lang}
+                targetLang=""
+                sourceText={displayText.text}
+                targetText=""
+                isLatest={true}
+              />
+            )}
+          </>
         )}
-      </View>
+      </ScrollView>
 
       <View style={styles.buttonContainer}>
         {isPaused ? (
@@ -189,31 +234,27 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
-  translationContainer: {
+  transcriptionArea: {
     flex: 1,
     paddingHorizontal: SPACING.md,
   },
+  transcriptionContent: {
+    paddingTop: SPACING.xl,
+    paddingBottom: SPACING.md,
+  },
   emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
+    paddingVertical: SPACING.xxl,
   },
   emptyText: {
     fontSize: FONTS.sizes.lg,
     color: COLORS.textMuted,
   },
-  listContent: {
-    paddingVertical: SPACING.lg,
-  },
-  separator: {
-    height: SPACING.lg,
-  },
   buttonContainer: {
     paddingHorizontal: SPACING.xl,
+    paddingTop: SPACING.md,
+    paddingBottom: 80,
     alignItems: 'center',
-    position: 'absolute',
-    bottom: '28%',
-    alignSelf: 'center',
   },
   buttonRow: {
     flexDirection: 'row',
