@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useCallback, useRef } from 
 // ===== Qwen3-ASR 서버 설정 =====
 interface WebSocketConfig {
   lang: string;  // 언어 코드: 'auto', 'ko', 'en', 'zh', 'ja' 등
+  targetLang?: string;  // 번역 대상 언어 코드
 }
 
 interface WebSocketContextType {
@@ -63,6 +64,8 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 const startMessage = {
                   type: 'start',
                   lang: config.lang,
+                  targetLang: config.targetLang || '',
+                  translate: !!config.targetLang,
                 };
                 ws.send(JSON.stringify(startMessage));
                 resolve();

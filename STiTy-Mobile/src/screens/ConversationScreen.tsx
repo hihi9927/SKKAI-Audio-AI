@@ -35,6 +35,7 @@ interface TranscriptionEntry {
   id: string;
   language: string;
   text: string;
+  translatedText: string;
   timestamp: number;
 }
 
@@ -47,10 +48,24 @@ const langToCode = (lang: string): string => {
   return map[lang] || lang.toLowerCase().substring(0, 2);
 };
 
-const MAX_VISIBLE = 3;
+const MAX_VISIBLE = 2;
+
+// Google Translate 무료 API
+const translateText = async (text: string, sourceLang: string, targetLang: string): Promise<string> => {
+  try {
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceLang}&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    // 응답 형식: [[["translated text","source text",null,null,10]],null,"ko"]
+    return data[0].map((item: any) => item[0]).join('');
+  } catch (e) {
+    console.error('Translation failed:', e);
+    return '';
+  }
+};
 
 export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigation, route }) => {
-  const { myLang, initialMessage } = route.params;
+  const { myLang, targetLang, initialMessage } = route.params;
   const [displayText, setDisplayText] = useState<{ lang: string; text: string } | null>(null);
   const [transcriptions, setTranscriptions] = useState<TranscriptionEntry[]>([]);
   const [isPaused, setIsPaused] = useState(false);
@@ -74,6 +89,68 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
 
   const processedInitialRef = useRef(false);
   const entryIdRef = useRef(0);
+  // 이미 확정(commit)된 텍스트 길이를 추적
+  const committedLenRef = useRef(0);
+
+  const addTranscription = (lang: string, text: string, serverTranslation?: string) => {
+    entryIdRef.current += 1;
+    const id = entryIdRef.current.toString();
+    setTranscriptions((prev) => [...prev, {
+      id,
+      language: lang,
+      text,
+      translatedText: serverTranslation || '',
+      timestamp: Date.now(),
+    }].slice(-MAX_VISIBLE));
+
+    // 서버 번역이 없으면 클라이언트에서 번역 (partial 추출 문장용)
+    if (!serverTranslation) {
+      const tgtCode = targetLang.code;
+      if (tgtCode && tgtCode !== lang) {
+        translateText(text, lang, tgtCode).then((translated) => {
+          if (translated) {
+            setTranscriptions((prev) =>
+              prev.map((item) => item.id === id ? { ...item, translatedText: translated } : item)
+            );
+          }
+        });
+      }
+    }
+  };
+
+  // partial 텍스트에서 확정된 문장을 추출
+  // "안녕하세요. 제가 말을" → committedLen 이후 부분에서
+  // 온점+공백+텍스트 패턴이 있으면 온점까지를 확정
+  const extractCommittedSentences = (fullText: string, lang: string): string => {
+    const uncommitted = fullText.slice(committedLenRef.current);
+    // 온점/물음표/느낌표 뒤에 공백+텍스트가 있는 마지막 위치를 찾음
+    const sentenceEndPattern = /[.?!。？！]\s+/g;
+    let lastSplitIndex = -1;
+    let match;
+    while ((match = sentenceEndPattern.exec(uncommitted)) !== null) {
+      // 온점 뒤에 실제 텍스트가 더 있는 경우만 확정
+      const afterMatch = uncommitted.slice(match.index + match[0].length);
+      if (afterMatch.trim().length > 0) {
+        lastSplitIndex = match.index + match[0].length;
+      }
+    }
+
+    if (lastSplitIndex > 0) {
+      // 확정할 텍스트 (여러 문장일 수 있음)
+      const confirmedPart = uncommitted.slice(0, lastSplitIndex).trim();
+      // 개별 문장으로 분리해서 각각 추가
+      const sentences = confirmedPart.split(/(?<=[.?!。？！])\s+/).filter(s => s.trim());
+      for (const sentence of sentences) {
+        addTranscription(lang, sentence);
+      }
+      committedLenRef.current += lastSplitIndex;
+      // 남은 partial 텍스트
+      return uncommitted.slice(lastSplitIndex).trim();
+    }
+
+    // 확정할 게 없으면 uncommitted 전체가 partial
+    return uncommitted;
+  };
 
   const handleMessage = useRef((message: any) => {
     const text = (message.original || '').trim();
@@ -81,17 +158,21 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     const lang = langToCode(message.language || 'auto');
 
     if (message.type === 'partial') {
-      // 웹앱과 동일: original 텍스트를 그대로 표시
-      setDisplayText({ lang, text });
+      const remaining = extractCommittedSentences(text, lang);
+      if (remaining) {
+        setDisplayText({ lang, text: remaining });
+      } else {
+        setDisplayText(null);
+      }
     } else if (message.type === 'final') {
-      // final: 확정된 텍스트를 기록에 추가
-      entryIdRef.current += 1;
-      setTranscriptions((prev) => [...prev, {
-        id: entryIdRef.current.toString(),
-        language: lang,
-        text,
-        timestamp: Date.now(),
-      }].slice(-MAX_VISIBLE));
+      // final: 아직 확정 안 된 나머지 텍스트를 모두 확정
+      const uncommitted = text.slice(committedLenRef.current).trim();
+      if (uncommitted) {
+        // 서버 번역 결과가 있으면 사용
+        const serverTranslation = (message.translation || '').trim();
+        addTranscription(lang, uncommitted, serverTranslation || undefined);
+      }
+      committedLenRef.current = 0;
       setDisplayText(null);
     }
   });
@@ -138,7 +219,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     if (isPaused) {
       // 연결이 끊어졌으면 재연결
       if (!isConnectedRef.current) {
-        await connect({ lang: myLang.code });
+        await connect({ lang: myLang.code, targetLang: targetLang.code });
       }
       await startRecording();
       setIsPaused(false);
@@ -184,9 +265,9 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
               <TranslationItem
                 key={item.id}
                 sourceLang={item.language}
-                targetLang=""
+                targetLang={targetLang.code}
                 sourceText={item.text}
-                targetText=""
+                targetText={item.translatedText}
                 isLatest={false}
               />
             ))}
@@ -239,7 +320,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
   },
   transcriptionContent: {
-    paddingTop: SPACING.xl,
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingTop: SPACING.xxl,
     paddingBottom: SPACING.md,
   },
   emptyContainer: {

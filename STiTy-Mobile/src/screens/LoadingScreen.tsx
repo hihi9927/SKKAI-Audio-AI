@@ -79,6 +79,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ navigation, route 
       // Qwen3-ASR 서버에 연결
       await connect({
         lang: myLang.code,  // 'auto', 'ko', 'en' 등
+        targetLang: targetLang.code,  // 번역 대상 언어
       });
 
       // 연결 성공 → 녹음 시작, 첫 출력 대기

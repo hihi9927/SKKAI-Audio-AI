@@ -24,6 +24,8 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 import numpy as np
+import urllib.request
+import urllib.parse
 
 try:
     import websockets
@@ -114,6 +116,24 @@ def format_time(seconds: float) -> str:
     return f"{hours}:{minutes:02d}:{secs:05.2f}"
 
 
+def google_translate(text: str, source_lang: str, target_lang: str) -> str:
+    """Google Translate 무료 API를 사용한 번역 (서버 사이드, 저지연)"""
+    try:
+        url = (
+            f"https://translate.googleapis.com/translate_a/single"
+            f"?client=gtx&sl={source_lang}&tl={target_lang}&dt=t"
+            f"&q={urllib.parse.quote(text)}"
+        )
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            import json as _json
+            data = _json.loads(resp.read().decode("utf-8"))
+            return "".join(item[0] for item in data[0] if item[0])
+    except Exception as e:
+        logger.warning(f"Translation failed: {e}")
+        return ""
+
+
 class Qwen3ASRStreamingHandler:
     """WebSocket 연결 당 하나의 스트리밍 핸들러"""
 
@@ -131,6 +151,7 @@ class Qwen3ASRStreamingHandler:
         self.client_lang = "auto"
         self.client_translate = False
         self.client_polish = False
+        self.client_target_lang = ""  # 번역 대상 언어
 
         # 타임스탬프 추적
         self.segment_start_time = 0.0
@@ -211,13 +232,19 @@ class Qwen3ASRStreamingHandler:
 
         # 이미 보낸 텍스트와 다를 때만 final 전송
         if final_text and final_text != self.last_final_text:
+            # 번역 수행 (targetLang이 설정되어 있고 원본 언어와 다를 때)
+            translation = ""
+            if self.client_target_lang and self.client_target_lang != final_lang:
+                translation = google_translate(final_text, final_lang, self.client_target_lang)
+                logger.info(f"[translation] {final_lang}->{self.client_target_lang}: {translation[:50]}...")
+
             # WhisperLiveKit 호환 final 메시지
             await self.send_message(
                 "final",
                 start=format_time(self.segment_start_time),
                 end=format_time(self.current_time),
                 original=final_text,
-                translation="",  # Qwen3-ASR은 번역 미지원
+                translation=translation,
                 language=final_lang
             )
             self.last_final_text = final_text
@@ -248,9 +275,11 @@ class Qwen3ASRStreamingHandler:
                             self.client_lang = data.get("lang", "auto")
                             self.client_translate = data.get("translate", False)
                             self.client_polish = data.get("polish", False)
+                            self.client_target_lang = data.get("targetLang", "")
 
                             logger.info(f"Received start: lang={self.client_lang}, "
-                                       f"translate={self.client_translate}, polish={self.client_polish}")
+                                       f"translate={self.client_translate}, polish={self.client_polish}, "
+                                       f"targetLang={self.client_target_lang}")
 
                             self.init_streaming_state()
                             self.running = True
