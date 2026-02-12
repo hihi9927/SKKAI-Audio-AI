@@ -51,7 +51,7 @@ const langToCode = (lang: string): string => {
   return map[lang] || lang.toLowerCase().substring(0, 2);
 };
 
-const MAX_VISIBLE = 2;
+const MAX_VISIBLE = 4;
 
 // Google Translate 무료 API
 const translateText = async (text: string, sourceLang: string, targetLang: string): Promise<string> => {
@@ -348,6 +348,9 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
                 filtered = filtered.slice(-MAX_VISIBLE);
               }
 
+              // mode-0 + 문서 아이콘 꺼짐: 번역만 표시
+              const onlyTranslation = currentMode === 'mode-0' && !showFullTranscript;
+
               return filtered.map((item) => (
                 <TranslationItem
                   key={item.id}
@@ -356,6 +359,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
                   sourceText={item.text}
                   targetText={item.translatedText}
                   isLatest={false}
+                  translationOnly={onlyTranslation}
                 />
               ));
             })()}

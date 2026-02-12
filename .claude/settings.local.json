@@ -58,7 +58,9 @@
       "Bash(./gradlew.bat assembleDebug:*)",
       "Bash(bash -c \"cd d:/STiTy-main/STiTy-Mobile/android && bash gradlew assembleDebug\")",
       "Bash(bash -c \"cd d:/STiTy-main/STiTy-Mobile/android && bash gradlew assembleRelease\")",
-      "Bash(ssh-keygen:*)"
+      "Bash(ssh-keygen:*)",
+      "Bash(git -C \"d:/STiTy-main\" log --oneline -5)",
+      "Bash(git -C \"d:/STiTy-main\" status)"
     ],
     "deny": [],
     "ask": []

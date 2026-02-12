@@ -8,6 +8,7 @@ interface TranslationItemProps {
   sourceText: string;
   targetText: string;
   isLatest?: boolean;
+  translationOnly?: boolean;
 }
 
 export const TranslationItem: React.FC<TranslationItemProps> = ({
@@ -16,6 +17,7 @@ export const TranslationItem: React.FC<TranslationItemProps> = ({
   sourceText,
   targetText,
   isLatest = false,
+  translationOnly = false,
 }) => {
   const getLabelColor = (lang: string) => {
     switch (lang) {
@@ -46,15 +48,17 @@ export const TranslationItem: React.FC<TranslationItemProps> = ({
 
   return (
     <View style={[styles.container, isLatest && styles.latestContainer]}>
-      {/* Source language row (transcription) */}
-      <View style={styles.row}>
-        <Text style={[styles.langLabel, { color: getLabelColor(sourceLang) }]}>
-          {sourceLang}
-        </Text>
-        <Text style={styles.text}>
-          {sourceText}
-        </Text>
-      </View>
+      {/* Source language row (transcription) - translationOnly면 숨김 */}
+      {!translationOnly && (
+        <View style={styles.row}>
+          <Text style={[styles.langLabel, { color: getLabelColor(sourceLang) }]}>
+            {sourceLang}
+          </Text>
+          <Text style={styles.text}>
+            {sourceText}
+          </Text>
+        </View>
+      )}
 
       {/* Target language row - 번역이 있을 때만 표시 */}
       {targetText && targetText.length > 0 && (
@@ -73,7 +77,7 @@ export const TranslationItem: React.FC<TranslationItemProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: SPACING.md,
+    paddingVertical: SPACING.lg,
     paddingHorizontal: SPACING.md,
   },
   latestContainer: {
