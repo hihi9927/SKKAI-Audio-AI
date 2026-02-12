@@ -348,8 +348,8 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
                 filtered = filtered.slice(-MAX_VISIBLE);
               }
 
-              // mode-0 + 문서 아이콘 꺼짐: 번역만 표시
-              const onlyTranslation = currentMode === 'mode-0' && !showFullTranscript;
+              // mode-0, mode-1 + 문서 아이콘 꺼짐: 번역만 표시
+              const onlyTranslation = (currentMode === 'mode-0' || currentMode === 'mode-1') && !showFullTranscript;
 
               return filtered.map((item) => (
                 <TranslationItem

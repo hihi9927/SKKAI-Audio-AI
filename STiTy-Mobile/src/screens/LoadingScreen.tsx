@@ -33,8 +33,9 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ navigation, route 
   const { myLang, targetLang, mode } = route.params;
   const [status, setStatus] = useState<'connecting' | 'waiting' | 'error' | 'success'>('connecting');
   const [errorMessage, setErrorMessage] = useState<string>('');
-  const { connect, disconnect, sendAudio, lastMessage } = useWebSocketContext();
+  const { connect, disconnect, sendAudio, addMessageListener } = useWebSocketContext();
   const hasNavigated = useRef(false);
+  const firstMessageRef = useRef<any>(null);
 
   const { startRecording, stopRecording } = useAudioRecording({
     onAudioData: (audioData) => {
@@ -43,33 +44,33 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ navigation, route 
   });
 
   useEffect(() => {
+    // 리스너로 첫 메시지 감지 (lastMessage 잔존값 문제 방지)
+    const unsubscribe = addMessageListener((message: any) => {
+      if (
+        status === 'waiting' &&
+        !hasNavigated.current &&
+        (message.type === 'partial' || message.type === 'final')
+      ) {
+        firstMessageRef.current = message;
+        setStatus('success');
+        hasNavigated.current = true;
+
+        setTimeout(() => {
+          navigation.replace('Conversation', { myLang, targetLang, mode, initialMessage: firstMessageRef.current });
+        }, 300);
+      }
+    });
+
     connectToServer();
 
     return () => {
+      unsubscribe();
       if (!hasNavigated.current) {
         stopRecording();
         disconnect();
       }
     };
   }, []);
-
-  // 서버에서 첫 partial/final 메시지가 오면 대화 화면으로 전환
-  useEffect(() => {
-    if (
-      status === 'waiting' &&
-      !hasNavigated.current &&
-      lastMessage &&
-      (lastMessage.type === 'partial' || lastMessage.type === 'final')
-    ) {
-      setStatus('success');
-      hasNavigated.current = true;
-
-      setTimeout(() => {
-        // 첫 메시지를 ConversationScreen에 전달하여 즉시 표시
-        navigation.replace('Conversation', { myLang, targetLang, mode, initialMessage: lastMessage });
-      }, 300);
-    }
-  }, [lastMessage, status]);
 
   const connectToServer = async () => {
     setStatus('connecting');
