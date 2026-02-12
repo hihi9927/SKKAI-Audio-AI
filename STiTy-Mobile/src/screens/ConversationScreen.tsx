@@ -196,8 +196,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     const lang = langToCode(message.language || 'auto');
 
     if (message.type === 'partial') {
-      // partial: 미리보기로만 표시
-      setDisplayText({ lang, text });
+      // partial: 화면에 표시하지 않음 (서버가 final로 분절해서 보냄)
     } else if (message.type === 'final') {
       // final: 서버가 분절한 확정 문장 → 바로 표시
       const serverTranslation = (message.translation || '').trim();
