@@ -103,8 +103,9 @@ const styles = StyleSheet.create({
   },
   translatedText: {
     flex: 1,
-    fontSize: FONTS.sizes.md,
+    fontSize: FONTS.sizes.lg,
     color: COLORS.textPrimary,
+    fontWeight: '500',
     textAlign: 'center',
   },
   latestTranslatedText: {

@@ -7,13 +7,16 @@ import {
   ScrollView,
   Alert,
   AppState,
+  TouchableOpacity,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
+import * as Speech from 'expo-speech';
+import { Ionicons } from '@expo/vector-icons';
 import { TranslationItem } from '../components/TranslationItem';
 import { GradientButton } from '../components/GradientButton';
 import { COLORS, FONTS, SPACING } from '../constants/theme';
-import { Language } from '../constants/languages';
+import { Language, CONVERSATION_MODES } from '../constants/languages';
 import { useWebSocketContext } from '../context/WebSocketContext';
 import { useAudioRecording } from '../hooks/useAudioRecording';
 
@@ -66,9 +69,15 @@ const translateText = async (text: string, sourceLang: string, targetLang: strin
 
 export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigation, route }) => {
   const { myLang, targetLang, initialMessage } = route.params;
+  const [currentMode, setCurrentMode] = useState(route.params.mode);
   const [displayText, setDisplayText] = useState<{ lang: string; text: string } | null>(null);
   const [transcriptions, setTranscriptions] = useState<TranscriptionEntry[]>([]);
   const [isPaused, setIsPaused] = useState(false);
+  const [showFullTranscript, setShowFullTranscript] = useState(false);
+
+  // 모드에 따라 TTS 자동 설정: mode-1, mode-2는 TTS 켜짐
+  const isTTSEnabled = currentMode === 'mode-1' || currentMode === 'mode-2';
+  const isTTSEnabledRef = useRef(isTTSEnabled);
 
   const { isConnected, connect, sendAudio, disconnect, addMessageListener } = useWebSocketContext();
   const isConnectedRef = useRef(isConnected);
@@ -78,6 +87,24 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
   useEffect(() => { isConnectedRef.current = isConnected; }, [isConnected]);
   useEffect(() => { isPausedRef.current = isPaused; }, [isPaused]);
   useEffect(() => { sendAudioRef.current = sendAudio; }, [sendAudio]);
+  useEffect(() => { isTTSEnabledRef.current = isTTSEnabled; }, [isTTSEnabled]);
+
+  // 모드 ref (handleMessage에서 접근)
+  const modeRef = useRef(currentMode);
+  const myLangRef = useRef(myLang);
+  const targetLangRef = useRef(targetLang);
+
+  useEffect(() => { modeRef.current = currentMode; }, [currentMode]);
+
+  // TTS로 말한 텍스트를 기억 (마이크 피드백 방지)
+  const lastSpokenTextRef = useRef('');
+
+  const speakTranslation = (text: string, lang: string) => {
+    if (!isTTSEnabledRef.current || !text) return;
+    Speech.stop();
+    lastSpokenTextRef.current = text;
+    Speech.speak(text, { language: lang, rate: 1.0 });
+  };
 
   const { startRecording, stopRecording, isRecordingActive } = useAudioRecording({
     onAudioData: (audioData) => {
@@ -89,90 +116,92 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
 
   const processedInitialRef = useRef(false);
   const entryIdRef = useRef(0);
-  // 이미 확정(commit)된 텍스트 길이를 추적
-  const committedLenRef = useRef(0);
+
+  // 모드별 TTS 재생 판단
+  const shouldPlayTTS = (detectedLang: string): boolean => {
+    if (!isTTSEnabledRef.current) return false;
+    const currentMode = modeRef.current;
+    if (currentMode === 'mode-0') return false; // 0 이어폰: TTS 없음
+    if (currentMode === 'mode-1') {
+      // 1 이어폰: 상대 언어 감지 시에만 TTS (이어폰 착용자에게 내 언어로 번역)
+      return detectedLang !== myLangRef.current.code;
+    }
+    // mode-2: 양방향 TTS
+    return true;
+  };
+
+  // TTS 재생 시 대상 언어 결정
+  const getTTSTargetLang = (detectedLang: string): string => {
+    // 감지된 언어의 반대 언어로 번역 읽기
+    if (detectedLang === myLangRef.current.code) return targetLangRef.current.code;
+    return myLangRef.current.code;
+  };
+
+  // 번역 대상 언어 결정 (감지 언어 → 반대 언어)
+  const getTranslationTarget = (detectedLang: string): string => {
+    if (detectedLang === myLangRef.current.code) return targetLangRef.current.code;
+    return myLangRef.current.code;
+  };
 
   const addTranscription = (lang: string, text: string, serverTranslation?: string) => {
     entryIdRef.current += 1;
     const id = entryIdRef.current.toString();
+    const translTarget = getTranslationTarget(lang);
+
     setTranscriptions((prev) => [...prev, {
       id,
       language: lang,
       text,
       translatedText: serverTranslation || '',
       timestamp: Date.now(),
-    }].slice(-MAX_VISIBLE));
+    }]);
 
-    // 서버 번역이 없으면 클라이언트에서 번역 (partial 추출 문장용)
+    // 서버 번역이 있으면 TTS 재생 (모드 조건 확인)
+    if (serverTranslation && shouldPlayTTS(lang)) {
+      speakTranslation(serverTranslation, getTTSTargetLang(lang));
+    }
+
+    // 서버 번역이 없으면 클라이언트에서 번역
     if (!serverTranslation) {
-      const tgtCode = targetLang.code;
-      if (tgtCode && tgtCode !== lang) {
-        translateText(text, lang, tgtCode).then((translated) => {
+      if (translTarget && translTarget !== lang) {
+        translateText(text, lang, translTarget).then((translated) => {
           if (translated) {
             setTranscriptions((prev) =>
               prev.map((item) => item.id === id ? { ...item, translatedText: translated } : item)
             );
+            if (shouldPlayTTS(lang)) {
+              speakTranslation(translated, getTTSTargetLang(lang));
+            }
           }
         });
       }
     }
   };
 
-  // partial 텍스트에서 확정된 문장을 추출
-  // "안녕하세요. 제가 말을" → committedLen 이후 부분에서
-  // 온점+공백+텍스트 패턴이 있으면 온점까지를 확정
-  const extractCommittedSentences = (fullText: string, lang: string): string => {
-    const uncommitted = fullText.slice(committedLenRef.current);
-    // 온점/물음표/느낌표 뒤에 공백+텍스트가 있는 마지막 위치를 찾음
-    const sentenceEndPattern = /[.?!。？！]\s+/g;
-    let lastSplitIndex = -1;
-    let match;
-    while ((match = sentenceEndPattern.exec(uncommitted)) !== null) {
-      // 온점 뒤에 실제 텍스트가 더 있는 경우만 확정
-      const afterMatch = uncommitted.slice(match.index + match[0].length);
-      if (afterMatch.trim().length > 0) {
-        lastSplitIndex = match.index + match[0].length;
-      }
-    }
-
-    if (lastSplitIndex > 0) {
-      // 확정할 텍스트 (여러 문장일 수 있음)
-      const confirmedPart = uncommitted.slice(0, lastSplitIndex).trim();
-      // 개별 문장으로 분리해서 각각 추가
-      const sentences = confirmedPart.split(/(?<=[.?!。？！])\s+/).filter(s => s.trim());
-      for (const sentence of sentences) {
-        addTranscription(lang, sentence);
-      }
-      committedLenRef.current += lastSplitIndex;
-      // 남은 partial 텍스트
-      return uncommitted.slice(lastSplitIndex).trim();
-    }
-
-    // 확정할 게 없으면 uncommitted 전체가 partial
-    return uncommitted;
-  };
-
   const handleMessage = useRef((message: any) => {
     const text = (message.original || '').trim();
     if (!text) return;
+
+    // TTS로 말한 텍스트가 마이크에 잡힌 경우 무시
+    // 단어 단위로 50% 이상 겹치면 TTS 피드백으로 판단
+    if (lastSpokenTextRef.current) {
+      const spokenWords = lastSpokenTextRef.current.toLowerCase().split(/\s+/);
+      const incomingWords = text.toLowerCase().split(/\s+/);
+      const matchCount = spokenWords.filter(w => incomingWords.includes(w)).length;
+      if (spokenWords.length > 0 && matchCount / spokenWords.length >= 0.5) {
+        return;
+      }
+    }
+
     const lang = langToCode(message.language || 'auto');
 
     if (message.type === 'partial') {
-      const remaining = extractCommittedSentences(text, lang);
-      if (remaining) {
-        setDisplayText({ lang, text: remaining });
-      } else {
-        setDisplayText(null);
-      }
+      // partial: 미리보기로만 표시
+      setDisplayText({ lang, text });
     } else if (message.type === 'final') {
-      // final: 아직 확정 안 된 나머지 텍스트를 모두 확정
-      const uncommitted = text.slice(committedLenRef.current).trim();
-      if (uncommitted) {
-        // 서버 번역 결과가 있으면 사용
-        const serverTranslation = (message.translation || '').trim();
-        addTranscription(lang, uncommitted, serverTranslation || undefined);
-      }
-      committedLenRef.current = 0;
+      // final: 서버가 분절한 확정 문장 → 바로 표시
+      const serverTranslation = (message.translation || '').trim();
+      addTranscription(lang, text, serverTranslation || undefined);
       setDisplayText(null);
     }
   });
@@ -190,6 +219,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     return () => {
       stopRecording();
       disconnect();
+      Speech.stop();
     };
   }, []);
 
@@ -217,6 +247,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
 
   const handleStopResume = async () => {
     if (isPaused) {
+      setDisplayText(null);
       // 연결이 끊어졌으면 재연결
       if (!isConnectedRef.current) {
         await connect({ lang: myLang.code, targetLang: targetLang.code });
@@ -252,8 +283,50 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* 상단 좌측: 모드 변경 버튼 */}
+      <TouchableOpacity
+        style={styles.topLeftButton}
+        onPress={() => {
+          const idx = CONVERSATION_MODES.findIndex(m => m.id === currentMode);
+          const next = CONVERSATION_MODES[(idx + 1) % CONVERSATION_MODES.length];
+          setCurrentMode(next.id);
+          // 모드 변경 시 TTS 중단
+          Speech.stop();
+          lastSpokenTextRef.current = '';
+        }}
+      >
+        <Ionicons
+          name={currentMode === 'mode-0' ? 'phone-landscape-outline' : currentMode === 'mode-1' ? 'ear-outline' : 'headset-outline'}
+          size={22}
+          color={COLORS.textMuted}
+        />
+        <Text style={styles.modeLabel}>
+          {CONVERSATION_MODES.find(m => m.id === currentMode)?.name || ''}
+        </Text>
+      </TouchableOpacity>
+
+      {/* 상단 우측: 전체 대화 내역 보기 */}
+      <TouchableOpacity
+        style={styles.topRightButton}
+        onPress={() => setShowFullTranscript((prev) => !prev)}
+      >
+        <Ionicons
+          name={showFullTranscript ? 'document-text' : 'document-text-outline'}
+          size={28}
+          color={showFullTranscript ? COLORS.gradientMiddle : COLORS.textMuted}
+        />
+      </TouchableOpacity>
+
       <ScrollView style={styles.transcriptionArea} contentContainerStyle={styles.transcriptionContent}>
-        {!displayText && transcriptions.length === 0 ? (
+        {currentMode === 'mode-2' && !showFullTranscript ? (
+          // 모드 3 (2 이어폰): 최소 UI - 상태만 표시
+          <View style={styles.emptyContainer}>
+            <Ionicons name="headset-outline" size={48} color={COLORS.textMuted} />
+            <Text style={[styles.emptyText, { marginTop: SPACING.md }]}>
+              {!isPaused ? '대화 중...' : '대기 중...'}
+            </Text>
+          </View>
+        ) : !displayText && transcriptions.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>
               {!isPaused ? '말씀해 주세요...' : '대기 중...'}
@@ -261,26 +334,52 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
           </View>
         ) : (
           <>
-            {transcriptions.map((item) => (
-              <TranslationItem
-                key={item.id}
-                sourceLang={item.language}
-                targetLang={targetLang.code}
-                sourceText={item.text}
-                targetText={item.translatedText}
-                isLatest={false}
-              />
-            ))}
-            {displayText && (
-              <TranslationItem
-                key="live"
-                sourceLang={displayText.lang}
-                targetLang=""
-                sourceText={displayText.text}
-                targetText=""
-                isLatest={true}
-              />
-            )}
+            {(() => {
+              // 모드별 표시할 항목 필터링
+              let filtered = transcriptions;
+
+              if (currentMode === 'mode-1' && !showFullTranscript) {
+                // 모드 2 (1 이어폰): 내 언어(myLang) 감지 항목만 화면에 표시
+                // (상대방이 화면을 보므로, 내가 말한 것의 번역을 보여줌)
+                filtered = filtered.filter(item => item.language === myLang.code);
+              }
+
+              // 전체 내역이 아니면 최근 MAX_VISIBLE개만
+              if (!showFullTranscript) {
+                filtered = filtered.slice(-MAX_VISIBLE);
+              }
+
+              return filtered.map((item) => (
+                <TranslationItem
+                  key={item.id}
+                  sourceLang={item.language}
+                  targetLang={getTranslationTarget(item.language)}
+                  sourceText={item.text}
+                  targetText={item.translatedText}
+                  isLatest={false}
+                />
+              ));
+            })()}
+            {displayText && (() => {
+              // 모드별 실시간 partial 표시 조건
+              if (currentMode === 'mode-1' && !showFullTranscript) {
+                // 모드 2: 내 언어 감지 시에만 화면 표시
+                if (displayText.lang !== myLang.code) return null;
+              }
+              if (currentMode === 'mode-2' && !showFullTranscript) {
+                return null; // 모드 3: 최소 UI
+              }
+              return (
+                <TranslationItem
+                  key="live"
+                  sourceLang={displayText.lang}
+                  targetLang=""
+                  sourceText={displayText.text}
+                  targetText=""
+                  isLatest={true}
+                />
+              );
+            })()}
           </>
         )}
       </ScrollView>
@@ -314,6 +413,28 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  topLeftButton: {
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    zIndex: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: SPACING.sm,
+    gap: 6,
+  },
+  modeLabel: {
+    fontSize: FONTS.sizes.sm,
+    color: COLORS.textMuted,
+    fontWeight: '500',
+  },
+  topRightButton: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    zIndex: 10,
+    padding: SPACING.sm,
   },
   transcriptionArea: {
     flex: 1,

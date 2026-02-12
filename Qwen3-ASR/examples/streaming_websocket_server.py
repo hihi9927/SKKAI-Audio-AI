@@ -20,6 +20,8 @@ import argparse
 import asyncio
 import json
 import logging
+import re
+import traceback
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -66,13 +68,9 @@ class StreamingConfig:
 class AudioBuffer:
     """오디오 버퍼 관리"""
     sample_rate: int = SAMPLING_RATE
-    min_samples: int = field(init=False)
     buffer: np.ndarray = field(default_factory=lambda: np.array([], dtype=np.float32))
     total_samples: int = 0
     total_duration: float = 0.0  # 누적 시간 (초)
-
-    def __post_init__(self):
-        self.min_samples = int(self.sample_rate * 0.5)  # 최소 0.5초
 
     def add_pcm_bytes(self, data: bytes) -> None:
         """PCM s16le 바이트를 버퍼에 추가"""
@@ -116,6 +114,18 @@ def format_time(seconds: float) -> str:
     return f"{hours}:{minutes:02d}:{secs:05.2f}"
 
 
+LANG_NAME_TO_CODE = {
+    "Korean": "ko", "English": "en", "Japanese": "ja", "Chinese": "zh",
+    "Indonesian": "id", "Vietnamese": "vi", "Thai": "th",
+    "Spanish": "es", "French": "fr", "German": "de",
+}
+
+
+def lang_to_code(lang: str) -> str:
+    """언어 이름을 코드로 변환 (Korean -> ko)"""
+    return LANG_NAME_TO_CODE.get(lang, lang.lower()[:2])
+
+
 def google_translate(text: str, source_lang: str, target_lang: str) -> str:
     """Google Translate 무료 API를 사용한 번역 (서버 사이드, 저지연)"""
     try:
@@ -126,8 +136,7 @@ def google_translate(text: str, source_lang: str, target_lang: str) -> str:
         )
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
         with urllib.request.urlopen(req, timeout=3) as resp:
-            import json as _json
-            data = _json.loads(resp.read().decode("utf-8"))
+            data = json.loads(resp.read().decode("utf-8"))
             return "".join(item[0] for item in data[0] if item[0])
     except Exception as e:
         logger.warning(f"Translation failed: {e}")
@@ -145,12 +154,10 @@ class Qwen3ASRStreamingHandler:
         self.state = None
         self.running = False
         self.last_text = ""
-        self.last_final_text = ""  # 마지막 final로 보낸 텍스트
+        self.committed_len = 0  # final로 보낸 텍스트 길이
 
         # 클라이언트 옵션
         self.client_lang = "auto"
-        self.client_translate = False
-        self.client_polish = False
         self.client_target_lang = ""  # 번역 대상 언어
 
         # 타임스탬프 추적
@@ -179,40 +186,98 @@ class Qwen3ASRStreamingHandler:
         )
         self.audio_buffer.clear()
         self.last_text = ""
-        self.last_final_text = ""
+        self.committed_len = 0
         self.segment_start_time = 0.0
         self.current_time = 0.0
         logger.info("Streaming state initialized")
 
     async def process_audio_chunk(self, audio_data: bytes):
-        """오디오 청크 처리"""
+        """오디오 청크 처리 - partial 전송 + 문장 분절 시 final 커밋"""
         self.audio_buffer.add_pcm_bytes(audio_data)
         self.current_time = self.audio_buffer.total_duration
 
-        # 최소 청크 크기 이상 모였을 때만 처리
         while self.audio_buffer.has_enough(self.min_chunk_samples):
-            # chunk_size만큼 가져오거나, 버퍼에 있는 만큼만 가져오기
             samples_to_get = min(self.chunk_samples, len(self.audio_buffer.buffer))
             chunk = self.audio_buffer.get_chunk(samples_to_get)
 
             if chunk is not None and len(chunk) > 0:
-                # Transcribe 수행
                 self.asr.streaming_transcribe(chunk, self.state)
 
                 current_text = (self.state.text or "").strip()
                 current_lang = self.state.language or ""
 
-                # 텍스트가 변경되었을 때만 전송
-                if current_text and current_text != self.last_text:
-                    # WhisperLiveKit 호환 partial 메시지
+                if not current_text or current_text == self.last_text:
+                    continue
+                self.last_text = current_text
+
+                # committed_len 이후의 새 텍스트만 본다
+                uncommitted = current_text[self.committed_len:]
+                if not uncommitted.strip():
+                    continue
+
+                # 문장 분절: "문장. 다음문장..." → "문장." 확정
+                sentences_to_commit = []
+                remaining = uncommitted
+
+                while True:
+                    match = re.search(r'([.?!。？！])\s+', remaining)
+                    if not match:
+                        break
+                    after = remaining[match.end():]
+                    if after.strip():
+                        sentence = remaining[:match.end()].strip()
+                        if sentence:
+                            sentences_to_commit.append(sentence)
+                        remaining = after
+                    else:
+                        break
+
+                # 남은 텍스트가 온점으로 끝나면 확정 (... 제외)
+                remaining_stripped = remaining.strip()
+                if remaining_stripped and re.search(r'[.?!。？！]$', remaining_stripped) and not remaining_stripped.endswith('...'):
+                    sentences_to_commit.append(remaining_stripped)
+                    remaining = ""
+
+                # 확정 문장 → final 전송 (번역 포함)
+                lang_code = lang_to_code(current_lang)
+                for sentence in sentences_to_commit:
+                    translation = ""
+                    if self.client_target_lang and self.client_target_lang != lang_code:
+                        translation = google_translate(sentence, lang_code, self.client_target_lang)
                     await self.send_message(
-                        "partial",
-                        original=current_text,
-                        last_translation="",  # Qwen3-ASR은 번역 미지원
+                        "final",
+                        start=format_time(self.segment_start_time),
+                        end=format_time(self.current_time),
+                        original=sentence,
+                        translation=translation,
                         language=current_lang
                     )
-                    self.last_text = current_text
-                    logger.info(f"[partial] lang={current_lang} text={current_text[:50]}...")
+                    logger.info(f"[final] lang={current_lang} text={sentence}")
+
+                if sentences_to_commit:
+                    if remaining.strip():
+                        self.committed_len = len(current_text) - len(remaining)
+                    else:
+                        self.committed_len = len(current_text)
+
+                # 남은 텍스트 → partial 전송
+                if remaining.strip():
+                    await self.send_message(
+                        "partial",
+                        original=remaining.strip(),
+                        last_translation="",
+                        language=current_lang
+                    )
+                    logger.info(f"[partial] lang={current_lang} text={remaining.strip()[:50]}...")
+                elif not sentences_to_commit:
+                    # 분절 없으면 전체를 partial로
+                    await self.send_message(
+                        "partial",
+                        original=uncommitted.strip(),
+                        last_translation="",
+                        language=current_lang
+                    )
+                    logger.info(f"[partial] lang={current_lang} text={uncommitted.strip()[:50]}...")
 
     async def finish_streaming(self):
         """스트리밍 종료 처리"""
@@ -230,25 +295,25 @@ class Qwen3ASRStreamingHandler:
         final_text = (self.state.text or "").strip()
         final_lang = self.state.language or ""
 
-        # 이미 보낸 텍스트와 다를 때만 final 전송
-        if final_text and final_text != self.last_final_text:
-            # 번역 수행 (targetLang이 설정되어 있고 원본 언어와 다를 때)
+        # committed_len 이후의 남은 텍스트만 final로 전송
+        remaining = final_text[self.committed_len:].strip()
+        if remaining:
+            lang_code = lang_to_code(final_lang)
             translation = ""
-            if self.client_target_lang and self.client_target_lang != final_lang:
-                translation = google_translate(final_text, final_lang, self.client_target_lang)
+            if self.client_target_lang and self.client_target_lang != lang_code:
+                translation = google_translate(remaining, lang_code, self.client_target_lang)
                 logger.info(f"[translation] {final_lang}->{self.client_target_lang}: {translation[:50]}...")
 
-            # WhisperLiveKit 호환 final 메시지
             await self.send_message(
                 "final",
                 start=format_time(self.segment_start_time),
                 end=format_time(self.current_time),
-                original=final_text,
+                original=remaining,
                 translation=translation,
                 language=final_lang
             )
-            self.last_final_text = final_text
-            logger.info(f"[final] lang={final_lang} text={final_text}")
+            self.committed_len = len(final_text)
+            logger.info(f"[final] lang={final_lang} text={remaining}")
 
     async def handle(self):
         """WebSocket 연결 핸들링"""
@@ -273,12 +338,9 @@ class Qwen3ASRStreamingHandler:
                         if msg_type == "start":
                             # 클라이언트 옵션 저장
                             self.client_lang = data.get("lang", "auto")
-                            self.client_translate = data.get("translate", False)
-                            self.client_polish = data.get("polish", False)
                             self.client_target_lang = data.get("targetLang", "")
 
                             logger.info(f"Received start: lang={self.client_lang}, "
-                                       f"translate={self.client_translate}, polish={self.client_polish}, "
                                        f"targetLang={self.client_target_lang}")
 
                             self.init_streaming_state()
@@ -307,7 +369,6 @@ class Qwen3ASRStreamingHandler:
             logger.info("Connection closed by client")
         except Exception as e:
             logger.error(f"Error in handler: {e}")
-            import traceback
             traceback.print_exc()
         finally:
             if self.running:

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import {
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LANGUAGES, Language, CONVERSATION_MODES, formatLanguageDisplay, formatLanguageAs } from '../constants/languages';
 
 type RootStackParamList = {
@@ -26,6 +27,12 @@ type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'H
 interface HomeScreenProps {
   navigation: HomeScreenNavigationProp;
 }
+
+const STORAGE_KEYS = {
+  MY_LANG: 'stity_myLang',
+  TARGET_LANG: 'stity_targetLang',
+  MODE: 'stity_mode',
+};
 
 // 그라데이션 텍스트 컴포넌트
 const GradientText: React.FC<{ text: string; style?: any }> = ({ text, style }) => {
@@ -107,13 +114,113 @@ const LanguagePickerModal: React.FC<{
   );
 };
 
+// 대화 형식 선택 모달
+const ModePickerModal: React.FC<{
+  visible: boolean;
+  onClose: () => void;
+  onSelect: (mode: typeof CONVERSATION_MODES[0]) => void;
+  selectedId: string;
+}> = ({ visible, onClose, onSelect, selectedId }) => {
+  return (
+    <Modal
+      animationType="slide"
+      transparent
+      visible={visible}
+      onRequestClose={onClose}
+    >
+      <View style={modalStyles.overlay}>
+        <View style={modalStyles.content}>
+          <View style={modalStyles.header}>
+            <Text style={modalStyles.title}>대화 형식 선택</Text>
+            <TouchableOpacity onPress={onClose} style={modalStyles.closeBtn}>
+              <Text style={modalStyles.closeText}>✕</Text>
+            </TouchableOpacity>
+          </View>
+          <FlatList
+            data={CONVERSATION_MODES}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={[
+                  modalStyles.item,
+                  item.id === selectedId && modalStyles.itemSelected,
+                ]}
+                onPress={() => { onSelect(item); onClose(); }}
+              >
+                <Text style={[
+                  modalStyles.itemText,
+                  item.id === selectedId && modalStyles.itemTextSelected,
+                ]}>
+                  {item.name}
+                </Text>
+                <Text style={modalStyles.itemDesc}>
+                  {item.description}
+                </Text>
+              </TouchableOpacity>
+            )}
+            ItemSeparatorComponent={() => <View style={modalStyles.sep} />}
+          />
+        </View>
+      </View>
+    </Modal>
+  );
+};
+
 export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const [myLanguage, setMyLanguage] = useState<Language>(LANGUAGES[0]);
   const [targetLanguage, setTargetLanguage] = useState<Language>(LANGUAGES[7]);  // Spanish
-  const [conversationMode] = useState(CONVERSATION_MODES[0]);
+  const [conversationMode, setConversationMode] = useState(CONVERSATION_MODES[0]);
+  const [loaded, setLoaded] = useState(false);
 
   const [myLangModal, setMyLangModal] = useState(false);
   const [targetLangModal, setTargetLangModal] = useState(false);
+  const [modeModal, setModeModal] = useState(false);
+
+  // 저장된 설정 불러오기
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const [savedMyLang, savedTargetLang, savedMode] = await Promise.all([
+          AsyncStorage.getItem(STORAGE_KEYS.MY_LANG),
+          AsyncStorage.getItem(STORAGE_KEYS.TARGET_LANG),
+          AsyncStorage.getItem(STORAGE_KEYS.MODE),
+        ]);
+
+        if (savedMyLang) {
+          const found = LANGUAGES.find(l => l.code === savedMyLang);
+          if (found) setMyLanguage(found);
+        }
+        if (savedTargetLang) {
+          const found = LANGUAGES.find(l => l.code === savedTargetLang);
+          if (found) setTargetLanguage(found);
+        }
+        if (savedMode) {
+          const found = CONVERSATION_MODES.find(m => m.id === savedMode);
+          if (found) setConversationMode(found);
+        }
+      } catch (e) {
+        console.error('Failed to load settings:', e);
+      }
+      setLoaded(true);
+    };
+    loadSettings();
+  }, []);
+
+  // 설정 변경 시 저장
+  const updateMyLanguage = (lang: Language) => {
+    setMyLanguage(lang);
+    AsyncStorage.setItem(STORAGE_KEYS.MY_LANG, lang.code);
+  };
+
+  const updateTargetLanguage = (lang: Language) => {
+    setTargetLanguage(lang);
+    AsyncStorage.setItem(STORAGE_KEYS.TARGET_LANG, lang.code);
+  };
+
+  const updateMode = (mode: typeof CONVERSATION_MODES[0]) => {
+    setConversationMode(mode);
+    AsyncStorage.setItem(STORAGE_KEYS.MODE, mode.id);
+  };
 
   const handleStart = () => {
     if (myLanguage.code === targetLanguage.code) {
@@ -126,6 +233,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       mode: conversationMode.id,
     });
   };
+
+  if (!loaded) return null;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -170,9 +279,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           {/* 대화 형식 */}
           <View style={styles.row}>
             <Text style={styles.label}>대화 형식</Text>
-            <View style={styles.valueBox}>
+            <TouchableOpacity
+              style={styles.valueBox}
+              onPress={() => setModeModal(true)}
+            >
               <Text style={styles.valueText}>{conversationMode.name}</Text>
-            </View>
+              <Text style={styles.arrow}>⌵</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -195,7 +308,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       <LanguagePickerModal
         visible={myLangModal}
         onClose={() => setMyLangModal(false)}
-        onSelect={setMyLanguage}
+        onSelect={updateMyLanguage}
         selectedCode={myLanguage.code}
         excludeCode={targetLanguage.code}
         title="나의 언어 선택"
@@ -203,11 +316,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       <LanguagePickerModal
         visible={targetLangModal}
         onClose={() => setTargetLangModal(false)}
-        onSelect={setTargetLanguage}
+        onSelect={updateTargetLanguage}
         selectedCode={targetLanguage.code}
         excludeCode={myLanguage.code}
         title="상대 언어 선택"
         displayAsLangCode={myLanguage.code}
+      />
+      <ModePickerModal
+        visible={modeModal}
+        onClose={() => setModeModal(false)}
+        onSelect={updateMode}
+        selectedId={conversationMode.id}
       />
     </SafeAreaView>
   );
@@ -340,6 +459,11 @@ const modalStyles = StyleSheet.create({
   itemTextSelected: {
     color: '#4776E6',
     fontWeight: '600',
+  },
+  itemDesc: {
+    fontSize: 13,
+    color: '#9CA3AF',
+    marginTop: 4,
   },
   sep: {
     height: 1,
