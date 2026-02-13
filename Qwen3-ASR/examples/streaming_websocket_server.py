@@ -21,6 +21,7 @@ import asyncio
 import json
 import logging
 import re
+import time
 import traceback
 from dataclasses import dataclass, field
 from typing import Optional
@@ -163,6 +164,7 @@ class Qwen3ASRStreamingHandler:
         self.running = False
         self.last_text = ""
         self.committed_len = 0
+        self.committed_prefix = ""  # committed_len validity tracking
         self.last_text_lang = ""
 
         # 클라이언트 옵션
@@ -172,6 +174,12 @@ class Qwen3ASRStreamingHandler:
         # 타임스탬프 추적
         self.segment_start_time = 0.0
         self.current_time = 0.0
+        # Commit policy: if no new partial arrives for timeout, commit tail.
+        self.partial_commit_timeout_sec = 2.0
+        self.last_partial_wall_ts = 0.0
+        self.partial_watchdog_interval_sec = 0.1
+        self.partial_watchdog_task = None
+        self.flush_lock = asyncio.Lock()
 
         # 샘플 수 계산
         self.chunk_samples = int(config.chunk_size_sec * SAMPLING_RATE)
@@ -196,167 +204,194 @@ class Qwen3ASRStreamingHandler:
         self.audio_buffer.clear()
         self.last_text = ""
         self.committed_len = 0
+        self.committed_prefix = ""
         self.last_text_lang = ""
         self.segment_start_time = 0.0
         self.current_time = 0.0
+        self.last_partial_wall_ts = 0.0
         logger.info("Streaming state initialized")
 
-    async def process_audio_chunk(self, audio_data: bytes):
-        """오디오 청크 처리 - partial 그대로 전송 + 문장 감지 시 final 추가 전송"""
-        self.audio_buffer.add_pcm_bytes(audio_data)
-        self.current_time = self.audio_buffer.total_duration
+    async def _start_partial_watchdog(self):
+        self._stop_partial_watchdog()
+        self.partial_watchdog_task = asyncio.create_task(self._partial_watchdog_loop())
 
-        while self.audio_buffer.has_enough(self.min_chunk_samples):
-            samples_to_get = min(self.chunk_samples, len(self.audio_buffer.buffer))
-            chunk = self.audio_buffer.get_chunk(samples_to_get)
+    def _stop_partial_watchdog(self):
+        if self.partial_watchdog_task and not self.partial_watchdog_task.done():
+            self.partial_watchdog_task.cancel()
+        self.partial_watchdog_task = None
 
-            if chunk is not None and len(chunk) > 0:
-                self.asr.streaming_transcribe(chunk, self.state)
-
-                current_text = (self.state.text or "").strip()
-                current_lang = self.state.language or ""
-
-                if not current_text:
-                    continue
-
-                if current_text == self.last_text:
-                    continue
-
-                self.last_text = current_text
-                self.last_text_lang = current_lang
-
-                # 1) partial: 항상 전체 누적 텍스트를 그대로 보낸다
-                await self.send_message(
-                    "partial",
-                    original=current_text,
-                    last_translation=""
-                )
-                logger.info(f"[partial] text={current_text[:80]}...")
-
-                # 2) 문장 분절: committed_len 이후에서 확정된 문장 찾기
-                uncommitted = current_text[self.committed_len:]
-                sentences_to_commit = []
-                remaining = uncommitted
-
-                # "문장. 다음문장..." → "문장." 확정
-                while True:
-                    match = re.search(r'[.?!。？！]\s+', remaining)
-                    if not match:
-                        break
-                    after = remaining[match.end():]
-                    if after.strip():
-                        sentence = remaining[:match.end()].strip()
-                        if sentence:
-                            sentences_to_commit.append(sentence)
-                        remaining = after
-                    else:
-                        break
-
-                # 확정 문장 → final 전송 (번역 + 언어 감지)
-                if sentences_to_commit:
-                    for sentence in sentences_to_commit:
-                        # 1차: target_lang으로 번역 시도 (언어 감지 겸용)
-                        translation, detected_lang = google_translate(sentence, self.client_target_lang)
-                        logger.info(f"[translate] sentence='{sentence}' tl={self.client_target_lang} -> detected={detected_lang} translation='{translation}' client_lang={self.client_lang}")
-                        # 감지된 언어가 target_lang이면 → 반대 방향(myLang)으로 번역
-                        if detected_lang == self.client_target_lang:
-                            translation, _ = google_translate(sentence, self.client_lang)
-                            logger.info(f"[translate-flip] tl={self.client_lang} -> translation='{translation}'")
-                        final_lang = detected_lang or lang_to_code(current_lang)
-                        logger.info(f"[final] lang={final_lang} translation='{translation}' original='{sentence}'")
-                        await self.send_message(
-                            "final",
-                            start=format_time(self.segment_start_time),
-                            end=format_time(self.current_time),
-                            original=sentence,
-                            translation=translation,
-                            language=final_lang
-                        )
-
-                    if remaining.strip():
-                        self.committed_len = len(current_text) - len(remaining)
-                    else:
-                        self.committed_len = len(current_text)
-
-    async def finish_streaming(self):
-        """스트리밍 종료 처리"""
-        if self.state is None:
+    async def _partial_watchdog_loop(self):
+        try:
+            while self.running:
+                await asyncio.sleep(self.partial_watchdog_interval_sec)
+                await self.maybe_flush_by_partial_timeout(trigger="watchdog")
+        except asyncio.CancelledError:
             return
 
-        # 버퍼에 남은 오디오 처리
-        remaining = self.audio_buffer.get_all()
-        if len(remaining) > 0:
-            self.asr.streaming_transcribe(remaining, self.state)
+    async def maybe_flush_by_partial_timeout(self, trigger: str):
+        if not self.running or self.state is None:
+            return
+        if self.last_partial_wall_ts <= 0:
+            return
+        idle_elapsed = time.monotonic() - self.last_partial_wall_ts
+        if idle_elapsed < self.partial_commit_timeout_sec:
+            return
 
-        # 최종 결과 가져오기
-        self.asr.finish_streaming_transcribe(self.state)
+        await self.flush_uncommitted(reason=f"partial-timeout:{trigger}")
+        # Prevent repeated flush loops until a new partial arrives.
+        self.last_partial_wall_ts = 0.0
 
-        final_text = (self.state.text or "").strip()
-        final_lang = self.state.language or ""
+    async def flush_uncommitted(self, force=False, reason="partial-timeout"):
+        async with self.flush_lock:
+            current_text = (self.state.text or "").strip() if self.state else ""
+            current_lang = self.last_text_lang or ""
+            uncommitted = current_text[self.committed_len:].strip()
+            if not uncommitted:
+                return
+            if not force and len(uncommitted) < 2:
+                logger.info(f"[timeout-skip] reason={reason} too short: '{uncommitted}'")
+                return
 
-        # committed_len 이후의 남은 텍스트만 final로 전송
-        uncommitted = final_text[self.committed_len:].strip()
-        if uncommitted:
             translation, detected_lang = google_translate(uncommitted, self.client_target_lang)
+            logger.info(f"[translate-timeout] reason={reason} sentence='{uncommitted}' tl={self.client_target_lang} -> detected={detected_lang} translation='{translation}'")
             if detected_lang == self.client_target_lang:
                 translation, _ = google_translate(uncommitted, self.client_lang)
+                logger.info(f"[translate-timeout-flip] reason={reason} tl={self.client_lang} -> translation='{translation}'")
 
+            final_lang = detected_lang or lang_to_code(current_lang)
+            logger.info(f"[final-timeout] reason={reason} lang={final_lang} translation='{translation}' original='{uncommitted}'")
             await self.send_message(
                 "final",
                 start=format_time(self.segment_start_time),
                 end=format_time(self.current_time),
                 original=uncommitted,
                 translation=translation,
-                language=detected_lang or lang_to_code(final_lang)
+                language=final_lang,
             )
-            logger.info(f"[final] detected={detected_lang} text={uncommitted}")
+            self.committed_len = len(current_text)
+            self.committed_prefix = current_text
+
+    async def process_audio_chunk(self, audio_data: bytes):
+        self.audio_buffer.add_pcm_bytes(audio_data)
+        self.current_time = self.audio_buffer.total_duration
+        # VAD path intentionally disabled. Commit is based on partial timeout only.
+
+        while self.audio_buffer.has_enough(self.min_chunk_samples):
+            samples_to_get = min(self.chunk_samples, len(self.audio_buffer.buffer))
+            chunk = self.audio_buffer.get_chunk(samples_to_get)
+            if chunk is None or len(chunk) == 0:
+                continue
+
+            self.asr.streaming_transcribe(chunk, self.state)
+
+            current_text = (self.state.text or "").strip()
+            current_lang = self.state.language or ""
+            if not current_text or current_text == self.last_text:
+                continue
+
+            self.last_text = current_text
+            self.last_text_lang = current_lang
+
+            await self.send_message(
+                "partial",
+                original=current_text,
+                last_translation=""
+            )
+            logger.info(f"[partial] text={current_text[:80]}...")
+            self.last_partial_wall_ts = time.monotonic()
+
+            uncommitted = current_text[self.committed_len:]
+            sentences_to_commit = []
+            remaining = uncommitted
+
+            while True:
+                match = re.search(r"[.?!\u3002\uff1f\uff01]\s+", remaining)
+                if not match:
+                    break
+                after = remaining[match.end():]
+                if after.strip():
+                    sentence = remaining[:match.end()].strip()
+                    if sentence:
+                        sentences_to_commit.append(sentence)
+                    remaining = after
+                else:
+                    break
+
+            if sentences_to_commit:
+                for sentence in sentences_to_commit:
+                    translation, detected_lang = google_translate(sentence, self.client_target_lang)
+                    logger.info(f"[translate-sentence] sentence='{sentence}' tl={self.client_target_lang} -> detected={detected_lang} translation='{translation}'")
+                    if detected_lang == self.client_target_lang:
+                        translation, _ = google_translate(sentence, self.client_lang)
+                        logger.info(f"[translate-sentence-flip] tl={self.client_lang} -> translation='{translation}'")
+                    final_lang = detected_lang or lang_to_code(current_lang)
+                    await self.send_message(
+                        "final",
+                        start=format_time(self.segment_start_time),
+                        end=format_time(self.current_time),
+                        original=sentence,
+                        translation=translation,
+                        language=final_lang
+                    )
+                    logger.info(f"[final-sentence] lang={final_lang} text={sentence}")
+
+                if remaining.strip():
+                    self.committed_len = len(current_text) - len(remaining)
+                else:
+                    self.committed_len = len(current_text)
+                self.committed_prefix = current_text[:self.committed_len]
+
+        # Also check from audio path; watchdog handles idle periods.
+        await self.maybe_flush_by_partial_timeout(trigger="audio")
+
+    async def finish_streaming(self):
+        if self.state is None:
+            return
+
+        remaining = self.audio_buffer.get_all()
+        if len(remaining) > 0:
+            self.asr.streaming_transcribe(remaining, self.state)
+
+        self.asr.finish_streaming_transcribe(self.state)
+        await self.flush_uncommitted(force=True, reason="finish")
 
     async def handle(self):
-        """WebSocket 연결 핸들링"""
         try:
             remote_addr = self.websocket.remote_address
             logger.info(f"New connection from {remote_addr}")
-
-            # Hello 메시지 전송
             await self.send_message("hello", message="Qwen3-ASR Streaming Server")
 
             async for message in self.websocket:
                 if isinstance(message, bytes):
-                    # 바이너리 데이터 = 오디오
                     if self.running:
                         await self.process_audio_chunk(message)
                 else:
-                    # 텍스트 데이터 = JSON 명령
                     try:
                         data = json.loads(message)
                         msg_type = data.get("type", "")
 
                         if msg_type == "start":
-                            # 클라이언트 옵션 저장
                             self.client_lang = data.get("lang", "auto")
                             self.client_target_lang = data.get("targetLang", "")
-
-                            logger.info(f"Received start: lang={self.client_lang}, "
-                                       f"targetLang={self.client_target_lang}")
+                            logger.info(f"Received start: lang={self.client_lang}, targetLang={self.client_target_lang}")
 
                             self.init_streaming_state()
                             self.running = True
-
-                            # Ready 메시지 전송
+                            await self._start_partial_watchdog()
                             await self.send_message("ready", message="Ready to receive audio")
 
                         elif msg_type == "stop" or msg_type == "finish":
                             logger.info(f"Received {msg_type} command")
-                            await self.finish_streaming()
                             self.running = False
+                            self._stop_partial_watchdog()
+                            await self.finish_streaming()
 
-                            # finish의 경우 연결 유지, stop의 경우 종료
                             if msg_type == "stop":
                                 break
 
-                            # finish 후 새 세션 준비
                             self.init_streaming_state()
                             self.running = True
+                            await self._start_partial_watchdog()
 
                     except json.JSONDecodeError:
                         logger.warning(f"Invalid JSON: {message[:100]}")
@@ -367,7 +402,10 @@ class Qwen3ASRStreamingHandler:
             logger.error(f"Error in handler: {e}")
             traceback.print_exc()
         finally:
-            if self.running:
+            was_running = self.running
+            self.running = False
+            self._stop_partial_watchdog()
+            if was_running:
                 await self.finish_streaming()
             logger.info("Connection closed")
 
