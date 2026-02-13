@@ -18,17 +18,17 @@ Client protocol (WhisperLiveKit app compatible):
 
 import argparse
 import asyncio
+import contextlib
 import json
 import logging
 import re
 import time
 import traceback
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 import numpy as np
-import urllib.request
-import urllib.parse
+import aiohttp
 
 try:
     import websockets
@@ -60,55 +60,12 @@ class StreamingConfig:
 
     # 스트리밍 설정
     chunk_size_sec: float = 2.0  # 한 번에 처리할 오디오 길이 (초)
-    min_chunk_size_sec: float = 0.5  # 최소 처리 단위 (초)
     unfixed_chunk_num: int = 2
     unfixed_token_num: int = 5
 
     # 서버 설정
     host: str = "0.0.0.0"
     port: int = 8765
-
-
-@dataclass
-class AudioBuffer:
-    """오디오 버퍼 관리"""
-    sample_rate: int = SAMPLING_RATE
-    buffer: np.ndarray = field(default_factory=lambda: np.array([], dtype=np.float32))
-    total_samples: int = 0
-    total_duration: float = 0.0  # 누적 시간 (초)
-
-    def add_pcm_bytes(self, data: bytes) -> None:
-        """PCM s16le 바이트를 버퍼에 추가"""
-        if len(data) == 0:
-            return
-        pcm_array = np.frombuffer(data, dtype=np.int16).astype(np.float32) / 32768.0
-        self.buffer = np.concatenate([self.buffer, pcm_array])
-        self.total_samples += len(pcm_array)
-        self.total_duration = self.total_samples / self.sample_rate
-
-    def get_chunk(self, num_samples: int) -> Optional[np.ndarray]:
-        """버퍼에서 청크 가져오기"""
-        if len(self.buffer) < num_samples:
-            return None
-        chunk = self.buffer[:num_samples].copy()
-        self.buffer = self.buffer[num_samples:]
-        return chunk
-
-    def get_all(self) -> np.ndarray:
-        """버퍼의 모든 데이터 가져오기"""
-        chunk = self.buffer.copy()
-        self.buffer = np.array([], dtype=np.float32)
-        return chunk
-
-    def has_enough(self, min_samples: int) -> bool:
-        """최소 샘플 수 이상 있는지 확인"""
-        return len(self.buffer) >= min_samples
-
-    def clear(self) -> None:
-        """버퍼 초기화"""
-        self.buffer = np.array([], dtype=np.float32)
-        self.total_samples = 0
-        self.total_duration = 0.0
 
 
 def format_time(seconds: float) -> str:
@@ -131,20 +88,27 @@ def lang_to_code(lang: str) -> str:
     return LANG_NAME_TO_CODE.get(lang, lang.lower()[:2])
 
 
-def google_translate(text: str, target_lang: str) -> tuple[str, str]:
-    """Google Translate 무료 API를 사용한 번역 + 언어 감지 (sl=auto)
+async def google_translate_async(session: aiohttp.ClientSession, text: str, target_lang: str) -> tuple[str, str]:
+    """Async Google Translate call.
     Returns: (translated_text, detected_source_lang_code)
     """
+    if not text.strip() or not target_lang:
+        return "", ""
     try:
-        url = (
-            f"https://translate.googleapis.com/translate_a/single"
-            f"?client=gtx&sl=auto&tl={target_lang}&dt=t"
-            f"&q={urllib.parse.quote(text)}"
-        )
-        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-        with urllib.request.urlopen(req, timeout=3) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            translated = "".join(item[0] for item in data[0] if item[0])
+        params = {
+            "client": "gtx",
+            "sl": "auto",
+            "tl": target_lang,
+            "dt": "t",
+            "q": text,
+        }
+        async with session.get(
+            "https://translate.googleapis.com/translate_a/single",
+            params=params,
+            headers={"User-Agent": "Mozilla/5.0"},
+        ) as resp:
+            data = await resp.json(content_type=None)
+            translated = "".join(item[0] for item in data[0] if item and item[0])
             detected_lang = data[2] if len(data) > 2 else ""
             return translated, detected_lang
     except Exception as e:
@@ -159,7 +123,6 @@ class Qwen3ASRStreamingHandler:
         self.websocket = websocket
         self.asr = asr_model
         self.config = config
-        self.audio_buffer = AudioBuffer()
         self.state = None
         self.running = False
         self.last_text = ""
@@ -180,10 +143,8 @@ class Qwen3ASRStreamingHandler:
         self.partial_watchdog_interval_sec = 0.1
         self.partial_watchdog_task = None
         self.flush_lock = asyncio.Lock()
-
-        # 샘플 수 계산
-        self.chunk_samples = int(config.chunk_size_sec * SAMPLING_RATE)
-        self.min_chunk_samples = int(config.min_chunk_size_sec * SAMPLING_RATE)
+        self.asr_lock = asyncio.Lock()
+        self.http_session: Optional[aiohttp.ClientSession] = None
 
     async def send_message(self, msg_type: str, **kwargs):
         """JSON 메시지 전송"""
@@ -201,7 +162,6 @@ class Qwen3ASRStreamingHandler:
             unfixed_token_num=self.config.unfixed_token_num,
             chunk_size_sec=self.config.chunk_size_sec,
         )
-        self.audio_buffer.clear()
         self.last_text = ""
         self.committed_len = 0
         self.committed_prefix = ""
@@ -228,6 +188,14 @@ class Qwen3ASRStreamingHandler:
         except asyncio.CancelledError:
             return
 
+    async def _asr_streaming_transcribe(self, chunk: np.ndarray):
+        async with self.asr_lock:
+            await asyncio.to_thread(self.asr.streaming_transcribe, chunk, self.state)
+
+    async def _asr_finish_streaming(self):
+        async with self.asr_lock:
+            await asyncio.to_thread(self.asr.finish_streaming_transcribe, self.state)
+
     async def maybe_flush_by_partial_timeout(self, trigger: str):
         if not self.running or self.state is None:
             return
@@ -243,8 +211,9 @@ class Qwen3ASRStreamingHandler:
 
     async def flush_uncommitted(self, force=False, reason="partial-timeout"):
         async with self.flush_lock:
-            current_text = (self.state.text or "").strip() if self.state else ""
-            current_lang = self.last_text_lang or ""
+            async with self.asr_lock:
+                current_text = (self.state.text or "").strip() if self.state else ""
+                current_lang = self.last_text_lang or ""
             uncommitted = current_text[self.committed_len:].strip()
             if not uncommitted:
                 return
@@ -252,10 +221,10 @@ class Qwen3ASRStreamingHandler:
                 logger.info(f"[timeout-skip] reason={reason} too short: '{uncommitted}'")
                 return
 
-            translation, detected_lang = google_translate(uncommitted, self.client_target_lang)
+            translation, detected_lang = await google_translate_async(self.http_session, uncommitted, self.client_target_lang)
             logger.info(f"[translate-timeout] reason={reason} sentence='{uncommitted}' tl={self.client_target_lang} -> detected={detected_lang} translation='{translation}'")
             if detected_lang == self.client_target_lang:
-                translation, _ = google_translate(uncommitted, self.client_lang)
+                translation, _ = await google_translate_async(self.http_session, uncommitted, self.client_lang)
                 logger.info(f"[translate-timeout-flip] reason={reason} tl={self.client_lang} -> translation='{translation}'")
 
             final_lang = detected_lang or lang_to_code(current_lang)
@@ -272,74 +241,74 @@ class Qwen3ASRStreamingHandler:
             self.committed_prefix = current_text
 
     async def process_audio_chunk(self, audio_data: bytes):
-        self.audio_buffer.add_pcm_bytes(audio_data)
-        self.current_time = self.audio_buffer.total_duration
-        # VAD path intentionally disabled. Commit is based on partial timeout only.
+        if not audio_data:
+            return
 
-        while self.audio_buffer.has_enough(self.min_chunk_samples):
-            samples_to_get = min(self.chunk_samples, len(self.audio_buffer.buffer))
-            chunk = self.audio_buffer.get_chunk(samples_to_get)
-            if chunk is None or len(chunk) == 0:
-                continue
+        chunk = np.frombuffer(audio_data, dtype=np.int16).astype(np.float32) / 32768.0
+        if chunk.size == 0:
+            return
 
-            self.asr.streaming_transcribe(chunk, self.state)
+        # No min_chunk gate: process every incoming chunk immediately.
+        self.current_time += chunk.size / SAMPLING_RATE
+        await self._asr_streaming_transcribe(chunk)
 
-            current_text = (self.state.text or "").strip()
-            current_lang = self.state.language or ""
-            if not current_text or current_text == self.last_text:
-                continue
+        current_text = (self.state.text or "").strip()
+        current_lang = self.state.language or ""
+        if not current_text or current_text == self.last_text:
+            await self.maybe_flush_by_partial_timeout(trigger="audio")
+            return
 
-            self.last_text = current_text
-            self.last_text_lang = current_lang
+        self.last_text = current_text
+        self.last_text_lang = current_lang
 
-            await self.send_message(
-                "partial",
-                original=current_text,
-                last_translation=""
-            )
-            logger.info(f"[partial] text={current_text[:80]}...")
-            self.last_partial_wall_ts = time.monotonic()
+        await self.send_message(
+            "partial",
+            original=current_text,
+            last_translation=""
+        )
+        logger.info(f"[partial] text={current_text[:80]}...")
+        self.last_partial_wall_ts = time.monotonic()
 
-            uncommitted = current_text[self.committed_len:]
-            sentences_to_commit = []
-            remaining = uncommitted
+        uncommitted = current_text[self.committed_len:]
+        sentences_to_commit = []
+        remaining = uncommitted
 
-            while True:
-                match = re.search(r"[.?!\u3002\uff1f\uff01]\s+", remaining)
-                if not match:
-                    break
-                after = remaining[match.end():]
-                if after.strip():
-                    sentence = remaining[:match.end()].strip()
-                    if sentence:
-                        sentences_to_commit.append(sentence)
-                    remaining = after
-                else:
-                    break
+        while True:
+            match = re.search(r"[.?!\u3002\uff1f\uff01]\s+", remaining)
+            if not match:
+                break
+            after = remaining[match.end():]
+            if after.strip():
+                sentence = remaining[:match.end()].strip()
+                if sentence:
+                    sentences_to_commit.append(sentence)
+                remaining = after
+            else:
+                break
 
-            if sentences_to_commit:
-                for sentence in sentences_to_commit:
-                    translation, detected_lang = google_translate(sentence, self.client_target_lang)
-                    logger.info(f"[translate-sentence] sentence='{sentence}' tl={self.client_target_lang} -> detected={detected_lang} translation='{translation}'")
-                    if detected_lang == self.client_target_lang:
-                        translation, _ = google_translate(sentence, self.client_lang)
-                        logger.info(f"[translate-sentence-flip] tl={self.client_lang} -> translation='{translation}'")
-                    final_lang = detected_lang or lang_to_code(current_lang)
-                    await self.send_message(
-                        "final",
-                        start=format_time(self.segment_start_time),
-                        end=format_time(self.current_time),
-                        original=sentence,
-                        translation=translation,
-                        language=final_lang
-                    )
-                    logger.info(f"[final-sentence] lang={final_lang} text={sentence}")
+        if sentences_to_commit:
+            for sentence in sentences_to_commit:
+                translation, detected_lang = await google_translate_async(self.http_session, sentence, self.client_target_lang)
+                logger.info(f"[translate-sentence] sentence='{sentence}' tl={self.client_target_lang} -> detected={detected_lang} translation='{translation}'")
+                if detected_lang == self.client_target_lang:
+                    translation, _ = await google_translate_async(self.http_session, sentence, self.client_lang)
+                    logger.info(f"[translate-sentence-flip] tl={self.client_lang} -> translation='{translation}'")
+                final_lang = detected_lang or lang_to_code(current_lang)
+                await self.send_message(
+                    "final",
+                    start=format_time(self.segment_start_time),
+                    end=format_time(self.current_time),
+                    original=sentence,
+                    translation=translation,
+                    language=final_lang
+                )
+                logger.info(f"[final-sentence] lang={final_lang} text={sentence}")
 
-                if remaining.strip():
-                    self.committed_len = len(current_text) - len(remaining)
-                else:
-                    self.committed_len = len(current_text)
-                self.committed_prefix = current_text[:self.committed_len]
+            if remaining.strip():
+                self.committed_len = len(current_text) - len(remaining)
+            else:
+                self.committed_len = len(current_text)
+            self.committed_prefix = current_text[:self.committed_len]
 
         # Also check from audio path; watchdog handles idle periods.
         await self.maybe_flush_by_partial_timeout(trigger="audio")
@@ -348,11 +317,7 @@ class Qwen3ASRStreamingHandler:
         if self.state is None:
             return
 
-        remaining = self.audio_buffer.get_all()
-        if len(remaining) > 0:
-            self.asr.streaming_transcribe(remaining, self.state)
-
-        self.asr.finish_streaming_transcribe(self.state)
+        await self._asr_finish_streaming()
         await self.flush_uncommitted(force=True, reason="finish")
 
     async def handle(self):
@@ -360,6 +325,8 @@ class Qwen3ASRStreamingHandler:
             remote_addr = self.websocket.remote_address
             logger.info(f"New connection from {remote_addr}")
             await self.send_message("hello", message="Qwen3-ASR Streaming Server")
+            timeout = aiohttp.ClientTimeout(total=3)
+            self.http_session = aiohttp.ClientSession(timeout=timeout)
 
             async for message in self.websocket:
                 if isinstance(message, bytes):
@@ -407,6 +374,10 @@ class Qwen3ASRStreamingHandler:
             self._stop_partial_watchdog()
             if was_running:
                 await self.finish_streaming()
+            if self.http_session is not None:
+                with contextlib.suppress(Exception):
+                    await self.http_session.close()
+                self.http_session = None
             logger.info("Connection closed")
 
 
@@ -463,8 +434,6 @@ def parse_args():
     # 스트리밍 설정
     parser.add_argument("--chunk-size", type=float, default=2.0,
                         help="Chunk size in seconds")
-    parser.add_argument("--min-chunk-size", type=float, default=0.5,
-                        help="Minimum chunk size in seconds")
 
     # 서버 설정
     parser.add_argument("--host", type=str, default="0.0.0.0",
@@ -483,7 +452,6 @@ def main():
         gpu_memory_utilization=args.gpu_memory_utilization,
         max_new_tokens=args.max_new_tokens,
         chunk_size_sec=args.chunk_size,
-        min_chunk_size_sec=args.min_chunk_size,
         host=args.host,
         port=args.port,
     )
