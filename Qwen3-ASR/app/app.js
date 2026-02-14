@@ -16,7 +16,8 @@ const state = {
   isServerConnected: false,
   translationHistory: [],
   recordingEnabled: false,
-  SERVER_URL: 'wss://edra-raspiest-eagerly.ngrok-free.dev',
+  // Default to latest mobile app endpoint (overridable via settings/localStorage)
+  SERVER_URL: 'wss://sportless-postpituitary-ludie.ngrok-free.dev',
   currentOriginal: '',
   currentTranslated: '',
   isConnecting: false,
@@ -313,10 +314,12 @@ async function connectWebSocket() {
 
       // Get language hint from settings
       const languageHint = localStorage.getItem('languageHint') || 'auto';
+      const targetLang = localStorage.getItem('targetLang') || '';
 
       const startMsg = {
         type: 'start',
         lang: languageHint,
+        targetLang,
         polish: polish,
         translate: translate
       };
