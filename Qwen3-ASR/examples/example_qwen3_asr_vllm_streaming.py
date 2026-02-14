@@ -29,6 +29,7 @@ import numpy as np
 import soundfile as sf
 
 from qwen_asr import Qwen3ASRModel
+from qwen_asr.inference.utils import warmup_streaming
 
 
 ASR_MODEL_PATH = "Qwen/Qwen3-ASR-1.7B"
@@ -92,6 +93,7 @@ def main() -> None:
         gpu_memory_utilization=0.8,
         max_new_tokens=32, # set a small value for streaming
     )
+    warmup_streaming(asr)
 
     audio_bytes = _download_audio_bytes(URL_EN)
     wav, sr = _read_wav_from_bytes(audio_bytes)

@@ -32,6 +32,7 @@ except ImportError:
     raise ImportError("websockets 패키지가 필요합니다: pip install websockets")
 
 from qwen_asr import Qwen3ASRModel
+from qwen_asr.inference.utils import warmup_streaming
 
 logging.basicConfig(
     level=logging.INFO,
@@ -317,6 +318,7 @@ class Qwen3ASRTransformersServer:
             max_inference_batch_size=1,
             max_new_tokens=self.config.max_new_tokens,
         )
+        warmup_streaming(self.asr)
         logger.info("Model loaded successfully")
 
     async def handle_connection(self, websocket):

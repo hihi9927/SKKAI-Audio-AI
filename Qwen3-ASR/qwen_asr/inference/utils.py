@@ -70,6 +70,30 @@ _ASR_TEXT_TAG = "<asr_text>"
 _LANG_PREFIX = "language "
 
 
+def _dummy_audio(duration_sec: float = MIN_ASR_INPUT_SECONDS) -> np.ndarray:
+    """Return zero waveform for warm-up runs."""
+    n = int(SAMPLE_RATE * duration_sec)
+    return np.zeros(n, dtype=np.float32)
+
+
+def warmup_transcribe(asr_model, duration_sec: float = MIN_ASR_INPUT_SECONDS, language: str = "English") -> None:
+    """
+    Trigger a lightweight transcribe once to load kernels/caches and reduce first-call latency.
+    """
+    wav = _dummy_audio(duration_sec)
+    asr_model.transcribe(audio=[(wav, SAMPLE_RATE)], language=language, return_time_stamps=False)
+
+
+def warmup_streaming(asr_model, duration_sec: float = MIN_ASR_INPUT_SECONDS) -> None:
+    """
+    Trigger a streaming round-trip once to warm pseudo-streaming path.
+    """
+    wav = _dummy_audio(duration_sec)
+    state = asr_model.init_streaming_state()
+    asr_model.streaming_transcribe(wav, state)
+    asr_model.finish_streaming_transcribe(state)
+
+
 def normalize_language_name(language: str) -> str:
     """
     Normalize language name to the canonical format used by Qwen3-ASR:

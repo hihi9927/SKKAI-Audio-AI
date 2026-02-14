@@ -37,6 +37,7 @@ import soundfile as sf
 import torch
 
 from qwen_asr import Qwen3ASRModel
+from qwen_asr.inference.utils import warmup_transcribe
 
 
 ASR_MODEL_PATH = "Qwen/Qwen3-ASR-1.7B"
@@ -141,6 +142,7 @@ def main() -> None:
         max_inference_batch_size=32,
         max_new_tokens=1024,
     )
+    warmup_transcribe(asr)
 
     test_single_url(asr)
     test_batch_mixed(asr)
