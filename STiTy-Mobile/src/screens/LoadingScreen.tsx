@@ -35,7 +35,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ navigation, route 
   const [errorMessage, setErrorMessage] = useState<string>('');
   const { connect, disconnect, sendAudio, addMessageListener } = useWebSocketContext();
   const hasNavigated = useRef(false);
-  const firstMessageRef = useRef<any>(null);
+  const firstFinalMessageRef = useRef<any>(null);
 
   const { startRecording, stopRecording } = useAudioRecording({
     onAudioData: (audioData) => {
@@ -46,17 +46,18 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ navigation, route 
   useEffect(() => {
     // 리스너로 첫 메시지 감지 (lastMessage 잔존값 문제 방지)
     const unsubscribe = addMessageListener((message: any) => {
-      if (
-        status === 'waiting' &&
-        !hasNavigated.current &&
-        (message.type === 'partial' || message.type === 'final')
-      ) {
-        firstMessageRef.current = message;
+      if (!hasNavigated.current && message.type === 'final') {
+        firstFinalMessageRef.current = message;
         setStatus('success');
         hasNavigated.current = true;
 
         setTimeout(() => {
-          navigation.replace('Conversation', { myLang, targetLang, mode, initialMessage: firstMessageRef.current });
+          navigation.replace('Conversation', {
+            myLang,
+            targetLang,
+            mode,
+            initialMessage: firstFinalMessageRef.current,
+          });
         }, 300);
       }
     });

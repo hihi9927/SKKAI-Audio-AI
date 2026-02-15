@@ -22,7 +22,6 @@ import contextlib
 import json
 import logging
 import re
-import time
 import traceback
 from dataclasses import dataclass
 from typing import Optional
@@ -143,10 +142,6 @@ class Qwen3ASRStreamingHandler:
         self.config = config
         self.state = None
         self.running = False
-        self.last_text = ""
-        self.committed_len = 0
-        self.committed_prefix = ""
-        self.last_text_lang = ""
 
         # 클라이언트 옵션
         self.client_lang = "auto"
@@ -156,20 +151,16 @@ class Qwen3ASRStreamingHandler:
         self.segment_start_time = 0.0
         self.current_time = 0.0
 
-        # Commit policy
-        self.partial_commit_timeout_sec = 2.0
-        self.last_partial_wall_ts = 0.0
-        self.partial_watchdog_interval_sec = 0.1
-        self.partial_watchdog_task = None
         self.flush_lock = asyncio.Lock()
         self.asr_lock = asyncio.Lock()
         self.http_session: Optional[aiohttp.ClientSession] = None
 
-        # VAD / commit alignment
+        # VAD / stream alignment
         self.sample_cursor = 0
         self.asr_processed_cursor = 0
-        self.pending_commits: list[int] = []
-        self.commit_task = None
+        self.active_slot = "A"
+        self.standby_slot = "B"
+        self.stream_slots: dict[str, dict] = {}
 
         # ── silero-vad 초기화 (VADIterator 사용) ──
         self.vad_enabled = False
@@ -205,78 +196,63 @@ class Qwen3ASRStreamingHandler:
 
     def init_streaming_state(self):
         """스트리밍 상태 초기화"""
-        self.state = self.asr.init_streaming_state(
-            unfixed_chunk_num=self.config.unfixed_chunk_num,
-            unfixed_token_num=self.config.unfixed_token_num,
-            chunk_size_sec=self.config.chunk_size_sec,
-        )
-        self.last_text = ""
-        self.committed_len = 0
-        self.committed_prefix = ""
-        self.last_text_lang = ""
+        self.stream_slots = {
+            "A": self._new_stream_slot(),
+            "B": self._new_stream_slot(),
+        }
+        self.active_slot = "A"
+        self.standby_slot = "B"
+        self.state = self.stream_slots[self.active_slot]["state"]
         self.segment_start_time = 0.0
         self.current_time = 0.0
-        self.last_partial_wall_ts = 0.0
         logger.info("Streaming state initialized")
 
         # reset VAD
         self.sample_cursor = 0
         self.asr_processed_cursor = 0
-        self.pending_commits.clear()
         if self.vad_iterator is not None:
             self.vad_iterator.reset_states()
-        self._stop_commit_task()
-        self.commit_task = asyncio.create_task(self._commit_loop())
+    
+    def _new_stream_slot(self) -> dict:
+        return {
+            "state": self.asr.init_streaming_state(
+                unfixed_chunk_num=self.config.unfixed_chunk_num,
+                unfixed_token_num=self.config.unfixed_token_num,
+                chunk_size_sec=self.config.chunk_size_sec,
+            ),
+            "last_text": "",
+            "last_text_lang": "",
+            "committed_len": 0,
+            "committed_prefix": "",
+        }
 
-    async def _start_partial_watchdog(self):
-        self._stop_partial_watchdog()
-        self.partial_watchdog_task = asyncio.create_task(self._partial_watchdog_loop())
+    def _reset_stream_slot(self, slot_key: str):
+        self.stream_slots[slot_key] = self._new_stream_slot()
+        logger.info(f"[slot-reset] slot={slot_key}")
 
-    def _stop_partial_watchdog(self):
-        if self.partial_watchdog_task and not self.partial_watchdog_task.done():
-            self.partial_watchdog_task.cancel()
-        self.partial_watchdog_task = None
+    def _slot(self, slot_key: Optional[str] = None) -> dict:
+        key = slot_key or self.active_slot
+        return self.stream_slots[key]
 
-    def _stop_commit_task(self):
-        if self.commit_task and not self.commit_task.done():
-            self.commit_task.cancel()
-        self.commit_task = None
-
-    async def _partial_watchdog_loop(self):
-        try:
-            while self.running:
-                await asyncio.sleep(self.partial_watchdog_interval_sec)
-                await self.maybe_flush_by_partial_timeout(trigger="watchdog")
-        except asyncio.CancelledError:
-            return
-
-    async def _asr_streaming_transcribe(self, chunk: np.ndarray):
+    async def _asr_streaming_transcribe(self, chunk: np.ndarray, slot_key: Optional[str] = None):
+        slot = self._slot(slot_key)
         async with self.asr_lock:
-            await asyncio.to_thread(self.asr.streaming_transcribe, chunk, self.state)
+            await asyncio.to_thread(self.asr.streaming_transcribe, chunk, slot["state"])
             self.asr_processed_cursor = self.sample_cursor
 
-    async def _asr_finish_streaming(self):
+    async def _asr_finish_streaming(self, slot_key: Optional[str] = None):
+        slot = self._slot(slot_key)
         async with self.asr_lock:
-            await asyncio.to_thread(self.asr.finish_streaming_transcribe, self.state)
+            await asyncio.to_thread(self.asr.finish_streaming_transcribe, slot["state"])
 
-    async def maybe_flush_by_partial_timeout(self, trigger: str):
-        if not self.running or self.state is None:
-            return
-        if self.last_partial_wall_ts <= 0:
-            return
-        idle_elapsed = time.monotonic() - self.last_partial_wall_ts
-        if idle_elapsed < self.partial_commit_timeout_sec:
-            return
-
-        await self.flush_uncommitted(reason=f"partial-timeout:{trigger}")
-        self.last_partial_wall_ts = 0.0
-
-    async def flush_uncommitted(self, force=False, reason="partial-timeout"):
+    async def flush_uncommitted(self, force=False, reason="flush", slot_key: Optional[str] = None):
+        slot = self._slot(slot_key)
         async with self.flush_lock:
             async with self.asr_lock:
-                current_text = (self.state.text or "").strip() if self.state else ""
-                current_lang = self.last_text_lang or ""
-            uncommitted = current_text[self.committed_len:].strip()
+                state = slot["state"]
+                current_text = (state.text or "").strip() if state else ""
+                current_lang = slot["last_text_lang"] or ""
+            uncommitted = current_text[slot["committed_len"]:].strip()
             if not uncommitted:
                 return
             if not force and len(uncommitted) < 2:
@@ -287,7 +263,7 @@ class Qwen3ASRStreamingHandler:
                 self.http_session, uncommitted, self.client_target_lang
             )
             logger.info(
-                f"[translate-timeout] reason={reason} sentence='{uncommitted}' "
+                f"[translate-flush] reason={reason} sentence='{uncommitted}' "
                 f"tl={self.client_target_lang} -> detected={detected_lang} "
                 f"translation='{translation}'"
             )
@@ -296,15 +272,20 @@ class Qwen3ASRStreamingHandler:
                     self.http_session, uncommitted, self.client_lang
                 )
                 logger.info(
-                    f"[translate-timeout-flip] reason={reason} "
+                    f"[translate-flush-flip] reason={reason} "
                     f"tl={self.client_lang} -> translation='{translation}'"
                 )
 
             final_lang = detected_lang or lang_to_code(current_lang)
             logger.info(
-                f"[final-timeout] reason={reason} lang={final_lang} "
+                f"[final-flush] slot={slot_key or self.active_slot} reason={reason} lang={final_lang} "
                 f"translation='{translation}' original='{uncommitted}'"
             )
+            if reason.startswith("vad"):
+                logger.info(
+                    f"[final-vad] slot={slot_key or self.active_slot} lang={final_lang} text='{uncommitted}' "
+                    f"translation='{translation}'"
+                )
             await self.send_message(
                 "final",
                 start=format_time(self.segment_start_time),
@@ -313,69 +294,30 @@ class Qwen3ASRStreamingHandler:
                 translation=translation,
                 language=final_lang,
             )
-            self.committed_len = len(current_text)
-            self.committed_prefix = current_text
+            slot["committed_len"] = len(current_text)
+            slot["committed_prefix"] = current_text
 
-    async def process_audio_chunk(self, audio_data: bytes):
-        if not audio_data:
+    async def _process_slot_updates(self, slot_key: str, emit_partial: bool = True):
+        slot = self._slot(slot_key)
+        state = slot["state"]
+        current_text = (state.text or "").strip()
+        current_lang = state.language or ""
+        if not current_text or current_text == slot["last_text"]:
             return
 
-        chunk = np.frombuffer(audio_data, dtype=np.int16).astype(np.float32) / 32768.0
-        if chunk.size == 0:
-            return
+        slot["last_text"] = current_text
+        slot["last_text_lang"] = current_lang
 
-        self.sample_cursor += chunk.size
-
-        # ── VAD: VADIterator로 스트리밍 음성 구간 탐지 ──
-        if self.vad_enabled and self.vad_iterator is not None:
-            try:
-                # VADIterator는 고정 크기(512 samples @16kHz)씩 처리해야 함
-                # 청크를 윈도우 크기로 분할하여 순차 처리
-                offset = 0
-                while offset + VAD_WINDOW_SIZE_SAMPLES <= chunk.size:
-                    window = chunk[offset:offset + VAD_WINDOW_SIZE_SAMPLES]
-                    speech_dict = self.vad_iterator(
-                        torch.from_numpy(window),
-                        return_seconds=False,
-                    )
-                    if speech_dict is not None:
-                        # speech_dict = {'start': N} 또는 {'end': N}
-                        if "end" in speech_dict:
-                            # 발화 종료 감지 → commit 예약
-                            end_sample = self.sample_cursor - (chunk.size - offset - VAD_WINDOW_SIZE_SAMPLES)
-                            self.pending_commits.append(end_sample)
-                            logger.info(
-                                f"[vad] speech end detected; "
-                                f"target_samples={end_sample}"
-                            )
-                    offset += VAD_WINDOW_SIZE_SAMPLES
-            except Exception as e:
-                logger.warning(f"[vad] error, disabling for this session: {e}")
-                self.vad_enabled = False
-
-        # ASR 처리
-        self.current_time += chunk.size / SAMPLING_RATE
-        await self._asr_streaming_transcribe(chunk)
-
-        current_text = (self.state.text or "").strip()
-        current_lang = self.state.language or ""
-        if not current_text or current_text == self.last_text:
-            await self.maybe_flush_by_partial_timeout(trigger="audio")
-            return
-
-        self.last_text = current_text
-        self.last_text_lang = current_lang
-
-        await self.send_message(
-            "partial",
-            original=current_text,
-            last_translation="",
-        )
-        logger.info(f"[partial] text={current_text[:80]}...")
-        self.last_partial_wall_ts = time.monotonic()
+        if emit_partial:
+            await self.send_message(
+                "partial",
+                original=current_text,
+                last_translation="",
+            )
+            logger.info(f"[partial] slot={slot_key} text={current_text[:80]}...")
 
         # 문장 단위 commit
-        uncommitted = current_text[self.committed_len:]
+        uncommitted = current_text[slot["committed_len"]:]
         sentences_to_commit = []
         remaining = uncommitted
 
@@ -393,6 +335,7 @@ class Qwen3ASRStreamingHandler:
                 break
 
         if sentences_to_commit:
+            translated_payloads = []
             for sentence in sentences_to_commit:
                 translation, detected_lang = await google_translate_async(
                     self.http_session, sentence, self.client_target_lang
@@ -411,44 +354,132 @@ class Qwen3ASRStreamingHandler:
                         f"-> translation='{translation}'"
                     )
                 final_lang = detected_lang or lang_to_code(current_lang)
+                translated_payloads.append({
+                    "original": sentence,
+                    "translation": translation,
+                    "language": final_lang,
+                })
+
+            ready_to_emit = []
+            async with self.flush_lock:
+                async with self.asr_lock:
+                    latest_state = slot["state"]
+                    latest_text = (latest_state.text or "").strip() if latest_state else ""
+
+                cursor = slot["committed_len"]
+                tail = latest_text[cursor:]
+
+                for payload in translated_payloads:
+                    sentence = payload["original"]
+                    stripped_tail = tail.lstrip()
+                    leading_ws = len(tail) - len(stripped_tail)
+                    if not stripped_tail.startswith(sentence):
+                        break
+                    cursor += leading_ws + len(sentence)
+                    tail = latest_text[cursor:]
+                    ready_to_emit.append(payload)
+
+                if ready_to_emit:
+                    slot["committed_len"] = cursor
+                    slot["committed_prefix"] = latest_text[:slot["committed_len"]]
+
+            for payload in ready_to_emit:
                 await self.send_message(
                     "final",
                     start=format_time(self.segment_start_time),
                     end=format_time(self.current_time),
-                    original=sentence,
-                    translation=translation,
-                    language=final_lang,
+                    original=payload["original"],
+                    translation=payload["translation"],
+                    language=payload["language"],
                 )
-                logger.info(f"[final-sentence] lang={final_lang} text={sentence}")
+                logger.info(
+                    f"[final-sentence] slot={slot_key} lang={payload['language']} "
+                    f"text={payload['original']}"
+                )
 
-            if remaining.strip():
-                self.committed_len = len(current_text) - len(remaining)
-            else:
-                self.committed_len = len(current_text)
-            self.committed_prefix = current_text[:self.committed_len]
-
-        await self.maybe_flush_by_partial_timeout(trigger="audio")
-
-    async def _commit_loop(self):
-        """VAD에서 발화 종료를 감지하면 flush 수행"""
-        try:
-            while True:
-                if self.pending_commits and self.asr_processed_cursor >= self.pending_commits[0]:
-                    target = self.pending_commits.pop(0)
-                    logger.info(
-                        f"[vad-commit] target_samples={target} "
-                        f"processed={self.asr_processed_cursor}"
-                    )
-                    await self.flush_uncommitted(force=True, reason="vad")
-                await asyncio.sleep(0.05)
-        except asyncio.CancelledError:
+    async def process_audio_chunk(self, audio_data: bytes):
+        if not audio_data:
             return
+
+        chunk = np.frombuffer(audio_data, dtype=np.int16).astype(np.float32) / 32768.0
+        if chunk.size == 0:
+            return
+
+        chunk_base_sample = self.sample_cursor
+        self.sample_cursor += chunk.size
+        vad_end_local_indices: list[int] = []
+
+        # ── VAD: VADIterator로 스트리밍 음성 구간 탐지 ──
+        if self.vad_enabled and self.vad_iterator is not None:
+            try:
+                # VADIterator는 고정 크기(512 samples @16kHz)씩 처리해야 함
+                # 청크를 윈도우 크기로 분할하여 순차 처리
+                offset = 0
+                while offset + VAD_WINDOW_SIZE_SAMPLES <= chunk.size:
+                    window = chunk[offset:offset + VAD_WINDOW_SIZE_SAMPLES]
+                    speech_dict = self.vad_iterator(
+                        torch.from_numpy(window),
+                        return_seconds=False,
+                    )
+                    if speech_dict is not None:
+                        # speech_dict = {'start': N} 또는 {'end': N}
+                        if "end" in speech_dict:
+                            # 발화 종료 감지 → 현재 청크의 경계 인덱스로 변환
+                            end_sample = self.sample_cursor - (chunk.size - offset - VAD_WINDOW_SIZE_SAMPLES)
+                            local_idx = int(end_sample - chunk_base_sample)
+                            local_idx = max(0, min(int(chunk.size), local_idx))
+                            if not vad_end_local_indices or local_idx > vad_end_local_indices[-1]:
+                                vad_end_local_indices.append(local_idx)
+                            logger.info(
+                                f"[vad] speech end detected; "
+                                f"target_samples={end_sample}"
+                            )
+                    offset += VAD_WINDOW_SIZE_SAMPLES
+            except Exception as e:
+                logger.warning(f"[vad] error, disabling for this session: {e}")
+                self.vad_enabled = False
+
+        # ASR 처리
+        self.current_time += chunk.size / SAMPLING_RATE
+        seg_start = 0
+        for local_cut in vad_end_local_indices:
+            if local_cut <= seg_start:
+                continue
+
+            pre_chunk = chunk[seg_start:local_cut]
+            if pre_chunk.size > 0:
+                await self._asr_streaming_transcribe(pre_chunk, self.active_slot)
+                await self._process_slot_updates(self.active_slot, emit_partial=True)
+
+            target_sample = chunk_base_sample + local_cut
+            logger.info(
+                f"[vad-commit] target_samples={target_sample} "
+                f"processed={self.asr_processed_cursor} active={self.active_slot}"
+            )
+
+            old_active = self.active_slot
+            self.active_slot, self.standby_slot = self.standby_slot, self.active_slot
+            self.state = self.stream_slots[self.active_slot]["state"]
+            logger.info(
+                f"[slot-switch] old_active={old_active} new_active={self.active_slot} "
+                f"new_standby={self.standby_slot}"
+            )
+
+            await self.flush_uncommitted(force=True, reason="vad", slot_key=old_active)
+            self._reset_stream_slot(self.standby_slot)
+
+            seg_start = local_cut
+
+        tail_chunk = chunk[seg_start:]
+        if tail_chunk.size > 0:
+            await self._asr_streaming_transcribe(tail_chunk, self.active_slot)
+            await self._process_slot_updates(self.active_slot, emit_partial=True)
 
     async def finish_streaming(self):
-        if self.state is None:
+        if not self.stream_slots:
             return
-        await self._asr_finish_streaming()
-        await self.flush_uncommitted(force=True, reason="finish")
+        await self._asr_finish_streaming(self.active_slot)
+        await self.flush_uncommitted(force=True, reason="finish", slot_key=self.active_slot)
 
     async def handle(self):
         try:
@@ -477,7 +508,6 @@ class Qwen3ASRStreamingHandler:
 
                             self.init_streaming_state()
                             self.running = True
-                            await self._start_partial_watchdog()
                             await self.send_message(
                                 "ready", message="Ready to receive audio"
                             )
@@ -485,7 +515,6 @@ class Qwen3ASRStreamingHandler:
                         elif msg_type in ("stop", "finish"):
                             logger.info(f"Received {msg_type} command")
                             self.running = False
-                            self._stop_partial_watchdog()
                             await self.finish_streaming()
 
                             if msg_type == "stop":
@@ -494,7 +523,6 @@ class Qwen3ASRStreamingHandler:
                             # finish → 상태 리셋 후 재시작
                             self.init_streaming_state()
                             self.running = True
-                            await self._start_partial_watchdog()
 
                     except json.JSONDecodeError:
                         logger.warning(f"Invalid JSON: {message[:100]}")
@@ -507,8 +535,6 @@ class Qwen3ASRStreamingHandler:
         finally:
             was_running = self.running
             self.running = False
-            self._stop_partial_watchdog()
-            self._stop_commit_task()
             if was_running:
                 await self.finish_streaming()
             if self.http_session is not None:
