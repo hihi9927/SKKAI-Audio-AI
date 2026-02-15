@@ -39,6 +39,7 @@ except ImportError:
 from qwen_asr import Qwen3ASRModel
 from qwen_asr.inference.utils import warmup_streaming
 from silero_vad import load_silero_vad
+from silero_vad.utils import get_speech_ts_adaptive
 
 logging.basicConfig(
     level=logging.INFO,
@@ -159,7 +160,15 @@ class Qwen3ASRStreamingHandler:
         self.asr_processed_cursor = 0       # best-effort processed samples
         self.pending_commits: list[int] = []  # target end indices (samples)
         self.commit_task = None
-        self.vad_model, self.vad_utils = load_silero_vad()
+        # silero-vad packaging differs by version: sometimes returns (model, utils), sometimes model only.
+        _vad_loaded = load_silero_vad()
+        if isinstance(_vad_loaded, tuple) and len(_vad_loaded) == 2:
+            self.vad_model, self.vad_utils = _vad_loaded
+            self._vad_get_ts = self.vad_utils["get_speech_ts_adaptive"]
+        else:
+            self.vad_model = _vad_loaded
+            self.vad_utils = {"get_speech_ts_adaptive": get_speech_ts_adaptive}
+            self._vad_get_ts = get_speech_ts_adaptive
         self.vad_state = None
         self.vad_silence_run = 0
         self.vad_hangover_samples = int(VAD_SILENCE_MS * VAD_SR / 1000)
@@ -288,7 +297,7 @@ class Qwen3ASRStreamingHandler:
 
         # VAD inference (silero expects 16k mono float32)
         with torch.no_grad():
-            speech_probs, self.vad_state = self.vad_utils["get_speech_ts_adaptive"](
+            speech_probs, self.vad_state = self._vad_get_ts(
                 torch.from_numpy(chunk),
                 self.vad_model,
                 self.vad_state,
