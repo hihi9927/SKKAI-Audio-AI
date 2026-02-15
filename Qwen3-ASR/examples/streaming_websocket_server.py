@@ -29,6 +29,7 @@ from typing import Optional
 
 import numpy as np
 import aiohttp
+import torch
 
 try:
     import websockets
@@ -37,6 +38,7 @@ except ImportError:
 
 from qwen_asr import Qwen3ASRModel
 from qwen_asr.inference.utils import warmup_streaming
+from silero_vad import load_silero_vad
 
 logging.basicConfig(
     level=logging.INFO,
@@ -49,6 +51,11 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 SAMPLING_RATE = 16000
+VAD_WINDOW_MS = 32           # silero default window size
+VAD_HOP_MS = 8               # silero default hop
+VAD_SR = 16000
+VAD_SILENCE_MS = 320         # need this much silence to close a segment
+VAD_PAD_MS = 160             # add tail pad to ensure decoder catches up
 
 
 @dataclass
@@ -147,6 +154,17 @@ class Qwen3ASRStreamingHandler:
         self.asr_lock = asyncio.Lock()
         self.http_session: Optional[aiohttp.ClientSession] = None
 
+        # VAD / commit alignment
+        self.sample_cursor = 0              # total samples ingested
+        self.asr_processed_cursor = 0       # best-effort processed samples
+        self.pending_commits: list[int] = []  # target end indices (samples)
+        self.commit_task = None
+        self.vad_model, self.vad_utils = load_silero_vad()
+        self.vad_state = None
+        self.vad_silence_run = 0
+        self.vad_hangover_samples = int(VAD_SILENCE_MS * VAD_SR / 1000)
+        self.vad_pad_samples = int(VAD_PAD_MS * VAD_SR / 1000)
+
     async def send_message(self, msg_type: str, **kwargs):
         """JSON 메시지 전송"""
         message = {"type": msg_type, **kwargs}
@@ -172,6 +190,15 @@ class Qwen3ASRStreamingHandler:
         self.last_partial_wall_ts = 0.0
         logger.info("Streaming state initialized")
 
+        # reset VAD
+        self.sample_cursor = 0
+        self.asr_processed_cursor = 0
+        self.pending_commits.clear()
+        self.vad_state = None
+        self.vad_silence_run = 0
+        self._stop_commit_task()
+        self.commit_task = asyncio.create_task(self._commit_loop())
+
     async def _start_partial_watchdog(self):
         self._stop_partial_watchdog()
         self.partial_watchdog_task = asyncio.create_task(self._partial_watchdog_loop())
@@ -180,6 +207,11 @@ class Qwen3ASRStreamingHandler:
         if self.partial_watchdog_task and not self.partial_watchdog_task.done():
             self.partial_watchdog_task.cancel()
         self.partial_watchdog_task = None
+
+    def _stop_commit_task(self):
+        if self.commit_task and not self.commit_task.done():
+            self.commit_task.cancel()
+        self.commit_task = None
 
     async def _partial_watchdog_loop(self):
         try:
@@ -192,6 +224,8 @@ class Qwen3ASRStreamingHandler:
     async def _asr_streaming_transcribe(self, chunk: np.ndarray):
         async with self.asr_lock:
             await asyncio.to_thread(self.asr.streaming_transcribe, chunk, self.state)
+            # best-effort: assume decoder processed this chunk fully
+            self.asr_processed_cursor = self.sample_cursor
 
     async def _asr_finish_streaming(self):
         async with self.asr_lock:
@@ -248,6 +282,31 @@ class Qwen3ASRStreamingHandler:
         chunk = np.frombuffer(audio_data, dtype=np.int16).astype(np.float32) / 32768.0
         if chunk.size == 0:
             return
+
+        # Track absolute cursor before decode
+        self.sample_cursor += chunk.size
+
+        # VAD inference (silero expects 16k mono float32)
+        with torch.no_grad():
+            speech_probs, self.vad_state = self.vad_utils["get_speech_ts_adaptive"](
+                torch.from_numpy(chunk),
+                self.vad_model,
+                self.vad_state,
+                sampling_rate=VAD_SR,
+                return_seconds=False,
+                threshold=0.5,
+                min_silence_ms=VAD_SILENCE_MS,
+                speech_pad_ms=0,
+            )
+        # speech_probs is a list of {"start":..., "end":...} relative to this chunk
+        # We only care about silence transition; if speech->silence ended in this chunk, enqueue commit target
+        if speech_probs:
+            last = speech_probs[-1]
+            # if segment ended inside this chunk
+            if last["end"] < chunk.size:
+                end_idx = self.sample_cursor - (chunk.size - last["end"])
+                end_idx += self.vad_pad_samples  # pad for decoder lag
+                self.pending_commits.append(end_idx)
 
         # No min_chunk gate: process every incoming chunk immediately.
         self.current_time += chunk.size / SAMPLING_RATE
@@ -314,6 +373,17 @@ class Qwen3ASRStreamingHandler:
         # Also check from audio path; watchdog handles idle periods.
         await self.maybe_flush_by_partial_timeout(trigger="audio")
 
+    async def _commit_loop(self):
+        try:
+            while True:
+                if self.pending_commits and self.asr_processed_cursor >= self.pending_commits[0]:
+                    target = self.pending_commits.pop(0)
+                    logger.info(f"[vad-commit] target_samples={target} processed={self.asr_processed_cursor}")
+                    await self.flush_uncommitted(force=True, reason="vad")
+                await asyncio.sleep(0.05)
+        except asyncio.CancelledError:
+            return
+
     async def finish_streaming(self):
         if self.state is None:
             return
@@ -346,6 +416,7 @@ class Qwen3ASRStreamingHandler:
                             self.init_streaming_state()
                             self.running = True
                             await self._start_partial_watchdog()
+                            # commit loop already started in init_streaming_state
                             await self.send_message("ready", message="Ready to receive audio")
 
                         elif msg_type == "stop" or msg_type == "finish":
@@ -373,6 +444,7 @@ class Qwen3ASRStreamingHandler:
             was_running = self.running
             self.running = False
             self._stop_partial_watchdog()
+            self._stop_commit_task()
             if was_running:
                 await self.finish_streaming()
             if self.http_session is not None:
