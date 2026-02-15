@@ -61,7 +61,7 @@ logger = logging.getLogger(__name__)
 SAMPLING_RATE = 16000
 # VADIterator 설정
 VAD_THRESHOLD = 0.5
-VAD_MIN_SILENCE_MS = 320       # 발화 종료 판정까지 필요한 침묵 길이
+VAD_MIN_SILENCE_MS = 800       # 발화 종료 판정까지 필요한 침묵 길이
 VAD_SPEECH_PAD_MS = 160        # 발화 경계에 추가하는 패딩
 VAD_WINDOW_SIZE_SAMPLES = 512  # 16kHz 기준 silero 권장 윈도우 크기
 
