@@ -8,6 +8,7 @@ import {
   Alert,
   AppState,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
@@ -59,7 +60,6 @@ const translateText = async (text: string, sourceLang: string, targetLang: strin
     const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceLang}&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`;
     const res = await fetch(url);
     const data = await res.json();
-    // 응답 형식: [[["translated text","source text",null,null,10]],null,"ko"]
     return data[0].map((item: any) => item[0]).join('');
   } catch (e) {
     console.error('Translation failed:', e);
@@ -75,7 +75,15 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
   const [isPaused, setIsPaused] = useState(false);
   const [showFullTranscript, setShowFullTranscript] = useState(false);
 
-  // 모드에 따라 TTS 자동 설정: mode-1, mode-2는 TTS 켜짐
+  // ── 연결/초기화 상태 관리 ──
+  // 'connecting': WebSocket 연결 중
+  // 'waiting': 연결 완료, 첫 전사 대기 중 (아무말이나 해주세요)
+  // 'ready': 첫 전사 도착, 정상 대화 모드
+  // 'error': 연결 실패
+  const [sessionStatus, setSessionStatus] = useState<'connecting' | 'waiting' | 'ready' | 'error'>('connecting');
+  const [connectionError, setConnectionError] = useState<string>('');
+
+  // 모드에 따라 TTS 자동 설정
   const isTTSEnabled = currentMode === 'mode-1' || currentMode === 'mode-2';
   const isTTSEnabledRef = useRef(isTTSEnabled);
 
@@ -89,14 +97,12 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
   useEffect(() => { sendAudioRef.current = sendAudio; }, [sendAudio]);
   useEffect(() => { isTTSEnabledRef.current = isTTSEnabled; }, [isTTSEnabled]);
 
-  // 모드 ref (handleMessage에서 접근)
   const modeRef = useRef(currentMode);
   const myLangRef = useRef(myLang);
   const targetLangRef = useRef(targetLang);
 
   useEffect(() => { modeRef.current = currentMode; }, [currentMode]);
 
-  // TTS로 말한 텍스트를 기억 (마이크 피드백 방지)
   const lastSpokenTextRef = useRef('');
 
   const speakTranslation = (text: string, lang: string) => {
@@ -117,27 +123,21 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
   const processedInitialRef = useRef(false);
   const entryIdRef = useRef(0);
 
-  // 모드별 TTS 재생 판단
   const shouldPlayTTS = (detectedLang: string): boolean => {
     if (!isTTSEnabledRef.current) return false;
     const currentMode = modeRef.current;
-    if (currentMode === 'mode-0') return false; // 0 이어폰: TTS 없음
+    if (currentMode === 'mode-0') return false;
     if (currentMode === 'mode-1') {
-      // 1 이어폰: 상대 언어 감지 시에만 TTS (이어폰 착용자에게 내 언어로 번역)
       return detectedLang !== myLangRef.current.code;
     }
-    // mode-2: 양방향 TTS
     return true;
   };
 
-  // TTS 재생 시 대상 언어 결정
   const getTTSTargetLang = (detectedLang: string): string => {
-    // 감지된 언어의 반대 언어로 번역 읽기
     if (detectedLang === myLangRef.current.code) return targetLangRef.current.code;
     return myLangRef.current.code;
   };
 
-  // 번역 대상 언어 결정 (감지 언어 → 반대 언어)
   const getTranslationTarget = (detectedLang: string): string => {
     if (detectedLang === myLangRef.current.code) return targetLangRef.current.code;
     return myLangRef.current.code;
@@ -156,12 +156,10 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
       timestamp: Date.now(),
     }]);
 
-    // 서버 번역이 있으면 TTS 재생 (모드 조건 확인)
     if (serverTranslation && shouldPlayTTS(lang)) {
       speakTranslation(serverTranslation, getTTSTargetLang(lang));
     }
 
-    // 서버 번역이 없으면 클라이언트에서 번역
     if (!serverTranslation) {
       if (translTarget && translTarget !== lang) {
         translateText(text, lang, translTarget).then((translated) => {
@@ -182,8 +180,6 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     const text = (message.original || '').trim();
     if (!text) return;
 
-    // TTS로 말한 텍스트가 마이크에 잡힌 경우 무시
-    // 단어 단위로 50% 이상 겹치면 TTS 피드백으로 판단
     if (lastSpokenTextRef.current) {
       const spokenWords = lastSpokenTextRef.current.toLowerCase().split(/\s+/);
       const incomingWords = text.toLowerCase().split(/\s+/);
@@ -196,25 +192,42 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     const lang = langToCode(message.language || 'auto');
 
     if (message.type === 'partial') {
-      // partial: 화면에 표시하지 않음 (서버가 final로 분절해서 보냄)
+      // partial: 화면에 표시하지 않음
     } else if (message.type === 'final') {
-      // final: 서버가 분절한 확정 문장 → 바로 표시
       const serverTranslation = (message.translation || '').trim();
       addTranscription(lang, text, serverTranslation || undefined);
       setDisplayText(null);
+
+      // ── 첫 전사 도착 시 힌트 오버레이 제거 ──
+      setSessionStatus((prev) => {
+        if (prev === 'waiting' || prev === 'connecting') return 'ready';
+        return prev;
+      });
     }
   });
 
+  // ── 화면 진입 시 WebSocket 연결 + 녹음 시작 ──
   useEffect(() => {
-    if (initialMessage && !processedInitialRef.current) {
-      processedInitialRef.current = true;
-      handleMessage.current(initialMessage);
-    }
-  }, []);
+    const initSession = async () => {
+      setSessionStatus('connecting');
+      setConnectionError('');
 
-  // LoadingScreen에서 넘어올 때 LiveAudioStream이 정리되므로 다시 시작
-  useEffect(() => {
-    startRecording();
+      try {
+        await connect({
+          lang: myLang.code,
+          targetLang: targetLang.code,
+        });
+        await startRecording();
+        setSessionStatus('waiting');
+      } catch (error: any) {
+        console.error('Connection failed:', error);
+        setSessionStatus('error');
+        setConnectionError(error.message || '연결에 실패했습니다');
+      }
+    };
+
+    initSession();
+
     return () => {
       stopRecording();
       disconnect();
@@ -222,7 +235,15 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     };
   }, []);
 
-  // 앱이 백그라운드로 갈 때 정지, 돌아오면 일시정지 상태로 전환
+  // initialMessage 처리 (LoadingScreen에서 넘어온 경우 호환)
+  useEffect(() => {
+    if (initialMessage && !processedInitialRef.current) {
+      processedInitialRef.current = true;
+      handleMessage.current(initialMessage);
+    }
+  }, []);
+
+  // 앱 백그라운드 처리
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextAppState) => {
       if (nextAppState === 'background' || nextAppState === 'inactive') {
@@ -236,7 +257,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     return () => subscription.remove();
   }, []);
 
-  // 리스너 패턴으로 메시지 수신 (React 배칭으로 인한 메시지 유실 방지)
+  // 메시지 리스너
   useEffect(() => {
     const unsubscribe = addMessageListener((message: any) => {
       handleMessage.current(message);
@@ -247,7 +268,6 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
   const handleStopResume = async () => {
     if (isPaused) {
       setDisplayText(null);
-      // 연결이 끊어졌으면 재연결
       if (!isConnectedRef.current) {
         await connect({ lang: myLang.code, targetLang: targetLang.code });
       }
@@ -260,6 +280,14 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
   };
 
   const handleGoBack = () => {
+    // 에러 상태에서는 확인 없이 바로 돌아가기
+    if (sessionStatus === 'error') {
+      stopRecording();
+      disconnect();
+      navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
+      return;
+    }
+
     Alert.alert(
       '대화 종료',
       '대화를 종료하시겠습니까?',
@@ -280,6 +308,62 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     );
   };
 
+  const handleRetry = async () => {
+    setSessionStatus('connecting');
+    setConnectionError('');
+    try {
+      await connect({
+        lang: myLang.code,
+        targetLang: targetLang.code,
+      });
+      await startRecording();
+      setSessionStatus('waiting');
+    } catch (error: any) {
+      setSessionStatus('error');
+      setConnectionError(error.message || '연결에 실패했습니다');
+    }
+  };
+
+  // ── 연결 중 / 대기 중 / 에러 오버레이 ──
+  if (sessionStatus === 'connecting' || sessionStatus === 'waiting' || sessionStatus === 'error') {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.overlayContainer}>
+          {sessionStatus === 'error' ? (
+            <>
+              <Text style={styles.errorText}>
+                {connectionError || '현재 이용자가 가득 차 이용이 불가합니다'}
+              </Text>
+              <View style={styles.overlayButtonRow}>
+                <GradientButton title="재시도" onPress={handleRetry} />
+                <GradientButton title="돌아가기" onPress={handleGoBack} />
+              </View>
+            </>
+          ) : (
+            <>
+              {sessionStatus === 'connecting' && (
+                <>
+                  <ActivityIndicator size="large" color={COLORS.gradientMiddle} style={{ marginBottom: SPACING.lg }} />
+                  <Text style={styles.overlayHintText}>서버에 연결하는 중...</Text>
+                </>
+              )}
+              {sessionStatus === 'waiting' && (
+                <>
+                  <Text style={styles.overlayHintText}>아무말이나 해주세요</Text>
+                  <ActivityIndicator size="small" color={COLORS.textMuted} style={{ marginTop: SPACING.md }} />
+                </>
+              )}
+              <View style={styles.overlayBackButton}>
+                <GradientButton title="돌아가기" onPress={handleGoBack} />
+              </View>
+            </>
+          )}
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // ── 정상 대화 UI (sessionStatus === 'ready') ──
   return (
     <SafeAreaView style={styles.container}>
       {/* 상단 좌측: 모드 변경 버튼 */}
@@ -289,7 +373,6 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
           const idx = CONVERSATION_MODES.findIndex(m => m.id === currentMode);
           const next = CONVERSATION_MODES[(idx + 1) % CONVERSATION_MODES.length];
           setCurrentMode(next.id);
-          // 모드 변경 시 TTS 중단
           Speech.stop();
           lastSpokenTextRef.current = '';
         }}
@@ -318,7 +401,6 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
 
       <ScrollView style={styles.transcriptionArea} contentContainerStyle={styles.transcriptionContent}>
         {currentMode === 'mode-2' && !showFullTranscript ? (
-          // 모드 3 (2 이어폰): 최소 UI - 상태만 표시
           <View style={styles.emptyContainer}>
             <Ionicons name="headset-outline" size={48} color={COLORS.textMuted} />
             <Text style={[styles.emptyText, { marginTop: SPACING.md }]}>
@@ -334,21 +416,16 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
         ) : (
           <>
             {(() => {
-              // 모드별 표시할 항목 필터링
               let filtered = transcriptions;
 
               if (currentMode === 'mode-1' && !showFullTranscript) {
-                // 모드 2 (1 이어폰): 내 언어(myLang) 감지 항목만 화면에 표시
-                // (상대방이 화면을 보므로, 내가 말한 것의 번역을 보여줌)
                 filtered = filtered.filter(item => item.language === myLang.code);
               }
 
-              // 전체 내역이 아니면 최근 MAX_VISIBLE개만
               if (!showFullTranscript) {
                 filtered = filtered.slice(-MAX_VISIBLE);
               }
 
-              // mode-0, mode-1 + 문서 아이콘 꺼짐: 번역만 표시
               const onlyTranslation = (currentMode === 'mode-0' || currentMode === 'mode-1') && !showFullTranscript;
 
               return filtered.map((item) => (
@@ -364,13 +441,11 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
               ));
             })()}
             {displayText && (() => {
-              // 모드별 실시간 partial 표시 조건
               if (currentMode === 'mode-1' && !showFullTranscript) {
-                // 모드 2: 내 언어 감지 시에만 화면 표시
                 if (displayText.lang !== myLang.code) return null;
               }
               if (currentMode === 'mode-2' && !showFullTranscript) {
-                return null; // 모드 3: 최소 UI
+                return null;
               }
               return (
                 <TranslationItem
@@ -417,6 +492,34 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
+  // ── 오버레이 (연결 중 / 대기 중 / 에러) ──
+  overlayContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.xl,
+  },
+  overlayHintText: {
+    fontSize: FONTS.sizes.xl,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+    textAlign: 'center',
+  },
+  overlayBackButton: {
+    position: 'absolute',
+    bottom: '28%',
+  },
+  overlayButtonRow: {
+    flexDirection: 'row',
+    gap: SPACING.lg,
+    marginTop: SPACING.xl,
+  },
+  errorText: {
+    fontSize: FONTS.sizes.md,
+    color: COLORS.textPrimary,
+    textAlign: 'center',
+  },
+  // ── 대화 UI ──
   topLeftButton: {
     position: 'absolute',
     top: 50,

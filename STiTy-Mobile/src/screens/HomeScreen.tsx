@@ -34,7 +34,6 @@ const STORAGE_KEYS = {
   MODE: 'stity_mode',
 };
 
-// 그라데이션 텍스트 컴포넌트
 const GradientText: React.FC<{ text: string; style?: any }> = ({ text, style }) => {
   return (
     <MaskedView
@@ -51,7 +50,6 @@ const GradientText: React.FC<{ text: string; style?: any }> = ({ text, style }) 
   );
 };
 
-// 언어 선택 모달
 const LanguagePickerModal: React.FC<{
   visible: boolean;
   onClose: () => void;
@@ -114,7 +112,6 @@ const LanguagePickerModal: React.FC<{
   );
 };
 
-// 대화 형식 선택 모달
 const ModePickerModal: React.FC<{
   visible: boolean;
   onClose: () => void;
@@ -168,7 +165,7 @@ const ModePickerModal: React.FC<{
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const [myLanguage, setMyLanguage] = useState<Language>(LANGUAGES[0]);
-  const [targetLanguage, setTargetLanguage] = useState<Language>(LANGUAGES[7]);  // Spanish
+  const [targetLanguage, setTargetLanguage] = useState<Language>(LANGUAGES[7]);
   const [conversationMode, setConversationMode] = useState(CONVERSATION_MODES[0]);
   const [loaded, setLoaded] = useState(false);
 
@@ -176,7 +173,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const [targetLangModal, setTargetLangModal] = useState(false);
   const [modeModal, setModeModal] = useState(false);
 
-  // 저장된 설정 불러오기
   useEffect(() => {
     const loadSettings = async () => {
       try {
@@ -206,7 +202,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     loadSettings();
   }, []);
 
-  // 설정 변경 시 저장
   const updateMyLanguage = (lang: Language) => {
     setMyLanguage(lang);
     AsyncStorage.setItem(STORAGE_KEYS.MY_LANG, lang.code);
@@ -227,7 +222,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       Alert.alert('오류', '나의 언어와 상대 언어가 같을 수 없습니다.');
       return;
     }
-    navigation.navigate('Loading', {
+    // Loading 화면을 건너뛰고 바로 Conversation으로 이동
+    navigation.navigate('Conversation', {
       myLang: myLanguage,
       targetLang: targetLanguage,
       mode: conversationMode.id,
@@ -289,7 +285,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           </View>
         </View>
 
-        {/* 시작하기 Button - 그라데이션 보더 */}
+        {/* 시작하기 Button */}
         <TouchableOpacity onPress={handleStart} activeOpacity={0.8}>
           <LinearGradient
             colors={['#8E54E9', '#4776E6', '#00CFEF']}
@@ -344,18 +340,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
     paddingBottom: 60,
   },
-
-  // Logo
   logoSection: {
     marginBottom: 56,
   },
   logoText: {
     fontSize: 48,
     fontWeight: 'bold',
-    letterSpacing: 48 * 0.06, // 자간 6%
+    letterSpacing: 48 * 0.06,
   },
-
-  // Selection
   selectionSection: {
     width: '100%',
     marginBottom: 78,
@@ -391,10 +383,8 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: '#E5E7EB',
-    marginLeft: 80, // label 너비만큼 띄워서 값 영역 아래부터 시작
+    marginLeft: 80,
   },
-
-  // Start Button - 그라데이션 보더
   startBtnGradient: {
     borderRadius: 28,
     padding: 1.5,
