@@ -38,15 +38,15 @@ except ImportError:
 
 from qwen_asr import Qwen3ASRModel
 from qwen_asr.inference.utils import warmup_streaming
-from silero_vad import load_silero_vad
+
+# ──────────────────────────────────────────────────────────────────────
+# silero-vad: 최신 API (v3+) 사용 — VADIterator 기반 스트리밍
+# ──────────────────────────────────────────────────────────────────────
 try:
-    from silero_vad import get_speech_ts_adaptive  # preferred
+    from silero_vad import load_silero_vad, VADIterator
+    _SILERO_VAD_AVAILABLE = True
 except ImportError:
-    get_speech_ts_adaptive = None
-try:
-    from silero_vad import get_speech_ts  # fallback
-except ImportError:
-    get_speech_ts = None
+    _SILERO_VAD_AVAILABLE = False
 
 logging.basicConfig(
     level=logging.INFO,
@@ -59,11 +59,11 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 SAMPLING_RATE = 16000
-VAD_WINDOW_MS = 32           # silero default window size
-VAD_HOP_MS = 8               # silero default hop
-VAD_SR = 16000
-VAD_SILENCE_MS = 320         # need this much silence to close a segment
-VAD_PAD_MS = 160             # add tail pad to ensure decoder catches up
+# VADIterator 설정
+VAD_THRESHOLD = 0.5
+VAD_MIN_SILENCE_MS = 320       # 발화 종료 판정까지 필요한 침묵 길이
+VAD_SPEECH_PAD_MS = 160        # 발화 경계에 추가하는 패딩
+VAD_WINDOW_SIZE_SAMPLES = 512  # 16kHz 기준 silero 권장 윈도우 크기
 
 
 @dataclass
@@ -75,7 +75,7 @@ class StreamingConfig:
     max_new_tokens: int = 32
 
     # 스트리밍 설정
-    chunk_size_sec: float = 2.0  # 한 번에 처리할 오디오 길이 (초)
+    chunk_size_sec: float = 2.0
     unfixed_chunk_num: int = 2
     unfixed_token_num: int = 5
 
@@ -104,7 +104,9 @@ def lang_to_code(lang: str) -> str:
     return LANG_NAME_TO_CODE.get(lang, lang.lower()[:2])
 
 
-async def google_translate_async(session: aiohttp.ClientSession, text: str, target_lang: str) -> tuple[str, str]:
+async def google_translate_async(
+    session: aiohttp.ClientSession, text: str, target_lang: str
+) -> tuple[str, str]:
     """Async Google Translate call.
     Returns: (translated_text, detected_source_lang_code)
     """
@@ -143,17 +145,18 @@ class Qwen3ASRStreamingHandler:
         self.running = False
         self.last_text = ""
         self.committed_len = 0
-        self.committed_prefix = ""  # committed_len validity tracking
+        self.committed_prefix = ""
         self.last_text_lang = ""
 
         # 클라이언트 옵션
         self.client_lang = "auto"
-        self.client_target_lang = ""  # 번역 대상 언어
+        self.client_target_lang = ""
 
         # 타임스탬프 추적
         self.segment_start_time = 0.0
         self.current_time = 0.0
-        # Commit policy: if no new partial arrives for timeout, commit tail.
+
+        # Commit policy
         self.partial_commit_timeout_sec = 2.0
         self.last_partial_wall_ts = 0.0
         self.partial_watchdog_interval_sec = 0.1
@@ -163,28 +166,33 @@ class Qwen3ASRStreamingHandler:
         self.http_session: Optional[aiohttp.ClientSession] = None
 
         # VAD / commit alignment
-        self.sample_cursor = 0              # total samples ingested
-        self.asr_processed_cursor = 0       # best-effort processed samples
-        self.pending_commits: list[int] = []  # target end indices (samples)
+        self.sample_cursor = 0
+        self.asr_processed_cursor = 0
+        self.pending_commits: list[int] = []
         self.commit_task = None
-        # silero-vad packaging differs by version: sometimes returns (model, utils), sometimes model only.
-        _vad_loaded = load_silero_vad()
-        if isinstance(_vad_loaded, tuple):
-            self.vad_model, self.vad_utils = _vad_loaded
-            self._vad_get_ts = (
-                self.vad_utils.get("get_speech_ts_adaptive")
-                or self.vad_utils.get("get_speech_ts")
-            )
+
+        # ── silero-vad 초기화 (VADIterator 사용) ──
+        self.vad_enabled = False
+        self.vad_iterator = None
+        if _SILERO_VAD_AVAILABLE:
+            try:
+                vad_model = load_silero_vad()
+                self.vad_iterator = VADIterator(
+                    model=vad_model,
+                    threshold=VAD_THRESHOLD,
+                    sampling_rate=SAMPLING_RATE,
+                    min_silence_duration_ms=VAD_MIN_SILENCE_MS,
+                    speech_pad_ms=VAD_SPEECH_PAD_MS,
+                )
+                self.vad_enabled = True
+                logger.info("Silero VAD (VADIterator) loaded successfully")
+            except Exception as e:
+                logger.warning(f"Silero VAD disabled: {e}")
         else:
-            self.vad_model = _vad_loaded
-            self.vad_utils = {}
-            self._vad_get_ts = get_speech_ts_adaptive or get_speech_ts
-        if self._vad_get_ts is None:
-            raise RuntimeError("silero-vad: get_speech_ts(_adaptive) not found; upgrade package.")
-        self.vad_state = None
-        self.vad_silence_run = 0
-        self.vad_hangover_samples = int(VAD_SILENCE_MS * VAD_SR / 1000)
-        self.vad_pad_samples = int(VAD_PAD_MS * VAD_SR / 1000)
+            logger.warning(
+                "silero-vad 패키지가 설치되지 않았습니다. "
+                "VAD 없이 동작합니다. 설치: pip install silero-vad"
+            )
 
     async def send_message(self, msg_type: str, **kwargs):
         """JSON 메시지 전송"""
@@ -215,8 +223,8 @@ class Qwen3ASRStreamingHandler:
         self.sample_cursor = 0
         self.asr_processed_cursor = 0
         self.pending_commits.clear()
-        self.vad_state = None
-        self.vad_silence_run = 0
+        if self.vad_iterator is not None:
+            self.vad_iterator.reset_states()
         self._stop_commit_task()
         self.commit_task = asyncio.create_task(self._commit_loop())
 
@@ -245,7 +253,6 @@ class Qwen3ASRStreamingHandler:
     async def _asr_streaming_transcribe(self, chunk: np.ndarray):
         async with self.asr_lock:
             await asyncio.to_thread(self.asr.streaming_transcribe, chunk, self.state)
-            # best-effort: assume decoder processed this chunk fully
             self.asr_processed_cursor = self.sample_cursor
 
     async def _asr_finish_streaming(self):
@@ -262,7 +269,6 @@ class Qwen3ASRStreamingHandler:
             return
 
         await self.flush_uncommitted(reason=f"partial-timeout:{trigger}")
-        # Prevent repeated flush loops until a new partial arrives.
         self.last_partial_wall_ts = 0.0
 
     async def flush_uncommitted(self, force=False, reason="partial-timeout"):
@@ -277,14 +283,28 @@ class Qwen3ASRStreamingHandler:
                 logger.info(f"[timeout-skip] reason={reason} too short: '{uncommitted}'")
                 return
 
-            translation, detected_lang = await google_translate_async(self.http_session, uncommitted, self.client_target_lang)
-            logger.info(f"[translate-timeout] reason={reason} sentence='{uncommitted}' tl={self.client_target_lang} -> detected={detected_lang} translation='{translation}'")
+            translation, detected_lang = await google_translate_async(
+                self.http_session, uncommitted, self.client_target_lang
+            )
+            logger.info(
+                f"[translate-timeout] reason={reason} sentence='{uncommitted}' "
+                f"tl={self.client_target_lang} -> detected={detected_lang} "
+                f"translation='{translation}'"
+            )
             if detected_lang == self.client_target_lang:
-                translation, _ = await google_translate_async(self.http_session, uncommitted, self.client_lang)
-                logger.info(f"[translate-timeout-flip] reason={reason} tl={self.client_lang} -> translation='{translation}'")
+                translation, _ = await google_translate_async(
+                    self.http_session, uncommitted, self.client_lang
+                )
+                logger.info(
+                    f"[translate-timeout-flip] reason={reason} "
+                    f"tl={self.client_lang} -> translation='{translation}'"
+                )
 
             final_lang = detected_lang or lang_to_code(current_lang)
-            logger.info(f"[final-timeout] reason={reason} lang={final_lang} translation='{translation}' original='{uncommitted}'")
+            logger.info(
+                f"[final-timeout] reason={reason} lang={final_lang} "
+                f"translation='{translation}' original='{uncommitted}'"
+            )
             await self.send_message(
                 "final",
                 start=format_time(self.segment_start_time),
@@ -304,32 +324,36 @@ class Qwen3ASRStreamingHandler:
         if chunk.size == 0:
             return
 
-        # Track absolute cursor before decode
         self.sample_cursor += chunk.size
 
-        # VAD inference (silero expects 16k mono float32)
-        with torch.no_grad():
-            speech_probs, self.vad_state = self._vad_get_ts(
-                torch.from_numpy(chunk),
-                self.vad_model,
-                self.vad_state,
-                sampling_rate=VAD_SR,
-                return_seconds=False,
-                threshold=0.5,
-                min_silence_ms=VAD_SILENCE_MS,
-                speech_pad_ms=0,
-            )
-        # speech_probs is a list of {"start":..., "end":...} relative to this chunk
-        # We only care about silence transition; if speech->silence ended in this chunk, enqueue commit target
-        if speech_probs:
-            last = speech_probs[-1]
-            # if segment ended inside this chunk
-            if last["end"] < chunk.size:
-                end_idx = self.sample_cursor - (chunk.size - last["end"])
-                end_idx += self.vad_pad_samples  # pad for decoder lag
-                self.pending_commits.append(end_idx)
+        # ── VAD: VADIterator로 스트리밍 음성 구간 탐지 ──
+        if self.vad_enabled and self.vad_iterator is not None:
+            try:
+                # VADIterator는 고정 크기(512 samples @16kHz)씩 처리해야 함
+                # 청크를 윈도우 크기로 분할하여 순차 처리
+                offset = 0
+                while offset + VAD_WINDOW_SIZE_SAMPLES <= chunk.size:
+                    window = chunk[offset:offset + VAD_WINDOW_SIZE_SAMPLES]
+                    speech_dict = self.vad_iterator(
+                        torch.from_numpy(window),
+                        return_seconds=False,
+                    )
+                    if speech_dict is not None:
+                        # speech_dict = {'start': N} 또는 {'end': N}
+                        if "end" in speech_dict:
+                            # 발화 종료 감지 → commit 예약
+                            end_sample = self.sample_cursor - (chunk.size - offset - VAD_WINDOW_SIZE_SAMPLES)
+                            self.pending_commits.append(end_sample)
+                            logger.info(
+                                f"[vad] speech end detected; "
+                                f"target_samples={end_sample}"
+                            )
+                    offset += VAD_WINDOW_SIZE_SAMPLES
+            except Exception as e:
+                logger.warning(f"[vad] error, disabling for this session: {e}")
+                self.vad_enabled = False
 
-        # No min_chunk gate: process every incoming chunk immediately.
+        # ASR 처리
         self.current_time += chunk.size / SAMPLING_RATE
         await self._asr_streaming_transcribe(chunk)
 
@@ -345,11 +369,12 @@ class Qwen3ASRStreamingHandler:
         await self.send_message(
             "partial",
             original=current_text,
-            last_translation=""
+            last_translation="",
         )
         logger.info(f"[partial] text={current_text[:80]}...")
         self.last_partial_wall_ts = time.monotonic()
 
+        # 문장 단위 commit
         uncommitted = current_text[self.committed_len:]
         sentences_to_commit = []
         remaining = uncommitted
@@ -369,11 +394,22 @@ class Qwen3ASRStreamingHandler:
 
         if sentences_to_commit:
             for sentence in sentences_to_commit:
-                translation, detected_lang = await google_translate_async(self.http_session, sentence, self.client_target_lang)
-                logger.info(f"[translate-sentence] sentence='{sentence}' tl={self.client_target_lang} -> detected={detected_lang} translation='{translation}'")
+                translation, detected_lang = await google_translate_async(
+                    self.http_session, sentence, self.client_target_lang
+                )
+                logger.info(
+                    f"[translate-sentence] sentence='{sentence}' "
+                    f"tl={self.client_target_lang} -> detected={detected_lang} "
+                    f"translation='{translation}'"
+                )
                 if detected_lang == self.client_target_lang:
-                    translation, _ = await google_translate_async(self.http_session, sentence, self.client_lang)
-                    logger.info(f"[translate-sentence-flip] tl={self.client_lang} -> translation='{translation}'")
+                    translation, _ = await google_translate_async(
+                        self.http_session, sentence, self.client_lang
+                    )
+                    logger.info(
+                        f"[translate-sentence-flip] tl={self.client_lang} "
+                        f"-> translation='{translation}'"
+                    )
                 final_lang = detected_lang or lang_to_code(current_lang)
                 await self.send_message(
                     "final",
@@ -381,7 +417,7 @@ class Qwen3ASRStreamingHandler:
                     end=format_time(self.current_time),
                     original=sentence,
                     translation=translation,
-                    language=final_lang
+                    language=final_lang,
                 )
                 logger.info(f"[final-sentence] lang={final_lang} text={sentence}")
 
@@ -391,15 +427,18 @@ class Qwen3ASRStreamingHandler:
                 self.committed_len = len(current_text)
             self.committed_prefix = current_text[:self.committed_len]
 
-        # Also check from audio path; watchdog handles idle periods.
         await self.maybe_flush_by_partial_timeout(trigger="audio")
 
     async def _commit_loop(self):
+        """VAD에서 발화 종료를 감지하면 flush 수행"""
         try:
             while True:
                 if self.pending_commits and self.asr_processed_cursor >= self.pending_commits[0]:
                     target = self.pending_commits.pop(0)
-                    logger.info(f"[vad-commit] target_samples={target} processed={self.asr_processed_cursor}")
+                    logger.info(
+                        f"[vad-commit] target_samples={target} "
+                        f"processed={self.asr_processed_cursor}"
+                    )
                     await self.flush_uncommitted(force=True, reason="vad")
                 await asyncio.sleep(0.05)
         except asyncio.CancelledError:
@@ -408,7 +447,6 @@ class Qwen3ASRStreamingHandler:
     async def finish_streaming(self):
         if self.state is None:
             return
-
         await self._asr_finish_streaming()
         await self.flush_uncommitted(force=True, reason="finish")
 
@@ -432,15 +470,19 @@ class Qwen3ASRStreamingHandler:
                         if msg_type == "start":
                             self.client_lang = data.get("lang", "auto")
                             self.client_target_lang = data.get("targetLang", "")
-                            logger.info(f"Received start: lang={self.client_lang}, targetLang={self.client_target_lang}")
+                            logger.info(
+                                f"Received start: lang={self.client_lang}, "
+                                f"targetLang={self.client_target_lang}"
+                            )
 
                             self.init_streaming_state()
                             self.running = True
                             await self._start_partial_watchdog()
-                            # commit loop already started in init_streaming_state
-                            await self.send_message("ready", message="Ready to receive audio")
+                            await self.send_message(
+                                "ready", message="Ready to receive audio"
+                            )
 
-                        elif msg_type == "stop" or msg_type == "finish":
+                        elif msg_type in ("stop", "finish"):
                             logger.info(f"Received {msg_type} command")
                             self.running = False
                             self._stop_partial_watchdog()
@@ -449,6 +491,7 @@ class Qwen3ASRStreamingHandler:
                             if msg_type == "stop":
                                 break
 
+                            # finish → 상태 리셋 후 재시작
                             self.init_streaming_state()
                             self.running = True
                             await self._start_partial_watchdog()
@@ -501,8 +544,9 @@ class Qwen3ASRStreamingServer:
 
     async def start(self):
         """서버 시작"""
-        logger.info(f"Starting WebSocket server on ws://{self.config.host}:{self.config.port}")
-
+        logger.info(
+            f"Starting WebSocket server on ws://{self.config.host}:{self.config.port}"
+        )
         async with websockets.serve(
             self.handle_connection,
             self.config.host,
@@ -511,31 +555,40 @@ class Qwen3ASRStreamingServer:
             ping_timeout=None,
             max_size=10 * 1024 * 1024,  # 10MB
         ):
-            logger.info(f"Server listening on ws://{self.config.host}:{self.config.port}")
+            logger.info(
+                f"Server listening on ws://{self.config.host}:{self.config.port}"
+            )
             await asyncio.Future()  # run forever
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Qwen3-ASR Streaming WebSocket Server")
-
-    # 모델 설정
-    parser.add_argument("--model", type=str, default="Qwen/Qwen3-ASR-1.7B",
-                        help="Model path or name")
-    parser.add_argument("--gpu-memory-utilization", type=float, default=0.8,
-                        help="GPU memory utilization (0.0 ~ 1.0)")
-    parser.add_argument("--max-new-tokens", type=int, default=32,
-                        help="Max new tokens per chunk")
-
-    # 스트리밍 설정
-    parser.add_argument("--chunk-size", type=float, default=2.0,
-                        help="Chunk size in seconds")
-
-    # 서버 설정
-    parser.add_argument("--host", type=str, default="0.0.0.0",
-                        help="Server host")
-    parser.add_argument("--port", type=int, default=8765,
-                        help="Server port")
-
+    parser = argparse.ArgumentParser(
+        description="Qwen3-ASR Streaming WebSocket Server"
+    )
+    parser.add_argument(
+        "--model", type=str, default="Qwen/Qwen3-ASR-1.7B",
+        help="Model path or name",
+    )
+    parser.add_argument(
+        "--gpu-memory-utilization", type=float, default=0.8,
+        help="GPU memory utilization (0.0 ~ 1.0)",
+    )
+    parser.add_argument(
+        "--max-new-tokens", type=int, default=32,
+        help="Max new tokens per chunk",
+    )
+    parser.add_argument(
+        "--chunk-size", type=float, default=2.0,
+        help="Chunk size in seconds",
+    )
+    parser.add_argument(
+        "--host", type=str, default="0.0.0.0",
+        help="Server host",
+    )
+    parser.add_argument(
+        "--port", type=int, default=8765,
+        help="Server port",
+    )
     return parser.parse_args()
 
 
@@ -553,7 +606,6 @@ def main():
 
     server = Qwen3ASRStreamingServer(config)
     server.init_model()
-
     asyncio.run(server.start())
 
 
