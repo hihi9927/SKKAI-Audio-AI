@@ -39,7 +39,14 @@ except ImportError:
 from qwen_asr import Qwen3ASRModel
 from qwen_asr.inference.utils import warmup_streaming
 from silero_vad import load_silero_vad
-from silero_vad.utils import get_speech_ts_adaptive
+try:
+    from silero_vad import get_speech_ts_adaptive  # preferred
+except ImportError:
+    get_speech_ts_adaptive = None
+try:
+    from silero_vad import get_speech_ts  # fallback
+except ImportError:
+    get_speech_ts = None
 
 logging.basicConfig(
     level=logging.INFO,
@@ -162,13 +169,18 @@ class Qwen3ASRStreamingHandler:
         self.commit_task = None
         # silero-vad packaging differs by version: sometimes returns (model, utils), sometimes model only.
         _vad_loaded = load_silero_vad()
-        if isinstance(_vad_loaded, tuple) and len(_vad_loaded) == 2:
+        if isinstance(_vad_loaded, tuple):
             self.vad_model, self.vad_utils = _vad_loaded
-            self._vad_get_ts = self.vad_utils["get_speech_ts_adaptive"]
+            self._vad_get_ts = (
+                self.vad_utils.get("get_speech_ts_adaptive")
+                or self.vad_utils.get("get_speech_ts")
+            )
         else:
             self.vad_model = _vad_loaded
-            self.vad_utils = {"get_speech_ts_adaptive": get_speech_ts_adaptive}
-            self._vad_get_ts = get_speech_ts_adaptive
+            self.vad_utils = {}
+            self._vad_get_ts = get_speech_ts_adaptive or get_speech_ts
+        if self._vad_get_ts is None:
+            raise RuntimeError("silero-vad: get_speech_ts(_adaptive) not found; upgrade package.")
         self.vad_state = None
         self.vad_silence_run = 0
         self.vad_hangover_samples = int(VAD_SILENCE_MS * VAD_SR / 1000)
