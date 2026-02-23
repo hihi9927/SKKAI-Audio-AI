@@ -520,7 +520,7 @@ class Qwen3ASRStreamingHandler:
 
 class Qwen3ASRStreamingServer:
     """Qwen3-ASR 스트리밍 서버"""
-
+    
     def __init__(self, config: StreamingConfig):
         self.config = config
         self.asr = None
