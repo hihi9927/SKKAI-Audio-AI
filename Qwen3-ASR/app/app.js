@@ -17,7 +17,7 @@ const state = {
   translationHistory: [],
   recordingEnabled: false,
   // Default to latest mobile app endpoint (overridable via settings/localStorage)
-  SERVER_URL: 'wss://sportless-postpituitary-ludie.ngrok-free.dev',
+  SERVER_URL: 'wss://supervigorously-unforded-lavone.ngrok-free.dev',
   currentOriginal: '',
   currentTranslated: '',
   isConnecting: false,
