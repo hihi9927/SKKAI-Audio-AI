@@ -83,7 +83,7 @@ export const useAudioRecording = ({
   const initializeStream = () => {
     // 이전 data 리스너 모두 제거 (화면 전환 시 중복 방지)
     try {
-      LiveAudioStream.removeAllListeners?.('data');
+      (LiveAudioStream as any).removeAllListeners?.('data');
     } catch (e) {
       // removeAllListeners 미지원 시 무시
     }
@@ -149,7 +149,7 @@ export const useAudioRecording = ({
     try {
       LiveAudioStream.stop();
       try {
-        LiveAudioStream.removeAllListeners?.('data');
+        (LiveAudioStream as any).removeAllListeners?.('data');
       } catch (e) { /* ignore */ }
       _activeCallback = null;
       _nativeInitialized = false;

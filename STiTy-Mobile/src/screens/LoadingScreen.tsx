@@ -110,7 +110,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ navigation, route 
         {(status === 'connecting' || status === 'waiting') && (
           <>
             <Text style={styles.loadingText}>로딩 중 ...</Text>
-            <Text style={styles.hintText}>아무말이나 해주세요</Text>
+            <Text style={styles.hintText}>말을 시작해주세요</Text>
             <ActivityIndicator
               size="large"
               color={COLORS.gradientMiddle}

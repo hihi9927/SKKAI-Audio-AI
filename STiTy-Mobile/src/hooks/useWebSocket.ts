@@ -16,11 +16,10 @@ interface UseWebSocketReturn {
   sendMessage: (message: object) => void;
 }
 
-// ===== 서버 URL 설정 =====
-// ngrok 터널 사용 시: 터미널에서 `ngrok http 8001` 실행 후 URL 입력
-// 예: 'wss://abcd-1234.ngrok-free.app'
-// 로컬 네트워크 사용 시: 'ws://192.168.x.x:8001'
-const SERVER_URL = 'wss://sportless-postpituitary-ludie.ngrok-free.dev';
+// ===== Server URL =====
+// ngrok example: 'wss://abcd-1234.ngrok-free.app'
+// LAN example: 'ws://192.168.x.x:8001'
+const SERVER_URL = 'wss://supervigorously-unforded-lavone.ngrok-free.dev';
 
 export const useWebSocket = (): UseWebSocketReturn => {
   const [isConnected, setIsConnected] = useState(false);
@@ -43,7 +42,7 @@ export const useWebSocket = (): UseWebSocketReturn => {
 
         const timeout = setTimeout(() => {
           ws.close();
-          reject(new Error('연결 시간이 초과되었습니다'));
+          reject(new Error('Connection timeout'));
         }, 10000);
 
         ws.onopen = () => {
@@ -56,7 +55,7 @@ export const useWebSocket = (): UseWebSocketReturn => {
               const data = JSON.parse(event.data);
               console.log('Received message:', data.type);
 
-              // 서버가 hello를 보내면 연결 성공 → start 메시지 전송
+              // When the server sends "hello", consider connection ready and start streaming.
               if (data.type === 'hello') {
                 clearTimeout(timeout);
                 setIsConnected(true);
@@ -83,9 +82,9 @@ export const useWebSocket = (): UseWebSocketReturn => {
         ws.onerror = (event) => {
           clearTimeout(timeout);
           console.error('WebSocket error:', event);
-          setError('연결 오류가 발생했습니다');
+          setError('Connection error occurred');
           setIsConnected(false);
-          reject(new Error('서버에 연결할 수 없습니다'));
+          reject(new Error('Failed to connect to server'));
         };
 
         ws.onclose = (event) => {
@@ -94,15 +93,14 @@ export const useWebSocket = (): UseWebSocketReturn => {
           setIsConnected(false);
 
           if (event.code !== 1000) {
-            setError('연결이 끊어졌습니다');
+            setError('Connection closed unexpectedly');
           }
         };
 
         wsRef.current = ws;
-
       } catch (err) {
         console.error('Failed to create WebSocket:', err);
-        setError('연결을 시작할 수 없습니다');
+        setError('Failed to initialize connection');
         reject(err);
       }
     });

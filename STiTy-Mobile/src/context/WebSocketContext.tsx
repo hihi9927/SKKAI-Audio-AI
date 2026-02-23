@@ -20,7 +20,7 @@ interface WebSocketContextType {
 const WebSocketContext = createContext<WebSocketContextType | null>(null);
 
 // ===== Qwen3-ASR 서버 URL 설정 =====
-const SERVER_URL = 'wss://edra-raspiest-eagerly.ngrok-free.dev';
+const SERVER_URL = 'wss://supervigorously-unforded-lavone.ngrok-free.dev';
 
 export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isConnected, setIsConnected] = useState(false);

@@ -19,6 +19,7 @@ import { LANGUAGES, Language, CONVERSATION_MODES, formatLanguageDisplay, formatL
 type RootStackParamList = {
   Home: undefined;
   Loading: { myLang: Language; targetLang: Language; mode: string };
+  Pairing: { myLang: Language; targetLang: Language; mode: string };
   Conversation: { myLang: Language; targetLang: Language; mode: string };
 };
 
@@ -136,6 +137,7 @@ const ModePickerModal: React.FC<{
           <FlatList
             data={CONVERSATION_MODES}
             keyExtractor={(item) => item.id}
+            contentContainerStyle={modalStyles.modeListContent}
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={[
@@ -223,6 +225,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       return;
     }
     // Loading 화면을 건너뛰고 바로 Conversation으로 이동
+    if (conversationMode.id === 'mode-2') {
+      navigation.navigate('Pairing', {
+        myLang: myLanguage,
+        targetLang: targetLanguage,
+        mode: conversationMode.id,
+      });
+      return;
+    }
+
     navigation.navigate('Conversation', {
       myLang: myLanguage,
       targetLang: targetLanguage,
@@ -454,6 +465,9 @@ const modalStyles = StyleSheet.create({
     fontSize: 13,
     color: '#9CA3AF',
     marginTop: 4,
+  },
+  modeListContent: {
+    paddingBottom: 14,
   },
   sep: {
     height: 1,

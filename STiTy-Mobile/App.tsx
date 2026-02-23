@@ -6,12 +6,14 @@ import { StatusBar } from 'expo-status-bar';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { LoadingScreen } from './src/screens/LoadingScreen';
 import { ConversationScreen } from './src/screens/ConversationScreen';
+import { PairingScreen } from './src/screens/PairingScreen';
 import { WebSocketProvider } from './src/context/WebSocketContext';
 import { Language } from './src/constants/languages';
 
 export type RootStackParamList = {
   Home: undefined;
   Loading: { myLang: Language; targetLang: Language; mode: string };
+  Pairing: { myLang: Language; targetLang: Language; mode: string };
   Conversation: { myLang: Language; targetLang: Language; mode: string };
 };
 
@@ -32,6 +34,7 @@ export default function App() {
         >
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="Loading" component={LoadingScreen} />
+          <Stack.Screen name="Pairing" component={PairingScreen} />
           <Stack.Screen name="Conversation" component={ConversationScreen} />
         </Stack.Navigator>
       </NavigationContainer>
