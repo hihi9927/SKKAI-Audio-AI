@@ -712,6 +712,8 @@ class Qwen3ASRStreamingServer:
         self.asr = None
         self.pairing_hub = PairingHub()
         self.idle_task = None
+        self.active_connections = 0
+        self.connection_lock = asyncio.Lock()
 
     def init_model(self):
         """ASR 모델 초기화"""
@@ -727,13 +729,15 @@ class Qwen3ASRStreamingServer:
 
     async def handle_connection(self, websocket):
         """각 연결 처리"""
+        async with self.connection_lock:
+            self.active_connections += 1
         try:
-            handler = Qwen3ASRStreamingHandler(...)
+            handler = Qwen3ASRStreamingHandler(websocket, self.asr, self.config, self.pairing_hub)
             await handler.handle()
         finally:
             async with self.connection_lock:
                 self.active_connections -= 1
-                logger.info(...)
+                logger.info(f'Connection closed. Active connections: {self.active_connections}')
                 # 접속자 0명 되면 타이머 시작
                 if self.active_connections == 0:
                     self._restart_idle_timer()
