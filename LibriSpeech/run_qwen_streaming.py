@@ -1,35 +1,40 @@
+import sys
+import os
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import asyncio
 import json
-import sys
 import traceback
-
 import numpy as np
 import websockets
-
-from pipeline.qwen_pipeline import Qwen3SpeechRecognizer, Qwen3CommitPolicy
+from servers.librispeech_qwen import Qwen3SpeechRecognizer, Qwen3CommitPolicy
 from pipeline.types import AudioSegment, SpeakerInfo, TimeRange
 
 
 def _build_audio_segment(audio_array: np.ndarray) -> AudioSegment:
-    # Fallback speaker/time metadata for minimal streaming flow.
     return AudioSegment(
         speaker=SpeakerInfo(speaker_id=0, speaker_language=""),
         audio=audio_array,
         time_range=TimeRange(audio_start_time_ms=0, audio_end_time_ms=0),
     )
 
-
 async def handle_client(websocket):
     print("Client connected", file=sys.stderr)
     try:
-        # Load model/session before telling client we're ready.
-        recognizer = Qwen3SpeechRecognizer()
+        global global_recognizer
+        global_recognizer.state = global_recognizer.model.init_streaming_state(
+            unfixed_chunk_num=2,
+            unfixed_token_num=5,
+            chunk_size_sec=2.0,
+        )
+        recognizer = global_recognizer 
         policy = Qwen3CommitPolicy()
+        
         await websocket.send(json.dumps({"type": "hello", "message": "Qwen3 Streaming Server Ready"}))
 
         async for message in websocket:
             if isinstance(message, bytes):
-                # Client sends float32 PCM(16k) raw bytes.
                 audio_array = np.frombuffer(message, dtype=np.float32)
                 segment = _build_audio_segment(audio_array)
 
@@ -48,7 +53,9 @@ async def handle_client(websocket):
                     recognizer.model.finish_streaming_transcribe(recognizer.state)
                     final_text = recognizer.state.text
                     if final_text:
-                        await websocket.send(json.dumps({"type": "final", "original": final_text}))
+                        remaining_words = policy._extract_new_words(policy.last_committed_text, final_text)
+                        if remaining_words:
+                            await websocket.send(json.dumps({"type": "final", "original": remaining_words}))
                     await websocket.send(json.dumps({"type": "finish_complete"}))
                     print("Streaming session finished", file=sys.stderr)
                     break
@@ -58,13 +65,14 @@ async def handle_client(websocket):
         print(f"Server error: {e}", file=sys.stderr)
         traceback.print_exc(file=sys.stderr)
 
+global_recognizer = None
 
 async def main():
+    global global_recognizer
+    print("Qwen3 모델을 GPU에 올립니다...", file=sys.stderr)
+    global_recognizer = Qwen3SpeechRecognizer()  
+    
     print("Qwen3 Streaming Server listening on 8001", file=sys.stderr)
-    # Preload model before accepting clients to avoid websocket ping timeout
-    # during first-request initialization.
-    _ = Qwen3SpeechRecognizer()
-    print("Qwen3 model preload complete", file=sys.stderr)
     async with websockets.serve(
         handle_client,
         "0.0.0.0",
@@ -73,7 +81,6 @@ async def main():
         ping_timeout=None,
     ):
         await asyncio.Future()
-
 
 if __name__ == "__main__":
     asyncio.run(main())
