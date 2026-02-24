@@ -24,11 +24,12 @@ import logging
 import re
 import traceback
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Any
 
 import numpy as np
 import aiohttp
 import torch
+import subprocess
 
 try:
     import websockets
@@ -103,6 +104,116 @@ def lang_to_code(lang: str) -> str:
     return LANG_NAME_TO_CODE.get(lang, lang.lower()[:2])
 
 
+class PairingHub:
+    """Lightweight in-memory signaling hub for 2-earphone room pairing."""
+
+    def __init__(self):
+        self._lock = asyncio.Lock()
+        self._rooms: dict[str, dict[str, Any]] = {}
+        self._ws_to_room: dict[Any, str] = {}
+
+    async def _safe_send(self, websocket, payload: dict[str, Any]) -> None:
+        try:
+            await websocket.send(json.dumps(payload, ensure_ascii=False))
+        except Exception as e:
+            logger.warning(f"[pairing] send failed: {e}")
+
+    async def _detach_locked(self, websocket, notify_peer: bool) -> None:
+        room_id = self._ws_to_room.pop(websocket, None)
+        if not room_id:
+            return
+
+        room = self._rooms.get(room_id)
+        if not room:
+            return
+
+        peer = None
+        if room.get("host_ws") is websocket:
+            room["host_ws"] = None
+            room["host_cfg"] = None
+            peer = room.get("guest_ws")
+        elif room.get("guest_ws") is websocket:
+            room["guest_ws"] = None
+            peer = room.get("host_ws")
+
+        if notify_peer and peer is not None:
+            await self._safe_send(peer, {"type": "pair_peer_left", "roomId": room_id})
+
+        if room.get("host_ws") is None and room.get("guest_ws") is None:
+            self._rooms.pop(room_id, None)
+
+    async def register_host(
+        self, websocket, room_id: str, my_lang: str, target_lang: str, mode: str
+    ) -> None:
+        async with self._lock:
+            await self._detach_locked(websocket, notify_peer=False)
+            room = self._rooms.setdefault(room_id, {"host_ws": None, "guest_ws": None, "host_cfg": None})
+            room["host_ws"] = websocket
+            room["host_cfg"] = {
+                "myLang": my_lang,
+                "targetLang": target_lang,
+                "mode": mode or "mode-2",
+            }
+            self._ws_to_room[websocket] = room_id
+
+        await self._safe_send(websocket, {"type": "pair_hosted", "roomId": room_id})
+        logger.info(f"[pairing] host registered room={room_id} my={my_lang} target={target_lang}")
+
+    async def join_room(self, websocket, room_id: str, guest_my_lang: str) -> None:
+        async with self._lock:
+            await self._detach_locked(websocket, notify_peer=False)
+            room = self._rooms.get(room_id)
+            if not room or room.get("host_ws") is None or room.get("host_cfg") is None:
+                await self._safe_send(
+                    websocket,
+                    {"type": "pair_error", "roomId": room_id, "message": "room_not_found"},
+                )
+                return
+
+            prev_guest = room.get("guest_ws")
+            if prev_guest is not None and prev_guest is not websocket:
+                self._ws_to_room.pop(prev_guest, None)
+                await self._safe_send(
+                    prev_guest,
+                    {"type": "pair_error", "roomId": room_id, "message": "replaced_by_new_guest"},
+                )
+
+            room["guest_ws"] = websocket
+            self._ws_to_room[websocket] = room_id
+
+            host_ws = room["host_ws"]
+            host_cfg = room["host_cfg"]
+            host_my_lang = host_cfg["myLang"]
+
+        host_payload = {
+            "type": "pair_connected",
+            "roomId": room_id,
+            "role": "host",
+            "mode": host_cfg["mode"],
+            "myLang": host_my_lang,
+            "targetLang": guest_my_lang,
+        }
+        guest_payload = {
+            "type": "pair_connected",
+            "roomId": room_id,
+            "role": "guest",
+            "mode": host_cfg["mode"],
+            "myLang": guest_my_lang,
+            "targetLang": host_my_lang,
+        }
+        await asyncio.gather(
+            self._safe_send(host_ws, host_payload),
+            self._safe_send(websocket, guest_payload),
+        )
+        logger.info(
+            f"[pairing] connected room={room_id} host_my={host_my_lang} guest_my={guest_my_lang}"
+        )
+
+    async def leave(self, websocket) -> None:
+        async with self._lock:
+            await self._detach_locked(websocket, notify_peer=True)
+
+
 async def google_translate_async(
     session: aiohttp.ClientSession, text: str, target_lang: str
 ) -> tuple[str, str]:
@@ -136,12 +247,17 @@ async def google_translate_async(
 class Qwen3ASRStreamingHandler:
     """WebSocket 연결 당 하나의 스트리밍 핸들러"""
 
-    def __init__(self, websocket, asr_model: Qwen3ASRModel, config: StreamingConfig,
-                 asr_semaphore: asyncio.Semaphore):
+    def __init__(
+        self,
+        websocket,
+        asr_model: Qwen3ASRModel,
+        config: StreamingConfig,
+        pairing_hub: PairingHub,
+    ):
         self.websocket = websocket
         self.asr = asr_model
         self.config = config
-        self.asr_semaphore = asr_semaphore
+        self.pairing_hub = pairing_hub
         self.state = None
         self.running = False
 
@@ -238,16 +354,14 @@ class Qwen3ASRStreamingHandler:
 
     async def _asr_streaming_transcribe(self, chunk: np.ndarray, slot_key: Optional[str] = None):
         slot = self._slot(slot_key)
-        async with self.asr_semaphore:
-            async with self.asr_lock:
-                await asyncio.to_thread(self.asr.streaming_transcribe, chunk, slot["state"])
-                self.asr_processed_cursor = self.sample_cursor
+        async with self.asr_lock:
+            await asyncio.to_thread(self.asr.streaming_transcribe, chunk, slot["state"])
+            self.asr_processed_cursor = self.sample_cursor
 
     async def _asr_finish_streaming(self, slot_key: Optional[str] = None):
         slot = self._slot(slot_key)
-        async with self.asr_semaphore:
-            async with self.asr_lock:
-                await asyncio.to_thread(self.asr.finish_streaming_transcribe, slot["state"])
+        async with self.asr_lock:
+            await asyncio.to_thread(self.asr.finish_streaming_transcribe, slot["state"])
 
     async def flush_uncommitted(self, force=False, reason="flush", slot_key: Optional[str] = None):
         slot = self._slot(slot_key)
@@ -528,6 +642,45 @@ class Qwen3ASRStreamingHandler:
                             self.init_streaming_state()
                             self.running = True
 
+                        elif msg_type == "pair_host":
+                            room_id = (data.get("roomId") or "").strip()
+                            my_lang = (data.get("myLang") or "").strip()
+                            target_lang = (data.get("targetLang") or "").strip()
+                            mode = (data.get("mode") or "mode-2").strip()
+                            if not room_id or not my_lang or not target_lang:
+                                await self.send_message(
+                                    "pair_error",
+                                    roomId=room_id,
+                                    message="invalid_pair_host_payload",
+                                )
+                            else:
+                                await self.pairing_hub.register_host(
+                                    self.websocket, room_id, my_lang, target_lang, mode
+                                )
+
+                        elif msg_type == "pair_join":
+                            room_id = (data.get("roomId") or "").strip()
+                            guest_my_lang = (data.get("myLang") or "").strip()
+                            if not room_id:
+                                await self.send_message(
+                                    "pair_error",
+                                    roomId=room_id,
+                                    message="missing_room_id",
+                                )
+                            elif not guest_my_lang:
+                                await self.send_message(
+                                    "pair_error",
+                                    roomId=room_id,
+                                    message="missing_guest_my_lang",
+                                )
+                            else:
+                                await self.pairing_hub.join_room(
+                                    self.websocket, room_id, guest_my_lang
+                                )
+
+                        elif msg_type == "pair_leave":
+                            await self.pairing_hub.leave(self.websocket)
+
                     except json.JSONDecodeError:
                         logger.warning(f"Invalid JSON: {message[:100]}")
 
@@ -545,21 +698,20 @@ class Qwen3ASRStreamingHandler:
                 with contextlib.suppress(Exception):
                     await self.http_session.close()
                 self.http_session = None
+            await self.pairing_hub.leave(self.websocket)
             logger.info("Connection closed")
 
 
 class Qwen3ASRStreamingServer:
     """Qwen3-ASR 스트리밍 서버"""
 
-    MAX_CLIENTS = 3  # 최대 동시 접속 수
-
+    IDLE_SHUTDOWN_SEC = 300  # 5분간 접속 없으면 종료
+    
     def __init__(self, config: StreamingConfig):
         self.config = config
         self.asr = None
-        self.active_connections = 0
-        self.connection_lock = asyncio.Lock()
-        # GPU 동시 추론 제한 (한 번에 1개만 GPU 사용)
-        self.asr_semaphore = asyncio.Semaphore(1)
+        self.pairing_hub = PairingHub()
+        self.idle_task = None
 
     def init_model(self):
         """ASR 모델 초기화"""
@@ -574,41 +726,23 @@ class Qwen3ASRStreamingServer:
         logger.info("Model loaded successfully")
 
     async def handle_connection(self, websocket):
-        """각 연결 처리 — 최대 접속 수 제한"""
-        async with self.connection_lock:
-            if self.active_connections >= self.MAX_CLIENTS:
-                logger.warning(
-                    f"Connection rejected: {self.active_connections}/{self.MAX_CLIENTS} slots in use"
-                )
-                await websocket.send(json.dumps({
-                    "type": "error",
-                    "message": f"서버가 가득 찼습니다 ({self.MAX_CLIENTS}명 접속 중). 잠시 후 다시 시도해주세요."
-                }, ensure_ascii=False))
-                await websocket.close()
-                return
-            self.active_connections += 1
-            logger.info(
-                f"Client connected ({self.active_connections}/{self.MAX_CLIENTS})"
-            )
-
+        """각 연결 처리"""
         try:
-            handler = Qwen3ASRStreamingHandler(
-                websocket, self.asr, self.config, self.asr_semaphore
-            )
+            handler = Qwen3ASRStreamingHandler(...)
             await handler.handle()
         finally:
             async with self.connection_lock:
                 self.active_connections -= 1
-                logger.info(
-                    f"Client disconnected ({self.active_connections}/{self.MAX_CLIENTS})"
-                )
+                logger.info(...)
+                # 접속자 0명 되면 타이머 시작
+                if self.active_connections == 0:
+                    self._restart_idle_timer()
 
     async def start(self):
         """서버 시작"""
         logger.info(
             f"Starting WebSocket server on ws://{self.config.host}:{self.config.port}"
         )
-        logger.info(f"Max concurrent clients: {self.MAX_CLIENTS}")
         async with websockets.serve(
             self.handle_connection,
             self.config.host,
@@ -621,6 +755,29 @@ class Qwen3ASRStreamingServer:
                 f"Server listening on ws://{self.config.host}:{self.config.port}"
             )
             await asyncio.Future()  # run forever
+        
+        self._restart_idle_timer()
+
+    async def _idle_shutdown_loop(self):
+        """접속자 0명이 일정 시간 지속되면 EC2 종료"""
+        try:
+            while True:
+                await asyncio.sleep(self.IDLE_SHUTDOWN_SEC)
+                async with self.connection_lock:
+                    if self.active_connections == 0:
+                        logger.info(
+                            f"[idle-shutdown] {self.IDLE_SHUTDOWN_SEC}초간 "
+                            f"접속자 없음 — EC2 종료"
+                        )
+                        subprocess.run(["sudo", "shutdown", "-h", "now"])
+                        return
+        except asyncio.CancelledError:
+            return
+        
+    def _restart_idle_timer(self):
+        if self.idle_task and not self.idle_task.done():
+            self.idle_task.cancel()
+        self.idle_task = asyncio.create_task(self._idle_shutdown_loop())
 
 
 def parse_args():
@@ -651,10 +808,6 @@ def parse_args():
         "--port", type=int, default=8765,
         help="Server port",
     )
-    parser.add_argument(
-        "--max-clients", type=int, default=3,
-        help="Maximum concurrent clients",
-    )
     return parser.parse_args()
 
 
@@ -671,7 +824,6 @@ def main():
     )
 
     server = Qwen3ASRStreamingServer(config)
-    server.MAX_CLIENTS = args.max_clients
     server.init_model()
     asyncio.run(server.start())
 
