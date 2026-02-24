@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
+import { startServer } from '../utils/serverUtils';
 
 // ===== Qwen3-ASR 서버 설정 =====
 interface WebSocketConfig {
@@ -39,7 +40,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   useEffect(() => { serverStatusRef.current = serverStatus; }, [serverStatus]);
 
-  const probeServer = useCallback(() => {
+  const probeServer = useCallback(async () => {
     if (isProbingRef.current || serverStatusRef.current === 'ready') return;
     isProbingRef.current = true;
     setServerStatus('connecting');
@@ -49,49 +50,53 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
 
     try {
-      const ws = new WebSocket(SERVER_URL);
-      ws.binaryType = 'arraybuffer';
-      let helloReceived = false;
+      // 1. EC2 기동 (이미 켜져 있으면 즉시 반환)
+      await startServer();
 
-      const timeout = setTimeout(() => {
-        if (!helloReceived) {
-          ws.close();
-          setServerStatus('error');
-          isProbingRef.current = false;
-        }
-      }, 30000);
+      // 2. WebSocket hello 확인 (최대 12회 재시도, 10초 간격 = 최대 2분)
+      const tryProbe = (): Promise<void> =>
+        new Promise<void>((resolve, reject) => {
+          const ws = new WebSocket(SERVER_URL);
+          ws.binaryType = 'arraybuffer';
+          let helloReceived = false;
 
-      ws.onmessage = (event) => {
+          const timeout = setTimeout(() => {
+            if (!helloReceived) { ws.close(); reject(new Error('timeout')); }
+          }, 10000);
+
+          ws.onmessage = (event) => {
+            try {
+              if (typeof event.data === 'string') {
+                const data = JSON.parse(event.data);
+                if (data.type === 'hello') {
+                  clearTimeout(timeout);
+                  helloReceived = true;
+                  ws.close(1000, 'Probe complete');
+                  resolve();
+                }
+              }
+            } catch (e) {}
+          };
+
+          ws.onerror = () => { clearTimeout(timeout); if (!helloReceived) reject(new Error('error')); };
+          ws.onclose = () => { if (!helloReceived) reject(new Error('closed')); };
+          probeWsRef.current = ws;
+        });
+
+      let connected = false;
+      for (let i = 0; i < 12; i++) {
         try {
-          if (typeof event.data === 'string') {
-            const data = JSON.parse(event.data);
-            if (data.type === 'hello') {
-              clearTimeout(timeout);
-              helloReceived = true;
-              setServerStatus('ready');
-              isProbingRef.current = false;
-              ws.close(1000, 'Probe complete');
-            }
-          }
-        } catch (e) {}
-      };
-
-      ws.onerror = () => {
-        clearTimeout(timeout);
-        if (!helloReceived) {
-          setServerStatus('error');
-          isProbingRef.current = false;
+          await tryProbe();
+          connected = true;
+          break;
+        } catch (e) {
+          if (i < 11) await new Promise(r => setTimeout(r, 10000));
         }
-      };
+      }
+      if (!connected) throw new Error('서버 연결 시간 초과');
 
-      ws.onclose = () => {
-        if (!helloReceived) {
-          setServerStatus('error');
-          isProbingRef.current = false;
-        }
-      };
-
-      probeWsRef.current = ws;
+      setServerStatus('ready');
+      isProbingRef.current = false;
     } catch (err) {
       setServerStatus('error');
       isProbingRef.current = false;

@@ -20,7 +20,6 @@ import { useWebSocketContext } from '../context/WebSocketContext';
 
 type RootStackParamList = {
   Home: undefined;
-  Loading: { myLang: Language; targetLang: Language; mode: string };
   Conversation: { myLang: Language; targetLang: Language; mode: string };
 };
 

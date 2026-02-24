@@ -23,8 +23,7 @@ import { useAudioRecording } from '../hooks/useAudioRecording';
 
 type RootStackParamList = {
   Home: undefined;
-  Loading: { myLang: Language; targetLang: Language; mode: string };
-  Conversation: { myLang: Language; targetLang: Language; mode: string; initialMessage?: any };
+  Conversation: { myLang: Language; targetLang: Language; mode: string };
 };
 
 type ConversationScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Conversation'>;
@@ -68,7 +67,7 @@ const translateText = async (text: string, sourceLang: string, targetLang: strin
 };
 
 export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigation, route }) => {
-  const { myLang, targetLang, initialMessage } = route.params;
+  const { myLang, targetLang } = route.params;
   const [currentMode, setCurrentMode] = useState(route.params.mode);
   const [displayText, setDisplayText] = useState<{ lang: string; text: string } | null>(null);
   const [transcriptions, setTranscriptions] = useState<TranscriptionEntry[]>([]);
@@ -82,6 +81,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
   // 'error': 연결 실패
   const [sessionStatus, setSessionStatus] = useState<'connecting' | 'ready' | 'error'>('connecting');
   const [connectionError, setConnectionError] = useState<string>('');
+  const [connectingMessage] = useState<string>('말을 시작해주세요');
 
   // 모드에 따라 TTS 자동 설정
   const isTTSEnabled = currentMode === 'mode-2';
@@ -138,7 +138,6 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     },
   });
 
-  const processedInitialRef = useRef(false);
   const entryIdRef = useRef(0);
 
   const shouldPlayTTS = (detectedLang: string): boolean => {
@@ -244,14 +243,6 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     };
   }, []);
 
-  // initialMessage 처리 (LoadingScreen에서 넘어온 경우 호환)
-  useEffect(() => {
-    if (initialMessage && !processedInitialRef.current) {
-      processedInitialRef.current = true;
-      handleMessage.current(initialMessage);
-    }
-  }, []);
-
   // 앱 백그라운드 처리
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextAppState) => {
@@ -355,7 +346,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
               {sessionStatus === 'connecting' && (
                 <>
                   <ActivityIndicator size="large" color={COLORS.gradientMiddle} style={{ marginBottom: SPACING.lg }} />
-                  <Text style={styles.overlayHintText}>말을 시작해주세요</Text>
+                  <Text style={styles.overlayHintText}>{connectingMessage}</Text>
                 </>
               )}
               <View style={styles.overlayBackButton}>
