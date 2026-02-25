@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,17 +9,17 @@ import {
   TouchableOpacity,
   Modal,
   FlatList,
+  Animated,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LANGUAGES, Language, CONVERSATION_MODES, formatLanguageDisplay, formatLanguageAs } from '../constants/languages';
+import { useWebSocketContext } from '../context/WebSocketContext';
 
 type RootStackParamList = {
   Home: undefined;
-  Loading: { myLang: Language; targetLang: Language; mode: string };
-  Pairing: { myLang: Language; targetLang: Language; mode: string };
   Conversation: { myLang: Language; targetLang: Language; mode: string };
 };
 
@@ -175,6 +175,37 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const [targetLangModal, setTargetLangModal] = useState(false);
   const [modeModal, setModeModal] = useState(false);
 
+  const { serverStatus, probeServer } = useWebSocketContext();
+  const progressAnim = useRef(new Animated.Value(0)).current;
+  const slowAnimRef = useRef<Animated.CompositeAnimation | null>(null);
+
+  // 마운트 시 서버 probe 시작
+  useEffect(() => {
+    probeServer();
+  }, []);
+
+  // serverStatus 변화에 따른 애니메이션
+  useEffect(() => {
+    if (serverStatus === 'connecting') {
+      progressAnim.setValue(0);
+      slowAnimRef.current = Animated.timing(progressAnim, {
+        toValue: 0.85,
+        duration: 18000,
+        useNativeDriver: false,
+      });
+      slowAnimRef.current.start();
+    } else if (serverStatus === 'ready') {
+      if (slowAnimRef.current) slowAnimRef.current.stop();
+      Animated.timing(progressAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: false,
+      }).start();
+    } else if (serverStatus === 'error') {
+      if (slowAnimRef.current) slowAnimRef.current.stop();
+    }
+  }, [serverStatus]);
+
   useEffect(() => {
     const loadSettings = async () => {
       try {
@@ -224,16 +255,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       Alert.alert('오류', '나의 언어와 상대 언어가 같을 수 없습니다.');
       return;
     }
-    // Loading 화면을 건너뛰고 바로 Conversation으로 이동
-    if (conversationMode.id === 'mode-2') {
-      navigation.navigate('Pairing', {
-        myLang: myLanguage,
-        targetLang: targetLanguage,
-        mode: conversationMode.id,
-      });
-      return;
-    }
-
     navigation.navigate('Conversation', {
       myLang: myLanguage,
       targetLang: targetLanguage,
@@ -296,19 +317,61 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           </View>
         </View>
 
-        {/* 시작하기 Button */}
-        <TouchableOpacity onPress={handleStart} activeOpacity={0.8}>
-          <LinearGradient
-            colors={['#8E54E9', '#4776E6', '#00CFEF']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.startBtnGradient}
-          >
-            <View style={styles.startBtnInner}>
-              <GradientText text="시작하기" style={styles.startText} />
+        {/* 서버 로딩 바 / 시작하기 버튼 */}
+        {serverStatus === 'ready' ? (
+          <TouchableOpacity onPress={handleStart} activeOpacity={0.8}>
+            <LinearGradient
+              colors={['#8E54E9', '#4776E6', '#00CFEF']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.startBtnGradient}
+            >
+              <View style={styles.startBtnInner}>
+                <GradientText text="시작하기" style={styles.startText} />
+              </View>
+            </LinearGradient>
+          </TouchableOpacity>
+        ) : serverStatus === 'error' ? (
+          <View style={styles.serverErrorContainer}>
+            <Text style={styles.serverErrorText}>서버에 연결할 수 없습니다</Text>
+            <TouchableOpacity onPress={probeServer} activeOpacity={0.8}>
+              <LinearGradient
+                colors={['#8E54E9', '#4776E6', '#00CFEF']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.startBtnGradient}
+              >
+                <View style={styles.startBtnInner}>
+                  <GradientText text="재시도" style={styles.startText} />
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.loadingContainer}>
+            <View style={styles.progressTrack}>
+              <Animated.View
+                style={[
+                  styles.progressFill,
+                  {
+                    width: progressAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ['0%', '100%'],
+                    }),
+                  },
+                ]}
+              >
+                <LinearGradient
+                  colors={['#8E54E9', '#4776E6', '#00CFEF']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={StyleSheet.absoluteFill}
+                />
+              </Animated.View>
             </View>
-          </LinearGradient>
-        </TouchableOpacity>
+            <Text style={styles.loadingText}>서버 연결 중...</Text>
+          </View>
+        )}
       </View>
 
       {/* Modals */}
@@ -410,6 +473,33 @@ const styles = StyleSheet.create({
   startText: {
     fontSize: 17,
     fontWeight: 'bold',
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    gap: 10,
+  },
+  progressTrack: {
+    width: 200,
+    height: 6,
+    backgroundColor: '#E5E7EB',
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 3,
+  },
+  loadingText: {
+    fontSize: 13,
+    color: '#9CA3AF',
+  },
+  serverErrorContainer: {
+    alignItems: 'center',
+    gap: 12,
+  },
+  serverErrorText: {
+    fontSize: 13,
+    color: '#9CA3AF',
   },
 });
 

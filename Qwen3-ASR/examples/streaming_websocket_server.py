@@ -712,7 +712,11 @@ class Qwen3ASRStreamingServer:
         self.asr = None
         self.pairing_hub = PairingHub()
         self.idle_task = None
+<<<<<<< HEAD
         self.active_connections = 0          
+=======
+        self.active_connections = 0
+>>>>>>> 9b952cc0b17d916a6c2828646471913c4a780384
         self.connection_lock = asyncio.Lock()
 
     def init_model(self):
@@ -731,6 +735,7 @@ class Qwen3ASRStreamingServer:
         """각 연결 처리"""
         async with self.connection_lock:
             self.active_connections += 1
+<<<<<<< HEAD
             # idle 타이머 취소 (사용자 접속)
             if self.idle_task and not self.idle_task.done():
                 self.idle_task.cancel()
@@ -740,11 +745,20 @@ class Qwen3ASRStreamingServer:
             handler = Qwen3ASRStreamingHandler(
                 websocket, self.asr, self.config, self.pairing_hub
             )
+=======
+        try:
+            handler = Qwen3ASRStreamingHandler(websocket, self.asr, self.config, self.pairing_hub)
+>>>>>>> 9b952cc0b17d916a6c2828646471913c4a780384
             await handler.handle()
         finally:
             async with self.connection_lock:
                 self.active_connections -= 1
+<<<<<<< HEAD
                 logger.info(f"Client disconnected ({self.active_connections})")
+=======
+                logger.info(f'Connection closed. Active connections: {self.active_connections}')
+                # 접속자 0명 되면 타이머 시작
+>>>>>>> 9b952cc0b17d916a6c2828646471913c4a780384
                 if self.active_connections == 0:
                     self._restart_idle_timer()
 

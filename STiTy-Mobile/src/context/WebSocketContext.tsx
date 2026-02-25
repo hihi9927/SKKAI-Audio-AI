@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
+import { startServer } from '../utils/serverUtils';
 
 // ===== Qwen3-ASR 서버 설정 =====
 interface WebSocketConfig {
@@ -6,15 +7,19 @@ interface WebSocketConfig {
   targetLang?: string;  // 번역 대상 언어 코드
 }
 
+export type ServerStatus = 'idle' | 'connecting' | 'ready' | 'error';
+
 interface WebSocketContextType {
   isConnected: boolean;
   lastMessage: any;
   error: string | null;
+  serverStatus: ServerStatus;
   connect: (config: WebSocketConfig) => Promise<void>;
   disconnect: () => void;
   sendAudio: (audioData: ArrayBuffer) => void;
   sendMessage: (message: object) => void;
   addMessageListener: (listener: (msg: any) => void) => () => void;
+  probeServer: () => void;
 }
 
 const WebSocketContext = createContext<WebSocketContextType | null>(null);
@@ -26,8 +31,77 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [isConnected, setIsConnected] = useState(false);
   const [lastMessage, setLastMessage] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [serverStatus, setServerStatus] = useState<ServerStatus>('idle');
   const wsRef = useRef<WebSocket | null>(null);
+  const probeWsRef = useRef<WebSocket | null>(null);
+  const isProbingRef = useRef(false);
+  const serverStatusRef = useRef<ServerStatus>('idle');
   const listenersRef = useRef<Set<(msg: any) => void>>(new Set());
+
+  useEffect(() => { serverStatusRef.current = serverStatus; }, [serverStatus]);
+
+  const probeServer = useCallback(async () => {
+    if (isProbingRef.current || serverStatusRef.current === 'ready') return;
+    isProbingRef.current = true;
+    setServerStatus('connecting');
+
+    if (probeWsRef.current && probeWsRef.current.readyState !== WebSocket.CLOSED) {
+      probeWsRef.current.close();
+    }
+
+    try {
+      // 1. EC2 기동 (이미 켜져 있으면 즉시 반환)
+      await startServer();
+
+      // 2. WebSocket hello 확인 (최대 12회 재시도, 10초 간격 = 최대 2분)
+      const tryProbe = (): Promise<void> =>
+        new Promise<void>((resolve, reject) => {
+          const ws = new WebSocket(SERVER_URL);
+          ws.binaryType = 'arraybuffer';
+          let helloReceived = false;
+
+          const timeout = setTimeout(() => {
+            if (!helloReceived) { ws.close(); reject(new Error('timeout')); }
+          }, 10000);
+
+          ws.onmessage = (event) => {
+            try {
+              if (typeof event.data === 'string') {
+                const data = JSON.parse(event.data);
+                if (data.type === 'hello') {
+                  clearTimeout(timeout);
+                  helloReceived = true;
+                  ws.close(1000, 'Probe complete');
+                  resolve();
+                }
+              }
+            } catch (e) {}
+          };
+
+          ws.onerror = () => { clearTimeout(timeout); if (!helloReceived) reject(new Error('error')); };
+          ws.onclose = () => { if (!helloReceived) reject(new Error('closed')); };
+          probeWsRef.current = ws;
+        });
+
+      let connected = false;
+      for (let i = 0; i < 12; i++) {
+        try {
+          await tryProbe();
+          connected = true;
+          break;
+        } catch (e) {
+          if (i < 11) await new Promise(r => setTimeout(r, 10000));
+        }
+      }
+      if (!connected) throw new Error('서버 연결 시간 초과');
+
+      setServerStatus('ready');
+      isProbingRef.current = false;
+    } catch (err) {
+      setServerStatus('error');
+      isProbingRef.current = false;
+    }
+  }, []);
 
   const connect = useCallback(async (config: WebSocketConfig): Promise<void> => {
     return new Promise((resolve, reject) => {
@@ -150,8 +224,8 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   return (
     <WebSocketContext.Provider value={{
-      isConnected, lastMessage, error,
-      connect, disconnect, sendAudio, sendMessage, addMessageListener,
+      isConnected, lastMessage, error, serverStatus,
+      connect, disconnect, sendAudio, sendMessage, addMessageListener, probeServer,
     }}>
       {children}
     </WebSocketContext.Provider>

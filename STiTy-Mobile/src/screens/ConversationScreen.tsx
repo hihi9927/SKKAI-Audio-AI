@@ -23,8 +23,7 @@ import { useAudioRecording } from '../hooks/useAudioRecording';
 
 type RootStackParamList = {
   Home: undefined;
-  Loading: { myLang: Language; targetLang: Language; mode: string };
-  Conversation: { myLang: Language; targetLang: Language; mode: string; initialMessage?: any };
+  Conversation: { myLang: Language; targetLang: Language; mode: string };
 };
 
 type ConversationScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Conversation'>;
@@ -68,12 +67,12 @@ const translateText = async (text: string, sourceLang: string, targetLang: strin
 };
 
 export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigation, route }) => {
-  const { myLang, targetLang, initialMessage } = route.params;
+  const { myLang, targetLang } = route.params;
   const [currentMode, setCurrentMode] = useState(route.params.mode);
   const [displayText, setDisplayText] = useState<{ lang: string; text: string } | null>(null);
   const [transcriptions, setTranscriptions] = useState<TranscriptionEntry[]>([]);
   const [isPaused, setIsPaused] = useState(false);
-  const [showFullTranscript, setShowFullTranscript] = useState(route.params.mode === 'mode-2');
+  const [showFullTranscript, setShowFullTranscript] = useState(false);
 
   // ── 연결/초기화 상태 관리 ──
   // 'connecting': WebSocket 연결 중
@@ -82,9 +81,10 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
   // 'error': 연결 실패
   const [sessionStatus, setSessionStatus] = useState<'connecting' | 'ready' | 'error'>('connecting');
   const [connectionError, setConnectionError] = useState<string>('');
+  const [connectingMessage] = useState<string>('말을 시작해주세요');
 
   // 모드에 따라 TTS 자동 설정
-  const isTTSEnabled = currentMode === 'mode-1' || currentMode === 'mode-2';
+  const isTTSEnabled = currentMode === 'mode-2';
   const isTTSEnabledRef = useRef(isTTSEnabled);
 
   const { isConnected, connect, sendAudio, disconnect, addMessageListener } = useWebSocketContext();
@@ -102,11 +102,6 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
   const targetLangRef = useRef(targetLang);
 
   useEffect(() => { modeRef.current = currentMode; }, [currentMode]);
-  useEffect(() => {
-    if (currentMode === 'mode-2') {
-      setShowFullTranscript(true);
-    }
-  }, [currentMode]);
 
   const ttsQueueRef = useRef<{ text: string; lang: string }[]>([]);
   const isSpeakingRef = useRef(false);
@@ -143,14 +138,11 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     },
   });
 
-  const processedInitialRef = useRef(false);
   const entryIdRef = useRef(0);
 
   const shouldPlayTTS = (detectedLang: string): boolean => {
     if (!isTTSEnabledRef.current) return false;
-    const currentMode = modeRef.current;
-    if (currentMode === 'mode-0') return false;
-    if (currentMode === 'mode-1' || currentMode === 'mode-2') {
+    if (modeRef.current === 'mode-2') {
       return detectedLang !== myLangRef.current.code;
     }
     return false;
@@ -249,14 +241,6 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
       isSpeakingRef.current = false;
       Speech.stop();
     };
-  }, []);
-
-  // initialMessage 처리 (LoadingScreen에서 넘어온 경우 호환)
-  useEffect(() => {
-    if (initialMessage && !processedInitialRef.current) {
-      processedInitialRef.current = true;
-      handleMessage.current(initialMessage);
-    }
   }, []);
 
   // 앱 백그라운드 처리
@@ -362,7 +346,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
               {sessionStatus === 'connecting' && (
                 <>
                   <ActivityIndicator size="large" color={COLORS.gradientMiddle} style={{ marginBottom: SPACING.lg }} />
-                  <Text style={styles.overlayHintText}>말을 시작해주세요</Text>
+                  <Text style={styles.overlayHintText}>{connectingMessage}</Text>
                 </>
               )}
               <View style={styles.overlayBackButton}>
@@ -391,7 +375,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
         }}
       >
         <Ionicons
-          name={currentMode === 'mode-0' ? 'phone-landscape-outline' : currentMode === 'mode-1' ? 'ear-outline' : 'headset-outline'}
+          name={currentMode === 'mode-1' ? 'phone-landscape-outline' : 'headset-outline'}
           size={22}
           color={COLORS.textMuted}
         />
@@ -401,28 +385,19 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
       </TouchableOpacity>
 
       {/* 상단 우측: 전체 대화 내역 보기 */}
-      {currentMode !== 'mode-2' && (
-        <TouchableOpacity
-          style={styles.topRightButton}
-          onPress={() => setShowFullTranscript((prev) => !prev)}
-        >
-          <Ionicons
-            name={showFullTranscript ? 'document-text' : 'document-text-outline'}
-            size={28}
-            color={showFullTranscript ? COLORS.gradientMiddle : COLORS.textMuted}
-          />
-        </TouchableOpacity>
-      )}
+      <TouchableOpacity
+        style={styles.topRightButton}
+        onPress={() => setShowFullTranscript((prev) => !prev)}
+      >
+        <Ionicons
+          name={showFullTranscript ? 'document-text' : 'document-text-outline'}
+          size={28}
+          color={showFullTranscript ? COLORS.gradientMiddle : COLORS.textMuted}
+        />
+      </TouchableOpacity>
 
       <ScrollView style={styles.transcriptionArea} contentContainerStyle={styles.transcriptionContent}>
-        {currentMode === 'mode-2' && !showFullTranscript ? (
-          <View style={styles.emptyContainer}>
-            <Ionicons name="headset-outline" size={48} color={COLORS.textMuted} />
-            <Text style={[styles.emptyText, { marginTop: SPACING.md }]}>
-              {!isPaused ? '대화 중...' : '대기 중...'}
-            </Text>
-          </View>
-        ) : !displayText && transcriptions.length === 0 ? (
+        {!displayText && transcriptions.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>
               {!isPaused ? '말씀해 주세요...' : '대기 중...'}
@@ -433,7 +408,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
             {(() => {
               let filtered = transcriptions;
 
-              if (currentMode === 'mode-1' && !showFullTranscript) {
+              if (currentMode === 'mode-2' && !showFullTranscript) {
                 filtered = filtered.filter(item => item.language === myLang.code);
               }
 
@@ -441,7 +416,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
                 filtered = filtered.slice(-MAX_VISIBLE);
               }
 
-              const onlyTranslation = (currentMode === 'mode-0' || currentMode === 'mode-1') && !showFullTranscript;
+              const onlyTranslation = currentMode === 'mode-1' && !showFullTranscript;
 
               return filtered.map((item) => (
                 <TranslationItem
@@ -456,11 +431,8 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
               ));
             })()}
             {displayText && (() => {
-              if (currentMode === 'mode-1' && !showFullTranscript) {
-                if (displayText.lang !== myLang.code) return null;
-              }
               if (currentMode === 'mode-2' && !showFullTranscript) {
-                return null;
+                if (displayText.lang !== myLang.code) return null;
               }
               return (
                 <TranslationItem

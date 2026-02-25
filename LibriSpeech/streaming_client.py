@@ -110,13 +110,13 @@ class LibriSpeechStreamingClient:
                     msg_type = data.get('type', '')
 
                     if msg_type == 'hello':
-                        print(f"✓ Server: {data.get('message', '')}\n")
+                        print(f"\n✓ Server: {data.get('message', '')}\n")
                     elif msg_type == 'final':
                         # Final transcription result
                         original = data.get('original', '')
 
                         # Print Whisper result to console
-                        print(f"Whisper: {original}")
+                        print(f"{original} / ", end="", flush=True)
 
                         # Store just the text (without "Whisper: " prefix)
                         self.output_lines.append(original)
