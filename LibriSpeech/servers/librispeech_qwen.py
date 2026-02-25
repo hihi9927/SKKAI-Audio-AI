@@ -175,9 +175,11 @@ class QwenOnlineProcessor:
         self.policy = policy
         self.audio_buffer = []
 
-    def init(self):
-        # 웹소켓이 새로 연결될 때마다 초기화
+    def init(self, offset=None):
+        # VAD가 넘겨주는 offset 파라미터를 유연하게 받도록 수정
         self.audio_buffer = []
+        self.offset = offset if offset is not None else 0.0
+
         # 모델 스트리밍 상태 초기화
         self.recognizer.state = self.recognizer.model.init_streaming_state(
             unfixed_chunk_num=2,
