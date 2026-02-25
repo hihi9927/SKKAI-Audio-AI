@@ -745,8 +745,8 @@ class Qwen3ASRStreamingServer:
             async with self.connection_lock:
                 self.active_connections -= 1
                 logger.info(f"Client disconnected ({self.active_connections})")
-                if self.active_connections == 0:
-                    self._restart_idle_timer()
+                # if self.active_connections == 0:
+                #     self._restart_idle_timer()
 
     async def start(self):
         logger.info(f"Starting WebSocket server on ws://{self.config.host}:{self.config.port}")
