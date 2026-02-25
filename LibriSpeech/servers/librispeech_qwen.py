@@ -176,7 +176,7 @@ class QwenOnlineProcessor:
         self.audio_buffer = []
 
     def init(self, offset=None):
-        # VAD가 넘겨주는 offset 파라미터를 유연하게 받도록 수정
+        # VAD 파라미터 유연하게 받기
         self.audio_buffer = []
         self.offset = offset if offset is not None else 0.0
 
@@ -186,7 +186,6 @@ class QwenOnlineProcessor:
             unfixed_token_num=5,
             chunk_size_sec=2.0,
         )
-        # 5번 대기 정책(CommitPolicy) 초기화
         self.policy.last_committed_words = []
         self.policy.uncommitted_words = []
         self.policy.stability_counts = []
