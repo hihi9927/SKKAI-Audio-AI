@@ -705,7 +705,7 @@ class Qwen3ASRStreamingHandler:
 class Qwen3ASRStreamingServer:
     """Qwen3-ASR 스트리밍 서버"""
 
-    IDLE_SHUTDOWN_SEC = 300  # 5분간 접속 없으면 종료
+    IDLE_SHUTDOWN_SEC = 60  # 1분간 접속 없으면 종료
     
     def __init__(self, config: StreamingConfig):
         self.config = config
@@ -745,8 +745,8 @@ class Qwen3ASRStreamingServer:
             async with self.connection_lock:
                 self.active_connections -= 1
                 logger.info(f"Client disconnected ({self.active_connections})")
-                # if self.active_connections == 0:
-                #     self._restart_idle_timer()
+                if self.active_connections == 0:
+                    self._restart_idle_timer()
 
     async def start(self):
         logger.info(f"Starting WebSocket server on ws://{self.config.host}:{self.config.port}")
@@ -759,8 +759,8 @@ class Qwen3ASRStreamingServer:
             max_size=10 * 1024 * 1024,
         ):
             logger.info(f"Server listening on ws://{self.config.host}:{self.config.port}")
-            # self._restart_idle_timer()  # 서버 시작 시 타이머 시작
-            await asyncio.Future()
+            self._restart_idle_timer()
+            await asyncio.Future()  # run forever
         
         
 
