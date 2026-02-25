@@ -1,7 +1,15 @@
 import sys
 import os
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# 현재 파일(run_qwen_streaming.py)의 위치를 기준으로 최상위 폴더(STiTy) 경로를 계산합니다.
+base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# 1. STiTy 폴더를 경로에 추가 (다른 서버 모듈용)
+sys.path.append(base_path)
+
+# 2. Qwen3-ASR 폴더를 경로에 추가 (qwen_asr 패키지를 찾기 위함)
+qwen_asr_path = os.path.join(base_path, "Qwen3-ASR")
+sys.path.append(qwen_asr_path)
 
 import asyncio
 import json
