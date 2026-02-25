@@ -712,7 +712,7 @@ class Qwen3ASRStreamingServer:
         self.asr = None
         self.pairing_hub = PairingHub()
         self.idle_task = None
-        self.active_connections = 0
+        self.active_connections = 0          
         self.connection_lock = asyncio.Lock()
 
     def init_model(self):
@@ -731,36 +731,38 @@ class Qwen3ASRStreamingServer:
         """각 연결 처리"""
         async with self.connection_lock:
             self.active_connections += 1
+            # idle 타이머 취소 (사용자 접속)
+            if self.idle_task and not self.idle_task.done():
+                self.idle_task.cancel()
+            logger.info(f"Client connected ({self.active_connections})")
+
         try:
-            handler = Qwen3ASRStreamingHandler(websocket, self.asr, self.config, self.pairing_hub)
+            handler = Qwen3ASRStreamingHandler(
+                websocket, self.asr, self.config, self.pairing_hub
+            )
             await handler.handle()
         finally:
             async with self.connection_lock:
                 self.active_connections -= 1
-                logger.info(f'Connection closed. Active connections: {self.active_connections}')
-                # 접속자 0명 되면 타이머 시작
+                logger.info(f"Client disconnected ({self.active_connections})")
                 if self.active_connections == 0:
                     self._restart_idle_timer()
 
     async def start(self):
-        """서버 시작"""
-        logger.info(
-            f"Starting WebSocket server on ws://{self.config.host}:{self.config.port}"
-        )
+        logger.info(f"Starting WebSocket server on ws://{self.config.host}:{self.config.port}")
         async with websockets.serve(
             self.handle_connection,
             self.config.host,
             self.config.port,
             ping_interval=None,
             ping_timeout=None,
-            max_size=10 * 1024 * 1024,  # 10MB
+            max_size=10 * 1024 * 1024,
         ):
-            logger.info(
-                f"Server listening on ws://{self.config.host}:{self.config.port}"
-            )
-            await asyncio.Future()  # run forever
+            logger.info(f"Server listening on ws://{self.config.host}:{self.config.port}")
+            # self._restart_idle_timer()  # 서버 시작 시 타이머 시작
+            await asyncio.Future()
         
-        self._restart_idle_timer()
+        
 
     async def _idle_shutdown_loop(self):
         """접속자 0명이 일정 시간 지속되면 EC2 종료"""
