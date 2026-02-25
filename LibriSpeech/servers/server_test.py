@@ -252,7 +252,7 @@ def main_websocket_server(factory, add_args):
     if args.warmup_file:
         if os.path.isfile(args.warmup_file):
             a = load_audio_chunk(args.warmup_file, 0, 1)
-            asr.warmup(a)
+            #asr.warmup(a)
             logger.info("Main Whisper model is warmed up.")
 
             # Warm up assistant model for speculative decoding
