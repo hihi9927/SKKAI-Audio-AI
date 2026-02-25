@@ -159,177 +159,95 @@ class LibriSpeechStreamingClient:
         print(f"Found {len(flac_files)} audio files\n")
 
         try:
-            async with websockets.connect(self.server_url) as websocket:
-                print(f"Connected to {self.server_url}\n")
+            # 1. 전체 타이밍 및 카운트 초기화 (루프 밖에서 한 번만)
+            self.start_time = time.time()
+            total_chunks_sent = 0
 
-                # Create finish event to signal when server completes finish processing
-                finish_event = asyncio.Event()
-
-                # Start receiving responses in background
-                receive_task = None
-                if show_recognition:
-                    receive_task = asyncio.create_task(self.receive_responses(websocket, finish_event))
-
-                # Start timing
-                self.start_time = time.time()
-
-                total_chunks_sent = 0
-
-                for file_idx, flac_file in enumerate(flac_files, 1):
-                    # Extract utterance ID from filename
+            # 2. 파일마다 반복 (화자/챕터 내의 파일들)
+            for file_idx, flac_file in enumerate(flac_files, 1):
+                # ⭐ 핵심: 파일마다 새 연결을 맺어 서버 버퍼를 초기화합니다.
+                async with websockets.connect(self.server_url) as websocket:
                     utt_id = Path(flac_file).stem
+                    finish_event = asyncio.Event()
+                    receive_task = None
 
-                    # Store GT for file output
+                    if show_recognition:
+                        # 파일별 응답을 받기 위한 백그라운드 태스크 시작
+                        receive_task = asyncio.create_task(self.receive_responses(websocket, finish_event))
+
+                    # 정답(GT) 저장 및 오디오 로드
                     if utt_id in transcripts:
                         self.gt_list.append(transcripts[utt_id])
 
-                    # Read audio file
                     audio, sr = sf.read(flac_file)
-
-                    # Ensure audio is mono
                     if len(audio.shape) > 1:
                         audio = audio.mean(axis=1)
 
-                    # Resample if necessary (LibriSpeech is already 16kHz, but just in case)
-                    if sr != self.sample_rate:
-                        print(f"Warning: Resampling from {sr}Hz to {self.sample_rate}Hz")
-                        # Simple resampling (for production, use librosa.resample)
-                        audio = np.interp(
-                            np.linspace(0, len(audio), int(len(audio) * self.sample_rate / sr)),
-                            np.arange(len(audio)),
-                            audio
-                        )
-
-                    # Track total audio duration
                     audio_duration = len(audio) / self.sample_rate
                     self.total_audio_duration += audio_duration
 
-                    # Show file info
+                    # 파일 정보 및 GT 출력
                     if show_transcript:
                         print(f"\n[File {file_idx}/{len(flac_files)}] {utt_id}")
                         print(f"⏱️  Audio Length: {audio_duration:.2f}s")
+                        if utt_id in transcripts:
+                            print(f"📝 GT: {transcripts[utt_id]}")
 
-                    # Show GT on screen
-                    if utt_id in transcripts:
-                        gt_text = transcripts[utt_id]
-                        if show_transcript:
-                            print(f"📝 GT: {gt_text}")
-
-                    # No start message needed - just stream continuously
-
-                    # Stream audio in chunks
+                    # 3. 오디오 청크 스트리밍
                     num_chunks = (len(audio) + self.chunk_size - 1) // self.chunk_size
-
                     for chunk_idx in range(num_chunks):
                         start_idx = chunk_idx * self.chunk_size
                         end_idx = min(start_idx + self.chunk_size, len(audio))
-                        chunk = audio[start_idx:end_idx]
+                        chunk_bytes = audio[start_idx:end_idx].astype(np.float32).tobytes()
 
-                        # Convert to bytes (Float32 format)
-                        chunk_float32 = chunk.astype(np.float32)
-                        chunk_bytes = chunk_float32.tobytes()
-
-                        # Send chunk
                         await websocket.send(chunk_bytes)
                         total_chunks_sent += 1
-
-                        # Wait for interval
                         await asyncio.sleep(self.interval_ms / 1000.0)
 
-                        # Print progress (only if not showing recognition)
-                        if not show_recognition and chunk_idx % 10 == 0:
-                            progress = (chunk_idx + 1) / num_chunks * 100
-                            print(f"  Progress: {progress:.1f}% ({chunk_idx+1}/{num_chunks} chunks)", end='\r')
-
-                    if not show_recognition:
-                        print(f"  Progress: 100.0% ({num_chunks}/{num_chunks} chunks) - Complete!")
-
-                    # Small gap between files (don't send finish - maintain context)
-                    await asyncio.sleep(self.interval_ms / 1000.0)
-
-                # Send finish signal to flush remaining audio after entire chapter
-                print(f"\nSending finish signal to server...")
-                await websocket.send(json.dumps({'type': 'finish'}))
-
-                # Wait for server to signal finish complete
-                print(f"Waiting for server to finish processing...")
-                try:
-                    # Wait up to 30 seconds for finish to complete
-                    await asyncio.wait_for(finish_event.wait(), timeout=30.0)
-                    print(f"Server finished processing!")
-                except asyncio.TimeoutError:
-                    print(f"Warning: Timeout waiting for finish complete (waited 30s)")
-
-                # End timing
-                self.end_time = time.time()
-                total_processing_time = self.end_time - self.start_time
-                delay = total_processing_time - self.total_audio_duration
-
-                # Cancel receive task
-                if receive_task:
-                    receive_task.cancel()
+                    # ⭐ 4. 파일 전송 완료 후 서버에 '끝났다'고 신호 보내기
+                    await websocket.send(json.dumps({'type': 'finish'}))
+                    
+                    # 서버가 마지막 인식을 완료할 때까지 대기 (최대 10초)
                     try:
-                        await receive_task
-                    except asyncio.CancelledError:
-                        pass
+                        await asyncio.wait_for(finish_event.wait(), timeout=10.0)
+                    except asyncio.TimeoutError:
+                        print("  (Timeout: 서버 응답 대기 시간 초과)")
 
-                print(f"\n{'='*70}")
-                print(f"Stream completed!")
-                print(f"Total files: {len(flac_files)}")
-                print(f"Total chunks sent: {total_chunks_sent}")
-                print(f"Total audio duration: {self.total_audio_duration:.2f}s")
-                print(f"Total processing time: {total_processing_time:.2f}s")
-                print(f"Total delay: {delay:.2f}s")
-                print(f"{'='*70}\n")
+                    # 5. 이번 파일의 태스크 종료 (with문을 나가면 연결도 닫힘)
+                    if receive_task:
+                        receive_task.cancel()
+                        try:
+                            await receive_task
+                        except asyncio.CancelledError:
+                            pass
 
-                # Save results to file
-                print(f"\nSaving results...")
+            # 6. 모든 파일 완료 후 통계 및 저장
+            self.end_time = time.time()
+            total_processing_time = self.end_time - self.start_time
+            delay = total_processing_time - self.total_audio_duration
 
-                if self.gt_list or self.output_lines:
-                    # Create output directory if it doesn't exist
-                    output_dir = Path("output")
-                    output_dir.mkdir(exist_ok=True)
+            print(f"\n{'='*70}\nStream completed!\nTotal files: {len(flac_files)}\nTotal audio duration: {self.total_audio_duration:.2f}s\n{'='*70}\n")
 
-                    output_filename = output_dir / f"streaming_results_{subset}_{speaker_id}_{chapter_id}.txt"
-                    with open(output_filename, 'w', encoding='utf-8') as f:
-                        # Write header with chapter info
-                        f.write(f"[{speaker_id}-{chapter_id}]\n")
+            # 결과 저장 로직
+            if self.gt_list or self.output_lines:
+                output_dir = Path("output")
+                output_dir.mkdir(exist_ok=True)
+                output_filename = output_dir / f"streaming_results_{subset}_{speaker_id}_{chapter_id}.txt"
+                with open(output_filename, 'w', encoding='utf-8') as f:
+                    f.write(f"[{speaker_id}-{chapter_id}]\n")
+                    if self.gt_list: f.write(f"GT: {' '.join(self.gt_list)}\n")
+                    if self.output_lines: f.write(f"Whisper: {' '.join(self.output_lines)}\n\n")
+                    f.write(f"Total audio duration: {self.total_audio_duration:.2f}s\n")
+                    f.write(f"Total processing time: {total_processing_time:.2f}s\n")
+                print(f"Results saved to: {output_filename}")
+            else:
+                print("No results to save!")
 
-                        # Write all GT transcripts first
-                        if self.gt_list:
-                            gt_combined = " ".join(self.gt_list)
-                            f.write(f"GT: {gt_combined}\n")
-                            print(f"  GT: {len(self.gt_list)} utterances combined")
-
-                        # Write all Whisper results
-                        if self.output_lines:
-                            whisper_combined = " ".join(self.output_lines)
-                            f.write(f"Whisper: {whisper_combined}\n\n")
-                            print(f"  Whisper: {len(self.output_lines)} segments combined")
-
-                        # Calculate and write WER if possible
-                        if HAS_JIWER and self.gt_list and self.output_lines:
-                            gt_combined = " ".join(self.gt_list)
-                            whisper_combined = " ".join(self.output_lines)
-
-                            # Normalize both strings (lowercase, no punctuation)
-                            gt_normalized = JIWER_TRANSFORM(gt_combined)
-                            whisper_normalized = JIWER_TRANSFORM(whisper_combined)
-
-                            # Calculate WER with normalized text
-                            wer_score = wer(gt_normalized, whisper_normalized)
-
-                            f.write(f"WER (normalized): {wer_score:.2%}\n")
-                            print(f"  WER (normalized): {wer_score:.2%}")
-
-                        # Write timing information
-                        f.write(f"Total audio duration: {self.total_audio_duration:.2f}s\n")
-                        f.write(f"Total processing time: {total_processing_time:.2f}s\n")
-                        f.write(f"Total delay: {delay:.2f}s\n")
-
-                    print(f"\nResults saved to: {output_filename}\n")
-                else:
-                    print(f"No results to save!")
+        except websockets.exceptions.WebSocketException as e:
+            print(f"WebSocket error: {e}")
+        except Exception as e:
+            print(f"Error: {e}")
+            raise
 
         except websockets.exceptions.WebSocketException as e:
             print(f"WebSocket error: {e}")
