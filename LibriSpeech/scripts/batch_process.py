@@ -442,9 +442,12 @@ def main():
         description='Batch process LibriSpeech test-clean dataset'
     )
 
-    parser.add_argument('--test-clean-dir', type=str,
-                        default=r'c:\Users\jduh1\Desktop\STiTy\LibriSpeech\test-clean',
-                        help='Path to test-clean directory')
+# 현재 스크립트 파일의 부모 폴더(LibriSpeech)를 기준으로 경로 설정
+    default_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "test-clean")
+    
+    parser.add_argument('--data-dir', type=str, # 변수명을 범용적으로 변경
+                        default=default_path,
+                        help='Path to dataset directory (e.g., test-clean or test-other)')
     parser.add_argument('--mode', type=str, default='streaming',
                         choices=['streaming', 'chunked', 'original'],
                         help='Processing mode (default: streaming)')
@@ -483,16 +486,15 @@ def main():
     else:
         modes_to_process = [args.mode]
 
-    # Check test-clean directory
-    if not os.path.isdir(args.test_clean_dir):
-        logger.error(f"test-clean directory not found: {args.test_clean_dir}")
+    # Check dataset directory
+    if not os.path.isdir(args.data_dir):
+        logger.error(f"Directory not found: {args.data_dir}")
         sys.exit(1)
 
-    # Find all audio files (once for all modes)
-    logger.info("Scanning test-clean directory...")
-    audio_files = find_audio_files(args.test_clean_dir)
-    logger.info(f"Found {len(audio_files)} audio files\n")
-
+    # Find all audio files
+    logger.info(f"Scanning directory: {args.data_dir}...")
+    audio_files = find_audio_files(args.data_dir)
+    
     if len(audio_files) == 0:
         logger.error("No audio files found")
         sys.exit(1)
