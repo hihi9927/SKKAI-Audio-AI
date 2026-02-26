@@ -8,7 +8,6 @@ import {
   Alert,
   AppState,
   TouchableOpacity,
-  ActivityIndicator,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
@@ -73,15 +72,15 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
   const [transcriptions, setTranscriptions] = useState<TranscriptionEntry[]>([]);
   const [isPaused, setIsPaused] = useState(false);
   const [showFullTranscript, setShowFullTranscript] = useState(false);
+  const fullTranscriptScrollRef = useRef<ScrollView>(null);
 
   // ── 연결/초기화 상태 관리 ──
   // 'connecting': WebSocket 연결 중
   // 'waiting': 연결 완료, 첫 전사 대기 중 (아무말이나 해주세요)
   // 'ready': 첫 전사 도착, 정상 대화 모드
   // 'error': 연결 실패
-  const [sessionStatus, setSessionStatus] = useState<'connecting' | 'ready' | 'error'>('connecting');
+  const [sessionStatus, setSessionStatus] = useState<'ready' | 'error'>('ready');
   const [connectionError, setConnectionError] = useState<string>('');
-  const [connectingMessage] = useState<string>('말을 시작해주세요');
 
   // 모드에 따라 TTS 자동 설정
   const isTTSEnabled = currentMode === 'mode-2';
@@ -204,18 +203,12 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
       addTranscription(lang, text, serverTranslation || undefined);
       setDisplayText(null);
 
-      // ── 첫 전사 도착 시 힌트 오버레이 제거 ──
-      setSessionStatus((prev) => {
-        if (prev === 'connecting') return 'ready';
-        return prev;
-      });
     }
   });
 
   // ── 화면 진입 시 WebSocket 연결 + 녹음 시작 ──
   useEffect(() => {
     const initSession = async () => {
-      setSessionStatus('connecting');
       setConnectionError('');
 
       try {
@@ -224,7 +217,6 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
           targetLang: targetLang.code,
         });
         await startRecording();
-        setSessionStatus('ready');
       } catch (error: any) {
         console.error('Connection failed:', error);
         setSessionStatus('error');
@@ -256,6 +248,15 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     });
     return () => subscription.remove();
   }, []);
+
+  // 전체 내역 열릴 때 + 새 항목 추가 시 맨 아래로 스크롤
+  useEffect(() => {
+    if (showFullTranscript) {
+      setTimeout(() => {
+        fullTranscriptScrollRef.current?.scrollToEnd({ animated: false });
+      }, 50);
+    }
+  }, [showFullTranscript, transcriptions.length]);
 
   // 메시지 리스너
   useEffect(() => {
@@ -311,7 +312,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
   };
 
   const handleRetry = async () => {
-    setSessionStatus('connecting');
+    setSessionStatus('ready');
     setConnectionError('');
     try {
       await connect({
@@ -319,41 +320,24 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
         targetLang: targetLang.code,
       });
       await startRecording();
-      setSessionStatus('ready');
     } catch (error: any) {
       setSessionStatus('error');
       setConnectionError(error.message || '연결에 실패했습니다');
     }
   };
 
-  // ── 연결 중 / 대기 중 / 에러 오버레이 ──
-  if (sessionStatus === 'connecting' || sessionStatus === 'error') {
+  // ── 에러 오버레이 ──
+  if (sessionStatus === 'error') {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.overlayContainer}>
-          {sessionStatus === 'error' ? (
-            <>
-              <Text style={styles.errorText}>
-                {connectionError || '현재 이용자가 가득 차 이용이 불가합니다'}
-              </Text>
-              <View style={styles.overlayButtonRow}>
-                <GradientButton title="재시도" onPress={handleRetry} />
-                <GradientButton title="돌아가기" onPress={handleGoBack} />
-              </View>
-            </>
-          ) : (
-            <>
-              {sessionStatus === 'connecting' && (
-                <>
-                  <ActivityIndicator size="large" color={COLORS.gradientMiddle} style={{ marginBottom: SPACING.lg }} />
-                  <Text style={styles.overlayHintText}>{connectingMessage}</Text>
-                </>
-              )}
-              <View style={styles.overlayBackButton}>
-                <GradientButton title="돌아가기" onPress={handleGoBack} />
-              </View>
-            </>
-          )}
+          <Text style={styles.errorText}>
+            {connectionError || '현재 이용자가 가득 차 이용이 불가합니다'}
+          </Text>
+          <View style={styles.overlayButtonRow}>
+            <GradientButton title="재시도" onPress={handleRetry} />
+            <GradientButton title="돌아가기" onPress={handleGoBack} />
+          </View>
         </View>
       </SafeAreaView>
     );
@@ -396,7 +380,14 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
         />
       </TouchableOpacity>
 
-      <ScrollView style={styles.transcriptionArea} contentContainerStyle={styles.transcriptionContent}>
+      <ScrollView
+        ref={showFullTranscript ? fullTranscriptScrollRef : undefined}
+        style={styles.transcriptionArea}
+        contentContainerStyle={[
+          styles.transcriptionContent,
+          showFullTranscript && { justifyContent: 'flex-start' },
+        ]}
+      >
         {!displayText && transcriptions.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>

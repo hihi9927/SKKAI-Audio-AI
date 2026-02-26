@@ -1,23 +1,27 @@
-const SERVER_STARTER_URL = 'https://r61duqe7w4.execute-api.ap-northeast-2.amazonaws.com/default/Serverstarter_Speech_AI';
+const SERVER_STARTER_URL =
+  'https://r61duqe7w4.execute-api.ap-northeast-2.amazonaws.com/default/Serverstarter_Speech_AI';
+
+const POLL_INTERVAL_MS = 10000;
+const MAX_SERVER_START_WAIT_MS = 4 * 60 * 1000;
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const startServer = async (): Promise<void> => {
-  const res = await fetch(SERVER_STARTER_URL);
-  const data = await res.json();
+  const deadline = Date.now() + MAX_SERVER_START_WAIT_MS;
 
-  if (data.status === 'ready') return;
+  while (Date.now() < deadline) {
+    const res = await fetch(SERVER_STARTER_URL);
+    const data = await res.json();
 
-  // starting 또는 stopping: 최대 3분 폴링
-  if (data.status === 'starting' || data.status === 'stopping') {
-    for (let i = 0; i < 18; i++) {  // 최대 3분
-      await new Promise(r => setTimeout(r, 10000));
-      const check = await fetch(SERVER_STARTER_URL);
-      const result = await check.json();
-      if (result.status === 'ready') return;
-      if (result.status === 'starting') continue;
-      if (result.status === 'stopping') continue;
+    if (data.status === 'ready') return;
+
+    if (data.status === 'starting' || data.status === 'stopping') {
+      await sleep(POLL_INTERVAL_MS);
+      continue;
     }
-    throw new Error('서버 시작 시간 초과');
+
+    throw new Error('Failed to start server');
   }
 
-  throw new Error('서버를 시작할 수 없습니다');
+  throw new Error('Server start timeout');
 };

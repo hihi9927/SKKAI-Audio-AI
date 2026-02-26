@@ -129,7 +129,7 @@ const ModePickerModal: React.FC<{
       <View style={modalStyles.overlay}>
         <View style={modalStyles.content}>
           <View style={modalStyles.header}>
-            <Text style={modalStyles.title}>대화 형식 선택</Text>
+            <Text style={modalStyles.title}>대화방식 선택</Text>
             <TouchableOpacity onPress={onClose} style={modalStyles.closeBtn}>
               <Text style={modalStyles.closeText}>✕</Text>
             </TouchableOpacity>
@@ -179,18 +179,18 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const progressAnim = useRef(new Animated.Value(0)).current;
   const slowAnimRef = useRef<Animated.CompositeAnimation | null>(null);
 
-  // 마운트 시 서버 probe 시작
+  // 마운?????�버 probe ?�작
   useEffect(() => {
     probeServer();
   }, []);
 
-  // serverStatus 변화에 따른 애니메이션
+  // serverStatus 변?�에 ?�른 ?�니메이??
   useEffect(() => {
     if (serverStatus === 'connecting') {
       progressAnim.setValue(0);
       slowAnimRef.current = Animated.timing(progressAnim, {
-        toValue: 0.85,
-        duration: 18000,
+        toValue: 0.8,
+        duration: 1 * 60 * 1000 + 40 * 1000,
         useNativeDriver: false,
       });
       slowAnimRef.current.start();
@@ -252,7 +252,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
   const handleStart = () => {
     if (myLanguage.code === targetLanguage.code) {
-      Alert.alert('오류', '나의 언어와 상대 언어가 같을 수 없습니다.');
+      Alert.alert('오류', '내 언어와 상대 언어가 같을 수 없습니다.');
       return;
     }
     navigation.navigate('Conversation', {
@@ -276,21 +276,21 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
         {/* Selection Rows */}
         <View style={styles.selectionSection}>
-          {/* 나의 언어 */}
+          {/* ?�의 ?�어 */}
           <View style={styles.row}>
-            <Text style={styles.label}>나의 언어</Text>
+            <Text style={styles.label}>내 언어</Text>
             <TouchableOpacity
               style={styles.valueBox}
               onPress={() => setMyLangModal(true)}
             >
               <Text style={styles.valueText}>{formatLanguageDisplay(myLanguage)}</Text>
-              <Text style={styles.arrow}>⌵</Text>
+              <Text style={styles.arrow}>›</Text>
             </TouchableOpacity>
           </View>
 
           <View style={styles.divider} />
 
-          {/* 상대 언어 */}
+          {/* ?��? ?�어 */}
           <View style={styles.row}>
             <Text style={styles.label}>상대 언어</Text>
             <TouchableOpacity
@@ -298,26 +298,26 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               onPress={() => setTargetLangModal(true)}
             >
               <Text style={styles.valueText}>{formatLanguageAs(targetLanguage, myLanguage.code)}</Text>
-              <Text style={styles.arrow}>⌵</Text>
+              <Text style={styles.arrow}>›</Text>
             </TouchableOpacity>
           </View>
 
           <View style={styles.divider} />
 
-          {/* 대화 형식 */}
+          {/* ?�???�식 */}
           <View style={styles.row}>
-            <Text style={styles.label}>대화 형식</Text>
+            <Text style={styles.label}>대화방식</Text>
             <TouchableOpacity
               style={styles.valueBox}
               onPress={() => setModeModal(true)}
             >
               <Text style={styles.valueText}>{conversationMode.name}</Text>
-              <Text style={styles.arrow}>⌵</Text>
+              <Text style={styles.arrow}>›</Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* 서버 로딩 바 / 시작하기 버튼 */}
+        {/* ?�버 로딩 �?/ ?�작?�기 버튼 */}
         {serverStatus === 'ready' ? (
           <TouchableOpacity onPress={handleStart} activeOpacity={0.8}>
             <LinearGradient
@@ -369,7 +369,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                 />
               </Animated.View>
             </View>
-            <Text style={styles.loadingText}>서버 연결 중...</Text>
+            <Text style={styles.loadingText}>서버 연결 중..</Text>
           </View>
         )}
       </View>
@@ -381,7 +381,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         onSelect={updateMyLanguage}
         selectedCode={myLanguage.code}
         excludeCode={targetLanguage.code}
-        title="나의 언어 선택"
+        title="내 언어 선택"
       />
       <LanguagePickerModal
         visible={targetLangModal}

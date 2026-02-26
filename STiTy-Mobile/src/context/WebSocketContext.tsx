@@ -1,10 +1,9 @@
-import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { startServer } from '../utils/serverUtils';
 
-// ===== Qwen3-ASR 서버 설정 =====
 interface WebSocketConfig {
-  lang: string;  // 언어 코드: 'auto', 'ko', 'en', 'zh', 'ja' 등
-  targetLang?: string;  // 번역 대상 언어 코드
+  lang: string;
+  targetLang?: string;
 }
 
 export type ServerStatus = 'idle' | 'connecting' | 'ready' | 'error';
@@ -24,8 +23,13 @@ interface WebSocketContextType {
 
 const WebSocketContext = createContext<WebSocketContextType | null>(null);
 
-// ===== Qwen3-ASR 서버 URL 설정 =====
 const SERVER_URL = 'wss://edra-raspiest-eagerly.ngrok-free.dev';
+const PROBE_SOCKET_TIMEOUT_MS = 10000;
+const PROBE_RETRY_INTERVAL_MS = 10000;
+const MAX_WEBSOCKET_PROBE_WAIT_MS = 4 * 60 * 1000;
+const KEEPALIVE_RECONNECT_MS = 3000;
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isConnected, setIsConnected] = useState(false);
@@ -34,11 +38,72 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [serverStatus, setServerStatus] = useState<ServerStatus>('idle');
   const wsRef = useRef<WebSocket | null>(null);
   const probeWsRef = useRef<WebSocket | null>(null);
+  const keepAliveWsRef = useRef<WebSocket | null>(null);
+  const keepAliveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const keepAliveEnabledRef = useRef(false);
   const isProbingRef = useRef(false);
   const serverStatusRef = useRef<ServerStatus>('idle');
   const listenersRef = useRef<Set<(msg: any) => void>>(new Set());
 
-  useEffect(() => { serverStatusRef.current = serverStatus; }, [serverStatus]);
+  useEffect(() => {
+    serverStatusRef.current = serverStatus;
+  }, [serverStatus]);
+
+  const clearKeepAliveTimer = useCallback(() => {
+    if (keepAliveTimerRef.current) {
+      clearTimeout(keepAliveTimerRef.current);
+      keepAliveTimerRef.current = null;
+    }
+  }, []);
+
+  const stopKeepAlive = useCallback(() => {
+    keepAliveEnabledRef.current = false;
+    clearKeepAliveTimer();
+    if (keepAliveWsRef.current) {
+      keepAliveWsRef.current.close(1000, 'Stop keepalive');
+      keepAliveWsRef.current = null;
+    }
+  }, [clearKeepAliveTimer]);
+
+  const startKeepAlive = useCallback(() => {
+    keepAliveEnabledRef.current = true;
+
+    const connectKeepAlive = () => {
+      if (!keepAliveEnabledRef.current) return;
+      if (wsRef.current) return; // real session is active
+      if (
+        keepAliveWsRef.current &&
+        (keepAliveWsRef.current.readyState === WebSocket.OPEN ||
+          keepAliveWsRef.current.readyState === WebSocket.CONNECTING)
+      ) {
+        return;
+      }
+
+      const ws = new WebSocket(SERVER_URL);
+      ws.binaryType = 'arraybuffer';
+      keepAliveWsRef.current = ws;
+
+      ws.onmessage = () => {
+        // keepalive socket just needs to stay connected
+      };
+
+      ws.onerror = () => {
+        ws.close();
+      };
+
+      ws.onclose = () => {
+        if (keepAliveWsRef.current === ws) {
+          keepAliveWsRef.current = null;
+        }
+        if (keepAliveEnabledRef.current && !wsRef.current) {
+          clearKeepAliveTimer();
+          keepAliveTimerRef.current = setTimeout(connectKeepAlive, KEEPALIVE_RECONNECT_MS);
+        }
+      };
+    };
+
+    connectKeepAlive();
+  }, [clearKeepAliveTimer]);
 
   const probeServer = useCallback(async () => {
     if (isProbingRef.current || serverStatusRef.current === 'ready') return;
@@ -50,58 +115,77 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
 
     try {
-      // 1. EC2 기동 (이미 켜져 있으면 즉시 반환)
       await startServer();
 
-      // 2. WebSocket hello 확인 (최대 12회 재시도, 10초 간격 = 최대 2분)
       const tryProbe = (): Promise<void> =>
         new Promise<void>((resolve, reject) => {
           const ws = new WebSocket(SERVER_URL);
           ws.binaryType = 'arraybuffer';
+          probeWsRef.current = ws;
+
+          let settled = false;
           let helloReceived = false;
 
-          const timeout = setTimeout(() => {
-            if (!helloReceived) { ws.close(); reject(new Error('timeout')); }
-          }, 10000);
-
-          ws.onmessage = (event) => {
-            try {
-              if (typeof event.data === 'string') {
-                const data = JSON.parse(event.data);
-                if (data.type === 'hello') {
-                  clearTimeout(timeout);
-                  helloReceived = true;
-                  ws.close(1000, 'Probe complete');
-                  resolve();
-                }
-              }
-            } catch (e) {}
+          const settle = (fn: () => void) => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timeout);
+            fn();
           };
 
-          ws.onerror = () => { clearTimeout(timeout); if (!helloReceived) reject(new Error('error')); };
-          ws.onclose = () => { if (!helloReceived) reject(new Error('closed')); };
-          probeWsRef.current = ws;
+          const timeout = setTimeout(() => {
+            if (!helloReceived) {
+              ws.close();
+              settle(() => reject(new Error('timeout')));
+            }
+          }, PROBE_SOCKET_TIMEOUT_MS);
+
+          ws.onmessage = event => {
+            try {
+              if (typeof event.data !== 'string') return;
+              const data = JSON.parse(event.data);
+              if (data.type === 'hello') {
+                helloReceived = true;
+                ws.close(1000, 'Probe complete');
+                settle(() => resolve());
+              }
+            } catch {
+              // ignore
+            }
+          };
+
+          ws.onerror = () => {
+            if (!helloReceived) settle(() => reject(new Error('error')));
+          };
+
+          ws.onclose = () => {
+            if (!helloReceived) settle(() => reject(new Error('closed')));
+          };
         });
 
+      const deadline = Date.now() + MAX_WEBSOCKET_PROBE_WAIT_MS;
       let connected = false;
-      for (let i = 0; i < 12; i++) {
+
+      while (Date.now() < deadline) {
         try {
           await tryProbe();
           connected = true;
           break;
-        } catch (e) {
-          if (i < 11) await new Promise(r => setTimeout(r, 10000));
+        } catch {
+          await sleep(PROBE_RETRY_INTERVAL_MS);
         }
       }
-      if (!connected) throw new Error('서버 연결 시간 초과');
 
+      if (!connected) throw new Error('Server connection timeout');
       setServerStatus('ready');
-      isProbingRef.current = false;
-    } catch (err) {
+      startKeepAlive();
+    } catch {
       setServerStatus('error');
+      stopKeepAlive();
+    } finally {
       isProbingRef.current = false;
     }
-  }, []);
+  }, [startKeepAlive, stopKeepAlive]);
 
   const connect = useCallback(async (config: WebSocketConfig): Promise<void> => {
     return new Promise((resolve, reject) => {
@@ -111,74 +195,74 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           return;
         }
 
+        stopKeepAlive();
         const ws = new WebSocket(SERVER_URL);
         ws.binaryType = 'arraybuffer';
 
         const timeout = setTimeout(() => {
           ws.close();
-          reject(new Error('연결 시간이 초과되었습니다'));
+          reject(new Error('Connection timed out'));
         }, 10000);
 
         ws.onopen = () => {
           console.log('WebSocket connected');
         };
 
-        ws.onmessage = (event) => {
+        ws.onmessage = event => {
           try {
-            if (typeof event.data === 'string') {
-              const data = JSON.parse(event.data);
-              console.log('Received message:', data.type);
+            if (typeof event.data !== 'string') return;
+            const data = JSON.parse(event.data);
+            console.log('Received message:', data.type);
 
-              if (data.type === 'hello') {
-                clearTimeout(timeout);
-                setIsConnected(true);
-                setError(null);
+            if (data.type === 'hello') {
+              clearTimeout(timeout);
+              setIsConnected(true);
+              setError(null);
 
-                // Qwen3-ASR start 메시지
-                const startMessage = {
+              ws.send(
+                JSON.stringify({
                   type: 'start',
                   lang: config.lang,
                   targetLang: config.targetLang || '',
                   translate: !!config.targetLang,
-                };
-                ws.send(JSON.stringify(startMessage));
-                resolve();
-                return;
-              }
-
-              setLastMessage(data);
-              listenersRef.current.forEach(l => l(data));
+                })
+              );
+              resolve();
+              return;
             }
+
+            setLastMessage(data);
+            listenersRef.current.forEach(listener => listener(data));
           } catch (e) {
             console.error('Failed to parse message:', e);
           }
         };
 
-        ws.onerror = (event) => {
+        ws.onerror = event => {
           clearTimeout(timeout);
           console.error('WebSocket error:', event);
-          setError('연결 오류가 발생했습니다');
+          setError('Connection error');
           setIsConnected(false);
-          reject(new Error('서버에 연결할 수 없습니다'));
+          reject(new Error('Cannot connect to server'));
         };
 
-        ws.onclose = (event) => {
+        ws.onclose = event => {
           clearTimeout(timeout);
           console.log('WebSocket closed:', event.code, event.reason);
           setIsConnected(false);
           if (event.code !== 1000) {
-            setError('연결이 끊어졌습니다');
+            setError('Connection lost');
           }
         };
 
         wsRef.current = ws;
       } catch (err) {
         console.error('Failed to create WebSocket:', err);
-        setError('연결을 시작할 수 없습니다');
+        setError('Cannot start connection');
         reject(err);
       }
     });
-  }, []);
+  }, [stopKeepAlive]);
 
   const disconnect = useCallback(() => {
     if (wsRef.current) {
@@ -195,7 +279,22 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setIsConnected(false);
     setLastMessage(null);
     setError(null);
-  }, []);
+    if (serverStatusRef.current === 'ready') {
+      startKeepAlive();
+    }
+  }, [startKeepAlive]);
+
+  useEffect(() => {
+    return () => {
+      stopKeepAlive();
+      if (wsRef.current) {
+        wsRef.current.close(1000, 'Provider unmount');
+      }
+      if (probeWsRef.current) {
+        probeWsRef.current.close(1000, 'Provider unmount');
+      }
+    };
+  }, [stopKeepAlive]);
 
   const sendAudio = useCallback((audioData: ArrayBuffer) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
@@ -209,7 +308,9 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const addMessageListener = useCallback((listener: (msg: any) => void) => {
     listenersRef.current.add(listener);
-    return () => { listenersRef.current.delete(listener); };
+    return () => {
+      listenersRef.current.delete(listener);
+    };
   }, []);
 
   const sendMessage = useCallback((message: object) => {
@@ -223,10 +324,20 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, []);
 
   return (
-    <WebSocketContext.Provider value={{
-      isConnected, lastMessage, error, serverStatus,
-      connect, disconnect, sendAudio, sendMessage, addMessageListener, probeServer,
-    }}>
+    <WebSocketContext.Provider
+      value={{
+        isConnected,
+        lastMessage,
+        error,
+        serverStatus,
+        connect,
+        disconnect,
+        sendAudio,
+        sendMessage,
+        addMessageListener,
+        probeServer,
+      }}
+    >
       {children}
     </WebSocketContext.Provider>
   );
