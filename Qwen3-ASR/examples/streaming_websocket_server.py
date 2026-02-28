@@ -82,6 +82,7 @@ class StreamingConfig:
     # 서버 설정
     host: str = "0.0.0.0"
     port: int = 8765
+    no_idle_shutdown: bool = False
 
 
 def format_time(seconds: float) -> str:
@@ -781,6 +782,8 @@ class Qwen3ASRStreamingServer:
             return
         
     def _restart_idle_timer(self):
+        if self.config.no_idle_shutdown:
+            return
         if self.idle_task and not self.idle_task.done():
             self.idle_task.cancel()
         self.idle_task = asyncio.create_task(self._idle_shutdown_loop())
@@ -814,6 +817,10 @@ def parse_args():
         "--port", type=int, default=8765,
         help="Server port",
     )
+    parser.add_argument(
+        "--no-idle-shutdown", action="store_true",
+        help="Disable idle shutdown (use this when running tests)",
+    )
     return parser.parse_args()
 
 
@@ -827,6 +834,7 @@ def main():
         chunk_size_sec=args.chunk_size,
         host=args.host,
         port=args.port,
+        no_idle_shutdown=args.no_idle_shutdown,
     )
 
     server = Qwen3ASRStreamingServer(config)
