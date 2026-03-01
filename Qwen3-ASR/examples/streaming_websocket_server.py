@@ -706,7 +706,7 @@ class Qwen3ASRStreamingHandler:
 class Qwen3ASRStreamingServer:
     """Qwen3-ASR 스트리밍 서버"""
 
-    IDLE_SHUTDOWN_SEC = 60  # 1분간 접속 없으면 종료
+    IDLE_SHUTDOWN_SEC = 10000  # 1분간 접속 없으면 종료
     
     def __init__(self, config: StreamingConfig):
         self.config = config
