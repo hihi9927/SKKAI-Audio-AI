@@ -68,7 +68,7 @@ export const TranslationItem: React.FC<TranslationItemProps> = ({
               style={styles.speakerBtn}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <Ionicons name="volume-medium-outline" size={15} color={getLabelColor(sourceLang)} />
+              <Ionicons name="volume-medium-outline" size={23} color={getLabelColor(sourceLang)} />
             </TouchableOpacity>
           </View>
         </View>
@@ -89,12 +89,12 @@ export const TranslationItem: React.FC<TranslationItemProps> = ({
               style={styles.speakerBtn}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <Ionicons name="volume-medium-outline" size={15} color={getLabelColor(targetLang)} />
+              <Ionicons name="volume-medium-outline" size={23} color={getLabelColor(targetLang)} />
             </TouchableOpacity>
           </View>
-          {/* (원본) - 번역 아래에 원문 소형 표시 */}
+          {/* 원본 - 번역 아래에 원문 표시 */}
           {sourceText ? (
-            <Text style={styles.originalText}>(원본) {sourceText}</Text>
+            <Text style={styles.originalText}>{sourceText}</Text>
           ) : null}
         </View>
       )}
@@ -112,7 +112,7 @@ export const TranslationItem: React.FC<TranslationItemProps> = ({
               style={styles.speakerBtn}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <Ionicons name="volume-medium-outline" size={15} color={getLabelColor(sourceLang)} />
+              <Ionicons name="volume-medium-outline" size={23} color={getLabelColor(sourceLang)} />
             </TouchableOpacity>
           </View>
         </View>
@@ -163,10 +163,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   originalText: {
-    marginLeft: 46,  // langLabel(30) + marginRight(16)
     marginTop: 4,
-    fontSize: FONTS.sizes.xs,
+    fontSize: 18,  // FONTS.sizes.xs(12) * 1.5
     color: COLORS.textMuted,
+    textAlign: 'center',
   },
 });
 

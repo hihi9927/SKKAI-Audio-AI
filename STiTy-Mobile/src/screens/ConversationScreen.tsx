@@ -375,7 +375,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
       >
         <Ionicons
           name={showFullTranscript ? 'document-text' : 'document-text-outline'}
-          size={28}
+          size={20}
           color={showFullTranscript ? COLORS.gradientMiddle : COLORS.textMuted}
         />
       </TouchableOpacity>
