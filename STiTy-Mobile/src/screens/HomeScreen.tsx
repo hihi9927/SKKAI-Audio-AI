@@ -284,7 +284,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               onPress={() => setMyLangModal(true)}
             >
               <Text style={styles.valueText}>{formatLanguageDisplay(myLanguage)}</Text>
-              <Text style={styles.arrow}>›</Text>
+              <Text style={styles.arrow}>⌄</Text>
             </TouchableOpacity>
           </View>
 
@@ -298,7 +298,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               onPress={() => setTargetLangModal(true)}
             >
               <Text style={styles.valueText}>{formatLanguageAs(targetLanguage, myLanguage.code)}</Text>
-              <Text style={styles.arrow}>›</Text>
+              <Text style={styles.arrow}>⌄</Text>
             </TouchableOpacity>
           </View>
 
@@ -312,7 +312,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               onPress={() => setModeModal(true)}
             >
               <Text style={styles.valueText}>{conversationMode.name}</Text>
-              <Text style={styles.arrow}>›</Text>
+              <Text style={styles.arrow}>⌄</Text>
             </TouchableOpacity>
           </View>
         </View>
