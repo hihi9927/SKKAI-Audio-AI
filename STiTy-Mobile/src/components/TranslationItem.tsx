@@ -1,5 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import * as Speech from 'expo-speech';
 import { COLORS, FONTS, SPACING } from '../constants/theme';
 
 interface TranslationItemProps {
@@ -26,49 +28,93 @@ export const TranslationItem: React.FC<TranslationItemProps> = ({
       case 'en':
         return COLORS.gradientMiddle; // Blue
       case 'es':
-        return '#E94E77';             // Spanish - Red/Pink
+        return '#E94E77';
       case 'ja':
-        return '#FF6B6B';             // Japanese - Coral
+        return '#FF6B6B';
       case 'zh':
-        return '#4ECDC4';             // Chinese - Teal
+        return '#4ECDC4';
       case 'id':
-        return COLORS.gradientEnd;    // Indonesian - Cyan
+        return COLORS.gradientEnd;
       case 'vi':
-        return '#45B7D1';             // Vietnamese - Sky Blue
+        return '#45B7D1';
       case 'th':
-        return '#96CEB4';             // Thai - Sage Green
+        return '#96CEB4';
       case 'fr':
-        return '#DDA0DD';             // French - Plum
+        return '#DDA0DD';
       case 'de':
-        return '#FFB347';             // German - Orange
+        return '#FFB347';
       default:
         return COLORS.gradientMiddle;
     }
   };
 
+  const speakText = (text: string, lang: string) => {
+    Speech.stop();
+    Speech.speak(text, { language: lang, rate: 1.0 });
+  };
+
   return (
     <View style={[styles.container, isLatest && styles.latestContainer]}>
-      {/* Source language row (transcription) - translationOnly면 숨김 */}
+      {/* Source language row - translationOnly면 숨김 */}
       {!translationOnly && (
-        <View style={styles.row}>
-          <Text style={[styles.langLabel, { color: getLabelColor(sourceLang) }]}>
-            {sourceLang}
-          </Text>
-          <Text style={styles.text}>
-            {sourceText}
-          </Text>
+        <View style={styles.rowWrapper}>
+          <View style={styles.row}>
+            <Text style={[styles.langLabel, { color: getLabelColor(sourceLang) }]}>
+              {sourceLang}
+            </Text>
+            <Text style={styles.text}>{sourceText}</Text>
+            <TouchableOpacity
+              onPress={() => speakText(sourceText, sourceLang)}
+              style={styles.speakerBtn}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Ionicons name="volume-medium-outline" size={23} color={getLabelColor(sourceLang)} />
+            </TouchableOpacity>
+          </View>
         </View>
       )}
 
       {/* Target language row - 번역이 있을 때만 표시 */}
       {targetText && targetText.length > 0 && (
-        <View style={styles.row}>
-          <Text style={[styles.langLabel, { color: getLabelColor(targetLang) }]}>
-            {targetLang}
-          </Text>
-          <Text style={[styles.translatedText, isLatest && styles.latestTranslatedText]}>
-            {targetText}
-          </Text>
+        <View style={styles.rowWrapper}>
+          <View style={styles.row}>
+            <Text style={[styles.langLabel, { color: getLabelColor(targetLang) }]}>
+              {targetLang}
+            </Text>
+            <Text style={[styles.translatedText, isLatest && styles.latestTranslatedText]}>
+              {targetText}
+            </Text>
+            <TouchableOpacity
+              onPress={() => speakText(targetText, targetLang)}
+              style={styles.speakerBtn}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Ionicons name="volume-medium-outline" size={23} color={getLabelColor(targetLang)} />
+            </TouchableOpacity>
+          </View>
+          {/* 원본 - 번역 아래에 원문 표시 */}
+          {sourceText ? (
+            <Text style={styles.originalText}>{sourceText}</Text>
+          ) : null}
+        </View>
+      )}
+
+      {/* translationOnly + 번역 없는 live 항목: 원문만 표시 */}
+      {translationOnly && (!targetText || targetText.length === 0) && (
+        <View style={styles.rowWrapper}>
+          <View style={styles.row}>
+            <Text style={[styles.langLabel, { color: getLabelColor(sourceLang) }]}>
+              {sourceLang}
+            </Text>
+            <Text style={styles.text}>{sourceText}</Text>
+            <TouchableOpacity
+              onPress={() => speakText(sourceText, sourceLang)}
+              style={styles.speakerBtn}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Ionicons name="volume-medium-outline" size={23} color={getLabelColor(sourceLang)} />
+            </TouchableOpacity>
+          </View>
         </View>
       )}
     </View>
@@ -80,13 +126,13 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.lg,
     paddingHorizontal: SPACING.md,
   },
-  latestContainer: {
-    // Slightly emphasized for latest item
+  latestContainer: {},
+  rowWrapper: {
+    marginVertical: SPACING.xs,
   },
   row: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginVertical: SPACING.xs,
+    alignItems: 'center',
   },
   langLabel: {
     fontSize: FONTS.sizes.lg,
@@ -101,10 +147,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     textAlign: 'center',
   },
-  latestText: {
-    fontSize: FONTS.sizes.xl,
-    fontWeight: '600',
-  },
   translatedText: {
     flex: 1,
     fontSize: FONTS.sizes.lg,
@@ -114,6 +156,17 @@ const styles = StyleSheet.create({
   },
   latestTranslatedText: {
     fontSize: FONTS.sizes.lg,
+  },
+  speakerBtn: {
+    paddingLeft: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  originalText: {
+    marginTop: 4,
+    fontSize: 14,  // 18 * 0.75
+    color: COLORS.textMuted,
+    textAlign: 'center',
   },
 });
 
