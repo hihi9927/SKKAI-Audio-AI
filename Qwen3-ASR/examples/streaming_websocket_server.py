@@ -441,7 +441,7 @@ class Qwen3ASRStreamingHandler:
         remaining = uncommitted
 
         while True:
-            match = re.search(r"[.?!\u3002\uff1f\uff01]\s+", remaining)
+            match = re.search(r"[,.?!\u3002\uff1f\uff01\u3001]\s+", remaining)
             if not match:
                 break
             after = remaining[match.end():]
