@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   },
   originalText: {
     marginTop: 4,
-    fontSize: 18,  // FONTS.sizes.xs(12) * 1.5
+    fontSize: 14,  // 18 * 0.75
     color: COLORS.textMuted,
     textAlign: 'center',
   },
