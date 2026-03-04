@@ -15,8 +15,10 @@ import os
 import argparse
 
 # Default configuration
-DEFAULT_COMMON_FILES_JSON = r"c:\Users\VRSTUDIO3\Desktop\STiTy-main1\test-results\common\chunked-common-files.json"
-DEFAULT_TEST_DIR = r"c:\Users\VRSTUDIO3\Desktop\STiTy-main1\LibriSpeech\test-other"
+_SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
+_EVAL_DIR = os.path.dirname(_SCRIPTS_DIR)
+DEFAULT_COMMON_FILES_JSON = os.path.join(_EVAL_DIR, "results", "common", "chunked-common-files.json")
+DEFAULT_TEST_DIR = os.path.join(_EVAL_DIR, "data")
 DEFAULT_RANDOM_SEED = 42
 DEFAULT_WS_HOST = "localhost"
 DEFAULT_WS_PORT = 8001

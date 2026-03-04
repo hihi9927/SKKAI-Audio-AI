@@ -60,7 +60,9 @@
       "Bash(bash -c \"cd d:/STiTy-main/STiTy-Mobile/android && bash gradlew assembleRelease\")",
       "Bash(ssh-keygen:*)",
       "Bash(git -C \"d:/STiTy-main\" log --oneline -5)",
-      "Bash(git -C \"d:/STiTy-main\" status)"
+      "Bash(git -C \"d:/STiTy-main\" status)",
+      "Bash(git branch -D main temp)",
+      "Bash(git branch -m main)"
     ],
     "deny": [],
     "ask": []

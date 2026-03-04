@@ -2,8 +2,8 @@ import sys
 import os
 import numpy as np
 
-from pipeline.types import AudioSegment, RecognizedToken, CommittedSentence
-from pipeline.modules import SpeechRecognizer, CommitPolicy
+from core.types import AudioSegment, RecognizedToken, CommittedSentence
+from core.modules import SpeechRecognizer, CommitPolicy
 from qwen_asr import Qwen3ASRModel
 
 class Qwen3SpeechRecognizer(SpeechRecognizer):
@@ -35,8 +35,8 @@ class Qwen3SpeechRecognizer(SpeechRecognizer):
         )
 
 
-from pipeline.types import RecognizedToken, CommittedSentence
-from pipeline.modules import CommitPolicy
+from core.types import RecognizedToken, CommittedSentence
+from core.modules import CommitPolicy
 import sys
 
 class Qwen3CommitPolicy(CommitPolicy):
@@ -163,7 +163,7 @@ def qwen_streaming_factory(args):
     return recognizer, online_processor
 
 import numpy as np
-from pipeline.types import AudioSegment, SpeakerInfo, TimeRange
+from core.types import AudioSegment, SpeakerInfo, TimeRange
 
 class QwenOnlineProcessor:
     """

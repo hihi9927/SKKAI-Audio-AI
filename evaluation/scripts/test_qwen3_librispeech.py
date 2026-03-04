@@ -514,7 +514,7 @@ def calculate_wer(results, policy=None, emit_summary=True):
 
 def main():
     parser = argparse.ArgumentParser(description='Qwen3 LibriSpeech integration test')
-    parser.add_argument('--test-dir', type=str, default=r'c:\Users\0147q\STiTy\LibriSpeech\test-clean')
+    parser.add_argument('--test-dir', type=str, default=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data"))
     parser.add_argument('--policy', type=int, default=DEFAULT_POLICY, choices=[DEFAULT_POLICY],
                         help='Compatibility-only policy field. Qwen3 uses policy=3.')
     parser.add_argument('--host', type=str, default='localhost')

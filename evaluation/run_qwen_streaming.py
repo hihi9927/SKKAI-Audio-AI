@@ -17,7 +17,7 @@ import traceback
 import numpy as np
 import websockets
 from servers.librispeech_qwen import Qwen3SpeechRecognizer, Qwen3CommitPolicy
-from pipeline.types import AudioSegment, SpeakerInfo, TimeRange
+from core.types import AudioSegment, SpeakerInfo, TimeRange
 
 
 def _build_audio_segment(audio_array: np.ndarray) -> AudioSegment:

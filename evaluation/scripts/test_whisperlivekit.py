@@ -755,8 +755,8 @@ def main():
     )
 
     parser.add_argument('--test-dir', type=str,
-                        default=r'c:\Users\VRSTUDIO3\Desktop\STiTy-main1\LibriSpeech\test-other',
-                        help='Path to test directory (default: c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other)')
+                        default=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data"),
+                        help='Path to test data directory')
     parser.add_argument('--policy', type=int, default=None,
                         choices=[1, 2],
                         help='Backend policy (1: SimulStreaming, 2: LocalAgreement)')

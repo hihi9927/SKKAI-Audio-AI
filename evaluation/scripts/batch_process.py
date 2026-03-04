@@ -443,7 +443,7 @@ def main():
     )
 
 # 현재 스크립트 파일의 부모 폴더(LibriSpeech)를 기준으로 경로 설정
-    default_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "test-clean")
+    default_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
     
     parser.add_argument('--data-dir', type=str, # 변수명을 범용적으로 변경
                         default=default_path,
