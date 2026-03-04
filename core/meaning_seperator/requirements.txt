@@ -1,0 +1,18 @@
+# Meaning Segmentation - 의존성
+
+# 오디오 처리
+librosa>=0.10.0
+soundfile>=0.12.1
+pydub>=0.25.0          # m4a 로드 fallback (ffmpeg 필요)
+
+# 수치 계산
+numpy>=1.24.0
+
+# Semantic 피처 (선택)
+sentence-transformers>=2.6.0
+
+# Qwen3ForcedAligner (Qwen3-ASR/ 패키지 의존성)
+torch>=2.0.0
+transformers==4.57.6   # Qwen3-ASR 호환 버전
+nagisa>=0.2.7          # Qwen3ForceAlignProcessor 내부 사용
+soynlp>=0.0.493        # Qwen3ForcedAligner 한국어 토크나이저
