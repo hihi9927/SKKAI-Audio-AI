@@ -11,8 +11,14 @@ numpy>=1.24.0
 # Semantic 피처 (선택)
 sentence-transformers>=2.6.0
 
+# 실시간 VAD (realtime_segmenter.py)
+silero-vad>=5.1
+
 # Qwen3ForcedAligner (Qwen3-ASR/ 패키지 의존성)
 torch>=2.0.0
 transformers==4.57.6   # Qwen3-ASR 호환 버전
 nagisa>=0.2.7          # Qwen3ForceAlignProcessor 내부 사용
 soynlp>=0.0.493        # Qwen3ForcedAligner 한국어 토크나이저
+konlpy>=0.6.0          # Text 피처 형태소 분석 — 한국어 (JDK 필요)
+spacy>=3.7.0           # Text 피처 형태소 분석 — 비한국어 (모델 별도 설치 필요)
+deep-translator>=1.9.0 # 번역 기반 평가 (GoogleTranslator)
