@@ -51,8 +51,8 @@ SENTENCES = [
     },
     {
         "text": "봄이 지나고 여름이 되면 무더위가 시작된다.",
-        "label": "시간 전환 (여름이)",
-        "hint": "여름이",
+        "label": "시간 전환 (되면)",
+        "hint": "되면",
     },
     {
         "text": "인공지능은 편리하지만 개인정보 침해 우려도 있다.",
@@ -64,7 +64,12 @@ SENTENCES = [
 # 슬라이딩 윈도우 크기 (토큰 단위, 작을수록 민감)
 WINDOW_SIZE = 2
 
-OUTPUT_PATH = "kobert_intrasentence_result.png"
+# 앙상블 가중치 (합이 1.0이 되도록)
+# CLS 비중을 높이면 안정적, Word 비중을 높이면 민감
+CLS_WEIGHT  = 0.6
+WORD_WEIGHT = 0.4
+
+OUTPUT_PATH = "/home/ubuntu/STiTy/core/meaning_seperator/results/seg_emb/kobert_intrasentence_result.png"
 
 
 # ══════════════════════════════════════════════════════════
@@ -96,33 +101,60 @@ def get_incremental_embeddings(
     device: str,
 ) -> Tuple[List[str], List[np.ndarray], List[np.ndarray]]:
     """
-    토큰을 1개씩 증분하면서 매 시점의 임베딩을 반환.
+    공백 단위 단어를 1개씩 증분하면서 매 시점의 임베딩을 반환.
+
+    서브워드(##)로 쪼개지 않고 공백 기준 단어 단위로 증분하여
+    분절 신호가 분산되는 문제를 방지합니다.
+
+    예) '날씨가 맑지만 내일은'
+        step 1: '날씨가'               -> CLS 임베딩, 날씨가 서브워드 평균
+        step 2: '날씨가 맑지만'        -> CLS 임베딩, 맑지만 서브워드 평균
+        step 3: '날씨가 맑지만 내일은' -> CLS 임베딩, 내일은 서브워드 평균
 
     반환:
-        tokens      : 서브워드 토큰 목록 (특수토큰 제외)
-        cls_embs    : 각 시점의 [CLS] 임베딩  [n_steps, H]
-        token_embs  : 각 시점에 마지막으로 추가된 토큰의 임베딩  [n_steps, H]
-                      (= 해당 시점 last_hidden_state의 마지막 실제 토큰)
+        words     : 공백 분리 단어 목록
+        cls_embs  : 각 시점의 [CLS] 임베딩         [n_words, H]
+        word_embs : 각 시점에 추가된 단어의 임베딩  [n_words, H]
+                    (해당 단어를 구성하는 서브워드 hidden state 평균)
     """
-    tokens = tokenizer.tokenize(sentence)
-    cls_embs, token_embs = [], []
+    words = sentence.split()
+    cls_embs, word_embs = [], []
 
-    for i in range(1, len(tokens) + 1):
-        partial = tokens[:i]
-        input_ids = torch.tensor([
-            tokenizer.build_inputs_with_special_tokens(
-                tokenizer.convert_tokens_to_ids(partial)
-            )
-        ]).to(device)
-        attn_mask = torch.ones_like(input_ids)
+    for i in range(1, len(words) + 1):
+        partial_text = " ".join(words[:i])
 
-        out = model(input_ids=input_ids, attention_mask=attn_mask)
-        hidden = out.last_hidden_state.squeeze(0).cpu().numpy()  # [seq_len, H]
+        encoding = tokenizer(
+            partial_text,
+            return_tensors="pt",
+            truncation=True,
+            max_length=128,
+        )
+        encoding = {k: v.to(device) for k, v in encoding.items()}
 
-        cls_embs.append(hidden[0])       # [CLS]
-        token_embs.append(hidden[-1])    # 마지막 실제 토큰 (= 이번에 추가된 토큰)
+        out = model(**encoding)
+        hidden = out.last_hidden_state.squeeze(0).cpu().numpy()
 
-    return tokens, cls_embs, token_embs
+        cls_embs.append(hidden[0])
+
+        # 마지막으로 추가된 단어(words[i-1])의 서브워드 위치 찾기
+        enc_obj = tokenizer(partial_text, truncation=True, max_length=128)
+        word_ids = enc_obj.word_ids()
+        target_word_idx = i - 1
+        subword_positions = [
+            pos for pos, wid in enumerate(word_ids)
+            if wid == target_word_idx
+        ]
+
+        if subword_positions:
+            word_hidden = hidden[subword_positions].mean(axis=0)
+        else:
+            word_hidden = hidden[-2]  # fallback: [SEP] 직전
+
+        word_embs.append(word_hidden)
+
+    return words, cls_embs, word_embs
+
+
 
 
 # ══════════════════════════════════════════════════════════
@@ -172,16 +204,89 @@ def consecutive_change_score(
     return indices, scores
 
 
-def find_hint_token_idx(tokens: List[str], hint: str, tokenizer) -> Optional[int]:
-    """힌트 키워드가 몇 번째 토큰 근처에 있는지 찾기 (시각화 표시용)"""
-    hint_tokens = tokenizer.tokenize(hint)
-    if not hint_tokens:
-        return None
-    first = hint_tokens[0]
-    for i, t in enumerate(tokens):
-        if first in t or t in first:
+def find_hint_token_idx(words: List[str], hint: str, tokenizer) -> Optional[int]:
+    """힌트 키워드가 몇 번째 단어(공백 단위)에 있는지 찾기 (시각화 표시용)"""
+    hint_clean = hint.replace(" ", "")
+    for i, w in enumerate(words):
+        w_clean = w.replace(" ", "")
+        if hint_clean in w_clean or w_clean in hint_clean:
             return i
     return None
+
+
+
+def ensemble_change_score(
+    cls_scores: List[float],
+    word_scores: List[float],
+    cls_weight: float = 0.5,
+    word_weight: float = 0.5,
+) -> List[float]:
+    """
+    CLS 점수와 Word 점수를 가중 평균하여 앙상블 점수 반환.
+
+    CLS  → 문장 전체 맥락 변화 포착 (느리지만 안정적)
+    Word → 국소 단어 의미 변화 포착 (빠르지만 노이즈)
+    둘을 합치면 맥락+의미 양쪽에서 바뀌는 지점을 더 정확히 탐지.
+    """
+    assert len(cls_scores) == len(word_scores), "점수 길이가 다릅니다"
+    return [
+        cls_weight * c + word_weight * w
+        for c, w in zip(cls_scores, word_scores)
+    ]
+
+
+def find_changepoints(
+    indices: List[int],
+    scores: List[float],
+    threshold: float = None,
+    min_distance: int = 2,
+) -> Tuple[List[int], float]:
+    """
+    임계값 기반으로 복수의 변화점을 탐지.
+
+    Args:
+        indices      : 점수가 계산된 토큰 인덱스 목록
+        scores       : 변화점 점수 목록
+        threshold    : 탐지 임계값. None이면 평균 + 1*표준편차 자동 설정
+        min_distance : 인접한 피크 간 최소 거리 (너무 가까운 중복 제거)
+
+    Returns:
+        detected  : 탐지된 토큰 인덱스 목록 (복수)
+        threshold : 실제 사용된 임계값
+    """
+    if not scores:
+        return [], 0.0
+
+    arr = np.array(scores)
+
+    # 임계값 자동 설정: 평균 + 1 표준편차
+    if threshold is None:
+        threshold = float(arr.mean() + arr.std())
+
+    # 임계값 초과 후보 수집
+    candidates = [
+        (idx, score)
+        for idx, score in zip(indices, scores)
+        if score >= threshold
+    ]
+
+    if not candidates:
+        return [], threshold
+
+    # NMS (Non-Maximum Suppression):
+    # min_distance 이내 후보 중 점수 최대인 것만 남기기
+    candidates.sort(key=lambda x: x[0])   # 인덱스 순 정렬
+    result = []
+    for idx, score in candidates:
+        if not result or idx - result[-1][0] >= min_distance:
+            result.append((idx, score))
+        else:
+            # 더 가까운 기존 후보보다 점수가 높으면 교체
+            if score > result[-1][1]:
+                result[-1] = (idx, score)
+
+    detected = [idx for idx, _ in result]
+    return detected, threshold
 
 
 # ══════════════════════════════════════════════════════════
@@ -208,20 +313,23 @@ def setup_korean_font():
 
 
 def draw_sentence_panels(
-    fig, gs_row,           # GridSpec 행 슬라이스
-    tokens: List[str],
+    fig, gs_row,
+    words: List[str],
     cls_embs: List[np.ndarray],
-    token_embs: List[np.ndarray],
+    word_embs: List[np.ndarray],
     sw_indices: List[int],
     sw_scores: List[float],
+    sw_word_scores: List[float],
+    ensemble_scores: List[float],
     consec_indices: List[int],
     consec_scores: List[float],
+    detected_indices: List[int],   # 복수 변화점
+    threshold: float,
     sentence_info: dict,
     tokenizer,
     BLUE, ORANGE, RED, GREEN, GRAY, PURPLE,
 ):
-    hint_idx = find_hint_token_idx(tokens, sentence_info["hint"], tokenizer)
-    detected_idx = sw_indices[int(np.argmax(sw_scores))] if sw_scores else None
+    hint_idx = find_hint_token_idx(words, sentence_info["hint"], tokenizer)
     n_steps = len(cls_embs)
 
     # ── 패널 A: 슬라이딩 윈도우 변화점 점수 ──
@@ -229,23 +337,41 @@ def draw_sentence_panels(
     axA.set_facecolor("#FFFFFF")
 
     axA.plot(sw_indices, sw_scores, "o-", color=BLUE, lw=2, ms=7,
-             label="슬라이딩 윈도우 점수", zorder=3)
+             label="CLS 점수", zorder=3)
+    axA.plot(sw_indices, sw_word_scores, "^-", color=PURPLE, lw=2, ms=7,
+             label="Word 점수", zorder=3)
+    axA.plot(sw_indices, ensemble_scores, "D-", color="#FF006E", lw=2.5, ms=8,
+             label="앙상블 점수", zorder=4, alpha=0.9)
     axA.plot(consec_indices, consec_scores, "s--", color=GREEN, lw=1.3, ms=5,
-             alpha=0.8, label="연속 스텝 변화량", zorder=2)
+             alpha=0.6, label="연속 스텝 변화량", zorder=2)
 
-    if detected_idx is not None:
-        axA.axvline(detected_idx, color=RED, lw=2, linestyle="-.",
-                    label=f"최대 변화 감지: [{tokens[detected_idx]}]")
+    # 임계값 수평선
+    axA.axhline(threshold, color=GRAY, lw=1.5, linestyle="--",
+                label=f"임계값 ({threshold:.4f})", alpha=0.8)
+
+    # 탐지된 복수 변화점 수직선
+    for k, didx in enumerate(detected_indices):
+        label = f"감지 분절 ({len(detected_indices)}개)" if k == 0 else None
+        axA.axvline(didx, color=RED, lw=2, linestyle="-.", alpha=0.85,
+                    label=label)
+        axA.text(didx, axA.get_ylim()[1] if sw_scores else 0,
+                 f" {words[didx]}", color=RED, fontsize=7,
+                 va="top", ha="left", fontweight="bold")
+
+    # 힌트 수직선
     if hint_idx is not None:
         axA.axvline(hint_idx, color=ORANGE, lw=1.8, linestyle=":",
                     label=f"예상 분절: [{sentence_info['hint']}]")
 
     axA.set_xticks(range(n_steps))
     axA.set_xticklabels(
-        [f"{t}\n({i})" for i, t in enumerate(tokens)],
+        [f"{t}\n({i})" for i, t in enumerate(words)],
         fontsize=6.5, rotation=40, ha="right",
     )
-    axA.set_title("변화점 통계량 (토큰 단위)", fontsize=10, fontweight="bold")
+    axA.set_title(
+        f"변화점 통계량 (토큰 단위) | 감지: {len(detected_indices)}개",
+        fontsize=10, fontweight="bold",
+    )
     axA.set_ylabel("코사인 거리", fontsize=8)
     axA.legend(fontsize=7, loc="upper left")
     axA.grid(alpha=0.25, linestyle="--")
@@ -271,15 +397,18 @@ def draw_sentence_panels(
                          zorder=4, edgecolors="white", lw=1)
         plt.colorbar(sc, ax=axB, fraction=0.046, pad=0.04, label="토큰 순서")
 
-        # 힌트 위치 강조
+        # 힌트 위치
         if hint_idx is not None and hint_idx < n_steps:
-            axB.scatter(*cls_2d[hint_idx], color=ORANGE, s=200, zorder=5,
+            axB.scatter(*cls_2d[hint_idx], color=ORANGE, s=220, zorder=5,
                         edgecolors="black", lw=1.5, marker="*",
                         label=f"힌트: {sentence_info['hint']}")
-        if detected_idx is not None and detected_idx < n_steps:
-            axB.scatter(*cls_2d[detected_idx], color=RED, s=200, zorder=5,
-                        edgecolors="black", lw=1.5, marker="D",
-                        label=f"감지: {tokens[detected_idx]}")
+
+        # 복수 감지 위치
+        for k, didx in enumerate(detected_indices):
+            if didx < n_steps:
+                axB.scatter(*cls_2d[didx], color=RED, s=180, zorder=5,
+                            edgecolors="black", lw=1.5, marker="D",
+                            label=f"감지{k+1}: {words[didx]}" if k < 3 else None)
 
         axB.annotate("시작", cls_2d[0],  fontsize=8, color="#6A0572",
                      fontweight="bold", xytext=(5,5), textcoords="offset points")
@@ -297,7 +426,7 @@ def draw_sentence_panels(
     axC.set_facecolor("#FFFFFF")
 
     n = n_steps
-    tok_arr = np.array(token_embs)
+    tok_arr = np.array(word_embs)
     sim = np.array([
         [1.0 - cosine_distance(tok_arr[i], tok_arr[j]) for j in range(n)]
         for i in range(n)
@@ -311,13 +440,13 @@ def draw_sentence_panels(
     tick_pos = list(range(0, n, tick_step))
     axC.set_xticks(tick_pos)
     axC.set_yticks(tick_pos)
-    axC.set_xticklabels([tokens[i] for i in tick_pos], rotation=45, ha="right", fontsize=7)
-    axC.set_yticklabels([tokens[i] for i in tick_pos], fontsize=7)
+    axC.set_xticklabels([words[i] for i in tick_pos], rotation=45, ha="right", fontsize=7)
+    axC.set_yticklabels([words[i] for i in tick_pos], fontsize=7)
 
-    # 감지된 분절점 수직/수평선
-    if detected_idx is not None:
-        axC.axvline(detected_idx, color=RED, lw=1.5, linestyle="--", alpha=0.8)
-        axC.axhline(detected_idx, color=RED, lw=1.5, linestyle="--", alpha=0.8)
+    # 복수 감지 분절점 수직/수평선
+    for didx in detected_indices:
+        axC.axvline(didx, color=RED, lw=1.5, linestyle="--", alpha=0.75)
+        axC.axhline(didx, color=RED, lw=1.5, linestyle="--", alpha=0.75)
 
     axC.set_title("토큰 임베딩 유사도 히트맵", fontsize=10, fontweight="bold")
     axC.spines[["top","right"]].set_visible(False)
@@ -342,7 +471,7 @@ def make_figure(
     fig.patch.set_facecolor("#F8F9FA")
     fig.suptitle(
         f"문장 내 의미 분절 탐지 — KoBERT 토큰 증분 임베딩\n"
-        f"모델: {MODEL_NAME}  |  윈도우 크기: {WINDOW_SIZE}",
+        f"모델: {MODEL_NAME}  |  윈도우 크기: {WINDOW_SIZE}  |  앙상블 가중치: CLS={CLS_WEIGHT} / Word={WORD_WEIGHT}",
         fontsize=14, fontweight="bold", y=0.99, color="#2B2D42",
     )
 
@@ -353,9 +482,9 @@ def make_figure(
 
     for row_idx, result in enumerate(all_results):
         info    = result["info"]
-        tokens  = result["tokens"]
+        words   = result["words"]
         cls_embs   = result["cls_embs"]
-        token_embs = result["token_embs"]
+        word_embs = result["word_embs"]
         sw_idx, sw_scores     = result["sw"]
         consec_idx, consec_scores = result["consec"]
 
@@ -376,13 +505,17 @@ def make_figure(
         draw_sentence_panels(
             fig=fig,
             gs_row=inner_gs,
-            tokens=tokens,
+            words=words,
             cls_embs=cls_embs,
-            token_embs=token_embs,
+            word_embs=word_embs,
             sw_indices=sw_idx,
             sw_scores=sw_scores,
+            sw_word_scores=result["sw_word_scores"],
+            ensemble_scores=result["ensemble_scores"],
             consec_indices=consec_idx,
             consec_scores=consec_scores,
+            detected_indices=result["detected_indices"],
+            threshold=result["threshold"],
             sentence_info=info,
             tokenizer=tokenizer,
             BLUE=BLUE, ORANGE=ORANGE, RED=RED,
@@ -411,33 +544,50 @@ def main():
         print(f"{'─'*60}")
 
         # 토큰 증분 임베딩
-        tokens, cls_embs, token_embs = get_incremental_embeddings(
+        words, cls_embs, word_embs = get_incremental_embeddings(
             sentence, tokenizer, model, device
         )
-        print(f"  토큰 목록: {tokens}")
+        print(f"  단어 목록: {words}")
 
         # 변화점 점수 계산
         sw_idx, sw_scores         = sliding_window_change_score(cls_embs, WINDOW_SIZE)
+        _,      sw_word_scores    = sliding_window_change_score(word_embs, WINDOW_SIZE)
         consec_idx, consec_scores = consecutive_change_score(cls_embs)
+
+        # CLS + Word 앙상블 점수
+        ensemble_scores = ensemble_change_score(sw_scores, sw_word_scores,
+                                                cls_weight=CLS_WEIGHT,
+                                                word_weight=WORD_WEIGHT)
+
+        # 앙상블 점수 기반 복수 변화점 탐지
+        detected_indices, threshold = find_changepoints(
+            sw_idx, ensemble_scores,
+            threshold=None,   # 자동 설정 (평균 + 1 표준편차)
+            min_distance=2,
+        )
 
         # 결과 출력
         if sw_scores:
-            detected_pos = int(np.argmax(sw_scores))
-            detected_tok = tokens[sw_idx[detected_pos]]
-            print(f"\n  슬라이딩 윈도우 변화점 점수:")
-            for idx, score in zip(sw_idx, sw_scores):
-                marker = " ◀ 최대" if score == max(sw_scores) else ""
-                print(f"    [{tokens[idx]:>12s}] (tok {idx:02d}): {score:.5f}{marker}")
-            print(f"\n  감지된 분절 토큰 : [{detected_tok}]")
-            print(f"  예상 분절 힌트   : [{info['hint']}]")
+            print(f"\n  변화점 점수 (임계값: {threshold:.5f}) [CLS / Word / 앙상블]:")
+            for idx, cs, ws, es in zip(sw_idx, sw_scores, sw_word_scores, ensemble_scores):
+                detected_mark = " ◀ 감지" if idx in detected_indices else ""
+                print(f"    [{words[idx]:>12s}] (word {idx:02d}): "
+                      f"CLS={cs:.4f}  Word={ws:.4f}  Ensemble={es:.4f}{detected_mark}")
+            print(f"\n  감지된 분절 단어 ({len(detected_indices)}개): "
+                  f"{[words[i] for i in detected_indices]}")
+            print(f"  예상 분절 힌트           : [{info['hint']}]")
 
         all_results.append({
             "info": info,
-            "tokens": tokens,
+            "words": words,
             "cls_embs": cls_embs,
-            "token_embs": token_embs,
+            "word_embs": word_embs,
             "sw": (sw_idx, sw_scores),
+            "sw_word_scores": sw_word_scores,
+            "ensemble_scores": ensemble_scores,
             "consec": (consec_idx, consec_scores),
+            "detected_indices": detected_indices,
+            "threshold": threshold,
         })
 
     # 시각화
