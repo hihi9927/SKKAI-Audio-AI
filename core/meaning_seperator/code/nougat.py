@@ -64,13 +64,20 @@ SENTENCES = [
 ]
 
 # ── NOUGAT 하이퍼파라미터 (논문 Table 1 기준) ──
-N_REF  = 2      # 참조 윈도우 크기 (짧은 문장이라 2~3 권장)
-N_TEST = 2      # 테스트 윈도우 크기
+N_REF  = 1      # 참조 윈도우 크기 (짧은 문장이라 2~3 권장)
+N_TEST = 1      # 테스트 윈도우 크기
 MU     = 0.01   # KLMS 학습률 (learning rate)
 SIGMA  = 1.0    # RBF 커널 대역폭 (bandwidth)
 NU     = 0.5    # Coherence rule 임계값 (0~1, 낮을수록 딕셔너리 크기↑)
 L_MAX  = 20     # 딕셔너리 최대 크기
 LAMBDA = 1e-3   # 정규화 계수
+
+# PCA 차원 축소 (None이면 원본 768차원 사용)
+# 고차원에서 RBF 커널이 모두 0에 가까워지는 문제 해결
+PCA_DIM = 32
+
+# σ 자동 설정 여부 (True: median heuristic, False: SIGMA 값 사용)
+AUTO_SIGMA = True
 
 # 탐지 임계값: None이면 MIA 기반 자동 설정 (False alarm rate)
 FALSE_ALARM_RATE = 0.05   # 5% 유의수준
@@ -134,8 +141,52 @@ def get_word_embeddings(
     return words, word_embs
 
 
+
 # ══════════════════════════════════════════════════════════
-# 3. NOUGAT 알고리즘 (논문 Algorithm 1)
+# 3. 전처리: PCA 차원 축소 + Median Heuristic σ 설정
+# ══════════════════════════════════════════════════════════
+
+def median_heuristic(embs: List[np.ndarray]) -> float:
+    """
+    RBF 커널 대역폭 σ 자동 설정: pairwise 거리의 중앙값.
+    고차원 임베딩에서 σ=1.0은 k(x,y)≈0 문제를 일으킴.
+    median heuristic이 커널 기계학습의 표준 휴리스틱.
+    """
+    arr = np.array(embs)
+    n = len(arr)
+    dists = []
+    for i in range(n):
+        for j in range(i + 1, n):
+            dists.append(float(np.linalg.norm(arr[i] - arr[j])))
+    if not dists:
+        return 1.0
+    sigma = float(np.median(dists))
+    return max(sigma, 1e-3)   # 0 방지
+
+
+def reduce_dim(
+    embs: List[np.ndarray],
+    n_components: int,
+) -> Tuple[List[np.ndarray], object]:
+    """
+    PCA로 임베딩 차원 축소.
+    768차원 → n_components차원으로 줄여 커널 계산을 안정화.
+    fit은 전체 임베딩으로, transform도 동일 PCA 적용.
+    """
+    arr = np.array(embs)
+    # 최대 n_components는 샘플 수 - 1
+    n_comp = min(n_components, arr.shape[0] - 1, arr.shape[1])
+    scaler = StandardScaler()
+    arr_scaled = scaler.fit_transform(arr)
+    pca = PCA(n_components=n_comp, random_state=42)
+    arr_reduced = pca.fit_transform(arr_scaled)
+    reduced = [arr_reduced[i] for i in range(len(embs))]
+    explained = float(pca.explained_variance_ratio_.sum())
+    return reduced, (scaler, pca, explained)
+
+
+# ══════════════════════════════════════════════════════════
+# 4. NOUGAT 알고리즘 (논문 Algorithm 1)
 # ══════════════════════════════════════════════════════════
 
 def rbf_kernel(x: np.ndarray, y: np.ndarray, sigma: float) -> float:
@@ -496,7 +547,7 @@ def draw_panels(
     axC.spines[["top","right"]].set_visible(False)
 
 
-def make_figure(all_results: list, output_path: str):
+def make_figure(all_results: list, output_path: str, sigma_label: str = ""):
     setup_korean_font()
 
     BLUE   = "#3A86FF"
@@ -511,8 +562,8 @@ def make_figure(all_results: list, output_path: str):
     fig.patch.set_facecolor("#F8F9FA")
     fig.suptitle(
         "NOUGAT + KoBERT: 문장 내 의미 분절 탐지\n"
-        f"모델: {MODEL_NAME}  |  "
-        f"N_ref={N_REF}  N_test={N_TEST}  μ={MU}  σ={SIGMA}  ν={NU}  L_max={L_MAX}",
+        f"모델: {MODEL_NAME}  |  PCA={PCA_DIM}차원  σ={sigma_label}  "
+        f"N_ref={N_REF}  N_test={N_TEST}  μ={MU}  ν={NU}  L_max={L_MAX}",
         fontsize=13, fontweight="bold", y=0.99, color="#2B2D42",
     )
 
@@ -570,15 +621,32 @@ def main():
         words, word_embs = get_word_embeddings(sentence, tokenizer, model, device)
         print(f"  단어 목록: {words}")
 
+        # ── PCA 차원 축소 ──
+        if PCA_DIM is not None:
+            embs_input, (scaler, pca_obj, expl) = reduce_dim(word_embs, PCA_DIM)
+            print(f"  PCA 축소: 768 → {len(embs_input[0])}차원  "
+                  f"(설명 분산: {expl*100:.1f}%)")
+        else:
+            embs_input = word_embs
+            print(f"  PCA 축소: 사용 안 함 (원본 {word_embs[0].shape[0]}차원)")
+
+        # ── Median Heuristic σ 설정 ──
+        if AUTO_SIGMA:
+            sigma_used = median_heuristic(embs_input)
+            print(f"  Median Heuristic σ: {sigma_used:.4f}  (기본값={SIGMA})")
+        else:
+            sigma_used = SIGMA
+            print(f"  σ 고정값: {sigma_used}")
+
         # NOUGAT 온라인 처리
         detector = NOUGAT(
             n_ref=N_REF, n_test=N_TEST,
-            mu=MU, sigma=SIGMA, nu=NU,
+            mu=MU, sigma=sigma_used, nu=NU,
             l_max=L_MAX, lam=LAMBDA,
         )
 
         print(f"\n  NOUGAT 온라인 처리:")
-        for t, (word, emb) in enumerate(zip(words, word_embs)):
+        for t, (word, emb) in enumerate(zip(words, embs_input)):
             g_t = detector.update(emb)
             if g_t is not None:
                 print(f"    t={t:02d} [{word:>12s}]  g_t={g_t:+.5f}  "
@@ -603,12 +671,14 @@ def main():
             "g_values":  detector.g_values,
             "xi":        xi,
             "detected":  detected,
+            "sigma_used": sigma_used,
         })
 
     print(f"\n{'─'*60}")
     print(f"  시각화 생성 → {OUTPUT_PATH}")
     print(f"{'─'*60}")
-    make_figure(all_results, OUTPUT_PATH)
+    sigma_str = f"median({all_results[0]['sigma_used']:.2f})" if AUTO_SIGMA else str(SIGMA)
+    make_figure(all_results, OUTPUT_PATH, sigma_label=sigma_str)
     print("\n실험 완료!")
 
 
