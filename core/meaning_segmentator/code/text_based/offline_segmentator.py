@@ -460,14 +460,15 @@ def get_token_entropies(
     sr: int,
     language: str = "Korean",
     max_new_tokens: int = 512,
-) -> Tuple[str, List[float]]:
+) -> Tuple[str, List[float], List[str]]:
     """
-    ASR 모델을 output_scores=True로 실행해 전사 텍스트와
-    생성된 각 LLM 토큰의 엔트로피(nats)를 반환.
+    ASR 모델을 output_scores=True로 실행해 전사 텍스트,
+    토큰별 엔트로피(nats), 토큰별 문자열을 반환.
 
     Returns:
         transcript (str): 전사 텍스트
         entropies (List[float]): 토큰별 엔트로피, len == 생성 토큰 수
+        token_strings (List[str]): 토큰별 decoded 문자열, len == 생성 토큰 수
     """
     import torch
 
@@ -511,27 +512,63 @@ def get_token_entropies(
         ent   = -(probs * torch.log(probs + 1e-9)).sum().item()
         entropies.append(ent)
 
-    return transcript, entropies
+    # 토큰별 문자열 (special token 포함, 공백 prefix 보존)
+    tokenizer = processor.tokenizer
+    token_strings: List[str] = [
+        tokenizer.decode([tok_id.item()], skip_special_tokens=False,
+                         clean_up_tokenization_spaces=False)
+        for tok_id in generated_ids[0]
+    ]
+
+    return transcript, entropies, token_strings
 
 
-def map_entropies_to_words(
+def align_token_entropies_to_words(
+    token_strings: List[str],
     token_entropies: List[float],
-    num_words: int,
+    word_texts: List[str],
 ) -> List[float]:
     """
-    T개 LLM 토큰 엔트로피를 W개 단어 엔트로피로 비례 매핑.
-    단어 i는 토큰 인덱스 [i*T/W, (i+1)*T/W) 구간의 평균 엔트로피.
+    LLM 토큰 문자열을 ForcedAligner 단어에 greedy string match로 align하여
+    단어별 엔트로피를 반환.
+
+    SentencePiece(▁), BPE(Ġ), 공백을 제거한 후 누적 문자열이 단어와
+    일치할 때까지 토큰을 소비. 남은 토큰은 마지막 단어에 귀속.
     """
-    if not token_entropies or num_words == 0:
-        return [0.0] * num_words
-    T      = len(token_entropies)
-    result = []
-    for wi in range(num_words):
-        t_start = int(wi * T / num_words)
-        t_end   = max(t_start + 1, int((wi + 1) * T / num_words))
-        t_end   = min(t_end, T)
-        result.append(float(np.mean(token_entropies[t_start:t_end])))
-    return result
+    def _clean(s: str) -> str:
+        return re.sub(r'[▁Ġ\s]', '', s)
+
+    if not token_strings or not word_texts:
+        return [0.0] * len(word_texts)
+
+    word_entropies: List[float] = []
+    tok_idx = 0
+    n_toks  = len(token_strings)
+
+    for wi, word in enumerate(word_texts):
+        target      = _clean(word)
+        accumulated = ''
+        indices: List[int] = []
+        is_last = (wi == len(word_texts) - 1)
+
+        if not target:
+            word_entropies.append(0.0)
+            continue
+
+        while tok_idx < n_toks:
+            piece = _clean(token_strings[tok_idx])
+            accumulated += piece
+            if piece:
+                indices.append(tok_idx)
+            tok_idx += 1
+            if not is_last and len(accumulated) >= len(target):
+                break
+
+        word_entropies.append(
+            float(np.mean([token_entropies[i] for i in indices])) if indices else 0.0
+        )
+
+    return word_entropies
 
 
 def entropy_score_at_boundary(
@@ -635,7 +672,7 @@ def run_pcm_case(
     word_entropies: List[float] = []
 
     if use_entropy and asr_model is not None:
-        transcript, token_entropies = get_token_entropies(
+        transcript, token_entropies, token_strings = get_token_entropies(
             asr_model, audio, sr,
             language=aligner_lang,
             max_new_tokens=max_new_tokens,
@@ -648,8 +685,9 @@ def run_pcm_case(
             language=aligner_lang,
             return_time_stamps=False,
         )
-        transcript   = results[0].text if results else ""
+        transcript      = results[0].text if results else ""
         token_entropies = []
+        token_strings   = []
     else:
         raise RuntimeError("asr_model이 필요합니다.")
 
@@ -674,9 +712,11 @@ def run_pcm_case(
             confirmed_positions=[], transcript=transcript,
         )
 
-    # 4a. 엔트로피 → 단어별 매핑
-    if use_entropy and token_entropies:
-        word_entropies = map_entropies_to_words(token_entropies, len(tokens))
+    # 4a. 엔트로피 → 단어별 매핑 (ForcedAligner 단어와 토큰 문자열 greedy align)
+    if use_entropy and token_entropies and token_strings:
+        word_entropies = align_token_entropies_to_words(
+            token_strings, token_entropies, [t.text for t in tokens]
+        )
     else:
         word_entropies = [0.0] * len(tokens)
 
