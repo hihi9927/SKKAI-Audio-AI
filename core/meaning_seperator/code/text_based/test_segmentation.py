@@ -2,29 +2,31 @@
 """
 Meaning Segmentation Test
 =========================
-Toy dataset(6개 m4a)에 대해 3가지 피처 기반 의미 분절을 테스트합니다.
+PCM 파일 기반 의미 분절 테스트 (GT 없음, 결과 저장).
 
 피처:
   1. Prosody  - gap, final lengthening, f0 drop, energy drop
   2. Text     - 담화표지/접속어미/화제전환 신호
   3. Semantic - sentence-transformers 코사인 비유사도 (다중 창 크기)
+  4. Entropy  - ASR 토큰 생성 시 모델 불확실성 (output_scores 기반)
 
 경계 확정:
-  고정 임계값 대신 local prominence 기반 peak detection 사용.
-  각 위치의 점수가 주변(±window) 평균보다 min_prominence 이상 높아야 peak로 확정.
+  고정 임계값 대신 local prominence 기반 peak detection.
+  각 위치의 점수가 주변(±window) 평균보다 min_prominence 이상 높아야 peak.
   NMS(non-maximum suppression)로 너무 가까운 peak 중 강한 것만 유지.
 
 사용법:
   cd STiTy/
-  python core/meaning_seperator/test_segmentation.py
-  python core/meaning_seperator/test_segmentation.py --device cpu
-  python core/meaning_seperator/test_segmentation.py --no-semantic
-  python core/meaning_seperator/test_segmentation.py --window 4 --min-prominence 0.08
+  python core/meaning_seperator/code/text_based/test_segmentation.py
+  python core/meaning_seperator/code/text_based/test_segmentation.py --num-files 2
+  python core/meaning_seperator/code/text_based/test_segmentation.py --no-semantic --no-entropy
+  python core/meaning_seperator/code/text_based/test_segmentation.py --output results.json
 """
 
 import sys
 import os
 import re
+import json
 import argparse
 import numpy as np
 from dataclasses import dataclass, field
@@ -33,8 +35,9 @@ from pathlib import Path
 
 # ─── 경로 설정 ────────────────────────────────────────────────────────────────
 _HERE      = Path(__file__).parent
-_BASE      = _HERE.parent.parent          # STiTy/
+_BASE      = _HERE.parent.parent.parent   # STiTy/
 _QWEN_DIR  = _BASE / "Qwen3-ASR"
+_DATA_DIR  = _HERE.parent.parent / "data" / "eval_clean"
 _TEST_DIR  = _HERE / "test"
 _AUDIO_DIR = _TEST_DIR / "audio"
 _TEXT_DIR  = _TEST_DIR / "text"
@@ -43,14 +46,14 @@ sys.path.insert(0, str(_BASE))
 sys.path.insert(0, str(_QWEN_DIR))
 
 # ─── 상수 ─────────────────────────────────────────────────────────────────────
-DEFAULT_WEIGHTS        = {"prosody": 0.4, "text": 0.4, "semantic": 0.2}
-DEFAULT_PEAK_WINDOW    = 3      # 좌우 몇 개 이웃까지 비교할지
-DEFAULT_MIN_PROMINENCE = 0.20   # peak가 이웃 평균보다 얼마나 높아야 하는지
-DEFAULT_MIN_FLOOR      = 0.15   # 이 값 미만이면 noise로 간주, peak 후보 제외
-DEFAULT_MIN_DISTANCE   = 2      # NMS: peak 간 최소 간격 (토큰 수)
+DEFAULT_WEIGHTS        = {"prosody": 0.30, "text": 0.30, "semantic": 0.15, "entropy": 0.25}
+DEFAULT_PEAK_WINDOW    = 3
+DEFAULT_MIN_PROMINENCE = 0.20
+DEFAULT_MIN_FLOOR      = 0.15
+DEFAULT_MIN_DISTANCE   = 2
 TARGET_SR              = 16000
+DEFAULT_MAX_ENTROPY_REF = 8.0   # 정규화 기준 엔트로피 (nats); 실제 범위: 2~10
 
-# 언어 코드 → Qwen3ForcedAligner 언어명 매핑
 LANGUAGE_MAP: Dict[str, str] = {
     "ko": "Korean",
     "en": "English",
@@ -63,77 +66,69 @@ LANGUAGE_MAP: Dict[str, str] = {
 
 # ── Text Feature: KoNLPy Okt POS 점수표 (한국어) ─────────────────────────────
 BEFORE_POS_SCORE: Dict[str, float] = {
-    "Eomi":        0.7,   # 어미 (종결/연결 공통)
-    "Punctuation": 1.0,   # 구두점
+    "Eomi":        0.7,
+    "Punctuation": 1.0,
 }
-BEFORE_VERBAL_EOMI_BONUS = 0.4   # Verb/Adj + Eomi → 절 종결 보너스
+BEFORE_VERBAL_EOMI_BONUS = 0.4
 
 AFTER_POS_SCORE: Dict[str, float] = {
-    "Exclamation": 0.7,  # 감탄사
-    "Adverb":      0.7,  # 접속 부사
+    "Exclamation": 0.7,
+    "Adverb":      0.7,
 }
 
-BEFORE_AUX_VERB_BONUS_UD = 0.2   # AUX + VERB → 한국어 용언+어미 상당
+BEFORE_AUX_VERB_BONUS_UD = 0.2
 
 # ── Text Feature: SpaCy POS 점수표 (영어) ─────────────────────────────
 BEFORE_POS_SCORE_UD: Dict[str, float] = {
     "PUNCT": 1.0,
-    "VERB":  0.4,   # 기본값 낮추고
+    "VERB":  0.4,
     "AUX":   0.2,
-    "PART":  0.1,   # 'to' 같은 건 오히려 연속 신호
-    "NOUN":  0.2,   # NP 종결도 분절 후보
+    "PART":  0.1,
+    "NOUN":  0.2,
     "PRON":  0.1,
-    "ADJ":   0.15,  # predicative adj ("it's great")
-    "ADV":   0.2,   # "so", "just" 등 문말 부사
+    "ADJ":   0.15,
+    "ADV":   0.2,
     "NUM":   0.15,
 }
 
-# Morphology 기반 보너스 (spaCy token.morph 활용)
 BEFORE_MORPH_BONUS: Dict[str, float] = {
-    "Tense=Past":    0.3,   # 과거형 동사 → 완결성 높음
+    "Tense=Past":    0.3,
     "Tense=Pres":    0.15,
-    "VerbForm=Fin":  0.25,  # 정형동사 (finite verb) → 절 종결
-    "VerbForm=Inf":  -0.2,  # 부정사 → 뒤에 더 이어짐
+    "VerbForm=Fin":  0.25,
+    "VerbForm=Inf":  -0.2,
     "VerbForm=Part": 0.1,
-    "Mood=Ind":      0.15,  # 직설법
-    "Mood=Imp":      0.3,   # 명령법 ("Stop!", "Go!")
+    "Mood=Ind":      0.15,
+    "Mood=Imp":      0.3,
     "Number=Plur":   0.05,
 }
 
 AFTER_POS_SCORE_UD: Dict[str, float] = {
     "INTJ":  0.6,
-    "ADV":   0.3,   # 일반 부사는 낮추고
-    "CCONJ": 0.4,   # "and", "but" → 새 절 시작 신호로 올림
+    "ADV":   0.3,
+    "CCONJ": 0.4,
     "SCONJ": 0.5,
     "DET":   0.2,
-    "PRON":  0.3,   # "I", "he", "they" → 새 주어 등장
-    "PROPN": 0.25,  # 고유명사로 시작 → 새 화제
+    "PRON":  0.3,
+    "PROPN": 0.25,
     "NUM":   0.15,
 }
 
-# 이 패턴이 감지되면 점수를 깎아야 함
 CONTINUITY_PENALTY_PATTERNS = [
-    # VERB → to (부정사구 시작)
-    ("VERB", "PART"),    # -0.4
-    # 관계절 시작
-    ("NOUN", "REL"),     # -0.3  (which, that, who)
-    # 비교급
-    ("ADJ", "SCONJ"),    # -0.2  ("better than")
-    # 조동사 + 본동사
-    ("AUX", "VERB"),     # -0.3
+    ("VERB", "PART"),
+    ("NOUN", "REL"),
+    ("ADJ", "SCONJ"),
+    ("AUX", "VERB"),
 ]
 
-# token.dep_ 기반 종결 강도
 DEP_SCORE: Dict[str, float] = {
-    "ROOT":      0.3,   # 문장 핵심 동사
-    "conj":     -0.1,   # 등위 접속 구조 안에 있음
-    "advcl":    -0.15,  # 부사절 안에 있음
-    "relcl":    -0.2,   # 관계절 안에 있음
-    "mark":     -0.1,   # 종속 접속사 마커
-    "cc":        0.2,   # 등위 접속사 → 새 절 경계
+    "ROOT":      0.3,
+    "conj":     -0.1,
+    "advcl":    -0.15,
+    "relcl":    -0.2,
+    "mark":     -0.1,
+    "cc":        0.2,
 }
 
-# spaCy 언어 코드 → 모델명
 SPACY_MODEL_MAP: Dict[str, str] = {
     "en": "en_core_web_sm",
     "ja": "ja_core_news_sm",
@@ -147,8 +142,8 @@ SPACY_MODEL_MAP: Dict[str, str] = {
 @dataclass
 class WordToken:
     text:  str
-    start: float   # seconds
-    end:   float   # seconds
+    start: float
+    end:   float
 
     @property
     def duration(self) -> float:
@@ -157,12 +152,13 @@ class WordToken:
 
 @dataclass
 class BoundaryScore:
-    position:       int          # i → boundary between tokens[i] and tokens[i+1]
+    position:       int
     word_before:    WordToken
     word_after:     WordToken
     prosody_score:  float = 0.0
     text_score:     float = 0.0
     semantic_score: float = 0.0
+    entropy_score:  float = 0.0
     total_score:    float = 0.0
     confirmed:      bool  = False
     details:        Dict  = field(default_factory=dict)
@@ -174,7 +170,8 @@ class SegmentationResult:
     tokens:              List[WordToken]
     boundaries:          List[BoundaryScore]
     confirmed_positions: List[int]
-    gt_positions:        List[int]
+    gt_positions:        List[int] = field(default_factory=list)
+    transcript:          str       = ""
 
 
 # ─── 오디오 로딩 ───────────────────────────────────────────────────────────────
@@ -195,35 +192,31 @@ def load_audio(path: str, sr: int = TARGET_SR) -> Tuple[np.ndarray, int]:
             raise RuntimeError(f"오디오 로드 실패 ({path}): {e1} | {e2}")
 
 
+def load_pcm(path: str, sr: int = TARGET_SR) -> Tuple[np.ndarray, int]:
+    """Raw PCM (16-bit signed int, mono, 16kHz) 로드 → float32 [-1, 1]."""
+    data = np.fromfile(path, dtype=np.int16)
+    audio = data.astype(np.float32) / 32768.0
+    return audio, sr
+
+
 # ─── GT 파싱 ───────────────────────────────────────────────────────────────────
 def parse_gt(text_with_markers: str) -> Tuple[str, List[str]]:
-    """
-    '/ 로 표시된 정답 텍스트를 파싱.
-    Returns: (clean_text, segments)
-    """
     parts = [p.strip() for p in text_with_markers.split("/") if p.strip()]
     clean = " ".join(parts)
     return clean, parts
 
 
 def get_gt_boundary_indices(tokens: List[WordToken], gt_segments: List[str]) -> List[int]:
-    """
-    누적 문자 수 기준으로 GT 분절 위치 → 토큰 인덱스로 변환.
-    boundary after tokens[i] ↔ 반환 리스트의 원소 i.
-    """
-    # 토큰 텍스트를 공백 없이 이어붙인 문자열에서 각 토큰의 끝 위치 계산
     char_ends = []
     acc = 0
     for t in tokens:
         acc += len(t.text.replace(" ", ""))
         char_ends.append(acc)
 
-    # 각 세그먼트(마지막 제외)의 끝 문자 위치
     boundary_indices = []
     seg_char_acc = 0
     for seg in gt_segments[:-1]:
         seg_char_acc += len(seg.replace(" ", ""))
-        # seg_char_acc에 가장 가까운 토큰 경계 찾기
         best_idx = min(range(len(char_ends)), key=lambda i: abs(char_ends[i] - seg_char_acc))
         boundary_indices.append(best_idx)
 
@@ -238,26 +231,17 @@ def prosody_score(
     gap_mean: float = 0.0,
     gap_std:  float = 0.1,
 ) -> Tuple[float, Dict]:
-    """
-    Gap, Final Lengthening, F0 Drop, Pitch Reset, Energy Drop 5가지 서브피처.
-
-    Gap score: 발화 내 pause 분포의 z-score 기반 → 화자마다/속도마다 자동 정규화.
-    Pitch reset: 경계 다음 단어 시작 F0가 직전보다 높으면 ↑ (한국어 억양 재설정).
-    """
     details: Dict = {}
     score = 0.0
 
-    # 1. Gap — z-score 기반 (speech rate 자동 정규화) ── 가중 0.30
     gap = max(0.0, w_after.start - w_before.end)
     z = (gap - gap_mean) / max(gap_std, 1e-6)
-    # z=0(평균) → 0.5, z=2(매우 긴 pause) → 1.0, z=-2(매우 짧음) → 0
     g_score = min(1.0, max(0.0, (z + 2) / 4))
     details["gap_s"]  = round(gap, 4)
     details["gap_z"]  = round(z, 3)
     details["gap_sc"] = round(g_score, 3)
     score += 0.30 * g_score
 
-    # 2. Final lengthening ── 가중 0.20
     idx = all_tokens.index(w_before)
     local_start = max(0, idx - 3)
     local_end   = min(len(all_tokens), idx + 3)
@@ -269,7 +253,6 @@ def prosody_score(
     details["fl_sc"]    = round(fl_score, 3)
     score += 0.20 * fl_score
 
-    # 3. F0 drop (word_before) + Pitch reset (word_after) ── 합산 가중 0.35
     try:
         import librosa
         seg_b = audio[max(0, int(w_before.start * sr)): int(w_before.end * sr)]
@@ -288,7 +271,6 @@ def prosody_score(
                                               frame_length=512, hop_length=128)
             f0v_a = f0_a[voiced_a] if voiced_a is not None else np.array([])
 
-        # F0 drop: word_before 전반 → 후반 하강 ── 가중 0.20
         if len(f0v_b) >= 4:
             half    = len(f0v_b) // 2
             f0_drop = (np.mean(f0v_b[:half]) - np.mean(f0v_b[half:])) / max(np.mean(f0v_b[:half]), 1.0)
@@ -299,12 +281,11 @@ def prosody_score(
         else:
             details["f0_drop_note"] = "too_short"
 
-        # Pitch reset: word_after 시작이 word_before 끝보다 높으면 ↑ ── 가중 0.15
         if len(f0v_b) >= 2 and len(f0v_a) >= 2:
             f0_before_end  = float(np.mean(f0v_b[len(f0v_b) // 2:]))
             f0_after_start = float(np.mean(f0v_a[:max(1, len(f0v_a) // 2)]))
-            f0_reset       = f0_after_start - f0_before_end   # 양수 = 피치 재설정 상승
-            reset_sc       = min(1.0, max(0.0, f0_reset / 80.0))  # 80 Hz 상승이면 1.0
+            f0_reset       = f0_after_start - f0_before_end
+            reset_sc       = min(1.0, max(0.0, f0_reset / 80.0))
             details["f0_reset_hz"] = round(f0_reset, 1)
             details["reset_sc"]    = round(reset_sc, 3)
             score += 0.15 * reset_sc
@@ -314,7 +295,6 @@ def prosody_score(
     except Exception as e:
         details["f0_err"] = str(e)
 
-    # 4. Energy drop ── 가중 0.15
     try:
         win     = int(0.1 * sr)
         b_end   = int(w_before.end  * sr)
@@ -332,23 +312,16 @@ def prosody_score(
     return min(1.0, score), details
 
 
-# ─── Feature 2: Text (형태소 분석 기반) ───────────────────────────────────────
+# ─── Feature 2: Text ──────────────────────────────────────────────────────────
 def text_score(
     w_before: WordToken, w_after: WordToken,
     okt=None,
     nlp=None,
 ) -> Tuple[float, Dict]:
-    """
-    형태소 분석 기반 텍스트 경계 피처.
-    - 한국어 (okt): KoNLPy Okt POS — Eomi/Punctuation + 용언+어미 보너스
-    - 비한국어 (nlp): spaCy UD POS — VERB/PUNCT + AUX+VERB 보너스
-    둘 다 없으면 0.0 반환.
-    """
     details: Dict = {}
     score = 0.0
 
     if okt is not None:
-        # ── 한국어: KoNLPy Okt ───────────────────────────────────────────────
         try:
             bm = okt.pos(w_before.text, norm=True)
             pos_b = [p for _, p in bm]
@@ -377,7 +350,6 @@ def text_score(
             details["after_err"] = str(e)
 
     elif nlp is not None:
-        # ── 비한국어: spaCy UD POS ───────────────────────────────────────────
         _PENALTY_MAP = {
             ("VERB", "PART"):  -0.4,
             ("NOUN", "REL"):   -0.3,
@@ -396,27 +368,21 @@ def text_score(
             if doc_b:
                 last_tok = doc_b[-1]
                 last_pos = last_tok.pos_
-
                 base_sc = BEFORE_POS_SCORE_UD.get(last_pos, 0.0)
                 if last_pos == "VERB" and len(pos_b) >= 2 and pos_b[-2] == "AUX":
                     base_sc += BEFORE_AUX_VERB_BONUS_UD
                     details["before_pattern"] = "aux_verb"
                 else:
                     details["before_pattern"] = last_pos
-
-                # Morphology bonus
                 morph_str = str(last_tok.morph)
                 morph_bonus = sum(v for k, v in BEFORE_MORPH_BONUS.items() if k in morph_str)
                 if morph_bonus != 0.0:
                     details["before_morph_bonus"] = round(morph_bonus, 3)
                     base_sc += morph_bonus
-
-                # DEP score
                 dep_sc = DEP_SCORE.get(last_tok.dep_, 0.0)
                 if dep_sc != 0.0:
                     details["before_dep"] = f"{last_tok.dep_}({dep_sc:+.2f})"
                     base_sc += dep_sc
-
                 score += base_sc
         except Exception as e:
             details["before_err"] = str(e)
@@ -432,7 +398,6 @@ def text_score(
         except Exception as e:
             details["after_err"] = str(e)
 
-        # Cross-boundary continuity penalty
         if doc_b and doc_a:
             try:
                 last_pos  = doc_b[-1].pos_
@@ -443,7 +408,6 @@ def text_score(
                     score += penalty
             except Exception:
                 pass
-
     else:
         details["note"] = "no_tagger"
         return 0.0, details
@@ -488,6 +452,113 @@ def semantic_score(
     return min(1.0, final), details
 
 
+# ─── Feature 4: Entropy ───────────────────────────────────────────────────────
+def get_token_entropies(
+    asr_model,
+    audio: np.ndarray,
+    sr: int,
+    language: str = "Korean",
+    max_new_tokens: int = 512,
+) -> Tuple[str, List[float]]:
+    """
+    ASR 모델을 output_scores=True로 실행해 전사 텍스트와
+    생성된 각 LLM 토큰의 엔트로피(nats)를 반환.
+
+    Returns:
+        transcript (str): 전사 텍스트
+        entropies (List[float]): 토큰별 엔트로피, len == 생성 토큰 수
+    """
+    import torch
+
+    hf_model  = asr_model.model      # Qwen3ASRForConditionalGeneration
+    processor = asr_model.processor
+
+    msgs = [
+        {"role": "system", "content": ""},
+        {"role": "user", "content": [{"type": "audio", "audio": audio}]},
+    ]
+    text_prompt = processor.apply_chat_template(msgs, add_generation_prompt=True, tokenize=False)
+    text_prompt = text_prompt + f"language {language}<asr_text>"
+
+    inputs = processor(
+        text=[text_prompt],
+        audio=[audio],
+        return_tensors="pt",
+        padding=True,
+    )
+    inputs = inputs.to(hf_model.device).to(hf_model.dtype)
+
+    with torch.no_grad():
+        outputs = hf_model.generate(
+            **inputs,
+            max_new_tokens=max_new_tokens,
+            output_scores=True,
+            return_dict_in_generate=True,
+        )
+
+    input_len    = inputs["input_ids"].shape[1]
+    generated_ids = outputs.sequences[:, input_len:]
+    transcript   = processor.batch_decode(
+        generated_ids,
+        skip_special_tokens=True,
+        clean_up_tokenization_spaces=False,
+    )[0]
+
+    # 각 생성 스텝의 엔트로피 (nats)
+    entropies: List[float] = []
+    for step_logits in outputs.scores:          # [batch, vocab_size]
+        probs = torch.softmax(step_logits[0].float(), dim=-1)
+        ent   = -(probs * torch.log(probs + 1e-9)).sum().item()
+        entropies.append(ent)
+
+    return transcript, entropies
+
+
+def map_entropies_to_words(
+    token_entropies: List[float],
+    num_words: int,
+) -> List[float]:
+    """
+    T개 LLM 토큰 엔트로피를 W개 단어 엔트로피로 비례 매핑.
+    단어 i는 토큰 인덱스 [i*T/W, (i+1)*T/W) 구간의 평균 엔트로피.
+    """
+    if not token_entropies or num_words == 0:
+        return [0.0] * num_words
+    T      = len(token_entropies)
+    result = []
+    for wi in range(num_words):
+        t_start = int(wi * T / num_words)
+        t_end   = max(t_start + 1, int((wi + 1) * T / num_words))
+        t_end   = min(t_end, T)
+        result.append(float(np.mean(token_entropies[t_start:t_end])))
+    return result
+
+
+def entropy_score_at_boundary(
+    position: int,
+    word_entropies: List[float],
+    max_entropy_ref: float = DEFAULT_MAX_ENTROPY_REF,
+) -> Tuple[float, Dict]:
+    """
+    경계 position에서의 엔트로피 점수.
+    word_before와 word_after의 엔트로피 평균을 max_entropy_ref로 정규화.
+    """
+    details: Dict = {}
+    if not word_entropies or position >= len(word_entropies):
+        return 0.0, {"note": "no_entropy"}
+
+    e_before = word_entropies[position]                                       if position     < len(word_entropies) else 0.0
+    e_after  = word_entropies[position + 1] if (position + 1) < len(word_entropies) else 0.0
+    raw      = (e_before + e_after) / 2.0
+    score    = min(1.0, raw / max(max_entropy_ref, 1e-6))
+
+    details["e_before_nats"] = round(e_before, 3)
+    details["e_after_nats"]  = round(e_after,  3)
+    details["raw_avg_nats"]  = round(raw,       3)
+    details["score"]         = round(score,     3)
+    return score, details
+
+
 # ─── Peak Detection ────────────────────────────────────────────────────────────
 def find_boundary_peaks(
     boundaries:     List[BoundaryScore],
@@ -496,18 +567,9 @@ def find_boundary_peaks(
     min_floor:      float = DEFAULT_MIN_FLOOR,
     min_distance:   int   = DEFAULT_MIN_DISTANCE,
 ) -> List[int]:
-    """
-    고정 임계값 대신 local prominence 기반으로 분절 경계 확정.
-
-    알고리즘:
-      1. total_score < min_floor → noise로 간주, 후보 제외
-      2. 좌우 ±window 범위 평균보다 min_prominence 이상 높아야 peak 후보
-      3. NMS: min_distance 이하 간격의 후보가 여러 개면 score 높은 것만 유지
-    """
     scores = [b.total_score for b in boundaries]
     n = len(scores)
 
-    # 1~2단계: floor + prominence 필터
     candidates: List[Tuple[int, float]] = []
     for i in range(n):
         s = scores[i]
@@ -517,7 +579,6 @@ def find_boundary_peaks(
         right = scores[i + 1: min(n, i + 1 + window)]
         left_mean  = float(np.mean(left))  if left  else 0.0
         right_mean = float(np.mean(right)) if right else 0.0
-        # 양쪽 평균 (한쪽만 있으면 그 쪽만)
         if left and right:
             context_mean = (left_mean + right_mean) / 2
         else:
@@ -528,7 +589,6 @@ def find_boundary_peaks(
     if not candidates:
         return []
 
-    # 3단계: NMS - score 높은 순으로 정렬 후 min_distance 이내 중복 제거
     candidates.sort(key=lambda x: x[1], reverse=True)
     confirmed: List[int] = []
     for idx, _ in candidates:
@@ -537,64 +597,112 @@ def find_boundary_peaks(
     return sorted(confirmed)
 
 
-# ─── 메인 파이프라인 ────────────────────────────────────────────────────────────
-def run_test_case(
-    name:           str,
-    audio_path:     str,
-    gt_answer:      str,
+# ─── PCM 파이프라인 (GT 없음) ──────────────────────────────────────────────────
+def run_pcm_case(
+    name:            str,
+    audio_path:      str,
+    asr_model,
     aligner,
-    embed_fn:       Optional[Callable],
-    weights:        Dict[str, float],
-    use_semantic:   bool,
-    device:         str,
-    language:       str   = "ko",
+    embed_fn:        Optional[Callable],
+    weights:         Dict[str, float],
+    use_semantic:    bool,
+    use_entropy:     bool,
+    language:        str   = "ko",
     okt=None,
     nlp=None,
-    window:         int   = DEFAULT_PEAK_WINDOW,
-    min_prominence: float = DEFAULT_MIN_PROMINENCE,
-    min_floor:      float = DEFAULT_MIN_FLOOR,
-    min_distance:   int   = DEFAULT_MIN_DISTANCE,
+    window:          int   = DEFAULT_PEAK_WINDOW,
+    min_prominence:  float = DEFAULT_MIN_PROMINENCE,
+    min_floor:       float = DEFAULT_MIN_FLOOR,
+    min_distance:    int   = DEFAULT_MIN_DISTANCE,
+    max_entropy_ref: float = DEFAULT_MAX_ENTROPY_REF,
+    max_new_tokens:  int   = 512,
 ) -> SegmentationResult:
-
-    # 1. 오디오 로드
-    audio, sr = load_audio(audio_path)
-
-    # 2. GT 파싱
-    clean_text, gt_segments = parse_gt(gt_answer)
-
-    # 3. Forced alignment → 토큰별 타임스탬프
+    """
+    PCM 오디오 파일 처리:
+      1. PCM 로드
+      2. ASR (output_scores=True) → 전사 텍스트 + 토큰별 엔트로피
+      3. ForcedAligner → 단어별 타임스탬프
+      4. 피처 계산 (prosody / text / semantic / entropy)
+      5. Peak detection → 분절 경계 확정
+    """
     aligner_lang = LANGUAGE_MAP.get(language, language.capitalize())
+
+    # 1. PCM 로드
+    audio, sr = load_pcm(audio_path)
+
+    # 2. ASR + entropy
+    transcript   = ""
+    word_entropies: List[float] = []
+
+    if use_entropy and asr_model is not None:
+        transcript, token_entropies = get_token_entropies(
+            asr_model, audio, sr,
+            language=aligner_lang,
+            max_new_tokens=max_new_tokens,
+        )
+    elif asr_model is not None:
+        # entropy 비활성화 — 전사만
+        from qwen_asr.inference.utils import normalize_audios
+        results = asr_model.transcribe(
+            audio=(audio, sr),
+            language=aligner_lang,
+            return_time_stamps=False,
+        )
+        transcript   = results[0].text if results else ""
+        token_entropies = []
+    else:
+        raise RuntimeError("asr_model이 필요합니다.")
+
+    if not transcript.strip():
+        return SegmentationResult(
+            name=name, tokens=[], boundaries=[],
+            confirmed_positions=[], transcript=transcript,
+        )
+
+    # 3. ForcedAligner → 단어 타임스탬프
     align_results = aligner.align(
         audio=(audio, sr),
-        text=clean_text,
+        text=transcript,
         language=aligner_lang,
     )
     raw_tokens = align_results[0]
     tokens = [WordToken(t.text, float(t.start_time), float(t.end_time)) for t in raw_tokens]
 
-    # 4. GT 경계 인덱스
-    gt_positions = get_gt_boundary_indices(tokens, gt_segments)
+    if not tokens:
+        return SegmentationResult(
+            name=name, tokens=[], boundaries=[],
+            confirmed_positions=[], transcript=transcript,
+        )
 
-    # 5. 발화 전체 gap 분포 계산 (z-score 기반 gap 점수를 위한 사전 통계)
+    # 4a. 엔트로피 → 단어별 매핑
+    if use_entropy and token_entropies:
+        word_entropies = map_entropies_to_words(token_entropies, len(tokens))
+    else:
+        word_entropies = [0.0] * len(tokens)
+
+    # 4b. Gap 통계
     all_gaps = [max(0.0, tokens[i + 1].start - tokens[i].end) for i in range(len(tokens) - 1)]
     gap_mean = float(np.mean(all_gaps)) if all_gaps else 0.0
     gap_std  = float(np.std(all_gaps))  if all_gaps else 0.1
 
-    # 6. Pass 1: 각 경계에서 피처 점수 계산 (confirmed는 아직 미정)
+    # 4c. 경계별 피처 계산
     boundaries: List[BoundaryScore] = []
     for i in range(len(tokens) - 1):
         wb, wa = tokens[i], tokens[i + 1]
 
         p_sc, p_det = prosody_score(audio, sr, wb, wa, tokens, gap_mean=gap_mean, gap_std=gap_std)
         t_sc, t_det = text_score(wb, wa, okt=okt, nlp=nlp)
-        s_sc, s_det = (semantic_score(tokens, i, embed_fn) if use_semantic
-                       else (0.0, {"note": "disabled"}))
+        s_sc, s_det = (semantic_score(tokens, i, embed_fn)
+                       if use_semantic else (0.0, {"note": "disabled"}))
+        e_sc, e_det = (entropy_score_at_boundary(i, word_entropies, max_entropy_ref=max_entropy_ref)
+                       if use_entropy else (0.0, {"note": "disabled"}))
 
-        w_s = weights["semantic"] if use_semantic else 0.0
-        w_t = weights["text"]
-        w_p = weights["prosody"]
-        total_w = w_p + w_t + w_s
-        total = (w_p * p_sc + w_t * t_sc + w_s * s_sc) / max(total_w, 1e-8)
+        w_p = weights.get("prosody",  0.30)
+        w_t = weights.get("text",     0.30)
+        w_s = weights.get("semantic", 0.15) if use_semantic else 0.0
+        w_e = weights.get("entropy",  0.25) if use_entropy  else 0.0
+        total_w = w_p + w_t + w_s + w_e
+        total   = (w_p * p_sc + w_t * t_sc + w_s * s_sc + w_e * e_sc) / max(total_w, 1e-8)
 
         boundaries.append(BoundaryScore(
             position=i,
@@ -602,12 +710,13 @@ def run_test_case(
             prosody_score=round(p_sc, 3),
             text_score=round(t_sc, 3),
             semantic_score=round(s_sc, 3),
+            entropy_score=round(e_sc, 3),
             total_score=round(total, 3),
             confirmed=False,
-            details={"prosody": p_det, "text": t_det, "semantic": s_det},
+            details={"prosody": p_det, "text": t_det, "semantic": s_det, "entropy": e_det},
         ))
 
-    # 7. Pass 2: 전체 점수 분포를 보고 local prominence peak 확정
+    # 5. Peak detection
     confirmed_positions = find_boundary_peaks(
         boundaries,
         window=window,
@@ -624,28 +733,52 @@ def run_test_case(
         tokens=tokens,
         boundaries=boundaries,
         confirmed_positions=confirmed_positions,
-        gt_positions=gt_positions,
+        gt_positions=[],
+        transcript=transcript,
     )
 
 
-# ─── 평가 ─────────────────────────────────────────────────────────────────────
-def evaluate(result: SegmentationResult) -> Dict:
-    pred = set(result.confirmed_positions)
-    gt   = set(result.gt_positions)
-    tp   = len(pred & gt)
-    fp   = len(pred - gt)
-    fn   = len(gt - pred)
-    prec = tp / max(tp + fp, 1)
-    rec  = tp / max(tp + fn, 1)
-    f1   = 2 * prec * rec / max(prec + rec, 1e-8)
-    return dict(precision=round(prec,3), recall=round(rec,3), f1=round(f1,3),
-                tp=tp, fp=fp, fn=fn,
-                pred=sorted(pred), gt=sorted(gt))
+# ─── 결과 출력 ────────────────────────────────────────────────────────────────
+def print_pcm_result(result: SegmentationResult) -> None:
+    W = 80
+    print(f"\n{'='*W}")
+    print(f"  {result.name}")
+    if result.transcript:
+        preview = result.transcript[:80].replace("\n", " ")
+        print(f"  전사: {preview}{'...' if len(result.transcript) > 80 else ''}")
+    print(f"{'='*W}")
+
+    if not result.tokens:
+        print("  (토큰 없음 — 묵음 또는 전사 실패)")
+        return
+
+    # 분절 결과
+    segments = get_segments_text(result.tokens, result.confirmed_positions)
+    print(f"\n[Segments]  ({len(segments)}개)")
+    for i, seg in enumerate(segments):
+        print(f"  [{i+1:2d}] {seg}")
+
+    # 토큰 목록
+    print(f"\n[Tokens]  ({len(result.tokens)} 개)")
+    for i, t in enumerate(result.tokens):
+        mark = " ←BOUNDARY" if i in result.confirmed_positions else ""
+        print(f"  [{i:2d}] {t.text:<18} {t.start:6.3f}s ~ {t.end:6.3f}s{mark}")
+
+    # 경계 분석 표
+    print(f"\n[Boundary Scores]")
+    hdr = f"  {'#':>3} | {'Before':>14} {'After':>14} | {'Pros':>5} {'Text':>5} {'Sem':>5} {'Ent':>5} | {'Total':>6} | Confirmed"
+    print(hdr)
+    print("  " + "-" * (len(hdr) - 2))
+    for b in result.boundaries:
+        mark = "✓" if b.confirmed else " "
+        print(f"  {b.position:>3} | {b.word_before.text:>14} {b.word_after.text:>14} "
+              f"| {b.prosody_score:>5.3f} {b.text_score:>5.3f} "
+              f"{b.semantic_score:>5.3f} {b.entropy_score:>5.3f} "
+              f"| {b.total_score:>6.3f} | {mark}")
 
 
-# ─── 번역 기반 평가 ────────────────────────────────────────────────────────────
+# ─── 분절 텍스트 추출 ────────────────────────────────────────────────────────
 def get_segments_text(tokens: List[WordToken], boundary_positions: List[int]) -> List[str]:
-    """토큰 리스트를 경계 위치 기준으로 분절하여 각 분절 텍스트 반환."""
     if not tokens:
         return []
     bounds = sorted(boundary_positions)
@@ -663,277 +796,208 @@ def get_segments_text(tokens: List[WordToken], boundary_positions: List[int]) ->
     return segments
 
 
-def translate_segments(
-    segments: List[str],
-    source: str = "ko",
-    target: str = "en",
-) -> List[str]:
-    """deep-translator GoogleTranslator로 각 분절 번역."""
-    try:
-        from deep_translator import GoogleTranslator
-    except ImportError:
-        return []
-
-    results: List[str] = []
-    translator = GoogleTranslator(source=source, target=target)
-    for seg in segments:
-        try:
-            translated = translator.translate(seg)
-            results.append(translated or seg)
-        except Exception as e:
-            results.append(f"[번역 오류: {e}]")
-    return results
-
-
-def translation_evaluate(
-    result: SegmentationResult,
-    source_lang: str = "ko",
-    target_lang: str = "en",
-    embed_fn: Optional[Callable] = None,
-) -> Dict:
-    """
-    GT 분절 번역 vs 예측 분절 번역 비교 평가.
-    GT 경계로 분절한 텍스트를 번역한 결과와
-    예측 경계로 분절한 텍스트를 번역한 결과를 비교합니다.
-    source_lang과 target_lang이 같으면 번역 없이 원문 그대로 반환합니다.
-    """
-    gt_segs   = get_segments_text(result.tokens, result.gt_positions)
-    pred_segs = get_segments_text(result.tokens, result.confirmed_positions)
-
-    if source_lang == target_lang:
-        gt_trans   = list(gt_segs)
-        pred_trans = list(pred_segs)
-    else:
-        gt_trans   = translate_segments(gt_segs,   source=source_lang, target=target_lang)
-        pred_trans = translate_segments(pred_segs, source=source_lang, target=target_lang)
-
-    similarity: Optional[float] = None
-    if embed_fn and gt_trans and pred_trans:
-        gt_full   = " ".join(gt_trans)
-        pred_full = " ".join(pred_trans)
-        try:
-            eg  = embed_fn(gt_full)
-            ep  = embed_fn(pred_full)
-            cos = float(np.dot(eg, ep) / (np.linalg.norm(eg) * np.linalg.norm(ep) + 1e-8))
-            similarity = round(max(0.0, cos), 3)
-        except Exception:
-            pass
-
+# ─── JSON 저장 ────────────────────────────────────────────────────────────────
+def result_to_dict(result: SegmentationResult) -> Dict:
+    segments = get_segments_text(result.tokens, result.confirmed_positions)
     return {
-        "gt_segments":       gt_segs,
-        "pred_segments":     pred_segs,
-        "gt_translations":   gt_trans,
-        "pred_translations": pred_trans,
-        "similarity":        similarity,
-        "target_lang":       target_lang,
+        "name":       result.name,
+        "transcript": result.transcript,
+        "num_tokens": len(result.tokens),
+        "segments": [
+            {
+                "index": i + 1,
+                "text":  seg,
+                "start": result.tokens[result.confirmed_positions[i - 1] + 1].start
+                         if i > 0 and (i - 1) < len(result.confirmed_positions)
+                         else (result.tokens[0].start if result.tokens else 0.0),
+                "end":   result.tokens[result.confirmed_positions[i]].end
+                         if i < len(result.confirmed_positions)
+                         else (result.tokens[-1].end if result.tokens else 0.0),
+            }
+            for i, seg in enumerate(segments)
+        ],
+        "boundaries": [
+            {
+                "position":      b.position,
+                "word_before":   b.word_before.text,
+                "word_after":    b.word_after.text,
+                "start":         b.word_before.start,
+                "end":           b.word_after.end,
+                "prosody":       b.prosody_score,
+                "text":          b.text_score,
+                "semantic":      b.semantic_score,
+                "entropy":       b.entropy_score,
+                "total":         b.total_score,
+                "confirmed":     b.confirmed,
+            }
+            for b in result.boundaries
+        ],
+        "confirmed_positions": result.confirmed_positions,
     }
 
 
-# ─── 출력 ─────────────────────────────────────────────────────────────────────
-def print_result(result: SegmentationResult, ev: Dict) -> None:
-    W = 72
-    print(f"\n{'='*W}")
-    print(f"  {result.name}")
-    print(f"{'='*W}")
-
-    # 토큰 목록
-    print(f"\n[Tokens]  ({len(result.tokens)} 개)")
-    for i, t in enumerate(result.tokens):
-        gt_mark   = " ←GT"  if i in result.gt_positions else ""
-        pred_mark = " ←PRED" if i in result.confirmed_positions else ""
-        print(f"  [{i:2d}] {t.text:<18} {t.start:6.3f}s ~ {t.end:6.3f}s{gt_mark}{pred_mark}")
-
-    # 경계 분석 표
-    print(f"\n[Boundary Analysis]")
-    hdr = f"  {'#':>3} | {'Before':>14} {'After':>14} | {'Pros':>5} {'Text':>5} {'Sem':>5} | {'Total':>6} | GT Pred"
-    print(hdr)
-    print("  " + "-" * (len(hdr) - 2))
-    for b in result.boundaries:
-        gt_m   = "✓ " if b.position in result.gt_positions else "  "
-        pr_m   = "✓"  if b.confirmed                       else " "
-        print(f"  {b.position:>3} | {b.word_before.text:>14} {b.word_after.text:>14} "
-              f"| {b.prosody_score:>5.3f} {b.text_score:>5.3f} {b.semantic_score:>5.3f} "
-              f"| {b.total_score:>6.3f} | {gt_m}{pr_m}")
-
-    # 평가
-    print(f"\n[Evaluation]")
-    print(f"  GT   positions : {ev['gt']}")
-    print(f"  Pred positions : {ev['pred']}")
-    print(f"  Precision={ev['precision']:.3f}  Recall={ev['recall']:.3f}  F1={ev['f1']:.3f}"
-          f"   (TP={ev['tp']} FP={ev['fp']} FN={ev['fn']})")
-
-    # 피처 상세 (GT 경계만)
-    if result.gt_positions:
-        print(f"\n[Feature Detail at GT boundaries]")
-        for b in result.boundaries:
-            if b.position in result.gt_positions:
-                print(f"  pos={b.position}  before='{b.word_before.text}'  after='{b.word_after.text}'")
-                for feat, det in b.details.items():
-                    print(f"    {feat}: {det}")
+def save_results_json(results: List[SegmentationResult], path: str) -> None:
+    data = [result_to_dict(r) for r in results]
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    print(f"\n  결과 저장: {path}")
 
 
-def print_translation_result(tr: Dict) -> None:
-    """GT 번역 vs 예측 번역 비교 출력."""
-    if not tr["gt_translations"] and not tr["pred_translations"]:
-        print("\n[Translation] deep-translator 미설치 (pip install deep-translator)")
-        return
-
-    lang = tr["target_lang"]
-    print(f"\n[Translation Evaluation]  (→ {lang})")
-
-    print(f"\n  GT 분절 ({len(tr['gt_segments'])}개):")
-    for i, (src, tgt) in enumerate(zip(tr["gt_segments"], tr["gt_translations"])):
-        print(f"  [{i+1}] {src}")
-        print(f"       → {tgt}")
-
-    print(f"\n  PRED 분절 ({len(tr['pred_segments'])}개):")
-    for i, (src, tgt) in enumerate(zip(tr["pred_segments"], tr["pred_translations"])):
-        print(f"  [{i+1}] {src}")
-        print(f"       → {tgt}")
-
-    if tr["similarity"] is not None:
-        print(f"\n  번역 의미 유사도 (GT vs PRED): {tr['similarity']:.3f}")
-    else:
-        print(f"\n  번역 의미 유사도: (embed_fn 없음)")
+# ─── (기존 호환) GT 기반 평가 ─────────────────────────────────────────────────
+def evaluate(result: SegmentationResult) -> Dict:
+    pred = set(result.confirmed_positions)
+    gt   = set(result.gt_positions)
+    tp   = len(pred & gt)
+    fp   = len(pred - gt)
+    fn   = len(gt - pred)
+    prec = tp / max(tp + fp, 1)
+    rec  = tp / max(tp + fn, 1)
+    f1   = 2 * prec * rec / max(prec + rec, 1e-8)
+    return dict(precision=round(prec,3), recall=round(rec,3), f1=round(f1,3),
+                tp=tp, fp=fp, fn=fn,
+                pred=sorted(pred), gt=sorted(gt))
 
 
 def print_feature_analysis(all_results: List[SegmentationResult]) -> None:
-    """GT 경계 vs 비경계 평균 피처 점수 비교."""
-    at_gt     = {"prosody": [], "text": [], "semantic": [], "total": []}
-    not_at_gt = {"prosody": [], "text": [], "semantic": [], "total": []}
+    """전체 피처 분포 요약 (GT 없으므로 전체 평균/분산)."""
+    keys = ["prosody", "text", "semantic", "entropy", "total"]
+    accum: Dict[str, List[float]] = {k: [] for k in keys}
 
     for result in all_results:
-        gt_set = set(result.gt_positions)
         for b in result.boundaries:
-            target = at_gt if b.position in gt_set else not_at_gt
-            target["prosody"].append(b.prosody_score)
-            target["text"].append(b.text_score)
-            target["semantic"].append(b.semantic_score)
-            target["total"].append(b.total_score)
+            accum["prosody"].append(b.prosody_score)
+            accum["text"].append(b.text_score)
+            accum["semantic"].append(b.semantic_score)
+            accum["entropy"].append(b.entropy_score)
+            accum["total"].append(b.total_score)
 
-    print(f"\n{'='*50}")
-    print(f"  Feature Analysis (전체 케이스 합산)")
-    print(f"{'='*50}")
-    print(f"  {'Feature':>12} | {'GT경계 평균':>10} | {'비경계 평균':>10} | {'차이':>8}")
-    print(f"  {'-'*12}-+-{'-'*10}-+-{'-'*10}-+-{'-'*8}")
-    for feat in ["prosody", "text", "semantic", "total"]:
-        gt_mean  = np.mean(at_gt[feat])     if at_gt[feat]     else 0.0
-        non_mean = np.mean(not_at_gt[feat]) if not_at_gt[feat] else 0.0
-        diff     = gt_mean - non_mean
-        print(f"  {feat:>12} | {gt_mean:>10.3f} | {non_mean:>10.3f} | {diff:>+8.3f}")
-    print(f"\n  GT 경계 수    : {len(at_gt['total'])}")
-    print(f"  비경계 수     : {len(not_at_gt['total'])}")
+    if not accum["total"]:
+        return
+
+    print(f"\n{'='*55}")
+    print(f"  Feature Distribution (전체 경계 합산)")
+    print(f"{'='*55}")
+    print(f"  {'Feature':>12} | {'Mean':>6} | {'Std':>6} | {'Max':>6} | {'Min':>6}")
+    print(f"  {'-'*12}-+-{'-'*6}-+-{'-'*6}-+-{'-'*6}-+-{'-'*6}")
+    for feat in keys:
+        vals = accum[feat]
+        if vals:
+            print(f"  {feat:>12} | {np.mean(vals):>6.3f} | {np.std(vals):>6.3f} "
+                  f"| {np.max(vals):>6.3f} | {np.min(vals):>6.3f}")
 
 
 # ─── 진입점 ────────────────────────────────────────────────────────────────────
 def main():
-    parser = argparse.ArgumentParser(description="Meaning Segmentation Test")
-    parser.add_argument("--device",         default="cuda:0",             help="cuda:0 또는 cpu")
-    parser.add_argument("--no-semantic",    action="store_true",          help="Semantic 피처 비활성화")
-    parser.add_argument("--window",         type=int,   default=DEFAULT_PEAK_WINDOW,    help="Peak 검출 좌우 window 크기")
-    parser.add_argument("--min-prominence", type=float, default=DEFAULT_MIN_PROMINENCE, help="Peak 최소 prominence")
-    parser.add_argument("--min-floor",      type=float, default=DEFAULT_MIN_FLOOR,      help="Peak 후보 최소 점수 (noise floor)")
-    parser.add_argument("--min-distance",   type=int,   default=DEFAULT_MIN_DISTANCE,   help="Peak 간 최소 거리 (NMS)")
-    parser.add_argument("--language",       default="ko",                              help="입력 오디오 언어 코드 (기본: ko, 예: en, ja)")
-    parser.add_argument("--target-lang",    default="en",                              help="번역 목적 언어 (기본: en)")
-    parser.add_argument("--no-translate",   action="store_true",                       help="번역 평가 비활성화")
+    parser = argparse.ArgumentParser(description="Meaning Segmentation (PCM + Entropy)")
+    parser.add_argument("--device",          default="cuda:0",                        help="cuda:0 또는 cpu")
+    parser.add_argument("--language",        default="ko",                            help="언어 코드 (기본: ko)")
+    parser.add_argument("--num-files",       type=int,  default=None,                 help="처리할 PCM 파일 수 (기본: 전부)")
+    parser.add_argument("--audio-dir",       default=None,                            help="PCM 파일 디렉터리 (기본: data/eval_clean)")
+    parser.add_argument("--output",          default=None,                            help="결과 JSON 저장 경로")
+    parser.add_argument("--no-semantic",     action="store_true",                     help="Semantic 피처 비활성화")
+    parser.add_argument("--no-entropy",      action="store_true",                     help="Entropy 피처 비활성화")
+    parser.add_argument("--max-entropy-ref", type=float, default=DEFAULT_MAX_ENTROPY_REF, help="엔트로피 정규화 기준값(nats)")
+    parser.add_argument("--max-new-tokens",  type=int,   default=512,                 help="ASR 최대 생성 토큰 수")
+    parser.add_argument("--window",          type=int,   default=DEFAULT_PEAK_WINDOW,    help="Peak 검출 window 크기")
+    parser.add_argument("--min-prominence",  type=float, default=DEFAULT_MIN_PROMINENCE, help="Peak 최소 prominence")
+    parser.add_argument("--min-floor",       type=float, default=DEFAULT_MIN_FLOOR,      help="Peak noise floor")
+    parser.add_argument("--min-distance",    type=int,   default=DEFAULT_MIN_DISTANCE,   help="Peak 최소 간격 (NMS)")
     args = parser.parse_args()
 
-    # ── Qwen3ForcedAligner 로드 ──────────────────────────────────────────────
     import torch
-    from qwen_asr import Qwen3ForcedAligner
+    from qwen_asr import Qwen3ASRModel, Qwen3ForcedAligner
 
-    print("=" * 50)
-    print("  Qwen3ForcedAligner 로딩 중...")
-    print("=" * 50)
-    try:
-        dtype = torch.bfloat16 if "cuda" in args.device else torch.float32
-        aligner = Qwen3ForcedAligner.from_pretrained(
-            "Qwen/Qwen3-ForcedAligner-0.6B",
-            dtype=dtype,
-            device_map=args.device,
-        )
-        print("  ✓ Aligner 로드 완료")
-    except Exception as e:
-        print(f"  ✗ Aligner 로드 실패: {e}")
-        sys.exit(1)
+    use_entropy  = not args.no_entropy
+    use_semantic = not args.no_semantic
 
-    # ── Text 피처 형태소 분석기 로드 ────────────────────────────────────────
+    # ── 모델 로드 ─────────────────────────────────────────────────────────────
+    print("=" * 55)
+    print("  모델 로딩 중...")
+    print("=" * 55)
+    dtype = torch.bfloat16 if "cuda" in args.device else torch.float32
+
+    asr_model = Qwen3ASRModel.from_pretrained(
+        "Qwen/Qwen3-ASR-1.7B",
+        dtype=dtype,
+        device_map=args.device,
+    )
+    print("  ✓ Qwen3ASRModel 로드 완료")
+
+    aligner = Qwen3ForcedAligner.from_pretrained(
+        "Qwen/Qwen3-ForcedAligner-0.6B",
+        dtype=dtype,
+        device_map=args.device,
+    )
+    print("  ✓ Qwen3ForcedAligner 로드 완료")
+
+    # ── Text 피처 ────────────────────────────────────────────────────────────
     okt = None
     nlp = None
     if args.language == "ko":
         try:
             from konlpy.tag import Okt
-            print("\n  KoNLPy Okt 로딩 중...")
             okt = Okt()
-            print("  ✓ Text 피처 (KoNLPy Okt) 활성화")
+            print("  ✓ KoNLPy Okt 활성화")
         except ImportError:
-            print("  ⚠ konlpy 없음. Text 피처 비활성화.")
-            print("    설치: pip install konlpy")
+            print("  ⚠ konlpy 없음 → Text 피처 비활성화 (pip install konlpy)")
     else:
         try:
             import spacy
             model_name = SPACY_MODEL_MAP.get(args.language, f"{args.language}_core_news_sm")
-            print(f"\n  spaCy 모델 로딩 중... ({model_name})")
             nlp = spacy.load(model_name)
-            print(f"  ✓ Text 피처 (spaCy {model_name}) 활성화")
-        except ImportError:
-            print("  ⚠ spacy 없음. Text 피처 비활성화.")
-            print("    설치: pip install spacy")
-        except OSError:
-            print(f"  ⚠ spaCy 모델 '{model_name}' 없음. Text 피처 비활성화.")
-            print(f"    설치: python -m spacy download {model_name}")
+            print(f"  ✓ spaCy {model_name} 활성화")
+        except (ImportError, OSError) as e:
+            print(f"  ⚠ spaCy 없음 또는 모델 미설치 → Text 피처 비활성화 ({e})")
 
-    # ── 가중치 조정 (활성화된 피처에 따라 자동 정규화됨) ────────────────────
+    # ── Semantic 피처 ────────────────────────────────────────────────────────
+    embed_fn = None
+    if use_semantic:
+        try:
+            from sentence_transformers import SentenceTransformer
+            embed_model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
+            embed_fn = lambda t: embed_model.encode(t, convert_to_numpy=True, show_progress_bar=False)
+            print("  ✓ Sentence-Transformers 활성화")
+        except ImportError:
+            print("  ⚠ sentence-transformers 없음 → Semantic 비활성화")
+            use_semantic = False
+
+    # ── 가중치 ──────────────────────────────────────────────────────────────
     weights = dict(DEFAULT_WEIGHTS)
     if okt is None and nlp is None:
         weights["text"] = 0.0
 
-    # ── Sentence-Transformers 로드 ───────────────────────────────────────────
-    embed_fn = None
-    if not args.no_semantic:
-        try:
-            from sentence_transformers import SentenceTransformer
-            print("\n  Sentence-Transformers 로딩 중...")
-            embed_model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
-            embed_fn = lambda t: embed_model.encode(t, convert_to_numpy=True, show_progress_bar=False)
-            print("  ✓ Semantic 피처 활성화")
-        except ImportError:
-            print("  ⚠ sentence-transformers 없음. Semantic 피처 비활성화.")
-            print("    설치: pip install sentence-transformers")
+    # ── PCM 파일 목록 ────────────────────────────────────────────────────────
+    audio_dir = Path(args.audio_dir) if args.audio_dir else _DATA_DIR
+    pcm_files = sorted(audio_dir.glob("*.pcm"))
+    if not pcm_files:
+        print(f"\n  ✗ PCM 파일 없음: {audio_dir}")
+        sys.exit(1)
 
-    # ── 테스트 케이스 ────────────────────────────────────────────────────────
-    test_cases = [
-        ("sentence1", "sentence1.m4a", "answer1.txt"),
-        ("sentence2", "sentence2.m4a", "answer2.txt"),
-        ("sentence3", "sentence3.m4a", "answer3.txt"),
-    ]
+    if args.num_files is not None:
+        pcm_files = pcm_files[:args.num_files]
 
+    print(f"\n  처리 대상: {len(pcm_files)}개 PCM 파일 ({audio_dir})")
+    if use_entropy:
+        print(f"  Entropy 피처: ON  (max_ref={args.max_entropy_ref} nats)")
+    else:
+        print(f"  Entropy 피처: OFF")
+
+    # ── 처리 루프 ────────────────────────────────────────────────────────────
     all_results: List[SegmentationResult] = []
-    all_evals:   List[Dict] = []
 
-    for name, audio_file, answer_file in test_cases:
-        audio_path  = str(_AUDIO_DIR / audio_file)
-        answer_path = str(_TEXT_DIR  / answer_file)
-
-        if not os.path.exists(audio_path):
-            print(f"\n[SKIP] {name}: 오디오 파일 없음 ({audio_path})")
-            continue
-
-        with open(answer_path, "r", encoding="utf-8") as f:
-            gt_text = f.read().strip()
-
+    for pcm_path in pcm_files:
+        name = pcm_path.stem
         print(f"\n>> {name} 처리 중...")
         try:
-            result = run_test_case(
+            result = run_pcm_case(
                 name=name,
-                audio_path=audio_path,
-                gt_answer=gt_text,
+                audio_path=str(pcm_path),
+                asr_model=asr_model,
                 aligner=aligner,
                 embed_fn=embed_fn,
                 weights=weights,
-                use_semantic=(not args.no_semantic and embed_fn is not None),
-                device=args.device,
+                use_semantic=use_semantic,
+                use_entropy=use_entropy,
                 language=args.language,
                 okt=okt,
                 nlp=nlp,
@@ -941,35 +1005,41 @@ def main():
                 min_prominence=args.min_prominence,
                 min_floor=args.min_floor,
                 min_distance=args.min_distance,
+                max_entropy_ref=args.max_entropy_ref,
+                max_new_tokens=args.max_new_tokens,
             )
-            ev = evaluate(result)
-            print_result(result, ev)
-            if not args.no_translate:
-                tr = translation_evaluate(result, source_lang=args.language, target_lang=args.target_lang, embed_fn=embed_fn)
-                print_translation_result(tr)
+            print_pcm_result(result)
             all_results.append(result)
-            all_evals.append(ev)
         except Exception as e:
             import traceback
             print(f"  ✗ 오류: {e}")
             traceback.print_exc()
 
-    # ── 전체 요약 ────────────────────────────────────────────────────────────
-    if all_evals:
+    # ── 요약 ─────────────────────────────────────────────────────────────────
+    if all_results:
         print_feature_analysis(all_results)
 
-        print(f"\n{'='*50}")
-        print(f"  OVERALL SUMMARY  ({len(all_evals)}개 케이스)")
-        print(f"{'='*50}")
-        print(f"  Avg Precision : {np.mean([e['precision'] for e in all_evals]):.3f}")
-        print(f"  Avg Recall    : {np.mean([e['recall']    for e in all_evals]):.3f}")
-        print(f"  Avg F1        : {np.mean([e['f1']        for e in all_evals]):.3f}")
-        print(f"  Peak window   : ±{args.window}")
-        print(f"  Min prominence: {args.min_prominence}")
-        print(f"  Min floor     : {args.min_floor}")
-        print(f"  Min distance  : {args.min_distance}")
-        print(f"  Weights       : {DEFAULT_WEIGHTS}")
+        total_segs = sum(len(r.confirmed_positions) + 1 for r in all_results if r.tokens)
+        total_toks = sum(len(r.tokens) for r in all_results)
+        print(f"\n{'='*55}")
+        print(f"  SUMMARY  ({len(all_results)}개 파일)")
+        print(f"{'='*55}")
+        print(f"  총 단어 수       : {total_toks}")
+        print(f"  총 분절 수       : {total_segs}")
+        print(f"  평균 분절 길이   : {total_toks / max(total_segs, 1):.1f} 단어")
+        print(f"  Peak window      : ±{args.window}")
+        print(f"  Min prominence   : {args.min_prominence}")
+        print(f"  Min floor        : {args.min_floor}")
+        print(f"  Min distance     : {args.min_distance}")
+        print(f"  Weights          : {weights}")
         print()
+
+    # ── JSON 저장 ─────────────────────────────────────────────────────────────
+    if args.output:
+        save_results_json(all_results, args.output)
+    else:
+        default_out = str(audio_dir / "segmentation_results.json")
+        save_results_json(all_results, default_out)
 
 
 if __name__ == "__main__":
