@@ -252,6 +252,44 @@ def load_processed_files(output_file, policy):
     return set()
 
 
+def normalize_commit_reason(raw_reason):
+    reason = str(raw_reason or '').lower()
+    return 'vad' if reason.startswith('vad') else 'seg'
+
+
+def format_commit_markers(segment_events):
+    parts = []
+    for event in segment_events:
+        text = (event.get('text') or '').strip()
+        if not text:
+            continue
+        tag = normalize_commit_reason(event.get('tag'))
+        parts.append(f'{text} <{tag}>')
+    return ' '.join(parts).strip()
+
+
+def compute_wer_for_rows(rows):
+    try:
+        import jiwer
+    except ImportError:
+        return None
+
+    refs = [r['reference'] for r in rows if r.get('reference') and r.get('hypothesis')]
+    hyps = [r['hypothesis'] for r in rows if r.get('reference') and r.get('hypothesis')]
+    if not refs:
+        return None
+
+    t = jiwer.Compose([jiwer.ToLowerCase(), jiwer.RemoveMultipleSpaces(), jiwer.RemovePunctuation(), jiwer.Strip()])
+    refs = [t(x) for x in refs]
+    hyps = [t(x) for x in hyps]
+    pairs = [(r, h) for r, h in zip(refs, hyps) if r.strip() and h.strip()]
+    if not pairs:
+        return None
+
+    refs2, hyps2 = zip(*pairs)
+    return jiwer.wer(list(refs2), list(hyps2))
+
+
 async def process_single_file(ws, audio_data, chunk_size_ms=100, send_interval_ms=10):
     processing_start = time.time()
     first_result_time = None
@@ -271,6 +309,7 @@ async def process_single_file(ws, audio_data, chunk_size_ms=100, send_interval_m
     await ws.send(json.dumps({'type': 'finish'}))
 
     finals = []
+    segment_events = []
     partial_last = ''
     absolute_deadline = time.time() + 60
     idle_deadline = time.time() + 5
@@ -293,6 +332,12 @@ async def process_single_file(ws, audio_data, chunk_size_ms=100, send_interval_m
             text = (data.get('original') or '').strip()
             if text:
                 finals.append(text)
+                segment_events.append({
+                    'text': text,
+                    'tag': normalize_commit_reason(
+                        data.get('commitReason') or data.get('commit_reason') or data.get('reason')
+                    ),
+                })
                 idle_deadline = time.time() + 2
 
         elif msg_type == 'partial':
@@ -309,6 +354,7 @@ async def process_single_file(ws, audio_data, chunk_size_ms=100, send_interval_m
 
     if not finals and partial_last:
         finals = [partial_last]
+        segment_events = [{'text': partial_last, 'tag': 'seg'}]
 
     total_time = time.time() - processing_start
     first_token_latency = (first_result_time - processing_start) if first_result_time else None
@@ -316,6 +362,7 @@ async def process_single_file(ws, audio_data, chunk_size_ms=100, send_interval_m
     return {
         'transcript': ' '.join(finals).strip(),
         'segments': finals,
+        'segment_events': segment_events,
         'total_time': total_time,
         'first_token_latency': first_token_latency,
     }
@@ -372,7 +419,7 @@ async def process_batch(
             logger.warning('Empty transcript: %s', file_id)
             continue
 
-        avg_processing = out['total_time'] - duration if out['total_time'] > duration else out['total_time']
+        model_runtime = out['total_time'] - duration
 
         results.append({
             'file_id': file_id,
@@ -383,13 +430,25 @@ async def process_batch(
             'duration': duration,
             'total_time': out['total_time'],
             'first_token_latency': out['first_token_latency'],
-            'avg_processing_time': avg_processing,
+            'model_runtime': model_runtime,
+            'avg_processing_time': model_runtime,
         })
+
+        speaker_rows = [r for r in results if r['speaker_id'] == speaker_id]
+        speaker_wer = compute_wer_for_rows(speaker_rows)
 
         logger.info('  REF: %s', audio_info['reference'])
         logger.info('  HYP: %s', out['transcript'])
+        logger.info('  FIRST_TOKEN_LATENCY: %s',
+                    f"{out['first_token_latency']:.3f}s" if out['first_token_latency'] is not None else 'N/A')
+        logger.info('  MODEL_RUNTIME(total-audio): %.3fs', model_runtime)
+        if speaker_wer is not None:
+            logger.info('  SPEAKER_%s_RUNNING_WER: %.2f%% (%s files)',
+                        speaker_id, speaker_wer * 100, len(speaker_rows))
+        else:
+            logger.info('  SPEAKER_%s_RUNNING_WER: N/A (%s files)', speaker_id, len(speaker_rows))
         if show_commit_slash and out.get('segments'):
-            logger.info('  HYP_COMMIT: %s /', ' / '.join(out['segments']))
+            logger.info('  HYP_COMMIT: %s', format_commit_markers(out.get('segment_events') or []))
 
     if processed_ids and os.path.exists(output_file):
         try:
@@ -424,15 +483,18 @@ def save_results_structured(results, output_file, policy):
     for speaker_id, rows in sorted(by_speaker.items()):
         lat = [r['first_token_latency'] for r in rows if r['first_token_latency'] is not None]
         proc = [r['avg_processing_time'] for r in rows]
+        model_runtime = [r['model_runtime'] for r in rows if r.get('model_runtime') is not None]
         folder_stats[speaker_id] = {
             'num_files': len(rows),
             'wer': folder_wers.get(speaker_id),
             'first_token_latency': (sum(lat) / len(lat)) if lat else None,
             'avg_processing_time': (sum(proc) / len(proc)) if proc else None,
+            'model_runtime': (sum(model_runtime) / len(model_runtime)) if model_runtime else None,
         }
 
     all_lat = [r['first_token_latency'] for r in results if r['first_token_latency'] is not None]
     all_proc = [r['avg_processing_time'] for r in results]
+    all_model_runtime = [r['model_runtime'] for r in results if r.get('model_runtime') is not None]
 
     existing[f'policy_{policy}'] = {
         'timestamp': datetime.now().isoformat(),
@@ -441,6 +503,7 @@ def save_results_structured(results, output_file, policy):
             'wer': wer_value,
             'first_token_latency': (sum(all_lat) / len(all_lat)) if all_lat else None,
             'avg_processing_time': (sum(all_proc) / len(all_proc)) if all_proc else None,
+            'model_runtime': (sum(all_model_runtime) / len(all_model_runtime)) if all_model_runtime else None,
         },
         'folders': folder_stats,
         'raw_results': results,
@@ -452,47 +515,22 @@ def save_results_structured(results, output_file, policy):
 
 def calculate_wer(results, policy=None, emit_summary=True):
     try:
-        import jiwer
+        import jiwer  # noqa: F401
     except ImportError:
         logger.warning('jiwer not installed. Install with: pip install jiwer')
         return None, {}
-
-    refs = [r['reference'] for r in results if r.get('reference') and r.get('hypothesis')]
-    hyps = [r['hypothesis'] for r in results if r.get('reference') and r.get('hypothesis')]
-    if not refs:
+    overall_wer = compute_wer_for_rows(results)
+    if overall_wer is None:
         logger.warning('No valid rows for WER.')
         return None, {}
-
-    t = jiwer.Compose([jiwer.ToLowerCase(), jiwer.RemoveMultipleSpaces(), jiwer.RemovePunctuation(), jiwer.Strip()])
-    refs = [t(x) for x in refs]
-    hyps = [t(x) for x in hyps]
-
-    pairs = [(r, h) for r, h in zip(refs, hyps) if r.strip() and h.strip()]
-    if not pairs:
-        logger.warning('No valid normalized rows for WER.')
-        return None, {}
-
-    refs2, hyps2 = zip(*pairs)
-    wer = jiwer.wer(list(refs2), list(hyps2))
+    wer = overall_wer
     folder_wers = {}
     by_speaker = {}
     for r in results:
         by_speaker.setdefault(r['speaker_id'], []).append(r)
 
     for speaker_id, rows in by_speaker.items():
-        s_refs = [x['reference'] for x in rows if x.get('reference') and x.get('hypothesis')]
-        s_hyps = [x['hypothesis'] for x in rows if x.get('reference') and x.get('hypothesis')]
-        if not s_refs:
-            folder_wers[speaker_id] = None
-            continue
-        s_refs = [t(x) for x in s_refs]
-        s_hyps = [t(x) for x in s_hyps]
-        s_pairs = [(r, h) for r, h in zip(s_refs, s_hyps) if r.strip() and h.strip()]
-        if not s_pairs:
-            folder_wers[speaker_id] = None
-            continue
-        rr, hh = zip(*s_pairs)
-        folder_wers[speaker_id] = jiwer.wer(list(rr), list(hh))
+        folder_wers[speaker_id] = compute_wer_for_rows(rows)
 
     if emit_summary:
         first_token_latencies = [r['first_token_latency'] for r in results if r['first_token_latency'] is not None]

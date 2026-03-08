@@ -412,6 +412,7 @@ class Qwen3ASRStreamingHandler:
                 original=uncommitted,
                 translation=translation,
                 language=final_lang,
+                commitReason=("vad" if reason.startswith("vad") else "seg"),
             )
             slot["committed_len"] = len(current_text)
             slot["committed_prefix"] = current_text
@@ -510,6 +511,7 @@ class Qwen3ASRStreamingHandler:
                     original=payload["original"],
                     translation=payload["translation"],
                     language=payload["language"],
+                    commitReason="seg",
                 )
                 logger.info(
                     f"[final-sentence] slot={slot_key} lang={payload['language']} "
