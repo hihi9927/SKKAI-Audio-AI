@@ -493,7 +493,6 @@ def get_token_entropies(
             **inputs,
             max_new_tokens=max_new_tokens,
             output_scores=True,
-            return_dict_in_generate=True,
         )
 
     input_len    = inputs["input_ids"].shape[1]
