@@ -37,7 +37,8 @@ from pathlib import Path
 _HERE      = Path(__file__).parent
 _BASE      = _HERE.parent.parent.parent   # STiTy/
 _QWEN_DIR  = _BASE / "Qwen3-ASR"
-_DATA_DIR  = _HERE.parent.parent / "data" / "eval_clean"
+_DATA_DIR    = _HERE.parent.parent / "data" / "eval_clean"
+_RESULTS_DIR = _HERE.parent.parent / "results" / "feature_based"
 _TEST_DIR  = _HERE / "test"
 _AUDIO_DIR = _TEST_DIR / "audio"
 _TEXT_DIR  = _TEST_DIR / "text"
@@ -52,7 +53,7 @@ DEFAULT_MIN_PROMINENCE = 0.20
 DEFAULT_MIN_FLOOR      = 0.15
 DEFAULT_MIN_DISTANCE   = 2
 TARGET_SR              = 16000
-DEFAULT_MAX_ENTROPY_REF = 8.0   # 정규화 기준 엔트로피 (nats); 실제 범위: 2~10
+DEFAULT_MAX_ENTROPY_REF = 0.5  # 정규화 기준 엔트로피 (nats); 실제 범위: 2~10
 
 LANGUAGE_MAP: Dict[str, str] = {
     "ko": "Korean",
@@ -1037,7 +1038,8 @@ def main():
     if args.output:
         save_results_json(all_results, args.output)
     else:
-        default_out = str(audio_dir / "segmentation_results.json")
+        _RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+        default_out = str(_RESULTS_DIR / "segmentation_results.json")
         save_results_json(all_results, default_out)
 
 
