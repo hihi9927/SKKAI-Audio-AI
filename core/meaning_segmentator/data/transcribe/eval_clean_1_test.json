@@ -1,11 +1,5 @@
 {
-  "stats": {
-    "total_files": 100,
-    "comet_evaluated": 69,
-    "comet_max": 0.9844,
-    "comet_min": 0.5413,
-    "comet_avg": 0.8252
-  },
+
   "data": [
     {
       "file": "KsponSpeech_E00001.pcm",
@@ -876,5 +870,12 @@
       "seg_trans": "It definitely has to come up to number 40. I only have number 49 written down. Yeah, I failed this test. Still, I aimed for A.",
       "comet_score": 0.8718
     }
-  ]
+  ],
+  "stats": {
+    "total_files": 100,
+    "comet_evaluated": 69,
+    "comet_max": 0.9844,
+    "comet_min": 0.5413,
+    "comet_avg": 0.8252
+  }
 }

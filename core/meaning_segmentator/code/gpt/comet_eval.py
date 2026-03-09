@@ -14,8 +14,12 @@ from deep_translator import GoogleTranslator
 from comet import download_model, load_from_checkpoint
 
 
-def translate(text: str, src: str = "ko", tgt: str = "en") -> str:
-    return GoogleTranslator(source=src, target=tgt).translate(text)
+def translate(text: str, src: str = "ko", tgt: str = "en") -> str | None:
+    try:
+        return GoogleTranslator(source=src, target=tgt).translate(text)
+    except Exception as e:
+        print(f"  [번역 실패] '{text}' → {e}")
+        return None
 
 
 def translate_seg(seg_text: str, src: str = "ko", tgt: str = "en") -> str:
@@ -27,7 +31,7 @@ def translate_seg(seg_text: str, src: str = "ko", tgt: str = "en") -> str:
 
 def main():
     parser = argparse.ArgumentParser(description="seg 번역 vs 전체 번역 COMET 평가")
-    parser.add_argument("--input",  type=str, default=r"/home/ubuntu/STiTy/core/meaning_segmentator/data/transcribe/eval_clean_100.json")
+    parser.add_argument("--input",  type=str, default=r"/home/ubuntu/STiTy/core/meaning_segmentator/data/transcribe/eval_clean_2_change_prompt.json")
     parser.add_argument("--output", type=str, default=None, help="결과 JSON 저장 경로 (기본: 입력 파일 덮어쓰기)")
     parser.add_argument("--model",  type=str, default="Unbabel/wmt22-comet-da", help="COMET 모델명")
     parser.add_argument("--delay",  type=float, default=0.2, help="번역 요청 간 딜레이(초)")
