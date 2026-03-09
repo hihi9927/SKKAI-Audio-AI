@@ -73,14 +73,21 @@ def main():
     model = load_from_checkpoint(model_path)
 
     comet_data = []
+    comet_entries = []
+    skipped = 0
     for entry in data:
         if "full_trans" not in entry or "seg_trans" not in entry:
+            continue
+        if "<seg>" not in entry.get("seg_text", ""):
+            skipped += 1
             continue
         comet_data.append({
             "src": entry["text"],
             "mt":  entry["seg_trans"],
             "ref": entry["full_trans"],
         })
+        comet_entries.append(entry)
+    print(f"  분절 없는 항목 제외: {skipped}개")
 
     if not comet_data:
         print("COMET 계산할 데이터가 없습니다.")
@@ -90,12 +97,8 @@ def main():
     scores = output.scores
 
     # 결과를 JSON에 저장
-    idx = 0
-    for entry in data:
-        if "full_trans" not in entry or "seg_trans" not in entry:
-            continue
-        entry["comet_score"] = round(scores[idx], 4)
-        idx += 1
+    for entry, score in zip(comet_entries, scores):
+        entry["comet_score"] = round(score, 4)
 
     output_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 
