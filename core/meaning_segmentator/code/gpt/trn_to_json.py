@@ -24,8 +24,8 @@ _NOISE_TAG = re.compile(r'\b[bolnu]/\s*')
 #   - 그 외 → 표기2 채택 (한글 정규 표기)
 _DUAL_NOTATION = re.compile(r'\(([^)]+)\)/\(([^)]*)\)')
 
-# 한국어 필러 어절: 한글로만 된 어절 뒤에 / 가 붙은 형태  예) 어/ 뭐/ 그/ 아/
-_KOREAN_FILLER = re.compile(r'[가-힣]+/\s*')
+# 한국어 어절 뒤 /: 슬래시만 제거, 어절 자체는 유지  예) 그/ → 그, 어/ → 어
+_KOREAN_SLASH = re.compile(r'([가-힣]+)/')
 
 
 def _replace_dual(m: re.Match) -> str:
@@ -36,9 +36,10 @@ def _replace_dual(m: re.Match) -> str:
 
 def normalize(text: str) -> str:
     text = _DUAL_NOTATION.sub(_replace_dual, text)  # (A)/(B) → 규칙에 따라 선택
-    text = _NOISE_TAG.sub('', text)           # b/ o/ l/ n/ u/ 제거
-    text = _KOREAN_FILLER.sub('', text)       # 한글어절/ 제거
-    text = re.sub(r'\s+', ' ', text).strip()  # 공백 정리
+    text = _NOISE_TAG.sub('', text)                 # b/ o/ l/ n/ u/ 제거
+    text = _KOREAN_SLASH.sub(r'\1', text)           # 한글어절/ → 슬래시만 제거
+    text = re.sub(r'\+', '', text)                  # + (음 연장 기호) 제거
+    text = re.sub(r'\s+', ' ', text).strip()        # 공백 정리
     return text
 
 
