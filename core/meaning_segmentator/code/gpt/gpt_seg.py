@@ -90,8 +90,8 @@ def mark_segmentation(client: OpenAI, text: str, model: str) -> str:
 
 def main():
     parser = argparse.ArgumentParser(description="GPT 기반 의미 분절 마킹")
-    parser.add_argument("--input",   type=str, default=r"C:\Users\jduh1\Desktop\STiTy\core\meaning_segmentator\data\transcribe\eval_clean_100.json")
-    parser.add_argument("--output",  type=str, default=None, help="출력 JSON 경로 (기본: 입력 파일 덮어쓰기)")
+    parser.add_argument("--input",   type=str, default=r"C:\Users\jduh1\Desktop\STiTy\core\meaning_segmentator\data\transcribe\eval_clean.json")
+    parser.add_argument("--output",  type=str, default=None, help="출력 JSON 경로 (기본: 입력 파일명에 _seg 추가)")
     parser.add_argument("--model",   type=str, default="gpt-4o-mini", help="OpenAI 모델명")
     parser.add_argument("--api-key", type=str, default=None, help="OpenAI API 키 (미입력 시 OPENAI_API_KEY 환경변수 사용)")
     parser.add_argument("--delay",   type=float, default=0.5, help="요청 간 딜레이(초)")
@@ -104,9 +104,31 @@ def main():
         raise ValueError("OpenAI API 키가 필요합니다. --api-key 또는 OPENAI_API_KEY 환경변수를 설정하세요.")
 
     client = OpenAI(api_key=api_key)
-    output_path = Path(args.output or args.input)
+    input_path = Path(args.input)
 
-    raw = json.loads(Path(args.input).read_text(encoding="utf-8"))
+    if args.output:
+        p = Path(args.output)
+        output_path = p if p.is_absolute() or len(p.parts) > 1 else input_path.parent / p
+    else:
+        output_path = input_path.parent / (input_path.stem + "_seg" + input_path.suffix)
+
+    if not input_path.exists():
+        raise FileNotFoundError(f"입력 파일을 찾을 수 없습니다: {input_path}")
+
+    raw_in = json.loads(input_path.read_text(encoding="utf-8"))
+    base_data = raw_in["data"] if isinstance(raw_in, dict) else raw_in
+
+    if output_path.exists():
+        raw = json.loads(output_path.read_text(encoding="utf-8"))
+        data = raw["data"] if isinstance(raw, dict) else raw
+        # 출력 파일의 데이터를 file 기준으로 병합
+        existing = {e["file"]: e for e in data}
+        data = [existing.get(e["file"], e) for e in base_data]
+        raw = {"data": data}
+    else:
+        raw = {"data": [dict(e) for e in base_data]}
+        print(f"출력 파일 생성: {output_path}")
+
     data = raw["data"]
 
     for i, entry in enumerate(data):
