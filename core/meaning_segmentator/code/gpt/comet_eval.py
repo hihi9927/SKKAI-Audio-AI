@@ -21,6 +21,7 @@ def translate(text: str, src: str = "ko", tgt: str = "en") -> str:
 def translate_seg(seg_text: str, src: str = "ko", tgt: str = "en") -> str:
     segments = seg_text.split("<seg>")
     translated = [translate(s.strip(), src, tgt) for s in segments if s.strip()]
+    translated = [t for t in translated if t is not None]
     return " ".join(translated)
 
 
