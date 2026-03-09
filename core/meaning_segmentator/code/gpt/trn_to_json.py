@@ -19,15 +19,23 @@ from pathlib import Path
 # 단순 노이즈 태그: b/ o/ l/ n/ u/ (단독 토큰)
 _NOISE_TAG = re.compile(r'\b[bolnu]/\s*')
 
-# 이중 표기: (표기1)/(표기2) → 표기2 채택
-_DUAL_NOTATION = re.compile(r'\([^)]+\)/\(([^)]+)\)')
+# 이중 표기: (표기1)/(표기2)
+#   - 표기2가 *로 끝나면 (잘린 형태) → 표기1 채택
+#   - 그 외 → 표기2 채택 (한글 정규 표기)
+_DUAL_NOTATION = re.compile(r'\(([^)]+)\)/\(([^)]*)\)')
 
 # 한국어 필러 어절: 한글로만 된 어절 뒤에 / 가 붙은 형태  예) 어/ 뭐/ 그/ 아/
 _KOREAN_FILLER = re.compile(r'[가-힣]+/\s*')
 
 
+def _replace_dual(m: re.Match) -> str:
+    first, second = m.group(1), m.group(2)
+    # second가 *로 끝나면 잘린 형태 → first(완전한 말) 선택
+    return first if second.endswith('*') else second
+
+
 def normalize(text: str) -> str:
-    text = _DUAL_NOTATION.sub(r'\1', text)   # (A)/(B) → B
+    text = _DUAL_NOTATION.sub(_replace_dual, text)  # (A)/(B) → 규칙에 따라 선택
     text = _NOISE_TAG.sub('', text)           # b/ o/ l/ n/ u/ 제거
     text = _KOREAN_FILLER.sub('', text)       # 한글어절/ 제거
     text = re.sub(r'\s+', ' ', text).strip()  # 공백 정리
