@@ -31,7 +31,7 @@ def translate_seg(seg_text: str, src: str = "ko", tgt: str = "en") -> str:
 
 def main():
     parser = argparse.ArgumentParser(description="seg 번역 vs 전체 번역 COMET 평가")
-    parser.add_argument("--input",  type=str, default=r"/home/ubuntu/STiTy/core/meaning_segmentator/data/transcribe/eval_clean_2_change_prompt.json")
+    parser.add_argument("--input",  type=str, default=r"/home/ubuntu/STiTy/core/meaning_segmentator/data/transcribe/eval_clean_3_change_prompt.json")
     parser.add_argument("--output", type=str, default=None, help="결과 JSON 저장 경로 (기본: 입력 파일 덮어쓰기)")
     parser.add_argument("--model",  type=str, default="Unbabel/wmt22-comet-da", help="COMET 모델명")
     parser.add_argument("--delay",  type=float, default=0.2, help="번역 요청 간 딜레이(초)")
