@@ -388,7 +388,17 @@ async def process_batch(
         logger.info('No files to process.')
         return []
 
-    logger.info('Processing %s files', len(targets))
+    # Load existing results so incremental saves include everything
+    all_results = []
+    if processed_ids and os.path.exists(output_file):
+        try:
+            with open(output_file, 'r', encoding='utf-8') as f:
+                old = json.load(f)
+            all_results = old.get(f'policy_{policy}', {}).get('raw_results', [])
+        except Exception:
+            pass
+
+    logger.info('Processing %s files (already done: %s)', len(targets), len(all_results))
     results = []
 
     for idx, audio_info in enumerate(targets, start=1):
@@ -434,6 +444,8 @@ async def process_batch(
             'avg_processing_time': model_runtime,
         })
 
+        save_results_structured(all_results + results, output_file, policy)
+
         speaker_rows = [r for r in results if r['speaker_id'] == speaker_id]
         speaker_wer = compute_wer_for_rows(speaker_rows)
 
@@ -450,18 +462,7 @@ async def process_batch(
         if show_commit_slash and out.get('segments'):
             logger.info('  HYP_COMMIT: %s', format_commit_markers(out.get('segment_events') or []))
 
-    if processed_ids and os.path.exists(output_file):
-        try:
-            with open(output_file, 'r', encoding='utf-8') as f:
-                old = json.load(f)
-            key = f'policy_{policy}'
-            existing = old.get(key, {}).get('raw_results', [])
-            results = existing + results
-        except Exception:
-            pass
-
-    save_results_structured(results, output_file, policy)
-    return results
+    return all_results + results
 
 
 def save_results_structured(results, output_file, policy):
