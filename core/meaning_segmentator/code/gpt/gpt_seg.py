@@ -12,12 +12,35 @@ from pathlib import Path
 from openai import OpenAI
 
 SYSTEM_PROMPT = (
-    "너는 지금 국어교사야. "
-    "주어진 문장에서 의미가 분절되는 지점을 <seg>로 표시해야 해. "
-    "의미가 분절되는 지점은 해당 지점을 끊어도 앞뒤 맥락이 자연스러운 곳이야"
-    "어미 같은 품사를 고려해도 되고 구두점을 고려해도 돼. "
-    "어떤 문장에는 분절 지점이 없을 수도 있어. "
-    "원문 텍스트에 <seg> 태그만 삽입해서 반환해. 다른 설명이나 텍스트는 절대 추가하지 마."
+"""너는 국어 텍스트 분석 전문가야.
+주어진 문장에서 의미 분절 지점에 <seg> 태그를 삽입해야 해.
+
+[분절 기준 - 우선순위 순]
+1. 절/구 경계: 주어+서술어 구조가 완결되는 지점
+2. 연결어미 뒤: ~고, ~며, ~서, ~면, ~지만, ~는데 등 이후
+3. 부사절/관형절이 끝나는 지점
+4. 쉼표(,) 또는 세미콜론(;) 위치
+
+[분절하지 않는 경우]
+- 조사, 보조용언, 의존명사 앞뒤
+- 짧은 명사구 내부
+- 전체 문장이 단일 의미 단위인 경우
+
+[출력 규칙]
+- 원문에 <seg> 태그만 삽입
+- 문장 맨 앞/맨 끝에는 태그 삽입 금지
+- 다른 설명, 주석, 텍스트 절대 추가 금지
+
+[예시]
+입력: 비가 오고 바람이 불었다
+출력: 비가 오고<seg>바람이 불었다
+
+입력: 나는 어제 학교에 갔다
+출력: 나는 어제 학교에 갔다
+
+입력: 그가 웃으면서 말했는데 아무도 듣지 않았다
+출력: 그가 웃으면서 말했는데<seg>아무도 듣지 않았다
+"""
 )
 
 
@@ -35,12 +58,13 @@ def mark_segmentation(client: OpenAI, text: str, model: str) -> str:
 
 def main():
     parser = argparse.ArgumentParser(description="GPT 기반 의미 분절 마킹")
-    parser.add_argument("--input",   type=str, default="C:\Users\jduh1\Desktop\STiTy\core\meaning_segmentator\data\transcribe\eval_clean_100.json")
+    parser.add_argument("--input",   type=str, default=r"C:\Users\jduh1\Desktop\STiTy\core\meaning_segmentator\data\transcribe\eval_clean_100.json")
     parser.add_argument("--output",  type=str, default=None, help="출력 JSON 경로 (기본: 입력 파일 덮어쓰기)")
     parser.add_argument("--model",   type=str, default="gpt-4o-mini", help="OpenAI 모델명")
     parser.add_argument("--api-key", type=str, default=None, help="OpenAI API 키 (미입력 시 OPENAI_API_KEY 환경변수 사용)")
     parser.add_argument("--delay",   type=float, default=0.5, help="요청 간 딜레이(초)")
-    parser.add_argument("--resume",  action="store_true", help="이미 seg_text가 있는 항목은 건너뜀")
+    parser.add_argument("--no-resume", dest="resume", action="store_false", help="이미 seg_text가 있는 항목도 재처리")
+    parser.set_defaults(resume=True)
     args = parser.parse_args()
 
     api_key = args.api_key or os.environ.get("OPENAI_API_KEY")
