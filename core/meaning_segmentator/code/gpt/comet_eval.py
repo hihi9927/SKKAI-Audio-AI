@@ -27,7 +27,7 @@ def translate_seg(seg_text: str, src: str = "ko", tgt: str = "en") -> str:
 
 def main():
     parser = argparse.ArgumentParser(description="seg 번역 vs 전체 번역 COMET 평가")
-    parser.add_argument("--input",  type=str, default=r"C:\Users\jduh1\Desktop\STiTy\core\meaning_segmentator\data\transcribe\eval_clean_100.json")
+    parser.add_argument("--input",  type=str, default=r"/home/ubuntu/STiTy/core/meaning_segmentator/data/transcribe/eval_clean_100.json")
     parser.add_argument("--output", type=str, default=None, help="결과 JSON 저장 경로 (기본: 입력 파일 덮어쓰기)")
     parser.add_argument("--model",  type=str, default="Unbabel/wmt22-comet-da", help="COMET 모델명")
     parser.add_argument("--delay",  type=float, default=0.2, help="번역 요청 간 딜레이(초)")
@@ -94,7 +94,7 @@ def main():
         print("COMET 계산할 데이터가 없습니다.")
         return
 
-    output = model.predict(comet_data, batch_size=8, gpus=0)
+    output = model.predict(comet_data, batch_size=8, gpus=1)
     scores = output.scores
 
     # 결과를 JSON에 저장
