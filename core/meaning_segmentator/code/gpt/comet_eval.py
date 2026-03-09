@@ -37,7 +37,8 @@ def main():
 
     input_path = Path(args.input)
     output_path = Path(args.output or args.input)
-    data = json.loads(input_path.read_text(encoding="utf-8"))
+    raw = json.loads(input_path.read_text(encoding="utf-8"))
+    data = raw["data"]
 
     # ── 1. 번역 ──────────────────────────────────────────────────────────────
     for i, entry in enumerate(data):
@@ -66,7 +67,7 @@ def main():
             if args.delay > 0:
                 time.sleep(args.delay)
 
-        output_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+        output_path.write_text(json.dumps(raw, ensure_ascii=False, indent=2), encoding="utf-8")
 
     # ── 2. COMET 점수 산출 ───────────────────────────────────────────────────
     print("\nCOMET 모델 로드 중...")
@@ -101,9 +102,20 @@ def main():
     for entry, score in zip(comet_entries, scores):
         entry["comet_score"] = round(score, 4)
 
-    output_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-
     avg = sum(scores) / len(scores)
+
+    # stats 업데이트
+    all_scores = [e["comet_score"] for e in data if "comet_score" in e]
+    raw["stats"] = {
+        "total_files": len(data),
+        "comet_evaluated": len(all_scores),
+        "comet_max": round(max(all_scores), 4),
+        "comet_min": round(min(all_scores), 4),
+        "comet_avg": round(sum(all_scores) / len(all_scores), 4),
+    }
+
+    output_path.write_text(json.dumps(raw, ensure_ascii=False, indent=2), encoding="utf-8")
+
     print(f"\n── COMET 결과 ──────────────────────────")
     print(f"  샘플 수  : {len(scores)}")
     print(f"  평균 점수: {avg:.4f}")

@@ -106,7 +106,8 @@ def main():
     client = OpenAI(api_key=api_key)
     output_path = Path(args.output or args.input)
 
-    data = json.loads(Path(args.input).read_text(encoding="utf-8"))
+    raw = json.loads(Path(args.input).read_text(encoding="utf-8"))
+    data = raw["data"]
 
     for i, entry in enumerate(data):
         if args.resume and "seg_text" in entry:
@@ -126,7 +127,7 @@ def main():
             entry["seg_text"] = None
 
         # 진행 중 중간 저장
-        output_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+        output_path.write_text(json.dumps(raw, ensure_ascii=False, indent=2), encoding="utf-8")
 
         if args.delay > 0:
             time.sleep(args.delay)
