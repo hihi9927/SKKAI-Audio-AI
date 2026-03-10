@@ -279,9 +279,16 @@ def compute_wer_for_rows(rows):
     if not refs:
         return None
 
-    t = jiwer.Compose([jiwer.ToLowerCase(), jiwer.RemoveMultipleSpaces(), jiwer.RemovePunctuation(), jiwer.Strip()])
-    refs = [t(x) for x in refs]
-    hyps = [t(x) for x in hyps]
+    import re
+
+    def normalize(text):
+        text = text.lower()
+        text = re.sub(r'[^\w\s]', ' ', text)
+        text = ' '.join(text.split())
+        return text
+
+    refs = [normalize(x) for x in refs]
+    hyps = [normalize(x) for x in hyps]
     pairs = [(r, h) for r, h in zip(refs, hyps) if r.strip() and h.strip()]
     if not pairs:
         return None
