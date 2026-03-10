@@ -448,6 +448,7 @@ async def process_batch(
             'audio_path': audio_info['path'],
             'reference': audio_info['reference'],
             'hypothesis': out['transcript'],
+            'hyp_commit': format_commit_markers(out.get('segment_events') or []),
             'duration': duration,
             'total_time': out['total_time'],
             'first_token_latency': out['first_token_latency'],
