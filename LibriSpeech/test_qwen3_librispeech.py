@@ -279,9 +279,16 @@ def compute_wer_for_rows(rows):
     if not refs:
         return None
 
-    t = jiwer.Compose([jiwer.ToLowerCase(), jiwer.RemoveMultipleSpaces(), jiwer.RemovePunctuation(), jiwer.Strip()])
-    refs = [t(x) for x in refs]
-    hyps = [t(x) for x in hyps]
+    import re
+
+    def normalize(text):
+        text = text.lower()
+        text = re.sub(r'[^\w\s]', ' ', text)
+        text = ' '.join(text.split())
+        return text
+
+    refs = [normalize(x) for x in refs]
+    hyps = [normalize(x) for x in hyps]
     pairs = [(r, h) for r, h in zip(refs, hyps) if r.strip() and h.strip()]
     if not pairs:
         return None
@@ -377,8 +384,12 @@ async def process_batch(
     chunk_size_ms=100,
     send_interval_ms=10,
     show_commit_slash=True,
+    resume=True,
 ):
-    processed_ids = load_processed_files(output_file, policy)
+    if resume:
+        processed_ids = load_processed_files(output_file, policy)
+    else:
+        processed_ids = set()
     targets = [f for f in audio_files if f['file_id'] not in processed_ids]
 
     if limit is not None:
@@ -390,7 +401,7 @@ async def process_batch(
 
     # Load existing results so incremental saves include everything
     all_results = []
-    if processed_ids and os.path.exists(output_file):
+    if resume and processed_ids and os.path.exists(output_file):
         try:
             with open(output_file, 'r', encoding='utf-8') as f:
                 old = json.load(f)
@@ -437,6 +448,7 @@ async def process_batch(
             'audio_path': audio_info['path'],
             'reference': audio_info['reference'],
             'hypothesis': out['transcript'],
+            'hyp_commit': format_commit_markers(out.get('segment_events') or []),
             'duration': duration,
             'total_time': out['total_time'],
             'first_token_latency': out['first_token_latency'],
@@ -579,6 +591,8 @@ def main():
                         help='Delay between chunk sends in ms (default: 10, use 100 for real-time-like pacing)')
     parser.add_argument('--show-commit-slash', action=argparse.BooleanOptionalAction, default=True,
                         help='Show commit boundaries as \"seg1 / seg2 /\" in logs')
+    parser.add_argument('--fresh-start', action='store_true', default=False,
+                        help='Ignore existing results and process all files from scratch')
 
     args = parser.parse_args()
     logger.setLevel(args.log_level)
@@ -632,6 +646,7 @@ def main():
                 chunk_size_ms=args.chunk_size_ms,
                 send_interval_ms=args.send_interval_ms,
                 show_commit_slash=args.show_commit_slash,
+                resume=not args.fresh_start,
             )
         )
         if args.calculate_wer and results:
