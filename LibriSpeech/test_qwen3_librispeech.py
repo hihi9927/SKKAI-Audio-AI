@@ -384,8 +384,12 @@ async def process_batch(
     chunk_size_ms=100,
     send_interval_ms=10,
     show_commit_slash=True,
+    resume=True,
 ):
-    processed_ids = load_processed_files(output_file, policy)
+    if resume:
+        processed_ids = load_processed_files(output_file, policy)
+    else:
+        processed_ids = set()
     targets = [f for f in audio_files if f['file_id'] not in processed_ids]
 
     if limit is not None:
@@ -397,7 +401,7 @@ async def process_batch(
 
     # Load existing results so incremental saves include everything
     all_results = []
-    if processed_ids and os.path.exists(output_file):
+    if resume and processed_ids and os.path.exists(output_file):
         try:
             with open(output_file, 'r', encoding='utf-8') as f:
                 old = json.load(f)
@@ -586,6 +590,8 @@ def main():
                         help='Delay between chunk sends in ms (default: 10, use 100 for real-time-like pacing)')
     parser.add_argument('--show-commit-slash', action=argparse.BooleanOptionalAction, default=True,
                         help='Show commit boundaries as \"seg1 / seg2 /\" in logs')
+    parser.add_argument('--fresh-start', action='store_true', default=False,
+                        help='Ignore existing results and process all files from scratch')
 
     args = parser.parse_args()
     logger.setLevel(args.log_level)
@@ -639,6 +645,7 @@ def main():
                 chunk_size_ms=args.chunk_size_ms,
                 send_interval_ms=args.send_interval_ms,
                 show_commit_slash=args.show_commit_slash,
+                resume=not args.fresh_start,
             )
         )
         if args.calculate_wer and results:
