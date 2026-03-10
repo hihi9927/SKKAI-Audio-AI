@@ -10,7 +10,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, current_dir)
 
 # 2. 최상위 디렉토리 (STiTy 폴더)
-base_path = os.path.dirname(current_dir)
+base_path = os.path.dirname(os.path.dirname(current_dir))
 sys.path.insert(0, base_path)
 
 # 3. servers 폴더와 SimulStreaming 폴더 추가

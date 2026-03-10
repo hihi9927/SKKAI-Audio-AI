@@ -27,6 +27,8 @@ import numpy as np
 import torch
 from silero_vad import VADIterator, load_silero_vad
 
+SCRIPT_DIR = Path(__file__).resolve().parent
+
 SAMPLING_RATE = 16000
 VAD_THRESHOLD = 0.5
 VAD_MIN_SILENCE_MS = 800
@@ -588,19 +590,19 @@ def main() -> None:
     parser.add_argument(
         "--output-png",
         type=str,
-        default="test-results/vad-verify/architecture_vad_verification.png",
+        default=str(SCRIPT_DIR.parent.parent / "test-results" / "vad-verify" / "architecture_vad_verification.png"),
         help="Output plot path",
     )
     parser.add_argument(
         "--output-json",
         type=str,
-        default="test-results/vad-verify/architecture_vad_trace.json",
+        default=str(SCRIPT_DIR.parent.parent / "test-results" / "vad-verify" / "architecture_vad_trace.json"),
         help="Output trace json path",
     )
     parser.add_argument(
         "--output-dir",
         type=str,
-        default="test-results/vad-verify/batch",
+        default=str(SCRIPT_DIR.parent.parent / "test-results" / "vad-verify" / "batch"),
         help="Base directory for batch outputs (default: test-results/vad-verify/batch).",
     )
     parser.add_argument(

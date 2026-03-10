@@ -76,7 +76,7 @@ def parse_trn(trn_path: Path, min_words: int, count: int) -> list[dict]:
 
 def main():
     parser = argparse.ArgumentParser(description=".trn → eval_clean.json 변환")
-    parser.add_argument("--input",     type=str,   default=r"/home/ubuntu/STiTy/core/meaning_segmentator/data/transcribe/eval_clean.trn",
+    parser.add_argument("--input",     type=str,   default=str(Path(__file__).resolve().parent.parent / "data" / "transcribe" / "eval_clean.trn"),
                         help=".trn 입력 파일 경로")
     parser.add_argument("--output",    type=str,   default=None,
                         help="출력 JSON 경로 (기본: 입력 파일명.json)")

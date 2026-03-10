@@ -47,7 +47,7 @@ from pathlib import Path
 
 # ─── 경로 설정 ────────────────────────────────────────────────────────────────
 _HERE     = Path(__file__).parent
-_BASE     = _HERE.parent.parent
+_BASE     = _HERE.parent.parent.parent
 _QWEN_DIR = _BASE / "Qwen3-ASR"
 
 sys.path.insert(0, str(_BASE))

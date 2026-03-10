@@ -87,7 +87,7 @@ def mark_segmentation(client: OpenAI, text: str, model: str) -> str:
 
 def main():
     parser = argparse.ArgumentParser(description="GPT 기반 의미 분절 마킹")
-    parser.add_argument("--input",   type=str, default=r"C:\Users\jduh1\Desktop\STiTy\core\meaning_segmentator\data\transcribe\eval_clean.json")
+    parser.add_argument("--input",   type=str, default=str(Path(__file__).resolve().parent.parent / "data" / "transcribe" / "eval_clean.json"))
     parser.add_argument("--output",  type=str, default=None, help="출력 JSON 경로 (기본: 입력 파일명에 _seg 추가)")
     parser.add_argument("--model",   type=str, default="gpt-4o-mini", help="OpenAI 모델명")
     parser.add_argument("--api-key", type=str, default=None, help="OpenAI API 키 (미입력 시 OPENAI_API_KEY 환경변수 사용)")
