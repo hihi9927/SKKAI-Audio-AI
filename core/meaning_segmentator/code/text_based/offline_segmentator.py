@@ -34,14 +34,14 @@ from typing import List, Dict, Tuple, Optional, Callable
 from pathlib import Path
 
 # ─── 경로 설정 ────────────────────────────────────────────────────────────────
-_HERE      = Path(__file__).parent
-_BASE      = _HERE.parent.parent.parent   # STiTy/
-_QWEN_DIR  = _BASE / "Qwen3-ASR"
-_DATA_DIR    = _HERE.parent.parent / "data" / "eval_clean"
-_RESULTS_DIR = _HERE.parent.parent / "results" / "feature_based"
-_TEST_DIR  = _HERE / "test"
-_AUDIO_DIR = _TEST_DIR / "audio"
-_TEXT_DIR  = _TEST_DIR / "text"
+_HERE           = Path(__file__).parent
+_BASE           = _HERE.parent.parent.parent   # STiTy/
+_QWEN_DIR       = _BASE / "Qwen3-ASR"
+_DATA_DIR       = _HERE.parent.parent / "data" / "eval_clean"
+_TRANSCRIPT_DIR = _HERE.parent.parent / "data" / "transcribe"
+_TEST_DIR       = _HERE / "test"
+_AUDIO_DIR      = _TEST_DIR / "audio"
+_TEXT_DIR       = _TEST_DIR / "text"
 
 sys.path.insert(0, str(_BASE))
 sys.path.insert(0, str(_QWEN_DIR))
@@ -883,6 +883,28 @@ def save_results_json(results: List[SegmentationResult], path: str) -> None:
     print(f"\n  결과 저장: {path}")
 
 
+def make_seg_text(tokens: List[WordToken], confirmed_positions: List[int]) -> str:
+    """토큰과 경계 위치로부터 <seg> 태그가 삽입된 텍스트를 생성."""
+    segments = get_segments_text(tokens, confirmed_positions)
+    return "<seg>".join(segments)
+
+
+def save_results_eval_json(
+    entries: List[Dict],
+    results: List[SegmentationResult],
+    path: str,
+) -> None:
+    """eval_clean.json 포맷으로 저장: {"data": [{"file":..., "text":..., "seg_text":...}]}"""
+    output_data = []
+    for entry, result in zip(entries, results):
+        row = dict(entry)
+        row["seg_text"] = make_seg_text(result.tokens, result.confirmed_positions)
+        output_data.append(row)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump({"data": output_data}, f, ensure_ascii=False, indent=2)
+    print(f"\n  결과 저장: {path}")
+
+
 # ─── (기존 호환) GT 기반 평가 ─────────────────────────────────────────────────
 def evaluate(result: SegmentationResult) -> Dict:
     pred = set(result.confirmed_positions)
@@ -931,9 +953,12 @@ def main():
     parser = argparse.ArgumentParser(description="Meaning Segmentation (PCM + Entropy)")
     parser.add_argument("--device",          default="cuda:0",                        help="cuda:0 또는 cpu")
     parser.add_argument("--language",        default="ko",                            help="언어 코드 (기본: ko)")
-    parser.add_argument("--num-files",       type=int,  default=None,                 help="처리할 PCM 파일 수 (기본: 전부)")
+    parser.add_argument("--num-files",       type=int,  default=None,                 help="처리할 파일 수 (기본: 전부)")
     parser.add_argument("--audio-dir",       default=None,                            help="PCM 파일 디렉터리 (기본: data/eval_clean)")
-    parser.add_argument("--output",          default=None,                            help="결과 JSON 저장 경로")
+    parser.add_argument("--transcript",      default=None,                            help="전사 JSON 경로 (기본: data/transcribe/eval_clean.json)")
+    parser.add_argument("--output",          default=None,                            help="결과 JSON 저장 경로 (기본: data/transcribe/<transcript_stem>_seg.json)")
+    parser.add_argument("--no-resume",       dest="resume", action="store_false",     help="이미 seg_text가 있는 항목도 재처리")
+    parser.set_defaults(resume=True)
     parser.add_argument("--no-semantic",     action="store_true",                     help="Semantic 피처 비활성화")
     parser.add_argument("--no-entropy",      action="store_true",                     help="Entropy 피처 비활성화")
     parser.add_argument("--max-entropy-ref", type=float, default=DEFAULT_MAX_ENTROPY_REF, help="엔트로피 정규화 기준값(nats)")
@@ -1006,17 +1031,37 @@ def main():
     if okt is None and nlp is None:
         weights["text"] = 0.0
 
-    # ── PCM 파일 목록 ────────────────────────────────────────────────────────
-    audio_dir = Path(args.audio_dir) if args.audio_dir else _DATA_DIR
-    pcm_files = sorted(audio_dir.glob("*.pcm"))
-    if not pcm_files:
-        print(f"\n  ✗ PCM 파일 없음: {audio_dir}")
+    # ── 전사 JSON 로드 ───────────────────────────────────────────────────────
+    transcript_path = Path(args.transcript) if args.transcript else _TRANSCRIPT_DIR / "eval_clean.json"
+    if not transcript_path.exists():
+        print(f"\n  ✗ 전사 파일 없음: {transcript_path}")
         sys.exit(1)
 
-    if args.num_files is not None:
-        pcm_files = pcm_files[:args.num_files]
+    raw_transcript = json.loads(transcript_path.read_text(encoding="utf-8"))
+    base_entries: List[Dict] = raw_transcript["data"] if isinstance(raw_transcript, dict) else raw_transcript
 
-    print(f"\n  처리 대상: {len(pcm_files)}개 PCM 파일 ({audio_dir})")
+    if args.num_files is not None:
+        base_entries = base_entries[:args.num_files]
+
+    # ── 출력 경로 및 resume 데이터 로드 ─────────────────────────────────────
+    if args.output:
+        p = Path(args.output)
+        output_path = p if p.is_absolute() or len(p.parts) > 1 else transcript_path.parent / p
+    else:
+        output_path = transcript_path.parent / (transcript_path.stem + "_seg.json")
+
+    existing_seg: Dict[str, str] = {}
+    if args.resume and output_path.exists():
+        raw_out = json.loads(output_path.read_text(encoding="utf-8"))
+        out_data = raw_out["data"] if isinstance(raw_out, dict) else raw_out
+        existing_seg = {e["file"]: e["seg_text"] for e in out_data if "seg_text" in e}
+        print(f"  Resume: 기존 결과 {len(existing_seg)}개 로드 ({output_path.name})")
+
+    audio_dir = Path(args.audio_dir) if args.audio_dir else _DATA_DIR
+
+    print(f"\n  처리 대상: {len(base_entries)}개 항목 ({transcript_path.name})")
+    print(f"  오디오 디렉터리: {audio_dir}")
+    print(f"  출력 경로: {output_path}")
     if use_entropy:
         print(f"  Entropy 피처: ON  (max_ref={args.max_entropy_ref} nats)")
     else:
@@ -1024,13 +1069,36 @@ def main():
 
     # ── 처리 루프 ────────────────────────────────────────────────────────────
     all_results: List[SegmentationResult] = []
+    processed_entries: List[Dict] = []
 
-    for pcm_path in pcm_files:
-        name = pcm_path.stem
-        print(f"\n>> {name} 처리 중...")
+    for i, entry in enumerate(base_entries):
+        file_name = entry["file"]
+        pcm_path  = audio_dir / f"{file_name}.pcm"
+
+        if args.resume and file_name in existing_seg:
+            print(f"[{i+1}/{len(base_entries)}] 건너뜀 (이미 처리됨): {file_name}")
+            # 더미 결과로 기존 seg_text 보존
+            dummy = SegmentationResult(
+                name=file_name, tokens=[], boundaries=[],
+                confirmed_positions=[], transcript=entry.get("text", ""),
+            )
+            all_results.append(dummy)
+            processed_entries.append(dict(entry, seg_text=existing_seg[file_name]))
+            continue
+
+        if not pcm_path.exists():
+            print(f"[{i+1}/{len(base_entries)}] ✗ PCM 없음, 건너뜀: {pcm_path.name}")
+            processed_entries.append(dict(entry))
+            all_results.append(SegmentationResult(
+                name=file_name, tokens=[], boundaries=[],
+                confirmed_positions=[], transcript="",
+            ))
+            continue
+
+        print(f"[{i+1}/{len(base_entries)}] {file_name} 처리 중...")
         try:
             result = run_pcm_case(
-                name=name,
+                name=file_name,
                 audio_path=str(pcm_path),
                 asr_model=asr_model,
                 aligner=aligner,
@@ -1050,19 +1118,34 @@ def main():
             )
             print_pcm_result(result)
             all_results.append(result)
+            seg_text = make_seg_text(result.tokens, result.confirmed_positions)
+            processed_entries.append(dict(entry, seg_text=seg_text))
         except Exception as e:
             import traceback
             print(f"  ✗ 오류: {e}")
             traceback.print_exc()
+            all_results.append(SegmentationResult(
+                name=file_name, tokens=[], boundaries=[],
+                confirmed_positions=[], transcript="",
+            ))
+            processed_entries.append(dict(entry))
+
+        # 중간 저장
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(
+            json.dumps({"data": processed_entries}, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
 
     # ── 요약 ─────────────────────────────────────────────────────────────────
-    if all_results:
-        print_feature_analysis(all_results)
+    real_results = [r for r in all_results if r.tokens]
+    if real_results:
+        print_feature_analysis(real_results)
 
-        total_segs = sum(len(r.confirmed_positions) + 1 for r in all_results if r.tokens)
-        total_toks = sum(len(r.tokens) for r in all_results)
+        total_segs = sum(len(r.confirmed_positions) + 1 for r in real_results)
+        total_toks = sum(len(r.tokens) for r in real_results)
         print(f"\n{'='*55}")
-        print(f"  SUMMARY  ({len(all_results)}개 파일)")
+        print(f"  SUMMARY  ({len(real_results)}개 파일 처리됨)")
         print(f"{'='*55}")
         print(f"  총 단어 수       : {total_toks}")
         print(f"  총 분절 수       : {total_segs}")
@@ -1074,13 +1157,13 @@ def main():
         print(f"  Weights          : {weights}")
         print()
 
-    # ── JSON 저장 ─────────────────────────────────────────────────────────────
-    if args.output:
-        save_results_json(all_results, args.output)
-    else:
-        _RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-        default_out = str(_RESULTS_DIR / "segmentation_results.json")
-        save_results_json(all_results, default_out)
+    # ── 최종 저장 ─────────────────────────────────────────────────────────────
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(
+        json.dumps({"data": processed_entries}, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    print(f"\n  결과 저장: {output_path}")
 
 
 if __name__ == "__main__":
