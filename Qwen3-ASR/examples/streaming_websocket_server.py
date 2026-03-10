@@ -83,6 +83,7 @@ class StreamingConfig:
     host: str = "0.0.0.0"
     port: int = 8765
     no_idle_shutdown: bool = False
+    idle_shutdown_sec: int = 60
 
 
 def format_time(seconds: float) -> str:
@@ -708,10 +709,9 @@ class Qwen3ASRStreamingHandler:
 class Qwen3ASRStreamingServer:
     """Qwen3-ASR 스트리밍 서버"""
 
-    IDLE_SHUTDOWN_SEC = 1000000  # 1분간 접속 없으면 종료
-    
     def __init__(self, config: StreamingConfig):
         self.config = config
+        self.IDLE_SHUTDOWN_SEC = config.idle_shutdown_sec
         self.asr = None
         self.pairing_hub = PairingHub()
         self.idle_task = None
@@ -823,6 +823,10 @@ def parse_args():
         "--no-idle-shutdown", action="store_true",
         help="Disable idle shutdown (use this when running tests)",
     )
+    parser.add_argument(
+        "--idle-shutdown-sec", type=int, default=60,
+        help="Seconds of no connections before server shuts down (default: 60)",
+    )
     return parser.parse_args()
 
 
@@ -837,6 +841,7 @@ def main():
         host=args.host,
         port=args.port,
         no_idle_shutdown=args.no_idle_shutdown,
+        idle_shutdown_sec=args.idle_shutdown_sec,
     )
 
     server = Qwen3ASRStreamingServer(config)
