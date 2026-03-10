@@ -1,0 +1,41 @@
+{
+  "common_files_count": 1619,
+  "models": {
+    "chunked": {
+      "overall": {
+        "num_files": 1619,
+        "wer": 0.08182842525200232,
+        "first_token_latency": 3.416865652766472,
+        "avg_processing_time": 2.8463546755533287
+      },
+      "num_speakers": 33
+    },
+    "original": {
+      "overall": {
+        "num_files": 1619,
+        "wer": 0.059780126077290864,
+        "first_token_latency": 7.823082522745115,
+        "avg_processing_time": 0.8008932434975036
+      },
+      "num_speakers": 33
+    },
+    "simul_meaning_policy1": {
+      "overall": {
+        "num_files": 1619,
+        "wer": 0.225781892377501,
+        "first_token_latency": 1.1942759719139415,
+        "avg_processing_time": 13.621617110223509
+      },
+      "num_speakers": 33
+    },
+    "simul_no_meaning_policy1": {
+      "overall": {
+        "num_files": 1619,
+        "wer": 0.16143374851539422,
+        "first_token_latency": 1.1837830397727829,
+        "avg_processing_time": 13.68809272739487
+      },
+      "num_speakers": 33
+    }
+  }
+}

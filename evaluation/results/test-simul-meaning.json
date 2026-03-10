@@ -1,0 +1,1245 @@
+{
+  "policy_1": {
+    "timestamp": "2026-01-05T15:30:34.943081",
+    "overall": {
+      "num_files": 96,
+      "wer": 0.26349545697487975,
+      "first_token_latency": 0.2984142526984215,
+      "avg_processing_time": 12.794157676736518
+    },
+    "folders": {
+      "1688": {
+        "num_files": 4,
+        "wer": 0.07246376811594203,
+        "first_token_latency": 0.1203758716583252,
+        "avg_processing_time": 13.07064363002777
+      },
+      "1998": {
+        "num_files": 2,
+        "wer": 0.07692307692307693,
+        "first_token_latency": 1.062508225440979,
+        "avg_processing_time": 15.689575510025026
+      },
+      "2033": {
+        "num_files": 2,
+        "wer": 0.4909090909090909,
+        "first_token_latency": 0.09629642963409424,
+        "avg_processing_time": 6.947369604110719
+      },
+      "2414": {
+        "num_files": 6,
+        "wer": 0.25675675675675674,
+        "first_token_latency": 0.07481094201405843,
+        "avg_processing_time": 13.684767808914186
+      },
+      "2609": {
+        "num_files": 3,
+        "wer": 0.4794520547945205,
+        "first_token_latency": 0.5834596951802572,
+        "avg_processing_time": 9.042244482040404
+      },
+      "3005": {
+        "num_files": 3,
+        "wer": 0.4492753623188406,
+        "first_token_latency": 0.10066628456115723,
+        "avg_processing_time": 11.361152397791543
+      },
+      "3080": {
+        "num_files": 3,
+        "wer": 0.08771929824561403,
+        "first_token_latency": 0.5429983139038086,
+        "avg_processing_time": 11.891636648178102
+      },
+      "3331": {
+        "num_files": 2,
+        "wer": 0.03125,
+        "first_token_latency": 0.05300140380859375,
+        "avg_processing_time": 15.069626212120056
+      },
+      "3528": {
+        "num_files": 6,
+        "wer": 0.06741573033707865,
+        "first_token_latency": 0.06917572021484375,
+        "avg_processing_time": 14.871677085558574
+      },
+      "3538": {
+        "num_files": 3,
+        "wer": 0.2692307692307692,
+        "first_token_latency": 0.11234315236409505,
+        "avg_processing_time": 10.598549547195434
+      },
+      "3764": {
+        "num_files": 7,
+        "wer": 0.16831683168316833,
+        "first_token_latency": 0.2995841843741281,
+        "avg_processing_time": 14.602951401846749
+      },
+      "4198": {
+        "num_files": 3,
+        "wer": 0.10526315789473684,
+        "first_token_latency": 0.06667749087015788,
+        "avg_processing_time": 14.012800283432007
+      },
+      "4294": {
+        "num_files": 4,
+        "wer": 0.4166666666666667,
+        "first_token_latency": 0.780509352684021,
+        "avg_processing_time": 12.421359493732453
+      },
+      "4350": {
+        "num_files": 4,
+        "wer": 0.0,
+        "first_token_latency": 0.07399910688400269,
+        "avg_processing_time": 13.6541521692276
+      },
+      "4852": {
+        "num_files": 3,
+        "wer": 0.46,
+        "first_token_latency": 0.7406557401021322,
+        "avg_processing_time": 13.539374338785805
+      },
+      "533": {
+        "num_files": 1,
+        "wer": 0.2777777777777778,
+        "first_token_latency": 0.1679978370666504,
+        "avg_processing_time": 6.079804620742799
+      },
+      "5442": {
+        "num_files": 3,
+        "wer": 0.43333333333333335,
+        "first_token_latency": 0.4236768881479899,
+        "avg_processing_time": 12.873475516637166
+      },
+      "5764": {
+        "num_files": 1,
+        "wer": 0.0,
+        "first_token_latency": 0.04700016975402832,
+        "avg_processing_time": 15.48348204612732
+      },
+      "6070": {
+        "num_files": 1,
+        "wer": 0.0,
+        "first_token_latency": 0.051999568939208984,
+        "avg_processing_time": 14.889298295974731
+      },
+      "6128": {
+        "num_files": 3,
+        "wer": 0.4727272727272727,
+        "first_token_latency": 0.4833400249481201,
+        "avg_processing_time": 5.284624379475912
+      },
+      "6432": {
+        "num_files": 3,
+        "wer": 0.05,
+        "first_token_latency": 0.07899888356526692,
+        "avg_processing_time": 15.57236927986145
+      },
+      "7018": {
+        "num_files": 2,
+        "wer": 0.32142857142857145,
+        "first_token_latency": 0.144506573677063,
+        "avg_processing_time": 9.882072234153748
+      },
+      "7105": {
+        "num_files": 3,
+        "wer": 0.3181818181818182,
+        "first_token_latency": 0.9709992408752441,
+        "avg_processing_time": 10.289362033208212
+      },
+      "7902": {
+        "num_files": 7,
+        "wer": 0.25443786982248523,
+        "first_token_latency": 0.09472288404192243,
+        "avg_processing_time": 13.461652894701276
+      },
+      "7975": {
+        "num_files": 3,
+        "wer": 0.4942528735632184,
+        "first_token_latency": 0.855333169301351,
+        "avg_processing_time": 9.303540274302165
+      },
+      "8131": {
+        "num_files": 6,
+        "wer": 0.20408163265306123,
+        "first_token_latency": 0.26083894570668537,
+        "avg_processing_time": 13.37510902563731
+      },
+      "8188": {
+        "num_files": 5,
+        "wer": 0.07407407407407407,
+        "first_token_latency": 0.30600566864013673,
+        "avg_processing_time": 14.967272115707397
+      },
+      "8280": {
+        "num_files": 2,
+        "wer": 0.36363636363636365,
+        "first_token_latency": 0.04899942874908447,
+        "avg_processing_time": 14.736498560905456
+      },
+      "8461": {
+        "num_files": 1,
+        "wer": 0.2857142857142857,
+        "first_token_latency": 0.07403111457824707,
+        "avg_processing_time": 16.366344871520997
+      }
+    },
+    "raw_results": [
+      {
+        "file_id": "1688-142285-0017",
+        "speaker_id": "1688",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\1688\\142285\\1688-142285-0017.flac",
+        "reference": "WHEN HE SPOKE OF THE MECHANICAL POWERS HE EVIDENTLY LOOKED UPON THEM ONLY AS NEW WAYS OF EXTENDING TRADE AND MAKING MONEY",
+        "hypothesis": "When he spoke of the mechanical powers, he evidently looked upon them only as new ways of extending trade and making money.",
+        "duration": 8.38,
+        "total_time": 20.15625309944153,
+        "first_token_latency": 0.12848520278930664,
+        "avg_processing_time": 11.776253099441528
+      },
+      {
+        "file_id": "1688-142285-0084",
+        "speaker_id": "1688",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\1688\\142285\\1688-142285-0084.flac",
+        "reference": "WHY I WOULD APPLY TO SOME GOOD HOUSE MOTHER TO RECOMMEND ME ONE KNOWN TO HERSELF OR HER SERVANTS",
+        "hypothesis": "Well, I would apply it to some good house mother to recommend me one known to herself or her servants.",
+        "duration": 7.71,
+        "total_time": 20.09096646308899,
+        "first_token_latency": 0.11646747589111328,
+        "avg_processing_time": 12.380966463088988
+      },
+      {
+        "file_id": "1688-142285-0087",
+        "speaker_id": "1688",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\1688\\142285\\1688-142285-0087.flac",
+        "reference": "MISSUS THORNTON THE ONLY MOTHER HE HAS I BELIEVE SAID MISTER HALE QUIETLY",
+        "hypothesis": "Mr. Thornton, the only mother he has, I believe, said Mr. Hale quietly.",
+        "duration": 6.82,
+        "total_time": 20.10125708580017,
+        "first_token_latency": 0.13275432586669922,
+        "avg_processing_time": 13.28125708580017
+      },
+      {
+        "file_id": "1688-142285-0095",
+        "speaker_id": "1688",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\1688\\142285\\1688-142285-0095.flac",
+        "reference": "THEY CARED TOO LITTLE TO ASK IN WHAT MANNER HER SON HAD SPOKEN ABOUT HER",
+        "hypothesis": "They cared too little to ask in what manner her son had spoken spoken about her.",
+        "duration": 5.23,
+        "total_time": 20.074097871780396,
+        "first_token_latency": 0.10379648208618164,
+        "avg_processing_time": 14.844097871780395
+      },
+      {
+        "file_id": "1998-29454-0005",
+        "speaker_id": "1998",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\1998\\29454\\1998-29454-0005.flac",
+        "reference": "HE HAD NEVER SEEN ONE BEFORE AND IT INTERESTED HIM EXTREMELY",
+        "hypothesis": "He had never seen one before and it interested him extremely.",
+        "duration": 4.08,
+        "total_time": 20.080844163894653,
+        "first_token_latency": 0.08744931221008301,
+        "avg_processing_time": 16.000844163894655
+      },
+      {
+        "file_id": "1998-29454-0025",
+        "speaker_id": "1998",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\1998\\29454\\1998-29454-0025.flac",
+        "reference": "A BIRD PAUSED IN ITS FLIGHT ON A BRANCH QUITE CLOSE AND CLUNG THERE SWAYING",
+        "hypothesis": "A bird paused in its flight on a branch quite close and clung their swing.",
+        "duration": 4.635,
+        "total_time": 20.013306856155396,
+        "first_token_latency": 2.037567138671875,
+        "avg_processing_time": 15.378306856155396
+      },
+      {
+        "file_id": "2033-164915-0011",
+        "speaker_id": "2033",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\2033\\164915\\2033-164915-0011.flac",
+        "reference": "TWAS AS I FEARED THE COMING ILLS DISCERNING BUT UNTO ALLAH WE ARE ALL RETURNING",
+        "hypothesis": "was as I feared the coming ills discerning. But unto Allah we are all returning.",
+        "duration": 7.04,
+        "total_time": 20.08499240875244,
+        "first_token_latency": 0.11763739585876465,
+        "avg_processing_time": 13.044992408752442
+      },
+      {
+        "file_id": "2033-164916-0003",
+        "speaker_id": "2033",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\2033\\164916\\2033-164916-0003.flac",
+        "reference": "ZAU AL MAKAN BOWED HIS HEAD AWHILE AND THEN SAID I ACCEPT THIS POSITION FOR INDEED THERE WAS NO REFUSING AND HE WAS CERTIFIED THAT THE CHAMBERLAIN HAD COUNSELLED HIM WELL AND WISELY AND SET HIM ON THE RIGHT WAY",
+        "hypothesis": "Zawah Makan bowed his head a while and then then said, \"I accept the position,,\" for indeed there was no refusing.",
+        "duration": 19.4,
+        "total_time": 20.249746799468994,
+        "first_token_latency": 0.07495546340942383,
+        "avg_processing_time": 0.8497467994689956
+      },
+      {
+        "file_id": "2414-128291-0021",
+        "speaker_id": "2414",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\2414\\128291\\2414-128291-0021.flac",
+        "reference": "SAID ZARATHUSTRA THOU SHOULDST ALSO SEE MINE ANIMALS MINE EAGLE AND MY SERPENT THEIR LIKE DO NOT AT PRESENT EXIST ON EARTH",
+        "hypothesis": "Artustra thou shouldest also see my animals. My eagle and my serpent. They are like do not at present exist on",
+        "duration": 13.025,
+        "total_time": 20.16192078590393,
+        "first_token_latency": 0.0580599308013916,
+        "avg_processing_time": 7.13692078590393
+      },
+      {
+        "file_id": "2414-128292-0000",
+        "speaker_id": "2414",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\2414\\128292\\2414-128292-0000.flac",
+        "reference": "WHITHER HATH MY LONESOMENESS GONE SPAKE HE",
+        "hypothesis": "و أحياناً أتحدث عن مغفرتي",
+        "duration": 4.52,
+        "total_time": 20.10614323616028,
+        "first_token_latency": 0.05596923828125,
+        "avg_processing_time": 15.586143236160279
+      },
+      {
+        "file_id": "2414-128292-0031",
+        "speaker_id": "2414",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\2414\\128292\\2414-128292-0031.flac",
+        "reference": "THOU POOR ROVER AND RAMBLER THOU TIRED BUTTERFLY",
+        "hypothesis": "Thou poor rover and rambler, thou tired butterfly!",
+        "duration": 5.34,
+        "total_time": 20.07951855659485,
+        "first_token_latency": 0.11612629890441895,
+        "avg_processing_time": 14.739518556594849
+      },
+      {
+        "file_id": "2414-159411-0012",
+        "speaker_id": "2414",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\2414\\159411\\2414-159411-0012.flac",
+        "reference": "IS IT FAIR THAT HE SHOULD DO SO OR NOT",
+        "hypothesis": "Is it fair that he should do so or not?",
+        "duration": 3.51,
+        "total_time": 20.076200485229492,
+        "first_token_latency": 0.044641971588134766,
+        "avg_processing_time": 16.566200485229494
+      },
+      {
+        "file_id": "2414-159411-0015",
+        "speaker_id": "2414",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\2414\\159411\\2414-159411-0015.flac",
+        "reference": "ON WHAT MUST I GIVE JUDGMENT ASKED THE EAGLE",
+        "hypothesis": "On what must I give judgment as to evil?",
+        "duration": 3.685,
+        "total_time": 20.053307056427002,
+        "first_token_latency": 0.04628634452819824,
+        "avg_processing_time": 16.368307056427003
+      },
+      {
+        "file_id": "2414-159411-0028",
+        "speaker_id": "2414",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\2414\\159411\\2414-159411-0028.flac",
+        "reference": "WHY I STOOD SO SAID THE TIGER JUMPING INTO THE CAGE AND MY HEAD WAS ON THIS SIDE",
+        "hypothesis": "\"Why, I stood so,\" said the diver, jumping into the cage, \"and my head was on this side.\"",
+        "duration": 8.38,
+        "total_time": 20.091516733169556,
+        "first_token_latency": 0.12778186798095703,
+        "avg_processing_time": 11.711516733169555
+      },
+      {
+        "file_id": "2609-156975-0001",
+        "speaker_id": "2609",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\2609\\156975\\2609-156975-0001.flac",
+        "reference": "HOLD ON HOLD FAST HOLD OUT PATIENCE IS GENIUS",
+        "hypothesis": "Hold on, hold fast, hold out. Patience is genius.",
+        "duration": 4.885,
+        "total_time": 20.06692624092102,
+        "first_token_latency": 0.10313153266906738,
+        "avg_processing_time": 15.18192624092102
+      },
+      {
+        "file_id": "2609-156975-0004",
+        "speaker_id": "2609",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\2609\\156975\\2609-156975-0004.flac",
+        "reference": "EVERY ONE WHO IS TURBULENT HAS BEEN FOUND BY KING MERNEPTAH THE TESTIMONY OF THE OLDEST BIBLICAL NARRATIVES REGARDING THE SOJOURN OF THE HEBREWS IN EGYPT IS ALSO IN PERFECT ACCORD WITH THE PICTURE WHICH THE CONTEMPORARY EGYPTIAN INSCRIPTIONS GIVE OF THE PERIOD",
+        "hypothesis": "everyone whose turban has been found by Gimren at the path. The testimony of the oldest biblical narratives regarding the",
+        "duration": 18.13,
+        "total_time": 20.21415066719055,
+        "first_token_latency": 0.22364377975463867,
+        "avg_processing_time": 2.0841506671905528
+      },
+      {
+        "file_id": "2609-156975-0026",
+        "speaker_id": "2609",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\2609\\156975\\2609-156975-0026.flac",
+        "reference": "THE PRIEST OF THE SUB TRIBE OF THE KENITES RECEIVED HIM INTO HIS HOME AND GAVE HIM HIS DAUGHTER IN MARRIAGE",
+        "hypothesis": "The priest of the sub-tribe of the Canites received him into his home and gave him his daughter in marriage.",
+        "duration": 8.46,
+        "total_time": 18.320656538009644,
+        "first_token_latency": 1.4236037731170654,
+        "avg_processing_time": 9.860656538009643
+      },
+      {
+        "file_id": "3005-163390-0001",
+        "speaker_id": "3005",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\3005\\163390\\3005-163390-0001.flac",
+        "reference": "THE PEOPLE MOST KILLED THEMSELVES LAUGHING AND WHEN THE KING GOT DONE CAPERING AND CAPERED OFF BEHIND THE SCENES THEY ROARED AND CLAPPED AND STORMED AND HAW HAWED TILL HE COME BACK AND DONE IT OVER AGAIN AND AFTER THAT THEY MADE HIM DO IT ANOTHER TIME",
+        "hypothesis": "The people most killed themselves laughing, and when the king got done capering and capered off behind the scenes,",
+        "duration": 16.465,
+        "total_time": 20.134098768234253,
+        "first_token_latency": 0.20099878311157227,
+        "avg_processing_time": 3.669098768234253
+      },
+      {
+        "file_id": "3005-163399-0000",
+        "speaker_id": "3005",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\3005\\163399\\3005-163399-0000.flac",
+        "reference": "PHELPS WAS ONE OF THESE LITTLE ONE HORSE COTTON PLANTATIONS AND THEY ALL LOOK ALIKE",
+        "hypothesis": "Phelps's was one of these little one-horse cotton plantations, and they all look alike.",
+        "duration": 6.135,
+        "total_time": 20.054781436920166,
+        "first_token_latency": 0.06299924850463867,
+        "avg_processing_time": 13.919781436920166
+      },
+      {
+        "file_id": "3005-163399-0020",
+        "speaker_id": "3005",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\3005\\163399\\3005-163399-0020.flac",
+        "reference": "HAS HE COME NO SAYS HER HUSBAND",
+        "hypothesis": "Has he come? No, says her husband.",
+        "duration": 3.565,
+        "total_time": 20.059576988220215,
+        "first_token_latency": 0.03800082206726074,
+        "avg_processing_time": 16.494576988220214
+      },
+      {
+        "file_id": "3080-5032-0002",
+        "speaker_id": "3080",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\3080\\5032\\3080-5032-0002.flac",
+        "reference": "HER CONVERSATION HAS MORE CHARMS THAN CAN BE IN MERE BEAUTY AND HER HUMOUR AND DISPOSITION WOULD MAKE A DEFORMED PERSON APPEAR LOVELY",
+        "hypothesis": "Her conversation has more charms than can be in mere beauty, and her humor and disposition would make a deformed person appear lovely.",
+        "duration": 9.995,
+        "total_time": 20.079312324523926,
+        "first_token_latency": 0.0970008373260498,
+        "avg_processing_time": 10.084312324523927
+      },
+      {
+        "file_id": "3080-5032-0003",
+        "speaker_id": "3080",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\3080\\5032\\3080-5032-0003.flac",
+        "reference": "WHY DID YOU NOT SEND ME THAT NEWS AND A GARLAND",
+        "hypothesis": "Why didn't you not send me that news, and a garland?",
+        "duration": 4.04,
+        "total_time": 20.066396236419678,
+        "first_token_latency": 0.07199549674987793,
+        "avg_processing_time": 16.02639623641968
+      },
+      {
+        "file_id": "3080-5032-0025",
+        "speaker_id": "3080",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\3080\\5032\\3080-5032-0025.flac",
+        "reference": "I HAVE BEEN STUDYING HOW TOM CHEEKE MIGHT COME BY HIS INTELLIGENCE AND I VERILY BELIEVE HE HAS IT FROM MY COUSIN PETERS",
+        "hypothesis": "I have been studying how Tom Cheek might come by his intelligence and I very believe he has it from my cousin G",
+        "duration": 9.095,
+        "total_time": 18.6592013835907,
+        "first_token_latency": 1.459998607635498,
+        "avg_processing_time": 9.564201383590698
+      },
+      {
+        "file_id": "3331-159605-0040",
+        "speaker_id": "3331",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\3331\\159605\\3331-159605-0040.flac",
+        "reference": "I DON'T MEAN TO BE PRYING BUT I REALLY THOUGHT HE DID",
+        "hypothesis": "I don't mean to be prying, but I really thought he did.",
+        "duration": 3.66,
+        "total_time": 20.04793357849121,
+        "first_token_latency": 0.040001869201660156,
+        "avg_processing_time": 16.38793357849121
+      },
+      {
+        "file_id": "3331-159609-0023",
+        "speaker_id": "3331",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\3331\\159609\\3331-159609-0023.flac",
+        "reference": "FOR NED WAS SO ABSORBED IN BUSINESS THAT HE IGNORED THE WHOLE BAILEY QUESTION AND LEFT THEM IN UTTER DARKNESS",
+        "hypothesis": "For Ned was so absorbed in business that he ignored the whole Baeli question and left them in utter darkness.",
+        "duration": 6.34,
+        "total_time": 20.0913188457489,
+        "first_token_latency": 0.06600093841552734,
+        "avg_processing_time": 13.751318845748902
+      },
+      {
+        "file_id": "3528-168669-0043",
+        "speaker_id": "3528",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\3528\\168669\\3528-168669-0043.flac",
+        "reference": "FATHER FAUVENT THE COMMUNITY HAS BEEN BLESSED IN MOTHER CRUCIFIXION",
+        "hypothesis": "Father Fulvent, the community has been blessed in Mother Crucifixion.",
+        "duration": 4.16,
+        "total_time": 20.04466962814331,
+        "first_token_latency": 0.04400205612182617,
+        "avg_processing_time": 15.88466962814331
+      },
+      {
+        "file_id": "3528-168669-0079",
+        "speaker_id": "3528",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\3528\\168669\\3528-168669-0079.flac",
+        "reference": "THE PRIORESS WHO WAS USUALLY SUBJECTED TO THE BARRIER OF SILENCE AND WHOSE RESERVOIR WAS OVERFULL ROSE AND EXCLAIMED WITH THE LOQUACITY OF A DAM WHICH HAS BROKEN AWAY",
+        "hypothesis": "the prioress, who is usually subjected to the barrier of silence, and whose reservoir was overfull, rose and exclaimed with the loquacity of a dam which has broken away",
+        "duration": 9.805,
+        "total_time": 20.13020133972168,
+        "first_token_latency": 0.06099867820739746,
+        "avg_processing_time": 10.32520133972168
+      },
+      {
+        "file_id": "3528-168669-0092",
+        "speaker_id": "3528",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\3528\\168669\\3528-168669-0092.flac",
+        "reference": "THEY SHUT THEIR EYES TO THE TRUTH DARKNESS IS THE RULE",
+        "hypothesis": "They shut their eyes to the truth. Darkness is the rule.",
+        "duration": 3.465,
+        "total_time": 20.070248126983643,
+        "first_token_latency": 0.058028459548950195,
+        "avg_processing_time": 16.605248126983643
+      },
+      {
+        "file_id": "3528-168669-0097",
+        "speaker_id": "3528",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\3528\\168669\\3528-168669-0097.flac",
+        "reference": "GAUTHIER BISHOP OF CHALONS HELD HIS OWN IN THIS MATTER AGAINST OTHO DUKE OF BURGUNDY",
+        "hypothesis": "Guthier, bishop of Chalon, held his own in this matter against Otho, duke of Burgundy.",
+        "duration": 6.07,
+        "total_time": 20.0580952167511,
+        "first_token_latency": 0.10602998733520508,
+        "avg_processing_time": 13.988095216751098
+      },
+      {
+        "file_id": "3528-168669-0107",
+        "speaker_id": "3528",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\3528\\168669\\3528-168669-0107.flac",
+        "reference": "THE PEAL WHICH ORDERS THE DOCTOR FOR THE DEAD TO BE SUMMONED HAS ALREADY BEEN RUNG",
+        "hypothesis": "The appeal which orders the doctor for the dead to be summoned has already been wrung.",
+        "duration": 3.885,
+        "total_time": 20.02228879928589,
+        "first_token_latency": 0.0729973316192627,
+        "avg_processing_time": 16.13728879928589
+      },
+      {
+        "file_id": "3528-168669-0123",
+        "speaker_id": "3528",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\3528\\168669\\3528-168669-0123.flac",
+        "reference": "THE EMPTY COFFIN REMAINS THIS PRODUCED A PAUSE",
+        "hypothesis": "The empty coffin remains. This produced a pause.",
+        "duration": 3.71,
+        "total_time": 19.99955940246582,
+        "first_token_latency": 0.0729978084564209,
+        "avg_processing_time": 16.28955940246582
+      },
+      {
+        "file_id": "3538-142836-0012",
+        "speaker_id": "3538",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\3538\\142836\\3538-142836-0012.flac",
+        "reference": "THEY SHOULD BE DRIED IN THE STOVE OR OVEN ON A SIEVE AND TURNED EVERY SIX OR EIGHT HOURS FRESH POWDERED SUGAR BEING SIFTED OVER THEM EVERY TIME THEY ARE TURNED",
+        "hypothesis": "They should be dried in the stove or oven on a sieve and turned every 6 or 8 hours, fresh powdered sugar being sifted over them every time they are turned.",
+        "duration": 9.535,
+        "total_time": 20.120809316635132,
+        "first_token_latency": 0.11802935600280762,
+        "avg_processing_time": 10.585809316635132
+      },
+      {
+        "file_id": "3538-163619-0001",
+        "speaker_id": "3538",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\3538\\163619\\3538-163619-0001.flac",
+        "reference": "FROM THE VERY DAY THAT THE NEW WIFE CAME INTO THE HOUSE THERE WAS NO PEACE FOR THE MAN'S CHILDREN AND NOT A CORNER TO BE FOUND WHERE THEY COULD GET ANY REST SO THE BOY THOUGHT THAT THE BEST THING HE COULD DO WAS TO GO OUT INTO THE WORLD AND TRY TO EARN HIS OWN BREAD",
+        "hypothesis": "From the very day that the new wife came into the house there was no peace for the man's children, and not a corner to be found where they could get any rest.",
+        "duration": 14.235,
+        "total_time": 20.15140175819397,
+        "first_token_latency": 0.1699998378753662,
+        "avg_processing_time": 5.91640175819397
+      },
+      {
+        "file_id": "3538-163622-0020",
+        "speaker_id": "3538",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\3538\\163622\\3538-163622-0020.flac",
+        "reference": "WHEN THEY HAD TRAVELLED A LONG LONG WAY THE FOAL SAID DOST THOU SEE ANYTHING",
+        "hypothesis": "When they had traveled a long, long way, the foal said, \"Dost thou see anything?\"",
+        "duration": 4.785,
+        "total_time": 20.078437566757202,
+        "first_token_latency": 0.04900026321411133,
+        "avg_processing_time": 15.293437566757202
+      },
+      {
+        "file_id": "3764-168670-0005",
+        "speaker_id": "3764",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\3764\\168670\\3764-168670-0005.flac",
+        "reference": "I HAVE PERMISSION TO BRING YOU IN BUT BEFORE BRINGING YOU IN YOU MUST BE GOT OUT",
+        "hypothesis": "I have permission to bring you in, but before bringing you in, you must be got out.",
+        "duration": 6.355,
+        "total_time": 20.07183861732483,
+        "first_token_latency": 0.09002947807312012,
+        "avg_processing_time": 13.716838617324829
+      },
+      {
+        "file_id": "3764-168670-0013",
+        "speaker_id": "3764",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\3764\\168670\\3764-168670-0013.flac",
+        "reference": "IT IS TO MORROW THAT I AM TO BRING YOU IN THE PRIORESS EXPECTS YOU",
+        "hypothesis": "It is tomorrow the time to bring you in. The virus expects you.",
+        "duration": 4.59,
+        "total_time": 20.049928188323975,
+        "first_token_latency": 0.04599928855895996,
+        "avg_processing_time": 15.459928188323975
+      },
+      {
+        "file_id": "3764-168670-0023",
+        "speaker_id": "3764",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\3764\\168670\\3764-168670-0023.flac",
+        "reference": "YOU KNOW FAUCHELEVENT WHAT YOU HAVE SAID MOTHER CRUCIFIXION IS DEAD",
+        "hypothesis": "You know, François Levant, what you have said. Mother Crucifixion is dead.",
+        "duration": 4.535,
+        "total_time": 20.066555738449097,
+        "first_token_latency": 0.047998905181884766,
+        "avg_processing_time": 15.531555738449097
+      },
+      {
+        "file_id": "3764-168670-0039",
+        "speaker_id": "3764",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\3764\\168670\\3764-168670-0039.flac",
+        "reference": "YOU CAN COME AND NAIL ME UP IN THE COFFIN AT TWO O'CLOCK",
+        "hypothesis": "you can come and nail me up in the coffin at two o'clock.",
+        "duration": 3.1700625,
+        "total_time": 20.018001317977905,
+        "first_token_latency": 0.05800127983093262,
+        "avg_processing_time": 16.847938817977905
+      },
+      {
+        "file_id": "3764-168670-0050",
+        "speaker_id": "3764",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\3764\\168670\\3764-168670-0050.flac",
+        "reference": "BUT JEAN VALJEAN'S COOLNESS PREVAILED OVER HIM IN SPITE OF HIMSELF HE GRUMBLED",
+        "hypothesis": "Jean Valjean's coolness prevailed over him, in spite of himself.",
+        "duration": 5.78,
+        "total_time": 19.99295926094055,
+        "first_token_latency": 1.6119999885559082,
+        "avg_processing_time": 14.21295926094055
+      },
+      {
+        "file_id": "3764-168671-0027",
+        "speaker_id": "3764",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\3764\\168671\\3764-168671-0027.flac",
+        "reference": "IT IS TRUE NEVERTHELESS THAT GRAVE DIGGERS DO DIE THEMSELVES",
+        "hypothesis": "It is true, nevertheless, that gravediggers do die themselves.",
+        "duration": 4.635,
+        "total_time": 20.043355226516724,
+        "first_token_latency": 0.10603189468383789,
+        "avg_processing_time": 15.408355226516724
+      },
+      {
+        "file_id": "3764-168671-0040",
+        "speaker_id": "3764",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\3764\\168671\\3764-168671-0040.flac",
+        "reference": "THE GOOD GOD CONSULTED HIS NOTE BOOK WHICH SHOWS WHEN THE TIME IS UP IT WAS FATHER MESTIENNE'S TURN FATHER MESTIENNE DIED",
+        "hypothesis": "The good God consulted his notebook, which shows when the time is up. It was Father Mestien's turn.. Father Mestien died.",
+        "duration": 9.065,
+        "total_time": 20.108083963394165,
+        "first_token_latency": 0.13702845573425293,
+        "avg_processing_time": 11.043083963394166
+      },
+      {
+        "file_id": "4198-61336-0002",
+        "speaker_id": "4198",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\4198\\61336\\4198-61336-0002.flac",
+        "reference": "WELL MIGHT SHARDURIS EXCLAIM IN THE WORDS OF THE PROPHET WHERE IS THE KING OF ARPAD",
+        "hypothesis": "\"Well!\" might Shardurus exclaim, \"in the words of the Prophet, 'Where is the king of Arpad?'",
+        "duration": 7.725,
+        "total_time": 20.081974506378174,
+        "first_token_latency": 0.05199909210205078,
+        "avg_processing_time": 12.356974506378174
+      },
+      {
+        "file_id": "4198-61336-0011",
+        "speaker_id": "4198",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\4198\\61336\\4198-61336-0011.flac",
+        "reference": "ONCE AGAIN THE HEBREWS CAME INTO CONTACT WITH ASSYRIA",
+        "hypothesis": "Once again, the Hebrews came into contact with this area.",
+        "duration": 3.94,
+        "total_time": 20.043429374694824,
+        "first_token_latency": 0.04200315475463867,
+        "avg_processing_time": 16.103429374694823
+      },
+      {
+        "file_id": "4198-61336-0021",
+        "speaker_id": "4198",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\4198\\61336\\4198-61336-0021.flac",
+        "reference": "MENAHEM KING OF ISRAEL HAD DIED AND WAS SUCCEEDED BY HIS SON PEKAHIAH",
+        "hypothesis": "Menahem king of Israel had died and was succeeded by his son Jechiah.",
+        "duration": 6.5,
+        "total_time": 20.077996969223022,
+        "first_token_latency": 0.10603022575378418,
+        "avg_processing_time": 13.577996969223022
+      },
+      {
+        "file_id": "4294-35475-0006",
+        "speaker_id": "4294",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\4294\\35475\\4294-35475-0006.flac",
+        "reference": "ONE NIGHT AS HE LAY IN A DEEP FOREST TOO UNHAPPY TO SLEEP HE HEARD A NOISE NEAR AT HAND IN THE BUSHES",
+        "hypothesis": "One night, as he lay in a deep forest, too unhappy to sleep, he heard a noise near at hand in the bushes.",
+        "duration": 7.225,
+        "total_time": 20.094865798950195,
+        "first_token_latency": 0.12103271484375,
+        "avg_processing_time": 12.869865798950196
+      },
+      {
+        "file_id": "4294-35475-0019",
+        "speaker_id": "4294",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\4294\\35475\\4294-35475-0019.flac",
+        "reference": "WHILE HE STOOD LOOKING AROUND HIM IN BEWILDERMENT A FIREFLY ALIGHTED ON HIS ARM FLASHING ITS LITTLE LANTERN IN THE PRINCE'S FACE IT CRIED THIS WAY MY FRIEND THE FLY SENT ME TO GUIDE YOU TO A PLACE OF SAFETY",
+        "hypothesis": "While he stood looking around him in bewilderment, a firefly alighted on his arm.",
+        "duration": 14.06,
+        "total_time": 18.619072437286377,
+        "first_token_latency": 1.3310027122497559,
+        "avg_processing_time": 4.5590724372863765
+      },
+      {
+        "file_id": "4294-9934-0005",
+        "speaker_id": "4294",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\4294\\9934\\4294-9934-0005.flac",
+        "reference": "THE HALF LIGHTS OF DOUBT PAINED HIM",
+        "hypothesis": "The half-lights of doubt pained him.",
+        "duration": 3.14,
+        "total_time": 20.072948932647705,
+        "first_token_latency": 0.04000258445739746,
+        "avg_processing_time": 16.932948932647705
+      },
+      {
+        "file_id": "4294-9934-0021",
+        "speaker_id": "4294",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\4294\\9934\\4294-9934-0021.flac",
+        "reference": "HE PAID TWENTY FRANCS FOR THE CAST OFF GARMENTS THEY WENT TO THE WATCHMAKER'S",
+        "hypothesis": "He paid twenty francs for the cast-off garments.",
+        "duration": 4.765,
+        "total_time": 20.088550806045532,
+        "first_token_latency": 1.6299993991851807,
+        "avg_processing_time": 15.323550806045532
+      },
+      {
+        "file_id": "4350-10919-0006",
+        "speaker_id": "4350",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\4350\\10919\\4350-10919-0006.flac",
+        "reference": "THE FAMILY DOCTOR RESPECTFULLY CEASED IN THE MIDDLE OF HIS OBSERVATIONS",
+        "hypothesis": "The family doctor respectfully ceased in the middle of his observations.",
+        "duration": 3.55,
+        "total_time": 20.03207778930664,
+        "first_token_latency": 0.03799915313720703,
+        "avg_processing_time": 16.48207778930664
+      },
+      {
+        "file_id": "4350-9170-0003",
+        "speaker_id": "4350",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\4350\\9170\\4350-9170-0003.flac",
+        "reference": "THE CHAMPIONS OF THE SOCIAL CONCEPTION OF LIFE USUALLY TRY TO CONNECT THE IDEA OF AUTHORITY THAT IS OF VIOLENCE WITH THE IDEA OF MORAL INFLUENCE BUT THIS CONNECTION IS QUITE IMPOSSIBLE",
+        "hypothesis": "The champions of the social conception of life usually try to connect the idea of authority, that is, of violence, with the idea of moral influence. But this connection is quite impossible.",
+        "duration": 9.245,
+        "total_time": 20.115163564682007,
+        "first_token_latency": 0.08799910545349121,
+        "avg_processing_time": 10.870163564682008
+      },
+      {
+        "file_id": "4350-9170-0006",
+        "speaker_id": "4350",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\4350\\9170\\4350-9170-0006.flac",
+        "reference": "THE POSSIBILITY OF APPLYING BODILY VIOLENCE TO PEOPLE IS PROVIDED ABOVE ALL BY AN ORGANIZATION OF ARMED MEN TRAINED TO ACT IN UNISON IN SUBMISSION TO ONE WILL",
+        "hypothesis": "The possibility of applying bodily violence to people is provided above all by an organization of armed men trained to act in unison in submission to one will.",
+        "duration": 8.14,
+        "total_time": 20.076909065246582,
+        "first_token_latency": 0.12099909782409668,
+        "avg_processing_time": 11.936909065246581
+      },
+      {
+        "file_id": "4350-9170-0007",
+        "speaker_id": "4350",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\4350\\9170\\4350-9170-0007.flac",
+        "reference": "THESE BANDS OF ARMED MEN SUBMISSIVE TO A SINGLE WILL ARE WHAT CONSTITUTE THE ARMY",
+        "hypothesis": "These bands of armed men, submissive to a single will, are what constitute the army.",
+        "duration": 4.755,
+        "total_time": 20.08245825767517,
+        "first_token_latency": 0.04899907112121582,
+        "avg_processing_time": 15.327458257675172
+      },
+      {
+        "file_id": "4852-28330-0013",
+        "speaker_id": "4852",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\4852\\28330\\4852-28330-0013.flac",
+        "reference": "HE PAUSED FINGERING HIS LOWER LIP AND LOOKING SIDEWAYS IN A REFLECTIVE FASHION AT CHRIS STANDING BEFORE HIM",
+        "hypothesis": "paused,",
+        "duration": 5.905,
+        "total_time": 16.62500786781311,
+        "first_token_latency": 0.9799995422363281,
+        "avg_processing_time": 10.72000786781311
+      },
+      {
+        "file_id": "4852-28330-0020",
+        "speaker_id": "4852",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\4852\\28330\\4852-28330-0020.flac",
+        "reference": "WHAT CAN BE SAID DURING THAT TIME SIR CHRIS THOUGHT TO ASK",
+        "hypothesis": "\"What can be said during that time,",
+        "duration": 4.225,
+        "total_time": 19.9989230632782,
+        "first_token_latency": 1.13800048828125,
+        "avg_processing_time": 15.773923063278199
+      },
+      {
+        "file_id": "4852-28330-0021",
+        "speaker_id": "4852",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\4852\\28330\\4852-28330-0021.flac",
+        "reference": "I AM SOMEWHAT SKILLED IN MEDICAMENTS I HAVE TO BE AS CAPTAIN OF A SHIP AND THE CREW KNOW IT",
+        "hypothesis": "I am somewhat skilled in medicaments. I have to be, as the captain of a ship and the crew know it.",
+        "duration": 5.91,
+        "total_time": 20.034192085266113,
+        "first_token_latency": 0.10396718978881836,
+        "avg_processing_time": 14.124192085266113
+      },
+      {
+        "file_id": "533-131564-0017",
+        "speaker_id": "533",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\533\\131564\\533-131564-0017.flac",
+        "reference": "I SOUGHT OUT AND PUT INTO HIS HANDS TWO OF MILICENT'S LETTERS ONE DATED FROM LONDON AND WRITTEN DURING ONE OF HIS WILDEST SEASONS OF RECKLESS DISSIPATION THE OTHER IN THE COUNTRY DURING A LUCID INTERVAL",
+        "hypothesis": "I sought out and put into his hands two of Millicent's letters. one dated from London and written during one of his wildest seasons of reckless dissipation,",
+        "duration": 14.04,
+        "total_time": 20.119804620742798,
+        "first_token_latency": 0.1679978370666504,
+        "avg_processing_time": 6.079804620742799
+      },
+      {
+        "file_id": "5442-32873-0002",
+        "speaker_id": "5442",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\5442\\32873\\5442-32873-0002.flac",
+        "reference": "A SLAVE ONLY THINK A SLAVE",
+        "hypothesis": "A slave,",
+        "duration": 2.965,
+        "total_time": 20.002618551254272,
+        "first_token_latency": 1.1610298156738281,
+        "avg_processing_time": 17.037618551254273
+      },
+      {
+        "file_id": "5442-41168-0000",
+        "speaker_id": "5442",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\5442\\41168\\5442-41168-0000.flac",
+        "reference": "THE ACT SAID THAT IN CASE OF DIFFERENCE OF OPINION THERE MUST BE A BALLOT",
+        "hypothesis": "The Act said that in case of difference of opinion,, there must be a ballot.",
+        "duration": 5.425,
+        "total_time": 20.06644916534424,
+        "first_token_latency": 0.0540008544921875,
+        "avg_processing_time": 14.641449165344238
+      },
+      {
+        "file_id": "5442-41168-0016",
+        "speaker_id": "5442",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\5442\\41168\\5442-41168-0016.flac",
+        "reference": "HAVING PUT IT IN HE RECOLLECTED THAT HE OUGHT TO HAVE THRUST HIS LEFT HAND TOO AND SO HE THRUST IT IN THOUGH TOO LATE AND STILL MORE OVERCOME WITH CONFUSION HE BEAT A HASTY RETREAT INTO THE BACKGROUND",
+        "hypothesis": "Having put it in, he recollected that he ought to have thrust his left hand too, and",
+        "duration": 13.22,
+        "total_time": 20.16135883331299,
+        "first_token_latency": 0.0559999942779541,
+        "avg_processing_time": 6.941358833312988
+      },
+      {
+        "file_id": "5764-299665-0047",
+        "speaker_id": "5764",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\5764\\299665\\5764-299665-0047.flac",
+        "reference": "WHAT HAS RELIGION DONE FOR HUNGARY OR AUSTRIA",
+        "hypothesis": "What has religion done for Hungary or Austria?",
+        "duration": 4.58,
+        "total_time": 20.06348204612732,
+        "first_token_latency": 0.04700016975402832,
+        "avg_processing_time": 15.48348204612732
+      },
+      {
+        "file_id": "6070-86745-0016",
+        "speaker_id": "6070",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\6070\\86745\\6070-86745-0016.flac",
+        "reference": "IN THE ENTIRE POLITICAL WORLD OF WHICH YOU ARE ONE OF THE LEADERS",
+        "hypothesis": "in the entire political world of which you are one of the leaders.",
+        "duration": 5.15,
+        "total_time": 20.03929829597473,
+        "first_token_latency": 0.051999568939208984,
+        "avg_processing_time": 14.889298295974731
+      },
+      {
+        "file_id": "6128-63240-0004",
+        "speaker_id": "6128",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\6128\\63240\\6128-63240-0004.flac",
+        "reference": "HE WAS TALL AND LEAN AND DRESSED THROUGHOUT IN BLACK HIS SHIRT COLLAR WAS LOW AND WIDE AND THE TRIANGLE OF LINEN A LITTLE CRUMPLED EXHIBITED BY THE OPENING OF HIS WAISTCOAT WAS ADORNED BY A PIN CONTAINING A SMALL RED STONE",
+        "hypothesis": "He was tall and lean, and dressed throughout in black. His shirt collar was low and wide, and the triangle of linen,",
+        "duration": 15.87,
+        "total_time": 20.16479730606079,
+        "first_token_latency": 0.21400022506713867,
+        "avg_processing_time": 4.294797306060792
+      },
+      {
+        "file_id": "6128-63241-0013",
+        "speaker_id": "6128",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\6128\\63241\\6128-63241-0013.flac",
+        "reference": "OF ALL THINGS IN THE WORLD CONTENTION WAS MOST SWEET TO HER THOUGH WHY IT IS HARD TO IMAGINE FOR IT ALWAYS COST HER TEARS HEADACHES A DAY OR TWO IN BED ACUTE EMOTION AND IT WAS VERY POSSIBLE BASIL RANSOM WOULD NOT CARE TO CONTEND",
+        "hypothesis": "Of all things in the world, contention was most sweet to her; though why,",
+        "duration": 16.45,
+        "total_time": 18.185945749282837,
+        "first_token_latency": 1.1390182971954346,
+        "avg_processing_time": 1.7359457492828376
+      },
+      {
+        "file_id": "6128-63244-0023",
+        "speaker_id": "6128",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\6128\\63244\\6128-63244-0023.flac",
+        "reference": "WHEN MISS BIRDSEYE APPROACHED IT TRANSFIGURED HER FAMILIAR HER COMICAL SHAPE AND MADE THE POOR LITTLE HUMANITARY HACK SEEM ALREADY A MARTYR",
+        "hypothesis": "When Miss Birdseye approached, it transfigured her familiar, her comical shape, and made the poor little humanitary hack seem already a martyr.",
+        "duration": 10.3,
+        "total_time": 20.123130083084106,
+        "first_token_latency": 0.09700155258178711,
+        "avg_processing_time": 9.823130083084106
+      },
+      {
+        "file_id": "6432-63722-0014",
+        "speaker_id": "6432",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\6432\\63722\\6432-63722-0014.flac",
+        "reference": "BUSTED HIS HEAD IN WITH A HEAVY CANDLESTICK ONE OF A PAIR",
+        "hypothesis": "busted his head in with a heavy candlestick, one of a pair.",
+        "duration": 3.84,
+        "total_time": 20.02089524269104,
+        "first_token_latency": 0.07299661636352539,
+        "avg_processing_time": 16.18089524269104
+      },
+      {
+        "file_id": "6432-63722-0029",
+        "speaker_id": "6432",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\6432\\63722\\6432-63722-0029.flac",
+        "reference": "THAT'S THE WATCH ANNOUNCED THE HEADQUARTERS DETECTIVE REACHING IN FOR IT GOING YET SEE",
+        "hypothesis": "That's the watch, announced the headquarters detective, reaching in for it, going at it, see?",
+        "duration": 5.745,
+        "total_time": 20.084539651870728,
+        "first_token_latency": 0.11799764633178711,
+        "avg_processing_time": 14.339539651870727
+      },
+      {
+        "file_id": "6432-63723-0044",
+        "speaker_id": "6432",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\6432\\63723\\6432-63723-0044.flac",
+        "reference": "NOW AS TO CERTAIN MATTERS IN THE STORE ON THE MORNING OF THE MURDER",
+        "hypothesis": "Now as to certain matters in the store on the morning of the murder.",
+        "duration": 3.845,
+        "total_time": 20.041672945022583,
+        "first_token_latency": 0.04600238800048828,
+        "avg_processing_time": 16.196672945022584
+      },
+      {
+        "file_id": "7018-75788-0004",
+        "speaker_id": "7018",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\7018\\75788\\7018-75788-0004.flac",
+        "reference": "DO AS THEY DO AND BELIKE THOU SHALT GAIN WHAT MAY FURTHER THY RETURN VOYAGE TO THY NATIVE LAND",
+        "hypothesis": "Do as they do, and be like thou shalt gain what may further thy return voyage to thy native land.",
+        "duration": 6.845,
+        "total_time": 20.102171659469604,
+        "first_token_latency": 0.10599994659423828,
+        "avg_processing_time": 13.257171659469606
+      },
+      {
+        "file_id": "7018-75788-0013",
+        "speaker_id": "7018",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\7018\\75788\\7018-75788-0013.flac",
+        "reference": "NEXT MORNING AS SOON AS IT WAS LIGHT HE PRAYED THE DAWN PRAYER AND AFTER BLESSING MOHAMMED THE CREAM OF ALL CREATURES BETOOK HIMSELF TO THE HOUSE OF SINDBAD THE SEAMAN AND WISHED HIM A GOOD DAY",
+        "hypothesis": "next morning, as soon as it was light, he prayed the dawn prayer and, after blessing Muhammad the cream of all creatures,",
+        "duration": 13.605,
+        "total_time": 20.11197280883789,
+        "first_token_latency": 0.1830132007598877,
+        "avg_processing_time": 6.50697280883789
+      },
+      {
+        "file_id": "7105-2330-0004",
+        "speaker_id": "7105",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\7105\\2330\\7105-2330-0004.flac",
+        "reference": "A HEADLONG PARDON ON THE EVE OF A BYE ELECTION WITH THREATS OF A HEAVY VOTING DEFECTION IF IT WERE WITHHELD OR EVEN DELAYED WOULD NOT NECESSARILY BE A SURRENDER BUT IT WOULD LOOK LIKE ONE",
+        "hypothesis": "A headlong pardon on the eve of a by-e-election with threats of a heavy voting defection. If it were withheld or even delayed,",
+        "duration": 14.285,
+        "total_time": 20.168978691101074,
+        "first_token_latency": 0.1379992961883545,
+        "avg_processing_time": 5.883978691101074
+      },
+      {
+        "file_id": "7105-2330-0025",
+        "speaker_id": "7105",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\7105\\2330\\7105-2330-0025.flac",
+        "reference": "THIS IS NOT A MOMENT FOR STANDING ON DIGNITY HE OBSERVED BLUNTLY MUSICIANS MUST BE SUPPLIED AT ONCE",
+        "hypothesis": "\"This is not a moment for standing on dignity,\" he observed bluntly.",
+        "duration": 7.175,
+        "total_time": 17.44428014755249,
+        "first_token_latency": 1.255000352859497,
+        "avg_processing_time": 10.26928014755249
+      },
+      {
+        "file_id": "7105-2340-0011",
+        "speaker_id": "7105",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\7105\\2340\\7105-2340-0011.flac",
+        "reference": "THE TALK FLITTED NERVOUSLY AND HURRIEDLY FROM ONE IMPERSONAL TOPIC TO ANOTHER",
+        "hypothesis": "The talk flitted nervously and hurriedly from one impersonal topic to",
+        "duration": 5.29,
+        "total_time": 20.00482726097107,
+        "first_token_latency": 1.5199980735778809,
+        "avg_processing_time": 14.71482726097107
+      },
+      {
+        "file_id": "7902-96591-0002",
+        "speaker_id": "7902",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\7902\\96591\\7902-96591-0002.flac",
+        "reference": "AND AND YOU HAVE NOT FOUND OUT ANYTHING CAME IN QUICK FRIGHTENED TONES",
+        "hypothesis": "And you have not found out anything? Came in quick frightened tones?",
+        "duration": 5.02,
+        "total_time": 20.060540676116943,
+        "first_token_latency": 0.10502886772155762,
+        "avg_processing_time": 15.040540676116944
+      },
+      {
+        "file_id": "7902-96592-0005",
+        "speaker_id": "7902",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\7902\\96592\\7902-96592-0005.flac",
+        "reference": "THE DULL SOUND OF DEPARTING STEPS AND A LOW WHISTLING SOUND COMING DOWN THROUGH THE SKYLIGHT WINDOW INTO THE CABIN WHERE ARCHY RAYSTOKE LAY WITH HIS HEAVY EYELIDS PRESSED DOWN BY SLEEP",
+        "hypothesis": "A dull sound of departing steps, and a low whistling sound coming down through the skylight window into the cabin where Archie Raystroke lay with his heavy eyelids pressed down by sleep.",
+        "duration": 8.605,
+        "total_time": 20.075311183929443,
+        "first_token_latency": 0.11999869346618652,
+        "avg_processing_time": 11.470311183929443
+      },
+      {
+        "file_id": "7902-96592-0009",
+        "speaker_id": "7902",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\7902\\96592\\7902-96592-0009.flac",
+        "reference": "THERE WAS AN INTERVAL OF THINKING OVER THIS KNOTTY QUESTION DURING WHICH THE LOW WHISTLING WENT ON",
+        "hypothesis": "There was an interval of thinking over this knotty question during which the low whistling went on.",
+        "duration": 4.91,
+        "total_time": 20.081950187683105,
+        "first_token_latency": 0.06000041961669922,
+        "avg_processing_time": 15.171950187683105
+      },
+      {
+        "file_id": "7902-96592-0028",
+        "speaker_id": "7902",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\7902\\96592\\7902-96592-0028.flac",
+        "reference": "A HAPPY INSPIRATION HAD COME AND PLACING ONE HAND UPON HIS BREAST HE THRUST IN THE OTHER GAVE A TUG AND DREW OUT HIS LITTLE CURVED DIRK GLANCED AT THE EDGE RAN TO THE WINDOW AND BEGAN TO CUT AT ONE OF THE BARS LABOUR IN VAIN",
+        "hypothesis": "Happy inspiration had come, and placing one hand upon his chest, he thrust in the other,",
+        "duration": 12.41,
+        "total_time": 20.124072313308716,
+        "first_token_latency": 0.1250002384185791,
+        "avg_processing_time": 7.714072313308716
+      },
+      {
+        "file_id": "7902-96592-0029",
+        "speaker_id": "7902",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\7902\\96592\\7902-96592-0029.flac",
+        "reference": "HE DIVIDED THE PAINT AND PRODUCED A FEW SQUEAKS AND GRATING SOUNDS AS HE REALISED THAT THE ATTEMPT WAS MADNESS",
+        "hypothesis": "He divided the paint and produced a few squeaks and grating sounds as he realized that the attempt was madness.",
+        "duration": 5.37,
+        "total_time": 20.081252336502075,
+        "first_token_latency": 0.10503196716308594,
+        "avg_processing_time": 14.711252336502074
+      },
+      {
+        "file_id": "7902-96594-0026",
+        "speaker_id": "7902",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\7902\\96594\\7902-96594-0026.flac",
+        "reference": "KEEP A SHARP LOOK OUT ON THE CLIFF TO SEE IF MISTER RAYSTOKE IS MAKING SIGNALS FOR A BOAT",
+        "hypothesis": "Keep a sharp lookout on the cliff to see if Mr. Raystroke is making signals for a boat.",
+        "duration": 3.93,
+        "total_time": 20.068169832229614,
+        "first_token_latency": 0.04400181770324707,
+        "avg_processing_time": 16.138169832229615
+      },
+      {
+        "file_id": "7902-96594-0030",
+        "speaker_id": "7902",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\7902\\96594\\7902-96594-0030.flac",
+        "reference": "NOW MISTER GURR HE SAID I'M ONLY GOING TO SAY ONE THING TO YOU IN THE WAY OF INSTRUCTIONS YES SIR",
+        "hypothesis": "\"Now, Mr. Gerr,\" he said, \"I'm only going to say one thing to you in the way of instructions.\" \"Yes, sir.\"",
+        "duration": 6.11,
+        "total_time": 20.095273733139038,
+        "first_token_latency": 0.10399818420410156,
+        "avg_processing_time": 13.985273733139039
+      },
+      {
+        "file_id": "7975-280076-0004",
+        "speaker_id": "7975",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\7975\\280076\\7975-280076-0004.flac",
+        "reference": "JUNE THIRD EIGHTEEN SEVENTY ONE OBOCOCK BROTHERS BANK AT CORYDON IOWA WAS ROBBED OF FORTY THOUSAND DOLLARS BY SEVEN MEN IN BROAD DAYLIGHT",
+        "hypothesis": "June 3,",
+        "duration": 8.31,
+        "total_time": 16.642913818359375,
+        "first_token_latency": 1.0640008449554443,
+        "avg_processing_time": 8.332913818359375
+      },
+      {
+        "file_id": "7975-280076-0028",
+        "speaker_id": "7975",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\7975\\280076\\7975-280076-0028.flac",
+        "reference": "IT WAS IMMEDIATELY FOLLOWING THE ROCK ISLAND ROBBERY AT ADAIR IOWA THAT THERE FIRST APPEARED A DELIBERATE ENLISTMENT OF SOME LOCAL PAPERS IN MISSOURI TO CONNECT US WITH THIS ROBBERY",
+        "hypothesis": "It was immediately following the Rock Island robbery at 8 Air,",
+        "duration": 9.525,
+        "total_time": 17.408164501190186,
+        "first_token_latency": 1.3659999370574951,
+        "avg_processing_time": 7.883164501190185
+      },
+      {
+        "file_id": "7975-280085-0006",
+        "speaker_id": "7975",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\7975\\280085\\7975-280085-0006.flac",
+        "reference": "THE WHISTLE ON THE OIL MILL BLEW AND WE FEARED THAT IT WAS A SIGNAL THAT HAD BEEN AGREED UPON TO ALARM THE TOWN IN CASE WE WERE OBSERVED BUT WE WERE NOT MOLESTED",
+        "hypothesis": "The whistle on the oil mill blew, and we feared that it was a signal that had been agreed upon to alarm the town in case we were observed, but we were not molested.",
+        "duration": 8.4,
+        "total_time": 20.094542503356934,
+        "first_token_latency": 0.13599872589111328,
+        "avg_processing_time": 11.694542503356933
+      },
+      {
+        "file_id": "8131-117016-0004",
+        "speaker_id": "8131",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\8131\\117016\\8131-117016-0004.flac",
+        "reference": "EVEN DERELICTS AND FAILURES HAD TO EAT THERE WERE STORES AND SHOPS THROUGHOUT THE DISTRICT WHICH EKED OUT SOME KIND OF A MARGINAL LIVING",
+        "hypothesis": "Even derelicts and failures had to eat. There were stories and shops throughout the district which eked out some kind of a marginal living.",
+        "duration": 9.45,
+        "total_time": 20.112083435058594,
+        "first_token_latency": 0.09200143814086914,
+        "avg_processing_time": 10.662083435058594
+      },
+      {
+        "file_id": "8131-117016-0034",
+        "speaker_id": "8131",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\8131\\117016\\8131-117016-0034.flac",
+        "reference": "I WANT THE NAME OF EVERY MAN IN THE GANG YOU CAN REMEMBER HE TOLD THE MAN",
+        "hypothesis": "\"I want the name of every man in the gang you can remember,\" he told the men.",
+        "duration": 4.895,
+        "total_time": 20.08030676841736,
+        "first_token_latency": 0.04999971389770508,
+        "avg_processing_time": 15.185306768417359
+      },
+      {
+        "file_id": "8131-117016-0051",
+        "speaker_id": "8131",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\8131\\117016\\8131-117016-0051.flac",
+        "reference": "NO YOU'RE A FIRSTER HE CAN'T LOSE",
+        "hypothesis": "No,",
+        "duration": 4.895,
+        "total_time": 19.998045921325684,
+        "first_token_latency": 1.2120001316070557,
+        "avg_processing_time": 15.103045921325684
+      },
+      {
+        "file_id": "8131-117016-0052",
+        "speaker_id": "8131",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\8131\\117016\\8131-117016-0052.flac",
+        "reference": "AND THEN HELL IS GOING TO POP AND THIS WHOLE PLANET MAY BE BLOWN WIDE OPEN",
+        "hypothesis": "and then hell is going to pop and this whole planet may be blown wide open.",
+        "duration": 5.995,
+        "total_time": 20.06606912612915,
+        "first_token_latency": 0.12203073501586914,
+        "avg_processing_time": 14.07106912612915
+      },
+      {
+        "file_id": "8131-117016-0059",
+        "speaker_id": "8131",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\8131\\117016\\8131-117016-0059.flac",
+        "reference": "IT WASN'T EXACTLY LEGAL BUT NOTHING WAS HERE",
+        "hypothesis": "It wasn't exactly legal,, but nothing was here.",
+        "duration": 4.005,
+        "total_time": 20.05685019493103,
+        "first_token_latency": 0.04200267791748047,
+        "avg_processing_time": 16.05185019493103
+      },
+      {
+        "file_id": "8131-117029-0010",
+        "speaker_id": "8131",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\8131\\117029\\8131-117029-0010.flac",
+        "reference": "THAT'S MARS GORDON ECHOED THE OTHER'S COMMENT WHY DON'T YOU PULL OFF THE PLANET FATS YOU COULD GO BACK TO EARTH I'D GUESS THE OTHER NODDED",
+        "hypothesis": "\"That's Mars,\" Gordon echoed the other's comments. \"Why don't you pull off the planet, Fats?",
+        "duration": 10.955,
+        "total_time": 20.132298707962036,
+        "first_token_latency": 0.04699897766113281,
+        "avg_processing_time": 9.177298707962036
+      },
+      {
+        "file_id": "8188-269288-0034",
+        "speaker_id": "8188",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\8188\\269288\\8188-269288-0034.flac",
+        "reference": "ANNIE'S EYES WERE VERY BRIGHT HER CHEEKS WERE NO LONGER PALE AND THERE WAS A BRILLIANT COLOR IN THEM",
+        "hypothesis": "Annie's eyes were very bright. Her cheeks were no longer pale,, and there was a brilliant colour in them.",
+        "duration": 6.36,
+        "total_time": 20.058268070220947,
+        "first_token_latency": 0.12199592590332031,
+        "avg_processing_time": 13.698268070220948
+      },
+      {
+        "file_id": "8188-269288-0039",
+        "speaker_id": "8188",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\8188\\269288\\8188-269288-0039.flac",
+        "reference": "I WALKED UP AND DOWN AS FAST AS EVER I COULD OUTSIDE IN ORDER TO MAKE MYSELF SLEEPY",
+        "hypothesis": "I walked up and down as fast as ever I could outside in order to make myself sleepy.",
+        "duration": 5.075,
+        "total_time": 20.052480936050415,
+        "first_token_latency": 0.052999258041381836,
+        "avg_processing_time": 14.977480936050416
+      },
+      {
+        "file_id": "8188-269290-0008",
+        "speaker_id": "8188",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\8188\\269290\\8188-269290-0008.flac",
+        "reference": "I KNOW YOU DON'T QUITE MEAN WHAT YOU SAY SAID LESLIE BUT OF COURSE IF YOU REALLY WISH ME",
+        "hypothesis": "\"I know you don't quite mean what you say,\" said Leslie, \"but of course,",
+        "duration": 6.015,
+        "total_time": 19.99254035949707,
+        "first_token_latency": 1.2690308094024658,
+        "avg_processing_time": 13.97754035949707
+      },
+      {
+        "file_id": "8188-269290-0023",
+        "speaker_id": "8188",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\8188\\269290\\8188-269290-0023.flac",
+        "reference": "IF YOU ARE IN LONDON DURING THE SUMMER YOU MUST COME AND PAY US A VISIT WILL YOU",
+        "hypothesis": "If you are in London during the summer, you must come and pay us a visit,, will you?",
+        "duration": 4.56,
+        "total_time": 20.02974772453308,
+        "first_token_latency": 0.049001216888427734,
+        "avg_processing_time": 15.469747724533082
+      },
+      {
+        "file_id": "8188-269290-0025",
+        "speaker_id": "8188",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\8188\\269290\\8188-269290-0025.flac",
+        "reference": "I BELIEVE POOR ANNIE IS DREADFULLY UNHAPPY",
+        "hypothesis": "I believe poor Annie is dreadfully unhappy.",
+        "duration": 3.36,
+        "total_time": 20.073323488235474,
+        "first_token_latency": 0.03700113296508789,
+        "avg_processing_time": 16.713323488235474
+      },
+      {
+        "file_id": "8280-266249-0017",
+        "speaker_id": "8280",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\8280\\266249\\8280-266249-0017.flac",
+        "reference": "IS IT STRANGE THEN THAT SMOKERS AND CHEWERS HAVE A THOUSAND AILMENTS",
+        "hypothesis": "Is it strange then that smokers and chewers have a thousand ail ailments?",
+        "duration": 4.31,
+        "total_time": 20.073521852493286,
+        "first_token_latency": 0.045000553131103516,
+        "avg_processing_time": 15.763521852493287
+      },
+      {
+        "file_id": "8280-266249-0038",
+        "speaker_id": "8280",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\8280\\266249\\8280-266249-0038.flac",
+        "reference": "I WONDER WHICH OF US IT IS REMARKED THE FIRST LOOKING HARD AT OUR PARTY I DON'T KNOW BUT COME ON",
+        "hypothesis": "\"I wonder which of us it is,\" remarked the First,",
+        "duration": 6.385,
+        "total_time": 20.094475269317627,
+        "first_token_latency": 0.05299830436706543,
+        "avg_processing_time": 13.709475269317627
+      },
+      {
+        "file_id": "8461-258277-0014",
+        "speaker_id": "8461",
+        "audio_path": "c:\\Users\\VRSTUDIO3\\Desktop\\STiTy-main1\\LibriSpeech\\test-other\\8461\\258277\\8461-258277-0014.flac",
+        "reference": "QUOTH AL RASHID WHOSE HEAD IS THIS",
+        "hypothesis": "Both are Rashid.. Whose head is this?",
+        "duration": 3.685,
+        "total_time": 20.051344871520996,
+        "first_token_latency": 0.07403111457824707,
+        "avg_processing_time": 16.366344871520997
+      }
+    ]
+  }
+}
