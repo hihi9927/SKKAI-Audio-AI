@@ -26,6 +26,7 @@ from datasets import load_dataset
 from peft import LoraConfig, TaskType, get_peft_model
 from qwen_asr import Qwen3ASRModel
 from transformers import (
+    EarlyStoppingCallback,
     GenerationConfig,
     Trainer,
     TrainerCallback,
@@ -358,6 +359,10 @@ def parse_args():
     p.add_argument("--save_steps", type=int, default=200)
     p.add_argument("--save_total_limit", type=int, default=3)
 
+    # EarlyStopping
+    p.add_argument("--early_stopping_patience", type=int, default=5,
+                   help="eval_loss가 개선되지 않는 횟수 (save_steps 단위). 기본값 5")
+
     # 재시작
     p.add_argument("--resume_from", type=str, default="")
     p.add_argument("--resume", type=int, default=0)
@@ -439,6 +444,9 @@ def main():
         eval_strategy="steps",
         eval_steps=args.save_steps,
         do_eval=("validation" in ds),
+        load_best_model_at_end=True,       # EarlyStopping에 필수
+        metric_for_best_model="eval_loss", # eval_loss 기준으로 best 판단
+        greater_is_better=False,           # loss는 낮을수록 좋음
         bf16=use_bf16,
         fp16=not use_bf16,
         ddp_find_unused_parameters=False,
@@ -453,7 +461,10 @@ def main():
         eval_dataset=ds.get("validation", None),
         data_collator=collator,
         tokenizer=processor.tokenizer,
-        callbacks=[MakeEveryCheckpointInferableCallback(base_model_path=args.model_path)],
+        callbacks=[
+            MakeEveryCheckpointInferableCallback(base_model_path=args.model_path),
+            EarlyStoppingCallback(early_stopping_patience=args.early_stopping_patience),
+        ],
     )
 
     # ── 학습 시작 ──
