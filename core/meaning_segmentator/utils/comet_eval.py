@@ -1,13 +1,13 @@
 """
 seg 단위 번역 vs 전체 번역 COMET 비교 스크립트
 
-- reference : text 전체를 Google Translate로 번역 (full_trans)
+- reference : --field 접두어에 맞는 full 번역 필드 (gdt_full_trans / gpt_full_trans)
 - hypothesis: --field 로 지정한 번역 필드 (기본: gdt_seg_trans)
 - COMET     : hypothesis 품질을 reference 기준으로 산출
 
 점수 필드 및 통계 키는 --field 값에서 자동 결정:
-  gdt_seg_trans → gdt_comet_score,  stats: gdt_comet_*
-  gpt_seg_trans → gpt_comet_score,  stats: gpt_comet_*
+  gdt_seg_trans → ref: gdt_full_trans, score: gdt_comet_score, stats: gdt_comet_*
+  gpt_seg_trans → ref: gpt_full_trans, score: gpt_comet_score, stats: gpt_comet_*
 """
 
 import json
@@ -33,15 +33,19 @@ def translate_seg(seg_text: str, src: str = "ko", tgt: str = "en") -> str:
     return " ".join(translated)
 
 
-def score_field_name(field: str) -> str:
-    """gdt_seg_trans → gdt_comet_score"""
-    prefix = field.split("_")[0]          # gdt / gpt / ...
-    return f"{prefix}_comet_score"
-
-
-def stat_prefix(field: str) -> str:
+def field_prefix(field: str) -> str:
     """gdt_seg_trans → gdt"""
     return field.split("_")[0]
+
+
+def score_field_name(field: str) -> str:
+    """gdt_seg_trans → gdt_comet_score"""
+    return f"{field_prefix(field)}_comet_score"
+
+
+def ref_field_name(field: str) -> str:
+    """gdt_seg_trans → gdt_full_trans"""
+    return f"{field_prefix(field)}_full_trans"
 
 
 def main():
@@ -63,8 +67,9 @@ def main():
     args = parser.parse_args()
 
     hyp_field   = args.field                  # e.g. gdt_seg_trans
+    ref_field   = ref_field_name(hyp_field)   # e.g. gdt_full_trans
     score_field = score_field_name(hyp_field) # e.g. gdt_comet_score
-    stat_pfx    = stat_prefix(hyp_field)      # e.g. gdt
+    stat_pfx    = field_prefix(hyp_field)     # e.g. gdt
 
     input_path  = Path(args.input_dir) / args.input
     output_path = input_path
@@ -74,7 +79,7 @@ def main():
     # ── 1. Google Translate 번역 (gdt 전용) ──────────────────────────────────
     if hyp_field == "gdt_seg_trans":
         for i, entry in enumerate(data):
-            has_full = bool(entry.get("full_trans"))
+            has_full = bool(entry.get("gdt_full_trans"))
             has_seg  = bool(entry.get("gdt_seg_trans"))
 
             if args.resume and has_full and has_seg:
@@ -88,8 +93,8 @@ def main():
             print(f"[{i+1}/{len(data)}] {entry['file']}")
 
             if not (args.resume and has_full):
-                entry["full_trans"] = translate(entry["text"])
-                print(f"  full      : {entry['full_trans']}")
+                entry["gdt_full_trans"] = translate(entry["text"])
+                print(f"  gdt_full  : {entry['gdt_full_trans']}")
                 if args.delay > 0:
                     time.sleep(args.delay)
 
@@ -102,7 +107,7 @@ def main():
             output_path.write_text(json.dumps(raw, ensure_ascii=False, indent=2), encoding="utf-8")
 
     # ── 2. COMET 점수 산출 ───────────────────────────────────────────────────
-    print(f"\nCOMET 모델 로드 중... (field={hyp_field}, score={score_field})")
+    print(f"\nCOMET 모델 로드 중... (hyp={hyp_field}, ref={ref_field}, score={score_field})")
     model_path = download_model(args.model)
     model = load_from_checkpoint(model_path)
 
@@ -110,7 +115,7 @@ def main():
     comet_entries = []
     skipped = 0
     for entry in data:
-        if not entry.get("full_trans") or not entry.get(hyp_field):
+        if not entry.get(ref_field) or not entry.get(hyp_field):
             continue
         if "<SEG>" not in entry.get("seg_text", ""):
             skipped += 1
@@ -118,7 +123,7 @@ def main():
         comet_data.append({
             "src": entry["text"],
             "mt":  entry[hyp_field],
-            "ref": entry["full_trans"],
+            "ref": entry[ref_field],
         })
         comet_entries.append(entry)
     print(f"  분절 없는 항목 제외: {skipped}개")

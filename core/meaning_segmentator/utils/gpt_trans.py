@@ -157,7 +157,7 @@ def main():
 
     total = len(data)
     for i, entry in enumerate(data):
-        has_full = bool(entry.get("full_trans"))
+        has_full = bool(entry.get("gpt_full_trans"))
         has_seg  = bool(entry.get("gpt_seg_trans"))
 
         if args.resume and has_full and has_seg:
@@ -171,22 +171,22 @@ def main():
         print(f"[{i+1}/{total}] {entry['file']}")
         print(f"  원문: {entry['text']}")
 
-        # ── full_trans ──────────────────────────────────────────────────────
+        # ── gpt_full_trans ──────────────────────────────────────────────────
         if not args.skip_full and not (args.resume and has_full):
-            entry["full_trans"] = translate_full(client, entry["text"], args.model)
-            print(f"  full: {entry['full_trans']}")
+            entry["gpt_full_trans"] = translate_full(client, entry["text"], args.model)
+            print(f"  gpt_full: {entry['gpt_full_trans']}")
             if args.delay > 0:
                 time.sleep(args.delay)
 
-        # ── seg_trans ───────────────────────────────────────────────────────
+        # ── gpt_seg_trans ───────────────────────────────────────────────────
         if not (args.resume and has_seg):
             seg_text = entry["seg_text"]
             segments = [s.strip() for s in seg_text.split("<SEG>") if s.strip()]
 
             if len(segments) <= 1:
-                # 분절 없으면 full_trans와 동일하게 처리
-                entry["gpt_seg_trans"] = entry.get("full_trans")
-                print(f"  seg : (분절 없음, full_trans 사용)")
+                # 분절 없으면 gpt_full_trans와 동일하게 처리
+                entry["gpt_seg_trans"] = entry.get("gpt_full_trans")
+                print(f"  seg : (분절 없음, gpt_full_trans 사용)")
             else:
                 translations = translate_segments_with_context(
                     client, segments, args.model, args.delay
