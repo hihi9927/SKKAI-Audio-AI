@@ -2,7 +2,7 @@
 seg 단위 번역 vs 전체 번역 COMET 비교 스크립트
 
 - reference : text 전체를 Google Translate로 번역
-- hypothesis: seg_text를 <seg>로 분할 → 각각 번역 → 공백 join
+- hypothesis: seg_text를 <SEG>로 분할 → 각각 번역 → 공백 join
 - COMET     : hypothesis 품질을 reference 기준으로 산출
 """
 
@@ -23,7 +23,7 @@ def translate(text: str, src: str = "ko", tgt: str = "en") -> str | None:
 
 
 def translate_seg(seg_text: str, src: str = "ko", tgt: str = "en") -> str:
-    segments = seg_text.split("<seg>")
+    segments = seg_text.split("<SEG>")
     translated = [translate(s.strip(), src, tgt) for s in segments if s.strip()]
     translated = [t for t in translated if t is not None]
     return " ".join(translated)
@@ -31,16 +31,17 @@ def translate_seg(seg_text: str, src: str = "ko", tgt: str = "en") -> str:
 
 def main():
     parser = argparse.ArgumentParser(description="seg 번역 vs 전체 번역 COMET 평가")
-    parser.add_argument("--input",  type=str, default=str(Path(__file__).resolve().parent.parent / "data" / "transcribe" / "eval_clean_exclude_short.json"))
-    parser.add_argument("--output", type=str, default=None, help="결과 JSON 저장 경로 (기본: 입력 파일 덮어쓰기)")
+    results_dir = Path("/home/ubuntu/STiTy/evaluation/KsponSpeech/results")
+    parser.add_argument("--input", type=str, required=True, help="결과 디렉토리 내 파일명 (예: eval_clean.json)")
+    parser.add_argument("--input-dir", type=str, default=str(results_dir), help="입력 파일 디렉토리")
     parser.add_argument("--model",  type=str, default="Unbabel/wmt22-comet-da", help="COMET 모델명")
     parser.add_argument("--delay",  type=float, default=0.2, help="번역 요청 간 딜레이(초)")
     parser.add_argument("--no-resume", dest="resume", action="store_false", help="이미 번역된 항목도 재처리")
     parser.set_defaults(resume=True)
     args = parser.parse_args()
 
-    input_path = Path(args.input)
-    output_path = Path(args.output or args.input)
+    input_path = Path(args.input_dir) / args.input
+    output_path = input_path
     raw = json.loads(input_path.read_text(encoding="utf-8"))
     data = raw["data"]
 
@@ -84,7 +85,7 @@ def main():
     for entry in data:
         if "full_trans" not in entry or "seg_trans" not in entry:
             continue
-        if "<seg>" not in entry.get("seg_text", ""):
+        if "<SEG>" not in entry.get("seg_text", ""):
             skipped += 1
             continue
         comet_data.append({
