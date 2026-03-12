@@ -27,6 +27,9 @@ _DUAL_NOTATION = re.compile(r'\(([^)]+)\)/\(([^)]*)\)')
 # 한국어 어절 뒤 /: 슬래시만 제거, 어절 자체는 유지  예) 그/ → 그, 어/ → 어
 _KOREAN_SLASH = re.compile(r'([가-힣]+)/')
 
+# 구두점(.,?!;:)을 제외한 나머지 특수기호 제거
+_SYMBOLS = re.compile(r'[^\uAC00-\uD7A3a-zA-Z0-9\s.,?!;:]')
+
 
 def _replace_dual(m: re.Match) -> str:
     first, second = m.group(1), m.group(2)
@@ -39,6 +42,7 @@ def normalize(text: str) -> str:
     text = _NOISE_TAG.sub('', text)                 # b/ o/ l/ n/ u/ 제거
     text = _KOREAN_SLASH.sub(r'\1', text)           # 한글어절/ → 슬래시만 제거
     text = re.sub(r'\+', '', text)                  # + (음 연장 기호) 제거
+    text = _SYMBOLS.sub('', text)                   # 구두점 외 특수기호 제거
     text = re.sub(r'\s+', ' ', text).strip()        # 공백 정리
     return text
 
@@ -76,8 +80,9 @@ def parse_trn(trn_path: Path, min_words: int, count: int) -> list[dict]:
 
 def main():
     parser = argparse.ArgumentParser(description=".trn → eval_clean.json 변환")
-    parser.add_argument("--input",     type=str,   default=str(Path(__file__).resolve().parent.parent / "data" / "transcribe" / "eval_clean.trn"),
-                        help=".trn 입력 파일 경로")
+    _trn_dir = Path(__file__).resolve().parent.parent.parent.parent / "evaluation" / "KsponSpeech" / "transcribe"
+    parser.add_argument("--input",     type=str,   required=True,
+                        help=".trn 파일명 (evaluation/KsponSpeech/transcribe/ 기준, 예: eval_clean.trn)")
     parser.add_argument("--output",    type=str,   default=None,
                         help="출력 JSON 경로 (기본: 입력 파일명.json)")
     parser.add_argument("--min-words", type=int,   default=5,
@@ -86,11 +91,15 @@ def main():
                         help="수집할 최대 문장 수 (기본: 0 = 전체)")
     args = parser.parse_args()
 
-    input_path = Path(args.input)
+    input_path = _trn_dir / args.input
     if not input_path.exists():
         raise FileNotFoundError(f"입력 파일 없음: {input_path}")
 
-    output_path = Path(args.output) if args.output else input_path.with_suffix(".json")
+    if args.output:
+        p = Path(args.output)
+        output_path = p if p.is_absolute() or len(p.parts) > 1 else _trn_dir / p
+    else:
+        output_path = input_path.with_suffix(".json")
 
     print(f"파싱 중: {input_path}")
     print(f"  최소 어절: {args.min_words}  |  최대 수집: {args.count if args.count > 0 else '전체'}")
