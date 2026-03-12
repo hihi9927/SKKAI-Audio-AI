@@ -83,7 +83,7 @@ def main():
     comet_entries = []
     skipped = 0
     for entry in data:
-        if "full_trans" not in entry or "seg_trans" not in entry:
+        if not entry.get("full_trans") or not entry.get("seg_trans"):
             continue
         if "<SEG>" not in entry.get("seg_text", ""):
             skipped += 1
