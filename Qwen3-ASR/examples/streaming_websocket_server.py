@@ -83,7 +83,7 @@ class StreamingConfig:
     host: str = "0.0.0.0"
     port: int = 8765
     no_idle_shutdown: bool = False
-    idle_shutdown_sec: int = 1000000
+    idle_shutdown_sec: int = 60
 
 
 def format_time(seconds: float) -> str:
