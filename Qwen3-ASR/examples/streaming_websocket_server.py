@@ -82,7 +82,7 @@ class StreamingConfig:
     # 서버 설정
     host: str = "0.0.0.0"
     port: int = 8765
-    no_idle_shutdown: bool = False
+    no_idle_shutdown: bool = True
     idle_shutdown_sec: int = 60
 
 
