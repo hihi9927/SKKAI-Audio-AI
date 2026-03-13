@@ -21,6 +21,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 import librosa
+import numpy as np
 import torch
 from datasets import load_dataset
 from peft import LoraConfig, TaskType, get_peft_model
@@ -210,6 +211,9 @@ def find_latest_checkpoint(output_dir: str) -> Optional[str]:
 
 
 def load_audio(path: str, sr: int = 16000):
+    if path.endswith(".pcm"):
+        raw = np.frombuffer(open(path, "rb").read(), dtype=np.int16)
+        return raw.astype(np.float32) / 32768.0
     wav, _ = librosa.load(path, sr=sr, mono=True)
     return wav
 
@@ -335,7 +339,7 @@ def parse_args():
                    help="data.json → train.jsonl 변환 후 종료")
     p.add_argument("--data_json", type=str, default="data.json")
     p.add_argument("--audio_dir", type=str, default="./audios")
-    p.add_argument("--audio_ext", type=str, default=".wav")
+    p.add_argument("--audio_ext", type=str, default=".pcm")
 
     # 모델 & 데이터
     p.add_argument("--model_path", type=str, default="Qwen/Qwen3-ASR-0.6B")
