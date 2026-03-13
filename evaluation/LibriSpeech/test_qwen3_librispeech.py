@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 SAMPLING_RATE = 16000
 DEFAULT_POLICY = 3
 SCRIPT_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = SCRIPT_DIR.parent
+PROJECT_ROOT = SCRIPT_DIR.parent.parent
 
 
 class ServerManager:
