@@ -27,6 +27,12 @@ python evaluation/smartturn/run_qwen3_streaming_server_smartturn.py \
   --host localhost --port 8765 \
   --model Qwen/Qwen3-ASR-1.7B \
   --no-idle-shutdown
+
+# Optional SmartTurn tuning (no export needed)
+#   --st-prob-mode speech|endpoint
+#   --st-threshold-on 0.55 --st-threshold-off 0.35
+#   --st-min-silence-ms 1400 --st-min-utterance-ms 2500
+#   --st-end-cooldown-ms 800 --st-ema-alpha 0.15
 ```
 
 Offline trace:
