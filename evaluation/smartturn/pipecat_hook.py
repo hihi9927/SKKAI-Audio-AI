@@ -29,6 +29,18 @@ def _get_analyzer():
     return _ANALYZER
 
 
+def reset_state(sampling_rate: Optional[int] = None) -> None:
+    """Reset rolling audio context used for endpoint scoring."""
+    global _BUFFER, _SR, _MAX_SAMPLES
+    if sampling_rate is not None:
+        _SR = int(sampling_rate)
+        context_sec = float(os.getenv("STITY_SMARTTURN_CONTEXT_SEC", "3.0"))
+        _MAX_SAMPLES = max(1, int(context_sec * _SR))
+    else:
+        _SR = None
+    _BUFFER = np.array([], dtype=np.float32)
+
+
 def score(frame: np.ndarray, sampling_rate: int = 16000) -> float:
     """
     SmartTurn score hook for STiTy detector.
@@ -47,7 +59,8 @@ def score(frame: np.ndarray, sampling_rate: int = 16000) -> float:
 
     if _SR != sampling_rate:
         _SR = sampling_rate
-        _MAX_SAMPLES = int(8 * sampling_rate)
+        context_sec = float(os.getenv("STITY_SMARTTURN_CONTEXT_SEC", "3.0"))
+        _MAX_SAMPLES = max(1, int(context_sec * sampling_rate))
         _BUFFER = np.array([], dtype=np.float32)
 
     if frame.size:

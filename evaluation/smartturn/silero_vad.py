@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import importlib
 from typing import Optional
 
 import numpy as np
@@ -116,6 +117,7 @@ class VADIterator:
         self._reset_runtime_state()
         if hasattr(self.model, "_detector"):
             self.model._detector.reset_states()
+        self._reset_hook_state()
 
     def __call__(self, x, return_seconds: bool = False):
         frame = _to_numpy(x)
@@ -155,6 +157,7 @@ class VADIterator:
                 self._silence_run_samples = 0
                 self._speech_start_sample = 0
                 self._last_end_sample = end_sample
+                self._reset_hook_state()
                 event = {"end": end_sample}
 
         self._sample_cursor += n
@@ -173,6 +176,19 @@ class VADIterator:
         self._silence_run_samples = 0
         self._last_end_sample = -10**12
         self._ema_prob: Optional[float] = None
+
+    def _reset_hook_state(self) -> None:
+        hook = os.getenv("STITY_SMARTTURN_SCORE_HOOK", "")
+        if ":" not in hook:
+            return
+        module_name, _ = hook.split(":", 1)
+        try:
+            mod = importlib.import_module(module_name)
+            reset_fn = getattr(mod, "reset_state", None)
+            if callable(reset_fn):
+                reset_fn(self.sampling_rate)
+        except Exception:
+            return
 
 
 def load_silero_vad(*_, **__):
