@@ -68,3 +68,7 @@ For server runs, the SmartTurn shim is provided by:
 
 If your SmartTurn output is endpoint probability (default), keep:
 `STITY_SMARTTURN_PROB_MODE=endpoint`
+
+Performance tuning:
+- `STITY_SMARTTURN_CONTEXT_SEC` (default: `1.0`)
+- `STITY_SMARTTURN_INFER_HOP_MS` (default: `240`)

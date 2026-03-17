@@ -9,6 +9,8 @@ _ANALYZER = None
 _SR: Optional[int] = None
 _BUFFER = np.array([], dtype=np.float32)
 _MAX_SAMPLES = 8 * 16000
+_LAST_PROB = 0.0
+_SAMPLES_SINCE_INFER = 0
 
 
 def _get_analyzer():
@@ -31,14 +33,16 @@ def _get_analyzer():
 
 def reset_state(sampling_rate: Optional[int] = None) -> None:
     """Reset rolling audio context used for endpoint scoring."""
-    global _BUFFER, _SR, _MAX_SAMPLES
+    global _BUFFER, _SR, _MAX_SAMPLES, _LAST_PROB, _SAMPLES_SINCE_INFER
     if sampling_rate is not None:
         _SR = int(sampling_rate)
-        context_sec = float(os.getenv("STITY_SMARTTURN_CONTEXT_SEC", "3.0"))
+        context_sec = float(os.getenv("STITY_SMARTTURN_CONTEXT_SEC", "1.0"))
         _MAX_SAMPLES = max(1, int(context_sec * _SR))
     else:
         _SR = None
     _BUFFER = np.array([], dtype=np.float32)
+    _LAST_PROB = 0.0
+    _SAMPLES_SINCE_INFER = 0
 
 
 def score(frame: np.ndarray, sampling_rate: int = 16000) -> float:
@@ -52,21 +56,29 @@ def score(frame: np.ndarray, sampling_rate: int = 16000) -> float:
     Output:
       probability in [0, 1]
     """
-    global _BUFFER, _SR, _MAX_SAMPLES
+    global _BUFFER, _SR, _MAX_SAMPLES, _LAST_PROB, _SAMPLES_SINCE_INFER
 
     analyzer = _get_analyzer()
     frame = np.ravel(frame).astype(np.float32, copy=False)
 
     if _SR != sampling_rate:
         _SR = sampling_rate
-        context_sec = float(os.getenv("STITY_SMARTTURN_CONTEXT_SEC", "3.0"))
+        context_sec = float(os.getenv("STITY_SMARTTURN_CONTEXT_SEC", "1.0"))
         _MAX_SAMPLES = max(1, int(context_sec * sampling_rate))
         _BUFFER = np.array([], dtype=np.float32)
+        _LAST_PROB = 0.0
+        _SAMPLES_SINCE_INFER = 0
 
     if frame.size:
         _BUFFER = np.concatenate([_BUFFER, frame])
         if _BUFFER.size > _MAX_SAMPLES:
             _BUFFER = _BUFFER[-_MAX_SAMPLES:]
+        _SAMPLES_SINCE_INFER += int(frame.size)
+
+    infer_hop_ms = float(os.getenv("STITY_SMARTTURN_INFER_HOP_MS", "240"))
+    infer_hop_samples = max(1, int((infer_hop_ms / 1000.0) * sampling_rate))
+    if _SAMPLES_SINCE_INFER < infer_hop_samples:
+        return _LAST_PROB
 
     # Pipecat analyzer keeps sample rate on the instance.
     if hasattr(analyzer, "_sample_rate"):
@@ -87,4 +99,6 @@ def score(frame: np.ndarray, sampling_rate: int = 16000) -> float:
     else:
         prob = endpoint_prob
 
-    return max(0.0, min(1.0, prob))
+    _LAST_PROB = max(0.0, min(1.0, prob))
+    _SAMPLES_SINCE_INFER = 0
+    return _LAST_PROB
