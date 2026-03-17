@@ -93,7 +93,10 @@ class VADIterator:
         self.sampling_rate = sampling_rate
         self.model = model or _SmartTurnModel(sampling_rate=sampling_rate)
         self.speech_pad_ms = int(speech_pad_ms)
-        self.min_speech_duration_ms = int(min_speech_duration_ms)
+        min_speech_override = _env_int("STITY_SMARTTURN_MIN_SPEECH_MS", default=-1)
+        self.min_speech_duration_ms = (
+            min_speech_override if min_speech_override >= 0 else int(min_speech_duration_ms)
+        )
         self.threshold_on = threshold
         self.threshold_off = threshold_off
 
@@ -105,6 +108,10 @@ class VADIterator:
         )
         self.min_silence_samples = int(
             (self.min_silence_duration_ms / 1000.0) * self.sampling_rate
+        )
+        self.speech_pad_samples = int((self.speech_pad_ms / 1000.0) * self.sampling_rate)
+        self.min_speech_samples = int(
+            (self.min_speech_duration_ms / 1000.0) * self.sampling_rate
         )
         self.min_utterance_ms = _env_int("STITY_SMARTTURN_MIN_UTTERANCE_MS", default=1800)
         self.min_utterance_samples = int((self.min_utterance_ms / 1000.0) * self.sampling_rate)
@@ -150,15 +157,21 @@ class VADIterator:
             cooldown_ok = (
                 self._sample_cursor + n - self._last_end_sample >= self.end_cooldown_samples
             )
+            silence_ready = self._silence_run_samples >= (
+                self.min_silence_samples + self.speech_pad_samples
+            )
 
-            if can_end and cooldown_ok and self._silence_run_samples >= self.min_silence_samples:
+            if can_end and cooldown_ok and silence_ready:
                 end_sample = self._sample_cursor + n
+                segment_len = end_sample - self._speech_start_sample
                 self._in_speech = False
                 self._silence_run_samples = 0
                 self._speech_start_sample = 0
                 self._last_end_sample = end_sample
-                self._reset_hook_state()
-                event = {"end": end_sample}
+
+                # Match Silero behavior: skip too-short speech fragments.
+                if segment_len >= self.min_speech_samples:
+                    event = {"end": end_sample}
 
         self._sample_cursor += n
 
