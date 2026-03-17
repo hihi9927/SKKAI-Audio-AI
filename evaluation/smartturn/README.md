@@ -59,3 +59,6 @@ whether `smartturn` or `rms_fallback` was used.
 For server runs, the SmartTurn shim is provided by:
 - `evaluation/smartturn/silero_vad.py`
 - `evaluation/smartturn/run_qwen3_streaming_server_smartturn.py`
+
+If your SmartTurn output is endpoint probability (default), keep:
+`STITY_SMARTTURN_PROB_MODE=endpoint`

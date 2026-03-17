@@ -61,9 +61,17 @@ def score(frame: np.ndarray, sampling_rate: int = 16000) -> float:
 
     if hasattr(analyzer, "_predict_endpoint"):
         out = analyzer._predict_endpoint(_BUFFER)
-        prob = float(out.get("probability", 0.0))
+        endpoint_prob = float(out.get("probability", 0.0))
     else:  # pragma: no cover - future API variants
-        prob = float(analyzer(_BUFFER))
+        endpoint_prob = float(analyzer(_BUFFER))
+
+    # SmartTurn endpoint probability -> speech probability for Silero-compatible
+    # VADIterator semantics used by the existing server.
+    # Default mode assumes endpoint probability output.
+    mode = os.getenv("STITY_SMARTTURN_PROB_MODE", "endpoint").strip().lower()
+    if mode in ("endpoint", "eou", "turn_end"):
+        prob = 1.0 - endpoint_prob
+    else:
+        prob = endpoint_prob
 
     return max(0.0, min(1.0, prob))
-
