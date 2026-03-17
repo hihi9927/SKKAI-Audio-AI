@@ -6,6 +6,7 @@ eval_clean_100.json의 각 텍스트에 <SEG> 태그로 분절 지점을 표시�
 
 import json
 import os
+import re
 import time
 import argparse
 from pathlib import Path
@@ -38,6 +39,20 @@ SYSTEM_PROMPT = (
 - 연결어미(~고, ~서, ~면, ~는데 등) 뒤 절이 단독으로 의미를 전달하지 못하는 경우
 - 분절 후 어느 한 조각이 번역 문맥 없이는 의미를 알 수 없는 파편이 되는 경우
 - 미완성 발화(문장이 끝나지 않고 잘린 경우)는 내부 분절 금지
+
+[판단 절차 — 분절 후보가 생겼을 때 반드시 이 순서를 따를 것]
+분절 후보를 확정하기 전에 아래 단계를 내부적으로 수행해. 출력에는 포함하지 마.
+
+1. 분절 후보를 만든다 (예: "A <SEG> B")
+2. 각 조각(A, B)을 앞뒤 문맥 없이 독립적으로 영어로 번역해본다
+3. 원문 전체(A B)를 하나의 문장으로 영어로 번역해본다
+4. 2번 결과를 합친 것과 3번 결과를 비교한다
+   - 의미가 실질적으로 같으면 → 분절 확정
+   - 아래 중 하나라도 해당하면 → 분절 취소, 원문 그대로 출력
+     · 대명사(걔, 거기, 그거 등)의 지시 대상이 한쪽 조각에서 불분명해짐
+     · 수식어의 적용 범위가 달라짐
+     · 문맥 의존 표현(그때, 그런데, 그렇게 등)의 의미가 왜곡됨
+     · 두 조각의 번역을 합쳐도 원문 전체 번역의 뉘앙스나 논리 구조가 재현되지 않음
 
 [출력 규칙]
 - 원문에 <SEG> 태그만 삽입, 원문 텍스트는 절대 수정하지 마
@@ -116,20 +131,42 @@ SYSTEM_PROMPT = (
 입력: 어제 늦게 자서 오늘 진짜 피곤해
 출력: 어제 늦게 자서 오늘 진짜 피곤해
 
+# 분절 시 대명사 지시 대상이 불분명해져 번역 의미 왜곡 → 분절 X
+# ("걔가 뭐라 했는데" 따로 번역하면 '걔'가 누구인지 알 수 없음)
+입력: 어제 친구한테 전화가 왔는데 걔가 뭐라 했는데 좀 상처받았어
+출력: 어제 친구한테 전화가 왔는데 걔가 뭐라 했는데 좀 상처받았어
+
 """
 )
 
 
-def mark_segmentation(client: OpenAI, text: str, model: str) -> str:
-    response = client.chat.completions.create(
-        model=model,
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user",   "content": text},
-        ],
-        temperature=0,
-    )
-    return response.choices[0].message.content.strip()
+def mark_segmentation(client: OpenAI, text: str, model: str, max_retries: int = 5) -> str:
+    for attempt in range(max_retries):
+        try:
+            response = client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user",   "content": text},
+                ],
+                temperature=0,
+            )
+            return response.choices[0].message.content.strip()
+        except Exception as e:
+            msg = str(e)
+            if "429" in msg or "rate_limit" in msg.lower():
+                # 오류 메시지에서 대기 시간(ms) 파싱, 없으면 지수 백오프
+                m = re.search(r"try again in (\d+(?:\.\d+)?)(m?s)", msg)
+                if m:
+                    wait = float(m.group(1)) / 1000 if m.group(2) == "ms" else float(m.group(1))
+                    wait = max(wait + 0.2, 1.0)
+                else:
+                    wait = 2 ** attempt
+                print(f"  Rate limit — {wait:.1f}초 대기 후 재시도 ({attempt+1}/{max_retries})")
+                time.sleep(wait)
+            else:
+                raise
+    raise RuntimeError(f"최대 재시도({max_retries}회) 초과: {text[:30]}")
 
 
 def main():
@@ -183,7 +220,7 @@ def main():
     data = raw["data"]
 
     for i, entry in enumerate(data):
-        if args.resume and "seg_text" in entry:
+        if args.resume and entry.get("seg_text") is not None:
             print(f"[{i+1}/{len(data)}] 건너뜀 (이미 처리됨): {entry['file']}")
             continue
 
