@@ -21,6 +21,18 @@ def _env_float(*keys: str, default: float) -> float:
     return default
 
 
+def _env_int(*keys: str, default: int) -> int:
+    for key in keys:
+        value = os.getenv(key)
+        if value is None:
+            continue
+        try:
+            return int(value)
+        except ValueError:
+            continue
+    return default
+
+
 class _SmartTurnModel:
     """
     Silero-like model shim.
@@ -77,30 +89,90 @@ class VADIterator:
             "STITy_SMARTTURN_THRESHOLD_OFF",
             default=max(0.0, threshold - 0.1),
         )
-        self.detector = SmartTurnV3Detector(
-            sampling_rate=sampling_rate,
-            threshold_on=threshold,
-            threshold_off=threshold_off,
-            min_silence_duration_ms=min_silence_duration_ms,
-        )
         self.sampling_rate = sampling_rate
         self.model = model or _SmartTurnModel(sampling_rate=sampling_rate)
         self.speech_pad_ms = int(speech_pad_ms)
         self.min_speech_duration_ms = int(min_speech_duration_ms)
+        self.threshold_on = threshold
+        self.threshold_off = threshold_off
+
+        # Stabilization knobs for SmartTurn->Silero compatibility.
+        self.ema_alpha = _env_float("STITY_SMARTTURN_EMA_ALPHA", default=0.2)
+        min_silence_override = _env_int("STITY_SMARTTURN_MIN_SILENCE_MS", default=-1)
+        self.min_silence_duration_ms = (
+            min_silence_override if min_silence_override > 0 else int(min_silence_duration_ms)
+        )
+        self.min_silence_samples = int(
+            (self.min_silence_duration_ms / 1000.0) * self.sampling_rate
+        )
+        self.min_utterance_ms = _env_int("STITY_SMARTTURN_MIN_UTTERANCE_MS", default=1800)
+        self.min_utterance_samples = int((self.min_utterance_ms / 1000.0) * self.sampling_rate)
+        self.end_cooldown_ms = _env_int("STITY_SMARTTURN_END_COOLDOWN_MS", default=400)
+        self.end_cooldown_samples = int((self.end_cooldown_ms / 1000.0) * self.sampling_rate)
+
+        self._reset_runtime_state()
 
     def reset_states(self) -> None:
-        self.detector.reset_states()
+        self._reset_runtime_state()
+        if hasattr(self.model, "_detector"):
+            self.model._detector.reset_states()
 
     def __call__(self, x, return_seconds: bool = False):
         frame = _to_numpy(x)
-        event = self.detector.process(frame)
-        if event.start is not None:
-            value = event.start / self.sampling_rate if return_seconds else int(event.start)
-            return {"start": value}
-        if event.end is not None:
-            value = event.end / self.sampling_rate if return_seconds else int(event.end)
-            return {"end": value}
+        n = int(frame.size)
+        if n <= 0:
+            return None
+
+        raw_prob = float(self.model(frame, self.sampling_rate).item())
+        if self._ema_prob is None:
+            self._ema_prob = raw_prob
+        else:
+            a = min(1.0, max(0.0, self.ema_alpha))
+            self._ema_prob = a * raw_prob + (1.0 - a) * self._ema_prob
+        prob = self._ema_prob
+
+        event = None
+        if not self._in_speech and prob >= self.threshold_on:
+            self._in_speech = True
+            self._speech_start_sample = self._sample_cursor
+            self._silence_run_samples = 0
+            event = {"start": self._speech_start_sample}
+        elif self._in_speech:
+            if prob < self.threshold_off:
+                self._silence_run_samples += n
+            else:
+                self._silence_run_samples = 0
+
+            utterance_samples = self._sample_cursor + n - self._speech_start_sample
+            can_end = utterance_samples >= self.min_utterance_samples
+            cooldown_ok = (
+                self._sample_cursor + n - self._last_end_sample >= self.end_cooldown_samples
+            )
+
+            if can_end and cooldown_ok and self._silence_run_samples >= self.min_silence_samples:
+                end_sample = self._sample_cursor + n
+                self._in_speech = False
+                self._silence_run_samples = 0
+                self._speech_start_sample = 0
+                self._last_end_sample = end_sample
+                event = {"end": end_sample}
+
+        self._sample_cursor += n
+
+        if event is not None and return_seconds:
+            key = "start" if "start" in event else "end"
+            return {key: event[key] / self.sampling_rate}
+        if event is not None:
+            return event
         return None
+
+    def _reset_runtime_state(self) -> None:
+        self._sample_cursor = 0
+        self._in_speech = False
+        self._speech_start_sample = 0
+        self._silence_run_samples = 0
+        self._last_end_sample = -10**12
+        self._ema_prob: Optional[float] = None
 
 
 def load_silero_vad(*_, **__):
@@ -118,4 +190,3 @@ def _to_numpy(x) -> np.ndarray:
     else:
         arr = np.asarray(x)
     return np.ravel(arr).astype(np.float32, copy=False)
-
