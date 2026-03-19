@@ -7,6 +7,7 @@ eval_clean_100.json의 각 텍스트에 <SEG> 태그로 분절 지점을 표시�
 import json
 import os
 import re
+import sys
 import time
 import argparse
 from pathlib import Path
@@ -141,6 +142,44 @@ SYSTEM_PROMPT = (
 )
 
 
+def run_gdt(data: list, raw: dict, output_path: Path, delay: float = 0.2, resume: bool = True) -> None:
+    """comet_eval.py에서 translate/translate_seg를 import해 GDT 번역을 실행."""
+    _utils_dir = str(Path(__file__).resolve().parent)
+    if _utils_dir not in sys.path:
+        sys.path.insert(0, _utils_dir)
+    from comet_eval import translate, translate_seg
+
+    for i, entry in enumerate(data):
+        has_full = bool(entry.get("gdt_full_trans"))
+        has_seg  = bool(entry.get("gdt_seg_trans"))
+
+        if resume and has_full and has_seg:
+            print(f"[GDT {i+1}/{len(data)}] 건너뜀: {entry['file']}")
+            continue
+
+        if "seg_text" not in entry:
+            print(f"[GDT {i+1}/{len(data)}] seg_text 없음, 스킵: {entry['file']}")
+            continue
+
+        print(f"[GDT {i+1}/{len(data)}] {entry['file']}")
+
+        if not (resume and has_full):
+            entry["gdt_full_trans"] = translate(entry["text"])
+            print(f"  gdt_full  : {entry['gdt_full_trans']}")
+            if delay > 0:
+                time.sleep(delay)
+
+        if not (resume and has_seg):
+            entry["gdt_seg_trans"] = translate_seg(entry["seg_text"])
+            print(f"  gdt_seg   : {entry['gdt_seg_trans']}")
+            if delay > 0:
+                time.sleep(delay)
+
+        output_path.write_text(json.dumps(raw, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    print(f"\nGDT 번역 완료. 저장: {output_path}")
+
+
 def mark_segmentation(client, text: str, model: str, provider: str = "openai", max_retries: int = 5) -> str:
     for attempt in range(max_retries):
         try:
@@ -148,7 +187,13 @@ def mark_segmentation(client, text: str, model: str, provider: str = "openai", m
                 response = client.messages.create(
                     model=model,
                     max_tokens=1024,
-                    system=SYSTEM_PROMPT,
+                    system=[
+                        {
+                            "type": "text",
+                            "text": SYSTEM_PROMPT,
+                            "cache_control": {"type": "ephemeral"},
+                        }
+                    ],
                     messages=[{"role": "user", "content": text}],
                 )
                 return response.content[0].text.strip()
@@ -194,8 +239,12 @@ def main():
                         help="모델명 (openai 기본값: gpt-4o-mini, claude 기본값: claude-haiku-4-5)")
     parser.add_argument("--api-key", type=str, default=None,
                         help="API 키 (미입력 시 OPENAI_API_KEY 또는 ANTHROPIC_API_KEY 환경변수 사용)")
-    parser.add_argument("--delay",   type=float, default=0.5, help="요청 간 딜레이(초)")
+    parser.add_argument("--delay",     type=float, default=0.5, help="요청 간 딜레이(초)")
     parser.add_argument("--no-resume", dest="resume", action="store_false", help="이미 seg_text가 있는 항목도 재처리")
+    parser.add_argument("--gdt",       action="store_true",
+                        help="분절 완료 후 GDT(Google 번역) + COMET 평가 자동 실행")
+    parser.add_argument("--gdt-delay", type=float, default=0.2,
+                        help="GDT 번역 요청 간 딜레이(초, 기본: 0.2)")
     parser.set_defaults(resume=True)
     args = parser.parse_args()
 
@@ -239,6 +288,7 @@ def main():
 
     data = raw["data"]
 
+    budget_exceeded = False
     for i, entry in enumerate(data):
         if args.resume and entry.get("seg_text") is not None:
             print(f"[{i+1}/{len(data)}] 건너뜀 (이미 처리됨): {entry['file']}")
@@ -253,6 +303,12 @@ def main():
             entry["seg_text"] = seg_text
             print(f"  분절: {seg_text}")
         except Exception as e:
+            msg = str(e)
+            if any(k in msg.lower() for k in ("insufficient_quota", "billing", "budget", "exceeded", "402")):
+                print(f"  예산 초과 오류 — 분절 중단, 번역으로 이동합니다.\n  ({msg})")
+                budget_exceeded = True
+                output_path.write_text(json.dumps(raw, ensure_ascii=False, indent=2), encoding="utf-8")
+                break
             print(f"  오류: {e}")
             entry["seg_text"] = None
 
@@ -262,7 +318,14 @@ def main():
         if args.delay > 0:
             time.sleep(args.delay)
 
-    print(f"\n완료. 저장: {output_path}")
+    if budget_exceeded:
+        print(f"\n분절 중단 (예산 초과). 저장: {output_path}")
+    else:
+        print(f"\n완료. 저장: {output_path}")
+
+    if args.gdt:
+        print("\nGDT 번역 시작...")
+        run_gdt(data, raw, output_path, delay=args.gdt_delay, resume=args.resume)
 
 
 if __name__ == "__main__":
