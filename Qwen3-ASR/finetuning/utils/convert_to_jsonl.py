@@ -5,7 +5,7 @@ import os
 
 TRAIN_JSON = "/home/skkai/Desktop/STiTy/evaluation/KsponSpeech/results/train_gpt.json"
 AUDIO_DIR = "/home/skkai/Desktop/STiTy/evaluation/KsponSpeech/wav_data"
-OUTPUT_JSONL = "/home/skkai/Desktop/STiTy/Qwen3-ASR/finetuning/train.jsonl"
+OUTPUT_JSONL = "/home/skkai/Desktop/STiTy/Qwen3-ASR/finetuning/data/train.jsonl"
 LANGUAGE = "Korean"
 
 with open(TRAIN_JSON, "r", encoding="utf-8") as f:

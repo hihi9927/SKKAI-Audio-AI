@@ -23,6 +23,7 @@ from typing import Any, Dict, List, Optional
 import librosa
 import torch
 from datasets import load_dataset
+from peft import LoraConfig, TaskType, get_peft_model
 from qwen_asr import Qwen3ASRModel
 from transformers import (GenerationConfig, Trainer, TrainerCallback,
                           TrainingArguments)
@@ -236,6 +237,12 @@ def parse_args():
     p.add_argument("--resume_from", type=str, default="")
     p.add_argument("--resume", type=int, default=0)
 
+    # LoRA
+    p.add_argument("--use_lora", type=int, default=1)
+    p.add_argument("--lora_r", type=int, default=16)
+    p.add_argument("--lora_alpha", type=int, default=32)
+    p.add_argument("--lora_dropout", type=float, default=0.05)
+
     return p.parse_args()
 
 
@@ -253,6 +260,17 @@ def main():
     )
     model = asr_wrapper.model
     processor = asr_wrapper.processor
+
+    if args_cli.use_lora:
+        lora_config = LoraConfig(
+            task_type=TaskType.CAUSAL_LM,
+            r=args_cli.lora_r,
+            lora_alpha=args_cli.lora_alpha,
+            lora_dropout=args_cli.lora_dropout,
+            target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
+        )
+        model = get_peft_model(model, lora_config)
+        model.print_trainable_parameters()
 
     patch_outer_forward(model)
     model.generation_config = GenerationConfig.from_model_config(model.config)

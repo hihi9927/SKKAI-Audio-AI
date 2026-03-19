@@ -4,11 +4,11 @@ import sounddevice as sd
 import sys
 from pathlib import Path
 
-PCM_DIR = Path(r"C:\Users\jduh1\Desktop\STiTy\core\meaning_segmentator\data\eval_clean")
+PCM_DIR = Path(r"/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/evaluation/KsponSpeech/data/KsponSpeech_0001")
 
 arg = sys.argv[1]
 if arg.isdigit():
-    path = PCM_DIR / f"KsponSpeech_E{int(arg):05d}.pcm"
+    path = PCM_DIR / f"KsponSpeech_{int(arg):06d}.pcm"
 else:
     path = Path(arg)
 
