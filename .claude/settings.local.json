@@ -62,7 +62,9 @@
       "Bash(git -C \"d:/STiTy-main\" log --oneline -5)",
       "Bash(git -C \"d:/STiTy-main\" status)",
       "Bash(git branch -D main temp)",
-      "Bash(git branch -m main)"
+      "Bash(git branch -m main)",
+      "Bash(curl -s https://download.pytorch.org/whl/nightly/cu128/)",
+      "Bash(conda run:*)"
     ],
     "deny": [],
     "ask": []

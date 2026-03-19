@@ -31,14 +31,18 @@ node_modules/
 STiTy-Mobile/dist/
 STiTy-Mobile/.expo/
 
+# Dataset
 evaluation/KsponSpeech/wav_data/
 evaluation/KsponSpeech/data/
 evaluation/KsponSpeech/transcribe/train.trn
 evaluation/LibriSpeech/data/
 Qwen3-ASR/finetuning/data/audio/
-Qwen3-ASR/finetuning/Qwen3-ASR-1.7B
-
-
-.env
 evaluation/LibriSpeech/test-other.tar.gz
 evaluation/LibriSpeech/test-other
+
+# Weights
+Qwen3-ASR/finetuning/Qwen3-ASR-1.7B
+Qwen3-ASR/finetuning/qwen3-asr-finetuning-out/
+
+.env
+
