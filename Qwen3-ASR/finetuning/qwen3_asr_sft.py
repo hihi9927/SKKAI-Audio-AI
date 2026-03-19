@@ -94,20 +94,41 @@ def build_prefix_messages(prompt: str, audio_array):
     ]
 
 
-def make_preprocess_fn_prefix_only(processor):
+def make_preprocess_fn_with_features(processor, sampling_rate=16000):
+    """map() 단계에서 오디오 로딩 + mel spectrogram 추출까지 완료해 캐싱."""
     def _preprocess(ex: Dict[str, Any]) -> Dict[str, Any]:
         prompt = ex.get("prompt", "")
-        dummy_audio = None
-        prefix_msgs = build_prefix_messages(prompt, dummy_audio)
+        target = ex["text"]
+        eos = processor.tokenizer.eos_token or ""
+
+        prefix_msgs = build_prefix_messages(prompt, None)
         prefix_text = processor.apply_chat_template(
             [prefix_msgs], add_generation_prompt=True, tokenize=False
         )[0]
-        return {
-            "prompt": prompt,
-            "audio": ex["audio"],
-            "target": ex["text"],
-            "prefix_text": prefix_text,
+        full_text = prefix_text + target + eos
+
+        wav = load_audio(ex["audio"], sr=sampling_rate)
+        inputs = processor(
+            text=[full_text],
+            audio=[wav],
+            return_tensors="pt",
+            padding=False,
+            truncation=False,
+        )
+
+        target_tok = processor.tokenizer(target + eos, add_special_tokens=False)
+        full_len = int(inputs["attention_mask"][0].sum().item())
+        prefix_len = full_len - len(target_tok["input_ids"])
+
+        result = {
+            "input_ids": inputs["input_ids"][0].tolist(),
+            "attention_mask": inputs["attention_mask"][0].tolist(),
+            "input_features": inputs["input_features"][0].tolist(),
+            "prefix_len": prefix_len,
         }
+        if "feature_attention_mask" in inputs:
+            result["feature_attention_mask"] = inputs["feature_attention_mask"][0].tolist()
+        return result
 
     return _preprocess
 
@@ -115,43 +136,50 @@ def make_preprocess_fn_prefix_only(processor):
 @dataclass
 class DataCollatorForQwen3ASRFinetuning:
     processor: Any
-    sampling_rate: int = 16000
 
     def __call__(self, features: List[Dict[str, Any]]) -> Dict[str, torch.Tensor]:
-        audio_paths = [f["audio"] for f in features]
-        prefix_texts = [f["prefix_text"] for f in features]
-        targets = [f["target"] for f in features]
+        pad_id = self.processor.tokenizer.pad_token_id or 0
 
-        eos = self.processor.tokenizer.eos_token or ""
-        full_texts = [pfx + tgt + eos for pfx, tgt in zip(prefix_texts, targets)]
-        audios = [load_audio(p, sr=self.sampling_rate) for p in audio_paths]
+        input_ids_list = [torch.tensor(f["input_ids"], dtype=torch.long) for f in features]
+        attn_mask_list = [torch.tensor(f["attention_mask"], dtype=torch.long) for f in features]
+        feat_list = [torch.tensor(f["input_features"]) for f in features]
+        prefix_lens = [f["prefix_len"] for f in features]
 
-        full_inputs = self.processor(
-            text=full_texts,
-            audio=audios,
-            return_tensors="pt",
-            padding=True,
-            truncation=False,
-        )
-        prefix_inputs = self.processor(
-            text=prefix_texts,
-            audio=audios,
-            return_tensors="pt",
-            padding=True,
-            truncation=False,
-        )
+        max_len = max(t.shape[0] for t in input_ids_list)
+        input_ids = torch.stack([
+            torch.nn.functional.pad(t, (0, max_len - t.shape[0]), value=pad_id)
+            for t in input_ids_list
+        ])
+        attention_mask = torch.stack([
+            torch.nn.functional.pad(t, (0, max_len - t.shape[0]), value=0)
+            for t in attn_mask_list
+        ])
+        # input_features: [mel_bins, time] - time이 오디오 길이마다 다르므로 패딩
+        max_feat_time = max(t.shape[-1] for t in feat_list)
+        input_features = torch.stack([
+            torch.nn.functional.pad(t, (0, max_feat_time - t.shape[-1]), value=0.0)
+            for t in feat_list
+        ])
 
-        prefix_lens = prefix_inputs["attention_mask"].sum(dim=1).tolist()
-        labels = full_inputs["input_ids"].clone()
+        labels = input_ids.clone()
         for i, pl in enumerate(prefix_lens):
             labels[i, :pl] = -100
+        labels[labels == pad_id] = -100
 
-        pad_id = self.processor.tokenizer.pad_token_id
-        if pad_id is not None:
-            labels[labels == pad_id] = -100
-
-        full_inputs["labels"] = labels
-        return full_inputs
+        result = {
+            "input_ids": input_ids,
+            "attention_mask": attention_mask,
+            "input_features": input_features,
+            "labels": labels,
+        }
+        if "feature_attention_mask" in features[0]:
+            fam_list = [torch.tensor(f["feature_attention_mask"], dtype=torch.long) for f in features]
+            max_fam = max(t.shape[0] for t in fam_list)
+            result["feature_attention_mask"] = torch.stack([
+                torch.nn.functional.pad(t, (0, max_fam - t.shape[0]), value=0)
+                for t in fam_list
+            ])
+        return result
 
 
 class CastFloatInputsTrainer(Trainer):
@@ -205,9 +233,9 @@ def parse_args():
     p = argparse.ArgumentParser("Qwen3-ASR Finetuning")
 
     # Paths
-    p.add_argument("--model_path", type=str, default="Qwen/Qwen3-ASR-1.7B")
-    p.add_argument("--train_file", type=str, default="train.jsonl")
-    p.add_argument("--eval_file", type=str, default="")
+    p.add_argument("--model_path", type=str, default="./Qwen3-ASR-1.7B")
+    p.add_argument("--train_file", type=str, default="./data/train_split.jsonl")
+    p.add_argument("--eval_file", type=str, default="./data/val_split.jsonl")
     p.add_argument("--output_dir", type=str, default="./qwen3-asr-finetuning-out")
 
     # Audio
@@ -282,15 +310,12 @@ def main():
             **({"validation": args_cli.eval_file} if args_cli.eval_file else {}),
         },
     )
-    ds = raw_ds.map(make_preprocess_fn_prefix_only(processor), num_proc=1)
+    ds = raw_ds.map(
+        make_preprocess_fn_with_features(processor, sampling_rate=args_cli.sr),
+        remove_columns=raw_ds["train"].column_names,
+    )
 
-    keep = {"prompt", "audio", "target", "prefix_text"}
-    for split in ds.keys():
-        drop = [c for c in ds[split].column_names if c not in keep]
-        if drop:
-            ds[split] = ds[split].remove_columns(drop)
-
-    collator = DataCollatorForQwen3ASRFinetuning(processor=processor, sampling_rate=args_cli.sr)
+    collator = DataCollatorForQwen3ASRFinetuning(processor=processor)
 
     training_args = TrainingArguments(
         output_dir=args_cli.output_dir,
@@ -309,8 +334,8 @@ def main():
         save_steps=args_cli.save_steps,
         save_total_limit=args_cli.save_total_limit,
         save_safetensors=True,
-        eval_strategy="steps",
-        eval_steps=args_cli.save_steps,
+        eval_strategy="steps" if args_cli.eval_file else "no",
+        eval_steps=args_cli.save_steps if args_cli.eval_file else None,
         do_eval=bool(args_cli.eval_file),
         bf16=use_bf16,
         fp16=not use_bf16,

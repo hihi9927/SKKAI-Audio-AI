@@ -153,3 +153,8 @@ torchrun --nproc_per_node=2 qwen3_asr_sft.py \
   --persistent_workers 1 \
   --prefetch_factor 2
 ```
+
+step 200 → 200 / 297 = epoch 0.67
+step 400 → 400 / 297 = epoch 1.35
+step 600 → 600 / 297 = epoch 2.02
+step 800 → 800 / 297 = epoch 2.69
