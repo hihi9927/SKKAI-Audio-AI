@@ -21,9 +21,11 @@ import asyncio
 import contextlib
 import json
 import logging
+import os
 import re
 import traceback
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from typing import Optional, Any
 
 import numpy as np
@@ -104,6 +106,28 @@ LANG_NAME_TO_CODE = {
 def lang_to_code(lang: str) -> str:
     """언어 이름을 코드로 변환 (Korean -> ko)"""
     return LANG_NAME_TO_CODE.get(lang, lang.lower()[:2])
+
+
+class SessionLogger:
+    """앱에서 수신한 로그를 세션별 JSON 파일로 저장"""
+
+    def __init__(self, logs_dir: str = "/tmp/asr_logs"):
+        os.makedirs(logs_dir, exist_ok=True)
+        ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        self.path = os.path.join(logs_dir, f"session_{ts}.json")
+        self._entries: list[dict] = []
+        self._lock = asyncio.Lock()
+        logger.info(f"[session-log] log file: {self.path}")
+
+    async def append(self, time: str, text: str, translation: str) -> None:
+        async with self._lock:
+            self._entries.append({
+                "time": time,
+                "text": text,
+                "translation": translation,
+            })
+            with open(self.path, "w", encoding="utf-8") as f:
+                json.dump(self._entries, f, ensure_ascii=False, indent=2)
 
 
 class PairingHub:
@@ -274,6 +298,7 @@ class Qwen3ASRStreamingHandler:
         self.flush_lock = asyncio.Lock()
         self.asr_lock = asyncio.Lock()
         self.http_session: Optional[aiohttp.ClientSession] = None
+        self.session_logger: Optional[SessionLogger] = None
 
         # VAD / stream alignment
         self.sample_cursor = 0
@@ -415,6 +440,12 @@ class Qwen3ASRStreamingHandler:
                 language=final_lang,
                 commitReason=("vad" if reason.startswith("vad") else "seg"),
             )
+            if self.session_logger:
+                await self.session_logger.append(
+                    time=datetime.now(timezone.utc).isoformat(),
+                    text=uncommitted,
+                    translation=translation,
+                )
             slot["committed_len"] = len(current_text)
             slot["committed_prefix"] = current_text
 
@@ -514,6 +545,12 @@ class Qwen3ASRStreamingHandler:
                     language=payload["language"],
                     commitReason="seg",
                 )
+                if self.session_logger:
+                    await self.session_logger.append(
+                        time=datetime.now(timezone.utc).isoformat(),
+                        text=payload["original"],
+                        translation=payload["translation"],
+                    )
                 logger.info(
                     f"[final-sentence] slot={slot_key} lang={payload['language']} "
                     f"text={payload['original']}"
@@ -610,6 +647,7 @@ class Qwen3ASRStreamingHandler:
             await self.send_message("hello", message="Qwen3-ASR Streaming Server")
             timeout = aiohttp.ClientTimeout(total=3)
             self.http_session = aiohttp.ClientSession(timeout=timeout)
+            self.session_logger = SessionLogger()
 
             async for message in self.websocket:
                 if isinstance(message, bytes):
@@ -681,6 +719,13 @@ class Qwen3ASRStreamingHandler:
                                 await self.pairing_hub.join_room(
                                     self.websocket, room_id, guest_my_lang
                                 )
+
+                        elif msg_type == "log":
+                            time = data.get("time", "")
+                            text = data.get("text", "")
+                            translation = data.get("translation", "")
+                            if self.session_logger and text:
+                                await self.session_logger.append(time, text, translation)
 
                         elif msg_type == "pair_leave":
                             await self.pairing_hub.leave(self.websocket)
