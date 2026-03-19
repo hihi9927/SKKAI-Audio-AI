@@ -7,7 +7,6 @@ eval_clean_100.json의 각 텍스트에 <SEG> 태그로 분절 지점을 표시�
 import json
 import os
 import re
-import sys
 import time
 import argparse
 from pathlib import Path
@@ -142,12 +141,26 @@ SYSTEM_PROMPT = (
 )
 
 
+def _gdt_translate(text: str, src: str = "ko", tgt: str = "en") -> str | None:
+    try:
+        from deep_translator import GoogleTranslator
+        return GoogleTranslator(source=src, target=tgt).translate(text)
+    except Exception as e:
+        print(f"  [번역 실패] '{text}' → {e}")
+        return None
+
+
+def _gdt_translate_seg(seg_text: str | None, src: str = "ko", tgt: str = "en") -> str | None:
+    if not seg_text:
+        return None
+    from deep_translator import GoogleTranslator
+    segments = seg_text.split("<SEG>")
+    translated = [_gdt_translate(s.strip(), src, tgt) for s in segments if s.strip()]
+    return " ".join(t for t in translated if t is not None)
+
+
 def run_gdt(data: list, raw: dict, output_path: Path, delay: float = 0.2, resume: bool = True) -> None:
-    """comet_eval.py에서 translate/translate_seg를 import해 GDT 번역을 실행."""
-    _utils_dir = str(Path(__file__).resolve().parent)
-    if _utils_dir not in sys.path:
-        sys.path.insert(0, _utils_dir)
-    from comet_eval import translate, translate_seg
+    """GDT(Google 번역)로 full/seg 번역을 실행."""
 
     for i, entry in enumerate(data):
         has_full = bool(entry.get("gdt_full_trans"))
@@ -164,13 +177,13 @@ def run_gdt(data: list, raw: dict, output_path: Path, delay: float = 0.2, resume
         print(f"[GDT {i+1}/{len(data)}] {entry['file']}")
 
         if not (resume and has_full):
-            entry["gdt_full_trans"] = translate(entry["text"])
+            entry["gdt_full_trans"] = _gdt_translate(entry["text"])
             print(f"  gdt_full  : {entry['gdt_full_trans']}")
             if delay > 0:
                 time.sleep(delay)
 
         if not (resume and has_seg):
-            entry["gdt_seg_trans"] = translate_seg(entry["seg_text"])
+            entry["gdt_seg_trans"] = _gdt_translate_seg(entry["seg_text"])
             print(f"  gdt_seg   : {entry['gdt_seg_trans']}")
             if delay > 0:
                 time.sleep(delay)
@@ -290,7 +303,7 @@ def main():
 
     budget_exceeded = False
     for i, entry in enumerate(data):
-        if args.resume and entry.get("seg_text") is not None:
+        if args.resume and entry.get("seg_text"):
             print(f"[{i+1}/{len(data)}] 건너뜀 (이미 처리됨): {entry['file']}")
             continue
 
