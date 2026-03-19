@@ -55,7 +55,7 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
         logging.StreamHandler(),
-        logging.FileHandler("/tmp/asr_server.log"),
+        logging.FileHandler(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../logs/asr_server.log")),
     ]
 )
 logger = logging.getLogger(__name__)
@@ -111,7 +111,7 @@ def lang_to_code(lang: str) -> str:
 class SessionLogger:
     """앱에서 수신한 로그를 세션별 JSON 파일로 저장"""
 
-    def __init__(self, logs_dir: str = "/tmp/asr_logs"):
+    def __init__(self, logs_dir: str = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../logs/asr_logs")):
         os.makedirs(logs_dir, exist_ok=True)
         ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
         self.path = os.path.join(logs_dir, f"session_{ts}.json")
