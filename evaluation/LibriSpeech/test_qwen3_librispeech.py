@@ -377,7 +377,6 @@ def summarize_segment_metrics(segment_metrics):
     summary = {
         'num_segments': len(segment_metrics),
         'avg_server_fcl_sec': mean(_vals('server_fcl_sec')) if _vals('server_fcl_sec') else None,
-        'avg_client_observed_fcl_sec': mean(_vals('client_observed_fcl_sec')) if _vals('client_observed_fcl_sec') else None,
         'avg_translation_latency_sec': mean(_vals('translation_latency_sec')) if _vals('translation_latency_sec') else None,
     }
     return summary
@@ -465,13 +464,8 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
                     'server_translate_done_elapsed_sec': data.get('translate_done_elapsed_sec'),
                     'translation_latency_sec': data.get('translation_latency_sec'),
                     'server_fcl_sec': data.get('fcl_sec'),
-                    'final_send_started_elapsed_sec': data.get('final_send_started_elapsed_sec'),
                     'final_payload_wall_utc': data.get('final_payload_wall_utc'),
                     'client_final_received_elapsed_sec': receive_elapsed_sec,
-                    'client_observed_fcl_sec': (
-                        receive_elapsed_sec - audio_end_sec
-                        if audio_end_sec is not None else None
-                    ),
                 })
                 idle_deadline = time.perf_counter() + 2
 
@@ -508,10 +502,8 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
                 'server_translate_done_elapsed_sec': None,
                 'translation_latency_sec': None,
                 'server_fcl_sec': None,
-                'final_send_started_elapsed_sec': None,
                 'final_payload_wall_utc': None,
                 'client_final_received_elapsed_sec': None,
-                'client_observed_fcl_sec': None,
             })
 
     total_time = time.perf_counter() - processing_start
@@ -609,7 +601,6 @@ async def process_batch(
             'total_time': out['total_time'],
             'first_token_latency': out['first_token_latency'],
             'model_runtime': model_runtime,
-            'avg_processing_time': model_runtime,
             'target_lang': target_lang,
             'segment_metrics': out.get('segment_metrics') or [],
             'segment_metrics_summary': out.get('segment_metrics_summary') or {},
@@ -629,9 +620,8 @@ async def process_batch(
         logger.info('  MODEL_RUNTIME(total-audio): %.3fs', model_runtime)
         segment_summary = out.get('segment_metrics_summary') or {}
         if segment_summary:
-            logger.info('  FCL(avg server/client): %s / %s',
-                        f"{segment_summary['avg_server_fcl_sec']:.3f}s" if segment_summary.get('avg_server_fcl_sec') is not None else 'N/A',
-                        f"{segment_summary['avg_client_observed_fcl_sec']:.3f}s" if segment_summary.get('avg_client_observed_fcl_sec') is not None else 'N/A')
+            logger.info('  FCL(avg server): %s',
+                        f"{segment_summary['avg_server_fcl_sec']:.3f}s" if segment_summary.get('avg_server_fcl_sec') is not None else 'N/A')
             logger.info('  TRANSLATION_LATENCY(avg): %s',
                         f"{segment_summary['avg_translation_latency_sec']:.3f}s" if segment_summary.get('avg_translation_latency_sec') is not None else 'N/A')
         if speaker_wer is not None:
@@ -663,27 +653,21 @@ def build_summary_payload(results, policy):
     folder_stats = {}
     for speaker_id, rows in sorted(by_speaker.items()):
         lat = [r['first_token_latency'] for r in rows if r['first_token_latency'] is not None]
-        proc = [r['avg_processing_time'] for r in rows]
         model_runtime = [r['model_runtime'] for r in rows if r.get('model_runtime') is not None]
         speaker_fcl = _collect_segment_metric('server_fcl_sec', rows)
-        speaker_client_fcl = _collect_segment_metric('client_observed_fcl_sec', rows)
         speaker_translation = _collect_segment_metric('translation_latency_sec', rows)
         folder_stats[speaker_id] = {
             'num_files': len(rows),
             'wer': folder_wers.get(speaker_id),
             'first_token_latency': mean(lat) if lat else None,
-            'avg_processing_time': mean(proc) if proc else None,
             'model_runtime': mean(model_runtime) if model_runtime else None,
             'avg_server_fcl_sec': mean(speaker_fcl) if speaker_fcl else None,
-            'avg_client_observed_fcl_sec': mean(speaker_client_fcl) if speaker_client_fcl else None,
             'avg_translation_latency_sec': mean(speaker_translation) if speaker_translation else None,
         }
 
     all_lat = [r['first_token_latency'] for r in results if r['first_token_latency'] is not None]
-    all_proc = [r['avg_processing_time'] for r in results]
     all_model_runtime = [r['model_runtime'] for r in results if r.get('model_runtime') is not None]
     all_server_fcl = _collect_segment_metric('server_fcl_sec', results)
-    all_client_fcl = _collect_segment_metric('client_observed_fcl_sec', results)
     all_translation = _collect_segment_metric('translation_latency_sec', results)
 
     return {
@@ -693,10 +677,8 @@ def build_summary_payload(results, policy):
             'num_files': len(results),
             'wer': wer_value,
             'first_token_latency': mean(all_lat) if all_lat else None,
-            'avg_processing_time': mean(all_proc) if all_proc else None,
             'model_runtime': mean(all_model_runtime) if all_model_runtime else None,
             'avg_server_fcl_sec': mean(all_server_fcl) if all_server_fcl else None,
-            'avg_client_observed_fcl_sec': mean(all_client_fcl) if all_client_fcl else None,
             'avg_translation_latency_sec': mean(all_translation) if all_translation else None,
         },
         'folders': folder_stats,
@@ -754,8 +736,8 @@ def calculate_wer(results, policy=None, emit_summary=True):
     if emit_summary:
         first_token_latencies = [r['first_token_latency'] for r in results if r['first_token_latency'] is not None]
         avg_first_token_latency = sum(first_token_latencies) / len(first_token_latencies) if first_token_latencies else 0.0
-        processing_times = [r['avg_processing_time'] for r in results if r.get('avg_processing_time') is not None]
-        avg_processing_time = sum(processing_times) / len(processing_times) if processing_times else 0.0
+        model_runtimes = [r['model_runtime'] for r in results if r.get('model_runtime') is not None]
+        avg_model_runtime = sum(model_runtimes) / len(model_runtimes) if model_runtimes else 0.0
 
         policy_label = f' - BACKEND POLICY {policy}' if policy is not None else ''
         logger.info('\n%s', '=' * 70)
@@ -764,7 +746,7 @@ def calculate_wer(results, policy=None, emit_summary=True):
         logger.info('Total files processed: %s', len(results))
         logger.info('Overall WER: %.2f%%', wer * 100)
         logger.info('Average First Token Latency: %.3fs', avg_first_token_latency)
-        logger.info('Average Processing Time: %.3fs', avg_processing_time)
+        logger.info('Average Model Runtime: %.3fs', avg_model_runtime)
         logger.info('Number of speakers: %s', len(by_speaker))
         logger.info('%s\n', '=' * 70)
 

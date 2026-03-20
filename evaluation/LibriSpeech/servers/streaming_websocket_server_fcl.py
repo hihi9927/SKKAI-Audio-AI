@@ -109,7 +109,6 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         self.next_segment_id += 1
 
         audio_start_sec = self.segment_audio_start_sec
-        final_send_started_elapsed_sec = self._stream_elapsed_sec()
 
         payload = {
             "type": "final",
@@ -122,7 +121,6 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
             "translation": translation,
             "language": language,
             "commitReason": reason,
-            "final_send_started_elapsed_sec": final_send_started_elapsed_sec,
             "final_payload_wall_utc": _utc_now_iso(),
             **timing,
         }
