@@ -297,6 +297,8 @@ def merge_trailing_partial(finals, segment_events, partial_last):
     if not finals:
         return [tail], [{'text': tail, 'tag': 'seg'}], True
 
+    full_final_text = ' '.join((text or '').strip() for text in finals).strip()
+    lower_full_final = full_final_text.lower()
     last_final = (finals[-1] or '').strip()
     if not last_final:
         finals[-1] = tail
@@ -308,11 +310,25 @@ def merge_trailing_partial(finals, segment_events, partial_last):
 
     lower_tail = tail.lower()
     lower_last = last_final.lower()
+    if lower_tail == lower_full_final:
+        return finals, segment_events, False
+
+    if lower_tail.startswith(lower_full_final):
+        extra_tail = tail[len(full_final_text):].strip()
+        if not extra_tail:
+            return finals, segment_events, False
+        finals.append(extra_tail)
+        segment_events.append({'text': extra_tail, 'tag': 'seg'})
+        return finals, segment_events, True
+
     if lower_tail.startswith(lower_last):
         finals[-1] = tail
         if segment_events:
             segment_events[-1]['text'] = tail
         return finals, segment_events, True
+
+    if lower_full_final.endswith(lower_tail):
+        return finals, segment_events, False
 
     if lower_last.endswith(lower_tail):
         return finals, segment_events, False
