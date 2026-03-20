@@ -19,6 +19,7 @@ import random
 import subprocess
 import sys
 import time
+from statistics import mean
 from datetime import datetime
 from pathlib import Path
 
@@ -33,6 +34,10 @@ SAMPLING_RATE = 16000
 DEFAULT_POLICY = 3
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent.parent
+DEFAULT_TEST_DIR = PROJECT_ROOT / "LibriSpeech" / "test-other"
+DEFAULT_OUTPUT = SCRIPT_DIR / "results" / "qwen3_test_other_fcl.json"
+DEFAULT_SUMMARY_OUTPUT = SCRIPT_DIR / "results" / "qwen3_test_other_fcl_summary.json"
+DEFAULT_SERVER_SCRIPT = SCRIPT_DIR / "servers" / "streaming_websocket_server_fcl.py"
 
 
 class ServerManager:
@@ -257,6 +262,22 @@ def normalize_commit_reason(raw_reason):
     return 'vad' if reason.startswith('vad') else 'seg'
 
 
+def parse_hms_timestamp(value):
+    if not value:
+        return None
+    try:
+        hours, minutes, seconds = value.split(':')
+        return (int(hours) * 3600) + (int(minutes) * 60) + float(seconds)
+    except Exception:
+        return None
+
+
+def ensure_parent_dir(path):
+    parent = os.path.dirname(path)
+    if parent:
+        os.makedirs(parent, exist_ok=True)
+
+
 def format_commit_markers(segment_events):
     parts = []
     for event in segment_events:
@@ -297,11 +318,27 @@ def compute_wer_for_rows(rows):
     return jiwer.wer(list(refs2), list(hyps2))
 
 
-async def process_single_file(ws, audio_data, chunk_size_ms=100, send_interval_ms=10):
-    processing_start = time.time()
+def summarize_segment_metrics(segment_metrics):
+    if not segment_metrics:
+        return {}
+
+    def _vals(key):
+        return [segment[key] for segment in segment_metrics if segment.get(key) is not None]
+
+    summary = {
+        'num_segments': len(segment_metrics),
+        'avg_server_fcl_sec': mean(_vals('server_fcl_sec')) if _vals('server_fcl_sec') else None,
+        'avg_client_observed_fcl_sec': mean(_vals('client_observed_fcl_sec')) if _vals('client_observed_fcl_sec') else None,
+        'avg_translation_latency_sec': mean(_vals('translation_latency_sec')) if _vals('translation_latency_sec') else None,
+    }
+    return summary
+
+
+async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_ms=200, target_lang='ko'):
+    processing_start = time.perf_counter()
     first_result_time = None
 
-    await ws.send(json.dumps({'type': 'start', 'lang': 'auto', 'targetLang': ''}))
+    await ws.send(json.dumps({'type': 'start', 'lang': 'auto', 'targetLang': target_lang}))
     await recv_type(ws, 'ready', timeout=25, ignore_types={'partial', 'final'})
 
     audio_int16 = (np.clip(audio_data, -1.0, 1.0) * 32767.0).astype(np.int16)
@@ -317,11 +354,12 @@ async def process_single_file(ws, audio_data, chunk_size_ms=100, send_interval_m
 
     finals = []
     segment_events = []
+    segment_metrics = []
     partial_last = ''
-    absolute_deadline = time.time() + 60
-    idle_deadline = time.time() + 5
+    absolute_deadline = time.perf_counter() + 60
+    idle_deadline = time.perf_counter() + 5
 
-    while time.time() < absolute_deadline and time.time() < idle_deadline:
+    while time.perf_counter() < absolute_deadline and time.perf_counter() < idle_deadline:
         try:
             msg = await asyncio.wait_for(ws.recv(), timeout=1.0)
         except asyncio.TimeoutError:
@@ -335,9 +373,17 @@ async def process_single_file(ws, audio_data, chunk_size_ms=100, send_interval_m
 
         if msg_type == 'final':
             if first_result_time is None:
-                first_result_time = time.time()
+                first_result_time = time.perf_counter()
             text = (data.get('original') or '').strip()
             if text:
+                receive_elapsed_sec = time.perf_counter() - processing_start
+                audio_start_sec = data.get('audioStartSec')
+                audio_end_sec = data.get('audioEndSec')
+                if audio_start_sec is None:
+                    audio_start_sec = parse_hms_timestamp(data.get('start'))
+                if audio_end_sec is None:
+                    audio_end_sec = parse_hms_timestamp(data.get('end'))
+
                 finals.append(text)
                 segment_events.append({
                     'text': text,
@@ -345,31 +391,54 @@ async def process_single_file(ws, audio_data, chunk_size_ms=100, send_interval_m
                         data.get('commitReason') or data.get('commit_reason') or data.get('reason')
                     ),
                 })
-                idle_deadline = time.time() + 2
+                segment_metrics.append({
+                    'segment_id': data.get('segmentId'),
+                    'text': text,
+                    'translation': (data.get('translation') or '').strip(),
+                    'commit_reason': normalize_commit_reason(
+                        data.get('commitReason') or data.get('commit_reason') or data.get('reason')
+                    ),
+                    'audio_start_sec': audio_start_sec,
+                    'audio_end_sec': audio_end_sec,
+                    'server_translate_started_elapsed_sec': data.get('translate_started_elapsed_sec'),
+                    'server_translate_done_elapsed_sec': data.get('translate_done_elapsed_sec'),
+                    'translation_latency_sec': data.get('translation_latency_sec'),
+                    'server_fcl_sec': data.get('fcl_sec'),
+                    'final_send_started_elapsed_sec': data.get('final_send_started_elapsed_sec'),
+                    'final_payload_wall_utc': data.get('final_payload_wall_utc'),
+                    'client_final_received_elapsed_sec': receive_elapsed_sec,
+                    'client_observed_fcl_sec': (
+                        receive_elapsed_sec - audio_end_sec
+                        if audio_end_sec is not None else None
+                    ),
+                })
+                idle_deadline = time.perf_counter() + 2
 
         elif msg_type == 'partial':
             text = (data.get('original') or '').strip()
             if text:
                 partial_last = text
                 if first_result_time is None:
-                    first_result_time = time.time()
-                idle_deadline = time.time() + 1
+                    first_result_time = time.perf_counter()
+                idle_deadline = time.perf_counter() + 1
 
         elif msg_type == 'ready':
             # Some servers may emit ready after internal reset.
-            idle_deadline = min(idle_deadline, time.time() + 0.5)
+            idle_deadline = min(idle_deadline, time.perf_counter() + 0.5)
 
     if not finals and partial_last:
         finals = [partial_last]
         segment_events = [{'text': partial_last, 'tag': 'seg'}]
 
-    total_time = time.time() - processing_start
+    total_time = time.perf_counter() - processing_start
     first_token_latency = (first_result_time - processing_start) if first_result_time else None
 
     return {
         'transcript': ' '.join(finals).strip(),
         'segments': finals,
         'segment_events': segment_events,
+        'segment_metrics': segment_metrics,
+        'segment_metrics_summary': summarize_segment_metrics(segment_metrics),
         'total_time': total_time,
         'first_token_latency': first_token_latency,
     }
@@ -381,10 +450,12 @@ async def process_batch(
     output_file,
     policy,
     limit=None,
-    chunk_size_ms=100,
-    send_interval_ms=10,
+    chunk_size_ms=200,
+    send_interval_ms=200,
     show_commit_slash=True,
     resume=True,
+    target_lang='ko',
+    summary_output_file=None,
 ):
     if resume:
         processed_ids = load_processed_files(output_file, policy)
@@ -431,6 +502,7 @@ async def process_batch(
                     audio,
                     chunk_size_ms=chunk_size_ms,
                     send_interval_ms=send_interval_ms,
+                    target_lang=target_lang,
                 )
         except Exception as e:
             logger.error('WebSocket processing failed for %s: %s', file_id, e)
@@ -454,9 +526,14 @@ async def process_batch(
             'first_token_latency': out['first_token_latency'],
             'model_runtime': model_runtime,
             'avg_processing_time': model_runtime,
+            'target_lang': target_lang,
+            'segment_metrics': out.get('segment_metrics') or [],
+            'segment_metrics_summary': out.get('segment_metrics_summary') or {},
         })
 
         save_results_structured(all_results + results, output_file, policy)
+        if summary_output_file:
+            save_summary_file(all_results + results, summary_output_file, policy)
 
         speaker_rows = [r for r in results if r['speaker_id'] == speaker_id]
         speaker_wer = compute_wer_for_rows(speaker_rows)
@@ -466,6 +543,13 @@ async def process_batch(
         logger.info('  FIRST_TOKEN_LATENCY: %s',
                     f"{out['first_token_latency']:.3f}s" if out['first_token_latency'] is not None else 'N/A')
         logger.info('  MODEL_RUNTIME(total-audio): %.3fs', model_runtime)
+        segment_summary = out.get('segment_metrics_summary') or {}
+        if segment_summary:
+            logger.info('  FCL(avg server/client): %s / %s',
+                        f"{segment_summary['avg_server_fcl_sec']:.3f}s" if segment_summary.get('avg_server_fcl_sec') is not None else 'N/A',
+                        f"{segment_summary['avg_client_observed_fcl_sec']:.3f}s" if segment_summary.get('avg_client_observed_fcl_sec') is not None else 'N/A')
+            logger.info('  TRANSLATION_LATENCY(avg): %s',
+                        f"{segment_summary['avg_translation_latency_sec']:.3f}s" if segment_summary.get('avg_translation_latency_sec') is not None else 'N/A')
         if speaker_wer is not None:
             logger.info('  SPEAKER_%s_RUNNING_WER: %.2f%% (%s files)',
                         speaker_id, speaker_wer * 100, len(speaker_rows))
@@ -477,6 +561,64 @@ async def process_batch(
     return all_results + results
 
 
+def build_summary_payload(results, policy):
+    wer_value, folder_wers = calculate_wer(results, policy=policy, emit_summary=False)
+    by_speaker = {}
+    for row in results:
+        by_speaker.setdefault(row['speaker_id'], []).append(row)
+
+    def _collect_segment_metric(metric_name, rows):
+        values = []
+        for row in rows:
+            for segment in row.get('segment_metrics') or []:
+                value = segment.get(metric_name)
+                if value is not None:
+                    values.append(value)
+        return values
+
+    folder_stats = {}
+    for speaker_id, rows in sorted(by_speaker.items()):
+        lat = [r['first_token_latency'] for r in rows if r['first_token_latency'] is not None]
+        proc = [r['avg_processing_time'] for r in rows]
+        model_runtime = [r['model_runtime'] for r in rows if r.get('model_runtime') is not None]
+        speaker_fcl = _collect_segment_metric('server_fcl_sec', rows)
+        speaker_client_fcl = _collect_segment_metric('client_observed_fcl_sec', rows)
+        speaker_translation = _collect_segment_metric('translation_latency_sec', rows)
+        folder_stats[speaker_id] = {
+            'num_files': len(rows),
+            'wer': folder_wers.get(speaker_id),
+            'first_token_latency': mean(lat) if lat else None,
+            'avg_processing_time': mean(proc) if proc else None,
+            'model_runtime': mean(model_runtime) if model_runtime else None,
+            'avg_server_fcl_sec': mean(speaker_fcl) if speaker_fcl else None,
+            'avg_client_observed_fcl_sec': mean(speaker_client_fcl) if speaker_client_fcl else None,
+            'avg_translation_latency_sec': mean(speaker_translation) if speaker_translation else None,
+        }
+
+    all_lat = [r['first_token_latency'] for r in results if r['first_token_latency'] is not None]
+    all_proc = [r['avg_processing_time'] for r in results]
+    all_model_runtime = [r['model_runtime'] for r in results if r.get('model_runtime') is not None]
+    all_server_fcl = _collect_segment_metric('server_fcl_sec', results)
+    all_client_fcl = _collect_segment_metric('client_observed_fcl_sec', results)
+    all_translation = _collect_segment_metric('translation_latency_sec', results)
+
+    return {
+        'timestamp': datetime.now().isoformat(),
+        'policy': policy,
+        'overall': {
+            'num_files': len(results),
+            'wer': wer_value,
+            'first_token_latency': mean(all_lat) if all_lat else None,
+            'avg_processing_time': mean(all_proc) if all_proc else None,
+            'model_runtime': mean(all_model_runtime) if all_model_runtime else None,
+            'avg_server_fcl_sec': mean(all_server_fcl) if all_server_fcl else None,
+            'avg_client_observed_fcl_sec': mean(all_client_fcl) if all_client_fcl else None,
+            'avg_translation_latency_sec': mean(all_translation) if all_translation else None,
+        },
+        'folders': folder_stats,
+    }
+
+
 def save_results_structured(results, output_file, policy):
     existing = {}
     if os.path.exists(output_file):
@@ -486,44 +628,24 @@ def save_results_structured(results, output_file, policy):
         except Exception:
             existing = {}
 
-    wer_value, folder_wers = calculate_wer(results, policy=policy, emit_summary=False)
-
-    by_speaker = {}
-    for row in results:
-        by_speaker.setdefault(row['speaker_id'], []).append(row)
-
-    folder_stats = {}
-    for speaker_id, rows in sorted(by_speaker.items()):
-        lat = [r['first_token_latency'] for r in rows if r['first_token_latency'] is not None]
-        proc = [r['avg_processing_time'] for r in rows]
-        model_runtime = [r['model_runtime'] for r in rows if r.get('model_runtime') is not None]
-        folder_stats[speaker_id] = {
-            'num_files': len(rows),
-            'wer': folder_wers.get(speaker_id),
-            'first_token_latency': (sum(lat) / len(lat)) if lat else None,
-            'avg_processing_time': (sum(proc) / len(proc)) if proc else None,
-            'model_runtime': (sum(model_runtime) / len(model_runtime)) if model_runtime else None,
-        }
-
-    all_lat = [r['first_token_latency'] for r in results if r['first_token_latency'] is not None]
-    all_proc = [r['avg_processing_time'] for r in results]
-    all_model_runtime = [r['model_runtime'] for r in results if r.get('model_runtime') is not None]
+    summary = build_summary_payload(results, policy)
 
     existing[f'policy_{policy}'] = {
-        'timestamp': datetime.now().isoformat(),
-        'overall': {
-            'num_files': len(results),
-            'wer': wer_value,
-            'first_token_latency': (sum(all_lat) / len(all_lat)) if all_lat else None,
-            'avg_processing_time': (sum(all_proc) / len(all_proc)) if all_proc else None,
-            'model_runtime': (sum(all_model_runtime) / len(all_model_runtime)) if all_model_runtime else None,
-        },
-        'folders': folder_stats,
+        'timestamp': summary['timestamp'],
+        'overall': summary['overall'],
+        'folders': summary['folders'],
         'raw_results': results,
     }
 
     with open(output_file, 'w', encoding='utf-8') as f:
         json.dump(existing, f, indent=2, ensure_ascii=False)
+
+
+def save_summary_file(results, summary_output_file, policy):
+    ensure_parent_dir(summary_output_file)
+    payload = build_summary_payload(results, policy)
+    with open(summary_output_file, 'w', encoding='utf-8') as f:
+        json.dump(payload, f, indent=2, ensure_ascii=False)
 
 
 def calculate_wer(results, policy=None, emit_summary=True):
@@ -566,29 +688,31 @@ def calculate_wer(results, policy=None, emit_summary=True):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Qwen3 LibriSpeech integration test')
-    parser.add_argument('--test-dir', type=str, default=str(SCRIPT_DIR / 'test-clean'))
+    parser = argparse.ArgumentParser(description='Qwen3 LibriSpeech integration test with FCL metrics')
+    parser.add_argument('--test-dir', type=str, default=str(DEFAULT_TEST_DIR))
     parser.add_argument('--policy', type=int, default=DEFAULT_POLICY, choices=[DEFAULT_POLICY],
                         help='Compatibility-only policy field. Qwen3 uses policy=3.')
     parser.add_argument('--host', type=str, default='localhost')
     parser.add_argument('--port', type=int, default=8765)
-    parser.add_argument('--output', type=str, default=str(SCRIPT_DIR / 'qwen3_librispeech_results.json'))
-    parser.add_argument('--limit', type=int, default=None)
+    parser.add_argument('--output', type=str, default=str(DEFAULT_OUTPUT))
+    parser.add_argument('--summary-output', type=str, default=str(DEFAULT_SUMMARY_OUTPUT))
+    parser.add_argument('--limit', type=int, default=10)
     parser.add_argument('--calculate-wer', action=argparse.BooleanOptionalAction, default=True,
                         help='Calculate and print WER summary (default: enabled)')
     parser.add_argument('--log-level', type=str, default='INFO', choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'])
     parser.add_argument('--auto-server', action='store_true')
-    parser.add_argument('--server-script', type=str, default=str(PROJECT_ROOT / 'Qwen3-ASR/examples/streaming_websocket_server.py'))
+    parser.add_argument('--server-script', type=str, default=str(DEFAULT_SERVER_SCRIPT))
     parser.add_argument('--server-model', type=str, default='Qwen/Qwen3-ASR-1.7B')
     parser.add_argument('--server-args', type=str, default='')
+    parser.add_argument('--target-lang', type=str, default='ko')
     parser.add_argument('--common-files', type=str, default=None)
     parser.add_argument('--random-sample', type=int, default=None)
     parser.add_argument('--random-seed', type=int, default=42)
     parser.add_argument('--skip-protocol-smoke', action='store_true')
-    parser.add_argument('--chunk-size-ms', type=int, default=100,
-                        help='Audio chunk size in ms for streaming send (default: 100)')
-    parser.add_argument('--send-interval-ms', type=int, default=10,
-                        help='Delay between chunk sends in ms (default: 10, use 100 for real-time-like pacing)')
+    parser.add_argument('--chunk-size-ms', type=int, default=200,
+                        help='Audio chunk size in ms for streaming send (default: 200)')
+    parser.add_argument('--send-interval-ms', type=int, default=200,
+                        help='Delay between chunk sends in ms (default: 200 for real-time-like pacing)')
     parser.add_argument('--show-commit-slash', action=argparse.BooleanOptionalAction, default=True,
                         help='Show commit boundaries as \"seg1 / seg2 /\" in logs')
     parser.add_argument('--fresh-start', action='store_true', default=False,
@@ -596,9 +720,12 @@ def main():
 
     args = parser.parse_args()
     logger.setLevel(args.log_level)
+    ensure_parent_dir(args.output)
+    ensure_parent_dir(args.summary_output)
 
     if not os.path.isdir(args.test_dir):
         logger.error('Test directory not found: %s', args.test_dir)
+        logger.error('Pass the real LibriSpeech test-other path with --test-dir.')
         sys.exit(1)
 
     files = find_audio_files(args.test_dir)
@@ -647,12 +774,17 @@ def main():
                 send_interval_ms=args.send_interval_ms,
                 show_commit_slash=args.show_commit_slash,
                 resume=not args.fresh_start,
+                target_lang=args.target_lang,
+                summary_output_file=args.summary_output,
             )
         )
         if args.calculate_wer and results:
             calculate_wer(results, policy=args.policy, emit_summary=True)
+        if results:
+            save_summary_file(results, args.summary_output, args.policy)
 
         logger.info('Completed. Results saved to %s', args.output)
+        logger.info('Summary saved to %s', args.summary_output)
     except KeyboardInterrupt:
         logger.info('Interrupted by user.')
     finally:
