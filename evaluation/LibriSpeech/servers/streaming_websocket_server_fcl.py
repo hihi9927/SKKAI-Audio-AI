@@ -17,7 +17,7 @@ import time
 import traceback
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import aiohttp
 import websockets
@@ -55,11 +55,15 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         super().__init__(websocket, asr_model, config, pairing_hub)
         self.stream_start_perf = time.perf_counter()
         self.next_segment_id = 1
+        self.segment_audio_start_sec = 0.0
+        self.pending_audio_end_sec: Optional[float] = None
 
     def init_streaming_state(self):
         super().init_streaming_state()
         self.stream_start_perf = time.perf_counter()
         self.next_segment_id = 1
+        self.segment_audio_start_sec = 0.0
+        self.pending_audio_end_sec = None
 
     def _stream_elapsed_sec(self) -> float:
         return time.perf_counter() - self.stream_start_perf
@@ -99,19 +103,19 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         language: str,
         reason: str,
         timing: dict[str, Any],
+        audio_end_sec: float,
     ) -> None:
         segment_id = self.next_segment_id
         self.next_segment_id += 1
 
-        audio_start_sec = _parse_hms_time(base_server.format_time(self.segment_start_time))
-        audio_end_sec = _parse_hms_time(base_server.format_time(self.current_time))
+        audio_start_sec = self.segment_audio_start_sec
         final_send_started_elapsed_sec = self._stream_elapsed_sec()
 
         payload = {
             "type": "final",
             "segmentId": segment_id,
-            "start": base_server.format_time(self.segment_start_time),
-            "end": base_server.format_time(self.current_time),
+            "start": base_server.format_time(audio_start_sec),
+            "end": base_server.format_time(audio_end_sec),
             "audioStartSec": audio_start_sec,
             "audioEndSec": audio_end_sec,
             "original": original,
@@ -123,6 +127,8 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
             **timing,
         }
         await self.send_message("final", **{k: v for k, v in payload.items() if k != "type"})
+        self.segment_audio_start_sec = audio_end_sec
+        self.pending_audio_end_sec = None
 
     async def flush_uncommitted(self, force=False, reason="flush", slot_key: Optional[str] = None):
         slot = self._slot(slot_key)
@@ -138,7 +144,7 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
                 logger.info("[timeout-skip] reason=%s too short: '%s'", reason, uncommitted)
                 return
 
-            audio_end_sec = self.current_time
+            audio_end_sec = self.pending_audio_end_sec if self.pending_audio_end_sec is not None else self.current_time
             translation, detected_lang, timing = await self._translate_with_metadata(
                 uncommitted,
                 self.client_target_lang,
@@ -174,6 +180,7 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
                 language=final_lang,
                 reason=commit_reason,
                 timing=timing,
+                audio_end_sec=audio_end_sec,
             )
             slot["committed_len"] = len(current_text)
             slot["committed_prefix"] = current_text
@@ -282,7 +289,90 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
                 language=payload["language"],
                 reason="seg",
                 timing=payload["timing"],
+                audio_end_sec=self.current_time,
             )
+
+    async def process_audio_chunk(self, audio_data: bytes):
+        if not audio_data:
+            return
+
+        chunk = base_server.np.frombuffer(audio_data, dtype=base_server.np.int16).astype(base_server.np.float32) / 32768.0
+        if chunk.size == 0:
+            return
+
+        chunk_base_sample = self.sample_cursor
+        self.sample_cursor += chunk.size
+        vad_end_local_indices: list[int] = []
+
+        if self.vad_enabled and self.vad_iterator is not None:
+            try:
+                offset = 0
+                while offset + base_server.VAD_WINDOW_SIZE_SAMPLES <= chunk.size:
+                    window = chunk[offset:offset + base_server.VAD_WINDOW_SIZE_SAMPLES]
+                    speech_dict = self.vad_iterator(
+                        base_server.torch.from_numpy(window),
+                        return_seconds=False,
+                    )
+                    if speech_dict is not None and "end" in speech_dict:
+                        end_sample = self.sample_cursor - (chunk.size - offset - base_server.VAD_WINDOW_SIZE_SAMPLES)
+                        local_idx = int(end_sample - chunk_base_sample)
+                        local_idx = max(0, min(int(chunk.size), local_idx))
+                        if not vad_end_local_indices or local_idx > vad_end_local_indices[-1]:
+                            vad_end_local_indices.append(local_idx)
+                        logger.info("[vad] speech end detected; target_samples=%s", end_sample)
+                    offset += base_server.VAD_WINDOW_SIZE_SAMPLES
+            except Exception as exc:
+                logger.warning("[vad] error, disabling for this session: %s", exc)
+                self.vad_enabled = False
+
+        self.current_time += chunk.size / base_server.SAMPLING_RATE
+        seg_start = 0
+        for local_cut in vad_end_local_indices:
+            if local_cut <= seg_start:
+                continue
+
+            pre_chunk = chunk[seg_start:local_cut]
+            if pre_chunk.size > 0:
+                await self._asr_streaming_transcribe(pre_chunk, self.active_slot)
+                await self._process_slot_updates(self.active_slot, emit_partial=True)
+
+            target_sample = chunk_base_sample + local_cut
+            target_audio_end_sec = target_sample / base_server.SAMPLING_RATE
+            self.pending_audio_end_sec = target_audio_end_sec
+            logger.info(
+                "[vad-commit] target_samples=%s target_audio_end_sec=%.3f processed=%s active=%s",
+                target_sample,
+                target_audio_end_sec,
+                self.asr_processed_cursor,
+                self.active_slot,
+            )
+
+            old_active = self.active_slot
+            self.active_slot, self.standby_slot = self.standby_slot, self.active_slot
+            self.state = self.stream_slots[self.active_slot]["state"]
+            logger.info(
+                "[slot-switch] old_active=%s new_active=%s new_standby=%s",
+                old_active,
+                self.active_slot,
+                self.standby_slot,
+            )
+
+            await self.flush_uncommitted(force=True, reason="vad", slot_key=old_active)
+            self._reset_stream_slot(self.standby_slot)
+
+            seg_start = local_cut
+
+        tail_chunk = chunk[seg_start:]
+        if tail_chunk.size > 0:
+            await self._asr_streaming_transcribe(tail_chunk, self.active_slot)
+            await self._process_slot_updates(self.active_slot, emit_partial=True)
+
+    async def finish_streaming(self):
+        if not self.stream_slots:
+            return
+        await self._asr_finish_streaming(self.active_slot)
+        self.pending_audio_end_sec = self.current_time
+        await self.flush_uncommitted(force=True, reason="finish", slot_key=self.active_slot)
 
     async def handle(self):
         try:

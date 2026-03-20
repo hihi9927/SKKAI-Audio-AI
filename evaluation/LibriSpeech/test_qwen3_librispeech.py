@@ -394,10 +394,20 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
     chunk_size = int((chunk_size_ms / 1000.0) * SAMPLING_RATE)
     send_interval_sec = max(0.0, send_interval_ms / 1000.0)
 
+    stream_origin = time.perf_counter()
     for i in range(0, len(audio_int16), chunk_size):
-        await ws.send(audio_int16[i:i + chunk_size].tobytes())
+        chunk = audio_int16[i:i + chunk_size]
+        chunk_end_sec = (i + len(chunk)) / SAMPLING_RATE
+
         if send_interval_sec > 0:
-            await asyncio.sleep(send_interval_sec)
+            target_send_at = stream_origin + chunk_end_sec
+            while True:
+                remaining = target_send_at - time.perf_counter()
+                if remaining <= 0:
+                    break
+                await asyncio.sleep(min(remaining, 0.02))
+
+        await ws.send(chunk.tobytes())
 
     await ws.send(json.dumps({'type': 'finish'}))
 
