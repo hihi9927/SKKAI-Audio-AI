@@ -1,0 +1,26 @@
+{
+  "timestamp": "2026-03-20T09:00:44.185215",
+  "policy": 3,
+  "overall": {
+    "num_files": 10,
+    "wer": 0.3050847457627119,
+    "first_token_latency": 6.7229709546999405,
+    "avg_processing_time": 2.356311761999765,
+    "model_runtime": 2.356311761999765,
+    "avg_server_fcl_sec": 0.32230653988244573,
+    "avg_client_observed_fcl_sec": 2.756092277941098,
+    "avg_translation_latency_sec": 0.1214365843529509
+  },
+  "folders": {
+    "1688": {
+      "num_files": 10,
+      "wer": 0.3050847457627119,
+      "first_token_latency": 6.7229709546999405,
+      "avg_processing_time": 2.356311761999765,
+      "model_runtime": 2.356311761999765,
+      "avg_server_fcl_sec": 0.32230653988244573,
+      "avg_client_observed_fcl_sec": 2.756092277941098,
+      "avg_translation_latency_sec": 0.1214365843529509
+    }
+  }
+}
