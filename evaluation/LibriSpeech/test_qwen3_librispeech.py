@@ -35,8 +35,9 @@ DEFAULT_POLICY = 3
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent.parent
 DEFAULT_TEST_DIR = PROJECT_ROOT / "LibriSpeech" / "test-other"
-DEFAULT_OUTPUT = SCRIPT_DIR / "results" / "qwen3_test_other_fcl.json"
-DEFAULT_SUMMARY_OUTPUT = SCRIPT_DIR / "results" / "qwen3_test_other_fcl_summary.json"
+DEFAULT_FCL_RUNS_DIR = SCRIPT_DIR / "fcl_runs"
+DEFAULT_OUTPUT = DEFAULT_FCL_RUNS_DIR / "results" / "qwen3_test_other_fcl.json"
+DEFAULT_SUMMARY_OUTPUT = DEFAULT_FCL_RUNS_DIR / "results" / "qwen3_test_other_fcl_summary.json"
 DEFAULT_SERVER_SCRIPT = SCRIPT_DIR / "servers" / "streaming_websocket_server_fcl.py"
 
 

@@ -9,17 +9,15 @@ It lives under evaluation/ so app traffic keeps using the production server.
 from __future__ import annotations
 
 import asyncio
-import contextlib
 import json
 import logging
-import os
 import re
 import sys
 import time
 import traceback
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Optional
+from typing import Optional
 
 import aiohttp
 import websockets
@@ -28,6 +26,7 @@ import websockets
 HERE = Path(__file__).resolve().parent
 PROJECT_ROOT = HERE.parent.parent.parent
 QWEN3_ROOT = PROJECT_ROOT / "Qwen3-ASR"
+LIBRISPEECH_DIR = HERE.parent
 sys.path.insert(0, str(QWEN3_ROOT))
 sys.path.insert(1, str(PROJECT_ROOT))
 
@@ -51,78 +50,11 @@ def _parse_hms_time(value: str) -> Optional[float]:
         return None
 
 
-class AsyncJsonlLogger:
-    """Small async logger so file writes stay off the critical path."""
-
-    def __init__(self, path: str, max_queue_size: int = 2048):
-        self.path = path
-        self._queue: asyncio.Queue[Optional[dict[str, Any]]] = asyncio.Queue(maxsize=max_queue_size)
-        self._worker: Optional[asyncio.Task] = None
-        self._dropped = 0
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-
-    def start(self) -> None:
-        if self._worker is None:
-            self._worker = asyncio.create_task(self._run())
-
-    async def log(self, record: dict[str, Any]) -> None:
-        if self._worker is None:
-            self.start()
-        try:
-            self._queue.put_nowait(record)
-        except asyncio.QueueFull:
-            self._dropped += 1
-            logger.warning("AsyncJsonlLogger queue full; dropping record (%s dropped)", self._dropped)
-
-    async def close(self) -> None:
-        if self._worker is None:
-            return
-        await self._queue.put(None)
-        with contextlib.suppress(asyncio.CancelledError):
-            await self._worker
-        self._worker = None
-
-    async def _run(self) -> None:
-        while True:
-            record = await self._queue.get()
-            if record is None:
-                return
-            line = json.dumps(record, ensure_ascii=False)
-            await asyncio.to_thread(self._append_line, line)
-
-    def _append_line(self, line: str) -> None:
-        with open(self.path, "a", encoding="utf-8") as handle:
-            handle.write(line + "\n")
-
-
-class AsyncSessionLogger:
-    """Compatibility shim for the original handler's session logger calls."""
-
-    def __init__(self, logs_dir: str):
-        os.makedirs(logs_dir, exist_ok=True)
-        ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-        self.path = os.path.join(logs_dir, f"session_{ts}.jsonl")
-        self._writer = AsyncJsonlLogger(self.path)
-        self._writer.start()
-        logger.info("[session-log] async log file: %s", self.path)
-
-    async def append(self, time: str, text: str, translation: str) -> None:
-        await self._writer.log({
-            "time": time,
-            "text": text,
-            "translation": translation,
-        })
-
-    async def close(self) -> None:
-        await self._writer.close()
-
-
 class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
     def __init__(self, websocket, asr_model, config, pairing_hub):
         super().__init__(websocket, asr_model, config, pairing_hub)
         self.stream_start_perf = time.perf_counter()
         self.next_segment_id = 1
-        self.fcl_logger: Optional[AsyncJsonlLogger] = None
 
     def init_streaming_state(self):
         super().init_streaming_state()
@@ -191,31 +123,6 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
             **timing,
         }
         await self.send_message("final", **{k: v for k, v in payload.items() if k != "type"})
-        final_sent_elapsed_sec = self._stream_elapsed_sec()
-
-        log_record = {
-            "event": "final_segment",
-            "segment_id": segment_id,
-            "slot_key": slot_key,
-            "commit_reason": reason,
-            "audio_start_sec": audio_start_sec,
-            "audio_end_sec": audio_end_sec,
-            "original": original,
-            "translation": translation,
-            "language": language,
-            **timing,
-            "final_send_started_elapsed_sec": final_send_started_elapsed_sec,
-            "final_sent_elapsed_sec": final_sent_elapsed_sec,
-            "logged_wall_utc": _utc_now_iso(),
-        }
-        if self.fcl_logger is not None:
-            await self.fcl_logger.log(log_record)
-        if self.session_logger:
-            await self.session_logger.append(
-                time=_utc_now_iso(),
-                text=original,
-                translation=translation,
-            )
 
     async def flush_uncommitted(self, force=False, reason="flush", slot_key: Optional[str] = None):
         slot = self._slot(slot_key)
@@ -378,22 +285,12 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
             )
 
     async def handle(self):
-        async_session_logger: Optional[AsyncSessionLogger] = None
         try:
             remote_addr = self.websocket.remote_address
             logger.info("New connection from %s", remote_addr)
             await self.send_message("hello", message="Qwen3-ASR Streaming Server (FCL)")
             timeout = aiohttp.ClientTimeout(total=3)
             self.http_session = aiohttp.ClientSession(timeout=timeout)
-
-            logs_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../logs/asr_logs")
-            async_session_logger = AsyncSessionLogger(logs_dir)
-            self.session_logger = async_session_logger
-
-            fcl_logs_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../logs/fcl_logs")
-            ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-            self.fcl_logger = AsyncJsonlLogger(os.path.join(fcl_logs_dir, f"fcl_session_{ts}.jsonl"))
-            self.fcl_logger.start()
 
             async for message in self.websocket:
                 if isinstance(message, bytes):
@@ -464,11 +361,8 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
                                 )
 
                         elif msg_type == "log":
-                            event_time = data.get("time", "")
-                            text = data.get("text", "")
-                            translation = data.get("translation", "")
-                            if self.session_logger and text:
-                                await self.session_logger.append(event_time, text, translation)
+                            # Evaluation mode does not persist separate log files.
+                            pass
 
                         elif msg_type == "pair_leave":
                             await self.pairing_hub.leave(self.websocket)
@@ -487,16 +381,11 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
             if was_running:
                 await self.finish_streaming()
             if self.http_session is not None:
-                with contextlib.suppress(Exception):
+                try:
                     await self.http_session.close()
+                except Exception:
+                    pass
                 self.http_session = None
-            if async_session_logger is not None:
-                with contextlib.suppress(Exception):
-                    await async_session_logger.close()
-            if self.fcl_logger is not None:
-                with contextlib.suppress(Exception):
-                    await self.fcl_logger.close()
-                self.fcl_logger = None
             await self.pairing_hub.leave(self.websocket)
             logger.info("Connection closed")
 
