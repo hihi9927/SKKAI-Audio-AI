@@ -435,6 +435,8 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
                 first_result_time = time.perf_counter()
             text = (data.get('original') or '').strip()
             if text:
+                # A final supersedes any previously seen partial for this segment.
+                partial_last = ''
                 receive_elapsed_sec = time.perf_counter() - processing_start
                 audio_start_sec = data.get('audioStartSec')
                 audio_end_sec = data.get('audioEndSec')
