@@ -290,6 +290,38 @@ def format_commit_markers(segment_events):
     return ' '.join(parts).strip()
 
 
+def merge_trailing_partial(finals, segment_events, partial_last):
+    tail = (partial_last or '').strip()
+    if not tail:
+        return finals, segment_events, False
+    if not finals:
+        return [tail], [{'text': tail, 'tag': 'seg'}], True
+
+    last_final = (finals[-1] or '').strip()
+    if not last_final:
+        finals[-1] = tail
+        segment_events[-1] = {'text': tail, 'tag': 'seg'}
+        return finals, segment_events, True
+
+    if tail == last_final:
+        return finals, segment_events, False
+
+    lower_tail = tail.lower()
+    lower_last = last_final.lower()
+    if lower_tail.startswith(lower_last):
+        finals[-1] = tail
+        if segment_events:
+            segment_events[-1]['text'] = tail
+        return finals, segment_events, True
+
+    if lower_last.endswith(lower_tail):
+        return finals, segment_events, False
+
+    finals.append(tail)
+    segment_events.append({'text': tail, 'tag': 'seg'})
+    return finals, segment_events, True
+
+
 def compute_wer_for_rows(rows):
     try:
         import jiwer
@@ -430,6 +462,29 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
     if not finals and partial_last:
         finals = [partial_last]
         segment_events = [{'text': partial_last, 'tag': 'seg'}]
+    else:
+        finals, segment_events, partial_used_as_tail = merge_trailing_partial(
+            finals,
+            segment_events,
+            partial_last,
+        )
+        if partial_used_as_tail:
+            segment_metrics.append({
+                'segment_id': None,
+                'text': partial_last.strip(),
+                'translation': '',
+                'commit_reason': 'partial_tail',
+                'audio_start_sec': None,
+                'audio_end_sec': None,
+                'server_translate_started_elapsed_sec': None,
+                'server_translate_done_elapsed_sec': None,
+                'translation_latency_sec': None,
+                'server_fcl_sec': None,
+                'final_send_started_elapsed_sec': None,
+                'final_payload_wall_utc': None,
+                'client_final_received_elapsed_sec': None,
+                'client_observed_fcl_sec': None,
+            })
 
     total_time = time.perf_counter() - processing_start
     first_token_latency = (first_result_time - processing_start) if first_result_time else None
