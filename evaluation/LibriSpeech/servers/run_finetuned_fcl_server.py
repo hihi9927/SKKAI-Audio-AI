@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import gc
 import subprocess
 import sys
 from pathlib import Path
@@ -71,6 +72,14 @@ def merge_lora(base_model: str, checkpoint: str, merged_dir: str) -> str:
     processor.save_pretrained(str(merged_path))
     done_flag.write_text("ok", encoding="utf-8")
 
+    del model
+    del processor
+    del asr_wrapper
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.ipc_collect()
+
     return str(merged_path)
 
 
@@ -109,7 +118,7 @@ def parse_args():
     )
     parser.add_argument("--host", type=str, default="localhost")
     parser.add_argument("--port", type=int, default=8765)
-    parser.add_argument("--gpu-memory-utilization", type=float, default=0.8)
+    parser.add_argument("--gpu-memory-utilization", type=float, default=0.65)
     parser.add_argument("--max-new-tokens", type=int, default=32)
     return parser.parse_args()
 
