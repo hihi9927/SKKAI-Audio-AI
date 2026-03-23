@@ -762,7 +762,8 @@ def main():
     parser.add_argument('--port', type=int, default=8765)
     parser.add_argument('--output', type=str, default=str(DEFAULT_OUTPUT))
     parser.add_argument('--summary-output', type=str, default=str(DEFAULT_SUMMARY_OUTPUT))
-    parser.add_argument('--limit', type=int, default=10)
+    parser.add_argument('--limit', type=int, default=None,
+                        help='Maximum number of files to process (default: all files)')
     parser.add_argument('--calculate-wer', action=argparse.BooleanOptionalAction, default=True,
                         help='Calculate and print WER summary (default: enabled)')
     parser.add_argument('--log-level', type=str, default='INFO', choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'])
