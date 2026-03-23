@@ -18,6 +18,24 @@ sys.path.insert(0, str(QWEN3_ROOT))
 from qwen_asr import Qwen3ASRModel
 
 
+def sanitize_generation_config(model) -> None:
+    gen_cfg = getattr(model, "generation_config", None)
+    if gen_cfg is None:
+        return
+
+    # Some released Qwen3-ASR configs keep sampling-only fields while
+    # do_sample=False, which blocks save_pretrained() validation.
+    if getattr(gen_cfg, "do_sample", False):
+        return
+
+    for attr in ("temperature", "top_p", "min_p", "typical_p"):
+        if hasattr(gen_cfg, attr):
+            setattr(gen_cfg, attr, None)
+
+    if hasattr(gen_cfg, "top_k"):
+        setattr(gen_cfg, "top_k", 0)
+
+
 def merge_lora(base_model: str, checkpoint: str, merged_dir: str) -> str:
     merged_path = Path(merged_dir)
     done_flag = merged_path / ".merge_complete"
@@ -46,6 +64,7 @@ def merge_lora(base_model: str, checkpoint: str, merged_dir: str) -> str:
     print("[3/4] Merging adapter into base model")
     model = model.merge_and_unload()
     model.eval()
+    sanitize_generation_config(model)
 
     print(f"[4/4] Saving merged model to: {merged_path}")
     model.save_pretrained(str(merged_path), safe_serialization=True)
