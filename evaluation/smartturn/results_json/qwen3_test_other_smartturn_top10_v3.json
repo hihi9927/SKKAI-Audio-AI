@@ -1,0 +1,114 @@
+{
+  "policy_3": {
+    "timestamp": "2026-03-17T01:31:42.950990",
+    "overall": {
+      "num_files": 7,
+      "wer": 0.6802721088435374,
+      "first_token_latency": 9.11950421333313,
+      "avg_processing_time": 2.2606515516553607,
+      "model_runtime": 2.2606515516553607
+    },
+    "folders": {
+      "1688": {
+        "num_files": 7,
+        "wer": 0.6802721088435374,
+        "first_token_latency": 9.11950421333313,
+        "avg_processing_time": 2.2606515516553607,
+        "model_runtime": 2.2606515516553607
+      }
+    },
+    "raw_results": [
+      {
+        "file_id": "1688-142285-0000",
+        "speaker_id": "1688",
+        "audio_path": "evaluation/LibriSpeech/test-other/1688/142285/1688-142285-0000.flac",
+        "reference": "THERE'S IRON THEY SAY IN ALL OUR BLOOD AND A GRAIN OR TWO PERHAPS IS GOOD BUT HIS HE MAKES ME HARSHLY FEEL HAS GOT A LITTLE TOO MUCH OF STEEL ANON",
+        "hypothesis": "There's iron, they say, in all our blood, and a grain or two, perhaps, is good.",
+        "hyp_commit": "There's iron, they say, in all our blood, and a grain or two, perhaps, is good. <seg>",
+        "duration": 15.0,
+        "total_time": 16.066583156585693,
+        "first_token_latency": 15.065412998199463,
+        "model_runtime": 1.0665831565856934,
+        "avg_processing_time": 1.0665831565856934
+      },
+      {
+        "file_id": "1688-142285-0001",
+        "speaker_id": "1688",
+        "audio_path": "evaluation/LibriSpeech/test-other/1688/142285/1688-142285-0001.flac",
+        "reference": "MARGARET SAID MISTER HALE AS HE RETURNED FROM SHOWING HIS GUEST DOWNSTAIRS I COULD NOT HELP WATCHING YOUR FACE WITH SOME ANXIETY WHEN MISTER THORNTON MADE HIS CONFESSION OF HAVING BEEN A SHOP BOY",
+        "hypothesis": "Margaret said, \"Mr.",
+        "hyp_commit": "Margaret said, \"Mr. <seg>",
+        "duration": 12.625,
+        "total_time": 14.25620436668396,
+        "first_token_latency": 13.255032062530518,
+        "model_runtime": 1.63120436668396,
+        "avg_processing_time": 1.63120436668396
+      },
+      {
+        "file_id": "1688-142285-0002",
+        "speaker_id": "1688",
+        "audio_path": "evaluation/LibriSpeech/test-other/1688/142285/1688-142285-0002.flac",
+        "reference": "YOU DON'T MEAN THAT YOU THOUGHT ME SO SILLY",
+        "hypothesis": "You don't mean that you thought me so silly.",
+        "hyp_commit": "You don't mean that you thought me so silly. <seg>",
+        "duration": 2.835,
+        "total_time": 5.837745666503906,
+        "first_token_latency": 4.836603879928589,
+        "model_runtime": 3.0027456665039063,
+        "avg_processing_time": 3.0027456665039063
+      },
+      {
+        "file_id": "1688-142285-0003",
+        "speaker_id": "1688",
+        "audio_path": "evaluation/LibriSpeech/test-other/1688/142285/1688-142285-0003.flac",
+        "reference": "I REALLY LIKED THAT ACCOUNT OF HIMSELF BETTER THAN ANYTHING ELSE HE SAID",
+        "hypothesis": "I really like that account of him.",
+        "hyp_commit": "I really like that account of him. <seg>",
+        "duration": 5.06,
+        "total_time": 6.225998640060425,
+        "first_token_latency": 5.224867820739746,
+        "model_runtime": 1.1659986400604252,
+        "avg_processing_time": 1.1659986400604252
+      },
+      {
+        "file_id": "1688-142285-0005",
+        "speaker_id": "1688",
+        "audio_path": "evaluation/LibriSpeech/test-other/1688/142285/1688-142285-0005.flac",
+        "reference": "YOU WHO WERE ALWAYS ACCUSING PEOPLE OF BEING SHOPPY AT HELSTONE",
+        "hypothesis": "You who were always accusing.",
+        "hyp_commit": "You who were always accusing. <seg>",
+        "duration": 4.3,
+        "total_time": 5.419770002365112,
+        "first_token_latency": 4.418626546859741,
+        "model_runtime": 1.1197700023651125,
+        "avg_processing_time": 1.1197700023651125
+      },
+      {
+        "file_id": "1688-142285-0006",
+        "speaker_id": "1688",
+        "audio_path": "evaluation/LibriSpeech/test-other/1688/142285/1688-142285-0006.flac",
+        "reference": "I DON'T THINK MISTER HALE YOU HAVE DONE QUITE RIGHT IN INTRODUCING SUCH A PERSON TO US WITHOUT TELLING US WHAT HE HAD BEEN",
+        "hypothesis": "I don't think, Mister Hale.",
+        "hyp_commit": "I don't think, Mister Hale. <seg>",
+        "duration": 8.14,
+        "total_time": 9.630104780197144,
+        "first_token_latency": 8.628970623016357,
+        "model_runtime": 1.490104780197143,
+        "avg_processing_time": 1.490104780197143
+      },
+      {
+        "file_id": "1688-142285-0007",
+        "speaker_id": "1688",
+        "audio_path": "evaluation/LibriSpeech/test-other/1688/142285/1688-142285-0007.flac",
+        "reference": "I REALLY WAS VERY MUCH AFRAID OF SHOWING HIM HOW MUCH SHOCKED I WAS AT SOME PARTS OF WHAT HE SAID",
+        "hypothesis": "His statement of having been a shop boy was the thing I liked best of all.",
+        "hyp_commit": "His statement of having been a shop boy was the thing I liked best of all. <seg>",
+        "duration": 7.06,
+        "total_time": 13.408154249191284,
+        "first_token_latency": 12.407015562057495,
+        "model_runtime": 6.348154249191285,
+        "avg_processing_time": 6.348154249191285
+      }
+    ]
+  }
+}

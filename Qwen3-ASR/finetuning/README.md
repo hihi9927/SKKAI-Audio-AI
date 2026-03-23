@@ -153,3 +153,14 @@ torchrun --nproc_per_node=2 qwen3_asr_sft.py \
   --persistent_workers 1 \
   --prefetch_factor 2
 ```
+
+step 200 → 200 / 297 = epoch 0.67
+{'loss': 0.2193, 'grad_norm': 0.5120252966880798, 'learning_rate': 8.179669030732861e-05, 'epoch': 0.67}
+
+step 400 → 400 / 297 = epoch 1.35
+{'loss': 0.224, 'grad_norm': 0.42741820216178894, 'learning_rate': 5.8156028368794324e-05, 'epoch': 1.35}
+
+step 600 → 600 / 297 = epoch 2.02
+{'loss': 0.1982, 'grad_norm': 0.5553427934646606, 'learning_rate': 3.451536643026005e-05, 'epoch': 2.02} 
+
+step 800 → 800 / 297 = epoch 2.69

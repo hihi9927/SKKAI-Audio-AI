@@ -1,0 +1,140 @@
+{
+  "policy_3": {
+    "timestamp": "2026-03-17T01:10:41.230391",
+    "overall": {
+      "num_files": 9,
+      "wer": 0.7455621301775148,
+      "first_token_latency": 8.516761832767063,
+      "avg_processing_time": 3.2475871107313368,
+      "model_runtime": 3.2475871107313368
+    },
+    "folders": {
+      "1688": {
+        "num_files": 9,
+        "wer": 0.7455621301775148,
+        "first_token_latency": 8.516761832767063,
+        "avg_processing_time": 3.2475871107313368,
+        "model_runtime": 3.2475871107313368
+      }
+    },
+    "raw_results": [
+      {
+        "file_id": "1688-142285-0000",
+        "speaker_id": "1688",
+        "audio_path": "evaluation/LibriSpeech/test-other/1688/142285/1688-142285-0000.flac",
+        "reference": "THERE'S IRON THEY SAY IN ALL OUR BLOOD AND A GRAIN OR TWO PERHAPS IS GOOD BUT HIS HE MAKES ME HARSHLY FEEL HAS GOT A LITTLE TOO MUCH OF STEEL ANON",
+        "hypothesis": "In all our blood. Perhaps is good, but.",
+        "hyp_commit": "In all our blood. <vad> Perhaps is good, but. <vad>",
+        "duration": 15.0,
+        "total_time": 17.939520359039307,
+        "first_token_latency": 15.07358169555664,
+        "model_runtime": 2.9395203590393066,
+        "avg_processing_time": 2.9395203590393066
+      },
+      {
+        "file_id": "1688-142285-0001",
+        "speaker_id": "1688",
+        "audio_path": "evaluation/LibriSpeech/test-other/1688/142285/1688-142285-0001.flac",
+        "reference": "MARGARET SAID MISTER HALE AS HE RETURNED FROM SHOWING HIS GUEST DOWNSTAIRS I COULD NOT HELP WATCHING YOUR FACE WITH SOME ANXIETY WHEN MISTER THORNTON MADE HIS CONFESSION OF HAVING BEEN A SHOP BOY",
+        "hypothesis": "Mr.",
+        "hyp_commit": "Mr. <seg>",
+        "duration": 12.625,
+        "total_time": 15.735010147094727,
+        "first_token_latency": 13.241786003112793,
+        "model_runtime": 3.1100101470947266,
+        "avg_processing_time": 3.1100101470947266
+      },
+      {
+        "file_id": "1688-142285-0002",
+        "speaker_id": "1688",
+        "audio_path": "evaluation/LibriSpeech/test-other/1688/142285/1688-142285-0002.flac",
+        "reference": "YOU DON'T MEAN THAT YOU THOUGHT ME SO SILLY",
+        "hypothesis": "You don't mean that you thought me so silly.",
+        "hyp_commit": "You don't mean that you thought me so silly. <seg>",
+        "duration": 2.835,
+        "total_time": 5.155010223388672,
+        "first_token_latency": 4.153841495513916,
+        "model_runtime": 2.320010223388672,
+        "avg_processing_time": 2.320010223388672
+      },
+      {
+        "file_id": "1688-142285-0003",
+        "speaker_id": "1688",
+        "audio_path": "evaluation/LibriSpeech/test-other/1688/142285/1688-142285-0003.flac",
+        "reference": "I REALLY LIKED THAT ACCOUNT OF HIMSELF BETTER THAN ANYTHING ELSE HE SAID",
+        "hypothesis": "Account of himself better than.",
+        "hyp_commit": "Account of himself better than. <vad>",
+        "duration": 5.06,
+        "total_time": 11.023671627044678,
+        "first_token_latency": 8.184160470962524,
+        "model_runtime": 5.963671627044678,
+        "avg_processing_time": 5.963671627044678
+      },
+      {
+        "file_id": "1688-142285-0004",
+        "speaker_id": "1688",
+        "audio_path": "evaluation/LibriSpeech/test-other/1688/142285/1688-142285-0004.flac",
+        "reference": "HIS STATEMENT OF HAVING BEEN A SHOP BOY WAS THE THING I LIKED BEST OF ALL",
+        "hypothesis": "I like best of all.",
+        "hyp_commit": "I like best of all. <seg>",
+        "duration": 4.475,
+        "total_time": 10.789117574691772,
+        "first_token_latency": 8.78684687614441,
+        "model_runtime": 6.314117574691773,
+        "avg_processing_time": 6.314117574691773
+      },
+      {
+        "file_id": "1688-142285-0005",
+        "speaker_id": "1688",
+        "audio_path": "evaluation/LibriSpeech/test-other/1688/142285/1688-142285-0005.flac",
+        "reference": "YOU WHO WERE ALWAYS ACCUSING PEOPLE OF BEING SHOPPY AT HELSTONE",
+        "hypothesis": "Accusing people of being shoppy at Helston.",
+        "hyp_commit": "Accusing people of being shoppy at Helston. <seg>",
+        "duration": 4.3,
+        "total_time": 8.140785932540894,
+        "first_token_latency": 7.140137672424316,
+        "model_runtime": 3.8407859325408937,
+        "avg_processing_time": 3.8407859325408937
+      },
+      {
+        "file_id": "1688-142285-0006",
+        "speaker_id": "1688",
+        "audio_path": "evaluation/LibriSpeech/test-other/1688/142285/1688-142285-0006.flac",
+        "reference": "I DON'T THINK MISTER HALE YOU HAVE DONE QUITE RIGHT IN INTRODUCING SUCH A PERSON TO US WITHOUT TELLING US WHAT HE HAD BEEN",
+        "hypothesis": "Mr.",
+        "hyp_commit": "Mr. <seg>",
+        "duration": 8.14,
+        "total_time": 10.238987445831299,
+        "first_token_latency": 8.236562728881836,
+        "model_runtime": 2.0989874458312983,
+        "avg_processing_time": 2.0989874458312983
+      },
+      {
+        "file_id": "1688-142285-0007",
+        "speaker_id": "1688",
+        "audio_path": "evaluation/LibriSpeech/test-other/1688/142285/1688-142285-0007.flac",
+        "reference": "I REALLY WAS VERY MUCH AFRAID OF SHOWING HIM HOW MUCH SHOCKED I WAS AT SOME PARTS OF WHAT HE SAID",
+        "hypothesis": "I really was very much afraid.",
+        "hyp_commit": "I really was very much afraid. <seg>",
+        "duration": 7.06,
+        "total_time": 8.616769075393677,
+        "first_token_latency": 7.615649938583374,
+        "model_runtime": 1.5567690753936771,
+        "avg_processing_time": 1.5567690753936771
+      },
+      {
+        "file_id": "1688-142285-0008",
+        "speaker_id": "1688",
+        "audio_path": "evaluation/LibriSpeech/test-other/1688/142285/1688-142285-0008.flac",
+        "reference": "HIS FATHER DYING IN MISERABLE CIRCUMSTANCES",
+        "hypothesis": "His father dying in.",
+        "hyp_commit": "His father dying in. <seg>",
+        "duration": 4.135,
+        "total_time": 5.219411611557007,
+        "first_token_latency": 4.218289613723755,
+        "model_runtime": 1.084411611557007,
+        "avg_processing_time": 1.084411611557007
+      }
+    ]
+  }
+}

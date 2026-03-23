@@ -86,7 +86,7 @@ def main():
                 print(f"[{i+1}/{len(data)}] 건너뜀: {entry['file']}")
                 continue
 
-            if "seg_text" not in entry:
+            if not entry.get("seg_text"):
                 print(f"[{i+1}/{len(data)}] seg_text 없음, 스킵: {entry['file']}")
                 continue
 

@@ -42,11 +42,16 @@ def main() -> None:
 
     here = Path(__file__).resolve().parent
     repo_root = here.parent.parent
+    output_dir = Path(
+        os.environ.get("STITY_SMARTTURN_OUTPUT_DIR", here / "results_json")
+    ).resolve()
     qwen3_root = repo_root / "Qwen3-ASR"
     target = qwen3_root / "examples" / "streaming_websocket_server.py"
 
     if not target.exists():
         raise FileNotFoundError(f"Target server script not found: {target}")
+
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     # Ensure import order:
     # 1) this folder (contains silero_vad shim)
@@ -66,6 +71,10 @@ def main() -> None:
     os.environ["STITY_SMARTTURN_MIN_UTTERANCE_MS"] = str(wrapper_args.st_min_utterance_ms)
     os.environ["STITY_SMARTTURN_END_COOLDOWN_MS"] = str(wrapper_args.st_end_cooldown_ms)
     os.environ["STITY_SMARTTURN_EMA_ALPHA"] = str(wrapper_args.st_ema_alpha)
+
+    # Keep the original server untouched while routing relative result files
+    # from SmartTurn runs into evaluation/smartturn/results_json.
+    os.chdir(output_dir)
 
     # Hand over execution to the original script with current CLI args.
     sys.argv = [str(target), *passthrough_argv]

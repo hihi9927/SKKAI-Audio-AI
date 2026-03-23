@@ -1,0 +1,36 @@
+{
+  "policy_3": {
+    "timestamp": "2026-03-17T01:48:55.881944",
+    "overall": {
+      "num_files": 1,
+      "wer": 0.0,
+      "first_token_latency": 15.063327074050903,
+      "avg_processing_time": 2.3994834423065186,
+      "model_runtime": 2.3994834423065186
+    },
+    "folders": {
+      "1688": {
+        "num_files": 1,
+        "wer": 0.0,
+        "first_token_latency": 15.063327074050903,
+        "avg_processing_time": 2.3994834423065186,
+        "model_runtime": 2.3994834423065186
+      }
+    },
+    "raw_results": [
+      {
+        "file_id": "1688-142285-0000",
+        "speaker_id": "1688",
+        "audio_path": "evaluation/LibriSpeech/test-other/1688/142285/1688-142285-0000.flac",
+        "reference": "THERE'S IRON THEY SAY IN ALL OUR BLOOD AND A GRAIN OR TWO PERHAPS IS GOOD BUT HIS HE MAKES ME HARSHLY FEEL HAS GOT A LITTLE TOO MUCH OF STEEL ANON",
+        "hypothesis": "There's iron, they say, in all our blood, and a grain or two, perhaps, is good, but his—he makes me harshly feel—has got a little too much of steel. Anon.",
+        "hyp_commit": "There's iron, they say, in all our blood, and a grain or two, perhaps, is good, but his—he makes me harshly feel—has got a little too much of steel. Anon. <seg>",
+        "duration": 15.0,
+        "total_time": 17.39948344230652,
+        "first_token_latency": 15.063327074050903,
+        "model_runtime": 2.3994834423065186,
+        "avg_processing_time": 2.3994834423065186
+      }
+    ]
+  }
+}

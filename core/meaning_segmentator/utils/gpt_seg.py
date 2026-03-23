@@ -11,6 +11,7 @@ import time
 import argparse
 from pathlib import Path
 from openai import OpenAI
+import anthropic
 
 SYSTEM_PROMPT = (
 """너는 구어체 한국어 텍스트의 의미 분절 전문가야.
@@ -140,22 +141,88 @@ SYSTEM_PROMPT = (
 )
 
 
-def mark_segmentation(client: OpenAI, text: str, model: str, max_retries: int = 5) -> str:
+def _gdt_translate(text: str, src: str = "ko", tgt: str = "en") -> str | None:
+    try:
+        from deep_translator import GoogleTranslator
+        return GoogleTranslator(source=src, target=tgt).translate(text)
+    except Exception as e:
+        print(f"  [번역 실패] '{text}' → {e}")
+        return None
+
+
+def _gdt_translate_seg(seg_text: str | None, src: str = "ko", tgt: str = "en") -> str | None:
+    if not seg_text:
+        return None
+    from deep_translator import GoogleTranslator
+    segments = seg_text.split("<SEG>")
+    translated = [_gdt_translate(s.strip(), src, tgt) for s in segments if s.strip()]
+    return " ".join(t for t in translated if t is not None)
+
+
+def run_gdt(data: list, raw: dict, output_path: Path, delay: float = 0.2, resume: bool = True) -> None:
+    """GDT(Google 번역)로 full/seg 번역을 실행."""
+
+    for i, entry in enumerate(data):
+        has_full = bool(entry.get("gdt_full_trans"))
+        has_seg  = bool(entry.get("gdt_seg_trans"))
+
+        if resume and has_full and has_seg:
+            print(f"[GDT {i+1}/{len(data)}] 건너뜀: {entry['file']}")
+            continue
+
+        if "seg_text" not in entry:
+            print(f"[GDT {i+1}/{len(data)}] seg_text 없음, 스킵: {entry['file']}")
+            continue
+
+        print(f"[GDT {i+1}/{len(data)}] {entry['file']}")
+
+        if not (resume and has_full):
+            entry["gdt_full_trans"] = _gdt_translate(entry["text"])
+            print(f"  gdt_full  : {entry['gdt_full_trans']}")
+            if delay > 0:
+                time.sleep(delay)
+
+        if not (resume and has_seg):
+            entry["gdt_seg_trans"] = _gdt_translate_seg(entry["seg_text"])
+            print(f"  gdt_seg   : {entry['gdt_seg_trans']}")
+            if delay > 0:
+                time.sleep(delay)
+
+        output_path.write_text(json.dumps(raw, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    print(f"\nGDT 번역 완료. 저장: {output_path}")
+
+
+def mark_segmentation(client, text: str, model: str, provider: str = "openai", max_retries: int = 5) -> str:
     for attempt in range(max_retries):
         try:
-            response = client.chat.completions.create(
-                model=model,
-                messages=[
-                    {"role": "system", "content": SYSTEM_PROMPT},
-                    {"role": "user",   "content": text},
-                ],
-                temperature=0,
-            )
-            return response.choices[0].message.content.strip()
+            if provider == "claude":
+                response = client.messages.create(
+                    model=model,
+                    max_tokens=1024,
+                    system=[
+                        {
+                            "type": "text",
+                            "text": SYSTEM_PROMPT,
+                            "cache_control": {"type": "ephemeral"},
+                        }
+                    ],
+                    messages=[{"role": "user", "content": text}],
+                )
+                return response.content[0].text.strip()
+            else:
+                response = client.chat.completions.create(
+                    model=model,
+                    messages=[
+                        {"role": "system", "content": SYSTEM_PROMPT},
+                        {"role": "user",   "content": text},
+                    ],
+                    temperature=0,
+                )
+                return response.choices[0].message.content.strip()
         except Exception as e:
             msg = str(e)
-            if "429" in msg or "rate_limit" in msg.lower():
-                # 오류 메시지에서 대기 시간(ms) 파싱, 없으면 지수 백오프
+            if "429" in msg or "rate_limit" in msg.lower() or "overloaded" in msg.lower():
                 m = re.search(r"try again in (\d+(?:\.\d+)?)(m?s)", msg)
                 if m:
                     wait = float(m.group(1)) / 1000 if m.group(2) == "ms" else float(m.group(1))
@@ -179,18 +246,33 @@ def main():
                         help="입력 JSON 파일명 (evaluation/KsponSpeech/transcribe/ 기준, 예: eval_clean.json)")
     parser.add_argument("--output",  type=str, default=None,
                         help="출력 JSON 파일명 (기본: 입력 파일명에 _seg 추가, evaluation/KsponSpeech/results/ 저장)")
-    parser.add_argument("--model",   type=str, default="gpt-4o-mini", help="OpenAI 모델명")
-    parser.add_argument("--api-key", type=str, default=None, help="OpenAI API 키 (미입력 시 OPENAI_API_KEY 환경변수 사용)")
-    parser.add_argument("--delay",   type=float, default=0.5, help="요청 간 딜레이(초)")
+    parser.add_argument("--provider", type=str, default="openai", choices=["openai", "claude"],
+                        help="사용할 API 제공자 (openai 또는 claude)")
+    parser.add_argument("--model",   type=str, default=None,
+                        help="모델명 (openai 기본값: gpt-4o-mini, claude 기본값: claude-haiku-4-5)")
+    parser.add_argument("--api-key", type=str, default=None,
+                        help="API 키 (미입력 시 OPENAI_API_KEY 또는 ANTHROPIC_API_KEY 환경변수 사용)")
+    parser.add_argument("--delay",     type=float, default=0.5, help="요청 간 딜레이(초)")
     parser.add_argument("--no-resume", dest="resume", action="store_false", help="이미 seg_text가 있는 항목도 재처리")
+    parser.add_argument("--gdt",       action="store_true",
+                        help="분절 완료 후 GDT(Google 번역) + COMET 평가 자동 실행")
+    parser.add_argument("--gdt-delay", type=float, default=0.2,
+                        help="GDT 번역 요청 간 딜레이(초, 기본: 0.2)")
     parser.set_defaults(resume=True)
     args = parser.parse_args()
 
-    api_key = args.api_key or os.environ.get("OPENAI_API_KEY")
-    if not api_key:
-        raise ValueError("OpenAI API 키가 필요합니다. --api-key 또는 OPENAI_API_KEY 환경변수를 설정하세요.")
-
-    client = OpenAI(api_key=api_key)
+    if args.provider == "claude":
+        api_key = args.api_key or os.environ.get("ANTHROPIC_API_KEY")
+        if not api_key:
+            raise ValueError("Anthropic API 키가 필요합니다. --api-key 또는 ANTHROPIC_API_KEY 환경변수를 설정하세요.")
+        client = anthropic.Anthropic(api_key=api_key)
+        model = args.model or "claude-haiku-4-5"
+    else:
+        api_key = args.api_key or os.environ.get("OPENAI_API_KEY")
+        if not api_key:
+            raise ValueError("OpenAI API 키가 필요합니다. --api-key 또는 OPENAI_API_KEY 환경변수를 설정하세요.")
+        client = OpenAI(api_key=api_key)
+        model = args.model or "gpt-4o-mini"
     input_path = _transcribe_dir / args.input
 
     _results_dir.mkdir(parents=True, exist_ok=True)
@@ -219,8 +301,9 @@ def main():
 
     data = raw["data"]
 
+    budget_exceeded = False
     for i, entry in enumerate(data):
-        if args.resume and entry.get("seg_text") is not None:
+        if args.resume and entry.get("seg_text"):
             print(f"[{i+1}/{len(data)}] 건너뜀 (이미 처리됨): {entry['file']}")
             continue
 
@@ -229,10 +312,16 @@ def main():
         print(f"  원문: {text}")
 
         try:
-            seg_text = mark_segmentation(client, text, args.model)
+            seg_text = mark_segmentation(client, text, model, args.provider)
             entry["seg_text"] = seg_text
             print(f"  분절: {seg_text}")
         except Exception as e:
+            msg = str(e)
+            if any(k in msg.lower() for k in ("insufficient_quota", "billing", "budget", "exceeded", "402")):
+                print(f"  예산 초과 오류 — 분절 중단, 번역으로 이동합니다.\n  ({msg})")
+                budget_exceeded = True
+                output_path.write_text(json.dumps(raw, ensure_ascii=False, indent=2), encoding="utf-8")
+                break
             print(f"  오류: {e}")
             entry["seg_text"] = None
 
@@ -242,7 +331,14 @@ def main():
         if args.delay > 0:
             time.sleep(args.delay)
 
-    print(f"\n완료. 저장: {output_path}")
+    if budget_exceeded:
+        print(f"\n분절 중단 (예산 초과). 저장: {output_path}")
+    else:
+        print(f"\n완료. 저장: {output_path}")
+
+    if args.gdt:
+        print("\nGDT 번역 시작...")
+        run_gdt(data, raw, output_path, delay=args.gdt_delay, resume=args.resume)
 
 
 if __name__ == "__main__":
