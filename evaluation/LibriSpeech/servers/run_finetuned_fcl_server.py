@@ -33,7 +33,7 @@ def sanitize_generation_config(model) -> None:
             setattr(gen_cfg, attr, None)
 
     if hasattr(gen_cfg, "top_k"):
-        setattr(gen_cfg, "top_k", 0)
+        setattr(gen_cfg, "top_k", None)
 
 
 def merge_lora(base_model: str, checkpoint: str, merged_dir: str) -> str:
