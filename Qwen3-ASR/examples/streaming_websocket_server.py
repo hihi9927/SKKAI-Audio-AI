@@ -111,17 +111,19 @@ def lang_to_code(lang: str) -> str:
 class SessionLogger:
     """앱에서 수신한 로그를 세션별 JSON 파일로 저장"""
 
-    def __init__(self, logs_dir: str = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../logs/asr_logs")):
+    def __init__(self, client_id: int = 0, logs_dir: str = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../logs/asr_logs")):
         os.makedirs(logs_dir, exist_ok=True)
         ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        self.client_id = client_id
         self.path = os.path.join(logs_dir, f"session_{ts}.json")
         self._entries: list[dict] = []
         self._lock = asyncio.Lock()
-        logger.info(f"[session-log] log file: {self.path}")
+        logger.info(f"[C{client_id}] [session-log] log file: {self.path}")
 
     async def append(self, time: str, text: str, translation: str) -> None:
         async with self._lock:
             self._entries.append({
+                "client": f"C{self.client_id}",
                 "time": time,
                 "text": text,
                 "translation": translation,
@@ -270,6 +272,13 @@ async def google_translate_async(
         return "", ""
 
 
+class _ClientAdapter(logging.LoggerAdapter):
+    """클라이언트 ID 태그를 자동으로 앞에 붙이는 LoggerAdapter"""
+
+    def process(self, msg, kwargs):
+        return f"[C{self.extra['cid']}] {msg}", kwargs
+
+
 class Qwen3ASRStreamingHandler:
     """WebSocket 연결 당 하나의 스트리밍 핸들러"""
 
@@ -279,8 +288,10 @@ class Qwen3ASRStreamingHandler:
         asr_model: Qwen3ASRModel,
         config: StreamingConfig,
         pairing_hub: PairingHub,
+        client_id: int = 0,
     ):
         self.websocket = websocket
+        self.log = _ClientAdapter(logger, {"cid": client_id})
         self.asr = asr_model
         self.config = config
         self.pairing_hub = pairing_hub
@@ -321,11 +332,11 @@ class Qwen3ASRStreamingHandler:
                     speech_pad_ms=VAD_SPEECH_PAD_MS,
                 )
                 self.vad_enabled = True
-                logger.info("Silero VAD (VADIterator) loaded successfully")
+                self.log.info("Silero VAD (VADIterator) loaded successfully")
             except Exception as e:
-                logger.warning(f"Silero VAD disabled: {e}")
+                self.log.warning(f"Silero VAD disabled: {e}")
         else:
-            logger.warning(
+            self.log.warning(
                 "silero-vad 패키지가 설치되지 않았습니다. "
                 "VAD 없이 동작합니다. 설치: pip install silero-vad"
             )
@@ -335,9 +346,9 @@ class Qwen3ASRStreamingHandler:
         message = {"type": msg_type, **kwargs}
         try:
             await self.websocket.send(json.dumps(message, ensure_ascii=False))
-            logger.debug(f"Sent: {msg_type}")
+            self.log.debug(f"Sent: {msg_type}")
         except Exception as e:
-            logger.error(f"Failed to send message: {e}")
+            self.log.error(f"Failed to send message: {e}")
 
     def init_streaming_state(self):
         """스트리밍 상태 초기화"""
@@ -350,7 +361,7 @@ class Qwen3ASRStreamingHandler:
         self.state = self.stream_slots[self.active_slot]["state"]
         self.segment_start_time = 0.0
         self.current_time = 0.0
-        logger.info("Streaming state initialized")
+        self.log.info("Streaming state initialized")
 
         # reset VAD
         self.sample_cursor = 0
@@ -373,7 +384,7 @@ class Qwen3ASRStreamingHandler:
 
     def _reset_stream_slot(self, slot_key: str):
         self.stream_slots[slot_key] = self._new_stream_slot()
-        logger.info(f"[slot-reset] slot={slot_key}")
+        self.log.info(f"[slot-reset] slot={slot_key}")
 
     def _slot(self, slot_key: Optional[str] = None) -> dict:
         key = slot_key or self.active_slot
@@ -407,7 +418,7 @@ class Qwen3ASRStreamingHandler:
             translation, detected_lang = await google_translate_async(
                 self.http_session, uncommitted, self.client_target_lang
             )
-            logger.info(
+            self.log.info(
                 f"[translate-flush] reason={reason} sentence='{uncommitted}' "
                 f"tl={self.client_target_lang} -> detected={detected_lang} "
                 f"translation='{translation}'"
@@ -416,18 +427,18 @@ class Qwen3ASRStreamingHandler:
                 translation, _ = await google_translate_async(
                     self.http_session, uncommitted, self.client_lang
                 )
-                logger.info(
+                self.log.info(
                     f"[translate-flush-flip] reason={reason} "
                     f"tl={self.client_lang} -> translation='{translation}'"
                 )
 
             final_lang = detected_lang or lang_to_code(current_lang)
-            logger.info(
+            self.log.info(
                 f"[final-flush] slot={slot_key or self.active_slot} reason={reason} lang={final_lang} "
                 f"translation='{translation}' original='{uncommitted}'"
             )
             if reason.startswith("vad"):
-                logger.info(
+                self.log.info(
                     f"[final-vad] slot={slot_key or self.active_slot} lang={final_lang} text='{uncommitted}' "
                     f"translation='{translation}'"
                 )
@@ -466,7 +477,7 @@ class Qwen3ASRStreamingHandler:
                 original=current_text,
                 last_translation="",
             )
-            logger.info(f"[partial] slot={slot_key} text={current_text[:80]}...")
+            self.log.info(f"[partial] slot={slot_key} text={current_text[:80]}...")
 
         # 문장 단위 commit
         uncommitted = current_text[slot["committed_len"]:]
@@ -492,7 +503,7 @@ class Qwen3ASRStreamingHandler:
                 translation, detected_lang = await google_translate_async(
                     self.http_session, sentence, self.client_target_lang
                 )
-                logger.info(
+                self.log.info(
                     f"[translate-sentence] sentence='{sentence}' "
                     f"tl={self.client_target_lang} -> detected={detected_lang} "
                     f"translation='{translation}'"
@@ -501,7 +512,7 @@ class Qwen3ASRStreamingHandler:
                     translation, _ = await google_translate_async(
                         self.http_session, sentence, self.client_lang
                     )
-                    logger.info(
+                    self.log.info(
                         f"[translate-sentence-flip] tl={self.client_lang} "
                         f"-> translation='{translation}'"
                     )
@@ -551,7 +562,7 @@ class Qwen3ASRStreamingHandler:
                         text=payload["original"],
                         translation=payload["translation"],
                     )
-                logger.info(
+                self.log.info(
                     f"[final-sentence] slot={slot_key} lang={payload['language']} "
                     f"text={payload['original']}"
                 )
@@ -589,13 +600,13 @@ class Qwen3ASRStreamingHandler:
                             local_idx = max(0, min(int(chunk.size), local_idx))
                             if not vad_end_local_indices or local_idx > vad_end_local_indices[-1]:
                                 vad_end_local_indices.append(local_idx)
-                            logger.info(
+                            self.log.info(
                                 f"[vad] speech end detected; "
                                 f"target_samples={end_sample}"
                             )
                     offset += VAD_WINDOW_SIZE_SAMPLES
             except Exception as e:
-                logger.warning(f"[vad] error, disabling for this session: {e}")
+                self.log.warning(f"[vad] error, disabling for this session: {e}")
                 self.vad_enabled = False
 
         # ASR 처리
@@ -611,7 +622,7 @@ class Qwen3ASRStreamingHandler:
                 await self._process_slot_updates(self.active_slot, emit_partial=True)
 
             target_sample = chunk_base_sample + local_cut
-            logger.info(
+            self.log.info(
                 f"[vad-commit] target_samples={target_sample} "
                 f"processed={self.asr_processed_cursor} active={self.active_slot}"
             )
@@ -619,7 +630,7 @@ class Qwen3ASRStreamingHandler:
             old_active = self.active_slot
             self.active_slot, self.standby_slot = self.standby_slot, self.active_slot
             self.state = self.stream_slots[self.active_slot]["state"]
-            logger.info(
+            self.log.info(
                 f"[slot-switch] old_active={old_active} new_active={self.active_slot} "
                 f"new_standby={self.standby_slot}"
             )
@@ -643,11 +654,11 @@ class Qwen3ASRStreamingHandler:
     async def handle(self):
         try:
             remote_addr = self.websocket.remote_address
-            logger.info(f"New connection from {remote_addr}")
+            self.log.info(f"New connection from {remote_addr}")
             await self.send_message("hello", message="Qwen3-ASR Streaming Server")
             timeout = aiohttp.ClientTimeout(total=3)
             self.http_session = aiohttp.ClientSession(timeout=timeout)
-            self.session_logger = SessionLogger()
+            self.session_logger = SessionLogger(client_id=self.log.extra["cid"])
 
             async for message in self.websocket:
                 if isinstance(message, bytes):
@@ -661,7 +672,7 @@ class Qwen3ASRStreamingHandler:
                         if msg_type == "start":
                             self.client_lang = data.get("lang", "auto")
                             self.client_target_lang = data.get("targetLang", "")
-                            logger.info(
+                            self.log.info(
                                 f"Received start: lang={self.client_lang}, "
                                 f"targetLang={self.client_target_lang}"
                             )
@@ -673,7 +684,7 @@ class Qwen3ASRStreamingHandler:
                             )
 
                         elif msg_type in ("stop", "finish"):
-                            logger.info(f"Received {msg_type} command")
+                            self.log.info(f"Received {msg_type} command")
                             self.running = False
                             await self.finish_streaming()
 
@@ -731,12 +742,12 @@ class Qwen3ASRStreamingHandler:
                             await self.pairing_hub.leave(self.websocket)
 
                     except json.JSONDecodeError:
-                        logger.warning(f"Invalid JSON: {message[:100]}")
+                        self.log.warning(f"Invalid JSON: {message[:100]}")
 
         except websockets.exceptions.ConnectionClosed:
-            logger.info("Connection closed by client")
+            self.log.info("Connection closed by client")
         except Exception as e:
-            logger.error(f"Error in handler: {e}")
+            self.log.error(f"Error in handler: {e}")
             traceback.print_exc()
         finally:
             was_running = self.running
@@ -748,7 +759,7 @@ class Qwen3ASRStreamingHandler:
                     await self.http_session.close()
                 self.http_session = None
             await self.pairing_hub.leave(self.websocket)
-            logger.info("Connection closed")
+            self.log.info("Connection closed")
 
 
 class Qwen3ASRStreamingServer:
@@ -760,7 +771,8 @@ class Qwen3ASRStreamingServer:
         self.asr = None
         self.pairing_hub = PairingHub()
         self.idle_task = None
-        self.active_connections = 0          
+        self.active_connections = 0
+        self._client_counter = 0
         self.connection_lock = asyncio.Lock()
 
     def init_model(self):
@@ -778,21 +790,23 @@ class Qwen3ASRStreamingServer:
     async def handle_connection(self, websocket):
         """각 연결 처리"""
         async with self.connection_lock:
+            self._client_counter += 1
+            client_id = self._client_counter
             self.active_connections += 1
             # idle 타이머 취소 (사용자 접속)
             if self.idle_task and not self.idle_task.done():
                 self.idle_task.cancel()
-            logger.info(f"Client connected ({self.active_connections})")
+            logger.info(f"[C{client_id}] Client connected (active={self.active_connections})")
 
         try:
             handler = Qwen3ASRStreamingHandler(
-                websocket, self.asr, self.config, self.pairing_hub
+                websocket, self.asr, self.config, self.pairing_hub, client_id=client_id
             )
             await handler.handle()
         finally:
             async with self.connection_lock:
                 self.active_connections -= 1
-                logger.info(f"Client disconnected ({self.active_connections})")
+                logger.info(f"[C{client_id}] Client disconnected (active={self.active_connections})")
                 if self.active_connections == 0:
                     self._restart_idle_timer()
 
