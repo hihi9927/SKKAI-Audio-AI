@@ -288,10 +288,11 @@ class Qwen3ASRStreamingHandler:
         asr_model: Qwen3ASRModel,
         config: StreamingConfig,
         pairing_hub: PairingHub,
-        client_id: int = 0,
+        get_streaming_id=None,
     ):
         self.websocket = websocket
-        self.log = _ClientAdapter(logger, {"cid": client_id})
+        self._get_streaming_id = get_streaming_id
+        self.log = _ClientAdapter(logger, {"cid": "-"})
         self.asr = asr_model
         self.config = config
         self.pairing_hub = pairing_hub
@@ -393,13 +394,13 @@ class Qwen3ASRStreamingHandler:
     async def _asr_streaming_transcribe(self, chunk: np.ndarray, slot_key: Optional[str] = None):
         slot = self._slot(slot_key)
         async with self.asr_lock:
-            await asyncio.to_thread(self.asr.streaming_transcribe, chunk, slot["state"])
+            await self.asr.streaming_transcribe(chunk, slot["state"])
             self.asr_processed_cursor = self.sample_cursor
 
     async def _asr_finish_streaming(self, slot_key: Optional[str] = None):
         slot = self._slot(slot_key)
         async with self.asr_lock:
-            await asyncio.to_thread(self.asr.finish_streaming_transcribe, slot["state"])
+            await self.asr.finish_streaming_transcribe(slot["state"])
 
     async def flush_uncommitted(self, force=False, reason="flush", slot_key: Optional[str] = None):
         slot = self._slot(slot_key)
@@ -658,7 +659,6 @@ class Qwen3ASRStreamingHandler:
             await self.send_message("hello", message="Qwen3-ASR Streaming Server")
             timeout = aiohttp.ClientTimeout(total=3)
             self.http_session = aiohttp.ClientSession(timeout=timeout)
-            self.session_logger = SessionLogger(client_id=self.log.extra["cid"])
 
             async for message in self.websocket:
                 if isinstance(message, bytes):
@@ -670,6 +670,10 @@ class Qwen3ASRStreamingHandler:
                         msg_type = data.get("type", "")
 
                         if msg_type == "start":
+                            if self._get_streaming_id is not None:
+                                streaming_id = await self._get_streaming_id()
+                                self.log.extra["cid"] = streaming_id
+                            self.session_logger = SessionLogger(client_id=self.log.extra["cid"])
                             self.client_lang = data.get("lang", "auto")
                             self.client_target_lang = data.get("targetLang", "")
                             self.log.info(
@@ -772,11 +776,17 @@ class Qwen3ASRStreamingServer:
         self.pairing_hub = PairingHub()
         self.idle_task = None
         self.active_connections = 0
-        self._client_counter = 0
+        self._streaming_counter = 0
         self.connection_lock = asyncio.Lock()
 
+    async def next_streaming_id(self) -> int:
+        """실제 스트리밍 시작 시에만 호출 — C 번호 할당"""
+        async with self.connection_lock:
+            self._streaming_counter += 1
+            return self._streaming_counter
+
     def init_model(self):
-        """ASR 모델 초기화"""
+        """ASR 모델 초기화 (동기 — 이벤트 루프 시작 전 호출)"""
         logger.info(f"Loading model: {self.config.model_path}")
         self.asr = Qwen3ASRModel.LLM(
             model=self.config.model_path,
@@ -784,34 +794,34 @@ class Qwen3ASRStreamingServer:
             max_new_tokens=self.config.max_new_tokens,
             max_model_len=8192,
         )
-        warmup_streaming(self.asr)
         logger.info("Model loaded successfully")
 
     async def handle_connection(self, websocket):
         """각 연결 처리"""
         async with self.connection_lock:
-            self._client_counter += 1
-            client_id = self._client_counter
             self.active_connections += 1
-            # idle 타이머 취소 (사용자 접속)
             if self.idle_task and not self.idle_task.done():
                 self.idle_task.cancel()
-            logger.info(f"[C{client_id}] Client connected (active={self.active_connections})")
+            logger.info(f"Client connected (active={self.active_connections})")
 
         try:
             handler = Qwen3ASRStreamingHandler(
-                websocket, self.asr, self.config, self.pairing_hub, client_id=client_id
+                websocket, self.asr, self.config, self.pairing_hub,
+                get_streaming_id=self.next_streaming_id,
             )
             await handler.handle()
         finally:
             async with self.connection_lock:
                 self.active_connections -= 1
-                logger.info(f"[C{client_id}] Client disconnected (active={self.active_connections})")
+                logger.info(f"Client disconnected (active={self.active_connections})")
                 if self.active_connections == 0:
                     self._restart_idle_timer()
 
     async def start(self):
         logger.info(f"Starting WebSocket server on ws://{self.config.host}:{self.config.port}")
+        logger.info("Warming up model...")
+        await warmup_streaming(self.asr)
+        logger.info("Warmup complete")
         async with websockets.serve(
             self.handle_connection,
             self.config.host,
