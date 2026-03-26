@@ -50,7 +50,7 @@ export const TranslationItem: React.FC<TranslationItemProps> = ({
 
   const speakText = (text: string, lang: string) => {
     Speech.stop();
-    Speech.speak(text, { language: lang, rate: 1.0 });
+    Speech.speak(text, { language: lang, rate: 1.6 });
   };
 
   return (

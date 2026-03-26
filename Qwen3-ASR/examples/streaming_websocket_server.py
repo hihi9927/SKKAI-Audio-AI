@@ -103,9 +103,19 @@ LANG_NAME_TO_CODE = {
 }
 
 
+LANG_CODE_TO_NAME = {v: k for k, v in LANG_NAME_TO_CODE.items()}
+
+
 def lang_to_code(lang: str) -> str:
     """언어 이름을 코드로 변환 (Korean -> ko)"""
     return LANG_NAME_TO_CODE.get(lang, lang.lower()[:2])
+
+
+def lang_code_to_name(code: str) -> Optional[str]:
+    """언어 코드를 이름으로 변환 (ko -> Korean). auto이거나 매핑 없으면 None."""
+    if not code or code == "auto":
+        return None
+    return LANG_CODE_TO_NAME.get(code)
 
 
 class SessionLogger:
@@ -127,6 +137,19 @@ class SessionLogger:
                 "time": time,
                 "text": text,
                 "translation": translation,
+            })
+            with open(self.path, "w", encoding="utf-8") as f:
+                json.dump(self._entries, f, ensure_ascii=False, indent=2)
+
+    async def append_tts(self, text: str, lang: str, start: str, end: str) -> None:
+        async with self._lock:
+            self._entries.append({
+                "client": f"C{self.client_id}",
+                "type": "tts",
+                "text": text,
+                "lang": lang,
+                "start": start,
+                "end": end,
             })
             with open(self.path, "w", encoding="utf-8") as f:
                 json.dump(self._entries, f, ensure_ascii=False, indent=2)
@@ -400,7 +423,17 @@ class Qwen3ASRStreamingHandler:
     async def _asr_finish_streaming(self, slot_key: Optional[str] = None):
         slot = self._slot(slot_key)
         async with self.asr_lock:
-            await self.asr.finish_streaming_transcribe(slot["state"])
+            state = slot["state"]
+            partial_lang = slot["last_text_lang"]  # canonical name e.g. "Korean"
+            # partial에서 감지된 언어가 있고, state에 force_language가 없으면
+            # finish pass에서도 같은 언어를 강제해 hallucination 방지
+            if partial_lang and not state.force_language:
+                state.prompt_raw = self.asr._build_text_prompt(
+                    context=state.context,
+                    force_language=partial_lang,
+                )
+                state.force_language = partial_lang
+            await self.asr.finish_streaming_transcribe(state)
 
     async def flush_uncommitted(self, force=False, reason="flush", slot_key: Optional[str] = None):
         slot = self._slot(slot_key)
@@ -758,6 +791,19 @@ class Qwen3ASRStreamingHandler:
                             translation = data.get("translation", "")
                             if self.session_logger and text:
                                 await self.session_logger.append(time, text, translation)
+
+                        elif msg_type == "tts_log":
+                            text = data.get("text", "")
+                            lang = data.get("lang", "")
+                            start = data.get("start", "")
+                            end = data.get("end", "")
+                            if self.session_logger and text:
+                                await self.session_logger.append_tts(
+                                    text=text,
+                                    lang=lang,
+                                    start=start,
+                                    end=end,
+                                )
 
                         elif msg_type == "pair_leave":
                             await self.pairing_hub.leave(self.websocket)

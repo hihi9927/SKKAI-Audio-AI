@@ -86,14 +86,16 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
   const isTTSEnabled = currentMode === 'mode-2';
   const isTTSEnabledRef = useRef(isTTSEnabled);
 
-  const { isConnected, connect, sendAudio, disconnect, addMessageListener } = useWebSocketContext();
+  const { isConnected, connect, sendAudio, disconnect, addMessageListener, sendMessage } = useWebSocketContext();
   const isConnectedRef = useRef(isConnected);
   const isPausedRef = useRef(isPaused);
   const sendAudioRef = useRef(sendAudio);
+  const sendMessageRef = useRef(sendMessage);
 
   useEffect(() => { isConnectedRef.current = isConnected; }, [isConnected]);
   useEffect(() => { isPausedRef.current = isPaused; }, [isPaused]);
   useEffect(() => { sendAudioRef.current = sendAudio; }, [sendAudio]);
+  useEffect(() => { sendMessageRef.current = sendMessage; }, [sendMessage]);
   useEffect(() => { isTTSEnabledRef.current = isTTSEnabled; }, [isTTSEnabled]);
 
   const modeRef = useRef(currentMode);
@@ -112,10 +114,14 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     }
     isSpeakingRef.current = true;
     const next = ttsQueueRef.current.shift()!;
+    const ttsStart = new Date().toISOString();
     Speech.speak(next.text, {
       language: next.lang,
-      rate: 1.0,
-      onDone: processNextTTS,
+      rate: 1.6,
+      onDone: () => {
+        sendMessageRef.current({ type: 'tts_log', text: next.text, lang: next.lang, start: ttsStart, end: new Date().toISOString() });
+        processNextTTS();
+      },
       onError: processNextTTS,
       onStopped: () => { isSpeakingRef.current = false; },
     });
