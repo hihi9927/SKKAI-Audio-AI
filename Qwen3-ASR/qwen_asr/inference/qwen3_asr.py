@@ -16,6 +16,9 @@
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Union
 
+import asyncio
+import uuid
+
 import numpy as np
 import torch
 from qwen_asr.core.transformers_backend import (
@@ -259,14 +262,16 @@ class Qwen3ASRModel:
             ImportError: If vLLM is not installed.
         """
         try:
-            from vllm import LLM as vLLM
+            from vllm.engine.async_llm_engine import AsyncLLMEngine
+            from vllm.engine.arg_utils import AsyncEngineArgs
             from vllm import SamplingParams
         except Exception as e:
             raise ImportError(
                 "vLLM is not available. Install with: pip install qwen-asr[vllm]"
             ) from e
 
-        llm = vLLM(model=model, **kwargs)
+        engine_args = AsyncEngineArgs(model=model, **kwargs)
+        llm = AsyncLLMEngine.from_engine_args(engine_args)
 
         processor = Qwen3ASRProcessor.from_pretrained(model, fix_mistral_regex=True)
         sampling_params = SamplingParams(**({"temperature": 0.0, "max_tokens": max_new_tokens}))
@@ -297,7 +302,7 @@ class Qwen3ASRModel:
         return list(SUPPORTED_LANGUAGES)
 
     @torch.no_grad()
-    def transcribe(
+    async def transcribe(
         self,
         audio: Union[AudioLike, List[AudioLike]],
         context: Union[str, List[str]] = "",
@@ -380,7 +385,7 @@ class Qwen3ASRModel:
         chunk_ctx: List[str] = [ctxs[c.orig_index] for c in chunks]
         chunk_lang: List[Optional[str]] = [langs_norm[c.orig_index] for c in chunks]
         chunk_wavs: List[np.ndarray] = [c.wav for c in chunks]
-        raw_outputs = self._infer_asr(chunk_ctx, chunk_wavs, chunk_lang)
+        raw_outputs = await self._infer_asr(chunk_ctx, chunk_wavs, chunk_lang)
 
         # parse outputs, prepare for optional alignment
         per_chunk_lang: List[str] = []
@@ -464,7 +469,7 @@ class Qwen3ASRModel:
             base = base + f"language {force_language}{'<asr_text>'}"
         return base
 
-    def _infer_asr(
+    async def _infer_asr(
         self,
         contexts: List[str],
         wavs: List[np.ndarray],
@@ -484,7 +489,7 @@ class Qwen3ASRModel:
         if self.backend == "transformers":
             return self._infer_asr_transformers(contexts, wavs, languages)
         if self.backend == "vllm":
-            return self._infer_asr_vllm(contexts, wavs, languages)
+            return await self._infer_asr_vllm(contexts, wavs, languages)
         raise RuntimeError(f"Unknown backend: {self.backend}")
 
     def _infer_asr_transformers(
@@ -518,23 +523,25 @@ class Qwen3ASRModel:
 
         return outs
 
-    def _infer_asr_vllm(
+    async def _infer_asr_vllm(
         self,
         contexts: List[str],
         wavs: List[np.ndarray],
         languages: List[Optional[str]],
     ) -> List[str]:
-        inputs: List[Dict[str, Any]] = []
-        for c, w, fl in zip(contexts, wavs, languages):
-            prompt = self._build_text_prompt(context=c, force_language=fl)
-            inputs.append({"prompt": prompt, "multi_modal_data": {"audio": [w]}})
+        async def _generate_one(prompt: str, wav: np.ndarray) -> str:
+            inp = {"prompt": prompt, "multi_modal_data": {"audio": [wav]}}
+            request_id = str(uuid.uuid4())
+            final = None
+            async for out in self.model.generate(inp, self.sampling_params, request_id=request_id):
+                final = out
+            return final.outputs[0].text
 
-        outs: List[str] = []
-        for batch in chunk_list(inputs, self.max_inference_batch_size):
-            outputs = self.model.generate(batch, sampling_params=self.sampling_params, use_tqdm=False)
-            for o in outputs:
-                outs.append(o.outputs[0].text)
-        return outs
+        tasks = [
+            _generate_one(self._build_text_prompt(c, fl), w)
+            for c, w, fl in zip(contexts, wavs, languages)
+        ]
+        return list(await asyncio.gather(*tasks))
 
     def _offset_align_result(self, result: Any, offset_sec: float) -> Any:
         """
@@ -654,7 +661,7 @@ class Qwen3ASRModel:
             _raw_decoded="",
         )
 
-    def streaming_transcribe(self, pcm16k: np.ndarray, state: ASRStreamingState) -> ASRStreamingState:
+    async def streaming_transcribe(self, pcm16k: np.ndarray, state: ASRStreamingState) -> ASRStreamingState:
         """
         Streaming ASR decode step.
 
@@ -750,8 +757,11 @@ class Qwen3ASRModel:
             # vLLM input: single item
             inp = {"prompt": prompt, "multi_modal_data": {"audio": [state.audio_accum]}}
 
-            outputs = self.model.generate([inp], sampling_params=self.sampling_params, use_tqdm=False)
-            gen_text = outputs[0].outputs[0].text
+            request_id = str(uuid.uuid4())
+            final = None
+            async for out in self.model.generate(inp, self.sampling_params, request_id=request_id):
+                final = out
+            gen_text = final.outputs[0].text
 
             # Accumulate raw decoded (then parse to lang/text)
             state._raw_decoded = (prefix + gen_text) if prefix is not None else gen_text
@@ -764,7 +774,7 @@ class Qwen3ASRModel:
 
         return state
 
-    def finish_streaming_transcribe(self, state: ASRStreamingState) -> ASRStreamingState:
+    async def finish_streaming_transcribe(self, state: ASRStreamingState) -> ASRStreamingState:
         """
         Finish streaming ASR.
 
@@ -818,8 +828,11 @@ class Qwen3ASRModel:
         prompt = state.prompt_raw + prefix
         inp = {"prompt": prompt, "multi_modal_data": {"audio": [state.audio_accum]}}
 
-        outputs = self.model.generate([inp], sampling_params=self.sampling_params, use_tqdm=False)
-        gen_text = outputs[0].outputs[0].text
+        request_id = str(uuid.uuid4())
+        final = None
+        async for out in self.model.generate(inp, self.sampling_params, request_id=request_id):
+            final = out
+        gen_text = final.outputs[0].text
 
         state._raw_decoded = (prefix + gen_text) if prefix is not None else gen_text
         lang, txt = parse_asr_output(state._raw_decoded, user_language=state.force_language)

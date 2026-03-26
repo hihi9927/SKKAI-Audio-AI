@@ -42,7 +42,14 @@ evaluation/LibriSpeech/test-other
 
 # Weights
 Qwen3-ASR/finetuning/Qwen3-ASR-1.7B
-Qwen3-ASR/finetuning/qwen3-asr-finetuning-out/
+Qwen3-ASR/finetuning/qwen3-asr-finetuning-out/checkpoint-200
+Qwen3-ASR/finetuning/qwen3-asr-finetuning-out/checkpoint-400
+Qwen3-ASR/finetuning/qwen3-asr-finetuning-out/checkpoint-800
+Qwen3-ASR/finetuning/qwen3-asr-finetuning-out/checkpoint-891
+
+# checkpoint-600 pt 파일 예외 허용
+!Qwen3-ASR/finetuning/qwen3-asr-finetuning-out/checkpoint-600/
+!Qwen3-ASR/finetuning/qwen3-asr-finetuning-out/checkpoint-600/*.safetensors
 
 .env
 

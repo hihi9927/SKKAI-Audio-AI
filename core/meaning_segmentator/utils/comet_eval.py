@@ -6,8 +6,10 @@ seg 단위 번역 vs 전체 번역 COMET 비교 스크립트
 - COMET     : hypothesis 품질을 reference 기준으로 산출
 
 점수 필드 및 통계 키는 --field 값에서 자동 결정:
-  gdt_seg_trans → ref: gdt_full_trans, score: gdt_comet_score, stats: gdt_comet_*
-  gpt_seg_trans → ref: gpt_full_trans, score: gpt_comet_score, stats: gpt_comet_*
+  gdt_seg_trans   → ref: gdt_full_trans,      score: gdt_comet_score,       stats: gdt_comet_*
+  gpt_seg_trans   → ref: gpt_full_trans,      score: gpt_comet_score,       stats: gpt_comet_*
+  finetuned_seg_trans → ref: finetuned_full_trans, score: finetuned_comet_score, stats: finetuned_comet_*
+                    (finetuned_text를 번역 → finetuned_seg_trans, text를 번역 → finetuned_full_trans)
 """
 
 import json
@@ -50,10 +52,12 @@ def ref_field_name(field: str) -> str:
 
 def main():
     parser = argparse.ArgumentParser(description="seg 번역 vs 전체 번역 COMET 평가")
-    results_dir = Path("/home/ubuntu/STiTy/evaluation/KsponSpeech/results")
+    _kspon_dir = Path(__file__).parents[3] / "evaluation" / "KsponSpeech"
+    results_dir = _kspon_dir / "results"
+    finetuned_results_dir = _kspon_dir / "finetuned_results"
     parser.add_argument("--input",     type=str, required=True,
                         help="결과 디렉토리 내 파일명 (예: eval_clean_seg.json)")
-    parser.add_argument("--input-dir", type=str, default=str(results_dir),
+    parser.add_argument("--input-dir", type=str, default=None,
                         help="입력 파일 디렉토리")
     parser.add_argument("--field",     type=str, default="gdt_seg_trans",
                         help="COMET hypothesis로 사용할 번역 필드 (기본: gdt_seg_trans)")
@@ -66,6 +70,9 @@ def main():
     parser.set_defaults(resume=True)
     args = parser.parse_args()
 
+    if args.input_dir is None:
+        args.input_dir = str(finetuned_results_dir if args.field == "finetuned_seg_trans" else results_dir)
+
     hyp_field   = args.field                  # e.g. gdt_seg_trans
     ref_field   = ref_field_name(hyp_field)   # e.g. gdt_full_trans
     score_field = score_field_name(hyp_field) # e.g. gdt_comet_score
@@ -76,7 +83,7 @@ def main():
     raw  = json.loads(input_path.read_text(encoding="utf-8"))
     data = raw["data"]
 
-    # ── 1. Google Translate 번역 (gdt 전용) ──────────────────────────────────
+    # ── 1. Google Translate 번역 ─────────────────────────────────────────────
     if hyp_field == "gdt_seg_trans":
         for i, entry in enumerate(data):
             has_full = bool(entry.get("gdt_full_trans"))
@@ -106,18 +113,51 @@ def main():
 
             output_path.write_text(json.dumps(raw, ensure_ascii=False, indent=2), encoding="utf-8")
 
+    elif hyp_field == "finetuned_seg_trans":
+        for i, entry in enumerate(data):
+            has_full      = bool(entry.get("finetuned_full_trans"))
+            has_finetuned = bool(entry.get("finetuned_seg_trans"))
+
+            if args.resume and has_full and has_finetuned:
+                print(f"[{i+1}/{len(data)}] 건너뜀: {entry['file']}")
+                continue
+
+            if not entry.get("finetuned_text"):
+                print(f"[{i+1}/{len(data)}] finetuned_text 없음, 스킵: {entry['file']}")
+                continue
+
+            print(f"[{i+1}/{len(data)}] {entry['file']}")
+
+            if not (args.resume and has_full):
+                # gdt_full_trans 재사용, 없으면 새로 번역
+                entry["finetuned_full_trans"] = (
+                    entry.get("gdt_full_trans") or translate(entry["text"])
+                )
+                print(f"  full_trans: {entry['finetuned_full_trans']}")
+                if args.delay > 0 and not entry.get("gdt_full_trans"):
+                    time.sleep(args.delay)
+
+            if not (args.resume and has_finetuned):
+                entry["finetuned_seg_trans"] = translate_seg(entry["finetuned_text"])
+                print(f"  finetuned : {entry['finetuned_seg_trans']}")
+                if args.delay > 0:
+                    time.sleep(args.delay)
+
+            output_path.write_text(json.dumps(raw, ensure_ascii=False, indent=2), encoding="utf-8")
+
     # ── 2. COMET 점수 산출 ───────────────────────────────────────────────────
     print(f"\nCOMET 모델 로드 중... (hyp={hyp_field}, ref={ref_field}, score={score_field})")
     model_path = download_model(args.model)
     model = load_from_checkpoint(model_path)
 
+    require_seg = hyp_field not in ("finetuned_seg_trans",)
     comet_data    = []
     comet_entries = []
     skipped = 0
     for entry in data:
         if not entry.get(ref_field) or not entry.get(hyp_field):
             continue
-        if "<SEG>" not in entry.get("seg_text", ""):
+        if require_seg and "<SEG>" not in entry.get("seg_text", ""):
             skipped += 1
             continue
         comet_data.append({
@@ -126,7 +166,8 @@ def main():
             "ref": entry[ref_field],
         })
         comet_entries.append(entry)
-    print(f"  분절 없는 항목 제외: {skipped}개")
+    if require_seg:
+        print(f"  분절 없는 항목 제외: {skipped}개")
 
     if not comet_data:
         print("COMET 계산할 데이터가 없습니다.")
