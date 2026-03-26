@@ -445,6 +445,8 @@ class Qwen3ASRStreamingHandler:
             async with self.asr_lock:
                 state = slot["state"]
                 current_text = (state.text or "").strip() if state else ""
+                if "<asr_text>" in current_text:
+                    current_text = current_text.split("<asr_text>", 1)[-1].strip()
                 current_lang = slot["last_text_lang"] or ""
             snapshot_committed_len = slot["committed_len"]
             uncommitted = current_text[snapshot_committed_len:].strip()
@@ -513,6 +515,8 @@ class Qwen3ASRStreamingHandler:
         slot = self._slot(slot_key)
         state = slot["state"]
         current_text = (state.text or "").strip()
+        if "<asr_text>" in current_text:
+            current_text = current_text.split("<asr_text>", 1)[-1].strip()
         current_lang = state.language or ""
         if not current_text or current_text == slot["last_text"]:
             return
