@@ -307,7 +307,6 @@ class Qwen3ASRStreamingHandler:
         self.segment_start_time = 0.0
         self.current_time = 0.0
 
-        self.flush_lock = asyncio.Lock()
         self.asr_lock = asyncio.Lock()
         self.http_session: Optional[aiohttp.ClientSession] = None
         self.session_logger: Optional[SessionLogger] = None
@@ -377,6 +376,7 @@ class Qwen3ASRStreamingHandler:
                 unfixed_token_num=self.config.unfixed_token_num,
                 chunk_size_sec=self.config.chunk_size_sec,
             ),
+            "flush_lock": asyncio.Lock(),
             "last_text": "",
             "last_text_lang": "",
             "committed_len": 0,
@@ -404,45 +404,59 @@ class Qwen3ASRStreamingHandler:
 
     async def flush_uncommitted(self, force=False, reason="flush", slot_key: Optional[str] = None):
         slot = self._slot(slot_key)
-        async with self.flush_lock:
+        slot_flush_lock = slot["flush_lock"]
+
+        # 1단계: 텍스트 스냅샷만 lock 안에서 읽기
+        async with slot_flush_lock:
             async with self.asr_lock:
                 state = slot["state"]
                 current_text = (state.text or "").strip() if state else ""
                 current_lang = slot["last_text_lang"] or ""
-            uncommitted = current_text[slot["committed_len"]:].strip()
+            snapshot_committed_len = slot["committed_len"]
+            uncommitted = current_text[snapshot_committed_len:].strip()
             if not uncommitted:
                 return
             if not force and len(uncommitted) < 2:
                 logger.info(f"[timeout-skip] reason={reason} too short: '{uncommitted}'")
                 return
 
-            translation, detected_lang = await google_translate_async(
-                self.http_session, uncommitted, self.client_target_lang
+        # 2단계: lock 해제 후 I/O (번역 API) 수행 → 다른 슬롯 flush 비차단
+        translation, detected_lang = await google_translate_async(
+            self.http_session, uncommitted, self.client_target_lang
+        )
+        self.log.info(
+            f"[translate-flush] reason={reason} sentence='{uncommitted}' "
+            f"tl={self.client_target_lang} -> detected={detected_lang} "
+            f"translation='{translation}'"
+        )
+        if detected_lang == self.client_target_lang:
+            translation, _ = await google_translate_async(
+                self.http_session, uncommitted, self.client_lang
             )
             self.log.info(
-                f"[translate-flush] reason={reason} sentence='{uncommitted}' "
-                f"tl={self.client_target_lang} -> detected={detected_lang} "
+                f"[translate-flush-flip] reason={reason} "
+                f"tl={self.client_lang} -> translation='{translation}'"
+            )
+
+        final_lang = detected_lang or lang_to_code(current_lang)
+        self.log.info(
+            f"[final-flush] slot={slot_key or self.active_slot} reason={reason} lang={final_lang} "
+            f"translation='{translation}' original='{uncommitted}'"
+        )
+        if reason.startswith("vad"):
+            self.log.info(
+                f"[final-vad] slot={slot_key or self.active_slot} lang={final_lang} text='{uncommitted}' "
                 f"translation='{translation}'"
             )
-            if detected_lang == self.client_target_lang:
-                translation, _ = await google_translate_async(
-                    self.http_session, uncommitted, self.client_lang
-                )
-                self.log.info(
-                    f"[translate-flush-flip] reason={reason} "
-                    f"tl={self.client_lang} -> translation='{translation}'"
-                )
 
-            final_lang = detected_lang or lang_to_code(current_lang)
-            self.log.info(
-                f"[final-flush] slot={slot_key or self.active_slot} reason={reason} lang={final_lang} "
-                f"translation='{translation}' original='{uncommitted}'"
-            )
-            if reason.startswith("vad"):
+        # 3단계: lock 재획득 후 커밋 — committed_len이 변경됐으면 skip (중복 방지)
+        async with slot_flush_lock:
+            if slot["committed_len"] != snapshot_committed_len:
                 self.log.info(
-                    f"[final-vad] slot={slot_key or self.active_slot} lang={final_lang} text='{uncommitted}' "
-                    f"translation='{translation}'"
+                    f"[flush-skip] reason={reason} committed_len advanced "
+                    f"({snapshot_committed_len} -> {slot['committed_len']}), skipping duplicate"
                 )
+                return
             await self.send_message(
                 "final",
                 start=format_time(self.segment_start_time),
@@ -525,7 +539,7 @@ class Qwen3ASRStreamingHandler:
                 })
 
             ready_to_emit = []
-            async with self.flush_lock:
+            async with slot["flush_lock"]:
                 async with self.asr_lock:
                     latest_state = slot["state"]
                     latest_text = (latest_state.text or "").strip() if latest_state else ""
@@ -636,6 +650,9 @@ class Qwen3ASRStreamingHandler:
                 f"new_standby={self.standby_slot}"
             )
 
+            # 잔여 버퍼(chunk_size 미만 tail audio)를 모델에 통과시킨 후 flush
+            await self._asr_finish_streaming(old_active)
+            await self._process_slot_updates(old_active, emit_partial=False)
             await self.flush_uncommitted(force=True, reason="vad", slot_key=old_active)
             self._reset_stream_slot(self.standby_slot)
 
