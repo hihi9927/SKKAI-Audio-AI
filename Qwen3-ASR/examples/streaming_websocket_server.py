@@ -28,6 +28,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Optional, Any
 
+import copy
 import numpy as np
 import aiohttp
 import torch
@@ -346,7 +347,7 @@ class Qwen3ASRStreamingHandler:
         self.vad_iterator = None
         if _SILERO_VAD_AVAILABLE:
             try:
-                vad_model = load_silero_vad()
+                vad_model = copy.deepcopy(load_silero_vad())
                 self.vad_iterator = VADIterator(
                     model=vad_model,
                     threshold=VAD_THRESHOLD,
