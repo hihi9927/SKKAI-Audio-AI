@@ -82,6 +82,9 @@ class StreamingConfig:
     unfixed_chunk_num: int = 2
     unfixed_token_num: int = 5
 
+    # 빔 서치 설정
+    beam_size: int = 2  # 1이면 greedy, 2+ 이면 beam search
+
     # 서버 설정
     host: str = "0.0.0.0"
     port: int = 8765
@@ -862,6 +865,17 @@ class Qwen3ASRStreamingServer:
             max_new_tokens=self.config.max_new_tokens,
             max_model_len=8192,
         )
+        if self.config.beam_size > 1:
+            from vllm import SamplingParams
+            self.asr.sampling_params = SamplingParams(
+                use_beam_search=True,
+                best_of=self.config.beam_size,
+                temperature=0.0,
+                max_tokens=self.config.max_new_tokens,
+            )
+            logger.info(f"Beam search enabled: beam_size={self.config.beam_size}")
+        else:
+            logger.info("Greedy decoding (beam_size=1)")
         logger.info("Model loaded successfully")
 
     async def handle_connection(self, websocket):
@@ -964,6 +978,10 @@ def parse_args():
         "--idle-shutdown-sec", type=int, default=60,
         help="Seconds of no connections before server shuts down (default: 60)",
     )
+    parser.add_argument(
+        "--beam-size", type=int, default=2,
+        help="Beam search size (1=greedy, 2+=beam search, default: 2)",
+    )
     return parser.parse_args()
 
 
@@ -979,6 +997,7 @@ def main():
         port=args.port,
         no_idle_shutdown=args.no_idle_shutdown,
         idle_shutdown_sec=args.idle_shutdown_sec,
+        beam_size=args.beam_size,
     )
 
     server = Qwen3ASRStreamingServer(config)

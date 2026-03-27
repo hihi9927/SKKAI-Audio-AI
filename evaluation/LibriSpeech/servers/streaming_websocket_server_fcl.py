@@ -508,6 +508,7 @@ def main():
         port=args.port,
         no_idle_shutdown=args.no_idle_shutdown,
         idle_shutdown_sec=args.idle_shutdown_sec,
+        beam_size=args.beam_size,
     )
 
     server = FCLStreamingServer(config)
