@@ -913,13 +913,19 @@ class Qwen3ASRStreamingServer:
         )
         if self.config.beam_size > 1:
             from vllm import SamplingParams
-            self.asr.sampling_params = SamplingParams(
-                use_beam_search=True,
-                best_of=self.config.beam_size,
-                temperature=0.0,
-                max_tokens=self.config.max_new_tokens,
-            )
-            logger.info(f"Beam search enabled: beam_size={self.config.beam_size}")
+            try:
+                self.asr.sampling_params = SamplingParams(
+                    use_beam_search=True,
+                    best_of=self.config.beam_size,
+                    temperature=0.0,
+                    max_tokens=self.config.max_new_tokens,
+                )
+                logger.info(f"Beam search enabled: beam_size={self.config.beam_size}")
+            except TypeError:
+                logger.warning(
+                    f"이 vLLM 버전은 use_beam_search를 지원하지 않습니다. "
+                    f"Greedy decoding으로 fallback합니다. (beam_size={self.config.beam_size} 무시)"
+                )
         else:
             logger.info("Greedy decoding (beam_size=1)")
         logger.info("Model loaded successfully")
