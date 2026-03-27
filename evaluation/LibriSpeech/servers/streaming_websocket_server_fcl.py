@@ -8,6 +8,7 @@ It lives under evaluation/ so app traffic keeps using the production server.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import sys
