@@ -460,8 +460,9 @@ class Qwen3ASRStreamingHandler:
                 return
 
         # 2단계: lock 해제 후 I/O (번역 API) 수행 → 다른 슬롯 flush 비차단
-        translation, detected_lang = await google_translate_async(
-            self.http_session, uncommitted, self.client_target_lang
+        audio_end_sec = self._get_flush_audio_end_sec()
+        translation, detected_lang, extra = await self._translate(
+            uncommitted, self.client_target_lang, audio_end_sec
         )
         self.log.info(
             f"[translate-flush] reason={reason} sentence='{uncommitted}' "
@@ -469,8 +470,8 @@ class Qwen3ASRStreamingHandler:
             f"translation='{translation}'"
         )
         if detected_lang == self.client_target_lang:
-            translation, _ = await google_translate_async(
-                self.http_session, uncommitted, self.client_lang
+            translation, _, extra = await self._translate(
+                uncommitted, self.client_lang, audio_end_sec
             )
             self.log.info(
                 f"[translate-flush-flip] reason={reason} "
@@ -478,6 +479,7 @@ class Qwen3ASRStreamingHandler:
             )
 
         final_lang = detected_lang or lang_to_code(current_lang)
+        commit_reason = "vad" if reason.startswith("vad") else "seg"
         self.log.info(
             f"[final-flush] slot={slot_key or self.active_slot} reason={reason} lang={final_lang} "
             f"translation='{translation}' original='{uncommitted}'"
@@ -496,21 +498,15 @@ class Qwen3ASRStreamingHandler:
                     f"({snapshot_committed_len} -> {slot['committed_len']}), skipping duplicate"
                 )
                 return
-            await self.send_message(
-                "final",
-                start=format_time(self.segment_start_time),
-                end=format_time(self.current_time),
+            await self._emit_final_payload(
+                slot_key=slot_key or self.active_slot,
                 original=uncommitted,
                 translation=translation,
                 language=final_lang,
-                commitReason=("vad" if reason.startswith("vad") else "seg"),
+                reason=commit_reason,
+                audio_end_sec=audio_end_sec,
+                extra=extra,
             )
-            if self.session_logger:
-                await self.session_logger.append(
-                    time=datetime.now(timezone.utc).isoformat(),
-                    text=uncommitted,
-                    translation=translation,
-                )
             slot["committed_len"] = len(current_text)
             slot["committed_prefix"] = current_text
 
@@ -556,8 +552,8 @@ class Qwen3ASRStreamingHandler:
         if sentences_to_commit:
             translated_payloads = []
             for sentence in sentences_to_commit:
-                translation, detected_lang = await google_translate_async(
-                    self.http_session, sentence, self.client_target_lang
+                translation, detected_lang, extra = await self._translate(
+                    sentence, self.client_target_lang, self.current_time
                 )
                 self.log.info(
                     f"[translate-sentence] sentence='{sentence}' "
@@ -565,8 +561,8 @@ class Qwen3ASRStreamingHandler:
                     f"translation='{translation}'"
                 )
                 if detected_lang == self.client_target_lang:
-                    translation, _ = await google_translate_async(
-                        self.http_session, sentence, self.client_lang
+                    translation, _, extra = await self._translate(
+                        sentence, self.client_lang, self.current_time
                     )
                     self.log.info(
                         f"[translate-sentence-flip] tl={self.client_lang} "
@@ -577,6 +573,7 @@ class Qwen3ASRStreamingHandler:
                     "original": sentence,
                     "translation": translation,
                     "language": final_lang,
+                    "extra": extra,
                 })
 
             ready_to_emit = []
@@ -603,21 +600,15 @@ class Qwen3ASRStreamingHandler:
                     slot["committed_prefix"] = latest_text[:slot["committed_len"]]
 
             for payload in ready_to_emit:
-                await self.send_message(
-                    "final",
-                    start=format_time(self.segment_start_time),
-                    end=format_time(self.current_time),
+                await self._emit_final_payload(
+                    slot_key=slot_key,
                     original=payload["original"],
                     translation=payload["translation"],
                     language=payload["language"],
-                    commitReason="seg",
+                    reason="seg",
+                    audio_end_sec=self.current_time,
+                    extra=payload.get("extra"),
                 )
-                if self.session_logger:
-                    await self.session_logger.append(
-                        time=datetime.now(timezone.utc).isoformat(),
-                        text=payload["original"],
-                        translation=payload["translation"],
-                    )
                 self.log.info(
                     f"[final-sentence] slot={slot_key} lang={payload['language']} "
                     f"text={payload['original']}"
@@ -678,8 +669,10 @@ class Qwen3ASRStreamingHandler:
                 await self._process_slot_updates(self.active_slot, emit_partial=True)
 
             target_sample = chunk_base_sample + local_cut
+            target_audio_end_sec = target_sample / SAMPLING_RATE
             self.log.info(
                 f"[vad-commit] target_samples={target_sample} "
+                f"target_audio_end_sec={target_audio_end_sec:.3f} "
                 f"processed={self.asr_processed_cursor} active={self.active_slot}"
             )
 
@@ -692,6 +685,7 @@ class Qwen3ASRStreamingHandler:
             )
 
             # 잔여 버퍼(chunk_size 미만 tail audio)를 모델에 통과시킨 후 flush
+            await self._on_vad_commit(target_audio_end_sec)
             await self._asr_finish_streaming(old_active)
             await self._process_slot_updates(old_active, emit_partial=False)
             await self.flush_uncommitted(force=True, reason="vad", slot_key=old_active)
@@ -709,6 +703,58 @@ class Qwen3ASRStreamingHandler:
             return
         await self._asr_finish_streaming(self.active_slot)
         await self.flush_uncommitted(force=True, reason="finish", slot_key=self.active_slot)
+
+    # ── 서브클래스 훅 ──────────────────────────────────────────────────────────
+
+    async def _translate(
+        self, text: str, target_lang: str, audio_end_sec: Optional[float] = None  # noqa: ARG002
+    ) -> tuple[str, str, dict]:
+        """번역 훅. 서브클래스에서 오버라이드해 타이밍 등 추가 데이터 수집 가능.
+
+        Returns:
+            (translation, detected_lang, extra)
+            extra: 서브클래스가 _emit_final_payload 에 전달할 임의 데이터.
+        """
+        translation, detected_lang = await google_translate_async(
+            self.http_session, text, target_lang
+        )
+        return translation, detected_lang, {}
+
+    def _get_flush_audio_end_sec(self) -> float:
+        """flush 시 사용할 오디오 종료 시각(초). 서브클래스에서 오버라이드 가능."""
+        return self.current_time
+
+    async def _on_vad_commit(self, audio_end_sec: float) -> None:  # noqa: ARG002
+        """VAD 발화 종료 커밋 직전에 호출되는 훅. 서브클래스에서 오버라이드 가능."""
+        pass
+
+    async def _emit_final_payload(
+        self,
+        *,
+        slot_key: str,  # noqa: ARG002
+        original: str,
+        translation: str,
+        language: str,
+        reason: str,
+        audio_end_sec: float,
+        extra: Optional[dict] = None,  # noqa: ARG002
+    ) -> None:
+        """최종 세그먼트 전송 훅. 서브클래스에서 오버라이드해 FCL 메타데이터 등 추가 가능."""
+        await self.send_message(
+            "final",
+            start=format_time(self.segment_start_time),
+            end=format_time(audio_end_sec),
+            original=original,
+            translation=translation,
+            language=language,
+            commitReason=reason,
+        )
+        if self.session_logger:
+            await self.session_logger.append(
+                time=datetime.now(timezone.utc).isoformat(),
+                text=original,
+                translation=translation,
+            )
 
     async def handle(self):
         try:
