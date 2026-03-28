@@ -67,6 +67,8 @@ def main():
                         help="번역 요청 간 딜레이(초)")
     parser.add_argument("--no-resume", dest="resume", action="store_false",
                         help="이미 번역된 항목도 재처리")
+    parser.add_argument("--gpus",     type=int, default=0,
+                        help="COMET 추론에 사용할 GPU 수 (기본: 0, CPU 사용)")
     parser.set_defaults(resume=True)
     args = parser.parse_args()
 
@@ -173,7 +175,7 @@ def main():
         print("COMET 계산할 데이터가 없습니다.")
         return
 
-    output = model.predict(comet_data, batch_size=8, gpus=1)
+    output = model.predict(comet_data, batch_size=8, gpus=args.gpus)
     scores = output.scores
 
     for entry, score in zip(comet_entries, scores):
@@ -190,8 +192,9 @@ def main():
     stats[f"{stat_pfx}_comet_min"]       = round(min(all_scores), 4)
     stats[f"{stat_pfx}_comet_avg"]       = round(sum(all_scores) / len(all_scores), 4)
     raw["stats"] = stats
+    raw_out = {"stats": stats} | {k: v for k, v in raw.items() if k != "stats"}
 
-    output_path.write_text(json.dumps(raw, ensure_ascii=False, indent=2), encoding="utf-8")
+    output_path.write_text(json.dumps(raw_out, ensure_ascii=False, indent=2), encoding="utf-8")
 
     print(f"\n── COMET 결과 ({hyp_field}) ──────────────────────────")
     print(f"  샘플 수  : {len(scores)}")

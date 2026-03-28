@@ -22,40 +22,42 @@ SEG_SYSTEM_PROMPT = (
     "You are a precise Korean-to-English translator specializing in spoken, conversational Korean.\n"
     "Rules:\n"
     "- Output ONLY the English translation. No explanations, notes, or alternatives.\n"
-    "- Preserve the natural spoken tone; do not over-formalize.\n"
-    "- Translate faithfully — do not add or omit meaning."
+    "- The input may be a sentence fragment — translate exactly what is given. Do NOT complete or extend it.\n"
+    "- Preserve the natural spoken register (casual/formal) exactly as in the source.\n"
+    "- Translate faithfully — do not add, omit, or infer meaning beyond what is stated."
 )
 
 SEG_CONTEXT_SYSTEM_PROMPT = (
     "You are a precise Korean-to-English translator specializing in spoken, conversational Korean.\n"
-    "You will receive already-translated preceding segments as context, then a new segment to translate.\n"
+    "You will receive already-confirmed preceding segment translations as context, "
+    "then a new segment to translate.\n"
     "Rules:\n"
     "- Output ONLY the English translation of the NEW segment. Nothing else.\n"
-    "- Do NOT re-translate or modify the preceding translations.\n"
-    "- Use the context to maintain consistency in names, topics, tense, and tone.\n"
-    "- Preserve the natural spoken tone; do not over-formalize."
+    "- The preceding translations are FINAL. Do NOT reproduce, paraphrase, or continue them.\n"
+    "- The new segment may be a grammatical fragment — translate exactly what is given, do NOT complete it.\n"
+    "- Match the register, terminology, and tone established in the preceding translations.\n"
+    "- Translate faithfully — do not add, omit, or infer meaning beyond what is stated."
 )
 
 FULL_SYSTEM_PROMPT = (
     "You are a precise Korean-to-English translator specializing in spoken, conversational Korean.\n"
     "Rules:\n"
     "- Output ONLY the English translation. No explanations, notes, or alternatives.\n"
-    "- Translate the entire sentence as one coherent unit.\n"
-    "- Preserve the natural spoken tone; do not over-formalize."
+    "- Translate the entire passage as one coherent unit.\n"
+    "- Preserve the natural spoken register (casual/formal) exactly as in the source.\n"
+    "- Translate faithfully — do not add, omit, or infer meaning beyond what is stated."
 )
 
 
 def translate_full(client: OpenAI, text: str, model: str) -> str | None:
     try:
-        response = client.chat.completions.create(
+        response = client.responses.create(
             model=model,
-            messages=[
-                {"role": "system", "content": FULL_SYSTEM_PROMPT},
-                {"role": "user",   "content": text},
-            ],
-            temperature=0,
+            instructions=FULL_SYSTEM_PROMPT,
+            input=text,
+            reasoning={"effort": "none"},
         )
-        return response.choices[0].message.content.strip()
+        return response.output_text.strip()
     except Exception as e:
         print(f"  [full 번역 실패] {e}")
         return None
@@ -77,10 +79,8 @@ def translate_segments_with_context(
 
     for i, seg in enumerate(segments):
         if i == 0:
-            messages = [
-                {"role": "system", "content": SEG_SYSTEM_PROMPT},
-                {"role": "user",   "content": seg},
-            ]
+            system_prompt = SEG_SYSTEM_PROMPT
+            user_content  = seg
         else:
             context_lines = []
             for j in range(i):
@@ -88,24 +88,22 @@ def translate_segments_with_context(
                 context_lines.append(f"[{j+1}] English: {translations[j] or '(translation unavailable)'}")
             context_str = "\n".join(context_lines)
 
-            user_content = (
-                f"Preceding segments (already translated — do NOT modify):\n"
+            system_prompt = SEG_CONTEXT_SYSTEM_PROMPT
+            user_content  = (
+                f"=== Preceding segments (FINAL — do NOT reproduce or modify) ===\n"
                 f"{context_str}\n\n"
-                f"Now translate this next segment:\n"
+                f"=== Translate ONLY this new segment ===\n"
                 f"{seg}"
             )
-            messages = [
-                {"role": "system", "content": SEG_CONTEXT_SYSTEM_PROMPT},
-                {"role": "user",   "content": user_content},
-            ]
 
         try:
-            response = client.chat.completions.create(
+            response = client.responses.create(
                 model=model,
-                messages=messages,
-                temperature=0,
+                instructions=system_prompt,
+                input=user_content,
+                reasoning={"effort": "none"},
             )
-            t = response.choices[0].message.content.strip()
+            t = response.output_text.strip()
             translations.append(t)
             print(f"    seg[{i+1}] KO: {seg}")
             print(f"    seg[{i+1}] EN: {t}")
@@ -130,7 +128,7 @@ def main():
                         help="출력 파일명 (기본: 입력과 동일 — 덮어씀)")
     parser.add_argument("--input-dir", type=str, default=str(_results_dir),
                         help="입력 파일 디렉토리")
-    parser.add_argument("--model",     type=str, default="gpt-4o-mini",
+    parser.add_argument("--model",     type=str, default="gpt-5.4-nano",
                         help="OpenAI 모델명")
     parser.add_argument("--api-key",   type=str, default=None,
                         help="OpenAI API 키 (미입력 시 OPENAI_API_KEY 환경변수 사용)")
