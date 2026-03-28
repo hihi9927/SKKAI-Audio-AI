@@ -20,6 +20,7 @@ import shutil
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
+import jiwer
 import librosa
 import torch
 from datasets import load_dataset
@@ -182,6 +183,41 @@ class DataCollatorForQwen3ASRFinetuning:
         return result
 
 
+def preprocess_logits_for_metrics(logits, labels):
+    """메모리 절약: 전체 logits 대신 argmax token id만 보관."""
+    return logits.argmax(dim=-1)
+
+
+def make_compute_metrics(processor):
+    def compute_metrics(eval_pred):
+        pred_ids, label_ids = eval_pred  # (batch, seq_len)
+
+        decoded_preds = []
+        decoded_labels = []
+
+        for pred, label in zip(pred_ids, label_ids):
+            # CausalLM shift: logit[i]는 position i+1을 예측
+            shifted_pred  = pred[:-1]
+            shifted_label = label[1:]
+
+            valid = shifted_label != -100
+            if valid.sum() == 0:
+                continue
+
+            p_str = processor.tokenizer.decode(shifted_pred[valid],  skip_special_tokens=True)
+            l_str = processor.tokenizer.decode(shifted_label[valid], skip_special_tokens=True)
+            decoded_preds.append(p_str)
+            decoded_labels.append(l_str)
+
+        if not decoded_labels:
+            return {"wer": 1.0}
+
+        wer = jiwer.wer(decoded_labels, decoded_preds)
+        return {"wer": round(wer, 4)}
+
+    return compute_metrics
+
+
 class CastFloatInputsTrainer(Trainer):
     def _prepare_inputs(self, inputs):
         inputs = super()._prepare_inputs(inputs)
@@ -341,7 +377,7 @@ def main():
         fp16=not use_bf16,
         ddp_find_unused_parameters=False,
         remove_unused_columns=False,
-        report_to="none",
+        report_to="tensorboard",
     )
 
     trainer = CastFloatInputsTrainer(
@@ -352,6 +388,8 @@ def main():
         data_collator=collator,
         tokenizer=processor.tokenizer,
         callbacks=[MakeEveryCheckpointInferableCallback(base_model_path=args_cli.model_path)],
+        compute_metrics=make_compute_metrics(processor),
+        preprocess_logits_for_metrics=preprocess_logits_for_metrics,
     )
 
     resume_from = (args_cli.resume_from or "").strip()
