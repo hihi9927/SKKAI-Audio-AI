@@ -83,7 +83,32 @@ def main():
     input_path  = Path(args.input_dir) / args.input
     output_path = input_path
     raw  = json.loads(input_path.read_text(encoding="utf-8"))
-    data = raw["data"]
+
+    # 구조 감지: KsponSpeech {"data": [...]} vs DailyTalk {"0": {"data": [...]}, ...}
+    is_dailytalk = "data" not in raw
+    if is_dailytalk:
+        group_keys = list(raw.keys())
+        data = []
+        entry_group = {}
+        for gk in group_keys:
+            if isinstance(raw[gk], dict) and "data" in raw[gk]:
+                for e in raw[gk]["data"]:
+                    data.append(e)
+                    entry_group[e["file"]] = gk
+    else:
+        data = raw["data"]
+
+    def save_raw(stats=None):
+        if is_dailytalk:
+            grouped = {gk: {"data": []} for gk in group_keys}
+            for e in data:
+                grouped[entry_group[e["file"]]]["data"].append(e)
+            if stats:
+                grouped = {"stats": stats} | grouped
+            output_path.write_text(json.dumps(grouped, ensure_ascii=False, indent=2), encoding="utf-8")
+        else:
+            raw_out = {"stats": raw.get("stats", {})} | {k: v for k, v in raw.items() if k != "stats"}
+            output_path.write_text(json.dumps(raw_out, ensure_ascii=False, indent=2), encoding="utf-8")
 
     # ── 1. Google Translate 번역 ─────────────────────────────────────────────
     if hyp_field == "gdt_seg_trans":
@@ -113,7 +138,7 @@ def main():
                 if args.delay > 0:
                     time.sleep(args.delay)
 
-            output_path.write_text(json.dumps(raw, ensure_ascii=False, indent=2), encoding="utf-8")
+            save_raw()
 
     elif hyp_field == "finetuned_seg_trans":
         for i, entry in enumerate(data):
@@ -145,7 +170,7 @@ def main():
                 if args.delay > 0:
                     time.sleep(args.delay)
 
-            output_path.write_text(json.dumps(raw, ensure_ascii=False, indent=2), encoding="utf-8")
+            save_raw()
 
     # ── 2. COMET 점수 산출 ───────────────────────────────────────────────────
     print(f"\nCOMET 모델 로드 중... (hyp={hyp_field}, ref={ref_field}, score={score_field})")
@@ -185,16 +210,15 @@ def main():
 
     # stats: 기존 stats 유지하면서 해당 field 통계만 덮어씀
     all_scores = [e[score_field] for e in data if score_field in e]
-    stats = raw.get("stats", {"total_files": len(data)})
+    stats = raw.get("stats", {"total_files": len(data)}) if not is_dailytalk else {"total_files": len(data)}
     stats["total_files"] = len(data)
     stats[f"{stat_pfx}_comet_evaluated"] = len(all_scores)
     stats[f"{stat_pfx}_comet_max"]       = round(max(all_scores), 4)
     stats[f"{stat_pfx}_comet_min"]       = round(min(all_scores), 4)
     stats[f"{stat_pfx}_comet_avg"]       = round(sum(all_scores) / len(all_scores), 4)
-    raw["stats"] = stats
-    raw_out = {"stats": stats} | {k: v for k, v in raw.items() if k != "stats"}
-
-    output_path.write_text(json.dumps(raw_out, ensure_ascii=False, indent=2), encoding="utf-8")
+    if not is_dailytalk:
+        raw["stats"] = stats
+    save_raw(stats=stats)
 
     print(f"\n── COMET 결과 ({hyp_field}) ──────────────────────────")
     print(f"  샘플 수  : {len(scores)}")
