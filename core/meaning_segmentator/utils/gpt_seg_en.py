@@ -14,206 +14,112 @@ from openai import OpenAI
 import anthropic
 
 SYSTEM_PROMPT = (
-"""You are an expert in meaning-based segmentation of spoken English text from ASR (Automatic Speech Recognition) output.
-Your task is to insert <SEG> tags to divide conversational English into translation units.
-The goal is for each segment to be a semantically self-contained unit that a translator can handle without surrounding context.
+"""You are an expert in meaning-based segmentation of spoken English ASR output.
+Insert <SEG> tags to divide text into translation units for Korean translation.
+The goal is to minimize latency: segment as aggressively as possible while keeping each piece translatable.
 
-[Spoken English Characteristics to Be Aware Of]
-ASR output reflects natural speech, which means:
-- Filler words and hesitation markers: uh, um, uh-huh, hmm
-- Discourse markers that open or link clauses: well, like, you know, I mean, right, okay, so, but, and, actually, basically, honestly, literally
-- Hedges attached to the following clause: kind of, sort of, I think, I guess, I suppose, I feel like
-- False starts and self-corrections: "I was gonna — I mean I actually changed my mind"
-- Reduced/contracted forms: gonna, wanna, gotta, kinda, sorta, 'cause, yeah, nah
-- Tag questions trailing the main clause: "It was great, wasn't it?" / "That's weird, right?"
-- Dislocated elements: left dislocation ("That movie, it was amazing") / right dislocation ("It was amazing, that movie")
-These features are normal and must be handled carefully when deciding whether to segment.
+[Fundamental Constraint]
+Segmentation occurs ONLY at clause boundaries.
+Never split inside a single clause — never separate:
+- a verb from its object or complement
+- a noun from its modifier
+- a preposition from its object
+- a subject from its predicate
+A valid split point must have a complete clause on BOTH sides.
 
-[Core Principles]
-- Minimize segmentation: when in doubt, do NOT segment
-- A grammatically incomplete clause can still be a single coherent meaning unit — do not segment based on grammar alone
-- Segmentation is based on semantic completeness and translation independence, NOT clause count or sentence length
+[Decision Rule]
+For every candidate split point "A <SEG> B":
+1. Can a Korean translator produce an acceptable translation of A alone?
+2. Can a Korean translator produce an acceptable translation of B alone?
+3. If yes to both → SEGMENT. Minor stylistic differences from a combined translation are acceptable.
+   Only reject a split if translation genuinely breaks: a pronoun loses its referent, a word becomes untranslatable, or the meaning reverses.
 
-[When to Segment]
-Segment ONLY when BOTH conditions are met.
-Even if both conditions are met, do NOT segment if it falls under [Never Segment] below — those rules always take priority.
+Bias toward splitting. When in doubt, SEGMENT.
 
-1. There is a clear semantic boundary between two clauses:
-   - Subject, tense, or topic changes meaningfully
-   - OR the first clause describes a completed event/state and the second introduces a new, independent one
-   - OR a contrastive or temporal shift (but, however, and then, after that) separates two independently meaningful clauses
-   - OR a punctuation mark (. ? !) ends a grammatically complete sentence and a new sentence begins
-   - OR a greeting (Hello, Hi, Hey) or response word (Yes, No, Sure, Okay, Alright) is followed by a period/comma and an independent clause
-     e.g. "Hello. <SEG> How can I help you?" / "Yes. <SEG> I'd like to make a reservation."
-   - OR the main clause is semantically complete and is followed by a purpose clause (so that, in order to) that can be independently translated
-2. After segmenting, each piece can stand alone as a translation unit — a translator with no context could handle it correctly
+[Segmentation Signals]
+- Sentence boundary punctuation (. ? !) followed by a new clause
+- Two clauses joined by "but", "and", "and then", or a contrastive/temporal shift
+- Conditional "if/when" clause + main clause → split between them
+- ", then" or ", and then" between sequential actions → split before "then"/"and then"
+- Greeting or response word (Hi / Yes / No / OK / Sure / Gotcha / Alright) followed by another clause
+- Ellipsis (...) followed by a new utterance
+- Complete main clause + purpose clause ("so that", "in order to")
+- Adverbial clause (although, even though, while, once) + main clause → split between them
+- "No matter..." / "Whatever..." / "Regardless..." + main clause → split between them
 
-[Note on "so" — three distinct roles]
-- "so" as a causal/result conjunction linking two clauses mid-sentence → do NOT segment
-  e.g. "I was tired so I left early" — tight causal link, keep together
-- "So" as a discourse marker at the start of a clause after a sentence boundary → valid segment point before it
-  e.g. "She quit her job. <SEG> So now she's looking for something new."
-- "so that" as a purpose clause after a complete main clause → valid segment boundary
-  e.g. "I saved money <SEG> so that I could travel."
-
-[Never Segment — even if both conditions above are met]
-- A filler or hesitation marker (uh, um, hmm, etc.) would become a standalone piece
-  → Must be attached to the following content
-- A discourse marker appears at the very start of the entire input with no preceding clause (well, like, you know, I mean, but, and, actually, basically, right, etc.)
-  → Must be attached to the following content
-  → NOTE: "but" or "and" between two complete clauses is a valid segment boundary — only "but"/"and" with nothing before it is forbidden as standalone
-- A hedge expression (I think, I guess, kind of, sort of, I feel like, maybe, probably) introduces the following clause
-  → Must stay with the clause it introduces
-- A subordinating conjunction opens a clause that cannot stand alone: because, since, when, while, if, although, even though, unless, until, as long as
-  → The subordinate clause and its main clause must stay together
-  → "so that" and "in order to" are exceptions — see [Note on "so"] above
-- A relative clause (who, which, that, where, when) modifies the preceding noun
-  → Restrictive relative clauses (no comma) — always keep together
-  → Non-restrictive relative clauses (comma + which/who) — generally keep together unless clearly separable
-- A complement clause follows a reporting or cognitive verb: "I think that...", "she said that...", "I know...", "I feel like..."
-  → Keep the verb and its complement together
-- A participial phrase, infinitive phrase, or gerund phrase modifies the main clause
-  → Keep together
-- Inside a noun/phrase-level enumeration (items of the same type with no independent subject+predicate): A and B, A or B, both A and B, not only A but B, A as well as B
-  → Keep the entire list as one unit
-  → e.g. "I had to clean and do laundry and meal prep" — these share one subject, keep together
-  → EXCEPTION: If each item in the list is a full clause with its own subject and predicate and can be independently translated, treat each clause boundary as a valid segment point
-  → e.g. "Country code is eighty one, <SEG> area code is thirty eight, <SEG> and the number is eight four six eight nine seven two."
-- A tag question trails the main clause: "right?", "you know?", "isn't it?", "didn't you?"
-  → Must stay with its main clause
-- A false start or self-correction is mid-utterance
-  → No internal segmentation
-- An utterance is cut off or incomplete
-  → No internal segmentation
-
-[Decision Procedure — apply internally before confirming any split]
-Do NOT include this reasoning in your output.
-
-1. Identify the segmentation candidate: "A <SEG> B"
-2. Attempt to translate A alone, then B alone, into Korean without any surrounding context
-3. Attempt to translate the full original (A + B) into Korean as one unit
-4. Compare: does combining the step-2 results match step 3 in meaning and nuance?
-   - Yes → confirm segmentation
-   - No, or any of the following apply → cancel, output original as-is:
-     · A modifier's scope changes (e.g. "really" now applies differently)
-     · A context-dependent word (then, that, there, this way) becomes ambiguous
-     · The logical or narrative connection between A and B is lost in translation
-     · A pronoun in B (he, she, it, they, that, there, this) loses its referent — see also [Never Segment]
+[Do NOT Segment]
+- Inside a single clause (verb+object, subject+predicate, noun+modifier, preposition+object)
+- A filler (uh, um, hmm) would become standalone
+- A pronoun in B genuinely loses its referent (no way to infer who/what)
+- Noun-level enumeration without independent predicate per item: "A, B, or C"
+- Tag question trailing main clause: "right?", "isn't it?"
+- "so" as causal conjunction mid-sentence: "I was tired so I left"
+- False start, self-correction, or incomplete utterance
+- Conjunction/discourse marker at the very start of the entire input with nothing before it
 
 [Output Rules]
-- Insert <SEG> tags only — do NOT change, correct, or paraphrase the original text in any way
-- No tag at the very start or very end of the text
-- Never place two tags consecutively (<SEG> <SEG>)
-- Punctuation (. ? ! ,) must stay attached to the text before it — never immediately after a <SEG> tag
-- Always place a space on both sides of every <SEG> tag
-- If no segmentation is needed, output the original text unchanged
-- Do NOT add any explanation, label, comment, or extra text
+- Insert <SEG> tags only. Do NOT change the original text.
+- No tag at the very start or very end.
+- Punctuation stays attached to the text before it.
+- Space on both sides of every <SEG> tag.
+- If no segmentation is needed, output the original text unchanged.
+- No explanation or extra text.
 
----
+[Examples — Segment]
+Input: Please have a seat and the doctor will be with you shortly.
+Output: Please have a seat <SEG> and the doctor will be with you shortly.
 
-[Examples — Segment ✓]
+Input: If you need anything else, just let me know.
+Output: If you need anything else, <SEG> just let me know.
 
-# Greeting followed by independent clause
-Input: Hi. Welcome to the store. Is there anything I can help you with?
-Output: Hi. <SEG> Welcome to the store. <SEG> Is there anything I can help you with?
+Input: Sure. I'll get that ready for you right away.
+Output: Sure. <SEG> I'll get that ready for you right away.
 
-# Response word (Yes/No) followed by independent clause
-Input: Yes. I'd like to place an order please.
-Output: Yes. <SEG> I'd like to place an order please.
+Input: Even though it was raining, we decided to go ahead with the picnic.
+Output: Even though it was raining, <SEG> we decided to go ahead with the picnic.
 
-# Complete main clause + purpose clause (so that) → segment
-Input: I'm making a shopping budget so that I don't spend too much money.
-Output: I'm making a shopping budget <SEG> so that I don't spend too much money.
+Input: No matter how busy you are, you should try to get some rest.
+Output: No matter how busy you are, <SEG> you should try to get some rest.
 
-# Two complete independent clauses, clear topic shift
-Input: I woke up really early this morning and then I went for a run
-Output: I woke up really early this morning <SEG> and then I went for a run
+Input: Chop the onions, then add them to the pan.
+Output: Chop the onions, <SEG> then add them to the pan.
 
-# Completed event + new event, punctuation stays with preceding text
-Input: It was honestly so good. I definitely want to go back.
-Output: It was honestly so good. <SEG> I definitely want to go back.
+Input: Alright... So what do we do next?
+Output: Alright... <SEG> So what do we do next?
 
-# Discourse marker (so) opens a new clause — groups with following content
-Input: She ended up leaving the company. So now she's looking for something new.
-Output: She ended up leaving the company. <SEG> So now she's looking for something new.
+Input: The room was way too cold but nobody said anything about it.
+Output: The room was way too cold <SEG> but nobody said anything about it.
 
-# Multiple boundaries in a longer utterance
-Input: I met up with my friend yesterday and we grabbed food and went to a café. But then we ran into an old classmate. It had been so long I was genuinely happy to see them.
-Output: I met up with my friend yesterday and we grabbed food and went to a café. <SEG> But then we ran into an old classmate. <SEG> It had been so long I was genuinely happy to see them.
+Input: I checked the schedule and the next train leaves at five.
+Output: I checked the schedule <SEG> and the next train leaves at five.
 
-# Filler + complete clause, then contrastive clause with "but" — segment between the two clauses
-Input: Uh I'm not really sure but I think I want to try something different
-Output: Uh I'm not really sure <SEG> but I think I want to try something different
+Input: Sorry about that. Let me fix it for you. It should only take a minute.
+Output: Sorry about that. <SEG> Let me fix it for you. <SEG> It should only take a minute.
 
-# Subject shift mid-utterance, no punctuation
-Input: I got the pasta but she ordered the risotto
-Output: I got the pasta <SEG> but she ordered the risotto
+Input: Once you're done with the form, bring it to the front desk.
+Output: Once you're done with the form, <SEG> bring it to the front desk.
 
-# Temporal/situational contrast without punctuation
-Input: Yesterday was rough but today actually feels okay
-Output: Yesterday was rough <SEG> but today actually feels okay
+[Examples — Do NOT Segment]
+Input: Tea, coffee, or juice?
+Output: Tea, coffee, or juice?
 
-# Contrastive shift with discourse marker, no punctuation
-Input: The vibe was really nice but the prices were kind of steep
-Output: The vibe was really nice <SEG> but the prices were kind of steep
+Input: She was exhausted so she went straight to bed.
+Output: She was exhausted so she went straight to bed.
 
-# Sequential events with "and then"
-Input: I finished the report and then I just completely crashed
-Output: I finished the report <SEG> and then I just completely crashed
+Input: I talked to my neighbor and he told me something interesting.
+Output: I talked to my neighbor and he told me something interesting.
 
----
+Input: um I think we should probably leave soon.
+Output: um I think we should probably leave soon.
 
-[Examples — Do NOT Segment ✗]
+Input: That was pretty impressive right?
+Output: That was pretty impressive right?
 
-# Filler at the start — must attach to following content
-Input: uh it was actually super crowded in there
-Output: uh it was actually super crowded in there
+Input: We should grab the blue one from the top shelf.
+Output: We should grab the blue one from the top shelf.
 
-# Discourse marker alone at the start — must attach to following content
-Input: but I thought that was kind of strange honestly
-Output: but I thought that was kind of strange honestly
-
-# Hedge + following clause — keep together
-Input: I think he was trying to be nice but it came off kind of weird
-Output: I think he was trying to be nice but it came off kind of weird
-
-# Subordinate clause with because — cannot stand alone
-Input: I was in such a good mood today because the weather was perfect
-Output: I was in such a good mood today because the weather was perfect
-
-# Cause-effect with so — continuous logical structure
-Input: I stayed up way too late last night so I'm running on nothing today
-Output: I stayed up way too late last night so I'm running on nothing today
-
-# Enumeration — keep entire list together
-Input: I had to clean and do laundry and meal prep over the weekend so it was a lot
-Output: I had to clean and do laundry and meal prep over the weekend so it was a lot
-
-# Complement clause after reporting verb — keep together
-Input: She told me she wasn't sure if she was going to make it
-Output: She told me she wasn't sure if she was going to make it
-
-# Tag question — must stay with its main clause
-Input: That's kind of a weird thing to say right
-Output: That's kind of a weird thing to say right
-
-# False start mid-utterance — no internal segmentation
-Input: I was gonna bring it up but I kind of just — I don't know I just let it go
-Output: I was gonna bring it up but I kind of just — I don't know I just let it go
-
-# Incomplete utterance — no internal segmentation
-Input: but at that point I was about to say something and
-Output: but at that point I was about to say something and
-
-# Pronoun would lose its referent after split — no segmentation
-# ("she said something" alone doesn't tell you who "she" is)
-Input: I got a call from my friend and she said something that kind of got to me
-Output: I got a call from my friend and she said something that kind of got to me
-
-# Restrictive relative clause — must stay with the noun it modifies
-Input: the guy that I was talking to earlier actually knows you
-Output: the guy that I was talking to earlier actually knows you
-
+Input: She wants to finish her homework before dinner.
+Output: She wants to finish her homework before dinner.
 """
 )
 
@@ -341,6 +247,10 @@ def main():
                         help="분절 완료 후 GDT(Google 번역) + COMET 평가 자동 실행")
     parser.add_argument("--gdt-delay", type=float, default=0.2,
                         help="GDT 번역 요청 간 딜레이(초, 기본: 0.2)")
+    parser.add_argument("--limit",     type=int, default=None,
+                        help="처리할 최대 항목 수 (기본: 전체)")
+    parser.add_argument("--overwrite", action="store_true",
+                        help="출력 파일을 입력 파일에 덮어쓰기 (--output 무시)")
     parser.set_defaults(resume=True)
     args = parser.parse_args()
 
@@ -360,11 +270,13 @@ def main():
     input_path = _transcribe_dir / args.input
 
     _results_dir.mkdir(parents=True, exist_ok=True)
-    if args.output:
+    if args.overwrite:
+        output_path = input_path
+    elif args.output:
         p = Path(args.output)
         output_path = p if p.is_absolute() or len(p.parts) > 1 else _results_dir / p
     else:
-        output_path = _results_dir / (input_path.stem + "_seg_eng" + input_path.suffix)
+        output_path = _results_dir / (input_path.stem + "_seg_en" + input_path.suffix)
 
     if not input_path.exists():
         raise FileNotFoundError(f"입력 파일을 찾을 수 없습니다: {input_path}")
@@ -393,50 +305,77 @@ def main():
         data = base_data
         print(f"출력 파일 생성: {output_path}")
 
+    target = data[:args.limit] if args.limit else data
+
     def save():
-        """flat data → DailyTalk 그룹 구조로 복원 후 저장"""
-        grouped = {gk: {"data": []} for gk in group_keys}
-        for e in data:
-            grouped[entry_group[e["file"]]]["data"].append(e)
+        """flat target → DailyTalk 그룹 구조로 복원 후 저장 (비어있는 그룹 제외)"""
+        grouped = {}
+        for e in target:
+            gk = entry_group[e["file"]]
+            if gk not in grouped:
+                grouped[gk] = {"data": []}
+            grouped[gk]["data"].append(e)
         output_path.write_text(json.dumps(grouped, ensure_ascii=False, indent=2), encoding="utf-8")
 
     budget_exceeded = False
-    for i, entry in enumerate(data):
-        if args.resume and entry.get("seg_text"):
-            print(f"[{i+1}/{len(data)}] 건너뜀 (이미 처리됨): {entry['file']}")
+    total = len(target)
+    for i, entry in enumerate(target):
+        seg_done  = bool(entry.get("seg_text"))
+        trans_done = bool(entry.get("gdt_full_trans")) and bool(entry.get("gdt_seg_trans"))
+
+        if args.resume and seg_done and (not args.gdt or trans_done):
+            print(f"[{i+1}/{total}] 건너뜀 (이미 처리됨): {entry['file']}")
             continue
 
         text = entry["text"]
-        print(f"[{i+1}/{len(data)}] {entry['file']}")
+        print(f"[{i+1}/{total}] {entry['file']}")
         print(f"  원문: {text}")
 
-        try:
-            seg_text = mark_segmentation(client, text, model, args.provider)
-            entry["seg_text"] = seg_text
-            print(f"  분절: {seg_text}")
-        except Exception as e:
-            msg = str(e)
-            if any(k in msg.lower() for k in ("insufficient_quota", "billing", "budget", "exceeded", "402")):
-                print(f"  예산 초과 오류 — 분절 중단, 번역으로 이동합니다.\n  ({msg})")
-                budget_exceeded = True
-                save()
-                break
-            print(f"  오류: {e}")
-            entry["seg_text"] = None
+        # ── 1. 분절 ──────────────────────────────────────────────
+        if not (args.resume and seg_done):
+            try:
+                seg_text = mark_segmentation(client, text, model, args.provider)
+                entry["seg_text"] = seg_text
+                print(f"  분절: {seg_text}")
+            except Exception as e:
+                msg = str(e)
+                if any(k in msg.lower() for k in ("insufficient_quota", "billing", "budget", "exceeded", "402")):
+                    print(f"  예산 초과 오류 — 분절 중단.\n  ({msg})")
+                    budget_exceeded = True
+                    save()
+                    break
+                print(f"  오류: {e}")
+                entry["seg_text"] = None
 
-        save()
+            save()
 
-        if args.delay > 0:
-            time.sleep(args.delay)
+            if args.delay > 0:
+                time.sleep(args.delay)
+
+        # ── 2. GDT 번역 (--gdt 옵션일 때만) ──────────────────────
+        if args.gdt and entry.get("seg_text") is not None:
+            if not (args.resume and bool(entry.get("gdt_full_trans"))):
+                entry["gdt_full_trans"] = _gdt_translate(entry["text"])
+                print(f"  gdt_full  : {entry['gdt_full_trans']}")
+                if args.gdt_delay > 0:
+                    time.sleep(args.gdt_delay)
+
+            if not (args.resume and bool(entry.get("gdt_seg_trans"))):
+                if "<SEG>" not in entry.get("seg_text", ""):
+                    entry["gdt_seg_trans"] = entry.get("gdt_full_trans")
+                    print(f"  gdt_seg   : (분절 없음, gdt_full_trans 사용)")
+                else:
+                    entry["gdt_seg_trans"] = _gdt_translate_seg(entry["seg_text"])
+                    print(f"  gdt_seg   : {entry['gdt_seg_trans']}")
+                    if args.gdt_delay > 0:
+                        time.sleep(args.gdt_delay)
+
+            save()
 
     if budget_exceeded:
         print(f"\n분절 중단 (예산 초과). 저장: {output_path}")
     else:
         print(f"\n완료. 저장: {output_path}")
-
-    if args.gdt:
-        print("\nGDT 번역 시작...")
-        run_gdt(data, output_path, delay=args.gdt_delay, resume=args.resume, save_fn=save)
 
 
 if __name__ == "__main__":
