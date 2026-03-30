@@ -384,7 +384,6 @@ def summarize_segment_metrics(segment_metrics):
 
 async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_ms=200, target_lang='ko'):
     processing_start = time.perf_counter()
-    first_result_time = None
 
     await ws.send(json.dumps({'type': 'start', 'lang': 'auto', 'targetLang': target_lang}))
     await recv_type(ws, 'ready', timeout=25, ignore_types={'partial', 'final'})
@@ -393,93 +392,100 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
     chunk_size = int((chunk_size_ms / 1000.0) * SAMPLING_RATE)
     send_interval_sec = max(0.0, send_interval_ms / 1000.0)
 
-    stream_origin = time.perf_counter()
-    for i in range(0, len(audio_int16), chunk_size):
-        chunk = audio_int16[i:i + chunk_size]
-        chunk_end_sec = (i + len(chunk)) / SAMPLING_RATE
-
-        if send_interval_sec > 0:
-            target_send_at = stream_origin + chunk_end_sec
-            while True:
-                remaining = target_send_at - time.perf_counter()
-                if remaining <= 0:
-                    break
-                await asyncio.sleep(min(remaining, 0.02))
-
-        await ws.send(chunk.tobytes())
-
-    await ws.send(json.dumps({'type': 'finish'}))
-
     finals = []
     segment_events = []
     segment_metrics = []
     partial_last = ''
-    absolute_deadline = time.perf_counter() + 60
-    idle_deadline = time.perf_counter() + 5
+    first_result_time = None
+    send_done = asyncio.Event()
 
-    while time.perf_counter() < absolute_deadline and time.perf_counter() < idle_deadline:
-        try:
-            msg = await asyncio.wait_for(ws.recv(), timeout=1.0)
-        except asyncio.TimeoutError:
-            continue
+    async def _send():
+        stream_origin = time.perf_counter()
+        for i in range(0, len(audio_int16), chunk_size):
+            chunk = audio_int16[i:i + chunk_size]
+            chunk_end_sec = (i + len(chunk)) / SAMPLING_RATE
 
-        if not isinstance(msg, str):
-            continue
+            if send_interval_sec > 0:
+                target_send_at = stream_origin + chunk_end_sec
+                while True:
+                    remaining = target_send_at - time.perf_counter()
+                    if remaining <= 0:
+                        break
+                    await asyncio.sleep(min(remaining, 0.02))
 
-        data = json.loads(msg)
-        msg_type = data.get('type', '')
+            await ws.send(chunk.tobytes())
 
-        if msg_type == 'final':
-            if first_result_time is None:
-                first_result_time = time.perf_counter()
-            text = (data.get('original') or '').strip()
-            if text:
-                # A final supersedes any previously seen partial for this segment.
-                partial_last = ''
-                receive_elapsed_sec = time.perf_counter() - processing_start
-                audio_start_sec = data.get('audioStartSec')
-                audio_end_sec = data.get('audioEndSec')
-                if audio_start_sec is None:
-                    audio_start_sec = parse_hms_timestamp(data.get('start'))
-                if audio_end_sec is None:
-                    audio_end_sec = parse_hms_timestamp(data.get('end'))
+        await ws.send(json.dumps({'type': 'finish'}))
+        send_done.set()
 
-                finals.append(text)
-                segment_events.append({
-                    'text': text,
-                    'tag': normalize_commit_reason(
-                        data.get('commitReason') or data.get('commit_reason') or data.get('reason')
-                    ),
-                })
-                segment_metrics.append({
-                    'segment_id': data.get('segmentId'),
-                    'text': text,
-                    'translation': (data.get('translation') or '').strip(),
-                    'commit_reason': normalize_commit_reason(
-                        data.get('commitReason') or data.get('commit_reason') or data.get('reason')
-                    ),
-                    'audio_start_sec': audio_start_sec,
-                    'audio_end_sec': audio_end_sec,
-                    'server_translate_started_elapsed_sec': data.get('translate_started_elapsed_sec'),
-                    'server_translate_done_elapsed_sec': data.get('translate_done_elapsed_sec'),
-                    'translation_latency_sec': data.get('translation_latency_sec'),
-                    'server_fcl_sec': data.get('fcl_sec'),
-                    'final_payload_wall_utc': data.get('final_payload_wall_utc'),
-                    'client_final_received_elapsed_sec': receive_elapsed_sec,
-                })
-                idle_deadline = time.perf_counter() + 2
+    async def _recv():
+        nonlocal partial_last, first_result_time
+        absolute_deadline = processing_start + 120
+        idle_deadline = processing_start + 10
 
-        elif msg_type == 'partial':
-            text = (data.get('original') or '').strip()
-            if text:
-                partial_last = text
+        while time.perf_counter() < absolute_deadline and time.perf_counter() < idle_deadline:
+            try:
+                msg = await asyncio.wait_for(ws.recv(), timeout=1.0)
+            except asyncio.TimeoutError:
+                if send_done.is_set():
+                    break
+                continue
+
+            if not isinstance(msg, str):
+                continue
+
+            data = json.loads(msg)
+            msg_type = data.get('type', '')
+
+            if msg_type == 'final':
                 if first_result_time is None:
                     first_result_time = time.perf_counter()
-                idle_deadline = time.perf_counter() + 1
+                text = (data.get('original') or '').strip()
+                if text:
+                    partial_last = ''
+                    receive_elapsed_sec = time.perf_counter() - processing_start
+                    audio_start_sec = data.get('audioStartSec')
+                    audio_end_sec = data.get('audioEndSec')
+                    if audio_start_sec is None:
+                        audio_start_sec = parse_hms_timestamp(data.get('start'))
+                    if audio_end_sec is None:
+                        audio_end_sec = parse_hms_timestamp(data.get('end'))
 
-        elif msg_type == 'ready':
-            # Some servers may emit ready after internal reset.
-            idle_deadline = min(idle_deadline, time.perf_counter() + 0.5)
+                    finals.append(text)
+                    segment_events.append({
+                        'text': text,
+                        'tag': normalize_commit_reason(
+                            data.get('commitReason') or data.get('commit_reason') or data.get('reason')
+                        ),
+                    })
+                    segment_metrics.append({
+                        'segment_id': data.get('segmentId'),
+                        'text': text,
+                        'translation': (data.get('translation') or '').strip(),
+                        'commit_reason': normalize_commit_reason(
+                            data.get('commitReason') or data.get('commit_reason') or data.get('reason')
+                        ),
+                        'audio_start_sec': audio_start_sec,
+                        'audio_end_sec': audio_end_sec,
+                        'server_translate_started_elapsed_sec': data.get('translate_started_elapsed_sec'),
+                        'server_translate_done_elapsed_sec': data.get('translate_done_elapsed_sec'),
+                        'translation_latency_sec': data.get('translation_latency_sec'),
+                        'server_fcl_sec': data.get('fcl_sec'),
+                        'final_payload_wall_utc': data.get('final_payload_wall_utc'),
+                        'client_final_received_elapsed_sec': receive_elapsed_sec,
+                    })
+                    idle_deadline = time.perf_counter() + 2
+
+            elif msg_type == 'partial':
+                text = (data.get('original') or '').strip()
+                if text:
+                    partial_last = text
+                    idle_deadline = time.perf_counter() + 1
+
+            elif msg_type == 'ready':
+                idle_deadline = min(idle_deadline, time.perf_counter() + 0.5)
+
+    await asyncio.gather(_send(), _recv())
 
     if not finals and partial_last:
         finals = [partial_last]
