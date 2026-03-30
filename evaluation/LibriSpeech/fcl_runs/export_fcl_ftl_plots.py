@@ -516,7 +516,7 @@ def main():
     print(f"  → {len(results):,}개 파일")
 
     # ── 집계 플롯 ─────────────────────────────────────────────────────────────
-    if not args.no_aggregate:
+    if not args.no_aggregate and not args.file_id:
         print("\n[집계 플롯 생성]")
         df = build_df(results)
         plot_aggregate(df, overall, str(out_dir))
