@@ -421,13 +421,13 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
     async def _recv():
         nonlocal partial_last, first_result_time
         absolute_deadline = processing_start + 120
-        idle_deadline = processing_start + 10
+        idle_deadline = time.perf_counter() + 30
 
         while time.perf_counter() < absolute_deadline and time.perf_counter() < idle_deadline:
             try:
                 msg = await asyncio.wait_for(ws.recv(), timeout=1.0)
             except asyncio.TimeoutError:
-                if send_done.is_set():
+                if send_done.is_set() and time.perf_counter() > idle_deadline:
                     break
                 continue
 
@@ -474,13 +474,13 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
                         'final_payload_wall_utc': data.get('final_payload_wall_utc'),
                         'client_final_received_elapsed_sec': receive_elapsed_sec,
                     })
-                    idle_deadline = time.perf_counter() + 2
+                    idle_deadline = time.perf_counter() + 5
 
             elif msg_type == 'partial':
                 text = (data.get('original') or '').strip()
                 if text:
                     partial_last = text
-                    idle_deadline = time.perf_counter() + 1
+                    idle_deadline = time.perf_counter() + 3
 
             elif msg_type == 'ready':
                 idle_deadline = min(idle_deadline, time.perf_counter() + 0.5)
