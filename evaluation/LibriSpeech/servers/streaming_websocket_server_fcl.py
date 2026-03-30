@@ -107,6 +107,7 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
             text = (kwargs.get("original") or "").strip()
             if text:
                 self._partial_snapshots.append((self.current_time, text))
+                logger.info("[PARTIAL] t=%.3fs | %s", self.current_time, text)
         await super().send_message(msg_type, **kwargs)
 
     def _seg_audio_end_sec(self, sentence: str) -> float:
@@ -142,9 +143,12 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
                 last_pre_punct_time = t
 
         if last_pre_punct_time is not None:
+            logger.info("[SEG_AUDIO_END] sentence='%s' → last_pre_punct_time=%.3fs (needle_no_punct='%s')", needle, last_pre_punct_time, needle_no_punct)
             return last_pre_punct_time
         if first_with_punct_time is not None:
+            logger.info("[SEG_AUDIO_END] sentence='%s' → first_with_punct_time=%.3fs (fallback)", needle, first_with_punct_time)
             return first_with_punct_time
+        logger.info("[SEG_AUDIO_END] sentence='%s' → current_time=%.3fs (no snapshot matched)", needle, self.current_time)
         return self.current_time
 
     async def _translate(
@@ -164,6 +168,7 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         return self.pending_audio_end_sec if self.pending_audio_end_sec is not None else self.current_time
 
     async def _on_vad_commit(self, audio_end_sec: float) -> None:
+        logger.info("[VAD_COMMIT] audio_end_sec=%.3fs", audio_end_sec)
         self.pending_audio_end_sec = audio_end_sec
 
     async def _emit_final_payload(
@@ -195,6 +200,7 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
             "final_payload_wall_utc": _utc_now_iso(),
             **timing,
         }
+        logger.info("[FINAL] seg=%d reason=%s audio=[%.3f, %.3f] text='%s'", segment_id, reason, audio_start_sec, audio_end_sec, original)
         await self.send_message("final", **{k: v for k, v in payload.items() if k != "type"})
         self.segment_audio_start_sec = audio_end_sec
         self.pending_audio_end_sec = None
