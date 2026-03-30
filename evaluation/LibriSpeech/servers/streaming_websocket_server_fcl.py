@@ -109,26 +109,17 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
                 self._partial_snapshots.append((self.current_time, text))
         await super().send_message(msg_type, **kwargs)
 
-    def _seg_audio_end_sec(self, sentence: str) -> float:
-        """Return the current_time of the last partial snapshot that contains
-        the sentence body *without* its final punctuation.
+    def _seg_audio_end_sec(self, sentence: str) -> tuple[float, dict]:
+        """Return (audio_end_sec, debug_info) for a seg commit.
 
-        Two-stage lookahead problem with seg commits:
-          1. The model needs extra audio chunks after the sentence ends to
-             decide to add the sentence-final punctuation.
-          2. The base server only commits once text *after* the punctuation
-             appears (line 544 in base server), adding another chunk of delay.
+        Tries three candidates in order:
+          1. last_pre_punct  — last snapshot with sentence body (no final punct)
+          2. first_with_punct — first snapshot with full sentence (with punct)
+          3. current_time    — fallback
 
-        Using the first snapshot that contains the full sentence (with punct)
-        removes stage-2 lookahead but leaves stage-1.  Using the last snapshot
-        that contains the sentence body *before* the punctuation appeared
-        removes both stages and gives the best approximation of T_end (the
-        actual moment the sentence audio finished).
-
-        Falls back to the first-with-punct snapshot, then self.current_time.
+        Returns a debug dict so callers can attach it to the final payload.
         """
         needle = sentence.strip()
-        # Strip sentence-final punctuation to match the pre-punct partial text.
         needle_no_punct = needle.rstrip('.,!?;:…。！？').strip()
 
         last_pre_punct_time: Optional[float] = None
@@ -141,25 +132,26 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
             if needle_no_punct and needle_no_punct in text:
                 last_pre_punct_time = t
 
-        self.log.info(
-            "[seg_audio_end] sentence=%r needle_no_punct=%r "
-            "last_pre_punct=%s first_with_punct=%s fallback=%.3f",
-            needle[:60],
-            needle_no_punct[:60],
-            f"{last_pre_punct_time:.3f}" if last_pre_punct_time is not None else "None",
-            f"{first_with_punct_time:.3f}" if first_with_punct_time is not None else "None",
-            self.current_time,
-        )
-        self.log.info(
-            "[seg_audio_end] snapshots (last 5): %s",
-            [(round(t, 3), txt[:60]) for t, txt in self._partial_snapshots[-5:]],
-        )
+        last5 = [(round(t, 3), txt[:80]) for t, txt in self._partial_snapshots[-5:]]
 
         if last_pre_punct_time is not None:
-            return last_pre_punct_time
-        if first_with_punct_time is not None:
-            return first_with_punct_time
-        return self.current_time
+            method = "pre_punct"
+            result = last_pre_punct_time
+        elif first_with_punct_time is not None:
+            method = "first_with_punct"
+            result = first_with_punct_time
+        else:
+            method = "fallback_current_time"
+            result = self.current_time
+
+        debug = {
+            "seg_audio_end_method": method,
+            "seg_audio_end_pre_punct": last_pre_punct_time,
+            "seg_audio_end_with_punct": first_with_punct_time,
+            "seg_audio_end_current_time": self.current_time,
+            "seg_snapshots_last5": last5,
+        }
+        return result, debug
 
     async def _translate(
         self, text: str, target_lang: str, audio_end_sec: Optional[float] = None
@@ -167,11 +159,10 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         if self.pending_audio_end_sec is not None:
             # VAD commit or finish flush: use the accurate VAD/finish timestamp.
             effective_audio_end = self.pending_audio_end_sec
+            self._last_seg_debug: dict = {}
         else:
-            # Seg commit: find the earliest snapshot containing this sentence,
-            # which is closer to the true end of the sentence audio than
-            # current_time (which includes look-ahead chunks for punctuation).
-            effective_audio_end = self._seg_audio_end_sec(text)
+            # Seg commit: find the earliest snapshot containing this sentence.
+            effective_audio_end, self._last_seg_debug = self._seg_audio_end_sec(text)
         return await self._translate_with_metadata(text, target_lang, effective_audio_end)
 
     def _get_flush_audio_end_sec(self) -> float:
@@ -192,6 +183,8 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         extra: Optional[dict] = None,
     ) -> None:
         timing = extra or {}
+        seg_debug = getattr(self, "_last_seg_debug", {})
+        self._last_seg_debug = {}
         segment_id = self.next_segment_id
         self.next_segment_id += 1
         audio_start_sec = self.segment_audio_start_sec
@@ -208,6 +201,7 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
             "commitReason": reason,
             "final_payload_wall_utc": _utc_now_iso(),
             **timing,
+            **seg_debug,
         }
         await self.send_message("final", **{k: v for k, v in payload.items() if k != "type"})
         self.segment_audio_start_sec = audio_end_sec
