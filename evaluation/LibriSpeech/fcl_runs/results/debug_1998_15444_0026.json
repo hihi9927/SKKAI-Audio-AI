@@ -1,0 +1,73 @@
+{
+  "policy_3": {
+    "timestamp": "2026-03-30T04:04:47.207287",
+    "overall": {
+      "num_files": 1,
+      "wer": 0.0625,
+      "first_token_latency": 11.560542519000023,
+      "model_runtime": 2.708794878999992,
+      "avg_server_fcl_sec": 1.7946053069999919,
+      "avg_translation_latency_sec": 0.5256886890000203
+    },
+    "folders": {
+      "1998": {
+        "num_files": 1,
+        "wer": 0.0625,
+        "first_token_latency": 11.560542519000023,
+        "model_runtime": 2.708794878999992,
+        "avg_server_fcl_sec": 1.7946053069999919,
+        "avg_translation_latency_sec": 0.5256886890000203
+      }
+    },
+    "raw_results": [
+      {
+        "file_id": "1998-15444-0026",
+        "speaker_id": "1998",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/1998/15444/1998-15444-0026.flac",
+        "reference": "BOIL THE FINELY DIVIDED SUBSTANCE WITH ABOUT ONE EIGHTH ITS BULK OF PURE HYDROCHLORIC ACID ADD FROM TIME TO TIME POTASSIC CHLORATE UNTIL THE SOLIDS ARE REDUCED TO A STRAW YELLOW FLUID",
+        "hypothesis": "Boil the finely divided substance with about one eighth its bulk of pure hydrochloric acid. Add from time to time potassium chloride until the solids are reduced to a straw yellow fluid.",
+        "hyp_commit": "Boil the finely divided substance with about one eighth its bulk of pure hydrochloric acid. <seg> Add from time to time potassium chloride until the solids are reduced to a straw yellow fluid. <seg>",
+        "duration": 11.55,
+        "total_time": 14.258794878999993,
+        "first_token_latency": 11.560542519000023,
+        "model_runtime": 2.708794878999992,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "Boil the finely divided substance with about one eighth its bulk of pure hydrochloric acid.",
+            "translation": "잘게 나눈 물질에 순수한 염산의 약 1/8을 넣고 끓입니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 8.000000000000004,
+            "server_translate_started_elapsed_sec": 8.314021568999976,
+            "server_translate_done_elapsed_sec": 8.88752688599999,
+            "translation_latency_sec": 0.5735053170000128,
+            "server_fcl_sec": 2.8875268859999865,
+            "final_payload_wall_utc": "2026-03-30T04:04:41.774194+00:00",
+            "client_final_received_elapsed_sec": 11.560618432000012
+          },
+          {
+            "segment_id": 2,
+            "text": "Add from time to time potassium chloride until the solids are reduced to a straw yellow fluid.",
+            "translation": "고체가 담황색 액체로 줄어들 때까지 때때로 염화칼륨을 추가합니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 8.000000000000004,
+            "audio_end_sec": 11.549999999999992,
+            "server_translate_started_elapsed_sec": 11.773811666999961,
+            "server_translate_done_elapsed_sec": 12.251683727999989,
+            "translation_latency_sec": 0.47787206100002777,
+            "server_fcl_sec": 0.7016837279999972,
+            "final_payload_wall_utc": "2026-03-30T04:04:45.138345+00:00",
+            "client_final_received_elapsed_sec": 12.256495371000028
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 2,
+          "avg_server_fcl_sec": 1.7946053069999919,
+          "avg_translation_latency_sec": 0.5256886890000203
+        }
+      }
+    ]
+  }
+}
