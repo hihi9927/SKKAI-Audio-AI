@@ -110,21 +110,41 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         await super().send_message(msg_type, **kwargs)
 
     def _seg_audio_end_sec(self, sentence: str) -> float:
-        """Return the earliest current_time at which *sentence* first appeared
-        in a partial transcript snapshot.
+        """Return the current_time of the last partial snapshot that contains
+        the sentence body *without* its final punctuation.
 
-        For seg commits the base server delays the commit until text appears
-        *after* the sentence-ending punctuation (line 544 in base server).
-        This means audio_end_sec = current_time is already 1-N chunks past the
-        true sentence end.  The first snapshot that contains the full sentence
-        gives a better approximation of when the model actually produced it.
+        Two-stage lookahead problem with seg commits:
+          1. The model needs extra audio chunks after the sentence ends to
+             decide to add the sentence-final punctuation.
+          2. The base server only commits once text *after* the punctuation
+             appears (line 544 in base server), adding another chunk of delay.
 
-        Falls back to self.current_time if no matching snapshot is found.
+        Using the first snapshot that contains the full sentence (with punct)
+        removes stage-2 lookahead but leaves stage-1.  Using the last snapshot
+        that contains the sentence body *before* the punctuation appeared
+        removes both stages and gives the best approximation of T_end (the
+        actual moment the sentence audio finished).
+
+        Falls back to the first-with-punct snapshot, then self.current_time.
         """
         needle = sentence.strip()
+        # Strip sentence-final punctuation to match the pre-punct partial text.
+        needle_no_punct = needle.rstrip('.,!?;:…。！？').strip()
+
+        last_pre_punct_time: Optional[float] = None
+        first_with_punct_time: Optional[float] = None
+
         for t, text in self._partial_snapshots:
             if needle in text:
-                return t
+                first_with_punct_time = t
+                break
+            if needle_no_punct and needle_no_punct in text:
+                last_pre_punct_time = t
+
+        if last_pre_punct_time is not None:
+            return last_pre_punct_time
+        if first_with_punct_time is not None:
+            return first_with_punct_time
         return self.current_time
 
     async def _translate(
