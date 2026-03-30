@@ -56,6 +56,11 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         self.next_segment_id = 1
         self.segment_audio_start_sec = 0.0
         self.pending_audio_end_sec: Optional[float] = None
+        # (current_time, partial_text) snapshots — used to find the earliest
+        # audio position at which a committed sentence first appeared, giving a
+        # better audio_end_sec estimate for seg commits than current_time at
+        # detection (which includes look-ahead audio needed for punctuation).
+        self._partial_snapshots: list[tuple[float, str]] = []
 
     def init_streaming_state(self):
         super().init_streaming_state()
@@ -63,6 +68,7 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         self.next_segment_id = 1
         self.segment_audio_start_sec = 0.0
         self.pending_audio_end_sec = None
+        self._partial_snapshots = []
 
     def _stream_elapsed_sec(self) -> float:
         return time.perf_counter() - self.stream_start_perf
@@ -95,12 +101,44 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
 
     # ── 훅 오버라이드 ──────────────────────────────────────────────────────────
 
+    async def send_message(self, msg_type: str, **kwargs) -> None:
+        """Intercept partial messages to record (current_time, text) snapshots."""
+        if msg_type == "partial":
+            text = (kwargs.get("original") or "").strip()
+            if text:
+                self._partial_snapshots.append((self.current_time, text))
+        await super().send_message(msg_type, **kwargs)
+
+    def _seg_audio_end_sec(self, sentence: str) -> float:
+        """Return the earliest current_time at which *sentence* first appeared
+        in a partial transcript snapshot.
+
+        For seg commits the base server delays the commit until text appears
+        *after* the sentence-ending punctuation (line 544 in base server).
+        This means audio_end_sec = current_time is already 1-N chunks past the
+        true sentence end.  The first snapshot that contains the full sentence
+        gives a better approximation of when the model actually produced it.
+
+        Falls back to self.current_time if no matching snapshot is found.
+        """
+        needle = sentence.strip()
+        for t, text in self._partial_snapshots:
+            if needle in text:
+                return t
+        return self.current_time
+
     async def _translate(
         self, text: str, target_lang: str, audio_end_sec: Optional[float] = None
     ) -> tuple[str, str, dict]:
-        if audio_end_sec is None:
-            audio_end_sec = self.current_time
-        return await self._translate_with_metadata(text, target_lang, audio_end_sec)
+        if self.pending_audio_end_sec is not None:
+            # VAD commit or finish flush: use the accurate VAD/finish timestamp.
+            effective_audio_end = self.pending_audio_end_sec
+        else:
+            # Seg commit: find the earliest snapshot containing this sentence,
+            # which is closer to the true end of the sentence audio than
+            # current_time (which includes look-ahead chunks for punctuation).
+            effective_audio_end = self._seg_audio_end_sec(text)
+        return await self._translate_with_metadata(text, target_lang, effective_audio_end)
 
     def _get_flush_audio_end_sec(self) -> float:
         return self.pending_audio_end_sec if self.pending_audio_end_sec is not None else self.current_time
