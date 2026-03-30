@@ -270,15 +270,15 @@ def parse_args():
 
     # Paths
     p.add_argument("--model_path", type=str, default="./Qwen3-ASR-1.7B")
-    p.add_argument("--train_file", type=str, default="./data/train_split.jsonl")
-    p.add_argument("--eval_file", type=str, default="./data/val_split.jsonl")
-    p.add_argument("--output_dir", type=str, default="./qwen3-asr-finetuning-out")
+    p.add_argument("--train_file", type=str, default="./data/KSponSpeech/train_split.jsonl")
+    p.add_argument("--eval_file", type=str, default="./data/KSponSpeech/val_split.jsonl")
+    p.add_argument("--output_dir", type=str, default="./qwen3-asr-finetuning-out-K")
 
     # Audio
     p.add_argument("--sr", type=int, default=16000)
 
     # Train hyper-params
-    p.add_argument("--batch_size", type=int, default=32)
+    p.add_argument("--batch_size", type=int, default=128)
     p.add_argument("--grad_acc", type=int, default=4)
     p.add_argument("--lr", type=float, default=2e-5)
     p.add_argument("--epochs", type=float, default=1)
@@ -303,8 +303,8 @@ def parse_args():
 
     # LoRA
     p.add_argument("--use_lora", type=int, default=1)
-    p.add_argument("--lora_r", type=int, default=16)
-    p.add_argument("--lora_alpha", type=int, default=32)
+    p.add_argument("--lora_r", type=int, default=128)
+    p.add_argument("--lora_alpha", type=int, default=256)
     p.add_argument("--lora_dropout", type=float, default=0.05)
 
     return p.parse_args()

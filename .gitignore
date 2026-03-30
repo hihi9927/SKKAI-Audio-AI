@@ -32,11 +32,13 @@ STiTy-Mobile/dist/
 STiTy-Mobile/.expo/
 
 # Dataset
-evaluation/KsponSpeech/wav_data/
 evaluation/KsponSpeech/data/
+evaluation/DailyTalk/data/
 evaluation/KsponSpeech/transcribe/train.trn
 evaluation/LibriSpeech/data/
-Qwen3-ASR/finetuning/data/audio/
+
+Qwen3-ASR/finetuning/data/KSponSpeech/audio/
+Qwen3-ASR/finetuning/data/DailyTalk/audio/
 evaluation/LibriSpeech/test-other.tar.gz
 evaluation/LibriSpeech/test-other
 
