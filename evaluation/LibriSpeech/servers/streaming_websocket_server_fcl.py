@@ -56,6 +56,7 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         self.next_segment_id = 1
         self.segment_audio_start_sec = 0.0
         self.pending_audio_end_sec: Optional[float] = None
+        self._effective_audio_end_sec: Optional[float] = None
         # (current_time, partial_text) snapshots — used to find the earliest
         # audio position at which a committed sentence first appeared, giving a
         # better audio_end_sec estimate for seg commits than current_time at
@@ -68,6 +69,7 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         self.next_segment_id = 1
         self.segment_audio_start_sec = 0.0
         self.pending_audio_end_sec = None
+        self._effective_audio_end_sec = None
         self._partial_snapshots = []
 
     def _stream_elapsed_sec(self) -> float:
@@ -162,6 +164,7 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
             # which is closer to the true end of the sentence audio than
             # current_time (which includes look-ahead chunks for punctuation).
             effective_audio_end = self._seg_audio_end_sec(text)
+        self._effective_audio_end_sec = effective_audio_end
         return await self._translate_with_metadata(text, target_lang, effective_audio_end)
 
     def _get_flush_audio_end_sec(self) -> float:
@@ -183,6 +186,9 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         extra: Optional[dict] = None,
     ) -> None:
         timing = extra or {}
+        if self._effective_audio_end_sec is not None:
+            audio_end_sec = self._effective_audio_end_sec
+            self._effective_audio_end_sec = None
         segment_id = self.next_segment_id
         self.next_segment_id += 1
         audio_start_sec = self.segment_audio_start_sec
