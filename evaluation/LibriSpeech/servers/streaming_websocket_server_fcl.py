@@ -141,6 +141,20 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
             if needle_no_punct and needle_no_punct in text:
                 last_pre_punct_time = t
 
+        self.log.debug(
+            "[seg_audio_end] sentence=%r needle_no_punct=%r "
+            "last_pre_punct=%.3f first_with_punct=%s fallback=%.3f",
+            needle[:60],
+            needle_no_punct[:60],
+            last_pre_punct_time if last_pre_punct_time is not None else -1.0,
+            f"{first_with_punct_time:.3f}" if first_with_punct_time is not None else "None",
+            self.current_time,
+        )
+        self.log.debug(
+            "[seg_audio_end] snapshots (last 5): %s",
+            [(round(t, 3), txt[:60]) for t, txt in self._partial_snapshots[-5:]],
+        )
+
         if last_pre_punct_time is not None:
             return last_pre_punct_time
         if first_with_punct_time is not None:
