@@ -396,6 +396,7 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
     segment_metrics = []
     partial_last = ''
     first_result_time = None
+    last_result_time = None
     send_done = asyncio.Event()
 
     async def _send():
@@ -418,7 +419,7 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
         send_done.set()
 
     async def _recv():
-        nonlocal partial_last, first_result_time
+        nonlocal partial_last, first_result_time, last_result_time
         absolute_deadline = processing_start + 120
         idle_deadline = time.perf_counter() + 30
 
@@ -439,6 +440,7 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
             if msg_type == 'final':
                 if first_result_time is None:
                     first_result_time = time.perf_counter()
+                last_result_time = time.perf_counter()
                 text = (data.get('original') or '').strip()
                 if text:
                     partial_last = ''
@@ -511,7 +513,7 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
                 'client_final_received_elapsed_sec': None,
             })
 
-    total_time = time.perf_counter() - processing_start
+    total_time = (last_result_time - processing_start) if last_result_time else (time.perf_counter() - processing_start)
     first_token_latency = (first_result_time - processing_start) if first_result_time else None
 
     return {
