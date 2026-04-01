@@ -82,7 +82,7 @@ STYLE = {
     "fg":        "#DDDDDD",
     "grid":      "#333333",
     "speech":    "#4C9BE8",   # 오디오 구간
-    "vad_gap":   "#F0A500",   # audio_end → translate_start
+    "commit_delay":   "#F0A500",   # audio_end → translate_start
     "model":     "#E84C4C",   # translate_start → translate_done (FCL)
     "ftl":       "#9B59B6",   # FTL 수직선
     "fcl_dot":   "#2ECC71",   # FCL 마커 점
@@ -246,9 +246,9 @@ def plot_file(record: dict, audio_root: str | None, out_path: str) -> None:
         # VAD/Commit 대기 (audio_end → translate_started)
         if ts > s_end + 0.001:
             ax.barh(y_pos, ts - s_end, left=s_end,
-                    height=bar_height * 0.6, color=STYLE["vad_gap"], alpha=0.85, zorder=3)
-            if "vad_gap" not in legend_handles:
-                legend_handles["vad_gap"] = mpatches.Patch(color=STYLE["vad_gap"], label="VAD wait")
+                    height=bar_height * 0.6, color=STYLE["commit_delay"], alpha=0.85, zorder=3)
+            if "commit_delay" not in legend_handles:
+                legend_handles["commit_delay"] = mpatches.Patch(color=STYLE["commit_delay"], label="commit delay")
 
         # 모델 실행 (translate_started → translate_done)
         ax.barh(y_pos, td - ts, left=ts,
@@ -344,7 +344,7 @@ def plot_aggregate(df: pd.DataFrame, overall: dict, out_dir: str) -> None:
     # ── 1. FCL 분포 (commit_reason별) ────────────────────────────────────────
     fig, ax = plt.subplots(figsize=(9, 4))
     bins = np.arange(0, df["server_fcl_sec"].quantile(0.995) + 0.1, 0.05)
-    for reason, color, alpha in [("vad", STYLE["vad_gap"], 0.75),
+    for reason, color, alpha in [("vad", STYLE["commit_delay"], 0.75),
                                   ("seg", STYLE["seg"], 0.65)]:
         sub = df[df["commit_reason"] == reason]["server_fcl_sec"]
         ax.hist(sub, bins=bins, color=color, alpha=alpha,
@@ -383,7 +383,7 @@ def plot_aggregate(df: pd.DataFrame, overall: dict, out_dir: str) -> None:
 
     # ── 3. FCL vs Segment Duration scatter ───────────────────────────────────
     fig, ax = plt.subplots(figsize=(8, 5))
-    for reason, color in [("vad", STYLE["vad_gap"]), ("seg", STYLE["seg"])]:
+    for reason, color in [("vad", STYLE["commit_delay"]), ("seg", STYLE["seg"])]:
         sub = df[df["commit_reason"] == reason]
         ax.scatter(sub["seg_duration"], sub["server_fcl_sec"],
                    color=color, alpha=0.3, s=8, label=f"commit={reason}")
@@ -451,7 +451,7 @@ def plot_aggregate(df: pd.DataFrame, overall: dict, out_dir: str) -> None:
 
     # ── 6. FCL CDF ────────────────────────────────────────────────────────────
     fig, ax = plt.subplots(figsize=(8, 4))
-    for reason, color in [("vad", STYLE["vad_gap"]), ("seg", STYLE["seg"]),
+    for reason, color in [("vad", STYLE["commit_delay"]), ("seg", STYLE["seg"]),
                            ("all", STYLE["speech"])]:
         sub = df[df["commit_reason"] == reason]["server_fcl_sec"] if reason != "all" \
               else df["server_fcl_sec"]
