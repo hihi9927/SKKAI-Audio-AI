@@ -1,0 +1,1985 @@
+{
+  "policy_3": {
+    "timestamp": "2026-04-01T04:49:42.320343",
+    "overall": {
+      "num_files": 50,
+      "wer": 0.06264501160092807,
+      "first_token_latency": 6.416857933000027,
+      "model_runtime": 5.841527718599966,
+      "avg_server_fcl_sec": 1.1689515619636268,
+      "avg_translation_latency_sec": 0.7573906667999919
+    },
+    "folders": {
+      "1688": {
+        "num_files": 1,
+        "wer": 0.0,
+        "first_token_latency": 5.030620667000221,
+        "model_runtime": 6.451349603999952,
+        "avg_server_fcl_sec": 1.440565531999745,
+        "avg_translation_latency_sec": 1.2270595689997208
+      },
+      "1998": {
+        "num_files": 5,
+        "wer": 0.03636363636363636,
+        "first_token_latency": 7.623178759399889,
+        "model_runtime": 6.1354941407997465,
+        "avg_server_fcl_sec": 1.4137897208332701,
+        "avg_translation_latency_sec": 0.825632293999964
+      },
+      "2414": {
+        "num_files": 1,
+        "wer": 0.16666666666666666,
+        "first_token_latency": 7.431185644999914,
+        "model_runtime": 5.7768985019996215,
+        "avg_server_fcl_sec": 0.766449923999823,
+        "avg_translation_latency_sec": 0.6302564030002031
+      },
+      "2609": {
+        "num_files": 5,
+        "wer": 0.1348314606741573,
+        "first_token_latency": 5.867450405600084,
+        "model_runtime": 5.608557803600022,
+        "avg_server_fcl_sec": 0.6045521748571269,
+        "avg_translation_latency_sec": 0.3722036065713447
+      },
+      "3005": {
+        "num_files": 1,
+        "wer": 0.0,
+        "first_token_latency": 3.8591679410001234,
+        "model_runtime": 5.7648109890000345,
+        "avg_server_fcl_sec": 0.7542871340000596,
+        "avg_translation_latency_sec": 0.4991865339998185
+      },
+      "3080": {
+        "num_files": 1,
+        "wer": 0.0,
+        "first_token_latency": 4.923219409000012,
+        "model_runtime": 5.678811422999843,
+        "avg_server_fcl_sec": 0.6682780439996341,
+        "avg_translation_latency_sec": 0.46522800200000347
+      },
+      "3331": {
+        "num_files": 2,
+        "wer": 0.22727272727272727,
+        "first_token_latency": 5.71510547600019,
+        "model_runtime": 3.7441100445000304,
+        "avg_server_fcl_sec": 0.9902133289999968,
+        "avg_translation_latency_sec": 0.8415256320004119
+      },
+      "3528": {
+        "num_files": 1,
+        "wer": 0.2,
+        "first_token_latency": 3.8102455350003765,
+        "model_runtime": 5.845827567000269,
+        "avg_server_fcl_sec": 0.8353569520002382,
+        "avg_translation_latency_sec": 0.5370267830003286
+      },
+      "3538": {
+        "num_files": 4,
+        "wer": 0.011904761904761904,
+        "first_token_latency": 6.842207100250107,
+        "model_runtime": 6.122338506250026,
+        "avg_server_fcl_sec": 1.1122531794999508,
+        "avg_translation_latency_sec": 0.881561505000036
+      },
+      "367": {
+        "num_files": 1,
+        "wer": 0.0,
+        "first_token_latency": 7.950767259999793,
+        "model_runtime": 6.286367106000016,
+        "avg_server_fcl_sec": 1.275779382000179,
+        "avg_translation_latency_sec": 1.1083808120001777
+      },
+      "3764": {
+        "num_files": 2,
+        "wer": 0.0392156862745098,
+        "first_token_latency": 7.82966370500003,
+        "model_runtime": 5.510468806500057,
+        "avg_server_fcl_sec": 1.1115628893333789,
+        "avg_translation_latency_sec": 0.27520153700000566
+      },
+      "3997": {
+        "num_files": 3,
+        "wer": 0.0,
+        "first_token_latency": 4.7082110516665425,
+        "model_runtime": 5.917144195999863,
+        "avg_server_fcl_sec": 0.9066112306666452,
+        "avg_translation_latency_sec": 0.7129683616667535
+      },
+      "4350": {
+        "num_files": 3,
+        "wer": 0.0,
+        "first_token_latency": 7.184352725333308,
+        "model_runtime": 6.09619893599991,
+        "avg_server_fcl_sec": 1.5628719860001732,
+        "avg_translation_latency_sec": 0.8440643757500084
+      },
+      "4852": {
+        "num_files": 1,
+        "wer": 0.03225806451612903,
+        "first_token_latency": 9.488823885999864,
+        "model_runtime": 5.807689285999858,
+        "avg_server_fcl_sec": 0.798876933000372,
+        "avg_translation_latency_sec": 0.6413810680001006
+      },
+      "533": {
+        "num_files": 1,
+        "wer": 0.0,
+        "first_token_latency": 3.469502107000153,
+        "model_runtime": 5.924059926999871,
+        "avg_server_fcl_sec": 0.9148479540001064,
+        "avg_translation_latency_sec": 0.7655966410002293
+      },
+      "5442": {
+        "num_files": 3,
+        "wer": 0.18518518518518517,
+        "first_token_latency": 4.652198041500014,
+        "model_runtime": 4.5648374616666905,
+        "avg_server_fcl_sec": 1.1923989139999496,
+        "avg_translation_latency_sec": 0.9478103444998851
+      },
+      "5764": {
+        "num_files": 1,
+        "wer": 0.0,
+        "first_token_latency": 6.026562369999738,
+        "model_runtime": 5.902070052999643,
+        "avg_server_fcl_sec": 0.891704185000088,
+        "avg_translation_latency_sec": 0.7398748159998831
+      },
+      "6432": {
+        "num_files": 1,
+        "wer": 0.08,
+        "first_token_latency": 5.233431759000268,
+        "model_runtime": 6.051537156000304,
+        "avg_server_fcl_sec": 2.1352281005000977,
+        "avg_translation_latency_sec": 0.7470876000002136
+      },
+      "7018": {
+        "num_files": 2,
+        "wer": 0.061224489795918366,
+        "first_token_latency": 9.839086237999936,
+        "model_runtime": 6.079492566500094,
+        "avg_server_fcl_sec": 1.069130081499789,
+        "avg_translation_latency_sec": 0.8774574609997217
+      },
+      "7105": {
+        "num_files": 1,
+        "wer": 0.0,
+        "first_token_latency": 4.982240379999894,
+        "model_runtime": 6.117943417000224,
+        "avg_server_fcl_sec": 1.1071730800002832,
+        "avg_translation_latency_sec": 0.817016101000263
+      },
+      "7902": {
+        "num_files": 2,
+        "wer": 0.29411764705882354,
+        "first_token_latency": 3.522734689500112,
+        "model_runtime": 5.917919714999825,
+        "avg_server_fcl_sec": 0.9076721410000481,
+        "avg_translation_latency_sec": 0.6919709349999721
+      },
+      "7975": {
+        "num_files": 2,
+        "wer": 0.13043478260869565,
+        "first_token_latency": 4.567406982499961,
+        "model_runtime": 5.970630080999817,
+        "avg_server_fcl_sec": 0.9598274899999151,
+        "avg_translation_latency_sec": 0.6553791089997958
+      },
+      "8131": {
+        "num_files": 2,
+        "wer": 0.015873015873015872,
+        "first_token_latency": 8.077480177500092,
+        "model_runtime": 5.918023786500252,
+        "avg_server_fcl_sec": 1.549770716999765,
+        "avg_translation_latency_sec": 0.6122544529998777
+      },
+      "8188": {
+        "num_files": 1,
+        "wer": 0.2,
+        "first_token_latency": 5.129131311000037,
+        "model_runtime": 6.484346257999823,
+        "avg_server_fcl_sec": 1.4740464419997799,
+        "avg_translation_latency_sec": 1.1700057839998408
+      },
+      "8280": {
+        "num_files": 1,
+        "wer": 0.0,
+        "first_token_latency": 11.199420863000341,
+        "model_runtime": 7.805062231000283,
+        "avg_server_fcl_sec": 2.7944058180001754,
+        "avg_translation_latency_sec": 2.646330311999918
+      },
+      "8461": {
+        "num_files": 2,
+        "wer": 0.08108108108108109,
+        "first_token_latency": 8.141475475000107,
+        "model_runtime": 6.477083441500051,
+        "avg_server_fcl_sec": 1.466449511500012,
+        "avg_translation_latency_sec": 1.232605865000096
+      }
+    },
+    "raw_results": [
+      {
+        "file_id": "1688-142285-0026",
+        "speaker_id": "1688",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/1688/142285/1688-142285-0026.flac",
+        "reference": "PERSONALLY AS YOU CALL IT AND ALL",
+        "hypothesis": "Personally, as you call it, and all.",
+        "hyp_commit": "Personally, as you call it, and all. <seg>",
+        "duration": 3.585,
+        "total_time": 10.036349603999952,
+        "first_token_latency": 5.030620667000221,
+        "model_runtime": 6.451349603999952,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "Personally, as you call it, and all.",
+            "translation": "개인적으로, 당신이 부르는대로, 그게 전부입니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 3.585000000000001,
+            "server_translate_started_elapsed_sec": 3.798505963000025,
+            "server_translate_done_elapsed_sec": 5.025565531999746,
+            "translation_latency_sec": 1.2270595689997208,
+            "server_fcl_sec": 1.440565531999745,
+            "final_payload_wall_utc": "2026-04-01T04:39:55.258487+00:00",
+            "client_final_received_elapsed_sec": 5.030623029000253
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 1.440565531999745,
+          "avg_translation_latency_sec": 1.2270595689997208
+        }
+      },
+      {
+        "file_id": "1998-15444-0006",
+        "speaker_id": "1998",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/1998/15444/1998-15444-0006.flac",
+        "reference": "IN A CASE OF ATTEMPTED SUICIDE BY POISONING IS IT THE DUTY OF THE DOCTOR TO INFORM THE POLICE",
+        "hypothesis": "In a case of attempted suicide by poisoning, is it the duty of the doctor to inform the police?",
+        "hyp_commit": "In a case of attempted suicide by poisoning, is it the duty of the doctor to inform the police? <seg>",
+        "duration": 6.43,
+        "total_time": 13.499717956999575,
+        "first_token_latency": 8.494880355999612,
+        "model_runtime": 7.069717956999575,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "In a case of attempted suicide by poisoning, is it the duty of the doctor to inform the police?",
+            "translation": "중독으로 인한 자살 시도의 경우 경찰에 알리는 것이 의사의 의무입니까?",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 6.430000000000003,
+            "server_translate_started_elapsed_sec": 6.572263074000148,
+            "server_translate_done_elapsed_sec": 8.489915848999772,
+            "translation_latency_sec": 1.917652774999624,
+            "server_fcl_sec": 2.0599158489997684,
+            "final_payload_wall_utc": "2026-04-01T04:40:08.860333+00:00",
+            "client_final_received_elapsed_sec": 8.494883045999813
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 2.0599158489997684,
+          "avg_translation_latency_sec": 1.917652774999624
+        }
+      },
+      {
+        "file_id": "1998-15444-0012",
+        "speaker_id": "1998",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/1998/15444/1998-15444-0012.flac",
+        "reference": "THE TUBE SHOULD BE EXAMINED TO SEE THAT IT IS NOT BROKEN OR CRACKED AS ACCIDENTS HAVE HAPPENED FROM NEGLECTING THIS PRECAUTION",
+        "hypothesis": "The tube should be examined to see that it is not broken or cracked, as accidents have happened from neglecting this precaution.",
+        "hyp_commit": "The tube should be examined to see that it is not broken or cracked, as accidents have happened from neglecting this precaution. <seg>",
+        "duration": 7.865,
+        "total_time": 13.780019568999705,
+        "first_token_latency": 8.774375593000059,
+        "model_runtime": 5.915019568999705,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "The tube should be examined to see that it is not broken or cracked, as accidents have happened from neglecting this precaution.",
+            "translation": "이 주의 사항을 무시하여 사고가 발생하므로 튜브가 부러지거나 갈라지지 않았는지 검사해야 합니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 7.865000000000005,
+            "server_translate_started_elapsed_sec": 8.05531525699962,
+            "server_translate_done_elapsed_sec": 8.76952333600002,
+            "translation_latency_sec": 0.7142080790004002,
+            "server_fcl_sec": 0.9045233360000156,
+            "final_payload_wall_utc": "2026-04-01T04:40:22.729516+00:00",
+            "client_final_received_elapsed_sec": 8.774376936999943
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 0.9045233360000156,
+          "avg_translation_latency_sec": 0.7142080790004002
+        }
+      },
+      {
+        "file_id": "1998-15444-0026",
+        "speaker_id": "1998",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/1998/15444/1998-15444-0026.flac",
+        "reference": "BOIL THE FINELY DIVIDED SUBSTANCE WITH ABOUT ONE EIGHTH ITS BULK OF PURE HYDROCHLORIC ACID ADD FROM TIME TO TIME POTASSIC CHLORATE UNTIL THE SOLIDS ARE REDUCED TO A STRAW YELLOW FLUID",
+        "hypothesis": "Boil the finely divided substance with about one eighth its bulk of pure hydrochloric acid. Add from time to time potassium chloride until the solids are reduced to a straw yellow fluid.",
+        "hyp_commit": "Boil the finely divided substance with about one eighth its bulk of pure hydrochloric acid. <seg> Add from time to time potassium chloride until the solids are reduced to a straw yellow fluid. <seg>",
+        "duration": 11.55,
+        "total_time": 17.451252010999724,
+        "first_token_latency": 8.861426519999895,
+        "model_runtime": 5.901252010999723,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "Boil the finely divided substance with about one eighth its bulk of pure hydrochloric acid.",
+            "translation": "잘게 나눈 물질에 순수한 염산의 약 1/8을 넣고 끓입니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 6.000000000000003,
+            "server_translate_started_elapsed_sec": 8.330558578999899,
+            "server_translate_done_elapsed_sec": 8.85677474699969,
+            "translation_latency_sec": 0.5262161679997917,
+            "server_fcl_sec": 2.8567747469996876,
+            "final_payload_wall_utc": "2026-04-01T04:40:36.685233+00:00",
+            "client_final_received_elapsed_sec": 8.861427663000086
+          },
+          {
+            "segment_id": 2,
+            "text": "Add from time to time potassium chloride until the solids are reduced to a straw yellow fluid.",
+            "translation": "고체가 담황색 액체로 줄어들 때까지 때때로 염화칼륨을 추가합니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 6.000000000000003,
+            "audio_end_sec": 11.549999999999992,
+            "server_translate_started_elapsed_sec": 11.76703809799983,
+            "server_translate_done_elapsed_sec": 12.440902069000003,
+            "translation_latency_sec": 0.6738639710001735,
+            "server_fcl_sec": 0.8909020690000116,
+            "final_payload_wall_utc": "2026-04-01T04:40:40.269375+00:00",
+            "client_final_received_elapsed_sec": 12.445651166000061
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 2,
+          "avg_server_fcl_sec": 1.8738384079998496,
+          "avg_translation_latency_sec": 0.6000400694999826
+        }
+      },
+      {
+        "file_id": "1998-29454-0006",
+        "speaker_id": "1998",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/1998/29454/1998-29454-0006.flac",
+        "reference": "HE LOOKED ABOUT HIM AND KNEW THAT HE DID NOT AT ALL KNOW WHERE HE WAS",
+        "hypothesis": "He looked about him and knew that he did not at all know where he was.",
+        "hyp_commit": "He looked about him and knew that he did not at all know where he was. <seg>",
+        "duration": 4.09,
+        "total_time": 10.143434803999753,
+        "first_token_latency": 5.1377679769998394,
+        "model_runtime": 6.053434803999753,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "He looked about him and knew that he did not at all know where he was.",
+            "translation": "그는 주위를 둘러보았고 자신이 어디에 있는지 전혀 모른다는 것을 알았습니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 4.090000000000001,
+            "server_translate_started_elapsed_sec": 4.512723348000236,
+            "server_translate_done_elapsed_sec": 5.132964205999997,
+            "translation_latency_sec": 0.6202408579997609,
+            "server_fcl_sec": 1.0429642059999962,
+            "final_payload_wall_utc": "2026-04-01T04:40:50.502938+00:00",
+            "client_final_received_elapsed_sec": 5.137769165999998
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 1.0429642059999962,
+          "avg_translation_latency_sec": 0.6202408579997609
+        }
+      },
+      {
+        "file_id": "1998-29455-0006",
+        "speaker_id": "1998",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/1998/29455/1998-29455-0006.flac",
+        "reference": "BUT I SHALL HAVE THEM WHILE THEY'RE ALIVE SAID DICKIE AS HE HAD SAID TO THE PAWNBROKER ABOUT THE MOONFLOWERS",
+        "hypothesis": "But I shall have them while they are alive,\" said Dicky, as he had said to the pawnbroker about the moonflowers.",
+        "hyp_commit": "But I shall have them while they are alive,\" said Dicky, as he had said to the pawnbroker about the moonflowers. <seg>",
+        "duration": 6.115,
+        "total_time": 11.853046362999976,
+        "first_token_latency": 6.847443351000038,
+        "model_runtime": 5.738046362999976,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "But I shall have them while they are alive,\" said Dicky, as he had said to the pawnbroker about the moonflowers.",
+            "translation": "하지만 살아 있는 동안은 가질 거예요.\" 디키는 전당포에게 달꽃에 관해 말한 대로 말했습니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 6.115000000000003,
+            "server_translate_started_elapsed_sec": 6.3410462050001115,
+            "server_translate_done_elapsed_sec": 6.842658118000145,
+            "translation_latency_sec": 0.5016119130000334,
+            "server_fcl_sec": 0.727658118000142,
+            "final_payload_wall_utc": "2026-04-01T04:41:02.443480+00:00",
+            "client_final_received_elapsed_sec": 6.847444937999626
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 0.727658118000142,
+          "avg_translation_latency_sec": 0.5016119130000334
+        }
+      },
+      {
+        "file_id": "2414-159411-0033",
+        "speaker_id": "2414",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/2414/159411/2414-159411-0033.flac",
+        "reference": "WHEN THE GOOD BRAHMAN OPENED YOUR CAGE DOOR IS TO EAT HIM THE ONLY RETURN YOU WOULD MAKE",
+        "hypothesis": "When a good Brahmin opens your cage door, is to eat him the only return you would make?",
+        "hyp_commit": "When a good Brahmin opens your cage door, is to eat him the only return you would make? <seg>",
+        "duration": 6.66,
+        "total_time": 12.436898501999622,
+        "first_token_latency": 7.431185644999914,
+        "model_runtime": 5.7768985019996215,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "When a good Brahmin opens your cage door, is to eat him the only return you would make?",
+            "translation": "좋은 브라민이 우리 문을 열 때, 그를 잡아먹는 것이 당신이 할 수 있는 유일한 보답입니까?",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 6.660000000000003,
+            "server_translate_started_elapsed_sec": 6.796193520999623,
+            "server_translate_done_elapsed_sec": 7.426449923999826,
+            "translation_latency_sec": 0.6302564030002031,
+            "server_fcl_sec": 0.766449923999823,
+            "final_payload_wall_utc": "2026-04-01T04:41:14.967229+00:00",
+            "client_final_received_elapsed_sec": 7.431187237999893
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 0.766449923999823,
+          "avg_translation_latency_sec": 0.6302564030002031
+        }
+      },
+      {
+        "file_id": "2609-156975-0018",
+        "speaker_id": "2609",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/2609/156975/2609-156975-0018.flac",
+        "reference": "NATURALLY HE WENT TO THE LAND OF MIDIAN",
+        "hypothesis": "Natty, he went to the land of Midian.",
+        "hyp_commit": "Natty, he went to the land of Midian. <seg>",
+        "duration": 3.37,
+        "total_time": 9.07695613299984,
+        "first_token_latency": 4.0712017890000425,
+        "model_runtime": 5.7069561329998395,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "Natty, he went to the land of Midian.",
+            "translation": "낫티, 그는 미디안 땅으로 갔습니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 3.3700000000000006,
+            "server_translate_started_elapsed_sec": 3.612596014000246,
+            "server_translate_done_elapsed_sec": 4.066336079999928,
+            "translation_latency_sec": 0.453740065999682,
+            "server_fcl_sec": 0.6963360799999276,
+            "final_payload_wall_utc": "2026-04-01T04:41:24.135566+00:00",
+            "client_final_received_elapsed_sec": 4.07120347
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 0.6963360799999276,
+          "avg_translation_latency_sec": 0.453740065999682
+        }
+      },
+      {
+        "file_id": "2609-156975-0022",
+        "speaker_id": "2609",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/2609/156975/2609-156975-0022.flac",
+        "reference": "THESE SAND WANDERERS SENT HIM ON FROM TRIBE TO TRIBE UNTIL HE REACHED THE LAND OF KEDEM EAST OF THE DEAD SEA WHERE HE REMAINED FOR A YEAR AND A HALF",
+        "hypothesis": "These sand wanderers sent him on from tribe to tribe until he reached the land of Kedem. It is the Dead Sea, where he remained for a year and a half.",
+        "hyp_commit": "These sand wanderers sent him on from tribe to tribe until he reached the land of Kedem. <seg> It is the Dead Sea, where he remained for a year and a half. <seg>",
+        "duration": 13.505,
+        "total_time": 19.17832704600005,
+        "first_token_latency": 10.880180234000363,
+        "model_runtime": 5.673327046000049,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "These sand wanderers sent him on from tribe to tribe until he reached the land of Kedem.",
+            "translation": "이 모래 방랑자들은 그가 게뎀 땅에 이를 때까지 그를 이 지파에서 저 지파로 보냈습니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 9.999999999999996,
+            "server_translate_started_elapsed_sec": 10.333420579000176,
+            "server_translate_done_elapsed_sec": 10.875481683000089,
+            "translation_latency_sec": 0.542061103999913,
+            "server_fcl_sec": 0.8754816830000927,
+            "final_payload_wall_utc": "2026-04-01T04:41:40.111790+00:00",
+            "client_final_received_elapsed_sec": 10.880181305000406
+          },
+          {
+            "segment_id": 2,
+            "text": "It is the Dead Sea, where he remained for a year and a half.",
+            "translation": "그곳은 그가 1년 반 동안 머물렀던 사해이다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 9.999999999999996,
+            "audio_end_sec": 13.504999999999985,
+            "server_translate_started_elapsed_sec": 13.756487249000202,
+            "server_translate_done_elapsed_sec": 14.167757450999943,
+            "translation_latency_sec": 0.4112702019997414,
+            "server_fcl_sec": 0.6627574509999583,
+            "final_payload_wall_utc": "2026-04-01T04:41:43.404101+00:00",
+            "client_final_received_elapsed_sec": 14.17258954800036
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 2,
+          "avg_server_fcl_sec": 0.7691195670000255,
+          "avg_translation_latency_sec": 0.4766656529998272
+        }
+      },
+      {
+        "file_id": "2609-156975-0035",
+        "speaker_id": "2609",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/2609/156975/2609-156975-0035.flac",
+        "reference": "HIS QUEST WAS FOR A JUST AND STRONG GOD ABLE TO DELIVER THE OPPRESSED",
+        "hypothesis": "His quest was for a just and strong god, able to deliver the oppressed.",
+        "hyp_commit": "His quest was for a just and strong god, able to deliver the oppressed. <seg>",
+        "duration": 5.465,
+        "total_time": 11.061131283999657,
+        "first_token_latency": 6.05542393099995,
+        "model_runtime": 5.596131283999657,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "His quest was for a just and strong god, able to deliver the oppressed.",
+            "translation": "그의 탐구는 억압받는 사람들을 구원할 수 있는 정의롭고 강한 신을 찾는 것이었습니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 5.4650000000000025,
+            "server_translate_started_elapsed_sec": 5.647701717000018,
+            "server_translate_done_elapsed_sec": 6.050590029999967,
+            "translation_latency_sec": 0.40288831299994854,
+            "server_fcl_sec": 0.5855900299999641,
+            "final_payload_wall_utc": "2026-04-01T04:41:54.606087+00:00",
+            "client_final_received_elapsed_sec": 6.055425532999834
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 0.5855900299999641,
+          "avg_translation_latency_sec": 0.40288831299994854
+        }
+      },
+      {
+        "file_id": "2609-169640-0003",
+        "speaker_id": "2609",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/2609/169640/2609-169640-0003.flac",
+        "reference": "I NEVER WAS IN A BETTER STEERING SHIP MOST ESPECIALLY IN MODERATE WEATHER",
+        "hypothesis": "I never was in a better steering ship, Potsy Spetsy, in moderate weather.",
+        "hyp_commit": "I never was in a better steering ship, Potsy Spetsy, in moderate weather. <seg>",
+        "duration": 5.33,
+        "total_time": 10.964906073000293,
+        "first_token_latency": 5.959969914999874,
+        "model_runtime": 5.634906073000293,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "I never was in a better steering ship, Potsy Spetsy, in moderate weather.",
+            "translation": "나는 온화한 날씨에 더 나은 조타선인 Potsy Spetsy를 타본 적이 없습니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 5.330000000000002,
+            "server_translate_started_elapsed_sec": 5.545594382999752,
+            "server_translate_done_elapsed_sec": 5.954963285999838,
+            "translation_latency_sec": 0.409368903000086,
+            "server_fcl_sec": 0.6249632859998364,
+            "final_payload_wall_utc": "2026-04-01T04:42:05.665589+00:00",
+            "client_final_received_elapsed_sec": 5.959971052000128
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 0.6249632859998364,
+          "avg_translation_latency_sec": 0.409368903000086
+        }
+      },
+      {
+        "file_id": "2609-169640-0004",
+        "speaker_id": "2609",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/2609/169640/2609-169640-0004.flac",
+        "reference": "MISTER MARBLE HE I DO BELIEVE WAS FAIRLY SNOOZING ON THE HEN COOPS BEING LIKE THE SAILS AS ONE MIGHT SAY BARELY ASLEEP",
+        "hypothesis": "Mr. Marble, he ought to believe, was fairly snoozing, when the Hinkups, being like the sails, as one might say, very asleep.",
+        "hyp_commit": "Mr. <seg> Marble, he ought to believe, was fairly snoozing, when the Hinkups, being like the sails, as one might say, very asleep. <seg>",
+        "duration": 10.84,
+        "total_time": 16.271468482000273,
+        "first_token_latency": 2.370476159000191,
+        "model_runtime": 5.431468482000273,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "Mr.",
+            "translation": "씨.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 1.9999999999999998,
+            "server_translate_started_elapsed_sec": 2.2323522930000763,
+            "server_translate_done_elapsed_sec": 2.3657451779999974,
+            "translation_latency_sec": 0.13339288499992108,
+            "server_fcl_sec": 0.3657451779999976,
+            "final_payload_wall_utc": "2026-04-01T04:42:13.125568+00:00",
+            "client_final_received_elapsed_sec": 2.3704770580002332
+          },
+          {
+            "segment_id": 2,
+            "text": "Marble, he ought to believe, was fairly snoozing, when the Hinkups, being like the sails, as one might say, very asleep.",
+            "translation": "마블은 꽤 졸고 있었는데, Hinkups는 마치 돛과 같아서 아주 잠들어 있었다고 그는 믿었을 것입니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 1.9999999999999998,
+            "audio_end_sec": 10.839999999999993,
+            "server_translate_started_elapsed_sec": 11.008287742999983,
+            "server_translate_done_elapsed_sec": 11.260991516000104,
+            "translation_latency_sec": 0.25270377300012115,
+            "server_fcl_sec": 0.420991516000111,
+            "final_payload_wall_utc": "2026-04-01T04:42:22.020864+00:00",
+            "client_final_received_elapsed_sec": 11.265813152000192
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 2,
+          "avg_server_fcl_sec": 0.3933683470000543,
+          "avg_translation_latency_sec": 0.1930483290000211
+        }
+      },
+      {
+        "file_id": "3005-163389-0016",
+        "speaker_id": "3005",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163389/3005-163389-0016.flac",
+        "reference": "AND THE HORSE A GOING LIKE A HOUSE AFIRE TOO",
+        "hypothesis": "And the horse a going like a house afire, too.",
+        "hyp_commit": "And the horse a going like a house afire, too. <seg>",
+        "duration": 3.1,
+        "total_time": 8.864810989000034,
+        "first_token_latency": 3.8591679410001234,
+        "model_runtime": 5.7648109890000345,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "And the horse a going like a house afire, too.",
+            "translation": "그리고 말도 집에 불이 붙은 것처럼 움직입니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 3.1000000000000005,
+            "server_translate_started_elapsed_sec": 3.3551006000002417,
+            "server_translate_done_elapsed_sec": 3.85428713400006,
+            "translation_latency_sec": 0.4991865339998185,
+            "server_fcl_sec": 0.7542871340000596,
+            "final_payload_wall_utc": "2026-04-01T04:42:30.969655+00:00",
+            "client_final_received_elapsed_sec": 3.859169415999986
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 0.7542871340000596,
+          "avg_translation_latency_sec": 0.4991865339998185
+        }
+      },
+      {
+        "file_id": "3080-5032-0023",
+        "speaker_id": "3080",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3080/5032/3080-5032-0023.flac",
+        "reference": "WE HAVE HAD ANOTHER DEBATE BUT MUCH MORE CALMLY",
+        "hypothesis": "We have had another debate, but much more calmly.",
+        "hyp_commit": "We have had another debate, but much more calmly. <seg>",
+        "duration": 4.25,
+        "total_time": 9.928811422999843,
+        "first_token_latency": 4.923219409000012,
+        "model_runtime": 5.678811422999843,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "We have had another debate, but much more calmly.",
+            "translation": "우리는 또 다른 토론을 했지만 훨씬 더 차분하게 토론했습니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 4.250000000000001,
+            "server_translate_started_elapsed_sec": 4.4530500419996315,
+            "server_translate_done_elapsed_sec": 4.918278043999635,
+            "translation_latency_sec": 0.46522800200000347,
+            "server_fcl_sec": 0.6682780439996341,
+            "final_payload_wall_utc": "2026-04-01T04:42:40.982869+00:00",
+            "client_final_received_elapsed_sec": 4.92322053099997
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 0.6682780439996341,
+          "avg_translation_latency_sec": 0.46522800200000347
+        }
+      },
+      {
+        "file_id": "3331-159605-0027",
+        "speaker_id": "3331",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3331/159605/3331-159605-0027.flac",
+        "reference": "ASKED THE ARTFUL YOUNG MAN LAYING A TRAP INTO WHICH POLLY IMMEDIATELY FELL",
+        "hypothesis": "Asked the artful young man, laying a trap into which Polly immediately fell.",
+        "hyp_commit": "Asked the artful young man, laying a trap into which Polly immediately fell. <seg>",
+        "duration": 4.72,
+        "total_time": 10.720185059999949,
+        "first_token_latency": 5.71510547600019,
+        "model_runtime": 6.000185059999949,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "Asked the artful young man, laying a trap into which Polly immediately fell.",
+            "translation": "교묘한 젊은이에게 물었고 폴리는 즉시 함정에 빠졌습니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 4.7200000000000015,
+            "server_translate_started_elapsed_sec": 4.8686876969995865,
+            "server_translate_done_elapsed_sec": 5.710213328999998,
+            "translation_latency_sec": 0.8415256320004119,
+            "server_fcl_sec": 0.9902133289999968,
+            "final_payload_wall_utc": "2026-04-01T04:42:51.787327+00:00",
+            "client_final_received_elapsed_sec": 5.715106744999957
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 0.9902133289999968,
+          "avg_translation_latency_sec": 0.8415256320004119
+        }
+      },
+      {
+        "file_id": "3331-159605-0044",
+        "speaker_id": "3331",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3331/159605/3331-159605-0044.flac",
+        "reference": "HE UNDERSTOOD AND BEING A GENTLEMAN MADE NO FUSS",
+        "hypothesis": "He understood, and being.",
+        "hyp_commit": "He understood, and being. <seg>",
+        "duration": 3.755,
+        "total_time": 5.2430350290001115,
+        "first_token_latency": null,
+        "model_runtime": 1.4880350290001116,
+        "target_lang": "ko",
+        "segment_metrics": [],
+        "segment_metrics_summary": {}
+      },
+      {
+        "file_id": "3528-168669-0119",
+        "speaker_id": "3528",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3528/168669/3528-168669-0119.flac",
+        "reference": "MOTHER ASCENSION WILL BE THERE TWO MEN WOULD BE BETTER",
+        "hypothesis": "Mother, a sentry will be there. Two men would be better.",
+        "hyp_commit": "Mother, a sentry will be there. Two men would be better. <seg>",
+        "duration": 2.97,
+        "total_time": 8.81582756700027,
+        "first_token_latency": 3.8102455350003765,
+        "model_runtime": 5.845827567000269,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "Mother, a sentry will be there. Two men would be better.",
+            "translation": "어머니, 보초가 거기 있을 거예요. 남자 두 명이면 더 좋을 것 같아요.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 2.97,
+            "server_translate_started_elapsed_sec": 3.26833016899991,
+            "server_translate_done_elapsed_sec": 3.8053569520002384,
+            "translation_latency_sec": 0.5370267830003286,
+            "server_fcl_sec": 0.8353569520002382,
+            "final_payload_wall_utc": "2026-04-01T04:43:06.009987+00:00",
+            "client_final_received_elapsed_sec": 3.810246489000292
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 0.8353569520002382,
+          "avg_translation_latency_sec": 0.5370267830003286
+        }
+      },
+      {
+        "file_id": "3538-163622-0013",
+        "speaker_id": "3538",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3538/163622/3538-163622-0013.flac",
+        "reference": "I WOULD MUCH RATHER HAVE THE PRINCESS SAID CINDERLAD",
+        "hypothesis": "I would much rather have the princess,\" said Cinderlad.",
+        "hyp_commit": "I would much rather have the princess,\" said Cinderlad. <seg>",
+        "duration": 3.755,
+        "total_time": 9.228926019000028,
+        "first_token_latency": 4.223290211000403,
+        "model_runtime": 5.473926019000028,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "I would much rather have the princess,\" said Cinderlad.",
+            "translation": "난 차라리 공주를 갖고 싶어.\" 신데렐라가 말했다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 3.755000000000001,
+            "server_translate_started_elapsed_sec": 3.9981904269998267,
+            "server_translate_done_elapsed_sec": 4.218480434999947,
+            "translation_latency_sec": 0.22029000800012,
+            "server_fcl_sec": 0.46348043499994596,
+            "final_payload_wall_utc": "2026-04-01T04:43:15.322910+00:00",
+            "client_final_received_elapsed_sec": 4.223291299000266
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 0.46348043499994596,
+          "avg_translation_latency_sec": 0.22029000800012
+        }
+      },
+      {
+        "file_id": "3538-163624-0002",
+        "speaker_id": "3538",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3538/163624/3538-163624-0002.flac",
+        "reference": "BUT IN THE NIGHT WHEN THE BATTLE WAS OVER HIS YOUNG WIFE CAME OUT AND SEARCHED FOR HIM AMONG THE SLAIN AND AT LAST SHE FOUND HIM AND ASKED WHETHER HE MIGHT BE HEALED",
+        "hypothesis": "But in the night, when the battle was over, his young wife came out and searched for him among the slain, and at last she found him and asked whether he might be healed.",
+        "hyp_commit": "But in the night, when the battle was over, his young wife came out and searched for him among the slain, and at last she found him and asked whether he might be healed. <seg>",
+        "duration": 8.14,
+        "total_time": 15.030569485999877,
+        "first_token_latency": 10.025022153000009,
+        "model_runtime": 6.890569485999876,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "But in the night, when the battle was over, his young wife came out and searched for him among the slain, and at last she found him and asked whether he might be healed.",
+            "translation": "그러나 전투가 끝난 밤이 되자 그의 젊은 아내가 나와서 살해된 자들 가운데서 그를 찾았고, 마침내 그를 발견하고 그가 낫을 수 있는지 물었습니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 8.140000000000004,
+            "server_translate_started_elapsed_sec": 8.422327552000297,
+            "server_translate_done_elapsed_sec": 10.020010411000385,
+            "translation_latency_sec": 1.5976828590000878,
+            "server_fcl_sec": 1.8800104110003808,
+            "final_payload_wall_utc": "2026-04-01T04:43:30.438223+00:00",
+            "client_final_received_elapsed_sec": 10.025023297999724
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 1.8800104110003808,
+          "avg_translation_latency_sec": 1.5976828590000878
+        }
+      },
+      {
+        "file_id": "3538-163624-0009",
+        "speaker_id": "3538",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3538/163624/3538-163624-0009.flac",
+        "reference": "THEN SIGURD WENT TO HIS MOTHER AND ASKED FOR THE BROKEN PIECES OF HIS FATHER'S BLADE AND GAVE THEM TO REGIN",
+        "hypothesis": "Then Sigurd went to his mother and asked for the broken pieces of his father's blade and gave them to Regan.",
+        "hyp_commit": "Then Sigurd went to his mother and asked for the broken pieces of his father's blade and gave them to Regan. <seg>",
+        "duration": 5.595,
+        "total_time": 11.802627383000072,
+        "first_token_latency": 6.798035465999874,
+        "model_runtime": 6.207627383000072,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "Then Sigurd went to his mother and asked for the broken pieces of his father's blade and gave them to Regan.",
+            "translation": "그런 다음 시구르드는 어머니에게 가서 아버지의 칼날의 부러진 조각을 요청하여 리건에게 주었습니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 5.595000000000002,
+            "server_translate_started_elapsed_sec": 5.8273978149995855,
+            "server_translate_done_elapsed_sec": 6.793023741999605,
+            "translation_latency_sec": 0.9656259270000191,
+            "server_fcl_sec": 1.1980237419996023,
+            "final_payload_wall_utc": "2026-04-01T04:43:42.335582+00:00",
+            "client_final_received_elapsed_sec": 6.79803668500017
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 1.1980237419996023,
+          "avg_translation_latency_sec": 0.9656259270000191
+        }
+      },
+      {
+        "file_id": "3538-163624-0021",
+        "speaker_id": "3538",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3538/163624/3538-163624-0021.flac",
+        "reference": "THEN HE TOOK THE HELMET OFF THE HEAD OF THE SLEEPER AND BEHOLD SHE WAS A MOST BEAUTIFUL LADY",
+        "hypothesis": "Then he took the helmet off the head of the sleeper, and behold, she was a most beautiful lady.",
+        "hyp_commit": "Then he took the helmet off the head of the sleeper, and behold, she was a most beautiful lady. <seg>",
+        "duration": 5.41,
+        "total_time": 11.327231137000126,
+        "first_token_latency": 6.322480571000142,
+        "model_runtime": 5.917231137000126,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "Then he took the helmet off the head of the sleeper, and behold, she was a most beautiful lady.",
+            "translation": "그리고 잠자는 자의 머리에서 투구를 벗기니, 보라, 그녀는 매우 아름다운 여인이었다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 5.410000000000002,
+            "server_translate_started_elapsed_sec": 5.574850903999959,
+            "server_translate_done_elapsed_sec": 6.317498129999876,
+            "translation_latency_sec": 0.7426472259999173,
+            "server_fcl_sec": 0.9074981299998743,
+            "final_payload_wall_utc": "2026-04-01T04:43:53.746789+00:00",
+            "client_final_received_elapsed_sec": 6.322481744000015
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 0.9074981299998743,
+          "avg_translation_latency_sec": 0.7426472259999173
+        }
+      },
+      {
+        "file_id": "367-130732-0032",
+        "speaker_id": "367",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/367/130732/367-130732-0032.flac",
+        "reference": "RESERVE SOME OF THE SPAWN ALSO HALF OF THE BODY SHELLS WITH WHICH TO MAKE THE CRAWFISH BUTTER TO FINISH THE SOUP",
+        "hypothesis": "Reserve some of the spawn, also half of the body shells, with which to make the crawfish butter to finish the soup.",
+        "hyp_commit": "Reserve some of the spawn, also half of the body shells, with which to make the crawfish butter to finish the soup. <seg>",
+        "duration": 6.67,
+        "total_time": 12.956367106000016,
+        "first_token_latency": 7.950767259999793,
+        "model_runtime": 6.286367106000016,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "Reserve some of the spawn, also half of the body shells, with which to make the crawfish butter to finish the soup.",
+            "translation": "수프를 마무리하기 위해 가재 버터를 만드는 데 사용할 알의 일부와 몸통 껍질의 절반을 예약하십시오.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 6.6700000000000035,
+            "server_translate_started_elapsed_sec": 6.837398570000005,
+            "server_translate_done_elapsed_sec": 7.9457793820001825,
+            "translation_latency_sec": 1.1083808120001777,
+            "server_fcl_sec": 1.275779382000179,
+            "final_payload_wall_utc": "2026-04-01T04:44:06.786865+00:00",
+            "client_final_received_elapsed_sec": 7.950768475000132
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 1.275779382000179,
+          "avg_translation_latency_sec": 1.1083808120001777
+        }
+      },
+      {
+        "file_id": "3764-168670-0028",
+        "speaker_id": "3764",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3764/168670/3764-168670-0028.flac",
+        "reference": "IT IS A CHAMBER ON THE GROUND FLOOR WHICH HAS A GRATED WINDOW OPENING ON THE GARDEN WHICH IS CLOSED ON THE OUTSIDE BY A SHUTTER AND TWO DOORS ONE LEADS INTO THE CONVENT THE OTHER INTO THE CHURCH WHAT CHURCH",
+        "hypothesis": "It is a chamber on the ground floor, which has a grated window opening on the garden, which is closed on the outside by a shutter, and two doors. One leads into the convent; the other into the church. A what church?",
+        "hyp_commit": "It is a chamber on the ground floor, which has a grated window opening on the garden, which is closed on the outside by a shutter, and two doors. <seg> One leads into the convent; the other into the church. A what church? <seg>",
+        "duration": 13.435,
+        "total_time": 18.69588779200012,
+        "first_token_latency": 10.33990298300023,
+        "model_runtime": 5.260887792000121,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "It is a chamber on the ground floor, which has a grated window opening on the garden, which is closed on the outside by a shutter, and two doors.",
+            "translation": "1층에 있는 방으로, 정원 쪽으로 열리는 격자창이 있고, 외부는 셔터로 닫혀 있으며, 두 개의 문이 있습니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 8.000000000000004,
+            "server_translate_started_elapsed_sec": 10.204450686999735,
+            "server_translate_done_elapsed_sec": 10.335017037999933,
+            "translation_latency_sec": 0.13056635100019776,
+            "server_fcl_sec": 2.335017037999929,
+            "final_payload_wall_utc": "2026-04-01T04:44:22.219229+00:00",
+            "client_final_received_elapsed_sec": 10.339903991000028
+          },
+          {
+            "segment_id": 2,
+            "text": "One leads into the convent; the other into the church. A what church?",
+            "translation": "하나는 수녀원으로 연결됩니다. 다른 하나는 교회에 들어갑니다. 무슨 교회요?",
+            "commit_reason": "seg",
+            "audio_start_sec": 8.000000000000004,
+            "audio_end_sec": 13.434999999999985,
+            "server_translate_started_elapsed_sec": 13.604467388000103,
+            "server_translate_done_elapsed_sec": 13.685268182000073,
+            "translation_latency_sec": 0.08080079399996976,
+            "server_fcl_sec": 0.25026818200008805,
+            "final_payload_wall_utc": "2026-04-01T04:44:25.569545+00:00",
+            "client_final_received_elapsed_sec": 13.69022876200006
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 2,
+          "avg_server_fcl_sec": 1.2926426100000086,
+          "avg_translation_latency_sec": 0.10568357250008376
+        }
+      },
+      {
+        "file_id": "3764-168671-0050",
+        "speaker_id": "3764",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3764/168671/3764-168671-0050.flac",
+        "reference": "RETURNED FAUCHELEVENT CLUTCHING AT THIS BRANCH FEEBLE AS IT WAS",
+        "hypothesis": "Returned Voslovon, clutching at this branch, feeble as it was.",
+        "hyp_commit": "Returned Voslovon, clutching at this branch, feeble as it was. <seg>",
+        "duration": 4.565,
+        "total_time": 10.325049820999993,
+        "first_token_latency": 5.319424426999831,
+        "model_runtime": 5.760049820999993,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "Returned Voslovon, clutching at this branch, feeble as it was.",
+            "translation": "보슬로본은 이 나뭇가지를 움켜쥐고 연약한 모습으로 돌아왔습니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 4.565000000000001,
+            "server_translate_started_elapsed_sec": 4.7001659820002715,
+            "server_translate_done_elapsed_sec": 5.314403448000121,
+            "translation_latency_sec": 0.6142374659998495,
+            "server_fcl_sec": 0.7494034480001197,
+            "final_payload_wall_utc": "2026-04-01T04:44:35.990165+00:00",
+            "client_final_received_elapsed_sec": 5.319425390000106
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 0.7494034480001197,
+          "avg_translation_latency_sec": 0.6142374659998495
+        }
+      },
+      {
+        "file_id": "3997-180297-0004",
+        "speaker_id": "3997",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3997/180297/3997-180297-0004.flac",
+        "reference": "MY DEAR PRUDENCE I ANSWERED YOU DO NOT KNOW WHAT YOU ARE SAYING",
+        "hypothesis": "My dear Prudence, I answered, \"You do not know what you are saying.\"",
+        "hyp_commit": "My dear Prudence, I answered, \"You do not know what you are saying.\" <seg>",
+        "duration": 5.01,
+        "total_time": 10.880266012999982,
+        "first_token_latency": 5.874675233999824,
+        "model_runtime": 5.870266012999982,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "My dear Prudence, I answered, \"You do not know what you are saying.\"",
+            "translation": "친애하는 프루던스여, 나는 \"당신은 당신이 무슨 말을 하는지 모르고 있습니다.\"라고 대답했습니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 5.010000000000002,
+            "server_translate_started_elapsed_sec": 5.174749045999761,
+            "server_translate_done_elapsed_sec": 5.869672290999915,
+            "translation_latency_sec": 0.6949232450001546,
+            "server_fcl_sec": 0.8596722909999137,
+            "final_payload_wall_utc": "2026-04-01T04:44:46.963878+00:00",
+            "client_final_received_elapsed_sec": 5.874676415000067
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 0.8596722909999137,
+          "avg_translation_latency_sec": 0.6949232450001546
+        }
+      },
+      {
+        "file_id": "3997-180297-0016",
+        "speaker_id": "3997",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3997/180297/3997-180297-0016.flac",
+        "reference": "WE NO LONGER BELONG TO OURSELVES",
+        "hypothesis": "We no longer belong to ourselves.",
+        "hyp_commit": "We no longer belong to ourselves. <seg>",
+        "duration": 2.525,
+        "total_time": 8.251005492999866,
+        "first_token_latency": 3.245341329999974,
+        "model_runtime": 5.726005492999866,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "We no longer belong to ourselves.",
+            "translation": "우리는 더 이상 우리 자신의 것이 아닙니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 2.525,
+            "server_translate_started_elapsed_sec": 2.6834866229996805,
+            "server_translate_done_elapsed_sec": 3.240475316999891,
+            "translation_latency_sec": 0.5569886940002107,
+            "server_fcl_sec": 0.7154753169998913,
+            "final_payload_wall_utc": "2026-04-01T04:44:55.298892+00:00",
+            "client_final_received_elapsed_sec": 3.245342839999921
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 0.7154753169998913,
+          "avg_translation_latency_sec": 0.5569886940002107
+        }
+      },
+      {
+        "file_id": "3997-180297-0017",
+        "speaker_id": "3997",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3997/180297/3997-180297-0017.flac",
+        "reference": "WE STAND FIRST IN THEIR SELF ESTEEM LAST IN THEIR ESTEEM",
+        "hypothesis": "We stand first in their self-esteem, last in their esteem.",
+        "hyp_commit": "We stand first in their self-esteem, last in their esteem. <seg>",
+        "duration": 3.855,
+        "total_time": 10.01016108199974,
+        "first_token_latency": 5.004616590999831,
+        "model_runtime": 6.15516108199974,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "We stand first in their self-esteem, last in their esteem.",
+            "translation": "우리는 그들의 자존심에서 가장 먼저 서고, 그들의 존경심에서는 맨 마지막에 서 있습니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 3.8550000000000013,
+            "server_translate_started_elapsed_sec": 4.112692938000237,
+            "server_translate_done_elapsed_sec": 4.999686084000132,
+            "translation_latency_sec": 0.8869931459998952,
+            "server_fcl_sec": 1.1446860840001305,
+            "final_payload_wall_utc": "2026-04-01T04:45:05.395548+00:00",
+            "client_final_received_elapsed_sec": 5.004617716999746
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 1.1446860840001305,
+          "avg_translation_latency_sec": 0.8869931459998952
+        }
+      },
+      {
+        "file_id": "4350-10919-0030",
+        "speaker_id": "4350",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/4350/10919/4350-10919-0030.flac",
+        "reference": "AT THE QUESTION SHOULD THEY GO ABROAD THE DOCTOR PLUNGED INTO DEEP MEDITATION AS THOUGH RESOLVING A WEIGHTY PROBLEM",
+        "hypothesis": "At the question, should they go abroad? The doctor plunged into deep meditation, as though resolving a weighty problem.",
+        "hyp_commit": "At the question, should they go abroad? <seg> The doctor plunged into deep meditation, as though resolving a weighty problem. <seg>",
+        "duration": 6.34,
+        "total_time": 12.10874302100001,
+        "first_token_latency": 4.997933940000166,
+        "model_runtime": 5.7687430210000095,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "At the question, should they go abroad?",
+            "translation": "질문에, 그들은 해외로 가야 하는가?",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 1.9999999999999998,
+            "server_translate_started_elapsed_sec": 4.362846770000033,
+            "server_translate_done_elapsed_sec": 4.993027041999994,
+            "translation_latency_sec": 0.6301802719999614,
+            "server_fcl_sec": 2.9930270419999943,
+            "final_payload_wall_utc": "2026-04-01T04:45:15.492129+00:00",
+            "client_final_received_elapsed_sec": 4.997934962000272
+          },
+          {
+            "segment_id": 2,
+            "text": "The doctor plunged into deep meditation, as though resolving a weighty problem.",
+            "translation": "의사는 마치 중대한 문제를 해결하려는 듯 깊은 명상에 빠졌습니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 1.9999999999999998,
+            "audio_end_sec": 6.3400000000000025,
+            "server_translate_started_elapsed_sec": 6.4782785130000775,
+            "server_translate_done_elapsed_sec": 7.098320959000375,
+            "translation_latency_sec": 0.6200424460002978,
+            "server_fcl_sec": 0.7583209590003728,
+            "final_payload_wall_utc": "2026-04-01T04:45:17.597482+00:00",
+            "client_final_received_elapsed_sec": 7.103268854000362
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 2,
+          "avg_server_fcl_sec": 1.8756740005001835,
+          "avg_translation_latency_sec": 0.6251113590001296
+        }
+      },
+      {
+        "file_id": "4350-9170-0011",
+        "speaker_id": "4350",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/4350/9170/4350-9170-0011.flac",
+        "reference": "ONLY UNDER THOSE CONDITIONS COULD THE SOCIAL ORGANIZATION BE JUSTIFIED",
+        "hypothesis": "Only under those conditions could the social organization be justified.",
+        "hyp_commit": "Only under those conditions could the social organization be justified. <seg>",
+        "duration": 3.745,
+        "total_time": 9.635703773999921,
+        "first_token_latency": 4.63139221099982,
+        "model_runtime": 5.890703773999921,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "Only under those conditions could the social organization be justified.",
+            "translation": "그러한 조건에서만 사회조직이 정당화될 수 있다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 3.745000000000001,
+            "server_translate_started_elapsed_sec": 3.972066988000279,
+            "server_translate_done_elapsed_sec": 4.62639441400006,
+            "translation_latency_sec": 0.6543274259997816,
+            "server_fcl_sec": 0.8813944140000594,
+            "final_payload_wall_utc": "2026-04-01T04:45:27.325804+00:00",
+            "client_final_received_elapsed_sec": 4.631393191999905
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 0.8813944140000594,
+          "avg_translation_latency_sec": 0.6543274259997816
+        }
+      },
+      {
+        "file_id": "4350-9170-0026",
+        "speaker_id": "4350",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/4350/9170/4350-9170-0026.flac",
+        "reference": "THE MEANING OF CAPRIVI'S SPEECH PUT INTO PLAIN LANGUAGE IS THAT FUNDS ARE NEEDED NOT TO RESIST FOREIGN FOES BUT TO BUY UNDER OFFICERS TO BE READY TO ACT AGAINST THE ENSLAVED TOILING MASSES",
+        "hypothesis": "The meaning of Caprivi's speech, put into plain language, is that funds are needed not to resist foreign foes, but to buy under officers to be ready to act against the enslaved toiling masses.",
+        "hyp_commit": "The meaning of Caprivi's speech, put into plain language, is that funds are needed not to resist foreign foes, but to buy under officers to be ready to act against the enslaved toiling masses. <seg>",
+        "duration": 10.3,
+        "total_time": 16.9291500129998,
+        "first_token_latency": 11.923732024999936,
+        "model_runtime": 6.629150012999798,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "The meaning of Caprivi's speech, put into plain language, is that funds are needed not to resist foreign foes, but to buy under officers to be ready to act against the enslaved toiling masses.",
+            "translation": "일반 언어로 표현된 Caprivi의 연설의 의미는 외국의 적에 저항하는 데 필요한 것이 아니라 노예로 일하는 노동 대중에 맞서 행동할 준비를 하기 위해 장교 아래에서 자금을 구입하는 데 자금이 필요하다는 것입니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 10.299999999999995,
+            "server_translate_started_elapsed_sec": 10.447038170000269,
+            "server_translate_done_elapsed_sec": 11.918745529000262,
+            "translation_latency_sec": 1.4717073589999927,
+            "server_fcl_sec": 1.6187455290002664,
+            "final_payload_wall_utc": "2026-04-01T04:45:44.344654+00:00",
+            "client_final_received_elapsed_sec": 11.923733188999904
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 1.6187455290002664,
+          "avg_translation_latency_sec": 1.4717073589999927
+        }
+      },
+      {
+        "file_id": "4852-28312-0000",
+        "speaker_id": "4852",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/4852/28312/4852-28312-0000.flac",
+        "reference": "OF THE MANY TIMES HE HAD EXAMINED MISTER WICKER'S WINDOW AND PORED OVER THE ROPE THE SHIP AND THE NUBIAN BOY HE HAD NEVER GONE INTO MISTER WICKER'S SHOP",
+        "hypothesis": "Of the many times he examined Mister Wicker's window and pored over the rope, the ship, and the Nubian boy, he had never gone into Mister Wicker's shop.",
+        "hyp_commit": "Of the many times he examined Mister Wicker's window and pored over the rope, the ship, and the Nubian boy, he had never gone into Mister Wicker's shop. <seg>",
+        "duration": 8.685,
+        "total_time": 14.492689285999859,
+        "first_token_latency": 9.488823885999864,
+        "model_runtime": 5.807689285999858,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "Of the many times he examined Mister Wicker's window and pored over the rope, the ship, and the Nubian boy, he had never gone into Mister Wicker's shop.",
+            "translation": "그는 위커 씨의 창문을 여러 번 살펴보고 밧줄과 배, 누비아 소년을 자세히 살펴보았지만 한 번도 위커 씨의 가게에 들어간 적이 없었습니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 8.685000000000002,
+            "server_translate_started_elapsed_sec": 8.842495865000274,
+            "server_translate_done_elapsed_sec": 9.483876933000374,
+            "translation_latency_sec": 0.6413810680001006,
+            "server_fcl_sec": 0.798876933000372,
+            "final_payload_wall_utc": "2026-04-01T04:45:58.931868+00:00",
+            "client_final_received_elapsed_sec": 9.488824809000107
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 0.798876933000372,
+          "avg_translation_latency_sec": 0.6413810680001006
+        }
+      },
+      {
+        "file_id": "533-1066-0000",
+        "speaker_id": "533",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/533/1066/533-1066-0000.flac",
+        "reference": "WHEN CHURCHYARDS YAWN",
+        "hypothesis": "When churchyards yawn.",
+        "hyp_commit": "When churchyards yawn. <seg>",
+        "duration": 2.55,
+        "total_time": 8.474059926999871,
+        "first_token_latency": 3.469502107000153,
+        "model_runtime": 5.924059926999871,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "When churchyards yawn.",
+            "translation": "교회 마당이 하품을 할 때.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 2.55,
+            "server_translate_started_elapsed_sec": 2.699251312999877,
+            "server_translate_done_elapsed_sec": 3.4648479540001063,
+            "translation_latency_sec": 0.7655966410002293,
+            "server_fcl_sec": 0.9148479540001064,
+            "final_payload_wall_utc": "2026-04-01T04:46:07.487652+00:00",
+            "client_final_received_elapsed_sec": 3.469503070999963
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 0.9148479540001064,
+          "avg_translation_latency_sec": 0.7655966410002293
+        }
+      },
+      {
+        "file_id": "5442-41169-0018",
+        "speaker_id": "5442",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/5442/41169/5442-41169-0018.flac",
+        "reference": "OH WELL ONE DOES IT WHAT WOULD YOU HAVE",
+        "hypothesis": "Oh well, one does.",
+        "hyp_commit": "Oh well, one does. <seg>",
+        "duration": 3.945,
+        "total_time": 5.234147091000068,
+        "first_token_latency": null,
+        "model_runtime": 1.2891470910000682,
+        "target_lang": "ko",
+        "segment_metrics": [],
+        "segment_metrics_summary": {}
+      },
+      {
+        "file_id": "5442-41169-0028",
+        "speaker_id": "5442",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/5442/41169/5442-41169-0028.flac",
+        "reference": "SAID LEVIN RETURNING TO A THOUGHT THAT HAD STRUCK HIM",
+        "hypothesis": "Said Levin, returning to a thought that had struck him.",
+        "hyp_commit": "Said Levin, returning to a thought that had struck him. <seg>",
+        "duration": 3.7,
+        "total_time": 9.507184084000073,
+        "first_token_latency": 4.501753201000156,
+        "model_runtime": 5.807184084000073,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "Said Levin, returning to a thought that had struck him.",
+            "translation": "레빈은 자신을 강타한 생각을 떠올리며 말했다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 3.700000000000001,
+            "server_translate_started_elapsed_sec": 3.9590856990002976,
+            "server_translate_done_elapsed_sec": 4.496993315000054,
+            "translation_latency_sec": 0.5379076159997567,
+            "server_fcl_sec": 0.7969933150000532,
+            "final_payload_wall_utc": "2026-04-01T04:46:22.393324+00:00",
+            "client_final_received_elapsed_sec": 4.501754159000029
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 0.7969933150000532,
+          "avg_translation_latency_sec": 0.5379076159997567
+        }
+      },
+      {
+        "file_id": "5442-41169-0031",
+        "speaker_id": "5442",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/5442/41169/5442-41169-0031.flac",
+        "reference": "WITHOUT A RETURN TOO AT A SIMPLE LOSS",
+        "hypothesis": "Without a return, too, at a simple loss.",
+        "hyp_commit": "Without a return, too, at a simple loss. <seg>",
+        "duration": 3.21,
+        "total_time": 9.80818120999993,
+        "first_token_latency": 4.802642881999873,
+        "model_runtime": 6.59818120999993,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "Without a return, too, at a simple loss.",
+            "translation": "반품도 없이 단순한 손실로.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 3.2100000000000004,
+            "server_translate_started_elapsed_sec": 3.440091439999833,
+            "server_translate_done_elapsed_sec": 4.797804512999846,
+            "translation_latency_sec": 1.3577130730000135,
+            "server_fcl_sec": 1.587804512999846,
+            "final_payload_wall_utc": "2026-04-01T04:46:32.292349+00:00",
+            "client_final_received_elapsed_sec": 4.802643967999757
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 1.587804512999846,
+          "avg_translation_latency_sec": 1.3577130730000135
+        }
+      },
+      {
+        "file_id": "5764-299665-0035",
+        "speaker_id": "5764",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/5764/299665/5764-299665-0035.flac",
+        "reference": "THEY ARE REGARDED AS GOOD THAT IS TO SAY AS MORAL",
+        "hypothesis": "They are regarded as good, that is to say, as moral.",
+        "hyp_commit": "They are regarded as good, that is to say, as moral. <seg>",
+        "duration": 5.13,
+        "total_time": 11.032070052999643,
+        "first_token_latency": 6.026562369999738,
+        "model_runtime": 5.902070052999643,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "They are regarded as good, that is to say, as moral.",
+            "translation": "그들은 선한 것, 즉 도덕적인 것으로 간주됩니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 5.130000000000002,
+            "server_translate_started_elapsed_sec": 5.2818293690002065,
+            "server_translate_done_elapsed_sec": 6.02170418500009,
+            "translation_latency_sec": 0.7398748159998831,
+            "server_fcl_sec": 0.891704185000088,
+            "final_payload_wall_utc": "2026-04-01T04:46:43.416515+00:00",
+            "client_final_received_elapsed_sec": 6.026563409999653
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 0.891704185000088,
+          "avg_translation_latency_sec": 0.7398748159998831
+        }
+      },
+      {
+        "file_id": "6432-63722-0030",
+        "speaker_id": "6432",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/6432/63722/6432-63722-0030.flac",
+        "reference": "YOU'RE NOT AS SQUEAMISH AS ALL THAT ARE YOU JUST BECAUSE IT WAS IN A DEAD MAN'S HAND AND IN A WOMAN'S",
+        "hypothesis": "You're not as squeamish as all that, are you? Just because it was in a dead man's hands and a woman's.",
+        "hyp_commit": "You're not as squeamish as all that, are you? <seg> Just because it was in a dead man's hands and a woman's. <seg>",
+        "duration": 5.16,
+        "total_time": 11.211537156000304,
+        "first_token_latency": 5.233431759000268,
+        "model_runtime": 6.051537156000304,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "You're not as squeamish as all that, are you?",
+            "translation": "당신은 그 모든 것만큼 비겁한 사람은 아니죠, 그렇죠?",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 1.9999999999999998,
+            "server_translate_started_elapsed_sec": 4.4943484669997815,
+            "server_translate_done_elapsed_sec": 5.22865640100008,
+            "translation_latency_sec": 0.7343079340002987,
+            "server_fcl_sec": 3.2286564010000802,
+            "final_payload_wall_utc": "2026-04-01T04:46:53.746505+00:00",
+            "client_final_received_elapsed_sec": 5.233433095000237
+          },
+          {
+            "segment_id": 2,
+            "text": "Just because it was in a dead man's hands and a woman's.",
+            "translation": "죽은 남자의 손과 여자의 손에 있었기 때문이다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 1.9999999999999998,
+            "audio_end_sec": 5.160000000000002,
+            "server_translate_started_elapsed_sec": 5.441932533999989,
+            "server_translate_done_elapsed_sec": 6.201799800000117,
+            "translation_latency_sec": 0.7598672660001284,
+            "server_fcl_sec": 1.0417998000001152,
+            "final_payload_wall_utc": "2026-04-01T04:46:54.719655+00:00",
+            "client_final_received_elapsed_sec": 6.206632120999984
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 2,
+          "avg_server_fcl_sec": 2.1352281005000977,
+          "avg_translation_latency_sec": 0.7470876000002136
+        }
+      },
+      {
+        "file_id": "7018-75789-0024",
+        "speaker_id": "7018",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/7018/75789/7018-75789-0024.flac",
+        "reference": "SHE SAID IT HATH REACHED ME O AUSPICIOUS KING THAT WHEN SINDBAD THE SEAMAN HAD RELATED THE HISTORY OF WHAT BEFEL HIM IN HIS SIXTH VOYAGE AND ALL THE COMPANY HAD DISPERSED SINDBAD THE LANDSMAN WENT HOME AND SLEPT AS OF WONT",
+        "hypothesis": "She said, \"It hath reached me, O auspicious king, that when Sinbad the seaman had related the history of what befell him in his sixth voyage, and all the company had dispersed, Sinbad the landsman went home and slept as of wont.\"",
+        "hyp_commit": "She said, \"It hath reached me, O auspicious king, that when Sinbad the seaman had related the history of what befell him in his sixth voyage, and all the company had dispersed, Sinbad the landsman went home and slept as of wont.\" <seg>",
+        "duration": 14.43,
+        "total_time": 20.97264721700003,
+        "first_token_latency": 15.967135295999924,
+        "model_runtime": 6.542647217000031,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "She said, \"It hath reached me, O auspicious king, that when Sinbad the seaman had related the history of what befell him in his sixth voyage, and all the company had dispersed, Sinbad the landsman went home and slept as of wont.\"",
+            "translation": "그녀가 말했습니다. \"오 상서로운 왕이시여, 선원 신드바드가 여섯 번째 항해에서 그에게 닥친 일의 역사를 이야기하고 모든 무리가 흩어졌을 때 토지 주인 신드바드는 집으로 돌아가 평소처럼 잠을 잤다는 소식이 나에게 이르렀습니다.\"",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 14.42999999999998,
+            "server_translate_started_elapsed_sec": 14.60158153500015,
+            "server_translate_done_elapsed_sec": 15.962307936999878,
+            "translation_latency_sec": 1.3607264019997274,
+            "server_fcl_sec": 1.5323079369998975,
+            "final_payload_wall_utc": "2026-04-01T04:47:15.777188+00:00",
+            "client_final_received_elapsed_sec": 15.967136427999776
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 1.5323079369998975,
+          "avg_translation_latency_sec": 1.3607264019997274
+        }
+      },
+      {
+        "file_id": "7018-75789-0025",
+        "speaker_id": "7018",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/7018/75789/7018-75789-0025.flac",
+        "reference": "THE SEVENTH VOYAGE OF SINDBAD THE SEAMAN",
+        "hypothesis": "The Seventh Voyage of Sindbad the Seaman.",
+        "hyp_commit": "The Seventh Voyage of Sindbad the Seaman. <seg>",
+        "duration": 3.1,
+        "total_time": 8.716337916000157,
+        "first_token_latency": 3.7110371799999484,
+        "model_runtime": 5.616337916000157,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "The Seventh Voyage of Sindbad the Seaman.",
+            "translation": "선원 신드바드의 일곱 번째 항해.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 3.1000000000000005,
+            "server_translate_started_elapsed_sec": 3.311763705999965,
+            "server_translate_done_elapsed_sec": 3.705952225999681,
+            "translation_latency_sec": 0.39418851999971594,
+            "server_fcl_sec": 0.6059522259996806,
+            "final_payload_wall_utc": "2026-04-01T04:47:24.590068+00:00",
+            "client_final_received_elapsed_sec": 3.7110382959999697
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 0.6059522259996806,
+          "avg_translation_latency_sec": 0.39418851999971594
+        }
+      },
+      {
+        "file_id": "7105-2340-0016",
+        "speaker_id": "7105",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/7105/2340/7105-2340-0016.flac",
+        "reference": "WE FEEL THAT WE MUST LIVE ON CREAM FOR THE REST OF OUR LIVES",
+        "hypothesis": "We feel that we must live on cream for the rest of our lives.",
+        "hyp_commit": "We feel that we must live on cream for the rest of our lives. <seg>",
+        "duration": 3.87,
+        "total_time": 9.987943417000224,
+        "first_token_latency": 4.982240379999894,
+        "model_runtime": 6.117943417000224,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "We feel that we must live on cream for the rest of our lives.",
+            "translation": "우리는 남은 생애 동안 크림을 먹고 살아야 한다고 생각합니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 3.870000000000001,
+            "server_translate_started_elapsed_sec": 4.160156979000021,
+            "server_translate_done_elapsed_sec": 4.977173080000284,
+            "translation_latency_sec": 0.817016101000263,
+            "server_fcl_sec": 1.1071730800002832,
+            "final_payload_wall_utc": "2026-04-01T04:47:34.674086+00:00",
+            "client_final_received_elapsed_sec": 4.982242260000021
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 1.1071730800002832,
+          "avg_translation_latency_sec": 0.817016101000263
+        }
+      },
+      {
+        "file_id": "7902-96594-0017",
+        "speaker_id": "7902",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/7902/96594/7902-96594-0017.flac",
+        "reference": "SAY AWK WARD IN FUTURE NOT AWK'ARD",
+        "hypothesis": "Say awkward in the future, not awkward.",
+        "hyp_commit": "Say awkward in the future, not awkward. <seg>",
+        "duration": 2.525,
+        "total_time": 8.40993622699989,
+        "first_token_latency": 3.4046482270000524,
+        "model_runtime": 5.884936226999889,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "Say awkward in the future, not awkward.",
+            "translation": "앞으로는 어색하지 말고 어색하게 말해보세요.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 2.525,
+            "server_translate_started_elapsed_sec": 2.7181723439998677,
+            "server_translate_done_elapsed_sec": 3.3997608549998404,
+            "translation_latency_sec": 0.6815885109999726,
+            "server_fcl_sec": 0.8747608549998405,
+            "final_payload_wall_utc": "2026-04-01T04:47:43.169001+00:00",
+            "client_final_received_elapsed_sec": 3.4046497169997565
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 0.8747608549998405,
+          "avg_translation_latency_sec": 0.6815885109999726
+        }
+      },
+      {
+        "file_id": "7902-96594-0022",
+        "speaker_id": "7902",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/7902/96594/7902-96594-0022.flac",
+        "reference": "NOW THEN WHY DO YOU WANT TO GO ASHORE",
+        "hypothesis": "Now then, why do you want to go ashore?",
+        "hyp_commit": "Now then, why do you want to go ashore? <seg>",
+        "duration": 2.695,
+        "total_time": 8.645903202999762,
+        "first_token_latency": 3.6408211520001714,
+        "model_runtime": 5.950903202999761,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "Now then, why do you want to go ashore?",
+            "translation": "그렇다면 왜 해변으로 가고 싶습니까?",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 2.6950000000000003,
+            "server_translate_started_elapsed_sec": 2.9332300680002845,
+            "server_translate_done_elapsed_sec": 3.635583427000256,
+            "translation_latency_sec": 0.7023533589999715,
+            "server_fcl_sec": 0.9405834270002558,
+            "final_payload_wall_utc": "2026-04-01T04:47:51.908426+00:00",
+            "client_final_received_elapsed_sec": 3.640822764999939
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 0.9405834270002558,
+          "avg_translation_latency_sec": 0.7023533589999715
+        }
+      },
+      {
+        "file_id": "7975-280057-0010",
+        "speaker_id": "7975",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/7975/280057/7975-280057-0010.flac",
+        "reference": "MISSUS MC CORKLE JUMPED FROM THE WINDOW OF THE HOUSE AND ESCAPED",
+        "hypothesis": "Miss McCorkle jumped from the window of the house and escaped.",
+        "hyp_commit": "Miss McCorkle jumped from the window of the house and escaped. <seg>",
+        "duration": 3.27,
+        "total_time": 9.085995896999975,
+        "first_token_latency": 4.080284869000025,
+        "model_runtime": 5.815995896999976,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "Miss McCorkle jumped from the window of the house and escaped.",
+            "translation": "McCorkle 양은 집 창문에서 뛰어내려 탈출했습니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 3.2700000000000005,
+            "server_translate_started_elapsed_sec": 3.54147534599997,
+            "server_translate_done_elapsed_sec": 4.075260759999765,
+            "translation_latency_sec": 0.5337854139997944,
+            "server_fcl_sec": 0.8052607599997641,
+            "final_payload_wall_utc": "2026-04-01T04:48:01.086330+00:00",
+            "client_final_received_elapsed_sec": 4.080286524999792
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 0.8052607599997641,
+          "avg_translation_latency_sec": 0.5337854139997944
+        }
+      },
+      {
+        "file_id": "7975-280057-0017",
+        "speaker_id": "7975",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/7975/280057/7975-280057-0017.flac",
+        "reference": "FROM HARRISONVILLE SHE WENT TO WAVERLY WHERE SHE WAS HOUNDED CONTINUALLY",
+        "hypothesis": "From Harrisonville, she went to Waverly, where she was hounded continually.",
+        "hyp_commit": "From Harrisonville, she went to Waverly, where she was hounded continually. <seg>",
+        "duration": 3.935,
+        "total_time": 10.06026426499966,
+        "first_token_latency": 5.0545290959998965,
+        "model_runtime": 6.125264264999659,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "From Harrisonville, she went to Waverly, where she was hounded continually.",
+            "translation": "해리슨빌에서 그녀는 웨이벌리(Waverly)로 갔는데 그곳에서 계속해서 쫓기게 되었습니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 3.9350000000000014,
+            "server_translate_started_elapsed_sec": 4.27242141600027,
+            "server_translate_done_elapsed_sec": 5.049394220000067,
+            "translation_latency_sec": 0.7769728039997972,
+            "server_fcl_sec": 1.114394220000066,
+            "final_payload_wall_utc": "2026-04-01T04:48:11.241322+00:00",
+            "client_final_received_elapsed_sec": 5.054530297999918
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 1.114394220000066,
+          "avg_translation_latency_sec": 0.7769728039997972
+        }
+      },
+      {
+        "file_id": "8131-117017-0002",
+        "speaker_id": "8131",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/8131/117017/8131-117017-0002.flac",
+        "reference": "AND THE SLOW DOUBTFUL RESPECT ON THE FACES OF THE CITIZENS AS THEY NODDED TO HIM WAS EVEN MORE PROOF THAT HALEY'S SYSTEM WAS WORKING",
+        "hypothesis": "And the slow, doubtful respect on the faces of the citizens, as they nodded to him, was even more proof that Haley's system was working.",
+        "hyp_commit": "And the slow, doubtful respect on the faces of the citizens, as they nodded to him, was even more proof that Haley's system was working. <seg>",
+        "duration": 10.14,
+        "total_time": 16.320726107000155,
+        "first_token_latency": 11.315773310000168,
+        "model_runtime": 6.1807261070001545,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "And the slow, doubtful respect on the faces of the citizens, as they nodded to him, was even more proof that Haley's system was working.",
+            "translation": "그리고 그에게 고개를 끄덕이는 시민들의 얼굴에 떠오른 느리고 의심스러운 존경심은 헤일리의 시스템이 작동하고 있다는 더욱 확실한 증거였습니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 10.139999999999997,
+            "server_translate_started_elapsed_sec": 10.445089671999995,
+            "server_translate_done_elapsed_sec": 11.310668764999718,
+            "translation_latency_sec": 0.8655790929997238,
+            "server_fcl_sec": 1.1706687649997214,
+            "final_payload_wall_utc": "2026-04-01T04:48:27.652083+00:00",
+            "client_final_received_elapsed_sec": 11.315774879999935
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 1.1706687649997214,
+          "avg_translation_latency_sec": 0.8655790929997238
+        }
+      },
+      {
+        "file_id": "8131-117029-0011",
+        "speaker_id": "8131",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/8131/117029/8131-117029-0011.flac",
+        "reference": "GUESS A MAN GETS USED TO ANYTHING HELL MAYBE I CAN HIRE SOME BUMS TO SIT AROUND AND WHOOP IT UP WHEN THE SHIPS COME IN AND BILL THIS AS A REAL OLD MARTIAN DEN OF SIN",
+        "hypothesis": "Guess a man gets used to anything. Hell, maybe I can hire some bums to sit around and whoop it up when the ships come in, and build this as a real old Martian den of sin.",
+        "hyp_commit": "Guess a man gets used to anything. <seg> Hell, maybe I can hire some bums to sit around and whoop it up when the ships come in, and build this as a real old Martian den of sin. <seg>",
+        "duration": 10.9,
+        "total_time": 16.55532146600035,
+        "first_token_latency": 4.839187045000017,
+        "model_runtime": 5.65532146600035,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "Guess a man gets used to anything.",
+            "translation": "남자는 뭐든 익숙해지는 것 같아요.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 1.9999999999999998,
+            "server_translate_started_elapsed_sec": 4.33916413399993,
+            "server_translate_done_elapsed_sec": 4.834159497999735,
+            "translation_latency_sec": 0.4949953639998057,
+            "server_fcl_sec": 2.8341594979997353,
+            "final_payload_wall_utc": "2026-04-01T04:48:37.593260+00:00",
+            "client_final_received_elapsed_sec": 4.839188120000017
+          },
+          {
+            "segment_id": 2,
+            "text": "Hell, maybe I can hire some bums to sit around and whoop it up when the ships come in, and build this as a real old Martian den of sin.",
+            "translation": "젠장, 어쩌면 내가 배들이 들어올 때 앉아서 놀아줄 부랑자들 몇 명을 고용하고, 이것을 화성의 진짜 오래된 죄의 소굴로 지을 수 있을지도 모릅니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 1.9999999999999998,
+            "audio_end_sec": 10.899999999999993,
+            "server_translate_started_elapsed_sec": 11.068294985999728,
+            "server_translate_done_elapsed_sec": 11.544483887999831,
+            "translation_latency_sec": 0.47618890200010355,
+            "server_fcl_sec": 0.6444838879998382,
+            "final_payload_wall_utc": "2026-04-01T04:48:44.303637+00:00",
+            "client_final_received_elapsed_sec": 11.549640611000086
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 2,
+          "avg_server_fcl_sec": 1.7393216929997868,
+          "avg_translation_latency_sec": 0.48559213299995463
+        }
+      },
+      {
+        "file_id": "8188-269290-0040",
+        "speaker_id": "8188",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/8188/269290/8188-269290-0040.flac",
+        "reference": "I WILL TALK WITH YOU BELLE ACHESON PRESENTLY SHE SAID",
+        "hypothesis": "I will talk with you, Bell Archiston. Presently, she said.",
+        "hyp_commit": "I will talk with you, Bell Archiston. Presently, she said. <seg>",
+        "duration": 3.65,
+        "total_time": 10.134346257999823,
+        "first_token_latency": 5.129131311000037,
+        "model_runtime": 6.484346257999823,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "I will talk with you, Bell Archiston. Presently, she said.",
+            "translation": "내가 당신과 얘기 좀 할게요, 벨 아치스턴. 현재 그녀는 말했다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 3.650000000000001,
+            "server_translate_started_elapsed_sec": 3.95404065799994,
+            "server_translate_done_elapsed_sec": 5.124046441999781,
+            "translation_latency_sec": 1.1700057839998408,
+            "server_fcl_sec": 1.4740464419997799,
+            "final_payload_wall_utc": "2026-04-01T04:48:54.533197+00:00",
+            "client_final_received_elapsed_sec": 5.1291331980000905
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 1.4740464419997799,
+          "avg_translation_latency_sec": 1.1700057839998408
+        }
+      },
+      {
+        "file_id": "8280-266249-0058",
+        "speaker_id": "8280",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/8280/266249/8280-266249-0058.flac",
+        "reference": "THE CAPTAIN COMING IN SHORTLY AFTER THE SUDDEN FLIGHT OF THE GAMBLERS TOOK CHARGE OF THE MONEY AND THE NEXT DAY RESTORED IT TO THE OWNERS",
+        "hypothesis": "The captain coming in shortly after the sudden flight of the gamblers took charge of the money, and the next day restored it to the owners.",
+        "hyp_commit": "The captain coming in shortly after the sudden flight of the gamblers took charge of the money, and the next day restored it to the owners. <seg>",
+        "duration": 8.4,
+        "total_time": 16.205062231000284,
+        "first_token_latency": 11.199420863000341,
+        "model_runtime": 7.805062231000283,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "The captain coming in shortly after the sudden flight of the gamblers took charge of the money, and the next day restored it to the owners.",
+            "translation": "도박꾼들의 갑작스러운 도주 직후에 들어온 선장이 돈을 맡아 관리했고, 다음날 주인에게 돌려주었다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 8.400000000000002,
+            "server_translate_started_elapsed_sec": 8.54807550600026,
+            "server_translate_done_elapsed_sec": 11.194405818000178,
+            "translation_latency_sec": 2.646330311999918,
+            "server_fcl_sec": 2.7944058180001754,
+            "final_payload_wall_utc": "2026-04-01T04:49:10.831343+00:00",
+            "client_final_received_elapsed_sec": 11.199422051000056
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 2.7944058180001754,
+          "avg_translation_latency_sec": 2.646330311999918
+        }
+      },
+      {
+        "file_id": "8461-258277-0005",
+        "speaker_id": "8461",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/8461/258277/8461-258277-0005.flac",
+        "reference": "AND SHE THREW DOWN THE JEW'S HEAD BEFORE HIM",
+        "hypothesis": "And she threw down the Jew's head before him.",
+        "hyp_commit": "And she threw down the Jew's head before him. <seg>",
+        "duration": 3.7,
+        "total_time": 10.115013180999995,
+        "first_token_latency": 5.109559637000075,
+        "model_runtime": 6.415013180999995,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "And she threw down the Jew's head before him.",
+            "translation": "그리고 그녀는 그 유대인의 머리를 그 앞에 던졌습니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 3.700000000000001,
+            "server_translate_started_elapsed_sec": 3.9256242809997275,
+            "server_translate_done_elapsed_sec": 5.104571171999851,
+            "translation_latency_sec": 1.1789468910001233,
+            "server_fcl_sec": 1.4045711719998497,
+            "final_payload_wall_utc": "2026-04-01T04:49:21.033048+00:00",
+            "client_final_received_elapsed_sec": 5.109560945000339
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 1.4045711719998497,
+          "avg_translation_latency_sec": 1.1789468910001233
+        }
+      },
+      {
+        "file_id": "8461-281231-0032",
+        "speaker_id": "8461",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/8461/281231/8461-281231-0032.flac",
+        "reference": "BEFORE REACHING HIS DESTINATION HE WAS TOLD THAT LUCAS DE BEAUMANOIR THE GRAND MASTER OF THE ORDER OF THE TEMPLARS WAS THEN ON VISIT TO THE PRECEPTORY",
+        "hypothesis": "Before reaching his destination, he was told that Lucas the Bois Noir, the Grand Master of the Order of the Templars, was then on visit to the Preceptory.",
+        "hyp_commit": "Before reaching his destination, he was told that Lucas the Bois Noir, the Grand Master of the Order of the Templars, was then on visit to the Preceptory. <seg>",
+        "duration": 9.6399375,
+        "total_time": 16.17909120200011,
+        "first_token_latency": 11.173391313000138,
+        "model_runtime": 6.5391537020001085,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "Before reaching his destination, he was told that Lucas the Bois Noir, the Grand Master of the Order of the Templars, was then on visit to the Preceptory.",
+            "translation": "목적지에 도착하기 전에 그는 기사단의 그랜드 마스터인 부아 느와르 루카스가 교구를 방문했다는 말을 들었습니다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 9.639937499999998,
+            "server_translate_started_elapsed_sec": 9.882000512000104,
+            "server_translate_done_elapsed_sec": 11.168265351000173,
+            "translation_latency_sec": 1.2862648390000686,
+            "server_fcl_sec": 1.5283278510001743,
+            "final_payload_wall_utc": "2026-04-01T04:49:37.305911+00:00",
+            "client_final_received_elapsed_sec": 11.173393127000054
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 1,
+          "avg_server_fcl_sec": 1.5283278510001743,
+          "avg_translation_latency_sec": 1.2862648390000686
+        }
+      }
+    ]
+  }
+}
