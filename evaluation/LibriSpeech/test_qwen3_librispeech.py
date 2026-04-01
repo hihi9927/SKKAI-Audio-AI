@@ -537,7 +537,6 @@ async def process_batch(
     show_commit_slash=True,
     resume=True,
     target_lang='ko',
-    summary_output_file=None,
 ):
     if resume:
         processed_ids = load_processed_files(output_file, policy)
@@ -613,8 +612,6 @@ async def process_batch(
         })
 
         save_results_structured(all_results + results, output_file, policy)
-        if summary_output_file:
-            save_summary_file(all_results + results, summary_output_file, policy)
 
         speaker_rows = [r for r in results if r['speaker_id'] == speaker_id]
         speaker_wer = compute_wer_for_rows(speaker_rows)
@@ -767,7 +764,6 @@ def main():
     parser.add_argument('--host', type=str, default='localhost')
     parser.add_argument('--port', type=int, default=8765)
     parser.add_argument('--output', type=str, default=str(DEFAULT_OUTPUT))
-    parser.add_argument('--summary-output', type=str, default=str(DEFAULT_SUMMARY_OUTPUT))
     parser.add_argument('--limit', type=int, default=None,
                         help='Maximum number of files to process (default: all files)')
     parser.add_argument('--calculate-wer', action=argparse.BooleanOptionalAction, default=True,
@@ -794,7 +790,6 @@ def main():
     args = parser.parse_args()
     logger.setLevel(args.log_level)
     ensure_parent_dir(args.output)
-    ensure_parent_dir(args.summary_output)
 
     if not os.path.isdir(args.test_dir):
         logger.error('Test directory not found: %s', args.test_dir)
@@ -848,16 +843,12 @@ def main():
                 show_commit_slash=args.show_commit_slash,
                 resume=not args.fresh_start,
                 target_lang=args.target_lang,
-                summary_output_file=args.summary_output,
             )
         )
         if args.calculate_wer and results:
             calculate_wer(results, policy=args.policy, emit_summary=True)
-        if results:
-            save_summary_file(results, args.summary_output, args.policy)
 
         logger.info('Completed. Results saved to %s', args.output)
-        logger.info('Summary saved to %s', args.summary_output)
     except KeyboardInterrupt:
         logger.info('Interrupted by user.')
     finally:
