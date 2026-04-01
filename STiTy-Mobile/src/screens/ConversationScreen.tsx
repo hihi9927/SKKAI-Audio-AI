@@ -117,7 +117,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     const ttsStart = new Date().toISOString();
     Speech.speak(next.text, {
       language: next.lang,
-      rate: 1.6,
+      rate: 1.3,
       onDone: () => {
         sendMessageRef.current({ type: 'tts_log', text: next.text, lang: next.lang, start: ttsStart, end: new Date().toISOString() });
         processNextTTS();
