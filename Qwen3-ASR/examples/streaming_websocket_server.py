@@ -476,7 +476,10 @@ class Qwen3ASRStreamingHandler:
             f"tl={self.client_target_lang} -> detected={detected_lang} "
             f"translation='{translation}'"
         )
-        if detected_lang == self.client_target_lang:
+        # Google Translate가 같은 언어끼리 번역 시 data[2]를 null로 반환하는 경우
+        # detected_lang이 빈 문자열이 될 수 있으므로 ASR 감지 언어를 fallback으로 사용
+        effective_detected = detected_lang or lang_to_code(current_lang)
+        if effective_detected == self.client_target_lang:
             translation, _, extra = await self._translate(
                 uncommitted, self.client_lang, audio_end_sec
             )
@@ -485,7 +488,7 @@ class Qwen3ASRStreamingHandler:
                 f"tl={self.client_lang} -> translation='{translation}'"
             )
 
-        final_lang = detected_lang or lang_to_code(current_lang)
+        final_lang = effective_detected
         commit_reason = "vad" if reason.startswith("vad") else "seg"
         self.log.info(
             f"[final-flush] slot={slot_key or self.active_slot} reason={reason} lang={final_lang} "
@@ -567,7 +570,8 @@ class Qwen3ASRStreamingHandler:
                     f"tl={self.client_target_lang} -> detected={detected_lang} "
                     f"translation='{translation}'"
                 )
-                if detected_lang == self.client_target_lang:
+                effective_detected = detected_lang or lang_to_code(current_lang)
+                if effective_detected == self.client_target_lang:
                     translation, _, extra = await self._translate(
                         sentence, self.client_lang, self.current_time
                     )
@@ -575,7 +579,7 @@ class Qwen3ASRStreamingHandler:
                         f"[translate-sentence-flip] tl={self.client_lang} "
                         f"-> translation='{translation}'"
                     )
-                final_lang = detected_lang or lang_to_code(current_lang)
+                final_lang = effective_detected
                 translated_payloads.append({
                     "original": sentence,
                     "translation": translation,
