@@ -50,8 +50,9 @@ def _parse_hms_time(value: str) -> Optional[float]:
 
 
 class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
-    def __init__(self, websocket, asr_model, config, pairing_hub):
+    def __init__(self, websocket, asr_model, config, pairing_hub, http_session=None):
         super().__init__(websocket, asr_model, config, pairing_hub)
+        self._shared_http_session = http_session
         self.stream_start_perf = time.perf_counter()
         self.next_segment_id = 1
         self.segment_audio_start_sec = 0.0
@@ -220,8 +221,11 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
             remote_addr = self.websocket.remote_address
             logger.info("New connection from %s", remote_addr)
             await self.send_message("hello", message="Qwen3-ASR Streaming Server (FCL)")
-            timeout = aiohttp.ClientTimeout(total=3)
-            self.http_session = aiohttp.ClientSession(timeout=timeout)
+            if self._shared_http_session is not None:
+                self.http_session = self._shared_http_session
+            else:
+                timeout = aiohttp.ClientTimeout(total=3)
+                self.http_session = aiohttp.ClientSession(timeout=timeout)
 
             async for message in self.websocket:
                 if isinstance(message, bytes):
@@ -311,7 +315,7 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
             self.running = False
             if was_running:
                 await self.finish_streaming()
-            if self.http_session is not None:
+            if self.http_session is not None and self._shared_http_session is None:
                 try:
                     await self.http_session.close()
                 except Exception:
@@ -322,6 +326,19 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
 
 
 class FCLStreamingServer(base_server.Qwen3ASRStreamingServer):
+    def __init__(self, config):
+        super().__init__(config)
+        self._http_session: Optional[aiohttp.ClientSession] = None
+
+    async def start(self):
+        timeout = aiohttp.ClientTimeout(total=3)
+        self._http_session = aiohttp.ClientSession(timeout=timeout)
+        try:
+            await super().start()
+        finally:
+            await self._http_session.close()
+            self._http_session = None
+
     async def handle_connection(self, websocket):
         async with self.connection_lock:
             self.active_connections += 1
@@ -330,7 +347,7 @@ class FCLStreamingServer(base_server.Qwen3ASRStreamingServer):
             logger.info("Client connected (%s)", self.active_connections)
 
         try:
-            handler = FCLStreamingHandler(websocket, self.asr, self.config, self.pairing_hub)
+            handler = FCLStreamingHandler(websocket, self.asr, self.config, self.pairing_hub, http_session=self._http_session)
             await handler.handle()
         finally:
             async with self.connection_lock:
