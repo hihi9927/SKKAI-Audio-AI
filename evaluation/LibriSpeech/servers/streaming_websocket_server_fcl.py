@@ -172,8 +172,9 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         return self.pending_audio_end_sec if self.pending_audio_end_sec is not None else self.current_time
 
     async def _on_vad_commit(self, audio_end_sec: float) -> None:
-        logger.info("[VAD_COMMIT] audio_end_sec=%.3fs", audio_end_sec)
-        self.pending_audio_end_sec = audio_end_sec
+        speech_end_sec = max(0.0, audio_end_sec - base_server.VAD_MIN_SILENCE_MS / 1000.0)
+        logger.info("[VAD_COMMIT] audio_end_sec=%.3fs → speech_end_sec=%.3fs", audio_end_sec, speech_end_sec)
+        self.pending_audio_end_sec = speech_end_sec
 
     async def _emit_final_payload(
         self,
