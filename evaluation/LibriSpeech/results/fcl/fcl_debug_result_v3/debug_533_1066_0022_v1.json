@@ -1,0 +1,73 @@
+{
+  "policy_3": {
+    "timestamp": "2026-04-01T06:25:49.015739",
+    "overall": {
+      "num_files": 1,
+      "wer": 0.0,
+      "first_token_latency": 3.0926735589999907,
+      "model_runtime": 0.25931782699997274,
+      "avg_server_fcl_sec": 0.2910218180000186,
+      "avg_translation_latency_sec": 0.09775368050003408
+    },
+    "folders": {
+      "533": {
+        "num_files": 1,
+        "wer": 0.0,
+        "first_token_latency": 3.0926735589999907,
+        "model_runtime": 0.25931782699997274,
+        "avg_server_fcl_sec": 0.2910218180000186,
+        "avg_translation_latency_sec": 0.09775368050003408
+      }
+    },
+    "raw_results": [
+      {
+        "file_id": "533-1066-0022",
+        "speaker_id": "533",
+        "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/533/1066/533-1066-0022.flac",
+        "reference": "THERE'S ONE THING SURE I'LL NOT BE SUSPECTED OF COMPLICITY",
+        "hypothesis": "There's one thing sure. I'll not be suspected of complicity.",
+        "hyp_commit": "There's one thing sure. <vad> I'll not be suspected of complicity. <seg>",
+        "duration": 5.425,
+        "total_time": 5.684317826999973,
+        "first_token_latency": 3.0926735589999907,
+        "model_runtime": 0.25931782699997274,
+        "target_lang": "ko",
+        "segment_metrics": [
+          {
+            "segment_id": 1,
+            "text": "There's one thing sure.",
+            "translation": "한 가지 확실한 게 있어요.",
+            "commit_reason": "vad",
+            "audio_start_sec": 0.0,
+            "audio_end_sec": 2.76,
+            "server_translate_started_elapsed_sec": 2.9576958100000184,
+            "server_translate_done_elapsed_sec": 3.0876537750000352,
+            "translation_latency_sec": 0.12995796500001688,
+            "server_fcl_sec": 0.32765377500003545,
+            "final_payload_wall_utc": "2026-04-01T06:25:41.405126+00:00",
+            "client_final_received_elapsed_sec": 3.0926759989999937
+          },
+          {
+            "segment_id": 2,
+            "text": "I'll not be suspected of complicity.",
+            "translation": "나는 공모 혐의를 받지 않을 것이다.",
+            "commit_reason": "seg",
+            "audio_start_sec": 2.76,
+            "audio_end_sec": 5.4250000000000025,
+            "server_translate_started_elapsed_sec": 5.613840464999953,
+            "server_translate_done_elapsed_sec": 5.679389861000004,
+            "translation_latency_sec": 0.06554939600005127,
+            "server_fcl_sec": 0.2543898610000017,
+            "final_payload_wall_utc": "2026-04-01T06:25:43.996814+00:00",
+            "client_final_received_elapsed_sec": 5.684320090000028
+          }
+        ],
+        "segment_metrics_summary": {
+          "num_segments": 2,
+          "avg_server_fcl_sec": 0.2910218180000186,
+          "avg_translation_latency_sec": 0.09775368050003408
+        }
+      }
+    ]
+  }
+}
