@@ -485,7 +485,7 @@ def parse_args():
     p.add_argument("--json",    required=True, help="결과 JSON 경로")
     p.add_argument("--audio-root", default=None,
                    help="LibriSpeech test-other 루트 (waveform 표시용, 없으면 Speech Activity)")
-    p.add_argument("--out-dir", default=str(Path(__file__).resolve().parent / "results" / "fcl" / "fcl_output_plots_v"), help="출력 디렉터리")
+    p.add_argument("--out-dir", default=str(Path(__file__).resolve().parent.parent / "results" / "fcl" / "fcl_output_plots_v"), help="출력 디렉터리")
     p.add_argument("--file-id", default=None, help="특정 file_id 하나만 처리")
     p.add_argument("--max-files", type=int, default=None,
                    help="앞에서 N개 파일만 per-file 플롯 생성")
@@ -506,7 +506,7 @@ def main():
 
     # 출력 디렉터리
     out_dir = Path(args.out_dir)
-    per_file_dir = out_dir / "per_file"
+    per_file_dir = out_dir
     if not args.aggregate_only:
         per_file_dir.mkdir(parents=True, exist_ok=True)
     out_dir.mkdir(parents=True, exist_ok=True)
