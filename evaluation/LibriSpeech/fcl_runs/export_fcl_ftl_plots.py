@@ -495,8 +495,8 @@ def parse_args():
                    help="전체 파일 per-file 플롯 생성 (느림)")
     p.add_argument("--aggregate-only", action="store_true",
                    help="집계 플롯만 생성 (per-file 생략)")
-    p.add_argument("--no-aggregate", action="store_true",
-                   help="집계 플롯 생략")
+    p.add_argument("--no-aggregate", action="store_true", default=True,
+                   help="집계 플롯 생략 (기본값: True)")
     p.add_argument("--seed", type=int, default=42, help="샘플링 seed")
     return p.parse_args()
 
