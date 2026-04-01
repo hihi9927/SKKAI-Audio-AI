@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# trainable params: 70,254,592 || all params: 2,108,307,072 || trainable%: 3.3323
 import argparse
 import os
 import re
@@ -116,10 +117,14 @@ def make_preprocess_fn_with_features(processor, sampling_rate=16000):
             padding=False,
             truncation=False,
         )
-
-        target_tok = processor.tokenizer(target + eos, add_special_tokens=False)
-        full_len = int(inputs["attention_mask"][0].sum().item())
-        prefix_len = full_len - len(target_tok["input_ids"])
+        prefix_inputs = processor(
+            text=[prefix_text],
+            audio=[wav],
+            return_tensors="pt",
+            padding=False,
+            truncation=False,
+        )
+        prefix_len = int(prefix_inputs["attention_mask"][0].sum().item())
 
         result = {
             "input_ids": inputs["input_ids"][0].tolist(),
@@ -165,7 +170,7 @@ class DataCollatorForQwen3ASRFinetuning:
         labels = input_ids.clone()
         for i, pl in enumerate(prefix_lens):
             labels[i, :pl] = -100
-        labels[labels == pad_id] = -100
+        labels[attention_mask == 0] = -100
 
         result = {
             "input_ids": input_ids,
@@ -185,15 +190,24 @@ class DataCollatorForQwen3ASRFinetuning:
 
 def preprocess_logits_for_metrics(logits, labels):
     """메모리 절약: 전체 logits 대신 argmax token id만 보관."""
+    if isinstance(logits, tuple):
+        logits = logits[0]
     return logits.argmax(dim=-1)
 
 
 def make_compute_metrics(processor):
+    seg_token_id = processor.tokenizer.convert_tokens_to_ids("<SEG>")
+    print(f"[val] seg_token_id = {seg_token_id}")
+
     def compute_metrics(eval_pred):
         pred_ids, label_ids = eval_pred  # (batch, seq_len)
 
         decoded_preds = []
         decoded_labels = []
+        total_tokens = 0
+        correct_tokens = 0
+        total_seg = 0
+        correct_seg = 0
 
         for pred, label in zip(pred_ids, label_ids):
             # CausalLM shift: logit[i]는 position i+1을 예측
@@ -204,16 +218,45 @@ def make_compute_metrics(processor):
             if valid.sum() == 0:
                 continue
 
-            p_str = processor.tokenizer.decode(shifted_pred[valid],  skip_special_tokens=True)
-            l_str = processor.tokenizer.decode(shifted_label[valid], skip_special_tokens=True)
+            p_valid = shifted_pred[valid]
+            l_valid = shifted_label[valid]
+
+            seg_mask = l_valid == seg_token_id
+            non_seg_mask = ~seg_mask
+
+            total_tokens += int(non_seg_mask.sum())
+            correct_tokens += int((p_valid[non_seg_mask] == l_valid[non_seg_mask]).sum())
+            total_seg += int(seg_mask.sum())
+            correct_seg += int((p_valid[seg_mask] == seg_token_id).sum())
+
+            p_str = processor.tokenizer.decode(p_valid, skip_special_tokens=True)
+            l_str = processor.tokenizer.decode(l_valid, skip_special_tokens=True)
             decoded_preds.append(p_str)
             decoded_labels.append(l_str)
 
         if not decoded_labels:
-            return {"wer": 1.0}
+            return {"wer": 1.0, "token_accuracy": 0.0, "seg_accuracy": 0.0}
 
         wer = jiwer.wer(decoded_labels, decoded_preds)
-        return {"wer": round(wer, 4)}
+        token_accuracy = correct_tokens / total_tokens if total_tokens > 0 else 0.0
+        seg_accuracy = correct_seg / total_seg if total_seg > 0 else 0.0
+        # label에 실제로 seg_token_id가 있는지, 모델이 뭘 예측하는지 샘플 확인
+        for pred, label in zip(pred_ids[:1], label_ids[:1]):
+            shifted_pred = pred[:-1]
+            shifted_label = label[1:]
+            valid = shifted_label != -100
+            l_valid = shifted_label[valid]
+            p_valid = shifted_pred[valid]
+            seg_pos = (l_valid == seg_token_id).nonzero()[0]
+            print(f"[val] seg positions in label: {seg_pos[:5].tolist()}")
+            if len(seg_pos) > 0:
+                print(f"[val] pred at seg pos: {p_valid[seg_pos[:5]].tolist()} (expected {seg_token_id})")
+        print(f"[val] total_seg={total_seg}, correct_seg={correct_seg}, seg_accuracy={seg_accuracy}")
+        return {
+            "wer": round(wer, 4),
+            "token_accuracy": round(token_accuracy, 4),
+            "seg_accuracy": round(seg_accuracy, 4),
+        }
 
     return compute_metrics
 
@@ -250,8 +293,9 @@ def copy_required_hf_files_for_qwen_asr(src_dir: str, dst_dir: str):
 
 
 class MakeEveryCheckpointInferableCallback(TrainerCallback):
-    def __init__(self, base_model_path: str):
+    def __init__(self, base_model_path: str, tokenizer):
         self.base_model_path = base_model_path
+        self._tokenizer = tokenizer
 
     def on_save(self, args: TrainingArguments, state, control, **kwargs):
         if args.process_index != 0:
@@ -262,6 +306,8 @@ class MakeEveryCheckpointInferableCallback(TrainerCallback):
             ckpt_dir = kwargs.get("checkpoint", ckpt_dir)
 
         copy_required_hf_files_for_qwen_asr(self.base_model_path, ckpt_dir)
+        # 수정된 tokenizer(<SEG> 포함)로 덮어쓰기
+        self._tokenizer.save_pretrained(ckpt_dir)
         return control
 
 
@@ -272,30 +318,30 @@ def parse_args():
     p.add_argument("--model_path", type=str, default="./Qwen3-ASR-1.7B")
     p.add_argument("--train_file", type=str, default="./data/KSponSpeech/train_split.jsonl")
     p.add_argument("--eval_file", type=str, default="./data/KSponSpeech/val_split.jsonl")
-    p.add_argument("--output_dir", type=str, default="./qwen3-asr-finetuning-out-K")
+    p.add_argument("--output_dir", type=str, default="./finetuning-out-ko")
 
     # Audio
     p.add_argument("--sr", type=int, default=16000)
 
     # Train hyper-params
-    p.add_argument("--batch_size", type=int, default=128)
-    p.add_argument("--grad_acc", type=int, default=4)
-    p.add_argument("--lr", type=float, default=2e-5)
-    p.add_argument("--epochs", type=float, default=1)
+    p.add_argument("--batch_size", type=int, default=8)
+    p.add_argument("--grad_acc", type=int, default=16)
+    p.add_argument("--lr", type=float, default=1e-4)
+    p.add_argument("--epochs", type=float, default=3)
     p.add_argument("--log_steps", type=int, default=10)
-    p.add_argument("--lr_scheduler_type", type=str, default="linear")
-    p.add_argument("--warmup_ratio", type=float, default=0.02)
+    p.add_argument("--lr_scheduler_type", type=str, default="cosine")
+    p.add_argument("--warmup_ratio", type=float, default=0.03)
 
     # DataLoader
-    p.add_argument("--num_workers", type=int, default=4)
+    p.add_argument("--num_workers", type=int, default=8)
     p.add_argument("--pin_memory", type=int, default=1)
     p.add_argument("--persistent_workers", type=int, default=1)
-    p.add_argument("--prefetch_factor", type=int, default=2)
+    p.add_argument("--prefetch_factor", type=int, default=4)
 
     # Save
     p.add_argument("--save_strategy", type=str, default="steps")
-    p.add_argument("--save_steps", type=int, default=200)
-    p.add_argument("--save_total_limit", type=int, default=5)
+    p.add_argument("--save_steps", type=int, default=10)
+    p.add_argument("--save_total_limit", type=int, default=10)
 
     # Resume
     p.add_argument("--resume_from", type=str, default="")
@@ -305,7 +351,7 @@ def parse_args():
     p.add_argument("--use_lora", type=int, default=1)
     p.add_argument("--lora_r", type=int, default=128)
     p.add_argument("--lora_alpha", type=int, default=256)
-    p.add_argument("--lora_dropout", type=float, default=0.05)
+    p.add_argument("--lora_dropout", type=float, default=0.1)
 
     return p.parse_args()
 
@@ -325,6 +371,13 @@ def main():
     model = asr_wrapper.model
     processor = asr_wrapper.processor
 
+    # <SEG>를 special token으로 등록
+    seg_added = False
+    if "<SEG>" not in processor.tokenizer.get_vocab():
+        processor.tokenizer.add_special_tokens({"additional_special_tokens": ["<SEG>"]})
+        model.thinker.resize_token_embeddings(len(processor.tokenizer))
+        seg_added = True
+
     if args_cli.use_lora:
         lora_config = LoraConfig(
             task_type=TaskType.CAUSAL_LM,
@@ -334,7 +387,27 @@ def main():
             target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
         )
         model = get_peft_model(model, lora_config)
-        model.print_trainable_parameters()
+
+    # PEFT가 freeze한 이후에 unfreeze해야 적용됨
+    if seg_added:
+        seg_id = processor.tokenizer.convert_tokens_to_ids("<SEG>")
+
+        def _make_seg_only_hook(sid):
+            def _hook(grad):
+                mask = torch.zeros_like(grad)
+                mask[sid] = 1.0
+                return grad * mask
+            return _hook
+
+        emb = model.thinker.get_input_embeddings()
+        emb.weight.requires_grad_(True)
+        emb.weight.register_hook(_make_seg_only_hook(seg_id))
+
+        lm_head = model.thinker.get_output_embeddings()
+        lm_head.weight.requires_grad_(True)
+        lm_head.weight.register_hook(_make_seg_only_hook(seg_id))
+
+    model.print_trainable_parameters()
 
     patch_outer_forward(model)
     model.generation_config = GenerationConfig.from_model_config(model.config)
@@ -377,6 +450,7 @@ def main():
         fp16=not use_bf16,
         ddp_find_unused_parameters=False,
         remove_unused_columns=False,
+        label_names=["labels"],
         report_to="tensorboard",
     )
 
@@ -387,7 +461,7 @@ def main():
         eval_dataset=ds.get("validation", None),
         data_collator=collator,
         tokenizer=processor.tokenizer,
-        callbacks=[MakeEveryCheckpointInferableCallback(base_model_path=args_cli.model_path)],
+        callbacks=[MakeEveryCheckpointInferableCallback(base_model_path=args_cli.model_path, tokenizer=processor.tokenizer)],
         compute_metrics=make_compute_metrics(processor),
         preprocess_logits_for_metrics=preprocess_logits_for_metrics,
     )

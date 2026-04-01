@@ -17,7 +17,9 @@ checkpoint-N 으로 validation 샘플 추론 스크립트.
     → 5개 문장을 500ms 무음으로 이어붙여 한 번에 추론
 """
 import argparse
+import asyncio
 import json
+import os
 import re
 
 import librosa
@@ -71,7 +73,7 @@ def run_single(asr_wrapper, samples, args):
         wav, _ = librosa.load(sample["audio"], sr=args.sr, mono=True)
         gt = parse_gt(sample["text"])
 
-        results = asr_wrapper.transcribe([(wav, args.sr)], language="Korean")
+        results = asyncio.run(asr_wrapper.transcribe([(wav, args.sr)], language=args.language))
         pred = results[0].text.strip()
 
         match = pred == gt
@@ -101,7 +103,7 @@ def run_concat(asr_wrapper, samples, args):
         gt_combined = " ".join(gts)
 
         combined_wav = concat_wavs_with_silence(wavs, args.sr, args.silence_ms)
-        results = asr_wrapper.transcribe([(combined_wav, args.sr)], language="Korean")
+        results = asyncio.run(asr_wrapper.transcribe([(combined_wav, args.sr)], language=args.language))
         pred = results[0].text.strip()
 
         records.append({
@@ -132,12 +134,15 @@ def main():
     # 연속 오디오 옵션
     p.add_argument("--concat_n", type=int, default=0,
                    help="N개 문장을 이어붙여 한 번에 추론 (0=개별 처리)")
+    p.add_argument("--language", type=str, default="Korean",
+                   help="추론 언어 (예: Korean, English)")
     p.add_argument("--silence_ms", type=int, default=500,
                    help="이어붙일 때 문장 사이 무음 길이 (ms)")
     p.add_argument("--output", type=str, default="",
                    help="결과 JSON 저장 경로 (미지정 시 checkpoint 경로 기반 자동 생성)")
     args = p.parse_args()
 
+    args.base_model = os.path.abspath(args.base_model)
     print(f"[1/3] base model 로드: {args.base_model}")
     asr_wrapper = load_model(args)
 
