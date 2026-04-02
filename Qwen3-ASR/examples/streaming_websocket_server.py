@@ -28,7 +28,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Optional, Any
 
-import copy
+import io
 import numpy as np
 import aiohttp
 import torch
@@ -360,7 +360,14 @@ class Qwen3ASRStreamingHandler:
         self.vad_iterator = None
         if _SILERO_VAD_AVAILABLE:
             try:
-                vad_model = copy.deepcopy(load_silero_vad())
+                # torch.jit.save/load로 완전히 독립된 새 인스턴스 생성.
+                # copy.deepcopy는 TorchScript 모델의 내부 LSTM 텐서 storage를
+                # 완전히 격리하지 못하는 경우가 있어 두 클라이언트가 hidden state를
+                # 공유하는 버그가 발생할 수 있음.
+                _buf = io.BytesIO()
+                torch.jit.save(load_silero_vad(), _buf)
+                _buf.seek(0)
+                vad_model = torch.jit.load(_buf)
                 self.vad_iterator = VADIterator(
                     model=vad_model,
                     threshold=VAD_THRESHOLD,
@@ -491,7 +498,10 @@ class Qwen3ASRStreamingHandler:
             f"tl={self.client_target_lang} -> detected={detected_lang} "
             f"translation='{translation}'"
         )
-        if detected_lang == self.client_target_lang:
+        # Google Translate가 같은 언어끼리 번역 시 data[2]를 null로 반환하는 경우
+        # detected_lang이 빈 문자열이 될 수 있으므로 ASR 감지 언어를 fallback으로 사용
+        effective_detected = detected_lang or lang_to_code(current_lang)
+        if effective_detected == self.client_target_lang:
             translation, _, extra = await self._translate(
                 uncommitted_display, self.client_lang, audio_end_sec
             )
@@ -500,7 +510,7 @@ class Qwen3ASRStreamingHandler:
                 f"tl={self.client_lang} -> translation='{translation}'"
             )
 
-        final_lang = detected_lang or lang_to_code(current_lang)
+        final_lang = effective_detected
         commit_reason = "vad" if reason.startswith("vad") else "seg"
         self.log.info(
             f"[final-flush] slot={slot_key or self.active_slot} reason={reason} lang={final_lang} "
@@ -585,7 +595,8 @@ class Qwen3ASRStreamingHandler:
                     f"tl={self.client_target_lang} -> detected={detected_lang} "
                     f"translation='{translation}'"
                 )
-                if detected_lang == self.client_target_lang:
+                effective_detected = detected_lang or lang_to_code(current_lang)
+                if effective_detected == self.client_target_lang:
                     translation, _, extra = await self._translate(
                         sentence_display, self.client_lang, self.current_time
                     )
@@ -593,7 +604,7 @@ class Qwen3ASRStreamingHandler:
                         f"[translate-sentence-flip] tl={self.client_lang} "
                         f"-> translation='{translation}'"
                     )
-                final_lang = detected_lang or lang_to_code(current_lang)
+                final_lang = effective_detected
                 translated_payloads.append({
                     "original_raw": sentence_raw,   # 커서 추적용 (raw, <SEG> 포함)
                     "original": sentence_display,   # 사용자 출력용
@@ -640,6 +651,36 @@ class Qwen3ASRStreamingHandler:
                     f"text={payload['original']}"
                 )
 
+    def _run_vad_sync(self, chunk: np.ndarray, chunk_base_sample: int):
+        """VAD 추론을 동기로 실행 (run_in_executor에서 호출).
+
+        Returns:
+            list[int]: 발화 종료 local index 목록. 예외 발생 시 None 반환.
+        """
+        vad_end_local_indices: list[int] = []
+        try:
+            offset = 0
+            while offset + VAD_WINDOW_SIZE_SAMPLES <= chunk.size:
+                window = chunk[offset:offset + VAD_WINDOW_SIZE_SAMPLES]
+                speech_dict = self.vad_iterator(
+                    torch.from_numpy(window),
+                    return_seconds=False,
+                )
+                if speech_dict is not None and "end" in speech_dict:
+                    end_sample = self.sample_cursor - (chunk.size - offset - VAD_WINDOW_SIZE_SAMPLES)
+                    local_idx = int(end_sample - chunk_base_sample)
+                    local_idx = max(0, min(int(chunk.size), local_idx))
+                    if not vad_end_local_indices or local_idx > vad_end_local_indices[-1]:
+                        vad_end_local_indices.append(local_idx)
+                    self.log.info(
+                        f"[vad] speech end detected; target_samples={end_sample}"
+                    )
+                offset += VAD_WINDOW_SIZE_SAMPLES
+        except Exception as e:
+            self.log.warning(f"[vad] error, disabling for this session: {e}")
+            return None
+        return vad_end_local_indices
+
     async def process_audio_chunk(self, audio_data: bytes):
         if not audio_data:
             return
@@ -653,31 +694,18 @@ class Qwen3ASRStreamingHandler:
         vad_end_local_indices: list[int] = []
 
         # ── VAD: VADIterator로 스트리밍 음성 구간 탐지 ──
+        # run_in_executor로 스레드풀에서 실행 — 동기 PyTorch 추론이 이벤트 루프를
+        # 차단하지 않도록 하여 다른 클라이언트의 오디오 처리를 방해하지 않음
         if self.vad_enabled and self.vad_iterator is not None:
             try:
-                # VADIterator는 고정 크기(512 samples @16kHz)씩 처리해야 함
-                # 청크를 윈도우 크기로 분할하여 순차 처리
-                offset = 0
-                while offset + VAD_WINDOW_SIZE_SAMPLES <= chunk.size:
-                    window = chunk[offset:offset + VAD_WINDOW_SIZE_SAMPLES]
-                    speech_dict = self.vad_iterator(
-                        torch.from_numpy(window),
-                        return_seconds=False,
-                    )
-                    if speech_dict is not None:
-                        # speech_dict = {'start': N} 또는 {'end': N}
-                        if "end" in speech_dict:
-                            # 발화 종료 감지 → 현재 청크의 경계 인덱스로 변환
-                            end_sample = self.sample_cursor - (chunk.size - offset - VAD_WINDOW_SIZE_SAMPLES)
-                            local_idx = int(end_sample - chunk_base_sample)
-                            local_idx = max(0, min(int(chunk.size), local_idx))
-                            if not vad_end_local_indices or local_idx > vad_end_local_indices[-1]:
-                                vad_end_local_indices.append(local_idx)
-                            self.log.info(
-                                f"[vad] speech end detected; "
-                                f"target_samples={end_sample}"
-                            )
-                    offset += VAD_WINDOW_SIZE_SAMPLES
+                loop = asyncio.get_event_loop()
+                vad_end_local_indices = await loop.run_in_executor(
+                    None, self._run_vad_sync, chunk, chunk_base_sample
+                )
+                if vad_end_local_indices is None:
+                    # _run_vad_sync에서 예외 발생 → VAD 비활성화
+                    self.vad_enabled = False
+                    vad_end_local_indices = []
             except Exception as e:
                 self.log.warning(f"[vad] error, disabling for this session: {e}")
                 self.vad_enabled = False
