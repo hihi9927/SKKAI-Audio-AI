@@ -82,7 +82,7 @@ class StreamingConfig:
     # LoRA 어댑터 경로 (examples/ 디렉토리 기준 상대경로)
     adapter_en: str = "../finetuning/finetuning-out-en/checkpoint-en"
     adapter_ko: str = "../finetuning/finetuning-out-ko/checkpoint-ko"
-    no_lora: bool = False  # True면 어댑터 경로 무시하고 기본 모델만 사용
+    no_lora: bool = True  # True면 어댑터 경로 무시하고 기본 모델만 사용
 
     # 스트리밍 설정
     chunk_size_sec: float = 2.0
@@ -1126,8 +1126,8 @@ def parse_args():
         help="Beam search size (1=greedy, 2+=beam search, default: 2)",
     )
     parser.add_argument(
-        "--no-lora", action="store_true",
-        help="LoRA 어댑터를 사용하지 않고 기본 모델만 사용",
+        "--lora", action="store_true",
+        help="LoRA 어댑터를 사용 (기본값: 사용 안 함)",
     )
     parser.add_argument(
         "--adapter-en", type=str,
@@ -1157,7 +1157,7 @@ def main():
         beam_size=args.beam_size,
         adapter_en=args.adapter_en,
         adapter_ko=args.adapter_ko,
-        no_lora=args.no_lora,
+        no_lora=not args.lora,
     )
 
     server = Qwen3ASRStreamingServer(config)
