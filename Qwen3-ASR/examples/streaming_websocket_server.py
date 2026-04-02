@@ -51,6 +51,8 @@ try:
 except ImportError:
     _SILERO_VAD_AVAILABLE = False
 
+_SERVER_DIR = os.path.dirname(os.path.abspath(__file__))
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
@@ -76,6 +78,10 @@ class StreamingConfig:
     model_path: str = "Qwen/Qwen3-ASR-1.7B"
     gpu_memory_utilization: float = 0.8
     max_new_tokens: int = 32
+
+    # LoRA 어댑터 경로 (examples/ 디렉토리 기준 상대경로)
+    adapter_en: str = "../finetuning/finetuning-out-en/checkpoint-210_best"
+    adapter_ko: str = "../finetuning/finetuning-out-ko/checkpoint-170_best"
 
     # 스트리밍 설정
     chunk_size_sec: float = 2.0
@@ -316,6 +322,8 @@ class Qwen3ASRStreamingHandler:
         config: StreamingConfig,
         pairing_hub: PairingHub,
         get_streaming_id=None,
+        lora_request_en=None,
+        lora_request_ko=None,
     ):
         self.websocket = websocket
         self._get_streaming_id = get_streaming_id
@@ -323,6 +331,8 @@ class Qwen3ASRStreamingHandler:
         self.asr = asr_model
         self.config = config
         self.pairing_hub = pairing_hub
+        self.lora_request_en = lora_request_en
+        self.lora_request_ko = lora_request_ko
         self.state = None
         self.running = False
 
@@ -418,10 +428,20 @@ class Qwen3ASRStreamingHandler:
         key = slot_key or self.active_slot
         return self.stream_slots[key]
 
+    def _get_lora_request(self, state):
+        """언어에 따라 적절한 LoRA 어댑터 반환. 미지원 언어는 None(기본 모델)."""
+        lang = state.force_language or state.language  # canonical name e.g. "Korean"
+        if lang == "English":
+            return self.lora_request_en
+        if lang == "Korean":
+            return self.lora_request_ko
+        return None
+
     async def _asr_streaming_transcribe(self, chunk: np.ndarray, slot_key: Optional[str] = None):
         slot = self._slot(slot_key)
         async with self.asr_lock:
-            await self.asr.streaming_transcribe(chunk, slot["state"])
+            lora_request = self._get_lora_request(slot["state"])
+            await self.asr.streaming_transcribe(chunk, slot["state"], lora_request=lora_request)
             self.asr_processed_cursor = self.sample_cursor
 
     async def _asr_finish_streaming(self, slot_key: Optional[str] = None):
@@ -437,7 +457,8 @@ class Qwen3ASRStreamingHandler:
                     force_language=partial_lang,
                 )
                 state.force_language = partial_lang
-            await self.asr.finish_streaming_transcribe(state)
+            lora_request = self._get_lora_request(state)
+            await self.asr.finish_streaming_transcribe(state, lora_request=lora_request)
 
     async def flush_uncommitted(self, force=False, reason="flush", slot_key: Optional[str] = None):
         slot = self._slot(slot_key)
@@ -455,23 +476,24 @@ class Qwen3ASRStreamingHandler:
             uncommitted = current_text[snapshot_committed_len:].strip()
             if not uncommitted:
                 return
-            if not force and len(uncommitted) < 2:
-                logger.info(f"[timeout-skip] reason={reason} too short: '{uncommitted}'")
+            uncommitted_display = uncommitted.replace("<SEG>", "").strip()
+            if not force and len(uncommitted_display) < 2:
+                logger.info(f"[timeout-skip] reason={reason} too short: '{uncommitted_display}'")
                 return
 
         # 2단계: lock 해제 후 I/O (번역 API) 수행 → 다른 슬롯 flush 비차단
         audio_end_sec = self._get_flush_audio_end_sec()
         translation, detected_lang, extra = await self._translate(
-            uncommitted, self.client_target_lang, audio_end_sec
+            uncommitted_display, self.client_target_lang, audio_end_sec
         )
         self.log.info(
-            f"[translate-flush] reason={reason} sentence='{uncommitted}' "
+            f"[translate-flush] reason={reason} sentence='{uncommitted_display}' "
             f"tl={self.client_target_lang} -> detected={detected_lang} "
             f"translation='{translation}'"
         )
         if detected_lang == self.client_target_lang:
             translation, _, extra = await self._translate(
-                uncommitted, self.client_lang, audio_end_sec
+                uncommitted_display, self.client_lang, audio_end_sec
             )
             self.log.info(
                 f"[translate-flush-flip] reason={reason} "
@@ -482,11 +504,11 @@ class Qwen3ASRStreamingHandler:
         commit_reason = "vad" if reason.startswith("vad") else "seg"
         self.log.info(
             f"[final-flush] slot={slot_key or self.active_slot} reason={reason} lang={final_lang} "
-            f"translation='{translation}' original='{uncommitted}'"
+            f"translation='{translation}' original='{uncommitted_display}'"
         )
         if reason.startswith("vad"):
             self.log.info(
-                f"[final-vad] slot={slot_key or self.active_slot} lang={final_lang} text='{uncommitted}' "
+                f"[final-vad] slot={slot_key or self.active_slot} lang={final_lang} text='{uncommitted_display}' "
                 f"translation='{translation}'"
             )
 
@@ -500,7 +522,7 @@ class Qwen3ASRStreamingHandler:
                 return
             await self._emit_final_payload(
                 slot_key=slot_key or self.active_slot,
-                original=uncommitted,
+                original=uncommitted_display,
                 translation=translation,
                 language=final_lang,
                 reason=commit_reason,
@@ -526,7 +548,7 @@ class Qwen3ASRStreamingHandler:
         if emit_partial:
             await self.send_message(
                 "partial",
-                original=current_text,
+                original=current_text.replace("<SEG>", ""),
                 last_translation="",
             )
             self.log.info(f"[partial] slot={slot_key} text={current_text[:80]}...")
@@ -537,13 +559,14 @@ class Qwen3ASRStreamingHandler:
         remaining = uncommitted
 
         while True:
-            match = re.search(r"[.?!\u3002\uff1f\uff01]\s+", remaining)
+            match = re.search(r"(?:[.?!\u3002\uff1f\uff01]\s+|<SEG>)", remaining)
             if not match:
                 break
             after = remaining[match.end():]
             if after.strip():
+                # 커서 추적을 위해 raw sentence(경계 포함) 사용
                 sentence = remaining[:match.end()].strip()
-                if sentence:
+                if sentence.replace("<SEG>", "").strip():
                     sentences_to_commit.append(sentence)
                 remaining = after
             else:
@@ -551,18 +574,20 @@ class Qwen3ASRStreamingHandler:
 
         if sentences_to_commit:
             translated_payloads = []
-            for sentence in sentences_to_commit:
+            for sentence_raw in sentences_to_commit:
+                # <SEG>는 사용자 출력/번역에서 제거
+                sentence_display = sentence_raw.replace("<SEG>", "").strip()
                 translation, detected_lang, extra = await self._translate(
-                    sentence, self.client_target_lang, self.current_time
+                    sentence_display, self.client_target_lang, self.current_time
                 )
                 self.log.info(
-                    f"[translate-sentence] sentence='{sentence}' "
+                    f"[translate-sentence] sentence='{sentence_display}' "
                     f"tl={self.client_target_lang} -> detected={detected_lang} "
                     f"translation='{translation}'"
                 )
                 if detected_lang == self.client_target_lang:
                     translation, _, extra = await self._translate(
-                        sentence, self.client_lang, self.current_time
+                        sentence_display, self.client_lang, self.current_time
                     )
                     self.log.info(
                         f"[translate-sentence-flip] tl={self.client_lang} "
@@ -570,7 +595,8 @@ class Qwen3ASRStreamingHandler:
                     )
                 final_lang = detected_lang or lang_to_code(current_lang)
                 translated_payloads.append({
-                    "original": sentence,
+                    "original_raw": sentence_raw,   # 커서 추적용 (raw, <SEG> 포함)
+                    "original": sentence_display,   # 사용자 출력용
                     "translation": translation,
                     "language": final_lang,
                     "extra": extra,
@@ -586,12 +612,12 @@ class Qwen3ASRStreamingHandler:
                 tail = latest_text[cursor:]
 
                 for payload in translated_payloads:
-                    sentence = payload["original"]
+                    sentence_raw = payload["original_raw"]
                     stripped_tail = tail.lstrip()
                     leading_ws = len(tail) - len(stripped_tail)
-                    if not stripped_tail.startswith(sentence):
+                    if not stripped_tail.startswith(sentence_raw):
                         break
-                    cursor += leading_ws + len(sentence)
+                    cursor += leading_ws + len(sentence_raw)
                     tail = latest_text[cursor:]
                     ready_to_emit.append(payload)
 
@@ -890,6 +916,8 @@ class Qwen3ASRStreamingServer:
         self.config = config
         self.IDLE_SHUTDOWN_SEC = config.idle_shutdown_sec
         self.asr = None
+        self.lora_request_en = None
+        self.lora_request_ko = None
         self.pairing_hub = PairingHub()
         self.idle_task = None
         self.active_connections = 0
@@ -902,14 +930,30 @@ class Qwen3ASRStreamingServer:
             self._streaming_counter += 1
             return self._streaming_counter
 
+    def _resolve_adapter_path(self, rel_path: str) -> Optional[str]:
+        """상대경로를 examples/ 디렉토리 기준으로 절대경로로 변환. 존재하지 않으면 None."""
+        if not rel_path:
+            return None
+        abs_path = os.path.abspath(os.path.join(_SERVER_DIR, rel_path))
+        if not os.path.isdir(abs_path):
+            logger.warning(f"LoRA adapter path not found, skipping: {abs_path}")
+            return None
+        return abs_path
+
     def init_model(self):
         """ASR 모델 초기화 (동기 — 이벤트 루프 시작 전 호출)"""
+        # LoRA 어댑터 경로 확인
+        adapter_en_path = self._resolve_adapter_path(self.config.adapter_en)
+        adapter_ko_path = self._resolve_adapter_path(self.config.adapter_ko)
+        use_lora = bool(adapter_en_path or adapter_ko_path)
+
         logger.info(f"Loading model: {self.config.model_path}")
         self.asr = Qwen3ASRModel.LLM(
             model=self.config.model_path,
             gpu_memory_utilization=self.config.gpu_memory_utilization,
             max_new_tokens=self.config.max_new_tokens,
             max_model_len=8192,
+            enable_lora=use_lora,
         )
         if self.config.beam_size > 1:
             from vllm import SamplingParams
@@ -928,6 +972,20 @@ class Qwen3ASRStreamingServer:
                 )
         else:
             logger.info("Greedy decoding (beam_size=1)")
+
+        # LoRA 어댑터 등록
+        if use_lora:
+            try:
+                from vllm.lora.request import LoRARequest
+                if adapter_en_path:
+                    self.lora_request_en = LoRARequest("en", 1, adapter_en_path)
+                    logger.info(f"English LoRA adapter loaded: {adapter_en_path}")
+                if adapter_ko_path:
+                    self.lora_request_ko = LoRARequest("ko", 2, adapter_ko_path)
+                    logger.info(f"Korean LoRA adapter loaded: {adapter_ko_path}")
+            except ImportError:
+                logger.warning("vllm.lora.request를 import할 수 없습니다. LoRA 어댑터를 사용하지 않습니다.")
+
         logger.info("Model loaded successfully")
 
     async def handle_connection(self, websocket):
@@ -942,6 +1000,8 @@ class Qwen3ASRStreamingServer:
             handler = Qwen3ASRStreamingHandler(
                 websocket, self.asr, self.config, self.pairing_hub,
                 get_streaming_id=self.next_streaming_id,
+                lora_request_en=self.lora_request_en,
+                lora_request_ko=self.lora_request_ko,
             )
             await handler.handle()
         finally:
@@ -1034,6 +1094,16 @@ def parse_args():
         "--beam-size", type=int, default=2,
         help="Beam search size (1=greedy, 2+=beam search, default: 2)",
     )
+    parser.add_argument(
+        "--adapter-en", type=str,
+        default="../finetuning/finetuning-out-en/BOOM/checkpoint-225",
+        help="영어 LoRA 어댑터 경로 (examples/ 기준 상대경로, 없으면 기본 모델 사용)",
+    )
+    parser.add_argument(
+        "--adapter-ko", type=str,
+        default="../finetuning/finetuning-out-ko/BOOM/checkpoint-225",
+        help="한국어 LoRA 어댑터 경로 (examples/ 기준 상대경로, 없으면 기본 모델 사용)",
+    )
     return parser.parse_args()
 
 
@@ -1050,6 +1120,8 @@ def main():
         no_idle_shutdown=args.no_idle_shutdown,
         idle_shutdown_sec=args.idle_shutdown_sec,
         beam_size=args.beam_size,
+        adapter_en=args.adapter_en,
+        adapter_ko=args.adapter_ko,
     )
 
     server = Qwen3ASRStreamingServer(config)

@@ -661,7 +661,7 @@ class Qwen3ASRModel:
             _raw_decoded="",
         )
 
-    async def streaming_transcribe(self, pcm16k: np.ndarray, state: ASRStreamingState) -> ASRStreamingState:
+    async def streaming_transcribe(self, pcm16k: np.ndarray, state: ASRStreamingState, lora_request=None) -> ASRStreamingState:
         """
         Streaming ASR decode step.
 
@@ -759,7 +759,7 @@ class Qwen3ASRModel:
 
             request_id = str(uuid.uuid4())
             final = None
-            async for out in self.model.generate(inp, self.sampling_params, request_id=request_id):
+            async for out in self.model.generate(inp, self.sampling_params, request_id=request_id, lora_request=lora_request):
                 final = out
             gen_text = final.outputs[0].text
 
@@ -774,7 +774,7 @@ class Qwen3ASRModel:
 
         return state
 
-    async def finish_streaming_transcribe(self, state: ASRStreamingState) -> ASRStreamingState:
+    async def finish_streaming_transcribe(self, state: ASRStreamingState, lora_request=None) -> ASRStreamingState:
         """
         Finish streaming ASR.
 
@@ -830,7 +830,7 @@ class Qwen3ASRModel:
 
         request_id = str(uuid.uuid4())
         final = None
-        async for out in self.model.generate(inp, self.sampling_params, request_id=request_id):
+        async for out in self.model.generate(inp, self.sampling_params, request_id=request_id, lora_request=lora_request):
             final = out
         gen_text = final.outputs[0].text
 
