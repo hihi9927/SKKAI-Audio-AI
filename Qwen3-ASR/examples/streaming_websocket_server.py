@@ -325,6 +325,7 @@ class Qwen3ASRStreamingHandler:
         get_streaming_id=None,
         lora_request_en=None,
         lora_request_ko=None,
+        vad_model_bytes: Optional[bytes] = None,
     ):
         self.websocket = websocket
         self._get_streaming_id = get_streaming_id
@@ -357,18 +358,12 @@ class Qwen3ASRStreamingHandler:
         self.stream_slots: dict[str, dict] = {}
 
         # ── silero-vad 초기화 (VADIterator 사용) ──
+        # 서버에서 미리 로드한 vad_model_bytes로 클라이언트마다 독립 인스턴스 생성.
         self.vad_enabled = False
         self.vad_iterator = None
-        if _SILERO_VAD_AVAILABLE:
+        if _SILERO_VAD_AVAILABLE and vad_model_bytes is not None:
             try:
-                # torch.jit.save/load로 완전히 독립된 새 인스턴스 생성.
-                # copy.deepcopy는 TorchScript 모델의 내부 LSTM 텐서 storage를
-                # 완전히 격리하지 못하는 경우가 있어 두 클라이언트가 hidden state를
-                # 공유하는 버그가 발생할 수 있음.
-                _buf = io.BytesIO()
-                torch.jit.save(load_silero_vad(), _buf)
-                _buf.seek(0)
-                vad_model = torch.jit.load(_buf)
+                vad_model = torch.jit.load(io.BytesIO(vad_model_bytes))
                 self.vad_iterator = VADIterator(
                     model=vad_model,
                     threshold=VAD_THRESHOLD,
@@ -380,7 +375,7 @@ class Qwen3ASRStreamingHandler:
                 self.log.info("Silero VAD (VADIterator) loaded successfully")
             except Exception as e:
                 self.log.warning(f"Silero VAD disabled: {e}")
-        else:
+        elif not _SILERO_VAD_AVAILABLE:
             self.log.warning(
                 "silero-vad 패키지가 설치되지 않았습니다. "
                 "VAD 없이 동작합니다. 설치: pip install silero-vad"
@@ -941,6 +936,7 @@ class Qwen3ASRStreamingServer:
         self.asr = None
         self.lora_request_en = None
         self.lora_request_ko = None
+        self.vad_model_bytes: Optional[bytes] = None
         self.pairing_hub = PairingHub()
         self.idle_task = None
         self.active_connections = 0
@@ -971,6 +967,16 @@ class Qwen3ASRStreamingServer:
         adapter_en_path = self._resolve_adapter_path(self.config.adapter_en)
         adapter_ko_path = self._resolve_adapter_path(self.config.adapter_ko)
         use_lora = bool(adapter_en_path or adapter_ko_path)
+
+        # VAD 모델을 한 번만 로드해 bytes로 보관 — 클라이언트마다 이 bytes로 독립 인스턴스 생성
+        if _SILERO_VAD_AVAILABLE:
+            try:
+                _buf = io.BytesIO()
+                torch.jit.save(load_silero_vad(), _buf)
+                self.vad_model_bytes = _buf.getvalue()
+                logger.info("Silero VAD model loaded (server-level)")
+            except Exception as e:
+                logger.warning(f"Silero VAD model load failed: {e}")
 
         logger.info(f"Loading model: {self.config.model_path}")
         self.asr = Qwen3ASRModel.LLM(
@@ -1027,6 +1033,7 @@ class Qwen3ASRStreamingServer:
                 get_streaming_id=self.next_streaming_id,
                 lora_request_en=self.lora_request_en,
                 lora_request_ko=self.lora_request_ko,
+                vad_model_bytes=self.vad_model_bytes,
             )
             await handler.handle()
         finally:
