@@ -80,8 +80,8 @@ class StreamingConfig:
     max_new_tokens: int = 32
 
     # LoRA 어댑터 경로 (examples/ 디렉토리 기준 상대경로)
-    adapter_en: str = "../finetuning/finetuning-out-en/checkpoint-210_best"
-    adapter_ko: str = "../finetuning/finetuning-out-ko/checkpoint-170_best"
+    adapter_en: str = "../finetuning/finetuning-out-en/checkpoint-en"
+    adapter_ko: str = "../finetuning/finetuning-out-ko/checkpoint-ko"
 
     # 스트리밍 설정
     chunk_size_sec: float = 2.0
