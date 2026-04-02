@@ -1131,12 +1131,12 @@ def parse_args():
     )
     parser.add_argument(
         "--adapter-en", type=str,
-        default="../finetuning/finetuning-out-en/BOOM/checkpoint-225",
+        default="../finetuning/finetuning-out-en/checkpoint-en",
         help="영어 LoRA 어댑터 경로 (examples/ 기준 상대경로, 없으면 기본 모델 사용)",
     )
     parser.add_argument(
         "--adapter-ko", type=str,
-        default="../finetuning/finetuning-out-ko/BOOM/checkpoint-225",
+        default="../finetuning/finetuning-out-ko/checkpoint-ko",
         help="한국어 LoRA 어댑터 경로 (examples/ 기준 상대경로, 없으면 기본 모델 사용)",
     )
     return parser.parse_args()
