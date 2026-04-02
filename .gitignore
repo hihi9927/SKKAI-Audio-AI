@@ -46,17 +46,17 @@ evaluation/LibriSpeech/test-other
 Qwen3-ASR/finetuning/Qwen3-ASR-1.7B
 Qwen3-ASR/finetuning/qwen3-asr-finetuning-out/
 
-Qwen3-ASR/finetuning/finetuning-out-en/
-Qwen3-ASR/finetuning/finetuning-out-ko/
+Qwen3-ASR/finetuning/finetuning-out-en/**
+Qwen3-ASR/finetuning/finetuning-out-ko/**
 
 Qwen3-ASR/finetuning/no_special/
 
-# checkpoint-600 pt 파일 예외 허용
-!Qwen3-ASR/finetuning/finetuning-out-en/checkpoint-210_best/
-!Qwen3-ASR/finetuning/finetuning-out-en/checkpoint-210_best/*.safetensors
+# 파인튜닝 가중치 파일 예외 허용
+#!Qwen3-ASR/finetuning/finetuning-out-en/checkpoint-210_best/
+#!Qwen3-ASR/finetuning/finetuning-out-en/checkpoint-210_best/**
 
-!Qwen3-ASR/finetuning/finetuning-out-ko/checkpoint-170_best/
-!Qwen3-ASR/finetuning/finetuning-out-ko/checkpoint-170_best/*.safetensors
+#!Qwen3-ASR/finetuning/finetuning-out-ko/checkpoint-170_best/
+#!Qwen3-ASR/finetuning/finetuning-out-ko/checkpoint-170_best/**
 
 
 .env
