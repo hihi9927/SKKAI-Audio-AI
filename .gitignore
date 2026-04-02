@@ -54,9 +54,11 @@ Qwen3-ASR/finetuning/no_special/
 # 파인튜닝 가중치 파일 예외 허용
 #!Qwen3-ASR/finetuning/finetuning-out-en/checkpoint-210_best/
 #!Qwen3-ASR/finetuning/finetuning-out-en/checkpoint-210_best/**
+!Qwen3-ASR/finetuning/finetuning-out-en/runs/
+!Qwen3-ASR/finetuning/finetuning-out-en/runs/**
 
-#!Qwen3-ASR/finetuning/finetuning-out-ko/checkpoint-170_best/
-#!Qwen3-ASR/finetuning/finetuning-out-ko/checkpoint-170_best/**
+!Qwen3-ASR/finetuning/finetuning-out-ko/runs/
+!Qwen3-ASR/finetuning/finetuning-out-ko/runs/**
 
 
 .env
