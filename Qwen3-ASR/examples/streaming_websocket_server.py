@@ -695,21 +695,15 @@ class Qwen3ASRStreamingHandler:
         vad_end_local_indices: list[int] = []
 
         # ── VAD: VADIterator로 스트리밍 음성 구간 탐지 ──
-        # run_in_executor로 스레드풀에서 실행 — 동기 PyTorch 추론이 이벤트 루프를
-        # 차단하지 않도록 하여 다른 클라이언트의 오디오 처리를 방해하지 않음
+        # 이벤트 루프에서 직접 동기 실행 — 512 샘플 윈도우 기준 추론당 < 0.5ms이므로
+        # executor 불필요. 공유 스레드풀 사용 시 두 클라이언트가 동시에 PyTorch 추론을
+        # 실행해 내부 상태 충돌 → 한 쪽 VAD exception → vad_enabled=False 버그 방지.
         if self.vad_enabled and self.vad_iterator is not None:
-            try:
-                loop = asyncio.get_event_loop()
-                vad_end_local_indices = await loop.run_in_executor(
-                    None, self._run_vad_sync, chunk, chunk_base_sample
-                )
-                if vad_end_local_indices is None:
-                    # _run_vad_sync에서 예외 발생 → VAD 비활성화
-                    self.vad_enabled = False
-                    vad_end_local_indices = []
-            except Exception as e:
-                self.log.warning(f"[vad] error, disabling for this session: {e}")
+            vad_result = self._run_vad_sync(chunk, chunk_base_sample)
+            if vad_result is None:
                 self.vad_enabled = False
+            else:
+                vad_end_local_indices = vad_result
 
         # ASR 처리
         self.current_time += chunk.size / SAMPLING_RATE
