@@ -108,36 +108,6 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
   const isSpeakingRef = useRef(false);
   const ttsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // 컴포넌트 마운트 시 한 번만 voice 목록 조회해 캐시.
-  // Samsung 기기는 기본 엔진이 Samsung TTS여서 language만 넘기면 언어 무관 영어로 발화함.
-  // getAvailableVoicesAsync()는 Samsung TTS + Google TTS 음성을 모두 반환하므로
-  // 각 언어에 맞는 identifier를 직접 지정해 올바른 음성 강제.
-  const voiceCacheRef = useRef<Record<string, string>>({});
-  const voicesCachedRef = useRef(false);
-
-  const cacheVoices = () => {
-    if (voicesCachedRef.current) return;
-    Speech.getAvailableVoicesAsync().then(voices => {
-      if (voices.length === 0) return;
-      voicesCachedRef.current = true;
-      const langMap: Record<string, string> = {
-        ko: 'ko-KR', en: 'en-US', ja: 'ja-JP', zh: 'zh-CN',
-        id: 'id-ID', vi: 'vi-VN', th: 'th-TH', es: 'es-ES', fr: 'fr-FR', de: 'de-DE',
-      };
-      Object.entries(langMap).forEach(([code, bcp]) => {
-        const match =
-          voices.find(v => v.language === bcp) ??
-          voices.find(v => v.language.startsWith(code));
-        if (match) voiceCacheRef.current[code] = match.identifier;
-      });
-    }).catch(() => {});
-  };
-
-  // mode-2 진입 시 voice 캐시 준비
-  useEffect(() => {
-    if (isTTSEnabled) cacheVoices();
-  }, [isTTSEnabled]);
-
   const toBCP47 = (code: string): string => {
     const map: Record<string, string> = {
       ko: 'ko-KR', en: 'en-US', ja: 'ja-JP', zh: 'zh-CN',
@@ -165,10 +135,8 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
       }
     }, estimatedMs);
 
-    const voiceId = voiceCacheRef.current[next.lang];
     Speech.speak(next.text, {
       language: toBCP47(next.lang),
-      ...(voiceId ? { voice: voiceId } : {}),
       rate: 1.3,
       onDone: () => {
         if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);
