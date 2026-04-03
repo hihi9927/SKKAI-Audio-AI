@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import * as Speech from 'expo-speech';
 import { COLORS, FONTS, SPACING } from '../constants/theme';
+import { ttsSpeak, ttsStop } from '../utils/tts';
 
 interface TranslationItemProps {
   sourceLang: string;
@@ -48,17 +48,9 @@ export const TranslationItem: React.FC<TranslationItemProps> = ({
     }
   };
 
-  const toBCP47 = (code: string): string => {
-    const map: Record<string, string> = {
-      ko: 'ko-KR', en: 'en-US', ja: 'ja-JP', zh: 'zh-CN',
-      id: 'id-ID', vi: 'vi-VN', th: 'th-TH', es: 'es-ES', fr: 'fr-FR', de: 'de-DE',
-    };
-    return map[code] ?? code;
-  };
-
   const speakText = (text: string, lang: string) => {
-    Speech.stop();
-    Speech.speak(text, { language: toBCP47(lang), rate: 1.6 });
+    ttsStop();
+    ttsSpeak(text, lang, 1.6, () => {}, () => {});
   };
 
   return (

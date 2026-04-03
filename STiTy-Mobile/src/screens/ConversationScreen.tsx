@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
-import * as Speech from 'expo-speech';
+import { initTtsEngine, ttsSpeak, ttsStop } from '../utils/tts';
 import { Ionicons } from '@expo/vector-icons';
 import { TranslationItem } from '../components/TranslationItem';
 import { GradientButton } from '../components/GradientButton';
@@ -106,15 +106,11 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
 
   const ttsQueueRef = useRef<{ text: string; lang: string }[]>([]);
   const isSpeakingRef = useRef(false);
-  const ttsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const toBCP47 = (code: string): string => {
-    const map: Record<string, string> = {
-      ko: 'ko-KR', en: 'en-US', ja: 'ja-JP', zh: 'zh-CN',
-      id: 'id-ID', vi: 'vi-VN', th: 'th-TH', es: 'es-ES', fr: 'fr-FR', de: 'de-DE',
-    };
-    return map[code] ?? code;
-  };
+  // mode-2 진입 시 Google TTS 엔진 초기화 (Samsung 기기 대응)
+  useEffect(() => {
+    if (isTTSEnabled) void initTtsEngine();
+  }, [isTTSEnabled]);
 
   const processNextTTS = () => {
     if (ttsQueueRef.current.length === 0) {
@@ -125,34 +121,13 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     const next = ttsQueueRef.current.shift()!;
     const ttsStart = new Date().toISOString();
 
-    // 일부 TTS 엔진이 onDone/onError를 호출 안 할 경우 큐 데드락 방지용 타임아웃
-    const estimatedMs = Math.max(3000, next.text.length * 60);
-    if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);
-    ttsTimeoutRef.current = setTimeout(() => {
-      if (isSpeakingRef.current) {
-        isSpeakingRef.current = false;
-        processNextTTS();
-      }
-    }, estimatedMs);
-
-    Speech.speak(next.text, {
-      language: toBCP47(next.lang),
-      rate: 1.3,
-      onDone: () => {
-        if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);
+    ttsSpeak(next.text, next.lang, 1.3,
+      () => {
         sendMessageRef.current({ type: 'tts_log', text: next.text, lang: next.lang, start: ttsStart, end: new Date().toISOString() });
         processNextTTS();
       },
-      onError: () => {
-        if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);
-        processNextTTS();
-      },
-      onStopped: () => {
-        if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);
-        isSpeakingRef.current = false;
-        processNextTTS();
-      },
-    });
+      () => processNextTTS(),
+    );
   };
 
   const speakTranslation = (text: string, lang: string) => {
@@ -265,8 +240,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
       disconnect();
       ttsQueueRef.current = [];
       isSpeakingRef.current = false;
-      if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);
-      Speech.stop();
+      ttsStop();
     };
   }, []);
 
@@ -337,7 +311,6 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
             disconnect();
             ttsQueueRef.current = [];
             isSpeakingRef.current = false;
-            if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);
             setTranscriptions([]);
             setDisplayText(null);
             navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
@@ -391,8 +364,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
           setCurrentMode(next.id);
           ttsQueueRef.current = [];
           isSpeakingRef.current = false;
-          if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);
-          Speech.stop();
+          ttsStop();
         }}
       >
         <Ionicons
