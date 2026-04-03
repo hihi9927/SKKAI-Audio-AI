@@ -107,7 +107,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
   const ttsQueueRef = useRef<{ text: string; lang: string }[]>([]);
   const isSpeakingRef = useRef(false);
   const ttsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // 언어코드 → Google TTS voice identifier 캐시 (사전 조회 후 동기 사용)
+  // 언어코드 → voice identifier 캐시
   const voiceCacheRef = useRef<Record<string, string | undefined>>({});
 
   const toBCP47 = (code: string): string => {
@@ -119,21 +119,19 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     return map[code] ?? code;
   };
 
-  // mode-2 진입 시 Google TTS voice identifier를 사전 조회해 캐시.
-  // Samsung 기기는 기본 엔진이 Samsung TTS라 language만 넘기면 영어 fallback됨.
-  // getAvailableVoicesAsync()는 모든 설치된 엔진(Google TTS 포함) 음성을 반환하므로
-  // identifier에 "google"이 포함된 음성을 골라 voice 파라미터로 직접 지정하면
-  // Samsung 기기에서도 Google TTS 엔진이 올바른 언어로 발화함.
+  // mode-2 진입 시 TTS 엔진 사전 초기화 + voice 캐시.
+  // Speech.stop() → TTS 엔진 바인딩 강제 실행 (첫 speak 무음 방지).
+  // getAvailableVoicesAsync() 결과에서 각 언어의 voice identifier를 캐시해
+  // speak 시 직접 지정 → Samsung 기기에서 엉뚱한 언어 fallback 방지.
+  // "google" 필터 없이 언어가 맞는 첫 번째 voice 사용 (identifier 형식이 기기마다 다름).
   useEffect(() => {
     if (!isTTSEnabled) return;
+    Speech.stop();
     Speech.getAvailableVoicesAsync().then(voices => {
       const langCodes = ['ko', 'en', 'ja', 'zh', 'id', 'vi', 'th', 'es', 'fr', 'de'];
       langCodes.forEach(code => {
         const bcp = toBCP47(code);
-        // Google TTS voice 우선, 없으면 언어 일치하는 아무 voice
         const match =
-          voices.find(v => v.language === bcp && v.identifier.toLowerCase().includes('google')) ??
-          voices.find(v => v.language.startsWith(code) && v.identifier.toLowerCase().includes('google')) ??
           voices.find(v => v.language === bcp) ??
           voices.find(v => v.language.startsWith(code));
         if (match) voiceCacheRef.current[code] = match.identifier;
