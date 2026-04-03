@@ -50,8 +50,8 @@ def _parse_hms_time(value: str) -> Optional[float]:
 
 
 class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
-    def __init__(self, websocket, asr_model, config, pairing_hub, http_session=None):
-        super().__init__(websocket, asr_model, config, pairing_hub)
+    def __init__(self, websocket, asr_model, config, pairing_hub, http_session=None, vad_model_bytes=None):
+        super().__init__(websocket, asr_model, config, pairing_hub, vad_model_bytes=vad_model_bytes)
         self._shared_http_session = http_session
         self.stream_start_perf = time.perf_counter()
         self.next_segment_id = 1
@@ -363,7 +363,7 @@ class FCLStreamingServer(base_server.Qwen3ASRStreamingServer):
             logger.info("Client connected (%s)", self.active_connections)
 
         try:
-            handler = FCLStreamingHandler(websocket, self.asr, self.config, self.pairing_hub, http_session=self._http_session)
+            handler = FCLStreamingHandler(websocket, self.asr, self.config, self.pairing_hub, http_session=self._http_session, vad_model_bytes=self.vad_model_bytes)
             await handler.handle()
         finally:
             async with self.connection_lock:
