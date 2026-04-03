@@ -39,7 +39,7 @@ export const ttsSpeak = (
   // 각 발화마다 언어와 속도 설정 후 speak
   Tts.setDefaultLanguage(lang)
     .then(() => {
-      Tts.setDefaultRate(rate / 4, true); // expo-speech rate 1.3 → react-native-tts 약 0.325
+      Tts.setDefaultRate(rate, true); // skipTransform=true: Android TTS에 rate 직접 전달 (1.3 = 1.3배속)
       const listeners = [
         Tts.addEventListener('tts-finish', () => {
           listeners.forEach(l => l.remove());
