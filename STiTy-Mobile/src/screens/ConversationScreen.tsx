@@ -107,9 +107,9 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
   const ttsQueueRef = useRef<{ text: string; lang: string }[]>([]);
   const isSpeakingRef = useRef(false);
   const ttsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // 언어 코드 → 설치된 voice identifier 캐시 (null = 매칭 없음, undefined = 미조회)
+  const voiceCacheRef = useRef<Record<string, string | null>>({});
 
-  // Samsung TTS 등 일부 엔진은 'ko' 같은 짧은 코드를 인식 못 해 silent fail함.
-  // BCP-47 full tag로 변환해 호환성 확보.
   const toBCP47 = (code: string): string => {
     const map: Record<string, string> = {
       ko: 'ko-KR', en: 'en-US', ja: 'ja-JP', zh: 'zh-CN',
@@ -119,7 +119,30 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     return map[code] ?? code;
   };
 
-  const processNextTTS = () => {
+  // 설치된 음성 목록에서 언어에 맞는 voice identifier를 찾아 캐시.
+  // Samsung TTS는 language 파라미터만으로 올바른 음성을 선택 못 하는 경우가 있어
+  // voice identifier를 직접 지정해야 함.
+  const resolveVoice = async (lang: string): Promise<string | undefined> => {
+    const bcp = toBCP47(lang);
+    if (voiceCacheRef.current[lang] !== undefined) {
+      return voiceCacheRef.current[lang] ?? undefined;
+    }
+    try {
+      const voices = await Speech.getAvailableVoicesAsync();
+      // 언어 코드가 정확히 일치하는 것 우선, 없으면 prefix 일치
+      const match =
+        voices.find(v => v.language === bcp) ??
+        voices.find(v => v.language.startsWith(lang));
+      const id = match?.identifier ?? null;
+      voiceCacheRef.current[lang] = id;
+      return id ?? undefined;
+    } catch {
+      voiceCacheRef.current[lang] = null;
+      return undefined;
+    }
+  };
+
+  const processNextTTS = async () => {
     if (ttsQueueRef.current.length === 0) {
       isSpeakingRef.current = false;
       return;
@@ -135,26 +158,28 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     ttsTimeoutRef.current = setTimeout(() => {
       if (isSpeakingRef.current) {
         isSpeakingRef.current = false;
-        processNextTTS();
+        void processNextTTS();
       }
     }, estimatedMs);
 
+    const voiceId = await resolveVoice(next.lang);
     Speech.speak(next.text, {
       language: toBCP47(next.lang),
+      ...(voiceId ? { voice: voiceId } : {}),
       rate: 1.3,
       onDone: () => {
         if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);
         sendMessageRef.current({ type: 'tts_log', text: next.text, lang: next.lang, start: ttsStart, end: new Date().toISOString() });
-        processNextTTS();
+        void processNextTTS();
       },
       onError: () => {
         if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);
-        processNextTTS();
+        void processNextTTS();
       },
       onStopped: () => {
         if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);
         isSpeakingRef.current = false;
-        processNextTTS();
+        void processNextTTS();
       },
     });
   };
@@ -163,7 +188,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     if (!isTTSEnabledRef.current || !text) return;
     ttsQueueRef.current.push({ text, lang });
     if (!isSpeakingRef.current) {
-      processNextTTS();
+      void processNextTTS();
     }
   };
 
