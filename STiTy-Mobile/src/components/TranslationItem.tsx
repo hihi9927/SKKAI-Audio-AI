@@ -59,7 +59,17 @@ export const TranslationItem: React.FC<TranslationItemProps> = ({
 
   const speakText = (text: string, lang: string) => {
     Speech.stop();
-    Speech.speak(text, { language: toBCP47(lang), rate: 1.6 });
+    const bcp = toBCP47(lang);
+    Speech.getAvailableVoicesAsync().then(voices => {
+      const voiceId = (
+        voices.find(v => v.language === bcp && v.identifier.toLowerCase().includes('google')) ??
+        voices.find(v => v.language.startsWith(lang) && v.identifier.toLowerCase().includes('google')) ??
+        voices.find(v => v.language === bcp)
+      )?.identifier;
+      Speech.speak(text, { language: bcp, ...(voiceId ? { voice: voiceId } : {}), rate: 1.6 });
+    }).catch(() => {
+      Speech.speak(text, { language: bcp, rate: 1.6 });
+    });
   };
 
   return (
