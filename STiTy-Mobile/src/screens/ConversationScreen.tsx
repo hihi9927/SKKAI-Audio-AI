@@ -106,6 +106,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
 
   const ttsQueueRef = useRef<{ text: string; lang: string }[]>([]);
   const isSpeakingRef = useRef(false);
+  const ttsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const processNextTTS = () => {
     if (ttsQueueRef.current.length === 0) {
@@ -115,15 +116,35 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     isSpeakingRef.current = true;
     const next = ttsQueueRef.current.shift()!;
     const ttsStart = new Date().toISOString();
+
+    // Samsung TTS 등 일부 엔진이 onDone/onError를 호출하지 않는 경우 대비.
+    // 예상 재생 시간(글자 수 × 60ms, 최소 3초) 후 강제로 다음 항목 진행.
+    const estimatedMs = Math.max(3000, next.text.length * 60);
+    if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);
+    ttsTimeoutRef.current = setTimeout(() => {
+      if (isSpeakingRef.current) {
+        isSpeakingRef.current = false;
+        processNextTTS();
+      }
+    }, estimatedMs);
+
     Speech.speak(next.text, {
       language: next.lang,
       rate: 1.3,
       onDone: () => {
+        if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);
         sendMessageRef.current({ type: 'tts_log', text: next.text, lang: next.lang, start: ttsStart, end: new Date().toISOString() });
         processNextTTS();
       },
-      onError: processNextTTS,
-      onStopped: () => { isSpeakingRef.current = false; },
+      onError: () => {
+        if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);
+        processNextTTS();
+      },
+      onStopped: () => {
+        if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);
+        isSpeakingRef.current = false;
+        processNextTTS();
+      },
     });
   };
 
@@ -237,6 +258,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
       disconnect();
       ttsQueueRef.current = [];
       isSpeakingRef.current = false;
+      if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);
       Speech.stop();
     };
   }, []);
@@ -308,6 +330,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
             disconnect();
             ttsQueueRef.current = [];
             isSpeakingRef.current = false;
+            if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);
             setTranscriptions([]);
             setDisplayText(null);
             navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
@@ -361,6 +384,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
           setCurrentMode(next.id);
           ttsQueueRef.current = [];
           isSpeakingRef.current = false;
+          if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);
           Speech.stop();
         }}
       >
