@@ -51,8 +51,7 @@ export const TranslationItem: React.FC<TranslationItemProps> = ({
   const toBCP47 = (code: string): string => {
     const map: Record<string, string> = {
       ko: 'ko-KR', en: 'en-US', ja: 'ja-JP', zh: 'zh-CN',
-      id: 'id-ID', vi: 'vi-VN', th: 'th-TH',
-      es: 'es-ES', fr: 'fr-FR', de: 'de-DE',
+      id: 'id-ID', vi: 'vi-VN', th: 'th-TH', es: 'es-ES', fr: 'fr-FR', de: 'de-DE',
     };
     return map[code] ?? code;
   };
@@ -61,12 +60,10 @@ export const TranslationItem: React.FC<TranslationItemProps> = ({
     Speech.stop();
     const bcp = toBCP47(lang);
     Speech.getAvailableVoicesAsync().then(voices => {
-      const voiceId = (
-        voices.find(v => v.language === bcp && v.identifier.toLowerCase().includes('google')) ??
-        voices.find(v => v.language.startsWith(lang) && v.identifier.toLowerCase().includes('google')) ??
-        voices.find(v => v.language === bcp)
-      )?.identifier;
-      Speech.speak(text, { language: bcp, ...(voiceId ? { voice: voiceId } : {}), rate: 1.6 });
+      const match =
+        voices.find(v => v.language === bcp) ??
+        voices.find(v => v.language.startsWith(lang));
+      Speech.speak(text, { language: bcp, ...(match ? { voice: match.identifier } : {}), rate: 1.6 });
     }).catch(() => {
       Speech.speak(text, { language: bcp, rate: 1.6 });
     });

@@ -107,37 +107,44 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
   const ttsQueueRef = useRef<{ text: string; lang: string }[]>([]);
   const isSpeakingRef = useRef(false);
   const ttsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // 언어코드 → voice identifier 캐시
-  const voiceCacheRef = useRef<Record<string, string | undefined>>({});
 
-  const toBCP47 = (code: string): string => {
-    const map: Record<string, string> = {
-      ko: 'ko-KR', en: 'en-US', ja: 'ja-JP', zh: 'zh-CN',
-      id: 'id-ID', vi: 'vi-VN', th: 'th-TH',
-      es: 'es-ES', fr: 'fr-FR', de: 'de-DE',
-    };
-    return map[code] ?? code;
-  };
+  // 컴포넌트 마운트 시 한 번만 voice 목록 조회해 캐시.
+  // Samsung 기기는 기본 엔진이 Samsung TTS여서 language만 넘기면 언어 무관 영어로 발화함.
+  // getAvailableVoicesAsync()는 Samsung TTS + Google TTS 음성을 모두 반환하므로
+  // 각 언어에 맞는 identifier를 직접 지정해 올바른 음성 강제.
+  const voiceCacheRef = useRef<Record<string, string>>({});
+  const voicesCachedRef = useRef(false);
 
-  // mode-2 진입 시 TTS 엔진 사전 초기화 + voice 캐시.
-  // Speech.stop() → TTS 엔진 바인딩 강제 실행 (첫 speak 무음 방지).
-  // getAvailableVoicesAsync() 결과에서 각 언어의 voice identifier를 캐시해
-  // speak 시 직접 지정 → Samsung 기기에서 엉뚱한 언어 fallback 방지.
-  // "google" 필터 없이 언어가 맞는 첫 번째 voice 사용 (identifier 형식이 기기마다 다름).
-  useEffect(() => {
-    if (!isTTSEnabled) return;
-    Speech.stop();
+  const cacheVoices = () => {
+    if (voicesCachedRef.current) return;
     Speech.getAvailableVoicesAsync().then(voices => {
-      const langCodes = ['ko', 'en', 'ja', 'zh', 'id', 'vi', 'th', 'es', 'fr', 'de'];
-      langCodes.forEach(code => {
-        const bcp = toBCP47(code);
+      if (voices.length === 0) return;
+      voicesCachedRef.current = true;
+      const langMap: Record<string, string> = {
+        ko: 'ko-KR', en: 'en-US', ja: 'ja-JP', zh: 'zh-CN',
+        id: 'id-ID', vi: 'vi-VN', th: 'th-TH', es: 'es-ES', fr: 'fr-FR', de: 'de-DE',
+      };
+      Object.entries(langMap).forEach(([code, bcp]) => {
         const match =
           voices.find(v => v.language === bcp) ??
           voices.find(v => v.language.startsWith(code));
         if (match) voiceCacheRef.current[code] = match.identifier;
       });
     }).catch(() => {});
+  };
+
+  // mode-2 진입 시 voice 캐시 준비
+  useEffect(() => {
+    if (isTTSEnabled) cacheVoices();
   }, [isTTSEnabled]);
+
+  const toBCP47 = (code: string): string => {
+    const map: Record<string, string> = {
+      ko: 'ko-KR', en: 'en-US', ja: 'ja-JP', zh: 'zh-CN',
+      id: 'id-ID', vi: 'vi-VN', th: 'th-TH', es: 'es-ES', fr: 'fr-FR', de: 'de-DE',
+    };
+    return map[code] ?? code;
+  };
 
   const processNextTTS = () => {
     if (ttsQueueRef.current.length === 0) {
@@ -148,8 +155,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     const next = ttsQueueRef.current.shift()!;
     const ttsStart = new Date().toISOString();
 
-    // Samsung TTS 등 일부 엔진이 onDone/onError를 호출하지 않는 경우 대비.
-    // 예상 재생 시간(글자 수 × 60ms, 최소 3초) 후 강제로 다음 항목 진행.
+    // 일부 TTS 엔진이 onDone/onError를 호출 안 할 경우 큐 데드락 방지용 타임아웃
     const estimatedMs = Math.max(3000, next.text.length * 60);
     if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);
     ttsTimeoutRef.current = setTimeout(() => {
