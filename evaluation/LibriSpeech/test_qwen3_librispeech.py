@@ -377,6 +377,7 @@ def summarize_segment_metrics(segment_metrics):
         'num_segments': len(segment_metrics),
         'avg_server_fcl_sec': mean(_vals('server_fcl_sec')) if _vals('server_fcl_sec') else None,
         'avg_translation_latency_sec': mean(_vals('translation_latency_sec')) if _vals('translation_latency_sec') else None,
+        'avg_asr_inference_sec': mean(_vals('asr_inference_sec')) if _vals('asr_inference_sec') else None,
     }
     return summary
 
@@ -471,6 +472,7 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
                         'server_translate_started_elapsed_sec': data.get('translate_started_elapsed_sec'),
                         'server_translate_done_elapsed_sec': data.get('translate_done_elapsed_sec'),
                         'translation_latency_sec': data.get('translation_latency_sec'),
+                        'asr_inference_sec': data.get('asr_inference_sec'),
                         'server_fcl_sec': data.get('fcl_sec'),
                         'final_payload_wall_utc': data.get('final_payload_wall_utc'),
                         'client_final_received_elapsed_sec': receive_elapsed_sec,
@@ -508,6 +510,7 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
                 'server_translate_started_elapsed_sec': None,
                 'server_translate_done_elapsed_sec': None,
                 'translation_latency_sec': None,
+                'asr_inference_sec': None,
                 'server_fcl_sec': None,
                 'final_payload_wall_utc': None,
                 'client_final_received_elapsed_sec': None,
@@ -660,6 +663,7 @@ def build_summary_payload(results, policy):
         model_runtime = [r['model_runtime'] for r in rows if r.get('model_runtime') is not None]
         speaker_fcl = _collect_segment_metric('server_fcl_sec', rows)
         speaker_translation = _collect_segment_metric('translation_latency_sec', rows)
+        speaker_asr = _collect_segment_metric('asr_inference_sec', rows)
         folder_stats[speaker_id] = {
             'num_files': len(rows),
             'wer': folder_wers.get(speaker_id),
@@ -667,12 +671,14 @@ def build_summary_payload(results, policy):
             'model_runtime': mean(model_runtime) if model_runtime else None,
             'avg_server_fcl_sec': mean(speaker_fcl) if speaker_fcl else None,
             'avg_translation_latency_sec': mean(speaker_translation) if speaker_translation else None,
+            'avg_asr_inference_sec': mean(speaker_asr) if speaker_asr else None,
         }
 
     all_lat = [r['first_token_latency'] for r in results if r['first_token_latency'] is not None]
     all_model_runtime = [r['model_runtime'] for r in results if r.get('model_runtime') is not None]
     all_server_fcl = _collect_segment_metric('server_fcl_sec', results)
     all_translation = _collect_segment_metric('translation_latency_sec', results)
+    all_asr = _collect_segment_metric('asr_inference_sec', results)
 
     return {
         'timestamp': datetime.now().isoformat(),
@@ -684,6 +690,7 @@ def build_summary_payload(results, policy):
             'model_runtime': mean(all_model_runtime) if all_model_runtime else None,
             'avg_server_fcl_sec': mean(all_server_fcl) if all_server_fcl else None,
             'avg_translation_latency_sec': mean(all_translation) if all_translation else None,
+            'avg_asr_inference_sec': mean(all_asr) if all_asr else None,
         },
         'folders': folder_stats,
     }

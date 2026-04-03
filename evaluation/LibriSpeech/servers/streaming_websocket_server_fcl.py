@@ -63,6 +63,7 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         # better audio_end_sec estimate for seg commits than current_time at
         # detection (which includes look-ahead audio needed for punctuation).
         self._partial_snapshots: list[tuple[float, str]] = []
+        self._slot_asr_sec: dict[str, float] = {}
 
     def init_streaming_state(self):
         super().init_streaming_state()
@@ -72,9 +73,22 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         self.pending_audio_end_sec = None
         self._effective_audio_end_sec = None
         self._partial_snapshots = []
+        self._slot_asr_sec = {}
 
     def _stream_elapsed_sec(self) -> float:
         return time.perf_counter() - self.stream_start_perf
+
+    async def _asr_streaming_transcribe(self, chunk, slot_key=None):
+        key = slot_key if slot_key is not None else self.active_slot
+        t0 = time.perf_counter()
+        await super()._asr_streaming_transcribe(chunk, slot_key)
+        self._slot_asr_sec[key] = self._slot_asr_sec.get(key, 0.0) + (time.perf_counter() - t0)
+
+    async def _asr_finish_streaming(self, slot_key=None):
+        key = slot_key if slot_key is not None else self.active_slot
+        t0 = time.perf_counter()
+        await super()._asr_finish_streaming(slot_key)
+        self._slot_asr_sec[key] = self._slot_asr_sec.get(key, 0.0) + (time.perf_counter() - t0)
 
     async def _translate_with_metadata(
         self,
@@ -179,7 +193,7 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
     async def _emit_final_payload(
         self,
         *,
-        slot_key: str,  # noqa: ARG002
+        slot_key: str,
         original: str,
         translation: str,
         language: str,
@@ -188,6 +202,7 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         extra: Optional[dict] = None,
     ) -> None:
         timing = extra or {}
+        timing["asr_inference_sec"] = self._slot_asr_sec.pop(slot_key, 0.0)
         if self._effective_audio_end_sec is not None:
             audio_end_sec = self._effective_audio_end_sec
             self._effective_audio_end_sec = None
