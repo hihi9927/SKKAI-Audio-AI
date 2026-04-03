@@ -108,6 +108,17 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
   const isSpeakingRef = useRef(false);
   const ttsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Samsung TTS 등 일부 엔진은 'ko' 같은 짧은 코드를 인식 못 해 silent fail함.
+  // BCP-47 full tag로 변환해 호환성 확보.
+  const toBCP47 = (code: string): string => {
+    const map: Record<string, string> = {
+      ko: 'ko-KR', en: 'en-US', ja: 'ja-JP', zh: 'zh-CN',
+      id: 'id-ID', vi: 'vi-VN', th: 'th-TH',
+      es: 'es-ES', fr: 'fr-FR', de: 'de-DE',
+    };
+    return map[code] ?? code;
+  };
+
   const processNextTTS = () => {
     if (ttsQueueRef.current.length === 0) {
       isSpeakingRef.current = false;
@@ -129,7 +140,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     }, estimatedMs);
 
     Speech.speak(next.text, {
-      language: next.lang,
+      language: toBCP47(next.lang),
       rate: 1.3,
       onDone: () => {
         if (ttsTimeoutRef.current) clearTimeout(ttsTimeoutRef.current);

@@ -48,9 +48,18 @@ export const TranslationItem: React.FC<TranslationItemProps> = ({
     }
   };
 
+  const toBCP47 = (code: string): string => {
+    const map: Record<string, string> = {
+      ko: 'ko-KR', en: 'en-US', ja: 'ja-JP', zh: 'zh-CN',
+      id: 'id-ID', vi: 'vi-VN', th: 'th-TH',
+      es: 'es-ES', fr: 'fr-FR', de: 'de-DE',
+    };
+    return map[code] ?? code;
+  };
+
   const speakText = (text: string, lang: string) => {
     Speech.stop();
-    Speech.speak(text, { language: lang, rate: 1.6 });
+    Speech.speak(text, { language: toBCP47(lang), rate: 1.6 });
   };
 
   return (
