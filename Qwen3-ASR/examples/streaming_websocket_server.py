@@ -552,13 +552,12 @@ class Qwen3ASRStreamingHandler:
         slot["last_text_lang"] = current_lang
 
         if emit_partial:
-            uncommitted_partial = re.sub(r"<SEG>|<asr_text>", "", current_text[slot["committed_len"]:]).strip()
             await self.send_message(
                 "partial",
-                original=uncommitted_partial,
+                original=current_text.replace("<SEG>", ""),
                 last_translation="",
             )
-            self.log.info(f"[partial] slot={slot_key} text={uncommitted_partial[:80]}...")
+            self.log.info(f"[partial] slot={slot_key} text={current_text[:80]}...")
 
         # 문장 단위 commit
         uncommitted = current_text[slot["committed_len"]:]
@@ -566,25 +565,24 @@ class Qwen3ASRStreamingHandler:
         remaining = uncommitted
 
         while True:
-            match = re.search(r"(?:[.?!\u3002\uff1f\uff01]\s+|<SEG>|<asr_text>)", remaining)
+            match = re.search(r"(?:[.?!\u3002\uff1f\uff01]\s+|<SEG>)", remaining)
             if not match:
                 break
             after = remaining[match.end():]
             if after.strip():
                 # 커서 추적을 위해 raw sentence(경계 포함) 사용
                 sentence = remaining[:match.end()].strip()
-                if re.sub(r"<SEG>|<asr_text>", "", sentence).strip():
-                    is_seg = match.group(0) in ("<SEG>", "<asr_text>")
-                    sentences_to_commit.append((sentence, is_seg))
+                if sentence.replace("<SEG>", "").strip():
+                    sentences_to_commit.append(sentence)
                 remaining = after
             else:
                 break
 
         if sentences_to_commit:
             translated_payloads = []
-            for sentence_raw, is_seg in sentences_to_commit:
-                # <SEG>/<asr_text>는 사용자 출력/번역에서 제거
-                sentence_display = re.sub(r"<SEG>|<asr_text>", "", sentence_raw).strip()
+            for sentence_raw in sentences_to_commit:
+                # <SEG>는 사용자 출력/번역에서 제거
+                sentence_display = sentence_raw.replace("<SEG>", "").strip()
                 translation, detected_lang, extra = await self._translate(
                     sentence_display, self.client_target_lang, self.current_time
                 )
@@ -609,7 +607,6 @@ class Qwen3ASRStreamingHandler:
                     "translation": translation,
                     "language": final_lang,
                     "extra": extra,
-                    "is_seg": is_seg,
                 })
 
             ready_to_emit = []
@@ -645,43 +642,10 @@ class Qwen3ASRStreamingHandler:
                     audio_end_sec=self.current_time,
                     extra=payload.get("extra"),
                 )
-                log_tag = "[final-sentence-seg]" if payload.get("is_seg") else "[final-sentence]"
                 self.log.info(
-                    f"{log_tag} slot={slot_key} lang={payload['language']} "
+                    f"[final-sentence] slot={slot_key} lang={payload['language']} "
                     f"text={payload['original']}"
                 )
-
-            # sentence flush 후 slot 전환 및 이전 slot 초기화 (audio_accum 리셋)
-            if ready_to_emit and slot_key == self.active_slot:
-                old_active = self.active_slot
-                self.active_slot = self.standby_slot
-                self.standby_slot = old_active
-
-                # old slot의 uncommitted 구간 오디오를 new slot으로 이전
-                # (문장 경계 이후 오디오 소실 방지)
-                old_slot_data = self.stream_slots[self.standby_slot]
-                old_audio = old_slot_data["state"].audio_accum
-                old_text = old_slot_data["state"].text or ""
-                committed_text = old_slot_data["committed_prefix"] or ""
-                if old_audio.shape[0] > 0 and old_text:
-                    committed_ratio = min(len(committed_text) / max(len(old_text), 1), 1.0)
-                    split_idx = int(committed_ratio * old_audio.shape[0])
-                    carry_audio = old_audio[split_idx:]
-                    MAX_CARRY = 3 * SAMPLING_RATE  # 최대 3초
-                    if carry_audio.shape[0] > MAX_CARRY:
-                        carry_audio = carry_audio[-MAX_CARRY:]
-                    if carry_audio.shape[0] > 0:
-                        self.stream_slots[self.active_slot]["state"].audio_accum = carry_audio.copy()
-                        self.log.info(
-                            f"[slot-switch] carry-over {carry_audio.shape[0]/SAMPLING_RATE:.2f}s "
-                            f"audio → new_active={self.active_slot}"
-                        )
-
-                self.log.info(
-                    f"[slot-switch] old_active={old_active} new_active={self.active_slot} "
-                    f"new_standby={self.standby_slot}"
-                )
-                self._reset_stream_slot(self.standby_slot)
 
     def _run_vad_sync(self, chunk: np.ndarray, chunk_base_sample: int):
         """VAD 추론을 동기로 실행 (run_in_executor에서 호출).
@@ -1127,7 +1091,7 @@ def parse_args():
         description="Qwen3-ASR Streaming WebSocket Server"
     )
     parser.add_argument(
-        "--model", type=str, default="/home/ubuntu/models/Qwen3-ASR-1.7B",
+        "--model", type=str, default="Qwen/Qwen3-ASR-1.7B",
         help="Model path or name",
     )
     parser.add_argument(
