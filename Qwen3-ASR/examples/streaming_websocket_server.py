@@ -552,7 +552,7 @@ class Qwen3ASRStreamingHandler:
         slot["last_text_lang"] = current_lang
 
         if emit_partial:
-            uncommitted_partial = current_text[slot["committed_len"]:].replace("<SEG>", "").strip()
+            uncommitted_partial = re.sub(r"<SEG>|<asr_text>", "", current_text[slot["committed_len"]:]).strip()
             await self.send_message(
                 "partial",
                 original=uncommitted_partial,
@@ -566,15 +566,15 @@ class Qwen3ASRStreamingHandler:
         remaining = uncommitted
 
         while True:
-            match = re.search(r"(?:[.?!\u3002\uff1f\uff01]\s+|<SEG>)", remaining)
+            match = re.search(r"(?:[.?!\u3002\uff1f\uff01]\s+|<SEG>|<asr_text>)", remaining)
             if not match:
                 break
             after = remaining[match.end():]
             if after.strip():
                 # 커서 추적을 위해 raw sentence(경계 포함) 사용
                 sentence = remaining[:match.end()].strip()
-                if sentence.replace("<SEG>", "").strip():
-                    is_seg = match.group(0) == "<SEG>"
+                if re.sub(r"<SEG>|<asr_text>", "", sentence).strip():
+                    is_seg = match.group(0) in ("<SEG>", "<asr_text>")
                     sentences_to_commit.append((sentence, is_seg))
                 remaining = after
             else:
@@ -583,8 +583,8 @@ class Qwen3ASRStreamingHandler:
         if sentences_to_commit:
             translated_payloads = []
             for sentence_raw, is_seg in sentences_to_commit:
-                # <SEG>는 사용자 출력/번역에서 제거
-                sentence_display = sentence_raw.replace("<SEG>", "").strip()
+                # <SEG>/<asr_text>는 사용자 출력/번역에서 제거
+                sentence_display = re.sub(r"<SEG>|<asr_text>", "", sentence_raw).strip()
                 translation, detected_lang, extra = await self._translate(
                     sentence_display, self.client_target_lang, self.current_time
                 )
