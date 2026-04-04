@@ -1127,7 +1127,7 @@ def parse_args():
         description="Qwen3-ASR Streaming WebSocket Server"
     )
     parser.add_argument(
-        "--model", type=str, default="/home/ubuntu/STiTy/Qwen3-ASR/finetuning/merged-ko",
+        "--model", type=str, default="/home/ubuntu/models/Qwen3-ASR-1.7B",
         help="Model path or name",
     )
     parser.add_argument(
