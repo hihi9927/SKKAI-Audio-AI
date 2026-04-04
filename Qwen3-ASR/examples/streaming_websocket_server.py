@@ -653,6 +653,27 @@ class Qwen3ASRStreamingHandler:
                 old_active = self.active_slot
                 self.active_slot = self.standby_slot
                 self.standby_slot = old_active
+
+                # old slot의 uncommitted 구간 오디오를 new slot으로 이전
+                # (문장 경계 이후 오디오 소실 방지)
+                old_slot_data = self.stream_slots[self.standby_slot]
+                old_audio = old_slot_data["state"].audio_accum
+                old_text = old_slot_data["state"].text or ""
+                committed_text = old_slot_data["committed_prefix"] or ""
+                if old_audio.shape[0] > 0 and old_text:
+                    committed_ratio = min(len(committed_text) / max(len(old_text), 1), 1.0)
+                    split_idx = int(committed_ratio * old_audio.shape[0])
+                    carry_audio = old_audio[split_idx:]
+                    MAX_CARRY = 3 * SAMPLING_RATE  # 최대 3초
+                    if carry_audio.shape[0] > MAX_CARRY:
+                        carry_audio = carry_audio[-MAX_CARRY:]
+                    if carry_audio.shape[0] > 0:
+                        self.stream_slots[self.active_slot]["state"].audio_accum = carry_audio.copy()
+                        self.log.info(
+                            f"[slot-switch] carry-over {carry_audio.shape[0]/SAMPLING_RATE:.2f}s "
+                            f"audio → new_active={self.active_slot}"
+                        )
+
                 self.log.info(
                     f"[slot-switch] old_active={old_active} new_active={self.active_slot} "
                     f"new_standby={self.standby_slot}"
