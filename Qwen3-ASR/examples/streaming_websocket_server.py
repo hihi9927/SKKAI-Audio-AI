@@ -552,12 +552,13 @@ class Qwen3ASRStreamingHandler:
         slot["last_text_lang"] = current_lang
 
         if emit_partial:
+            uncommitted_partial = current_text[slot["committed_len"]:].replace("<SEG>", "").strip()
             await self.send_message(
                 "partial",
-                original=current_text.replace("<SEG>", ""),
+                original=uncommitted_partial,
                 last_translation="",
             )
-            self.log.info(f"[partial] slot={slot_key} text={current_text[:80]}...")
+            self.log.info(f"[partial] slot={slot_key} text={uncommitted_partial[:80]}...")
 
         # 문장 단위 commit
         uncommitted = current_text[slot["committed_len"]:]
@@ -646,6 +647,17 @@ class Qwen3ASRStreamingHandler:
                     f"[final-sentence] slot={slot_key} lang={payload['language']} "
                     f"text={payload['original']}"
                 )
+
+            # sentence flush 후 slot 전환 및 이전 slot 초기화 (audio_accum 리셋)
+            if ready_to_emit and slot_key == self.active_slot:
+                old_active = self.active_slot
+                self.active_slot = self.standby_slot
+                self.standby_slot = old_active
+                self.log.info(
+                    f"[slot-switch] old_active={old_active} new_active={self.active_slot} "
+                    f"new_standby={self.standby_slot}"
+                )
+                self._reset_stream_slot(self.standby_slot)
 
     def _run_vad_sync(self, chunk: np.ndarray, chunk_base_sample: int):
         """VAD 추론을 동기로 실행 (run_in_executor에서 호출).
