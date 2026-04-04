@@ -574,14 +574,15 @@ class Qwen3ASRStreamingHandler:
                 # 커서 추적을 위해 raw sentence(경계 포함) 사용
                 sentence = remaining[:match.end()].strip()
                 if sentence.replace("<SEG>", "").strip():
-                    sentences_to_commit.append(sentence)
+                    is_seg = match.group(0) == "<SEG>"
+                    sentences_to_commit.append((sentence, is_seg))
                 remaining = after
             else:
                 break
 
         if sentences_to_commit:
             translated_payloads = []
-            for sentence_raw in sentences_to_commit:
+            for sentence_raw, is_seg in sentences_to_commit:
                 # <SEG>는 사용자 출력/번역에서 제거
                 sentence_display = sentence_raw.replace("<SEG>", "").strip()
                 translation, detected_lang, extra = await self._translate(
@@ -608,6 +609,7 @@ class Qwen3ASRStreamingHandler:
                     "translation": translation,
                     "language": final_lang,
                     "extra": extra,
+                    "is_seg": is_seg,
                 })
 
             ready_to_emit = []
@@ -643,8 +645,9 @@ class Qwen3ASRStreamingHandler:
                     audio_end_sec=self.current_time,
                     extra=payload.get("extra"),
                 )
+                log_tag = "[final-sentence-seg]" if payload.get("is_seg") else "[final-sentence]"
                 self.log.info(
-                    f"[final-sentence] slot={slot_key} lang={payload['language']} "
+                    f"{log_tag} slot={slot_key} lang={payload['language']} "
                     f"text={payload['original']}"
                 )
 
