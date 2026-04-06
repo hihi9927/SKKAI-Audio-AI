@@ -374,7 +374,32 @@ class FCLStreamingServer(base_server.Qwen3ASRStreamingServer):
 
 
 def main():
+    import argparse as _argparse
+    base_parser = base_server.parse_args.__wrapped__ if hasattr(base_server.parse_args, '__wrapped__') else None
+
+    # base_server.parse_args()를 먼저 처리하되, --log-file 추가
+    # base_server 파서를 직접 재구성하지 않고 known_args 방식으로 확장
+    extra_parser = _argparse.ArgumentParser(add_help=False)
+    extra_parser.add_argument(
+        "--log-file",
+        type=str,
+        default=None,
+        help="서버 로그를 저장할 파일 경로 (예: results/fcl/fcl_server_log_v5/server.log)",
+    )
+    extra_args, remaining = extra_parser.parse_known_args()
+
+    import sys as _sys
+    _sys.argv = [_sys.argv[0]] + remaining
     args = base_server.parse_args()
+
+    if extra_args.log_file:
+        log_path = Path(extra_args.log_file)
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        file_handler = logging.FileHandler(log_path, encoding="utf-8")
+        file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(name)s - %(message)s"))
+        logging.getLogger().addHandler(file_handler)
+        logger.info("Server log file: %s", log_path.resolve())
+
     config = base_server.StreamingConfig(
         model_path=args.model,
         gpu_memory_utilization=args.gpu_memory_utilization,
