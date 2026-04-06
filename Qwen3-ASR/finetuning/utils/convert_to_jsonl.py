@@ -4,12 +4,12 @@ import os
 
 PRESETS = {
     "Korean": {
-        "input":     "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/evaluation/KsponSpeech/transcribe/eval_clean_1000.json",
+        "input":     "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/evaluation/KsponSpeech/results/eval_clean_1000_seg.json",
         "audio_dir": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio",
         "output":    "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/test.jsonl",
     },
     "English": {
-        "input":     "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/evaluation/DailyTalk/transcribe/eval_dailytalk_1008.json",
+        "input":     "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/evaluation/DailyTalk/results/eval_dailytalk_1008_seg_en.json",
         "audio_dir": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/DailyTalk/audio",
         "output":    "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/DailyTalk/test.jsonl",
     },
@@ -41,7 +41,7 @@ with open(output_jsonl, "w", encoding="utf-8") as out:
         audio_path = os.path.join(audio_dir, entry["file"] + ".wav")
         line = {
             "audio": audio_path,
-            "text": f"language {args.language}<asr_text>{entry['text']}"
+            "text": f"language {args.language}<asr_text>{entry['seg_text']}"
         }
         out.write(json.dumps(line, ensure_ascii=False) + "\n")
 

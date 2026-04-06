@@ -308,6 +308,26 @@ class MakeEveryCheckpointInferableCallback(TrainerCallback):
         copy_required_hf_files_for_qwen_asr(self.base_model_path, ckpt_dir)
         # 수정된 tokenizer(<SEG> 포함)로 덮어쓰기
         self._tokenizer.save_pretrained(ckpt_dir)
+
+        # SEG 토큰 임베딩 저장 (LoRA adapter에 포함되지 않으므로 별도 저장)
+        model = kwargs.get("model")
+        if model is not None:
+            seg_id = self._tokenizer.convert_tokens_to_ids("<SEG>")
+
+            emb = model.get_input_embeddings()
+            torch.save(emb.weight[seg_id].detach().cpu(), os.path.join(ckpt_dir, "seg_embedding.pt"))
+
+            lm_head = model.get_output_embeddings()
+            if lm_head is not None and lm_head.weight is not emb.weight:
+                torch.save(lm_head.weight[seg_id].detach().cpu(), os.path.join(ckpt_dir, "seg_lm_head.pt"))
+
+            # vocab_size 반영된 config.json 저장
+            base = model.base_model.model if hasattr(model, "base_model") else model
+            if hasattr(base, "thinker"):
+                base.thinker.config.save_pretrained(ckpt_dir)
+            elif hasattr(base, "config"):
+                base.config.save_pretrained(ckpt_dir)
+
         return control
 
 
@@ -318,7 +338,7 @@ def parse_args():
     p.add_argument("--model_path", type=str, default="./Qwen3-ASR-1.7B")
     p.add_argument("--train_file", type=str, default="./data/KSponSpeech/train_split.jsonl")
     p.add_argument("--eval_file", type=str, default="./data/KSponSpeech/val_split.jsonl")
-    p.add_argument("--output_dir", type=str, default="./finetuning-out-ko")
+    p.add_argument("--output_dir", type=str, default="./finetuning-out-ko-retry")
 
     # Audio
     p.add_argument("--sr", type=int, default=16000)
@@ -371,12 +391,13 @@ def main():
     model = asr_wrapper.model
     processor = asr_wrapper.processor
 
-    # <SEG>를 special token으로 등록
-    seg_added = False
+    # <SEG>를 special token으로 등록 (resume 시에도 처리)
     if "<SEG>" not in processor.tokenizer.get_vocab():
         processor.tokenizer.add_special_tokens({"additional_special_tokens": ["<SEG>"]})
+    # vocab 크기 불일치 시 resize (최초 학습 및 resume 모두)
+    if model.thinker.get_input_embeddings().weight.shape[0] != len(processor.tokenizer):
         model.thinker.resize_token_embeddings(len(processor.tokenizer))
-        seg_added = True
+    seg_id = processor.tokenizer.convert_tokens_to_ids("<SEG>")
 
     if args_cli.use_lora:
         lora_config = LoraConfig(
@@ -388,24 +409,21 @@ def main():
         )
         model = get_peft_model(model, lora_config)
 
-    # PEFT가 freeze한 이후에 unfreeze해야 적용됨
-    if seg_added:
-        seg_id = processor.tokenizer.convert_tokens_to_ids("<SEG>")
+    # PEFT가 freeze한 이후 SEG 임베딩 unfreeze + gradient hook (resume 포함 항상 등록)
+    def _make_seg_only_hook(sid):
+        def _hook(grad):
+            mask = torch.zeros_like(grad)
+            mask[sid] = 1.0
+            return grad * mask
+        return _hook
 
-        def _make_seg_only_hook(sid):
-            def _hook(grad):
-                mask = torch.zeros_like(grad)
-                mask[sid] = 1.0
-                return grad * mask
-            return _hook
+    emb = model.thinker.get_input_embeddings()
+    emb.weight.requires_grad_(True)
+    emb.weight.register_hook(_make_seg_only_hook(seg_id))
 
-        emb = model.thinker.get_input_embeddings()
-        emb.weight.requires_grad_(True)
-        emb.weight.register_hook(_make_seg_only_hook(seg_id))
-
-        lm_head = model.thinker.get_output_embeddings()
-        lm_head.weight.requires_grad_(True)
-        lm_head.weight.register_hook(_make_seg_only_hook(seg_id))
+    lm_head = model.thinker.get_output_embeddings()
+    lm_head.weight.requires_grad_(True)
+    lm_head.weight.register_hook(_make_seg_only_hook(seg_id))
 
     model.print_trainable_parameters()
 
