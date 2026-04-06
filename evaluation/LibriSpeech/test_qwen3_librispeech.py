@@ -382,7 +382,7 @@ def summarize_segment_metrics(segment_metrics):
     return summary
 
 
-async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_ms=200, target_lang='ko'):
+async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_ms=200, target_lang='ko', trailing_silence_ms=1000):
     processing_start = time.perf_counter()
 
     await ws.send(json.dumps({'type': 'start', 'lang': 'auto', 'targetLang': target_lang}))
@@ -415,6 +415,21 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
                     await asyncio.sleep(min(remaining, 0.02))
 
             await ws.send(chunk.tobytes())
+
+        # Append trailing silence so VAD can fire naturally before finish
+        if trailing_silence_ms > 0:
+            silence = np.zeros(int(SAMPLING_RATE * trailing_silence_ms / 1000), dtype=np.int16)
+            silence_origin = time.perf_counter()
+            for i in range(0, len(silence), chunk_size):
+                chunk = silence[i:i + chunk_size]
+                if send_interval_sec > 0:
+                    target_send_at = silence_origin + (i + len(chunk)) / SAMPLING_RATE
+                    while True:
+                        remaining = target_send_at - time.perf_counter()
+                        if remaining <= 0:
+                            break
+                        await asyncio.sleep(min(remaining, 0.02))
+                await ws.send(chunk.tobytes())
 
         await ws.send(json.dumps({'type': 'finish'}))
         send_done.set()
@@ -541,6 +556,7 @@ async def process_batch(
     show_commit_slash=True,
     resume=True,
     target_lang='ko',
+    trailing_silence_ms=1000,
 ):
     if resume:
         processed_ids = load_processed_files(output_file, policy)
@@ -588,6 +604,7 @@ async def process_batch(
                     chunk_size_ms=chunk_size_ms,
                     send_interval_ms=send_interval_ms,
                     target_lang=target_lang,
+                    trailing_silence_ms=trailing_silence_ms,
                 )
         except Exception as e:
             logger.error('WebSocket processing failed for %s: %s', file_id, e)
@@ -794,6 +811,8 @@ def main():
                         help='Show commit boundaries as \"seg1 / seg2 /\" in logs')
     parser.add_argument('--fresh-start', action='store_true', default=False,
                         help='Ignore existing results and process all files from scratch')
+    parser.add_argument('--trailing-silence-ms', type=int, default=1000,
+                        help='Silence (ms) appended after each audio file so VAD fires before finish (default: 1000)')
 
     args = parser.parse_args()
     logger.setLevel(args.log_level)
@@ -851,6 +870,7 @@ def main():
                 show_commit_slash=args.show_commit_slash,
                 resume=not args.fresh_start,
                 target_lang=args.target_lang,
+                trailing_silence_ms=args.trailing_silence_ms,
             )
         )
         if args.calculate_wer and results:

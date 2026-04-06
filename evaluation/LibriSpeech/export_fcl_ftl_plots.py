@@ -36,7 +36,6 @@ import matplotlib.patches as mpatches
 import matplotlib.ticker as ticker
 import matplotlib.font_manager as fm
 import numpy as np
-import pandas as pd
 from tqdm import tqdm
 
 # ── 한글/CJK 폰트 자동 설정 ──────────────────────────────────────────────────
@@ -135,32 +134,6 @@ def find_audio(audio_path: str, audio_root: str | None) -> str | None:
                 return os.path.join(dirpath, filename)
     return None
 
-
-def build_df(results: list) -> pd.DataFrame:
-    rows = []
-    for r in results:
-        for seg in r.get("segment_metrics", []):
-            # partial_tail 등 타이밍 데이터 없는 세그먼트 제외
-            if seg.get("audio_start_sec") is None or seg.get("server_fcl_sec") is None:
-                continue
-            rows.append({
-                "file_id":        r["file_id"],
-                "speaker_id":     r["speaker_id"],
-                "file_duration":  r["duration"],
-                "file_ftl":       r["first_token_latency"],
-                "segment_id":     seg["segment_id"],
-                "commit_reason":  seg["commit_reason"],
-                "audio_start":    seg["audio_start_sec"],
-                "audio_end":      seg["audio_end_sec"],
-                "seg_duration":   seg["audio_end_sec"] - seg["audio_start_sec"],
-                "translate_started": seg["server_translate_started_elapsed_sec"],
-                "translate_done":    seg["server_translate_done_elapsed_sec"],
-                "server_fcl_sec":    seg["server_fcl_sec"],
-                "translation_latency_sec": seg["translation_latency_sec"],
-                "text":           seg.get("text", ""),
-                "translation":    seg.get("translation", ""),
-            })
-    return pd.DataFrame(rows)
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -335,148 +308,6 @@ def _truncate(s: str, n: int) -> str:
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# 집계 플롯
-# ──────────────────────────────────────────────────────────────────────────────
-
-def plot_aggregate(df: pd.DataFrame, overall: dict, out_dir: str) -> None:
-    out = Path(out_dir)
-
-    # ── 1. FCL 분포 (commit_reason별) ────────────────────────────────────────
-    fig, ax = plt.subplots(figsize=(9, 4))
-    bins = np.arange(0, df["server_fcl_sec"].quantile(0.995) + 0.1, 0.05)
-    for reason, color, alpha in [("vad", STYLE["commit_delay"], 0.75),
-                                  ("seg", STYLE["seg"], 0.65)]:
-        sub = df[df["commit_reason"] == reason]["server_fcl_sec"]
-        ax.hist(sub, bins=bins, color=color, alpha=alpha,
-                label=f"commit={reason}  (n={len(sub):,})", edgecolor="none")
-    avg = df["server_fcl_sec"].mean()
-    ax.axvline(avg, color="white", lw=1.2, ls="--")
-    ax.text(avg + 0.01, ax.get_ylim()[1] * 0.92,
-            f"mean {avg:.3f}s", color="white", fontsize=8.5)
-    ax.set_xlabel("server_fcl_sec (s)")
-    ax.set_ylabel("Segment count")
-    ax.set_title("FCL Distribution by commit_reason")
-    ax.legend()
-    ax.grid(True, lw=0.4)
-    fig.tight_layout()
-    fig.savefig(out / "aggregate_fcl_distribution.png", dpi=150, bbox_inches="tight",
-                facecolor=STYLE["bg"])
-    plt.close(fig)
-    print(f"  saved: aggregate_fcl_distribution.png")
-
-    # ── 2. FTL 분포 (per-file) ────────────────────────────────────────────────
-    ftl_df = df.drop_duplicates("file_id")["file_ftl"]
-    fig, ax = plt.subplots(figsize=(9, 4))
-    ax.hist(ftl_df, bins=40, color=STYLE["ftl"], alpha=0.8, edgecolor="none")
-    ax.axvline(ftl_df.mean(), color="white", lw=1.2, ls="--")
-    ax.text(ftl_df.mean() + 0.1, ax.get_ylim()[1] * 0.92,
-            f"mean {ftl_df.mean():.3f}s", color="white", fontsize=8.5)
-    ax.set_xlabel("first_token_latency (s)")
-    ax.set_ylabel("File count")
-    ax.set_title("FTL Distribution (per-file)")
-    ax.grid(True, lw=0.4)
-    fig.tight_layout()
-    fig.savefig(out / "aggregate_ftl_distribution.png", dpi=150, bbox_inches="tight",
-                facecolor=STYLE["bg"])
-    plt.close(fig)
-    print(f"  saved: aggregate_ftl_distribution.png")
-
-    # ── 3. FCL vs Segment Duration scatter ───────────────────────────────────
-    fig, ax = plt.subplots(figsize=(8, 5))
-    for reason, color in [("vad", STYLE["commit_delay"]), ("seg", STYLE["seg"])]:
-        sub = df[df["commit_reason"] == reason]
-        ax.scatter(sub["seg_duration"], sub["server_fcl_sec"],
-                   color=color, alpha=0.3, s=8, label=f"commit={reason}")
-    ax.set_xlabel("Segment duration (s)")
-    ax.set_ylabel("server_fcl_sec (s)")
-    ax.set_title("FCL vs Segment Duration")
-    ax.legend()
-    ax.grid(True, lw=0.4)
-    fig.tight_layout()
-    fig.savefig(out / "aggregate_fcl_vs_seg_duration.png", dpi=150, bbox_inches="tight",
-                facecolor=STYLE["bg"])
-    plt.close(fig)
-    print(f"  saved: aggregate_fcl_vs_seg_duration.png")
-
-    # ── 4. avg FCL vs FTL (per-file scatter) ─────────────────────────────────
-    file_df = (
-        df.groupby("file_id")
-        .agg(avg_fcl=("server_fcl_sec", "mean"),
-             ftl=("file_ftl", "first"),
-             duration=("file_duration", "first"))
-        .reset_index()
-    )
-    fig, ax = plt.subplots(figsize=(8, 5))
-    sc = ax.scatter(file_df["avg_fcl"], file_df["ftl"],
-                    c=file_df["duration"], cmap="viridis",
-                    alpha=0.6, s=12)
-    cbar = fig.colorbar(sc, ax=ax)
-    cbar.set_label("Audio Duration (s)", color=STYLE["fg"])
-    cbar.ax.yaxis.set_tick_params(color=STYLE["fg"])
-    plt.setp(cbar.ax.yaxis.get_ticklabels(), color=STYLE["fg"])
-    ax.set_xlabel("avg server_fcl_sec (s)")
-    ax.set_ylabel("first_token_latency (s)")
-    ax.set_title("File avg FCL vs FTL  (color = audio duration)")
-    ax.grid(True, lw=0.4)
-    fig.tight_layout()
-    fig.savefig(out / "aggregate_file_fcl_vs_ftl.png", dpi=150, bbox_inches="tight",
-                facecolor=STYLE["bg"])
-    plt.close(fig)
-    print(f"  saved: aggregate_file_fcl_vs_ftl.png")
-
-    # ── 5. Speaker별 avg FCL 바 차트 ─────────────────────────────────────────
-    spk_df = (
-        df.groupby("speaker_id")["server_fcl_sec"]
-        .mean()
-        .sort_values()
-        .reset_index()
-    )
-    fig, ax = plt.subplots(figsize=(14, 4))
-    colors = [STYLE["model"] if v > df["server_fcl_sec"].mean() else STYLE["speech"]
-              for v in spk_df["server_fcl_sec"]]
-    ax.bar(spk_df["speaker_id"], spk_df["server_fcl_sec"], color=colors, width=0.7)
-    ax.axhline(df["server_fcl_sec"].mean(), color="white", lw=1, ls="--",
-               label=f"overall mean {df['server_fcl_sec'].mean():.3f}s")
-    ax.set_xlabel("Speaker ID")
-    ax.set_ylabel("avg server_fcl_sec (s)")
-    ax.set_title("avg FCL by Speaker")
-    ax.tick_params(axis="x", rotation=90, labelsize=7)
-    ax.legend()
-    ax.grid(True, axis="y", lw=0.4)
-    fig.tight_layout()
-    fig.savefig(out / "aggregate_speaker_fcl.png", dpi=150, bbox_inches="tight",
-                facecolor=STYLE["bg"])
-    plt.close(fig)
-    print(f"  saved: aggregate_speaker_fcl.png")
-
-    # ── 6. FCL CDF ────────────────────────────────────────────────────────────
-    fig, ax = plt.subplots(figsize=(8, 4))
-    for reason, color in [("vad", STYLE["commit_delay"]), ("seg", STYLE["seg"]),
-                           ("all", STYLE["speech"])]:
-        sub = df[df["commit_reason"] == reason]["server_fcl_sec"] if reason != "all" \
-              else df["server_fcl_sec"]
-        x_sorted = np.sort(sub)
-        cdf = np.arange(1, len(x_sorted) + 1) / len(x_sorted)
-        lbl = f"commit={reason}" if reason != "all" else "all"
-        ax.plot(x_sorted, cdf * 100, color=color, lw=1.5, label=lbl)
-    for pct, ls in [(50, "--"), (90, ":"), (95, "-.")]:
-        q = df["server_fcl_sec"].quantile(pct / 100)
-        ax.axvline(q, color="white", lw=0.8, ls=ls, alpha=0.6)
-        ax.text(q + 0.01, pct - 3, f"P{pct}={q:.3f}s", fontsize=7.5, color="white")
-    ax.set_xlabel("server_fcl_sec (s)")
-    ax.set_ylabel("CDF (%)")
-    ax.set_title("FCL CDF (P50 / P90 / P95)")
-    ax.legend()
-    ax.grid(True, lw=0.4)
-    ax.set_ylim(0, 102)
-    fig.tight_layout()
-    fig.savefig(out / "aggregate_fcl_cdf.png", dpi=150, bbox_inches="tight",
-                facecolor=STYLE["bg"])
-    plt.close(fig)
-    print(f"  saved: aggregate_fcl_cdf.png")
-
-
-# ──────────────────────────────────────────────────────────────────────────────
 # CLI
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -493,10 +324,6 @@ def parse_args():
                    help="랜덤 N개 파일 샘플링 (--max-files와 배타적)")
     p.add_argument("--all-files", action="store_true",
                    help="전체 파일 per-file 플롯 생성 (느림)")
-    p.add_argument("--aggregate-only", action="store_true",
-                   help="집계 플롯만 생성 (per-file 생략)")
-    p.add_argument("--no-aggregate", action="store_true", default=True,
-                   help="집계 플롯 생략 (기본값: True)")
     p.add_argument("--seed", type=int, default=42, help="샘플링 seed")
     return p.parse_args()
 
@@ -504,26 +331,12 @@ def parse_args():
 def main():
     args = parse_args()
 
-    # 출력 디렉터리
     out_dir = Path(args.out_dir)
-    per_file_dir = out_dir
-    if not args.aggregate_only:
-        per_file_dir.mkdir(parents=True, exist_ok=True)
     out_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"JSON 로드 중: {args.json}")
-    results, overall = load_json(args.json)
+    results, _ = load_json(args.json)
     print(f"  → {len(results):,}개 파일")
-
-    # ── 집계 플롯 ─────────────────────────────────────────────────────────────
-    if not args.no_aggregate and not args.file_id:
-        print("\n[집계 플롯 생성]")
-        df = build_df(results)
-        plot_aggregate(df, overall, str(out_dir))
-
-    if args.aggregate_only:
-        print("\n완료!")
-        return
 
     # ── Per-file 플롯 ─────────────────────────────────────────────────────────
     if args.file_id:
@@ -539,14 +352,12 @@ def main():
     elif args.max_files:
         targets = results[: args.max_files]
     else:
-        # 기본: 집계 플롯만 (per-file은 명시적 옵션 필요)
-        print("\n--max-files, --sample, --all-files, --file-id 중 하나를 지정하면 per-file 플롯도 생성됩니다.")
-        print("완료!")
-        return
+        print("\n--max-files, --sample, --all-files, --file-id 중 하나를 지정하세요.")
+        sys.exit(1)
 
-    print(f"\n[Per-file 플롯 생성]  대상 {len(targets)}개 → {per_file_dir}/")
+    print(f"\n[Per-file 플롯 생성]  대상 {len(targets)}개 → {out_dir}/")
     for record in tqdm(targets, unit="file"):
-        out_path = per_file_dir / f"{record['file_id']}.png"
+        out_path = out_dir / f"{record['file_id']}.png"
         try:
             plot_file(record, args.audio_root, str(out_path))
         except Exception as e:
