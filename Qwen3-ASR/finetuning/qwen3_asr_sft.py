@@ -15,6 +15,7 @@
 # limitations under the License.
 # trainable params: 70,254,592 || all params: 2,108,307,072 || trainable%: 3.3323
 import argparse
+import json
 import os
 import re
 import shutil
@@ -314,19 +315,27 @@ class MakeEveryCheckpointInferableCallback(TrainerCallback):
         if model is not None:
             seg_id = self._tokenizer.convert_tokens_to_ids("<SEG>")
 
-            emb = model.get_input_embeddings()
+            base = model.base_model.model if hasattr(model, "base_model") else model
+            thinker = base.thinker if hasattr(base, "thinker") else base
+            emb = thinker.get_input_embeddings()
             torch.save(emb.weight[seg_id].detach().cpu(), os.path.join(ckpt_dir, "seg_embedding.pt"))
 
-            lm_head = model.get_output_embeddings()
+            lm_head = thinker.get_output_embeddings()
             if lm_head is not None and lm_head.weight is not emb.weight:
                 torch.save(lm_head.weight[seg_id].detach().cpu(), os.path.join(ckpt_dir, "seg_lm_head.pt"))
 
-            # vocab_size 반영된 config.json 저장
-            base = model.base_model.model if hasattr(model, "base_model") else model
-            if hasattr(base, "thinker"):
-                base.thinker.config.save_pretrained(ckpt_dir)
-            elif hasattr(base, "config"):
-                base.config.save_pretrained(ckpt_dir)
+            # vocab_size를 config.json에 패치 (thinker config로 전체를 덮어쓰지 않도록 json 직접 수정)
+            config_path = os.path.join(ckpt_dir, "config.json")
+            if os.path.exists(config_path):
+                with open(config_path, "r") as f:
+                    cfg = json.load(f)
+                new_vocab_size = emb.weight.shape[0]
+                if "thinker_config" in cfg:
+                    cfg["thinker_config"]["vocab_size"] = new_vocab_size
+                else:
+                    cfg["vocab_size"] = new_vocab_size
+                with open(config_path, "w") as f:
+                    json.dump(cfg, f, indent=2, ensure_ascii=False)
 
         return control
 
