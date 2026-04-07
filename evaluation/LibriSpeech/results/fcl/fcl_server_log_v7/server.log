@@ -1,0 +1,1418 @@
+2026-04-07 02:27:54,466 - INFO - __main__ - Server log file: /home/ubuntu/STiTy/evaluation/LibriSpeech/results/fcl/fcl_server_log_v7/server.log
+2026-04-07 02:27:54,558 - INFO - examples.streaming_websocket_server - Silero VAD model loaded (server-level)
+2026-04-07 02:27:54,559 - INFO - examples.streaming_websocket_server - Loading model: Qwen/Qwen3-ASR-1.7B
+2026-04-07 02:29:01,178 - WARNING - examples.streaming_websocket_server - 이 vLLM 버전은 use_beam_search를 지원하지 않습니다. Greedy decoding으로 fallback합니다. (beam_size=2 무시)
+2026-04-07 02:29:01,178 - INFO - examples.streaming_websocket_server - Model loaded successfully
+2026-04-07 02:29:01,179 - INFO - examples.streaming_websocket_server - Starting WebSocket server on ws://0.0.0.0:8765
+2026-04-07 02:29:01,179 - INFO - examples.streaming_websocket_server - Warming up model...
+2026-04-07 02:29:11,734 - INFO - examples.streaming_websocket_server - Warmup complete
+2026-04-07 02:29:11,744 - INFO - websockets.server - server listening on 0.0.0.0:8765
+2026-04-07 02:29:11,744 - INFO - examples.streaming_websocket_server - Server listening on ws://0.0.0.0:8765
+2026-04-07 02:29:39,757 - INFO - websockets.server - connection open
+2026-04-07 02:29:39,757 - INFO - __main__ - Client connected (1)
+2026-04-07 02:29:39,830 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:29:39,831 - INFO - __main__ - New connection from ('127.0.0.1', 41700)
+2026-04-07 02:29:39,831 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:29:39,832 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:29:42,106 - INFO - __main__ - [PARTIAL] t=2.000s | There's iron, they say.
+2026-04-07 02:29:42,106 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=There's iron, they say....
+2026-04-07 02:29:43,841 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=62336
+2026-04-07 02:29:43,843 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=62336 target_audio_end_sec=3.896 processed=64000 active=A
+2026-04-07 02:29:43,843 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:29:43,843 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=3.896s → speech_end_sec=3.096s
+2026-04-07 02:29:44,241 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='There's iron, they say, in all our blood.' tl=ko -> detected=en translation='우리의 모든 혈액에는 철분이 들어있다고 합니다.'
+2026-04-07 02:29:44,241 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='우리의 모든 혈액에는 철분이 들어있다고 합니다.' original='There's iron, they say, in all our blood.'
+2026-04-07 02:29:44,241 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='There's iron, they say, in all our blood.' translation='우리의 모든 혈액에는 철분이 들어있다고 합니다.'
+2026-04-07 02:29:44,241 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 3.096] text='There's iron, they say, in all our blood.'
+2026-04-07 02:29:44,242 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:29:46,112 - INFO - __main__ - [PARTIAL] t=6.000s | And a grain or two, perhaps, is good.
+2026-04-07 02:29:46,112 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=B text=And a grain or two, perhaps, is good....
+2026-04-07 02:29:46,642 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=107648
+2026-04-07 02:29:46,644 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=107648 target_audio_end_sec=6.728 processed=108800 active=B
+2026-04-07 02:29:46,644 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=B new_active=A new_standby=B
+2026-04-07 02:29:46,644 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=6.728s → speech_end_sec=5.928s
+2026-04-07 02:29:46,947 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='And a grain or two, perhaps, is good.' tl=ko -> detected=en translation='그리고 아마도 한두 알이 좋을 것입니다.'
+2026-04-07 02:29:46,947 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=B reason=vad lang=en translation='그리고 아마도 한두 알이 좋을 것입니다.' original='And a grain or two, perhaps, is good.'
+2026-04-07 02:29:46,947 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=B lang=en text='And a grain or two, perhaps, is good.' translation='그리고 아마도 한두 알이 좋을 것입니다.'
+2026-04-07 02:29:46,948 - INFO - __main__ - [FINAL] seg=2 reason=vad audio=[3.096, 5.928] text='And a grain or two, perhaps, is good.'
+2026-04-07 02:29:46,948 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=B
+2026-04-07 02:29:48,865 - INFO - __main__ - [PARTIAL] t=8.800s | But his, he makes me harsh.
+2026-04-07 02:29:48,866 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=But his, he makes me harsh....
+2026-04-07 02:29:50,243 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=165760
+2026-04-07 02:29:50,244 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=165760 target_audio_end_sec=10.360 processed=166400 active=A
+2026-04-07 02:29:50,244 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:29:50,244 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=10.360s → speech_end_sec=9.560s
+2026-04-07 02:29:50,525 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='But his, he makes me harshly feel.' tl=ko -> detected=en translation='하지만 그 사람은 나를 가혹하게 느끼게 만듭니다.'
+2026-04-07 02:29:50,525 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='하지만 그 사람은 나를 가혹하게 느끼게 만듭니다.' original='But his, he makes me harshly feel.'
+2026-04-07 02:29:50,525 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='But his, he makes me harshly feel.' translation='하지만 그 사람은 나를 가혹하게 느끼게 만듭니다.'
+2026-04-07 02:29:50,525 - INFO - __main__ - [FINAL] seg=3 reason=vad audio=[5.928, 9.560] text='But his, he makes me harshly feel.'
+2026-04-07 02:29:50,526 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:29:52,467 - INFO - __main__ - [PARTIAL] t=12.400s | Has got a little too much of.
+2026-04-07 02:29:52,467 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=B text=Has got a little too much of....
+2026-04-07 02:29:53,640 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=218112
+2026-04-07 02:29:53,644 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=218112 target_audio_end_sec=13.632 processed=220800 active=B
+2026-04-07 02:29:53,644 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=B new_active=A new_standby=B
+2026-04-07 02:29:53,644 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=13.632s → speech_end_sec=12.832s
+2026-04-07 02:29:53,912 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='Has got a little too much of steel.' tl=ko -> detected=en translation='강철이 너무 많이 들어갔습니다.'
+2026-04-07 02:29:53,912 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=B reason=vad lang=en translation='강철이 너무 많이 들어갔습니다.' original='Has got a little too much of steel.'
+2026-04-07 02:29:53,912 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=B lang=en text='Has got a little too much of steel.' translation='강철이 너무 많이 들어갔습니다.'
+2026-04-07 02:29:53,912 - INFO - __main__ - [FINAL] seg=4 reason=vad audio=[9.560, 12.832] text='Has got a little too much of steel.'
+2026-04-07 02:29:53,913 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=B
+2026-04-07 02:29:55,442 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=247424
+2026-04-07 02:29:55,445 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=247424 target_audio_end_sec=15.464 processed=249600 active=A
+2026-04-07 02:29:55,445 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:29:55,445 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=15.464s → speech_end_sec=14.664s
+2026-04-07 02:29:55,661 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='Anon.' tl=ko -> detected=en translation='곧.'
+2026-04-07 02:29:55,662 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='곧.' original='Anon.'
+2026-04-07 02:29:55,662 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='Anon.' translation='곧.'
+2026-04-07 02:29:55,662 - INFO - __main__ - [FINAL] seg=5 reason=vad audio=[12.832, 14.664] text='Anon.'
+2026-04-07 02:29:55,662 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:29:55,845 - INFO - __main__ - Received finish command
+2026-04-07 02:29:55,949 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:30:00,670 - INFO - __main__ - Connection closed
+2026-04-07 02:30:00,670 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:30:00,690 - INFO - websockets.server - connection open
+2026-04-07 02:30:00,690 - INFO - __main__ - Client connected (1)
+2026-04-07 02:30:00,760 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:30:00,760 - INFO - __main__ - New connection from ('127.0.0.1', 33522)
+2026-04-07 02:30:00,760 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:30:00,761 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:30:03,023 - INFO - __main__ - [PARTIAL] t=2.000s | Personally, as you call it.
+2026-04-07 02:30:03,023 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Personally, as you call it....
+2026-04-07 02:30:04,956 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=65296
+2026-04-07 02:30:05,269 - INFO - __main__ - [PARTIAL] t=4.185s | Personally, as you call it, and all.
+2026-04-07 02:30:05,269 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Personally, as you call it, and all....
+2026-04-07 02:30:05,269 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=65296 target_audio_end_sec=4.081 processed=66960 active=A
+2026-04-07 02:30:05,269 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:30:05,269 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=4.081s → speech_end_sec=3.281s
+2026-04-07 02:30:05,495 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='Personally, as you call it, and all.' tl=ko -> detected=en translation='개인적으로, 당신이 부르는대로, 그게 전부입니다.'
+2026-04-07 02:30:05,495 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='개인적으로, 당신이 부르는대로, 그게 전부입니다.' original='Personally, as you call it, and all.'
+2026-04-07 02:30:05,495 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='Personally, as you call it, and all.' translation='개인적으로, 당신이 부르는대로, 그게 전부입니다.'
+2026-04-07 02:30:05,495 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 3.281] text='Personally, as you call it, and all.'
+2026-04-07 02:30:05,495 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:30:05,503 - INFO - __main__ - Received finish command
+2026-04-07 02:30:05,602 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:30:10,501 - INFO - __main__ - Connection closed
+2026-04-07 02:30:10,501 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:30:10,514 - INFO - websockets.server - connection open
+2026-04-07 02:30:10,515 - INFO - __main__ - Client connected (1)
+2026-04-07 02:30:10,584 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:30:10,584 - INFO - __main__ - New connection from ('127.0.0.1', 54928)
+2026-04-07 02:30:10,585 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:30:10,585 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:30:12,847 - INFO - __main__ - [PARTIAL] t=2.000s | What would you do, Papa?
+2026-04-07 02:30:12,848 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=What would you do, Papa?...
+2026-04-07 02:30:13,394 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=42112
+2026-04-07 02:30:13,397 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=42112 target_audio_end_sec=2.632 processed=44800 active=A
+2026-04-07 02:30:13,397 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:30:13,397 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=2.632s → speech_end_sec=1.832s
+2026-04-07 02:30:13,635 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='What would you do, Papa?' tl=ko -> detected=en translation='어떻게 하시겠습니까, 아빠?'
+2026-04-07 02:30:13,635 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='어떻게 하시겠습니까, 아빠?' original='What would you do, Papa?'
+2026-04-07 02:30:13,635 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='What would you do, Papa?' translation='어떻게 하시겠습니까, 아빠?'
+2026-04-07 02:30:13,635 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 1.832] text='What would you do, Papa?'
+2026-04-07 02:30:13,635 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:30:15,405 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=75808
+2026-04-07 02:30:15,655 - INFO - __main__ - [PARTIAL] t=4.810s | How would you set about it?
+2026-04-07 02:30:15,655 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=B text=How would you set about it?...
+2026-04-07 02:30:15,655 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=75808 target_audio_end_sec=4.738 processed=76960 active=B
+2026-04-07 02:30:15,656 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=B new_active=A new_standby=B
+2026-04-07 02:30:15,656 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=4.738s → speech_end_sec=3.938s
+2026-04-07 02:30:15,933 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='How would you set about it?' tl=ko -> detected=en translation='당신은 그것에 대해 어떻게 설정 하시겠습니까?'
+2026-04-07 02:30:15,934 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=B reason=vad lang=en translation='당신은 그것에 대해 어떻게 설정 하시겠습니까?' original='How would you set about it?'
+2026-04-07 02:30:15,934 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=B lang=en text='How would you set about it?' translation='당신은 그것에 대해 어떻게 설정 하시겠습니까?'
+2026-04-07 02:30:15,934 - INFO - __main__ - [FINAL] seg=2 reason=vad audio=[1.832, 3.938] text='How would you set about it?'
+2026-04-07 02:30:15,934 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=B
+2026-04-07 02:30:15,942 - INFO - __main__ - Received finish command
+2026-04-07 02:30:16,044 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:30:20,941 - INFO - __main__ - Connection closed
+2026-04-07 02:30:20,941 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:30:20,957 - INFO - websockets.server - connection open
+2026-04-07 02:30:20,958 - INFO - __main__ - Client connected (1)
+2026-04-07 02:30:21,030 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:30:21,030 - INFO - __main__ - New connection from ('127.0.0.1', 54118)
+2026-04-07 02:30:21,030 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:30:21,031 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:30:23,291 - INFO - __main__ - [PARTIAL] t=2.000s | In a case of attempted suicide.
+2026-04-07 02:30:23,291 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=In a case of attempted suicide....
+2026-04-07 02:30:25,411 - INFO - __main__ - [PARTIAL] t=4.000s | In a case of attempted suicide by poisoning, is it the duty?
+2026-04-07 02:30:25,412 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=In a case of attempted suicide by poisoning, is it the duty?...
+2026-04-07 02:30:27,297 - INFO - __main__ - [PARTIAL] t=6.000s | In a case of attempted suicide by poisoning, is it the duty of the doctor to inform the police?
+2026-04-07 02:30:27,298 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=In a case of attempted suicide by poisoning, is it the duty of the doctor to inf...
+2026-04-07 02:30:28,073 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=112352
+2026-04-07 02:30:28,073 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=112352 target_audio_end_sec=7.022 processed=112480 active=A
+2026-04-07 02:30:28,073 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:30:28,073 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=7.022s → speech_end_sec=6.222s
+2026-04-07 02:30:28,521 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='In a case of attempted suicide by poisoning, is it the duty of the doctor to inform the police?' tl=ko -> detected=en translation='중독으로 인한 자살 시도의 경우 경찰에 알리는 것이 의사의 의무입니까?'
+2026-04-07 02:30:28,521 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='중독으로 인한 자살 시도의 경우 경찰에 알리는 것이 의사의 의무입니까?' original='In a case of attempted suicide by poisoning, is it the duty of the doctor to inform the police?'
+2026-04-07 02:30:28,521 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='In a case of attempted suicide by poisoning, is it the duty of the doctor to inform the police?' translation='중독으로 인한 자살 시도의 경우 경찰에 알리는 것이 의사의 의무입니까?'
+2026-04-07 02:30:28,521 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 6.222] text='In a case of attempted suicide by poisoning, is it the duty of the doctor to inform the police?'
+2026-04-07 02:30:28,521 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:30:28,529 - INFO - __main__ - Received finish command
+2026-04-07 02:30:28,630 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:30:33,528 - INFO - __main__ - Connection closed
+2026-04-07 02:30:33,528 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:30:33,544 - INFO - websockets.server - connection open
+2026-04-07 02:30:33,544 - INFO - __main__ - Client connected (1)
+2026-04-07 02:30:33,614 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:30:33,615 - INFO - __main__ - New connection from ('127.0.0.1', 60772)
+2026-04-07 02:30:33,615 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:30:33,616 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:30:35,883 - INFO - __main__ - [PARTIAL] t=2.000s | The tube should be examined to.
+2026-04-07 02:30:35,883 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=The tube should be examined to....
+2026-04-07 02:30:37,968 - INFO - __main__ - [PARTIAL] t=4.000s | The tube should be examined to see that it is not broken or cracked.
+2026-04-07 02:30:37,969 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=The tube should be examined to see that it is not broken or cracked....
+2026-04-07 02:30:39,877 - INFO - __main__ - [PARTIAL] t=6.000s | The tube should be examined to see that it is not broken or cracked, as accidents have happened from neglect.
+2026-04-07 02:30:39,877 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=The tube should be examined to see that it is not broken or cracked, as accident...
+2026-04-07 02:30:41,938 - INFO - __main__ - [PARTIAL] t=8.065s | The tube should be examined to see that it is not broken or cracked, as accidents have happened from neglecting this precaution.
+2026-04-07 02:30:41,938 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=The tube should be examined to see that it is not broken or cracked, as accident...
+2026-04-07 02:30:42,089 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=133264
+2026-04-07 02:30:42,091 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=133264 target_audio_end_sec=8.329 processed=135440 active=A
+2026-04-07 02:30:42,092 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:30:42,092 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=8.329s → speech_end_sec=7.529s
+2026-04-07 02:30:42,322 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='The tube should be examined to see that it is not broken or cracked, as accidents have happened from neglecting this precaution.' tl=ko -> detected=en translation='이 주의 사항을 무시하여 사고가 발생하므로 튜브가 부러지거나 갈라지지 않았는지 검사해야 합니다.'
+2026-04-07 02:30:42,322 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='이 주의 사항을 무시하여 사고가 발생하므로 튜브가 부러지거나 갈라지지 않았는지 검사해야 합니다.' original='The tube should be examined to see that it is not broken or cracked, as accidents have happened from neglecting this precaution.'
+2026-04-07 02:30:42,322 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='The tube should be examined to see that it is not broken or cracked, as accidents have happened from neglecting this precaution.' translation='이 주의 사항을 무시하여 사고가 발생하므로 튜브가 부러지거나 갈라지지 않았는지 검사해야 합니다.'
+2026-04-07 02:30:42,322 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 7.529] text='The tube should be examined to see that it is not broken or cracked, as accidents have happened from neglecting this precaution.'
+2026-04-07 02:30:42,323 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:30:42,493 - INFO - __main__ - Received finish command
+2026-04-07 02:30:42,564 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:30:47,329 - INFO - __main__ - Connection closed
+2026-04-07 02:30:47,329 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:30:47,344 - INFO - websockets.server - connection open
+2026-04-07 02:30:47,344 - INFO - __main__ - Client connected (1)
+2026-04-07 02:30:47,415 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:30:47,415 - INFO - __main__ - New connection from ('127.0.0.1', 58232)
+2026-04-07 02:30:47,416 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:30:47,416 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:30:49,666 - INFO - __main__ - [PARTIAL] t=2.000s | Boil the finely divided substance.
+2026-04-07 02:30:49,666 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Boil the finely divided substance....
+2026-04-07 02:30:51,754 - INFO - __main__ - [PARTIAL] t=4.000s | Boil the finely divided substance with about one eighth its bulk of.
+2026-04-07 02:30:51,755 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Boil the finely divided substance with about one eighth its bulk of....
+2026-04-07 02:30:53,644 - INFO - __main__ - [PARTIAL] t=6.000s | Boil the finely divided substance with about one eighth its bulk of pure hydrochloric acid.
+2026-04-07 02:30:53,644 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Boil the finely divided substance with about one eighth its bulk of pure hydroch...
+2026-04-07 02:30:55,700 - INFO - __main__ - [PARTIAL] t=8.000s | Boil the finely divided substance with about one eighth its bulk of pure hydrochloric acid. Add from time to time potassium chloride.
+2026-04-07 02:30:55,700 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Boil the finely divided substance with about one eighth its bulk of pure hydroch...
+2026-04-07 02:30:55,700 - INFO - __main__ - [SEG_AUDIO_END] sentence='Boil the finely divided substance with about one eighth its bulk of pure hydrochloric acid.' → first_with_punct_time=6.000s (fallback)
+2026-04-07 02:30:55,769 - INFO - examples.streaming_websocket_server - [C-] [translate-sentence] sentence='Boil the finely divided substance with about one eighth its bulk of pure hydrochloric acid.' tl=ko -> detected=en translation='잘게 나눈 물질에 순수한 염산의 약 1/8을 넣고 끓입니다.'
+2026-04-07 02:30:55,770 - INFO - __main__ - [FINAL] seg=1 reason=seg audio=[0.000, 6.000] text='Boil the finely divided substance with about one eighth its bulk of pure hydrochloric acid.'
+2026-04-07 02:30:55,770 - INFO - examples.streaming_websocket_server - [C-] [final-sentence] slot=A lang=en text=Boil the finely divided substance with about one eighth its bulk of pure hydrochloric acid.
+2026-04-07 02:30:57,675 - INFO - __main__ - [PARTIAL] t=10.000s | Boil the finely divided substance with about one eighth its bulk of pure hydrochloric acid. Add from time to time potassium chloride until the solids are reduced to.
+2026-04-07 02:30:57,676 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Boil the finely divided substance with about one eighth its bulk of pure hydroch...
+2026-04-07 02:30:59,576 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=193248
+2026-04-07 02:30:59,854 - INFO - __main__ - [PARTIAL] t=12.150s | Boil the finely divided substance with about one eighth its bulk of pure hydrochloric acid. Add from time to time potassium chloride until the solids are reduced to a straw yellow fluid.
+2026-04-07 02:30:59,854 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Boil the finely divided substance with about one eighth its bulk of pure hydroch...
+2026-04-07 02:30:59,854 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=193248 target_audio_end_sec=12.078 processed=194400 active=A
+2026-04-07 02:30:59,854 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:30:59,854 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=12.078s → speech_end_sec=11.278s
+2026-04-07 02:31:00,153 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='Add from time to time potassium chloride until the solids are reduced to a straw yellow fluid.' tl=ko -> detected=en translation='고체가 담황색 액체로 줄어들 때까지 때때로 염화칼륨을 추가합니다.'
+2026-04-07 02:31:00,153 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='고체가 담황색 액체로 줄어들 때까지 때때로 염화칼륨을 추가합니다.' original='Add from time to time potassium chloride until the solids are reduced to a straw yellow fluid.'
+2026-04-07 02:31:00,153 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='Add from time to time potassium chloride until the solids are reduced to a straw yellow fluid.' translation='고체가 담황색 액체로 줄어들 때까지 때때로 염화칼륨을 추가합니다.'
+2026-04-07 02:31:00,153 - INFO - __main__ - [FINAL] seg=2 reason=vad audio=[6.000, 11.278] text='Add from time to time potassium chloride until the solids are reduced to a straw yellow fluid.'
+2026-04-07 02:31:00,154 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:31:00,161 - INFO - __main__ - Received finish command
+2026-04-07 02:31:00,233 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:31:05,160 - INFO - __main__ - Connection closed
+2026-04-07 02:31:05,160 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:31:05,174 - INFO - websockets.server - connection open
+2026-04-07 02:31:05,174 - INFO - __main__ - Client connected (1)
+2026-04-07 02:31:05,244 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:31:05,244 - INFO - __main__ - New connection from ('127.0.0.1', 59984)
+2026-04-07 02:31:05,245 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:31:05,245 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:31:07,510 - INFO - __main__ - [PARTIAL] t=2.000s | He looked about him and knew that.
+2026-04-07 02:31:07,510 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=He looked about him and knew that....
+2026-04-07 02:31:09,628 - INFO - __main__ - [PARTIAL] t=4.000s | He looked about him and knew that he did not at all know where he was.
+2026-04-07 02:31:09,628 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=He looked about him and knew that he did not at all know where he was....
+2026-04-07 02:31:10,144 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=76576
+2026-04-07 02:31:10,146 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=76576 target_audio_end_sec=4.786 processed=78240 active=A
+2026-04-07 02:31:10,146 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:31:10,146 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=4.786s → speech_end_sec=3.986s
+2026-04-07 02:31:10,352 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='He looked about him and knew that he did not at all know where he was.' tl=ko -> detected=en translation='그는 주위를 둘러보았고 자신이 어디에 있는지 전혀 모른다는 것을 알았습니다.'
+2026-04-07 02:31:10,353 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='그는 주위를 둘러보았고 자신이 어디에 있는지 전혀 모른다는 것을 알았습니다.' original='He looked about him and knew that he did not at all know where he was.'
+2026-04-07 02:31:10,353 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='He looked about him and knew that he did not at all know where he was.' translation='그는 주위를 둘러보았고 자신이 어디에 있는지 전혀 모른다는 것을 알았습니다.'
+2026-04-07 02:31:10,353 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 3.986] text='He looked about him and knew that he did not at all know where he was.'
+2026-04-07 02:31:10,353 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:31:10,358 - INFO - __main__ - Received finish command
+2026-04-07 02:31:10,460 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:31:15,360 - INFO - __main__ - Connection closed
+2026-04-07 02:31:15,360 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:31:15,375 - INFO - websockets.server - connection open
+2026-04-07 02:31:15,375 - INFO - __main__ - Client connected (1)
+2026-04-07 02:31:15,445 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:31:15,445 - INFO - __main__ - New connection from ('127.0.0.1', 42110)
+2026-04-07 02:31:15,446 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:31:15,446 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:31:17,748 - INFO - __main__ - [PARTIAL] t=2.000s | But I shall have them while they are alive.
+2026-04-07 02:31:17,748 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=But I shall have them while they are alive....
+2026-04-07 02:31:19,926 - INFO - __main__ - [PARTIAL] t=4.000s | But I shall have them while they are alive," said Dicky, as he had said to the pawnbroker.
+2026-04-07 02:31:19,926 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=But I shall have them while they are alive," said Dicky, as he had said to the p...
+2026-04-07 02:31:21,656 - INFO - __main__ - [PARTIAL] t=6.000s | But I shall have them while they are alive," said Dicky, as he had said to the pawnbroker about the moonflowers.
+2026-04-07 02:31:21,657 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=But I shall have them while they are alive," said Dicky, as he had said to the p...
+2026-04-07 02:31:21,973 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=104112
+2026-04-07 02:31:21,973 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=104112 target_audio_end_sec=6.507 processed=104240 active=A
+2026-04-07 02:31:21,974 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:31:21,974 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=6.507s → speech_end_sec=5.707s
+2026-04-07 02:31:22,187 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='But I shall have them while they are alive," said Dicky, as he had said to the pawnbroker about the moonflowers.' tl=ko -> detected=en translation='하지만 살아 있는 동안은 가질 거예요." 디키는 전당포에게 달꽃에 관해 말한 대로 말했습니다.'
+2026-04-07 02:31:22,188 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='하지만 살아 있는 동안은 가질 거예요." 디키는 전당포에게 달꽃에 관해 말한 대로 말했습니다.' original='But I shall have them while they are alive," said Dicky, as he had said to the pawnbroker about the moonflowers.'
+2026-04-07 02:31:22,188 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='But I shall have them while they are alive," said Dicky, as he had said to the pawnbroker about the moonflowers.' translation='하지만 살아 있는 동안은 가질 거예요." 디키는 전당포에게 달꽃에 관해 말한 대로 말했습니다.'
+2026-04-07 02:31:22,188 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 5.707] text='But I shall have them while they are alive," said Dicky, as he had said to the pawnbroker about the moonflowers.'
+2026-04-07 02:31:22,188 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:31:22,573 - INFO - __main__ - Received finish command
+2026-04-07 02:31:22,675 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:31:27,195 - INFO - __main__ - Connection closed
+2026-04-07 02:31:27,195 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:31:27,210 - INFO - websockets.server - connection open
+2026-04-07 02:31:27,211 - INFO - __main__ - Client connected (1)
+2026-04-07 02:31:27,282 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:31:27,282 - INFO - __main__ - New connection from ('127.0.0.1', 54138)
+2026-04-07 02:31:27,282 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:31:27,283 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:31:29,557 - INFO - __main__ - [PARTIAL] t=2.000s | Then he bade him be seated.
+2026-04-07 02:31:29,558 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Then he bade him be seated....
+2026-04-07 02:31:31,612 - INFO - __main__ - [PARTIAL] t=4.000s | Then he bade him be seated and questioned him.
+2026-04-07 02:31:31,613 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Then he bade him be seated and questioned him....
+2026-04-07 02:31:33,543 - INFO - __main__ - [PARTIAL] t=6.000s | Then he bade him be seated and questioned him, and he replied that he was.
+2026-04-07 02:31:33,543 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Then he bade him be seated and questioned him, and he replied that he was....
+2026-04-07 02:31:35,623 - INFO - __main__ - [PARTIAL] t=8.000s | Then he bade him be seated and questioned him, and he replied that he was chamberlain to the emir of the.
+2026-04-07 02:31:35,623 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Then he bade him be seated and questioned him, and he replied that he was chambe...
+2026-04-07 02:31:36,894 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=151936
+2026-04-07 02:31:36,896 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=151936 target_audio_end_sec=9.496 processed=153600 active=A
+2026-04-07 02:31:36,896 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:31:36,896 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=9.496s → speech_end_sec=8.696s
+2026-04-07 02:31:37,137 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='Then he bade him be seated and questioned him, and he replied that he was chamberlain to the emir of Damascus.' tl=ko -> detected=en translation='그런 다음 그는 그에게 앉으라고 명하고 그에게 질문했고 그는 자신이 다마스커스 국왕의 시종이라고 대답했습니다.'
+2026-04-07 02:31:37,137 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='그런 다음 그는 그에게 앉으라고 명하고 그에게 질문했고 그는 자신이 다마스커스 국왕의 시종이라고 대답했습니다.' original='Then he bade him be seated and questioned him, and he replied that he was chamberlain to the emir of Damascus.'
+2026-04-07 02:31:37,137 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='Then he bade him be seated and questioned him, and he replied that he was chamberlain to the emir of Damascus.' translation='그런 다음 그는 그에게 앉으라고 명하고 그에게 질문했고 그는 자신이 다마스커스 국왕의 시종이라고 대답했습니다.'
+2026-04-07 02:31:37,137 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 8.696] text='Then he bade him be seated and questioned him, and he replied that he was chamberlain to the emir of Damascus.'
+2026-04-07 02:31:37,138 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:31:39,175 - INFO - __main__ - [PARTIAL] t=11.600s | And was bound to King Omar with.
+2026-04-07 02:31:39,176 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=B text=And was bound to King Omar with....
+2026-04-07 02:31:41,249 - INFO - __main__ - [PARTIAL] t=13.600s | And was bound to King Omar with presents and the tribute of Syria.
+2026-04-07 02:31:41,250 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=B text=And was bound to King Omar with presents and the tribute of Syria....
+2026-04-07 02:31:41,944 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=232225
+2026-04-07 02:31:41,947 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=232225 target_audio_end_sec=14.514 processed=234401 active=B
+2026-04-07 02:31:41,947 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=B new_active=A new_standby=B
+2026-04-07 02:31:41,947 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=14.514s → speech_end_sec=13.714s
+2026-04-07 02:31:42,159 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='And was bound to King Omar with presents and the tribute of Syria.' tl=ko -> detected=en translation='그리고 시리아의 선물과 공물로 오마르 왕에게 묶였습니다.'
+2026-04-07 02:31:42,159 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=B reason=vad lang=en translation='그리고 시리아의 선물과 공물로 오마르 왕에게 묶였습니다.' original='And was bound to King Omar with presents and the tribute of Syria.'
+2026-04-07 02:31:42,159 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=B lang=en text='And was bound to King Omar with presents and the tribute of Syria.' translation='그리고 시리아의 선물과 공물로 오마르 왕에게 묶였습니다.'
+2026-04-07 02:31:42,159 - INFO - __main__ - [FINAL] seg=2 reason=vad audio=[8.696, 13.714] text='And was bound to King Omar with presents and the tribute of Syria.'
+2026-04-07 02:31:42,159 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=B
+2026-04-07 02:31:42,346 - INFO - __main__ - Received finish command
+2026-04-07 02:31:42,418 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:31:47,166 - INFO - __main__ - Connection closed
+2026-04-07 02:31:47,167 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:31:47,182 - INFO - websockets.server - connection open
+2026-04-07 02:31:47,182 - INFO - __main__ - Client connected (1)
+2026-04-07 02:31:47,253 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:31:47,253 - INFO - __main__ - New connection from ('127.0.0.1', 56154)
+2026-04-07 02:31:47,254 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:31:47,254 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:31:49,518 - INFO - __main__ - [PARTIAL] t=2.000s | The Brahman treated the case.
+2026-04-07 02:31:49,519 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=The Brahman treated the case....
+2026-04-07 02:31:51,558 - INFO - __main__ - [PARTIAL] t=4.000s | The Brahman treated the case, and the eagle answered.
+2026-04-07 02:31:51,559 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=The Brahman treated the case, and the eagle answered....
+2026-04-07 02:31:52,064 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=74624
+2026-04-07 02:31:52,067 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=74624 target_audio_end_sec=4.664 processed=76800 active=A
+2026-04-07 02:31:52,067 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:31:52,067 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=4.664s → speech_end_sec=3.864s
+2026-04-07 02:31:52,283 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='The Brahman treated the case, and the eagle answered.' tl=ko -> detected=en translation='바라문이 사건을 처리하자 독수리가 대답했다.'
+2026-04-07 02:31:52,283 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='바라문이 사건을 처리하자 독수리가 대답했다.' original='The Brahman treated the case, and the eagle answered.'
+2026-04-07 02:31:52,283 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='The Brahman treated the case, and the eagle answered.' translation='바라문이 사건을 처리하자 독수리가 대답했다.'
+2026-04-07 02:31:52,283 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 3.864] text='The Brahman treated the case, and the eagle answered.'
+2026-04-07 02:31:52,284 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:31:54,268 - INFO - __main__ - [PARTIAL] t=6.800s | Whenever men see me.
+2026-04-07 02:31:54,268 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=B text=Whenever men see me....
+2026-04-07 02:31:56,351 - INFO - __main__ - [PARTIAL] t=8.800s | Whenever men see me, they try to shoot me.
+2026-04-07 02:31:56,351 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=B text=Whenever men see me, they try to shoot me....
+2026-04-07 02:31:58,297 - INFO - __main__ - [PARTIAL] t=10.800s | Whenever men see me, they try to shoot me. They climb the rocks and.
+2026-04-07 02:31:58,297 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=B text=Whenever men see me, they try to shoot me. They climb the rocks and....
+2026-04-07 02:31:58,297 - INFO - __main__ - [SEG_AUDIO_END] sentence='Whenever men see me, they try to shoot me.' → first_with_punct_time=8.800s (fallback)
+2026-04-07 02:31:58,378 - INFO - examples.streaming_websocket_server - [C-] [translate-sentence] sentence='Whenever men see me, they try to shoot me.' tl=ko -> detected=en translation='남자들은 나를 볼 때마다 나를 쏘려고 한다.'
+2026-04-07 02:31:58,378 - INFO - __main__ - [FINAL] seg=2 reason=seg audio=[3.864, 8.800] text='Whenever men see me, they try to shoot me.'
+2026-04-07 02:31:58,378 - INFO - examples.streaming_websocket_server - [C-] [final-sentence] slot=B lang=en text=Whenever men see me, they try to shoot me.
+2026-04-07 02:32:00,169 - INFO - __main__ - [PARTIAL] t=12.680s | Whenever men see me, they try to shoot me. They climb the rocks and steal away my little ones.
+2026-04-07 02:32:00,169 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=B text=Whenever men see me, they try to shoot me. They climb the rocks and steal away m...
+2026-04-07 02:32:00,543 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=209792
+2026-04-07 02:32:00,547 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=209792 target_audio_end_sec=13.112 processed=212480 active=B
+2026-04-07 02:32:00,547 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=B new_active=A new_standby=B
+2026-04-07 02:32:00,547 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=13.112s → speech_end_sec=12.312s
+2026-04-07 02:32:00,750 - INFO - websockets.server - connection open
+2026-04-07 02:32:00,750 - INFO - __main__ - Client connected (2)
+2026-04-07 02:32:00,818 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:32:00,819 - INFO - __main__ - New connection from ('127.0.0.1', 32974)
+2026-04-07 02:32:00,819 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='They climb the rocks and steal away my little ones.' tl=ko -> detected=en translation='그들은 바위에 올라가서 내 어린 것들을 훔쳐갑니다.'
+2026-04-07 02:32:00,819 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=B reason=vad lang=en translation='그들은 바위에 올라가서 내 어린 것들을 훔쳐갑니다.' original='They climb the rocks and steal away my little ones.'
+2026-04-07 02:32:00,819 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=B lang=en text='They climb the rocks and steal away my little ones.' translation='그들은 바위에 올라가서 내 어린 것들을 훔쳐갑니다.'
+2026-04-07 02:32:00,820 - INFO - __main__ - [FINAL] seg=3 reason=vad audio=[8.800, 12.312] text='They climb the rocks and steal away my little ones.'
+2026-04-07 02:32:00,820 - ERROR - examples.streaming_websocket_server - [C-] Failed to send message: received 1000 (OK); then sent 1000 (OK)
+2026-04-07 02:32:00,820 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=B
+2026-04-07 02:32:00,824 - INFO - __main__ - Received finish command
+2026-04-07 02:32:00,828 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:32:00,829 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:32:00,926 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:32:00,927 - INFO - __main__ - Connection closed
+2026-04-07 02:32:00,927 - INFO - __main__ - Client disconnected (1)
+2026-04-07 02:32:03,083 - INFO - __main__ - [PARTIAL] t=2.000s | But a good Brahmin opened.
+2026-04-07 02:32:03,083 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=But a good Brahmin opened....
+2026-04-07 02:32:05,187 - INFO - __main__ - [PARTIAL] t=4.000s | When a good Brahmin opens your cage door, is to.
+2026-04-07 02:32:05,187 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=When a good Brahmin opens your cage door, is to....
+2026-04-07 02:32:07,103 - INFO - __main__ - [PARTIAL] t=6.000s | When a good Brahmin opens your cage door, is to eat him the only return you would make?
+2026-04-07 02:32:07,103 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=When a good Brahmin opens your cage door, is to eat him the only return you woul...
+2026-04-07 02:32:08,096 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=113472
+2026-04-07 02:32:08,100 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=113472 target_audio_end_sec=7.092 processed=116160 active=A
+2026-04-07 02:32:08,100 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:32:08,100 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=7.092s → speech_end_sec=6.292s
+2026-04-07 02:32:08,314 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='When a good Brahmin opens your cage door, is to eat him the only return you would make?' tl=ko -> detected=en translation='좋은 브라민이 우리 문을 열 때, 그를 잡아먹는 것이 당신이 할 수 있는 유일한 보답입니까?'
+2026-04-07 02:32:08,314 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='좋은 브라민이 우리 문을 열 때, 그를 잡아먹는 것이 당신이 할 수 있는 유일한 보답입니까?' original='When a good Brahmin opens your cage door, is to eat him the only return you would make?'
+2026-04-07 02:32:08,314 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='When a good Brahmin opens your cage door, is to eat him the only return you would make?' translation='좋은 브라민이 우리 문을 열 때, 그를 잡아먹는 것이 당신이 할 수 있는 유일한 보답입니까?'
+2026-04-07 02:32:08,314 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 6.292] text='When a good Brahmin opens your cage door, is to eat him the only return you would make?'
+2026-04-07 02:32:08,315 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:32:08,500 - INFO - __main__ - Received finish command
+2026-04-07 02:32:08,603 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:32:13,322 - INFO - __main__ - Connection closed
+2026-04-07 02:32:13,322 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:32:13,337 - INFO - websockets.server - connection open
+2026-04-07 02:32:13,337 - INFO - __main__ - Client connected (1)
+2026-04-07 02:32:13,407 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:32:13,408 - INFO - __main__ - New connection from ('127.0.0.1', 32916)
+2026-04-07 02:32:13,408 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:32:13,409 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:32:15,692 - INFO - __main__ - [PARTIAL] t=2.000s | Naturally, he went to the.
+2026-04-07 02:32:15,692 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Naturally, he went to the....
+2026-04-07 02:32:17,391 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=62880
+2026-04-07 02:32:17,392 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=62880 target_audio_end_sec=3.930 processed=63520 active=A
+2026-04-07 02:32:17,392 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:32:17,392 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=3.930s → speech_end_sec=3.130s
+2026-04-07 02:32:17,716 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='Nitri, he went to the land of Midian.' tl=ko -> detected=en translation='니트리, 그는 미디안 땅으로 갔다.'
+2026-04-07 02:32:17,716 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='니트리, 그는 미디안 땅으로 갔다.' original='Nitri, he went to the land of Midian.'
+2026-04-07 02:32:17,716 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='Nitri, he went to the land of Midian.' translation='니트리, 그는 미디안 땅으로 갔다.'
+2026-04-07 02:32:17,716 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 3.130] text='Nitri, he went to the land of Midian.'
+2026-04-07 02:32:17,717 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:32:17,791 - INFO - __main__ - Received finish command
+2026-04-07 02:32:17,889 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:32:22,723 - INFO - __main__ - Connection closed
+2026-04-07 02:32:22,723 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:32:22,738 - INFO - websockets.server - connection open
+2026-04-07 02:32:22,738 - INFO - __main__ - Client connected (1)
+2026-04-07 02:32:22,809 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:32:22,809 - INFO - __main__ - New connection from ('127.0.0.1', 48178)
+2026-04-07 02:32:22,810 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:32:22,811 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:32:25,037 - INFO - __main__ - [PARTIAL] t=2.000s | These sand wanderers.
+2026-04-07 02:32:25,037 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=These sand wanderers....
+2026-04-07 02:32:27,059 - INFO - __main__ - [PARTIAL] t=4.000s | These sand wanderers sent him on.
+2026-04-07 02:32:27,059 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=These sand wanderers sent him on....
+2026-04-07 02:32:29,052 - INFO - __main__ - [PARTIAL] t=6.000s | These sand wanderers sent him on from tribe to tribe until he.
+2026-04-07 02:32:29,053 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=These sand wanderers sent him on from tribe to tribe until he....
+2026-04-07 02:32:31,028 - INFO - __main__ - [PARTIAL] t=8.000s | These sand wanderers sent him on from tribe to tribe until he reached the land of.
+2026-04-07 02:32:31,028 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=These sand wanderers sent him on from tribe to tribe until he reached the land o...
+2026-04-07 02:32:33,097 - INFO - __main__ - [PARTIAL] t=10.000s | These sand wanderers sent him on from tribe to tribe until he reached the land of Kedem. Each of the dead.
+2026-04-07 02:32:33,097 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=These sand wanderers sent him on from tribe to tribe until he reached the land o...
+2026-04-07 02:32:33,097 - INFO - __main__ - [SEG_AUDIO_END] sentence='These sand wanderers sent him on from tribe to tribe until he reached the land of Kedem.' → first_with_punct_time=10.000s (fallback)
+2026-04-07 02:32:33,238 - INFO - examples.streaming_websocket_server - [C-] [translate-sentence] sentence='These sand wanderers sent him on from tribe to tribe until he reached the land of Kedem.' tl=ko -> detected=en translation='이 모래 방랑자들은 그가 게뎀 땅에 이를 때까지 그를 이 지파에서 저 지파로 보냈습니다.'
+2026-04-07 02:32:33,238 - INFO - __main__ - [FINAL] seg=1 reason=seg audio=[0.000, 10.000] text='These sand wanderers sent him on from tribe to tribe until he reached the land of Kedem.'
+2026-04-07 02:32:33,239 - INFO - examples.streaming_websocket_server - [C-] [final-sentence] slot=A lang=en text=These sand wanderers sent him on from tribe to tribe until he reached the land of Kedem.
+2026-04-07 02:32:35,053 - INFO - __main__ - [PARTIAL] t=12.000s | These sand wanderers sent him on from tribe to tribe until he reached the land of Kedem. It is the Dead Sea, where he remained.
+2026-04-07 02:32:35,053 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=These sand wanderers sent him on from tribe to tribe until he reached the land o...
+2026-04-07 02:32:36,926 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=224016
+2026-04-07 02:32:37,241 - INFO - __main__ - [PARTIAL] t=14.105s | These sand wanderers sent him on from tribe to tribe until he reached the land of Kedem. It is the Dead Sea, where he remained for a year and a half.
+2026-04-07 02:32:37,242 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=These sand wanderers sent him on from tribe to tribe until he reached the land o...
+2026-04-07 02:32:37,242 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=224016 target_audio_end_sec=14.001 processed=225680 active=A
+2026-04-07 02:32:37,242 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:32:37,242 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=14.001s → speech_end_sec=13.201s
+2026-04-07 02:32:37,477 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='It is the Dead Sea, where he remained for a year and a half.' tl=ko -> detected=en translation='그곳은 그가 1년 반 동안 머물렀던 사해이다.'
+2026-04-07 02:32:37,478 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='그곳은 그가 1년 반 동안 머물렀던 사해이다.' original='It is the Dead Sea, where he remained for a year and a half.'
+2026-04-07 02:32:37,478 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='It is the Dead Sea, where he remained for a year and a half.' translation='그곳은 그가 1년 반 동안 머물렀던 사해이다.'
+2026-04-07 02:32:37,478 - INFO - __main__ - [FINAL] seg=2 reason=vad audio=[10.000, 13.201] text='It is the Dead Sea, where he remained for a year and a half.'
+2026-04-07 02:32:37,478 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:32:37,487 - INFO - __main__ - Received finish command
+2026-04-07 02:32:37,558 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:32:42,485 - INFO - __main__ - Connection closed
+2026-04-07 02:32:42,485 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:32:42,500 - INFO - websockets.server - connection open
+2026-04-07 02:32:42,500 - INFO - __main__ - Client connected (1)
+2026-04-07 02:32:42,570 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:32:42,570 - INFO - __main__ - New connection from ('127.0.0.1', 34554)
+2026-04-07 02:32:42,570 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:32:42,571 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:32:44,810 - INFO - __main__ - [PARTIAL] t=2.000s | His quest was for jets.
+2026-04-07 02:32:44,810 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=His quest was for jets....
+2026-04-07 02:32:46,930 - INFO - __main__ - [PARTIAL] t=4.000s | His quest was for a just and strong God, able to.
+2026-04-07 02:32:46,931 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=His quest was for a just and strong God, able to....
+2026-04-07 02:32:48,831 - INFO - __main__ - [PARTIAL] t=6.065s | His quest was for a just and strong god, able to deliver the oppressed.
+2026-04-07 02:32:48,831 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=His quest was for a just and strong god, able to deliver the oppressed....
+2026-04-07 02:32:48,844 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=97552
+2026-04-07 02:32:48,847 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=97552 target_audio_end_sec=6.097 processed=100240 active=A
+2026-04-07 02:32:48,848 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:32:48,848 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=6.097s → speech_end_sec=5.297s
+2026-04-07 02:32:49,061 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='His quest was for a just and strong god, able to deliver the oppressed.' tl=ko -> detected=en translation='그의 탐구는 억압받는 사람들을 구원할 수 있는 정의롭고 강한 신을 찾는 것이었습니다.'
+2026-04-07 02:32:49,062 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='그의 탐구는 억압받는 사람들을 구원할 수 있는 정의롭고 강한 신을 찾는 것이었습니다.' original='His quest was for a just and strong god, able to deliver the oppressed.'
+2026-04-07 02:32:49,062 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='His quest was for a just and strong god, able to deliver the oppressed.' translation='그의 탐구는 억압받는 사람들을 구원할 수 있는 정의롭고 강한 신을 찾는 것이었습니다.'
+2026-04-07 02:32:49,062 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 5.297] text='His quest was for a just and strong god, able to deliver the oppressed.'
+2026-04-07 02:32:49,062 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:32:49,067 - INFO - __main__ - Received finish command
+2026-04-07 02:32:49,138 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:32:54,068 - INFO - __main__ - Connection closed
+2026-04-07 02:32:54,068 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:32:54,084 - INFO - websockets.server - connection open
+2026-04-07 02:32:54,084 - INFO - __main__ - Client connected (1)
+2026-04-07 02:32:54,155 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:32:54,155 - INFO - __main__ - New connection from ('127.0.0.1', 58868)
+2026-04-07 02:32:54,156 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:32:54,156 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:32:56,438 - INFO - __main__ - [PARTIAL] t=2.000s | I never was in a better steering.
+2026-04-07 02:32:56,438 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=I never was in a better steering....
+2026-04-07 02:32:58,541 - INFO - __main__ - [PARTIAL] t=4.000s | I never was in a better steering ship, Patsy Spetsy.
+2026-04-07 02:32:58,541 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=I never was in a better steering ship, Patsy Spetsy....
+2026-04-07 02:33:00,098 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=93728
+2026-04-07 02:33:00,100 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=93728 target_audio_end_sec=5.858 processed=94880 active=A
+2026-04-07 02:33:00,100 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:33:00,100 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=5.858s → speech_end_sec=5.058s
+2026-04-07 02:33:00,404 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='I never was in a better steering ship, Potsy Spetsy, in moderate weather.' tl=ko -> detected=en translation='나는 온화한 날씨에 더 나은 조타선인 Potsy Spetsy를 타본 적이 없습니다.'
+2026-04-07 02:33:00,404 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='나는 온화한 날씨에 더 나은 조타선인 Potsy Spetsy를 타본 적이 없습니다.' original='I never was in a better steering ship, Potsy Spetsy, in moderate weather.'
+2026-04-07 02:33:00,404 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='I never was in a better steering ship, Potsy Spetsy, in moderate weather.' translation='나는 온화한 날씨에 더 나은 조타선인 Potsy Spetsy를 타본 적이 없습니다.'
+2026-04-07 02:33:00,404 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 5.058] text='I never was in a better steering ship, Potsy Spetsy, in moderate weather.'
+2026-04-07 02:33:00,404 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:33:00,498 - INFO - __main__ - Received finish command
+2026-04-07 02:33:00,569 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:33:05,411 - INFO - __main__ - Connection closed
+2026-04-07 02:33:05,412 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:33:05,426 - INFO - websockets.server - connection open
+2026-04-07 02:33:05,426 - INFO - __main__ - Client connected (1)
+2026-04-07 02:33:05,496 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:33:05,496 - INFO - __main__ - New connection from ('127.0.0.1', 46172)
+2026-04-07 02:33:05,497 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:33:05,497 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:33:07,728 - INFO - __main__ - [PARTIAL] t=2.000s | Mr. Marble, he.
+2026-04-07 02:33:07,729 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Mr. Marble, he....
+2026-04-07 02:33:07,729 - INFO - __main__ - [SEG_AUDIO_END] sentence='Mr.' → first_with_punct_time=2.000s (fallback)
+2026-04-07 02:33:07,795 - INFO - examples.streaming_websocket_server - [C-] [translate-sentence] sentence='Mr.' tl=ko -> detected=en translation='씨.'
+2026-04-07 02:33:07,795 - INFO - __main__ - [FINAL] seg=1 reason=seg audio=[0.000, 2.000] text='Mr.'
+2026-04-07 02:33:07,795 - INFO - examples.streaming_websocket_server - [C-] [final-sentence] slot=A lang=en text=Mr.
+2026-04-07 02:33:09,792 - INFO - __main__ - [PARTIAL] t=4.000s | Mr. Marble, he ought to believe was fairly.
+2026-04-07 02:33:09,792 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Mr. Marble, he ought to believe was fairly....
+2026-04-07 02:33:11,804 - INFO - __main__ - [PARTIAL] t=6.000s | Mr. Marble, he ought to believe, was fairly snoozing, when the hinkoop.
+2026-04-07 02:33:11,804 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Mr. Marble, he ought to believe, was fairly snoozing, when the hinkoop....
+2026-04-07 02:33:13,730 - INFO - __main__ - [PARTIAL] t=8.000s | Mr. Marble, he ought to believe, was fairly snoozing, when the Hinkups, being like the sails.
+2026-04-07 02:33:13,730 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Mr. Marble, he ought to believe, was fairly snoozing, when the Hinkups, being li...
+2026-04-07 02:33:15,819 - INFO - __main__ - [PARTIAL] t=10.000s | Mr. Marble, he ought to believe, was fairly snoozing, when the Hinkups, being like the sails, as one might say, various.
+2026-04-07 02:33:15,819 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Mr. Marble, he ought to believe, was fairly snoozing, when the Hinkups, being li...
+2026-04-07 02:33:16,949 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=182400
+2026-04-07 02:33:16,950 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=182400 target_audio_end_sec=11.400 processed=183040 active=A
+2026-04-07 02:33:16,950 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:33:16,950 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=11.400s → speech_end_sec=10.600s
+2026-04-07 02:33:17,190 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='Marble, he ought to believe, was fairly snoozing, when the Hinkups, being like the sails, as one might say, very asleep.' tl=ko -> detected=en translation='마블은 꽤 졸고 있었는데, Hinkups는 마치 돛과 같아서 아주 잠들어 있었다고 그는 믿었을 것입니다.'
+2026-04-07 02:33:17,190 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='마블은 꽤 졸고 있었는데, Hinkups는 마치 돛과 같아서 아주 잠들어 있었다고 그는 믿었을 것입니다.' original='Marble, he ought to believe, was fairly snoozing, when the Hinkups, being like the sails, as one might say, very asleep.'
+2026-04-07 02:33:17,190 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='Marble, he ought to believe, was fairly snoozing, when the Hinkups, being like the sails, as one might say, very asleep.' translation='마블은 꽤 졸고 있었는데, Hinkups는 마치 돛과 같아서 아주 잠들어 있었다고 그는 믿었을 것입니다.'
+2026-04-07 02:33:17,190 - INFO - __main__ - [FINAL] seg=2 reason=vad audio=[2.000, 10.600] text='Marble, he ought to believe, was fairly snoozing, when the Hinkups, being like the sails, as one might say, very asleep.'
+2026-04-07 02:33:17,191 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:33:17,350 - INFO - __main__ - Received finish command
+2026-04-07 02:33:17,359 - INFO - websockets.server - connection open
+2026-04-07 02:33:17,359 - INFO - __main__ - Client connected (2)
+2026-04-07 02:33:17,429 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:33:17,430 - INFO - __main__ - New connection from ('127.0.0.1', 53840)
+2026-04-07 02:33:17,431 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:33:17,431 - INFO - __main__ - Connection closed
+2026-04-07 02:33:17,431 - INFO - __main__ - Client disconnected (1)
+2026-04-07 02:33:17,445 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:33:17,446 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:33:19,743 - INFO - __main__ - [PARTIAL] t=2.000s | And the horse a going like a house.
+2026-04-07 02:33:19,744 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=And the horse a going like a house....
+2026-04-07 02:33:21,158 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=59072
+2026-04-07 02:33:21,158 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=59072 target_audio_end_sec=3.692 processed=59200 active=A
+2026-04-07 02:33:21,158 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:33:21,158 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=3.692s → speech_end_sec=2.892s
+2026-04-07 02:33:21,475 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='And the horse a going like a house afire too.' tl=ko -> detected=en translation='그리고 말도 집에 불이 붙은 것처럼 움직입니다.'
+2026-04-07 02:33:21,475 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='그리고 말도 집에 불이 붙은 것처럼 움직입니다.' original='And the horse a going like a house afire too.'
+2026-04-07 02:33:21,475 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='And the horse a going like a house afire too.' translation='그리고 말도 집에 불이 붙은 것처럼 움직입니다.'
+2026-04-07 02:33:21,476 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 2.892] text='And the horse a going like a house afire too.'
+2026-04-07 02:33:21,476 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:33:21,557 - INFO - __main__ - Received finish command
+2026-04-07 02:33:21,629 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:33:26,483 - INFO - __main__ - Connection closed
+2026-04-07 02:33:26,483 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:33:26,498 - INFO - websockets.server - connection open
+2026-04-07 02:33:26,498 - INFO - __main__ - Client connected (1)
+2026-04-07 02:33:26,568 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:33:26,568 - INFO - __main__ - New connection from ('127.0.0.1', 39218)
+2026-04-07 02:33:26,569 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:33:26,569 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:33:28,817 - INFO - __main__ - [PARTIAL] t=2.000s | Asked the artful young man.
+2026-04-07 02:33:28,818 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Asked the artful young man....
+2026-04-07 02:33:30,924 - INFO - __main__ - [PARTIAL] t=4.000s | Asked the artful young man, laying a trap into which Polly immediately.
+2026-04-07 02:33:30,924 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Asked the artful young man, laying a trap into which Polly immediately....
+2026-04-07 02:33:32,099 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=86144
+2026-04-07 02:33:32,102 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=86144 target_audio_end_sec=5.384 processed=88320 active=A
+2026-04-07 02:33:32,102 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:33:32,102 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=5.384s → speech_end_sec=4.584s
+2026-04-07 02:33:32,332 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='Asked the artful young man, laying a trap into which Polly immediately fell.' tl=ko -> detected=en translation='교묘한 젊은이에게 물었고 폴리는 즉시 함정에 빠졌습니다.'
+2026-04-07 02:33:32,332 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='교묘한 젊은이에게 물었고 폴리는 즉시 함정에 빠졌습니다.' original='Asked the artful young man, laying a trap into which Polly immediately fell.'
+2026-04-07 02:33:32,332 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='Asked the artful young man, laying a trap into which Polly immediately fell.' translation='교묘한 젊은이에게 물었고 폴리는 즉시 함정에 빠졌습니다.'
+2026-04-07 02:33:32,332 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 4.584] text='Asked the artful young man, laying a trap into which Polly immediately fell.'
+2026-04-07 02:33:32,333 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:33:32,337 - INFO - __main__ - Received finish command
+2026-04-07 02:33:32,439 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:33:37,339 - INFO - __main__ - Connection closed
+2026-04-07 02:33:37,339 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:33:37,354 - INFO - websockets.server - connection open
+2026-04-07 02:33:37,354 - INFO - __main__ - Client connected (1)
+2026-04-07 02:33:37,425 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:33:37,425 - INFO - __main__ - New connection from ('127.0.0.1', 36012)
+2026-04-07 02:33:37,426 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:33:37,426 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:33:39,691 - INFO - __main__ - [PARTIAL] t=2.000s | I would much rather have the prince.
+2026-04-07 02:33:39,691 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=I would much rather have the prince....
+2026-04-07 02:33:41,924 - INFO - __main__ - [PARTIAL] t=4.155s | I would much rather have the princess," said Cinderlad.
+2026-04-07 02:33:41,924 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=I would much rather have the princess," said Cinderlad....
+2026-04-07 02:33:41,926 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=67504
+2026-04-07 02:33:41,929 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=67504 target_audio_end_sec=4.219 processed=69680 active=A
+2026-04-07 02:33:41,929 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:33:41,929 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=4.219s → speech_end_sec=3.419s
+2026-04-07 02:33:42,142 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='I would much rather have the princess," said Cinderlad.' tl=ko -> detected=en translation='난 차라리 공주를 갖고 싶어." 신데렐라가 말했다.'
+2026-04-07 02:33:42,142 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='난 차라리 공주를 갖고 싶어." 신데렐라가 말했다.' original='I would much rather have the princess," said Cinderlad.'
+2026-04-07 02:33:42,142 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='I would much rather have the princess," said Cinderlad.' translation='난 차라리 공주를 갖고 싶어." 신데렐라가 말했다.'
+2026-04-07 02:33:42,142 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 3.419] text='I would much rather have the princess," said Cinderlad.'
+2026-04-07 02:33:42,143 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:33:42,195 - INFO - __main__ - Received finish command
+2026-04-07 02:33:42,266 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:33:47,151 - INFO - __main__ - Connection closed
+2026-04-07 02:33:47,151 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:33:47,165 - INFO - websockets.server - connection open
+2026-04-07 02:33:47,165 - INFO - __main__ - Client connected (1)
+2026-04-07 02:33:47,234 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:33:47,234 - INFO - __main__ - New connection from ('127.0.0.1', 58066)
+2026-04-07 02:33:47,235 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:33:47,236 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:33:49,519 - INFO - __main__ - [PARTIAL] t=2.000s | Then Sigurd went to his mother and.
+2026-04-07 02:33:49,519 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Then Sigurd went to his mother and....
+2026-04-07 02:33:51,650 - INFO - __main__ - [PARTIAL] t=4.000s | Then Sigurd went to his mother and asked for the broken pieces of his father's blade.
+2026-04-07 02:33:51,650 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Then Sigurd went to his mother and asked for the broken pieces of his father's b...
+2026-04-07 02:33:53,442 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=98992
+2026-04-07 02:33:53,713 - INFO - __main__ - [PARTIAL] t=6.195s | Then Sigurd went to his mother and asked for the broken pieces of his father's blade and gave them to Regan.
+2026-04-07 02:33:53,713 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Then Sigurd went to his mother and asked for the broken pieces of his father's b...
+2026-04-07 02:33:53,714 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=98992 target_audio_end_sec=6.187 processed=99120 active=A
+2026-04-07 02:33:53,714 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:33:53,714 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=6.187s → speech_end_sec=5.387s
+2026-04-07 02:33:53,932 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='Then Sigurd went to his mother and asked for the broken pieces of his father's blade and gave them to Regan.' tl=ko -> detected=en translation='그런 다음 시구르드는 어머니에게 가서 아버지의 칼날의 부러진 조각을 요청하여 리건에게 주었습니다.'
+2026-04-07 02:33:53,933 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='그런 다음 시구르드는 어머니에게 가서 아버지의 칼날의 부러진 조각을 요청하여 리건에게 주었습니다.' original='Then Sigurd went to his mother and asked for the broken pieces of his father's blade and gave them to Regan.'
+2026-04-07 02:33:53,933 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='Then Sigurd went to his mother and asked for the broken pieces of his father's blade and gave them to Regan.' translation='그런 다음 시구르드는 어머니에게 가서 아버지의 칼날의 부러진 조각을 요청하여 리건에게 주었습니다.'
+2026-04-07 02:33:53,933 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 5.387] text='Then Sigurd went to his mother and asked for the broken pieces of his father's blade and gave them to Regan.'
+2026-04-07 02:33:53,933 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:33:53,941 - INFO - __main__ - Received finish command
+2026-04-07 02:33:54,013 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:33:58,940 - INFO - __main__ - Connection closed
+2026-04-07 02:33:58,940 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:33:58,957 - INFO - websockets.server - connection open
+2026-04-07 02:33:58,957 - INFO - __main__ - Client connected (1)
+2026-04-07 02:33:59,026 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:33:59,026 - INFO - __main__ - New connection from ('127.0.0.1', 44054)
+2026-04-07 02:33:59,027 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:33:59,027 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:34:01,350 - INFO - __main__ - [PARTIAL] t=2.000s | Then he took the helmet off the head of the.
+2026-04-07 02:34:01,350 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Then he took the helmet off the head of the....
+2026-04-07 02:34:03,456 - INFO - __main__ - [PARTIAL] t=4.000s | Then he took the helmet off the head of the sleeper, and behold, she was a most.
+2026-04-07 02:34:03,456 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Then he took the helmet off the head of the sleeper, and behold, she was a most....
+2026-04-07 02:34:05,047 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=94496
+2026-04-07 02:34:05,049 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=94496 target_audio_end_sec=5.906 processed=96160 active=A
+2026-04-07 02:34:05,049 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:34:05,050 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=5.906s → speech_end_sec=5.106s
+2026-04-07 02:34:05,300 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='Then he took the helmet off the head of the sleeper, and behold, she was a most beautiful lady.' tl=ko -> detected=en translation='그리고 잠자는 자의 머리에서 투구를 벗기니, 보라, 그녀는 매우 아름다운 여인이었다.'
+2026-04-07 02:34:05,300 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='그리고 잠자는 자의 머리에서 투구를 벗기니, 보라, 그녀는 매우 아름다운 여인이었다.' original='Then he took the helmet off the head of the sleeper, and behold, she was a most beautiful lady.'
+2026-04-07 02:34:05,300 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='Then he took the helmet off the head of the sleeper, and behold, she was a most beautiful lady.' translation='그리고 잠자는 자의 머리에서 투구를 벗기니, 보라, 그녀는 매우 아름다운 여인이었다.'
+2026-04-07 02:34:05,300 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 5.106] text='Then he took the helmet off the head of the sleeper, and behold, she was a most beautiful lady.'
+2026-04-07 02:34:05,301 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:34:05,450 - INFO - __main__ - Received finish command
+2026-04-07 02:34:05,522 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:34:10,307 - INFO - __main__ - Connection closed
+2026-04-07 02:34:10,307 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:34:10,321 - INFO - websockets.server - connection open
+2026-04-07 02:34:10,321 - INFO - __main__ - Client connected (1)
+2026-04-07 02:34:10,391 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:34:10,391 - INFO - __main__ - New connection from ('127.0.0.1', 42158)
+2026-04-07 02:34:10,392 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:34:10,392 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:34:12,656 - INFO - __main__ - [PARTIAL] t=2.000s | Reserve some of the spawn.
+2026-04-07 02:34:12,657 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Reserve some of the spawn....
+2026-04-07 02:34:14,760 - INFO - __main__ - [PARTIAL] t=4.000s | Reserve some of the spawn, also half of the body shells, which.
+2026-04-07 02:34:14,760 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Reserve some of the spawn, also half of the body shells, which....
+2026-04-07 02:34:16,684 - INFO - __main__ - [PARTIAL] t=6.000s | Reserve some of the spawn, also half of the body shells, with which to make the crawfish butter to finish.
+2026-04-07 02:34:16,684 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Reserve some of the spawn, also half of the body shells, with which to make the ...
+2026-04-07 02:34:17,674 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=116192
+2026-04-07 02:34:17,675 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=116192 target_audio_end_sec=7.262 processed=116320 active=A
+2026-04-07 02:34:17,675 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:34:17,675 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=7.262s → speech_end_sec=6.462s
+2026-04-07 02:34:17,925 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='Reserve some of the spawn, also half of the body shells, with which to make the crawfish butter to finish the soup.' tl=ko -> detected=en translation='수프를 마무리하기 위해 가재 버터를 만드는 데 사용할 알의 일부와 몸통 껍질의 절반을 예약하십시오.'
+2026-04-07 02:34:17,926 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='수프를 마무리하기 위해 가재 버터를 만드는 데 사용할 알의 일부와 몸통 껍질의 절반을 예약하십시오.' original='Reserve some of the spawn, also half of the body shells, with which to make the crawfish butter to finish the soup.'
+2026-04-07 02:34:17,926 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='Reserve some of the spawn, also half of the body shells, with which to make the crawfish butter to finish the soup.' translation='수프를 마무리하기 위해 가재 버터를 만드는 데 사용할 알의 일부와 몸통 껍질의 절반을 예약하십시오.'
+2026-04-07 02:34:17,926 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 6.462] text='Reserve some of the spawn, also half of the body shells, with which to make the crawfish butter to finish the soup.'
+2026-04-07 02:34:17,926 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:34:18,074 - INFO - __main__ - Received finish command
+2026-04-07 02:34:18,145 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:34:22,931 - INFO - __main__ - Connection closed
+2026-04-07 02:34:22,931 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:34:22,946 - INFO - websockets.server - connection open
+2026-04-07 02:34:22,946 - INFO - __main__ - Client connected (1)
+2026-04-07 02:34:23,015 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:34:23,015 - INFO - __main__ - New connection from ('127.0.0.1', 37416)
+2026-04-07 02:34:23,016 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:34:23,016 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:34:25,349 - INFO - __main__ - [PARTIAL] t=2.000s | It is a chamber on the ground floor, which.
+2026-04-07 02:34:25,349 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=It is a chamber on the ground floor, which....
+2026-04-07 02:34:27,382 - INFO - __main__ - [PARTIAL] t=4.000s | It is a chamber on the ground floor, which has a grated window opening.
+2026-04-07 02:34:27,383 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=It is a chamber on the ground floor, which has a grated window opening....
+2026-04-07 02:34:29,322 - INFO - __main__ - [PARTIAL] t=6.000s | It is a chamber on the ground floor, which has a grated window opening on the garden, which is closed on the outside.
+2026-04-07 02:34:29,322 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=It is a chamber on the ground floor, which has a grated window opening on the ga...
+2026-04-07 02:34:31,282 - INFO - __main__ - [PARTIAL] t=8.000s | It is a chamber on the ground floor, which has a grated window opening on the garden, which is closed on the outside by a shutter, and two doors.
+2026-04-07 02:34:31,282 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=It is a chamber on the ground floor, which has a grated window opening on the ga...
+2026-04-07 02:34:33,269 - INFO - __main__ - [PARTIAL] t=10.000s | It is a chamber on the ground floor, which has a grated window opening on the garden, which is closed on the outside by a shutter, and two doors. One leads into the convent.
+2026-04-07 02:34:33,269 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=It is a chamber on the ground floor, which has a grated window opening on the ga...
+2026-04-07 02:34:33,269 - INFO - __main__ - [SEG_AUDIO_END] sentence='It is a chamber on the ground floor, which has a grated window opening on the garden, which is closed on the outside by a shutter, and two doors.' → first_with_punct_time=8.000s (fallback)
+2026-04-07 02:34:33,425 - INFO - examples.streaming_websocket_server - [C-] [translate-sentence] sentence='It is a chamber on the ground floor, which has a grated window opening on the garden, which is closed on the outside by a shutter, and two doors.' tl=ko -> detected=en translation='1층에 있는 방으로, 정원 쪽으로 열리는 격자창이 있고, 외부는 셔터로 닫혀 있으며, 두 개의 문이 있습니다.'
+2026-04-07 02:34:33,425 - INFO - __main__ - [FINAL] seg=1 reason=seg audio=[0.000, 8.000] text='It is a chamber on the ground floor, which has a grated window opening on the garden, which is closed on the outside by a shutter, and two doors.'
+2026-04-07 02:34:33,425 - INFO - examples.streaming_websocket_server - [C-] [final-sentence] slot=A lang=en text=It is a chamber on the ground floor, which has a grated window opening on the garden, which is closed on the outside by a shutter, and two doors.
+2026-04-07 02:34:35,275 - INFO - __main__ - [PARTIAL] t=12.000s | It is a chamber on the ground floor, which has a grated window opening on the garden, which is closed on the outside by a shutter, and two doors. One leads into the convent; the other into the church.
+2026-04-07 02:34:35,275 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=It is a chamber on the ground floor, which has a grated window opening on the ga...
+2026-04-07 02:34:36,864 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=221232
+2026-04-07 02:34:36,865 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=221232 target_audio_end_sec=13.827 processed=221360 active=A
+2026-04-07 02:34:36,865 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:34:36,865 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=13.827s → speech_end_sec=13.027s
+2026-04-07 02:34:37,157 - INFO - examples.streaming_websocket_server - [C-] [translate-sentence] sentence='One leads into the convent; the other into the church.' tl=ko -> detected=en translation='하나는 수녀원으로 연결됩니다. 다른 하나는 교회에 들어갑니다.'
+2026-04-07 02:34:37,318 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='One leads into the convent; the other into the church. A what church?' tl=ko -> detected=en translation='하나는 수녀원으로 연결됩니다. 다른 하나는 교회에 들어갑니다. 무슨 교회요?'
+2026-04-07 02:34:37,319 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='하나는 수녀원으로 연결됩니다. 다른 하나는 교회에 들어갑니다. 무슨 교회요?' original='One leads into the convent; the other into the church. A what church?'
+2026-04-07 02:34:37,319 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='One leads into the convent; the other into the church. A what church?' translation='하나는 수녀원으로 연결됩니다. 다른 하나는 교회에 들어갑니다. 무슨 교회요?'
+2026-04-07 02:34:37,319 - INFO - __main__ - [FINAL] seg=2 reason=vad audio=[8.000, 13.027] text='One leads into the convent; the other into the church. A what church?'
+2026-04-07 02:34:37,319 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:34:37,465 - INFO - __main__ - Received finish command
+2026-04-07 02:34:37,552 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:34:42,325 - INFO - __main__ - Connection closed
+2026-04-07 02:34:42,326 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:34:42,339 - INFO - websockets.server - connection open
+2026-04-07 02:34:42,339 - INFO - __main__ - Client connected (1)
+2026-04-07 02:34:42,408 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:34:42,408 - INFO - __main__ - New connection from ('127.0.0.1', 44432)
+2026-04-07 02:34:42,409 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:34:42,409 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:34:44,680 - INFO - __main__ - [PARTIAL] t=2.000s | He did what he liked with him.
+2026-04-07 02:34:44,680 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=He did what he liked with him....
+2026-04-07 02:34:46,832 - INFO - __main__ - [PARTIAL] t=4.000s | He did what he liked with him. He made him dance according to his whim.
+2026-04-07 02:34:46,833 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=He did what he liked with him. He made him dance according to his whim....
+2026-04-07 02:34:46,833 - INFO - __main__ - [SEG_AUDIO_END] sentence='He did what he liked with him.' → first_with_punct_time=2.000s (fallback)
+2026-04-07 02:34:46,913 - INFO - examples.streaming_websocket_server - [C-] [translate-sentence] sentence='He did what he liked with him.' tl=ko -> detected=en translation='그는 자신이 좋아하는 일을 그와 함께했습니다.'
+2026-04-07 02:34:46,913 - INFO - __main__ - [FINAL] seg=1 reason=seg audio=[0.000, 2.000] text='He did what he liked with him.'
+2026-04-07 02:34:46,914 - INFO - examples.streaming_websocket_server - [C-] [final-sentence] slot=A lang=en text=He did what he liked with him.
+2026-04-07 02:34:47,393 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=77424
+2026-04-07 02:34:47,395 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=77424 target_audio_end_sec=4.839 processed=79600 active=A
+2026-04-07 02:34:47,395 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:34:47,396 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=4.839s → speech_end_sec=4.039s
+2026-04-07 02:34:47,631 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='He made him dance according to his whim.' tl=ko -> detected=en translation='그는 그의 기분에 따라 그를 춤추게 했다.'
+2026-04-07 02:34:47,631 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='그는 그의 기분에 따라 그를 춤추게 했다.' original='He made him dance according to his whim.'
+2026-04-07 02:34:47,631 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='He made him dance according to his whim.' translation='그는 그의 기분에 따라 그를 춤추게 했다.'
+2026-04-07 02:34:47,631 - INFO - __main__ - [FINAL] seg=2 reason=vad audio=[2.000, 4.039] text='He made him dance according to his whim.'
+2026-04-07 02:34:47,631 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:34:47,795 - INFO - __main__ - Received finish command
+2026-04-07 02:34:47,866 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:34:52,638 - INFO - __main__ - Connection closed
+2026-04-07 02:34:52,638 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:34:52,654 - INFO - websockets.server - connection open
+2026-04-07 02:34:52,654 - INFO - __main__ - Client connected (1)
+2026-04-07 02:34:52,724 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:34:52,724 - INFO - __main__ - New connection from ('127.0.0.1', 57260)
+2026-04-07 02:34:52,724 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:34:52,725 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:34:54,940 - INFO - __main__ - [PARTIAL] t=2.000s | The grave digger.
+2026-04-07 02:34:54,941 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=The grave digger....
+2026-04-07 02:34:55,532 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=42624
+2026-04-07 02:34:55,535 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=42624 target_audio_end_sec=2.664 processed=44800 active=A
+2026-04-07 02:34:55,535 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:34:55,535 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=2.664s → speech_end_sec=1.864s
+2026-04-07 02:34:55,746 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='The grave digger.' tl=ko -> detected=en translation='무덤 파는 사람.'
+2026-04-07 02:34:55,746 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='무덤 파는 사람.' original='The grave digger.'
+2026-04-07 02:34:55,746 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='The grave digger.' translation='무덤 파는 사람.'
+2026-04-07 02:34:55,746 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 1.864] text='The grave digger.'
+2026-04-07 02:34:55,747 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:34:56,897 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=65920
+2026-04-07 02:34:56,898 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=65920 target_audio_end_sec=4.120 processed=66560 active=B
+2026-04-07 02:34:56,898 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=B new_active=A new_standby=B
+2026-04-07 02:34:56,898 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=4.120s → speech_end_sec=3.320s
+2026-04-07 02:34:57,109 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='Yes.' tl=ko -> detected=en translation='예.'
+2026-04-07 02:34:57,109 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=B reason=vad lang=en translation='예.' original='Yes.'
+2026-04-07 02:34:57,109 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=B lang=en text='Yes.' translation='예.'
+2026-04-07 02:34:57,109 - INFO - __main__ - [FINAL] seg=2 reason=vad audio=[1.864, 3.320] text='Yes.'
+2026-04-07 02:34:57,109 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=B
+2026-04-07 02:34:57,497 - INFO - __main__ - Received finish command
+2026-04-07 02:34:57,595 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:35:02,116 - INFO - __main__ - Connection closed
+2026-04-07 02:35:02,116 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:35:02,130 - INFO - websockets.server - connection open
+2026-04-07 02:35:02,131 - INFO - __main__ - Client connected (1)
+2026-04-07 02:35:02,201 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:35:02,202 - INFO - __main__ - New connection from ('127.0.0.1', 47140)
+2026-04-07 02:35:02,202 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:35:02,203 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:35:04,521 - INFO - __main__ - [PARTIAL] t=2.000s | Returned Voschlevon, clutching.
+2026-04-07 02:35:04,522 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Returned Voschlevon, clutching....
+2026-04-07 02:35:06,606 - INFO - __main__ - [PARTIAL] t=4.000s | Returned Voslovon, clutching at this branch, feeble as it was.
+2026-04-07 02:35:06,606 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Returned Voslovon, clutching at this branch, feeble as it was....
+2026-04-07 02:35:07,376 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=80976
+2026-04-07 02:35:07,378 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=80976 target_audio_end_sec=5.061 processed=82640 active=A
+2026-04-07 02:35:07,378 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:35:07,378 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=5.061s → speech_end_sec=4.261s
+2026-04-07 02:35:07,593 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='Returned Voslovon, clutching at this branch, feeble as it was.' tl=ko -> detected=en translation='보슬로본은 이 나뭇가지를 움켜쥐고 연약한 모습으로 돌아왔습니다.'
+2026-04-07 02:35:07,593 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='보슬로본은 이 나뭇가지를 움켜쥐고 연약한 모습으로 돌아왔습니다.' original='Returned Voslovon, clutching at this branch, feeble as it was.'
+2026-04-07 02:35:07,593 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='Returned Voslovon, clutching at this branch, feeble as it was.' translation='보슬로본은 이 나뭇가지를 움켜쥐고 연약한 모습으로 돌아왔습니다.'
+2026-04-07 02:35:07,594 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 4.261] text='Returned Voslovon, clutching at this branch, feeble as it was.'
+2026-04-07 02:35:07,594 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:35:07,779 - INFO - __main__ - Received finish command
+2026-04-07 02:35:07,850 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:35:12,601 - INFO - __main__ - Connection closed
+2026-04-07 02:35:12,601 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:35:12,616 - INFO - websockets.server - connection open
+2026-04-07 02:35:12,616 - INFO - __main__ - Client connected (1)
+2026-04-07 02:35:12,683 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:35:12,683 - INFO - __main__ - New connection from ('127.0.0.1', 35120)
+2026-04-07 02:35:12,684 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:35:12,685 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:35:14,927 - INFO - __main__ - [PARTIAL] t=2.000s | The duke comes every morning.
+2026-04-07 02:35:14,928 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=The duke comes every morning....
+2026-04-07 02:35:17,060 - INFO - __main__ - [PARTIAL] t=4.000s | The duke comes every morning. They will tell him when he comes.
+2026-04-07 02:35:17,061 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=The duke comes every morning. They will tell him when he comes....
+2026-04-07 02:35:17,061 - INFO - __main__ - [SEG_AUDIO_END] sentence='The duke comes every morning.' → first_with_punct_time=2.000s (fallback)
+2026-04-07 02:35:17,145 - INFO - examples.streaming_websocket_server - [C-] [translate-sentence] sentence='The duke comes every morning.' tl=ko -> detected=en translation='공작은 매일 아침 찾아온다.'
+2026-04-07 02:35:17,145 - INFO - __main__ - [FINAL] seg=1 reason=seg audio=[0.000, 2.000] text='The duke comes every morning.'
+2026-04-07 02:35:17,145 - INFO - examples.streaming_websocket_server - [C-] [final-sentence] slot=A lang=en text=The duke comes every morning.
+2026-04-07 02:35:18,924 - INFO - __main__ - [PARTIAL] t=6.000s | The duke comes every morning. They will tell him when he comes that I am asleep, and.
+2026-04-07 02:35:18,924 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=The duke comes every morning. They will tell him when he comes that I am asleep,...
+2026-04-07 02:35:21,177 - INFO - __main__ - [PARTIAL] t=8.155s | The duke comes every morning. They will tell him when he comes that I am asleep, and perhaps he will wait until I awake.
+2026-04-07 02:35:21,178 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=The duke comes every morning. They will tell him when he comes that I am asleep,...
+2026-04-07 02:35:21,450 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=139952
+2026-04-07 02:35:21,450 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=139952 target_audio_end_sec=8.747 processed=140080 active=A
+2026-04-07 02:35:21,450 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:35:21,450 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=8.747s → speech_end_sec=7.947s
+2026-04-07 02:35:21,671 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='They will tell him when he comes that I am asleep, and perhaps he will wait until I awake.' tl=ko -> detected=en translation='그가 오면 내가 자고 있다고 말할 것이고, 아마도 그는 내가 깨어날 때까지 기다릴 것입니다.'
+2026-04-07 02:35:21,671 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='그가 오면 내가 자고 있다고 말할 것이고, 아마도 그는 내가 깨어날 때까지 기다릴 것입니다.' original='They will tell him when he comes that I am asleep, and perhaps he will wait until I awake.'
+2026-04-07 02:35:21,671 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='They will tell him when he comes that I am asleep, and perhaps he will wait until I awake.' translation='그가 오면 내가 자고 있다고 말할 것이고, 아마도 그는 내가 깨어날 때까지 기다릴 것입니다.'
+2026-04-07 02:35:21,671 - INFO - __main__ - [FINAL] seg=2 reason=vad audio=[2.000, 7.947] text='They will tell him when he comes that I am asleep, and perhaps he will wait until I awake.'
+2026-04-07 02:35:21,672 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:35:21,675 - INFO - __main__ - Received finish command
+2026-04-07 02:35:21,775 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:35:26,677 - INFO - __main__ - Connection closed
+2026-04-07 02:35:26,678 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:35:26,692 - INFO - websockets.server - connection open
+2026-04-07 02:35:26,692 - INFO - __main__ - Client connected (1)
+2026-04-07 02:35:26,761 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:35:26,761 - INFO - __main__ - New connection from ('127.0.0.1', 47070)
+2026-04-07 02:35:26,762 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:35:26,762 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:35:29,001 - INFO - __main__ - [PARTIAL] t=2.000s | My whole being was exhausted.
+2026-04-07 02:35:29,001 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=My whole being was exhausted....
+2026-04-07 02:35:31,137 - INFO - __main__ - [PARTIAL] t=4.000s | My whole being was exalted into joy at the memory of the.
+2026-04-07 02:35:31,138 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=My whole being was exalted into joy at the memory of the....
+2026-04-07 02:35:32,971 - INFO - __main__ - [PARTIAL] t=6.000s | My whole being was exalted into joy at the memory of the words we had exchanged.
+2026-04-07 02:35:32,971 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=My whole being was exalted into joy at the memory of the words we had exchanged....
+2026-04-07 02:35:35,158 - INFO - __main__ - [PARTIAL] t=8.120s | My whole being was exalted into joy at the memory of the words we had exchanged during that first night.
+2026-04-07 02:35:35,158 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=My whole being was exalted into joy at the memory of the words we had exchanged ...
+2026-04-07 02:35:35,292 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=134656
+2026-04-07 02:35:35,293 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=134656 target_audio_end_sec=8.416 processed=136320 active=A
+2026-04-07 02:35:35,294 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:35:35,294 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=8.416s → speech_end_sec=7.616s
+2026-04-07 02:35:35,517 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='My whole being was exalted into joy at the memory of the words we had exchanged during that first night.' tl=ko -> detected=en translation='우리가 첫날 밤에 나눈 말을 생각하면 내 온 존재는 기쁨으로 고양되었습니다.'
+2026-04-07 02:35:35,517 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='우리가 첫날 밤에 나눈 말을 생각하면 내 온 존재는 기쁨으로 고양되었습니다.' original='My whole being was exalted into joy at the memory of the words we had exchanged during that first night.'
+2026-04-07 02:35:35,517 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='My whole being was exalted into joy at the memory of the words we had exchanged during that first night.' translation='우리가 첫날 밤에 나눈 말을 생각하면 내 온 존재는 기쁨으로 고양되었습니다.'
+2026-04-07 02:35:35,517 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 7.616] text='My whole being was exalted into joy at the memory of the words we had exchanged during that first night.'
+2026-04-07 02:35:35,518 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:35:35,522 - INFO - __main__ - Received finish command
+2026-04-07 02:35:35,594 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:35:40,524 - INFO - __main__ - Connection closed
+2026-04-07 02:35:40,524 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:35:40,538 - INFO - websockets.server - connection open
+2026-04-07 02:35:40,538 - INFO - __main__ - Client connected (1)
+2026-04-07 02:35:40,607 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:35:40,607 - INFO - __main__ - New connection from ('127.0.0.1', 38160)
+2026-04-07 02:35:40,608 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:35:40,608 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:35:42,863 - INFO - __main__ - [PARTIAL] t=2.000s | My dear Prudence, I.
+2026-04-07 02:35:42,863 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=My dear Prudence, I....
+2026-04-07 02:35:45,017 - INFO - __main__ - [PARTIAL] t=4.000s | My dear Prudence, I answered, "You do not know what you."
+2026-04-07 02:35:45,017 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=My dear Prudence, I answered, "You do not know what you."...
+2026-04-07 02:35:46,426 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=90272
+2026-04-07 02:35:46,430 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=90272 target_audio_end_sec=5.642 processed=92960 active=A
+2026-04-07 02:35:46,430 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:35:46,430 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=5.642s → speech_end_sec=4.842s
+2026-04-07 02:35:46,676 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='My dear Prudence, I answered, "You do not know what you are saying."' tl=ko -> detected=en translation='친애하는 프루던스여, 나는 "당신은 당신이 무슨 말을 하는지 모르고 있습니다."라고 대답했습니다.'
+2026-04-07 02:35:46,676 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='친애하는 프루던스여, 나는 "당신은 당신이 무슨 말을 하는지 모르고 있습니다."라고 대답했습니다.' original='My dear Prudence, I answered, "You do not know what you are saying."'
+2026-04-07 02:35:46,676 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='My dear Prudence, I answered, "You do not know what you are saying."' translation='친애하는 프루던스여, 나는 "당신은 당신이 무슨 말을 하는지 모르고 있습니다."라고 대답했습니다.'
+2026-04-07 02:35:46,676 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 4.842] text='My dear Prudence, I answered, "You do not know what you are saying."'
+2026-04-07 02:35:46,677 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:35:46,681 - INFO - __main__ - Received finish command
+2026-04-07 02:35:46,752 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:35:51,683 - INFO - __main__ - Connection closed
+2026-04-07 02:35:51,683 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:35:51,697 - INFO - websockets.server - connection open
+2026-04-07 02:35:51,697 - INFO - __main__ - Client connected (1)
+2026-04-07 02:35:51,767 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:35:51,767 - INFO - __main__ - New connection from ('127.0.0.1', 54994)
+2026-04-07 02:35:51,767 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:35:51,768 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:35:54,035 - INFO - __main__ - [PARTIAL] t=2.000s | We no longer belong to ourselves.
+2026-04-07 02:35:54,035 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=We no longer belong to ourselves....
+2026-04-07 02:35:55,302 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=53712
+2026-04-07 02:35:55,305 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=53712 target_audio_end_sec=3.357 processed=56400 active=A
+2026-04-07 02:35:55,305 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:35:55,305 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=3.357s → speech_end_sec=2.557s
+2026-04-07 02:35:55,547 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='We no longer belong to ourselves.' tl=ko -> detected=en translation='우리는 더 이상 우리 자신의 것이 아닙니다.'
+2026-04-07 02:35:55,547 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='우리는 더 이상 우리 자신의 것이 아닙니다.' original='We no longer belong to ourselves.'
+2026-04-07 02:35:55,547 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='We no longer belong to ourselves.' translation='우리는 더 이상 우리 자신의 것이 아닙니다.'
+2026-04-07 02:35:55,547 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 2.557] text='We no longer belong to ourselves.'
+2026-04-07 02:35:55,548 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:35:55,548 - INFO - __main__ - Received finish command
+2026-04-07 02:35:55,648 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:36:00,554 - INFO - __main__ - Connection closed
+2026-04-07 02:36:00,554 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:36:00,569 - INFO - websockets.server - connection open
+2026-04-07 02:36:00,569 - INFO - __main__ - Client connected (1)
+2026-04-07 02:36:00,639 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:36:00,639 - INFO - __main__ - New connection from ('127.0.0.1', 43412)
+2026-04-07 02:36:00,640 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:36:00,640 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:36:02,902 - INFO - __main__ - [PARTIAL] t=2.000s | Here it is. I have.
+2026-04-07 02:36:02,902 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Here it is. I have....
+2026-04-07 02:36:02,903 - INFO - __main__ - [SEG_AUDIO_END] sentence='Here it is.' → first_with_punct_time=2.000s (fallback)
+2026-04-07 02:36:03,015 - INFO - examples.streaming_websocket_server - [C-] [translate-sentence] sentence='Here it is.' tl=ko -> detected=en translation='여기 있습니다.'
+2026-04-07 02:36:03,016 - INFO - __main__ - [FINAL] seg=1 reason=seg audio=[0.000, 2.000] text='Here it is.'
+2026-04-07 02:36:03,016 - INFO - examples.streaming_websocket_server - [C-] [final-sentence] slot=A lang=en text=Here it is.
+2026-04-07 02:36:04,399 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=57824
+2026-04-07 02:36:04,402 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=57824 target_audio_end_sec=3.614 processed=60000 active=A
+2026-04-07 02:36:04,402 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:36:04,402 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=3.614s → speech_end_sec=2.814s
+2026-04-07 02:36:04,698 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='I have brought it back.' tl=ko -> detected=en translation='나는 그것을 다시 가져왔다.'
+2026-04-07 02:36:04,698 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='나는 그것을 다시 가져왔다.' original='I have brought it back.'
+2026-04-07 02:36:04,698 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='I have brought it back.' translation='나는 그것을 다시 가져왔다.'
+2026-04-07 02:36:04,698 - INFO - __main__ - [FINAL] seg=2 reason=vad audio=[2.000, 2.814] text='I have brought it back.'
+2026-04-07 02:36:04,698 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:36:04,802 - INFO - __main__ - Received finish command
+2026-04-07 02:36:04,874 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:36:09,705 - INFO - __main__ - Connection closed
+2026-04-07 02:36:09,706 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:36:09,719 - INFO - websockets.server - connection open
+2026-04-07 02:36:09,719 - INFO - __main__ - Client connected (1)
+2026-04-07 02:36:09,789 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:36:09,790 - INFO - __main__ - New connection from ('127.0.0.1', 49160)
+2026-04-07 02:36:09,790 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:36:09,791 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:36:12,061 - INFO - __main__ - [PARTIAL] t=2.000s | Menahem, king of Israel.
+2026-04-07 02:36:12,061 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Menahem, king of Israel....
+2026-04-07 02:36:14,142 - INFO - __main__ - [PARTIAL] t=4.000s | Menahem, king of Israel, had died, and was succeeded.
+2026-04-07 02:36:14,142 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Menahem, king of Israel, had died, and was succeeded....
+2026-04-07 02:36:16,049 - INFO - __main__ - [PARTIAL] t=6.000s | Menahem, king of Israel, had died, and was succeeded by his son Pekahiah.
+2026-04-07 02:36:16,049 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Menahem, king of Israel, had died, and was succeeded by his son Pekahiah....
+2026-04-07 02:36:16,899 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=111424
+2026-04-07 02:36:16,902 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=111424 target_audio_end_sec=6.964 processed=113600 active=A
+2026-04-07 02:36:16,902 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:36:16,902 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=6.964s → speech_end_sec=6.164s
+2026-04-07 02:36:17,117 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='Menahem, king of Israel, had died, and was succeeded by his son Pekahiah.' tl=ko -> detected=en translation='이스라엘 왕 므나헴이 죽고 그의 아들 브가히야가 왕위를 계승하였습니다.'
+2026-04-07 02:36:17,118 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='이스라엘 왕 므나헴이 죽고 그의 아들 브가히야가 왕위를 계승하였습니다.' original='Menahem, king of Israel, had died, and was succeeded by his son Pekahiah.'
+2026-04-07 02:36:17,118 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='Menahem, king of Israel, had died, and was succeeded by his son Pekahiah.' translation='이스라엘 왕 므나헴이 죽고 그의 아들 브가히야가 왕위를 계승하였습니다.'
+2026-04-07 02:36:17,118 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 6.164] text='Menahem, king of Israel, had died, and was succeeded by his son Pekahiah.'
+2026-04-07 02:36:17,118 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:36:17,301 - INFO - __main__ - Received finish command
+2026-04-07 02:36:17,372 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:36:22,126 - INFO - __main__ - Connection closed
+2026-04-07 02:36:22,126 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:36:22,142 - INFO - websockets.server - connection open
+2026-04-07 02:36:22,143 - INFO - __main__ - Client connected (1)
+2026-04-07 02:36:22,212 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:36:22,212 - INFO - __main__ - New connection from ('127.0.0.1', 50312)
+2026-04-07 02:36:22,212 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:36:22,213 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:36:24,493 - INFO - __main__ - [PARTIAL] t=2.000s | At the question, should they go abroad?
+2026-04-07 02:36:24,494 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=At the question, should they go abroad?...
+2026-04-07 02:36:26,579 - INFO - __main__ - [PARTIAL] t=4.000s | At the question, should they go abroad? The doctor plunged into deep meditation.
+2026-04-07 02:36:26,580 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=At the question, should they go abroad? The doctor plunged into deep meditation....
+2026-04-07 02:36:26,580 - INFO - __main__ - [SEG_AUDIO_END] sentence='At the question, should they go abroad?' → first_with_punct_time=2.000s (fallback)
+2026-04-07 02:36:26,661 - INFO - examples.streaming_websocket_server - [C-] [translate-sentence] sentence='At the question, should they go abroad?' tl=ko -> detected=en translation='질문에, 그들은 해외로 가야 하는가?'
+2026-04-07 02:36:26,661 - INFO - __main__ - [FINAL] seg=1 reason=seg audio=[0.000, 2.000] text='At the question, should they go abroad?'
+2026-04-07 02:36:26,661 - INFO - examples.streaming_websocket_server - [C-] [final-sentence] slot=A lang=en text=At the question, should they go abroad?
+2026-04-07 02:36:28,487 - INFO - __main__ - [PARTIAL] t=6.000s | At the question, should they go abroad? The doctor plunged into deep meditation, as though resolving a weighty problem.
+2026-04-07 02:36:28,487 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=At the question, should they go abroad? The doctor plunged into deep meditation,...
+2026-04-07 02:36:29,362 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=112064
+2026-04-07 02:36:29,365 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=112064 target_audio_end_sec=7.004 processed=114240 active=A
+2026-04-07 02:36:29,365 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:36:29,365 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=7.004s → speech_end_sec=6.204s
+2026-04-07 02:36:29,593 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='The doctor plunged into deep meditation, as though resolving a weighty problem.' tl=ko -> detected=en translation='의사는 마치 중대한 문제를 해결하려는 듯 깊은 명상에 빠졌습니다.'
+2026-04-07 02:36:29,593 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='의사는 마치 중대한 문제를 해결하려는 듯 깊은 명상에 빠졌습니다.' original='The doctor plunged into deep meditation, as though resolving a weighty problem.'
+2026-04-07 02:36:29,593 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='The doctor plunged into deep meditation, as though resolving a weighty problem.' translation='의사는 마치 중대한 문제를 해결하려는 듯 깊은 명상에 빠졌습니다.'
+2026-04-07 02:36:29,593 - INFO - __main__ - [FINAL] seg=2 reason=vad audio=[2.000, 6.204] text='The doctor plunged into deep meditation, as though resolving a weighty problem.'
+2026-04-07 02:36:29,594 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:36:29,600 - INFO - __main__ - Received finish command
+2026-04-07 02:36:29,672 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:36:34,599 - INFO - __main__ - Connection closed
+2026-04-07 02:36:34,599 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:36:34,613 - INFO - websockets.server - connection open
+2026-04-07 02:36:34,614 - INFO - __main__ - Client connected (1)
+2026-04-07 02:36:34,683 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:36:34,683 - INFO - __main__ - New connection from ('127.0.0.1', 34834)
+2026-04-07 02:36:34,684 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:36:34,684 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:36:36,923 - INFO - __main__ - [PARTIAL] t=2.000s | There's one thing sure.
+2026-04-07 02:36:36,923 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=There's one thing sure....
+2026-04-07 02:36:37,494 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=44160
+2026-04-07 02:36:37,495 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=44160 target_audio_end_sec=2.760 processed=44800 active=A
+2026-04-07 02:36:37,495 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:36:37,495 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=2.760s → speech_end_sec=1.960s
+2026-04-07 02:36:37,719 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='There's one thing sure.' tl=ko -> detected=en translation='한 가지 확실한 게 있어요.'
+2026-04-07 02:36:37,719 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='한 가지 확실한 게 있어요.' original='There's one thing sure.'
+2026-04-07 02:36:37,719 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='There's one thing sure.' translation='한 가지 확실한 게 있어요.'
+2026-04-07 02:36:37,719 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 1.960] text='There's one thing sure.'
+2026-04-07 02:36:37,720 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:36:39,752 - INFO - __main__ - [PARTIAL] t=4.800s | I'll not be suspected of completing.
+2026-04-07 02:36:39,752 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=B text=I'll not be suspected of completing....
+2026-04-07 02:36:40,720 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=95760
+2026-04-07 02:36:40,721 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=95760 target_audio_end_sec=5.985 processed=96400 active=B
+2026-04-07 02:36:40,721 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=B new_active=A new_standby=B
+2026-04-07 02:36:40,721 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=5.985s → speech_end_sec=5.185s
+2026-04-07 02:36:41,000 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='I'll not be suspected of complicity.' tl=ko -> detected=en translation='나는 공모 혐의를 받지 않을 것이다.'
+2026-04-07 02:36:41,000 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=B reason=vad lang=en translation='나는 공모 혐의를 받지 않을 것이다.' original='I'll not be suspected of complicity.'
+2026-04-07 02:36:41,000 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=B lang=en text='I'll not be suspected of complicity.' translation='나는 공모 혐의를 받지 않을 것이다.'
+2026-04-07 02:36:41,000 - INFO - __main__ - [FINAL] seg=2 reason=vad audio=[1.960, 5.185] text='I'll not be suspected of complicity.'
+2026-04-07 02:36:41,001 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=B
+2026-04-07 02:36:41,120 - INFO - __main__ - Received finish command
+2026-04-07 02:36:41,191 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:36:46,007 - INFO - __main__ - Connection closed
+2026-04-07 02:36:46,007 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:36:46,026 - INFO - websockets.server - connection open
+2026-04-07 02:36:46,026 - INFO - __main__ - Client connected (1)
+2026-04-07 02:36:46,095 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:36:46,095 - INFO - __main__ - New connection from ('127.0.0.1', 39478)
+2026-04-07 02:36:46,096 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:36:46,096 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:36:48,360 - INFO - __main__ - [PARTIAL] t=2.000s | Then he went directly to the neighbor.
+2026-04-07 02:36:48,360 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Then he went directly to the neighbor....
+2026-04-07 02:36:50,446 - INFO - __main__ - [PARTIAL] t=4.000s | Then he went directly to the neighboring palace. The queen might have a.
+2026-04-07 02:36:50,446 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Then he went directly to the neighboring palace. The queen might have a....
+2026-04-07 02:36:50,446 - INFO - __main__ - [SEG_AUDIO_END] sentence='Then he went directly to the neighboring palace.' → first_with_punct_time=4.000s (fallback)
+2026-04-07 02:36:50,527 - INFO - examples.streaming_websocket_server - [C-] [translate-sentence] sentence='Then he went directly to the neighboring palace.' tl=ko -> detected=en translation='그런 다음 그는 바로 이웃 궁전으로 갔다.'
+2026-04-07 02:36:50,527 - INFO - __main__ - [FINAL] seg=1 reason=seg audio=[0.000, 4.000] text='Then he went directly to the neighboring palace.'
+2026-04-07 02:36:50,528 - INFO - examples.streaming_websocket_server - [C-] [final-sentence] slot=A lang=en text=Then he went directly to the neighboring palace.
+2026-04-07 02:36:52,370 - INFO - __main__ - [PARTIAL] t=6.000s | Then he went directly to the neighboring palace. The queen might have appeared already, and it would not do to.
+2026-04-07 02:36:52,371 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Then he went directly to the neighboring palace. The queen might have appeared a...
+2026-04-07 02:36:53,910 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=123216
+2026-04-07 02:36:53,912 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=123216 target_audio_end_sec=7.701 processed=124880 active=A
+2026-04-07 02:36:53,913 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:36:53,913 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=7.701s → speech_end_sec=6.901s
+2026-04-07 02:36:54,181 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='The queen might have appeared already, and it would not do to keep her waiting.' tl=ko -> detected=en translation='여왕은 이미 나타났을 수도 있고, 그녀를 계속 기다리게 할 수도 없습니다.'
+2026-04-07 02:36:54,181 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='여왕은 이미 나타났을 수도 있고, 그녀를 계속 기다리게 할 수도 없습니다.' original='The queen might have appeared already, and it would not do to keep her waiting.'
+2026-04-07 02:36:54,181 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='The queen might have appeared already, and it would not do to keep her waiting.' translation='여왕은 이미 나타났을 수도 있고, 그녀를 계속 기다리게 할 수도 없습니다.'
+2026-04-07 02:36:54,181 - INFO - __main__ - [FINAL] seg=2 reason=vad audio=[4.000, 6.901] text='The queen might have appeared already, and it would not do to keep her waiting.'
+2026-04-07 02:36:54,182 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:36:54,311 - INFO - __main__ - Received finish command
+2026-04-07 02:36:54,382 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:36:59,189 - INFO - __main__ - Connection closed
+2026-04-07 02:36:59,189 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:36:59,203 - INFO - websockets.server - connection open
+2026-04-07 02:36:59,203 - INFO - __main__ - Client connected (1)
+2026-04-07 02:36:59,273 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:36:59,273 - INFO - __main__ - New connection from ('127.0.0.1', 57368)
+2026-04-07 02:36:59,274 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:36:59,275 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:37:01,514 - INFO - __main__ - [PARTIAL] t=2.000s | They are regarded as good.
+2026-04-07 02:37:01,514 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=They are regarded as good....
+2026-04-07 02:37:03,636 - INFO - __main__ - [PARTIAL] t=4.000s | They are regarded as good, that is to say, as.
+2026-04-07 02:37:03,636 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=They are regarded as good, that is to say, as....
+2026-04-07 02:37:05,013 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=89504
+2026-04-07 02:37:05,016 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=89504 target_audio_end_sec=5.594 processed=91680 active=A
+2026-04-07 02:37:05,016 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:37:05,016 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=5.594s → speech_end_sec=4.794s
+2026-04-07 02:37:05,257 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='They are regarded as good, that is to say, as moral.' tl=ko -> detected=en translation='그들은 선한 것, 즉 도덕적인 것으로 간주됩니다.'
+2026-04-07 02:37:05,257 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='그들은 선한 것, 즉 도덕적인 것으로 간주됩니다.' original='They are regarded as good, that is to say, as moral.'
+2026-04-07 02:37:05,257 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='They are regarded as good, that is to say, as moral.' translation='그들은 선한 것, 즉 도덕적인 것으로 간주됩니다.'
+2026-04-07 02:37:05,257 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 4.794] text='They are regarded as good, that is to say, as moral.'
+2026-04-07 02:37:05,258 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:37:05,415 - INFO - __main__ - Received finish command
+2026-04-07 02:37:05,487 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:37:10,264 - INFO - __main__ - Connection closed
+2026-04-07 02:37:10,264 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:37:10,280 - INFO - websockets.server - connection open
+2026-04-07 02:37:10,280 - INFO - __main__ - Client connected (1)
+2026-04-07 02:37:10,350 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:37:10,350 - INFO - __main__ - New connection from ('127.0.0.1', 48930)
+2026-04-07 02:37:10,351 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:37:10,351 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:37:12,583 - INFO - __main__ - [PARTIAL] t=2.000s | Why should men and women?
+2026-04-07 02:37:12,583 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Why should men and women?...
+2026-04-07 02:37:14,724 - INFO - __main__ - [PARTIAL] t=4.000s | Why should men and women have children that they cannot take care of?
+2026-04-07 02:37:14,724 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Why should men and women have children that they cannot take care of?...
+2026-04-07 02:37:16,561 - INFO - __main__ - [PARTIAL] t=6.000s | Why should men and women have children that they cannot take care of? Children that are.
+2026-04-07 02:37:16,562 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Why should men and women have children that they cannot take care of? Children t...
+2026-04-07 02:37:16,562 - INFO - __main__ - [SEG_AUDIO_END] sentence='Why should men and women have children that they cannot take care of?' → first_with_punct_time=4.000s (fallback)
+2026-04-07 02:37:16,641 - INFO - examples.streaming_websocket_server - [C-] [translate-sentence] sentence='Why should men and women have children that they cannot take care of?' tl=ko -> detected=en translation='왜 남자와 여자는 자기들이 돌볼 수 없는 아이를 가져야 합니까?'
+2026-04-07 02:37:16,642 - INFO - __main__ - [FINAL] seg=1 reason=seg audio=[0.000, 4.000] text='Why should men and women have children that they cannot take care of?'
+2026-04-07 02:37:16,642 - INFO - examples.streaming_websocket_server - [C-] [final-sentence] slot=A lang=en text=Why should men and women have children that they cannot take care of?
+2026-04-07 02:37:18,617 - INFO - __main__ - [PARTIAL] t=8.000s | Why should men and women have children that they cannot take care of? Children that are a burden and curses.
+2026-04-07 02:37:18,617 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Why should men and women have children that they cannot take care of? Children t...
+2026-04-07 02:37:19,841 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=150528
+2026-04-07 02:37:19,843 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=150528 target_audio_end_sec=9.408 processed=151680 active=A
+2026-04-07 02:37:19,843 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:37:19,843 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=9.408s → speech_end_sec=8.608s
+2026-04-07 02:37:20,107 - INFO - examples.streaming_websocket_server - [C-] [translate-sentence] sentence='Children that are a burden and curses.' tl=ko -> detected=en translation='짐이 되고 저주가 되는 아이들.'
+2026-04-07 02:37:20,185 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='Children that are a burden and curses. Why?' tl=ko -> detected=en translation='짐이 되고 저주가 되는 아이들. 왜?'
+2026-04-07 02:37:20,185 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='짐이 되고 저주가 되는 아이들. 왜?' original='Children that are a burden and curses. Why?'
+2026-04-07 02:37:20,185 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='Children that are a burden and curses. Why?' translation='짐이 되고 저주가 되는 아이들. 왜?'
+2026-04-07 02:37:20,185 - INFO - __main__ - [FINAL] seg=2 reason=vad audio=[4.000, 8.608] text='Children that are a burden and curses. Why?'
+2026-04-07 02:37:20,186 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:37:20,190 - INFO - __main__ - Received finish command
+2026-04-07 02:37:20,292 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:37:25,192 - INFO - __main__ - Connection closed
+2026-04-07 02:37:25,192 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:37:25,207 - INFO - websockets.server - connection open
+2026-04-07 02:37:25,207 - INFO - __main__ - Client connected (1)
+2026-04-07 02:37:25,277 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:37:25,277 - INFO - __main__ - New connection from ('127.0.0.1', 46206)
+2026-04-07 02:37:25,278 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:37:25,278 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:37:27,662 - INFO - __main__ - [PARTIAL] t=2.000s | You're not as squeamish as all that, are you?
+2026-04-07 02:37:27,663 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=You're not as squeamish as all that, are you?...
+2026-04-07 02:37:29,788 - INFO - __main__ - [PARTIAL] t=4.000s | You're not as squeamish as all that, are you? Just because it was in a dead man's hand.
+2026-04-07 02:37:29,788 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=You're not as squeamish as all that, are you? Just because it was in a dead man'...
+2026-04-07 02:37:29,788 - INFO - __main__ - [SEG_AUDIO_END] sentence='You're not as squeamish as all that, are you?' → first_with_punct_time=2.000s (fallback)
+2026-04-07 02:37:29,870 - INFO - examples.streaming_websocket_server - [C-] [translate-sentence] sentence='You're not as squeamish as all that, are you?' tl=ko -> detected=en translation='당신은 그 모든 것만큼 비겁한 사람은 아니죠, 그렇죠?'
+2026-04-07 02:37:29,870 - INFO - __main__ - [FINAL] seg=1 reason=seg audio=[0.000, 2.000] text='You're not as squeamish as all that, are you?'
+2026-04-07 02:37:29,871 - INFO - examples.streaming_websocket_server - [C-] [final-sentence] slot=A lang=en text=You're not as squeamish as all that, are you?
+2026-04-07 02:37:31,051 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=92032
+2026-04-07 02:37:31,051 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=92032 target_audio_end_sec=5.752 processed=92160 active=A
+2026-04-07 02:37:31,051 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:37:31,051 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=5.752s → speech_end_sec=4.952s
+2026-04-07 02:37:31,325 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='Just because it was in a dead man's hands and a woman's.' tl=ko -> detected=en translation='죽은 남자의 손과 여자의 손에 있었기 때문이다.'
+2026-04-07 02:37:31,325 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='죽은 남자의 손과 여자의 손에 있었기 때문이다.' original='Just because it was in a dead man's hands and a woman's.'
+2026-04-07 02:37:31,325 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='Just because it was in a dead man's hands and a woman's.' translation='죽은 남자의 손과 여자의 손에 있었기 때문이다.'
+2026-04-07 02:37:31,325 - INFO - __main__ - [FINAL] seg=2 reason=vad audio=[2.000, 4.952] text='Just because it was in a dead man's hands and a woman's.'
+2026-04-07 02:37:31,326 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:37:31,451 - INFO - __main__ - Received finish command
+2026-04-07 02:37:31,522 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:37:36,332 - INFO - __main__ - Connection closed
+2026-04-07 02:37:36,332 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:37:36,354 - INFO - websockets.server - connection open
+2026-04-07 02:37:36,354 - INFO - __main__ - Client connected (1)
+2026-04-07 02:37:36,423 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:37:36,424 - INFO - __main__ - New connection from ('127.0.0.1', 35978)
+2026-04-07 02:37:36,424 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:37:36,425 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:37:38,740 - INFO - __main__ - [PARTIAL] t=2.000s | She said, "It hath reached me, O."
+2026-04-07 02:37:38,741 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=She said, "It hath reached me, O."...
+2026-04-07 02:37:40,822 - INFO - __main__ - [PARTIAL] t=4.000s | She said, "It hath reached me, O auspicious king, that when Sin."
+2026-04-07 02:37:40,823 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=She said, "It hath reached me, O auspicious king, that when Sin."...
+2026-04-07 02:37:42,699 - INFO - __main__ - [PARTIAL] t=6.000s | She said, "It hath reached me, O auspicious king, that when Sinbad the seaman had related the history."
+2026-04-07 02:37:42,699 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=She said, "It hath reached me, O auspicious king, that when Sinbad the seaman ha...
+2026-04-07 02:37:44,723 - INFO - __main__ - [PARTIAL] t=8.000s | She said, "It hath reached me, O auspicious king, that when Sinbad the seaman had related the history of what befell him in his sixth voyage."
+2026-04-07 02:37:44,723 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=She said, "It hath reached me, O auspicious king, that when Sinbad the seaman ha...
+2026-04-07 02:37:46,767 - INFO - __main__ - [PARTIAL] t=10.000s | She said, "It hath reached me, O auspicious king, that when Sinbad the seaman had related the history of what befell him in his sixth voyage, and all the company had dispersed."
+2026-04-07 02:37:46,767 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=She said, "It hath reached me, O auspicious king, that when Sinbad the seaman ha...
+2026-04-07 02:37:48,686 - INFO - __main__ - [PARTIAL] t=12.000s | She said, "It hath reached me, O auspicious king, that when Sinbad the seaman had related the history of what befell him in his sixth voyage, and all the company had dispersed, Sinbad the landsman."
+2026-04-07 02:37:48,686 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=She said, "It hath reached me, O auspicious king, that when Sinbad the seaman ha...
+2026-04-07 02:37:50,761 - INFO - __main__ - [PARTIAL] t=14.000s | She said, "It hath reached me, O auspicious king, that when Sinbad the seaman had related the history of what befell him in his sixth voyage, and all the company had dispersed, Sinbad the landsman went home and slept as of wont."
+2026-04-07 02:37:50,762 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=She said, "It hath reached me, O auspicious king, that when Sinbad the seaman ha...
+2026-04-07 02:37:51,465 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=238816
+2026-04-07 02:37:51,467 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=238816 target_audio_end_sec=14.926 processed=240480 active=A
+2026-04-07 02:37:51,467 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:37:51,467 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=14.926s → speech_end_sec=14.126s
+2026-04-07 02:37:51,799 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='She said, "It hath reached me, O auspicious king, that when Sinbad the seaman had related the history of what befell him in his sixth voyage, and all the company had dispersed, Sinbad the landsman went home and slept as of wont."' tl=ko -> detected=en translation='그녀가 말했습니다. "오 상서로운 왕이시여, 선원 신드바드가 여섯 번째 항해에서 그에게 닥친 일의 역사를 이야기하고 모든 무리가 흩어졌을 때 토지 주인 신드바드는 집으로 돌아가 평소처럼 잠을 잤다는 소식이 나에게 이르렀습니다."'
+2026-04-07 02:37:51,799 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='그녀가 말했습니다. "오 상서로운 왕이시여, 선원 신드바드가 여섯 번째 항해에서 그에게 닥친 일의 역사를 이야기하고 모든 무리가 흩어졌을 때 토지 주인 신드바드는 집으로 돌아가 평소처럼 잠을 잤다는 소식이 나에게 이르렀습니다."' original='She said, "It hath reached me, O auspicious king, that when Sinbad the seaman had related the history of what befell him in his sixth voyage, and all the company had dispersed, Sinbad the landsman went home and slept as of wont."'
+2026-04-07 02:37:51,799 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='She said, "It hath reached me, O auspicious king, that when Sinbad the seaman had related the history of what befell him in his sixth voyage, and all the company had dispersed, Sinbad the landsman went home and slept as of wont."' translation='그녀가 말했습니다. "오 상서로운 왕이시여, 선원 신드바드가 여섯 번째 항해에서 그에게 닥친 일의 역사를 이야기하고 모든 무리가 흩어졌을 때 토지 주인 신드바드는 집으로 돌아가 평소처럼 잠을 잤다는 소식이 나에게 이르렀습니다."'
+2026-04-07 02:37:51,799 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 14.126] text='She said, "It hath reached me, O auspicious king, that when Sinbad the seaman had related the history of what befell him in his sixth voyage, and all the company had dispersed, Sinbad the landsman went home and slept as of wont."'
+2026-04-07 02:37:51,800 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:37:51,868 - INFO - __main__ - Received finish command
+2026-04-07 02:37:51,940 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:37:56,807 - INFO - __main__ - Connection closed
+2026-04-07 02:37:56,807 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:37:56,825 - INFO - websockets.server - connection open
+2026-04-07 02:37:56,825 - INFO - __main__ - Client connected (1)
+2026-04-07 02:37:56,895 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:37:56,895 - INFO - __main__ - New connection from ('127.0.0.1', 43730)
+2026-04-07 02:37:56,896 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:37:56,896 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:37:59,181 - INFO - __main__ - [PARTIAL] t=2.000s | Say awkward in the future, not awkward.
+2026-04-07 02:37:59,181 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Say awkward in the future, not awkward....
+2026-04-07 02:38:00,230 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=50512
+2026-04-07 02:38:00,233 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=50512 target_audio_end_sec=3.157 processed=53200 active=A
+2026-04-07 02:38:00,233 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:38:00,233 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=3.157s → speech_end_sec=2.357s
+2026-04-07 02:38:00,512 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='Say awkward in the future, not awkward.' tl=ko -> detected=en translation='앞으로는 어색하지 말고 어색하게 말해보세요.'
+2026-04-07 02:38:00,512 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='앞으로는 어색하지 말고 어색하게 말해보세요.' original='Say awkward in the future, not awkward.'
+2026-04-07 02:38:00,512 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='Say awkward in the future, not awkward.' translation='앞으로는 어색하지 말고 어색하게 말해보세요.'
+2026-04-07 02:38:00,512 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 2.357] text='Say awkward in the future, not awkward.'
+2026-04-07 02:38:00,513 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:38:00,517 - INFO - __main__ - Received finish command
+2026-04-07 02:38:00,588 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:38:05,518 - INFO - __main__ - Connection closed
+2026-04-07 02:38:05,518 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:38:05,533 - INFO - websockets.server - connection open
+2026-04-07 02:38:05,534 - INFO - __main__ - Client connected (1)
+2026-04-07 02:38:05,605 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:38:05,606 - INFO - __main__ - New connection from ('127.0.0.1', 52762)
+2026-04-07 02:38:05,606 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:38:05,607 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:38:07,946 - INFO - __main__ - [PARTIAL] t=2.000s | From Harrisonville, she went to Waverly.
+2026-04-07 02:38:07,946 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=From Harrisonville, she went to Waverly....
+2026-04-07 02:38:10,179 - INFO - __main__ - [PARTIAL] t=4.135s | From Harrisonville, she went to Waverly, where she was hounded continually.
+2026-04-07 02:38:10,179 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=From Harrisonville, she went to Waverly, where she was hounded continually....
+2026-04-07 02:38:10,350 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=73072
+2026-04-07 02:38:10,353 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=73072 target_audio_end_sec=4.567 processed=75760 active=A
+2026-04-07 02:38:10,353 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:38:10,353 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=4.567s → speech_end_sec=3.767s
+2026-04-07 02:38:10,568 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='From Harrisonville, she went to Waverly, where she was hounded continually.' tl=ko -> detected=en translation='해리슨빌에서 그녀는 웨이벌리(Waverly)로 갔는데 그곳에서 계속해서 쫓기게 되었습니다.'
+2026-04-07 02:38:10,568 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='해리슨빌에서 그녀는 웨이벌리(Waverly)로 갔는데 그곳에서 계속해서 쫓기게 되었습니다.' original='From Harrisonville, she went to Waverly, where she was hounded continually.'
+2026-04-07 02:38:10,568 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='From Harrisonville, she went to Waverly, where she was hounded continually.' translation='해리슨빌에서 그녀는 웨이벌리(Waverly)로 갔는데 그곳에서 계속해서 쫓기게 되었습니다.'
+2026-04-07 02:38:10,569 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 3.767] text='From Harrisonville, she went to Waverly, where she was hounded continually.'
+2026-04-07 02:38:10,569 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:38:10,574 - INFO - __main__ - Received finish command
+2026-04-07 02:38:10,644 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:38:15,575 - INFO - __main__ - Connection closed
+2026-04-07 02:38:15,576 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:38:15,591 - INFO - websockets.server - connection open
+2026-04-07 02:38:15,591 - INFO - __main__ - Client connected (1)
+2026-04-07 02:38:15,662 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:38:15,662 - INFO - __main__ - New connection from ('127.0.0.1', 60120)
+2026-04-07 02:38:15,663 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:38:15,663 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:38:17,948 - INFO - __main__ - [PARTIAL] t=2.000s | That night, it started to rain.
+2026-04-07 02:38:17,948 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=That night, it started to rain....
+2026-04-07 02:38:20,238 - INFO - __main__ - [PARTIAL] t=4.180s | That night it started to rain, and we wore out our horses.
+2026-04-07 02:38:20,239 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=That night it started to rain, and we wore out our horses....
+2026-04-07 02:38:20,243 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=69952
+2026-04-07 02:38:20,243 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=69952 target_audio_end_sec=4.372 processed=70080 active=A
+2026-04-07 02:38:20,243 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:38:20,243 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=4.372s → speech_end_sec=3.572s
+2026-04-07 02:38:20,459 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='That night it started to rain, and we wore out our horses.' tl=ko -> detected=en translation='그날 밤 비가 내리기 시작했고 우리는 말을 지쳤습니다.'
+2026-04-07 02:38:20,459 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='그날 밤 비가 내리기 시작했고 우리는 말을 지쳤습니다.' original='That night it started to rain, and we wore out our horses.'
+2026-04-07 02:38:20,459 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='That night it started to rain, and we wore out our horses.' translation='그날 밤 비가 내리기 시작했고 우리는 말을 지쳤습니다.'
+2026-04-07 02:38:20,460 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 3.572] text='That night it started to rain, and we wore out our horses.'
+2026-04-07 02:38:20,460 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:38:20,465 - INFO - __main__ - Received finish command
+2026-04-07 02:38:20,535 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:38:25,465 - INFO - __main__ - Connection closed
+2026-04-07 02:38:25,466 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:38:25,482 - INFO - websockets.server - connection open
+2026-04-07 02:38:25,482 - INFO - __main__ - Client connected (1)
+2026-04-07 02:38:25,553 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:38:25,553 - INFO - __main__ - New connection from ('127.0.0.1', 55332)
+2026-04-07 02:38:25,554 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:38:25,554 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:38:27,796 - INFO - __main__ - [PARTIAL] t=2.000s | And the slow, doubtful.
+2026-04-07 02:38:27,796 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=And the slow, doubtful....
+2026-04-07 02:38:29,918 - INFO - __main__ - [PARTIAL] t=4.000s | And the slow, doubtful respect on the faces of the citizens.
+2026-04-07 02:38:29,918 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=And the slow, doubtful respect on the faces of the citizens....
+2026-04-07 02:38:31,796 - INFO - __main__ - [PARTIAL] t=6.000s | And the slow, doubtful respect on the faces of the citizens, as they nodded to him.
+2026-04-07 02:38:31,797 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=And the slow, doubtful respect on the faces of the citizens, as they nodded to h...
+2026-04-07 02:38:33,839 - INFO - __main__ - [PARTIAL] t=8.000s | And the slow, doubtful respect on the faces of the citizens, as they nodded to him, was even more proof.
+2026-04-07 02:38:33,840 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=And the slow, doubtful respect on the faces of the citizens, as they nodded to h...
+2026-04-07 02:38:35,853 - INFO - __main__ - [PARTIAL] t=10.000s | And the slow, doubtful respect on the faces of the citizens, as they nodded to him, was even more proof that Haley's system was working.
+2026-04-07 02:38:35,854 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=And the slow, doubtful respect on the faces of the citizens, as they nodded to h...
+2026-04-07 02:38:36,306 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=171200
+2026-04-07 02:38:36,307 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=171200 target_audio_end_sec=10.700 processed=171840 active=A
+2026-04-07 02:38:36,307 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:38:36,307 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=10.700s → speech_end_sec=9.900s
+2026-04-07 02:38:36,620 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='And the slow, doubtful respect on the faces of the citizens, as they nodded to him, was even more proof that Haley's system was working.' tl=ko -> detected=en translation='그리고 그에게 고개를 끄덕이는 시민들의 얼굴에 떠오른 느리고 의심스러운 존경심은 헤일리의 시스템이 작동하고 있다는 더욱 확실한 증거였습니다.'
+2026-04-07 02:38:36,620 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='그리고 그에게 고개를 끄덕이는 시민들의 얼굴에 떠오른 느리고 의심스러운 존경심은 헤일리의 시스템이 작동하고 있다는 더욱 확실한 증거였습니다.' original='And the slow, doubtful respect on the faces of the citizens, as they nodded to him, was even more proof that Haley's system was working.'
+2026-04-07 02:38:36,620 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='And the slow, doubtful respect on the faces of the citizens, as they nodded to him, was even more proof that Haley's system was working.' translation='그리고 그에게 고개를 끄덕이는 시민들의 얼굴에 떠오른 느리고 의심스러운 존경심은 헤일리의 시스템이 작동하고 있다는 더욱 확실한 증거였습니다.'
+2026-04-07 02:38:36,620 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 9.900] text='And the slow, doubtful respect on the faces of the citizens, as they nodded to him, was even more proof that Haley's system was working.'
+2026-04-07 02:38:36,621 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:38:36,706 - INFO - __main__ - Received finish command
+2026-04-07 02:38:36,778 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:38:41,628 - INFO - __main__ - Connection closed
+2026-04-07 02:38:41,628 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:38:41,644 - INFO - websockets.server - connection open
+2026-04-07 02:38:41,644 - INFO - __main__ - Client connected (1)
+2026-04-07 02:38:41,715 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:38:41,715 - INFO - __main__ - New connection from ('127.0.0.1', 36940)
+2026-04-07 02:38:41,716 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:38:41,716 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:38:44,031 - INFO - __main__ - [PARTIAL] t=2.000s | You didn't pay up your pledge to the.
+2026-04-07 02:38:44,031 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=You didn't pay up your pledge to the....
+2026-04-07 02:38:46,081 - INFO - __main__ - [PARTIAL] t=4.000s | You didn't pay up your pledge to the captain fund, so I had.
+2026-04-07 02:38:46,082 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=You didn't pay up your pledge to the captain fund, so I had....
+2026-04-07 02:38:47,655 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=92192
+2026-04-07 02:38:47,658 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=92192 target_audio_end_sec=5.762 processed=94880 active=A
+2026-04-07 02:38:47,658 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:38:47,658 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=5.762s → speech_end_sec=4.962s
+2026-04-07 02:38:47,924 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='You didn't pay up your pledge to the captain fund, so I had to fill in.' tl=ko -> detected=en translation='선장기금에 대한 공약금을 납부하지 않으셔서 제가 채워야 했습니다.'
+2026-04-07 02:38:47,925 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='선장기금에 대한 공약금을 납부하지 않으셔서 제가 채워야 했습니다.' original='You didn't pay up your pledge to the captain fund, so I had to fill in.'
+2026-04-07 02:38:47,925 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='You didn't pay up your pledge to the captain fund, so I had to fill in.' translation='선장기금에 대한 공약금을 납부하지 않으셔서 제가 채워야 했습니다.'
+2026-04-07 02:38:47,925 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 4.962] text='You didn't pay up your pledge to the captain fund, so I had to fill in.'
+2026-04-07 02:38:47,925 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:38:47,926 - INFO - __main__ - Received finish command
+2026-04-07 02:38:47,997 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:38:52,932 - INFO - __main__ - Connection closed
+2026-04-07 02:38:52,932 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:38:52,947 - INFO - websockets.server - connection open
+2026-04-07 02:38:52,948 - INFO - __main__ - Client connected (1)
+2026-04-07 02:38:53,018 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:38:53,018 - INFO - __main__ - New connection from ('127.0.0.1', 52800)
+2026-04-07 02:38:53,019 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:38:53,019 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:38:55,315 - INFO - __main__ - [PARTIAL] t=2.000s | Now show me where I signed any agreement.
+2026-04-07 02:38:55,315 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Now show me where I signed any agreement....
+2026-04-07 02:38:57,551 - INFO - __main__ - [PARTIAL] t=4.135s | Now show me where I signed any agreement saying I'd pay ye back.
+2026-04-07 02:38:57,551 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Now show me where I signed any agreement saying I'd pay ye back....
+2026-04-07 02:38:57,565 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=72432
+2026-04-07 02:38:57,565 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=72432 target_audio_end_sec=4.527 processed=72560 active=A
+2026-04-07 02:38:57,565 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:38:57,565 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=4.527s → speech_end_sec=3.727s
+2026-04-07 02:38:57,780 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='Now show me where I signed any agreement saying I'd pay ye back.' tl=ko -> detected=en translation='이제 내가 갚겠다는 계약서에 서명한 곳을 보여주세요.'
+2026-04-07 02:38:57,780 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='이제 내가 갚겠다는 계약서에 서명한 곳을 보여주세요.' original='Now show me where I signed any agreement saying I'd pay ye back.'
+2026-04-07 02:38:57,780 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='Now show me where I signed any agreement saying I'd pay ye back.' translation='이제 내가 갚겠다는 계약서에 서명한 곳을 보여주세요.'
+2026-04-07 02:38:57,780 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 3.727] text='Now show me where I signed any agreement saying I'd pay ye back.'
+2026-04-07 02:38:57,781 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:38:57,965 - INFO - __main__ - Received finish command
+2026-04-07 02:38:58,037 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:39:02,787 - INFO - __main__ - Connection closed
+2026-04-07 02:39:02,787 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:39:02,810 - INFO - websockets.server - connection open
+2026-04-07 02:39:02,810 - INFO - __main__ - Client connected (1)
+2026-04-07 02:39:02,881 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:39:02,881 - INFO - __main__ - New connection from ('127.0.0.1', 33738)
+2026-04-07 02:39:02,882 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:39:02,882 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:39:05,157 - INFO - __main__ - [PARTIAL] t=2.000s | Guess a man gets used to anything.
+2026-04-07 02:39:05,157 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Guess a man gets used to anything....
+2026-04-07 02:39:07,261 - INFO - __main__ - [PARTIAL] t=4.000s | Guess a man gets used to anything. Hell, maybe I can.
+2026-04-07 02:39:07,262 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Guess a man gets used to anything. Hell, maybe I can....
+2026-04-07 02:39:07,262 - INFO - __main__ - [SEG_AUDIO_END] sentence='Guess a man gets used to anything.' → first_with_punct_time=2.000s (fallback)
+2026-04-07 02:39:07,345 - INFO - examples.streaming_websocket_server - [C-] [translate-sentence] sentence='Guess a man gets used to anything.' tl=ko -> detected=en translation='남자는 뭐든 익숙해지는 것 같아요.'
+2026-04-07 02:39:07,346 - INFO - __main__ - [FINAL] seg=1 reason=seg audio=[0.000, 2.000] text='Guess a man gets used to anything.'
+2026-04-07 02:39:07,346 - INFO - examples.streaming_websocket_server - [C-] [final-sentence] slot=A lang=en text=Guess a man gets used to anything.
+2026-04-07 02:39:09,206 - INFO - __main__ - [PARTIAL] t=6.000s | Guess a man gets used to anything. Hell, maybe I can hire some bums to sit around and whoop it.
+2026-04-07 02:39:09,206 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Guess a man gets used to anything. Hell, maybe I can hire some bums to sit aroun...
+2026-04-07 02:39:11,164 - INFO - __main__ - [PARTIAL] t=8.000s | Guess a man gets used to anything. Hell, maybe I can hire some bums to sit around and whoop it up when the ships come in, and.
+2026-04-07 02:39:11,164 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Guess a man gets used to anything. Hell, maybe I can hire some bums to sit aroun...
+2026-04-07 02:39:13,219 - INFO - __main__ - [PARTIAL] t=10.000s | Guess a man gets used to anything. Hell, maybe I can hire some bums to sit around and whoop it up when the ships come in, and build this as a real old Martian den of.
+2026-04-07 02:39:13,220 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Guess a man gets used to anything. Hell, maybe I can hire some bums to sit aroun...
+2026-04-07 02:39:14,393 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=183360
+2026-04-07 02:39:14,394 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=183360 target_audio_end_sec=11.460 processed=184000 active=A
+2026-04-07 02:39:14,395 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:39:14,395 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=11.460s → speech_end_sec=10.660s
+2026-04-07 02:39:14,649 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='Hell, maybe I can hire some bums to sit around and whoop it up when the ships come in, and build this as a real old Martian den of sin.' tl=ko -> detected=en translation='젠장, 어쩌면 내가 배들이 들어올 때 앉아서 놀아줄 부랑자들 몇 명을 고용하고, 이것을 화성의 진짜 오래된 죄의 소굴로 지을 수 있을지도 모릅니다.'
+2026-04-07 02:39:14,650 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='젠장, 어쩌면 내가 배들이 들어올 때 앉아서 놀아줄 부랑자들 몇 명을 고용하고, 이것을 화성의 진짜 오래된 죄의 소굴로 지을 수 있을지도 모릅니다.' original='Hell, maybe I can hire some bums to sit around and whoop it up when the ships come in, and build this as a real old Martian den of sin.'
+2026-04-07 02:39:14,650 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='Hell, maybe I can hire some bums to sit around and whoop it up when the ships come in, and build this as a real old Martian den of sin.' translation='젠장, 어쩌면 내가 배들이 들어올 때 앉아서 놀아줄 부랑자들 몇 명을 고용하고, 이것을 화성의 진짜 오래된 죄의 소굴로 지을 수 있을지도 모릅니다.'
+2026-04-07 02:39:14,650 - INFO - __main__ - [FINAL] seg=2 reason=vad audio=[2.000, 10.660] text='Hell, maybe I can hire some bums to sit around and whoop it up when the ships come in, and build this as a real old Martian den of sin.'
+2026-04-07 02:39:14,650 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:39:14,794 - INFO - __main__ - Received finish command
+2026-04-07 02:39:14,810 - INFO - websockets.server - connection open
+2026-04-07 02:39:14,810 - INFO - __main__ - Client connected (2)
+2026-04-07 02:39:14,882 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:39:14,882 - INFO - __main__ - New connection from ('127.0.0.1', 48724)
+2026-04-07 02:39:14,884 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:39:14,884 - INFO - __main__ - Connection closed
+2026-04-07 02:39:14,884 - INFO - __main__ - Client disconnected (1)
+2026-04-07 02:39:14,898 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:39:14,899 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:39:17,197 - INFO - __main__ - [PARTIAL] t=2.000s | These letters have just come for you and.
+2026-04-07 02:39:17,197 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=These letters have just come for you and....
+2026-04-07 02:39:19,268 - INFO - __main__ - [PARTIAL] t=4.000s | These letters have just come for you and Annie Colchester," she said.
+2026-04-07 02:39:19,268 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=These letters have just come for you and Annie Colchester," she said....
+2026-04-07 02:39:19,273 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=67072
+2026-04-07 02:39:19,273 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=67072 target_audio_end_sec=4.192 processed=67200 active=A
+2026-04-07 02:39:19,273 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:39:19,273 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=4.192s → speech_end_sec=3.392s
+2026-04-07 02:39:19,490 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='These letters have just come for you and Annie Colchester," she said.' tl=ko -> detected=en translation='이 편지는 당신과 애니 콜체스터에게 방금 왔습니다." 그녀가 말했다.'
+2026-04-07 02:39:19,491 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='이 편지는 당신과 애니 콜체스터에게 방금 왔습니다." 그녀가 말했다.' original='These letters have just come for you and Annie Colchester," she said.'
+2026-04-07 02:39:19,491 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='These letters have just come for you and Annie Colchester," she said.' translation='이 편지는 당신과 애니 콜체스터에게 방금 왔습니다." 그녀가 말했다.'
+2026-04-07 02:39:19,491 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 3.392] text='These letters have just come for you and Annie Colchester," she said.'
+2026-04-07 02:39:19,491 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:39:21,321 - INFO - __main__ - [PARTIAL] t=6.200s | And as I was coming upstairs.
+2026-04-07 02:39:21,321 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=B text=And as I was coming upstairs....
+2026-04-07 02:39:23,672 - INFO - __main__ - [PARTIAL] t=8.360s | And as I was coming upstairs, I thought I would leave them with you.
+2026-04-07 02:39:23,672 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=B text=And as I was coming upstairs, I thought I would leave them with you....
+2026-04-07 02:39:23,673 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=134272
+2026-04-07 02:39:23,676 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=134272 target_audio_end_sec=8.392 processed=136960 active=B
+2026-04-07 02:39:23,677 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=B new_active=A new_standby=B
+2026-04-07 02:39:23,677 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=8.392s → speech_end_sec=7.592s
+2026-04-07 02:39:23,896 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='And as I was coming upstairs, I thought I would leave them with you.' tl=ko -> detected=en translation='그리고 위층으로 올라가면서 나는 그것들을 당신에게 맡기고 싶다고 생각했습니다.'
+2026-04-07 02:39:23,896 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=B reason=vad lang=en translation='그리고 위층으로 올라가면서 나는 그것들을 당신에게 맡기고 싶다고 생각했습니다.' original='And as I was coming upstairs, I thought I would leave them with you.'
+2026-04-07 02:39:23,896 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=B lang=en text='And as I was coming upstairs, I thought I would leave them with you.' translation='그리고 위층으로 올라가면서 나는 그것들을 당신에게 맡기고 싶다고 생각했습니다.'
+2026-04-07 02:39:23,896 - INFO - __main__ - [FINAL] seg=2 reason=vad audio=[3.392, 7.592] text='And as I was coming upstairs, I thought I would leave them with you.'
+2026-04-07 02:39:23,897 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=B
+2026-04-07 02:39:23,905 - INFO - __main__ - Received finish command
+2026-04-07 02:39:23,992 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:39:28,903 - INFO - __main__ - Connection closed
+2026-04-07 02:39:28,903 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:39:28,924 - INFO - websockets.server - connection open
+2026-04-07 02:39:28,924 - INFO - __main__ - Client connected (1)
+2026-04-07 02:39:28,996 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:39:28,996 - INFO - __main__ - New connection from ('127.0.0.1', 44406)
+2026-04-07 02:39:28,997 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:39:28,998 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:39:31,220 - INFO - __main__ - [PARTIAL] t=2.000s | Her face grew suddenly.
+2026-04-07 02:39:31,220 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=Her face grew suddenly....
+2026-04-07 02:39:32,606 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=55424
+2026-04-07 02:39:32,608 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=55424 target_audio_end_sec=3.464 processed=57600 active=A
+2026-04-07 02:39:32,608 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:39:32,608 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=3.464s → speech_end_sec=2.664s
+2026-04-07 02:39:32,869 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='Her face grew suddenly white as death.' tl=ko -> detected=en translation='그녀의 얼굴은 갑자기 죽음처럼 하얗게 변했습니다.'
+2026-04-07 02:39:32,869 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='그녀의 얼굴은 갑자기 죽음처럼 하얗게 변했습니다.' original='Her face grew suddenly white as death.'
+2026-04-07 02:39:32,869 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='Her face grew suddenly white as death.' translation='그녀의 얼굴은 갑자기 죽음처럼 하얗게 변했습니다.'
+2026-04-07 02:39:32,869 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 2.664] text='Her face grew suddenly white as death.'
+2026-04-07 02:39:32,870 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:39:34,423 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=84464
+2026-04-07 02:39:34,425 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=84464 target_audio_end_sec=5.279 processed=86640 active=B
+2026-04-07 02:39:34,426 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=B new_active=A new_standby=B
+2026-04-07 02:39:34,426 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=5.279s → speech_end_sec=4.479s
+2026-04-07 02:39:34,699 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='What is it, dear?' tl=ko -> detected=en translation='그게 뭐야?'
+2026-04-07 02:39:34,699 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=B reason=vad lang=en translation='그게 뭐야?' original='What is it, dear?'
+2026-04-07 02:39:34,699 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=B lang=en text='What is it, dear?' translation='그게 뭐야?'
+2026-04-07 02:39:34,699 - INFO - __main__ - [FINAL] seg=2 reason=vad audio=[2.664, 4.479] text='What is it, dear?'
+2026-04-07 02:39:34,700 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=B
+2026-04-07 02:39:34,704 - INFO - __main__ - Received finish command
+2026-04-07 02:39:34,775 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:39:39,706 - INFO - __main__ - Connection closed
+2026-04-07 02:39:39,706 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:39:39,723 - INFO - websockets.server - connection open
+2026-04-07 02:39:39,723 - INFO - __main__ - Client connected (1)
+2026-04-07 02:39:39,794 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:39:39,795 - INFO - __main__ - New connection from ('127.0.0.1', 50886)
+2026-04-07 02:39:39,795 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:39:39,796 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:39:42,041 - INFO - __main__ - [PARTIAL] t=2.000s | The captain coming in shortly.
+2026-04-07 02:39:42,042 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=The captain coming in shortly....
+2026-04-07 02:39:44,174 - INFO - __main__ - [PARTIAL] t=4.000s | The captain coming in shortly after the sudden flight of the gamblers.
+2026-04-07 02:39:44,174 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=The captain coming in shortly after the sudden flight of the gamblers....
+2026-04-07 02:39:46,054 - INFO - __main__ - [PARTIAL] t=6.000s | The captain coming in shortly after the sudden flight of the gamblers took charge of the money, and.
+2026-04-07 02:39:46,054 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=The captain coming in shortly after the sudden flight of the gamblers took charg...
+2026-04-07 02:39:48,087 - INFO - __main__ - [PARTIAL] t=8.000s | The captain coming in shortly after the sudden flight of the gamblers took charge of the money, and the next day restored it to the owners.
+2026-04-07 02:39:48,088 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=The captain coming in shortly after the sudden flight of the gamblers took charg...
+2026-04-07 02:39:49,004 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=144512
+2026-04-07 02:39:49,008 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=144512 target_audio_end_sec=9.032 processed=147200 active=A
+2026-04-07 02:39:49,008 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:39:49,008 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=9.032s → speech_end_sec=8.232s
+2026-04-07 02:39:49,239 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='The captain coming in shortly after the sudden flight of the gamblers took charge of the money, and the next day restored it to the owners.' tl=ko -> detected=en translation='도박꾼들의 갑작스러운 도주 직후에 들어온 선장이 돈을 맡아 관리했고, 다음날 주인에게 돌려주었다.'
+2026-04-07 02:39:49,239 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='도박꾼들의 갑작스러운 도주 직후에 들어온 선장이 돈을 맡아 관리했고, 다음날 주인에게 돌려주었다.' original='The captain coming in shortly after the sudden flight of the gamblers took charge of the money, and the next day restored it to the owners.'
+2026-04-07 02:39:49,239 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='The captain coming in shortly after the sudden flight of the gamblers took charge of the money, and the next day restored it to the owners.' translation='도박꾼들의 갑작스러운 도주 직후에 들어온 선장이 돈을 맡아 관리했고, 다음날 주인에게 돌려주었다.'
+2026-04-07 02:39:49,239 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 8.232] text='The captain coming in shortly after the sudden flight of the gamblers took charge of the money, and the next day restored it to the owners.'
+2026-04-07 02:39:49,240 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:39:49,244 - INFO - __main__ - Received finish command
+2026-04-07 02:39:49,315 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:39:54,246 - INFO - __main__ - Connection closed
+2026-04-07 02:39:54,246 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:39:54,262 - INFO - websockets.server - connection open
+2026-04-07 02:39:54,262 - INFO - __main__ - Client connected (1)
+2026-04-07 02:39:54,334 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-07 02:39:54,334 - INFO - __main__ - New connection from ('127.0.0.1', 43976)
+2026-04-07 02:39:54,334 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-07 02:39:54,335 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:39:56,583 - INFO - __main__ - [PARTIAL] t=2.000s | And she threw down the jewels.
+2026-04-07 02:39:56,583 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=And she threw down the jewels....
+2026-04-07 02:39:58,767 - INFO - __main__ - [PARTIAL] t=4.100s | And she threw down the Jew's head before him.
+2026-04-07 02:39:58,767 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=And she threw down the Jew's head before him....
+2026-04-07 02:39:58,768 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=66112
+2026-04-07 02:39:58,772 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=66112 target_audio_end_sec=4.132 processed=68800 active=A
+2026-04-07 02:39:58,772 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-07 02:39:58,772 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=4.132s → speech_end_sec=3.332s
+2026-04-07 02:39:58,986 - INFO - examples.streaming_websocket_server - [C-] [translate-flush] reason=vad sentence='And she threw down the Jew's head before him.' tl=ko -> detected=en translation='그리고 그녀는 그 유대인의 머리를 그 앞에 던졌습니다.'
+2026-04-07 02:39:58,986 - INFO - examples.streaming_websocket_server - [C-] [final-flush] slot=A reason=vad lang=en translation='그리고 그녀는 그 유대인의 머리를 그 앞에 던졌습니다.' original='And she threw down the Jew's head before him.'
+2026-04-07 02:39:58,986 - INFO - examples.streaming_websocket_server - [C-] [final-vad] slot=A lang=en text='And she threw down the Jew's head before him.' translation='그리고 그녀는 그 유대인의 머리를 그 앞에 던졌습니다.'
+2026-04-07 02:39:58,987 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 3.332] text='And she threw down the Jew's head before him.'
+2026-04-07 02:39:58,987 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-07 02:39:59,047 - INFO - __main__ - Received finish command
+2026-04-07 02:39:59,118 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-07 02:40:03,994 - INFO - __main__ - Connection closed
+2026-04-07 02:40:03,995 - INFO - __main__ - Client disconnected (0)
+2026-04-07 02:45:47,949 - INFO - websockets.server - server closing
+2026-04-07 02:45:47,949 - INFO - websockets.server - server closed
