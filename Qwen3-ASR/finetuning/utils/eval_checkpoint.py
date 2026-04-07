@@ -209,7 +209,7 @@ def main():
     args.base_model = os.path.abspath(args.base_model)
 
     lang_code = LANG_CODE.get(args.language.lower(), args.language.lower()[:2])
-    merged_path = args.checkpoint.rstrip("/") + f"_{lang_code}"
+    merged_path = args.checkpoint.rstrip("/") + f"_{lang_code}_merged"
 
     if args.no_merge:
         print(f"[1/3] base model 로드 (no_merge): {args.base_model}")
