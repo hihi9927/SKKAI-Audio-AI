@@ -45,6 +45,27 @@ LANG_CODE = {
 }
 
 
+def transcribe_with_seg(asr_wrapper, wav: np.ndarray, language: str) -> str:
+    """transcribe() 대신 직접 generate — <SEG> 토큰을 보존한다."""
+    from qwen_asr.inference.utils import normalize_language_name
+    lang = normalize_language_name(language)
+    prompt = asr_wrapper._build_text_prompt(context="", force_language=lang)
+    inputs = asr_wrapper.processor(text=[prompt], audio=[wav], return_tensors="pt", padding=True)
+    inputs = inputs.to(asr_wrapper.model.device).to(asr_wrapper.model.dtype)
+    with torch.no_grad():
+        out_ids = asr_wrapper.model.generate(**inputs, max_new_tokens=asr_wrapper.max_new_tokens)
+    decoded = asr_wrapper.processor.batch_decode(
+        out_ids[:, inputs["input_ids"].shape[1]:],
+        skip_special_tokens=False,
+        clean_up_tokenization_spaces=False,
+    )[0]
+    # <SEG>를 제외한 special token 제거
+    for tok in asr_wrapper.processor.tokenizer.all_special_tokens:
+        if tok != SEG_TOKEN:
+            decoded = decoded.replace(tok, "")
+    return decoded.strip()
+
+
 def compute_metrics(gt: str, pred: str) -> dict:
     wer = jiwer.wer(gt, pred)
     cer = jiwer.cer(gt, pred)
@@ -97,17 +118,18 @@ def load_model(args):
     seg_emb_path = os.path.join(args.checkpoint, "seg_embedding.pt")
     if os.path.exists(seg_emb_path):
         seg_id = tokenizer.convert_tokens_to_ids("<SEG>")
-        device = model.get_input_embeddings().weight.device
+        thinker = model.thinker if hasattr(model, "thinker") else model.base_model.model.thinker
+        device = thinker.get_input_embeddings().weight.device
 
         seg_vec = torch.load(seg_emb_path, map_location="cpu")
         with torch.no_grad():
-            model.get_input_embeddings().weight[seg_id] = seg_vec.to(device)
+            thinker.get_input_embeddings().weight[seg_id] = seg_vec.to(device)
 
         lm_head_path = os.path.join(args.checkpoint, "seg_lm_head.pt")
         if os.path.exists(lm_head_path):
             seg_lm = torch.load(lm_head_path, map_location="cpu")
             with torch.no_grad():
-                model.get_output_embeddings().weight[seg_id] = seg_lm.to(device)
+                thinker.get_output_embeddings().weight[seg_id] = seg_lm.to(device)
 
         print(f"  SEG 임베딩 주입 완료 (token_id={seg_id})")
     else:
@@ -120,9 +142,11 @@ def load_model(args):
     return asr_wrapper
 
 
-def run_single(asr_wrapper, samples, args):
+def run_single(asr_wrapper, samples, args, out_f):
     """문장 단위 개별 추론."""
     records = []
+    out_f.write('{"results": [\n')
+    out_f.flush()
     for i, sample in enumerate(samples):
         wav, _ = librosa.load(sample["audio"], sr=args.sr, mono=True)
         gt = parse_gt(sample["text"])
@@ -131,7 +155,11 @@ def run_single(asr_wrapper, samples, args):
         pred = results[0].text.strip()
 
         m = compute_metrics(gt, pred)
-        records.append({"audio": sample["audio"], "gt": gt, "pred": pred, **m})
+        record = {"audio": sample["audio"], "gt": gt, "pred": pred, **m}
+        records.append(record)
+        prefix = "" if i == 0 else ","
+        out_f.write(prefix + json.dumps(record, ensure_ascii=False) + "\n")
+        out_f.flush()
         print(f"[{i+1}/{len(samples)}]")
         print(f"  GT  : {gt}")
         print(f"  PRED: {pred}")
@@ -145,11 +173,13 @@ def run_single(asr_wrapper, samples, args):
     return records, {"avg_wer": avg_wer, "avg_cer": avg_cer, "seg_match": f"{seg_match_count}/{len(records)}"}
 
 
-def run_concat(asr_wrapper, samples, args):
+def run_concat(asr_wrapper, samples, args, out_f):
     """concat_n개씩 이어붙여 연속 오디오로 추론."""
     n = args.concat_n
     groups = [samples[i:i+n] for i in range(0, len(samples), n)]
     records = []
+    out_f.write('{"results": [\n')
+    out_f.flush()
 
     for gi, group in enumerate(groups):
         wavs = [librosa.load(s["audio"], sr=args.sr, mono=True)[0] for s in group]
@@ -161,7 +191,7 @@ def run_concat(asr_wrapper, samples, args):
         pred = results[0].text.strip()
 
         m = compute_metrics(gt_combined, pred)
-        records.append({
+        record = {
             "group": gi,
             "audios": [s["audio"] for s in group],
             "gt_sentences": gts,
@@ -169,7 +199,11 @@ def run_concat(asr_wrapper, samples, args):
             "pred": pred,
             "silence_ms": args.silence_ms,
             **m,
-        })
+        }
+        records.append(record)
+        prefix = "" if gi == 0 else ","
+        out_f.write(prefix + json.dumps(record, ensure_ascii=False) + "\n")
+        out_f.flush()
 
         print(f"[그룹 {gi+1}/{len(groups)}] ({len(group)}개 문장, {args.silence_ms}ms 무음)")
         for j, gt in enumerate(gts):
@@ -231,20 +265,28 @@ def main():
         samples = samples[:args.n]
 
     mode = "concat" if args.concat_n > 0 else "single"
-    print(f"[3/3] {len(samples)}개 샘플 추론 시작 (모드: {mode})\n" + "=" * 60)
-
-    if mode == "single":
-        records, agg = run_single(asr_wrapper, samples, args)
-        output = {"summary": {"mode": "single", **agg}, "results": records}
+    if args.output:
+        out_path = args.output
     else:
-        records, agg = run_concat(asr_wrapper, samples, args)
-        output = {"summary": {"mode": "concat", "concat_n": args.concat_n, "silence_ms": args.silence_ms, **agg}, "results": records}
+        ckpt_name = os.path.basename(args.checkpoint.rstrip("/"))
+        results_dir = os.path.join(os.path.dirname(args.checkpoint.rstrip("/")), "results")
+        os.makedirs(results_dir, exist_ok=True)
+        out_path = os.path.join(results_dir, f"{ckpt_name}_eval_{mode}.json")
+    print(f"[3/3] {len(samples)}개 샘플 추론 시작 (모드: {mode})\n결과 저장: {out_path}\n" + "=" * 60)
+
+    with open(out_path, "w", encoding="utf-8") as out_f:
+        if mode == "single":
+            _, agg = run_single(asr_wrapper, samples, args, out_f)
+            summary = {"mode": "single", **agg}
+        else:
+            _, agg = run_concat(asr_wrapper, samples, args, out_f)
+            summary = {"mode": "concat", "concat_n": args.concat_n, "silence_ms": args.silence_ms, **agg}
+        out_f.write('], "summary": ')
+        out_f.write(json.dumps(summary, ensure_ascii=False))
+        out_f.write("}\n")
 
     print("=" * 60)
-    out_path = args.output if args.output else args.checkpoint.rstrip("/") + f"_eval_{mode}.json"
-    with open(out_path, "w", encoding="utf-8") as f:
-        json.dump(output, f, ensure_ascii=False, indent=2)
-    print(f"결과 저장: {out_path}")
+    print(f"결과 저장 완료: {out_path}")
 
 
 if __name__ == "__main__":
