@@ -17,7 +17,6 @@ checkpoint-N 으로 validation 샘플 추론 스크립트.
     → 5개 문장을 500ms 무음으로 이어붙여 한 번에 추론
 """
 import argparse
-import asyncio
 import json
 import os
 import re
@@ -45,25 +44,28 @@ LANG_CODE = {
 }
 
 
-def transcribe_with_seg(asr_wrapper, wav: np.ndarray, language: str) -> str:
-    """transcribe() 대신 직접 generate — <SEG> 토큰을 보존한다."""
+def batch_transcribe_with_seg(asr_wrapper, wavs: list, language: str) -> list:
+    """배치 generate — <SEG> 토큰을 보존한다."""
     from qwen_asr.inference.utils import normalize_language_name
     lang = normalize_language_name(language)
     prompt = asr_wrapper._build_text_prompt(context="", force_language=lang)
-    inputs = asr_wrapper.processor(text=[prompt], audio=[wav], return_tensors="pt", padding=True)
-    inputs = inputs.to(asr_wrapper.model.device).to(asr_wrapper.model.dtype)
+    prompts = [prompt] * len(wavs)
+    inputs = asr_wrapper.processor(text=prompts, audio=wavs, return_tensors="pt", padding=True)
+    inputs = inputs.to(asr_wrapper.device).to(asr_wrapper.dtype)
     with torch.no_grad():
         out_ids = asr_wrapper.model.generate(**inputs, max_new_tokens=asr_wrapper.max_new_tokens)
-    decoded = asr_wrapper.processor.batch_decode(
-        out_ids[:, inputs["input_ids"].shape[1]:],
+    decoded_list = asr_wrapper.processor.batch_decode(
+        out_ids.sequences[:, inputs["input_ids"].shape[1]:],
         skip_special_tokens=False,
         clean_up_tokenization_spaces=False,
-    )[0]
-    # <SEG>를 제외한 special token 제거
-    for tok in asr_wrapper.processor.tokenizer.all_special_tokens:
-        if tok != SEG_TOKEN:
+    )
+    special_tokens = [t for t in asr_wrapper.processor.tokenizer.all_special_tokens if t != SEG_TOKEN]
+    results = []
+    for decoded in decoded_list:
+        for tok in special_tokens:
             decoded = decoded.replace(tok, "")
-    return decoded.strip()
+        results.append(decoded.strip())
+    return results
 
 
 def compute_metrics(gt: str, pred: str) -> dict:
@@ -142,29 +144,79 @@ def load_model(args):
     return asr_wrapper
 
 
-def run_single(asr_wrapper, samples, args, out_f):
-    """문장 단위 개별 추론."""
+def load_existing_records(out_path: str) -> list:
+    """기존 결과 파일에서 완료된 record 목록 반환. 파일이 불완전해도 파싱 가능한 만큼 읽음."""
+    if not os.path.exists(out_path):
+        return []
+    with open(out_path, "r", encoding="utf-8") as f:
+        content = f.read()
+    try:
+        return json.loads(content).get("results", [])
+    except json.JSONDecodeError:
+        pass
+    # 불완전한 파일: 완성된 { } 블록만 추출
     records = []
+    depth, start = 0, None
+    in_results = False
+    for i, c in enumerate(content):
+        if not in_results:
+            if content[i:i+11] == '"results":':
+                in_results = True
+            continue
+        if c == '{':
+            if depth == 0:
+                start = i
+            depth += 1
+        elif c == '}':
+            depth -= 1
+            if depth == 0 and start is not None:
+                try:
+                    records.append(json.loads(content[start:i + 1]))
+                except json.JSONDecodeError:
+                    pass
+                start = None
+    return records
+
+
+def run_single(asr_wrapper, samples, args, out_f, existing_records=None):
+    """문장 단위 배치 추론."""
+    existing_records = existing_records or []
+    done_audios = {r["audio"] for r in existing_records}
+    pending = [s for s in samples if s["audio"] not in done_audios]
+    records = list(existing_records)
+
+    # 기존 record 먼저 기록
     out_f.write('{"results": [\n')
+    for i, record in enumerate(records):
+        if i > 0:
+            out_f.write(",\n")
+        out_f.write(json.dumps(record, ensure_ascii=False, indent=2))
     out_f.flush()
-    for i, sample in enumerate(samples):
-        wav, _ = librosa.load(sample["audio"], sr=args.sr, mono=True)
-        gt = parse_gt(sample["text"])
 
-        results = asyncio.run(asr_wrapper.transcribe([(wav, args.sr)], language=args.language))
-        pred = results[0].text.strip()
+    if existing_records:
+        print(f"  [resume] {len(existing_records)}개 기존 결과 로드, {len(pending)}개 남음")
 
-        m = compute_metrics(gt, pred)
-        record = {"audio": sample["audio"], "gt": gt, "pred": pred, **m}
-        records.append(record)
-        prefix = "" if i == 0 else ","
-        out_f.write(prefix + json.dumps(record, ensure_ascii=False) + "\n")
-        out_f.flush()
-        print(f"[{i+1}/{len(samples)}]")
-        print(f"  GT  : {gt}")
-        print(f"  PRED: {pred}")
-        print(f"  WER={m['wer']:.4f}  CER={m['cer']:.4f}  SEG gt={m['gt_seg']} pred={m['pred_seg']} {'✓' if m['seg_match'] else '✗'}")
-        print()
+    batch_size = args.batch_size
+    for batch_start in range(0, len(pending), batch_size):
+        batch = pending[batch_start:batch_start + batch_size]
+        wavs = [librosa.load(s["audio"], sr=args.sr, mono=True)[0] for s in batch]
+        gts = [parse_gt(s["text"]) for s in batch]
+        preds = batch_transcribe_with_seg(asr_wrapper, wavs, args.language)
+        for j, (sample, gt, pred) in enumerate(zip(batch, gts, preds)):
+            global_i = len(records)
+            m = compute_metrics(gt, pred)
+            record = {"audio": sample["audio"], "gt": gt, "pred": pred, **m}
+            records.append(record)
+            if global_i > 0:
+                out_f.write(",\n")
+            out_f.write(json.dumps(record, ensure_ascii=False, indent=2))
+            out_f.flush()
+            display_i = len(existing_records) + batch_start + j
+            print(f"[{display_i + 1}/{len(samples)}]")
+            print(f"  GT  : {gt}")
+            print(f"  PRED: {pred}")
+            print(f"  WER={m['wer']:.4f}  CER={m['cer']:.4f}  SEG gt={m['gt_seg']} pred={m['pred_seg']} {'✓' if m['seg_match'] else '✗'}")
+            print()
 
     avg_wer = round(sum(r["wer"] for r in records) / len(records), 4)
     avg_cer = round(sum(r["cer"] for r in records) / len(records), 4)
@@ -173,22 +225,31 @@ def run_single(asr_wrapper, samples, args, out_f):
     return records, {"avg_wer": avg_wer, "avg_cer": avg_cer, "seg_match": f"{seg_match_count}/{len(records)}"}
 
 
-def run_concat(asr_wrapper, samples, args, out_f):
+def run_concat(asr_wrapper, samples, args, out_f, existing_records=None):
     """concat_n개씩 이어붙여 연속 오디오로 추론."""
+    existing_records = existing_records or []
+    done_groups = len(existing_records)
     n = args.concat_n
     groups = [samples[i:i+n] for i in range(0, len(samples), n)]
-    records = []
+    records = list(existing_records)
+
     out_f.write('{"results": [\n')
+    for i, record in enumerate(records):
+        if i > 0:
+            out_f.write(",\n")
+        out_f.write(json.dumps(record, ensure_ascii=False, indent=2))
     out_f.flush()
 
-    for gi, group in enumerate(groups):
+    if existing_records:
+        print(f"  [resume] {done_groups}개 기존 그룹 로드, {len(groups) - done_groups}개 남음")
+
+    for gi, group in enumerate(groups[done_groups:], start=done_groups):
         wavs = [librosa.load(s["audio"], sr=args.sr, mono=True)[0] for s in group]
         gts = [parse_gt(s["text"]) for s in group]
         gt_combined = " ".join(gts)
 
         combined_wav = concat_wavs_with_silence(wavs, args.sr, args.silence_ms)
-        results = asyncio.run(asr_wrapper.transcribe([(combined_wav, args.sr)], language=args.language))
-        pred = results[0].text.strip()
+        pred = batch_transcribe_with_seg(asr_wrapper, [combined_wav], args.language)[0]
 
         m = compute_metrics(gt_combined, pred)
         record = {
@@ -201,8 +262,9 @@ def run_concat(asr_wrapper, samples, args, out_f):
             **m,
         }
         records.append(record)
-        prefix = "" if gi == 0 else ","
-        out_f.write(prefix + json.dumps(record, ensure_ascii=False) + "\n")
+        if len(records) > 1:
+            out_f.write(",\n")
+        out_f.write(json.dumps(record, ensure_ascii=False, indent=2))
         out_f.flush()
 
         print(f"[그룹 {gi+1}/{len(groups)}] ({len(group)}개 문장, {args.silence_ms}ms 무음)")
@@ -238,6 +300,10 @@ def main():
                    help="결과 JSON 저장 경로 (미지정 시 checkpoint 경로 기반 자동 생성)")
     p.add_argument("--no_merge", action="store_true",
                    help="adapter를 merge하지 않고 PeftModel 상태로 추론")
+    p.add_argument("--batch_size", type=int, default=8,
+                   help="추론 배치 크기 (기본값 8)")
+    p.add_argument("--resume", action="store_true",
+                   help="기존 결과 파일이 있으면 이어서 진행")
     args = p.parse_args()
 
     args.base_model = os.path.abspath(args.base_model)
@@ -272,18 +338,32 @@ def main():
         results_dir = os.path.join(os.path.dirname(args.checkpoint.rstrip("/")), "results")
         os.makedirs(results_dir, exist_ok=True)
         out_path = os.path.join(results_dir, f"{ckpt_name}_eval_{mode}.json")
+    existing_records = []
+    if args.resume and os.path.exists(out_path):
+        existing_records = load_existing_records(out_path)
+        print(f"  [resume] 기존 파일 감지: {len(existing_records)}개 record 로드")
+
     print(f"[3/3] {len(samples)}개 샘플 추론 시작 (모드: {mode})\n결과 저장: {out_path}\n" + "=" * 60)
 
     with open(out_path, "w", encoding="utf-8") as out_f:
         if mode == "single":
-            _, agg = run_single(asr_wrapper, samples, args, out_f)
+            all_records, agg = run_single(asr_wrapper, samples, args, out_f, existing_records)
             summary = {"mode": "single", **agg}
         else:
-            _, agg = run_concat(asr_wrapper, samples, args, out_f)
+            all_records, agg = run_concat(asr_wrapper, samples, args, out_f, existing_records)
             summary = {"mode": "concat", "concat_n": args.concat_n, "silence_ms": args.silence_ms, **agg}
-        out_f.write('], "summary": ')
-        out_f.write(json.dumps(summary, ensure_ascii=False))
-        out_f.write("}\n")
+        out_f.write("\n]\n}\n")  # 임시 마무리 (재작성 전)
+
+    # 완료 후 summary를 맨 위에 두고 파일 재작성
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write('{\n"summary": ')
+        f.write(json.dumps(summary, ensure_ascii=False, indent=2))
+        f.write(',\n"results": [\n')
+        for i, record in enumerate(all_records):
+            if i > 0:
+                f.write(",\n")
+            f.write(json.dumps(record, ensure_ascii=False, indent=2))
+        f.write("\n]\n}\n")
 
     print("=" * 60)
     print(f"결과 저장 완료: {out_path}")

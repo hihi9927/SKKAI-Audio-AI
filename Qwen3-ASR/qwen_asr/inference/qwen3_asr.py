@@ -514,12 +514,19 @@ class Qwen3ASRModel:
 
             text_ids = self.model.generate(**inputs, max_new_tokens=self.max_new_tokens)
 
-            decoded = self.processor.batch_decode(
+            decoded_raw = self.processor.batch_decode(
                 text_ids.sequences[:, inputs["input_ids"].shape[1]:],
-                skip_special_tokens=True,
+                skip_special_tokens=False,
                 clean_up_tokenization_spaces=False,
             )
-            outs.extend(list(decoded))
+            seg_token = "<SEG>"
+            special_tokens = [t for t in self.processor.tokenizer.all_special_tokens if t != seg_token]
+            decoded = []
+            for d in decoded_raw:
+                for tok in special_tokens:
+                    d = d.replace(tok, "")
+                decoded.append(d)
+            outs.extend(decoded)
 
         return outs
 
