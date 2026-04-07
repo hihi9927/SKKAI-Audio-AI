@@ -1,0 +1,951 @@
+{"results": [
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00001.wav",
+  "gt": "일단은 억지로 과장해서 이렇게 하는 것보다 <SEG> 진실된 마음으로 이걸 어떻게 전달할 수 있을까 <SEG> 공감을 시킬 수 있을까 해서 좀 <SEG>",
+  "pred": "어 일단은 억지로 과장해서 이렇게 하는 것보다 <SEG> 진실된 마음으로 이걸 어떻게 전달을 할 수 있을까 <SEG> 공감을 시킬 수 있을까 <SEG> 해서 쫌 <SEG>",
+  "wer": 0.2273,
+  "cer": 0.1294,
+  "gt_seg": 3,
+  "pred_seg": 4,
+  "seg_match": false
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00002.wav",
+  "gt": "혼인 신고를 또 해야 되잖아. <SEG>",
+  "pred": "혼인 신고를 또 해야 되잖아. <SEG>",
+  "wer": 0.0,
+  "cer": 0.0,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00003.wav",
+  "gt": "약간 젊은 엄마 같은 느낌이야. <SEG>",
+  "pred": "약간 젊은 엄마 같은 느낌이야. <SEG>",
+  "wer": 0.0,
+  "cer": 0.0,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00004.wav",
+  "gt": "응 근데 오늘 일단 밥 먹고 이것 저것 하다가 <SEG> 시간되면 뭐 가는 거고 <SEG> 안 되면 <SEG>",
+  "pred": "음 근데 오늘 일단 밥 먹고 이것저것 하달아 <SEG> 하다가 시간 되면 뭐 가는 거고 안 되면 <SEG>",
+  "wer": 0.3889,
+  "cer": 0.2459,
+  "gt_seg": 3,
+  "pred_seg": 2,
+  "seg_match": false
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00005.wav",
+  "gt": "아. 우린 또 그런 거 안 하잖아. <SEG> 어. 그치. <SEG>",
+  "pred": "아 우린 또 그런 거 안 하잖아. <SEG> 어 그지. <SEG>",
+  "wer": 0.2727,
+  "cer": 0.0789,
+  "gt_seg": 2,
+  "pred_seg": 2,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00006.wav",
+  "gt": "아 근데 진짜 감튀 먹고 있는데 <SEG> 데려온 거 심했다 <SEG>",
+  "pred": "아 근데 진짜 감튀 먹고 있는데 <SEG> 데려온 거 심했다. <SEG>",
+  "wer": 0.0909,
+  "cer": 0.0256,
+  "gt_seg": 2,
+  "pred_seg": 2,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00007.wav",
+  "gt": "그래서 저승에서 그 애기를 찾아서 <SEG> 막 돌아다니는 내용인데. <SEG>",
+  "pred": "그래서 저승에서 그 애기를 찾아서 <SEG> 막 돌아다니는 내용인데 <SEG>",
+  "wer": 0.1,
+  "cer": 0.0227,
+  "gt_seg": 2,
+  "pred_seg": 2,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00008.wav",
+  "gt": "그런가? <SEG>",
+  "pred": "그런가? <SEG>",
+  "wer": 0.0,
+  "cer": 0.0,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00009.wav",
+  "gt": "그 너가 매운 거를 잘 못먹어서 <SEG> 못 먹기도 하고 <SEG>",
+  "pred": "근데 너가 매운 거를 잘 못 먹었 <SEG> 못 먹기도 하고 <SEG>",
+  "wer": 0.2727,
+  "cer": 0.1316,
+  "gt_seg": 2,
+  "pred_seg": 2,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00010.wav",
+  "gt": "그래서 나는 지금 에는 사람들이 돈 씩 뭐 달마다 씩 모아서 <SEG> 지금 그 태국여행 가기로 했거든. <SEG>",
+  "pred": "그 나는 지금 칠 월 달에는 사람들이 돈 삼십만 원씩 뭐 달마다 삼십만 원씩 모아서 <SEG> 지금 우리 태국 여행 가기로 했거든. <SEG>",
+  "wer": 0.6111,
+  "cer": 0.3125,
+  "gt_seg": 2,
+  "pred_seg": 2,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00011.wav",
+  "gt": "아닐껄 그뭐지 몰라 뭔가 <SEG> 근데 그 남자애가 우리 욕 했을 것 같애. <SEG>",
+  "pred": "아닐걸? <SEG> 그 뭐지? <SEG> 몰라. <SEG> 뭔가 근데 그 남자가 우리 욕했을 거 같애. <SEG>",
+  "wer": 0.7857,
+  "cer": 0.4898,
+  "gt_seg": 2,
+  "pred_seg": 4,
+  "seg_match": false
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00012.wav",
+  "gt": "대화를 할 때 <SEG>",
+  "pred": "그 대화를 할 때 <SEG>",
+  "wer": 0.25,
+  "cer": 0.1538,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00013.wav",
+  "gt": "알아서 할게. <SEG>",
+  "pred": "알아서 할게. <SEG>",
+  "wer": 0.0,
+  "cer": 0.0,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00014.wav",
+  "gt": "그 해부학 할 때가 제일 재밌긴 했는데 <SEG> 그때 밀려 썼던 그 기억이 아직도 잊혀지지가 않네. <SEG>",
+  "pred": "그 해보학할 때가 제일 재밌긴 했는데 <SEG> 그때 밀렸었던 그 기억이 아직도 잊혀지지가 않네. <SEG>",
+  "wer": 0.2353,
+  "cer": 0.0806,
+  "gt_seg": 2,
+  "pred_seg": 2,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00015.wav",
+  "gt": "아니 아닐껄 <SEG>",
+  "pred": "아닌 아닐걸. <SEG>",
+  "wer": 0.6667,
+  "cer": 0.25,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00016.wav",
+  "gt": "그렇지. <SEG>",
+  "pred": "그치. <SEG>",
+  "wer": 0.5,
+  "cer": 0.2,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00017.wav",
+  "gt": "나도 기분 안 좋긴 한데 <SEG> 근데 그거는 식당말이 맞는 거 같애 <SEG> 거의 식당에서 뭐 호텔이나 이런데 식당 밥 먹다 보면은. <SEG>",
+  "pred": "나도 기분 안 좋긴 한데 <SEG> 근데 그거는 그 식당 말이 맞는 거 같애. <SEG> 거의 식당에서 뭐 호텔이나 이런데 뭐 식당 밥 먹다 보면은 <SEG>",
+  "wer": 0.2609,
+  "cer": 0.0843,
+  "gt_seg": 3,
+  "pred_seg": 3,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00018.wav",
+  "gt": "뭔가 즉흥적인 거보다는 <SEG> 너무 준비해온 것만 하는 느낌 <SEG>",
+  "pred": "음 그니까 뭔가 즉흥적인 거보다는 너무 준비해온 것만 하는 느낌. <SEG>",
+  "wer": 0.4,
+  "cer": 0.3171,
+  "gt_seg": 2,
+  "pred_seg": 1,
+  "seg_match": false
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00019.wav",
+  "gt": "농사 짓고 막 그랬잖아. <SEG>",
+  "pred": "농사 짓고 막 그랬잖아. <SEG>",
+  "wer": 0.0,
+  "cer": 0.0,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00020.wav",
+  "gt": "거기 말고 저번에 우리 우리 언니랑 같이 갔던 베트남 식당 있는 쪽 있잖아. <SEG> 기억나? <SEG> 아 태국 식당. <SEG>",
+  "pred": "거기 말고 그 저번에 우리 그 우리 언니랑 같이 갔던 베트남 식당 있는 쪽 있잖아. <SEG> 기억나? <SEG> 아 태국 식당. <SEG>",
+  "wer": 0.1,
+  "cer": 0.0541,
+  "gt_seg": 3,
+  "pred_seg": 3,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00021.wav",
+  "gt": "더 재밌게 즐길 수 있었을 텐데. <SEG>",
+  "pred": "더 재밌게 즐길 수 있었을 텐데. <SEG>",
+  "wer": 0.0,
+  "cer": 0.0,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00022.wav",
+  "gt": "아니 근데 우리도 부담되는데 너무 먹고 싶어서 <SEG> 어쩔 수 없었다고 <SEG> 그래가지고 먹고 <SEG> 맛있게 먹었어. <SEG>",
+  "pred": "아니 근데 우리도 부담되는데 너무 먹고 싶어서 어쩔 수 없었다고 <SEG> 이러고 먹고 맛있게 먹었어. <SEG>",
+  "wer": 0.1667,
+  "cer": 0.2078,
+  "gt_seg": 4,
+  "pred_seg": 2,
+  "seg_match": false
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00023.wav",
+  "gt": "그래서 한 좀 좀 무리 무리했어 사실. <SEG>",
+  "pred": "그래서 그냥 쫌 쫌 무리 무리했어. <SEG> 사실. <SEG>",
+  "wer": 0.625,
+  "cer": 0.4074,
+  "gt_seg": 1,
+  "pred_seg": 2,
+  "seg_match": false
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00024.wav",
+  "gt": "집에 내려가서 먹었던 게 맛있었어. <SEG>",
+  "pred": "집에 내려가서 먹었던 게 맛있었어. <SEG>",
+  "wer": 0.0,
+  "cer": 0.0,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00025.wav",
+  "gt": "아 노래 부르고 싶다 <SEG> 나 갑자기 노래 부르고 싶어졌어. <SEG>",
+  "pred": "아 노래 부르고 싶다. <SEG> 나 갑자기 노래 부르고 싶어졌어. <SEG>",
+  "wer": 0.0909,
+  "cer": 0.0238,
+  "gt_seg": 2,
+  "pred_seg": 2,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00026.wav",
+  "gt": "내리갈굼 없었어? <SEG>",
+  "pred": "내리갈굼 없었어? <SEG>",
+  "wer": 0.0,
+  "cer": 0.0,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00027.wav",
+  "gt": "아니 그니까 같이 사는 거 생각 없어? <SEG> 딴 딴 데 유성이나 이쪽에. <SEG>",
+  "pred": "아 그니까 같이 사는 거 생각 없어? <SEG> 그 딴 딴 데 유성이 나 이쪽에? <SEG>",
+  "wer": 0.3571,
+  "cer": 0.102,
+  "gt_seg": 2,
+  "pred_seg": 2,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00028.wav",
+  "gt": "그니까 좀 배울걸 <SEG>",
+  "pred": "아 그니까. <SEG> 좀 배울걸. <SEG>",
+  "wer": 1.0,
+  "cer": 0.6667,
+  "gt_seg": 1,
+  "pred_seg": 2,
+  "seg_match": false
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00029.wav",
+  "gt": "그래 그러고 나서 <SEG> 신발도 봐야 될 거 같애. <SEG>",
+  "pred": "그래. 그러고 나서 뭐 신발도 봐야 될 거 같애. <SEG>",
+  "wer": 0.2,
+  "cer": 0.1667,
+  "gt_seg": 2,
+  "pred_seg": 1,
+  "seg_match": false
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00030.wav",
+  "gt": "뭐 하고 이렇게. <SEG>",
+  "pred": "그니까 뭐 뭐 스쿠버 다이빙하고 <SEG> 뭐 이렇게 뭐 <SEG>",
+  "wer": 2.0,
+  "cer": 1.5333,
+  "gt_seg": 1,
+  "pred_seg": 2,
+  "seg_match": false
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00031.wav",
+  "gt": "아니야 엄청 많이 먹고 왔구만 <SEG>",
+  "pred": "아니야. 엄청 많이 먹고 갔구먼. <SEG>",
+  "wer": 0.3333,
+  "cer": 0.1818,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00032.wav",
+  "gt": "우리랑 같이 놀기로 했어. <SEG>",
+  "pred": "아 우리랑 같이 놀기로 했어. <SEG>",
+  "wer": 0.2,
+  "cer": 0.1,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00033.wav",
+  "gt": "근데 자취랑 <SEG>",
+  "pred": "근데 자취랑 <SEG>",
+  "wer": 0.0,
+  "cer": 0.0,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00034.wav",
+  "gt": "오빠는 어떻게 생각해? <SEG>",
+  "pred": "오빠는 어떻게 생각해? <SEG>",
+  "wer": 0.0,
+  "cer": 0.0,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00035.wav",
+  "gt": "그래 나도 지금 좀 그래. <SEG>",
+  "pred": "그래. <SEG> 나도 지금 쫌 그래. <SEG>",
+  "wer": 0.5,
+  "cer": 0.4,
+  "gt_seg": 1,
+  "pred_seg": 2,
+  "seg_match": false
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00036.wav",
+  "gt": "파는데 뭐 거기 <SEG> 그 관광비라 드는 거 같은데. <SEG>",
+  "pred": "하는데 거 완강비라 <SEG> 되는 거 같은데 <SEG>",
+  "wer": 0.7,
+  "cer": 0.4054,
+  "gt_seg": 2,
+  "pred_seg": 2,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00037.wav",
+  "gt": "너는 너한테 후배가 생길 거 아니야 <SEG> 이제. <SEG>",
+  "pred": "너는 너한테 후배가 생길 거 아냐 <SEG> 이제. <SEG>",
+  "wer": 0.1111,
+  "cer": 0.0571,
+  "gt_seg": 2,
+  "pred_seg": 2,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00038.wav",
+  "gt": "그래서 <SEG>",
+  "pred": "그래서 <SEG>",
+  "wer": 0.0,
+  "cer": 0.0,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00039.wav",
+  "gt": "그 목표가 이루어지진 않았지만 이제 군대에 있을 때부터 일본에 좀 유학을 갈 <SEG> 이제 생각을 좀 많이 하고 있었습니다. <SEG> 그래서 이제 차근차근 이제 <SEG>",
+  "pred": "그 목표가 이루어지진 않았지만 <SEG> 이제 군대 있을 때부터 일본에 지금 유학을 갈 이제 생각을 좀 많이 하고 있었습니다. <SEG> 그래서 이제 창우학은 이제 <SEG>",
+  "wer": 0.2,
+  "cer": 0.1959,
+  "gt_seg": 3,
+  "pred_seg": 3,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00040.wav",
+  "gt": "그치 서로 다른 게임을 했지. <SEG>",
+  "pred": "그치 서로 다른 게임을 했지. <SEG>",
+  "wer": 0.0,
+  "cer": 0.0,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00041.wav",
+  "gt": "지나칠수가 없지. <SEG>",
+  "pred": "지나칠 수가 없지. <SEG>",
+  "wer": 0.6667,
+  "cer": 0.0667,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00042.wav",
+  "gt": "걔 걔가 좋아하는 영화. <SEG>",
+  "pred": "걔 걔가 좋아하는 영화. <SEG>",
+  "wer": 0.0,
+  "cer": 0.0,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00043.wav",
+  "gt": "그래 가지고 아디다스로 내가 살려고 하는 것도 있고. <SEG>",
+  "pred": "그래가지고 아디다스로 <SEG> 내가 어 살려고 하는 것도 있고 <SEG>",
+  "wer": 0.5556,
+  "cer": 0.2857,
+  "gt_seg": 1,
+  "pred_seg": 2,
+  "seg_match": false
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00044.wav",
+  "gt": "여름 때 많이 사. <SEG>",
+  "pred": "여름에 많이 사. <SEG>",
+  "wer": 0.4,
+  "cer": 0.125,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00045.wav",
+  "gt": "아니 근데 그러면은 너 시험 언제 <SEG> 그거 나오는 건 나왔어? <SEG> 시험 언제 일정은? <SEG>",
+  "pred": "아니 근데 그러면은 그 너 시험 언제 그거 언 나오는 건 나왔어? <SEG> 시험 언제 일정은? <SEG>",
+  "wer": 0.1875,
+  "cer": 0.1475,
+  "gt_seg": 3,
+  "pred_seg": 2,
+  "seg_match": false
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00046.wav",
+  "gt": "오빠가 한 살 많댔나? <SEG> 두 살 많댔나? <SEG>",
+  "pred": "오빠가 한 살 많댔나 <SEG> 두 살 많댔나? <SEG>",
+  "wer": 0.1111,
+  "cer": 0.0303,
+  "gt_seg": 2,
+  "pred_seg": 2,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00047.wav",
+  "gt": "그날도? <SEG>",
+  "pred": "그날도 <SEG>",
+  "wer": 0.5,
+  "cer": 0.1,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00048.wav",
+  "gt": "아 형님 바로 집 옆이었죠? <SEG>",
+  "pred": "아 형님 바로 집 옆이었죠? <SEG>",
+  "wer": 0.0,
+  "cer": 0.0,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00049.wav",
+  "gt": "그러면 저녁에 많이 와? <SEG>",
+  "pred": "그러면 우리 저녁에 많이 와? <SEG>",
+  "wer": 0.2,
+  "cer": 0.1579,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00050.wav",
+  "gt": "너네 과 몇 명인데? <SEG>",
+  "pred": "너네가 몇 명인데? <SEG>",
+  "wer": 0.4,
+  "cer": 0.1176,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00051.wav",
+  "gt": "놀 시간도 없을 거 같애 <SEG> 내가 봤을 때는 <SEG>",
+  "pred": "놀 시간도 없을 거 같애. <SEG> 내가 보기엔. <SEG>",
+  "wer": 0.3,
+  "cer": 0.1765,
+  "gt_seg": 2,
+  "pred_seg": 2,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00052.wav",
+  "gt": "끝나고 뭐 먹을까? <SEG> 그래 그 음식 얘기나 이번에 해보자 <SEG> 끝나고 뭐 먹을까? <SEG>",
+  "pred": "그 놈 뭐 먹을까? <SEG> 그래 그 음식 얘기 나 좀 해보자. <SEG> 그 놈 뭐 먹을까? <SEG>",
+  "wer": 0.5333,
+  "cer": 0.1864,
+  "gt_seg": 3,
+  "pred_seg": 3,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00053.wav",
+  "gt": "우리나라 돈으로 한. <SEG>",
+  "pred": "우리나라 돈으로 한 <SEG>",
+  "wer": 0.25,
+  "cer": 0.0588,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00054.wav",
+  "gt": "근데 나는 뭔가 <SEG>",
+  "pred": "근데 나는 뭔가 심포 <SEG>",
+  "wer": 0.25,
+  "cer": 0.2143,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00055.wav",
+  "gt": "하는데 근데 너는 공부를 좀 하니까. <SEG>",
+  "pred": "사십 펀데 <SEG> 근데 너는 공부를 좀 하니까 <SEG>",
+  "wer": 0.5714,
+  "cer": 0.4231,
+  "gt_seg": 1,
+  "pred_seg": 2,
+  "seg_match": false
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00056.wav",
+  "gt": "먼저 믿어줘야 <SEG>",
+  "pred": "먼저 믿어줘야? <SEG>",
+  "wer": 0.3333,
+  "cer": 0.0769,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00057.wav",
+  "gt": "그니까. 너 이라 했지. <SEG> 난 이야. <SEG>",
+  "pred": "그니까 너 이십 육 일이라 있지. <SEG> 나는 이십 오 일이야. <SEG>",
+  "wer": 1.125,
+  "cer": 0.5161,
+  "gt_seg": 2,
+  "pred_seg": 2,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00058.wav",
+  "gt": "거기 돈이 부족한 거야. <SEG>",
+  "pred": "거기도 돈이 부족한 거야. <SEG>",
+  "wer": 0.2,
+  "cer": 0.0526,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00059.wav",
+  "gt": "그리고 우리 피시방 가자. <SEG>",
+  "pred": "그리고 우리 피시방 가자. <SEG>",
+  "wer": 0.0,
+  "cer": 0.0,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00060.wav",
+  "gt": "너무 냉정한데? <SEG>",
+  "pred": "너무 냉정한데? <SEG>",
+  "wer": 0.0,
+  "cer": 0.0,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00061.wav",
+  "gt": "그냥 면접 보고 기다리는 게 아니라? <SEG>",
+  "pred": "그냥 면접 보고 기다리는 게 아니라 <SEG>",
+  "wer": 0.1429,
+  "cer": 0.0385,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00062.wav",
+  "gt": "아니 봐봐. <SEG>",
+  "pred": "아니, 봐봐. <SEG>",
+  "wer": 0.3333,
+  "cer": 0.0833,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00063.wav",
+  "gt": "얘는 나랑 맞지 않다고 생각 <SEG> 할 것 아니야. <SEG>",
+  "pred": "얘는 나랑 맞지 않다고 생각할 거 아냐. <SEG>",
+  "wer": 0.5,
+  "cer": 0.2778,
+  "gt_seg": 2,
+  "pred_seg": 1,
+  "seg_match": false
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00064.wav",
+  "gt": "응. 응 어 진짜. <SEG>",
+  "pred": "응 응 어 진짜. <SEG>",
+  "wer": 0.2,
+  "cer": 0.0625,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00065.wav",
+  "gt": "언제 먹었어. <SEG> 난 밥도 안 먹고 왔는데 <SEG>",
+  "pred": "언제 먹었어? <SEG> 난 밥도 안 먹고 왔는데. <SEG>",
+  "wer": 0.2222,
+  "cer": 0.0606,
+  "gt_seg": 2,
+  "pred_seg": 2,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00066.wav",
+  "gt": "엄마는 그냥 처음부터 조금 데 대전 <SEG> 대전이라든가 아니면은 지역 중앙회 같은 거 이렇게 하라고 하는데. <SEG>",
+  "pred": "엄마는 그냥 처음부터 쪼금 막 따른 데 <SEG> 대전 어 대전이라든가 아니면은 지역 중앙회 같은 거 이렇게 하라고 하는데 <SEG>",
+  "wer": 0.3529,
+  "cer": 0.1765,
+  "gt_seg": 2,
+  "pred_seg": 2,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00067.wav",
+  "gt": "김자홍? <SEG>",
+  "pred": "김자홍? <SEG>",
+  "wer": 0.0,
+  "cer": 0.0,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00068.wav",
+  "gt": "우리 내 친척 중에서 조폭이 있다고 <SEG> 얘기했나? <SEG>",
+  "pred": "우리 내 친척 중에 <SEG> 그 조폭이 있다고 얘기했나? <SEG>",
+  "wer": 0.4444,
+  "cer": 0.3784,
+  "gt_seg": 2,
+  "pred_seg": 2,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00069.wav",
+  "gt": "재밌게 놀 수 있는 친구. <SEG>",
+  "pred": "재밌게 놀 수 있는 친구. <SEG>",
+  "wer": 0.0,
+  "cer": 0.0,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00070.wav",
+  "gt": "고등학교 때는 <SEG>",
+  "pred": "고등학교 때는 <SEG>",
+  "wer": 0.0,
+  "cer": 0.0,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00071.wav",
+  "gt": "뭔지 알아. <SEG>",
+  "pred": "뭔지 알아. <SEG>",
+  "wer": 0.0,
+  "cer": 0.0,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00072.wav",
+  "gt": "어 내 내가 생각한 거보다는 <SEG> 그렇게 비싸지는 않은 거 같아. <SEG>",
+  "pred": "근데 내가 생각한 거보단 그렇게 비싸지는 않은 거 같다. <SEG>",
+  "wer": 0.4167,
+  "cer": 0.2667,
+  "gt_seg": 2,
+  "pred_seg": 1,
+  "seg_match": false
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00073.wav",
+  "gt": "안 먹을 때에는 확실히 그게 안 나와. <SEG> 그래가지고 다이어트 보조제는 안 쓰는 게 좋은데 <SEG> 안 안 빠지는 걸 어떡해 근데. <SEG>",
+  "pred": "어. 안 먹을 때는 확실히 그게 안 나와. <SEG> 그래가지고 다이어트 보조제는 안 쓰는 게 좋은데 <SEG> 안 안 빠지는 걸로 어떻게 근데? <SEG>",
+  "wer": 0.2174,
+  "cer": 0.0952,
+  "gt_seg": 3,
+  "pred_seg": 3,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00074.wav",
+  "gt": "너는 워라벨을 꿈꾸고 있는 거고? <SEG>",
+  "pred": "그래서 너는 워라밸을 꿈꾸고 있는 거고 <SEG>",
+  "wer": 0.5,
+  "cer": 0.25,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00075.wav",
+  "gt": "그 뭐지? <SEG> 약간 리프트가 내려주는데가 왼쪽 오른쪽이었거든? <SEG>",
+  "pred": "그 뭐지? <SEG> 약간 리프트가 내려주는 데가 왼쪽이 오른쪽이었거든? <SEG>",
+  "wer": 0.3333,
+  "cer": 0.0455,
+  "gt_seg": 2,
+  "pred_seg": 2,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00076.wav",
+  "gt": "초기화 안 돼? <SEG>",
+  "pred": "초기화 안 돼? <SEG>",
+  "wer": 0.0,
+  "cer": 0.0,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00077.wav",
+  "gt": "왜 그런지 모르겠는데 그냥 연기를 잘 하니까 그러겠죠. <SEG> 목소리도 한 하시고 셜록에 대해 <SEG>",
+  "pred": "왜 그런지 모르겠는데 <SEG> 근 연기를 잘하니까 그러겠죠. <SEG> 근데 목소리도 한 목소리 하시고 <SEG> 셜록에 대해 <SEG>",
+  "wer": 0.4667,
+  "cer": 0.35,
+  "gt_seg": 2,
+  "pred_seg": 4,
+  "seg_match": false
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00078.wav",
+  "gt": "그러면 정상적으로 일을 할 수 있는 게 <SEG> 정확히 로 보는 거야? <SEG>",
+  "pred": "그러면 정상적으로 일을 할 수 있는 게 <SEG> 정확히 오 월로 보는 거야? <SEG>",
+  "wer": 0.1538,
+  "cer": 0.0652,
+  "gt_seg": 2,
+  "pred_seg": 2,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00079.wav",
+  "gt": "근데 그게 맞는 거 같애 <SEG> 식당 이미지도 있고 <SEG> 다른 사람 밥 먹는데 피해 주는 것도 있고. <SEG>",
+  "pred": "데 그게 맞는 거 같애. <SEG> 식당 이미지도 있고 <SEG> 다른 사람 밥 먹는데 피해주는 것도 있고 <SEG>",
+  "wer": 0.2632,
+  "cer": 0.0597,
+  "gt_seg": 3,
+  "pred_seg": 3,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00080.wav",
+  "gt": "내가 봐도 알아? <SEG>",
+  "pred": "내가 봐도 알아. <SEG>",
+  "wer": 0.25,
+  "cer": 0.0667,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00081.wav",
+  "gt": "릴리아라는 여자애랑 같이 살고 있었는데 <SEG> 그 여자가 <SEG>",
+  "pred": "릴리아라는 여자애랑 같이 살고 있었는데 <SEG> 그 여자가 <SEG>",
+  "wer": 0.0,
+  "cer": 0.0,
+  "gt_seg": 2,
+  "pred_seg": 2,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00082.wav",
+  "gt": "잠도 못 잘 것 같애 <SEG>",
+  "pred": "잠도 못 잘 거 같애. <SEG>",
+  "wer": 0.3333,
+  "cer": 0.1176,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00083.wav",
+  "gt": "뭐 결혼할 건가 봐. <SEG>",
+  "pred": "뭐 결혼할 건가 봐. <SEG>",
+  "wer": 0.0,
+  "cer": 0.0,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00084.wav",
+  "gt": "그때가 <SEG>",
+  "pred": "그때가 <SEG>",
+  "wer": 0.0,
+  "cer": 0.0,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00085.wav",
+  "gt": "앞치마. <SEG>",
+  "pred": "앞치마. <SEG>",
+  "wer": 0.0,
+  "cer": 0.0,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00086.wav",
+  "gt": "그래서 결국 보내줬다. <SEG>",
+  "pred": "그래서 결국 보내줬다. <SEG>",
+  "wer": 0.0,
+  "cer": 0.0,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00087.wav",
+  "gt": "밤에 공부하는 게 좀 힘들긴 하지만 그래도 뭐 저뿐만 아니고 다른 학생들도 다 하는 거라서 <SEG> 참고 좀 그렇게 계속 하게 됐습니다. <SEG> 네. <SEG>",
+  "pred": "밤에 공부하는 게 좀 힘들긴 하지만 <SEG> 그래도 뭐 저뿐만 아니고 다른 학생들도 다 하는 거라서 <SEG> 참고 좀 그렇게 계속 하게 됐습니다. <SEG> 네. <SEG>",
+  "wer": 0.04,
+  "cer": 0.0652,
+  "gt_seg": 3,
+  "pred_seg": 4,
+  "seg_match": false
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00088.wav",
+  "gt": "근데 약간 전주는 <SEG>",
+  "pred": "근데 약간 전주는 <SEG>",
+  "wer": 0.0,
+  "cer": 0.0,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00089.wav",
+  "gt": "차이 나가지고 <SEG>",
+  "pred": "두 살 차이 나가지고 <SEG>",
+  "wer": 0.6667,
+  "cer": 0.3077,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00090.wav",
+  "gt": "아 진짜? <SEG>",
+  "pred": "아 진짜? <SEG>",
+  "wer": 0.0,
+  "cer": 0.0,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00091.wav",
+  "gt": "마지막으로 한 번만 더 타면 안 되냐고 <SEG> 이제 계속 말을 하신단 말이야. <SEG> 그러면은 몇 번 태워 드리는 경우도 있는데 <SEG> 계속 <SEG>",
+  "pred": "마지막으로 한 번만 더 타면 안 되냐고 <SEG> 이제 계속 말을 하신단 말이야. <SEG> 그러면은 몇 번 이렇게 태워드리는 경우도 있는데 <SEG> 계속 <SEG>",
+  "wer": 0.0833,
+  "cer": 0.0556,
+  "gt_seg": 4,
+  "pred_seg": 4,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00092.wav",
+  "gt": "저도 그렇게 생각 무조건 합니다. <SEG> 그래도 그 중에 장점이 하나 있다면 <SEG>",
+  "pred": "저도 그렇게 생각, 무조건 합니다. <SEG> 그래도 그 중에 장점이 하나 있다면 <SEG>",
+  "wer": 0.0769,
+  "cer": 0.02,
+  "gt_seg": 2,
+  "pred_seg": 2,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00093.wav",
+  "gt": "어떤 거? <SEG>",
+  "pred": "어떤 거? <SEG>",
+  "wer": 0.0,
+  "cer": 0.0,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00094.wav",
+  "gt": "나도 지금 <SEG>",
+  "pred": "나도 지금 <SEG>",
+  "wer": 0.0,
+  "cer": 0.0,
+  "gt_seg": 1,
+  "pred_seg": 1,
+  "seg_match": true
+},
+{
+  "audio": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/KSponSpeech/audio/KsponSpeech_E00095.wav",
+  "gt": "이런 걸로 판별하는 게 더 좋다고 생각해 <SEG> 하고 <SEG>",
+  "pred": "이런 걸로 판별하는 게 더 좋다고 생각해 <SEG> 하고 <SEG>",
+  "wer": 0.0,
+  "cer": 0.0,
+  "gt_seg": 2,
+  "pred_seg": 2,
+  "seg_match": true
+}

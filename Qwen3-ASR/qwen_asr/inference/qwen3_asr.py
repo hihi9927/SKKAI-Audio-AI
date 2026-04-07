@@ -513,7 +513,11 @@ class Qwen3ASRModel:
             _param = next(self.model.parameters())
             inputs = inputs.to(_param.device).to(_param.dtype)
 
-            text_ids = self.model.generate(**inputs, max_new_tokens=self.max_new_tokens)
+            text_ids = self.model.generate(
+                **inputs,
+                max_new_tokens=self.max_new_tokens,
+                pad_token_id=self.processor.tokenizer.eos_token_id,
+            )
 
             decoded_raw = self.processor.batch_decode(
                 text_ids.sequences[:, inputs["input_ids"].shape[1]:],
