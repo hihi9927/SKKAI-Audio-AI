@@ -169,27 +169,28 @@ def _make_vad_iterator(model):
 def detect_speech_bounds(y_wav: np.ndarray, sr: int, start_sec: float, end_sec: float,
                          vad_model=None) -> tuple[float, float]:
     """Silero VAD로 세그먼트 내 실제 발화 시작·끝 시각을 추정.
+    end_sec 이후 (VAD_MIN_SILENCE_MS + VAD_SPEECH_PAD_MS)만큼 더 포함해
+    Silero가 end 이벤트를 발생시킬 수 있게 함.
+    r_end는 end_sec로 clamp하여 look-ahead 막대가 정확히 표시됨.
     vad_model이 None이면 RMS 에너지 기반 fallback 사용."""
-    i_start = int(start_sec * sr)
-    i_end   = min(int(end_sec * sr), len(y_wav))
-    segment = y_wav[i_start:i_end]
+    i_start    = int(start_sec * sr)
+    extend_sec = (VAD_MIN_SILENCE_MS + VAD_SPEECH_PAD_MS) / 1000.0
+    i_end_ext  = min(int((end_sec + extend_sec) * sr), len(y_wav))
+    segment    = y_wav[i_start:i_end_ext]
     if len(segment) == 0:
         return start_sec, end_sec
 
     if vad_model is not None:
         try:
             vad_iter = _make_vad_iterator(vad_model)
-            # 512샘플 윈도우로 슬라이딩, 음성 구간 수집
             speech_starts, speech_ends = [], []
-            audio_int16 = (np.clip(segment, -1.0, 1.0) * 32767).astype(np.int16)
-            audio_float = audio_int16.astype(np.float32) / 32768.0
+            audio_float = segment.astype(np.float32)
             offset = 0
             in_speech = False
             seg_start_local = None
             while offset + VAD_WINDOW_SAMPLES <= len(audio_float):
                 window = torch.from_numpy(audio_float[offset:offset + VAD_WINDOW_SAMPLES])
                 result = vad_iter(window, return_seconds=False)
-                t_sec = start_sec + offset / sr
                 if result is not None:
                     if "start" in result and not in_speech:
                         seg_start_local = start_sec + result["start"] / sr
@@ -203,8 +204,8 @@ def detect_speech_bounds(y_wav: np.ndarray, sr: int, start_sec: float, end_sec: 
                 speech_starts.append(seg_start_local)
                 speech_ends.append(end_sec)
             if speech_starts:
-                return speech_starts[0], min(speech_ends[-1], end_sec)
-            # 음성 구간 미감지 시 원본 반환
+                r_end = min(speech_ends[-1], end_sec)  # end_sec 초과 불가
+                return speech_starts[0], r_end
             return start_sec, end_sec
         except Exception:
             pass  # fallback
