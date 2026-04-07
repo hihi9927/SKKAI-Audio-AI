@@ -29,6 +29,7 @@ import sys
 from pathlib import Path
 
 import librosa
+import torch
 import matplotlib
 matplotlib.use("Agg")  # GUI 없는 서버 환경
 import matplotlib.pyplot as plt
@@ -87,6 +88,7 @@ STYLE = {
     "fcl_dot":   "#2ECC71",   # FCL 마커 점
     "seg":       "#E84C4C",   # commit=seg 색
     "vad":       "#F0A500",   # commit=vad 색
+    "lookahead": "#7F8C8D",   # refined_end → server audio_end (look-ahead 오디오)
 }
 
 plt.rcParams.update({
@@ -135,12 +137,99 @@ def find_audio(audio_path: str, audio_root: str | None) -> str | None:
     return None
 
 
+VAD_THRESHOLD        = 0.5
+VAD_MIN_SILENCE_MS   = 800
+VAD_SPEECH_PAD_MS    = 160
+VAD_WINDOW_SAMPLES   = 512
+VAD_SR               = 16000
+
+
+def load_vad_model():
+    """Silero VAD 모델 로드. 실패 시 None 반환."""
+    try:
+        from silero_vad import load_silero_vad, VADIterator  # noqa: F401
+        model = load_silero_vad()
+        return model
+    except Exception as e:
+        print(f"  [VAD] Silero VAD 로드 실패, RMS fallback 사용: {e}")
+        return None
+
+
+def _make_vad_iterator(model):
+    from silero_vad import VADIterator
+    return VADIterator(
+        model=model,
+        threshold=VAD_THRESHOLD,
+        sampling_rate=VAD_SR,
+        min_silence_duration_ms=VAD_MIN_SILENCE_MS,
+        speech_pad_ms=VAD_SPEECH_PAD_MS,
+    )
+
+
+def detect_speech_bounds(y_wav: np.ndarray, sr: int, start_sec: float, end_sec: float,
+                         vad_model=None) -> tuple[float, float]:
+    """Silero VAD로 세그먼트 내 실제 발화 시작·끝 시각을 추정.
+    vad_model이 None이면 RMS 에너지 기반 fallback 사용."""
+    i_start = int(start_sec * sr)
+    i_end   = min(int(end_sec * sr), len(y_wav))
+    segment = y_wav[i_start:i_end]
+    if len(segment) == 0:
+        return start_sec, end_sec
+
+    if vad_model is not None:
+        try:
+            vad_iter = _make_vad_iterator(vad_model)
+            # 512샘플 윈도우로 슬라이딩, 음성 구간 수집
+            speech_starts, speech_ends = [], []
+            audio_int16 = (np.clip(segment, -1.0, 1.0) * 32767).astype(np.int16)
+            audio_float = audio_int16.astype(np.float32) / 32768.0
+            offset = 0
+            in_speech = False
+            seg_start_local = None
+            while offset + VAD_WINDOW_SAMPLES <= len(audio_float):
+                window = torch.from_numpy(audio_float[offset:offset + VAD_WINDOW_SAMPLES])
+                result = vad_iter(window, return_seconds=False)
+                t_sec = start_sec + offset / sr
+                if result is not None:
+                    if "start" in result and not in_speech:
+                        seg_start_local = start_sec + result["start"] / sr
+                        in_speech = True
+                    if "end" in result and in_speech:
+                        speech_starts.append(seg_start_local)
+                        speech_ends.append(start_sec + result["end"] / sr)
+                        in_speech = False
+                offset += VAD_WINDOW_SAMPLES
+            if in_speech and seg_start_local is not None:
+                speech_starts.append(seg_start_local)
+                speech_ends.append(end_sec)
+            if speech_starts:
+                return speech_starts[0], min(speech_ends[-1], end_sec)
+            # 음성 구간 미감지 시 원본 반환
+            return start_sec, end_sec
+        except Exception:
+            pass  # fallback
+
+    # RMS fallback
+    frame_len = int(0.02 * sr)
+    n_frames = len(segment) // frame_len
+    if n_frames == 0:
+        return start_sec, end_sec
+    rms = np.array([
+        np.sqrt(np.mean(segment[i * frame_len:(i + 1) * frame_len] ** 2))
+        for i in range(n_frames)
+    ])
+    active = np.where(rms >= 0.01)[0]
+    if len(active) == 0:
+        return start_sec, end_sec
+    return (start_sec + active[0] * 0.02,
+            min(start_sec + (active[-1] + 1) * 0.02, end_sec))
+
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Per-file 플롯
 # ──────────────────────────────────────────────────────────────────────────────
 
-def plot_file(record: dict, audio_root: str | None, out_path: str) -> None:
+def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=None) -> None:
     # partial_tail (타이밍 None) 제외
     segs      = [s for s in record["segment_metrics"] if s.get("audio_start_sec") is not None]
     duration  = record["duration"]
@@ -149,6 +238,10 @@ def plot_file(record: dict, audio_root: str | None, out_path: str) -> None:
 
     audio_path = find_audio(record["audio_path"], audio_root)
     has_audio  = audio_path is not None
+
+    # 오디오 로드 (waveform + speech bounds 둘 다 사용)
+    y_wav, sr_wav = (librosa.load(audio_path, sr=16000, mono=True) if has_audio
+                     else (None, 16000))
 
     # 행 구성: waveform(있으면) + gantt + 텍스트 표
     n_rows   = 3 if has_audio else 2
@@ -175,8 +268,7 @@ def plot_file(record: dict, audio_root: str | None, out_path: str) -> None:
 
     # ── Row 1: Waveform or Speech Activity ────────────────────────────────
     if has_audio and ax_wave is not None:
-        y_wav, sr = librosa.load(audio_path, sr=16000, mono=True)
-        t = np.linspace(0, len(y_wav) / sr, num=len(y_wav))
+        t = np.linspace(0, len(y_wav) / sr_wav, num=len(y_wav))
         step = max(1, len(y_wav) // 8000)
         ax_wave.plot(t[::step], y_wav[::step], color=STYLE["speech"], lw=0.6)
         ax_wave.set_ylabel("Amplitude")
@@ -210,11 +302,23 @@ def plot_file(record: dict, audio_root: str | None, out_path: str) -> None:
         y_pos   = seg["segment_id"]
         reason  = seg["commit_reason"]
 
-        # 오디오 구간
-        bar = ax.barh(y_pos, s_end - s_start, left=s_start,
-                      height=bar_height, color=STYLE["speech"], alpha=0.9, zorder=3)
+        # 오디오 구간 (에너지 기반 refined bounds 또는 원본)
+        if has_audio and y_wav is not None:
+            r_start, r_end = detect_speech_bounds(y_wav, sr_wav, s_start, s_end, vad_model=vad_model)
+        else:
+            r_start, r_end = s_start, s_end
+
+        ax.barh(y_pos, r_end - r_start, left=r_start,
+                height=bar_height, color=STYLE["speech"], alpha=0.9, zorder=3)
         if "audio" not in legend_handles:
-            legend_handles["audio"] = mpatches.Patch(color=STYLE["speech"], label="Audio segment")
+            legend_handles["audio"] = mpatches.Patch(color=STYLE["speech"], label="Audio segment (energy)")
+
+        # look-ahead 구간 (refined_end → server audio_end_sec)
+        if has_audio and y_wav is not None and s_end > r_end + 0.001:
+            ax.barh(y_pos, s_end - r_end, left=r_end,
+                    height=bar_height, color=STYLE["lookahead"], alpha=0.6, zorder=3)
+            if "lookahead" not in legend_handles:
+                legend_handles["lookahead"] = mpatches.Patch(color=STYLE["lookahead"], label="Look-ahead (speech→server commit)")
 
         # VAD/Commit 대기 (audio_end → translate_started)
         if ts > s_end + 0.001:
@@ -227,7 +331,7 @@ def plot_file(record: dict, audio_root: str | None, out_path: str) -> None:
         ax.barh(y_pos, td - ts, left=ts,
                 height=bar_height * 0.6, color=STYLE["model"], alpha=0.85, zorder=3)
         if "model" not in legend_handles:
-            legend_handles["model"] = mpatches.Patch(color=STYLE["model"], label="Model run (->FCL)")
+            legend_handles["model"] = mpatches.Patch(color=STYLE["model"], label="Translation API")
 
         # FCL 점 & 레이블
         ax.scatter(td, y_pos, color=STYLE["fcl_dot"], s=60, zorder=5,
@@ -240,7 +344,7 @@ def plot_file(record: dict, audio_root: str | None, out_path: str) -> None:
 
         # commit_reason 레이블 (왼쪽)
         r_color = STYLE["vad"] if reason == "vad" else STYLE["seg"]
-        ax.text(s_start - 0.05, y_pos, reason,
+        ax.text(r_start - 0.05, y_pos, reason,
                 fontsize=7, color=r_color, ha="right", va="center")
 
     # FTL 수직선
@@ -355,11 +459,13 @@ def main():
         print("\n--max-files, --sample, --all-files, --file-id 중 하나를 지정하세요.")
         sys.exit(1)
 
+    vad_model = load_vad_model() if args.audio_root else None
+
     print(f"\n[Per-file 플롯 생성]  대상 {len(targets)}개 → {out_dir}/")
     for record in tqdm(targets, unit="file"):
         out_path = out_dir / f"{record['file_id']}.png"
         try:
-            plot_file(record, args.audio_root, str(out_path))
+            plot_file(record, args.audio_root, str(out_path), vad_model=vad_model)
         except Exception as e:
             print(f"  ⚠ {record['file_id']}: {e}")
 
