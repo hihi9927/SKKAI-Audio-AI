@@ -44,28 +44,10 @@ LANG_CODE = {
 }
 
 
-def batch_transcribe_with_seg(asr_wrapper, wavs: list, language: str) -> list:
-    """배치 generate — <SEG> 토큰을 보존한다."""
-    from qwen_asr.inference.utils import normalize_language_name
-    lang = normalize_language_name(language)
-    prompt = asr_wrapper._build_text_prompt(context="", force_language=lang)
-    prompts = [prompt] * len(wavs)
-    inputs = asr_wrapper.processor(text=prompts, audio=wavs, return_tensors="pt", padding=True)
-    inputs = inputs.to(asr_wrapper.device).to(asr_wrapper.dtype)
-    with torch.no_grad():
-        out_ids = asr_wrapper.model.generate(**inputs, max_new_tokens=asr_wrapper.max_new_tokens)
-    decoded_list = asr_wrapper.processor.batch_decode(
-        out_ids.sequences[:, inputs["input_ids"].shape[1]:],
-        skip_special_tokens=False,
-        clean_up_tokenization_spaces=False,
-    )
-    special_tokens = [t for t in asr_wrapper.processor.tokenizer.all_special_tokens if t != SEG_TOKEN]
-    results = []
-    for decoded in decoded_list:
-        for tok in special_tokens:
-            decoded = decoded.replace(tok, "")
-        results.append(decoded.strip())
-    return results
+def transcribe_one(asr_wrapper, wav: np.ndarray, sr: int, language: str) -> str:
+    import asyncio
+    results = asyncio.run(asr_wrapper.transcribe([(wav, sr)], language=language))
+    return results[0].text.strip()
 
 
 def compute_metrics(gt: str, pred: str) -> dict:
@@ -181,8 +163,8 @@ def load_existing_records(out_path: str) -> list:
 def run_single(asr_wrapper, samples, args, out_f, existing_records=None):
     """문장 단위 배치 추론."""
     existing_records = existing_records or []
-    done_audios = {r["audio"] for r in existing_records}
-    pending = [s for s in samples if s["audio"] not in done_audios]
+    done_audios = {os.path.abspath(r["audio"]) for r in existing_records}
+    pending = [s for s in samples if os.path.abspath(s["audio"]) not in done_audios]
     records = list(existing_records)
 
     # 기존 record 먼저 기록
@@ -196,27 +178,24 @@ def run_single(asr_wrapper, samples, args, out_f, existing_records=None):
     if existing_records:
         print(f"  [resume] {len(existing_records)}개 기존 결과 로드, {len(pending)}개 남음")
 
-    batch_size = args.batch_size
-    for batch_start in range(0, len(pending), batch_size):
-        batch = pending[batch_start:batch_start + batch_size]
-        wavs = [librosa.load(s["audio"], sr=args.sr, mono=True)[0] for s in batch]
-        gts = [parse_gt(s["text"]) for s in batch]
-        preds = batch_transcribe_with_seg(asr_wrapper, wavs, args.language)
-        for j, (sample, gt, pred) in enumerate(zip(batch, gts, preds)):
-            global_i = len(records)
-            m = compute_metrics(gt, pred)
-            record = {"audio": sample["audio"], "gt": gt, "pred": pred, **m}
-            records.append(record)
-            if global_i > 0:
-                out_f.write(",\n")
-            out_f.write(json.dumps(record, ensure_ascii=False, indent=2))
-            out_f.flush()
-            display_i = len(existing_records) + batch_start + j
-            print(f"[{display_i + 1}/{len(samples)}]")
-            print(f"  GT  : {gt}")
-            print(f"  PRED: {pred}")
-            print(f"  WER={m['wer']:.4f}  CER={m['cer']:.4f}  SEG gt={m['gt_seg']} pred={m['pred_seg']} {'✓' if m['seg_match'] else '✗'}")
-            print()
+    for i, sample in enumerate(pending):
+        wav, _ = librosa.load(sample["audio"], sr=args.sr, mono=True)
+        gt = parse_gt(sample["text"])
+        pred = transcribe_one(asr_wrapper, wav, args.sr, args.language)
+        global_i = len(records)
+        m = compute_metrics(gt, pred)
+        record = {"audio": sample["audio"], "gt": gt, "pred": pred, **m}
+        records.append(record)
+        if global_i > 0:
+            out_f.write(",\n")
+        out_f.write(json.dumps(record, ensure_ascii=False, indent=2))
+        out_f.flush()
+        display_i = len(existing_records) + i
+        print(f"[{display_i + 1}/{len(samples)}]")
+        print(f"  GT  : {gt}")
+        print(f"  PRED: {pred}")
+        print(f"  WER={m['wer']:.4f}  CER={m['cer']:.4f}  SEG gt={m['gt_seg']} pred={m['pred_seg']} {'✓' if m['seg_match'] else '✗'}")
+        print()
 
     avg_wer = round(sum(r["wer"] for r in records) / len(records), 4)
     avg_cer = round(sum(r["cer"] for r in records) / len(records), 4)
@@ -249,7 +228,7 @@ def run_concat(asr_wrapper, samples, args, out_f, existing_records=None):
         gt_combined = " ".join(gts)
 
         combined_wav = concat_wavs_with_silence(wavs, args.sr, args.silence_ms)
-        pred = batch_transcribe_with_seg(asr_wrapper, [combined_wav], args.language)[0]
+        pred = transcribe_one(asr_wrapper, combined_wav, args.sr, args.language)
 
         m = compute_metrics(gt_combined, pred)
         record = {
@@ -300,8 +279,7 @@ def main():
                    help="결과 JSON 저장 경로 (미지정 시 checkpoint 경로 기반 자동 생성)")
     p.add_argument("--no_merge", action="store_true",
                    help="adapter를 merge하지 않고 PeftModel 상태로 추론")
-    p.add_argument("--batch_size", type=int, default=8,
-                   help="추론 배치 크기 (기본값 8)")
+
     p.add_argument("--resume", action="store_true",
                    help="기존 결과 파일이 있으면 이어서 진행")
     args = p.parse_args()
@@ -316,7 +294,9 @@ def main():
         asr_wrapper = load_model(args)
     elif os.path.isdir(merged_path):
         print(f"[1/3] 병합 모델 캐시 감지, 직접 로드: {merged_path}")
-        asr_wrapper = Qwen3ASRModel.from_pretrained(merged_path)
+        use_bf16 = torch.cuda.is_available() and torch.cuda.get_device_capability(0)[0] >= 8
+        dtype = torch.bfloat16 if use_bf16 else torch.float16
+        asr_wrapper = Qwen3ASRModel.from_pretrained(merged_path, dtype=dtype, device_map="auto")
     else:
         print(f"[1/3] base model 로드: {args.base_model}")
         asr_wrapper = load_model(args)
