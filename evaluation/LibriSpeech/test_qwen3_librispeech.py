@@ -498,7 +498,8 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
                 text = (data.get('original') or '').strip()
                 if text:
                     partial_last = text
-                    idle_deadline = time.perf_counter() + 3
+                    if send_done.is_set():
+                        idle_deadline = time.perf_counter() + 3
 
             elif msg_type == 'ready':
                 idle_deadline = min(idle_deadline, time.perf_counter() + 0.5)
