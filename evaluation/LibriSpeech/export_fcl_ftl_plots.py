@@ -201,11 +201,15 @@ def detect_speech_bounds(y_wav: np.ndarray, sr: int, start_sec: float, end_sec: 
                         in_speech = False
                 offset += VAD_WINDOW_SAMPLES
             if in_speech and seg_start_local is not None:
-                speech_starts.append(seg_start_local)
-                speech_ends.append(end_sec)
-            if speech_starts:
-                r_end = min(speech_ends[-1], end_sec)  # end_sec 초과 불가
-                return speech_starts[0], r_end
+                # 확장 구간에서 시작된 speech(다음 세그먼트)는 제외
+                if seg_start_local < end_sec:
+                    speech_starts.append(seg_start_local)
+                    speech_ends.append(end_sec)
+            # end_sec 이전에 시작된 region만 유효
+            valid = [(s, e) for s, e in zip(speech_starts, speech_ends) if s < end_sec]
+            if valid:
+                r_end = min(valid[-1][1], end_sec)  # end_sec 초과 불가
+                return valid[0][0], r_end
             return start_sec, end_sec
         except Exception:
             pass  # fallback
