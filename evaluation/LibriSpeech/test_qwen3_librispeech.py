@@ -443,8 +443,10 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
             try:
                 msg = await asyncio.wait_for(ws.recv(), timeout=1.0)
             except asyncio.TimeoutError:
-                if send_done.is_set() and time.perf_counter() > idle_deadline:
-                    break
+                if send_done.is_set():
+                    idle_deadline = min(idle_deadline, time.perf_counter() + 10)
+                    if time.perf_counter() > idle_deadline:
+                        break
                 continue
 
             if not isinstance(msg, str):
@@ -492,7 +494,8 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
                         'final_payload_wall_utc': data.get('final_payload_wall_utc'),
                         'client_final_received_elapsed_sec': receive_elapsed_sec,
                     })
-                    idle_deadline = time.perf_counter() + 5
+                    if send_done.is_set():
+                        idle_deadline = time.perf_counter() + 5
 
             elif msg_type == 'partial':
                 text = (data.get('original') or '').strip()
