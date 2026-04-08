@@ -49,6 +49,7 @@ from vllm.model_executor.layers.linear import (
 from vllm.model_executor.model_loader.weight_utils import default_weight_loader
 from vllm.model_executor.models.interfaces import (
     MultiModalEmbeddings,
+    SupportsLoRA,
     SupportsMRoPE,
     SupportsMultiModal,
     SupportsPP,
@@ -691,12 +692,20 @@ class Qwen3ASRMultiModalProcessor(
 )
 class Qwen3ASRForConditionalGeneration(
     nn.Module,
+    SupportsLoRA,
     SupportsMultiModal,
     SupportsPP,
     SupportsMRoPE,
     SupportsTranscription,
 ):
     supported_languages = ISO639_1_SUPPORTED_LANGS
+
+    # LoRA support: q/k/v are packed into qkv_proj in vLLM
+    supports_lora = True
+    packed_modules_mapping = {
+        "qkv_proj": ["q_proj", "k_proj", "v_proj"],
+    }
+    embedding_modules: dict = {}
 
     hf_to_vllm_mapper = WeightsMapper(
         orig_to_new_prefix={
