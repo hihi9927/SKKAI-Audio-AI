@@ -80,9 +80,10 @@ class StreamingConfig:
     max_new_tokens: int = 32
 
     # LoRA 어댑터 경로 (examples/ 디렉토리 기준 상대경로)
-    adapter_en: str = "../finetuning/finetuning-out-en/checkpoint-en"
-    adapter_ko: str = "../finetuning/finetuning-out-ko/checkpoint-ko"
+    adapter_en: str = "../finetuning/finetuning-out-en-retry/checkpoint-200_final_vllm"
+    adapter_ko: str = "../finetuning/finetuning-out-ko-retry/checkpoint-170_final_vllm"
     no_lora: bool = True  # True면 어댑터 경로 무시하고 기본 모델만 사용
+    max_lora_rank: int = 128  # 학습 시 사용한 LoRA rank
 
     # 스트리밍 설정
     chunk_size_sec: float = 2.0
@@ -424,6 +425,8 @@ class Qwen3ASRStreamingHandler:
             "last_text_lang": "",
             "committed_len": 0,
             "committed_prefix": "",
+            "committed_display": "",
+            "committed_seg_count": 0,
         }
 
     def _reset_stream_slot(self, slot_key: str):
@@ -433,6 +436,41 @@ class Qwen3ASRStreamingHandler:
     def _slot(self, slot_key: Optional[str] = None) -> dict:
         key = slot_key or self.active_slot
         return self.stream_slots[key]
+
+    @staticmethod
+    def _uncommitted_from(current_text: str, committed_display: str,
+                          committed_seg_count: int = 0) -> str:
+        """committed 경계 이후의 current_text를 반환.
+
+        1차: committed_display(SEG 제거 기준) prefix 매칭
+        2차(fallback): committed_seg_count 번째 <SEG> 이후 텍스트
+        모델이 이전 텍스트를 수정해 display가 달라져도 SEG 카운트로 안전하게 찾는다.
+        """
+        seg_tag = "<SEG>"
+        seg_len = len(seg_tag)
+
+        # ── 1차: display prefix 매칭 ──────────────────────────────────────
+        if committed_display:
+            current_no_seg = current_text.replace(seg_tag, "")
+            if current_no_seg.startswith(committed_display):
+                pos, disp_pos, target = 0, 0, len(committed_display)
+                while pos < len(current_text) and disp_pos < target:
+                    if current_text[pos:pos + seg_len] == seg_tag:
+                        pos += seg_len
+                    else:
+                        disp_pos += 1
+                        pos += 1
+                return current_text[pos:]
+
+        # ── 2차 fallback: SEG 카운트 기준 ───────────────────────────────
+        pos, found = 0, 0
+        while found < committed_seg_count:
+            idx = current_text.find(seg_tag, pos)
+            if idx == -1:
+                return ""  # 커밋된 SEG 수보다 현재 텍스트의 SEG가 적음 → 모두 커밋됨
+            pos = idx + seg_len
+            found += 1
+        return current_text[pos:]
 
     def _get_lora_request(self, state):
         """언어에 따라 적절한 LoRA 어댑터 반환. 미지원 언어는 None(기본 모델)."""
@@ -479,10 +517,14 @@ class Qwen3ASRStreamingHandler:
                     current_text = current_text.split("<asr_text>", 1)[-1].strip()
                 current_lang = slot["last_text_lang"] or ""
             snapshot_committed_len = slot["committed_len"]
-            uncommitted = current_text[snapshot_committed_len:].strip()
-            if not uncommitted:
+            snapshot_committed_display = slot["committed_display"]
+            snapshot_committed_seg_count = slot["committed_seg_count"]
+            uncommitted_raw = self._uncommitted_from(
+                current_text, snapshot_committed_display, snapshot_committed_seg_count
+            )
+            uncommitted_display = re.sub(r'\s+', ' ', uncommitted_raw.replace("<SEG>", "")).strip() if uncommitted_raw is not None else ""
+            if not uncommitted_display:
                 return
-            uncommitted_display = uncommitted.replace("<SEG>", "").strip()
             if not force and len(uncommitted_display) < 2:
                 logger.info(f"[timeout-skip] reason={reason} too short: '{uncommitted_display}'")
                 return
@@ -540,6 +582,8 @@ class Qwen3ASRStreamingHandler:
             )
             slot["committed_len"] = len(current_text)
             slot["committed_prefix"] = current_text
+            slot["committed_display"] = re.sub(r'\s+', ' ', current_text.replace("<SEG>", "")).strip()
+            slot["committed_seg_count"] = current_text.count("<SEG>")
 
     async def _process_slot_updates(self, slot_key: str, emit_partial: bool = True):
         slot = self._slot(slot_key)
@@ -563,23 +607,31 @@ class Qwen3ASRStreamingHandler:
             self.log.info(f"[partial] slot={slot_key} text={current_text[:80]}...")
 
         # 문장 단위 commit
-        uncommitted = current_text[slot["committed_len"]:]
+        # committed_display/seg_count 기준으로 uncommitted 구간 계산 (모델 텍스트 수정에도 안전)
+        uncommitted = self._uncommitted_from(
+            current_text, slot["committed_display"], slot["committed_seg_count"]
+        )
         sentences_to_commit = []
         remaining = uncommitted
 
         while True:
-            match = re.search(r"(?:[.?!\u3002\uff1f\uff01]\s+|<SEG>)", remaining)
+            # 우선순위 1: <SEG>
+            # 우선순위 2: VAD (flush_uncommitted 에서 처리)
+            # 우선순위 3: 구두점 (비활성화)
+            # match = re.search(r"(?:[.?!\u3002\uff1f\uff01]\s+|<SEG>)", remaining)
+            match = re.search(r"<SEG>", remaining)
             if not match:
                 break
             after = remaining[match.end():]
-            if after.strip():
-                # 커서 추적을 위해 raw sentence(경계 포함) 사용
-                sentence = remaining[:match.end()].strip()
-                if sentence.replace("<SEG>", "").strip():
-                    sentences_to_commit.append(sentence)
-                remaining = after
-            else:
+            # 마지막 <SEG>는 커밋 보류 — 뒤에 텍스트가 있어야 커밋
+            # (마지막 <SEG> 직전 텍스트는 다음 청크에서 모델이 수정할 수 있음)
+            if not after.strip():
                 break
+            # 커서 추적을 위해 raw sentence(<SEG> 포함) 사용
+            sentence = remaining[:match.end()].strip()
+            if sentence.replace("<SEG>", "").strip():
+                sentences_to_commit.append(sentence)
+            remaining = after
 
         if sentences_to_commit:
             translated_payloads = []
@@ -634,6 +686,10 @@ class Qwen3ASRStreamingHandler:
                 if ready_to_emit:
                     slot["committed_len"] = cursor
                     slot["committed_prefix"] = latest_text[:slot["committed_len"]]
+                    slot["committed_display"] = re.sub(
+                        r'\s+', ' ', slot["committed_prefix"].replace("<SEG>", "")
+                    ).strip()
+                    slot["committed_seg_count"] += len(ready_to_emit)
 
             for payload in ready_to_emit:
                 await self._emit_final_payload(
@@ -646,7 +702,7 @@ class Qwen3ASRStreamingHandler:
                     extra=payload.get("extra"),
                 )
                 self.log.info(
-                    f"[final-sentence] slot={slot_key} lang={payload['language']} "
+                    f"[final-sentence/SEG] slot={slot_key} lang={payload['language']} "
                     f"text={payload['original']}"
                 )
 
@@ -988,6 +1044,7 @@ class Qwen3ASRStreamingServer:
             max_new_tokens=self.config.max_new_tokens,
             max_model_len=8192,
             enable_lora=use_lora,
+            max_lora_rank=self.config.max_lora_rank if use_lora else 16,
             enforce_eager=self.config.enforce_eager,
         )
         if self.config.beam_size > 1:
@@ -1148,6 +1205,10 @@ def parse_args():
         default="../finetuning/finetuning-out-ko/checkpoint-ko",
         help="한국어 LoRA 어댑터 경로 (examples/ 기준 상대경로, 없으면 기본 모델 사용)",
     )
+    parser.add_argument(
+        "--max-lora-rank", type=int, default=128,
+        help="LoRA 최대 rank (학습 시 사용한 rank와 일치해야 함, 기본값: 128)",
+    )
     return parser.parse_args()
 
 
@@ -1167,6 +1228,7 @@ def main():
         adapter_en=args.adapter_en,
         adapter_ko=args.adapter_ko,
         no_lora=not args.lora,
+        max_lora_rank=args.max_lora_rank,
         enforce_eager=args.enforce_eager,
     )
 

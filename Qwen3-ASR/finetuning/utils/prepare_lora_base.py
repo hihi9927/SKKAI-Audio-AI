@@ -8,7 +8,7 @@ seg_embedding.pt를 평균내어 embedding table에 주입한 뒤 저장.
 
 Usage:
     python prepare_lora_base.py \\
-        --base_model  ../Qwen3-ASR-1.7B \\
+        --base_model  Qwen/Qwen3-ASR-1.7B \\
         --seg_en      ../finetuning-out-en-retry/checkpoint-200_final/seg_embedding.pt \\
         --seg_ko      ../finetuning-out-ko-retry/checkpoint-170_final/seg_embedding.pt \\
         --output      ../Qwen3-ASR-1.7B-lora-ready
@@ -22,7 +22,6 @@ from transformers import AutoProcessor, AutoTokenizer
 
 
 def prepare(base_model: str, seg_en: str, seg_ko: str, output: str) -> None:
-    base_model = os.path.abspath(base_model)
     output = os.path.abspath(output)
 
     if os.path.exists(output):
@@ -33,8 +32,16 @@ def prepare(base_model: str, seg_en: str, seg_ko: str, output: str) -> None:
             return
         shutil.rmtree(output)
 
-    print(f"[1/4] 베이스 모델 복사: {base_model} → {output}")
-    shutil.copytree(base_model, output)
+    # 로컬 경로이면 복사, 아니면 HuggingFace에서 다운로드
+    if os.path.isdir(base_model):
+        base_model = os.path.abspath(base_model)
+        print(f"[1/4] 베이스 모델 복사: {base_model} → {output}")
+        shutil.copytree(base_model, output)
+    else:
+        from huggingface_hub import snapshot_download
+        print(f"[1/4] HuggingFace에서 모델 다운로드: {base_model} → {output}")
+        snapshot_download(repo_id=base_model, local_dir=output)
+        print(f"  다운로드 완료")
 
     # ── 토크나이저에 <SEG> 추가 ───────────────────────────────────────────
     print("[2/4] 토크나이저에 <SEG> 추가")
@@ -152,7 +159,7 @@ def prepare(base_model: str, seg_en: str, seg_ko: str, output: str) -> None:
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument("--base_model", required=True, help="원본 베이스 모델 디렉토리")
+    p.add_argument("--base_model", required=True, help="베이스 모델 (로컬 디렉토리 또는 HuggingFace 모델 ID, 예: Qwen/Qwen3-ASR-1.7B)")
     p.add_argument("--seg_en", required=True, help="EN 체크포인트의 seg_embedding.pt 경로")
     p.add_argument("--seg_ko", required=True, help="KO 체크포인트의 seg_embedding.pt 경로")
     p.add_argument("--output", required=True, help="출력 디렉토리")
