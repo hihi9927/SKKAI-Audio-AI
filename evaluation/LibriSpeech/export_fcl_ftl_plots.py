@@ -282,6 +282,7 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
         ax_wave.plot(t[::step], y_wav[::step], color=STYLE["speech"], lw=0.6)
         ax_wave.set_ylabel("Amplitude")
         ax_wave.set_xlim(0, x_max)
+        ax_wave.tick_params(labelbottom=True)
         ax_wave.grid(True, axis="x", lw=0.4)
         ax_wave.set_title("Waveform  (VAD segments shaded)", fontsize=9, pad=3)
         # VAD segment 음영
