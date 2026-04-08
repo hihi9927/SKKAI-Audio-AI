@@ -271,6 +271,10 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
         fontsize=11, y=0.99,
     )
 
+    x_max = max(duration, ftl, max(s["translate_done_sec"] if "translate_done_sec" in s
+                                    else s["server_translate_done_elapsed_sec"]
+                                    for s in segs)) * 1.03
+
     # ── Row 1: Waveform or Speech Activity ────────────────────────────────
     if has_audio and ax_wave is not None:
         t = np.linspace(0, len(y_wav) / sr_wav, num=len(y_wav))
@@ -293,9 +297,6 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
     # ── Row 2: Gantt ────────────────────────────────────────────────────────
     ax = ax_gantt
     bar_height = 0.55
-    x_max = max(duration, ftl, max(s["translate_done_sec"] if "translate_done_sec" in s
-                                    else s["server_translate_done_elapsed_sec"]
-                                    for s in segs)) * 1.03
 
     legend_handles = {}
 
