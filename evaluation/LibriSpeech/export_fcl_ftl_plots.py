@@ -256,7 +256,7 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
         n_rows, 1,
         figsize=(14, 4 + 1.2 * len(segs)),
         gridspec_kw={"height_ratios": heights},
-        sharex=False,
+        sharex=True,
     )
     if n_rows == 2:
         axes = list(axes)
@@ -277,7 +277,7 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
         step = max(1, len(y_wav) // 8000)
         ax_wave.plot(t[::step], y_wav[::step], color=STYLE["speech"], lw=0.6)
         ax_wave.set_ylabel("Amplitude")
-        ax_wave.set_xlim(0, max(duration, ftl) * 1.02)
+        ax_wave.set_xlim(0, x_max)
         ax_wave.grid(True, axis="x", lw=0.4)
         ax_wave.set_title("Waveform  (VAD segments shaded)", fontsize=9, pad=3)
         # VAD segment 음영
@@ -347,10 +347,10 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
         if "fcl" not in legend_handles:
             legend_handles["fcl"] = mpatches.Patch(color=STYLE["fcl_dot"], label="FCL point")
 
-        # commit_reason 레이블 (왼쪽)
+        # commit_reason 레이블 (바 위쪽)
         r_color = STYLE["vad"] if reason == "vad" else STYLE["seg"]
-        ax.text(r_start - 0.05, y_pos, reason,
-                fontsize=7, color=r_color, ha="right", va="center")
+        ax.text(r_start, y_pos + bar_height / 2 + 0.05, reason,
+                fontsize=7, color=r_color, ha="left", va="bottom")
 
     # FTL 수직선
     ax.axvline(ftl, color=STYLE["ftl"], lw=1.5, ls="--", zorder=6)
@@ -360,7 +360,7 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
 
     ax.set_yticks(range(1, len(segs) + 1))
     ax.set_yticklabels([f"seg {s['segment_id']}" for s in segs], fontsize=8)
-    ax.set_xlim(-0.3, x_max)
+    ax.set_xlim(0, x_max)
     ax.set_ylim(0.3, len(segs) + 0.9)
     ax.set_xlabel("Time (s)")
     ax.set_title("FCL / FTL Gantt Timeline", fontsize=9, pad=3)
