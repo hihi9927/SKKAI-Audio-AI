@@ -92,6 +92,9 @@ class StreamingConfig:
     # 빔 서치 설정
     beam_size: int = 2  # 1이면 greedy, 2+ 이면 beam search
 
+    # vLLM 컴파일 설정
+    enforce_eager: bool = False  # True면 Triton 컴파일 우회 (sm_121a 등 미지원 GPU)
+
     # 서버 설정
     host: str = "0.0.0.0"
     port: int = 8765
@@ -985,6 +988,7 @@ class Qwen3ASRStreamingServer:
             max_new_tokens=self.config.max_new_tokens,
             max_model_len=8192,
             enable_lora=use_lora,
+            enforce_eager=self.config.enforce_eager,
         )
         if self.config.beam_size > 1:
             from vllm import SamplingParams
@@ -1127,6 +1131,10 @@ def parse_args():
         help="Beam search size (1=greedy, 2+=beam search, default: 2)",
     )
     parser.add_argument(
+        "--enforce-eager", action="store_true",
+        help="Triton 컴파일 우회 (sm_121a 등 미지원 GPU에서 필요)",
+    )
+    parser.add_argument(
         "--lora", action="store_true",
         help="LoRA 어댑터를 사용 (기본값: 사용 안 함)",
     )
@@ -1159,6 +1167,7 @@ def main():
         adapter_en=args.adapter_en,
         adapter_ko=args.adapter_ko,
         no_lora=not args.lora,
+        enforce_eager=args.enforce_eager,
     )
 
     server = Qwen3ASRStreamingServer(config)
