@@ -80,8 +80,8 @@ class StreamingConfig:
     max_new_tokens: int = 32
 
     # LoRA 어댑터 경로 (examples/ 디렉토리 기준 상대경로)
-    adapter_en: str = "../finetuning/finetuning-out-en-retry/checkpoint-200_final_vllm"
-    adapter_ko: str = "../finetuning/finetuning-out-ko-retry/checkpoint-170_final_vllm"
+    adapter_en: str = "../finetuning/finetuning-out-en-plus/checkpoint-420_vllm"
+    adapter_ko: str = "../finetuning/finetuning-out-ko-plus/checkpoint-300_vllm"
     no_lora: bool = True  # True면 어댑터 경로 무시하고 기본 모델만 사용
     max_lora_rank: int = 128  # 학습 시 사용한 LoRA rank
 

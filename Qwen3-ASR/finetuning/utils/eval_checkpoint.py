@@ -50,11 +50,38 @@ def transcribe_one(asr_wrapper, wav: np.ndarray, sr: int, language: str) -> str:
     return results[0].text.strip()
 
 
-def compute_metrics(gt: str, pred: str) -> dict:
-    wer = jiwer.wer(gt, pred)
-    cer = jiwer.cer(gt, pred)
+def normalize_text(text: str, language: str = "") -> str:
+    """WER/CER 계산용 정규화: <SEG> 제거, 숫자→단어, 구두점 제거, 공백 정규화, 영어 소문자."""
+    import num2words
+    lang_is_en = language.lower() in ('english', 'en')
+    lang_code = 'en' if lang_is_en else 'ko'
+
+    text = re.sub(r'<SEG>', ' ', text)
+
+    # 숫자 → 단어 (소수점 포함)
+    def replace_num(m):
+        s = m.group()
+        try:
+            if '.' in s:
+                return num2words.num2words(float(s), lang=lang_code)
+            return num2words.num2words(int(s), lang=lang_code)
+        except Exception:
+            return s
+    text = re.sub(r'\d+\.?\d*', replace_num, text)
+
+    text = re.sub(r'[^\w\s]', ' ', text, flags=re.UNICODE)
+    if lang_is_en:
+        text = text.lower()
+    return ' '.join(text.split())
+
+
+def compute_metrics(gt: str, pred: str, language: str = "") -> dict:
     gt_seg = gt.count(SEG_TOKEN)
     pred_seg = pred.count(SEG_TOKEN)
+    gt_norm = normalize_text(gt, language)
+    pred_norm = normalize_text(pred, language)
+    wer = jiwer.wer(gt_norm, pred_norm) if gt_norm else 1.0
+    cer = jiwer.cer(gt_norm, pred_norm) if gt_norm else 1.0
     return {
         "wer": round(wer, 4),
         "cer": round(cer, 4),
@@ -183,7 +210,7 @@ def run_single(asr_wrapper, samples, args, out_f, existing_records=None):
         gt = parse_gt(sample["text"])
         pred = transcribe_one(asr_wrapper, wav, args.sr, args.language)
         global_i = len(records)
-        m = compute_metrics(gt, pred)
+        m = compute_metrics(gt, pred, args.language)
         record = {"audio": sample["audio"], "gt": gt, "pred": pred, **m}
         records.append(record)
         if global_i > 0:
@@ -230,7 +257,7 @@ def run_concat(asr_wrapper, samples, args, out_f, existing_records=None):
         combined_wav = concat_wavs_with_silence(wavs, args.sr, args.silence_ms)
         pred = transcribe_one(asr_wrapper, combined_wav, args.sr, args.language)
 
-        m = compute_metrics(gt_combined, pred)
+        m = compute_metrics(gt_combined, pred, args.language)
         record = {
             "group": gi,
             "audios": [s["audio"] for s in group],
