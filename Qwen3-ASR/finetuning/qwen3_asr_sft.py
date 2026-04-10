@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# trainable params: 70,254,592 || all params: 2,108,307,072 || trainable%: 3.3323
+
 import argparse
 import json
 import os
@@ -347,7 +347,7 @@ def parse_args():
     p.add_argument("--model_path", type=str, default="./Qwen3-ASR-1.7B")
     p.add_argument("--train_file", type=str, default="./data/KSponSpeech/train_split.jsonl")
     p.add_argument("--eval_file", type=str, default="./data/KSponSpeech/val_split.jsonl")
-    p.add_argument("--output_dir", type=str, default="./finetuning-out-ko-retry")
+    p.add_argument("--output_dir", type=str, default="./finetuning-out-ko-plus")
 
     # Audio
     p.add_argument("--sr", type=int, default=16000)
@@ -369,7 +369,7 @@ def parse_args():
 
     # Save
     p.add_argument("--save_strategy", type=str, default="steps")
-    p.add_argument("--save_steps", type=int, default=10)
+    p.add_argument("--save_steps", type=int, default=20)
     p.add_argument("--save_total_limit", type=int, default=10)
 
     # Resume

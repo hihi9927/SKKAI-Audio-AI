@@ -47,25 +47,14 @@ evaluation/LibriSpeech/test-other
 # Weights
 Qwen3-ASR/finetuning/Qwen3-ASR-1.7B
 Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-lora-ready
-Qwen3-ASR/finetuning/qwen3-asr-finetuning-out/
-
-Qwen3-ASR/finetuning/finetuning-out-en/**
-Qwen3-ASR/finetuning/finetuning-out-ko/**
 
 Qwen3-ASR/finetuning/finetuning-out-en-retry/**
 Qwen3-ASR/finetuning/finetuning-out-ko-retry/**
 
-Qwen3-ASR/finetuning/no_special/
+Qwen3-ASR/finetuning/finetuning-out-en-plus/**
+Qwen3-ASR/finetuning/finetuning-out-ko-plus/**
 
 # 파인튜닝 가중치 파일 예외 허용
-#!Qwen3-ASR/finetuning/finetuning-out-en/checkpoint-210_best/
-#!Qwen3-ASR/finetuning/finetuning-out-en/checkpoint-210_best/**
-!Qwen3-ASR/finetuning/finetuning-out-en/runs/
-!Qwen3-ASR/finetuning/finetuning-out-en/runs/**
-
-!Qwen3-ASR/finetuning/finetuning-out-ko/runs/
-!Qwen3-ASR/finetuning/finetuning-out-ko/runs/**
-
 !Qwen3-ASR/finetuning/finetuning-out-en-retry/runs/
 !Qwen3-ASR/finetuning/finetuning-out-en-retry/runs/**
 
@@ -78,8 +67,16 @@ Qwen3-ASR/finetuning/no_special/
 !Qwen3-ASR/finetuning/finetuning-out-en-retry/results/
 !Qwen3-ASR/finetuning/finetuning-out-en-retry/results/**
 
-Qwen3-ASR/finetuning/merged-ko/
-Qwen3-ASR/finetuning/merged-checkpoint-600/
+!Qwen3-ASR/finetuning/finetuning-out-en-plus/runs/
+!Qwen3-ASR/finetuning/finetuning-out-en-plus/runs/**
 
+!Qwen3-ASR/finetuning/finetuning-out-ko-plus/runs/
+!Qwen3-ASR/finetuning/finetuning-out-ko-plus/runs/**
+
+!Qwen3-ASR/finetuning/finetuning-out-ko-plus/results/
+!Qwen3-ASR/finetuning/finetuning-out-ko-plus/results/**
+
+!Qwen3-ASR/finetuning/finetuning-out-en-plus/results/
+!Qwen3-ASR/finetuning/finetuning-out-en-plus/results/**
 .env
 
