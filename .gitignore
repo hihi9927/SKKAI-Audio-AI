@@ -41,6 +41,8 @@ Qwen3-ASR/finetuning/data/KSponSpeech/audio/
 Qwen3-ASR/finetuning/data/DailyTalk/audio/
 Qwen3-ASR/finetuning/data/KSponSpeech/split_audio/
 Qwen3-ASR/finetuning/data/DailyTalk/split_audio/
+Qwen3-ASR/finetuning/data/DailyTalk/split_audio_test/
+Qwen3-ASR/finetuning/data/KSponSpeech/split_audio_test/
 evaluation/LibriSpeech/test-other.tar.gz
 evaluation/LibriSpeech/test-other
 
@@ -48,25 +50,12 @@ evaluation/LibriSpeech/test-other
 Qwen3-ASR/finetuning/Qwen3-ASR-1.7B
 Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-lora-ready
 
-Qwen3-ASR/finetuning/finetuning-out-en-retry/**
-Qwen3-ASR/finetuning/finetuning-out-ko-retry/**
+Qwen3-ASR/finetuning/no_split/
 
 Qwen3-ASR/finetuning/finetuning-out-en-plus/**
 Qwen3-ASR/finetuning/finetuning-out-ko-plus/**
 
 # 파인튜닝 가중치 파일 예외 허용
-!Qwen3-ASR/finetuning/finetuning-out-en-retry/runs/
-!Qwen3-ASR/finetuning/finetuning-out-en-retry/runs/**
-
-!Qwen3-ASR/finetuning/finetuning-out-ko-retry/runs/
-!Qwen3-ASR/finetuning/finetuning-out-ko-retry/runs/**
-
-!Qwen3-ASR/finetuning/finetuning-out-ko-retry/results/
-!Qwen3-ASR/finetuning/finetuning-out-ko-retry/results/**
-
-!Qwen3-ASR/finetuning/finetuning-out-en-retry/results/
-!Qwen3-ASR/finetuning/finetuning-out-en-retry/results/**
-
 !Qwen3-ASR/finetuning/finetuning-out-en-plus/runs/
 !Qwen3-ASR/finetuning/finetuning-out-en-plus/runs/**
 
