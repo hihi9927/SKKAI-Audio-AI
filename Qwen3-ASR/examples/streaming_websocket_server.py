@@ -52,15 +52,37 @@ except ImportError:
     _SILERO_VAD_AVAILABLE = False
 
 _SERVER_DIR = os.path.dirname(os.path.abspath(__file__))
+_LOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../logs/asr_server.log")
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[
+
+class _JsonFormatter(logging.Formatter):
+    """JSON 한 줄 포맷 로그 포매터"""
+
+    def format(self, record: logging.LogRecord) -> str:
+        entry: dict = {
+            "ts": self.formatTime(record, "%Y-%m-%dT%H:%M:%S"),
+            "level": record.levelname,
+            "msg": record.getMessage(),
+        }
+        if record.exc_info:
+            entry["exc"] = self.formatException(record.exc_info)
+        return json.dumps(entry, ensure_ascii=False)
+
+
+def _configure_logging(use_json: bool = False) -> None:
+    fmt: logging.Formatter = (
+        _JsonFormatter() if use_json
+        else logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+    )
+    handlers: list[logging.Handler] = [
         logging.StreamHandler(),
-        logging.FileHandler(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../logs/asr_server.log")),
+        logging.FileHandler(_LOG_FILE),
     ]
-)
+    for h in handlers:
+        h.setFormatter(fmt)
+    logging.basicConfig(level=logging.INFO, handlers=handlers)
+
+
 logger = logging.getLogger(__name__)
 
 SAMPLING_RATE = 16000
@@ -1210,11 +1232,16 @@ def parse_args():
         "--max-lora-rank", type=int, default=128,
         help="LoRA 최대 rank (학습 시 사용한 rank와 일치해야 함, 기본값: 128)",
     )
+    parser.add_argument(
+        "--log-json", action="store_true",
+        help="로그를 JSON 형식으로 출력",
+    )
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
+    _configure_logging(use_json=args.log_json)
 
     config = StreamingConfig(
         model_path=args.model,

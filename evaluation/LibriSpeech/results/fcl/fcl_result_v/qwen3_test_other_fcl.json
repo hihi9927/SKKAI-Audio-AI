@@ -1,11 +1,11 @@
 {
   "policy_3": {
-    "timestamp": "2026-04-11T14:19:11.073207",
+    "timestamp": "2026-04-11T14:24:32.482503",
     "overall": {
       "num_files": 1,
       "wer": 0.0,
-      "first_token_latency": 6.493652843999996,
-      "model_runtime": 0.980072468000003,
+      "first_token_latency": 5.530302894999977,
+      "model_runtime": 0.9548023159999843,
       "avg_server_fcl_sec": null,
       "avg_translation_latency_sec": null,
       "avg_asr_inference_sec": null
@@ -14,8 +14,8 @@
       "1688": {
         "num_files": 1,
         "wer": 0.0,
-        "first_token_latency": 6.493652843999996,
-        "model_runtime": 0.980072468000003,
+        "first_token_latency": 5.530302894999977,
+        "model_runtime": 0.9548023159999843,
         "avg_server_fcl_sec": null,
         "avg_translation_latency_sec": null,
         "avg_asr_inference_sec": null
@@ -30,9 +30,9 @@
         "hypothesis": "There's iron, they say, in all our blood. And a grain or two perhaps is good. But his, he makes me harshly feel. Has got a little too much of steel. Anon.",
         "hyp_commit": "There's iron, they say, in all our blood. <seg> And a grain or two perhaps is good. <seg> But his, he makes me harshly feel. <seg> Has got a little too much of steel. <seg> Anon. <vad>",
         "duration": 15.0,
-        "total_time": 15.980072468000003,
-        "first_token_latency": 6.493652843999996,
-        "model_runtime": 0.980072468000003,
+        "total_time": 15.954802315999984,
+        "first_token_latency": 5.530302894999977,
+        "model_runtime": 0.9548023159999843,
         "target_lang": "ko",
         "segment_metrics": [
           {
@@ -48,7 +48,7 @@
             "asr_inference_sec": null,
             "server_fcl_sec": null,
             "final_payload_wall_utc": null,
-            "client_final_received_elapsed_sec": 6.493654637999981
+            "client_final_received_elapsed_sec": 5.530304662999981
           },
           {
             "segment_id": null,
@@ -63,7 +63,7 @@
             "asr_inference_sec": null,
             "server_fcl_sec": null,
             "final_payload_wall_utc": null,
-            "client_final_received_elapsed_sec": 8.053112169000002
+            "client_final_received_elapsed_sec": 7.767697193999993
           },
           {
             "segment_id": null,
@@ -78,7 +78,7 @@
             "asr_inference_sec": null,
             "server_fcl_sec": null,
             "final_payload_wall_utc": null,
-            "client_final_received_elapsed_sec": 11.483149733000005
+            "client_final_received_elapsed_sec": 11.48137275900001
           },
           {
             "segment_id": null,
@@ -93,7 +93,7 @@
             "asr_inference_sec": null,
             "server_fcl_sec": null,
             "final_payload_wall_utc": null,
-            "client_final_received_elapsed_sec": 14.778838753000002
+            "client_final_received_elapsed_sec": 14.765943129999982
           },
           {
             "segment_id": null,
@@ -108,7 +108,7 @@
             "asr_inference_sec": null,
             "server_fcl_sec": null,
             "final_payload_wall_utc": null,
-            "client_final_received_elapsed_sec": 15.980074029999997
+            "client_final_received_elapsed_sec": 15.954803804999983
           }
         ],
         "segment_metrics_summary": {
