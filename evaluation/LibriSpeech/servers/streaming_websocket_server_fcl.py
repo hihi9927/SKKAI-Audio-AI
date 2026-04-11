@@ -414,6 +414,7 @@ def main():
         adapter_en=args.adapter_en,
         adapter_ko=args.adapter_ko,
         max_lora_rank=args.max_lora_rank,
+        enforce_eager=args.enforce_eager,
     )
 
     server = FCLStreamingServer(config)
