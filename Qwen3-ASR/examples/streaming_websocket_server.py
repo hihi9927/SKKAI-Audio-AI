@@ -1197,12 +1197,12 @@ def parse_args():
     )
     parser.add_argument(
         "--adapter-en", type=str,
-        default="../finetuning/finetuning-out-en/checkpoint-en",
+        default="../finetuning/finetuning-out-en-plus/checkpoint-420_vllm",
         help="영어 LoRA 어댑터 경로 (examples/ 기준 상대경로, 없으면 기본 모델 사용)",
     )
     parser.add_argument(
         "--adapter-ko", type=str,
-        default="../finetuning/finetuning-out-ko/checkpoint-ko",
+        default="../finetuning/finetuning-out-ko-plus/checkpoint-300_vllm",
         help="한국어 LoRA 어댑터 경로 (examples/ 기준 상대경로, 없으면 기본 모델 사용)",
     )
     parser.add_argument(
