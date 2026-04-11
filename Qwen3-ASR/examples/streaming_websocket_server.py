@@ -598,19 +598,21 @@ class Qwen3ASRStreamingHandler:
         slot["last_text"] = current_text
         slot["last_text_lang"] = current_lang
 
-        if emit_partial:
-            await self.send_message(
-                "partial",
-                original=current_text.replace("<SEG>", ""),
-                last_translation="",
-            )
-            self.log.info(f"[partial] slot={slot_key} text={current_text[:80]}...")
-
         # 문장 단위 commit
         # committed_display/seg_count 기준으로 uncommitted 구간 계산 (모델 텍스트 수정에도 안전)
         uncommitted = self._uncommitted_from(
             current_text, slot["committed_display"], slot["committed_seg_count"]
         )
+
+        if emit_partial:
+            # 이미 커밋된 부분은 제외하고 uncommitted 부분만 partial로 전송
+            partial_text = re.sub(r'\s+', ' ', uncommitted.replace("<SEG>", "")).strip()
+            await self.send_message(
+                "partial",
+                original=partial_text,
+                last_translation="",
+            )
+            self.log.info(f"[partial] slot={slot_key} text={current_text[:80]}...")
         sentences_to_commit = []
         remaining = uncommitted
 
@@ -623,10 +625,6 @@ class Qwen3ASRStreamingHandler:
             if not match:
                 break
             after = remaining[match.end():]
-            # 마지막 <SEG>는 커밋 보류 — 뒤에 텍스트가 있어야 커밋
-            # (마지막 <SEG> 직전 텍스트는 다음 청크에서 모델이 수정할 수 있음)
-            if not after.strip():
-                break
             # 커서 추적을 위해 raw sentence(<SEG> 포함) 사용
             sentence = remaining[:match.end()].strip()
             if sentence.replace("<SEG>", "").strip():
