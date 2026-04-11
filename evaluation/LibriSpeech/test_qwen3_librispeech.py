@@ -36,7 +36,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent.parent
 DEFAULT_TEST_DIR = PROJECT_ROOT / "LibriSpeech" / "test-other"
 DEFAULT_FCL_RUNS_DIR = SCRIPT_DIR / "fcl_runs"
-DEFAULT_OUTPUT = SCRIPT_DIR / "results" / "fcl" / "fcl_result_v" / "qwen3_test_other_fcl.json"
+DEFAULT_OUTPUT = SCRIPT_DIR / "results" / "fcl" / "fcl_finetuning_results" / "qwen3_test_other_fcl.json"
 DEFAULT_SERVER_SCRIPT = SCRIPT_DIR / "servers" / "streaming_websocket_server_fcl.py"
 
 
