@@ -632,6 +632,9 @@ class Qwen3ASRStreamingHandler:
             remaining = after
 
         if sentences_to_commit:
+            self.log.info(
+                f"[seg-detect] slot={slot_key} raw={current_text[:120]}..."
+            )
             translated_payloads = []
             for sentence_raw in sentences_to_commit:
                 # <SEG>는 사용자 출력/번역에서 제거
