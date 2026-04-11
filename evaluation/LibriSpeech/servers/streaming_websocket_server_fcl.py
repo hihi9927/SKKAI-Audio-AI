@@ -410,6 +410,10 @@ def main():
         no_idle_shutdown=args.no_idle_shutdown,
         idle_shutdown_sec=args.idle_shutdown_sec,
         beam_size=args.beam_size,
+        no_lora=not args.lora,
+        adapter_en=args.adapter_en,
+        adapter_ko=args.adapter_ko,
+        max_lora_rank=args.max_lora_rank,
     )
 
     server = FCLStreamingServer(config)
