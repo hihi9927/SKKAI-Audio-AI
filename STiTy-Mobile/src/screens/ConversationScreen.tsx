@@ -50,8 +50,6 @@ const langToCode = (lang: string): string => {
   return map[lang] || lang.toLowerCase().substring(0, 2);
 };
 
-const MAX_VISIBLE = 4;
-
 // Google Translate 무료 API
 const translateText = async (text: string, sourceLang: string, targetLang: string): Promise<string> => {
   try {
@@ -71,20 +69,14 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
   const [displayText, setDisplayText] = useState<{ lang: string; text: string } | null>(null);
   const [transcriptions, setTranscriptions] = useState<TranscriptionEntry[]>([]);
   const [isPaused, setIsPaused] = useState(false);
-  const [showFullTranscript, setShowFullTranscript] = useState(false);
-  const fullTranscriptScrollRef = useRef<ScrollView>(null);
+  const [isTTSMuted, setIsTTSMuted] = useState(false);
+  const isTTSMutedRef = useRef(isTTSMuted);
+  const scrollRef = useRef<ScrollView>(null);
 
   // ── 연결/초기화 상태 관리 ──
-  // 'connecting': WebSocket 연결 중
-  // 'waiting': 연결 완료, 첫 전사 대기 중 (아무말이나 해주세요)
-  // 'ready': 첫 전사 도착, 정상 대화 모드
-  // 'error': 연결 실패
   const [sessionStatus, setSessionStatus] = useState<'ready' | 'error'>('ready');
   const [connectionError, setConnectionError] = useState<string>('');
 
-  // 모드에 따라 TTS 자동 설정
-  const isTTSEnabled = currentMode === 'mode-2';
-  const isTTSEnabledRef = useRef(isTTSEnabled);
 
   const { isConnected, connect, sendAudio, disconnect, addMessageListener, sendMessage } = useWebSocketContext();
   const isConnectedRef = useRef(isConnected);
@@ -96,7 +88,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
   useEffect(() => { isPausedRef.current = isPaused; }, [isPaused]);
   useEffect(() => { sendAudioRef.current = sendAudio; }, [sendAudio]);
   useEffect(() => { sendMessageRef.current = sendMessage; }, [sendMessage]);
-  useEffect(() => { isTTSEnabledRef.current = isTTSEnabled; }, [isTTSEnabled]);
+  useEffect(() => { isTTSMutedRef.current = isTTSMuted; }, [isTTSMuted]);
 
   const modeRef = useRef(currentMode);
   const myLangRef = useRef(myLang);
@@ -107,10 +99,10 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
   const ttsQueueRef = useRef<{ text: string; lang: string }[]>([]);
   const isSpeakingRef = useRef(false);
 
-  // mode-2 진입 시 Google TTS 엔진 초기화 (Samsung 기기 대응)
+  // TTS 엔진 초기화 (Samsung 기기 대응)
   useEffect(() => {
-    if (isTTSEnabled) void initTtsEngine();
-  }, [isTTSEnabled]);
+    void initTtsEngine();
+  }, []);
 
   const processNextTTS = () => {
     if (ttsQueueRef.current.length === 0) {
@@ -131,7 +123,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
   };
 
   const speakTranslation = (text: string, lang: string) => {
-    if (!isTTSEnabledRef.current || !text) return;
+    if (isTTSMutedRef.current || !text) return;
     ttsQueueRef.current.push({ text, lang });
     if (!isSpeakingRef.current) {
       processNextTTS();
@@ -149,10 +141,9 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
   const entryIdRef = useRef(0);
 
   const shouldPlayTTS = (detectedLang: string): boolean => {
-    if (!isTTSEnabledRef.current) return false;
-    if (modeRef.current === 'mode-2') {
-      return detectedLang !== myLangRef.current.code;
-    }
+    if (isTTSMutedRef.current) return false;
+    if (modeRef.current === 'mode-1') return true;
+    if (modeRef.current === 'mode-2') return detectedLang !== myLangRef.current.code;
     return false;
   };
 
@@ -258,14 +249,12 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     return () => subscription.remove();
   }, []);
 
-  // 전체 내역 열릴 때 + 새 항목 추가 시 맨 아래로 스크롤
+  // 새 항목 추가 시 맨 아래로 스크롤
   useEffect(() => {
-    if (showFullTranscript) {
-      setTimeout(() => {
-        fullTranscriptScrollRef.current?.scrollToEnd({ animated: false });
-      }, 50);
-    }
-  }, [showFullTranscript, transcriptions.length]);
+    setTimeout(() => {
+      scrollRef.current?.scrollToEnd({ animated: false });
+    }, 50);
+  }, [transcriptions.length]);
 
   // 메시지 리스너
   useEffect(() => {
@@ -377,25 +366,30 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
         </Text>
       </TouchableOpacity>
 
-      {/* 상단 우측: 전체 대화 내역 보기 */}
-      <TouchableOpacity
-        style={styles.topRightButton}
-        onPress={() => setShowFullTranscript((prev) => !prev)}
-      >
-        <Ionicons
-          name={showFullTranscript ? 'document-text' : 'document-text-outline'}
-          size={20}
-          color={showFullTranscript ? COLORS.gradientMiddle : COLORS.textMuted}
-        />
-      </TouchableOpacity>
+      {/* 상단 우측: mode-1일 때 스피커 토글 */}
+      {currentMode === 'mode-1' && (
+        <View style={styles.topRightButtons}>
+          <TouchableOpacity onPress={() => {
+            setIsTTSMuted((prev) => {
+              const next = !prev;
+              isTTSMutedRef.current = next;
+              if (next) { ttsQueueRef.current = []; isSpeakingRef.current = false; ttsStop(); }
+              return next;
+            });
+          }}>
+            <Ionicons
+              name={isTTSMuted ? 'volume-mute-outline' : 'volume-high-outline'}
+              size={20}
+              color={isTTSMuted ? COLORS.gradientMiddle : COLORS.textMuted}
+            />
+          </TouchableOpacity>
+        </View>
+      )}
 
       <ScrollView
-        ref={showFullTranscript ? fullTranscriptScrollRef : undefined}
+        ref={scrollRef}
         style={styles.transcriptionArea}
-        contentContainerStyle={[
-          styles.transcriptionContent,
-          showFullTranscript && { justifyContent: 'flex-start' },
-        ]}
+        contentContainerStyle={styles.transcriptionContent}
       >
         {!displayText && transcriptions.length === 0 ? (
           <View style={styles.emptyContainer}>
@@ -405,46 +399,27 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
           </View>
         ) : (
           <>
-            {(() => {
-              let filtered = transcriptions;
-
-              if (currentMode === 'mode-2' && !showFullTranscript) {
-                filtered = filtered.filter(item => item.language === myLang.code);
-              }
-
-              if (!showFullTranscript) {
-                filtered = filtered.slice(-MAX_VISIBLE);
-              }
-
-              const onlyTranslation = currentMode === 'mode-1' && !showFullTranscript;
-
-              return filtered.map((item) => (
-                <TranslationItem
-                  key={item.id}
-                  sourceLang={item.language}
-                  targetLang={getTranslationTarget(item.language)}
-                  sourceText={item.text}
-                  targetText={item.translatedText}
-                  isLatest={false}
-                  translationOnly={onlyTranslation}
-                />
-              ));
-            })()}
-            {displayText && (() => {
-              if (currentMode === 'mode-2' && !showFullTranscript) {
-                if (displayText.lang !== myLang.code) return null;
-              }
-              return (
-                <TranslationItem
-                  key="live"
-                  sourceLang={displayText.lang}
-                  targetLang=""
-                  sourceText={displayText.text}
-                  targetText=""
-                  isLatest={true}
-                />
-              );
-            })()}
+            {transcriptions.map((item) => (
+              <TranslationItem
+                key={item.id}
+                sourceLang={item.language}
+                targetLang={getTranslationTarget(item.language)}
+                sourceText={item.text}
+                targetText={item.translatedText}
+                isLatest={false}
+                translationOnly={true}
+              />
+            ))}
+            {displayText && (
+              <TranslationItem
+                key="live"
+                sourceLang={displayText.lang}
+                targetLang=""
+                sourceText={displayText.text}
+                targetText=""
+                isLatest={true}
+              />
+            )}
           </>
         )}
       </ScrollView>
@@ -529,14 +504,24 @@ const styles = StyleSheet.create({
     zIndex: 10,
     padding: SPACING.sm,
   },
+  topRightButtons: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    zIndex: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: SPACING.sm,
+  },
   transcriptionArea: {
     flex: 1,
+    marginTop: 90,
     paddingHorizontal: SPACING.md,
   },
   transcriptionContent: {
     flexGrow: 1,
-    justifyContent: 'center',
-    paddingTop: SPACING.xxl,
+    justifyContent: 'flex-end',
     paddingBottom: SPACING.md,
   },
   emptyContainer: {

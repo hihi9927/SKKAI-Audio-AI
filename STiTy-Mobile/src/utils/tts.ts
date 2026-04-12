@@ -54,7 +54,7 @@ export const ttsSpeak = (
           onError();
         }),
       ];
-      Tts.speak(text);
+      Tts.speak(text, { KEY_PARAM_STREAM: 'STREAM_VOICE_CALL' });
     })
     .catch(onError);
 };

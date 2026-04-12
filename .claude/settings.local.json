@@ -65,7 +65,14 @@
       "Bash(git branch -m main)",
       "Bash(curl -s https://download.pytorch.org/whl/nightly/cu128/)",
       "Bash(conda run:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(git -C d:/STiTy-main commit -m ':*)",
+      "Bash(node -e \"require\\('react-native-tts'\\)\")",
+      "Bash(git -C d:/STiTy-main add STiTy-Mobile/src/screens/ConversationScreen.tsx STiTy-Mobile/src/components/TranslationItem.tsx STiTy-Mobile/src/utils/tts.ts STiTy-Mobile/package.json STiTy-Mobile/package-lock.json)",
+      "Bash(git -C d:/STiTy-main add STiTy-Mobile/src/utils/tts.ts)",
+      "Bash(git -C d:/STiTy-main diff Qwen3-ASR/examples/streaming_websocket_server.py)",
+      "Bash(git -C d:/STiTy-main checkout -- Qwen3-ASR/examples/streaming_websocket_server.py)",
+      "Bash(npx patch-package:*)"
     ],
     "deny": [],
     "ask": []

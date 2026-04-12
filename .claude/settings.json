@@ -7,7 +7,18 @@
       "WebSearch",
       "Bash(git checkout:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git branch:*)",
+      "Bash(git -C d:/STiTy-main pull)",
+      "Bash(grep -v '\\\\.pyc$')",
+      "Bash(git -C d:/STiTy-main status)",
+      "Bash(git -C d:/STiTy-main diff)",
+      "Bash(git -C d:/STiTy-main add STiTy-Mobile/src/screens/ConversationScreen.tsx)",
+      "Bash(git -C d:/STiTy-main commit -m ':*)",
+      "Bash(git -C d:/STiTy-main add STiTy-Mobile/src/screens/ConversationScreen.tsx STiTy-Mobile/src/components/TranslationItem.tsx)",
+      "Bash(git -C d:/STiTy-main log --oneline -5)",
+      "Bash(npx react-native:*)",
+      "Bash(npx expo:*)"
     ],
     "additionalDirectories": [
       "\\tmp"
