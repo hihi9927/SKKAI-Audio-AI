@@ -415,6 +415,7 @@ def main():
         adapter_ko=args.adapter_ko,
         max_lora_rank=args.max_lora_rank,
         enforce_eager=args.enforce_eager,
+        enable_dot_commit=args.enable_dot_commit,
     )
 
     server = FCLStreamingServer(config)

@@ -118,6 +118,9 @@ class StreamingConfig:
     # vLLM 컴파일 설정
     enforce_eager: bool = False  # True면 Triton 컴파일 우회 (sm_121a 등 미지원 GPU)
 
+    # Commit 방식 설정
+    enable_dot_commit: bool = False  # True면 온점/느낌표/물음표(dot) 기반 seg commit 활성화
+
     # 서버 설정
     host: str = "0.0.0.0"
     port: int = 8765
@@ -375,6 +378,9 @@ class Qwen3ASRStreamingHandler:
         self.asr_lock = asyncio.Lock()
         self.http_session: Optional[aiohttp.ClientSession] = None
         self.session_logger: Optional[SessionLogger] = None
+
+        # Commit 방식 설정
+        self.enable_dot_commit: bool = config.enable_dot_commit
 
         # VAD / stream alignment
         self.sample_cursor = 0
@@ -641,9 +647,11 @@ class Qwen3ASRStreamingHandler:
         while True:
             # 우선순위 1: <SEG>
             # 우선순위 2: VAD (flush_uncommitted 에서 처리)
-            # 우선순위 3: 구두점 (비활성화)
-            # match = re.search(r"(?:[.?!\u3002\uff1f\uff01]\s+|<SEG>)", remaining)
-            match = re.search(r"<SEG>", remaining)
+            # 우선순위 3: dot (enable_dot_commit=True일 때만 활성화)
+            if self.enable_dot_commit:
+                match = re.search(r"(?:[.?!\u3002\uff1f\uff01]\s+|<SEG>)", remaining)
+            else:
+                match = re.search(r"<SEG>", remaining)
             if not match:
                 break
             after = remaining[match.end():]
@@ -1232,6 +1240,10 @@ def parse_args():
         help="LoRA 최대 rank (학습 시 사용한 rank와 일치해야 함, 기본값: 128)",
     )
     parser.add_argument(
+        "--enable-dot-commit", action="store_true",
+        help="온점/느낌표/물음표(dot) 기반 seg commit 활성화 (기본값: 비활성화, 베이스라인 모델용)",
+    )
+    parser.add_argument(
         "--log-json", action="store_true",
         help="로그를 JSON 형식으로 출력",
     )
@@ -1257,6 +1269,7 @@ def main():
         no_lora=not args.lora,
         max_lora_rank=args.max_lora_rank,
         enforce_eager=args.enforce_eager,
+        enable_dot_commit=args.enable_dot_commit,
     )
 
     server = Qwen3ASRStreamingServer(config)

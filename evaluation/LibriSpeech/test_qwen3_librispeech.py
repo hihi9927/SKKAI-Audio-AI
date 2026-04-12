@@ -484,6 +484,7 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
                         'commit_reason': normalize_commit_reason(
                             data.get('commitReason') or data.get('commit_reason') or data.get('reason')
                         ),
+                        'output_token_count': len(text.split()),
                         'audio_start_sec': audio_start_sec,
                         'audio_end_sec': audio_end_sec,
                         'server_translate_started_elapsed_sec': data.get('translate_started_elapsed_sec'),
@@ -678,6 +679,16 @@ def build_summary_payload(results, policy):
                     values.append(value)
         return values
 
+    def _collect_commit_stats(rows):
+        counts = {'vad': 0, 'seg': 0, 'dot': 0}
+        for row in rows:
+            for segment in row.get('segment_metrics') or []:
+                reason = segment.get('commit_reason', 'seg')
+                counts[reason] = counts.get(reason, 0) + 1
+        total = sum(counts.values())
+        ratios = {k: (v / total if total > 0 else 0.0) for k, v in counts.items()}
+        return {'counts': counts, 'total': total, 'ratios': ratios}
+
     folder_stats = {}
     for speaker_id, rows in sorted(by_speaker.items()):
         lat = [r['first_token_latency'] for r in rows if r['first_token_latency'] is not None]
@@ -685,6 +696,8 @@ def build_summary_payload(results, policy):
         speaker_fcl = _collect_segment_metric('server_fcl_sec', rows)
         speaker_translation = _collect_segment_metric('translation_latency_sec', rows)
         speaker_asr = _collect_segment_metric('asr_inference_sec', rows)
+        speaker_tokens = _collect_segment_metric('output_token_count', rows)
+        speaker_commit = _collect_commit_stats(rows)
         folder_stats[speaker_id] = {
             'num_files': len(rows),
             'wer': folder_wers.get(speaker_id),
@@ -693,6 +706,8 @@ def build_summary_payload(results, policy):
             'avg_server_fcl_sec': mean(speaker_fcl) if speaker_fcl else None,
             'avg_translation_latency_sec': mean(speaker_translation) if speaker_translation else None,
             'avg_asr_inference_sec': mean(speaker_asr) if speaker_asr else None,
+            'avg_output_tokens_per_commit': mean(speaker_tokens) if speaker_tokens else None,
+            'commit_stats': speaker_commit,
         }
 
     all_lat = [r['first_token_latency'] for r in results if r['first_token_latency'] is not None]
@@ -700,6 +715,8 @@ def build_summary_payload(results, policy):
     all_server_fcl = _collect_segment_metric('server_fcl_sec', results)
     all_translation = _collect_segment_metric('translation_latency_sec', results)
     all_asr = _collect_segment_metric('asr_inference_sec', results)
+    all_tokens = _collect_segment_metric('output_token_count', results)
+    all_commit = _collect_commit_stats(results)
 
     return {
         'timestamp': datetime.now().isoformat(),
@@ -712,6 +729,8 @@ def build_summary_payload(results, policy):
             'avg_server_fcl_sec': mean(all_server_fcl) if all_server_fcl else None,
             'avg_translation_latency_sec': mean(all_translation) if all_translation else None,
             'avg_asr_inference_sec': mean(all_asr) if all_asr else None,
+            'avg_output_tokens_per_commit': mean(all_tokens) if all_tokens else None,
+            'commit_stats': all_commit,
         },
         'folders': folder_stats,
     }

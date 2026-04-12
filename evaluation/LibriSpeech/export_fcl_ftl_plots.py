@@ -301,19 +301,21 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
 
     legend_handles = {}
 
+    prev_r_end = 0.0  # 이전 세그먼트의 실제 speech end (다음 세그먼트 검색 시작점)
+
     for seg in segs:
-        s_start = seg["audio_start_sec"]
         s_end   = seg["audio_end_sec"]
         ts      = seg["server_translate_started_elapsed_sec"]
         td      = seg["server_translate_done_elapsed_sec"]
         y_pos   = seg["segment_id"]
         reason  = seg["commit_reason"]
 
-        # 오디오 구간 (에너지 기반 refined bounds 또는 원본)
+        # 오디오 구간: s_start 대신 이전 세그먼트의 실제 speech end를 검색 시작점으로 사용
         if has_audio and y_wav is not None:
-            r_start, r_end = detect_speech_bounds(y_wav, sr_wav, s_start, s_end, vad_model=vad_model)
+            r_start, r_end = detect_speech_bounds(y_wav, sr_wav, prev_r_end, s_end, vad_model=vad_model)
         else:
-            r_start, r_end = s_start, s_end
+            r_start, r_end = prev_r_end, s_end
+        prev_r_end = r_end
 
         ax.barh(y_pos, r_end - r_start, left=r_start,
                 height=bar_height, color=STYLE["speech"], alpha=0.9, zorder=3)
