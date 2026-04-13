@@ -259,7 +259,13 @@ def load_processed_files(output_file, policy):
 
 def normalize_commit_reason(raw_reason):
     reason = str(raw_reason or '').lower()
-    return 'vad' if reason.startswith('vad') else 'seg'
+    if reason.startswith('vad'):
+        return 'vad'
+    if reason == 'dot':
+        return 'dot'
+    if reason == 'finish':
+        return 'finish'
+    return 'seg'
 
 
 def parse_hms_timestamp(value):
@@ -430,6 +436,9 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
                             break
                         await asyncio.sleep(min(remaining, 0.02))
                 await ws.send(chunk.tobytes())
+            # 마지막 silence 청크 전송 후 서버 VAD 처리 대기
+            # VAD_MIN_SILENCE_MS(800ms) + 처리 여유 시간
+            await asyncio.sleep(0.5)
 
         await ws.send(json.dumps({'type': 'finish'}))
         send_done.set()
@@ -680,7 +689,7 @@ def build_summary_payload(results, policy):
         return values
 
     def _collect_commit_stats(rows):
-        counts = {'vad': 0, 'seg': 0, 'dot': 0}
+        counts = {'vad': 0, 'seg': 0, 'dot': 0, 'finish': 0}
         for row in rows:
             for segment in row.get('segment_metrics') or []:
                 reason = segment.get('commit_reason', 'seg')

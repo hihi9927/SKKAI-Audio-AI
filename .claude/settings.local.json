@@ -72,7 +72,12 @@
       "Bash(git -C d:/STiTy-main add STiTy-Mobile/src/utils/tts.ts)",
       "Bash(git -C d:/STiTy-main diff Qwen3-ASR/examples/streaming_websocket_server.py)",
       "Bash(git -C d:/STiTy-main checkout -- Qwen3-ASR/examples/streaming_websocket_server.py)",
-      "Bash(npx patch-package:*)"
+      "Bash(npx patch-package:*)",
+      "Bash(netstat -ano)",
+      "Bash(tmux list-sessions:*)",
+      "Bash(chmod 600 \"c:/Users/gyuye/Downloads/Audio_AI.pem\")",
+      "Bash(cp \"c:/Users/gyuye/Downloads/Audio_AI.pem\" /tmp/Audio_AI.pem)",
+      "Bash(chmod 400 /tmp/Audio_AI.pem)"
     ],
     "deny": [],
     "ask": []

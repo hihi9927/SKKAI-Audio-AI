@@ -580,7 +580,12 @@ class Qwen3ASRStreamingHandler:
             )
 
         final_lang = effective_detected
-        commit_reason = "vad" if reason.startswith("vad") else "seg"
+        if reason.startswith("vad"):
+            commit_reason = "vad"
+        elif reason == "finish":
+            commit_reason = "finish"
+        else:
+            commit_reason = "seg"
         self.log.info(
             f"[final-flush] slot={slot_key or self.active_slot} reason={reason} lang={final_lang} "
             f"translation='{translation}' original='{uncommitted_display}'"
@@ -648,17 +653,27 @@ class Qwen3ASRStreamingHandler:
             # 우선순위 1: <SEG>
             # 우선순위 2: VAD (flush_uncommitted 에서 처리)
             # 우선순위 3: dot (enable_dot_commit=True일 때만 활성화)
+            # dot 패턴: Mr./Mrs./Dr./St./Jr./Sr./vs./No. 등 약어 제외
             if self.enable_dot_commit:
-                match = re.search(r"(?:[.?!\u3002\uff1f\uff01]\s+|<SEG>)", remaining)
+                match = re.search(
+                    r"(?:"
+                    r"(?<!Mr)(?<!Mrs)(?<!Dr)(?<!St)(?<!Jr)(?<!Sr)(?<!vs)(?<!No)\.\s+"
+                    r"|[?!\u3002\uff1f\uff01]\s+"
+                    r"|<SEG>"
+                    r")",
+                    remaining,
+                )
             else:
                 match = re.search(r"<SEG>", remaining)
             if not match:
                 break
+            matched_text = match.group()
+            trigger = "seg" if "<SEG>" in matched_text else "dot"
             after = remaining[match.end():]
             # 커서 추적을 위해 raw sentence(<SEG> 포함) 사용
             sentence = remaining[:match.end()].strip()
             if sentence.replace("<SEG>", "").strip():
-                sentences_to_commit.append(sentence)
+                sentences_to_commit.append((sentence, trigger))
             remaining = after
 
         if sentences_to_commit:
@@ -666,7 +681,7 @@ class Qwen3ASRStreamingHandler:
                 f"[seg-detect] slot={slot_key} raw={current_text[:120]}..."
             )
             translated_payloads = []
-            for sentence_raw in sentences_to_commit:
+            for sentence_raw, trigger_reason in sentences_to_commit:
                 # <SEG>는 사용자 출력/번역에서 제거
                 sentence_display = sentence_raw.replace("<SEG>", "").strip()
                 translation, detected_lang, extra = await self._translate(
@@ -693,6 +708,7 @@ class Qwen3ASRStreamingHandler:
                     "translation": translation,
                     "language": final_lang,
                     "extra": extra,
+                    "trigger_reason": trigger_reason,
                 })
 
             ready_to_emit = []
@@ -728,12 +744,12 @@ class Qwen3ASRStreamingHandler:
                     original=payload["original"],
                     translation=payload["translation"],
                     language=payload["language"],
-                    reason="seg",
+                    reason=payload["trigger_reason"],
                     audio_end_sec=self.current_time,
                     extra=payload.get("extra"),
                 )
                 self.log.info(
-                    f"[final-sentence/SEG] slot={slot_key} lang={payload['language']} "
+                    f"[final-sentence/{payload['trigger_reason'].upper()}] slot={slot_key} lang={payload['language']} "
                     f"text={payload['original']}"
                 )
 
