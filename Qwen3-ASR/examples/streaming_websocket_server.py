@@ -472,36 +472,27 @@ class Qwen3ASRStreamingHandler:
         return self.stream_slots[key]
 
     @staticmethod
-    def _uncommitted_from(current_text: str, committed_display: str,
-                          committed_seg_count: int = 0) -> str:
+    def _uncommitted_from(current_text: str,
+                          committed_seg_count: int = 0,
+                          committed_prefix: str = "") -> str:
         """committed 경계 이후의 current_text를 반환.
 
-        1차: committed_display(SEG 제거 기준) prefix 매칭
-        2차(fallback): committed_seg_count 번째 <SEG> 이후 텍스트
-        모델이 이전 텍스트를 수정해 display가 달라져도 SEG 카운트로 안전하게 찾는다.
+        1차: committed_prefix(raw 텍스트) 직접 prefix 매칭 — 가장 정확
+        2차 fallback: committed_seg_count 번째 <SEG> 이후 텍스트
         """
         seg_tag = "<SEG>"
         seg_len = len(seg_tag)
 
-        # ── 1차: display prefix 매칭 ──────────────────────────────────────
-        if committed_display:
-            current_no_seg = current_text.replace(seg_tag, "")
-            if current_no_seg.startswith(committed_display):
-                pos, disp_pos, target = 0, 0, len(committed_display)
-                while pos < len(current_text) and disp_pos < target:
-                    if current_text[pos:pos + seg_len] == seg_tag:
-                        pos += seg_len
-                    else:
-                        disp_pos += 1
-                        pos += 1
-                return current_text[pos:]
+        # ── 1차: committed_prefix raw 직접 매칭 ──────────────────────────
+        if committed_prefix and current_text.startswith(committed_prefix):
+            return current_text[len(committed_prefix):]
 
         # ── 2차 fallback: SEG 카운트 기준 ───────────────────────────────
         pos, found = 0, 0
         while found < committed_seg_count:
             idx = current_text.find(seg_tag, pos)
             if idx == -1:
-                return ""  # 커밋된 SEG 수보다 현재 텍스트의 SEG가 적음 → 모두 커밋됨
+                return ""
             pos = idx + seg_len
             found += 1
         return current_text[pos:]
@@ -551,10 +542,10 @@ class Qwen3ASRStreamingHandler:
                     current_text = current_text.split("<asr_text>", 1)[-1].strip()
                 current_lang = slot["last_text_lang"] or ""
             snapshot_committed_len = slot["committed_len"]
-            snapshot_committed_display = slot["committed_display"]
             snapshot_committed_seg_count = slot["committed_seg_count"]
+            snapshot_committed_prefix = slot["committed_prefix"]
             uncommitted_raw = self._uncommitted_from(
-                current_text, snapshot_committed_display, snapshot_committed_seg_count
+                current_text, snapshot_committed_seg_count, snapshot_committed_prefix
             )
             uncommitted_display = re.sub(r'\s+', ' ', uncommitted_raw.replace("<SEG>", "")).strip() if uncommitted_raw is not None else ""
             if not uncommitted_display:
@@ -637,10 +628,8 @@ class Qwen3ASRStreamingHandler:
         slot["last_text"] = current_text
         slot["last_text_lang"] = current_lang
 
-        # 문장 단위 commit
-        # committed_display/seg_count 기준으로 uncommitted 구간 계산 (모델 텍스트 수정에도 안전)
         uncommitted = self._uncommitted_from(
-            current_text, slot["committed_display"], slot["committed_seg_count"]
+            current_text, slot["committed_seg_count"], slot["committed_prefix"]
         )
 
         if emit_partial:
