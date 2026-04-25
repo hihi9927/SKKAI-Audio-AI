@@ -378,6 +378,7 @@ class Qwen3ASRStreamingHandler:
         self.asr_lock = asyncio.Lock()
         self.http_session: Optional[aiohttp.ClientSession] = None
         self.session_logger: Optional[SessionLogger] = None
+        self._seg_watcher_task: Optional[asyncio.Task] = None
 
         # Commit 방식 설정
         self.enable_dot_commit: bool = config.enable_dot_commit
@@ -440,6 +441,11 @@ class Qwen3ASRStreamingHandler:
         self.asr_processed_cursor = 0
         if self.vad_iterator is not None:
             self.vad_iterator.reset_states()
+
+        # cancel previous seg watcher
+        if self._seg_watcher_task and not self._seg_watcher_task.done():
+            self._seg_watcher_task.cancel()
+        self._seg_watcher_task = None
     
     def _new_stream_slot(self) -> dict:
         return {
@@ -676,9 +682,15 @@ class Qwen3ASRStreamingHandler:
                 sentences_to_commit.append((sentence, trigger))
             remaining = after
 
+        # EOS 감지: SEG 루프 이후 남은 uncommitted 텍스트를 즉시 commit
+        if getattr(state, "eos_detected", False) and remaining.replace("<SEG>", "").strip():
+            sentences_to_commit.append((remaining.strip(), "eos"))
+            state.eos_detected = False
+
         if sentences_to_commit:
+            triggers = set(t for _, t in sentences_to_commit)
             self.log.info(
-                f"[seg-detect] slot={slot_key} raw={current_text[:120]}..."
+                f"[commit-detect] slot={slot_key} triggers={triggers} raw={current_text[:120]}..."
             )
             translated_payloads = []
             for sentence_raw, trigger_reason in sentences_to_commit:
@@ -748,9 +760,10 @@ class Qwen3ASRStreamingHandler:
                     audio_end_sec=self.current_time,
                     extra=payload.get("extra"),
                 )
+                trigger = payload["trigger_reason"].upper()
                 self.log.info(
-                    f"[final-sentence/{payload['trigger_reason'].upper()}] slot={slot_key} lang={payload['language']} "
-                    f"text={payload['original']}"
+                    f"[final/{trigger}] slot={slot_key} lang={payload['language']} "
+                    f"text='{payload['original']}'"
                 )
 
     def _run_vad_sync(self, chunk: np.ndarray, chunk_base_sample: int):
@@ -854,6 +867,17 @@ class Qwen3ASRStreamingHandler:
         await self._asr_finish_streaming(self.active_slot)
         await self.flush_uncommitted(force=True, reason="finish", slot_key=self.active_slot)
 
+    async def _seg_watcher_loop(self):
+        """0.5초마다 active slot의 uncommitted 텍스트에서 <SEG>를 감지해 즉시 commit."""
+        while self.running:
+            await asyncio.sleep(0.5)
+            if not self.running:
+                break
+            try:
+                await self._process_slot_updates(self.active_slot, emit_partial=False)
+            except Exception as e:
+                self.log.warning(f"[seg-watcher] error: {e}")
+
     # ── 서브클래스 훅 ──────────────────────────────────────────────────────────
 
     async def _translate(
@@ -937,6 +961,7 @@ class Qwen3ASRStreamingHandler:
 
                             self.init_streaming_state()
                             self.running = True
+                            self._seg_watcher_task = asyncio.create_task(self._seg_watcher_loop())
                             await self.send_message(
                                 "ready", message="Ready to receive audio"
                             )
@@ -952,6 +977,7 @@ class Qwen3ASRStreamingHandler:
                             # finish → 상태 리셋 후 재시작
                             self.init_streaming_state()
                             self.running = True
+                            self._seg_watcher_task = asyncio.create_task(self._seg_watcher_loop())
 
                         elif msg_type == "pair_host":
                             room_id = (data.get("roomId") or "").strip()
@@ -1023,6 +1049,8 @@ class Qwen3ASRStreamingHandler:
         finally:
             was_running = self.running
             self.running = False
+            if self._seg_watcher_task and not self._seg_watcher_task.done():
+                self._seg_watcher_task.cancel()
             if was_running:
                 await self.finish_streaming()
             if self.http_session is not None:
