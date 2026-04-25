@@ -129,7 +129,6 @@ class ASRStreamingState:
     language: str
     text: str
     _raw_decoded: str
-    eos_detected: bool = False
 
 
 class Qwen3ASRModel:
@@ -775,7 +774,6 @@ class Qwen3ASRModel:
             async for out in self.model.generate(inp, self.sampling_params, request_id=request_id, lora_request=lora_request):
                 final = out
             gen_text = final.outputs[0].text
-            state.eos_detected = getattr(final.outputs[0], "finish_reason", None) == "stop"
 
             # Accumulate raw decoded (then parse to lang/text)
             state._raw_decoded = (prefix + gen_text) if prefix is not None else gen_text
@@ -847,7 +845,6 @@ class Qwen3ASRModel:
         async for out in self.model.generate(inp, self.sampling_params, request_id=request_id, lora_request=lora_request):
             final = out
         gen_text = final.outputs[0].text
-        state.eos_detected = getattr(final.outputs[0], "finish_reason", None) == "stop"
 
         state._raw_decoded = (prefix + gen_text) if prefix is not None else gen_text
         lang, txt = parse_asr_output(state._raw_decoded, user_language=state.force_language)

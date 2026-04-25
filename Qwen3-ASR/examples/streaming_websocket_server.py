@@ -682,11 +682,6 @@ class Qwen3ASRStreamingHandler:
                 sentences_to_commit.append((sentence, trigger))
             remaining = after
 
-        # EOS 감지: SEG 루프 이후 남은 uncommitted 텍스트를 즉시 commit
-        if getattr(state, "eos_detected", False) and remaining.replace("<SEG>", "").strip():
-            sentences_to_commit.append((remaining.strip(), "eos"))
-            state.eos_detected = False
-
         if sentences_to_commit:
             triggers = set(t for _, t in sentences_to_commit)
             self.log.info(
@@ -748,7 +743,9 @@ class Qwen3ASRStreamingHandler:
                     slot["committed_display"] = re.sub(
                         r'\s+', ' ', slot["committed_prefix"].replace("<SEG>", "")
                     ).strip()
-                    slot["committed_seg_count"] += len(ready_to_emit)
+                    slot["committed_seg_count"] += sum(
+                        p["original_raw"].count("<SEG>") for p in ready_to_emit
+                    )
 
             for payload in ready_to_emit:
                 await self._emit_final_payload(
