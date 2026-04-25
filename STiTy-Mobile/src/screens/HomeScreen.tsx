@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -12,13 +12,11 @@ import {
   Animated,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LANGUAGES, Language, CONVERSATION_MODES, formatLanguageDisplay, formatLanguageAs } from '../constants/languages';
 import { useWebSocketContext } from '../context/WebSocketContext';
-import { isEarphoneConnected } from '../utils/audioRouting';
 
 type RootStackParamList = {
   Home: undefined;
@@ -34,6 +32,7 @@ interface HomeScreenProps {
 const STORAGE_KEYS = {
   MY_LANG: 'stity_myLang',
   TARGET_LANG: 'stity_targetLang',
+  MODE: 'stity_mode',
 };
 
 const GradientText: React.FC<{ text: string; style?: any }> = ({ text, style }) => {
@@ -179,62 +178,41 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const { serverStatus, probeServer } = useWebSocketContext();
   const progressAnim = useRef(new Animated.Value(0)).current;
   const slowAnimRef = useRef<Animated.CompositeAnimation | null>(null);
-  const [barActive, setBarActive] = useState(false);
-  const barTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [dots, setDots] = useState('');
 
-  // 화면 포커스될 때마다 서버 상태 재확인 (다른 화면 갔다 돌아올 때 포함)
-  useFocusEffect(useCallback(() => {
-    probeServer();
-  }, []));
-
+  // 마운?????�버 probe ?�작
   useEffect(() => {
-    if (barTimerRef.current) { clearTimeout(barTimerRef.current); barTimerRef.current = null; }
+    probeServer();
+  }, []);
 
+  // serverStatus 변?�에 ?�른 ?�니메이??
+  useEffect(() => {
     if (serverStatus === 'connecting') {
-      // 1초 이상 connecting 지속될 때만 바 표시 (빠른 retry 깜빡임 방지)
-      barTimerRef.current = setTimeout(() => {
-        progressAnim.setValue(0);
-        slowAnimRef.current = Animated.timing(progressAnim, {
-          toValue: 0.8,
-          duration: 1 * 60 * 1000 + 40 * 1000,
-          useNativeDriver: false,
-        });
-        slowAnimRef.current.start();
-        setBarActive(true);
-      }, 1000);
+      progressAnim.setValue(0);
+      slowAnimRef.current = Animated.timing(progressAnim, {
+        toValue: 0.8,
+        duration: 1 * 60 * 1000 + 40 * 1000,
+        useNativeDriver: false,
+      });
+      slowAnimRef.current.start();
     } else if (serverStatus === 'ready') {
       if (slowAnimRef.current) slowAnimRef.current.stop();
-      Animated.timing(progressAnim, { toValue: 1, duration: 400, useNativeDriver: false }).start();
-      setBarActive(false);
+      Animated.timing(progressAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: false,
+      }).start();
     } else if (serverStatus === 'error') {
       if (slowAnimRef.current) slowAnimRef.current.stop();
-      setBarActive(false);
     }
-  }, [serverStatus]);
-
-  // 잠시만 기다려 주세요 점 애니메이션
-  useEffect(() => {
-    if (barActive || serverStatus === 'ready') { setDots(''); return; }
-    const interval = setInterval(() => {
-      setDots(d => d.length >= 3 ? '' : d + '.');
-    }, 500);
-    return () => clearInterval(interval);
-  }, [barActive, serverStatus]);
-
-  // error 상태에서 자동 재시도
-  useEffect(() => {
-    if (serverStatus !== 'error') return;
-    const interval = setInterval(() => { probeServer(); }, 3000);
-    return () => clearInterval(interval);
   }, [serverStatus]);
 
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const [savedMyLang, savedTargetLang] = await Promise.all([
+        const [savedMyLang, savedTargetLang, savedMode] = await Promise.all([
           AsyncStorage.getItem(STORAGE_KEYS.MY_LANG),
           AsyncStorage.getItem(STORAGE_KEYS.TARGET_LANG),
+          AsyncStorage.getItem(STORAGE_KEYS.MODE),
         ]);
 
         if (savedMyLang) {
@@ -245,10 +223,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           const found = LANGUAGES.find(l => l.code === savedTargetLang);
           if (found) setTargetLanguage(found);
         }
-
-        const earphone = await isEarphoneConnected();
-        const autoMode = CONVERSATION_MODES.find(m => m.id === (earphone ? 'mode-2' : 'mode-1'))!;
-        setConversationMode(autoMode);
+        if (savedMode) {
+          const found = CONVERSATION_MODES.find(m => m.id === savedMode);
+          if (found) setConversationMode(found);
+        }
       } catch (e) {
         console.error('Failed to load settings:', e);
       }
@@ -269,6 +247,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
   const updateMode = (mode: typeof CONVERSATION_MODES[0]) => {
     setConversationMode(mode);
+    AsyncStorage.setItem(STORAGE_KEYS.MODE, mode.id);
   };
 
   const handleStart = () => {
@@ -352,10 +331,21 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               </View>
             </LinearGradient>
           </TouchableOpacity>
-        ) : !barActive ? (
+        ) : serverStatus === 'error' ? (
           <View style={styles.serverErrorContainer}>
-            <Text style={styles.serverErrorText}>잠시만 기다려 주세요{dots}</Text>
-            <Text style={styles.serverErrorDesc}>서버가 준비되면 자동으로 연결됩니다</Text>
+            <Text style={styles.serverErrorText}>서버에 연결할 수 없습니다</Text>
+            <TouchableOpacity onPress={probeServer} activeOpacity={0.8}>
+              <LinearGradient
+                colors={['#8E54E9', '#4776E6', '#00CFEF']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.startBtnGradient}
+              >
+                <View style={styles.startBtnInner}>
+                  <GradientText text="재시도" style={styles.startText} />
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
           </View>
         ) : (
           <View style={styles.loadingContainer}>
@@ -366,7 +356,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                   {
                     width: progressAnim.interpolate({
                       inputRange: [0, 1],
-                      outputRange: [0, 200],
+                      outputRange: ['0%', '100%'],
                     }),
                   },
                 ]}
@@ -486,7 +476,7 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
   progressTrack: {
     width: 200,
@@ -505,17 +495,11 @@ const styles = StyleSheet.create({
   },
   serverErrorContainer: {
     alignItems: 'center',
-    gap: 6,
+    gap: 12,
   },
   serverErrorText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#6B7280',
-  },
-  serverErrorDesc: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#9CA3AF',
-    marginBottom: 8,
   },
 });
 
