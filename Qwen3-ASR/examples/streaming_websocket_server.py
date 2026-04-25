@@ -1176,8 +1176,8 @@ class Qwen3ASRStreamingServer:
             self.handle_connection,
             self.config.host,
             self.config.port,
-            ping_interval=None,
-            ping_timeout=None,
+            ping_interval=20,
+            ping_timeout=10,
             max_size=10 * 1024 * 1024,
         ):
             logger.info(f"Server listening on ws://{self.config.host}:{self.config.port}")
@@ -1197,7 +1197,15 @@ class Qwen3ASRStreamingServer:
                             f"[idle-shutdown] {self.IDLE_SHUTDOWN_SEC}초간 "
                             f"접속자 없음 — EC2 종료"
                         )
-                        subprocess.run(["sudo", "shutdown", "-h", "now"])
+                        result = subprocess.run(
+                            ["sudo", "shutdown", "-h", "now"],
+                            capture_output=True, text=True
+                        )
+                        if result.returncode != 0:
+                            logger.error(
+                                f"[idle-shutdown] shutdown 실패 (rc={result.returncode}): "
+                                f"{result.stderr.strip()}"
+                            )
                         return
         except asyncio.CancelledError:
             return
