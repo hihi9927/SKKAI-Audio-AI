@@ -471,31 +471,44 @@ class Qwen3ASRStreamingHandler:
         key = slot_key or self.active_slot
         return self.stream_slots[key]
 
-    @staticmethod
-    def _uncommitted_from(current_text: str,
-                          committed_seg_count: int = 0,
-                          committed_prefix: str = "") -> str:
-        """committed 경계 이후의 current_text를 반환.
+    def _sync_committed_boundary(self, slot: dict, current_text: str) -> str:
+        """committed 경계를 current_text에 동기화하고 uncommitted 텍스트를 반환.
 
-        1차: committed_prefix(raw 텍스트) 직접 prefix 매칭 — 가장 정확
-        2차 fallback: committed_seg_count 번째 <SEG> 이후 텍스트
+        모델이 커밋된 텍스트를 수정한 경우 committed 상태를 마지막 유효한 SEG 경계로 롤백.
+        slot 상태를 직접 수정한다.
         """
         seg_tag = "<SEG>"
-        seg_len = len(seg_tag)
+        committed_prefix = slot["committed_prefix"]
 
-        # ── 1차: committed_prefix raw 직접 매칭 ──────────────────────────
+        # 1차: committed_prefix raw 직접 매칭
         if committed_prefix and current_text.startswith(committed_prefix):
             return current_text[len(committed_prefix):]
 
-        # ── 2차 fallback: SEG 카운트 기준 ───────────────────────────────
-        pos, found = 0, 0
-        while found < committed_seg_count:
-            idx = current_text.find(seg_tag, pos)
-            if idx == -1:
-                return ""
-            pos = idx + seg_len
-            found += 1
-        return current_text[pos:]
+        # 2차: SEG 경계 후퇴 매칭
+        # 모델이 마지막 SEG를 수정한 경우 이전 유효 경계로 롤백
+        if committed_prefix:
+            pos, last_match = 0, ""
+            while True:
+                idx = committed_prefix.find(seg_tag, pos)
+                if idx == -1:
+                    break
+                boundary = committed_prefix[:idx + len(seg_tag)]
+                if current_text.startswith(boundary):
+                    last_match = boundary
+                pos = idx + len(seg_tag)
+
+            if last_match:
+                slot["committed_prefix"] = last_match
+                slot["committed_len"] = len(last_match)
+                slot["committed_seg_count"] = last_match.count(seg_tag)
+                slot["committed_display"] = re.sub(
+                    r'\s+', ' ', last_match.replace(seg_tag, "")
+                ).strip()
+                self.log.info(f"[boundary-rollback] to ...'{last_match[-40:]}'")
+                return current_text[len(last_match):]
+
+        # 3차: 매칭 없음 → 전체를 uncommitted로
+        return current_text
 
     def _get_lora_request(self, state):
         """언어에 따라 적절한 LoRA 어댑터 반환. 미지원 언어는 None(기본 모델)."""
@@ -541,12 +554,8 @@ class Qwen3ASRStreamingHandler:
                 if "<asr_text>" in current_text:
                     current_text = current_text.split("<asr_text>", 1)[-1].strip()
                 current_lang = slot["last_text_lang"] or ""
+            uncommitted_raw = self._sync_committed_boundary(slot, current_text)
             snapshot_committed_len = slot["committed_len"]
-            snapshot_committed_seg_count = slot["committed_seg_count"]
-            snapshot_committed_prefix = slot["committed_prefix"]
-            uncommitted_raw = self._uncommitted_from(
-                current_text, snapshot_committed_seg_count, snapshot_committed_prefix
-            )
             uncommitted_display = re.sub(r'\s+', ' ', uncommitted_raw.replace("<SEG>", "")).strip() if uncommitted_raw is not None else ""
             if not uncommitted_display:
                 return
@@ -628,19 +637,16 @@ class Qwen3ASRStreamingHandler:
         slot["last_text"] = current_text
         slot["last_text_lang"] = current_lang
 
-        uncommitted = self._uncommitted_from(
-            current_text, slot["committed_seg_count"], slot["committed_prefix"]
-        )
+        uncommitted = self._sync_committed_boundary(slot, current_text)
 
         if emit_partial:
-            # 이미 커밋된 부분은 제외하고 uncommitted 부분만 partial로 전송
             partial_text = re.sub(r'\s+', ' ', uncommitted.replace("<SEG>", "")).strip()
             await self.send_message(
                 "partial",
                 original=partial_text,
                 last_translation="",
             )
-            self.log.info(f"[partial] slot={slot_key} text={current_text[:80]}...")
+            self.log.info(f"[partial] slot={slot_key} partial='{partial_text[:80]}'")
         sentences_to_commit = []
         remaining = uncommitted
 
