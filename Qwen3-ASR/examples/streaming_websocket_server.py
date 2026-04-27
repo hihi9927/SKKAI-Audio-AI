@@ -681,80 +681,85 @@ class Qwen3ASRStreamingHandler:
             self.log.info(
                 f"[commit-detect] slot={slot_key} triggers={triggers} raw={current_text[:120]}..."
             )
-            translated_payloads = []
-            for sentence_raw, trigger_reason in sentences_to_commit:
-                # <SEG>는 사용자 출력/번역에서 제거
-                sentence_display = sentence_raw.replace("<SEG>", "").strip()
-                translation, detected_lang, extra = await self._translate(
-                    sentence_display, self.client_target_lang, self.current_time
+            asyncio.create_task(
+                self._translate_and_commit(slot_key, sentences_to_commit, current_lang)
+            )
+
+    async def _translate_and_commit(self, slot_key: str, sentences_to_commit: list, current_lang: str):
+        """번역 + 커밋을 백그라운드 태스크로 실행 — 추론 루프를 블로킹하지 않음."""
+        slot = self._slot(slot_key)
+        translated_payloads = []
+        for sentence_raw, trigger_reason in sentences_to_commit:
+            sentence_display = sentence_raw.replace("<SEG>", "").strip()
+            translation, detected_lang, extra = await self._translate(
+                sentence_display, self.client_target_lang, self.current_time
+            )
+            self.log.info(
+                f"[translate-sentence] sentence='{sentence_display}' "
+                f"tl={self.client_target_lang} -> detected={detected_lang} "
+                f"translation='{translation}'"
+            )
+            effective_detected = detected_lang or lang_to_code(current_lang)
+            if effective_detected == self.client_target_lang:
+                translation, _, extra = await self._translate(
+                    sentence_display, self.client_lang, self.current_time
                 )
                 self.log.info(
-                    f"[translate-sentence] sentence='{sentence_display}' "
-                    f"tl={self.client_target_lang} -> detected={detected_lang} "
-                    f"translation='{translation}'"
+                    f"[translate-sentence-flip] tl={self.client_lang} "
+                    f"-> translation='{translation}'"
                 )
-                effective_detected = detected_lang or lang_to_code(current_lang)
-                if effective_detected == self.client_target_lang:
-                    translation, _, extra = await self._translate(
-                        sentence_display, self.client_lang, self.current_time
-                    )
-                    self.log.info(
-                        f"[translate-sentence-flip] tl={self.client_lang} "
-                        f"-> translation='{translation}'"
-                    )
-                final_lang = effective_detected
-                translated_payloads.append({
-                    "original_raw": sentence_raw,   # 커서 추적용 (raw, <SEG> 포함)
-                    "original": sentence_display,   # 사용자 출력용
-                    "translation": translation,
-                    "language": final_lang,
-                    "extra": extra,
-                    "trigger_reason": trigger_reason,
-                })
+            translated_payloads.append({
+                "original_raw": sentence_raw,
+                "original": sentence_display,
+                "translation": translation,
+                "language": effective_detected,
+                "extra": extra,
+                "trigger_reason": trigger_reason,
+            })
 
-            ready_to_emit = []
-            async with slot["flush_lock"]:
-                latest_state = slot["state"]
-                latest_text = (latest_state.text or "").strip() if latest_state else ""
+        ready_to_emit = []
+        async with slot["flush_lock"]:
+            latest_state = slot["state"]
+            latest_text = (latest_state.text or "").strip() if latest_state else ""
 
-                cursor = slot["committed_len"]
+            cursor = slot["committed_len"]
+            tail = latest_text[cursor:]
+
+            for payload in translated_payloads:
+                sentence_raw = payload["original_raw"]
+                stripped_tail = tail.lstrip()
+                leading_ws = len(tail) - len(stripped_tail)
+                if not stripped_tail.startswith(sentence_raw):
+                    break
+                cursor += leading_ws + len(sentence_raw)
                 tail = latest_text[cursor:]
+                ready_to_emit.append(payload)
 
-                for payload in translated_payloads:
-                    sentence_raw = payload["original_raw"]
-                    stripped_tail = tail.lstrip()
-                    leading_ws = len(tail) - len(stripped_tail)
-                    if not stripped_tail.startswith(sentence_raw):
-                        break
-                    cursor += leading_ws + len(sentence_raw)
-                    tail = latest_text[cursor:]
-                    ready_to_emit.append(payload)
-
-                if ready_to_emit:
-                    slot["committed_len"] = cursor
-                    slot["committed_prefix"] = latest_text[:slot["committed_len"]]
-                    slot["committed_display"] = re.sub(
-                        r'\s+', ' ', slot["committed_prefix"].replace("<SEG>", "")
-                    ).strip()
-                    slot["committed_seg_count"] += sum(
-                        p["original_raw"].count("<SEG>") for p in ready_to_emit
-                    )
-
-            for payload in ready_to_emit:
-                await self._emit_final_payload(
-                    slot_key=slot_key,
-                    original=payload["original"],
-                    translation=payload["translation"],
-                    language=payload["language"],
-                    reason=payload["trigger_reason"],
-                    audio_end_sec=self.current_time,
-                    extra=payload.get("extra"),
+            if ready_to_emit:
+                slot["committed_len"] = cursor
+                slot["committed_prefix"] = latest_text[:slot["committed_len"]]
+                slot["committed_display"] = re.sub(
+                    r'\s+', ' ', slot["committed_prefix"].replace("<SEG>", "")
+                ).strip()
+                slot["committed_seg_count"] += sum(
+                    p["original_raw"].count("<SEG>") for p in ready_to_emit
                 )
-                trigger = payload["trigger_reason"].upper()
-                self.log.info(
-                    f"[final/{trigger}] slot={slot_key} lang={payload['language']} "
-                    f"text='{payload['original']}'"
-                )
+
+        for payload in ready_to_emit:
+            await self._emit_final_payload(
+                slot_key=slot_key,
+                original=payload["original"],
+                translation=payload["translation"],
+                language=payload["language"],
+                reason=payload["trigger_reason"],
+                audio_end_sec=self.current_time,
+                extra=payload.get("extra"),
+            )
+            trigger = payload["trigger_reason"].upper()
+            self.log.info(
+                f"[final/{trigger}] slot={slot_key} lang={payload['language']} "
+                f"text='{payload['original']}'"
+            )
 
     def _run_vad_sync(self, chunk: np.ndarray, chunk_base_sample: int):
         """VAD 추론을 동기로 실행 (run_in_executor에서 호출).
