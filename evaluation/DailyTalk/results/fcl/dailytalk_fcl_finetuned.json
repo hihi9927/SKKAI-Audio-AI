@@ -1,42 +1,33 @@
 {
   "policy_3": {
-    "timestamp": "2026-04-11T20:23:07.550398",
+    "timestamp": "2026-04-11T20:46:33.481411",
     "overall": {
-      "num_files": 3,
-      "wer": 0.05263157894736842,
-      "first_token_latency": 3.3317289733483144,
-      "model_runtime": 1.3053958054023485,
-      "avg_server_fcl_sec": 1.3850452144027998,
-      "avg_translation_latency_sec": 0.07635235607934494,
-      "avg_asr_inference_sec": 0.6973721864633262
+      "num_files": 2,
+      "wer": 0.07692307692307693,
+      "first_token_latency": 3.4018443385139108,
+      "model_runtime": 1.7355809505498037,
+      "avg_server_fcl_sec": null,
+      "avg_translation_latency_sec": null,
+      "avg_asr_inference_sec": null
     },
     "dialogs": {
       "d1065": {
         "num_files": 1,
         "wer": 0.0,
-        "first_token_latency": 2.6633761199191213,
-        "model_runtime": 1.3765637160781772,
-        "avg_server_fcl_sec": 1.3814881969671695,
-        "avg_translation_latency_sec": 0.0758912421297282,
-        "avg_asr_inference_sec": 0.4827111635822803
+        "first_token_latency": 3.151698708999902,
+        "model_runtime": 1.864886401085183,
+        "avg_server_fcl_sec": null,
+        "avg_translation_latency_sec": null,
+        "avg_asr_inference_sec": null
       },
       "d1080": {
         "num_files": 1,
         "wer": 0.1,
-        "first_token_latency": 3.3548587660770863,
-        "model_runtime": 1.308796538023278,
-        "avg_server_fcl_sec": 1.3778040751907976,
-        "avg_translation_latency_sec": 0.07545700203627348,
-        "avg_asr_inference_sec": 0.8999392825644463
-      },
-      "d1084": {
-        "num_files": 1,
-        "wer": 0.0,
-        "first_token_latency": 3.976952034048736,
-        "model_runtime": 1.23082716210559,
-        "avg_server_fcl_sec": 1.3958433710504323,
-        "avg_translation_latency_sec": 0.07770882407203317,
-        "avg_asr_inference_sec": 0.709466113243252
+        "first_token_latency": 3.6519899680279195,
+        "model_runtime": 1.6062755000144242,
+        "avg_server_fcl_sec": null,
+        "avg_translation_latency_sec": null,
+        "avg_asr_inference_sec": null
       }
     },
     "raw_results": [
@@ -46,34 +37,34 @@
         "audio_path": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/DailyTalk/audio/0_0_d1065.wav",
         "reference": "Good morning, Loans.",
         "hypothesis": "Good morning, loans.",
-        "hyp_commit": "Good morning, loans. <vad>",
+        "hyp_commit": "Good morning, loans. <SEG>",
         "duration": 1.2868125,
-        "total_time": 2.663376216078177,
-        "first_token_latency": 2.6633761199191213,
-        "model_runtime": 1.3765637160781772,
+        "total_time": 3.151698901085183,
+        "first_token_latency": 3.151698708999902,
+        "model_runtime": 1.864886401085183,
         "target_lang": "ko",
         "segment_metrics": [
           {
-            "segment_id": 1,
+            "segment_id": null,
             "text": "Good morning, loans.",
             "translation": "좋은 아침입니다, 대출.",
-            "commit_reason": "vad",
+            "commit_reason": "SEG",
             "audio_start_sec": 0.0,
-            "audio_end_sec": 1.2788125000000001,
-            "server_translate_started_elapsed_sec": 2.5844094548374414,
-            "server_translate_done_elapsed_sec": 2.6603006969671696,
-            "translation_latency_sec": 0.0758912421297282,
-            "asr_inference_sec": 0.4827111635822803,
-            "server_fcl_sec": 1.3814881969671695,
-            "final_payload_wall_utc": "2026-04-11T11:22:45.124349+00:00",
-            "client_final_received_elapsed_sec": 2.6633770801126957
+            "audio_end_sec": 2.09,
+            "server_translate_started_elapsed_sec": null,
+            "server_translate_done_elapsed_sec": null,
+            "translation_latency_sec": null,
+            "asr_inference_sec": null,
+            "server_fcl_sec": null,
+            "final_payload_wall_utc": null,
+            "client_final_received_elapsed_sec": 3.15170051692985
           }
         ],
         "segment_metrics_summary": {
           "num_segments": 1,
-          "avg_server_fcl_sec": 1.3814881969671695,
-          "avg_translation_latency_sec": 0.0758912421297282,
-          "avg_asr_inference_sec": 0.4827111635822803
+          "avg_server_fcl_sec": null,
+          "avg_translation_latency_sec": null,
+          "avg_asr_inference_sec": null
         }
       },
       {
@@ -82,70 +73,49 @@
         "audio_path": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/DailyTalk/audio/0_0_d1080.wav",
         "reference": "Good morning, Madam. <SEG> What can I do for you?",
         "hypothesis": "Good morning, madam. What can I do for you?",
-        "hyp_commit": "Good morning, madam. What can I do for you? <vad>",
+        "hyp_commit": "Good morning, madam. <SEG> What can I do for you? <SEG>",
         "duration": 2.0460625,
-        "total_time": 3.354859038023278,
-        "first_token_latency": 3.3548587660770863,
-        "model_runtime": 1.308796538023278,
+        "total_time": 3.6523380000144243,
+        "first_token_latency": 3.6519899680279195,
+        "model_runtime": 1.6062755000144242,
         "target_lang": "ko",
         "segment_metrics": [
           {
-            "segment_id": 1,
-            "text": "Good morning, madam. What can I do for you?",
-            "translation": "좋은 아침입니다, 부인. 제가 당신을 위해 무엇을 도와드릴까요?",
-            "commit_reason": "vad",
+            "segment_id": null,
+            "text": "Good morning, madam.",
+            "translation": "좋은 아침입니다, 부인.",
+            "commit_reason": "SEG",
             "audio_start_sec": 0.0,
-            "audio_end_sec": 1.9740624999999998,
-            "server_translate_started_elapsed_sec": 3.276409573154524,
-            "server_translate_done_elapsed_sec": 3.3518665751907974,
-            "translation_latency_sec": 0.07545700203627348,
-            "asr_inference_sec": 0.8999392825644463,
-            "server_fcl_sec": 1.3778040751907976,
-            "final_payload_wall_utc": "2026-04-11T11:22:53.523697+00:00",
-            "client_final_received_elapsed_sec": 3.354860318126157
-          }
-        ],
-        "segment_metrics_summary": {
-          "num_segments": 1,
-          "avg_server_fcl_sec": 1.3778040751907976,
-          "avg_translation_latency_sec": 0.07545700203627348,
-          "avg_asr_inference_sec": 0.8999392825644463
-        }
-      },
-      {
-        "file_id": "0_0_d1084",
-        "speaker_id": "d1084",
-        "audio_path": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/DailyTalk/audio/0_0_d1084.wav",
-        "reference": "So, Paula, where are you from?",
-        "hypothesis": "So, Paula, where are you from?",
-        "hyp_commit": "So, Paula, where are you from? <vad>",
-        "duration": 2.746125,
-        "total_time": 3.97695216210559,
-        "first_token_latency": 3.976952034048736,
-        "model_runtime": 1.23082716210559,
-        "target_lang": "ko",
-        "segment_metrics": [
+            "audio_end_sec": 2.85,
+            "server_translate_started_elapsed_sec": null,
+            "server_translate_done_elapsed_sec": null,
+            "translation_latency_sec": null,
+            "asr_inference_sec": null,
+            "server_fcl_sec": null,
+            "final_payload_wall_utc": null,
+            "client_final_received_elapsed_sec": 3.6519916160032153
+          },
           {
-            "segment_id": 1,
-            "text": "So, Paula, where are you from?",
-            "translation": "그래, 폴라, 넌 어디서 왔니?",
-            "commit_reason": "vad",
+            "segment_id": null,
+            "text": "What can I do for you?",
+            "translation": "제가 당신을 위해 무엇을 도와드릴까요?",
+            "commit_reason": "SEG",
             "audio_start_sec": 0.0,
-            "audio_end_sec": 2.578125,
-            "server_translate_started_elapsed_sec": 3.896259546978399,
-            "server_translate_done_elapsed_sec": 3.9739683710504323,
-            "translation_latency_sec": 0.07770882407203317,
-            "asr_inference_sec": 0.709466113243252,
-            "server_fcl_sec": 1.3958433710504323,
-            "final_payload_wall_utc": "2026-04-11T11:23:02.541637+00:00",
-            "client_final_received_elapsed_sec": 3.9769531381316483
+            "audio_end_sec": 2.85,
+            "server_translate_started_elapsed_sec": null,
+            "server_translate_done_elapsed_sec": null,
+            "translation_latency_sec": null,
+            "asr_inference_sec": null,
+            "server_fcl_sec": null,
+            "final_payload_wall_utc": null,
+            "client_final_received_elapsed_sec": 3.6523386240005493
           }
         ],
         "segment_metrics_summary": {
-          "num_segments": 1,
-          "avg_server_fcl_sec": 1.3958433710504323,
-          "avg_translation_latency_sec": 0.07770882407203317,
-          "avg_asr_inference_sec": 0.709466113243252
+          "num_segments": 2,
+          "avg_server_fcl_sec": null,
+          "avg_translation_latency_sec": null,
+          "avg_asr_inference_sec": null
         }
       }
     ]

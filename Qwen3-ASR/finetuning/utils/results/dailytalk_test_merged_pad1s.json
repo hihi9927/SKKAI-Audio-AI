@@ -1,0 +1,59 @@
+{
+  "stats": {
+    "checkpoint": "../Qwen3-ASR-1.7B-en-merged",
+    "base_model": "../Qwen3-ASR-1.7B-en-merged",
+    "language": "English"
+  },
+  "data": [
+    {
+      "file": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/DailyTalk/split_audio_test/split_0_1_d1061.wav",
+      "text": "Hi, how’re",
+      "finetuned_text": "Hi, how are"
+    },
+    {
+      "file": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/DailyTalk/audio/1_0_d1061.wav",
+      "text": "Terrible.",
+      "finetuned_text": "Terrible! <SEG>"
+    },
+    {
+      "file": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/DailyTalk/audio/2_1_d1061.wav",
+      "text": "Oh, what’s the matter?",
+      "finetuned_text": "Oh, what's the matter? <SEG>"
+    },
+    {
+      "file": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/DailyTalk/split_audio_test/split_3_0_d1061.wav",
+      "text": "I’ve got",
+      "finetuned_text": "I've got"
+    },
+    {
+      "file": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/DailyTalk/split_audio_test/split_4_1_d1061.wav",
+      "text": "Oh, that’s too bad. Why don’t you take",
+      "finetuned_text": "Oh, that's too bad. <SEG> Why don't you take... <SEG>"
+    },
+    {
+      "file": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/DailyTalk/audio/5_0_d1061.wav",
+      "text": "I’ve already tried some  but it didn’t help.",
+      "finetuned_text": "I've already tried some, <SEG> but it didn't help. <SEG>"
+    },
+    {
+      "file": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/DailyTalk/audio/6_1_d1061.wav",
+      "text": "Well, it’s necessary for you to see a doctor.",
+      "finetuned_text": "Well, it's necessary for you to see a doctor. <SEG>"
+    },
+    {
+      "file": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/DailyTalk/split_audio_test/split_7_0_d1061.wav",
+      "text": "Yeah, I guess",
+      "finetuned_text": "Yeah, I guess I"
+    },
+    {
+      "file": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/DailyTalk/split_audio_test/split_8_1_d1061.wav",
+      "text": "Well, you’d better",
+      "finetuned_text": "Well, you'd better"
+    },
+    {
+      "file": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/data/DailyTalk/split_audio_test/split_9_0_d1061.wav",
+      "text": "Thank you",
+      "finetuned_text": "Thank you. <SEG>"
+    }
+  ]
+}
