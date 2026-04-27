@@ -1,0 +1,9 @@
+2026-04-15 16:30:39.129 [CONNECTION] start lang=auto targetLang=ko
+2026-04-15 16:30:41.362 [PARTIAL] t=2.000s | My dear Prudence, I
+2026-04-15 16:30:43.462 [PARTIAL] t=4.000s | My dear Prudence, I answered, you do not know what you
+2026-04-15 16:30:44.946 [VAD_COMMIT] audio_end_sec=5.642s → speech_end_sec=4.842s
+2026-04-15 16:30:45.292 [FINAL] seg=1 reason=vad audio=[0.000, 4.842] fcl=1.321s asr=0.766s translation_latency=0.075s | text='My dear Prudence, I answered, you do not know what you are saying.' | translation='친애하는 프루던스야, 나는 대답했다. 당신은 당신이 무슨 말을 하는지 모르고 있는 것입니다.'
+2026-04-15 16:30:47.219 [PARTIAL] t=7.810s | I'm sorry, but I can't help you.
+2026-04-15 16:30:47.285 [FINAL] seg=2 reason=seg audio=[4.842, 7.810] fcl=0.346s asr=0.272s translation_latency=0.066s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-04-15 16:30:49.312 [PARTIAL] t=9.810s | I'm afraid I can't help you.
+2026-04-15 16:30:49.645 [CONNECTION] closed

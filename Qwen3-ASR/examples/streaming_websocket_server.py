@@ -840,6 +840,7 @@ class Qwen3ASRStreamingHandler:
             await self._process_slot_updates(old_active, emit_partial=False)
             await self.flush_uncommitted(force=True, reason="vad", slot_key=old_active)
             self._reset_stream_slot(self.standby_slot)
+            await self._on_vad_done(old_active)
 
             seg_start = local_cut
 
@@ -849,14 +850,7 @@ class Qwen3ASRStreamingHandler:
             await self._process_slot_updates(self.active_slot, emit_partial=True)
 
     async def finish_streaming(self):
-        if not self.stream_slots:
-            return
-        # VAD 커밋 후 슬롯이 전환된 경우, 새 active slot은 trailing silence만 포함할 수 있음.
-        # partial 텍스트가 없으면 finish pass를 실행하지 않아 hallucination 방지.
-        slot = self._slot(self.active_slot)
-        if slot["last_text"]:
-            await self._asr_finish_streaming(self.active_slot)
-        await self.flush_uncommitted(force=True, reason="finish", slot_key=self.active_slot)
+        pass
 
     # ── 서브클래스 훅 ──────────────────────────────────────────────────────────
 
@@ -880,6 +874,10 @@ class Qwen3ASRStreamingHandler:
 
     async def _on_vad_commit(self, audio_end_sec: float) -> None:  # noqa: ARG002
         """VAD 발화 종료 커밋 직전에 호출되는 훅. 서브클래스에서 오버라이드 가능."""
+        pass
+
+    async def _on_vad_done(self, slot_key: str) -> None:  # noqa: ARG002
+        """VAD 발화 종료 플러시 완료 후 호출되는 훅. 서브클래스에서 오버라이드 가능."""
         pass
 
     async def _emit_final_payload(

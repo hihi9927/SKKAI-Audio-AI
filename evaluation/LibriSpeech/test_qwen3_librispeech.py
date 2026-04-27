@@ -382,16 +382,20 @@ def summarize_segment_metrics(segment_metrics):
     summary = {
         'num_segments': len(segment_metrics),
         'avg_server_fcl_sec': mean(_vals('server_fcl_sec')) if _vals('server_fcl_sec') else None,
+        'avg_commit_delay_sec': mean(_vals('commit_delay_sec')) if _vals('commit_delay_sec') else None,
         'avg_translation_latency_sec': mean(_vals('translation_latency_sec')) if _vals('translation_latency_sec') else None,
         'avg_asr_inference_sec': mean(_vals('asr_inference_sec')) if _vals('asr_inference_sec') else None,
     }
     return summary
 
 
-async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_ms=200, target_lang='ko', trailing_silence_ms=1000):
+async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_ms=200, target_lang='ko', trailing_silence_ms=5500, log_path=None):
     processing_start = time.perf_counter()
 
-    await ws.send(json.dumps({'type': 'start', 'lang': 'auto', 'targetLang': target_lang}))
+    start_msg = {'type': 'start', 'lang': 'auto', 'targetLang': target_lang}
+    if log_path:
+        start_msg['logPath'] = log_path
+    await ws.send(json.dumps(start_msg))
     await recv_type(ws, 'ready', timeout=25, ignore_types={'partial', 'final'})
 
     audio_int16 = (np.clip(audio_data, -1.0, 1.0) * 32767.0).astype(np.int16)
@@ -401,10 +405,11 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
     finals = []
     segment_events = []
     segment_metrics = []
-    partial_last = ''
     first_result_time = None
     last_result_time = None
     send_done = asyncio.Event()
+    real_audio_done = asyncio.Event()
+    vad_done_event = asyncio.Event()
 
     async def _send():
         stream_origin = time.perf_counter()
@@ -422,7 +427,9 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
 
             await ws.send(chunk.tobytes())
 
-        # Append trailing silence so VAD can fire naturally before finish
+        real_audio_done.set()
+
+        # Append trailing silence so VAD can fire naturally
         if trailing_silence_ms > 0:
             silence = np.zeros(int(SAMPLING_RATE * trailing_silence_ms / 1000), dtype=np.int16)
             silence_origin = time.perf_counter()
@@ -436,27 +443,21 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
                             break
                         await asyncio.sleep(min(remaining, 0.02))
                 await ws.send(chunk.tobytes())
-            # 마지막 silence 청크 전송 후 서버 VAD 처리 대기
-            # VAD_MIN_SILENCE_MS(800ms) + 처리 여유 시간
-            await asyncio.sleep(0.5)
 
-        await ws.send(json.dumps({'type': 'finish'}))
         send_done.set()
 
     async def _recv():
-        nonlocal partial_last, first_result_time, last_result_time
-        absolute_deadline = processing_start + 120
-        idle_deadline = time.perf_counter() + 30
+        nonlocal first_result_time, last_result_time
 
-        while time.perf_counter() < absolute_deadline and time.perf_counter() < idle_deadline:
+        while True:
             try:
-                msg = await asyncio.wait_for(ws.recv(), timeout=1.0)
+                msg = await asyncio.wait_for(ws.recv(), timeout=0.5)
             except asyncio.TimeoutError:
                 if send_done.is_set():
-                    idle_deadline = min(idle_deadline, time.perf_counter() + 10)
-                    if time.perf_counter() > idle_deadline:
-                        break
+                    break
                 continue
+            except Exception:
+                break  # ConnectionClosed 등
 
             if not isinstance(msg, str):
                 continue
@@ -464,13 +465,19 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
             data = json.loads(msg)
             msg_type = data.get('type', '')
 
-            if msg_type == 'final':
+            if msg_type == 'vad_done':
+                if real_audio_done.is_set():
+                    vad_done_event.set()
+                    break
+                # 실제 오디오 전송 중 자연 묵음 VAD — 무시
+                continue
+
+            elif msg_type == 'final':
                 if first_result_time is None:
                     first_result_time = time.perf_counter()
                 last_result_time = time.perf_counter()
                 text = (data.get('original') or '').strip()
                 if text:
-                    partial_last = ''
                     receive_elapsed_sec = time.perf_counter() - processing_start
                     audio_start_sec = data.get('audioStartSec')
                     audio_end_sec = data.get('audioEndSec')
@@ -501,49 +508,17 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
                         'translation_latency_sec': data.get('translation_latency_sec'),
                         'asr_inference_sec': data.get('asr_inference_sec'),
                         'server_fcl_sec': data.get('fcl_sec'),
+                        'commit_delay_sec': (
+                            max(0.0, data['translate_started_elapsed_sec'] - audio_end_sec)
+                            if data.get('translate_started_elapsed_sec') is not None and audio_end_sec is not None
+                            else None
+                        ),
                         'final_payload_wall_utc': data.get('final_payload_wall_utc'),
                         'client_final_received_elapsed_sec': receive_elapsed_sec,
                     })
-                    if send_done.is_set():
-                        idle_deadline = time.perf_counter() + 5
 
-            elif msg_type == 'partial':
-                text = (data.get('original') or '').strip()
-                if text:
-                    partial_last = text
-                    if send_done.is_set():
-                        idle_deadline = time.perf_counter() + 3
-
-            elif msg_type == 'ready':
-                idle_deadline = min(idle_deadline, time.perf_counter() + 0.5)
 
     await asyncio.gather(_send(), _recv())
-
-    if not finals and partial_last:
-        finals = [partial_last]
-        segment_events = [{'text': partial_last, 'tag': 'seg'}]
-    else:
-        finals, segment_events, partial_used_as_tail = merge_trailing_partial(
-            finals,
-            segment_events,
-            partial_last,
-        )
-        if partial_used_as_tail:
-            segment_metrics.append({
-                'segment_id': None,
-                'text': partial_last.strip(),
-                'translation': '',
-                'commit_reason': 'partial_tail',
-                'audio_start_sec': None,
-                'audio_end_sec': None,
-                'server_translate_started_elapsed_sec': None,
-                'server_translate_done_elapsed_sec': None,
-                'translation_latency_sec': None,
-                'asr_inference_sec': None,
-                'server_fcl_sec': None,
-                'final_payload_wall_utc': None,
-                'client_final_received_elapsed_sec': None,
-            })
 
     total_time = (last_result_time - processing_start) if last_result_time else (time.perf_counter() - processing_start)
     first_token_latency = (first_result_time - processing_start) if first_result_time else None
@@ -570,7 +545,9 @@ async def process_batch(
     show_commit_slash=True,
     resume=True,
     target_lang='ko',
-    trailing_silence_ms=1000,
+    trailing_silence_ms=5500,
+    log_sample_n=10,
+    log_sample_seed=42,
 ):
     if resume:
         processed_ids = load_processed_files(output_file, policy)
@@ -584,6 +561,14 @@ async def process_batch(
     if not targets:
         logger.info('No files to process.')
         return []
+
+    # Pre-select files for per-connection log capture
+    import random as _random
+    _rng = _random.Random(log_sample_seed)
+    all_target_ids = [f['file_id'] for f in targets]
+    log_sample_ids = set(_rng.sample(all_target_ids, min(log_sample_n, len(all_target_ids))))
+    plots_dir = Path(output_file).parent / "plots"
+    logger.info('Log capture enabled for %d sampled files → %s', len(log_sample_ids), plots_dir)
 
     # Load existing results so incremental saves include everything
     all_results = []
@@ -609,6 +594,8 @@ async def process_batch(
 
         duration = len(audio) / SAMPLING_RATE
 
+        log_path = str(plots_dir / f"{file_id}.log") if file_id in log_sample_ids else None
+
         try:
             async with websockets.connect(ws_url, ping_interval=None, ping_timeout=None, max_size=10 * 1024 * 1024) as ws:
                 await recv_type(ws, 'hello', timeout=8)
@@ -619,6 +606,7 @@ async def process_batch(
                     send_interval_ms=send_interval_ms,
                     target_lang=target_lang,
                     trailing_silence_ms=trailing_silence_ms,
+                    log_path=log_path,
                 )
         except Exception as e:
             logger.error('WebSocket processing failed for %s: %s', file_id, e)
@@ -703,6 +691,7 @@ def build_summary_payload(results, policy):
         lat = [r['first_token_latency'] for r in rows if r['first_token_latency'] is not None]
         model_runtime = [r['model_runtime'] for r in rows if r.get('model_runtime') is not None]
         speaker_fcl = _collect_segment_metric('server_fcl_sec', rows)
+        speaker_commit_delay = _collect_segment_metric('commit_delay_sec', rows)
         speaker_translation = _collect_segment_metric('translation_latency_sec', rows)
         speaker_asr = _collect_segment_metric('asr_inference_sec', rows)
         speaker_tokens = _collect_segment_metric('output_token_count', rows)
@@ -713,6 +702,7 @@ def build_summary_payload(results, policy):
             'first_token_latency': mean(lat) if lat else None,
             'model_runtime': mean(model_runtime) if model_runtime else None,
             'avg_server_fcl_sec': mean(speaker_fcl) if speaker_fcl else None,
+            'avg_commit_delay_sec': mean(speaker_commit_delay) if speaker_commit_delay else None,
             'avg_translation_latency_sec': mean(speaker_translation) if speaker_translation else None,
             'avg_asr_inference_sec': mean(speaker_asr) if speaker_asr else None,
             'avg_output_tokens_per_commit': mean(speaker_tokens) if speaker_tokens else None,
@@ -722,6 +712,7 @@ def build_summary_payload(results, policy):
     all_lat = [r['first_token_latency'] for r in results if r['first_token_latency'] is not None]
     all_model_runtime = [r['model_runtime'] for r in results if r.get('model_runtime') is not None]
     all_server_fcl = _collect_segment_metric('server_fcl_sec', results)
+    all_commit_delay = _collect_segment_metric('commit_delay_sec', results)
     all_translation = _collect_segment_metric('translation_latency_sec', results)
     all_asr = _collect_segment_metric('asr_inference_sec', results)
     all_tokens = _collect_segment_metric('output_token_count', results)
@@ -736,6 +727,7 @@ def build_summary_payload(results, policy):
             'first_token_latency': mean(all_lat) if all_lat else None,
             'model_runtime': mean(all_model_runtime) if all_model_runtime else None,
             'avg_server_fcl_sec': mean(all_server_fcl) if all_server_fcl else None,
+            'avg_commit_delay_sec': mean(all_commit_delay) if all_commit_delay else None,
             'avg_translation_latency_sec': mean(all_translation) if all_translation else None,
             'avg_asr_inference_sec': mean(all_asr) if all_asr else None,
             'avg_output_tokens_per_commit': mean(all_tokens) if all_tokens else None,
@@ -834,6 +826,8 @@ def main():
     parser.add_argument('--common-files', type=str, default=None)
     parser.add_argument('--random-sample', type=int, default=None)
     parser.add_argument('--random-seed', type=int, default=42)
+    parser.add_argument('--log-sample-n', type=int, default=10,
+                        help='Number of files to save per-connection server logs for (default: 10). Set to 0 for all files.')
     parser.add_argument('--skip-protocol-smoke', action='store_true')
     parser.add_argument('--chunk-size-ms', type=int, default=200,
                         help='Audio chunk size in ms for streaming send (default: 200)')
@@ -843,7 +837,7 @@ def main():
                         help='Show commit boundaries as \"seg1 / seg2 /\" in logs')
     parser.add_argument('--fresh-start', action='store_true', default=False,
                         help='Ignore existing results and process all files from scratch')
-    parser.add_argument('--trailing-silence-ms', type=int, default=1000,
+    parser.add_argument('--trailing-silence-ms', type=int, default=5500,
                         help='Silence (ms) appended after each audio file so VAD fires before finish (default: 1000)')
 
     args = parser.parse_args()
@@ -903,6 +897,7 @@ def main():
                 resume=not args.fresh_start,
                 target_lang=args.target_lang,
                 trailing_silence_ms=args.trailing_silence_ms,
+                log_sample_n=args.log_sample_n if args.log_sample_n > 0 else 999999,
             )
         )
         if args.calculate_wer and results:
