@@ -114,7 +114,7 @@ def translate_segments_with_context(
                 instructions=system_prompt,
                 input=user_content,
                 reasoning={"effort": "none"},
-                temperature=0,
+            temperature=0,
             )
             t = response.output_text.strip()
             translations.append(t)
