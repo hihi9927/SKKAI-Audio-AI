@@ -378,7 +378,6 @@ class Qwen3ASRStreamingHandler:
         self.asr_lock = asyncio.Lock()
         self.http_session: Optional[aiohttp.ClientSession] = None
         self.session_logger: Optional[SessionLogger] = None
-        self._seg_watcher_task: Optional[asyncio.Task] = None
 
         # Commit 방식 설정
         self.enable_dot_commit: bool = config.enable_dot_commit
@@ -442,10 +441,6 @@ class Qwen3ASRStreamingHandler:
         if self.vad_iterator is not None:
             self.vad_iterator.reset_states()
 
-        # cancel previous seg watcher
-        if self._seg_watcher_task and not self._seg_watcher_task.done():
-            self._seg_watcher_task.cancel()
-        self._seg_watcher_task = None
     
     def _new_stream_slot(self) -> dict:
         return {
@@ -521,10 +516,16 @@ class Qwen3ASRStreamingHandler:
 
     async def _asr_streaming_transcribe(self, chunk: np.ndarray, slot_key: Optional[str] = None):
         slot = self._slot(slot_key)
-        async with self.asr_lock:
-            lora_request = self._get_lora_request(slot["state"])
-            await self.asr.streaming_transcribe(chunk, slot["state"], lora_request=lora_request)
-            self.asr_processed_cursor = self.sample_cursor
+        lora_request = self._get_lora_request(slot["state"])
+        _slot_key = slot_key or self.active_slot
+
+        async def on_partial(_state):
+            await self._process_slot_updates(_slot_key, emit_partial=True)
+
+        await self.asr.streaming_transcribe(
+            chunk, slot["state"], lora_request=lora_request, on_partial=on_partial
+        )
+        self.asr_processed_cursor = self.sample_cursor
 
     async def _asr_finish_streaming(self, slot_key: Optional[str] = None):
         slot = self._slot(slot_key)
@@ -546,14 +547,12 @@ class Qwen3ASRStreamingHandler:
         slot = self._slot(slot_key)
         slot_flush_lock = slot["flush_lock"]
 
-        # 1단계: 텍스트 스냅샷만 lock 안에서 읽기
         async with slot_flush_lock:
-            async with self.asr_lock:
-                state = slot["state"]
-                current_text = (state.text or "").strip() if state else ""
-                if "<asr_text>" in current_text:
-                    current_text = current_text.split("<asr_text>", 1)[-1].strip()
-                current_lang = slot["last_text_lang"] or ""
+            state = slot["state"]
+            current_text = (state.text or "").strip() if state else ""
+            if "<asr_text>" in current_text:
+                current_text = current_text.split("<asr_text>", 1)[-1].strip()
+            current_lang = slot["last_text_lang"] or ""
             uncommitted_raw = self._sync_committed_boundary(slot, current_text)
             snapshot_committed_len = slot["committed_len"]
             uncommitted_display = re.sub(r'\s+', ' ', uncommitted_raw.replace("<SEG>", "")).strip() if uncommitted_raw is not None else ""
@@ -715,9 +714,8 @@ class Qwen3ASRStreamingHandler:
 
             ready_to_emit = []
             async with slot["flush_lock"]:
-                async with self.asr_lock:
-                    latest_state = slot["state"]
-                    latest_text = (latest_state.text or "").strip() if latest_state else ""
+                latest_state = slot["state"]
+                latest_text = (latest_state.text or "").strip() if latest_state else ""
 
                 cursor = slot["committed_len"]
                 tail = latest_text[cursor:]
@@ -857,17 +855,6 @@ class Qwen3ASRStreamingHandler:
     async def finish_streaming(self):
         pass
 
-    async def _seg_watcher_loop(self):
-        """0.5초마다 active slot의 uncommitted 텍스트에서 <SEG>를 감지해 즉시 commit."""
-        while self.running:
-            await asyncio.sleep(0.5)
-            if not self.running:
-                break
-            try:
-                await self._process_slot_updates(self.active_slot, emit_partial=False)
-            except Exception as e:
-                self.log.warning(f"[seg-watcher] error: {e}")
-
     # ── 서브클래스 훅 ──────────────────────────────────────────────────────────
 
     async def _translate(
@@ -955,7 +942,6 @@ class Qwen3ASRStreamingHandler:
 
                             self.init_streaming_state()
                             self.running = True
-                            self._seg_watcher_task = asyncio.create_task(self._seg_watcher_loop())
                             await self.send_message(
                                 "ready", message="Ready to receive audio"
                             )
@@ -971,7 +957,6 @@ class Qwen3ASRStreamingHandler:
                             # finish → 상태 리셋 후 재시작
                             self.init_streaming_state()
                             self.running = True
-                            self._seg_watcher_task = asyncio.create_task(self._seg_watcher_loop())
 
                         elif msg_type == "pair_host":
                             room_id = (data.get("roomId") or "").strip()
@@ -1043,8 +1028,6 @@ class Qwen3ASRStreamingHandler:
         finally:
             was_running = self.running
             self.running = False
-            if self._seg_watcher_task and not self._seg_watcher_task.done():
-                self._seg_watcher_task.cancel()
             if was_running:
                 await self.finish_streaming()
             if self.http_session is not None:
