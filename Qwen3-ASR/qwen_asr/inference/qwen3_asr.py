@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Union
 
 import asyncio
+import time
 import uuid
 
 import numpy as np
@@ -673,7 +674,7 @@ class Qwen3ASRModel:
             _raw_decoded="",
         )
 
-    async def streaming_transcribe(self, pcm16k: np.ndarray, state: ASRStreamingState, lora_request=None) -> ASRStreamingState:
+    async def streaming_transcribe(self, pcm16k: np.ndarray, state: ASRStreamingState, lora_request=None, on_partial=None) -> ASRStreamingState:
         """
         Streaming ASR decode step.
 
@@ -771,13 +772,23 @@ class Qwen3ASRModel:
 
             request_id = str(uuid.uuid4())
             final = None
+            last_partial_t = 0.0
             async for out in self.model.generate(inp, self.sampling_params, request_id=request_id, lora_request=lora_request):
                 final = out
+                if on_partial and not out.finished:
+                    now = time.monotonic()
+                    if now - last_partial_t >= 0.5:
+                        gen_text_partial = out.outputs[0].text
+                        raw_partial = (prefix + gen_text_partial) if prefix is not None else gen_text_partial
+                        lang_p, txt_p = parse_asr_output(raw_partial, user_language=state.force_language)
+                        state.language = lang_p
+                        state.text = txt_p
+                        await on_partial(state)
+                        last_partial_t = now
+
+            # Finalize with completed output
             gen_text = final.outputs[0].text
-
-            # Accumulate raw decoded (then parse to lang/text)
             state._raw_decoded = (prefix + gen_text) if prefix is not None else gen_text
-
             lang, txt = parse_asr_output(state._raw_decoded, user_language=state.force_language)
             state.language = lang
             state.text = txt

@@ -378,7 +378,6 @@ class Qwen3ASRStreamingHandler:
         self.asr_lock = asyncio.Lock()
         self.http_session: Optional[aiohttp.ClientSession] = None
         self.session_logger: Optional[SessionLogger] = None
-        self._seg_watcher_task: Optional[asyncio.Task] = None
 
         # Commit 방식 설정
         self.enable_dot_commit: bool = config.enable_dot_commit
@@ -441,11 +440,6 @@ class Qwen3ASRStreamingHandler:
         self.asr_processed_cursor = 0
         if self.vad_iterator is not None:
             self.vad_iterator.reset_states()
-
-        # cancel previous seg watcher
-        if self._seg_watcher_task and not self._seg_watcher_task.done():
-            self._seg_watcher_task.cancel()
-        self._seg_watcher_task = None
     
     def _new_stream_slot(self) -> dict:
         return {
@@ -471,44 +465,40 @@ class Qwen3ASRStreamingHandler:
         key = slot_key or self.active_slot
         return self.stream_slots[key]
 
-    def _sync_committed_boundary(self, slot: dict, current_text: str) -> str:
-        """committed 경계를 current_text에 동기화하고 uncommitted 텍스트를 반환.
+    @staticmethod
+    def _uncommitted_from(current_text: str, committed_display: str,
+                          committed_seg_count: int = 0) -> str:
+        """committed 경계 이후의 current_text를 반환.
 
-        모델이 커밋된 텍스트를 수정한 경우 committed 상태를 마지막 유효한 SEG 경계로 롤백.
-        slot 상태를 직접 수정한다.
+        1차: committed_display(SEG 제거 기준) prefix 매칭
+        2차(fallback): committed_seg_count 번째 <SEG> 이후 텍스트
+        모델이 이전 텍스트를 수정해 display가 달라져도 SEG 카운트로 안전하게 찾는다.
         """
         seg_tag = "<SEG>"
-        committed_prefix = slot["committed_prefix"]
+        seg_len = len(seg_tag)
 
-        # 1차: committed_prefix raw 직접 매칭
-        if committed_prefix and current_text.startswith(committed_prefix):
-            return current_text[len(committed_prefix):]
+        # ── 1차: display prefix 매칭 ──────────────────────────────────────
+        if committed_display:
+            current_no_seg = current_text.replace(seg_tag, "")
+            if current_no_seg.startswith(committed_display):
+                pos, disp_pos, target = 0, 0, len(committed_display)
+                while pos < len(current_text) and disp_pos < target:
+                    if current_text[pos:pos + seg_len] == seg_tag:
+                        pos += seg_len
+                    else:
+                        disp_pos += 1
+                        pos += 1
+                return current_text[pos:]
 
-        # 2차: SEG 경계 후퇴 매칭
-        # 모델이 마지막 SEG를 수정한 경우 이전 유효 경계로 롤백
-        if committed_prefix:
-            pos, last_match = 0, ""
-            while True:
-                idx = committed_prefix.find(seg_tag, pos)
-                if idx == -1:
-                    break
-                boundary = committed_prefix[:idx + len(seg_tag)]
-                if current_text.startswith(boundary):
-                    last_match = boundary
-                pos = idx + len(seg_tag)
-
-            if last_match:
-                slot["committed_prefix"] = last_match
-                slot["committed_len"] = len(last_match)
-                slot["committed_seg_count"] = last_match.count(seg_tag)
-                slot["committed_display"] = re.sub(
-                    r'\s+', ' ', last_match.replace(seg_tag, "")
-                ).strip()
-                self.log.info(f"[boundary-rollback] to ...'{last_match[-40:]}'")
-                return current_text[len(last_match):]
-
-        # 3차: 매칭 없음 → 전체를 uncommitted로
-        return current_text
+        # ── 2차 fallback: SEG 카운트 기준 ───────────────────────────────
+        pos, found = 0, 0
+        while found < committed_seg_count:
+            idx = current_text.find(seg_tag, pos)
+            if idx == -1:
+                return ""  # 커밋된 SEG 수보다 현재 텍스트의 SEG가 적음 → 모두 커밋됨
+            pos = idx + seg_len
+            found += 1
+        return current_text[pos:]
 
     def _get_lora_request(self, state):
         """언어에 따라 적절한 LoRA 어댑터 반환. 미지원 언어는 None(기본 모델)."""
@@ -554,8 +544,12 @@ class Qwen3ASRStreamingHandler:
                 if "<asr_text>" in current_text:
                     current_text = current_text.split("<asr_text>", 1)[-1].strip()
                 current_lang = slot["last_text_lang"] or ""
-            uncommitted_raw = self._sync_committed_boundary(slot, current_text)
             snapshot_committed_len = slot["committed_len"]
+            snapshot_committed_display = slot["committed_display"]
+            snapshot_committed_seg_count = slot["committed_seg_count"]
+            uncommitted_raw = self._uncommitted_from(
+                current_text, snapshot_committed_display, snapshot_committed_seg_count
+            )
             uncommitted_display = re.sub(r'\s+', ' ', uncommitted_raw.replace("<SEG>", "")).strip() if uncommitted_raw is not None else ""
             if not uncommitted_display:
                 return
@@ -637,16 +631,21 @@ class Qwen3ASRStreamingHandler:
         slot["last_text"] = current_text
         slot["last_text_lang"] = current_lang
 
-        uncommitted = self._sync_committed_boundary(slot, current_text)
+        # 문장 단위 commit
+        # committed_display/seg_count 기준으로 uncommitted 구간 계산 (모델 텍스트 수정에도 안전)
+        uncommitted = self._uncommitted_from(
+            current_text, slot["committed_display"], slot["committed_seg_count"]
+        )
 
         if emit_partial:
+            # 이미 커밋된 부분은 제외하고 uncommitted 부분만 partial로 전송
             partial_text = re.sub(r'\s+', ' ', uncommitted.replace("<SEG>", "")).strip()
             await self.send_message(
                 "partial",
                 original=partial_text,
                 last_translation="",
             )
-            self.log.info(f"[partial] slot={slot_key} partial='{partial_text[:80]}'")
+            self.log.info(f"[partial] slot={slot_key} text={current_text[:80]}...")
         sentences_to_commit = []
         remaining = uncommitted
 
@@ -678,9 +677,8 @@ class Qwen3ASRStreamingHandler:
             remaining = after
 
         if sentences_to_commit:
-            triggers = set(t for _, t in sentences_to_commit)
             self.log.info(
-                f"[commit-detect] slot={slot_key} triggers={triggers} raw={current_text[:120]}..."
+                f"[seg-detect] slot={slot_key} raw={current_text[:120]}..."
             )
             translated_payloads = []
             for sentence_raw, trigger_reason in sentences_to_commit:
@@ -738,9 +736,7 @@ class Qwen3ASRStreamingHandler:
                     slot["committed_display"] = re.sub(
                         r'\s+', ' ', slot["committed_prefix"].replace("<SEG>", "")
                     ).strip()
-                    slot["committed_seg_count"] += sum(
-                        p["original_raw"].count("<SEG>") for p in ready_to_emit
-                    )
+                    slot["committed_seg_count"] += len(ready_to_emit)
 
             for payload in ready_to_emit:
                 await self._emit_final_payload(
@@ -752,10 +748,9 @@ class Qwen3ASRStreamingHandler:
                     audio_end_sec=self.current_time,
                     extra=payload.get("extra"),
                 )
-                trigger = payload["trigger_reason"].upper()
                 self.log.info(
-                    f"[final/{trigger}] slot={slot_key} lang={payload['language']} "
-                    f"text='{payload['original']}'"
+                    f"[final-sentence/{payload['trigger_reason'].upper()}] slot={slot_key} lang={payload['language']} "
+                    f"text={payload['original']}"
                 )
 
     def _run_vad_sync(self, chunk: np.ndarray, chunk_base_sample: int):
@@ -857,17 +852,6 @@ class Qwen3ASRStreamingHandler:
     async def finish_streaming(self):
         pass
 
-    async def _seg_watcher_loop(self):
-        """0.5초마다 active slot의 uncommitted 텍스트에서 <SEG>를 감지해 즉시 commit."""
-        while self.running:
-            await asyncio.sleep(0.5)
-            if not self.running:
-                break
-            try:
-                await self._process_slot_updates(self.active_slot, emit_partial=False)
-            except Exception as e:
-                self.log.warning(f"[seg-watcher] error: {e}")
-
     # ── 서브클래스 훅 ──────────────────────────────────────────────────────────
 
     async def _translate(
@@ -955,7 +939,6 @@ class Qwen3ASRStreamingHandler:
 
                             self.init_streaming_state()
                             self.running = True
-                            self._seg_watcher_task = asyncio.create_task(self._seg_watcher_loop())
                             await self.send_message(
                                 "ready", message="Ready to receive audio"
                             )
@@ -971,7 +954,6 @@ class Qwen3ASRStreamingHandler:
                             # finish → 상태 리셋 후 재시작
                             self.init_streaming_state()
                             self.running = True
-                            self._seg_watcher_task = asyncio.create_task(self._seg_watcher_loop())
 
                         elif msg_type == "pair_host":
                             room_id = (data.get("roomId") or "").strip()
@@ -1043,8 +1025,6 @@ class Qwen3ASRStreamingHandler:
         finally:
             was_running = self.running
             self.running = False
-            if self._seg_watcher_task and not self._seg_watcher_task.done():
-                self._seg_watcher_task.cancel()
             if was_running:
                 await self.finish_streaming()
             if self.http_session is not None:
@@ -1182,12 +1162,11 @@ class Qwen3ASRStreamingServer:
             self.handle_connection,
             self.config.host,
             self.config.port,
-            ping_interval=20,
-            ping_timeout=10,
+            ping_interval=None,
+            ping_timeout=None,
             max_size=10 * 1024 * 1024,
         ):
             logger.info(f"Server listening on ws://{self.config.host}:{self.config.port}")
-            self._restart_idle_timer()
             await asyncio.Future()  # run forever
         
         
@@ -1203,15 +1182,7 @@ class Qwen3ASRStreamingServer:
                             f"[idle-shutdown] {self.IDLE_SHUTDOWN_SEC}초간 "
                             f"접속자 없음 — EC2 종료"
                         )
-                        result = subprocess.run(
-                            ["sudo", "shutdown", "-h", "now"],
-                            capture_output=True, text=True
-                        )
-                        if result.returncode != 0:
-                            logger.error(
-                                f"[idle-shutdown] shutdown 실패 (rc={result.returncode}): "
-                                f"{result.stderr.strip()}"
-                            )
+                        subprocess.run(["sudo", "shutdown", "-h", "now"])
                         return
         except asyncio.CancelledError:
             return

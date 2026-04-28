@@ -24,6 +24,9 @@ SEG_SYSTEM_PROMPT = (
     "- Output ONLY the English translation. No explanations, notes, or alternatives.\n"
     "- The input may be a sentence fragment — translate exactly what is given. Do NOT complete or extend it.\n"
     "- Preserve the natural spoken register (casual/formal) exactly as in the source.\n"
+    "- Korean filler words (음, 어, 그) and disfluencies: translate naturally or omit if they carry no meaning, "
+    "consistent with spoken English convention.\n"
+    "- Proper nouns (names, places, organizations): transliterate consistently.\n"
     "- Translate faithfully — do not add, omit, or infer meaning beyond what is stated."
 )
 
@@ -36,6 +39,10 @@ SEG_CONTEXT_SYSTEM_PROMPT = (
     "- The preceding translations are FINAL. Do NOT reproduce, paraphrase, or continue them.\n"
     "- The new segment may be a grammatical fragment — translate exactly what is given, do NOT complete it.\n"
     "- Match the register, terminology, and tone established in the preceding translations.\n"
+    "- Preserve the natural spoken register (casual/formal) exactly as in the source.\n"
+    "- Korean filler words (음, 어, 그) and disfluencies: translate naturally or omit if they carry no meaning, "
+    "consistent with spoken English convention.\n"
+    "- Proper nouns (names, places, organizations): transliterate consistently with preceding segments.\n"
     "- Translate faithfully — do not add, omit, or infer meaning beyond what is stated."
 )
 
@@ -45,6 +52,9 @@ FULL_SYSTEM_PROMPT = (
     "- Output ONLY the English translation. No explanations, notes, or alternatives.\n"
     "- Translate the entire passage as one coherent unit.\n"
     "- Preserve the natural spoken register (casual/formal) exactly as in the source.\n"
+    "- Korean filler words (음, 어, 그) and disfluencies: translate naturally or omit if they carry no meaning, "
+    "consistent with spoken English convention.\n"
+    "- Proper nouns (names, places, organizations): transliterate consistently.\n"
     "- Translate faithfully — do not add, omit, or infer meaning beyond what is stated."
 )
 
@@ -56,6 +66,7 @@ def translate_full(client: OpenAI, text: str, model: str) -> str | None:
             instructions=FULL_SYSTEM_PROMPT,
             input=text,
             reasoning={"effort": "none"},
+            temperature=0,
         )
         return response.output_text.strip()
     except Exception as e:
@@ -84,8 +95,9 @@ def translate_segments_with_context(
         else:
             context_lines = []
             for j in range(i):
-                context_lines.append(f"[{j+1}] Korean : {segments[j]}")
-                context_lines.append(f"[{j+1}] English: {translations[j] or '(translation unavailable)'}")
+                if translations[j] is None:
+                    continue  # 실패 세그먼트는 컨텍스트에서 제외
+                context_lines.append(f"[{j+1}] KO: {segments[j]} → EN: {translations[j]}")
             context_str = "\n".join(context_lines)
 
             system_prompt = SEG_CONTEXT_SYSTEM_PROMPT
@@ -102,6 +114,7 @@ def translate_segments_with_context(
                 instructions=system_prompt,
                 input=user_content,
                 reasoning={"effort": "none"},
+            temperature=0,
             )
             t = response.output_text.strip()
             translations.append(t)
