@@ -8,10 +8,13 @@ import {
   Alert,
   AppState,
   TouchableOpacity,
+  Animated,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { initTtsEngine, ttsSpeak, ttsStop } from '../utils/tts';
+import { setSpeakerphoneOn, releaseAudioMode } from '../utils/audioRouting';
 import { Ionicons } from '@expo/vector-icons';
 import { TranslationItem } from '../components/TranslationItem';
 import { GradientButton } from '../components/GradientButton';
@@ -78,14 +81,20 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
   const [connectionError, setConnectionError] = useState<string>('');
 
 
-  const { isConnected, connect, sendAudio, disconnect, addMessageListener, sendMessage } = useWebSocketContext();
+  const { isConnected, connect, sendAudio, disconnect, addMessageListener, sendMessage, serverStatus, probeServer } = useWebSocketContext();
   const isConnectedRef = useRef(isConnected);
   const isPausedRef = useRef(isPaused);
+  const serverStatusRef = useRef(serverStatus);
+
+  const [isInitializing, setIsInitializing] = useState(false);
+  const progressAnim = useRef(new Animated.Value(0)).current;
+  const progressAnimRunning = useRef<Animated.CompositeAnimation | null>(null);
   const sendAudioRef = useRef(sendAudio);
   const sendMessageRef = useRef(sendMessage);
 
   useEffect(() => { isConnectedRef.current = isConnected; }, [isConnected]);
   useEffect(() => { isPausedRef.current = isPaused; }, [isPaused]);
+  useEffect(() => { serverStatusRef.current = serverStatus; }, [serverStatus]);
   useEffect(() => { sendAudioRef.current = sendAudio; }, [sendAudio]);
   useEffect(() => { sendMessageRef.current = sendMessage; }, [sendMessage]);
   useEffect(() => { isTTSMutedRef.current = isTTSMuted; }, [isTTSMuted]);
@@ -98,6 +107,26 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
 
   const ttsQueueRef = useRef<{ text: string; lang: string }[]>([]);
   const isSpeakingRef = useRef(false);
+
+  // serverStatus에 따라 진행 바 애니메이션
+  useEffect(() => {
+    if (serverStatus === 'connecting') {
+      progressAnim.setValue(0);
+      progressAnimRunning.current = Animated.timing(progressAnim, {
+        toValue: 0.85,
+        duration: 80000,
+        useNativeDriver: false,
+      });
+      progressAnimRunning.current.start();
+    } else if (serverStatus === 'ready') {
+      progressAnimRunning.current?.stop();
+      Animated.timing(progressAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: false,
+      }).start();
+    }
+  }, [serverStatus]);
 
   // TTS 엔진 초기화 (Samsung 기기 대응)
   useEffect(() => {
@@ -113,12 +142,15 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     const next = ttsQueueRef.current.shift()!;
     const ttsStart = new Date().toISOString();
 
+    const isEarphoneMode = modeRef.current === 'mode-2';
+    if (isEarphoneMode) setSpeakerphoneOn(false);
     ttsSpeak(next.text, next.lang, 1.3,
       () => {
         sendMessageRef.current({ type: 'tts_log', text: next.text, lang: next.lang, start: ttsStart, end: new Date().toISOString() });
         processNextTTS();
       },
       () => processNextTTS(),
+      isEarphoneMode,
     );
   };
 
@@ -210,17 +242,20 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
   useEffect(() => {
     const initSession = async () => {
       setConnectionError('');
-
       try {
-        await connect({
-          lang: myLang.code,
-          targetLang: targetLang.code,
-        });
+        if (serverStatusRef.current !== 'ready') {
+          setIsInitializing(true);
+          await probeServer();
+        }
+        await connect({ lang: myLang.code, targetLang: targetLang.code });
         await startRecording();
+        setSpeakerphoneOn(modeRef.current !== 'mode-2');
       } catch (error: any) {
         console.error('Connection failed:', error);
         setSessionStatus('error');
         setConnectionError(error.message || '연결에 실패했습니다');
+      } finally {
+        setIsInitializing(false);
       }
     };
 
@@ -232,17 +267,45 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
       ttsQueueRef.current = [];
       isSpeakingRef.current = false;
       ttsStop();
+      releaseAudioMode();
     };
   }, []);
 
-  // 앱 백그라운드 처리
+  // 앱 백그라운드/포그라운드 처리
   useEffect(() => {
+    const prevStateRef = { current: AppState.currentState };
+
     const subscription = AppState.addEventListener('change', (nextAppState) => {
+      const prevState = prevStateRef.current;
+      prevStateRef.current = nextAppState;
+
       if (nextAppState === 'background' || nextAppState === 'inactive') {
         if (!isPausedRef.current) {
           stopRecording();
           disconnect();
           setIsPaused(true);
+        }
+      } else if (nextAppState === 'active' && (prevState === 'background' || prevState === 'inactive')) {
+        if (isPausedRef.current) {
+          setDisplayText(null);
+          const doReconnect = async () => {
+            try {
+              if (serverStatusRef.current !== 'ready') {
+                setIsInitializing(true);
+                await probeServer();
+              }
+              await connect({ lang: myLang.code, targetLang: targetLang.code });
+              await startRecording();
+              setSpeakerphoneOn(modeRef.current !== 'mode-2');
+              setIsPaused(false);
+            } catch (error: any) {
+              setSessionStatus('error');
+              setConnectionError(error.message || '연결에 실패했습니다');
+            } finally {
+              setIsInitializing(false);
+            }
+          };
+          doReconnect();
         }
       }
     });
@@ -271,8 +334,12 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
         await connect({ lang: myLang.code, targetLang: targetLang.code });
       }
       await startRecording();
+      setSpeakerphoneOn(modeRef.current !== 'mode-2');
       setIsPaused(false);
     } else {
+      ttsQueueRef.current = [];
+      isSpeakingRef.current = false;
+      ttsStop();
       await stopRecording();
       setIsPaused(true);
     }
@@ -283,6 +350,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     if (sessionStatus === 'error') {
       stopRecording();
       disconnect();
+      releaseAudioMode();
       navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
       return;
     }
@@ -302,6 +370,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
             isSpeakingRef.current = false;
             setTranscriptions([]);
             setDisplayText(null);
+            releaseAudioMode();
             navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
           },
         },
@@ -323,6 +392,42 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
       setConnectionError(error.message || '연결에 실패했습니다');
     }
   };
+
+  // ── 로딩 오버레이 (서버 시작 중 / 연결 중) ──
+  if (isInitializing) {
+    const isServerStarting = serverStatus !== 'connecting' && serverStatus !== 'ready';
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.overlayContainer}>
+          {isServerStarting ? (
+            <>
+              <Text style={styles.overlayHintText}>잠시만요...</Text>
+              <Text style={[styles.errorText, { marginTop: 8 }]}>서버를 시작하고 있어요</Text>
+            </>
+          ) : (
+            <>
+              <Text style={styles.overlayHintText}>연결 중...</Text>
+              <View style={styles.progressTrack}>
+                <Animated.View style={[styles.progressFill, {
+                  width: progressAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: ['0%', '100%'],
+                  }),
+                }]}>
+                  <LinearGradient
+                    colors={['#8E54E9', '#4776E6', '#00CFEF']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={StyleSheet.absoluteFill}
+                  />
+                </Animated.View>
+              </View>
+            </>
+          )}
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   // ── 에러 오버레이 ──
   if (sessionStatus === 'error') {
@@ -351,6 +456,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
           const idx = CONVERSATION_MODES.findIndex(m => m.id === currentMode);
           const next = CONVERSATION_MODES[(idx + 1) % CONVERSATION_MODES.length];
           setCurrentMode(next.id);
+          setSpeakerphoneOn(next.id !== 'mode-2');
           ttsQueueRef.current = [];
           isSpeakingRef.current = false;
           ttsStop();
@@ -544,6 +650,19 @@ const styles = StyleSheet.create({
   },
   button: {
     minWidth: 120,
+  },
+  progressTrack: {
+    width: '75%',
+    height: 6,
+    backgroundColor: COLORS.border,
+    borderRadius: 3,
+    marginTop: SPACING.xl,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 3,
+    overflow: 'hidden',
   },
 });
 

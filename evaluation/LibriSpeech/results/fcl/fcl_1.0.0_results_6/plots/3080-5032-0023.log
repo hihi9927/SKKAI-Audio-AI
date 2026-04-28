@@ -1,0 +1,6 @@
+2026-04-15 07:23:22.172 [CONNECTION] start lang=auto targetLang=ko
+2026-04-15 07:23:24.408 [PARTIAL] t=2.000s | We have had another debate.
+2026-04-15 07:23:26.459 [PARTIAL] t=4.000s | We have had another debate, but much more calmly.
+2026-04-15 07:23:27.029 [VAD_COMMIT] audio_end_sec=4.810s → speech_end_sec=4.010s
+2026-04-15 07:23:28.345 [FINAL] seg=1 reason=vad audio=[0.000, 4.010] fcl=2.163s asr=0.639s translation_latency=1.186s | text='We have had another debate, but much more calmly.' | translation='우리는 또 다른 토론을 했지만 훨씬 더 차분하게 토론했습니다.'
+2026-04-15 07:23:31.926 [CONNECTION] closed

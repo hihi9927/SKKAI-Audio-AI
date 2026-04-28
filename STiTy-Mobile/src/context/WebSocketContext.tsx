@@ -6,7 +6,7 @@ interface WebSocketConfig {
   targetLang?: string;
 }
 
-export type ServerStatus = 'idle' | 'connecting' | 'ready' | 'error';
+export type ServerStatus = 'idle' | 'ec2-starting' | 'connecting' | 'ready' | 'error';
 
 interface WebSocketContextType {
   isConnected: boolean;
@@ -108,7 +108,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const probeServer = useCallback(async () => {
     if (isProbingRef.current || serverStatusRef.current === 'ready') return;
     isProbingRef.current = true;
-    setServerStatus('connecting');
+    setServerStatus('ec2-starting');
 
     if (probeWsRef.current && probeWsRef.current.readyState !== WebSocket.CLOSED) {
       probeWsRef.current.close();
@@ -116,6 +116,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     try {
       await startServer();
+      setServerStatus('connecting');
 
       const tryProbe = (): Promise<void> =>
         new Promise<void>((resolve, reject) => {

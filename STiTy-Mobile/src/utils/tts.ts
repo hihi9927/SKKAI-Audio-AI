@@ -34,12 +34,13 @@ export const ttsSpeak = (
   rate: number,
   onDone: () => void,
   onError: () => void,
+  useVoiceStream = false,
 ) => {
   const lang = toBCP47(langCode);
-  // 각 발화마다 언어와 속도 설정 후 speak
+  const stream = useVoiceStream ? 'STREAM_VOICE_CALL' : 'STREAM_MUSIC';
   Tts.setDefaultLanguage(lang)
     .then(() => {
-      Tts.setDefaultRate(rate, true); // skipTransform=true: Android TTS에 rate 직접 전달 (1.3 = 1.3배속)
+      Tts.setDefaultRate(rate, true);
       const listeners = [
         Tts.addEventListener('tts-finish', () => {
           listeners.forEach(l => l.remove());
@@ -54,7 +55,7 @@ export const ttsSpeak = (
           onError();
         }),
       ];
-      Tts.speak(text, { KEY_PARAM_STREAM: 'STREAM_MUSIC' });
+      Tts.speak(text, { KEY_PARAM_STREAM: stream });
     })
     .catch(onError);
 };

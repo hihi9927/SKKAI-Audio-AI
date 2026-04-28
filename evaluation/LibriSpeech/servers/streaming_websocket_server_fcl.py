@@ -64,6 +64,23 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         # detection (which includes look-ahead audio needed for punctuation).
         self._partial_snapshots: list[tuple[float, str]] = []
         self._slot_asr_sec: dict[str, float] = {}
+        # Per-connection log buffer (populated when client requests log capture)
+        self._connection_log: list[str] = []
+        self._log_output_path: Optional[str] = None
+
+    def _clog(self, msg: str) -> None:
+        """Append a timestamped line to the per-connection log buffer."""
+        if self._log_output_path is not None:
+            ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+            self._connection_log.append(f"{ts} {msg}")
+
+    def _flush_connection_log(self) -> None:
+        if self._log_output_path and self._connection_log:
+            path = Path(self._log_output_path)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with open(path, "w", encoding="utf-8") as f:
+                f.write("\n".join(self._connection_log) + "\n")
+            logger.info("Connection log saved: %s", path)
 
     def init_streaming_state(self):
         super().init_streaming_state()
@@ -74,6 +91,7 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         self._effective_audio_end_sec = None
         self._partial_snapshots = []
         self._slot_asr_sec = {}
+        self._connection_log = []
 
     def _stream_elapsed_sec(self) -> float:
         return time.perf_counter() - self.stream_start_perf
@@ -125,6 +143,7 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
             if text:
                 self._partial_snapshots.append((self.current_time, text))
                 logger.info("[PARTIAL] t=%.3fs | %s", self.current_time, text)
+                self._clog(f"[PARTIAL] t={self.current_time:.3f}s | {text}")
         await super().send_message(msg_type, **kwargs)
 
     def _seg_audio_end_sec(self, sentence: str) -> float:
@@ -188,7 +207,12 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
     async def _on_vad_commit(self, audio_end_sec: float) -> None:
         speech_end_sec = max(0.0, audio_end_sec - base_server.VAD_MIN_SILENCE_MS / 1000.0)
         logger.info("[VAD_COMMIT] audio_end_sec=%.3fs → speech_end_sec=%.3fs", audio_end_sec, speech_end_sec)
+        self._clog(f"[VAD_COMMIT] audio_end_sec={audio_end_sec:.3f}s → speech_end_sec={speech_end_sec:.3f}s")
         self.pending_audio_end_sec = speech_end_sec
+
+    async def _on_vad_done(self, slot_key: str) -> None:
+        logger.info("[VAD_DONE] slot=%s", slot_key)
+        await self.send_message("vad_done")
 
     async def _emit_final_payload(
         self,
@@ -224,6 +248,14 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
             **timing,
         }
         logger.info("[FINAL] seg=%d reason=%s audio=[%.3f, %.3f] text='%s'", segment_id, reason, audio_start_sec, audio_end_sec, original)
+        self._clog(
+            f"[FINAL] seg={segment_id} reason={reason} "
+            f"audio=[{audio_start_sec:.3f}, {audio_end_sec:.3f}] "
+            f"fcl={timing.get('fcl_sec', 0.0):.3f}s "
+            f"asr={timing.get('asr_inference_sec', 0.0):.3f}s "
+            f"translation_latency={timing.get('translation_latency_sec', 0.0):.3f}s | "
+            f"text='{original}' | translation='{translation}'"
+        )
         await self.send_message("final", **{k: v for k, v in payload.items() if k != "type"})
         self.segment_audio_start_sec = audio_end_sec
         self.pending_audio_end_sec = None
@@ -255,12 +287,18 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
                         if msg_type == "start":
                             self.client_lang = data.get("lang", "auto")
                             self.client_target_lang = data.get("targetLang", "")
+                            log_path = data.get("logPath")
+                            if log_path:
+                                self._log_output_path = log_path
                             logger.info(
                                 "Received start: lang=%s, targetLang=%s",
                                 self.client_lang,
                                 self.client_target_lang,
                             )
                             self.init_streaming_state()
+                            if log_path:
+                                self._log_output_path = log_path  # init_streaming_state resets log, restore path
+                                self._clog(f"[CONNECTION] start lang={self.client_lang} targetLang={self.client_target_lang}")
                             self.running = True
                             await self.send_message("ready", message="Ready to receive audio")
 
@@ -331,6 +369,8 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
             self.running = False
             if was_running:
                 await self.finish_streaming()
+            self._clog("[CONNECTION] closed")
+            self._flush_connection_log()
             if self.http_session is not None and self._shared_http_session is None:
                 try:
                     await self.http_session.close()

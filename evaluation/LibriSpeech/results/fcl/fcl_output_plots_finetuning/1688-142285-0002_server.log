@@ -1,0 +1,19 @@
+2026-04-11 16:06:22,278 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-04-11 16:06:22,278 - INFO - __main__ - New connection from ('127.0.0.1', 49222)
+2026-04-11 16:06:22,279 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-04-11 16:06:22,279 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-11 16:06:24,845 - INFO - __main__ - [PARTIAL] t=2.000s | You don't mean that you thought me so silly.
+2026-04-11 16:06:24,845 - INFO - examples.streaming_websocket_server - [C-] [partial] slot=A text=You don't mean that you thought me so silly....
+2026-04-11 16:06:25,525 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=51632
+2026-04-11 16:06:25,525 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=51632 target_audio_end_sec=3.227 processed=51760 active=A
+2026-04-11 16:06:25,525 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-04-11 16:06:25,525 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=3.227s → speech_end_sec=2.427s
+2026-04-11 16:06:26,554 - INFO - examples.streaming_websocket_server - [C-] [seg-detect] slot=A raw=You don't mean that you thought me so silly. <SEG>...
+2026-04-11 16:06:26,632 - INFO - examples.streaming_websocket_server - [C-] [translate-sentence] sentence='You don't mean that you thought me so silly.' tl=ko -> detected=en translation='당신이 나를 그렇게 바보처럼 생각했다는 뜻은 아닙니다.'
+2026-04-11 16:06:26,632 - INFO - __main__ - [FINAL] seg=1 reason=seg audio=[0.000, 2.427] text='You don't mean that you thought me so silly.'
+2026-04-11 16:06:26,632 - INFO - examples.streaming_websocket_server - [C-] [final-sentence/SEG] slot=A lang=en text=You don't mean that you thought me so silly.
+2026-04-11 16:06:26,633 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-04-11 16:06:26,644 - INFO - __main__ - Received finish command
+2026-04-11 16:06:26,840 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-04-11 16:06:31,639 - INFO - __main__ - Connection closed
+2026-04-11 16:06:31,639 - INFO - __main__ - Client disconnected (0)

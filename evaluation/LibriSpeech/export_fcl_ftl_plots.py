@@ -237,8 +237,10 @@ def detect_speech_bounds(y_wav: np.ndarray, sr: int, start_sec: float, end_sec: 
 def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=None) -> None:
     # partial_tail (타이밍 None) 제외
     segs      = [s for s in record["segment_metrics"] if s.get("audio_start_sec") is not None]
+    if not segs:
+        raise ValueError("no valid segments (record may be incomplete)")
     duration  = record["duration"]
-    ftl       = record["first_token_latency"]
+    ftl       = record["first_token_latency"]  # may be None
     file_id   = record["file_id"]
 
     audio_path = find_audio(record["audio_path"], audio_root)
@@ -265,15 +267,16 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
     else:
         ax_wave, ax_gantt, ax_text = axes
 
+    ftl_str = f"{ftl:.3f}s" if ftl is not None else "N/A"
     fig.suptitle(
         f"FCL / FTL Timeline  ─  {file_id}  "
-        f"(duration={duration:.1f}s  FTL={ftl:.3f}s)",
+        f"(duration={duration:.1f}s  FTL={ftl_str})",
         fontsize=11, y=0.99,
     )
 
-    x_max = max(duration, ftl, max(s["translate_done_sec"] if "translate_done_sec" in s
-                                    else s["server_translate_done_elapsed_sec"]
-                                    for s in segs)) * 1.03
+    seg_td_vals = [s["translate_done_sec"] if "translate_done_sec" in s
+                   else s["server_translate_done_elapsed_sec"] for s in segs]
+    x_max = max([duration] + ([ftl] if ftl is not None else []) + seg_td_vals) * 1.03
 
     # ── Row 1: Waveform or Speech Activity ────────────────────────────────
     if has_audio and ax_wave is not None:
@@ -290,7 +293,8 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
             ax_wave.axvspan(seg["audio_start_sec"], seg["audio_end_sec"],
                             alpha=0.15, color=STYLE["speech"])
         # FTL 수직선
-        ax_wave.axvline(ftl, color=STYLE["ftl"], lw=1.2, ls="--", alpha=0.8)
+        if ftl is not None:
+            ax_wave.axvline(ftl, color=STYLE["ftl"], lw=1.2, ls="--", alpha=0.8)
     elif ax_wave is None:
         # Speech activity step function은 gantt 위에 배치 (별도 ax 없음, 생략)
         pass
@@ -357,10 +361,11 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
                 fontsize=7, color=r_color, ha="left", va="bottom")
 
     # FTL 수직선
-    ax.axvline(ftl, color=STYLE["ftl"], lw=1.5, ls="--", zorder=6)
-    ax.text(ftl + 0.05, len(segs) + 0.6,
-            f"FTL {ftl:.3f}s", fontsize=8.5, color=STYLE["ftl"])
-    legend_handles["ftl"] = mpatches.Patch(color=STYLE["ftl"], label=f"FTL ({ftl:.3f}s)")
+    if ftl is not None:
+        ax.axvline(ftl, color=STYLE["ftl"], lw=1.5, ls="--", zorder=6)
+        ax.text(ftl + 0.05, len(segs) + 0.6,
+                f"FTL {ftl:.3f}s", fontsize=8.5, color=STYLE["ftl"])
+        legend_handles["ftl"] = mpatches.Patch(color=STYLE["ftl"], label=f"FTL ({ftl:.3f}s)")
 
     ax.set_yticks(range(1, len(segs) + 1))
     ax.set_yticklabels([f"seg {s['segment_id']}" for s in segs], fontsize=8)

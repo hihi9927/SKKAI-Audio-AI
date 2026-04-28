@@ -1,0 +1,10 @@
+2026-04-15 16:28:27.155 [CONNECTION] start lang=auto targetLang=ko
+2026-04-15 16:28:29.443 [PARTIAL] t=2.000s | He looked about him and knew that
+2026-04-15 16:28:29.530 [FINAL] seg=1 reason=seg audio=[0.000, 2.000] fcl=0.375s asr=0.282s translation_latency=0.087s | text='He looked about him' | translation='그는 주위를 둘러보았다'
+2026-04-15 16:28:31.597 [PARTIAL] t=4.000s | and knew that he did not at all know where he was.
+2026-04-15 16:28:31.668 [FINAL] seg=2 reason=seg audio=[2.000, 4.000] fcl=0.513s asr=0.437s translation_latency=0.070s | text='and knew that he did not at all know where he was.' | translation='그리고 그는 자신이 어디에 있는지 전혀 몰랐다는 것을 알았습니다.'
+2026-04-15 16:28:32.052 [VAD_COMMIT] audio_end_sec=4.786s → speech_end_sec=3.986s
+2026-04-15 16:28:34.365 [PARTIAL] t=6.890s | I'm sorry, but I can't help you.
+2026-04-15 16:28:34.454 [FINAL] seg=3 reason=seg audio=[4.000, 3.986] fcl=3.313s asr=0.314s translation_latency=0.088s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-04-15 16:28:36.418 [PARTIAL] t=8.890s | I'm afraid I can't help you.
+2026-04-15 16:28:36.750 [CONNECTION] closed

@@ -1,0 +1,10 @@
+2026-04-15 16:29:33.284 [CONNECTION] start lang=auto targetLang=ko
+2026-04-15 16:29:35.497 [PARTIAL] t=2.000s | We have had another debate
+2026-04-15 16:29:37.634 [PARTIAL] t=4.000s | We have had another debate, but much more calmly,
+2026-04-15 16:29:37.703 [FINAL] seg=1 reason=seg audio=[0.000, 2.000] fcl=2.418s asr=0.553s translation_latency=0.068s | text='We have had another debate,' | translation='우리는 또 다른 논쟁을 벌였습니다.'
+2026-04-15 16:29:38.140 [VAD_COMMIT] audio_end_sec=4.810s → speech_end_sec=4.010s
+2026-04-15 16:29:38.435 [FINAL] seg=2 reason=vad audio=[2.000, 4.010] fcl=1.140s asr=0.160s translation_latency=0.073s | text='but much more calmly.' | translation='하지만 훨씬 더 침착하게.'
+2026-04-15 16:29:40.451 [PARTIAL] t=6.850s | I'm sorry, but I can't help you.
+2026-04-15 16:29:40.524 [FINAL] seg=3 reason=seg audio=[4.010, 6.850] fcl=0.390s asr=0.312s translation_latency=0.073s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-04-15 16:29:42.505 [PARTIAL] t=8.850s | I'm afraid I can't help you.
+2026-04-15 16:29:43.039 [CONNECTION] closed

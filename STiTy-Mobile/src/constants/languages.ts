@@ -20,8 +20,9 @@ export const LANGUAGES: Language[] = [
 ];
 
 export const CONVERSATION_MODES = [
-  { id: 'mode-1', name: '스피커 출력', description: '화면을 보거나 스피커 소리를 들으며 대화', earphones: 0 },
-  { id: 'mode-2', name: '이어폰 착용', description: '이어폰을 착용하고 대화', earphones: 1 },
+  { id: 'mode-1', name: 'Speaker output', description: 'Share one device; everyone hears translations through the speaker', earphones: 0 },
+  { id: 'mode-2', name: 'Earphone only', description: 'One person wears an earphone and hears the peer\'s translations', earphones: 1 },
+  { id: 'mode-3', name: 'Both', description: 'Both users wear earphones and hear all translations', earphones: 2 },
 ];
 
 export const getLanguageByCode = (code: string): Language | undefined => {

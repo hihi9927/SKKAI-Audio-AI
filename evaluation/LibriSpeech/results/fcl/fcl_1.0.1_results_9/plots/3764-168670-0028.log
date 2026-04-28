@@ -1,0 +1,15 @@
+2026-04-15 16:30:20.105 [CONNECTION] start lang=auto targetLang=ko
+2026-04-15 16:30:22.384 [PARTIAL] t=2.000s | It is a chamber on the ground floor which
+2026-04-15 16:30:24.460 [PARTIAL] t=4.000s | It is a chamber on the ground floor which has a grated window opening
+2026-04-15 16:30:24.545 [FINAL] seg=1 reason=seg audio=[0.000, 2.000] fcl=2.440s asr=0.617s translation_latency=0.085s | text='It is a chamber on the ground floor' | translation='지하 1층에 있는 회의실입니다'
+2026-04-15 16:30:26.399 [PARTIAL] t=6.000s | which has a grated window opening on the garden, which is closed on the outside
+2026-04-15 16:30:28.359 [PARTIAL] t=8.000s | which has a grated window opening on the garden, which is closed on the outside by a shutter, and two doors
+2026-04-15 16:30:30.421 [PARTIAL] t=10.000s | which has a grated window opening on the garden, which is closed on the outside by a shutter, and two doors, one leads into the convent,
+2026-04-15 16:30:32.385 [PARTIAL] t=12.000s | which has a grated window opening on the garden, which is closed on the outside by a shutter, and two doors, one leads into the convent, the other into the church.
+2026-04-15 16:30:32.453 [FINAL] seg=2 reason=seg audio=[2.000, 12.000] fcl=0.348s asr=1.119s translation_latency=0.068s | text='which has a grated window opening on the garden, which is closed on the outside by a shutter, and two doors, one leads into the convent, the other into the church.' | translation='정원에는 격자창이 있고 외부는 덧문으로 닫혀 있으며, 문 두 개 중 하나는 수녀원으로, 다른 하나는 교회로 연결됩니다.'
+2026-04-15 16:30:33.949 [VAD_COMMIT] audio_end_sec=13.827s → speech_end_sec=13.027s
+2026-04-15 16:30:34.367 [FINAL] seg=3 reason=vad audio=[12.000, 13.027] fcl=1.235s asr=0.246s translation_latency=0.068s | text='A what church?' | translation='무슨 교회요?'
+2026-04-15 16:30:36.264 [PARTIAL] t=15.835s | I'm sorry, but I can't help you.
+2026-04-15 16:30:36.337 [FINAL] seg=4 reason=seg audio=[13.027, 15.835] fcl=0.396s asr=0.316s translation_latency=0.072s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-04-15 16:30:38.315 [PARTIAL] t=17.835s | I'm afraid I can't help you.
+2026-04-15 16:30:39.047 [CONNECTION] closed

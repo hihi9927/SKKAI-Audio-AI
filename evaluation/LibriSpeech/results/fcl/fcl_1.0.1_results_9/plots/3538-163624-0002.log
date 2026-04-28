@@ -1,0 +1,13 @@
+2026-04-15 16:29:43.120 [CONNECTION] start lang=auto targetLang=ko
+2026-04-15 16:29:45.431 [PARTIAL] t=2.000s | But in the night, when the battle was over,
+2026-04-15 16:29:47.581 [PARTIAL] t=4.000s | But in the night, when the battle was over, his young wife came out and searched for him a
+2026-04-15 16:29:47.643 [FINAL] seg=1 reason=seg audio=[0.000, 2.000] fcl=2.523s asr=0.762s translation_latency=0.062s | text='But in the night, when the battle was over,' | translation='그러나 전투가 끝난 밤에,'
+2026-04-15 16:29:49.414 [PARTIAL] t=6.000s | his young wife came out and searched for him among the slain, and at last she found
+2026-04-15 16:29:49.490 [FINAL] seg=2 reason=seg audio=[2.000, 6.000] fcl=0.369s asr=0.289s translation_latency=0.075s | text='his young wife came out and searched for him among the slain,' | translation='그의 젊은 아내가 나와서 살해당한 자들 가운데서 그를 찾았으나'
+2026-04-15 16:29:51.486 [PARTIAL] t=8.000s | and at last she found him and asked whether he might be healed.
+2026-04-15 16:29:51.565 [FINAL] seg=3 reason=seg audio=[6.000, 8.000] fcl=0.445s asr=0.361s translation_latency=0.078s | text='and at last she found him and asked whether he might be healed.' | translation='마침내 그녀는 그를 만나서 그가 고칠 수 있는지 물었습니다.'
+2026-04-15 16:29:52.068 [VAD_COMMIT] audio_end_sec=8.836s → speech_end_sec=8.036s
+2026-04-15 16:29:54.377 [PARTIAL] t=10.940s | I'm sorry, but I can't help you.
+2026-04-15 16:29:54.445 [FINAL] seg=4 reason=seg audio=[8.000, 8.036] fcl=3.288s asr=0.311s translation_latency=0.067s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-04-15 16:29:56.431 [PARTIAL] t=12.940s | I'm afraid I can't help you.
+2026-04-15 16:29:56.765 [CONNECTION] closed

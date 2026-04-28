@@ -1,0 +1,10 @@
+2026-04-15 16:29:56.848 [CONNECTION] start lang=auto targetLang=ko
+2026-04-15 16:29:59.132 [PARTIAL] t=2.000s | Then he took the helmet off the head of this
+2026-04-15 16:30:01.262 [PARTIAL] t=4.000s | Then he took the helmet off the head of the sleeper and behold, she was a most
+2026-04-15 16:30:01.331 [FINAL] seg=1 reason=seg audio=[0.000, 4.000] fcl=0.483s asr=0.688s translation_latency=0.069s | text='Then he took the helmet off the head of the sleeper' | translation='그런 다음 그는 잠자는 사람의 머리에서 헬멧을 벗었습니다.'
+2026-04-15 16:30:02.865 [VAD_COMMIT] audio_end_sec=5.906s → speech_end_sec=5.106s
+2026-04-15 16:30:03.215 [FINAL] seg=2 reason=vad audio=[4.000, 5.106] fcl=1.261s asr=0.211s translation_latency=0.066s | text='and behold, she was a most beautiful lady.' | translation='보라, 그녀는 가장 아름다운 여인이었다.'
+2026-04-15 16:30:05.174 [PARTIAL] t=8.010s | I'm sorry, but I can't help you.
+2026-04-15 16:30:05.243 [FINAL] seg=3 reason=seg audio=[5.106, 8.010] fcl=0.385s asr=0.309s translation_latency=0.068s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-04-15 16:30:07.232 [PARTIAL] t=10.010s | I'm afraid I can't help you.
+2026-04-15 16:30:07.764 [CONNECTION] closed
