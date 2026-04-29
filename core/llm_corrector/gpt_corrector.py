@@ -67,7 +67,7 @@ class GPTCorrector:
     def __init__(
         self,
         api_key: Optional[str] = None,
-        model: str = "gpt-4o-mini",
+        model: str = "gpt-5.4-mini",
         max_retries: int = 5,
     ):
         key = api_key or os.environ.get("OPENAI_API_KEY")

@@ -129,9 +129,12 @@ class StreamingConfig:
     # Commit 방식 설정
     enable_dot_commit: bool = False  # True면 온점/느낌표/물음표(dot) 기반 seg commit 활성화
 
+    # 언어 제한 설정
+    restrict_languages: bool = True  # True면 앱 설정 두 언어 외 토큰 차단
+
     # LLM 후처리 설정
     enable_correction: bool = True
-    correction_model: str = "gpt-4o-mini"
+    correction_model: str = "gpt-5.4-mini"
 
     # 서버 설정
     host: str = "0.0.0.0"
@@ -456,11 +459,23 @@ class Qwen3ASRStreamingHandler:
             self.vad_iterator.reset_states()
     
     def _new_stream_slot(self) -> dict:
+        allowed_languages = None
+        if self.config.restrict_languages:
+            candidates = []
+            for code in (self.client_lang, self.client_target_lang):
+                if code and code != "auto":
+                    name = lang_code_to_name(code)
+                    if name:
+                        candidates.append(name)
+            if len(candidates) >= 2:
+                allowed_languages = candidates
+
         return {
             "state": self.asr.init_streaming_state(
                 unfixed_chunk_num=self.config.unfixed_chunk_num,
                 unfixed_token_num=self.config.unfixed_token_num,
                 chunk_size_sec=self.config.chunk_size_sec,
+                allowed_languages=allowed_languages,
             ),
             "flush_lock": asyncio.Lock(),
             "last_text": "",
@@ -1288,12 +1303,16 @@ def parse_args():
         help="온점/느낌표/물음표(dot) 기반 seg commit 활성화 (기본값: 비활성화, 베이스라인 모델용)",
     )
     parser.add_argument(
+        "--no-restrict-languages", action="store_true",
+        help="앱 설정 두 언어 외 언어 차단 비활성화 (기본값: 활성화)",
+    )
+    parser.add_argument(
         "--no-correction", action="store_true",
         help="GPT LLM 후처리 비활성화 (기본값: 활성화)",
     )
     parser.add_argument(
-        "--correction-model", type=str, default="gpt-4o-mini",
-        help="후처리에 사용할 GPT 모델명 (기본값: gpt-4o-mini)",
+        "--correction-model", type=str, default="gpt-5.4-mini",
+        help="후처리에 사용할 GPT 모델명 (기본값: gpt-5.4-mini)",
     )
     parser.add_argument(
         "--log-json", action="store_true",
@@ -1322,6 +1341,7 @@ def main():
         max_lora_rank=args.max_lora_rank,
         enforce_eager=args.enforce_eager,
         enable_dot_commit=args.enable_dot_commit,
+        restrict_languages=not args.no_restrict_languages,
         enable_correction=not args.no_correction,
         correction_model=args.correction_model,
     )
