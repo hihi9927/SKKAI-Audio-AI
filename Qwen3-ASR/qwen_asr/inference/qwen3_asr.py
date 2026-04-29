@@ -674,7 +674,7 @@ class Qwen3ASRModel:
             _raw_decoded="",
         )
 
-    async def streaming_transcribe(self, pcm16k: np.ndarray, state: ASRStreamingState, lora_request=None, on_partial=None) -> ASRStreamingState:
+    async def streaming_transcribe(self, pcm16k: np.ndarray, state: ASRStreamingState, lora_request=None, on_seg=None) -> ASRStreamingState:
         """
         Streaming ASR decode step.
 
@@ -772,19 +772,20 @@ class Qwen3ASRModel:
 
             request_id = str(uuid.uuid4())
             final = None
-            last_partial_t = 0.0
+            prev_seg_count = 0
             async for out in self.model.generate(inp, self.sampling_params, request_id=request_id, lora_request=lora_request):
                 final = out
-                if on_partial and not out.finished:
-                    now = time.monotonic()
-                    if now - last_partial_t >= 0.5:
-                        gen_text_partial = out.outputs[0].text
-                        raw_partial = (prefix + gen_text_partial) if prefix is not None else gen_text_partial
-                        lang_p, txt_p = parse_asr_output(raw_partial, user_language=state.force_language)
-                        state.language = lang_p
-                        state.text = txt_p
-                        await on_partial(state)
-                        last_partial_t = now
+                if on_seg and not out.finished:
+                    gen_text_partial = out.outputs[0].text
+                    raw_partial = (prefix + gen_text_partial) if prefix is not None else gen_text_partial
+                    lang_p, txt_p = parse_asr_output(raw_partial, user_language=state.force_language)
+                    state.language = lang_p
+                    state.text = txt_p
+
+                    seg_count = txt_p.count("<SEG>")
+                    if seg_count > prev_seg_count:
+                        prev_seg_count = seg_count
+                        await on_seg(state)
 
             # Finalize with completed output
             gen_text = final.outputs[0].text

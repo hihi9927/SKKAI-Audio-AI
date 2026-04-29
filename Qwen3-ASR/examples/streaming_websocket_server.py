@@ -511,9 +511,18 @@ class Qwen3ASRStreamingHandler:
 
     async def _asr_streaming_transcribe(self, chunk: np.ndarray, slot_key: Optional[str] = None):
         slot = self._slot(slot_key)
+
+        async def _on_seg(_):
+            # lock 밖에서 호출되므로 _process_slot_updates가 asr_lock 자유롭게 획득 가능
+            await self._process_slot_updates(slot_key)
+
         async with self.asr_lock:
             lora_request = self._get_lora_request(slot["state"])
-            await self.asr.streaming_transcribe(chunk, slot["state"], lora_request=lora_request)
+
+        # 생성 중 lock 미보유 — state.text는 await 없는 단순 대입이므로 asyncio 안전
+        await self.asr.streaming_transcribe(chunk, slot["state"], lora_request=lora_request, on_seg=_on_seg)
+
+        async with self.asr_lock:
             self.asr_processed_cursor = self.sample_cursor
 
     async def _asr_finish_streaming(self, slot_key: Optional[str] = None):
@@ -618,7 +627,7 @@ class Qwen3ASRStreamingHandler:
             slot["committed_display"] = re.sub(r'\s+', ' ', current_text.replace("<SEG>", "")).strip()
             slot["committed_seg_count"] = current_text.count("<SEG>")
 
-    async def _process_slot_updates(self, slot_key: str, emit_partial: bool = True):
+    async def _process_slot_updates(self, slot_key: str):
         slot = self._slot(slot_key)
         state = slot["state"]
         current_text = (state.text or "").strip()
@@ -636,16 +645,6 @@ class Qwen3ASRStreamingHandler:
         uncommitted = self._uncommitted_from(
             current_text, slot["committed_display"], slot["committed_seg_count"]
         )
-
-        if emit_partial:
-            # 이미 커밋된 부분은 제외하고 uncommitted 부분만 partial로 전송
-            partial_text = re.sub(r'\s+', ' ', uncommitted.replace("<SEG>", "")).strip()
-            await self.send_message(
-                "partial",
-                original=partial_text,
-                last_translation="",
-            )
-            self.log.info(f"[partial] slot={slot_key} text={current_text[:80]}...")
         sentences_to_commit = []
         remaining = uncommitted
 
@@ -816,7 +815,6 @@ class Qwen3ASRStreamingHandler:
             pre_chunk = chunk[seg_start:local_cut]
             if pre_chunk.size > 0:
                 await self._asr_streaming_transcribe(pre_chunk, self.active_slot)
-                await self._process_slot_updates(self.active_slot, emit_partial=True)
 
             target_sample = chunk_base_sample + local_cut
             target_audio_end_sec = target_sample / SAMPLING_RATE
@@ -837,7 +835,7 @@ class Qwen3ASRStreamingHandler:
             # 잔여 버퍼(chunk_size 미만 tail audio)를 모델에 통과시킨 후 flush
             await self._on_vad_commit(target_audio_end_sec)
             await self._asr_finish_streaming(old_active)
-            await self._process_slot_updates(old_active, emit_partial=False)
+            await self._process_slot_updates(old_active)
             await self.flush_uncommitted(force=True, reason="vad", slot_key=old_active)
             self._reset_stream_slot(self.standby_slot)
             await self._on_vad_done(old_active)
@@ -847,7 +845,6 @@ class Qwen3ASRStreamingHandler:
         tail_chunk = chunk[seg_start:]
         if tail_chunk.size > 0:
             await self._asr_streaming_transcribe(tail_chunk, self.active_slot)
-            await self._process_slot_updates(self.active_slot, emit_partial=True)
 
     async def finish_streaming(self):
         pass
