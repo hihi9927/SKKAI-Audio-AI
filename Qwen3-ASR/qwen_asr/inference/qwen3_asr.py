@@ -472,35 +472,6 @@ class Qwen3ASRModel:
             base = base + f"language {force_language}{'<asr_text>'}"
         return base
 
-    def _make_language_logits_processor(self, allowed_languages: List[str]):
-        """언어 이름 토큰 위치에서 허용 언어 외의 토큰을 차단하는 logits processor 반환.
-
-        모델 출력 형식: "language Korean<asr_text>..."
-        force_language 없이 자동 감지할 때, 지정된 두 언어 중 하나만 생성되도록 제한.
-        """
-        tokenizer = self.processor.tokenizer
-
-        lang_prefix_ids = tuple(tokenizer.encode("language ", add_special_tokens=False))
-        n_prefix = len(lang_prefix_ids)
-
-        allowed_first_token_ids: set = set()
-        for lang in allowed_languages:
-            ids = tokenizer.encode(lang, add_special_tokens=False)
-            if ids:
-                allowed_first_token_ids.add(ids[0])
-
-        def processor(token_ids: List[int], logits: torch.Tensor) -> torch.Tensor:
-            if len(token_ids) == n_prefix:
-                decoded = tokenizer.decode(list(token_ids), skip_special_tokens=False)
-                if decoded == "language ":
-                    mask = torch.full_like(logits, float("-inf"))
-                    for tid in allowed_first_token_ids:
-                        mask[tid] = 0.0
-                    return logits + mask
-            return logits
-
-        return processor
-
     async def _infer_asr(
         self,
         contexts: List[str],
@@ -707,6 +678,21 @@ class Qwen3ASRModel:
             allowed_languages=allowed_languages or None,
         )
 
+    def _make_language_logit_bias(self, allowed_languages: List[str]) -> dict:
+        """허용 언어 외의 언어 이름 토큰에 -100 bias를 적용하는 dict 반환.
+
+        force_language 없이 자동 감지할 때만 사용. 허용된 두 언어 토큰은 건드리지 않고
+        나머지 언어 토큰에 강한 음의 bias를 줘서 감지 결과가 허용 범위 내로 유지됨.
+        """
+        tokenizer = self.processor.tokenizer
+        bias: dict = {}
+        for lang in SUPPORTED_LANGUAGES:
+            if lang not in allowed_languages:
+                ids = tokenizer.encode(lang, add_special_tokens=False)
+                if ids:
+                    bias[ids[0]] = -100.0
+        return bias
+
     async def streaming_transcribe(self, pcm16k: np.ndarray, state: ASRStreamingState, lora_request=None, on_seg=None) -> ASRStreamingState:
         """
         Streaming ASR decode step.
@@ -799,23 +785,20 @@ class Qwen3ASRModel:
                         k += 1
 
             prompt = state.prompt_raw + prefix
-
-            # vLLM input: single item
             inp = {"prompt": prompt, "multi_modal_data": {"audio": [state.audio_accum]}}
 
-            # 허용 언어 제한: force_language 없이 자동 감지할 때만 적용
-            sampling_params = self.sampling_params
+            # 허용 언어 제한: force_language 없을 때만 bias 적용
             if state.allowed_languages and not state.force_language:
                 from copy import copy
-                sampling_params = copy(self.sampling_params)
-                sampling_params.logits_processors = [
-                    self._make_language_logits_processor(state.allowed_languages)
-                ]
+                sp = copy(self.sampling_params)
+                sp.logit_bias = self._make_language_logit_bias(state.allowed_languages)
+            else:
+                sp = self.sampling_params
 
             request_id = str(uuid.uuid4())
             final = None
             prev_seg_count = 0
-            async for out in self.model.generate(inp, sampling_params, request_id=request_id, lora_request=lora_request):
+            async for out in self.model.generate(inp, sp, request_id=request_id, lora_request=lora_request):
                 final = out
                 if on_seg and not out.finished:
                     gen_text_partial = out.outputs[0].text
@@ -823,19 +806,16 @@ class Qwen3ASRModel:
                     lang_p, txt_p = parse_asr_output(raw_partial, user_language=state.force_language)
                     state.language = lang_p
                     state.text = txt_p
-
                     seg_count = txt_p.count("<SEG>")
                     if seg_count > prev_seg_count:
                         prev_seg_count = seg_count
                         await on_seg(state)
 
-            # Finalize with completed output
             gen_text = final.outputs[0].text
             state._raw_decoded = (prefix + gen_text) if prefix is not None else gen_text
             lang, txt = parse_asr_output(state._raw_decoded, user_language=state.force_language)
             state.language = lang
             state.text = txt
-
             state.chunk_id += 1
 
         return state
@@ -894,20 +874,18 @@ class Qwen3ASRModel:
         prompt = state.prompt_raw + prefix
         inp = {"prompt": prompt, "multi_modal_data": {"audio": [state.audio_accum]}}
 
-        sampling_params = self.sampling_params
         if state.allowed_languages and not state.force_language:
             from copy import copy
-            sampling_params = copy(self.sampling_params)
-            sampling_params.logits_processors = [
-                self._make_language_logits_processor(state.allowed_languages)
-            ]
+            sp = copy(self.sampling_params)
+            sp.logit_bias = self._make_language_logit_bias(state.allowed_languages)
+        else:
+            sp = self.sampling_params
 
         request_id = str(uuid.uuid4())
         final = None
-        async for out in self.model.generate(inp, sampling_params, request_id=request_id, lora_request=lora_request):
+        async for out in self.model.generate(inp, sp, request_id=request_id, lora_request=lora_request):
             final = out
         gen_text = final.outputs[0].text
-
         state._raw_decoded = (prefix + gen_text) if prefix is not None else gen_text
         lang, txt = parse_asr_output(state._raw_decoded, user_language=state.force_language)
         state.language = lang
