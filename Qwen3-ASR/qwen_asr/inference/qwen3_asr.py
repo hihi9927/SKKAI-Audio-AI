@@ -681,16 +681,22 @@ class Qwen3ASRModel:
     def _make_language_logit_bias(self, allowed_languages: List[str]) -> dict:
         """허용 언어 외의 언어 이름 토큰에 -100 bias를 적용하는 dict 반환.
 
-        force_language 없이 자동 감지할 때만 사용. 허용된 두 언어 토큰은 건드리지 않고
-        나머지 언어 토큰에 강한 음의 bias를 줘서 감지 결과가 허용 범위 내로 유지됨.
+        모델은 "language " 뒤에 언어명을 생성하므로 space-prefixed variant(" Korean" 등)를 기준으로 차단.
+        standalone variant("Korean" 등)가 다중 토큰으로 분리되는 경우(예: [42, 45195]),
+        첫 토큰이 다른 단어와 공유되는 일반 prefix일 수 있으므로 단일 토큰인 경우에만 차단.
         """
         tokenizer = self.processor.tokenizer
         bias: dict = {}
         for lang in SUPPORTED_LANGUAGES:
             if lang not in allowed_languages:
-                ids = tokenizer.encode(lang, add_special_tokens=False)
-                if ids:
-                    bias[ids[0]] = -100.0
+                # space-prefixed: 모델이 실제 생성하는 형태 — 항상 차단
+                space_ids = tokenizer.encode(" " + lang, add_special_tokens=False)
+                if space_ids:
+                    bias[space_ids[0]] = -100.0
+                # standalone: 단일 토큰일 때만 차단 (다중 토큰이면 첫 토큰이 범용 prefix라 과잉 차단 위험)
+                plain_ids = tokenizer.encode(lang, add_special_tokens=False)
+                if len(plain_ids) == 1:
+                    bias[plain_ids[0]] = -100.0
         return bias
 
     async def streaming_transcribe(self, pcm16k: np.ndarray, state: ASRStreamingState, lora_request=None, on_seg=None) -> ASRStreamingState:
