@@ -1,0 +1,9 @@
+2026-04-29 03:43:19.525 [CONNECTION] start lang=auto targetLang=ko
+2026-04-29 03:43:20.298 [PARTIAL] t=0.600s | Many
+2026-04-29 03:43:20.765 [PARTIAL] t=1.000s | Mr. Marm
+2026-04-29 03:43:21.389 [PARTIAL] t=1.600s | Mr. Marvell.
+2026-04-29 03:43:22.437 [FINAL] seg=1 reason=seg audio=[0.000, 1.600] fcl=1.312s asr=0.657s translation_latency=1.048s | text='Mr. Marvell.' | translation='마벨 씨.'
+2026-04-29 03:43:30.973 [VAD_COMMIT] audio_end_sec=11.400s → speech_end_sec=10.600s
+2026-04-29 03:43:32.001 [PARTIAL] t=12.040s | I'm sorry, but I can't help you.
+2026-04-29 03:43:32.100 [FINAL] seg=2 reason=seg audio=[1.600, 10.600] fcl=1.974s asr=0.427s translation_latency=0.098s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-04-29 03:43:35.872 [CONNECTION] closed

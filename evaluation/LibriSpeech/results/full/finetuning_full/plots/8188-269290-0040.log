@@ -1,0 +1,15 @@
+2026-04-29 11:46:52.534 [CONNECTION] start lang=auto targetLang=ko
+2026-04-29 11:46:53.395 [PARTIAL] t=0.600s | I'm sorry, but
+2026-04-29 11:46:53.747 [PARTIAL] t=1.000s | I will talk
+2026-04-29 11:46:54.464 [PARTIAL] t=1.600s | I will talk with you, Bell
+2026-04-29 11:46:55.445 [FINAL] seg=1 reason=seg audio=[0.000, 1.600] fcl=1.311s asr=0.785s translation_latency=0.981s | text='I will talk with you,' | translation='나는 당신과 이야기 할 것입니다'
+2026-04-29 11:46:55.686 [PARTIAL] t=2.000s | Bell Archibson,
+2026-04-29 11:46:55.859 [PARTIAL] t=2.600s | Bel Ashton, presently
+2026-04-29 11:46:56.120 [PARTIAL] t=3.000s | Bel Ashton, presently.
+2026-04-29 11:46:57.546 [PARTIAL] t=3.600s | Bel Ashton, presently, she said.
+2026-04-29 11:46:58.358 [PARTIAL] t=4.050s | Bel Ashton, presently, she said.
+2026-04-29 11:46:59.294 [VAD_COMMIT] audio_end_sec=4.314s → speech_end_sec=3.514s
+2026-04-29 11:46:59.562 [FINAL] seg=2 reason=vad audio=[1.600, 3.514] fcl=3.514s asr=1.333s translation_latency=0.076s | text='Bel Ashton, presently, she said.' | translation='현재 벨 애쉬튼(Bel Ashton)이 말했다.'
+2026-04-29 11:46:59.995 [PARTIAL] t=4.850s | I'm sorry, but I can't help you.
+2026-04-29 11:47:00.075 [FINAL] seg=3 reason=seg audio=[3.514, 4.850] fcl=2.690s asr=0.424s translation_latency=0.079s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-04-29 11:47:01.745 [CONNECTION] closed

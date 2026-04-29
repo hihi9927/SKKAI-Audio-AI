@@ -1,0 +1,12 @@
+2026-04-28 15:22:06.762 [CONNECTION] start lang=auto targetLang=ko
+2026-04-28 15:22:07.355 [PARTIAL] t=0.400s | What do
+2026-04-28 15:22:07.788 [PARTIAL] t=0.800s | What should I
+2026-04-28 15:22:08.000 [PARTIAL] t=1.000s | What should I all
+2026-04-28 15:22:08.349 [PARTIAL] t=1.400s | What shall I do
+2026-04-28 15:22:08.597 [PARTIAL] t=1.600s | What shall I do first,
+2026-04-28 15:22:08.837 [PARTIAL] t=1.800s | What shall I do first?
+2026-04-28 15:22:09.986 [FINAL] seg=1 reason=seg audio=[0.000, 1.600] fcl=1.625s asr=1.457s translation_latency=1.149s | text='What shall I do first?' | translation='무엇을 먼저 해야 할까요?'
+2026-04-28 15:22:10.563 [VAD_COMMIT] audio_end_sec=2.697s → speech_end_sec=1.897s
+2026-04-28 15:22:11.179 [PARTIAL] t=3.105s | I'm sorry, but I can't help you.
+2026-04-28 15:22:11.251 [FINAL] seg=2 reason=seg audio=[1.600, 1.897] fcl=2.593s asr=0.420s translation_latency=0.071s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-04-28 15:22:14.726 [CONNECTION] closed

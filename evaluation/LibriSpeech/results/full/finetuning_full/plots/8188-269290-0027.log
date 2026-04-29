@@ -1,0 +1,15 @@
+2026-04-29 00:29:44.420 [CONNECTION] start lang=auto targetLang=ko
+2026-04-29 00:29:45.056 [PARTIAL] t=0.400s | I want to know
+2026-04-29 00:29:45.266 [PARTIAL] t=0.600s | Refrain
+2026-04-29 00:29:45.437 [PARTIAL] t=0.800s | Refuse
+2026-04-29 00:29:45.652 [PARTIAL] t=1.000s | Refuses to
+2026-04-29 00:29:46.053 [PARTIAL] t=1.400s | Refuses to come
+2026-04-29 00:29:46.550 [PARTIAL] t=1.800s | Refuses to come. She
+2026-04-29 00:29:46.977 [FINAL] seg=1 reason=seg audio=[0.000, 1.400] fcl=1.157s asr=1.526s translation_latency=0.426s | text='Refuses to come.' | translation='오기를 거부합니다.'
+2026-04-29 00:29:47.191 [PARTIAL] t=2.000s | She cried
+2026-04-29 00:29:47.455 [PARTIAL] t=2.400s | She cried.
+2026-04-29 00:29:48.013 [FINAL] seg=2 reason=seg audio=[1.400, 2.000] fcl=1.593s asr=0.466s translation_latency=0.557s | text='She cried.' | translation='그녀는 울었다.'
+2026-04-29 00:29:48.586 [VAD_COMMIT] audio_end_sec=3.191s → speech_end_sec=2.391s
+2026-04-29 00:29:49.195 [PARTIAL] t=3.495s | I'm sorry, but I can't help you.
+2026-04-29 00:29:49.261 [FINAL] seg=3 reason=seg audio=[2.000, 2.391] fcl=2.450s asr=0.418s translation_latency=0.066s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-04-29 00:29:52.584 [CONNECTION] closed

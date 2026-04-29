@@ -1,0 +1,8 @@
+2026-04-29 01:05:54.921 [CONNECTION] start lang=auto targetLang=ko
+2026-04-29 01:05:55.677 [PARTIAL] t=0.400s | He is a very good man.
+2026-04-29 01:05:55.745 [FINAL] seg=1 reason=seg audio=[0.000, 0.400] fcl=0.423s asr=0.349s translation_latency=0.067s | text='He is a very good man.' | translation='그는 아주 좋은 사람입니다.'
+2026-04-29 01:06:00.019 [PARTIAL] t=4.800s | Ural
+2026-04-29 01:06:02.994 [VAD_COMMIT] audio_end_sec=7.982s → speech_end_sec=7.182s
+2026-04-29 01:06:03.740 [PARTIAL] t=8.390s | I'm sorry, but I can't help you.
+2026-04-29 01:06:03.813 [FINAL] seg=2 reason=seg audio=[0.400, 7.182] fcl=1.710s asr=0.421s translation_latency=0.072s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-04-29 01:06:08.088 [CONNECTION] closed

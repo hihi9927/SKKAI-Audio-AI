@@ -1,0 +1,23 @@
+2026-04-29 01:00:33.337 [CONNECTION] start lang=auto targetLang=ko
+2026-04-29 01:00:34.092 [PARTIAL] t=0.400s | He is a very good teacher.
+2026-04-29 01:00:34.165 [FINAL] seg=1 reason=seg audio=[0.000, 0.400] fcl=0.428s asr=0.348s translation_latency=0.073s | text='He is a very good teacher.' | translation='그는 아주 좋은 선생님이에요.'
+2026-04-29 01:00:38.212 [PARTIAL] t=4.600s | and
+2026-04-29 01:00:38.425 [PARTIAL] t=4.800s | and that
+2026-04-29 01:00:38.638 [PARTIAL] t=5.000s | and that he
+2026-04-29 01:00:38.953 [PARTIAL] t=5.400s | and that he still
+2026-04-29 01:00:39.190 [PARTIAL] t=5.600s | and that he is still enough
+2026-04-29 01:00:39.405 [PARTIAL] t=5.800s | and that he is still enough hard
+2026-04-29 01:00:39.621 [PARTIAL] t=6.000s | and that he is still enough harshly
+2026-04-29 01:00:39.956 [PARTIAL] t=6.400s | and that he is still enough harshly crisp
+2026-04-29 01:00:40.150 [PARTIAL] t=6.600s | and that he is still enough harshly critical
+2026-04-29 01:00:40.563 [PARTIAL] t=7.000s | and that he is still enough harshly critical towards
+2026-04-29 01:00:40.983 [PARTIAL] t=7.400s | and that he is still enough harshly critical towards the will
+2026-04-29 01:00:41.180 [PARTIAL] t=7.600s | and that he is still enough harshly critical towards the works
+2026-04-29 01:00:41.425 [PARTIAL] t=7.800s | and that he is still enough harshly critical towards the works of other
+2026-04-29 01:00:41.625 [PARTIAL] t=8.000s | and that he is still enough harshly critical towards the works of others
+2026-04-29 01:00:42.010 [PARTIAL] t=8.400s | and that he is still enough harshly critical towards the works of others.
+2026-04-29 01:00:43.080 [VAD_COMMIT] audio_end_sec=9.012s → speech_end_sec=8.212s
+2026-04-29 01:00:43.352 [FINAL] seg=2 reason=vad audio=[0.400, 8.212] fcl=1.802s asr=7.508s translation_latency=0.071s | text='and that he is still enough harshly critical towards the works of others.' | translation='그리고 그는 여전히 다른 사람들의 작품에 대해 충분히 가혹하게 비판적입니다.'
+2026-04-29 01:00:43.778 [PARTIAL] t=9.380s | I'm sorry, but I can't help you.
+2026-04-29 01:00:43.857 [FINAL] seg=3 reason=seg audio=[8.212, 9.380] fcl=1.140s asr=0.421s translation_latency=0.079s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-04-29 01:00:47.601 [CONNECTION] closed

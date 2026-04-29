@@ -1,0 +1,23 @@
+2026-04-28 16:23:48.959 [CONNECTION] start lang=auto targetLang=ko
+2026-04-28 16:23:49.602 [PARTIAL] t=0.400s | He is
+2026-04-28 16:23:49.798 [PARTIAL] t=0.600s | Instead
+2026-04-28 16:23:50.035 [PARTIAL] t=0.800s | In spite of
+2026-04-28 16:23:50.278 [PARTIAL] t=1.000s | In spite of his
+2026-04-28 16:23:50.597 [PARTIAL] t=1.400s | In spite of his deep
+2026-04-28 16:23:50.853 [PARTIAL] t=1.600s | In spite of his deep mental
+2026-04-28 16:23:51.084 [PARTIAL] t=1.800s | In spite of his deep mental distress
+2026-04-28 16:23:51.300 [PARTIAL] t=2.000s | In spite of his deep mental distress,
+2026-04-28 16:23:51.596 [PARTIAL] t=2.400s | In spite of his deep mental distress,
+2026-04-28 16:23:52.595 [FINAL] seg=1 reason=seg audio=[0.000, 1.800] fcl=1.836s asr=2.046s translation_latency=0.999s | text='In spite of his deep mental distress,' | translation='그의 깊은 정신적 고통에도 불구하고,'
+2026-04-28 16:23:52.811 [PARTIAL] t=2.600s | he
+2026-04-28 16:23:53.047 [PARTIAL] t=2.800s | he could have
+2026-04-28 16:23:53.259 [PARTIAL] t=3.000s | he could have shouted
+2026-04-28 16:23:53.478 [PARTIAL] t=3.400s | he could have shouted a
+2026-04-28 16:23:53.669 [PARTIAL] t=3.600s | he could have shouted aloud
+2026-04-28 16:23:53.905 [PARTIAL] t=3.800s | he could have shouted aloud in his
+2026-04-28 16:23:54.188 [PARTIAL] t=4.000s | he could have shouted aloud in his delight.
+2026-04-28 16:23:54.980 [FINAL] seg=2 reason=seg audio=[1.800, 4.000] fcl=2.021s asr=1.560s translation_latency=0.792s | text='he could have shouted aloud in his delight.' | translation='그는 기뻐서 큰 소리로 외칠 수도 있었다.'
+2026-04-28 16:23:56.381 [VAD_COMMIT] audio_end_sec=5.817s → speech_end_sec=5.017s
+2026-04-28 16:23:56.996 [PARTIAL] t=6.225s | I'm sorry, but I can't help you.
+2026-04-28 16:23:57.060 [FINAL] seg=3 reason=seg audio=[4.000, 5.017] fcl=3.084s asr=0.418s translation_latency=0.063s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-04-28 16:24:00.292 [CONNECTION] closed

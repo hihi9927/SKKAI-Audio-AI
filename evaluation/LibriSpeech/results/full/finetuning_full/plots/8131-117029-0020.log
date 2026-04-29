@@ -1,0 +1,11 @@
+2026-04-29 00:14:24.373 [CONNECTION] start lang=auto targetLang=ko
+2026-04-29 00:14:25.199 [PARTIAL] t=0.400s | I'm sorry, but I can't help you.
+2026-04-29 00:14:25.267 [FINAL] seg=1 reason=seg audio=[0.000, 0.400] fcl=0.494s asr=0.420s translation_latency=0.067s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-04-29 00:14:28.516 [PARTIAL] t=3.800s | He
+2026-04-29 00:14:28.733 [PARTIAL] t=4.000s | He asked
+2026-04-29 00:14:29.039 [PARTIAL] t=4.400s | He asked.
+2026-04-29 00:14:29.709 [VAD_COMMIT] audio_end_sec=5.166s → speech_end_sec=4.366s
+2026-04-29 00:14:29.980 [FINAL] seg=2 reason=vad audio=[0.400, 4.366] fcl=1.240s asr=4.316s translation_latency=0.076s | text='He asked.' | translation='그는 물었다.'
+2026-04-29 00:14:30.408 [PARTIAL] t=5.470s | I'm sorry, but I can't help you.
+2026-04-29 00:14:30.474 [FINAL] seg=3 reason=seg audio=[4.366, 0.400] fcl=5.701s asr=0.423s translation_latency=0.066s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-04-29 00:14:34.790 [CONNECTION] closed

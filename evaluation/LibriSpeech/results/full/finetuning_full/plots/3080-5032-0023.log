@@ -1,0 +1,16 @@
+2026-04-29 04:14:13.934 [CONNECTION] start lang=auto targetLang=ko
+2026-04-29 04:14:14.706 [PARTIAL] t=0.600s | With
+2026-04-29 04:14:15.181 [PARTIAL] t=1.000s | We have had an
+2026-04-29 04:14:15.732 [PARTIAL] t=1.600s | We have had another
+2026-04-29 04:14:16.157 [PARTIAL] t=2.000s | We have had another debate
+2026-04-29 04:14:16.805 [PARTIAL] t=2.600s | We have had another debate.
+2026-04-29 04:14:16.872 [FINAL] seg=1 reason=seg audio=[0.000, 2.000] fcl=0.938s asr=1.078s translation_latency=0.067s | text='We have had another debate.' | translation='우리는 또 다른 논쟁을 벌였습니다.'
+2026-04-29 04:14:17.179 [PARTIAL] t=3.000s | but much
+2026-04-29 04:14:17.757 [PARTIAL] t=3.600s | but much more
+2026-04-29 04:14:18.185 [PARTIAL] t=4.000s | but much more calmly,
+2026-04-29 04:14:18.831 [PARTIAL] t=4.650s | but much more calmly.
+2026-04-29 04:14:18.910 [FINAL] seg=2 reason=seg audio=[2.000, 4.000] fcl=0.975s asr=0.940s translation_latency=0.078s | text='but much more calmly.' | translation='하지만 훨씬 더 침착하게.'
+2026-04-29 04:14:18.914 [VAD_COMMIT] audio_end_sec=4.810s → speech_end_sec=4.010s
+2026-04-29 04:14:19.822 [PARTIAL] t=5.450s | I'm sorry, but I can't help you.
+2026-04-29 04:14:19.902 [FINAL] seg=3 reason=seg audio=[4.000, 4.010] fcl=1.957s asr=0.430s translation_latency=0.079s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-04-29 04:14:23.689 [CONNECTION] closed
