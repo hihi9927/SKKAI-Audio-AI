@@ -42,6 +42,14 @@ except ImportError:
 from qwen_asr import Qwen3ASRModel
 from qwen_asr.inference.utils import warmup_streaming
 
+try:
+    import sys as _sys
+    _sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
+    from core.llm_corrector import GPTCorrector
+    _CORRECTOR_AVAILABLE = True
+except Exception:
+    _CORRECTOR_AVAILABLE = False
+
 # ──────────────────────────────────────────────────────────────────────
 # silero-vad: 최신 API (v3+) 사용 — VADIterator 기반 스트리밍
 # ──────────────────────────────────────────────────────────────────────
@@ -120,6 +128,10 @@ class StreamingConfig:
 
     # Commit 방식 설정
     enable_dot_commit: bool = False  # True면 온점/느낌표/물음표(dot) 기반 seg commit 활성화
+
+    # LLM 후처리 설정
+    enable_correction: bool = True
+    correction_model: str = "gpt-4o-mini"
 
     # 서버 설정
     host: str = "0.0.0.0"
@@ -355,6 +367,7 @@ class Qwen3ASRStreamingHandler:
         lora_request_en=None,
         lora_request_ko=None,
         vad_model_bytes: Optional[bytes] = None,
+        corrector=None,
     ):
         self.websocket = websocket
         self._get_streaming_id = get_streaming_id
@@ -378,6 +391,7 @@ class Qwen3ASRStreamingHandler:
         self.asr_lock = asyncio.Lock()
         self.http_session: Optional[aiohttp.ClientSession] = None
         self.session_logger: Optional[SessionLogger] = None
+        self.corrector = corrector
 
         # Commit 방식 설정
         self.enable_dot_commit: bool = config.enable_dot_commit
@@ -568,6 +582,8 @@ class Qwen3ASRStreamingHandler:
 
         # 2단계: lock 해제 후 I/O (번역 API) 수행 → 다른 슬롯 flush 비차단
         audio_end_sec = self._get_flush_audio_end_sec()
+        if self.corrector:
+            uncommitted_display = await self.corrector.correct_text(uncommitted_display, current_lang)
         translation, detected_lang, extra = await self._translate(
             uncommitted_display, self.client_target_lang, audio_end_sec
         )
@@ -683,6 +699,8 @@ class Qwen3ASRStreamingHandler:
             for sentence_raw, trigger_reason in sentences_to_commit:
                 # <SEG>는 사용자 출력/번역에서 제거
                 sentence_display = sentence_raw.replace("<SEG>", "").strip()
+                if self.corrector:
+                    sentence_display = await self.corrector.correct_text(sentence_display, current_lang)
                 translation, detected_lang, extra = await self._translate(
                     sentence_display, self.client_target_lang, self.current_time
                 )
@@ -1042,6 +1060,7 @@ class Qwen3ASRStreamingServer:
         self.lora_request_en = None
         self.lora_request_ko = None
         self.vad_model_bytes: Optional[bytes] = None
+        self.corrector: Optional["GPTCorrector"] = None
         self.pairing_hub = PairingHub()
         self.idle_task = None
         self.active_connections = 0
@@ -1126,6 +1145,15 @@ class Qwen3ASRStreamingServer:
 
         logger.info("Model loaded successfully")
 
+        if self.config.enable_correction:
+            if not _CORRECTOR_AVAILABLE:
+                logger.warning("GPT corrector requested but core.llm_corrector import failed — correction disabled")
+            elif not os.environ.get("OPENAI_API_KEY"):
+                logger.warning("GPT corrector requested but OPENAI_API_KEY not set — correction disabled")
+            else:
+                self.corrector = GPTCorrector(model=self.config.correction_model)
+                logger.info(f"GPT corrector enabled (model={self.config.correction_model})")
+
     async def handle_connection(self, websocket):
         """각 연결 처리"""
         async with self.connection_lock:
@@ -1141,6 +1169,7 @@ class Qwen3ASRStreamingServer:
                 lora_request_en=self.lora_request_en,
                 lora_request_ko=self.lora_request_ko,
                 vad_model_bytes=self.vad_model_bytes,
+                corrector=self.corrector,
             )
             await handler.handle()
         finally:
@@ -1259,6 +1288,14 @@ def parse_args():
         help="온점/느낌표/물음표(dot) 기반 seg commit 활성화 (기본값: 비활성화, 베이스라인 모델용)",
     )
     parser.add_argument(
+        "--no-correction", action="store_true",
+        help="GPT LLM 후처리 비활성화 (기본값: 활성화)",
+    )
+    parser.add_argument(
+        "--correction-model", type=str, default="gpt-4o-mini",
+        help="후처리에 사용할 GPT 모델명 (기본값: gpt-4o-mini)",
+    )
+    parser.add_argument(
         "--log-json", action="store_true",
         help="로그를 JSON 형식으로 출력",
     )
@@ -1285,6 +1322,8 @@ def main():
         max_lora_rank=args.max_lora_rank,
         enforce_eager=args.enforce_eager,
         enable_dot_commit=args.enable_dot_commit,
+        enable_correction=not args.no_correction,
+        correction_model=args.correction_model,
     )
 
     server = Qwen3ASRStreamingServer(config)

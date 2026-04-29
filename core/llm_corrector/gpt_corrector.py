@@ -1,11 +1,11 @@
 # coding=utf-8
+import asyncio
 import os
 import re
-import time
 from dataclasses import replace
 from typing import Optional
 
-from openai import OpenAI
+from openai import AsyncOpenAI
 
 from ..types import CommittedSentence
 
@@ -69,7 +69,6 @@ class GPTCorrector:
         api_key: Optional[str] = None,
         model: str = "gpt-4o-mini",
         max_retries: int = 5,
-        request_delay: float = 0.0,
     ):
         key = api_key or os.environ.get("OPENAI_API_KEY")
         if not key:
@@ -77,32 +76,31 @@ class GPTCorrector:
                 "OpenAI API 키가 필요합니다. "
                 "api_key 인자 또는 OPENAI_API_KEY 환경변수를 설정하세요."
             )
-        self._client = OpenAI(api_key=key)
+        self._client = AsyncOpenAI(api_key=key)
         self._model = model
         self._max_retries = max_retries
-        self._request_delay = request_delay
 
-    def correct(self, sentence: CommittedSentence) -> CommittedSentence:
+    async def correct(self, sentence: CommittedSentence) -> CommittedSentence:
         """CommittedSentence를 받아 텍스트만 후보정한 CommittedSentence를 반환.
 
         텍스트가 변경되지 않았으면 동일 객체를 그대로 반환.
         """
-        corrected = self._call_api(sentence.text, sentence.language)
+        corrected = await self._call_api(sentence.text, sentence.language)
         if corrected == sentence.text:
             return sentence
         return replace(sentence, text=corrected)
 
-    def correct_text(self, text: str, language: str = "ko") -> str:
+    async def correct_text(self, text: str, language: str = "ko") -> str:
         """텍스트 문자열을 직접 받아 후보정된 텍스트를 반환 (단독 사용용)."""
-        return self._call_api(text, language)
+        return await self._call_api(text, language)
 
     # ------------------------------------------------------------------
 
-    def _call_api(self, text: str, language: str) -> str:
+    async def _call_api(self, text: str, language: str) -> str:
         system_prompt = _SYSTEM_PROMPTS.get(language, _SYSTEM_PROMPT_KO)
         for attempt in range(self._max_retries):
             try:
-                response = self._client.chat.completions.create(
+                response = await self._client.chat.completions.create(
                     model=self._model,
                     messages=[
                         {"role": "system", "content": system_prompt},
@@ -110,16 +108,13 @@ class GPTCorrector:
                     ],
                     temperature=0,
                 )
-                result = response.choices[0].message.content.strip()
-                if self._request_delay > 0:
-                    time.sleep(self._request_delay)
-                return result
+                return response.choices[0].message.content.strip()
             except Exception as e:
                 msg = str(e)
                 if "429" in msg or "rate_limit" in msg.lower():
                     wait = _parse_retry_after(msg, attempt)
                     print(f"  Rate limit — {wait:.1f}초 대기 후 재시도 ({attempt + 1}/{self._max_retries})")
-                    time.sleep(wait)
+                    await asyncio.sleep(wait)
                 else:
                     raise
         raise RuntimeError(f"최대 재시도({self._max_retries}회) 초과: '{text[:40]}'")
