@@ -1,19 +1,13 @@
-2026-04-29 02:36:19.366 [CONNECTION] start lang=auto targetLang=ko
-2026-04-29 02:36:20.157 [PARTIAL] t=0.600s | It's
-2026-04-29 02:36:20.582 [PARTIAL] t=1.000s | In a case
-2026-04-29 02:36:21.205 [PARTIAL] t=1.600s | In a case of attempted
-2026-04-29 02:36:21.580 [PARTIAL] t=2.000s | In a case of attempted suicide
-2026-04-29 02:36:22.207 [PARTIAL] t=2.600s | In a case of attempted suicide by poison
-2026-04-29 02:36:22.583 [PARTIAL] t=3.000s | In a case of attempted suicide by poisoning,
-2026-04-29 02:36:23.211 [PARTIAL] t=3.600s | In a case of attempted suicide by poisoning, is it
-2026-04-29 02:36:23.609 [PARTIAL] t=4.000s | In a case of attempted suicide by poisoning, is it the duty
-2026-04-29 02:36:24.211 [PARTIAL] t=4.600s | In a case of attempted suicide by poisoning, is it the duty of the
-2026-04-29 02:36:24.611 [PARTIAL] t=5.000s | In a case of attempted suicide by poisoning, is it the duty of the doctor to
-2026-04-29 02:36:25.212 [PARTIAL] t=5.600s | In a case of attempted suicide by poisoning, is it the duty of the doctor to inform the
-2026-04-29 02:36:25.588 [PARTIAL] t=6.000s | In a case of attempted suicide by poisoning, is it the duty of the doctor to inform the police
-2026-04-29 02:36:26.268 [PARTIAL] t=6.630s | In a case of attempted suicide by poisoning, is it the duty of the doctor to inform the police?
-2026-04-29 02:36:26.369 [FINAL] seg=1 reason=seg audio=[0.000, 6.000] fcl=1.003s asr=2.960s translation_latency=0.100s | text='In a case of attempted suicide by poisoning, is it the duty of the doctor to inform the police?' | translation='중독으로 인한 자살 시도의 경우 경찰에 알리는 것이 의사의 의무입니까?'
-2026-04-29 02:36:26.598 [VAD_COMMIT] audio_end_sec=7.022s → speech_end_sec=6.222s
-2026-04-29 02:36:27.430 [PARTIAL] t=7.630s | I'm sorry, but I can't help you.
-2026-04-29 02:36:27.528 [FINAL] seg=2 reason=seg audio=[6.000, 6.222] fcl=1.939s asr=0.426s translation_latency=0.097s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
-2026-04-29 02:36:31.302 [CONNECTION] closed
+2026-04-29 13:14:00.959 [CONNECTION] start lang=auto targetLang=ko
+2026-04-29 13:14:02.175 [PARTIAL] t=1.000s | In a case
+2026-04-29 13:14:03.243 [PARTIAL] t=2.000s | In a case of attempted suicide
+2026-04-29 13:14:04.222 [PARTIAL] t=3.000s | In a case of attempted suicide by poisoning,
+2026-04-29 13:14:05.248 [PARTIAL] t=4.000s | In a case of attempted suicide by poisoning, is it the duty
+2026-04-29 13:14:06.249 [PARTIAL] t=5.000s | In a case of attempted suicide by poisoning, is it the duty of the doctor to
+2026-04-29 13:14:07.228 [PARTIAL] t=6.000s | In a case of attempted suicide by poisoning, is it the duty of the doctor to inform the police
+2026-04-29 13:14:08.259 [PARTIAL] t=7.030s | In a case of attempted suicide by poisoning, is it the duty of the doctor to inform the police?
+2026-04-29 13:14:08.326 [FINAL] seg=1 reason=seg audio=[0.000, 6.000] fcl=1.367s asr=1.841s translation_latency=0.067s | text='In a case of attempted suicide by poisoning, is it the duty of the doctor to inform the police?' | translation='중독으로 인한 자살 시도의 경우 경찰에 알리는 것이 의사의 의무입니까?'
+2026-04-29 13:14:08.327 [VAD_COMMIT] audio_end_sec=7.022s → speech_end_sec=6.222s
+2026-04-29 13:14:09.420 [PARTIAL] t=8.030s | I'm sorry, but I can't help you.
+2026-04-29 13:14:09.492 [FINAL] seg=2 reason=seg audio=[6.000, 6.222] fcl=2.311s asr=0.423s translation_latency=0.072s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-04-29 13:14:12.893 [CONNECTION] closed

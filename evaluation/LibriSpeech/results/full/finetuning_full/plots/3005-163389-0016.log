@@ -1,12 +1,9 @@
-2026-04-29 03:50:50.318 [CONNECTION] start lang=auto targetLang=ko
-2026-04-29 03:50:51.113 [PARTIAL] t=0.600s | And a
-2026-04-29 03:50:51.559 [PARTIAL] t=1.000s | And a horse a
-2026-04-29 03:50:52.161 [PARTIAL] t=1.600s | And the horse a-going like
-2026-04-29 03:50:52.585 [PARTIAL] t=2.000s | And the horse a-going like a house of
-2026-04-29 03:50:53.164 [PARTIAL] t=2.600s | And the horse a-going like a house afire,
-2026-04-29 03:50:53.609 [PARTIAL] t=3.000s | And the horse a-going like a house afire, too.
-2026-04-29 03:50:53.920 [FINAL] seg=1 reason=seg audio=[0.000, 3.000] fcl=0.602s asr=1.443s translation_latency=0.311s | text='And the horse a-going like a house afire, too.' | translation='그리고 말도 집에 불이 붙은 것처럼 움직입니다.'
-2026-04-29 03:50:54.126 [VAD_COMMIT] audio_end_sec=3.692s → speech_end_sec=2.892s
-2026-04-29 03:50:55.052 [PARTIAL] t=4.300s | I'm sorry, but I can't help you.
-2026-04-29 03:50:55.115 [FINAL] seg=2 reason=seg audio=[3.000, 2.892] fcl=1.905s asr=0.427s translation_latency=0.062s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
-2026-04-29 03:50:58.925 [CONNECTION] closed
+2026-04-29 14:28:30.265 [CONNECTION] start lang=auto targetLang=ko
+2026-04-29 14:28:31.509 [PARTIAL] t=1.000s | And a horse a
+2026-04-29 14:28:32.623 [PARTIAL] t=2.000s | And the horse a-going like a house of
+2026-04-29 14:28:33.601 [PARTIAL] t=3.000s | And the horse a-going like a house afire, too.
+2026-04-29 14:28:33.695 [FINAL] seg=1 reason=seg audio=[0.000, 3.000] fcl=0.430s asr=0.919s translation_latency=0.094s | text='And the horse a-going like a house afire, too.' | translation='그리고 말도 집에 불이 붙은 것처럼 움직입니다.'
+2026-04-29 14:28:33.973 [VAD_COMMIT] audio_end_sec=3.692s → speech_end_sec=2.892s
+2026-04-29 14:28:35.395 [PARTIAL] t=4.700s | I'm sorry, but I can't help you.
+2026-04-29 14:28:35.470 [FINAL] seg=2 reason=seg audio=[3.000, 2.892] fcl=2.313s asr=0.424s translation_latency=0.075s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-04-29 14:28:38.870 [CONNECTION] closed
