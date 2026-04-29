@@ -135,6 +135,7 @@ class StreamingConfig:
     # LLM 후처리 설정
     enable_correction: bool = True
     correction_model: str = "gpt-5.4-mini"
+    correction_api_key: Optional[str] = None
 
     # 서버 설정
     host: str = "0.0.0.0"
@@ -1166,7 +1167,7 @@ class Qwen3ASRStreamingServer:
             elif not os.environ.get("OPENAI_API_KEY"):
                 logger.warning("GPT corrector requested but OPENAI_API_KEY not set — correction disabled")
             else:
-                self.corrector = GPTCorrector(model=self.config.correction_model)
+                self.corrector = GPTCorrector(model=self.config.correction_model, api_key=self.config.correction_api_key)
                 logger.info(f"GPT corrector enabled (model={self.config.correction_model})")
 
     async def handle_connection(self, websocket):
@@ -1315,6 +1316,10 @@ def parse_args():
         help="후처리에 사용할 GPT 모델명 (기본값: gpt-5.4-mini)",
     )
     parser.add_argument(
+        "--correction-api-key", type=str, default=None,
+        help="OpenAI API 키 (미지정 시 OPENAI_API_KEY 환경변수 사용)",
+    )
+    parser.add_argument(
         "--log-json", action="store_true",
         help="로그를 JSON 형식으로 출력",
     )
@@ -1344,6 +1349,7 @@ def main():
         restrict_languages=not args.no_restrict_languages,
         enable_correction=not args.no_correction,
         correction_model=args.correction_model,
+        correction_api_key=args.correction_api_key,
     )
 
     server = Qwen3ASRStreamingServer(config)
