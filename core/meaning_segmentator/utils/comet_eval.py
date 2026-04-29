@@ -6,8 +6,9 @@ seg 단위 번역 vs 전체 번역 COMET 비교 스크립트
 - COMET     : hypothesis 품질을 reference 기준으로 산출
 
 점수 필드 및 통계 키는 --field 값에서 자동 결정:
-  gdt_seg_trans   → ref: gdt_full_trans,      score: gdt_comet_score,       stats: gdt_comet_*
-  gpt_seg_trans   → ref: gpt_full_trans,      score: gpt_comet_score,       stats: gpt_comet_*
+  gdt_seg_trans       → ref: gdt_full_trans,      score: gdt_comet_score,       stats: gdt_comet_*
+  gpt_seg_trans       → ref: gpt_full_trans,      score: gpt_comet_score,       stats: gpt_comet_*
+  gpt_seg_nc_trans    → ref: gpt_full_trans,      score: gpt_nc_comet_score,    stats: gpt_nc_comet_*
   finetuned_seg_trans → ref: finetuned_full_trans, score: finetuned_comet_score, stats: finetuned_comet_*
                     (finetuned_text를 번역 → finetuned_seg_trans, text를 번역 → finetuned_full_trans)
 """
@@ -35,19 +36,29 @@ def translate_seg(seg_text: str, src: str = "ko", tgt: str = "en") -> str:
     return " ".join(translated)
 
 
+# 기본 split("_")[0] 로 처리할 수 없는 필드의 prefix / ref 매핑
+_FIELD_PREFIX_MAP: dict[str, str] = {
+    "gpt_seg_nc_trans": "gpt_nc",
+}
+_PREFIX_REF_MAP: dict[str, str] = {
+    "gpt_nc": "gpt_full_trans",
+}
+
+
 def field_prefix(field: str) -> str:
-    """gdt_seg_trans → gdt"""
-    return field.split("_")[0]
+    """gdt_seg_trans → gdt,  gpt_seg_nc_trans → gpt_nc"""
+    return _FIELD_PREFIX_MAP.get(field, field.split("_")[0])
 
 
 def score_field_name(field: str) -> str:
-    """gdt_seg_trans → gdt_comet_score"""
+    """gdt_seg_trans → gdt_comet_score,  gpt_seg_nc_trans → gpt_nc_comet_score"""
     return f"{field_prefix(field)}_comet_score"
 
 
 def ref_field_name(field: str) -> str:
-    """gdt_seg_trans → gdt_full_trans"""
-    return f"{field_prefix(field)}_full_trans"
+    """gdt_seg_trans → gdt_full_trans,  gpt_seg_nc_trans → gpt_full_trans"""
+    pfx = field_prefix(field)
+    return _PREFIX_REF_MAP.get(pfx, f"{pfx}_full_trans")
 
 
 def main():
