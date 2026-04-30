@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Modal,
   Animated,
+  Easing,
   StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,6 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle, Path, Rect, Ellipse } from 'react-native-svg';
+import { LinearGradient } from 'expo-linear-gradient';
 import { LANGUAGES, Language, CONVERSATION_MODES } from '../constants/languages';
 import { useWebSocketContext } from '../context/WebSocketContext';
 import { useAudioRecording } from '../hooks/useAudioRecording';
@@ -30,6 +32,28 @@ interface TranscriptionEntry {
   translatedText: string;
   timestamp: number;
 }
+
+// ─── UI string localizations ──────────────────────────────────────────────────
+const UI_STRINGS: Record<string, {
+  peerLanguage: string; mode: string;
+  modes: Record<string, string>;
+  collapse: string; configureAndStart: string; startSpeaking: string;
+  listening: string; start: string; connectingServer: string; startingServer: string;
+  stop: string; resume: string; back: string; cancel: string;
+  endTitle: string; endMsg: string; end: string;
+  errTitle: string; langMustDiffer: string; peerPickerTitle: string; connectionFailed: string;
+}> = {
+  en: { peerLanguage: 'PEER LANGUAGE', mode: 'MODE', modes: { 'mode-1': 'Speaker', 'mode-2': 'Earphone', 'mode-3': 'Both' }, collapse: 'Collapse ▲', configureAndStart: 'Configure and tap Start', startSpeaking: 'Start speaking', listening: 'Listening...', start: 'Start', connectingServer: 'Connecting to server...', startingServer: 'Starting server...', stop: 'Stop', resume: 'Resume', back: 'Back', cancel: 'Cancel', endTitle: 'End conversation', endMsg: 'Do you want to end the conversation?', end: 'End', errTitle: 'Error', langMustDiffer: 'My language and peer language must be different.', peerPickerTitle: 'Peer Language', connectionFailed: 'Connection failed' },
+  ko: { peerLanguage: '상대방 언어', mode: '모드', modes: { 'mode-1': '스피커', 'mode-2': '이어폰', 'mode-3': '둘다' }, collapse: '접기 ▲', configureAndStart: '설정 후 시작을 누르세요', startSpeaking: '말씀해 주세요', listening: '듣는 중...', start: '시작', connectingServer: '서버 연결 중...', startingServer: '서버 시작 중...', stop: '중지', resume: '재개', back: '종료', cancel: '취소', endTitle: '대화 종료', endMsg: '대화를 종료하시겠습니까?', end: '종료', errTitle: '오류', langMustDiffer: '내 언어와 상대방 언어가 달라야 합니다.', peerPickerTitle: '상대방 언어', connectionFailed: '연결 실패' },
+  ja: { peerLanguage: '相手の言語', mode: 'モード', modes: { 'mode-1': 'スピーカー', 'mode-2': 'イヤホン', 'mode-3': '両方' }, collapse: '閉じる ▲', configureAndStart: '設定して開始をタップ', startSpeaking: '話してください', listening: '聴いています...', start: '開始', connectingServer: 'サーバー接続中...', startingServer: 'サーバー起動中...', stop: '停止', resume: '再開', back: '終了', cancel: 'キャンセル', endTitle: '会話を終了', endMsg: '会話を終了しますか？', end: '終了', errTitle: 'エラー', langMustDiffer: '自分と相手の言語が異なる必要があります。', peerPickerTitle: '相手の言語', connectionFailed: '接続失敗' },
+  zh: { peerLanguage: '对方语言', mode: '模式', modes: { 'mode-1': '扬声器', 'mode-2': '耳机', 'mode-3': '两者' }, collapse: '收起 ▲', configureAndStart: '设置后点击开始', startSpeaking: '请开始说话', listening: '正在聆听...', start: '开始', connectingServer: '正在连接服务器...', startingServer: '正在启动服务器...', stop: '停止', resume: '继续', back: '结束', cancel: '取消', endTitle: '结束对话', endMsg: '确定要结束对话吗？', end: '结束', errTitle: '错误', langMustDiffer: '我的语言和对方语言必须不同。', peerPickerTitle: '对方语言', connectionFailed: '连接失败' },
+  es: { peerLanguage: 'IDIOMA DEL OTRO', mode: 'MODO', modes: { 'mode-1': 'Altavoz', 'mode-2': 'Auricular', 'mode-3': 'Ambos' }, collapse: 'Contraer ▲', configureAndStart: 'Configura y pulsa Iniciar', startSpeaking: 'Empieza a hablar', listening: 'Escuchando...', start: 'Iniciar', connectingServer: 'Conectando al servidor...', startingServer: 'Iniciando servidor...', stop: 'Detener', resume: 'Reanudar', back: 'Volver', cancel: 'Cancelar', endTitle: 'Finalizar conversación', endMsg: '¿Quieres finalizar la conversación?', end: 'Finalizar', errTitle: 'Error', langMustDiffer: 'Mi idioma y el del otro deben ser distintos.', peerPickerTitle: 'Idioma del otro', connectionFailed: 'Conexión fallida' },
+  fr: { peerLanguage: 'LANGUE DU PAIR', mode: 'MODE', modes: { 'mode-1': 'Haut-parleur', 'mode-2': 'Écouteur', 'mode-3': 'Les deux' }, collapse: 'Réduire ▲', configureAndStart: 'Configurez et appuyez sur Démarrer', startSpeaking: 'Commencez à parler', listening: 'En écoute...', start: 'Démarrer', connectingServer: 'Connexion au serveur...', startingServer: 'Démarrage du serveur...', stop: 'Arrêter', resume: 'Reprendre', back: 'Retour', cancel: 'Annuler', endTitle: 'Terminer la conversation', endMsg: 'Voulez-vous terminer la conversation ?', end: 'Terminer', errTitle: 'Erreur', langMustDiffer: 'Ma langue et celle du pair doivent être différentes.', peerPickerTitle: 'Langue du pair', connectionFailed: 'Connexion échouée' },
+  id: { peerLanguage: 'BAHASA LAWAN', mode: 'MODE', modes: { 'mode-1': 'Speaker', 'mode-2': 'Earphone', 'mode-3': 'Keduanya' }, collapse: 'Tutup ▲', configureAndStart: 'Atur dan ketuk Mulai', startSpeaking: 'Mulai berbicara', listening: 'Mendengarkan...', start: 'Mulai', connectingServer: 'Menghubungkan ke server...', startingServer: 'Memulai server...', stop: 'Berhenti', resume: 'Lanjutkan', back: 'Kembali', cancel: 'Batal', endTitle: 'Akhiri percakapan', endMsg: 'Apakah Anda ingin mengakhiri percakapan?', end: 'Akhiri', errTitle: 'Kesalahan', langMustDiffer: 'Bahasa saya dan bahasa lawan harus berbeda.', peerPickerTitle: 'Bahasa Lawan', connectionFailed: 'Koneksi gagal' },
+  vi: { peerLanguage: 'NGÔN NGỮ ĐỐI TÁC', mode: 'CHẾ ĐỘ', modes: { 'mode-1': 'Loa ngoài', 'mode-2': 'Tai nghe', 'mode-3': 'Cả hai' }, collapse: 'Thu gọn ▲', configureAndStart: 'Cài đặt và nhấn Bắt đầu', startSpeaking: 'Bắt đầu nói', listening: 'Đang nghe...', start: 'Bắt đầu', connectingServer: 'Đang kết nối máy chủ...', startingServer: 'Đang khởi động máy chủ...', stop: 'Dừng', resume: 'Tiếp tục', back: 'Quay lại', cancel: 'Hủy', endTitle: 'Kết thúc cuộc trò chuyện', endMsg: 'Bạn có muốn kết thúc cuộc trò chuyện không?', end: 'Kết thúc', errTitle: 'Lỗi', langMustDiffer: 'Ngôn ngữ của tôi và đối tác phải khác nhau.', peerPickerTitle: 'Ngôn ngữ đối tác', connectionFailed: 'Kết nối thất bại' },
+  th: { peerLanguage: 'ภาษาของคู่สนทนา', mode: 'โหมด', modes: { 'mode-1': 'ลำโพง', 'mode-2': 'หูฟัง', 'mode-3': 'ทั้งสอง' }, collapse: 'ย่อ ▲', configureAndStart: 'ตั้งค่าแล้วแตะเริ่มต้น', startSpeaking: 'เริ่มพูด', listening: 'กำลังฟัง...', start: 'เริ่มต้น', connectingServer: 'กำลังเชื่อมต่อเซิร์ฟเวอร์...', startingServer: 'กำลังเริ่มเซิร์ฟเวอร์...', stop: 'หยุด', resume: 'ดำเนินการต่อ', back: 'กลับ', cancel: 'ยกเลิก', endTitle: 'สิ้นสุดการสนทนา', endMsg: 'คุณต้องการสิ้นสุดการสนทนาหรือไม่?', end: 'สิ้นสุด', errTitle: 'ข้อผิดพลาด', langMustDiffer: 'ภาษาของฉันและคู่สนทนาต้องแตกต่างกัน', peerPickerTitle: 'ภาษาของคู่สนทนา', connectionFailed: 'การเชื่อมต่อล้มเหลว' },
+  de: { peerLanguage: 'SPRACHE DES ANDEREN', mode: 'MODUS', modes: { 'mode-1': 'Lautsprecher', 'mode-2': 'Kopfhörer', 'mode-3': 'Beide' }, collapse: 'Einklappen ▲', configureAndStart: 'Einstellen und Start tippen', startSpeaking: 'Anfangen zu sprechen', listening: 'Höre zu...', start: 'Start', connectingServer: 'Verbinde mit Server...', startingServer: 'Server wird gestartet...', stop: 'Stopp', resume: 'Fortsetzen', back: 'Zurück', cancel: 'Abbrechen', endTitle: 'Gespräch beenden', endMsg: 'Möchten Sie das Gespräch beenden?', end: 'Beenden', errTitle: 'Fehler', langMustDiffer: 'Meine Sprache und die des anderen müssen unterschiedlich sein.', peerPickerTitle: 'Sprache des anderen', connectionFailed: 'Verbindung fehlgeschlagen' },
+};
 
 // ─── Fixed card colors (from prototype) ──────────────────────────────────────
 const MY_CARD_COLOR   = '#6080C8';
@@ -78,39 +102,39 @@ const translateText = async (text: string, sl: string, tl: string): Promise<stri
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-// Logo: S(blue) T(blue) i(light-blue, normal) T(olive) y(pale-yellow)
+// Logo: S(#6080C8) T(#6080C8) i(#9BB4D4) T(#7A9030) y(#E8E0A0) — Prototype.html 기준
 const STiTyLogo = () => (
   <Text style={S.logo}>
     <Text style={{ color: '#6080C8' }}>ST</Text>
     <Text style={{ color: '#9BB4D4' }}>i</Text>
     <Text style={{ color: '#7A9030' }}>T</Text>
-    <Text style={{ color: '#A8B040' }}>y</Text>
+    <Text style={{ color: '#E8E0A0' }}>y</Text>
   </Text>
 );
 
 const StatusDot = ({ active }: { active: boolean }) => {
-  const scale = useRef(new Animated.Value(1)).current;
+  const ringOpacity = useRef(new Animated.Value(0.3)).current;
   const animRef = useRef<Animated.CompositeAnimation | null>(null);
 
   useEffect(() => {
     if (active) {
       animRef.current = Animated.loop(
         Animated.sequence([
-          Animated.timing(scale, { toValue: 1.8, duration: 700, useNativeDriver: true }),
-          Animated.timing(scale, { toValue: 1, duration: 700, useNativeDriver: true }),
+          Animated.timing(ringOpacity, { toValue: 0.06, duration: 750, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+          Animated.timing(ringOpacity, { toValue: 0.3, duration: 750, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
         ])
       );
       animRef.current.start();
     } else {
       animRef.current?.stop();
-      scale.setValue(1);
+      ringOpacity.setValue(0.3);
     }
     return () => { animRef.current?.stop(); };
   }, [active]);
 
   return (
     <View style={S.dotWrap}>
-      {active && <Animated.View style={[S.dotRing, { transform: [{ scale }] }]} />}
+      {active && <Animated.View style={[S.dotRing, { opacity: ringOpacity }]} />}
       <View style={[S.dot, { backgroundColor: active ? '#22c55e' : '#ccc' }]} />
     </View>
   );
@@ -121,8 +145,8 @@ const WaveBar = ({ delay }: { delay: number }) => {
   useEffect(() => {
     const loop = Animated.loop(
       Animated.sequence([
-        Animated.timing(h, { toValue: 14, duration: 380, delay, useNativeDriver: false }),
-        Animated.timing(h, { toValue: 3, duration: 380, useNativeDriver: false }),
+        Animated.timing(h, { toValue: 14, duration: 400, delay, useNativeDriver: false }),
+        Animated.timing(h, { toValue: 3, duration: 400, useNativeDriver: false }),
       ])
     );
     loop.start();
@@ -131,12 +155,12 @@ const WaveBar = ({ delay }: { delay: number }) => {
   return <Animated.View style={[S.waveBar, { height: h }]} />;
 };
 
-const RecordingBar = () => (
+const RecordingBar = ({ label }: { label: string }) => (
   <View style={S.recBar}>
     <View style={S.recDot} />
-    <Text style={S.recLabel}>Listening...</Text>
+    <Text style={S.recLabel}>{label}</Text>
     <View style={S.waveRow}>
-      {[0, 80, 160, 240, 320, 240, 160, 80, 0].map((d, i) => (
+      {[0, 100, 200, 300, 400, 300, 200, 100, 0].map((d, i) => (
         <WaveBar key={i} delay={d} />
       ))}
     </View>
@@ -184,6 +208,7 @@ const IdleIllustration = () => (
 
 const LangPickerSheet = ({
   visible, title, selectedCode, excludeCode, onSelect, onClose, myLangCode,
+  cancelLabel = 'Cancel', forceEnglish = false,
 }: {
   visible: boolean;
   title: string;
@@ -192,17 +217,22 @@ const LangPickerSheet = ({
   onSelect: (lang: Language) => void;
   onClose: () => void;
   myLangCode: string;
+  cancelLabel?: string;
+  forceEnglish?: boolean;
 }) => {
+  const { bottom } = useSafeAreaInsets();
   const filtered = LANGUAGES.filter(l => l.code !== excludeCode);
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View style={S.pickerOverlay}>
         <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={onClose} />
-        <View style={S.pickerSheet}>
+        <View style={[S.pickerSheet, { paddingBottom: Math.max(bottom, 16) + 16 }]}>
           <Text style={S.pickerTitle}>{title}</Text>
           <ScrollView>
             {filtered.map(lang => {
-              const name = lang.translations[myLangCode] || lang.nativeName;
+              const name = forceEnglish
+                ? lang.name
+                : (lang.translations[myLangCode] || lang.nativeName);
               const selected = lang.code === selectedCode;
               return (
                 <TouchableOpacity
@@ -218,7 +248,7 @@ const LangPickerSheet = ({
             })}
           </ScrollView>
           <TouchableOpacity style={S.pickerCancel} onPress={onClose}>
-            <Text style={S.pickerCancelTxt}>Cancel</Text>
+            <Text style={S.pickerCancelTxt}>{cancelLabel}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -226,13 +256,36 @@ const LangPickerSheet = ({
   );
 };
 
-const BubbleItem = ({ entry, myLangCode }: { entry: TranscriptionEntry; myLangCode: string }) => {
+const BubbleItem = ({ entry, myLangCode, targetLangCode }: {
+  entry: TranscriptionEntry; myLangCode: string; targetLangCode: string;
+}) => {
   const isMine = entry.language === myLangCode;
-  const clr = getLangColor(entry.language);
+  const isPeer = entry.language === targetLangCode;
+  const clr = isMine
+    ? { bubble: '#6080C8', avatar: '#9BB4D4', text: '#fff', subText: 'rgba(255,255,255,0.65)' }
+    : isPeer
+    ? { bubble: '#f2f2f2', avatar: '#E8E0A0', text: '#1a1a1a', subText: '#aaa' }
+    : { ...getLangColor(entry.language), text: '#fff', subText: 'rgba(255,255,255,0.65)' };
+
+  const slideAnim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.timing(slideAnim, {
+      toValue: 1,
+      duration: 300,
+      easing: Easing.bezier(0.4, 0, 0.2, 1),
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
   return (
-    <View style={[S.bubbleRow, isMine && S.bubbleRowMine]}>
+    <Animated.View style={[S.bubbleRow, isMine && S.bubbleRowMine, {
+      opacity: slideAnim,
+      transform: [{ translateY: slideAnim.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }) }],
+    }]}>
       <View style={[S.avatar, { backgroundColor: clr.avatar }]}>
-        <Text style={S.avatarTxt}>{entry.language.toUpperCase()}</Text>
+        <Text style={[S.avatarTxt, { color: isMine ? '#fff' : '#7A9030' }]}>
+          {entry.language.toUpperCase()}
+        </Text>
       </View>
       <View style={[
         S.bubble,
@@ -242,12 +295,12 @@ const BubbleItem = ({ entry, myLangCode }: { entry: TranscriptionEntry; myLangCo
           borderBottomLeftRadius: isMine ? 18 : 4,
         },
       ]}>
-        <Text style={S.bubbleMain}>{entry.text}</Text>
+        <Text style={[S.bubbleMain, { color: clr.text }]}>{entry.text}</Text>
         {!!entry.translatedText && (
-          <Text style={S.bubbleSub}>{entry.translatedText}</Text>
+          <Text style={[S.bubbleSub, { color: clr.subText }]}>{entry.translatedText}</Text>
         )}
       </View>
-    </View>
+    </Animated.View>
   );
 };
 
@@ -271,6 +324,18 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
   const [transcriptions, setTranscriptions] = useState<TranscriptionEntry[]>([]);
   const [isInitializing, setIsInitializing] = useState(false);
   const [sessionError, setSessionError] = useState('');
+  const [connectPct, setConnectPct] = useState(0);
+  const progressAnim = useRef(new Animated.Value(0)).current;
+  const progressAnimRef = useRef<Animated.CompositeAnimation | null>(null);
+
+  // chips / setup 패널 애니메이션
+  const chipsAnim = useRef(new Animated.Value(0)).current;
+  const setupOpacityAnim = useRef(new Animated.Value(1)).current;
+  const setupHeightAnim = useRef(new Animated.Value(1000)).current;
+  const setupNaturalHeight = useRef(1000);
+  const isSetupAnimatingRef = useRef(false);
+  const isSetupVisibleRef = useRef(true);
+  const setupAnimRef = useRef<Animated.CompositeAnimation | null>(null);
 
   const scrollRef = useRef<ScrollView>(null);
   const entryIdRef = useRef(0);
@@ -338,6 +403,79 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
     };
   }, []);
 
+  // ── Server connect progress ───────────────────────────────────────────────────
+  useEffect(() => {
+    const id = progressAnim.addListener(({ value }) => setConnectPct(Math.round(value * 100)));
+    return () => progressAnim.removeListener(id);
+  }, []);
+
+  useEffect(() => {
+    progressAnimRef.current?.stop();
+    if (serverStatus === 'ec2-starting') {
+      progressAnim.setValue(0);
+    } else if (serverStatus === 'connecting') {
+      progressAnim.setValue(0);
+      progressAnimRef.current = Animated.timing(progressAnim, { toValue: 0.85, duration: 80000, useNativeDriver: false });
+      progressAnimRef.current.start();
+    } else if (serverStatus === 'ready') {
+      Animated.timing(progressAnim, { toValue: 1, duration: 400, useNativeDriver: false }).start();
+    }
+  }, [serverStatus]);
+
+  // ── Setup panel ↔ Chips 전환 애니메이션 (maxHeight + opacity parallel) ────────
+  const prevSetupVisibleRef = useRef(true);
+  useEffect(() => {
+    const visible = sessionState === 'idle' || showSetup;
+    if (visible === prevSetupVisibleRef.current) return;
+    prevSetupVisibleRef.current = visible;
+    isSetupVisibleRef.current = visible;
+
+    setupAnimRef.current?.stop();
+    isSetupAnimatingRef.current = true;
+
+    if (visible) {
+      setupHeightAnim.setValue(0);
+      setupOpacityAnim.setValue(0);
+      // non-idle 상태에서는 collapse 버튼이 추가돼 높이가 늘어나므로 여유 확보
+      const showTargetH = sessionStateRef.current !== 'idle'
+        ? setupNaturalHeight.current + 48
+        : setupNaturalHeight.current;
+      setupAnimRef.current = Animated.parallel([
+        Animated.timing(setupHeightAnim, {
+          toValue: showTargetH,
+          duration: 420,
+          easing: Easing.bezier(0.4, 0, 0.2, 1),
+          useNativeDriver: false,
+        }),
+        Animated.timing(setupOpacityAnim, {
+          toValue: 1,
+          duration: 340,
+          easing: Easing.ease,
+          useNativeDriver: false,
+        }),
+      ]);
+      setupAnimRef.current.start(() => { isSetupAnimatingRef.current = false; });
+      Animated.timing(chipsAnim, { toValue: 0, duration: 250, easing: Easing.ease, useNativeDriver: true }).start();
+    } else {
+      setupAnimRef.current = Animated.parallel([
+        Animated.timing(setupHeightAnim, {
+          toValue: 0,
+          duration: 380,
+          easing: Easing.bezier(0.4, 0, 0.2, 1),
+          useNativeDriver: false,
+        }),
+        Animated.timing(setupOpacityAnim, {
+          toValue: 0,
+          duration: 260,
+          easing: Easing.ease,
+          useNativeDriver: false,
+        }),
+      ]);
+      setupAnimRef.current.start(() => { isSetupAnimatingRef.current = false; });
+      Animated.timing(chipsAnim, { toValue: 1, duration: 380, easing: Easing.ease, useNativeDriver: true }).start();
+    }
+  }, [sessionState, showSetup]);
+
   // ── AppState ─────────────────────────────────────────────────────────────────
   useEffect(() => {
     const prevRef = { current: AppState.currentState };
@@ -351,10 +489,22 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
         setSessionState('paused');
       } else if (next === 'active' && (prev === 'background' || prev === 'inactive') && sessionStateRef.current === 'paused') {
         doResume();
+      } else if (next === 'active' && (prev === 'background' || prev === 'inactive') && sessionStateRef.current === 'idle') {
+        probeServer(); // keepalive 끊겼으면 재기동, 살아있으면 즉시 return
       }
     });
     return () => sub.remove();
   }, []);
+
+  // ── keepalive 실패 감지: serverStatus 'ready'→'idle' 전환 시 자동 재기동 ────────
+  const prevServerStatusRef = useRef<string>(serverStatus);
+  useEffect(() => {
+    const prev = prevServerStatusRef.current;
+    prevServerStatusRef.current = serverStatus;
+    if (serverStatus === 'idle' && prev !== 'idle' && sessionStateRef.current === 'idle') {
+      probeServer();
+    }
+  }, [serverStatus]);
 
   // ── Message listener ─────────────────────────────────────────────────────────
   const handleMessageRef = useRef((msg: any) => {
@@ -402,7 +552,7 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
         processNextTTS();
       },
       () => processNextTTS(),
-      isEarphone,
+      isEarphone, // true → STREAM_VOICE_CALL(이어폰), false → STREAM_MUSIC(스피커)
     );
   }, []);
 
@@ -457,25 +607,37 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
 
   const doStart = async () => {
     if (myLang.code === targetLang.code) {
-      Alert.alert('Error', 'My language and peer language must be different.');
+      const s = UI_STRINGS[myLang.code] ?? UI_STRINGS.en;
+      Alert.alert(s.errTitle, s.langMustDiffer);
       return;
     }
+    const s = UI_STRINGS[myLang.code] ?? UI_STRINGS.en;
     setSessionError('');
     try {
+      // 서버가 준비 안 됐거나 오류 상태면 재시작
       if (serverStatusRef.current !== 'ready') {
-        setIsInitializing(true);
-        await probeServer();
+        await probeServer(serverStatusRef.current === 'error');
       }
-      await connect({ lang: myLang.code, targetLang: targetLang.code });
+      if (serverStatusRef.current !== 'ready') {
+        throw new Error(s.connectionFailed);
+      }
+      try {
+        await connect({ lang: myLang.code, targetLang: targetLang.code });
+      } catch {
+        // connect 실패 = serverStatus는 'ready'였지만 서버 실제로 죽어있음 → 강제 재시작
+        await probeServer(true);
+        if (serverStatusRef.current !== 'ready') {
+          throw new Error(s.connectionFailed);
+        }
+        await connect({ lang: myLang.code, targetLang: targetLang.code });
+      }
       await startRecording();
       applySpeakerRouting();
       sessionStateRef.current = 'recording';
       setSessionState('recording');
       setShowSetup(false);
     } catch (e: any) {
-      setSessionError(e?.message || 'Connection failed');
-    } finally {
-      setIsInitializing(false);
+      setSessionError(e?.message ?? s.connectionFailed);
     }
   };
 
@@ -494,7 +656,14 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
           setIsInitializing(true);
           await probeServer();
         }
-        await connect({ lang: myLangRef.current.code, targetLang: targetLangRef.current.code });
+        try {
+          await connect({ lang: myLangRef.current.code, targetLang: targetLangRef.current.code });
+        } catch {
+          // connect 실패 = 서버가 이미 종료됨. 강제로 서버 재시작 후 재연결
+          setIsInitializing(true);
+          await probeServer(true);
+          await connect({ lang: myLangRef.current.code, targetLang: targetLangRef.current.code });
+        }
       }
       await startRecording();
       applySpeakerRouting();
@@ -508,10 +677,11 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
   };
 
   const doBack = () => {
-    Alert.alert('End conversation', 'Do you want to end the conversation?', [
-      { text: 'Cancel', style: 'cancel' },
+    const s = UI_STRINGS[myLangRef.current.code] ?? UI_STRINGS.en;
+    Alert.alert(s.endTitle, s.endMsg, [
+      { text: s.cancel, style: 'cancel' },
       {
-        text: 'End', style: 'destructive',
+        text: s.end, style: 'destructive',
         onPress: async () => {
           stopTTS();
           await stopRecording();
@@ -546,12 +716,12 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
 
   if (!loaded) return null;
 
+  const ui = UI_STRINGS[myLang.code] ?? UI_STRINGS.en;
   const isIdle = sessionState === 'idle';
   const isRecording = sessionState === 'recording';
   const isPaused = sessionState === 'paused';
-  const setupVisible = isIdle || showSetup;
   const modeObj = CONVERSATION_MODES.find(m => m.id === modeId) ?? CONVERSATION_MODES[0];
-  const bottomPad = Math.max(insets.bottom, 16);
+  const bottomPad = Math.max(insets.bottom, 20);
 
   return (
     <SafeAreaView style={S.container} edges={['top', 'left', 'right']}>
@@ -579,16 +749,26 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
             <Ionicons
               name={isTTSMuted ? 'volume-mute-outline' : 'volume-high-outline'}
               size={20}
-              color={isTTSMuted ? '#C87060' : '#7A9030'}
+              color={isTTSMuted ? '#ccc' : '#7A9030'}
             />
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* ── Setup panel ── */}
-      {setupVisible && (
+      {/* ── Setup panel (maxHeight + opacity parallel animation) ── */}
+      <Animated.View
+        style={{ overflow: 'hidden', maxHeight: setupHeightAnim, opacity: setupOpacityAnim }}
+        onLayout={(e) => {
+          const h = e.nativeEvent.layout.height;
+          if (h > 10 && !isSetupAnimatingRef.current && isSetupVisibleRef.current) {
+            if (Math.abs(h - setupNaturalHeight.current) > 2) {
+              setupNaturalHeight.current = h;
+              setupHeightAnim.setValue(h);
+            }
+          }
+        }}
+      >
         <View style={S.setupPanel}>
-          {/* Language cards — fixed colors per prototype */}
           <View style={S.langRow}>
             <TouchableOpacity
               style={[S.langCard, { backgroundColor: MY_CARD_COLOR }]}
@@ -600,14 +780,24 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
               <Text style={S.langCardArrow}>▾</Text>
             </TouchableOpacity>
 
-            <Text style={S.langSwap}>⇄</Text>
+            <TouchableOpacity
+              style={S.langSwapBtn}
+              onPress={() => {
+                const tmp = myLangRef.current;
+                updateMyLang(targetLangRef.current);
+                updateTargetLang(tmp);
+              }}
+              activeOpacity={0.7}
+            >
+              <Text style={S.langSwap}>⇄</Text>
+            </TouchableOpacity>
 
             <TouchableOpacity
               style={[S.langCard, { backgroundColor: PEER_CARD_COLOR }]}
               onPress={() => setPicker('peer')}
               activeOpacity={0.85}
             >
-              <Text style={S.langCardLabel}>PEER LANGUAGE</Text>
+              <Text style={S.langCardLabel}>{ui.peerLanguage}</Text>
               <Text style={S.langCardValue}>
                 {targetLang.translations[myLang.code] ?? targetLang.name}
               </Text>
@@ -615,9 +805,8 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
             </TouchableOpacity>
           </View>
 
-          {/* Mode segment — 3 options */}
           <View style={S.modeSection}>
-            <Text style={S.modeSectionLabel}>MODE</Text>
+            <Text style={S.modeSectionLabel}>{ui.mode}</Text>
             <View style={S.modeSegment}>
               {CONVERSATION_MODES.map(m => (
                 <TouchableOpacity
@@ -627,7 +816,7 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
                   activeOpacity={0.8}
                 >
                   <Text style={[S.modeOptionTxt, modeId === m.id && S.modeOptionTxtActive]}>
-                    {m.name}
+                    {ui.modes[m.id] ?? m.name}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -636,28 +825,33 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
 
           {!isIdle && (
             <TouchableOpacity style={S.collapseBtn} onPress={() => setShowSetup(false)}>
-              <Text style={S.collapseBtnTxt}>Collapse ▲</Text>
+              <Text style={S.collapseBtnTxt}>{ui.collapse}</Text>
             </TouchableOpacity>
           )}
         </View>
-      )}
+      </Animated.View>
 
-      {/* ── Session chips ── */}
+      {/* ── Session chips (opacity 애니메이션) ── */}
       {!isIdle && !showSetup && (
-        <TouchableOpacity style={S.chips} onPress={() => setShowSetup(true)} activeOpacity={0.8}>
-          <View style={[S.chip, { backgroundColor: MY_CARD_COLOR + '22' }]}>
-            <Text style={[S.chipTxt, { color: MY_CARD_COLOR }]}>{myLang.name}</Text>
-          </View>
-          <Text style={S.chipSep}>↔</Text>
-          <View style={[S.chip, { backgroundColor: PEER_CARD_COLOR + '44' }]}>
-            <Text style={[S.chipTxt, { color: '#6070A0' }]}>
-              {targetLang.translations[myLang.code] ?? targetLang.name}
-            </Text>
-          </View>
-          <View style={[S.chip, { backgroundColor: '#f0f0f0' }]}>
-            <Text style={[S.chipTxt, { color: '#777' }]}>{modeObj.name}</Text>
-          </View>
-        </TouchableOpacity>
+        <Animated.View style={{
+          opacity: chipsAnim,
+          transform: [{ translateY: chipsAnim.interpolate({ inputRange: [0, 1], outputRange: [-6, 0] }) }],
+        }}>
+          <TouchableOpacity style={S.chips} onPress={() => setShowSetup(true)} activeOpacity={0.8}>
+            <View style={[S.chip, { backgroundColor: '#f0f4e8' }]}>
+              <Text style={[S.chipTxt, { color: '#7A9030' }]}>{myLang.name}</Text>
+            </View>
+            <Text style={S.chipSep}>↔</Text>
+            <View style={[S.chip, { backgroundColor: '#eaf2fb' }]}>
+              <Text style={[S.chipTxt, { color: '#6080C8' }]}>
+                {targetLang.translations[myLang.code] ?? targetLang.name}
+              </Text>
+            </View>
+            <View style={[S.chip, { backgroundColor: '#f0f0f0' }]}>
+              <Text style={[S.chipTxt, { color: '#777' }]}>{ui.modes[modeObj.id] ?? modeObj.name}</Text>
+            </View>
+          </TouchableOpacity>
+        </Animated.View>
       )}
 
       {/* ── Error banner ── */}
@@ -679,29 +873,42 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
         {isIdle && (
           <View style={S.idleWrap}>
             <IdleIllustration />
-            <Text style={S.idleTxt}>Configure and tap Start</Text>
+            <Text style={S.idleTxt}>{ui.configureAndStart}</Text>
           </View>
         )}
 
         {!isIdle && transcriptions.length === 0 && (
           <View style={S.idleWrap}>
-            <Text style={{ fontSize: 32 }}>🎙</Text>
-            <Text style={S.idleTxt}>Start speaking</Text>
+            <LinearGradient
+              colors={['rgba(122,144,48,0.1)', 'rgba(6,182,212,0.1)']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={S.micIconWrap}
+            >
+              <Ionicons name="mic" size={26} color="#7A9030" />
+            </LinearGradient>
+            <Text style={S.idleTxt}>{ui.startSpeaking}</Text>
           </View>
         )}
 
         {transcriptions.map(entry => (
-          <BubbleItem key={entry.id} entry={entry} myLangCode={myLang.code} />
+          <BubbleItem key={entry.id} entry={entry} myLangCode={myLang.code} targetLangCode={targetLang.code} />
         ))}
       </ScrollView>
 
       {/* ── Recording bar ── */}
-      {isRecording && <RecordingBar />}
+      {isRecording && <RecordingBar label={ui.listening} />}
 
       {/* ── Loading overlay ── */}
       {isInitializing && (
         <View style={S.initOverlay}>
-          <Text style={S.initTxt}>Connecting...</Text>
+          <Text style={S.initTxt}>
+            {serverStatus === 'ec2-starting'
+              ? `${ui.startingServer} (${connectPct}%)`
+              : serverStatus === 'connecting'
+              ? `${ui.connectingServer} (${connectPct}%)`
+              : ui.connectingServer}
+          </Text>
         </View>
       )}
 
@@ -709,17 +916,18 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
       <View style={[S.bottomBar, { paddingBottom: bottomPad + 8 }]}>
         {isIdle && (
           <TouchableOpacity
-            style={[S.btn, S.btnOutline, serverStatus !== 'ready' && S.btnDisabled]}
+            style={[S.btn, S.btnOutline,
+              (serverStatus === 'ec2-starting' || serverStatus === 'connecting') && S.btnDisabled]}
             onPress={doStart}
             activeOpacity={0.85}
-            disabled={serverStatus !== 'ready' || isInitializing}
+            disabled={serverStatus === 'ec2-starting' || serverStatus === 'connecting' || isInitializing}
           >
             <Text style={[S.btnTxt, { color: '#7A9030' }]}>
-              {serverStatus === 'ready'
-                ? 'Start'
-                : serverStatus === 'connecting'
-                  ? 'Connecting to server...'
-                  : 'Starting server...'}
+              {serverStatus === 'ready' || serverStatus === 'idle' || serverStatus === 'error'
+                ? ui.start
+                : serverStatus === 'ec2-starting'
+                ? ui.startingServer
+                : `${ui.connectingServer} (${connectPct}%)`}
             </Text>
           </TouchableOpacity>
         )}
@@ -727,7 +935,7 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
         {isRecording && (
           <>
             <TouchableOpacity style={[S.btn, S.btnStop]} onPress={doStop} activeOpacity={0.85}>
-              <Text style={[S.btnTxt, { color: '#ef4444' }]}>Stop</Text>
+              <Text style={[S.btnTxt, { color: '#ef4444' }]}>{ui.stop}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[S.btn, S.btnGhost]} onPress={doBack} activeOpacity={0.85}>
               <Text style={[S.btnTxt, { color: '#999' }]}>✕</Text>
@@ -737,11 +945,11 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
 
         {isPaused && (
           <>
-            <TouchableOpacity style={[S.btn, S.btnOutline]} onPress={doResume} activeOpacity={0.85}>
-              <Text style={[S.btnTxt, { color: '#7A9030' }]}>Resume</Text>
+            <TouchableOpacity style={[S.btn, S.btnPaused]} onPress={doResume} activeOpacity={0.85}>
+              <Text style={[S.btnTxt, { color: '#aaa' }]}>{ui.resume}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[S.btn, S.btnOutlineCyan]} onPress={doBack} activeOpacity={0.85}>
-              <Text style={[S.btnTxt, { color: '#6080C8' }]}>Back</Text>
+            <TouchableOpacity style={[S.btn, S.btnPaused]} onPress={doBack} activeOpacity={0.85}>
+              <Text style={[S.btnTxt, { color: '#aaa' }]}>{ui.back}</Text>
             </TouchableOpacity>
           </>
         )}
@@ -756,15 +964,18 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
         onSelect={updateMyLang}
         onClose={() => setPicker(null)}
         myLangCode={myLang.code}
+        cancelLabel="Cancel"
+        forceEnglish
       />
       <LangPickerSheet
         visible={picker === 'peer'}
-        title="Peer Language"
+        title={ui.peerPickerTitle}
         selectedCode={targetLang.code}
         excludeCode={myLang.code}
         onSelect={updateTargetLang}
         onClose={() => setPicker(null)}
         myLangCode={myLang.code}
+        cancelLabel={ui.cancel}
       />
     </SafeAreaView>
   );
@@ -779,8 +990,8 @@ const S = StyleSheet.create({
   logo: { fontSize: 28, fontWeight: '900', letterSpacing: -1 },
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   iconBtn: { padding: 4 },
-  dotWrap: { width: 16, height: 16, alignItems: 'center', justifyContent: 'center' },
-  dotRing: { position: 'absolute', width: 16, height: 16, borderRadius: 8, backgroundColor: 'rgba(34,197,94,0.2)' },
+  dotWrap: { width: 20, height: 20, alignItems: 'center', justifyContent: 'center' },
+  dotRing: { position: 'absolute', width: 20, height: 20, borderRadius: 10, backgroundColor: '#22c55e' },
   dot: { width: 8, height: 8, borderRadius: 4 },
 
   // Setup panel
@@ -790,6 +1001,7 @@ const S = StyleSheet.create({
   langCardLabel: { fontSize: 9, fontWeight: '700', color: 'rgba(255,255,255,0.7)', letterSpacing: 0.5, marginBottom: 5 },
   langCardValue: { fontSize: 16, fontWeight: '700', color: '#fff' },
   langCardArrow: { position: 'absolute', top: 10, right: 12, color: 'rgba(255,255,255,0.6)', fontSize: 12 },
+  langSwapBtn: { padding: 8 },
   langSwap: { fontSize: 20, color: '#ccc' },
   modeSection: { marginBottom: 4 },
   modeSectionLabel: { fontSize: 9, fontWeight: '700', color: '#aaa', letterSpacing: 0.5, marginBottom: 6 },
@@ -816,7 +1028,8 @@ const S = StyleSheet.create({
   convContent: { paddingVertical: 12 },
   convContentFlex: { flexGrow: 1 },
   idleWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 40, gap: 12 },
-  idleTxt: { fontSize: 13, color: '#ccc', textAlign: 'center' },
+  micIconWrap: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },
+  idleTxt: { fontSize: 13, color: '#bbb', textAlign: 'center' },
 
   // Bubbles
   bubbleRow: { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 5, gap: 8, alignItems: 'flex-end' },
@@ -844,13 +1057,14 @@ const S = StyleSheet.create({
   btnTxt: { fontSize: 15, fontWeight: '600' },
   btnOutline: { borderWidth: 2, borderColor: '#7A9030', backgroundColor: '#fff' },
   btnOutlineCyan: { borderWidth: 2, borderColor: '#6080C8', backgroundColor: '#fff' },
+  btnPaused: { borderWidth: 2, borderColor: '#ccc', backgroundColor: 'transparent' },
   btnStop: { backgroundColor: '#fff0f0' },
   btnGhost: { flex: 0, width: 52, backgroundColor: '#f5f5f5' },
   btnDisabled: { opacity: 0.45 },
 
   // Language picker
   pickerOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.3)', justifyContent: 'flex-end' },
-  pickerSheet: { backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 20, paddingHorizontal: 20, paddingBottom: 32, maxHeight: '75%' },
+  pickerSheet: { backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 20, paddingHorizontal: 20, maxHeight: '75%' },
   pickerTitle: { fontSize: 13, fontWeight: '700', color: '#aaa', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 },
   pickerOption: { paddingVertical: 13, paddingHorizontal: 14, borderRadius: 12 },
   pickerOptionSel: { backgroundColor: '#eaf2fb' },

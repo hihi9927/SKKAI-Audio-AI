@@ -4,19 +4,25 @@ const SERVER_STARTER_URL =
 const POLL_INTERVAL_MS = 10000;
 const MAX_SERVER_START_WAIT_MS = 4 * 60 * 1000;
 
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const sleep = (ms: number, signal?: AbortSignal) =>
+  new Promise<void>((resolve, reject) => {
+    const t = setTimeout(resolve, ms);
+    signal?.addEventListener('abort', () => { clearTimeout(t); reject(new DOMException('Aborted', 'AbortError')); }, { once: true });
+  });
 
-export const startServer = async (): Promise<void> => {
+export const startServer = async (signal?: AbortSignal): Promise<void> => {
   const deadline = Date.now() + MAX_SERVER_START_WAIT_MS;
 
   while (Date.now() < deadline) {
-    const res = await fetch(SERVER_STARTER_URL);
+    if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+
+    const res = await fetch(SERVER_STARTER_URL, { signal });
     const data = await res.json();
 
     if (data.status === 'ready') return;
 
     if (data.status === 'starting' || data.status === 'stopping') {
-      await sleep(POLL_INTERVAL_MS);
+      await sleep(POLL_INTERVAL_MS, signal);
       continue;
     }
 

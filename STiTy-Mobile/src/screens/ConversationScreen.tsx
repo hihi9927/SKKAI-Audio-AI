@@ -143,7 +143,8 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     const ttsStart = new Date().toISOString();
 
     const isEarphoneMode = modeRef.current === 'mode-2';
-    if (isEarphoneMode) setSpeakerphoneOn(false);
+    // 매 TTS마다 오디오 모드 설정: 스피커=MODE_IN_COMMUNICATION, 이어폰=MODE_NORMAL(BT A2DP 활성화)
+    setSpeakerphoneOn(!isEarphoneMode);
     ttsSpeak(next.text, next.lang, 1.3,
       () => {
         sendMessageRef.current({ type: 'tts_log', text: next.text, lang: next.lang, start: ttsStart, end: new Date().toISOString() });
@@ -232,7 +233,10 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
       // partial: 화면에 표시하지 않음
     } else if (message.type === 'final') {
       const serverTranslation = (message.translation || '').trim();
-      addTranscription(lang, text, serverTranslation || undefined);
+      // serverTranslation === text 이면 서버가 번역 대신 원문을 그대로 반환한 것(예: zh→zh)
+      // 이 경우 undefined로 처리해 클라이언트 측 Google Translate 폴백을 실행
+      const validTranslation = (serverTranslation && serverTranslation !== text) ? serverTranslation : undefined;
+      addTranscription(lang, text, validTranslation);
       setDisplayText(null);
 
     }

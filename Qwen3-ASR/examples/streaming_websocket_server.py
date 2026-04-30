@@ -1210,6 +1210,7 @@ class Qwen3ASRStreamingServer:
             max_size=10 * 1024 * 1024,
         ):
             logger.info(f"Server listening on ws://{self.config.host}:{self.config.port}")
+            self._restart_idle_timer()  # start idle timer so server shuts down if no client connects
             await asyncio.Future()  # run forever
         
         

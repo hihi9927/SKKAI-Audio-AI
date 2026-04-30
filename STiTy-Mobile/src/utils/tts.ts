@@ -37,7 +37,9 @@ export const ttsSpeak = (
   useVoiceStream = false,
 ) => {
   const lang = toBCP47(langCode);
-  const stream = useVoiceStream ? 'STREAM_VOICE_CALL' : 'STREAM_MUSIC';
+  // 스피커: MODE_IN_COMMUNICATION + BUILTIN_SPEAKER → STREAM_MUSIC이 스피커로 라우팅.
+  // 이어폰: MODE_NORMAL → BT A2DP 활성화 → STREAM_MUSIC이 이어폰으로 자동 라우팅.
+  const stream = 'STREAM_MUSIC';
   Tts.setDefaultLanguage(lang)
     .then(() => {
       Tts.setDefaultRate(rate, true);

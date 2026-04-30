@@ -18,13 +18,13 @@ interface WebSocketContextType {
   sendAudio: (audioData: ArrayBuffer) => void;
   sendMessage: (message: object) => void;
   addMessageListener: (listener: (msg: any) => void) => () => void;
-  probeServer: () => void;
+  probeServer: (force?: boolean) => void;
 }
 
 const WebSocketContext = createContext<WebSocketContextType | null>(null);
 
 const SERVER_URL = 'wss://edra-raspiest-eagerly.ngrok-free.dev';
-const PROBE_SOCKET_TIMEOUT_MS = 10000;
+const PROBE_SOCKET_TIMEOUT_MS = 15000;
 const PROBE_RETRY_INTERVAL_MS = 10000;
 const MAX_WEBSOCKET_PROBE_WAIT_MS = 4 * 60 * 1000;
 const KEEPALIVE_RECONNECT_MS = 3000;
@@ -44,6 +44,8 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const isProbingRef = useRef(false);
   const serverStatusRef = useRef<ServerStatus>('idle');
   const listenersRef = useRef<Set<(msg: any) => void>>(new Set());
+  const keepAliveFailCountRef = useRef(0);
+  const probeAbortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     serverStatusRef.current = serverStatus;
@@ -58,6 +60,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const stopKeepAlive = useCallback(() => {
     keepAliveEnabledRef.current = false;
+    keepAliveFailCountRef.current = 0;
     clearKeepAliveTimer();
     if (keepAliveWsRef.current) {
       keepAliveWsRef.current.close(1000, 'Stop keepalive');
@@ -83,6 +86,10 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       ws.binaryType = 'arraybuffer';
       keepAliveWsRef.current = ws;
 
+      ws.onopen = () => {
+        keepAliveFailCountRef.current = 0;
+      };
+
       ws.onmessage = () => {
         // keepalive socket just needs to stay connected
       };
@@ -96,6 +103,11 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           keepAliveWsRef.current = null;
         }
         if (keepAliveEnabledRef.current && !wsRef.current) {
+          keepAliveFailCountRef.current += 1;
+          if (keepAliveFailCountRef.current >= 3 && serverStatusRef.current === 'ready') {
+            setServerStatus('idle');
+            keepAliveFailCountRef.current = 0;
+          }
           clearKeepAliveTimer();
           keepAliveTimerRef.current = setTimeout(connectKeepAlive, KEEPALIVE_RECONNECT_MS);
         }
@@ -105,17 +117,24 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     connectKeepAlive();
   }, [clearKeepAliveTimer]);
 
-  const probeServer = useCallback(async () => {
-    if (isProbingRef.current || serverStatusRef.current === 'ready') return;
+  const probeServer = useCallback(async (force = false) => {
+    if (isProbingRef.current) return;
+    if (!force && serverStatusRef.current === 'ready' && keepAliveWsRef.current?.readyState === WebSocket.OPEN) return;
     isProbingRef.current = true;
+    stopKeepAlive();
     setServerStatus('ec2-starting');
+
+    probeAbortRef.current?.abort();
+    const abort = new AbortController();
+    probeAbortRef.current = abort;
 
     if (probeWsRef.current && probeWsRef.current.readyState !== WebSocket.CLOSED) {
       probeWsRef.current.close();
     }
 
     try {
-      await startServer();
+      await startServer(abort.signal);
+      if (abort.signal.aborted) return;
       setServerStatus('connecting');
 
       const tryProbe = (): Promise<void> =>
@@ -180,7 +199,8 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (!connected) throw new Error('Server connection timeout');
       setServerStatus('ready');
       startKeepAlive();
-    } catch {
+    } catch (e: any) {
+      if (e?.name === 'AbortError') return; // app closed mid-probe, silently exit
       setServerStatus('error');
       stopKeepAlive();
     } finally {
@@ -203,7 +223,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         const timeout = setTimeout(() => {
           ws.close();
           reject(new Error('Connection timed out'));
-        }, 10000);
+        }, 15000);
 
         ws.onopen = () => {
           console.log('WebSocket connected');
@@ -287,6 +307,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   useEffect(() => {
     return () => {
+      probeAbortRef.current?.abort();
       stopKeepAlive();
       if (wsRef.current) {
         wsRef.current.close(1000, 'Provider unmount');
