@@ -277,7 +277,7 @@ class Qwen3ASRModel:
         llm = AsyncLLMEngine.from_engine_args(engine_args)
 
         processor = Qwen3ASRProcessor.from_pretrained(model, fix_mistral_regex=True)
-        sampling_params = SamplingParams(**({"temperature": 0.0, "max_tokens": max_new_tokens}))
+        sampling_params = SamplingParams(**({"temperature": 0.0, "max_tokens": max_new_tokens, "skip_special_tokens": False}))  # DEBUG: special token 출력용
 
         forced_aligner_model = None
         if forced_aligner is not None:
