@@ -456,6 +456,12 @@ def main():
         max_lora_rank=args.max_lora_rank,
         enforce_eager=args.enforce_eager,
         enable_dot_commit=args.enable_dot_commit,
+        restrict_languages=not args.no_restrict_languages,
+        enable_correction=not args.no_correction,
+        correction_model=args.correction_model,
+        api_key=args.api_key,
+        enable_gpt_translation=args.gpt_translation,
+        translation_model=args.translation_model,
     )
 
     server = FCLStreamingServer(config)
