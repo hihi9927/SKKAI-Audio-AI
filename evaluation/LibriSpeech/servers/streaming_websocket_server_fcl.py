@@ -172,6 +172,8 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         first_with_punct_time: Optional[float] = None
 
         for t, text in self._partial_snapshots:
+            if t < self.segment_audio_start_sec:
+                continue
             if needle in text:
                 first_with_punct_time = t
                 break
