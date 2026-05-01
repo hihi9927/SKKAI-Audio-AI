@@ -14,8 +14,8 @@ FSL (First SEG Latency) = encode_sec + decode_sec = fsl_sec
   : (회색)  : seg_audio_sec — SEG 감지 당시 수신된 오디오 끝 (청크 경계)
 
 사용법:
-  python export_fcl_ftl_plots.py --json results/qwen3_test_other_fcl.json \\
-      --audio-root /path/to/LibriSpeech/test-other \\
+  python export_fcl_ftl_plots.py --json /home/ubuntu/STiTy/evaluation/LibriSpeech/servers/results/fsl/test/test_other_fsl_test.json \\
+      --audio-root /home/ubuntu/STiTy/evaluation/LibriSpeech/LibriSpeech/test-other \\
       --max-files 50 --out-dir output_plots
 
   python export_fcl_ftl_plots.py --json results/qwen3_test_other_fcl.json \\
@@ -312,7 +312,7 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
     prev_end = 0.0
 
     for i, seg in enumerate(segs):
-        y      = i + 1
+        y      = n_segs - i   # seg[0] → top (y=n_segs), seg[-1] → bottom (y=1)
         a_start = _audio_start(seg)
         a_end   = _audio_end(seg)
         reason  = _reason(seg)
@@ -326,12 +326,25 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
             seg_audio   = seg.get("seg_audio_sec")
 
             if fsl is not None and encode_sec is not None:
-                # encode bar
-                ax.barh(y, encode_sec - a_start, left=a_start, height=bh,
-                        color=STYLE["encode"], alpha=0.9, zorder=3)
+                # encode bar (chunk-split if chunk_encode_log available)
+                chunk_log = seg.get("chunk_encode_log", [])
+                if chunk_log:
+                    _CHUNK_COLORS = ["#4CAF50", "#81C784"]
+                    sorted_chunks = sorted(chunk_log, key=lambda c: c.get("chunk_id", 0))
+                    prev_pos = a_start
+                    for k, chunk in enumerate(sorted_chunks):
+                        audio_pos = chunk.get("audio_pos_sec", prev_pos)
+                        bar_width = audio_pos - prev_pos
+                        if bar_width > 0:
+                            ax.barh(y, bar_width, left=prev_pos, height=bh,
+                                    color=_CHUNK_COLORS[k % 2], alpha=0.9, zorder=3)
+                        prev_pos = audio_pos
+                else:
+                    ax.barh(y, encode_sec - a_start, left=a_start, height=bh,
+                            color=STYLE["encode"], alpha=0.9, zorder=3)
                 if "encode" not in legend_handles:
                     legend_handles["encode"] = mpatches.Patch(
-                        color=STYLE["encode"], label="Encode layer")
+                        color=STYLE["encode"], label="Encode layer (per chunk)")
 
                 # decode bar
                 decode_dur = fsl - encode_sec
@@ -401,7 +414,7 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
         prev_end = a_end
 
     ax.set_yticks(range(1, n_segs + 1))
-    ax.set_yticklabels([f"seg {_seg_id(s)}" for s in segs], fontsize=8)
+    ax.set_yticklabels([f"seg {_seg_id(s)}" for s in reversed(segs)], fontsize=8)
     ax.set_xlim(0, x_max)
     ax.set_ylim(0.25, n_segs + 0.9)
     ax.set_xlabel("Stream elapsed time (s)", fontsize=9)
