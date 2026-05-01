@@ -804,6 +804,7 @@ class Qwen3ASRModel:
             request_id = str(uuid.uuid4())
             final = None
             prev_seg_count = 0
+            state._decode_start_perf = time.perf_counter()
             async for out in self.model.generate(inp, sp, request_id=request_id, lora_request=lora_request):
                 final = out
                 if on_seg and not out.finished:

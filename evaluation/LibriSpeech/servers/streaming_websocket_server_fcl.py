@@ -63,7 +63,8 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         # better audio_end_sec estimate for seg commits than current_time at
         # detection (which includes look-ahead audio needed for punctuation).
         self._partial_snapshots: list[tuple[float, str]] = []
-        self._slot_asr_sec: dict[str, float] = {}
+        self._slot_final_decode_sec: dict[str, float] = {}  # _asr_finish_streaming 누적
+        self._slot_seg_detected: dict[str, dict] = {}       # 첫 SEG 감지 시점 {elapsed_sec, audio_sec, decode_start_elapsed_sec}
         # Per-connection log buffer (populated when client requests log capture)
         self._connection_log: list[str] = []
         self._log_output_path: Optional[str] = None
@@ -90,48 +91,63 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         self.pending_audio_end_sec = None
         self._effective_audio_end_sec = None
         self._partial_snapshots = []
-        self._slot_asr_sec = {}
+        self._slot_final_decode_sec = {}
+        self._slot_seg_detected = {}
         self._connection_log = []
 
     def _stream_elapsed_sec(self) -> float:
         return time.perf_counter() - self.stream_start_perf
 
     async def _asr_streaming_transcribe(self, chunk, slot_key=None):
-        key = slot_key if slot_key is not None else self.active_slot
-        t0 = time.perf_counter()
         await super()._asr_streaming_transcribe(chunk, slot_key)
-        self._slot_asr_sec[key] = self._slot_asr_sec.get(key, 0.0) + (time.perf_counter() - t0)
 
     async def _asr_finish_streaming(self, slot_key=None):
         key = slot_key if slot_key is not None else self.active_slot
         t0 = time.perf_counter()
         await super()._asr_finish_streaming(slot_key)
-        self._slot_asr_sec[key] = self._slot_asr_sec.get(key, 0.0) + (time.perf_counter() - t0)
+        self._slot_final_decode_sec[key] = self._slot_final_decode_sec.get(key, 0.0) + (time.perf_counter() - t0)
+
+    async def _process_slot_updates(self, slot_key=None):
+        key = slot_key if slot_key is not None else self.active_slot
+        if key not in self._slot_seg_detected:
+            elapsed = self._stream_elapsed_sec()
+            slot = self._slot(slot_key)
+            decode_start_perf = getattr(slot["state"], "_decode_start_perf", None)
+            decode_start_elapsed = (decode_start_perf - self.stream_start_perf) if decode_start_perf else None
+            self._slot_seg_detected[key] = {
+                "elapsed_sec": elapsed,
+                "audio_sec": self.current_time,
+                "decode_start_elapsed_sec": decode_start_elapsed,
+            }
+            logger.info(
+                "[SEG] slot=%s fsl=%.3fs decode_start=%.3fs audio_pos=%.3fs",
+                key, elapsed,
+                decode_start_elapsed if decode_start_elapsed is not None else -1.0,
+                self.current_time,
+            )
+            self._clog(
+                f"[SEG] slot={key} fsl={elapsed:.3f}s "
+                f"decode_start={decode_start_elapsed:.3f}s audio_pos={self.current_time:.3f}s"
+                if decode_start_elapsed is not None else
+                f"[SEG] slot={key} fsl={elapsed:.3f}s audio_pos={self.current_time:.3f}s"
+            )
+        await super()._process_slot_updates(slot_key)
 
     async def _translate_with_metadata(
         self,
         text: str,
         target_lang: str,
-        audio_end_sec: float,
     ) -> tuple[str, str, dict[str, Any]]:
-        translate_start_elapsed_sec = self._stream_elapsed_sec()
-        translate_start_wall = _utc_now_iso()
+        t0 = self._stream_elapsed_sec()
         translation, detected_lang = await base_server.google_translate_async(
             self.http_session,
             text,
             target_lang,
         )
-        translate_done_elapsed_sec = self._stream_elapsed_sec()
-        translate_done_wall = _utc_now_iso()
+        trans_sec = self._stream_elapsed_sec() - t0
 
         return translation, detected_lang, {
-            "translate_target_lang": target_lang,
-            "translate_started_elapsed_sec": translate_start_elapsed_sec,
-            "translate_done_elapsed_sec": translate_done_elapsed_sec,
-            "translate_started_wall_utc": translate_start_wall,
-            "translate_done_wall_utc": translate_done_wall,
-            "translation_latency_sec": translate_done_elapsed_sec - translate_start_elapsed_sec,
-            "fcl_sec": translate_done_elapsed_sec - audio_end_sec,
+            "trans_sec": trans_sec,
         }
 
     # ── 훅 오버라이드 ──────────────────────────────────────────────────────────
@@ -201,7 +217,7 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
             # current_time (which includes look-ahead chunks for punctuation).
             effective_audio_end = self._seg_audio_end_sec(text)
         self._effective_audio_end_sec = effective_audio_end
-        return await self._translate_with_metadata(text, target_lang, effective_audio_end)
+        return await self._translate_with_metadata(text, target_lang)
 
     def _get_flush_audio_end_sec(self) -> float:
         return self.pending_audio_end_sec if self.pending_audio_end_sec is not None else self.current_time
@@ -228,7 +244,24 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         extra: Optional[dict] = None,
     ) -> None:
         timing = extra or {}
-        timing["asr_inference_sec"] = self._slot_asr_sec.pop(slot_key, 0.0)
+
+        # VAD/finish 커밋 전용: _asr_finish_streaming 시간
+        final_decode_sec = self._slot_final_decode_sec.pop(slot_key, 0.0)
+        timing["final_decode_sec"] = final_decode_sec
+
+        # encode / decode / FSL
+        seg_info = self._slot_seg_detected.pop(slot_key, None)
+        if seg_info:
+            fsl_sec = seg_info["elapsed_sec"]
+            timing["fsl_sec"] = fsl_sec
+            # encode_sec: stream 시작(오디오 입력) ~ model.generate() 호출 직전
+            # decode_sec: model.generate() 호출 ~ SEG 감지
+            d_start = seg_info.get("decode_start_elapsed_sec")
+            if d_start is not None:
+                timing["encode_sec"] = d_start
+                timing["decode_sec"] = max(0.0, fsl_sec - d_start)
+        encoding_sec = timing.get("encode_sec", 0.0)
+
         if self._effective_audio_end_sec is not None:
             audio_end_sec = self._effective_audio_end_sec
             self._effective_audio_end_sec = None
@@ -246,16 +279,24 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
             "translation": translation,
             "language": language,
             "commitReason": reason,
-            "final_payload_wall_utc": _utc_now_iso(),
             **timing,
         }
-        logger.info("[FINAL] seg=%d reason=%s audio=[%.3f, %.3f] text='%s'", segment_id, reason, audio_start_sec, audio_end_sec, original)
+        logger.info(
+            "[FINAL] seg=%d reason=%s audio=[%.3f, %.3f] "
+            "fsl=%.3fs encode=%.3fs decode=%.3fs final_decode=%.3fs trans=%.3fs | text='%s'",
+            segment_id, reason, audio_start_sec, audio_end_sec,
+            timing.get("fsl_sec", 0.0), encoding_sec,
+            timing.get("decode_sec", 0.0), final_decode_sec,
+            timing.get("trans_sec", 0.0), original,
+        )
         self._clog(
             f"[FINAL] seg={segment_id} reason={reason} "
             f"audio=[{audio_start_sec:.3f}, {audio_end_sec:.3f}] "
-            f"fcl={timing.get('fcl_sec', 0.0):.3f}s "
-            f"asr={timing.get('asr_inference_sec', 0.0):.3f}s "
-            f"translation_latency={timing.get('translation_latency_sec', 0.0):.3f}s | "
+            f"fsl={timing.get('fsl_sec', 0.0):.3f}s "
+            f"encode={encoding_sec:.3f}s "
+            f"decode={timing.get('decode_sec', 0.0):.3f}s "
+            f"final_decode={final_decode_sec:.3f}s "
+            f"trans={timing.get('trans_sec', 0.0):.3f}s | "
             f"text='{original}' | translation='{translation}'"
         )
         await self.send_message("final", **{k: v for k, v in payload.items() if k != "type"})

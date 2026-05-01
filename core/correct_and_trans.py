@@ -77,7 +77,7 @@ class GPTTranslator:
     일관된 용어·문체로 번역한다 (gpt_trans.py SEG_CONTEXT_SYSTEM_PROMPT 방식).
 
     Usage:
-        translator = GPTTranslator(model="gpt-4o-mini")
+        translator = GPTTranslator(model="gpt-5.4-mini")
         corrected, translation = await translator.correct_and_translate(
             text="안녕하세요",
             source_lang_name="Korean",
@@ -89,7 +89,7 @@ class GPTTranslator:
     def __init__(
         self,
         api_key: Optional[str] = None,
-        model: str = "gpt-4o-mini",
+        model: str = "gpt-5.4-mini",
         max_retries: int = 3,
     ):
         key = api_key or os.environ.get("OPENAI_API_KEY")
