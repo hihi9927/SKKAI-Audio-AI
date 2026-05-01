@@ -137,7 +137,7 @@ class StreamingConfig:
     # LLM 후처리 설정
     enable_correction: bool = True
     correction_model: str = "gpt-5.4-mini"
-    correction_api_key: Optional[str] = None
+    api_key: Optional[str] = None
 
     # GPT 번역 설정 (활성화 시 GPTCorrector + Google Translate 대신 단일 GPT 호출)
     enable_gpt_translation: bool = False
@@ -1193,21 +1193,21 @@ class Qwen3ASRStreamingServer:
         if self.config.enable_gpt_translation:
             if not _CORRECTOR_AVAILABLE:
                 logger.warning("GPT translator requested but core.llm_corrector import failed — falling back to Google Translate")
-            elif not (self.config.correction_api_key or os.environ.get("OPENAI_API_KEY")):
+            elif not (self.config.api_key or os.environ.get("OPENAI_API_KEY")):
                 logger.warning("GPT translator requested but OPENAI_API_KEY not set — falling back to Google Translate")
             else:
                 self.gpt_translator = GPTTranslator(
                     model=self.config.translation_model,
-                    api_key=self.config.correction_api_key,
+                    api_key=self.config.api_key,
                 )
                 logger.info(f"GPT translator enabled (model={self.config.translation_model})")
         elif self.config.enable_correction:
             if not _CORRECTOR_AVAILABLE:
                 logger.warning("GPT corrector requested but core.llm_corrector import failed — correction disabled")
-            elif not (self.config.correction_api_key or os.environ.get("OPENAI_API_KEY")):
+            elif not (self.config.api_key or os.environ.get("OPENAI_API_KEY")):
                 logger.warning("GPT corrector requested but OPENAI_API_KEY not set — correction disabled")
             else:
-                self.corrector = GPTCorrector(model=self.config.correction_model, api_key=self.config.correction_api_key)
+                self.corrector = GPTCorrector(model=self.config.correction_model, api_key=self.config.api_key)
                 logger.info(f"GPT corrector enabled (model={self.config.correction_model})")
 
     async def handle_connection(self, websocket):
@@ -1358,7 +1358,7 @@ def parse_args():
         help="후처리에 사용할 GPT 모델명 (기본값: gpt-5.4-mini)",
     )
     parser.add_argument(
-        "--correction-api-key", type=str, default=None,
+        "--api-key", type=str, default=None,
         help="OpenAI API 키 (미지정 시 OPENAI_API_KEY 환경변수 사용)",
     )
     parser.add_argument(
@@ -1399,7 +1399,7 @@ def main():
         restrict_languages=not args.no_restrict_languages,
         enable_correction=not args.no_correction,
         correction_model=args.correction_model,
-        correction_api_key=args.correction_api_key,
+        api_key=args.api_key,
         enable_gpt_translation=args.gpt_translation,
         translation_model=args.translation_model,
     )

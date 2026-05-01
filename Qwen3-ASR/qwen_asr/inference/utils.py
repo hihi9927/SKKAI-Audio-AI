@@ -15,6 +15,7 @@
 # limitations under the License.
 import base64
 import io
+import re
 import urllib.request
 from dataclasses import dataclass
 from typing import Any, Iterable, List, Optional, Tuple, Union
@@ -424,6 +425,13 @@ def detect_and_fix_repetitions(text, threshold=20):
     return text
 
 
+_SPECIAL_CHARS_RE = re.compile(r"[�\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
+
+
+def _strip_special_chars(text: str) -> str:
+    return _SPECIAL_CHARS_RE.sub("", text)
+
+
 def parse_asr_output(
     raw: str,
     user_language: Optional[str] = None,
@@ -457,7 +465,7 @@ def parse_asr_output(
 
     if user_language:
         # user explicitly forced language => model output is treated as pure text
-        return user_language, s
+        return user_language, _strip_special_chars(s)
 
     meta_part = s
     text_part = ""
@@ -466,7 +474,7 @@ def parse_asr_output(
         meta_part, text_part = s.split(_ASR_TEXT_TAG, 1)
     else:
         # no tag => pure text
-        return "", s.strip()
+        return "", _strip_special_chars(s.strip())
 
     meta_lower = meta_part.lower()
 
@@ -491,7 +499,7 @@ def parse_asr_output(
                 lang = normalize_language_name(val)
             break
 
-    return lang, text_part.strip()
+    return lang, _strip_special_chars(text_part.strip())
 
 
 def merge_languages(langs: List[str]) -> str:

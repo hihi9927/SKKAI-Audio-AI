@@ -818,10 +818,6 @@ class Qwen3ASRModel:
                         await on_seg(state)
 
             gen_text = final.outputs[0].text
-            import logging as _logging
-            _logging.getLogger(__name__).info(
-                f"[vllm-stop] finish_reason={final.outputs[0].finish_reason} tokens={len(final.outputs[0].token_ids)}"
-            )
             state._raw_decoded = (prefix + gen_text) if prefix is not None else gen_text
             lang, txt = parse_asr_output(state._raw_decoded, user_language=state.force_language)
             state.language = lang
