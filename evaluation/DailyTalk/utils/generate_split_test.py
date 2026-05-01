@@ -17,7 +17,7 @@ cut 규칙:
   - <SEG> 직전 단어(분절 경계)에서는 cut 불가
   - 마지막 단어에서는 cut 불가
 """
-
+    
 import argparse
 import json
 import random
