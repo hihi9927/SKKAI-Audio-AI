@@ -135,7 +135,7 @@ class StreamingConfig:
     restrict_languages: bool = True  # True면 앱 설정 두 언어 외 토큰 차단
 
     # LLM 후처리 설정
-    enable_correction: bool = True
+    enable_correction: bool = False
     correction_model: str = "gpt-5.4-mini"
     api_key: Optional[str] = None
 
@@ -1350,8 +1350,8 @@ def parse_args():
         help="앱 설정 두 언어 외 언어 차단 비활성화 (기본값: 활성화)",
     )
     parser.add_argument(
-        "--no-correction", action="store_true",
-        help="GPT LLM 후처리 비활성화 (기본값: 활성화)",
+        "--correction", action="store_true",
+        help="GPT LLM 후처리 활성화 (기본값: 비활성화)",
     )
     parser.add_argument(
         "--correction-model", type=str, default="gpt-5.4-mini",
@@ -1397,7 +1397,7 @@ def main():
         enforce_eager=args.enforce_eager,
         enable_dot_commit=args.enable_dot_commit,
         restrict_languages=not args.no_restrict_languages,
-        enable_correction=not args.no_correction,
+        enable_correction=args.correction,
         correction_model=args.correction_model,
         api_key=args.api_key,
         enable_gpt_translation=args.gpt_translation,

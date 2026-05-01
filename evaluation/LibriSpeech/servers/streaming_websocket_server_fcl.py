@@ -500,7 +500,7 @@ def main():
         enforce_eager=args.enforce_eager,
         enable_dot_commit=args.enable_dot_commit,
         restrict_languages=not args.no_restrict_languages,
-        enable_correction=not args.no_correction,
+        enable_correction=args.correction,
         correction_model=args.correction_model,
         api_key=args.api_key,
         enable_gpt_translation=args.gpt_translation,
