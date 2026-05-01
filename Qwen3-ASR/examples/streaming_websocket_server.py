@@ -24,6 +24,7 @@ import logging
 import os
 import re
 import traceback
+from collections import deque
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Optional, Any
@@ -46,6 +47,7 @@ try:
     import sys as _sys
     _sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
     from core.llm_corrector import GPTCorrector
+    from core.correct_and_trans import GPTTranslator
     _CORRECTOR_AVAILABLE = True
 except Exception:
     _CORRECTOR_AVAILABLE = False
@@ -136,6 +138,10 @@ class StreamingConfig:
     enable_correction: bool = True
     correction_model: str = "gpt-5.4-mini"
     correction_api_key: Optional[str] = None
+
+    # GPT 번역 설정 (활성화 시 GPTCorrector + Google Translate 대신 단일 GPT 호출)
+    enable_gpt_translation: bool = False
+    translation_model: str = "gpt-5.4-mini"
 
     # 서버 설정
     host: str = "0.0.0.0"
@@ -372,6 +378,7 @@ class Qwen3ASRStreamingHandler:
         lora_request_ko=None,
         vad_model_bytes: Optional[bytes] = None,
         corrector=None,
+        gpt_translator=None,
     ):
         self.websocket = websocket
         self._get_streaming_id = get_streaming_id
@@ -396,6 +403,9 @@ class Qwen3ASRStreamingHandler:
         self.http_session: Optional[aiohttp.ClientSession] = None
         self.session_logger: Optional[SessionLogger] = None
         self.corrector = corrector
+        self.gpt_translator = gpt_translator
+        # GPT 번역 컨텍스트: 최근 5 세그먼트의 (corrected_original, translation) 보관
+        self._segment_history: deque[tuple[str, str]] = deque(maxlen=5)
 
         # Commit 방식 설정
         self.enable_dot_commit: bool = config.enable_dot_commit
@@ -458,6 +468,7 @@ class Qwen3ASRStreamingHandler:
         self.asr_processed_cursor = 0
         if self.vad_iterator is not None:
             self.vad_iterator.reset_states()
+        self._segment_history.clear()
     
     def _new_stream_slot(self) -> dict:
         allowed_languages = None
@@ -596,30 +607,16 @@ class Qwen3ASRStreamingHandler:
                 logger.info(f"[timeout-skip] reason={reason} too short: '{uncommitted_display}'")
                 return
 
-        # 2단계: lock 해제 후 I/O (번역 API) 수행 → 다른 슬롯 flush 비차단
+        # 2단계: lock 해제 후 I/O (교정 + 번역) 수행 → 다른 슬롯 flush 비차단
         audio_end_sec = self._get_flush_audio_end_sec()
-        if self.corrector:
-            uncommitted_display = await self.corrector.correct_text(uncommitted_display, current_lang)
-        translation, detected_lang, extra = await self._translate(
-            uncommitted_display, self.client_target_lang, audio_end_sec
+        uncommitted_display, translation, effective_detected, extra = await self._correct_and_translate(
+            uncommitted_display, current_lang, audio_end_sec
         )
         self.log.info(
             f"[translate-flush] reason={reason} sentence='{uncommitted_display}' "
-            f"tl={self.client_target_lang} -> detected={detected_lang} "
+            f"tl={self.client_target_lang} -> detected={effective_detected} "
             f"translation='{translation}'"
         )
-        # Google Translate가 같은 언어끼리 번역 시 data[2]를 null로 반환하는 경우
-        # detected_lang이 빈 문자열이 될 수 있으므로 ASR 감지 언어를 fallback으로 사용
-        effective_detected = detected_lang or lang_to_code(current_lang)
-        if effective_detected == self.client_target_lang:
-            translation, _, extra = await self._translate(
-                uncommitted_display, self.client_lang, audio_end_sec
-            )
-            self.log.info(
-                f"[translate-flush-flip] reason={reason} "
-                f"tl={self.client_lang} -> translation='{translation}'"
-            )
-
         final_lang = effective_detected
         if reason.startswith("vad"):
             commit_reason = "vad"
@@ -715,26 +712,14 @@ class Qwen3ASRStreamingHandler:
             for sentence_raw, trigger_reason in sentences_to_commit:
                 # <SEG>는 사용자 출력/번역에서 제거
                 sentence_display = sentence_raw.replace("<SEG>", "").strip()
-                if self.corrector:
-                    sentence_display = await self.corrector.correct_text(sentence_display, current_lang)
-                translation, detected_lang, extra = await self._translate(
-                    sentence_display, self.client_target_lang, self.current_time
+                sentence_display, translation, final_lang, extra = await self._correct_and_translate(
+                    sentence_display, current_lang, self.current_time
                 )
                 self.log.info(
                     f"[translate-sentence] sentence='{sentence_display}' "
-                    f"tl={self.client_target_lang} -> detected={detected_lang} "
+                    f"tl={self.client_target_lang} -> detected={final_lang} "
                     f"translation='{translation}'"
                 )
-                effective_detected = detected_lang or lang_to_code(current_lang)
-                if effective_detected == self.client_target_lang:
-                    translation, _, extra = await self._translate(
-                        sentence_display, self.client_lang, self.current_time
-                    )
-                    self.log.info(
-                        f"[translate-sentence-flip] tl={self.client_lang} "
-                        f"-> translation='{translation}'"
-                    )
-                final_lang = effective_detected
                 translated_payloads.append({
                     "original_raw": sentence_raw,   # 커서 추적용 (raw, <SEG> 포함)
                     "original": sentence_display,   # 사용자 출력용
@@ -899,6 +884,46 @@ class Qwen3ASRStreamingHandler:
         )
         return translation, detected_lang, {}
 
+    async def _correct_and_translate(
+        self, text: str, current_lang: str, audio_end_sec: float
+    ) -> tuple[str, str, str, dict]:
+        """교정 + 번역 통합 메서드. flush_uncommitted / _process_slot_updates 공통 경로.
+
+        gpt_translator 활성화 시: 단일 GPT 호출로 교정 + 번역 처리.
+        비활성화 시: corrector(선택) → Google Translate → 언어 flip 처리.
+
+        Returns:
+            (corrected_text, translation, detected_lang_code, extra)
+        """
+        if self.gpt_translator:
+            src_code = lang_to_code(current_lang) if current_lang else ""
+            # ASR이 이미 target_lang 언어를 감지했다면 반대 방향으로 번역
+            target = (
+                self.client_lang
+                if src_code and src_code == self.client_target_lang
+                else self.client_target_lang
+            )
+            corrected, translation = await self.gpt_translator.correct_and_translate(
+                text, current_lang, target,
+                context=list(self._segment_history) if self._segment_history else None,
+            )
+            return corrected, translation, src_code, {}
+
+        # Google Translate 경로
+        if self.corrector:
+            text = await self.corrector.correct_text(text, current_lang)
+        translation, detected_lang, extra = await self._translate(
+            text, self.client_target_lang, audio_end_sec
+        )
+        # Google Translate가 동일 언어 번역 시 detected_lang을 null로 반환하는 경우 fallback
+        effective = detected_lang or lang_to_code(current_lang)
+        if effective == self.client_target_lang:
+            translation, _, extra = await self._translate(
+                text, self.client_lang, audio_end_sec
+            )
+            self.log.info(f"[translate-flip] tl={self.client_lang} -> translation='{translation}'")
+        return text, translation, effective, extra
+
     def _get_flush_audio_end_sec(self) -> float:
         """flush 시 사용할 오디오 종료 시각(초). 서브클래스에서 오버라이드 가능."""
         return self.current_time
@@ -938,6 +963,8 @@ class Qwen3ASRStreamingHandler:
                 text=original,
                 translation=translation,
             )
+        if self.gpt_translator and original and translation:
+            self._segment_history.append((original, translation))
 
     async def handle(self):
         try:
@@ -1077,6 +1104,7 @@ class Qwen3ASRStreamingServer:
         self.lora_request_ko = None
         self.vad_model_bytes: Optional[bytes] = None
         self.corrector: Optional["GPTCorrector"] = None
+        self.gpt_translator: Optional["GPTTranslator"] = None
         self.pairing_hub = PairingHub()
         self.idle_task = None
         self.active_connections = 0
@@ -1162,10 +1190,21 @@ class Qwen3ASRStreamingServer:
 
         logger.info("Model loaded successfully")
 
-        if self.config.enable_correction:
+        if self.config.enable_gpt_translation:
+            if not _CORRECTOR_AVAILABLE:
+                logger.warning("GPT translator requested but core.llm_corrector import failed — falling back to Google Translate")
+            elif not (self.config.correction_api_key or os.environ.get("OPENAI_API_KEY")):
+                logger.warning("GPT translator requested but OPENAI_API_KEY not set — falling back to Google Translate")
+            else:
+                self.gpt_translator = GPTTranslator(
+                    model=self.config.translation_model,
+                    api_key=self.config.correction_api_key,
+                )
+                logger.info(f"GPT translator enabled (model={self.config.translation_model})")
+        elif self.config.enable_correction:
             if not _CORRECTOR_AVAILABLE:
                 logger.warning("GPT corrector requested but core.llm_corrector import failed — correction disabled")
-            elif not os.environ.get("OPENAI_API_KEY"):
+            elif not (self.config.correction_api_key or os.environ.get("OPENAI_API_KEY")):
                 logger.warning("GPT corrector requested but OPENAI_API_KEY not set — correction disabled")
             else:
                 self.corrector = GPTCorrector(model=self.config.correction_model, api_key=self.config.correction_api_key)
@@ -1187,6 +1226,7 @@ class Qwen3ASRStreamingServer:
                 lora_request_ko=self.lora_request_ko,
                 vad_model_bytes=self.vad_model_bytes,
                 corrector=self.corrector,
+                gpt_translator=self.gpt_translator,
             )
             await handler.handle()
         finally:
@@ -1322,6 +1362,14 @@ def parse_args():
         help="OpenAI API 키 (미지정 시 OPENAI_API_KEY 환경변수 사용)",
     )
     parser.add_argument(
+        "--gpt-translation", action="store_true",
+        help="GPT로 교정+번역을 단일 호출 처리 (Google Translate + GPTCorrector 대체)",
+    )
+    parser.add_argument(
+        "--translation-model", type=str, default="gpt-5.4-mini",
+        help="GPT 번역에 사용할 모델명 (기본값: gpt-5.4-mini, --gpt-translation 활성화 시 사용)",
+    )
+    parser.add_argument(
         "--log-json", action="store_true",
         help="로그를 JSON 형식으로 출력",
     )
@@ -1352,6 +1400,8 @@ def main():
         enable_correction=not args.no_correction,
         correction_model=args.correction_model,
         correction_api_key=args.correction_api_key,
+        enable_gpt_translation=args.gpt_translation,
+        translation_model=args.translation_model,
     )
 
     server = Qwen3ASRStreamingServer(config)

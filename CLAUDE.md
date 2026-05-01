@@ -77,7 +77,7 @@ Language color scheme: Purple `#8B5CF6` (Korean), Blue `#3B82F6` (English/Tibeta
 ## Key Configuration
 
 - **Python deps:** `transformers==4.57.6`, `openai>=1.0.0`, `websockets>=12.0`, optional `vllm==0.14.0`
-- **LLM corrector model:** configurable, default `gpt-4o-mini` (check `gpt_corrector.py`)
+- **LLM corrector model:** configurable, default `gpt-5.4-mini` (check `gpt_corrector.py`)
 - **Mobile target SDK:** configured in `app.json` and `eas.json`
 - **Server connection:** hardcoded in `STiTy-Mobile/src/hooks/useWebSocket.ts` — update this when changing environments
 
