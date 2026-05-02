@@ -65,6 +65,7 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         self._partial_snapshots: list[tuple[float, str]] = []
         self._slot_final_decode_sec: dict[str, float] = {}  # _asr_finish_streaming 누적
         self._slot_seg_detected: dict[str, dict] = {}       # 첫 SEG 감지 시점 {elapsed_sec, audio_sec, decode_start_elapsed_sec}
+        self._slot_chunk_encode_log: dict[str, list] = {}   # 청크별 encode 시간 [{chunk_id, audio_pos, encode_sec}]
         # Per-connection log buffer (populated when client requests log capture)
         self._connection_log: list[str] = []
         self._log_output_path: Optional[str] = None
@@ -93,13 +94,31 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         self._partial_snapshots = []
         self._slot_final_decode_sec = {}
         self._slot_seg_detected = {}
+        self._slot_chunk_encode_log = {}
         self._connection_log = []
 
     def _stream_elapsed_sec(self) -> float:
         return time.perf_counter() - self.stream_start_perf
 
     async def _asr_streaming_transcribe(self, chunk, slot_key=None):
+        key = slot_key if slot_key is not None else self.active_slot
+        state = self._slot(slot_key)["state"]
+        chunk_id_before = state.chunk_id
+        t0 = time.perf_counter()
         await super()._asr_streaming_transcribe(chunk, slot_key)
+        elapsed = time.perf_counter() - t0
+        # model.generate()가 실제 호출된 경우만 기록 (chunk_id가 증가한 경우)
+        if state.chunk_id > chunk_id_before:
+            entry = {
+                "chunk_id": chunk_id_before,
+                "audio_pos_sec": round(self.current_time, 3),
+                "encode_sec": round(elapsed, 4),
+            }
+            self._slot_chunk_encode_log.setdefault(key, []).append(entry)
+            logger.info(
+                "[ENCODE] slot=%s chunk=%d audio_pos=%.3fs encode=%.3fs",
+                key, chunk_id_before, self.current_time, elapsed,
+            )
 
     async def _asr_finish_streaming(self, slot_key=None):
         key = slot_key if slot_key is not None else self.active_slot
@@ -248,6 +267,11 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         # VAD/finish 커밋 전용: _asr_finish_streaming 시간
         final_decode_sec = self._slot_final_decode_sec.pop(slot_key, 0.0)
         timing["final_decode_sec"] = final_decode_sec
+
+        # 청크별 encode 시간 로그
+        chunk_log = self._slot_chunk_encode_log.pop(slot_key, [])
+        if chunk_log:
+            timing["chunk_encode_log"] = chunk_log
 
         # encode / decode / FSL
         seg_info = self._slot_seg_detected.pop(slot_key, None)

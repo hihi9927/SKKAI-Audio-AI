@@ -668,6 +668,8 @@ class Qwen3ASRStreamingHandler:
 
         slot["last_text"] = current_text
         slot["last_text_lang"] = current_lang
+        if "<SEG>" in current_text:
+            self.log.info(f"[SEG_IN_TEXT] slot={slot_key} text={current_text!r}")
 
         # 문장 단위 commit
         # committed_display/seg_count 기준으로 uncommitted 구간 계산 (모델 텍스트 수정에도 안전)
