@@ -1,0 +1,6 @@
+2026-04-28 17:42:42.854 [CONNECTION] start lang=auto targetLang=ko
+2026-04-28 17:42:45.139 [PARTIAL] t=2.000s | Now show me where I signed any agreement.
+2026-04-28 17:42:47.392 [PARTIAL] t=4.135s | Now show me where I signed any agreement saying I'd pay ye back.
+2026-04-28 17:42:47.400 [VAD_COMMIT] audio_end_sec=4.527s → speech_end_sec=3.727s
+2026-04-28 17:42:48.443 [FINAL] seg=1 reason=vad audio=[0.000, 3.727] fcl=1.862s asr=0.813s translation_latency=0.907s | text='Now show me where I signed any agreement saying I'd pay ye back.' | translation='이제 내가 갚겠다는 계약서에 서명한 곳을 보여주세요.'
+2026-04-28 17:42:52.294 [CONNECTION] closed
