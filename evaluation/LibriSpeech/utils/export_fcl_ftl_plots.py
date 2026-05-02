@@ -485,7 +485,7 @@ def parse_args():
     p = argparse.ArgumentParser(description="레이어 타이밍 PNG 시각화")
     p.add_argument("--json",       required=True, help="결과 JSON 경로")
     p.add_argument("--audio-root", default=None,  help="LibriSpeech test-other 루트 (waveform용)")
-    p.add_argument("--out-dir",    default=str(Path(__file__).resolve().parent / "results" / "layer_plots"),
+    p.add_argument("--out-dir",    default=str(Path(__file__).resolve().parent.parent / "servers" / "results" / "fsl" / "test"),
                    help="출력 디렉터리")
     p.add_argument("--file-id",    default=None,  help="특정 file_id 하나만 처리")
     p.add_argument("--max-files",  type=int, default=None, help="앞에서 N개 파일만 처리")

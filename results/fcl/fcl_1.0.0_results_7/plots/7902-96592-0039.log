@@ -1,0 +1,9 @@
+2026-04-28 15:28:50.882 [CONNECTION] start lang=auto targetLang=ko
+2026-04-28 15:28:53.207 [PARTIAL] t=2.000s | I told you, a fisher boy cried, Archie.
+2026-04-28 15:28:55.301 [PARTIAL] t=4.000s | I told you," a fisher boy cried. Archie impatiently, but trying not to offend.
+2026-04-28 15:28:55.709 [FINAL] seg=1 reason=dot audio=[0.000, 4.000] fcl=0.826s asr=0.729s translation_latency=0.407s | text='I told you," a fisher boy cried.' | translation='내가 말했잖아." 한 어부 소년이 소리쳤다.'
+2026-04-28 15:28:57.164 [PARTIAL] t=6.000s | Archie impatiently, but trying not to offend his visitor, who possessed the power of confirming.
+2026-04-28 15:28:59.180 [PARTIAL] t=8.070s | Archie impatiently, but trying not to offend his visitor, who possessed the power of conferring freedom by speaking sharply.
+2026-04-28 15:28:59.360 [VAD_COMMIT] audio_end_sec=8.398s → speech_end_sec=7.598s
+2026-04-28 15:29:00.357 [FINAL] seg=2 reason=vad audio=[4.000, 7.598] fcl=1.876s asr=0.638s translation_latency=0.853s | text='Archie impatiently, but trying not to offend his visitor, who possessed the power of conferring freedom by speaking sharply.' | translation='Archie는 참을성이 없지만 날카로운 말을 통해 자유를 부여하는 힘을 가진 방문객을 화나게하지 않으려 고 노력합니다.'
+2026-04-28 15:29:04.258 [CONNECTION] closed

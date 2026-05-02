@@ -1,0 +1,11 @@
+2026-04-28 07:55:45.017 [CONNECTION] start lang=auto targetLang=ko
+2026-04-28 07:55:47.338 [PARTIAL] t=2.000s | It is a chamber on the ground floor, which.
+2026-04-28 07:55:49.371 [PARTIAL] t=4.000s | It is a chamber on the ground floor, which has a grated window opening.
+2026-04-28 07:55:51.314 [PARTIAL] t=6.000s | It is a chamber on the ground floor, which has a grated window opening on the garden, which is closed on the outside.
+2026-04-28 07:55:53.278 [PARTIAL] t=8.000s | It is a chamber on the ground floor, which has a grated window opening on the garden, which is closed on the outside by a shutter, and two doors.
+2026-04-28 07:55:55.262 [PARTIAL] t=10.000s | It is a chamber on the ground floor, which has a grated window opening on the garden, which is closed on the outside by a shutter, and two doors. One leads into the convent.
+2026-04-28 07:55:55.827 [FINAL] seg=1 reason=dot audio=[0.000, 8.000] fcl=2.809s asr=1.447s translation_latency=0.564s | text='It is a chamber on the ground floor, which has a grated window opening on the garden, which is closed on the outside by a shutter, and two doors.' | translation='1층에 있는 방으로, 정원 쪽으로 열리는 격자창이 있고, 외부는 셔터로 닫혀 있으며, 두 개의 문이 있습니다.'
+2026-04-28 07:55:57.267 [PARTIAL] t=12.000s | One leads into the convent; the other into the church.
+2026-04-28 07:55:58.860 [VAD_COMMIT] audio_end_sec=13.827s → speech_end_sec=13.027s
+2026-04-28 07:56:00.520 [FINAL] seg=2 reason=vad audio=[8.000, 13.027] fcl=2.475s asr=0.460s translation_latency=0.516s | text='One leads into the convent; the other into the church. A what church?' | translation='하나는 수녀원으로 연결됩니다. 다른 하나는 교회에 들어갑니다. 무슨 교회요?'
+2026-04-28 07:56:03.958 [CONNECTION] closed
