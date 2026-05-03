@@ -10,7 +10,7 @@ FSL (First SEG Latency) = encode_sec + decode_sec = fsl_sec
 
 마커:
   ◆ (흰색) : SEG 감지 시점 (fsl_sec) — decode→trans 전환점
-  | (초록)  : audioEndSec — partial 스냅샷으로 추정한 실제 문장 오디오 끝
+  | (초록)  : audioEndSec — SEG commit 시 partial 스냅샷으로 역산한 추정 음성 끝 (VAD commit은 실제 VAD 기준)
   : (회색)  : seg_audio_sec — SEG 감지 당시 수신된 오디오 끝 (청크 경계)
 
 사용법:
@@ -78,7 +78,7 @@ STYLE = {
     "encode":       "#4CAF50",   # encode layer (green)
     "encode_tail":  "#81C784",   # encode layer 마지막 gap (light green)
     "decode":       "#FF9800",   # decode layer (orange, 오디오 수신 중)
-    "decode_post":  "#E65100",   # decode layer post-audio (dark orange)
+    "decode_post":  "#E65100",   # decode layer post-est. SEG end (dark orange)
     "trans":        "#E84C4C",   # trans layer (red)
     "final_decode": "#9B59B6",   # VAD/finish commit 전용 final decode (purple)
     # 오디오 / 마커
@@ -372,14 +372,14 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
                                 color=STYLE["decode_post"], alpha=0.9, zorder=3)
                         if "decode_post" not in legend_handles:
                             legend_handles["decode_post"] = mpatches.Patch(
-                                color=STYLE["decode_post"], label="Decode (post-audio end)")
+                                color=STYLE["decode_post"], label="Decode (post-est. SEG end)")
                     elif a_end and a_end <= encode_sec:
                         # encode 시작 전에 이미 오디오 종료 → decode 전체가 post-audio
                         ax.barh(y, decode_dur, left=encode_sec, height=bh,
                                 color=STYLE["decode_post"], alpha=0.9, zorder=3)
                         if "decode_post" not in legend_handles:
                             legend_handles["decode_post"] = mpatches.Patch(
-                                color=STYLE["decode_post"], label="Decode (post-audio end)")
+                                color=STYLE["decode_post"], label="Decode (post-est. SEG end)")
                     else:
                         ax.barh(y, decode_dur, left=encode_sec, height=bh,
                                 color=STYLE["decode"], alpha=0.9, zorder=3)
@@ -423,7 +423,7 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
                     if "audio_end" not in legend_handles:
                         legend_handles["audio_end"] = plt.Line2D(
                             [], [], color=STYLE["audio_end"], lw=2,
-                            label="audioEndSec (추정 발화 끝)")
+                            label="audioEndSec (SEG 추정 음성 끝)")
 
                 # seg_audio_sec 마커 (청크 경계, 회색 점선)
                 if seg_audio:
