@@ -66,6 +66,8 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         self._slot_final_decode_sec: dict[str, float] = {}  # _asr_finish_streaming 누적
         self._slot_seg_detected: dict[str, dict] = {}       # 첫 SEG 감지 시점 {elapsed_sec, audio_sec, decode_start_elapsed_sec}
         self._slot_chunk_encode_log: dict[str, list] = {}   # 청크별 encode 시간 [{chunk_id, audio_pos, encode_sec}]
+        # _asr_streaming_transcribe 호출 시작 시간 — on_seg 내부에서 조기 로깅에 사용
+        self._slot_active_transcribe_t0: dict[str, float] = {}
         # Per-connection log buffer (populated when client requests log capture)
         self._connection_log: list[str] = []
         self._log_output_path: Optional[str] = None
@@ -95,6 +97,7 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         self._slot_final_decode_sec = {}
         self._slot_seg_detected = {}
         self._slot_chunk_encode_log = {}
+        self._slot_active_transcribe_t0 = {}
         self._connection_log = []
 
     def _stream_elapsed_sec(self) -> float:
@@ -105,20 +108,27 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         state = self._slot(slot_key)["state"]
         chunk_id_before = state.chunk_id
         t0 = time.perf_counter()
+        # _process_slot_updates(on_seg) 내부에서 조기 로깅이 가능하도록 t0 공유
+        self._slot_active_transcribe_t0[key] = t0
         await super()._asr_streaming_transcribe(chunk, slot_key)
         elapsed = time.perf_counter() - t0
+        self._slot_active_transcribe_t0.pop(key, None)
         # model.generate()가 실제 호출된 경우만 기록 (chunk_id가 증가한 경우)
+        # on_seg 경로로 이미 기록된 경우(audio_pos_sec 동일)는 중복 추가하지 않음
         if state.chunk_id > chunk_id_before:
-            entry = {
-                "chunk_id": chunk_id_before,
-                "audio_pos_sec": round(self.current_time, 3),
-                "encode_sec": round(elapsed, 4),
-            }
-            self._slot_chunk_encode_log.setdefault(key, []).append(entry)
-            logger.info(
-                "[ENCODE] slot=%s chunk=%d audio_pos=%.3fs encode=%.3fs",
-                key, chunk_id_before, self.current_time, elapsed,
-            )
+            existing = self._slot_chunk_encode_log.get(key, [])
+            audio_pos = round(self.current_time, 3)
+            if not existing or existing[-1].get("audio_pos_sec") != audio_pos:
+                entry = {
+                    "chunk_id": chunk_id_before,
+                    "audio_pos_sec": audio_pos,
+                    "encode_sec": round(elapsed, 4),
+                }
+                self._slot_chunk_encode_log.setdefault(key, []).append(entry)
+                logger.info(
+                    "[ENCODE] slot=%s chunk=%d audio_pos=%.3fs encode=%.3fs",
+                    key, chunk_id_before, self.current_time, elapsed,
+                )
 
     async def _asr_finish_streaming(self, slot_key=None):
         key = slot_key if slot_key is not None else self.active_slot
@@ -150,6 +160,24 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
                 if decode_start_elapsed is not None else
                 f"[SEG] slot={key} fsl={elapsed:.3f}s audio_pos={self.current_time:.3f}s"
             )
+            # _emit_final_payload가 pop 하기 전에 chunk 로그를 미리 추가
+            # (on_seg는 generate() loop 내부에서 호출되므로 chunk_id += 1 이 아직 실행 전)
+            t0 = self._slot_active_transcribe_t0.get(key)
+            if t0 is not None:
+                encode_elapsed = time.perf_counter() - t0
+                audio_pos = round(self.current_time, 3)
+                existing = self._slot_chunk_encode_log.get(key, [])
+                if not existing or existing[-1].get("audio_pos_sec") != audio_pos:
+                    entry = {
+                        "chunk_id": slot["state"].chunk_id,
+                        "audio_pos_sec": audio_pos,
+                        "encode_sec": round(encode_elapsed, 4),
+                    }
+                    self._slot_chunk_encode_log.setdefault(key, []).append(entry)
+                    logger.info(
+                        "[ENCODE-EARLY] slot=%s chunk=%d audio_pos=%.3fs encode=%.3fs",
+                        key, slot["state"].chunk_id, self.current_time, encode_elapsed,
+                    )
         await super()._process_slot_updates(slot_key)
 
     async def _translate_with_metadata(
@@ -289,6 +317,12 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         if self._effective_audio_end_sec is not None:
             audio_end_sec = self._effective_audio_end_sec
             self._effective_audio_end_sec = None
+
+        # audioEndSec 이후 디코딩 시간: 실제 발화 종료 추정 시점 ~ SEG 감지
+        # (audio time ≈ stream elapsed time이므로 근사 계산)
+        fsl = timing.get("fsl_sec")
+        if fsl is not None and audio_end_sec is not None:
+            timing["post_audio_decode_sec"] = round(max(0.0, fsl - audio_end_sec), 4)
         segment_id = self.next_segment_id
         self.next_segment_id += 1
         audio_start_sec = self.segment_audio_start_sec

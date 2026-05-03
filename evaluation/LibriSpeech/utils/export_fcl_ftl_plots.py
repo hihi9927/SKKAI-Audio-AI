@@ -35,6 +35,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import matplotlib.ticker as mticker
 import matplotlib.font_manager as fm
 import numpy as np
 from tqdm import tqdm
@@ -75,7 +76,9 @@ STYLE = {
     "grid":         "#333333",
     # 레이어 색상
     "encode":       "#4CAF50",   # encode layer (green)
-    "decode":       "#FF9800",   # decode layer (orange)
+    "encode_tail":  "#81C784",   # encode layer 마지막 gap (light green)
+    "decode":       "#FF9800",   # decode layer (orange, 오디오 수신 중)
+    "decode_post":  "#E65100",   # decode layer post-audio (dark orange)
     "trans":        "#E84C4C",   # trans layer (red)
     "final_decode": "#9B59B6",   # VAD/finish commit 전용 final decode (purple)
     # 오디오 / 마커
@@ -256,7 +259,7 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
         n_rows, 1,
         figsize=(15, sum(heights) + 1),
         gridspec_kw={"height_ratios": heights},
-        sharex=(n_rows == 3),
+        sharex=False,  # sharex 비활성 — gantt가 중간에 있을 때 tick label 숨김 방지
     )
     if n_rows == 2:
         ax_gantt, ax_text = axes
@@ -285,7 +288,12 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
         ax_wave.plot(t[::step], y_wav[::step], color=STYLE["waveform"], lw=0.5)
         ax_wave.set_ylabel("Amp", fontsize=8)
         ax_wave.set_xlim(0, x_max)
-        ax_wave.grid(True, axis="x", lw=0.4)
+        ax_wave.xaxis.set_major_locator(mticker.MultipleLocator(1.0))
+        ax_wave.xaxis.set_minor_locator(mticker.MultipleLocator(0.5))
+        ax_wave.tick_params(axis="x", which="major", labelsize=7)
+        ax_wave.tick_params(axis="x", which="minor", length=2)
+        ax_wave.grid(True, axis="x", which="major", lw=0.4)
+        ax_wave.grid(True, axis="x", which="minor", lw=0.15, alpha=0.4)
         ax_wave.set_title("Waveform", fontsize=8, pad=2)
 
         prev_end = 0.0
@@ -339,6 +347,11 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
                             ax.barh(y, bar_width, left=prev_pos, height=bh,
                                     color=_CHUNK_COLORS[k % 2], alpha=0.9, zorder=3)
                         prev_pos = audio_pos
+                    # 마지막 chunk 이후 ~ encode_sec 구간 (모델 generate 직전 gap)
+                    gap = encode_sec - prev_pos
+                    if gap > 0.005:
+                        ax.barh(y, gap, left=prev_pos, height=bh,
+                                color=STYLE["encode_tail"], alpha=0.7, zorder=3)
                 else:
                     ax.barh(y, encode_sec - a_start, left=a_start, height=bh,
                             color=STYLE["encode"], alpha=0.9, zorder=3)
@@ -346,11 +359,30 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
                     legend_handles["encode"] = mpatches.Patch(
                         color=STYLE["encode"], label="Encode layer (per chunk)")
 
-                # decode bar
+                # decode bar: audioEndSec 기준으로 분할 (오디오 수신 중 / 오디오 종료 후)
                 decode_dur = fsl - encode_sec
                 if decode_dur > 0:
-                    ax.barh(y, decode_dur, left=encode_sec, height=bh,
-                            color=STYLE["decode"], alpha=0.9, zorder=3)
+                    # audioEndSec이 decode 구간 내에 있으면 분할
+                    if a_end and encode_sec < a_end < fsl:
+                        pre_dur = a_end - encode_sec
+                        post_dur = fsl - a_end
+                        ax.barh(y, pre_dur, left=encode_sec, height=bh,
+                                color=STYLE["decode"], alpha=0.9, zorder=3)
+                        ax.barh(y, post_dur, left=a_end, height=bh,
+                                color=STYLE["decode_post"], alpha=0.9, zorder=3)
+                        if "decode_post" not in legend_handles:
+                            legend_handles["decode_post"] = mpatches.Patch(
+                                color=STYLE["decode_post"], label="Decode (post-audio end)")
+                    elif a_end and a_end <= encode_sec:
+                        # encode 시작 전에 이미 오디오 종료 → decode 전체가 post-audio
+                        ax.barh(y, decode_dur, left=encode_sec, height=bh,
+                                color=STYLE["decode_post"], alpha=0.9, zorder=3)
+                        if "decode_post" not in legend_handles:
+                            legend_handles["decode_post"] = mpatches.Patch(
+                                color=STYLE["decode_post"], label="Decode (post-audio end)")
+                    else:
+                        ax.barh(y, decode_dur, left=encode_sec, height=bh,
+                                color=STYLE["decode"], alpha=0.9, zorder=3)
                 if "decode" not in legend_handles:
                     legend_handles["decode"] = mpatches.Patch(
                         color=STYLE["decode"], label="Decode layer")
@@ -419,7 +451,13 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
     ax.set_ylim(0.25, n_segs + 0.9)
     ax.set_xlabel("Stream elapsed time (s)", fontsize=9)
     ax.set_title("encode / decode / trans  레이어 타이밍", fontsize=9, pad=3)
-    ax.grid(True, axis="x", lw=0.4)
+    # 정수 초 단위 major tick, 0.5초 minor tick
+    ax.xaxis.set_major_locator(mticker.MultipleLocator(1.0))
+    ax.xaxis.set_minor_locator(mticker.MultipleLocator(0.5))
+    ax.tick_params(axis="x", which="major", labelsize=8, labelbottom=True)
+    ax.tick_params(axis="x", which="minor", length=3)
+    ax.grid(True, axis="x", which="major", lw=0.4)
+    ax.grid(True, axis="x", which="minor", lw=0.2, alpha=0.4)
     if legend_handles:
         ax.legend(handles=list(legend_handles.values()),
                   loc="lower right", fontsize=8, ncol=3)
