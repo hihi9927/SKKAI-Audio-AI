@@ -75,8 +75,12 @@ Qwen3-ASR/finetuning/checkpoint-420/
 !Qwen3-ASR/finetuning/finetuning-out-en-plus/results/**
 .env
 
+# Evaluation datasets
 evaluation/AMI/ES2004a/
 evaluation/AMI/ES2004b/
 evaluation/AMI/ES2004c/
 evaluation/AMI/ES2004d/
 evaluation/AMI/AMI/
+
+evaluation/KtelSpeech/KtelSpeech
+evaluation/KtelSpeech/label
