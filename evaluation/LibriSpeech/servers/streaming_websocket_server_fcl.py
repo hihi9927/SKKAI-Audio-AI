@@ -111,7 +111,8 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         # _process_slot_updates(on_seg) 내부에서 조기 로깅이 가능하도록 t0 공유
         self._slot_active_transcribe_t0[key] = t0
         await super()._asr_streaming_transcribe(chunk, slot_key)
-        elapsed = time.perf_counter() - t0
+        t1 = time.perf_counter()
+        elapsed = t1 - t0
         self._slot_active_transcribe_t0.pop(key, None)
         # model.generate()가 실제 호출된 경우만 기록 (chunk_id가 증가한 경우)
         # on_seg 경로로 이미 기록된 경우(audio_pos_sec 동일)는 중복 추가하지 않음
@@ -119,15 +120,19 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
             existing = self._slot_chunk_encode_log.get(key, [])
             audio_pos = round(self.current_time, 3)
             if not existing or existing[-1].get("audio_pos_sec") != audio_pos:
+                # chunk_decode_sec: model.generate() 시작 ~ 청크 처리 완료 (decode only)
+                dp = getattr(state, "_decode_start_perf", None)
+                chunk_decode_sec = round(t1 - dp, 4) if (dp is not None and t0 <= dp <= t1) else 0.0
                 entry = {
                     "chunk_id": chunk_id_before,
                     "audio_pos_sec": audio_pos,
                     "encode_sec": round(elapsed, 4),
+                    "chunk_decode_sec": chunk_decode_sec,
                 }
                 self._slot_chunk_encode_log.setdefault(key, []).append(entry)
                 logger.info(
-                    "[ENCODE] slot=%s chunk=%d audio_pos=%.3fs encode=%.3fs",
-                    key, chunk_id_before, self.current_time, elapsed,
+                    "[ENCODE] slot=%s chunk=%d audio_pos=%.3fs encode=%.3fs decode=%.3fs",
+                    key, chunk_id_before, self.current_time, elapsed, chunk_decode_sec,
                 )
 
     async def _asr_finish_streaming(self, slot_key=None):
@@ -149,34 +154,39 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
                 "decode_start_elapsed_sec": decode_start_elapsed,
             }
             logger.info(
-                "[SEG] slot=%s fsl=%.3fs decode_start=%.3fs audio_pos=%.3fs",
+                "[SEG] slot=%s elapsed=%.3fs decode_start=%.3fs audio_pos=%.3fs",
                 key, elapsed,
                 decode_start_elapsed if decode_start_elapsed is not None else -1.0,
                 self.current_time,
             )
             self._clog(
-                f"[SEG] slot={key} fsl={elapsed:.3f}s "
+                f"[SEG] slot={key} elapsed={elapsed:.3f}s "
                 f"decode_start={decode_start_elapsed:.3f}s audio_pos={self.current_time:.3f}s"
                 if decode_start_elapsed is not None else
-                f"[SEG] slot={key} fsl={elapsed:.3f}s audio_pos={self.current_time:.3f}s"
+                f"[SEG] slot={key} elapsed={elapsed:.3f}s audio_pos={self.current_time:.3f}s"
             )
             # _emit_final_payload가 pop 하기 전에 chunk 로그를 미리 추가
             # (on_seg는 generate() loop 내부에서 호출되므로 chunk_id += 1 이 아직 실행 전)
             t0 = self._slot_active_transcribe_t0.get(key)
             if t0 is not None:
-                encode_elapsed = time.perf_counter() - t0
+                t_seg = time.perf_counter()
+                encode_elapsed = t_seg - t0
                 audio_pos = round(self.current_time, 3)
                 existing = self._slot_chunk_encode_log.get(key, [])
                 if not existing or existing[-1].get("audio_pos_sec") != audio_pos:
+                    # chunk_decode_sec: model.generate() 시작 ~ SEG 감지 시점 (decode only)
+                    dp = getattr(slot["state"], "_decode_start_perf", None)
+                    chunk_decode_sec = round(t_seg - dp, 4) if (dp is not None and t0 <= dp <= t_seg) else 0.0
                     entry = {
                         "chunk_id": slot["state"].chunk_id,
                         "audio_pos_sec": audio_pos,
                         "encode_sec": round(encode_elapsed, 4),
+                        "chunk_decode_sec": chunk_decode_sec,
                     }
                     self._slot_chunk_encode_log.setdefault(key, []).append(entry)
                     logger.info(
-                        "[ENCODE-EARLY] slot=%s chunk=%d audio_pos=%.3fs encode=%.3fs",
-                        key, slot["state"].chunk_id, self.current_time, encode_elapsed,
+                        "[ENCODE-EARLY] slot=%s chunk=%d audio_pos=%.3fs encode=%.3fs decode=%.3fs",
+                        key, slot["state"].chunk_id, self.current_time, encode_elapsed, chunk_decode_sec,
                     )
         await super()._process_slot_updates(slot_key)
 
@@ -191,10 +201,10 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
             text,
             target_lang,
         )
-        trans_sec = self._stream_elapsed_sec() - t0
-
+        t1 = self._stream_elapsed_sec()
         return translation, detected_lang, {
-            "trans_sec": trans_sec,
+            "trans_sec": round(t1 - t0, 4),
+            "_trans_end_elapsed": t1,  # FSL 계산용 내부 필드 (클라이언트 미전송)
         }
 
     # ── 훅 오버라이드 ──────────────────────────────────────────────────────────
@@ -302,27 +312,30 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
             timing["chunk_encode_log"] = chunk_log
 
         # encode / decode / FSL
+        # - encode_sec: stream 시작 ~ model.generate() 직전 (오디오 입력 + prefill)
+        # - decode_sec: model.generate() 시작 ~ SEG 토큰 감지 (autoregressive decode)
+        # - fsl_sec (SEG commit): SEG 감지 시점 ~ 번역 완료 시점 (post-SEG 처리 레이턴시)
+        # - fsl_sec (VAD/finish): final_decode_sec + trans_sec
         seg_info = self._slot_seg_detected.pop(slot_key, None)
-        if seg_info:
-            fsl_sec = seg_info["elapsed_sec"]
-            timing["fsl_sec"] = fsl_sec
-            # encode_sec: stream 시작(오디오 입력) ~ model.generate() 호출 직전
-            # decode_sec: model.generate() 호출 ~ SEG 감지
+        trans_end_elapsed = timing.pop("_trans_end_elapsed", None)
+
+        if reason not in ("vad", "finish") and seg_info is not None:
             d_start = seg_info.get("decode_start_elapsed_sec")
             if d_start is not None:
                 timing["encode_sec"] = d_start
-                timing["decode_sec"] = max(0.0, fsl_sec - d_start)
+                timing["decode_sec"] = round(max(0.0, seg_info["elapsed_sec"] - d_start), 4)
+            timing["seg_audio_sec"] = round(seg_info["audio_sec"], 3)
+            if trans_end_elapsed is not None:
+                timing["fsl_sec"] = round(max(0.0, trans_end_elapsed - seg_info["elapsed_sec"]), 4)
+        else:
+            # VAD/finish: SEG 감지 없음 → final decode + 번역 시간
+            timing["fsl_sec"] = round(final_decode_sec + timing.get("trans_sec", 0.0), 4)
+
         encoding_sec = timing.get("encode_sec", 0.0)
 
         if self._effective_audio_end_sec is not None:
             audio_end_sec = self._effective_audio_end_sec
             self._effective_audio_end_sec = None
-
-        # audioEndSec 이후 디코딩 시간: 실제 발화 종료 추정 시점 ~ SEG 감지
-        # (audio time ≈ stream elapsed time이므로 근사 계산)
-        fsl = timing.get("fsl_sec")
-        if fsl is not None and audio_end_sec is not None:
-            timing["post_audio_decode_sec"] = round(max(0.0, fsl - audio_end_sec), 4)
         segment_id = self.next_segment_id
         self.next_segment_id += 1
         audio_start_sec = self.segment_audio_start_sec
