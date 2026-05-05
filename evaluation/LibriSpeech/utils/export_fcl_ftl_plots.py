@@ -590,7 +590,8 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
     ax.grid(True, axis="x", which="minor", lw=0.2, alpha=0.4)
     if legend_handles:
         ax.legend(handles=list(legend_handles.values()),
-                  loc="lower right", fontsize=8, ncol=3)
+                  loc="upper center", bbox_to_anchor=(0.5, -0.18),
+                  fontsize=8, ncol=4, borderaxespad=0, framealpha=0.9)
 
     # ── Row 3: 텍스트 표 ─────────────────────────────────────────────────────
     ax_text.axis("off")
