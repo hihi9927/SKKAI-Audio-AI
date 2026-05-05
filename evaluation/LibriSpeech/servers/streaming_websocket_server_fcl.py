@@ -69,6 +69,8 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         self._slot_last_emitted_chunk_id: dict[str, int] = {}  # 마지막 payload에 포함된 chunk_id (중복 방지)
         # _asr_streaming_transcribe 호출 시작 시간 — on_seg 내부에서 조기 로깅에 사용
         self._slot_active_transcribe_t0: dict[str, float] = {}
+        # VAD 트리거 시점 (speech_end + 800ms) — VAD 커밋 시 payload에 포함
+        self._pending_vad_trigger_sec: Optional[float] = None
         # Per-connection log buffer (populated when client requests log capture)
         self._connection_log: list[str] = []
         self._log_output_path: Optional[str] = None
@@ -100,6 +102,7 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         self._slot_chunk_encode_log = {}
         self._slot_last_emitted_chunk_id = {}
         self._slot_active_transcribe_t0 = {}
+        self._pending_vad_trigger_sec = None
         self._connection_log = []
 
     def _stream_elapsed_sec(self) -> float:
@@ -313,6 +316,7 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         logger.info("[VAD_COMMIT] audio_end_sec=%.3fs → speech_end_sec=%.3fs", audio_end_sec, speech_end_sec)
         self._clog(f"[VAD_COMMIT] audio_end_sec={audio_end_sec:.3f}s → speech_end_sec={speech_end_sec:.3f}s")
         self.pending_audio_end_sec = speech_end_sec
+        self._pending_vad_trigger_sec = audio_end_sec
 
     async def _on_vad_done(self, slot_key: str) -> None:
         logger.info("[VAD_DONE] slot=%s", slot_key)
@@ -352,6 +356,12 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         seg_info = self._slot_seg_detected.pop(slot_key, None)
         trans_end_elapsed = timing.pop("_trans_end_elapsed", None)
         trans_start_elapsed = timing.pop("_trans_start_elapsed", None)
+
+        # VAD 트리거 시점 (0.8초 침묵 후) — VAD 커밋에서만 기록
+        vad_trigger_sec = self._pending_vad_trigger_sec
+        self._pending_vad_trigger_sec = None
+        if reason == "vad" and vad_trigger_sec is not None:
+            timing["vad_trigger_sec"] = round(vad_trigger_sec, 3)
 
         if reason not in ("vad", "finish") and seg_info is not None:
             d_start = seg_info.get("decode_start_elapsed_sec")

@@ -83,6 +83,7 @@ STYLE = {
     "trans":        "#E84C4C",   # trans layer (red)
     "pre_trans":    "#888888",   # decode→trans 사이 처리 시간 (gray)
     "final_decode": "#9B59B6",   # VAD/finish commit 전용 final decode (purple)
+    "vad_silence":  "#546E7A",   # VAD 0.8초 침묵 감지 구간 (blue-gray)
     # 오디오 / 마커
     "waveform":     "#4C9BE8",
     "seg_span":     "#4C9BE8",   # 세그먼트 배경 음영
@@ -495,7 +496,20 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
                 if "encode" not in legend_handles:
                     legend_handles["encode"] = mpatches.Patch(
                         color=STYLE["encode"], label="Encode (audio coverage, audio-time)")
-                bar_start = a_end or a_start
+                # VAD 0.8초 침묵 감지 구간: audioEndSec(발화 끝) → vad_trigger_sec(VAD 트리거)
+                speech_end = a_end or a_start
+                vad_trigger = seg.get("vad_trigger_sec") or (speech_end + VAD_MIN_SILENCE_MS / 1000.0)
+                silence_w = vad_trigger - speech_end
+                if silence_w > 0.01 and reason == "vad":
+                    ax.barh(ye, silence_w, left=speech_end, height=bh_enc,
+                            color=STYLE["vad_silence"], alpha=0.55, hatch="///", zorder=3)
+                    _vlines_seg(ax, vad_trigger, y, bh / 2 + 0.05,
+                                STYLE["vad_silence"], lw=1.5, ls="--", zorder=6)
+                    if "vad_silence" not in legend_handles:
+                        legend_handles["vad_silence"] = mpatches.Patch(
+                            facecolor=STYLE["vad_silence"], alpha=0.55, hatch="///",
+                            label=f"VAD silence ({VAD_MIN_SILENCE_MS}ms)")
+                bar_start = vad_trigger if reason == "vad" else speech_end
                 if fd_sec > 0:
                     ax.barh(yd, fd_sec, left=bar_start, height=bh_dec,
                             color=STYLE["final_decode"], alpha=0.8, zorder=3)
