@@ -73,6 +73,8 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         self._pending_vad_trigger_sec: Optional[float] = None
         # 슬롯별 실제 오디오 수신 시작 시점 (VAD trigger of the switch that created this slot)
         self._slot_audio_start_sec: dict[str, float] = {"A": 0.0}
+        # Empty flush (VAD fired but no segment produced): prev slot's speech_end for gap bar
+        self._prev_slot_speech_end_sec: Optional[float] = None
         # Per-connection log buffer (populated when client requests log capture)
         self._connection_log: list[str] = []
         self._log_output_path: Optional[str] = None
@@ -106,6 +108,7 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         self._slot_active_transcribe_t0 = {}
         self._pending_vad_trigger_sec = None
         self._slot_audio_start_sec = {"A": 0.0}
+        self._prev_slot_speech_end_sec = None
         self._connection_log = []
 
     def _stream_elapsed_sec(self) -> float:
@@ -222,6 +225,19 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
                         key, slot["state"].chunk_id, audio_pos, ts_elapsed,
                         chunk_decode_start_elapsed or -1, chunk_decode_sec,
                     )
+            elif force_reason in ("vad", "finish"):
+                # VAD/finish path: elapsed/decode_start는 stale → encode_sec/decode_sec 기록 금지
+                # SEG가 텍스트에 있으면 audio_sec만 기록해 seg_audio_sec 마커 표시에 사용
+                raw = (self._slot(slot_key)["state"].text or "").strip()
+                if "<SEG>" in raw:
+                    audio_sec = self.pending_audio_end_sec \
+                        if self.pending_audio_end_sec is not None else self.current_time
+                    self._slot_seg_detected[key] = {
+                        "elapsed_sec": None,
+                        "audio_sec": audio_sec,
+                        "decode_start_elapsed_sec": None,
+                    }
+                    logger.info("[SEG-VAD] slot=%s audio_pos=%.3fs", key, audio_sec)
         await super()._process_slot_updates(slot_key, force_reason=force_reason)
 
     async def _translate_with_metadata(
@@ -316,6 +332,9 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
 
     async def _on_vad_commit(self, audio_end_sec: float) -> None:
         speech_end_sec = max(0.0, audio_end_sec - base_server.VAD_MIN_SILENCE_MS / 1000.0)
+        # Detect empty flush: previous VAD trigger was never consumed → no FINAL was emitted
+        if self._pending_vad_trigger_sec is not None and self.pending_audio_end_sec is not None:
+            self._prev_slot_speech_end_sec = self.pending_audio_end_sec
         logger.info("[VAD_COMMIT] audio_end_sec=%.3fs → speech_end_sec=%.3fs", audio_end_sec, speech_end_sec)
         self._clog(f"[VAD_COMMIT] audio_end_sec={audio_end_sec:.3f}s → speech_end_sec={speech_end_sec:.3f}s")
         self.pending_audio_end_sec = speech_end_sec
@@ -372,6 +391,11 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         self._pending_vad_trigger_sec = None
         if reason == "vad" and vad_trigger_sec is not None:
             timing["vad_trigger_sec"] = round(vad_trigger_sec, 3)
+
+        # 이전 슬롯이 empty flush였을 때 gap bar 시각화를 위해 speech_end 전달
+        if self._prev_slot_speech_end_sec is not None:
+            timing["prevSlotSpeechEndSec"] = round(self._prev_slot_speech_end_sec, 3)
+            self._prev_slot_speech_end_sec = None
 
         if reason not in ("vad", "finish") and seg_info is not None:
             d_start = seg_info.get("decode_start_elapsed_sec")

@@ -256,7 +256,7 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
 
     n_segs  = len(segs)
     n_rows  = 3 if has_audio else 2
-    heights = [1.8, 3.5 + 0.4 * (n_segs + 1), 1.5] if has_audio else [3.5 + 0.4 * (n_segs + 1), 1.5]
+    heights = [1.8, 3.5 + 0.4 * n_segs, 1.5] if has_audio else [3.5 + 0.4 * n_segs, 1.5]
 
     fig, axes = plt.subplots(
         n_rows, 1,
@@ -357,6 +357,23 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
             # 슬롯 실제 오디오 수신 시작 시점 — 없으면 audioStartSec 사용
             slot_start = seg.get("slotAudioStartSec") or a_start
 
+            # ── Empty flush gap: prev slot processed audio but produced no committed output ──
+            # 초록(연) = prev slot speech 수신, 회색 hatched(연) = prev slot VAD silence
+            prev_speech_end = seg.get("prevSlotSpeechEndSec")
+            if prev_speech_end is not None and slot_start > a_start + 0.01:
+                gap_speech_w = max(0.0, prev_speech_end - a_start)
+                gap_vad_w    = max(0.0, slot_start - prev_speech_end)
+                if gap_speech_w > 0.01:
+                    ax.barh(ye, gap_speech_w, left=a_start, height=bh_enc,
+                            color=STYLE["encode"], alpha=0.30, zorder=2)
+                if gap_vad_w > 0.01:
+                    ax.barh(ye, gap_vad_w, left=prev_speech_end, height=bh_enc,
+                            color=STYLE["vad_silence"], alpha=0.30, hatch="///", zorder=2)
+                if "gap_enc" not in legend_handles:
+                    legend_handles["gap_enc"] = mpatches.Patch(
+                        color=STYLE["encode"], alpha=0.30,
+                        label="Prev slot audio (empty flush)")
+
             if encode_sec is not None:
                 # ── SEG commit: 위=encode(초록), 아래=decode(주황)+pre_trans(회색)+trans(빨강) ──
                 # x축 = wall-clock elapsed (stream_start_perf 기준)
@@ -431,8 +448,8 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
                     legend_handles["trans"] = mpatches.Patch(
                         color=STYLE["trans"], label="Trans layer")
 
-                # ◆ SEG 감지 마커
-                ax.scatter(seg_det_x, y, marker="D", color=STYLE["seg_marker"],
+                # ◆ SEG 감지 마커 (decode bar 오른쪽 끝 = yd 존)
+                ax.scatter(seg_det_x, yd, marker="D", color=STYLE["seg_marker"],
                            s=55, zorder=7, linewidths=0.5, edgecolors="#888888")
                 if "seg_det" not in legend_handles:
                     legend_handles["seg_det"] = plt.Line2D(
@@ -535,8 +552,9 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
                 if seg_audio:
                     _vlines_seg(ax, seg_audio, y, bh / 2,
                                 STYLE["seg_audio"], lw=1.5, ls=":", zorder=6)
-                    ax.scatter([seg_audio], [y + bh * 0.26], marker="D", s=18,
-                               color=STYLE["seg_marker"], zorder=7)
+                    ax.scatter([seg_audio], [yd], marker="D", s=40,
+                               color=STYLE["seg_marker"], zorder=7,
+                               linewidths=0.5, edgecolors="#888888")
                     if "seg_audio" not in legend_handles:
                         legend_handles["seg_audio"] = plt.Line2D(
                             [], [], color=STYLE["seg_audio"], lw=1.5, ls=":",
@@ -557,51 +575,10 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
 
         prev_end = a_end
 
-    # ── 최상단 고정 행: ASR 모델 청크 처리 타임라인 ─────────────────────────────
-    _TOP_Y       = n_segs + 1
-    _TOP_BH      = bh * 0.55
-    _TOP_COLORS  = ["#1565C0", "#42A5F5"]  # 진파랑 / 연파랑 교대
-    chunk_seq    = 0
-    for seg in segs:
-        slot_st = seg.get("slotAudioStartSec") or _audio_start(seg)
-        a_e     = _audio_end(seg)
-        clog    = seg.get("chunk_encode_log", [])
-        if clog:
-            sorted_clog = sorted(clog, key=lambda c: c.get("chunk_id", 0))
-            prev = slot_st
-            for ck in sorted_clog:
-                ap = ck.get("audio_pos_sec", prev)
-                w  = ap - prev
-                if w > 0.01:
-                    ax.barh(_TOP_Y, w, left=prev, height=_TOP_BH,
-                            color=_TOP_COLORS[chunk_seq % 2], alpha=0.85, zorder=3)
-                    _vlines_seg(ax, ap, _TOP_Y, _TOP_BH / 2 + 0.04,
-                                "white", lw=0.8, ls="-", zorder=5)
-                prev = ap
-                chunk_seq += 1
-            # tail: _asr_finish_streaming이 처리한 잔여 구간
-            if a_e and a_e > prev + 0.01:
-                ax.barh(_TOP_Y, a_e - prev, left=prev, height=_TOP_BH,
-                        color=_TOP_COLORS[chunk_seq % 2], alpha=0.45, zorder=3)
-            chunk_seq += 1
-        else:
-            # 스트리밍 청크 없이 VAD finish 단일 처리
-            w = (a_e or slot_st) - slot_st
-            if w > 0.01:
-                ax.barh(_TOP_Y, w, left=slot_st, height=_TOP_BH,
-                        color=_TOP_COLORS[chunk_seq % 2], alpha=0.45, zorder=3)
-            chunk_seq += 1
-    if "asr_chunk" not in legend_handles:
-        legend_handles["asr_chunk"] = mpatches.Patch(
-            color=_TOP_COLORS[0], label="ASR 청크 (2초 단위, 짙음=streaming / 옅음=tail)")
-
-    ax.set_yticks(list(range(1, n_segs + 2)))
-    ax.set_yticklabels(
-        [f"seg {_seg_id(s)}" for s in reversed(segs)] + ["ASR 청크"],
-        fontsize=8,
-    )
+    ax.set_yticks(range(1, n_segs + 1))
+    ax.set_yticklabels([f"seg {_seg_id(s)}" for s in reversed(segs)], fontsize=8)
     ax.set_xlim(0, x_max)
-    ax.set_ylim(0.25, n_segs + 1.9)
+    ax.set_ylim(0.25, n_segs + 0.9)
     ax.set_xlabel("Stream elapsed time (s)", fontsize=9)
     ax.set_title("encode / decode / trans  레이어 타이밍", fontsize=9, pad=3)
     # 정수 초 단위 major tick, 0.5초 minor tick

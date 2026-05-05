@@ -512,6 +512,7 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
                         'chunk_encode_log': data.get('chunk_encode_log'),
                         'slotAudioStartSec': data.get('slotAudioStartSec'),
                         'vad_trigger_sec': data.get('vad_trigger_sec'),
+                        'prevSlotSpeechEndSec': data.get('prevSlotSpeechEndSec'),
                         'client_final_received_elapsed_sec': receive_elapsed_sec,
                     })
 
