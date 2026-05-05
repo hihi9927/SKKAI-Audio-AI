@@ -1183,6 +1183,13 @@ class Qwen3ASRStreamingServer:
                     f"이 vLLM 버전은 use_beam_search를 지원하지 않습니다. "
                     f"Greedy decoding으로 fallback합니다. (beam_size={self.config.beam_size} 무시)"
                 )
+                self.asr.sampling_params = SamplingParams(
+                    temperature=0.0,
+                    max_tokens=self.config.max_new_tokens,
+                    skip_special_tokens=False,
+                    repetition_penalty=1.3,
+                )
+                logger.info("Greedy decoding with repetition_penalty=1.3")
         else:
             logger.info("Greedy decoding (beam_size=1)")
 
