@@ -71,6 +71,8 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         self._slot_active_transcribe_t0: dict[str, float] = {}
         # VAD 트리거 시점 (speech_end + 800ms) — VAD 커밋 시 payload에 포함
         self._pending_vad_trigger_sec: Optional[float] = None
+        # 슬롯별 실제 오디오 수신 시작 시점 (VAD trigger of the switch that created this slot)
+        self._slot_audio_start_sec: dict[str, float] = {"A": 0.0}
         # Per-connection log buffer (populated when client requests log capture)
         self._connection_log: list[str] = []
         self._log_output_path: Optional[str] = None
@@ -103,6 +105,7 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         self._slot_last_emitted_chunk_id = {}
         self._slot_active_transcribe_t0 = {}
         self._pending_vad_trigger_sec = None
+        self._slot_audio_start_sec = {"A": 0.0}
         self._connection_log = []
 
     def _stream_elapsed_sec(self) -> float:
@@ -317,6 +320,8 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         self._clog(f"[VAD_COMMIT] audio_end_sec={audio_end_sec:.3f}s → speech_end_sec={speech_end_sec:.3f}s")
         self.pending_audio_end_sec = speech_end_sec
         self._pending_vad_trigger_sec = audio_end_sec
+        # 슬롯 스위치 후 _on_vad_commit 호출 시점에 self.active_slot은 이미 새 슬롯
+        self._slot_audio_start_sec[self.active_slot] = audio_end_sec
 
     async def _on_vad_done(self, slot_key: str) -> None:
         logger.info("[VAD_DONE] slot=%s", slot_key)
@@ -357,6 +362,11 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         trans_end_elapsed = timing.pop("_trans_end_elapsed", None)
         trans_start_elapsed = timing.pop("_trans_start_elapsed", None)
 
+        # 슬롯 실제 오디오 시작 시점
+        slot_audio_start = self._slot_audio_start_sec.pop(slot_key, None)
+        if slot_audio_start is not None:
+            timing["slotAudioStartSec"] = round(slot_audio_start, 3)
+
         # VAD 트리거 시점 (0.8초 침묵 후) — VAD 커밋에서만 기록
         vad_trigger_sec = self._pending_vad_trigger_sec
         self._pending_vad_trigger_sec = None
@@ -368,6 +378,9 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
             if d_start is not None:
                 timing["encode_sec"] = d_start
                 timing["decode_sec"] = round(max(0.0, seg_info["elapsed_sec"] - d_start), 4)
+            timing["seg_audio_sec"] = round(seg_info["audio_sec"], 3)
+        elif seg_info is not None:
+            # VAD/finish path에서도 final decode 중 SEG 감지된 경우 위치 기록
             timing["seg_audio_sec"] = round(seg_info["audio_sec"], 3)
             # pre_trans_sec: SEG 감지 ~ 번역 API 호출 시작 (텍스트 처리/correction 시간)
             if trans_start_elapsed is not None:
