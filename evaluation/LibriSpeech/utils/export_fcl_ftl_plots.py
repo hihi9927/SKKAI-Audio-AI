@@ -336,6 +336,8 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
     bh_dec  = bh * 0.44           # 디코드/번역 바 높이
     y_dec   = lambda y: y - bh * 0.32  # 디코드 바 y-center (아래쪽 존)
 
+    _CHUNK_COLORS = ["#4CAF50", "#81C784"]
+
     legend_handles = {}
     prev_end = 0.0
 
@@ -358,9 +360,13 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
             slot_start = seg.get("slotAudioStartSec") or a_start
 
             # ── Empty flush gap: prev slot processed audio but produced no committed output ──
-            # 초록(연) = prev slot speech 수신, 회색 hatched(연) = prev slot VAD silence
+            # 노멀 VAD→VAD: gap = 0.8s (이전 seg VAD bar로 이미 표시) → 중복 방지
+            # Empty flush: gap > 0.8s (빈 flush + VAD silence) → gap bar 추가
+            _vad_sil = VAD_MIN_SILENCE_MS / 1000.0
             prev_speech_end = seg.get("prevSlotSpeechEndSec")
-            if prev_speech_end is not None and slot_start > a_start + 0.01:
+            if prev_speech_end is None and slot_start > a_start + _vad_sil + 0.05:
+                prev_speech_end = max(a_start, slot_start - _vad_sil)
+            if prev_speech_end is not None and slot_start > a_start + _vad_sil + 0.05:
                 gap_speech_w = max(0.0, prev_speech_end - a_start)
                 gap_vad_w    = max(0.0, slot_start - prev_speech_end)
                 if gap_speech_w > 0.01:
@@ -483,7 +489,6 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
             elif fd_sec > 0 or trans_sec > 0 or seg.get("chunk_encode_log"):
                 # ── VAD/finish commit: final_decode + trans (audioEndSec 기준) ──
                 # 오디오 커버리지 바 (encode zone): chunk_log 있으면 청크별 분리
-                _CHUNK_COLORS = ["#4CAF50", "#81C784"]
                 chunk_log = seg.get("chunk_encode_log", [])
                 if chunk_log:
                     sorted_chunks = sorted(chunk_log, key=lambda c: c.get("chunk_id", 0))
@@ -525,8 +530,6 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
                 if silence_w > 0.01 and reason == "vad":
                     ax.barh(ye, silence_w, left=speech_end, height=bh_enc,
                             color=STYLE["vad_silence"], alpha=0.55, hatch="///", zorder=3)
-                    _vlines_seg(ax, vad_trigger, y, bh / 2 + 0.05,
-                                STYLE["vad_silence"], lw=1.5, ls="--", zorder=6)
                     if "vad_silence" not in legend_handles:
                         legend_handles["vad_silence"] = mpatches.Patch(
                             facecolor=STYLE["vad_silence"], alpha=0.55, hatch="///",
