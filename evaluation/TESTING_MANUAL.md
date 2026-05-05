@@ -55,14 +55,14 @@ cd ~/STiTy && git pull
 # Baseline 모델
 python evaluation/LibriSpeech/servers/streaming_websocket_server_fcl.py \
   --no-idle-shutdown \
-  --log-file evaluation/LibriSpeech/results/baseline(1.0.0)/sample/run_01/logs/server.log
+  --log-file "evaluation/LibriSpeech/results/baseline(1.0.0)/sample/run_01/logs/server.log"
 
 # Finetuned 모델
 python evaluation/LibriSpeech/servers/streaming_websocket_server_fcl.py \
   --model /home/ubuntu/STiTy/Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged \
   --no-idle-shutdown \
   --enforce-eager \
-  --log-file evaluation/LibriSpeech/results/finetuned(1.0.1)/sample/run_01/logs/server.log
+  --log-file "evaluation/LibriSpeech/results/finetuned(1.0.1)/sample/run_01/logs/server.log"
 ```
 
 > **`--log-file` 경로 규칙:** `evaluation/{Dataset}/results/{model}/{scope}/{tag}/logs/server.log`  
@@ -91,7 +91,7 @@ python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \
 ```bash
 python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \
   --test-dir evaluation/LibriSpeech/LibriSpeech/test-other \
-  --model finetuned(1.0.1) \
+  --model "finetuned(1.0.1)" \
   --scope full \
   --description "finetuned 모델 전체 test-other 기준선 측정"
 # → results/finetuned(1.0.1)/full/run_01/
@@ -101,7 +101,7 @@ python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \
 ```bash
 python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \
   --test-dir evaluation/LibriSpeech/LibriSpeech/test-other \
-  --model baseline(1.0.0)) \
+  --model "baseline(1.0.0)" \
   --scope sample \
   --limit 50
 # → results/baseline(1.0.0)/sample/run_01/
@@ -111,7 +111,7 @@ python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \
 ```bash
 python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \
   --test-dir evaluation/LibriSpeech/LibriSpeech/test-other \
-  --model finetuned(1.0.1) \
+  --model "finetuned(1.0.1)" \
   --scope full \
   --tag chunk_1500ms \
   --chunk-size-ms 1500
@@ -130,15 +130,15 @@ python evaluation/LibriSpeech/servers/streaming_websocket_server_fcl.py \
   --model /home/ubuntu/STiTy/Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged \
   --no-idle-shutdown \
   --enforce-eager \
-  --log-file evaluation/KtelSpeech/results/finetuned(1.0.1)/sample/run_01/logs/server.log
+  --log-file "evaluation/KtelSpeech/results/finetuned(1.0.1)/sample/run_01/logs/server.log"
 
 # 2) 테스트 실행
 python evaluation/KtelSpeech/test_qwen3_ktelspeech.py \
   --data-dir evaluation/KtelSpeech \
-  --model finetuned(1.0.1) \
+  --model "finetuned(1.0.1)" \
   --scope sample \
   --tag run_01 \
-  [--description "테스트 설명"] \
+  --description "테스트 설명" \
   --trailing-silence-ms 5000
 ```
 
@@ -156,12 +156,12 @@ python evaluation/KtelSpeech/test_qwen3_ktelspeech.py \
 # 1) 서버 시작 (별도 터미널)
 python evaluation/LibriSpeech/servers/streaming_websocket_server_fcl.py \
   --no-idle-shutdown \
-  --log-file evaluation/AMI/results/baseline(1.0.0)/sample/run_01/logs/server.log
+  --log-file "evaluation/AMI/results/baseline(1.0.0)/sample/run_01/logs/server.log"
 
 # 2) 테스트 실행
 python evaluation/AMI/test_qwen3_ami.py \
   --ami-dir evaluation/AMI \
-  --model baseline(1.0.0) \
+  --model "baseline(1.0.0)" \
   --scope sample \
   --tag run_01
 ```
@@ -190,13 +190,13 @@ python evaluation/AMI/test_qwen3_ami.py \
 ```bash
 # 처음 실행 (run_01 자동 생성)
 python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \
-  --model finetuned(1.0.1) --scope full
+  --model "finetuned(1.0.1)" --scope full
 
 # 중단 후 이어서 실행
 python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \
-  --model finetuned(1.0.1) --scope full --tag run_01
+  --model "finetuned(1.0.1)" --scope full --tag run_01
 
 # 처음부터 다시 실행
 python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \
-  --model finetuned(1.0.1) --scope full --tag run_01 --fresh-start
+  --model "finetuned(1.0.1)" --scope full --tag run_01 --fresh-start
 ```
