@@ -1,7 +1,7 @@
-2026-05-05 06:55:44.711 [CONNECTION] start lang=auto targetLang=ko
-2026-05-05 06:55:52.580 [VAD_COMMIT] audio_end_sec=7.692s → speech_end_sec=6.892s
-2026-05-05 06:55:53.408 [FINAL] seg=1 reason=seg audio=[0.000, 6.892] fsl=0.827s encode=0.000s decode=0.000s final_decode=0.320s trans=0.507s | text='I really was very much afraid of showing him how much shocked I was at some parts of what he said.' | translation='나는 그가 말한 일부 부분에 내가 얼마나 충격을 받았는지 그에게 보여주기가 정말 두려웠습니다.'
-2026-05-05 06:55:54.996 [SEG] slot=B elapsed=10.285s decode_start=9.869s audio_pos=9.860s
-2026-05-05 06:55:55.074 [FINAL] seg=2 reason=seg audio=[6.892, 9.860] fsl=0.077s encode=9.869s decode=0.416s final_decode=0.000s trans=0.077s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
-2026-05-05 06:55:56.872 [SEG] slot=B elapsed=12.161s decode_start=11.869s audio_pos=11.860s
-2026-05-05 06:55:57.278 [CONNECTION] closed
+2026-05-05 12:19:04.850 [CONNECTION] start lang=auto targetLang=ko
+2026-05-05 12:19:12.716 [VAD_COMMIT] audio_end_sec=7.692s → speech_end_sec=6.892s
+2026-05-05 12:19:13.095 [FINAL] seg=1 reason=vad audio=[0.000, 6.892] fsl=0.379s encode=0.000s decode=0.000s final_decode=0.311s trans=0.068s | text='I really was very much afraid of showing him how much shocked I was at some parts of what he said.' | translation='나는 그가 말한 일부 부분에 내가 얼마나 충격을 받았는지 그에게 보여주기가 정말 두려웠습니다.'
+2026-05-05 12:19:15.111 [SEG] slot=B elapsed=10.261s decode_start=9.866s audio_pos=9.860s
+2026-05-05 12:19:15.184 [FINAL] seg=2 reason=seg audio=[6.892, 9.860] fsl=0.073s encode=9.866s decode=0.395s final_decode=0.000s trans=0.073s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-05-05 12:19:16.995 [SEG] slot=B elapsed=12.145s decode_start=11.866s audio_pos=11.860s
+2026-05-05 12:19:17.414 [CONNECTION] closed

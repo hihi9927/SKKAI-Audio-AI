@@ -1,7 +1,7 @@
-2026-05-05 06:55:00.362 [CONNECTION] start lang=auto targetLang=ko
-2026-05-05 06:55:06.030 [VAD_COMMIT] audio_end_sec=5.524s → speech_end_sec=4.724s
-2026-05-05 06:55:06.464 [FINAL] seg=1 reason=seg audio=[0.000, 4.724] fsl=0.433s encode=0.000s decode=0.000s final_decode=0.318s trans=0.115s | text='I really like that account of himself better than anything else he said.' | translation='나는 그가 말한 다른 어떤 것보다 자신에 대한 그 설명을 정말 좋아합니다.'
-2026-05-05 06:55:08.441 [SEG] slot=B elapsed=8.080s decode_start=7.668s audio_pos=7.660s
-2026-05-05 06:55:08.519 [FINAL] seg=2 reason=seg audio=[4.724, 7.660] fsl=0.078s encode=7.668s decode=0.411s final_decode=0.000s trans=0.078s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
-2026-05-05 06:55:10.322 [SEG] slot=B elapsed=9.960s decode_start=9.669s audio_pos=9.660s
-2026-05-05 06:55:10.928 [CONNECTION] closed
+2026-05-05 12:18:20.531 [CONNECTION] start lang=auto targetLang=ko
+2026-05-05 12:18:26.197 [VAD_COMMIT] audio_end_sec=5.524s → speech_end_sec=4.724s
+2026-05-05 12:18:26.576 [FINAL] seg=1 reason=vad audio=[0.000, 4.724] fsl=0.379s encode=0.000s decode=0.000s final_decode=0.304s trans=0.075s | text='I really like that account of himself better than anything else he said.' | translation='나는 그가 말한 다른 어떤 것보다 자신에 대한 그 설명을 정말 좋아합니다.'
+2026-05-05 12:18:28.594 [SEG] slot=B elapsed=8.062s decode_start=7.665s audio_pos=7.660s
+2026-05-05 12:18:28.663 [FINAL] seg=2 reason=seg audio=[4.724, 7.660] fsl=0.069s encode=7.665s decode=0.397s final_decode=0.000s trans=0.069s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-05-05 12:18:30.476 [SEG] slot=B elapsed=9.945s decode_start=9.665s audio_pos=9.660s
+2026-05-05 12:18:31.095 [CONNECTION] closed
