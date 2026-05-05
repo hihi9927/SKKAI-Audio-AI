@@ -1,16 +1,16 @@
-2026-05-05 12:43:59.626 [CONNECTION] start lang=auto targetLang=ko
-2026-05-05 12:44:03.633 [VAD_COMMIT] audio_end_sec=3.896s → speech_end_sec=3.096s
-2026-05-05 12:44:04.241 [FINAL] seg=1 reason=vad audio=[0.000, 3.096] fsl=0.608s encode=0.000s decode=0.000s final_decode=0.465s trans=0.143s | text='There's iron, they say, in all our blood.' | translation='우리의 모든 혈액에는 철분이 들어있다고 합니다.'
-2026-05-05 12:44:06.432 [VAD_COMMIT] audio_end_sec=6.728s → speech_end_sec=5.928s
-2026-05-05 12:44:06.909 [FINAL] seg=2 reason=vad audio=[3.096, 5.928] fsl=0.476s encode=0.000s decode=0.000s final_decode=0.395s trans=0.081s | text='And a grain or two perhaps is good.' | translation='그리고 아마도 한두 알 정도가 좋을 것입니다.'
-2026-05-05 12:44:08.659 [SEG] slot=A elapsed=9.034s decode_start=8.806s audio_pos=8.800s
-2026-05-05 12:44:08.753 [FINAL] seg=3 reason=seg audio=[5.928, 8.800] fsl=0.000s encode=8.806s decode=0.227s final_decode=0.000s trans=0.093s | text='But his.' | translation='하지만 그의.'
-2026-05-05 12:44:10.033 [VAD_COMMIT] audio_end_sec=10.360s → speech_end_sec=9.560s
-2026-05-05 12:44:13.432 [VAD_COMMIT] audio_end_sec=13.632s → speech_end_sec=12.832s
-2026-05-05 12:44:13.903 [FINAL] seg=4 reason=vad audio=[8.800, 12.832] fsl=0.471s encode=0.000s decode=0.000s final_decode=0.386s trans=0.085s | text='Has got a little too much of steel.' | translation='강철이 너무 많이 들어갔습니다.'
-2026-05-05 12:44:15.233 [VAD_COMMIT] audio_end_sec=15.464s → speech_end_sec=14.664s
-2026-05-05 12:44:15.569 [FINAL] seg=5 reason=vad audio=[12.832, 14.664] fsl=0.677s encode=0.000s decode=0.000s final_decode=0.592s trans=0.085s | text='Anon.' | translation='곧.'
-2026-05-05 12:44:17.640 [SEG] slot=B elapsed=18.015s decode_start=17.608s audio_pos=17.600s
-2026-05-05 12:44:17.718 [FINAL] seg=6 reason=seg audio=[14.664, 17.600] fsl=0.000s encode=17.608s decode=0.407s final_decode=0.000s trans=0.077s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
-2026-05-05 12:44:19.531 [SEG] slot=B elapsed=19.905s decode_start=19.608s audio_pos=19.600s
-2026-05-05 12:44:20.131 [CONNECTION] closed
+2026-05-05 13:33:40.770 [CONNECTION] start lang=auto targetLang=ko
+2026-05-05 13:33:44.779 [VAD_COMMIT] audio_end_sec=3.896s → speech_end_sec=3.096s
+2026-05-05 13:33:45.381 [FINAL] seg=1 reason=vad audio=[0.000, 3.096] fsl=0.000s encode=0.000s decode=0.000s final_decode=0.466s trans=0.135s | text='There's iron, they say, in all our blood.' | translation='우리의 모든 혈액에는 철분이 들어있다고 합니다.'
+2026-05-05 13:33:47.580 [VAD_COMMIT] audio_end_sec=6.728s → speech_end_sec=5.928s
+2026-05-05 13:33:48.071 [FINAL] seg=2 reason=vad audio=[3.096, 5.928] fsl=0.000s encode=0.000s decode=0.000s final_decode=0.393s trans=0.098s | text='And a grain or two perhaps is good.' | translation='그리고 아마도 한두 알 정도가 좋을 것입니다.'
+2026-05-05 13:33:49.808 [SEG] slot=A elapsed=9.037s decode_start=8.809s audio_pos=8.800s
+2026-05-05 13:33:49.899 [FINAL] seg=3 reason=seg audio=[5.928, 8.800] fsl=0.000s encode=8.809s decode=0.229s final_decode=0.000s trans=0.091s | text='But his.' | translation='하지만 그의.'
+2026-05-05 13:33:51.178 [VAD_COMMIT] audio_end_sec=10.360s → speech_end_sec=9.560s
+2026-05-05 13:33:54.580 [VAD_COMMIT] audio_end_sec=13.632s → speech_end_sec=12.832s
+2026-05-05 13:33:55.063 [FINAL] seg=4 reason=vad audio=[8.800, 12.832] fsl=0.000s encode=0.000s decode=0.000s final_decode=0.393s trans=0.090s | text='Has got a little too much of steel.' | translation='강철이 너무 많이 들어갔습니다.'
+2026-05-05 13:33:56.380 [VAD_COMMIT] audio_end_sec=15.464s → speech_end_sec=14.664s
+2026-05-05 13:33:56.812 [FINAL] seg=5 reason=vad audio=[12.832, 14.664] fsl=0.000s encode=0.000s decode=0.000s final_decode=0.600s trans=0.178s | text='Anon.' | translation='곧.'
+2026-05-05 13:33:58.792 [SEG] slot=B elapsed=18.021s decode_start=17.610s audio_pos=17.600s
+2026-05-05 13:33:58.865 [FINAL] seg=6 reason=seg audio=[14.664, 17.600] fsl=0.000s encode=17.610s decode=0.412s final_decode=0.000s trans=0.073s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-05-05 13:34:00.677 [SEG] slot=B elapsed=19.907s decode_start=19.609s audio_pos=19.600s
+2026-05-05 13:34:01.278 [CONNECTION] closed
