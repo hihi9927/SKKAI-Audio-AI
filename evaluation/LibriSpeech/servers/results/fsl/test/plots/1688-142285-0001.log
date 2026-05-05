@@ -1,7 +1,7 @@
-2026-05-05 06:54:33.714 [CONNECTION] start lang=auto targetLang=ko
-2026-05-05 06:54:46.946 [VAD_COMMIT] audio_end_sec=13.121s → speech_end_sec=12.321s
-2026-05-05 06:54:47.312 [FINAL] seg=1 reason=seg audio=[0.000, 12.321] fsl=0.366s encode=0.000s decode=0.000s final_decode=0.289s trans=0.077s | text='Margaret," said Mr. Hale, as he returned from showing his guests downstairs, "I could not help watching your face with some anxiety, when Mr. Thornton made his confession of having been a shop boy.' | translation='마가렛 씨는 손님들에게 아래층을 안내하고 돌아오면서 이렇게 말했습니다. "손튼 씨가 가게 주인이었다고 고백했을 때 저는 걱정스러운 마음으로 당신의 얼굴을 지켜보지 않을 수 없었습니다.'
-2026-05-05 06:54:49.364 [SEG] slot=B elapsed=15.650s decode_start=15.233s audio_pos=15.225s
-2026-05-05 06:54:49.440 [FINAL] seg=2 reason=seg audio=[12.321, 15.225] fsl=0.076s encode=15.233s decode=0.416s final_decode=0.000s trans=0.076s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
-2026-05-05 06:54:51.237 [SEG] slot=B elapsed=17.523s decode_start=17.233s audio_pos=17.225s
-2026-05-05 06:54:51.845 [CONNECTION] closed
+2026-05-05 12:17:53.901 [CONNECTION] start lang=auto targetLang=ko
+2026-05-05 12:18:07.134 [VAD_COMMIT] audio_end_sec=13.121s → speech_end_sec=12.321s
+2026-05-05 12:18:07.482 [FINAL] seg=1 reason=vad audio=[0.000, 12.321] fsl=0.348s encode=0.000s decode=0.000s final_decode=0.279s trans=0.069s | text='Margaret," said Mr. Hale, as he returned from showing his guests downstairs, "I could not help watching your face with some anxiety, when Mr. Thornton made his confession of having been a shop boy.' | translation='마가렛 씨는 손님들에게 아래층을 안내하고 돌아오면서 이렇게 말했습니다. "손튼 씨가 가게 주인이었다고 고백했을 때 저는 걱정스러운 마음으로 당신의 얼굴을 지켜보지 않을 수 없었습니다.'
+2026-05-05 12:18:09.527 [SEG] slot=B elapsed=15.626s decode_start=15.231s audio_pos=15.225s
+2026-05-05 12:18:09.595 [FINAL] seg=2 reason=seg audio=[12.321, 15.225] fsl=0.068s encode=15.231s decode=0.395s final_decode=0.000s trans=0.067s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-05-05 12:18:11.409 [SEG] slot=B elapsed=17.508s decode_start=17.231s audio_pos=17.225s
+2026-05-05 12:18:12.030 [CONNECTION] closed
