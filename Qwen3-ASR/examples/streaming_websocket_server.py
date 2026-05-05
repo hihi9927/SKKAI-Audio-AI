@@ -1175,6 +1175,7 @@ class Qwen3ASRStreamingServer:
                     temperature=0.0,
                     max_tokens=self.config.max_new_tokens,
                     skip_special_tokens=False,  # DEBUG: special token 출력용
+                    repetition_penalty=1.3,
                 )
                 logger.info(f"Beam search enabled: beam_size={self.config.beam_size}")
             except TypeError:
