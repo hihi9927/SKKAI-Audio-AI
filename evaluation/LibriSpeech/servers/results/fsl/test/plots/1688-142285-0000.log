@@ -1,0 +1,20 @@
+2026-05-04 14:32:28.585 [CONNECTION] start lang=auto targetLang=ko
+2026-05-04 14:32:32.595 [VAD_COMMIT] audio_end_sec=3.896s → speech_end_sec=3.096s
+2026-05-04 14:32:33.087 [SEG] slot=A elapsed=4.503s decode_start=2.010s audio_pos=4.000s
+2026-05-04 14:32:33.231 [FINAL] seg=1 reason=seg audio=[0.000, 3.096] fsl=0.144s encode=2.010s decode=2.492s final_decode=0.492s trans=0.144s | text='There's iron, they say, in all our blood.' | translation='우리의 모든 혈액에는 철분이 들어있다고 합니다.'
+2026-05-04 14:32:35.394 [VAD_COMMIT] audio_end_sec=6.728s → speech_end_sec=5.928s
+2026-05-04 14:32:35.806 [SEG] slot=B elapsed=7.222s decode_start=6.009s audio_pos=6.800s
+2026-05-04 14:32:35.882 [FINAL] seg=2 reason=seg audio=[3.096, 5.928] fsl=0.076s encode=6.009s decode=1.212s final_decode=0.412s trans=0.076s | text='And a grain or two perhaps is good.' | translation='그리고 아마도 한두 알 정도가 좋을 것입니다.'
+2026-05-04 14:32:37.629 [SEG] slot=A elapsed=9.044s decode_start=8.808s audio_pos=8.800s
+2026-05-04 14:32:37.704 [FINAL] seg=3 reason=seg audio=[5.928, 8.800] fsl=0.074s encode=8.808s decode=0.236s final_decode=0.000s trans=0.074s | text='But his.' | translation='하지만 그의.'
+2026-05-04 14:32:38.995 [VAD_COMMIT] audio_end_sec=10.360s → speech_end_sec=9.560s
+2026-05-04 14:32:39.352 [SEG] slot=A elapsed=10.767s decode_start=8.808s audio_pos=10.400s
+2026-05-04 14:32:42.395 [VAD_COMMIT] audio_end_sec=13.632s → speech_end_sec=12.832s
+2026-05-04 14:32:42.799 [SEG] slot=B elapsed=14.215s decode_start=12.408s audio_pos=13.800s
+2026-05-04 14:32:42.884 [FINAL] seg=4 reason=seg audio=[8.800, 12.832] fsl=0.085s encode=12.408s decode=1.806s final_decode=0.404s trans=0.085s | text='Has got a little too much of steel.' | translation='강철이 너무 많이 들어갔습니다.'
+2026-05-04 14:32:44.195 [VAD_COMMIT] audio_end_sec=15.464s → speech_end_sec=14.664s
+2026-05-04 14:32:44.528 [FINAL] seg=5 reason=seg audio=[12.832, 14.664] fsl=5.177s encode=8.808s decode=1.958s final_decode=0.615s trans=0.074s | text='Anon.' | translation='곧.'
+2026-05-04 14:32:46.617 [SEG] slot=B elapsed=18.032s decode_start=17.611s audio_pos=17.600s
+2026-05-04 14:32:46.711 [FINAL] seg=6 reason=seg audio=[14.664, 17.600] fsl=0.094s encode=17.611s decode=0.421s final_decode=0.000s trans=0.094s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-05-04 14:32:48.503 [SEG] slot=B elapsed=19.919s decode_start=19.610s audio_pos=19.600s
+2026-05-04 14:32:49.539 [CONNECTION] closed
