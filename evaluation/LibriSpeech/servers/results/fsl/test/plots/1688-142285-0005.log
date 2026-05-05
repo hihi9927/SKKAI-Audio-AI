@@ -1,8 +1,8 @@
-2026-05-05 12:18:41.240 [CONNECTION] start lang=auto targetLang=ko
-2026-05-05 12:18:45.729 [SEG] slot=A elapsed=4.489s decode_start=4.005s audio_pos=4.000s
-2026-05-05 12:18:45.795 [FINAL] seg=1 reason=seg audio=[0.000, 4.000] fsl=0.066s encode=4.005s decode=0.485s final_decode=0.000s trans=0.066s | text='You who were always accusing people of being shoppy at Helston.' | translation='헬스톤에서는 항상 사람들이 쇼핑만 한다고 비난하던 당신.'
-2026-05-05 12:18:46.146 [VAD_COMMIT] audio_end_sec=4.732s → speech_end_sec=3.932s
-2026-05-05 12:18:48.546 [SEG] slot=B elapsed=7.307s decode_start=6.905s audio_pos=6.900s
-2026-05-05 12:18:48.620 [FINAL] seg=2 reason=seg audio=[4.000, 3.932] fsl=0.073s encode=6.905s decode=0.402s final_decode=0.000s trans=0.073s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
-2026-05-05 12:18:50.425 [SEG] slot=B elapsed=9.186s decode_start=8.906s audio_pos=8.900s
-2026-05-05 12:18:51.043 [CONNECTION] closed
+2026-05-05 12:45:07.564 [CONNECTION] start lang=auto targetLang=ko
+2026-05-05 12:45:12.051 [SEG] slot=A elapsed=4.488s decode_start=4.006s audio_pos=4.000s
+2026-05-05 12:45:12.129 [FINAL] seg=1 reason=seg audio=[0.000, 4.000] fsl=0.000s encode=4.006s decode=0.482s final_decode=0.000s trans=0.077s | text='You who were always accusing people of being shoppy at Helston.' | translation='헬스톤에서는 항상 사람들이 쇼핑만 한다고 비난하던 당신.'
+2026-05-05 12:45:12.470 [VAD_COMMIT] audio_end_sec=4.732s → speech_end_sec=3.932s
+2026-05-05 12:45:14.862 [SEG] slot=B elapsed=7.298s decode_start=6.906s audio_pos=6.900s
+2026-05-05 12:45:14.942 [FINAL] seg=2 reason=seg audio=[4.000, 3.932] fsl=0.000s encode=6.906s decode=0.392s final_decode=0.000s trans=0.080s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-05-05 12:45:16.746 [SEG] slot=B elapsed=9.182s decode_start=8.906s audio_pos=8.900s
+2026-05-05 12:45:17.368 [CONNECTION] closed
