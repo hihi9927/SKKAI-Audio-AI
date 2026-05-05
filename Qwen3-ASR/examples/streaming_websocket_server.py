@@ -1191,7 +1191,14 @@ class Qwen3ASRStreamingServer:
                 )
                 logger.info("Greedy decoding with repetition_penalty=1.3")
         else:
-            logger.info("Greedy decoding (beam_size=1)")
+            from vllm import SamplingParams
+            self.asr.sampling_params = SamplingParams(
+                temperature=0.0,
+                max_tokens=self.config.max_new_tokens,
+                skip_special_tokens=False,
+                repetition_penalty=1.3,
+            )
+            logger.info("Greedy decoding with repetition_penalty=1.3")
 
         # LoRA 어댑터 등록
         if use_lora:
