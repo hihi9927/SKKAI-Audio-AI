@@ -81,6 +81,7 @@ STYLE = {
     "decode":       "#FF9800",   # decode layer (orange, 오디오 수신 중)
     "decode_post":  "#E65100",   # decode layer post-est. SEG end (dark orange)
     "trans":        "#E84C4C",   # trans layer (red)
+    "pre_trans":    "#888888",   # decode→trans 사이 처리 시간 (gray)
     "final_decode": "#9B59B6",   # VAD/finish commit 전용 final decode (purple)
     # 오디오 / 마커
     "waveform":     "#4C9BE8",
@@ -268,16 +269,20 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
     else:
         ax_wave, ax_gantt, ax_text = axes
 
-    # x 범위 계산 (SEG commit: encode+decode+trans, VAD/finish: audioEnd+finalDecode+trans)
+    # x 범위 계산: seg_det_x + fsl_sec 로 통일 (fsl_sec = pre_trans + trans 포함)
     x_vals = [duration]
     for s in segs:
         enc = s.get("encode_sec")
         dec = s.get("decode_sec") or 0
-        ts  = s.get("trans_sec", 0) or 0
-        fd  = s.get("final_decode_sec", 0) or 0
-        if enc is not None:
+        fsl_v = s.get("fsl_sec") or 0
+        if enc is not None and fsl_v:
+            x_vals.append(enc + dec + fsl_v)
+        elif enc is not None:
+            ts = s.get("trans_sec", 0) or 0
             x_vals.append(enc + dec + ts)
         elif _audio_end(s):
+            fd = s.get("final_decode_sec", 0) or 0
+            ts = s.get("trans_sec", 0) or 0
             x_vals.append(_audio_end(s) + fd + ts)
     x_max = max(x_vals) * 1.06
 
@@ -346,37 +351,44 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
             seg_audio  = seg.get("seg_audio_sec")
 
             if encode_sec is not None:
-                # ── SEG commit: 위=오디오(초록), 아래=디코드(주황)+번역(빨강) ──
+                # ── SEG commit: 위=encode(초록), 아래=decode(주황)+pre_trans(회색)+trans(빨강) ──
+                # x축 = wall-clock elapsed (stream_start_perf 기준)
+                # 청크별 bar는 chunk_transcribe_start_elapsed / chunk_decode_start_elapsed 사용
                 _CHUNK_COLORS = ["#4CAF50", "#81C784"]
                 chunk_log = seg.get("chunk_encode_log", [])
+                pre_trans_sec = seg.get("pre_trans_sec", 0) or 0
 
                 if chunk_log:
                     sorted_chunks = sorted(chunk_log, key=lambda c: c.get("chunk_id", 0))
-                    prev_pos = a_start
+                    prev_pos = a_start  # audio-time fallback 용
                     for k, chunk in enumerate(sorted_chunks):
-                        audio_pos = chunk.get("audio_pos_sec", prev_pos)
-                        audio_w   = audio_pos - prev_pos
-                        cdec      = chunk.get("chunk_decode_sec", 0) or 0
+                        ts_el = chunk.get("chunk_transcribe_start_elapsed")
+                        ds_el = chunk.get("chunk_decode_start_elapsed")
+                        cdec  = chunk.get("chunk_decode_sec", 0) or 0
 
-                        # 오디오 intake bar (위쪽 존, 청크별 교번 초록)
-                        if audio_w > 0:
-                            ax.barh(ye, audio_w, left=prev_pos, height=bh_enc,
-                                    color=_CHUNK_COLORS[k % 2], alpha=0.9, zorder=3)
-
-                        # 청크별 decode bar (아래쪽 존, audio_pos 이후에 배치)
-                        if cdec > 0:
-                            ax.barh(yd, cdec, left=audio_pos, height=bh_dec,
-                                    color=STYLE["decode"], alpha=0.85, zorder=3)
-
-                        prev_pos = audio_pos
-
-                    # 마지막 chunk audio_pos ~ encode_sec (prefill 직전 gap, 연한 초록)
-                    gap = encode_sec - prev_pos
-                    if gap > 0.005:
-                        ax.barh(ye, gap, left=prev_pos, height=bh_enc,
-                                color=STYLE["encode_tail"], alpha=0.7, zorder=3)
+                        if ts_el is not None and ds_el is not None:
+                            # wall-clock 기반: encode bar = transcribe_start → decode_start
+                            enc_w = ds_el - ts_el
+                            if enc_w > 0.001:
+                                ax.barh(ye, enc_w, left=ts_el, height=bh_enc,
+                                        color=_CHUNK_COLORS[k % 2], alpha=0.9, zorder=3)
+                            # decode bar = decode_start → decode_start + chunk_decode_sec
+                            if cdec > 0:
+                                ax.barh(yd, cdec, left=ds_el, height=bh_dec,
+                                        color=STYLE["decode"], alpha=0.85, zorder=3)
+                        else:
+                            # fallback: 구형 데이터(audio-time 기반)
+                            audio_pos = chunk.get("audio_pos_sec", prev_pos)
+                            audio_w   = audio_pos - prev_pos
+                            if audio_w > 0:
+                                ax.barh(ye, audio_w, left=prev_pos, height=bh_enc,
+                                        color=_CHUNK_COLORS[k % 2], alpha=0.9, zorder=3)
+                            if cdec > 0:
+                                ax.barh(yd, cdec, left=audio_pos, height=bh_dec,
+                                        color=STYLE["decode"], alpha=0.85, zorder=3)
+                            prev_pos = audio_pos
                 else:
-                    # chunk_encode_log 없음: 단일 오디오 바 + 단일 디코드 바
+                    # chunk_encode_log 없음: 세그먼트 레벨 값으로 단일 바
                     ax.barh(ye, encode_sec - a_start, left=a_start, height=bh_enc,
                             color=STYLE["encode"], alpha=0.9, zorder=3)
                     if decode_sec > 0:
@@ -385,23 +397,32 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
 
                 if "encode" not in legend_handles:
                     legend_handles["encode"] = mpatches.Patch(
-                        color=STYLE["encode"], label="Encode (audio intake)")
+                        color=STYLE["encode"], label="Encode (prefill/setup)")
                 if "decode" not in legend_handles:
                     legend_handles["decode"] = mpatches.Patch(
                         color=STYLE["decode"], label="Decode (model.generate())")
 
-                # SEG 감지 x 좌표 = encode_sec + decode_sec
+                # SEG 감지 x 좌표 = encode_sec + decode_sec (wall-clock)
                 seg_det_x = encode_sec + decode_sec
 
-                # 번역 바 (아래쪽 존, SEG 감지 직후)
+                # pre_trans bar (회색): SEG 감지 ~ 번역 API 호출 시작 (텍스트 처리/correction)
+                trans_left = seg_det_x + pre_trans_sec
+                if pre_trans_sec > 0.005:
+                    ax.barh(yd, pre_trans_sec, left=seg_det_x, height=bh_dec,
+                            color=STYLE["pre_trans"], alpha=0.75, zorder=3)
+                    if "pre_trans" not in legend_handles:
+                        legend_handles["pre_trans"] = mpatches.Patch(
+                            color=STYLE["pre_trans"], label="Pre-trans (text proc / correction)")
+
+                # trans bar (빨강): 번역 API 호출
                 if trans_sec > 0:
-                    ax.barh(yd, trans_sec, left=seg_det_x, height=bh_dec,
+                    ax.barh(yd, trans_sec, left=trans_left, height=bh_dec,
                             color=STYLE["trans"], alpha=0.9, zorder=3)
                 if "trans" not in legend_handles:
                     legend_handles["trans"] = mpatches.Patch(
                         color=STYLE["trans"], label="Trans layer")
 
-                # ◆ SEG 감지 마커 (두 존 경계, y-center에 표시)
+                # ◆ SEG 감지 마커
                 ax.scatter(seg_det_x, y, marker="D", color=STYLE["seg_marker"],
                            s=55, zorder=7, linewidths=0.5, edgecolors="#888888")
                 if "seg_det" not in legend_handles:
@@ -409,9 +430,9 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
                         [], [], marker="D", color=STYLE["seg_marker"],
                         markersize=6, linestyle="None", label="SEG detected")
 
-                # FSL 레이블 (번역 바 끝 상단)
+                # FSL 레이블: seg_det_x + fsl_sec = 번역 완료 시점
                 if fsl is not None:
-                    ax.text(seg_det_x + trans_sec + 0.05, y + bh / 2 + 0.06,
+                    ax.text(seg_det_x + fsl + 0.05, y + bh / 2 + 0.06,
                             f"FSL {fsl:.2f}s", fontsize=7, color=STYLE["seg_marker"],
                             va="bottom", zorder=8)
 
