@@ -355,7 +355,6 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
                 # ── SEG commit: 위=encode(초록), 아래=decode(주황)+pre_trans(회색)+trans(빨강) ──
                 # x축 = wall-clock elapsed (stream_start_perf 기준)
                 # 청크별 bar는 chunk_transcribe_start_elapsed / chunk_decode_start_elapsed 사용
-                _CHUNK_COLORS = ["#4CAF50", "#81C784"]
                 chunk_log = seg.get("chunk_encode_log", [])
                 pre_trans_sec = seg.get("pre_trans_sec", 0) or 0
 
