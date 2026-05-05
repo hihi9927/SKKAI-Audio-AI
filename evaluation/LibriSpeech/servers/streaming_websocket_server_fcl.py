@@ -406,13 +406,15 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         elif seg_info is not None:
             # VAD/finish path에서도 final decode 중 SEG 감지된 경우 위치 기록
             timing["seg_audio_sec"] = round(seg_info["audio_sec"], 3)
-            # pre_trans_sec: SEG 감지 ~ 번역 API 호출 시작 (텍스트 처리/correction 시간)
-            if trans_start_elapsed is not None:
-                pre_trans = round(max(0.0, trans_start_elapsed - seg_info["elapsed_sec"]), 4)
-                if pre_trans > 0.001:
-                    timing["pre_trans_sec"] = pre_trans
-            if trans_end_elapsed is not None:
-                timing["fsl_sec"] = round(max(0.0, trans_end_elapsed - seg_info["elapsed_sec"]), 4)
+            # elapsed_sec is None for VAD-path SEG (no wall-clock timing available)
+            seg_elapsed = seg_info.get("elapsed_sec")
+            if seg_elapsed is not None:
+                if trans_start_elapsed is not None:
+                    pre_trans = round(max(0.0, trans_start_elapsed - seg_elapsed), 4)
+                    if pre_trans > 0.001:
+                        timing["pre_trans_sec"] = pre_trans
+                if trans_end_elapsed is not None:
+                    timing["fsl_sec"] = round(max(0.0, trans_end_elapsed - seg_elapsed), 4)
         else:
             # VAD/finish: SEG 감지 없음 → final decode + 번역 시간
             timing["fsl_sec"] = round(final_decode_sec + timing.get("trans_sec", 0.0), 4)
