@@ -109,6 +109,9 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         key = slot_key if slot_key is not None else self.active_slot
         state = self._slot(slot_key)["state"]
         chunk_id_before = state.chunk_id
+        # 슬롯이 리셋되면(chunk_id=0) last_emitted 초기화 → 재사용 슬롯에서 outer path 차단 방지
+        if state.chunk_id == 0:
+            self._slot_last_emitted_chunk_id.pop(key, None)
         t0 = time.perf_counter()
         ts_elapsed = round(t0 - self.stream_start_perf, 4)  # wall-clock elapsed (plot x축 기준)
         # _process_slot_updates(on_seg) 내부에서 조기 로깅이 가능하도록 t0 공유
@@ -159,31 +162,33 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
     async def _process_slot_updates(self, slot_key=None):
         key = slot_key if slot_key is not None else self.active_slot
         if key not in self._slot_seg_detected:
-            elapsed = self._stream_elapsed_sec()
-            slot = self._slot(slot_key)
-            decode_start_perf = getattr(slot["state"], "_decode_start_perf", None)
-            decode_start_elapsed = (decode_start_perf - self.stream_start_perf) if decode_start_perf else None
-            self._slot_seg_detected[key] = {
-                "elapsed_sec": elapsed,
-                "audio_sec": self.current_time,
-                "decode_start_elapsed_sec": decode_start_elapsed,
-            }
-            logger.info(
-                "[SEG] slot=%s elapsed=%.3fs decode_start=%.3fs audio_pos=%.3fs",
-                key, elapsed,
-                decode_start_elapsed if decode_start_elapsed is not None else -1.0,
-                self.current_time,
-            )
-            self._clog(
-                f"[SEG] slot={key} elapsed={elapsed:.3f}s "
-                f"decode_start={decode_start_elapsed:.3f}s audio_pos={self.current_time:.3f}s"
-                if decode_start_elapsed is not None else
-                f"[SEG] slot={key} elapsed={elapsed:.3f}s audio_pos={self.current_time:.3f}s"
-            )
-            # _emit_final_payload가 pop 하기 전에 chunk 로그를 미리 추가
-            # (on_seg는 generate() loop 내부에서 호출되므로 chunk_id += 1 이 아직 실행 전)
+            # t0가 None이면 VAD/finish 경로 호출 (streaming_transcribe 밖) → 기록 금지
+            # VAD 경로에서 stale elapsed로 _slot_seg_detected를 오염시키면 decode_sec가
+            # 실제보다 수 초 이상 크게 계산되어 decode↔trans 사이에 가짜 공백이 발생함
             t0 = self._slot_active_transcribe_t0.get(key)
             if t0 is not None:
+                elapsed = self._stream_elapsed_sec()
+                slot = self._slot(slot_key)
+                decode_start_perf = getattr(slot["state"], "_decode_start_perf", None)
+                decode_start_elapsed = (decode_start_perf - self.stream_start_perf) if decode_start_perf else None
+                self._slot_seg_detected[key] = {
+                    "elapsed_sec": elapsed,
+                    "audio_sec": self.current_time,
+                    "decode_start_elapsed_sec": decode_start_elapsed,
+                }
+                logger.info(
+                    "[SEG] slot=%s elapsed=%.3fs decode_start=%.3fs audio_pos=%.3fs",
+                    key, elapsed,
+                    decode_start_elapsed if decode_start_elapsed is not None else -1.0,
+                    self.current_time,
+                )
+                self._clog(
+                    f"[SEG] slot={key} elapsed={elapsed:.3f}s "
+                    f"decode_start={decode_start_elapsed:.3f}s audio_pos={self.current_time:.3f}s"
+                    if decode_start_elapsed is not None else
+                    f"[SEG] slot={key} elapsed={elapsed:.3f}s audio_pos={self.current_time:.3f}s"
+                )
+                # chunk 로그 추가 (on_seg는 generate() loop 내부 → chunk_id += 1 아직 실행 전)
                 t_seg = time.perf_counter()
                 encode_elapsed = t_seg - t0
                 audio_pos = round(self.current_time, 3)
