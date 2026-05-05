@@ -14,22 +14,58 @@ Dependencies (try in order):
 import sys
 import os
 import subprocess
+import threading
+import time
+
+
+def _get_duration(path: str) -> float | None:
+    try:
+        import soundfile as sf
+        info = sf.info(path)
+        return info.duration
+    except Exception:
+        return None
+
+
+def _progress_printer(start: float, total: float | None, stop: threading.Event) -> None:
+    while not stop.is_set():
+        elapsed = time.perf_counter() - start
+        if total:
+            print(f"\r  {elapsed:.1f}s / {total:.1f}s", end="", flush=True)
+        else:
+            print(f"\r  {elapsed:.1f}s", end="", flush=True)
+        time.sleep(0.1)
+    print()
 
 
 def play_with_ffplay(path: str) -> None:
     result = subprocess.run(["which", "ffplay"], capture_output=True)
     if result.returncode != 0:
         raise FileNotFoundError("ffplay not found")
-    print(f"[info] playing via ffplay: {os.path.basename(path)}")
+    total = _get_duration(path)
+    print(f"[info] playing via ffplay: {os.path.basename(path)}"
+          + (f" | {total:.1f}s" if total else ""))
+    stop = threading.Event()
+    t = threading.Thread(target=_progress_printer, args=(time.perf_counter(), total, stop), daemon=True)
+    t.start()
     subprocess.run(["ffplay", "-nodisp", "-autoexit", "-loglevel", "quiet", path], check=True)
+    stop.set()
+    t.join()
 
 
 def play_with_aplay(path: str) -> None:
     result = subprocess.run(["which", "aplay"], capture_output=True)
     if result.returncode != 0:
         raise FileNotFoundError("aplay not found")
-    print(f"[info] playing via aplay: {os.path.basename(path)}")
+    total = _get_duration(path)
+    print(f"[info] playing via aplay: {os.path.basename(path)}"
+          + (f" | {total:.1f}s" if total else ""))
+    stop = threading.Event()
+    t = threading.Thread(target=_progress_printer, args=(time.perf_counter(), total, stop), daemon=True)
+    t.start()
     subprocess.run(["aplay", path], check=True)
+    stop.set()
+    t.join()
 
 
 def play_with_sounddevice(path: str) -> None:
@@ -37,8 +73,18 @@ def play_with_sounddevice(path: str) -> None:
     import sounddevice as sd
 
     data, samplerate = sf.read(path)
-    print(f"[info] {os.path.basename(path)} | sr={samplerate}Hz | shape={data.shape}")
+    total = len(data) / samplerate
+    print(f"[info] {os.path.basename(path)} | sr={samplerate}Hz | {total:.1f}s")
     sd.play(data, samplerate)
+    start = time.perf_counter()
+    try:
+        while sd.get_stream().active:
+            elapsed = time.perf_counter() - start
+            print(f"\r  {elapsed:.1f}s / {total:.1f}s", end="", flush=True)
+            time.sleep(0.1)
+    except Exception:
+        pass
+    print()
     sd.wait()
 
 
