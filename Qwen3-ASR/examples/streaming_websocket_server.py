@@ -656,7 +656,7 @@ class Qwen3ASRStreamingHandler:
             slot["committed_display"] = re.sub(r'\s+', ' ', current_text.replace("<SEG>", "")).strip()
             slot["committed_seg_count"] = current_text.count("<SEG>")
 
-    async def _process_slot_updates(self, slot_key: str):
+    async def _process_slot_updates(self, slot_key: str, force_reason: Optional[str] = None):
         slot = self._slot(slot_key)
         state = slot["state"]
         current_text = (state.text or "").strip()
@@ -759,17 +759,18 @@ class Qwen3ASRStreamingHandler:
                     slot["committed_seg_count"] += len(ready_to_emit)
 
             for payload in ready_to_emit:
+                effective_reason = force_reason or payload["trigger_reason"]
                 await self._emit_final_payload(
                     slot_key=slot_key,
                     original=payload["original"],
                     translation=payload["translation"],
                     language=payload["language"],
-                    reason=payload["trigger_reason"],
+                    reason=effective_reason,
                     audio_end_sec=self.current_time,
                     extra=payload.get("extra"),
                 )
                 self.log.info(
-                    f"[final-sentence/{payload['trigger_reason'].upper()}] slot={slot_key} lang={payload['language']} "
+                    f"[final-sentence/{effective_reason.upper()}] slot={slot_key} lang={payload['language']} "
                     f"text={payload['original']}"
                 )
 
@@ -856,7 +857,7 @@ class Qwen3ASRStreamingHandler:
             # 잔여 버퍼(chunk_size 미만 tail audio)를 모델에 통과시킨 후 flush
             await self._on_vad_commit(target_audio_end_sec)
             await self._asr_finish_streaming(old_active)
-            await self._process_slot_updates(old_active)
+            await self._process_slot_updates(old_active, force_reason="vad")
             await self.flush_uncommitted(force=True, reason="vad", slot_key=old_active)
             self._reset_stream_slot(self.standby_slot)
             await self._on_vad_done(old_active)

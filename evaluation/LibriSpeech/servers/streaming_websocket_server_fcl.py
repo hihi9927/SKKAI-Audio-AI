@@ -159,7 +159,7 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         await super()._asr_finish_streaming(slot_key)
         self._slot_final_decode_sec[key] = self._slot_final_decode_sec.get(key, 0.0) + (time.perf_counter() - t0)
 
-    async def _process_slot_updates(self, slot_key=None):
+    async def _process_slot_updates(self, slot_key=None, force_reason=None):
         key = slot_key if slot_key is not None else self.active_slot
         if key not in self._slot_seg_detected:
             # t0가 None이면 VAD/finish 경로 호출 (streaming_transcribe 밖) → 기록 금지
@@ -216,7 +216,7 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
                         key, slot["state"].chunk_id, audio_pos, ts_elapsed,
                         chunk_decode_start_elapsed or -1, chunk_decode_sec,
                     )
-        await super()._process_slot_updates(slot_key)
+        await super()._process_slot_updates(slot_key, force_reason=force_reason)
 
     async def _translate_with_metadata(
         self,
