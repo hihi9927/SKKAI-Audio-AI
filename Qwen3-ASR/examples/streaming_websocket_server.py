@@ -472,15 +472,12 @@ class Qwen3ASRStreamingHandler:
     
     def _new_stream_slot(self) -> dict:
         allowed_languages = None
-        if self.config.restrict_languages:
-            candidates = []
-            for code in (self.client_lang, self.client_target_lang):
-                if code and code != "auto":
-                    name = lang_code_to_name(code)
-                    if name:
-                        candidates.append(name)
-            if len(candidates) >= 2:
-                allowed_languages = candidates
+        if self.config.restrict_languages and self.client_lang and self.client_lang != "auto":
+            # targetLang은 번역 대상이지 ASR 출력 언어가 아니므로 제외.
+            # ASR은 항상 발화 언어(client_lang)만 출력해야 한다.
+            name = lang_code_to_name(self.client_lang)
+            if name:
+                allowed_languages = [name]
 
         return {
             "state": self.asr.init_streaming_state(
@@ -737,7 +734,17 @@ class Qwen3ASRStreamingHandler:
                     latest_state = slot["state"]
                     latest_text = (latest_state.text or "").strip() if latest_state else ""
 
-                cursor = slot["committed_len"]
+                # committed_len은 이전 pass 기준 절대 위치라 텍스트가 바뀌면 무효.
+                # committed_seg_count 기준으로 latest_text 내 커서를 재계산해 안정성 확보.
+                _seg_tag = "<SEG>"
+                cursor, _found = 0, 0
+                while _found < slot["committed_seg_count"]:
+                    _idx = latest_text.find(_seg_tag, cursor)
+                    if _idx == -1:
+                        cursor = len(latest_text)
+                        break
+                    cursor = _idx + len(_seg_tag)
+                    _found += 1
                 tail = latest_text[cursor:]
 
                 for payload in translated_payloads:

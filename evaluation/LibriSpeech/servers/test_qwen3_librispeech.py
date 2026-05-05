@@ -242,15 +242,14 @@ def load_common_file_ids(common_files_json):
     return set()
 
 
-def load_processed_files(output_file, policy):
-    if not os.path.exists(output_file):
+def load_processed_files(run_dir):
+    metric_file = Path(run_dir) / 'metric.json'
+    if not metric_file.exists():
         return set()
     try:
-        with open(output_file, 'r', encoding='utf-8') as f:
+        with open(metric_file, 'r', encoding='utf-8') as f:
             data = json.load(f)
-        key = f'policy_{policy}'
-        if key in data:
-            return {r['file_id'] for r in data[key].get('raw_results', [])}
+        return {r['file_id'] for r in data.get('raw_results', [])}
     except Exception:
         pass
     return set()
@@ -536,7 +535,7 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
 async def process_batch(
     audio_files,
     ws_url,
-    output_file,
+    run_dir,
     policy,
     limit=None,
     chunk_size_ms=200,
@@ -547,10 +546,10 @@ async def process_batch(
     trailing_silence_ms=5500,
     log_sample_n=10,
     log_sample_seed=42,
-    args=None,
 ):
+    run_dir = Path(run_dir)
     if resume:
-        processed_ids = load_processed_files(output_file, policy)
+        processed_ids = load_processed_files(run_dir)
     else:
         processed_ids = set()
     targets = [f for f in audio_files if f['file_id'] not in processed_ids]
@@ -567,18 +566,20 @@ async def process_batch(
     _rng = _random.Random(log_sample_seed)
     all_target_ids = [f['file_id'] for f in targets]
     log_sample_ids = set(_rng.sample(all_target_ids, min(log_sample_n, len(all_target_ids))))
-    plots_dir = Path(output_file).parent / "plots"
+    plots_dir = run_dir / 'plots'
     logger.info('Log capture enabled for %d sampled files → %s', len(log_sample_ids), plots_dir)
 
     # Load existing results so incremental saves include everything
     all_results = []
-    if resume and processed_ids and os.path.exists(output_file):
-        try:
-            with open(output_file, 'r', encoding='utf-8') as f:
-                old = json.load(f)
-            all_results = old.get(f'policy_{policy}', {}).get('raw_results', [])
-        except Exception:
-            pass
+    if resume and processed_ids:
+        metric_file = run_dir / 'metric.json'
+        if metric_file.exists():
+            try:
+                with open(metric_file, 'r', encoding='utf-8') as f:
+                    old = json.load(f)
+                all_results = old.get('raw_results', [])
+            except Exception:
+                pass
 
     logger.info('Processing %s files (already done: %s)', len(targets), len(all_results))
     results = []
@@ -634,7 +635,7 @@ async def process_batch(
             'segment_metrics_summary': out.get('segment_metrics_summary') or {},
         })
 
-        save_results_structured(all_results + results, args)
+        save_results_structured(all_results + results, run_dir, policy)
 
         speaker_rows = [r for r in results if r['speaker_id'] == speaker_id]
         speaker_wer = compute_wer_for_rows(speaker_rows)
@@ -745,44 +746,21 @@ def build_summary_payload(results, policy):
     }
 
 
-def save_results_structured(results, args):
-    base_dir = Path('evaluation/LibriSpeech/results/finetuned(1.0.1)')
-    
-    run_num = 0
-    while True:
-        run_dir = base_dir / f'run_{run_num:02d}'
-        if not run_dir.exists():
-            break
-        run_num += 1
-    
-    logs_path = run_dir / 'logs'
-    logs_path.mkdir(parents=True, exist_ok=True)
-    
-    args_dict = vars(args)
-    serializable_args = {}
-    for key, value in args_dict.items():
-        if isinstance(value, Path):
-            serializable_args[key] = str(value)
-        else:
-            serializable_args[key] = value
+def save_results_structured(results, run_dir, policy):
+    run_dir = Path(run_dir)
+    (run_dir / 'logs').mkdir(parents=True, exist_ok=True)
+    (run_dir / 'plots').mkdir(exist_ok=True)
 
-    meta_data = {
-        'timestamp': datetime.now().isoformat(),
-        'cli_args': serializable_args,
-    }
-    with open(run_dir / 'meta.json', 'w', encoding='utf-8') as f:
-        json.dump(meta_data, f, indent=2, ensure_ascii=False)
-
-    summary = build_summary_payload(results, args.policy)
+    summary = build_summary_payload(results, policy)
     metric_data = {
         'overall': summary.get('overall'),
         'folders': summary.get('folders'),
-        'raw_results': results
+        'raw_results': results,
     }
     with open(run_dir / 'metric.json', 'w', encoding='utf-8') as f:
         json.dump(metric_data, f, indent=2, ensure_ascii=False)
-    
-    logger.info(f"Results incrementally saved to {run_dir}")
+
+    logger.info('Results saved → %s', run_dir)
 
 
 def save_summary_file(results, summary_output_file, policy):
@@ -790,6 +768,27 @@ def save_summary_file(results, summary_output_file, policy):
     payload = build_summary_payload(results, policy)
     with open(summary_output_file, 'w', encoding='utf-8') as f:
         json.dump(payload, f, indent=2, ensure_ascii=False)
+
+
+def resolve_run_dir(args) -> Path:
+    """
+    결과 저장 경로를 결정합니다.
+      results/{model}/{scope}/{tag}/
+    --tag 미지정 시 run_01, run_02 ... 순으로 자동 생성.
+    """
+    results_root = SCRIPT_DIR.parent / 'results'
+    base = results_root / args.model / args.scope
+    if args.tag:
+        run_dir = base / args.tag
+    else:
+        n = 1
+        while True:
+            run_dir = base / f'run_{n:02d}'
+            if not run_dir.exists():
+                break
+            n += 1
+    run_dir.mkdir(parents=True, exist_ok=True)
+    return run_dir
 
 
 def calculate_wer(results, policy=None, emit_summary=True):
@@ -838,7 +837,16 @@ def main():
                         help='Compatibility-only policy field. Qwen3 uses policy=3.')
     parser.add_argument('--host', type=str, default='localhost')
     parser.add_argument('--port', type=int, default=8765)
-    parser.add_argument('--output', type=str, default=str(DEFAULT_OUTPUT))
+    # ─── 결과 폴더 구조 인자 ────────────────────────────────────────────────
+    parser.add_argument('--model', type=str, default='finetuned',
+                        help='대분류: 모델 종류 (예: baseline, finetuned)')
+    parser.add_argument('--scope', type=str, default='sample', choices=['full', 'sample'],
+                        help='소분류: 테스트 범위 (full=전체 데이터셋, sample=일부)')
+    parser.add_argument('--tag', type=str, default=None,
+                        help='결과 폴더명. 미지정 시 run_01, run_02 ... 자동 생성')
+    parser.add_argument('--description', type=str, default=None,
+                        help='테스트 설명 (description.txt에 저장)')
+    # ────────────────────────────────────────────────────────────────────────
     parser.add_argument('--limit', type=int, default=None,
                         help='Maximum number of files to process (default: all files)')
     parser.add_argument('--calculate-wer', action=argparse.BooleanOptionalAction, default=True,
@@ -866,7 +874,6 @@ def main():
 
     args = parser.parse_args()
     logger.setLevel(args.log_level)
-    ensure_parent_dir(args.output)
 
     if not os.path.isdir(args.test_dir):
         logger.error('Test directory not found: %s', args.test_dir)
@@ -888,6 +895,20 @@ def main():
     if args.random_sample is not None and args.random_sample < len(files):
         random.seed(args.random_seed)
         files = sorted(random.sample(sorted(files, key=lambda x: x['file_id']), args.random_sample), key=lambda x: x['file_id'])
+
+    # 결과 폴더 결정 및 meta/description 저장
+    run_dir = resolve_run_dir(args)
+    logger.info('Results → %s', run_dir)
+
+    meta = {
+        'timestamp': datetime.now().isoformat(),
+        'cli_args': {k: str(v) if isinstance(v, Path) else v for k, v in vars(args).items()},
+    }
+    with open(run_dir / 'meta.json', 'w', encoding='utf-8') as f:
+        json.dump(meta, f, indent=2, ensure_ascii=False)
+
+    if args.description:
+        (run_dir / 'description.txt').write_text(args.description, encoding='utf-8')
 
     server = None
     ws_url = f'ws://{args.host}:{args.port}'
@@ -912,7 +933,7 @@ def main():
             process_batch(
                 files,
                 ws_url,
-                args.output,
+                run_dir,
                 args.policy,
                 args.limit,
                 chunk_size_ms=args.chunk_size_ms,
@@ -921,13 +942,12 @@ def main():
                 resume=not args.fresh_start,
                 target_lang=args.target_lang,
                 trailing_silence_ms=args.trailing_silence_ms,
-                args=args,
             )
         )
         if args.calculate_wer and results:
             calculate_wer(results, policy=args.policy, emit_summary=True)
 
-        logger.info('Completed. Results saved to %s', args.output)
+        logger.info('Completed. Results saved to %s', run_dir)
     except KeyboardInterrupt:
         logger.info('Interrupted by user.')
     finally:
