@@ -1,9 +1,8 @@
-2026-05-05 04:50:39.947 [CONNECTION] start lang=auto targetLang=ko
-2026-05-05 04:50:44.517 [SEG] slot=A elapsed=4.570s decode_start=4.007s audio_pos=4.000s
-2026-05-05 04:50:44.597 [FINAL] seg=1 reason=seg audio=[0.000, 4.000] fsl=0.080s encode=4.007s decode=0.563s final_decode=0.000s trans=0.080s | text='His statement of having been a shop boy was the thing I liked best of all.' | translation='가게 소년이었다는 그의 진술은 내가 가장 좋아하는 것이었습니다.'
-2026-05-05 04:50:45.029 [VAD_COMMIT] audio_end_sec=5.003s → speech_end_sec=4.203s
-2026-05-05 04:50:45.223 [SEG] slot=A elapsed=5.276s decode_start=4.007s audio_pos=5.075s
-2026-05-05 04:50:47.434 [SEG] slot=B elapsed=7.487s decode_start=7.084s audio_pos=7.075s
-2026-05-05 04:50:47.512 [FINAL] seg=2 reason=seg audio=[4.000, 4.203] fsl=0.078s encode=7.084s decode=0.403s final_decode=0.000s trans=0.078s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
-2026-05-05 04:50:49.315 [SEG] slot=B elapsed=9.368s decode_start=9.084s audio_pos=9.075s
-2026-05-05 04:50:49.928 [CONNECTION] closed
+2026-05-05 05:24:41.506 [CONNECTION] start lang=auto targetLang=ko
+2026-05-05 05:24:46.062 [SEG] slot=A elapsed=4.556s decode_start=4.007s audio_pos=4.000s
+2026-05-05 05:24:46.134 [FINAL] seg=1 reason=seg audio=[0.000, 4.000] fsl=0.072s encode=4.007s decode=0.549s final_decode=0.000s trans=0.072s | text='His statement of having been a shop boy was the thing I liked best of all.' | translation='가게 소년이었다는 그의 진술은 내가 가장 좋아하는 것이었습니다.'
+2026-05-05 05:24:46.589 [VAD_COMMIT] audio_end_sec=5.003s → speech_end_sec=4.203s
+2026-05-05 05:24:48.979 [SEG] slot=B elapsed=7.472s decode_start=7.081s audio_pos=7.075s
+2026-05-05 05:24:49.040 [FINAL] seg=2 reason=seg audio=[4.000, 4.203] fsl=0.062s encode=7.081s decode=0.391s final_decode=0.000s trans=0.061s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-05-05 05:24:50.865 [SEG] slot=B elapsed=9.359s decode_start=9.082s audio_pos=9.075s
+2026-05-05 05:24:51.486 [CONNECTION] closed

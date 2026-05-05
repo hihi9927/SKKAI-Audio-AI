@@ -1,20 +1,16 @@
-2026-05-05 04:49:41.992 [CONNECTION] start lang=auto targetLang=ko
-2026-05-05 04:49:46.002 [VAD_COMMIT] audio_end_sec=3.896s → speech_end_sec=3.096s
-2026-05-05 04:49:46.485 [SEG] slot=A elapsed=4.493s decode_start=2.010s audio_pos=4.000s
-2026-05-05 04:49:46.633 [FINAL] seg=1 reason=seg audio=[0.000, 3.096] fsl=0.147s encode=2.010s decode=2.483s final_decode=0.483s trans=0.147s | text='There's iron, they say, in all our blood.' | translation='우리의 모든 혈액에는 철분이 들어있다고 합니다.'
-2026-05-05 04:49:48.803 [VAD_COMMIT] audio_end_sec=6.728s → speech_end_sec=5.928s
-2026-05-05 04:49:49.202 [SEG] slot=B elapsed=7.210s decode_start=6.010s audio_pos=6.800s
-2026-05-05 04:49:49.289 [FINAL] seg=2 reason=seg audio=[3.096, 5.928] fsl=0.087s encode=6.010s decode=1.200s final_decode=0.399s trans=0.087s | text='And a grain or two perhaps is good.' | translation='그리고 아마도 한두 알 정도가 좋을 것입니다.'
-2026-05-05 04:49:51.032 [SEG] slot=A elapsed=9.039s decode_start=8.809s audio_pos=8.800s
-2026-05-05 04:49:51.102 [FINAL] seg=3 reason=seg audio=[5.928, 8.800] fsl=0.071s encode=8.809s decode=0.230s final_decode=0.000s trans=0.070s | text='But his.' | translation='하지만 그의.'
-2026-05-05 04:49:52.402 [VAD_COMMIT] audio_end_sec=10.360s → speech_end_sec=9.560s
-2026-05-05 04:49:52.752 [SEG] slot=A elapsed=10.760s decode_start=8.809s audio_pos=10.400s
-2026-05-05 04:49:55.802 [VAD_COMMIT] audio_end_sec=13.632s → speech_end_sec=12.832s
-2026-05-05 04:49:56.196 [SEG] slot=B elapsed=14.204s decode_start=12.408s audio_pos=13.800s
-2026-05-05 04:49:56.275 [FINAL] seg=4 reason=seg audio=[8.800, 12.832] fsl=0.078s encode=12.408s decode=1.796s final_decode=0.394s trans=0.078s | text='Has got a little too much of steel.' | translation='강철이 너무 많이 들어갔습니다.'
-2026-05-05 04:49:57.603 [VAD_COMMIT] audio_end_sec=15.464s → speech_end_sec=14.664s
-2026-05-05 04:49:57.932 [FINAL] seg=5 reason=seg audio=[12.832, 14.664] fsl=5.180s encode=8.809s decode=1.950s final_decode=0.607s trans=0.072s | text='Anon.' | translation='곧.'
-2026-05-05 04:50:00.020 [SEG] slot=B elapsed=18.028s decode_start=17.610s audio_pos=17.600s
-2026-05-05 04:50:00.093 [FINAL] seg=6 reason=seg audio=[14.664, 17.600] fsl=0.073s encode=17.610s decode=0.417s final_decode=0.000s trans=0.073s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
-2026-05-05 04:50:01.907 [SEG] slot=B elapsed=19.915s decode_start=19.610s audio_pos=19.600s
-2026-05-05 04:50:02.503 [CONNECTION] closed
+2026-05-05 05:23:43.562 [CONNECTION] start lang=auto targetLang=ko
+2026-05-05 05:23:47.570 [VAD_COMMIT] audio_end_sec=3.896s → speech_end_sec=3.096s
+2026-05-05 05:23:48.180 [FINAL] seg=1 reason=seg audio=[0.000, 3.096] fsl=0.609s encode=0.000s decode=0.000s final_decode=0.482s trans=0.127s | text='There's iron, they say, in all our blood.' | translation='우리의 모든 혈액에는 철분이 들어있다고 합니다.'
+2026-05-05 05:23:50.370 [VAD_COMMIT] audio_end_sec=6.728s → speech_end_sec=5.928s
+2026-05-05 05:23:50.837 [FINAL] seg=2 reason=seg audio=[3.096, 5.928] fsl=0.466s encode=0.000s decode=0.000s final_decode=0.401s trans=0.065s | text='And a grain or two perhaps is good.' | translation='그리고 아마도 한두 알 정도가 좋을 것입니다.'
+2026-05-05 05:23:52.599 [SEG] slot=A elapsed=9.038s decode_start=8.808s audio_pos=8.800s
+2026-05-05 05:23:52.672 [FINAL] seg=3 reason=seg audio=[5.928, 8.800] fsl=0.073s encode=8.808s decode=0.229s final_decode=0.000s trans=0.073s | text='But his.' | translation='하지만 그의.'
+2026-05-05 05:23:53.971 [VAD_COMMIT] audio_end_sec=10.360s → speech_end_sec=9.560s
+2026-05-05 05:23:57.371 [VAD_COMMIT] audio_end_sec=13.632s → speech_end_sec=12.832s
+2026-05-05 05:23:57.839 [FINAL] seg=4 reason=seg audio=[8.800, 12.832] fsl=0.468s encode=0.000s decode=0.000s final_decode=0.392s trans=0.075s | text='Has got a little too much of steel.' | translation='강철이 너무 많이 들어갔습니다.'
+2026-05-05 05:23:59.172 [VAD_COMMIT] audio_end_sec=15.464s → speech_end_sec=14.664s
+2026-05-05 05:23:59.506 [FINAL] seg=5 reason=seg audio=[12.832, 14.664] fsl=0.682s encode=0.000s decode=0.000s final_decode=0.604s trans=0.078s | text='Anon.' | translation='곧.'
+2026-05-05 05:24:01.588 [SEG] slot=B elapsed=18.026s decode_start=17.610s audio_pos=17.600s
+2026-05-05 05:24:01.654 [FINAL] seg=6 reason=seg audio=[14.664, 17.600] fsl=0.067s encode=17.610s decode=0.416s final_decode=0.000s trans=0.066s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-05-05 05:24:03.474 [SEG] slot=B elapsed=19.912s decode_start=19.611s audio_pos=19.600s
+2026-05-05 05:24:04.071 [CONNECTION] closed

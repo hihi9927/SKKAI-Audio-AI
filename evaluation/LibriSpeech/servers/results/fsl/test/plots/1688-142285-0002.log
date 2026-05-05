@@ -1,8 +1,7 @@
-2026-05-05 04:50:20.868 [CONNECTION] start lang=auto targetLang=ko
-2026-05-05 04:50:24.110 [VAD_COMMIT] audio_end_sec=3.227s → speech_end_sec=2.427s
-2026-05-05 04:50:24.553 [SEG] slot=A elapsed=3.685s decode_start=2.007s audio_pos=3.235s
-2026-05-05 04:50:24.629 [FINAL] seg=1 reason=seg audio=[0.000, 2.427] fsl=0.075s encode=2.007s decode=1.678s final_decode=0.443s trans=0.075s | text='You don't mean that you thought me so silly.' | translation='당신이 나를 그렇게 바보처럼 생각했다는 뜻은 아닙니다.'
-2026-05-05 04:50:26.510 [SEG] slot=B elapsed=5.643s decode_start=5.243s audio_pos=5.235s
-2026-05-05 04:50:26.585 [FINAL] seg=2 reason=seg audio=[2.427, 5.235] fsl=0.075s encode=5.243s decode=0.399s final_decode=0.000s trans=0.075s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
-2026-05-05 04:50:28.394 [SEG] slot=B elapsed=7.526s decode_start=7.243s audio_pos=7.235s
-2026-05-05 04:50:29.209 [CONNECTION] closed
+2026-05-05 05:24:22.432 [CONNECTION] start lang=auto targetLang=ko
+2026-05-05 05:24:25.674 [VAD_COMMIT] audio_end_sec=3.227s → speech_end_sec=2.427s
+2026-05-05 05:24:26.173 [FINAL] seg=1 reason=seg audio=[0.000, 2.427] fsl=0.499s encode=0.000s decode=0.000s final_decode=0.435s trans=0.064s | text='You don't mean that you thought me so silly.' | translation='당신이 나를 그렇게 바보처럼 생각했다는 뜻은 아닙니다.'
+2026-05-05 05:24:28.064 [SEG] slot=B elapsed=5.632s decode_start=5.242s audio_pos=5.235s
+2026-05-05 05:24:28.151 [FINAL] seg=2 reason=seg audio=[2.427, 5.235] fsl=0.086s encode=5.242s decode=0.390s final_decode=0.000s trans=0.086s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-05-05 05:24:29.953 [SEG] slot=B elapsed=7.521s decode_start=7.243s audio_pos=7.235s
+2026-05-05 05:24:30.773 [CONNECTION] closed
