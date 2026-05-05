@@ -458,16 +458,44 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
                             [], [], color=STYLE["seg_audio"], lw=1.5, ls=":",
                             label="seg_audio_sec (SEG 감지 청크 경계)")
 
-            elif fd_sec > 0 or trans_sec > 0:
+            elif fd_sec > 0 or trans_sec > 0 or seg.get("chunk_encode_log"):
                 # ── VAD/finish commit: final_decode + trans (audioEndSec 기준) ──
-                # 오디오 커버리지 바 (encode zone, 음성 구간 표시)
-                audio_dur = (a_end or a_start) - a_start
-                if audio_dur > 0:
-                    ax.barh(ye, audio_dur, left=a_start, height=bh_enc,
-                            color=STYLE["encode"], alpha=0.9, zorder=3)
-                    if "encode" not in legend_handles:
-                        legend_handles["encode"] = mpatches.Patch(
-                            color=STYLE["encode"], label="Encode (audio coverage, audio-time)")
+                # 오디오 커버리지 바 (encode zone): chunk_log 있으면 청크별 분리
+                _CHUNK_COLORS = ["#4CAF50", "#81C784"]
+                chunk_log = seg.get("chunk_encode_log", [])
+                if chunk_log:
+                    sorted_chunks = sorted(chunk_log, key=lambda c: c.get("chunk_id", 0))
+                    prev_pos = a_start
+                    for k, chunk in enumerate(sorted_chunks):
+                        audio_pos = chunk.get("audio_pos_sec", prev_pos)
+                        audio_w   = audio_pos - prev_pos
+                        cdec      = chunk.get("chunk_decode_sec", 0) or 0
+                        ds_el     = chunk.get("chunk_decode_start_elapsed")
+                        # 오디오 bar (위쪽)
+                        if audio_w > 0:
+                            ax.barh(ye, audio_w, left=prev_pos, height=bh_enc,
+                                    color=_CHUNK_COLORS[k % 2], alpha=0.9, zorder=3)
+                        # 디코드 bar (아래쪽)
+                        dec_left = ds_el if ds_el is not None else audio_pos
+                        if cdec > 0:
+                            ax.barh(yd, cdec, left=dec_left, height=bh_dec,
+                                    color=STYLE["decode"], alpha=0.85, zorder=3)
+                            if "decode" not in legend_handles:
+                                legend_handles["decode"] = mpatches.Patch(
+                                    color=STYLE["decode"], label="Decode (model.generate(), wall-clock)")
+                        prev_pos = audio_pos
+                    # 마지막 청크 ~ a_end 잔여 구간
+                    if a_end and a_end > prev_pos:
+                        ax.barh(ye, a_end - prev_pos, left=prev_pos, height=bh_enc,
+                                color=_CHUNK_COLORS[len(sorted_chunks) % 2], alpha=0.7, zorder=3)
+                else:
+                    audio_dur = (a_end or a_start) - a_start
+                    if audio_dur > 0:
+                        ax.barh(ye, audio_dur, left=a_start, height=bh_enc,
+                                color=STYLE["encode"], alpha=0.9, zorder=3)
+                if "encode" not in legend_handles:
+                    legend_handles["encode"] = mpatches.Patch(
+                        color=STYLE["encode"], label="Encode (audio coverage, audio-time)")
                 bar_start = a_end or a_start
                 if fd_sec > 0:
                     ax.barh(yd, fd_sec, left=bar_start, height=bh_dec,

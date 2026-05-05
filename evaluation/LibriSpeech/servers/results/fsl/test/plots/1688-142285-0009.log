@@ -1,7 +1,7 @@
-2026-05-05 05:25:37.564 [CONNECTION] start lang=auto targetLang=ko
-2026-05-05 05:25:41.706 [VAD_COMMIT] audio_end_sec=3.967s → speech_end_sec=3.167s
-2026-05-05 05:25:42.227 [FINAL] seg=1 reason=seg audio=[0.000, 3.167] fsl=0.521s encode=0.000s decode=0.000s final_decode=0.455s trans=0.066s | text='Why, it might have been in the workhouse.' | translation='왜, 작업장에 있었을 수도 있습니다.'
-2026-05-05 05:25:44.104 [SEG] slot=B elapsed=6.540s decode_start=6.141s audio_pos=6.135s
-2026-05-05 05:25:44.171 [FINAL] seg=2 reason=seg audio=[3.167, 6.135] fsl=0.067s encode=6.141s decode=0.399s final_decode=0.000s trans=0.067s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
-2026-05-05 05:25:45.986 [SEG] slot=B elapsed=8.422s decode_start=8.141s audio_pos=8.135s
-2026-05-05 05:25:46.604 [CONNECTION] closed
+2026-05-05 06:56:07.094 [CONNECTION] start lang=auto targetLang=ko
+2026-05-05 06:56:11.238 [VAD_COMMIT] audio_end_sec=3.967s → speech_end_sec=3.167s
+2026-05-05 06:56:12.173 [FINAL] seg=1 reason=seg audio=[0.000, 3.167] fsl=0.934s encode=0.000s decode=0.000s final_decode=0.470s trans=0.464s | text='Why, it might have been in the workhouse.' | translation='왜, 작업장에 있었을 수도 있습니다.'
+2026-05-05 06:56:13.650 [SEG] slot=B elapsed=6.555s decode_start=6.142s audio_pos=6.135s
+2026-05-05 06:56:13.728 [FINAL] seg=2 reason=seg audio=[3.167, 6.135] fsl=0.078s encode=6.142s decode=0.413s final_decode=0.000s trans=0.078s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-05-05 06:56:15.527 [SEG] slot=B elapsed=8.432s decode_start=8.142s audio_pos=8.135s
+2026-05-05 06:56:16.136 [CONNECTION] closed
