@@ -269,21 +269,22 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
     else:
         ax_wave, ax_gantt, ax_text = axes
 
-    # x 범위 계산: seg_det_x + fsl_sec 로 통일 (fsl_sec = pre_trans + trans 포함)
+    # x 범위 계산
+    # encode bar는 audio-time 기준(audio_end까지), decode+trans는 wall-clock(seg_det_x + fsl)
     x_vals = [duration]
     for s in segs:
         enc = s.get("encode_sec")
         dec = s.get("decode_sec") or 0
         fsl_v = s.get("fsl_sec") or 0
-        if enc is not None and fsl_v:
-            x_vals.append(enc + dec + fsl_v)
-        elif enc is not None:
-            ts = s.get("trans_sec", 0) or 0
-            x_vals.append(enc + dec + ts)
-        elif _audio_end(s):
+        a_end_s = _audio_end(s) or 0
+        if enc is not None:
+            seg_det = enc + dec
+            right = seg_det + fsl_v if fsl_v else seg_det + (s.get("trans_sec", 0) or 0)
+            x_vals.append(max(a_end_s, right))  # audio bar와 decode bar 중 더 넓은 쪽
+        elif a_end_s:
             fd = s.get("final_decode_sec", 0) or 0
             ts = s.get("trans_sec", 0) or 0
-            x_vals.append(_audio_end(s) + fd + ts)
+            x_vals.append(a_end_s + fd + ts)
     x_max = max(x_vals) * 1.06
 
     fig.suptitle(
@@ -360,47 +361,50 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
 
                 if chunk_log:
                     sorted_chunks = sorted(chunk_log, key=lambda c: c.get("chunk_id", 0))
-                    prev_pos = a_start  # audio-time fallback 용
+                    prev_pos = a_start
                     for k, chunk in enumerate(sorted_chunks):
-                        ts_el = chunk.get("chunk_transcribe_start_elapsed")
-                        ds_el = chunk.get("chunk_decode_start_elapsed")
-                        cdec  = chunk.get("chunk_decode_sec", 0) or 0
+                        audio_pos = chunk.get("audio_pos_sec", prev_pos)
+                        audio_w   = audio_pos - prev_pos
+                        cdec      = chunk.get("chunk_decode_sec", 0) or 0
+                        ds_el     = chunk.get("chunk_decode_start_elapsed")
 
-                        if ts_el is not None and ds_el is not None:
-                            # wall-clock 기반: encode bar = transcribe_start → decode_start
-                            enc_w = ds_el - ts_el
-                            if enc_w > 0.001:
-                                ax.barh(ye, enc_w, left=ts_el, height=bh_enc,
-                                        color=_CHUNK_COLORS[k % 2], alpha=0.9, zorder=3)
-                            # decode bar = decode_start → decode_start + chunk_decode_sec
-                            if cdec > 0:
-                                ax.barh(yd, cdec, left=ds_el, height=bh_dec,
-                                        color=STYLE["decode"], alpha=0.85, zorder=3)
-                        else:
-                            # fallback: 구형 데이터(audio-time 기반)
-                            audio_pos = chunk.get("audio_pos_sec", prev_pos)
-                            audio_w   = audio_pos - prev_pos
-                            if audio_w > 0:
-                                ax.barh(ye, audio_w, left=prev_pos, height=bh_enc,
-                                        color=_CHUNK_COLORS[k % 2], alpha=0.9, zorder=3)
-                            if cdec > 0:
-                                ax.barh(yd, cdec, left=audio_pos, height=bh_dec,
-                                        color=STYLE["decode"], alpha=0.85, zorder=3)
-                            prev_pos = audio_pos
+                        # Encode bar (위쪽 존): audio-time 기준 — 청크가 커버하는 음성 구간 표시
+                        # wall-clock이 아닌 audio time으로 그려야 "2초짜리 청크" 등 직관적 크기가 보임
+                        if audio_w > 0:
+                            ax.barh(ye, audio_w, left=prev_pos, height=bh_enc,
+                                    color=_CHUNK_COLORS[k % 2], alpha=0.9, zorder=3)
+
+                        # Decode bar (아래쪽 존): wall-clock 기준 — 실제 model.generate() 실행 시점
+                        # ds_el(= chunk_decode_start_elapsed) 이 있으면 정확한 wall-clock 위치 사용
+                        # 없으면 audio_pos fallback (구형 데이터 호환)
+                        dec_left = ds_el if ds_el is not None else audio_pos
+                        if cdec > 0:
+                            ax.barh(yd, cdec, left=dec_left, height=bh_dec,
+                                    color=STYLE["decode"], alpha=0.85, zorder=3)
+
+                        prev_pos = audio_pos
+
+                    # 마지막 chunk audio_pos ~ encode_sec gap (연한 초록)
+                    gap = encode_sec - prev_pos
+                    if gap > 0.005:
+                        ax.barh(ye, gap, left=prev_pos, height=bh_enc,
+                                color=STYLE["encode_tail"], alpha=0.7, zorder=3)
                 else:
-                    # chunk_encode_log 없음: 세그먼트 레벨 값으로 단일 바
-                    ax.barh(ye, encode_sec - a_start, left=a_start, height=bh_enc,
-                            color=STYLE["encode"], alpha=0.9, zorder=3)
+                    # chunk_encode_log 없음: audio duration으로 단일 encode 바 + decode 바
+                    audio_dur = max((_audio_end(seg) or encode_sec) - a_start, 0)
+                    if audio_dur > 0:
+                        ax.barh(ye, audio_dur, left=a_start, height=bh_enc,
+                                color=STYLE["encode"], alpha=0.9, zorder=3)
                     if decode_sec > 0:
                         ax.barh(yd, decode_sec, left=encode_sec, height=bh_dec,
                                 color=STYLE["decode"], alpha=0.9, zorder=3)
 
                 if "encode" not in legend_handles:
                     legend_handles["encode"] = mpatches.Patch(
-                        color=STYLE["encode"], label="Encode (prefill/setup)")
+                        color=STYLE["encode"], label="Encode (audio coverage, audio-time)")
                 if "decode" not in legend_handles:
                     legend_handles["decode"] = mpatches.Patch(
-                        color=STYLE["decode"], label="Decode (model.generate())")
+                        color=STYLE["decode"], label="Decode (model.generate(), wall-clock)")
 
                 # SEG 감지 x 좌표 = encode_sec + decode_sec (wall-clock)
                 seg_det_x = encode_sec + decode_sec
