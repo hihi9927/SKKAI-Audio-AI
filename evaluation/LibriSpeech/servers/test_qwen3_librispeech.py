@@ -544,6 +544,7 @@ async def process_batch(
     trailing_silence_ms=5500,
     log_sample_n=10,
     log_sample_seed=42,
+    args=None,
 ):
     if resume:
         processed_ids = load_processed_files(output_file, policy)
@@ -630,7 +631,7 @@ async def process_batch(
             'segment_metrics_summary': out.get('segment_metrics_summary') or {},
         })
 
-        save_results_structured(all_results + results, output_file, policy)
+        save_results_structured(all_results + results, args)
 
         speaker_rows = [r for r in results if r['speaker_id'] == speaker_id]
         speaker_wer = compute_wer_for_rows(speaker_rows)
@@ -741,26 +742,44 @@ def build_summary_payload(results, policy):
     }
 
 
-def save_results_structured(results, output_file, policy):
-    existing = {}
-    if os.path.exists(output_file):
-        try:
-            with open(output_file, 'r', encoding='utf-8') as f:
-                existing = json.load(f)
-        except Exception:
-            existing = {}
+def save_results_structured(results, args):
+    base_dir = Path('evaluation/LibriSpeech/results/finetuned(1.0.1)')
+    
+    run_num = 0
+    while True:
+        run_dir = base_dir / f'run_{run_num:02d}'
+        if not run_dir.exists():
+            break
+        run_num += 1
+    
+    logs_path = run_dir / 'logs'
+    logs_path.mkdir(parents=True, exist_ok=True)
+    
+    args_dict = vars(args)
+    serializable_args = {}
+    for key, value in args_dict.items():
+        if isinstance(value, Path):
+            serializable_args[key] = str(value)
+        else:
+            serializable_args[key] = value
 
-    summary = build_summary_payload(results, policy)
-
-    existing[f'policy_{policy}'] = {
-        'timestamp': summary['timestamp'],
-        'overall': summary['overall'],
-        'folders': summary['folders'],
-        'raw_results': results,
+    meta_data = {
+        'timestamp': datetime.now().isoformat(),
+        'cli_args': serializable_args,
     }
+    with open(run_dir / 'meta.json', 'w', encoding='utf-8') as f:
+        json.dump(meta_data, f, indent=2, ensure_ascii=False)
 
-    with open(output_file, 'w', encoding='utf-8') as f:
-        json.dump(existing, f, indent=2, ensure_ascii=False)
+    summary = build_summary_payload(results, args.policy)
+    metric_data = {
+        'overall': summary.get('overall'),
+        'folders': summary.get('folders'),
+        'raw_results': results
+    }
+    with open(run_dir / 'metric.json', 'w', encoding='utf-8') as f:
+        json.dump(metric_data, f, indent=2, ensure_ascii=False)
+    
+    logger.info(f"Results incrementally saved to {run_dir}")
 
 
 def save_summary_file(results, summary_output_file, policy):
@@ -899,6 +918,7 @@ def main():
                 resume=not args.fresh_start,
                 target_lang=args.target_lang,
                 trailing_silence_ms=args.trailing_silence_ms,
+                args=args,
             )
         )
         if args.calculate_wer and results:

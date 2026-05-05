@@ -1,8 +1,0 @@
-2026-04-29 00:25:23.128 [CONNECTION] start lang=auto targetLang=ko
-2026-04-29 00:25:24.311 [PARTIAL] t=0.400s | I want to buy a new car. I want to buy a new car. I want to buy a new car.
-2026-04-29 00:25:24.631 [FINAL] seg=1 reason=seg audio=[0.000, 0.400] fcl=1.031s asr=0.777s translation_latency=0.248s | text='I want to buy a new car.' | translation='나는 새 차를 사고 싶다.'
-2026-04-29 00:25:24.631 [FINAL] seg=2 reason=seg audio=[0.400, 0.400] fcl=1.102s asr=0.000s translation_latency=0.071s | text='I want to buy a new car.' | translation='나는 새 차를 사고 싶다.'
-2026-04-29 00:25:30.236 [VAD_COMMIT] audio_end_sec=6.964s → speech_end_sec=6.164s
-2026-04-29 00:25:30.855 [PARTIAL] t=7.300s | I'm sorry, but I can't help you.
-2026-04-29 00:25:30.924 [FINAL] seg=3 reason=seg audio=[0.400, 6.164] fcl=1.632s asr=0.419s translation_latency=0.069s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
-2026-04-29 00:25:35.377 [CONNECTION] closed
