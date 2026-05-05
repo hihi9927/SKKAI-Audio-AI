@@ -1,0 +1,10 @@
+2026-05-03 17:11:25.598 [CONNECTION] start lang=auto targetLang=ko
+2026-05-03 17:11:31.891 [SEG] slot=A fsl=6.293s decode_start=6.006s audio_pos=6.000s
+2026-05-03 17:11:31.961 [FINAL] seg=1 reason=seg audio=[0.000, 6.000] fsl=6.293s encode=6.006s decode=0.287s final_decode=0.000s trans=0.070s | text='The constant necessity of meeting the dangers of the wilderness,' | translation='광야의 위험에 맞서야 하는 끊임없는 필요성,'
+2026-05-03 17:11:33.714 [SEG] slot=A fsl=8.115s decode_start=8.006s audio_pos=8.000s
+2026-05-03 17:11:39.506 [VAD_COMMIT] audio_end_sec=13.860s → speech_end_sec=13.060s
+2026-05-03 17:11:39.986 [FINAL] seg=2 reason=vad audio=[6.000, 13.060] fsl=8.115s encode=8.006s decode=0.110s final_decode=0.325s trans=0.069s | text='and the defending the flocks entrusted to Moses' care, developed his courage and power of leadership and action.' | translation='그리고 모세에게 맡겨진 양 떼를 보호하면서 그의 용기와 지도력과 행동력을 발전시켰습니다.'
+2026-05-03 17:11:41.904 [SEG] slot=B fsl=16.306s decode_start=15.908s audio_pos=15.900s
+2026-05-03 17:11:41.975 [FINAL] seg=3 reason=seg audio=[13.060, 15.900] fsl=16.306s encode=15.908s decode=0.397s final_decode=0.000s trans=0.070s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-05-03 17:11:43.793 [SEG] slot=B fsl=18.194s decode_start=17.908s audio_pos=17.900s
+2026-05-03 17:11:44.204 [CONNECTION] closed

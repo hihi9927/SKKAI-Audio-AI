@@ -1,8 +1,8 @@
-2026-05-04 14:32:49.224 [CONNECTION] start lang=auto targetLang=ko
-2026-05-04 14:33:02.457 [VAD_COMMIT] audio_end_sec=13.121s → speech_end_sec=12.321s
-2026-05-04 14:33:02.741 [SEG] slot=A elapsed=13.517s decode_start=12.008s audio_pos=13.225s
-2026-05-04 14:33:02.817 [FINAL] seg=1 reason=seg audio=[0.000, 12.321] fsl=0.076s encode=12.008s decode=1.509s final_decode=0.284s trans=0.075s | text='Margaret," said Mr. Hale, as he returned from showing his guests downstairs, "I could not help watching your face with some anxiety, when Mr. Thornton made his confession of having been a shop boy.' | translation='마가렛 씨는 손님들에게 아래층을 안내하고 돌아오면서 이렇게 말했습니다. "손튼 씨가 가게 주인이었다고 고백했을 때 저는 걱정스러운 마음으로 당신의 얼굴을 지켜보지 않을 수 없었습니다.'
-2026-05-04 14:33:04.859 [SEG] slot=B elapsed=15.635s decode_start=15.233s audio_pos=15.225s
-2026-05-04 14:33:04.935 [FINAL] seg=2 reason=seg audio=[12.321, 15.225] fsl=0.076s encode=15.233s decode=0.402s final_decode=0.000s trans=0.076s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
-2026-05-04 14:33:06.741 [SEG] slot=B elapsed=17.517s decode_start=17.233s audio_pos=17.225s
-2026-05-04 14:33:07.355 [CONNECTION] closed
+2026-05-05 04:50:02.650 [CONNECTION] start lang=auto targetLang=ko
+2026-05-05 04:50:15.882 [VAD_COMMIT] audio_end_sec=13.121s → speech_end_sec=12.321s
+2026-05-05 04:50:16.165 [SEG] slot=A elapsed=13.515s decode_start=12.008s audio_pos=13.225s
+2026-05-05 04:50:16.235 [FINAL] seg=1 reason=seg audio=[0.000, 12.321] fsl=0.069s encode=12.008s decode=1.507s final_decode=0.283s trans=0.069s | text='Margaret," said Mr. Hale, as he returned from showing his guests downstairs, "I could not help watching your face with some anxiety, when Mr. Thornton made his confession of having been a shop boy.' | translation='마가렛 씨는 손님들에게 아래층을 안내하고 돌아오면서 이렇게 말했습니다. "손튼 씨가 가게 주인이었다고 고백했을 때 저는 걱정스러운 마음으로 당신의 얼굴을 지켜보지 않을 수 없었습니다.'
+2026-05-05 04:50:18.279 [SEG] slot=B elapsed=15.629s decode_start=15.233s audio_pos=15.225s
+2026-05-05 04:50:18.380 [FINAL] seg=2 reason=seg audio=[12.321, 15.225] fsl=0.100s encode=15.233s decode=0.396s final_decode=0.000s trans=0.100s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-05-05 04:50:20.165 [SEG] slot=B elapsed=17.515s decode_start=17.234s audio_pos=17.225s
+2026-05-05 04:50:20.781 [CONNECTION] closed

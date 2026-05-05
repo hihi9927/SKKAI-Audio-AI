@@ -1,0 +1,8 @@
+2026-05-03 16:48:15.391 [CONNECTION] start lang=auto targetLang=ko
+2026-05-03 16:48:19.318 [VAD_COMMIT] audio_end_sec=3.880s → speech_end_sec=3.080s
+2026-05-03 16:48:19.813 [SEG] slot=A fsl=4.421s decode_start=2.006s audio_pos=3.920s
+2026-05-03 16:48:20.215 [FINAL] seg=1 reason=seg audio=[0.000, 3.080] fsl=4.421s encode=2.006s decode=2.415s final_decode=0.494s trans=0.402s | text='No one came fords to help the mother and this boy?' | translation='엄마와 이 소년을 도우러 오는 사람이 아무도 없나요?'
+2026-05-03 16:48:21.719 [SEG] slot=B fsl=6.328s decode_start=5.926s audio_pos=5.920s
+2026-05-03 16:48:21.795 [FINAL] seg=2 reason=seg audio=[3.080, 5.920] fsl=6.328s encode=5.926s decode=0.402s final_decode=0.000s trans=0.075s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-05-03 16:48:23.624 [SEG] slot=B fsl=8.232s decode_start=7.926s audio_pos=7.920s
+2026-05-03 16:48:24.216 [CONNECTION] closed

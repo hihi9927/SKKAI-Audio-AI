@@ -1,0 +1,14 @@
+2026-05-03 14:59:32.883 [CONNECTION] start lang=auto targetLang=ko
+2026-05-03 14:59:39.108 [SEG] slot=A fsl=6.225s decode_start=6.007s audio_pos=6.000s
+2026-05-03 14:59:39.549 [FINAL] seg=1 reason=seg audio=[0.000, 6.000] fsl=6.225s encode=6.007s decode=0.218s final_decode=0.000s trans=0.441s | text='But though she received caresses and fond words back again,' | translation='하지만 그녀는 다시 애무와 다정한 말을 받았지만,'
+2026-05-03 14:59:40.970 [SEG] slot=A fsl=8.085s decode_start=8.007s audio_pos=8.000s
+2026-05-03 14:59:43.782 [FINAL] seg=2 reason=seg audio=[6.000, 10.000] fsl=8.085s encode=8.007s decode=0.079s final_decode=0.000s trans=0.640s | text='in such profusion as would have gladdened her formerly,' | translation='예전에는 그녀를 기쁘게 했을 만큼 풍성하게,'
+2026-05-03 14:59:44.980 [SEG] slot=A fsl=12.097s decode_start=12.009s audio_pos=12.000s
+2026-05-03 14:59:48.282 [FINAL] seg=3 reason=seg audio=[10.000, 14.000] fsl=12.097s encode=12.009s decode=0.088s final_decode=0.000s trans=1.152s | text='yet she felt that there was a secret withheld from her,' | translation='하지만 그녀는 자신에게 숨겨져 있는 비밀이 있다고 느꼈습니다.'
+2026-05-03 14:59:48.995 [SEG] slot=A fsl=16.112s decode_start=16.007s audio_pos=16.000s
+2026-05-03 14:59:50.343 [VAD_COMMIT] audio_end_sec=17.410s → speech_end_sec=16.610s
+2026-05-03 14:59:51.513 [FINAL] seg=4 reason=vad audio=[14.000, 16.610] fsl=16.112s encode=16.007s decode=0.104s final_decode=0.321s trans=0.068s | text='and she believed it bore serious reference to her mother's health.' | translation='그리고 그녀는 그것이 어머니의 건강과 심각한 관련이 있다고 믿었습니다.'
+2026-05-03 14:59:52.757 [SEG] slot=B fsl=19.874s decode_start=19.459s audio_pos=19.450s
+2026-05-03 14:59:52.835 [FINAL] seg=5 reason=seg audio=[16.610, 19.450] fsl=19.874s encode=19.459s decode=0.415s final_decode=0.000s trans=0.077s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-05-03 14:59:54.634 [SEG] slot=B fsl=21.751s decode_start=21.458s audio_pos=21.450s
+2026-05-03 14:59:55.241 [CONNECTION] closed

@@ -1,11 +1,11 @@
-2026-05-04 14:33:46.469 [CONNECTION] start lang=auto targetLang=ko
-2026-05-04 14:33:54.695 [SEG] slot=A elapsed=8.226s decode_start=8.008s audio_pos=8.000s
-2026-05-04 14:33:54.769 [FINAL] seg=1 reason=seg audio=[0.000, 8.000] fsl=0.074s encode=8.008s decode=0.218s final_decode=0.000s trans=0.074s | text='I don't think, Mr. Hale, you have done quite right in introducing such a person to us,' | translation='헤일 씨, 당신이 그런 사람을 우리에게 소개한 것은 아주 옳은 일이라고 생각하지 않습니다.'
-2026-05-04 14:33:54.930 [SEG] slot=A elapsed=8.461s decode_start=8.008s audio_pos=8.000s
-2026-05-04 14:33:55.008 [FINAL] seg=2 reason=seg audio=[8.000, 8.000] fsl=0.078s encode=8.008s decode=0.453s final_decode=0.000s trans=0.078s | text='without telling us what he had been.' | translation='그가 어떤 사람이었는지 우리에게 말하지 않고.'
-2026-05-04 14:33:55.216 [VAD_COMMIT] audio_end_sec=8.572s → speech_end_sec=7.772s
-2026-05-04 14:33:55.422 [SEG] slot=A elapsed=8.953s decode_start=8.008s audio_pos=8.740s
-2026-05-04 14:33:57.619 [SEG] slot=B elapsed=11.150s decode_start=10.747s audio_pos=10.740s
-2026-05-04 14:33:57.695 [FINAL] seg=3 reason=seg audio=[8.000, 7.772] fsl=0.076s encode=10.747s decode=0.402s final_decode=0.000s trans=0.076s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
-2026-05-04 14:33:59.496 [SEG] slot=B elapsed=13.027s decode_start=12.748s audio_pos=12.740s
-2026-05-04 14:34:00.114 [CONNECTION] closed
+2026-05-05 04:50:59.908 [CONNECTION] start lang=auto targetLang=ko
+2026-05-05 04:51:08.137 [SEG] slot=A elapsed=8.229s decode_start=8.008s audio_pos=8.000s
+2026-05-05 04:51:08.215 [FINAL] seg=1 reason=seg audio=[0.000, 8.000] fsl=0.077s encode=8.008s decode=0.222s final_decode=0.000s trans=0.077s | text='I don't think, Mr. Hale, you have done quite right in introducing such a person to us,' | translation='헤일 씨, 당신이 그런 사람을 우리에게 소개한 것은 아주 옳은 일이라고 생각하지 않습니다.'
+2026-05-05 04:51:08.374 [SEG] slot=A elapsed=8.466s decode_start=8.008s audio_pos=8.000s
+2026-05-05 04:51:08.448 [FINAL] seg=2 reason=seg audio=[8.000, 8.000] fsl=0.073s encode=8.008s decode=0.458s final_decode=0.000s trans=0.073s | text='without telling us what he had been.' | translation='그가 어떤 사람이었는지 우리에게 말하지 않고.'
+2026-05-05 04:51:08.656 [VAD_COMMIT] audio_end_sec=8.572s → speech_end_sec=7.772s
+2026-05-05 04:51:08.865 [SEG] slot=A elapsed=8.956s decode_start=8.008s audio_pos=8.740s
+2026-05-05 04:51:11.065 [SEG] slot=B elapsed=11.156s decode_start=10.749s audio_pos=10.740s
+2026-05-05 04:51:11.135 [FINAL] seg=3 reason=seg audio=[8.000, 7.772] fsl=0.070s encode=10.749s decode=0.407s final_decode=0.000s trans=0.070s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-05-05 04:51:12.947 [SEG] slot=B elapsed=13.038s decode_start=12.749s audio_pos=12.740s
+2026-05-05 04:51:13.555 [CONNECTION] closed

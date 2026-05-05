@@ -1,0 +1,13 @@
+2026-05-03 15:43:20.491 [CONNECTION] start lang=auto targetLang=ko
+2026-05-03 15:43:24.872 [SEG] slot=A fsl=4.381s decode_start=4.006s audio_pos=4.000s
+2026-05-03 15:43:26.108 [FINAL] seg=1 reason=seg audio=[0.000, 4.000] fsl=4.381s encode=4.006s decode=0.375s final_decode=0.000s trans=1.236s | text='So it was agreed that we go to Damascus' | translation='그래서 우리는 다메섹으로 가기로 합의했습니다.'
+2026-05-03 15:43:26.573 [SEG] slot=A fsl=6.082s decode_start=6.007s audio_pos=6.000s
+2026-05-03 15:43:29.157 [FINAL] seg=2 reason=seg audio=[4.000, 8.000] fsl=6.082s encode=6.007s decode=0.075s final_decode=0.000s trans=0.437s | text='and fetch thence the king's son, Sharkan,' | translation='거기서 왕의 아들 샤르칸을 데려오너라.'
+2026-05-03 15:43:30.583 [SEG] slot=A fsl=10.090s decode_start=10.007s audio_pos=10.000s
+2026-05-03 15:43:31.616 [FINAL] seg=3 reason=seg audio=[8.000, 10.000] fsl=10.090s encode=10.007s decode=0.083s final_decode=0.000s trans=0.746s | text='and make him sultan over his father's realm.' | translation='그리고 그를 그의 아버지 나라의 술탄으로 삼으십시오.'
+2026-05-03 15:43:31.629 [VAD_COMMIT] audio_end_sec=10.671s → speech_end_sec=9.871s
+2026-05-03 15:43:31.838 [SEG] slot=A fsl=11.348s decode_start=10.007s audio_pos=10.775s
+2026-05-03 15:43:33.683 [SEG] slot=B fsl=13.192s decode_start=12.782s audio_pos=12.775s
+2026-05-03 15:43:33.753 [FINAL] seg=4 reason=seg audio=[10.000, 9.871] fsl=13.192s encode=12.782s decode=0.410s final_decode=0.000s trans=0.070s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-05-03 15:43:35.562 [SEG] slot=B fsl=15.071s decode_start=14.782s audio_pos=14.775s
+2026-05-03 15:43:36.171 [CONNECTION] closed

@@ -1,0 +1,8 @@
+2026-05-03 17:13:08.993 [CONNECTION] start lang=auto targetLang=ko
+2026-05-03 17:13:12.059 [VAD_COMMIT] audio_end_sec=3.052s → speech_end_sec=2.252s
+2026-05-03 17:13:12.528 [SEG] slot=A fsl=3.535s decode_start=2.007s audio_pos=3.060s
+2026-05-03 17:13:12.595 [FINAL] seg=1 reason=seg audio=[0.000, 2.252] fsl=3.535s encode=2.007s decode=1.528s final_decode=0.468s trans=0.067s | text='Ain't bad when she's in a good temper.' | translation='그녀가 기분이 좋을 때는 나쁘지 않습니다.'
+2026-05-03 17:13:14.464 [SEG] slot=B fsl=5.471s decode_start=5.067s audio_pos=5.060s
+2026-05-03 17:13:14.538 [FINAL] seg=2 reason=seg audio=[2.252, 5.060] fsl=5.471s encode=5.067s decode=0.403s final_decode=0.000s trans=0.073s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-05-03 17:13:16.345 [SEG] slot=B fsl=7.352s decode_start=7.067s audio_pos=7.060s
+2026-05-03 17:13:16.958 [CONNECTION] closed

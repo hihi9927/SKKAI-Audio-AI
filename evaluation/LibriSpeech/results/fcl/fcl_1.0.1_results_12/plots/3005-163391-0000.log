@@ -1,0 +1,12 @@
+2026-05-03 17:29:36.451 [CONNECTION] start lang=auto targetLang=ko
+2026-05-03 17:29:40.766 [SEG] slot=A fsl=4.314s decode_start=4.007s audio_pos=4.000s
+2026-05-03 17:29:40.842 [FINAL] seg=1 reason=seg audio=[0.000, 4.000] fsl=4.314s encode=4.007s decode=0.307s final_decode=0.000s trans=0.076s | text='Which was sound enough judgment,' | translation='충분히 타당한 판단이었는데,'
+2026-05-03 17:29:42.532 [SEG] slot=A fsl=6.081s decode_start=6.006s audio_pos=6.000s
+2026-05-03 17:29:42.769 [FINAL] seg=2 reason=seg audio=[4.000, 6.000] fsl=6.081s encode=6.006s decode=0.074s final_decode=0.000s trans=0.073s | text='but you take the average man,' | translation='하지만 당신은 보통 사람을 생각합니다.'
+2026-05-03 17:29:43.745 [VAD_COMMIT] audio_end_sec=7.181s → speech_end_sec=6.381s
+2026-05-03 17:29:44.044 [SEG] slot=A fsl=7.593s decode_start=6.006s audio_pos=7.285s
+2026-05-03 17:29:44.183 [FINAL] seg=3 reason=vad audio=[6.000, 6.381] fsl=7.593s encode=6.006s decode=1.586s final_decode=0.300s trans=0.068s | text='and he wouldn't wait for him to howl.' | translation='그리고 그는 그가 울부짖을 때까지 기다리지 않았습니다.'
+2026-05-03 17:29:46.147 [SEG] slot=B fsl=9.695s decode_start=9.291s audio_pos=9.285s
+2026-05-03 17:29:46.226 [FINAL] seg=4 reason=seg audio=[6.381, 9.285] fsl=9.695s encode=9.291s decode=0.404s final_decode=0.000s trans=0.078s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-05-03 17:29:48.031 [SEG] slot=B fsl=11.579s decode_start=11.293s audio_pos=11.285s
+2026-05-03 17:29:48.443 [CONNECTION] closed

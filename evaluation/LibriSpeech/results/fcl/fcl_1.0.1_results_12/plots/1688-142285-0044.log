@@ -1,0 +1,11 @@
+2026-05-03 16:55:03.904 [CONNECTION] start lang=auto targetLang=ko
+2026-05-03 16:55:05.910 [VAD_COMMIT] audio_end_sec=1.928s → speech_end_sec=1.128s
+2026-05-03 16:55:06.215 [SEG] slot=A fsl=2.311s audio_pos=2.000s
+2026-05-03 16:55:06.284 [FINAL] seg=1 reason=seg audio=[0.000, 1.128] fsl=2.311s encode=0.000s decode=0.000s final_decode=0.305s trans=0.068s | text='Bessie.' | translation='베시.'
+2026-05-03 16:55:07.916 [VAD_COMMIT] audio_end_sec=3.837s → speech_end_sec=3.037s
+2026-05-03 16:55:08.272 [SEG] slot=B fsl=4.368s audio_pos=4.005s
+2026-05-03 16:55:08.346 [FINAL] seg=2 reason=seg audio=[1.128, 3.037] fsl=4.368s encode=0.000s decode=0.000s final_decode=0.355s trans=0.074s | text='Do you wish to die?' | translation='죽고 싶나요?'
+2026-05-03 16:55:10.330 [SEG] slot=A fsl=6.427s decode_start=6.012s audio_pos=6.005s
+2026-05-03 16:55:10.401 [FINAL] seg=3 reason=seg audio=[3.037, 6.005] fsl=6.427s encode=6.012s decode=0.414s final_decode=0.000s trans=0.070s | text='I'm sorry, but I can't help you.' | translation='죄송하지만 도와드릴 수 없습니다.'
+2026-05-03 16:55:12.231 [SEG] slot=A fsl=8.327s decode_start=8.012s audio_pos=8.005s
+2026-05-03 16:55:12.814 [CONNECTION] closed
