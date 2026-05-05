@@ -1,0 +1,19 @@
+chunk_size 별 성능 확인을 위한 test
+서버 측 커맨드에서 chunk-size 바꿔가며 돌림.
+
+# 서버 시작
+cd ~/STiTy && git pull
+python evaluation/LibriSpeech/servers/streaming_websocket_server_fcl.py \
+  --model /home/ubuntu/STiTy/Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged \
+  --no-idle-shutdown \
+  --enforce-eager \
+  --chunk-size 1.5 \
+  --log-file /home/ubuntu/STiTy/evaluation/LibriSpeech/results/full/finetuning_log/server_cs1.5.log
+
+
+# 테스트 실행
+python evaluation/LibriSpeech/test_qwen3_librispeech.py \
+  --test-dir evaluation/LibriSpeech/LibriSpeech/test-other \
+  --output /home/ubuntu/STiTy/evaluation/LibriSpeech/results/full/finetuning_full/qwen3_test_other_chunk1.5.json \
+  --target-lang ko \
+  --trailing-silence-ms 5500
