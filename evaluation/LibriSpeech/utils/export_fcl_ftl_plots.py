@@ -460,6 +460,14 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
 
             elif fd_sec > 0 or trans_sec > 0:
                 # ── VAD/finish commit: final_decode + trans (audioEndSec 기준) ──
+                # 오디오 커버리지 바 (encode zone, 음성 구간 표시)
+                audio_dur = (a_end or a_start) - a_start
+                if audio_dur > 0:
+                    ax.barh(ye, audio_dur, left=a_start, height=bh_enc,
+                            color=STYLE["encode"], alpha=0.9, zorder=3)
+                    if "encode" not in legend_handles:
+                        legend_handles["encode"] = mpatches.Patch(
+                            color=STYLE["encode"], label="Encode (audio coverage, audio-time)")
                 bar_start = a_end or a_start
                 if fd_sec > 0:
                     ax.barh(yd, fd_sec, left=bar_start, height=bh_dec,
