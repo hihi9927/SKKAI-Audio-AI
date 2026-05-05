@@ -25,7 +25,7 @@ evaluation/{Dataset}/results/
 
 | 인자 | 기본값 | 설명 |
 |---|---|---|
-| `--model` | `finetuned` | 대분류: 모델 종류 (예: `baseline`, `finetuned`) |
+| `--model` | `finetuned(1.0.1)` | 대분류: 모델 종류 (예: `baseline(1.0.0)`, `finetuned(1.0.1)`) |
 | `--scope` | `sample` | 소분류: `full`(전체 데이터셋) 또는 `sample`(일부) |
 | `--tag` | 자동 생성 | 결과 폴더명. 지정 시 해당 폴더에 이어서 저장 |
 | `--description` | — | 테스트 설명. `description.txt`에 저장 |
@@ -47,7 +47,7 @@ evaluation/{Dataset}/results/
 ### 3.1 서버 실행 (공통)
 
 서버 로그를 결과 폴더(`logs/server.log`)에 저장하려면 `--log-file`을 지정해야 합니다.  
-run 폴더 이름은 테스트 스크립트 실행 시 결정되므로, **`--tag`로 폴더명을 미리 고정**한 뒤 서버와 테스트 스크립트에 같은 경로를 맞춰줍니다.
+run 폴더 이름은 테스트 스크립트 실행 시 결정되므로, **`--tag`로 폴더명을 미리 고정**한 뒤 서버와 테스트 스크립트에 같은 경로를 맞춰줍니다.  
 
 ```bash
 cd ~/STiTy && git pull
@@ -55,14 +55,14 @@ cd ~/STiTy && git pull
 # Baseline 모델
 python evaluation/LibriSpeech/servers/streaming_websocket_server_fcl.py \
   --no-idle-shutdown \
-  --log-file evaluation/LibriSpeech/results/baseline/sample/run_01/logs/server.log
+  --log-file evaluation/LibriSpeech/results/baseline(1.0.0)/sample/run_01/logs/server.log
 
 # Finetuned 모델
 python evaluation/LibriSpeech/servers/streaming_websocket_server_fcl.py \
   --model /home/ubuntu/STiTy/Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged \
   --no-idle-shutdown \
   --enforce-eager \
-  --log-file evaluation/LibriSpeech/results/finetuned/sample/run_01/logs/server.log
+  --log-file evaluation/LibriSpeech/results/finetuned(1.0.1)/sample/run_01/logs/server.log
 ```
 
 > **`--log-file` 경로 규칙:** `evaluation/{Dataset}/results/{model}/{scope}/{tag}/logs/server.log`  
@@ -76,7 +76,7 @@ python evaluation/LibriSpeech/servers/streaming_websocket_server_fcl.py \
 ```bash
 python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \
   --test-dir evaluation/LibriSpeech/LibriSpeech/test-other \
-  --model <baseline|finetuned> \
+  --model <baseline(1.0.0)|finetuned(1.0.1)> \
   --scope <full|sample> \
   [--tag <폴더명>] \
   [--description "테스트 설명"] \
@@ -91,31 +91,31 @@ python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \
 ```bash
 python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \
   --test-dir evaluation/LibriSpeech/LibriSpeech/test-other \
-  --model finetuned \
+  --model finetuned(1.0.1) \
   --scope full \
   --description "finetuned 모델 전체 test-other 기준선 측정"
-# → results/finetuned/full/run_01/
+# → results/finetuned(1.0.1)/full/run_01/
 ```
 
 **예시 2 — baseline, 일부 샘플**
 ```bash
 python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \
   --test-dir evaluation/LibriSpeech/LibriSpeech/test-other \
-  --model baseline \
+  --model baseline(1.0.0)) \
   --scope sample \
   --limit 50
-# → results/baseline/sample/run_01/
+# → results/baseline(1.0.0)/sample/run_01/
 ```
 
 **예시 3 — chunk size 변경 실험 (tag 지정)**
 ```bash
 python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \
   --test-dir evaluation/LibriSpeech/LibriSpeech/test-other \
-  --model finetuned \
+  --model finetuned(1.0.1) \
   --scope full \
   --tag chunk_1500ms \
   --chunk-size-ms 1500
-# → results/finetuned/full/chunk_1500ms/
+# → results/finetuned(1.0.1)/full/chunk_1500ms/
 ```
 
 ---
@@ -130,12 +130,12 @@ python evaluation/LibriSpeech/servers/streaming_websocket_server_fcl.py \
   --model /home/ubuntu/STiTy/Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged \
   --no-idle-shutdown \
   --enforce-eager \
-  --log-file evaluation/KtelSpeech/results/finetuned/sample/run_01/logs/server.log
+  --log-file evaluation/KtelSpeech/results/finetuned(1.0.1)/sample/run_01/logs/server.log
 
 # 2) 테스트 실행
 python evaluation/KtelSpeech/test_qwen3_ktelspeech.py \
   --data-dir evaluation/KtelSpeech \
-  --model finetuned \
+  --model finetuned(1.0.1) \
   --scope sample \
   --tag run_01 \
   [--description "테스트 설명"] \
@@ -156,12 +156,12 @@ python evaluation/KtelSpeech/test_qwen3_ktelspeech.py \
 # 1) 서버 시작 (별도 터미널)
 python evaluation/LibriSpeech/servers/streaming_websocket_server_fcl.py \
   --no-idle-shutdown \
-  --log-file evaluation/AMI/results/baseline/sample/run_01/logs/server.log
+  --log-file evaluation/AMI/results/baseline(1.0.0)/sample/run_01/logs/server.log
 
 # 2) 테스트 실행
 python evaluation/AMI/test_qwen3_ami.py \
   --ami-dir evaluation/AMI \
-  --model baseline \
+  --model baseline(1.0.0) \
   --scope sample \
   --tag run_01
 ```
@@ -190,13 +190,13 @@ python evaluation/AMI/test_qwen3_ami.py \
 ```bash
 # 처음 실행 (run_01 자동 생성)
 python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \
-  --model finetuned --scope full
+  --model finetuned(1.0.1) --scope full
 
 # 중단 후 이어서 실행
 python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \
-  --model finetuned --scope full --tag run_01
+  --model finetuned(1.0.1) --scope full --tag run_01
 
 # 처음부터 다시 실행
 python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \
-  --model finetuned --scope full --tag run_01 --fresh-start
+  --model finetuned(1.0.1) --scope full --tag run_01 --fresh-start
 ```
