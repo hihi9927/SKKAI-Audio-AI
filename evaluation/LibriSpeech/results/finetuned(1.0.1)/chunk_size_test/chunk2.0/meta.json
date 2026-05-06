@@ -1,0 +1,30 @@
+{
+  "timestamp": "2026-05-06T13:11:16.469363",
+  "cli_args": {
+    "test_dir": "/home/ubuntu/STiTy/evaluation/LibriSpeech/LibriSpeech/test-other",
+    "policy": 3,
+    "host": "localhost",
+    "port": 8765,
+    "model": "finetuned(1.0.1)",
+    "scope": "chunk_size_test",
+    "tag": "chunk2.0",
+    "description": "chunk_size=2.0s sweep",
+    "limit": 548,
+    "calculate_wer": true,
+    "log_level": "INFO",
+    "auto_server": true,
+    "server_script": "/home/ubuntu/STiTy/evaluation/LibriSpeech/servers/streaming_websocket_server_fcl.py",
+    "server_model": "/home/ubuntu/STiTy/Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged",
+    "server_args": "--chunk-size 2.0 --enforce-eager --no-idle-shutdown",
+    "target_lang": "ko",
+    "common_files": null,
+    "random_sample": null,
+    "random_seed": 42,
+    "skip_protocol_smoke": false,
+    "chunk_size_ms": 200,
+    "send_interval_ms": 200,
+    "show_commit_slash": true,
+    "fresh_start": true,
+    "trailing_silence_ms": 5500
+  }
+}

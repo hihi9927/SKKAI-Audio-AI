@@ -840,8 +840,8 @@ def main():
     # ─── 결과 폴더 구조 인자 ────────────────────────────────────────────────
     parser.add_argument('--model', type=str, default='finetuned',
                         help='대분류: 모델 종류 (예: baseline, finetuned)')
-    parser.add_argument('--scope', type=str, default='sample', choices=['full', 'sample'],
-                        help='소분류: 테스트 범위 (full=전체 데이터셋, sample=일부)')
+    parser.add_argument('--scope', type=str, default='sample',
+                        help='소분류: 테스트 범위 (full=전체 데이터셋, sample=일부, 임의 문자열 가능)')
     parser.add_argument('--tag', type=str, default=None,
                         help='결과 폴더명. 미지정 시 run_01, run_02 ... 자동 생성')
     parser.add_argument('--description', type=str, default=None,
