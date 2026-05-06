@@ -1,0 +1,610 @@
+INFO	Results → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	Manual mode. Ensure server is running at ws://localhost:8765
+INFO	Log capture enabled for 10 sampled files → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5/plots
+INFO	Processing 55 files (already done: 0)
+INFO	[1/55] 2414-128291-0012
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: IT IS NO LONGER TRUE THAT THE POOR ARE BLESSED
+INFO	  HYP: It is no longer true that the poor are blessed.
+INFO	  FIRST_TOKEN_LATENCY: 4.721s
+INFO	  MODEL_RUNTIME(total-audio): 0.756s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.172s  DECODE(avg): 0.466s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.076s
+INFO	  SPEAKER_2414_RUNNING_WER: 0.00% (1 files)
+INFO	  HYP_COMMIT: It is no longer true that the poor are blessed. <seg>
+INFO	[2/55] 2414-128291-0013
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: THE KINGDOM OF HEAVEN HOWEVER IS WITH THE KINE AND WHY IS IT NOT WITH THE RICH
+INFO	  HYP: The kingdom of heaven, however, is with the kind. I'm sorry, but I can't help you.
+INFO	  FIRST_TOKEN_LATENCY: 5.681s
+INFO	  MODEL_RUNTIME(total-audio): -1.953s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 7.233s  DECODE(avg): 0.486s  FINAL_DECODE(avg): 0.152s
+INFO	  TRANS(avg): 0.109s
+INFO	  SPEAKER_2414_RUNNING_WER: 37.04% (2 files)
+INFO	  HYP_COMMIT: The kingdom of heaven, however, is with the kind. <vad> I'm sorry, but I can't help you. <seg>
+INFO	[3/55] 2414-128291-0014
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: WHY DOST THOU TEMPT ME
+INFO	  HYP: Why thou dost tempt me?
+INFO	  FIRST_TOKEN_LATENCY: 4.407s
+INFO	  MODEL_RUNTIME(total-audio): 1.072s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.374s
+INFO	  TRANS(avg): 0.072s
+INFO	  SPEAKER_2414_RUNNING_WER: 37.50% (3 files)
+INFO	  HYP_COMMIT: Why thou dost tempt me? <vad>
+INFO	[4/55] 2414-128291-0015
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: ANSWERED THE OTHER
+INFO	  HYP: Answered the other.
+INFO	  FIRST_TOKEN_LATENCY: 2.665s
+INFO	  MODEL_RUNTIME(total-audio): 0.690s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.181s  DECODE(avg): 0.317s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.077s
+INFO	  SPEAKER_2414_RUNNING_WER: 34.29% (4 files)
+INFO	  HYP_COMMIT: Answered the other. <seg>
+INFO	[5/55] 2414-128291-0016
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: THOU KNOWEST IT THYSELF BETTER EVEN THAN I
+INFO	  HYP: Thou knowest it thyself, better even than I.
+INFO	  FIRST_TOKEN_LATENCY: 4.587s
+INFO	  MODEL_RUNTIME(total-audio): 1.075s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.007s  DECODE(avg): 0.404s  FINAL_DECODE(avg): 0.149s
+INFO	  TRANS(avg): 0.081s
+INFO	  SPEAKER_2414_RUNNING_WER: 27.91% (5 files)
+INFO	  HYP_COMMIT: Thou knowest it thyself, <seg> better even than I. <vad>
+INFO	[6/55] 2414-128291-0017
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: THUS SPAKE THE PEACEFUL ONE AND PUFFED HIMSELF AND PERSPIRED WITH HIS WORDS SO THAT THE KINE WONDERED ANEW
+INFO	  HYP: Thus begged the peaceful one, and puffed himself, and perspired with his words. So that the kind wondered anew.
+INFO	  FIRST_TOKEN_LATENCY: 4.522s
+INFO	  MODEL_RUNTIME(total-audio): 1.061s
+INFO	  FSL(avg): 2.393s
+INFO	  ENCODE(avg): 4.007s  DECODE(avg): 0.357s  FINAL_DECODE(avg): 0.255s
+INFO	  TRANS(avg): 0.098s
+INFO	  SPEAKER_2414_RUNNING_WER: 22.58% (6 files)
+INFO	  HYP_COMMIT: Thus begged the peaceful one, <seg> and puffed himself, and perspired with his words. <vad> So that the kind wondered anew. <vad>
+INFO	[7/55] 2414-128291-0018
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: THOU DOEST VIOLENCE TO THYSELF THOU PREACHER ON THE MOUNT WHEN THOU USEST SUCH SEVERE WORDS
+INFO	  HYP: Thou doest violence to thyself, thou preacher on the mount, and thou usest such savior words.
+INFO	  FIRST_TOKEN_LATENCY: 4.485s
+INFO	  MODEL_RUNTIME(total-audio): 0.920s
+INFO	  FSL(avg): 3.121s
+INFO	  ENCODE(avg): 4.006s  DECODE(avg): 0.383s  FINAL_DECODE(avg): 0.134s
+INFO	  TRANS(avg): 0.076s
+INFO	  SPEAKER_2414_RUNNING_WER: 20.51% (7 files)
+INFO	  HYP_COMMIT: Thou doest violence to thyself, <seg> thou preacher on the mount, and thou usest such savior words. <vad>
+INFO	[8/55] 2414-128291-0019
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: THEY ALSO ABSTAIN FROM ALL HEAVY THOUGHTS WHICH INFLATE THE HEART
+INFO	  HYP: They also abstain from all heavy thoughts, which inflate the heart.
+INFO	  FIRST_TOKEN_LATENCY: 6.314s
+INFO	  MODEL_RUNTIME(total-audio): 0.811s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 6.007s  DECODE(avg): 0.210s  FINAL_DECODE(avg): 0.153s
+INFO	  TRANS(avg): 0.089s
+INFO	  SPEAKER_2414_RUNNING_WER: 17.98% (8 files)
+INFO	  HYP_COMMIT: They also abstain from all heavy thoughts, <seg> which inflate the heart. <vad>
+INFO	[9/55] 2414-128291-0020
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: WELL
+INFO	  HYP: Well.
+INFO	  FIRST_TOKEN_LATENCY: 2.465s
+INFO	  MODEL_RUNTIME(total-audio): 1.215s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.307s
+INFO	  TRANS(avg): 0.073s
+INFO	  SPEAKER_2414_RUNNING_WER: 17.78% (9 files)
+INFO	  HYP_COMMIT: Well. <vad>
+INFO	[10/55] 2414-128291-0021
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: SAID ZARATHUSTRA THOU SHOULDST ALSO SEE MINE ANIMALS MINE EAGLE AND MY SERPENT THEIR LIKE DO NOT AT PRESENT EXIST ON EARTH
+INFO	  HYP: Say, sir, two extra. Thou shouldst also see mine animals, mine eagle, and my serpent. Their like do not at present exist on earth.
+INFO	  FIRST_TOKEN_LATENCY: 2.517s
+INFO	  MODEL_RUNTIME(total-audio): 1.064s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.008s  DECODE(avg): 0.405s  FINAL_DECODE(avg): 0.206s
+INFO	  TRANS(avg): 0.101s
+INFO	  SPEAKER_2414_RUNNING_WER: 17.86% (10 files)
+INFO	  HYP_COMMIT: Say, sir, two extra. <seg> Thou shouldst also see mine animals, mine eagle, and my serpent. <vad> Their like do not at present exist on earth. <seg>
+INFO	[11/55] 2414-128291-0022
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: AND TALK TO MINE ANIMALS OF THE HAPPINESS OF ANIMALS
+INFO	  HYP: And talk to mine animals of the happiness of animals.
+INFO	  FIRST_TOKEN_LATENCY: 5.472s
+INFO	  MODEL_RUNTIME(total-audio): 0.947s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.256s
+INFO	  TRANS(avg): 0.071s
+INFO	  SPEAKER_2414_RUNNING_WER: 16.39% (11 files)
+INFO	  HYP_COMMIT: And talk to mine animals of the happiness of animals. <vad>
+INFO	[12/55] 2414-128291-0023
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: NOW HOWEVER TAKE LEAVE AT ONCE OF THY KINE THOU STRANGE ONE
+INFO	  HYP: Now, however, take leave at once of thy kind, thou strange one.
+INFO	  FIRST_TOKEN_LATENCY: 6.429s
+INFO	  MODEL_RUNTIME(total-audio): 1.248s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 6.006s  DECODE(avg): 0.341s  FINAL_DECODE(avg): 0.135s
+INFO	  TRANS(avg): 0.083s
+INFO	  SPEAKER_2414_RUNNING_WER: 15.67% (12 files)
+INFO	  HYP_COMMIT: Now, however, take leave at once of thy kind, <seg> thou strange one. <vad>
+INFO	[13/55] 2414-128291-0024
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: THOU AMIABLE ONE
+INFO	  HYP: Thou amiable one!
+INFO	  FIRST_TOKEN_LATENCY: 3.309s
+INFO	  MODEL_RUNTIME(total-audio): 1.064s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.350s
+INFO	  TRANS(avg): 0.076s
+INFO	  SPEAKER_2414_RUNNING_WER: 15.33% (13 files)
+INFO	  HYP_COMMIT: Thou amiable one! <vad>
+INFO	[14/55] 2414-128291-0025
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: FOR THEY ARE THY WARMEST FRIENDS AND PRECEPTORS
+INFO	  HYP: For they are thy warmest friends and perceptors.
+INFO	  FIRST_TOKEN_LATENCY: 4.681s
+INFO	  MODEL_RUNTIME(total-audio): 0.824s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.005s  DECODE(avg): 0.520s  FINAL_DECODE(avg): 0.137s
+INFO	  TRANS(avg): 0.111s
+INFO	  SPEAKER_2414_RUNNING_WER: 15.17% (14 files)
+INFO	  HYP_COMMIT: For they are thy warmest friends <seg> and perceptors. <vad>
+INFO	[15/55] 2414-128291-0026
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: THOU EVIL FLATTERER
+INFO	  HYP: Thou evil flatterer!
+INFO	  FIRST_TOKEN_LATENCY: 3.399s
+INFO	  MODEL_RUNTIME(total-audio): 1.119s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.403s
+INFO	  TRANS(avg): 0.090s
+INFO	  SPEAKER_2414_RUNNING_WER: 14.86% (15 files)
+INFO	  HYP_COMMIT: Thou evil flatterer! <vad>
+INFO	[16/55] 2414-128292-0000
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: WHITHER HATH MY LONESOMENESS GONE SPAKE HE
+INFO	  HYP: Whither hath my lonesomeness gone? Spake he.
+INFO	  FIRST_TOKEN_LATENCY: 4.563s
+INFO	  MODEL_RUNTIME(total-audio): 0.838s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.007s  DECODE(avg): 0.449s  FINAL_DECODE(avg): 0.129s
+INFO	  TRANS(avg): 0.084s
+INFO	  SPEAKER_2414_RUNNING_WER: 14.19% (16 files)
+INFO	  HYP_COMMIT: Whither hath my lonesomeness gone? <seg> Spake he. <vad>
+INFO	[17/55] 2414-128292-0001
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: MY SHADOW CALLETH ME
+INFO	  HYP: My shadow calleth me.
+INFO	  FIRST_TOKEN_LATENCY: 3.593s
+INFO	  MODEL_RUNTIME(total-audio): 1.098s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.324s
+INFO	  TRANS(avg): 0.151s
+INFO	  SPEAKER_2414_RUNNING_WER: 13.84% (17 files)
+INFO	  HYP_COMMIT: My shadow calleth me. <vad>
+INFO	[18/55] 2414-128292-0002
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: WHAT MATTER ABOUT MY SHADOW
+INFO	  HYP: What matter about my shadow?
+INFO	  FIRST_TOKEN_LATENCY: 3.666s
+INFO	  MODEL_RUNTIME(total-audio): 1.076s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.358s
+INFO	  TRANS(avg): 0.086s
+INFO	  SPEAKER_2414_RUNNING_WER: 13.41% (18 files)
+INFO	  HYP_COMMIT: What matter about my shadow? <vad>
+INFO	[19/55] 2414-128292-0003
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: LET IT RUN AFTER ME I RUN AWAY FROM IT
+INFO	  HYP: Let it run after me. I run away from it.
+INFO	  FIRST_TOKEN_LATENCY: 2.425s
+INFO	  MODEL_RUNTIME(total-audio): 1.088s
+INFO	  FSL(avg): 0.526s
+INFO	  ENCODE(avg): 2.010s  DECODE(avg): 0.327s  FINAL_DECODE(avg): 0.100s
+INFO	  TRANS(avg): 0.075s
+INFO	  SPEAKER_2414_RUNNING_WER: 12.64% (19 files)
+INFO	  HYP_COMMIT: Let it run after me. <seg> I run away from it. <vad>
+INFO	[20/55] 2414-128292-0004
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: THUS SPAKE ZARATHUSTRA TO HIS HEART AND RAN AWAY
+INFO	  HYP: Thus paying the two-struck to his heart, and ran away.
+INFO	  FIRST_TOKEN_LATENCY: 4.577s
+INFO	  MODEL_RUNTIME(total-audio): 0.656s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.006s  DECODE(avg): 0.507s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.131s
+INFO	  SPEAKER_2414_RUNNING_WER: 14.21% (20 files)
+INFO	  HYP_COMMIT: Thus paying the two-struck to his heart, <seg> and ran away. <seg>
+INFO	[21/55] 2414-128292-0005
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: VERILY MY FOLLY HATH GROWN BIG IN THE MOUNTAINS
+INFO	  HYP: Verily, my folly hath grown big, in the mountains.
+INFO	  FIRST_TOKEN_LATENCY: 5.787s
+INFO	  MODEL_RUNTIME(total-audio): 1.002s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.295s
+INFO	  TRANS(avg): 0.075s
+INFO	  SPEAKER_2414_RUNNING_WER: 13.54% (21 files)
+INFO	  HYP_COMMIT: Verily, my folly hath grown big, in the mountains. <vad>
+INFO	[22/55] 2414-128292-0006
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: NOW DO I HEAR SIX OLD FOOLS LEGS RATTLING BEHIND ONE ANOTHER
+INFO	  HYP: Now do I hear six old fool's legs rattling behind one another?
+INFO	  FIRST_TOKEN_LATENCY: 7.524s
+INFO	  MODEL_RUNTIME(total-audio): 0.979s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.261s
+INFO	  TRANS(avg): 0.075s
+INFO	  SPEAKER_2414_RUNNING_WER: 13.73% (22 files)
+INFO	  HYP_COMMIT: Now do I hear six old fool's legs rattling behind one another? <vad>
+INFO	[23/55] 2414-128292-0007
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: BUT DOTH ZARATHUSTRA NEED TO BE FRIGHTENED BY HIS SHADOW
+INFO	  HYP: But Dodos at Ustra need to be frightened by his shadow.
+INFO	  FIRST_TOKEN_LATENCY: 5.284s
+INFO	  MODEL_RUNTIME(total-audio): 0.964s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.264s
+INFO	  TRANS(avg): 0.079s
+INFO	  SPEAKER_2414_RUNNING_WER: 14.49% (23 files)
+INFO	  HYP_COMMIT: But Dodos at Ustra need to be frightened by his shadow. <vad>
+INFO	[24/55] 2414-128292-0008
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: ALSO METHINKETH THAT AFTER ALL IT HATH LONGER LEGS THAN MINE
+INFO	  HYP: Also, methink it that after all it hath longer legs than mine.
+INFO	  FIRST_TOKEN_LATENCY: 6.476s
+INFO	  MODEL_RUNTIME(total-audio): 0.626s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 6.057s  DECODE(avg): 0.334s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.075s
+INFO	  SPEAKER_2414_RUNNING_WER: 14.67% (24 files)
+INFO	  HYP_COMMIT: Also, methink it that after all it hath longer legs than mine. <seg>
+INFO	[25/55] 2414-128292-0009
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: FOR WHEN ZARATHUSTRA SCRUTINISED HIM WITH HIS GLANCE HE WAS FRIGHTENED AS BY A SUDDEN APPARITION SO SLENDER SWARTHY HOLLOW AND WORN OUT DID THIS FOLLOWER APPEAR
+INFO	  HYP: Who when that two-stress scrutinised him, with his glance he was frightened, as by a sudden apparition, so slender, swarthy, hollow and worn out did his follower appear.
+INFO	  FIRST_TOKEN_LATENCY: 4.593s
+INFO	  MODEL_RUNTIME(total-audio): 1.082s
+INFO	  FSL(avg): 8.070s
+INFO	  ENCODE(avg): 4.007s  DECODE(avg): 0.457s  FINAL_DECODE(avg): 0.177s
+INFO	  TRANS(avg): 0.082s
+INFO	  SPEAKER_2414_RUNNING_WER: 15.08% (25 files)
+INFO	  HYP_COMMIT: Who when that two-stress scrutinised him, <seg> with his glance he was frightened, as by a sudden apparition, so slender, swarthy, hollow and worn out did his follower appear. <vad>
+INFO	[26/55] 2414-128292-0010
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: ASKED ZARATHUSTRA VEHEMENTLY WHAT DOEST THOU HERE
+INFO	  HYP: As they twist ravagently, what doest thou here?
+INFO	  FIRST_TOKEN_LATENCY: 4.435s
+INFO	  MODEL_RUNTIME(total-audio): 1.194s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.006s  DECODE(avg): 0.339s  FINAL_DECODE(avg): 0.151s
+INFO	  TRANS(avg): 0.075s
+INFO	  SPEAKER_2414_RUNNING_WER: 16.22% (26 files)
+INFO	  HYP_COMMIT: As they twist ravagently, <seg> what doest thou here? <vad>
+INFO	[27/55] 2414-128292-0011
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: AND WHY CALLEST THOU THYSELF MY SHADOW
+INFO	  HYP: And why callest thou thyself my shadow?
+INFO	  FIRST_TOKEN_LATENCY: 4.646s
+INFO	  MODEL_RUNTIME(total-audio): 0.791s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.071s  DECODE(avg): 0.463s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.071s
+INFO	  SPEAKER_2414_RUNNING_WER: 15.79% (27 files)
+INFO	  HYP_COMMIT: And why callest thou thyself my shadow? <seg>
+INFO	[28/55] 2414-128292-0012
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: THOU ART NOT PLEASING UNTO ME
+INFO	  HYP: Thou art not pleasing unto me.
+INFO	  FIRST_TOKEN_LATENCY: 3.821s
+INFO	  MODEL_RUNTIME(total-audio): 1.111s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.418s
+INFO	  TRANS(avg): 0.075s
+INFO	  SPEAKER_2414_RUNNING_WER: 15.44% (28 files)
+INFO	  HYP_COMMIT: Thou art not pleasing unto me. <vad>
+INFO	[29/55] 2414-128292-0013
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: MUST I EVER BE ON THE WAY
+INFO	  HYP: Must I ever be on the way?
+INFO	  FIRST_TOKEN_LATENCY: 3.879s
+INFO	  MODEL_RUNTIME(total-audio): 1.414s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.504s
+INFO	  TRANS(avg): 0.075s
+INFO	  SPEAKER_2414_RUNNING_WER: 15.05% (29 files)
+INFO	  HYP_COMMIT: Must I ever be on the way? <vad>
+INFO	[30/55] 2414-128292-0014
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: O EARTH THOU HAST BECOME TOO ROUND FOR ME
+INFO	  HYP: O Earth, thou hast become too round for me.
+INFO	  FIRST_TOKEN_LATENCY: 5.323s
+INFO	  MODEL_RUNTIME(total-audio): 0.788s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.266s
+INFO	  TRANS(avg): 0.078s
+INFO	  SPEAKER_2414_RUNNING_WER: 14.58% (30 files)
+INFO	  HYP_COMMIT: O Earth, thou hast become too round for me. <vad>
+INFO	[31/55] 2414-128292-0015
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: WHEN THE DEVIL CASTETH HIS SKIN DOTH NOT HIS NAME ALSO FALL AWAY IT IS ALSO SKIN
+INFO	  HYP: When the devil casteth his skin, doth not his name also fall away? It is also skinned.
+INFO	  FIRST_TOKEN_LATENCY: 4.498s
+INFO	  MODEL_RUNTIME(total-audio): 1.030s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 6.112s  DECODE(avg): 0.292s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.088s
+INFO	  SPEAKER_2414_RUNNING_WER: 14.10% (31 files)
+INFO	  HYP_COMMIT: When the devil casteth his skin, <seg> doth not his name also fall away? <seg> It is also skinned. <seg>
+INFO	[32/55] 2414-128292-0016
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: THE DEVIL HIMSELF IS PERHAPS SKIN
+INFO	  HYP: The devil himself is perhaps kin.
+INFO	  FIRST_TOKEN_LATENCY: 4.170s
+INFO	  MODEL_RUNTIME(total-audio): 1.155s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.440s
+INFO	  TRANS(avg): 0.095s
+INFO	  SPEAKER_2414_RUNNING_WER: 14.15% (32 files)
+INFO	  HYP_COMMIT: The devil himself is perhaps kin. <vad>
+INFO	[33/55] 2414-128292-0017
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: SOMETIMES I MEANT TO LIE AND BEHOLD
+INFO	  HYP: Sometimes I am meant to lie and behold.
+INFO	  FIRST_TOKEN_LATENCY: 4.520s
+INFO	  MODEL_RUNTIME(total-audio): 1.320s
+INFO	  FSL(avg): 0.078s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.249s
+INFO	  TRANS(avg): 0.077s
+INFO	  SPEAKER_2414_RUNNING_WER: 14.15% (33 files)
+INFO	  HYP_COMMIT: Sometimes I am meant to lie <vad> and behold. <vad>
+INFO	[34/55] 2414-128292-0018
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: THEN ONLY DID I HIT THE TRUTH
+INFO	  HYP: Then only did I hate that truth.
+INFO	  FIRST_TOKEN_LATENCY: 4.466s
+INFO	  MODEL_RUNTIME(total-audio): 0.911s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.419s
+INFO	  TRANS(avg): 0.070s
+INFO	  SPEAKER_2414_RUNNING_WER: 14.46% (34 files)
+INFO	  HYP_COMMIT: Then only did I hate that truth. <vad>
+INFO	[35/55] 2414-128292-0019
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: HOW HAVE I STILL INCLINATION
+INFO	  HYP: How have I still inclination?
+INFO	  FIRST_TOKEN_LATENCY: 4.360s
+INFO	  MODEL_RUNTIME(total-audio): 1.270s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.360s
+INFO	  TRANS(avg): 0.091s
+INFO	  SPEAKER_2414_RUNNING_WER: 14.24% (35 files)
+INFO	  HYP_COMMIT: How have I still inclination? <vad>
+INFO	[36/55] 2414-128292-0020
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: HAVE I STILL A GOAL
+INFO	  HYP: Have I still a goal?
+INFO	  FIRST_TOKEN_LATENCY: 3.465s
+INFO	  MODEL_RUNTIME(total-audio): 1.250s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.353s
+INFO	  TRANS(avg): 0.071s
+INFO	  SPEAKER_2414_RUNNING_WER: 14.03% (36 files)
+INFO	  HYP_COMMIT: Have I still a goal? <vad>
+INFO	[37/55] 2414-128292-0021
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: A HAVEN TOWARDS WHICH MY SAIL IS SET
+INFO	  HYP: A haven towards which my sail is set.
+INFO	  FIRST_TOKEN_LATENCY: 4.292s
+INFO	  MODEL_RUNTIME(total-audio): 1.347s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.435s
+INFO	  TRANS(avg): 0.092s
+INFO	  SPEAKER_2414_RUNNING_WER: 13.70% (37 files)
+INFO	  HYP_COMMIT: A haven towards which my sail is set. <vad>
+INFO	[38/55] 2414-128292-0022
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: FOR IT DO I ASK AND SEEK AND HAVE SOUGHT BUT HAVE NOT FOUND IT
+INFO	  HYP: For it too I ask and seek, and have sought, but have not found it.
+INFO	  FIRST_TOKEN_LATENCY: 4.523s
+INFO	  MODEL_RUNTIME(total-audio): 1.277s
+INFO	  FSL(avg): 1.404s
+INFO	  ENCODE(avg): 4.009s  DECODE(avg): 0.427s  FINAL_DECODE(avg): 0.153s
+INFO	  TRANS(avg): 0.073s
+INFO	  SPEAKER_2414_RUNNING_WER: 13.41% (38 files)
+INFO	  HYP_COMMIT: For it too I ask and seek, <seg> and have sought, but have not found it. <vad>
+INFO	[39/55] 2414-128292-0023
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: O ETERNAL EVERYWHERE O ETERNAL NOWHERE O ETERNAL IN VAIN
+INFO	  HYP: O eternal everywhere, o eternal nowhere, o eternal in vain.
+INFO	  FIRST_TOKEN_LATENCY: 4.384s
+INFO	  MODEL_RUNTIME(total-audio): 1.100s
+INFO	  FSL(avg): 1.590s
+INFO	  ENCODE(avg): 4.006s  DECODE(avg): 0.268s  FINAL_DECODE(avg): 0.175s
+INFO	  TRANS(avg): 0.098s
+INFO	  SPEAKER_2414_RUNNING_WER: 13.04% (39 files)
+INFO	  HYP_COMMIT: O eternal everywhere, <seg> o eternal nowhere, o eternal in vain. <vad>
+INFO	[40/55] 2414-128292-0024
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: THOU ART MY SHADOW
+INFO	  HYP: Thou art my shadow.
+INFO	  FIRST_TOKEN_LATENCY: 3.757s
+INFO	  MODEL_RUNTIME(total-audio): 1.307s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.393s
+INFO	  TRANS(avg): 0.094s
+INFO	  SPEAKER_2414_RUNNING_WER: 12.90% (40 files)
+INFO	  HYP_COMMIT: Thou art my shadow. <vad>
+INFO	[41/55] 2414-128292-0025
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: SAID HE AT LAST SADLY
+INFO	  HYP: Said he at last sadly.
+INFO	  FIRST_TOKEN_LATENCY: 3.521s
+INFO	  MODEL_RUNTIME(total-audio): 1.106s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.379s
+INFO	  TRANS(avg): 0.076s
+INFO	  SPEAKER_2414_RUNNING_WER: 12.73% (41 files)
+INFO	  HYP_COMMIT: Said he at last sadly. <vad>
+INFO	[42/55] 2414-128292-0026
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: THY DANGER IS NOT SMALL THOU FREE SPIRIT AND WANDERER
+INFO	  HYP: Thy danger is not small, thou free spirit and wanderer.
+INFO	  FIRST_TOKEN_LATENCY: 6.365s
+INFO	  MODEL_RUNTIME(total-audio): 0.993s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 6.181s  DECODE(avg): 0.198s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.076s
+INFO	  SPEAKER_2414_RUNNING_WER: 12.40% (42 files)
+INFO	  HYP_COMMIT: Thy danger is not small, <seg> thou free spirit and wanderer. <seg>
+INFO	[43/55] 2414-128292-0027
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: THEY SLEEP QUIETLY THEY ENJOY THEIR NEW SECURITY
+INFO	  HYP: They sleep quietly. They enjoy their new security.
+INFO	  FIRST_TOKEN_LATENCY: 4.386s
+INFO	  MODEL_RUNTIME(total-audio): 0.787s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.006s  DECODE(avg): 0.288s  FINAL_DECODE(avg): 0.144s
+INFO	  TRANS(avg): 0.077s
+INFO	  SPEAKER_2414_RUNNING_WER: 12.15% (43 files)
+INFO	  HYP_COMMIT: They sleep quietly. <seg> They enjoy their new security. <vad>
+INFO	[44/55] 2414-128292-0028
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: BEWARE LEST IN THE END A NARROW FAITH CAPTURE THEE A HARD RIGOROUS DELUSION
+INFO	  HYP: Be well lest, in the end, a narrow faith capture thee, a hard, aigrous delusion.
+INFO	  FIRST_TOKEN_LATENCY: 9.231s
+INFO	  MODEL_RUNTIME(total-audio): 1.151s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.251s
+INFO	  TRANS(avg): 0.080s
+INFO	  SPEAKER_2414_RUNNING_WER: 12.47% (44 files)
+INFO	  HYP_COMMIT: Be well lest, in the end, a narrow faith capture thee, a hard, aigrous delusion. <vad>
+INFO	[45/55] 2414-128292-0029
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: FOR NOW EVERYTHING THAT IS NARROW AND FIXED SEDUCETH AND TEMPTETH THEE
+INFO	  HYP: For now everything that is narrow, and fixed, seduceth and tempteth thee.
+INFO	  FIRST_TOKEN_LATENCY: 7.513s
+INFO	  MODEL_RUNTIME(total-audio): 1.213s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.307s
+INFO	  TRANS(avg): 0.077s
+INFO	  SPEAKER_2414_RUNNING_WER: 12.11% (45 files)
+INFO	  HYP_COMMIT: For now everything that is narrow, and fixed, seduceth and tempteth thee. <vad>
+INFO	[46/55] 2414-128292-0030
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: THOU HAST LOST THY GOAL
+INFO	  HYP: Thou hast lost thy goal.
+INFO	  FIRST_TOKEN_LATENCY: 3.801s
+INFO	  MODEL_RUNTIME(total-audio): 1.451s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.356s
+INFO	  TRANS(avg): 0.072s
+INFO	  SPEAKER_2414_RUNNING_WER: 11.97% (46 files)
+INFO	  HYP_COMMIT: Thou hast lost thy goal. <vad>
+INFO	[47/55] 2414-128292-0031
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: THOU POOR ROVER AND RAMBLER THOU TIRED BUTTERFLY
+INFO	  HYP: Thou poor rover and rambler, thou tired butterfly!
+INFO	  FIRST_TOKEN_LATENCY: 6.529s
+INFO	  MODEL_RUNTIME(total-audio): 1.189s
+INFO	  FSL(avg): 0.078s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.193s
+INFO	  TRANS(avg): 0.079s
+INFO	  SPEAKER_2414_RUNNING_WER: 11.75% (47 files)
+INFO	  HYP_COMMIT: Thou poor rover and rambler, <vad> thou tired butterfly! <vad>
+INFO	[48/55] 2414-128292-0032
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: WILT THOU HAVE A REST AND A HOME THIS EVENING
+INFO	  HYP: Wilt thou have a rest and a home this evening?
+INFO	  FIRST_TOKEN_LATENCY: 4.907s
+INFO	  MODEL_RUNTIME(total-audio): 1.282s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.214s
+INFO	  TRANS(avg): 0.077s
+INFO	  SPEAKER_2414_RUNNING_WER: 11.49% (48 files)
+INFO	  HYP_COMMIT: Wilt thou have a rest and a home this evening? <vad>
+INFO	[49/55] 2414-159411-0000
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: ONCE UPON A TIME A BRAHMAN WHO WAS WALKING ALONG THE ROAD CAME UPON AN IRON CAGE IN WHICH A GREAT TIGER HAD BEEN SHUT UP BY THE VILLAGERS WHO CAUGHT HIM
+INFO	  HYP: Once upon a time, a Brahmin, who was walking along the road, came upon an iron cage, in which a great tiger had been shut up by the villagers who caught him.
+INFO	  FIRST_TOKEN_LATENCY: 12.531s
+INFO	  MODEL_RUNTIME(total-audio): 0.181s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 12.007s  DECODE(avg): 0.441s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.070s
+INFO	  SPEAKER_2414_RUNNING_WER: 10.92% (49 files)
+INFO	  HYP_COMMIT: Once upon a time, a Brahmin, who was walking along the road, came upon an iron cage, in which a great tiger had been shut up by the villagers who caught him. <seg>
+INFO	[50/55] 2414-159411-0001
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: THE BRAHMAN ANSWERED NO I WILL NOT FOR IF I LET YOU OUT OF THE CAGE YOU WILL EAT ME
+INFO	  HYP: The Brahmin answered, No, I will not. you will eat me.
+INFO	  FIRST_TOKEN_LATENCY: 3.284s
+INFO	  MODEL_RUNTIME(total-audio): 1.147s
+INFO	  FSL(avg): 1.987s
+INFO	  ENCODE(avg): 4.807s  DECODE(avg): 0.305s  FINAL_DECODE(avg): 0.198s
+INFO	  TRANS(avg): 0.089s
+INFO	  SPEAKER_2414_RUNNING_WER: 12.50% (50 files)
+INFO	  HYP_COMMIT: The Brahmin answered, <vad> No, <seg> I will not. <seg> you will eat me. <vad>
+INFO	[51/55] 2414-159411-0002
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: OH FATHER OF MERCY ANSWERED THE TIGER IN TRUTH THAT I WILL NOT
+INFO	  HYP: O, Father of Mercy, answered the tiger, 'In truth that I will not.
+INFO	  FIRST_TOKEN_LATENCY: 7.353s
+INFO	  MODEL_RUNTIME(total-audio): 0.833s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.314s
+INFO	  TRANS(avg): 0.090s
+INFO	  SPEAKER_2414_RUNNING_WER: 12.38% (51 files)
+INFO	  HYP_COMMIT: O, Father of Mercy, answered the tiger, 'In truth that I will not. <vad>
+INFO	[52/55] 2414-159411-0003
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: I WILL NEVER BE SO UNGRATEFUL ONLY LET ME OUT THAT I MAY DRINK SOME WATER AND RETURN
+INFO	  HYP: I will never be so ungrateful. Only let me out, that I may drink some water and return.
+INFO	  FIRST_TOKEN_LATENCY: 4.501s
+INFO	  MODEL_RUNTIME(total-audio): 0.941s
+INFO	  FSL(avg): 2.008s
+INFO	  ENCODE(avg): 4.007s  DECODE(avg): 0.404s  FINAL_DECODE(avg): 0.211s
+INFO	  TRANS(avg): 0.072s
+INFO	  SPEAKER_2414_RUNNING_WER: 11.95% (52 files)
+INFO	  HYP_COMMIT: I will never be so ungrateful. <seg> Only let me out, that I may drink some water and return. <vad>
+INFO	[53/55] 2414-159411-0004
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: THEN THE BRAHMAN TOOK PITY ON HIM AND OPENED THE CAGE DOOR BUT NO SOONER HAD HE DONE SO THAN THE TIGER JUMPING OUT SAID NOW I WILL EAT YOU FIRST AND DRINK THE WATER AFTERWARDS
+INFO	  HYP: Then the Brahmin took pity on him and opened the cage door, but no sooner had he done so, than the tiger, jumping out, said, "Now I will eat you first and drink the water afterwards."
+INFO	  FIRST_TOKEN_LATENCY: 4.531s
+INFO	  MODEL_RUNTIME(total-audio): -0.059s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 7.008s  DECODE(avg): 0.173s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.077s
+INFO	  SPEAKER_2414_RUNNING_WER: 11.37% (53 files)
+INFO	  HYP_COMMIT: Then the Brahmin took pity on him <seg> and opened the cage door, <seg> but no sooner had he done so, <seg> than the tiger, jumping out, said, "Now I will eat you first and drink the water afterwards." <seg>
+INFO	[54/55] 2414-159411-0005
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: SO THE BRAHMAN AND THE TIGER WALKED ON TILL THEY CAME TO A BANYAN TREE AND THE BRAHMAN SAID TO IT BANYAN TREE BANYAN TREE HEAR AND GIVE JUDGMENT
+INFO	  HYP: So the Brahmin and the tiger walked on. and the Brahmin said to it, Ban and tre, ban and tre, hear and give judgment.
+INFO	  FIRST_TOKEN_LATENCY: 4.593s
+INFO	  MODEL_RUNTIME(total-audio): 0.859s
+INFO	  FSL(avg): 0.946s
+INFO	  ENCODE(avg): 4.010s  DECODE(avg): 0.480s  FINAL_DECODE(avg): 0.196s
+INFO	  TRANS(avg): 0.082s
+INFO	  SPEAKER_2414_RUNNING_WER: 13.34% (54 files)
+INFO	  HYP_COMMIT: So the Brahmin and the tiger walked on. <seg> and the Brahmin said to it, <vad> Ban and tre, ban and tre, hear and give judgment. <vad>
+INFO	[55/55] 2414-159411-0006
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
+INFO	  REF: ON WHAT MUST I GIVE JUDGMENT ASKED THE BANYAN TREE
+INFO	  HYP: On what must I give judgment? asked the Ben Tree.
+INFO	  FIRST_TOKEN_LATENCY: 4.490s
+INFO	  MODEL_RUNTIME(total-audio): 0.979s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.014s  DECODE(avg): 0.385s  FINAL_DECODE(avg): 0.135s
+INFO	  TRANS(avg): 0.075s
+INFO	  SPEAKER_2414_RUNNING_WER: 13.29% (55 files)
+INFO	  HYP_COMMIT: On what must I give judgment? <seg> asked the Ben Tree. <vad>
+INFO	Completed. Results saved to /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c5
