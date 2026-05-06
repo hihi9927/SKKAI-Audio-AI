@@ -63,6 +63,12 @@ except ImportError:
 
 _SERVER_DIR = os.path.dirname(os.path.abspath(__file__))
 _LOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../logs/asr_server.log")
+_BASELINE_MODEL_IDS = {
+    "qwen/qwen3-asr-1.7b",
+    "qwen3-asr-1.7b",
+    "baseline",
+    "baseline(1.0.0)",
+}
 
 
 class _JsonFormatter(logging.Formatter):
@@ -101,6 +107,17 @@ VAD_THRESHOLD = 0.5
 VAD_MIN_SILENCE_MS = 800       # 발화 종료 판정까지 필요한 침묵 길이
 VAD_SPEECH_PAD_MS = 160        # 발화 경계에 추가하는 패딩
 VAD_WINDOW_SIZE_SAMPLES = 512  # 16kHz 기준 silero 권장 윈도우 크기
+
+
+def _infer_dot_commit_default(model_path: str) -> bool:
+    """Enable dot commit by default for baseline model variants."""
+    normalized = (model_path or "").replace("\\", "/").strip().lower()
+    if not normalized:
+        return False
+    if normalized in _BASELINE_MODEL_IDS:
+        return True
+    model_name = normalized.rsplit("/", 1)[-1]
+    return model_name in _BASELINE_MODEL_IDS or "baseline" in model_name
 
 
 @dataclass
@@ -1421,8 +1438,12 @@ def parse_args():
         help="LoRA 최대 rank (학습 시 사용한 rank와 일치해야 함, 기본값: 128)",
     )
     parser.add_argument(
-        "--enable-dot-commit", action="store_true",
+        "--enable-dot-commit", dest="enable_dot_commit", action="store_true", default=None,
         help="온점/느낌표/물음표(dot) 기반 seg commit 활성화 (기본값: 비활성화, 베이스라인 모델용)",
+    )
+    parser.add_argument(
+        "--disable-dot-commit", dest="enable_dot_commit", action="store_false",
+        help="Disable dot-based commit even for baseline models",
     )
     parser.add_argument(
         "--no-restrict-languages", action="store_true",
@@ -1452,7 +1473,10 @@ def parse_args():
         "--log-json", action="store_true",
         help="로그를 JSON 형식으로 출력",
     )
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.enable_dot_commit is None:
+        args.enable_dot_commit = _infer_dot_commit_default(args.model)
+    return args
 
 
 def main():

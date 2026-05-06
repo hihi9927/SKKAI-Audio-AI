@@ -40,6 +40,9 @@ evaluation/{Dataset}/results/
 | `--auto-server` | — | ASR 서버 자동 시작/종료 |
 | `--server-model` | `Qwen/Qwen3-ASR-1.7B` | 자동 시작 시 사용할 모델 |
 
+> `baseline` 계열 모델(`Qwen/Qwen3-ASR-1.7B`, `baseline`, `baseline(1.0.0)` 등)은 서버에서 `dot commit`이 기본 활성화됩니다.  
+> baseline에서도 끄고 싶으면 `--disable-dot-commit`, finetuned 등에서 강제로 켜고 싶으면 `--enable-dot-commit`을 사용합니다.
+
 ---
 
 ## 3. 데이터셋별 실행 방법
@@ -48,6 +51,9 @@ evaluation/{Dataset}/results/
 
 서버 로그를 결과 폴더(`logs/server.log`)에 저장하려면 `--log-file`을 지정해야 합니다.  
 run 폴더 이름은 테스트 스크립트 실행 시 결정되므로, **`--tag`로 폴더명을 미리 고정**한 뒤 서버와 테스트 스크립트에 같은 경로를 맞춰줍니다.  
+
+baseline 서버는 `dot commit`이 기본으로 켜지므로 별도 인자를 붙이지 않아도 됩니다.  
+반대로 baseline에서 `dot commit`을 끄고 싶다면 서버 실행 시 `--disable-dot-commit`을 추가합니다.
 
 ```bash
 cd ~/STiTy && git pull
@@ -84,6 +90,8 @@ python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \
   --trailing-silence-ms 5500 \
   --chunk-size-ms 200
 ```
+
+`--auto-server`를 사용할 때도 같은 규칙이 적용됩니다. baseline 계열 모델은 `dot commit`이 자동 활성화되고, 필요하면 `--server-args "--disable-dot-commit"` 또는 `--server-args "--enable-dot-commit"`으로 override할 수 있습니다.
 
 결과 위치: `evaluation/LibriSpeech/results/{model}/{scope}/{tag}/`
 
