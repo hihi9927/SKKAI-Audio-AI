@@ -1051,7 +1051,12 @@ class Qwen3ASRStreamingHandler:
         try:
             remote_addr = self.websocket.remote_address
             self.log.info(f"New connection from {remote_addr}")
-            await self.send_message("hello", message="Qwen3-ASR Streaming Server")
+            await self.send_message(
+                "hello",
+                message="Qwen3-ASR Streaming Server",
+                modelPath=self.config.model_path,
+                modelId=self.config.model_path,
+            )
             timeout = aiohttp.ClientTimeout(total=3)
             self.http_session = aiohttp.ClientSession(timeout=timeout)
 
