@@ -1,21 +1,371 @@
-usage: test_qwen3_librispeech.py [-h] [--test-dir TEST_DIR] [--policy {3}]
-                                 [--host HOST] [--port PORT] [--model MODEL]
-                                 [--scope {full,sample}] [--tag TAG]
-                                 [--description DESCRIPTION] [--limit LIMIT]
-                                 [--calculate-wer | --no-calculate-wer]
-                                 [--log-level {DEBUG,INFO,WARNING,ERROR}]
-                                 [--auto-server]
-                                 [--server-script SERVER_SCRIPT]
-                                 [--server-model SERVER_MODEL]
-                                 [--server-args SERVER_ARGS]
-                                 [--target-lang TARGET_LANG]
-                                 [--common-files COMMON_FILES]
-                                 [--random-sample RANDOM_SAMPLE]
-                                 [--random-seed RANDOM_SEED]
-                                 [--skip-protocol-smoke]
-                                 [--chunk-size-ms CHUNK_SIZE_MS]
-                                 [--send-interval-ms SEND_INTERVAL_MS]
-                                 [--show-commit-slash | --no-show-commit-slash]
-                                 [--fresh-start]
-                                 [--trailing-silence-ms TRAILING_SILENCE_MS]
-test_qwen3_librispeech.py: error: unrecognized arguments: --output /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/multi_speaker_test/run_03/qwen3_test_other_fcl_c1.json
+INFO	Results → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_03_c1
+INFO	Manual mode. Ensure server is running at ws://localhost:8765
+INFO	Log capture enabled for 10 sampled files → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_03_c1/plots
+INFO	Processing 183 files (already done: 0)
+INFO	[1/183] 1998-29455-0012
+ERROR	WebSocket processing failed for 1998-29455-0012: no close frame received or sent
+INFO	[2/183] 1998-29455-0013
+ERROR	WebSocket processing failed for 1998-29455-0013: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[3/183] 1998-29455-0014
+ERROR	WebSocket processing failed for 1998-29455-0014: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[4/183] 1998-29455-0015
+ERROR	WebSocket processing failed for 1998-29455-0015: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[5/183] 1998-29455-0016
+ERROR	WebSocket processing failed for 1998-29455-0016: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[6/183] 1998-29455-0017
+ERROR	WebSocket processing failed for 1998-29455-0017: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[7/183] 1998-29455-0018
+ERROR	WebSocket processing failed for 1998-29455-0018: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[8/183] 1998-29455-0019
+ERROR	WebSocket processing failed for 1998-29455-0019: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[9/183] 1998-29455-0020
+ERROR	WebSocket processing failed for 1998-29455-0020: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[10/183] 1998-29455-0021
+ERROR	WebSocket processing failed for 1998-29455-0021: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[11/183] 1998-29455-0022
+ERROR	WebSocket processing failed for 1998-29455-0022: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[12/183] 1998-29455-0023
+ERROR	WebSocket processing failed for 1998-29455-0023: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[13/183] 1998-29455-0024
+ERROR	WebSocket processing failed for 1998-29455-0024: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[14/183] 1998-29455-0025
+ERROR	WebSocket processing failed for 1998-29455-0025: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[15/183] 1998-29455-0026
+ERROR	WebSocket processing failed for 1998-29455-0026: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[16/183] 1998-29455-0027
+ERROR	WebSocket processing failed for 1998-29455-0027: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[17/183] 1998-29455-0028
+ERROR	WebSocket processing failed for 1998-29455-0028: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[18/183] 1998-29455-0029
+ERROR	WebSocket processing failed for 1998-29455-0029: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[19/183] 1998-29455-0030
+ERROR	WebSocket processing failed for 1998-29455-0030: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[20/183] 1998-29455-0031
+ERROR	WebSocket processing failed for 1998-29455-0031: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[21/183] 1998-29455-0032
+ERROR	WebSocket processing failed for 1998-29455-0032: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[22/183] 1998-29455-0033
+ERROR	WebSocket processing failed for 1998-29455-0033: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[23/183] 1998-29455-0034
+ERROR	WebSocket processing failed for 1998-29455-0034: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[24/183] 1998-29455-0035
+ERROR	WebSocket processing failed for 1998-29455-0035: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[25/183] 1998-29455-0036
+ERROR	WebSocket processing failed for 1998-29455-0036: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[26/183] 1998-29455-0037
+ERROR	WebSocket processing failed for 1998-29455-0037: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[27/183] 1998-29455-0038
+ERROR	WebSocket processing failed for 1998-29455-0038: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[28/183] 1998-29455-0039
+ERROR	WebSocket processing failed for 1998-29455-0039: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[29/183] 2033-164914-0000
+ERROR	WebSocket processing failed for 2033-164914-0000: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[30/183] 2033-164914-0001
+ERROR	WebSocket processing failed for 2033-164914-0001: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[31/183] 2033-164914-0002
+ERROR	WebSocket processing failed for 2033-164914-0002: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[32/183] 2033-164914-0003
+ERROR	WebSocket processing failed for 2033-164914-0003: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[33/183] 2033-164914-0004
+ERROR	WebSocket processing failed for 2033-164914-0004: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[34/183] 2033-164914-0005
+ERROR	WebSocket processing failed for 2033-164914-0005: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[35/183] 2033-164914-0006
+ERROR	WebSocket processing failed for 2033-164914-0006: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[36/183] 2033-164914-0007
+ERROR	WebSocket processing failed for 2033-164914-0007: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[37/183] 2033-164914-0008
+ERROR	WebSocket processing failed for 2033-164914-0008: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[38/183] 2033-164914-0009
+ERROR	WebSocket processing failed for 2033-164914-0009: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[39/183] 2033-164914-0010
+ERROR	WebSocket processing failed for 2033-164914-0010: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[40/183] 2033-164914-0011
+ERROR	WebSocket processing failed for 2033-164914-0011: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[41/183] 2033-164914-0012
+ERROR	WebSocket processing failed for 2033-164914-0012: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[42/183] 2033-164914-0013
+ERROR	WebSocket processing failed for 2033-164914-0013: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[43/183] 2033-164914-0014
+ERROR	WebSocket processing failed for 2033-164914-0014: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[44/183] 2033-164914-0015
+ERROR	WebSocket processing failed for 2033-164914-0015: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[45/183] 2033-164914-0016
+ERROR	WebSocket processing failed for 2033-164914-0016: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[46/183] 2033-164914-0017
+ERROR	WebSocket processing failed for 2033-164914-0017: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[47/183] 2033-164914-0018
+ERROR	WebSocket processing failed for 2033-164914-0018: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[48/183] 2033-164914-0019
+ERROR	WebSocket processing failed for 2033-164914-0019: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[49/183] 2033-164914-0020
+ERROR	WebSocket processing failed for 2033-164914-0020: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[50/183] 2033-164914-0021
+ERROR	WebSocket processing failed for 2033-164914-0021: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[51/183] 2033-164914-0022
+ERROR	WebSocket processing failed for 2033-164914-0022: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[52/183] 2033-164915-0000
+ERROR	WebSocket processing failed for 2033-164915-0000: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[53/183] 2033-164915-0001
+ERROR	WebSocket processing failed for 2033-164915-0001: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[54/183] 2033-164915-0002
+ERROR	WebSocket processing failed for 2033-164915-0002: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[55/183] 2033-164915-0003
+ERROR	WebSocket processing failed for 2033-164915-0003: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[56/183] 2033-164915-0004
+ERROR	WebSocket processing failed for 2033-164915-0004: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[57/183] 2033-164915-0005
+ERROR	WebSocket processing failed for 2033-164915-0005: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[58/183] 2033-164915-0006
+ERROR	WebSocket processing failed for 2033-164915-0006: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[59/183] 2033-164915-0007
+ERROR	WebSocket processing failed for 2033-164915-0007: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[60/183] 2033-164915-0008
+ERROR	WebSocket processing failed for 2033-164915-0008: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[61/183] 2033-164915-0009
+ERROR	WebSocket processing failed for 2033-164915-0009: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[62/183] 2033-164915-0010
+ERROR	WebSocket processing failed for 2033-164915-0010: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[63/183] 2033-164915-0011
+ERROR	WebSocket processing failed for 2033-164915-0011: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[64/183] 2033-164915-0012
+ERROR	WebSocket processing failed for 2033-164915-0012: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[65/183] 2033-164915-0013
+ERROR	WebSocket processing failed for 2033-164915-0013: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[66/183] 2033-164915-0014
+ERROR	WebSocket processing failed for 2033-164915-0014: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[67/183] 2033-164915-0015
+ERROR	WebSocket processing failed for 2033-164915-0015: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[68/183] 2033-164915-0016
+ERROR	WebSocket processing failed for 2033-164915-0016: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[69/183] 2033-164915-0017
+ERROR	WebSocket processing failed for 2033-164915-0017: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[70/183] 2033-164916-0000
+ERROR	WebSocket processing failed for 2033-164916-0000: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[71/183] 2033-164916-0001
+ERROR	WebSocket processing failed for 2033-164916-0001: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[72/183] 2033-164916-0002
+ERROR	WebSocket processing failed for 2033-164916-0002: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[73/183] 2033-164916-0003
+ERROR	WebSocket processing failed for 2033-164916-0003: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[74/183] 2033-164916-0004
+ERROR	WebSocket processing failed for 2033-164916-0004: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[75/183] 2033-164916-0005
+ERROR	WebSocket processing failed for 2033-164916-0005: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[76/183] 2033-164916-0006
+ERROR	WebSocket processing failed for 2033-164916-0006: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[77/183] 2033-164916-0007
+ERROR	WebSocket processing failed for 2033-164916-0007: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[78/183] 2033-164916-0008
+ERROR	WebSocket processing failed for 2033-164916-0008: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[79/183] 2033-164916-0009
+ERROR	WebSocket processing failed for 2033-164916-0009: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[80/183] 2033-164916-0010
+ERROR	WebSocket processing failed for 2033-164916-0010: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[81/183] 2414-128291-0000
+ERROR	WebSocket processing failed for 2414-128291-0000: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[82/183] 2414-128291-0001
+ERROR	WebSocket processing failed for 2414-128291-0001: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[83/183] 2414-128291-0002
+ERROR	WebSocket processing failed for 2414-128291-0002: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[84/183] 2414-128291-0003
+ERROR	WebSocket processing failed for 2414-128291-0003: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[85/183] 2414-128291-0004
+ERROR	WebSocket processing failed for 2414-128291-0004: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[86/183] 2414-128291-0005
+ERROR	WebSocket processing failed for 2414-128291-0005: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[87/183] 2414-128291-0006
+ERROR	WebSocket processing failed for 2414-128291-0006: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[88/183] 2414-128291-0007
+ERROR	WebSocket processing failed for 2414-128291-0007: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[89/183] 2414-128291-0008
+ERROR	WebSocket processing failed for 2414-128291-0008: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[90/183] 2414-128291-0009
+ERROR	WebSocket processing failed for 2414-128291-0009: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[91/183] 2414-128291-0010
+ERROR	WebSocket processing failed for 2414-128291-0010: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[92/183] 2414-128291-0011
+ERROR	WebSocket processing failed for 2414-128291-0011: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[93/183] 2414-128291-0012
+ERROR	WebSocket processing failed for 2414-128291-0012: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[94/183] 2414-128291-0013
+ERROR	WebSocket processing failed for 2414-128291-0013: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[95/183] 2414-128291-0014
+ERROR	WebSocket processing failed for 2414-128291-0014: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[96/183] 2414-128291-0015
+ERROR	WebSocket processing failed for 2414-128291-0015: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[97/183] 2414-128291-0016
+ERROR	WebSocket processing failed for 2414-128291-0016: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[98/183] 2414-128291-0017
+ERROR	WebSocket processing failed for 2414-128291-0017: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[99/183] 2414-128291-0018
+ERROR	WebSocket processing failed for 2414-128291-0018: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[100/183] 2414-128291-0019
+ERROR	WebSocket processing failed for 2414-128291-0019: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[101/183] 2414-128291-0020
+ERROR	WebSocket processing failed for 2414-128291-0020: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[102/183] 2414-128291-0021
+ERROR	WebSocket processing failed for 2414-128291-0021: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[103/183] 2414-128291-0022
+ERROR	WebSocket processing failed for 2414-128291-0022: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[104/183] 2414-128291-0023
+ERROR	WebSocket processing failed for 2414-128291-0023: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[105/183] 2414-128291-0024
+ERROR	WebSocket processing failed for 2414-128291-0024: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[106/183] 2414-128291-0025
+ERROR	WebSocket processing failed for 2414-128291-0025: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[107/183] 2414-128291-0026
+ERROR	WebSocket processing failed for 2414-128291-0026: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[108/183] 2414-128292-0000
+ERROR	WebSocket processing failed for 2414-128292-0000: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[109/183] 2414-128292-0001
+ERROR	WebSocket processing failed for 2414-128292-0001: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[110/183] 2414-128292-0002
+ERROR	WebSocket processing failed for 2414-128292-0002: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[111/183] 2414-128292-0003
+ERROR	WebSocket processing failed for 2414-128292-0003: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[112/183] 2414-128292-0004
+ERROR	WebSocket processing failed for 2414-128292-0004: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[113/183] 2414-128292-0005
+ERROR	WebSocket processing failed for 2414-128292-0005: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[114/183] 2414-128292-0006
+ERROR	WebSocket processing failed for 2414-128292-0006: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[115/183] 2414-128292-0007
+ERROR	WebSocket processing failed for 2414-128292-0007: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[116/183] 2414-128292-0008
+ERROR	WebSocket processing failed for 2414-128292-0008: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[117/183] 2414-128292-0009
+ERROR	WebSocket processing failed for 2414-128292-0009: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[118/183] 2414-128292-0010
+ERROR	WebSocket processing failed for 2414-128292-0010: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[119/183] 2414-128292-0011
+ERROR	WebSocket processing failed for 2414-128292-0011: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[120/183] 2414-128292-0012
+ERROR	WebSocket processing failed for 2414-128292-0012: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[121/183] 2414-128292-0013
+ERROR	WebSocket processing failed for 2414-128292-0013: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[122/183] 2414-128292-0014
+ERROR	WebSocket processing failed for 2414-128292-0014: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[123/183] 2414-128292-0015
+ERROR	WebSocket processing failed for 2414-128292-0015: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[124/183] 2414-128292-0016
+ERROR	WebSocket processing failed for 2414-128292-0016: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[125/183] 2414-128292-0017
+ERROR	WebSocket processing failed for 2414-128292-0017: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[126/183] 2414-128292-0018
+ERROR	WebSocket processing failed for 2414-128292-0018: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[127/183] 2414-128292-0019
+ERROR	WebSocket processing failed for 2414-128292-0019: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[128/183] 2414-128292-0020
+ERROR	WebSocket processing failed for 2414-128292-0020: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[129/183] 2414-128292-0021
+ERROR	WebSocket processing failed for 2414-128292-0021: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[130/183] 2414-128292-0022
+ERROR	WebSocket processing failed for 2414-128292-0022: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[131/183] 2414-128292-0023
+ERROR	WebSocket processing failed for 2414-128292-0023: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[132/183] 2414-128292-0024
+ERROR	WebSocket processing failed for 2414-128292-0024: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[133/183] 2414-128292-0025
+ERROR	WebSocket processing failed for 2414-128292-0025: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[134/183] 2414-128292-0026
+ERROR	WebSocket processing failed for 2414-128292-0026: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[135/183] 2414-128292-0027
+ERROR	WebSocket processing failed for 2414-128292-0027: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[136/183] 2414-128292-0028
+ERROR	WebSocket processing failed for 2414-128292-0028: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[137/183] 2414-128292-0029
+ERROR	WebSocket processing failed for 2414-128292-0029: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[138/183] 2414-128292-0030
+ERROR	WebSocket processing failed for 2414-128292-0030: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[139/183] 2414-128292-0031
+ERROR	WebSocket processing failed for 2414-128292-0031: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[140/183] 2414-128292-0032
+ERROR	WebSocket processing failed for 2414-128292-0032: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[141/183] 2414-159411-0000
+ERROR	WebSocket processing failed for 2414-159411-0000: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[142/183] 2414-159411-0001
+ERROR	WebSocket processing failed for 2414-159411-0001: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[143/183] 2414-159411-0002
+ERROR	WebSocket processing failed for 2414-159411-0002: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[144/183] 2414-159411-0003
+ERROR	WebSocket processing failed for 2414-159411-0003: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[145/183] 2414-159411-0004
+ERROR	WebSocket processing failed for 2414-159411-0004: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[146/183] 2414-159411-0005
+ERROR	WebSocket processing failed for 2414-159411-0005: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[147/183] 2414-159411-0006
+ERROR	WebSocket processing failed for 2414-159411-0006: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[148/183] 2414-159411-0007
+ERROR	WebSocket processing failed for 2414-159411-0007: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[149/183] 2414-159411-0008
+ERROR	WebSocket processing failed for 2414-159411-0008: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[150/183] 2414-159411-0009
+ERROR	WebSocket processing failed for 2414-159411-0009: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[151/183] 2414-159411-0010
+ERROR	WebSocket processing failed for 2414-159411-0010: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[152/183] 2414-159411-0011
+ERROR	WebSocket processing failed for 2414-159411-0011: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[153/183] 2414-159411-0012
+ERROR	WebSocket processing failed for 2414-159411-0012: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[154/183] 2414-159411-0013
+ERROR	WebSocket processing failed for 2414-159411-0013: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[155/183] 2414-159411-0014
+ERROR	WebSocket processing failed for 2414-159411-0014: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[156/183] 2414-159411-0015
+ERROR	WebSocket processing failed for 2414-159411-0015: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[157/183] 2414-159411-0016
+ERROR	WebSocket processing failed for 2414-159411-0016: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[158/183] 2414-159411-0017
+ERROR	WebSocket processing failed for 2414-159411-0017: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[159/183] 2414-159411-0018
+ERROR	WebSocket processing failed for 2414-159411-0018: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[160/183] 2414-159411-0019
+ERROR	WebSocket processing failed for 2414-159411-0019: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[161/183] 2414-159411-0020
+ERROR	WebSocket processing failed for 2414-159411-0020: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[162/183] 2414-159411-0021
+ERROR	WebSocket processing failed for 2414-159411-0021: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[163/183] 2414-159411-0022
+ERROR	WebSocket processing failed for 2414-159411-0022: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[164/183] 2414-159411-0023
+ERROR	WebSocket processing failed for 2414-159411-0023: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[165/183] 2414-159411-0024
+ERROR	WebSocket processing failed for 2414-159411-0024: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[166/183] 2414-159411-0025
+ERROR	WebSocket processing failed for 2414-159411-0025: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[167/183] 2414-159411-0026
+ERROR	WebSocket processing failed for 2414-159411-0026: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[168/183] 2414-159411-0027
+ERROR	WebSocket processing failed for 2414-159411-0027: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[169/183] 2414-159411-0028
+ERROR	WebSocket processing failed for 2414-159411-0028: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[170/183] 2414-159411-0029
+ERROR	WebSocket processing failed for 2414-159411-0029: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[171/183] 2414-159411-0030
+ERROR	WebSocket processing failed for 2414-159411-0030: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[172/183] 2414-159411-0031
+ERROR	WebSocket processing failed for 2414-159411-0031: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[173/183] 2414-159411-0032
+ERROR	WebSocket processing failed for 2414-159411-0032: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[174/183] 2414-159411-0033
+ERROR	WebSocket processing failed for 2414-159411-0033: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[175/183] 2414-159411-0034
+ERROR	WebSocket processing failed for 2414-159411-0034: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[176/183] 2414-159411-0035
+ERROR	WebSocket processing failed for 2414-159411-0035: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[177/183] 2414-165385-0000
+ERROR	WebSocket processing failed for 2414-165385-0000: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[178/183] 2414-165385-0001
+ERROR	WebSocket processing failed for 2414-165385-0001: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[179/183] 2609-156975-0000
+ERROR	WebSocket processing failed for 2609-156975-0000: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[180/183] 2609-156975-0001
+ERROR	WebSocket processing failed for 2609-156975-0001: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[181/183] 2609-156975-0002
+ERROR	WebSocket processing failed for 2609-156975-0002: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[182/183] 2609-156975-0003
+ERROR	WebSocket processing failed for 2609-156975-0003: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	[183/183] 2609-156975-0004
+ERROR	WebSocket processing failed for 2609-156975-0004: [Errno 111] Connect call failed ('127.0.0.1', 8765)
+INFO	Completed. Results saved to /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_03_c1

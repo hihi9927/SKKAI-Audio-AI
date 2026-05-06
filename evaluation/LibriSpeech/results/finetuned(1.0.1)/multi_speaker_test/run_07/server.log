@@ -1,0 +1,41 @@
+2026-05-06 02:54:37,585 - INFO - __main__ - Server log file: /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/multi_speaker_test/run_07/server.log
+2026-05-06 02:54:37,674 - INFO - examples.streaming_websocket_server - Silero VAD model loaded (server-level)
+2026-05-06 02:54:37,675 - INFO - examples.streaming_websocket_server - Loading model: /home/ubuntu/STiTy/Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged
+2026-05-06 02:55:12,289 - WARNING - examples.streaming_websocket_server - 이 vLLM 버전은 use_beam_search를 지원하지 않습니다. Greedy decoding으로 fallback합니다. (beam_size=2 무시)
+2026-05-06 02:55:12,289 - INFO - examples.streaming_websocket_server - Greedy decoding with repetition_penalty=1.3
+2026-05-06 02:55:12,289 - INFO - examples.streaming_websocket_server - Model loaded successfully
+2026-05-06 02:55:12,290 - INFO - examples.streaming_websocket_server - Starting WebSocket server on ws://0.0.0.0:8765
+2026-05-06 02:55:12,290 - INFO - examples.streaming_websocket_server - Warming up model...
+2026-05-06 02:55:17,024 - INFO - examples.streaming_websocket_server - Warmup complete
+2026-05-06 02:55:17,198 - INFO - websockets.server - server listening on 0.0.0.0:8765
+2026-05-06 02:55:17,198 - INFO - examples.streaming_websocket_server - Server listening on ws://0.0.0.0:8765
+2026-05-06 02:55:17,369 - ERROR - websockets.server - opening handshake failed
+Traceback (most recent call last):
+  File "/home/ubuntu/miniconda3/envs/qwen3-asr/lib/python3.12/site-packages/websockets/http11.py", line 138, in parse
+    request_line = yield from parse_line(read_line)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/miniconda3/envs/qwen3-asr/lib/python3.12/site-packages/websockets/http11.py", line 320, in parse_line
+    line = yield from read_line(MAX_LINE_LENGTH)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/miniconda3/envs/qwen3-asr/lib/python3.12/site-packages/websockets/streams.py", line 46, in read_line
+    raise EOFError(f"stream ends after {p} bytes, before end of line")
+EOFError: stream ends after 0 bytes, before end of line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/ubuntu/miniconda3/envs/qwen3-asr/lib/python3.12/site-packages/websockets/server.py", line 547, in parse
+    request = yield from Request.parse(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/miniconda3/envs/qwen3-asr/lib/python3.12/site-packages/websockets/http11.py", line 140, in parse
+    raise EOFError("connection closed while reading HTTP request line") from exc
+EOFError: connection closed while reading HTTP request line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/ubuntu/miniconda3/envs/qwen3-asr/lib/python3.12/site-packages/websockets/asyncio/server.py", line 356, in conn_handler
+    await connection.handshake(
+  File "/home/ubuntu/miniconda3/envs/qwen3-asr/lib/python3.12/site-packages/websockets/asyncio/server.py", line 207, in handshake
+    raise self.protocol.handshake_exc
+websockets.exceptions.InvalidMessage: did not receive a valid HTTP request

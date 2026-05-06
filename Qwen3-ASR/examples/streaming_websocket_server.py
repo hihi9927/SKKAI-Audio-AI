@@ -1246,7 +1246,6 @@ class Qwen3ASRStreamingServer:
                     temperature=0.0,
                     max_tokens=self.config.max_new_tokens,
                     skip_special_tokens=True,
-                    repetition_penalty=1.3,
                 )
                 logger.info(f"Beam search enabled: beam_size={self.config.beam_size}")
             except TypeError:
@@ -1258,18 +1257,16 @@ class Qwen3ASRStreamingServer:
                     temperature=0.0,
                     max_tokens=self.config.max_new_tokens,
                     skip_special_tokens=True,
-                    repetition_penalty=1.3,
                 )
-                logger.info("Greedy decoding with repetition_penalty=1.3")
+                logger.info("Greedy decoding (no repetition_penalty)")
         else:
             from vllm import SamplingParams
             self.asr.sampling_params = SamplingParams(
                 temperature=0.0,
                 max_tokens=self.config.max_new_tokens,
                 skip_special_tokens=True,
-                repetition_penalty=1.3,
             )
-            logger.info("Greedy decoding with repetition_penalty=1.3")
+            logger.info("Greedy decoding (no repetition_penalty)")
 
         # LoRA 어댑터 등록
         if use_lora:

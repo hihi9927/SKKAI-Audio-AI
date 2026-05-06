@@ -80,3 +80,172 @@ Traceback (most recent call last):
   File "/home/ubuntu/miniconda3/envs/qwen3-asr/lib/python3.12/site-packages/websockets/asyncio/server.py", line 207, in handshake
     raise self.protocol.handshake_exc
 websockets.exceptions.InvalidMessage: did not receive a valid HTTP request
+2026-05-06 02:57:10,453 - INFO - __main__ - Server log file: /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/multi_speaker_test/run_03/server.log
+2026-05-06 02:57:10,543 - INFO - examples.streaming_websocket_server - Silero VAD model loaded (server-level)
+2026-05-06 02:57:10,543 - INFO - examples.streaming_websocket_server - Loading model: /home/ubuntu/STiTy/Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged
+2026-05-06 02:57:44,715 - WARNING - examples.streaming_websocket_server - 이 vLLM 버전은 use_beam_search를 지원하지 않습니다. Greedy decoding으로 fallback합니다. (beam_size=2 무시)
+2026-05-06 02:57:44,715 - INFO - examples.streaming_websocket_server - Greedy decoding with repetition_penalty=1.3
+2026-05-06 02:57:44,715 - INFO - examples.streaming_websocket_server - Model loaded successfully
+2026-05-06 02:57:44,716 - INFO - examples.streaming_websocket_server - Starting WebSocket server on ws://0.0.0.0:8765
+2026-05-06 02:57:44,716 - INFO - examples.streaming_websocket_server - Warming up model...
+2026-05-06 02:57:49,551 - INFO - examples.streaming_websocket_server - Warmup complete
+2026-05-06 02:57:49,747 - INFO - websockets.server - server listening on 0.0.0.0:8765
+2026-05-06 02:57:49,748 - INFO - examples.streaming_websocket_server - Server listening on ws://0.0.0.0:8765
+2026-05-06 02:57:50,248 - ERROR - websockets.server - opening handshake failed
+Traceback (most recent call last):
+  File "/home/ubuntu/miniconda3/envs/qwen3-asr/lib/python3.12/site-packages/websockets/http11.py", line 138, in parse
+    request_line = yield from parse_line(read_line)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/miniconda3/envs/qwen3-asr/lib/python3.12/site-packages/websockets/http11.py", line 320, in parse_line
+    line = yield from read_line(MAX_LINE_LENGTH)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/miniconda3/envs/qwen3-asr/lib/python3.12/site-packages/websockets/streams.py", line 46, in read_line
+    raise EOFError(f"stream ends after {p} bytes, before end of line")
+EOFError: stream ends after 0 bytes, before end of line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/ubuntu/miniconda3/envs/qwen3-asr/lib/python3.12/site-packages/websockets/server.py", line 547, in parse
+    request = yield from Request.parse(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/miniconda3/envs/qwen3-asr/lib/python3.12/site-packages/websockets/http11.py", line 140, in parse
+    raise EOFError("connection closed while reading HTTP request line") from exc
+EOFError: connection closed while reading HTTP request line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/ubuntu/miniconda3/envs/qwen3-asr/lib/python3.12/site-packages/websockets/asyncio/server.py", line 356, in conn_handler
+    await connection.handshake(
+  File "/home/ubuntu/miniconda3/envs/qwen3-asr/lib/python3.12/site-packages/websockets/asyncio/server.py", line 207, in handshake
+    raise self.protocol.handshake_exc
+websockets.exceptions.InvalidMessage: did not receive a valid HTTP request
+2026-05-06 02:57:50,561 - INFO - websockets.server - connection open
+2026-05-06 02:57:50,561 - INFO - __main__ - Client connected (1)
+2026-05-06 02:57:50,635 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-05-06 02:57:50,635 - INFO - __main__ - New connection from ('127.0.0.1', 58094)
+2026-05-06 02:57:50,636 - INFO - websockets.server - connection open
+2026-05-06 02:57:50,636 - INFO - __main__ - Client connected (2)
+2026-05-06 02:57:50,702 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-05-06 02:57:50,702 - INFO - __main__ - New connection from ('127.0.0.1', 58110)
+2026-05-06 02:57:50,703 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-05-06 02:57:50,703 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-05-06 02:57:50,707 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-05-06 02:57:50,708 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-05-06 02:57:50,712 - INFO - websockets.server - connection open
+2026-05-06 02:57:50,712 - INFO - __main__ - Client connected (3)
+2026-05-06 02:57:50,777 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+2026-05-06 02:57:50,778 - INFO - __main__ - New connection from ('127.0.0.1', 58114)
+2026-05-06 02:57:50,778 - INFO - __main__ - Received start: lang=auto, targetLang=ko
+2026-05-06 02:57:50,779 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-05-06 02:57:52,701 - ERROR - websockets.server - opening handshake failed
+Traceback (most recent call last):
+  File "/home/ubuntu/miniconda3/envs/qwen3-asr/lib/python3.12/site-packages/websockets/http11.py", line 138, in parse
+    request_line = yield from parse_line(read_line)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/miniconda3/envs/qwen3-asr/lib/python3.12/site-packages/websockets/http11.py", line 320, in parse_line
+    line = yield from read_line(MAX_LINE_LENGTH)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/miniconda3/envs/qwen3-asr/lib/python3.12/site-packages/websockets/streams.py", line 46, in read_line
+    raise EOFError(f"stream ends after {p} bytes, before end of line")
+EOFError: stream ends after 0 bytes, before end of line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/ubuntu/miniconda3/envs/qwen3-asr/lib/python3.12/site-packages/websockets/server.py", line 547, in parse
+    request = yield from Request.parse(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/miniconda3/envs/qwen3-asr/lib/python3.12/site-packages/websockets/http11.py", line 140, in parse
+    raise EOFError("connection closed while reading HTTP request line") from exc
+EOFError: connection closed while reading HTTP request line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/ubuntu/miniconda3/envs/qwen3-asr/lib/python3.12/site-packages/websockets/asyncio/server.py", line 356, in conn_handler
+    await connection.handshake(
+  File "/home/ubuntu/miniconda3/envs/qwen3-asr/lib/python3.12/site-packages/websockets/asyncio/server.py", line 207, in handshake
+    raise self.protocol.handshake_exc
+websockets.exceptions.InvalidMessage: did not receive a valid HTTP request
+2026-05-06 02:57:53,249 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.008s ds=2.009s decode=0.458s
+2026-05-06 02:57:53,317 - INFO - __main__ - [SEG] slot=A elapsed=2.610s decode_start=2.011s audio_pos=2.000s
+2026-05-06 02:57:53,317 - INFO - __main__ - [ENCODE-EARLY] slot=A chunk=0 audio_pos=2.000s ts=2.011s ds=2.011s decode=0.598s
+2026-05-06 02:57:53,317 - INFO - examples.streaming_websocket_server - [C-] [SEG_IN_TEXT] slot=A text="There's iron, they say. <SEG>"
+2026-05-06 02:57:53,317 - INFO - examples.streaming_websocket_server - [C-] [seg-detect] slot=A raw=There's iron, they say. <SEG>...
+2026-05-06 02:57:53,317 - INFO - __main__ - [SEG_AUDIO_END] sentence='There's iron, they say.' → current_time=2.000s (no snapshot matched)
+2026-05-06 02:57:53,395 - INFO - __main__ - [SEG] slot=A elapsed=2.684s decode_start=2.022s audio_pos=2.000s
+2026-05-06 02:57:53,396 - INFO - __main__ - [ENCODE-EARLY] slot=A chunk=0 audio_pos=2.000s ts=2.022s ds=2.022s decode=0.662s
+2026-05-06 02:57:53,396 - INFO - examples.streaming_websocket_server - [C-] [SEG_IN_TEXT] slot=A text='I like you next to my own daddy <SEG>'
+2026-05-06 02:57:53,396 - INFO - examples.streaming_websocket_server - [C-] [seg-detect] slot=A raw=I like you next to my own daddy <SEG>...
+2026-05-06 02:57:53,396 - INFO - __main__ - [SEG_AUDIO_END] sentence='I like you next to my own daddy' → current_time=2.000s (no snapshot matched)
+2026-05-06 02:57:53,827 - INFO - examples.streaming_websocket_server - [C-] [translate-sentence] sentence='I like you next to my own daddy' tl=ko -> detected=en translation='나는 내 아빠 옆에 당신이 좋아'
+2026-05-06 02:57:53,828 - INFO - __main__ - [FINAL] seg=1 reason=seg audio=[0.000, 2.000] fsl=0.000s encode=2.022s decode=0.662s final_decode=0.000s trans=0.431s | text='I like you next to my own daddy'
+2026-05-06 02:57:53,828 - INFO - examples.streaming_websocket_server - [C-] [final-sentence/SEG] slot=A lang=en text=I like you next to my own daddy
+2026-05-06 02:57:54,105 - INFO - examples.streaming_websocket_server - [C-] [translate-sentence] sentence='There's iron, they say.' tl=ko -> detected=en translation='철이 있다고 합니다.'
+2026-05-06 02:57:54,105 - INFO - __main__ - [FINAL] seg=1 reason=seg audio=[0.000, 2.000] fsl=0.000s encode=2.011s decode=0.598s final_decode=0.000s trans=0.788s | text='There's iron, they say.'
+2026-05-06 02:57:54,106 - INFO - examples.streaming_websocket_server - [C-] [final-sentence/SEG] slot=A lang=en text=There's iron, they say.
+2026-05-06 02:57:54,712 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=62336
+2026-05-06 02:57:54,714 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=62336 target_audio_end_sec=3.896 processed=64000 active=A
+2026-05-06 02:57:54,714 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-05-06 02:57:54,714 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=3.896s → speech_end_sec=3.096s
+2026-05-06 02:57:55,197 - INFO - __main__ - [SEG] slot=A elapsed=4.486s decode_start=4.102s audio_pos=4.095s
+2026-05-06 02:57:55,198 - INFO - __main__ - [ENCODE-EARLY] slot=A chunk=1 audio_pos=4.095s ts=4.102s ds=4.102s decode=0.384s
+2026-05-06 02:57:55,221 - INFO - __main__ - [SEG-VAD] slot=A audio_pos=3.096s
+2026-05-06 02:57:55,222 - INFO - examples.streaming_websocket_server - [C-] [SEG_IN_TEXT] slot=A text="There's iron, they say. <SEG> In all our blood... <SEG>"
+2026-05-06 02:57:55,222 - INFO - examples.streaming_websocket_server - [C-] [seg-detect] slot=A raw=There's iron, they say. <SEG> In all our blood... <SEG>...
+2026-05-06 02:57:55,246 - INFO - __main__ - [ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.010s ds=4.010s decode=0.453s
+2026-05-06 02:57:55,441 - INFO - examples.streaming_websocket_server - [C-] [SEG_IN_TEXT] slot=A text='I like you next to my own daddy <SEG> and Mr. Baxter, the neighbour! <SEG>'
+2026-05-06 02:57:55,442 - INFO - examples.streaming_websocket_server - [C-] [seg-detect] slot=A raw=I like you next to my own daddy <SEG> and Mr. Baxter, the neighbour! <SEG>...
+2026-05-06 02:57:55,442 - INFO - __main__ - [SEG_AUDIO_END] sentence='and Mr. Baxter, the neighbour!' → current_time=4.095s (no snapshot matched)
+2026-05-06 02:57:56,060 - INFO - examples.streaming_websocket_server - [C-] [translate-sentence] sentence='In all our blood...' tl=ko -> detected=en translation='우리의 모든 피 속에...'
+2026-05-06 02:57:56,060 - INFO - __main__ - [FINAL] seg=2 reason=vad audio=[2.000, 3.096] fsl=0.000s encode=0.000s decode=0.000s final_decode=0.507s trans=0.838s | text='In all our blood...'
+2026-05-06 02:57:56,060 - INFO - examples.streaming_websocket_server - [C-] [final-sentence/VAD] slot=A lang=en text=In all our blood...
+2026-05-06 02:57:56,061 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-05-06 02:57:56,061 - INFO - __main__ - [VAD_DONE] slot=A
+2026-05-06 02:57:56,418 - INFO - examples.streaming_websocket_server - [C-] [translate-sentence] sentence='and Mr. Baxter, the neighbour!' tl=ko -> detected=en translation='그리고 이웃인 백스터 씨!'
+2026-05-06 02:57:56,418 - INFO - __main__ - [FINAL] seg=2 reason=seg audio=[2.000, 4.095] fsl=0.000s encode=4.102s decode=0.384s final_decode=0.000s trans=0.976s | text='and Mr. Baxter, the neighbour!'
+2026-05-06 02:57:56,418 - INFO - examples.streaming_websocket_server - [C-] [final-sentence/SEG] slot=A lang=en text=and Mr. Baxter, the neighbour!
+2026-05-06 02:57:56,421 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=67568
+2026-05-06 02:57:56,423 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=67568 target_audio_end_sec=4.223 processed=68720 active=A
+2026-05-06 02:57:56,423 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-05-06 02:57:56,423 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=4.223s → speech_end_sec=3.423s
+2026-05-06 02:57:56,631 - INFO - __main__ - [SEG-VAD] slot=A audio_pos=3.423s
+2026-05-06 02:57:56,632 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-05-06 02:57:56,632 - INFO - __main__ - [VAD_DONE] slot=A
+2026-05-06 02:57:57,185 - INFO - __main__ - [ENCODE] slot=B chunk=0 audio_pos=6.000s ts=6.007s ds=6.007s decode=0.471s
+2026-05-06 02:57:57,193 - INFO - __main__ - [SEG] slot=A elapsed=6.410s decode_start=6.009s audio_pos=6.000s
+2026-05-06 02:57:57,193 - INFO - __main__ - [ENCODE-EARLY] slot=A chunk=2 audio_pos=6.000s ts=6.008s ds=6.009s decode=0.402s
+2026-05-06 02:57:57,193 - INFO - examples.streaming_websocket_server - [C-] [SEG_IN_TEXT] slot=A text='The absence of detailed reference to the Hebrews is therefore perfectly natural. <SEG>'
+2026-05-06 02:57:57,193 - INFO - examples.streaming_websocket_server - [C-] [seg-detect] slot=A raw=The absence of detailed reference to the Hebrews is therefore perfectly natural. <SEG>...
+2026-05-06 02:57:57,193 - INFO - __main__ - [SEG_AUDIO_END] sentence='The absence of detailed reference to the Hebrews is therefore perfectly natural.' → current_time=6.000s (no snapshot matched)
+2026-05-06 02:57:57,474 - INFO - __main__ - [SEG] slot=B elapsed=6.762s decode_start=6.304s audio_pos=6.295s
+2026-05-06 02:57:57,474 - INFO - __main__ - [ENCODE-EARLY] slot=B chunk=0 audio_pos=6.295s ts=6.303s ds=6.304s decode=0.459s
+2026-05-06 02:57:57,474 - INFO - examples.streaming_websocket_server - [C-] [SEG_IN_TEXT] slot=B text="I'm sorry, but I can't help you. <SEG>"
+2026-05-06 02:57:57,474 - INFO - examples.streaming_websocket_server - [C-] [seg-detect] slot=B raw=I'm sorry, but I can't help you. <SEG>...
+2026-05-06 02:57:57,515 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=107648
+2026-05-06 02:57:57,518 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=107648 target_audio_end_sec=6.728 processed=108800 active=B
+2026-05-06 02:57:57,518 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=B new_active=A new_standby=B
+2026-05-06 02:57:57,518 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=6.728s → speech_end_sec=5.928s
+2026-05-06 02:57:57,637 - INFO - examples.streaming_websocket_server - [C-] [translate-sentence] sentence='The absence of detailed reference to the Hebrews is therefore perfectly natural.' tl=ko -> detected=en translation='그러므로 히브리서에 대한 자세한 언급이 없는 것은 너무나 자연스러운 일입니다.'
+2026-05-06 02:57:57,637 - INFO - __main__ - [FINAL] seg=1 reason=seg audio=[0.000, 6.000] fsl=0.000s encode=6.009s decode=0.402s final_decode=0.000s trans=0.444s | text='The absence of detailed reference to the Hebrews is therefore perfectly natural.'
+2026-05-06 02:57:57,638 - INFO - examples.streaming_websocket_server - [C-] [final-sentence/SEG] slot=A lang=en text=The absence of detailed reference to the Hebrews is therefore perfectly natural.
+2026-05-06 02:57:57,880 - INFO - examples.streaming_websocket_server - [C-] [translate-sentence] sentence='I'm sorry, but I can't help you.' tl=ko -> detected=en translation='죄송하지만 도와드릴 수 없습니다.'
+2026-05-06 02:57:57,880 - INFO - __main__ - [FINAL] seg=3 reason=seg audio=[4.095, 3.423] fsl=0.000s encode=6.304s decode=0.459s final_decode=0.000s trans=0.406s | text='I'm sorry, but I can't help you.'
+2026-05-06 02:57:57,880 - INFO - examples.streaming_websocket_server - [C-] [final-sentence/SEG] slot=B lang=en text=I'm sorry, but I can't help you.
+2026-05-06 02:57:57,970 - INFO - __main__ - [SEG-VAD] slot=B audio_pos=5.928s
+2026-05-06 02:57:57,970 - INFO - examples.streaming_websocket_server - [C-] [SEG_IN_TEXT] slot=B text='And a grain or two perhaps is good. <SEG>'
+2026-05-06 02:57:57,970 - INFO - examples.streaming_websocket_server - [C-] [seg-detect] slot=B raw=And a grain or two perhaps is good. <SEG>...
+2026-05-06 02:57:58,093 - INFO - examples.streaming_websocket_server - [C-] [vad] speech end detected; target_samples=116240
+2026-05-06 02:57:58,094 - INFO - examples.streaming_websocket_server - [C-] [vad-commit] target_samples=116240 target_audio_end_sec=7.265 processed=116880 active=A
+2026-05-06 02:57:58,094 - INFO - examples.streaming_websocket_server - [C-] [slot-switch] old_active=A new_active=B new_standby=A
+2026-05-06 02:57:58,094 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=7.265s → speech_end_sec=6.465s
+2026-05-06 02:57:58,293 - INFO - __main__ - [SEG-VAD] slot=A audio_pos=6.465s
+2026-05-06 02:57:58,294 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=A
+2026-05-06 02:57:58,294 - INFO - __main__ - [VAD_DONE] slot=A
+2026-05-06 02:57:58,430 - INFO - examples.streaming_websocket_server - [C-] [translate-sentence] sentence='And a grain or two perhaps is good.' tl=ko -> detected=en translation='그리고 아마도 한두 알 정도가 좋을 것입니다.'
+2026-05-06 02:57:58,431 - INFO - __main__ - [FINAL] seg=3 reason=vad audio=[3.096, 5.928] fsl=0.000s encode=0.000s decode=0.000s final_decode=0.452s trans=0.461s | text='And a grain or two perhaps is good.'
+2026-05-06 02:57:58,431 - INFO - examples.streaming_websocket_server - [C-] [final-sentence/VAD] slot=B lang=en text=And a grain or two perhaps is good.
+2026-05-06 02:57:58,431 - INFO - examples.streaming_websocket_server - [C-] [slot-reset] slot=B
+2026-05-06 02:57:58,431 - INFO - __main__ - [VAD_DONE] slot=B
