@@ -423,6 +423,9 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
                         timing["pre_trans_sec"] = pre_trans
                 if trans_end_elapsed is not None:
                     timing["fsl_sec"] = round(max(0.0, trans_end_elapsed - seg_elapsed), 4)
+            if "fsl_sec" not in timing:
+                # seg_elapsed가 없는 VAD-path SEG → final decode + 번역 시간으로 fallback
+                timing["fsl_sec"] = round(final_decode_sec + timing.get("trans_sec", 0.0), 4)
         else:
             # VAD/finish: SEG 감지 없음 → final decode + 번역 시간
             timing["fsl_sec"] = round(final_decode_sec + timing.get("trans_sec", 0.0), 4)
