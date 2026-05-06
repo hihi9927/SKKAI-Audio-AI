@@ -121,6 +121,14 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         # 슬롯이 리셋되면(chunk_id=0) last_emitted 초기화 → 재사용 슬롯에서 outer path 차단 방지
         if state.chunk_id == 0:
             self._slot_last_emitted_chunk_id.pop(key, None)
+
+        # base server가 "partial" WebSocket 메시지를 전송하지 않아 send_message("partial")
+        # 인터셉트로는 스냅샷이 채워지지 않음. 대신 각 청크 추론 직전에 이전 청크까지의
+        # 누적 텍스트를 current_time 기준으로 저장해 _seg_audio_end_sec()가 동작하게 함.
+        raw_text = (state.text or "").strip()
+        if raw_text:
+            self._partial_snapshots.append((self.current_time, raw_text))
+
         t0 = time.perf_counter()
         ts_elapsed = round(t0 - self.stream_start_perf, 4)  # wall-clock elapsed (plot x축 기준)
         # _process_slot_updates(on_seg) 내부에서 조기 로깅이 가능하도록 t0 공유
