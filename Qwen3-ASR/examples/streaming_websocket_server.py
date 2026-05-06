@@ -1051,7 +1051,12 @@ class Qwen3ASRStreamingHandler:
         try:
             remote_addr = self.websocket.remote_address
             self.log.info(f"New connection from {remote_addr}")
-            await self.send_message("hello", message="Qwen3-ASR Streaming Server")
+            await self.send_message(
+                "hello",
+                message="Qwen3-ASR Streaming Server",
+                modelPath=self.config.model_path,
+                modelId=self.config.model_path,
+            )
             timeout = aiohttp.ClientTimeout(total=3)
             self.http_session = aiohttp.ClientSession(timeout=timeout)
 
@@ -1246,7 +1251,6 @@ class Qwen3ASRStreamingServer:
                     temperature=0.0,
                     max_tokens=self.config.max_new_tokens,
                     skip_special_tokens=True,
-                    repetition_penalty=1.3,
                 )
                 logger.info(f"Beam search enabled: beam_size={self.config.beam_size}")
             except TypeError:
@@ -1258,18 +1262,16 @@ class Qwen3ASRStreamingServer:
                     temperature=0.0,
                     max_tokens=self.config.max_new_tokens,
                     skip_special_tokens=True,
-                    repetition_penalty=1.3,
                 )
-                logger.info("Greedy decoding with repetition_penalty=1.3")
+                logger.info("Greedy decoding (no repetition_penalty)")
         else:
             from vllm import SamplingParams
             self.asr.sampling_params = SamplingParams(
                 temperature=0.0,
                 max_tokens=self.config.max_new_tokens,
                 skip_special_tokens=True,
-                repetition_penalty=1.3,
             )
-            logger.info("Greedy decoding with repetition_penalty=1.3")
+            logger.info("Greedy decoding (no repetition_penalty)")
 
         # LoRA 어댑터 등록
         if use_lora:

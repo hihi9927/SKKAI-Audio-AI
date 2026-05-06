@@ -168,11 +168,15 @@ python evaluation/LibriSpeech/servers/streaming_websocket_server_fcl.py \
 
 # 2) 테스트 실행
 python evaluation/AMI/test_qwen3_ami.py \
-  --ami-dir evaluation/AMI \
+  --ami-dir evaluation/AMI/AMI \
+  --words-dir evaluation/AMI/words \
   --model "baseline(1.0.0)" \
   --scope sample \
   --tag run_01
 ```
+
+> **참고:** 현재 저장소의 AMI 데이터는 오디오가 `evaluation/AMI/AMI/`, 단어 XML이 `evaluation/AMI/words/` 아래에 있습니다.  
+> 그래서 `--ami-dir evaluation/AMI`만 주면 `No audio files found.`가 날 수 있고, 위 예시처럼 `--ami-dir`와 `--words-dir`를 각각 지정하는 것이 안전합니다.
 
 결과 위치: `evaluation/AMI/results/{model}/{scope}/{tag}/`
 
