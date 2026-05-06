@@ -51,7 +51,7 @@ for CS in "${CHUNK_SIZES[@]}"; do
         --auto-server \
         --server-script "$SERVER_SCRIPT" \
         --server-model  "$SERVER_MODEL" \
-        --server-args   "--chunk-size ${CS} --enforce-eager --no-idle-shutdown" \
+        --server-args   "--chunk-size ${CS} --enforce-eager --no-idle-shutdown --log-file ${SCRIPT_DIR}/../results/${MODEL_TAG}/${SCOPE}/${TAG}/server.log" \
         --model  "$MODEL_TAG" \
         --scope  "$SCOPE" \
         --tag    "$TAG" \

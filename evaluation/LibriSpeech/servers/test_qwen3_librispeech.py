@@ -388,12 +388,10 @@ def summarize_segment_metrics(segment_metrics):
     return summary
 
 
-async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_ms=200, target_lang='ko', trailing_silence_ms=5500, log_path=None):
+async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_ms=200, target_lang='ko', trailing_silence_ms=5500):
     processing_start = time.perf_counter()
 
     start_msg = {'type': 'start', 'lang': 'auto', 'targetLang': target_lang}
-    if log_path:
-        start_msg['logPath'] = log_path
     await ws.send(json.dumps(start_msg))
     await recv_type(ws, 'ready', timeout=25, ignore_types={'partial', 'final'})
 
@@ -544,8 +542,6 @@ async def process_batch(
     resume=True,
     target_lang='ko',
     trailing_silence_ms=5500,
-    log_sample_n=10,
-    log_sample_seed=42,
 ):
     run_dir = Path(run_dir)
     if resume:
@@ -560,14 +556,6 @@ async def process_batch(
     if not targets:
         logger.info('No files to process.')
         return []
-
-    # Pre-select files for per-connection log capture
-    import random as _random
-    _rng = _random.Random(log_sample_seed)
-    all_target_ids = [f['file_id'] for f in targets]
-    log_sample_ids = set(_rng.sample(all_target_ids, min(log_sample_n, len(all_target_ids))))
-    plots_dir = run_dir / 'plots'
-    logger.info('Log capture enabled for %d sampled files → %s', len(log_sample_ids), plots_dir)
 
     # Load existing results so incremental saves include everything
     all_results = []
@@ -595,8 +583,6 @@ async def process_batch(
 
         duration = len(audio) / SAMPLING_RATE
 
-        log_path = str(plots_dir / f"{file_id}.log") if file_id in log_sample_ids else None
-
         try:
             async with websockets.connect(ws_url, ping_interval=None, ping_timeout=None, max_size=10 * 1024 * 1024) as ws:
                 await recv_type(ws, 'hello', timeout=8)
@@ -607,7 +593,6 @@ async def process_batch(
                     send_interval_ms=send_interval_ms,
                     target_lang=target_lang,
                     trailing_silence_ms=trailing_silence_ms,
-                    log_path=log_path,
                 )
         except Exception as e:
             logger.error('WebSocket processing failed for %s: %s', file_id, e)
@@ -748,8 +733,7 @@ def build_summary_payload(results, policy):
 
 def save_results_structured(results, run_dir, policy):
     run_dir = Path(run_dir)
-    (run_dir / 'logs').mkdir(parents=True, exist_ok=True)
-    (run_dir / 'plots').mkdir(exist_ok=True)
+    (run_dir / 'plots').mkdir(parents=True, exist_ok=True)
 
     summary = build_summary_payload(results, policy)
     metric_data = {
@@ -942,6 +926,7 @@ def main():
                 resume=not args.fresh_start,
                 target_lang=args.target_lang,
                 trailing_silence_ms=args.trailing_silence_ms,
+
             )
         )
         if args.calculate_wer and results:
