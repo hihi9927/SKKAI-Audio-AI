@@ -1,0 +1,6 @@
+ERROR 05-06 02:51:32 [fa_utils.py:82] Cannot use FA version 2 is not supported due to FA2 is only supported on devices with compute capability >= 8
+Server log file: /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/multi_speaker_test/run_04/server.log
+Silero VAD model loaded (server-level)
+Loading model: /home/ubuntu/STiTy/Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged
+INFO 05-06 02:51:33 [model.py:530] Resolved architecture: Qwen3ASRForConditionalGeneration
+ERROR 05-06 02:51:33 [repo_utils.py:65] Error retrieving safetensors: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/home/ubuntu/STiTy/Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged'. Use `repo_type` argument if needed., retrying 1 of 2
