@@ -58,6 +58,9 @@ except:
     pass
 
 
+MAX_STREAMING_PREFIX_TOKENS = 96
+
+
 @dataclass
 class ASRTranscription:
     """
@@ -699,6 +702,23 @@ class Qwen3ASRModel:
                     bias[plain_ids[0]] = -100.0
         return bias
 
+    def _build_streaming_prefix(self, state: ASRStreamingState) -> str:
+        """Keep only a bounded decode tail as continuation prefix."""
+        if state.chunk_id < state.unfixed_chunk_num:
+            return ""
+
+        cur_ids = self.processor.tokenizer.encode(state._raw_decoded)
+        rollback = int(state.unfixed_token_num)
+        while True:
+            end_idx = max(0, len(cur_ids) - rollback)
+            start_idx = max(0, end_idx - MAX_STREAMING_PREFIX_TOKENS)
+            prefix = self.processor.tokenizer.decode(cur_ids[start_idx:end_idx]) if end_idx > start_idx else ""
+            if "\ufffd" not in prefix:
+                return prefix
+            if start_idx == 0 and end_idx == 0:
+                return ""
+            rollback += 1
+
     async def streaming_transcribe(self, pcm16k: np.ndarray, state: ASRStreamingState, lora_request=None, on_seg=None) -> ASRStreamingState:
         """
         Streaming ASR decode step.
@@ -773,22 +793,7 @@ class Qwen3ASRModel:
                 state.audio_accum = np.concatenate([state.audio_accum, chunk], axis=0)
 
             # Build prefix with rollback strategy
-            prefix = ""
-            if state.chunk_id < state.unfixed_chunk_num:
-                prefix = ""
-            else:
-                cur_ids = self.processor.tokenizer.encode(state._raw_decoded)
-                k = int(state.unfixed_token_num)
-                while True:
-                    end_idx = max(0, len(cur_ids) - k)
-                    prefix = self.processor.tokenizer.decode(cur_ids[:end_idx]) if end_idx > 0 else ""
-                    if '\ufffd' not in prefix:
-                        break
-                    else:
-                        if end_idx == 0:
-                            prefix = ""
-                            break
-                        k += 1
+            prefix = self._build_streaming_prefix(state)
 
             prompt = state.prompt_raw + prefix
             inp = {"prompt": prompt, "multi_modal_data": {"audio": [state.audio_accum]}}
@@ -870,13 +875,7 @@ class Qwen3ASRModel:
             state.audio_accum = np.concatenate([state.audio_accum, tail], axis=0)
 
         # Prefix rollback strategy (same as per-chunk)
-        prefix = ""
-        if state.chunk_id < state.unfixed_chunk_num:
-            prefix = ""
-        else:
-            cur_ids = self.processor.tokenizer.encode(state._raw_decoded)
-            end_idx = max(1, len(cur_ids) - int(state.unfixed_token_num))
-            prefix = self.processor.tokenizer.decode(cur_ids[:end_idx])
+        prefix = self._build_streaming_prefix(state)
 
         prompt = state.prompt_raw + prefix
         inp = {"prompt": prompt, "multi_modal_data": {"audio": [state.audio_accum]}}

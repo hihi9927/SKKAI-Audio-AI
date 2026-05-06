@@ -130,6 +130,7 @@ class StreamingConfig:
 
     # Commit 방식 설정
     enable_dot_commit: bool = False  # True면 온점/느낌표/물음표(dot) 기반 seg commit 활성화
+    force_commit_sec: float = 18.0
 
     # 언어 제한 설정
     restrict_languages: bool = True  # True면 앱 설정 두 언어 외 토큰 차단
@@ -493,6 +494,7 @@ class Qwen3ASRStreamingHandler:
             "committed_prefix": "",
             "committed_display": "",
             "committed_seg_count": 0,
+            "audio_anchor_sec": self.current_time,
         }
 
     def _reset_stream_slot(self, slot_key: str):
@@ -546,6 +548,54 @@ class Qwen3ASRStreamingHandler:
         if lang == "Korean":
             return self.lora_request_ko
         return None
+
+    def _slot_uncommitted_display(self, slot_key: Optional[str] = None) -> str:
+        slot = self._slot(slot_key)
+        state = slot["state"]
+        current_text = (state.text or "").strip() if state else ""
+        if "<asr_text>" in current_text:
+            current_text = current_text.split("<asr_text>", 1)[-1].strip()
+        uncommitted_raw = self._uncommitted_from(
+            current_text, slot["committed_display"], slot["committed_seg_count"]
+        )
+        if uncommitted_raw is None:
+            return ""
+        return re.sub(r'\s+', ' ', uncommitted_raw.replace("<SEG>", "")).strip()
+
+    async def _force_commit_active_slot(self, reason: str = "timeout"):
+        old_active = self.active_slot
+        self.active_slot, self.standby_slot = self.standby_slot, self.active_slot
+        self.state = self.stream_slots[self.active_slot]["state"]
+        self.stream_slots[self.active_slot]["audio_anchor_sec"] = self.current_time
+        self.log.info(
+            f"[slot-switch/{reason}] old_active={old_active} new_active={self.active_slot} "
+            f"new_standby={self.standby_slot} at={self.current_time:.3f}s"
+        )
+
+        await self._asr_finish_streaming(old_active)
+        await self._process_slot_updates(old_active, force_reason=reason)
+        await self.flush_uncommitted(force=True, reason=reason, slot_key=old_active)
+        self._reset_stream_slot(self.standby_slot)
+
+    async def _maybe_force_commit_active_slot(self):
+        threshold = float(getattr(self.config, "force_commit_sec", 0.0) or 0.0)
+        if threshold <= 0:
+            return
+
+        slot = self._slot(self.active_slot)
+        anchor = float(slot.get("audio_anchor_sec", 0.0) or 0.0)
+        if (self.current_time - anchor) < threshold:
+            return
+
+        if not self._slot_uncommitted_display(self.active_slot):
+            slot["audio_anchor_sec"] = self.current_time
+            return
+
+        self.log.info(
+            f"[force-commit] slot={self.active_slot} span={self.current_time - anchor:.3f}s "
+            f"threshold={threshold:.3f}s"
+        )
+        await self._force_commit_active_slot(reason="timeout")
 
     async def _asr_streaming_transcribe(self, chunk: np.ndarray, slot_key: Optional[str] = None):
         slot = self._slot(slot_key)
@@ -652,6 +702,7 @@ class Qwen3ASRStreamingHandler:
             slot["committed_prefix"] = current_text
             slot["committed_display"] = re.sub(r'\s+', ' ', current_text.replace("<SEG>", "")).strip()
             slot["committed_seg_count"] = current_text.count("<SEG>")
+            slot["audio_anchor_sec"] = audio_end_sec
 
     async def _process_slot_updates(self, slot_key: str, force_reason: Optional[str] = None):
         slot = self._slot(slot_key)
@@ -764,6 +815,7 @@ class Qwen3ASRStreamingHandler:
                         r'\s+', ' ', slot["committed_prefix"].replace("<SEG>", "")
                     ).strip()
                     slot["committed_seg_count"] += len(ready_to_emit)
+                    slot["audio_anchor_sec"] = self.current_time
 
             for payload in ready_to_emit:
                 effective_reason = force_reason or payload["trigger_reason"]
@@ -856,6 +908,7 @@ class Qwen3ASRStreamingHandler:
             old_active = self.active_slot
             self.active_slot, self.standby_slot = self.standby_slot, self.active_slot
             self.state = self.stream_slots[self.active_slot]["state"]
+            self.stream_slots[self.active_slot]["audio_anchor_sec"] = target_audio_end_sec
             self.log.info(
                 f"[slot-switch] old_active={old_active} new_active={self.active_slot} "
                 f"new_standby={self.standby_slot}"
@@ -874,6 +927,7 @@ class Qwen3ASRStreamingHandler:
         tail_chunk = chunk[seg_start:]
         if tail_chunk.size > 0:
             await self._asr_streaming_transcribe(tail_chunk, self.active_slot)
+        await self._maybe_force_commit_active_slot()
 
     async def finish_streaming(self):
         pass
@@ -1174,7 +1228,7 @@ class Qwen3ASRStreamingServer:
                     best_of=self.config.beam_size,
                     temperature=0.0,
                     max_tokens=self.config.max_new_tokens,
-                    skip_special_tokens=False,  # DEBUG: special token 출력용
+                    skip_special_tokens=True,
                     repetition_penalty=1.3,
                 )
                 logger.info(f"Beam search enabled: beam_size={self.config.beam_size}")
@@ -1186,7 +1240,7 @@ class Qwen3ASRStreamingServer:
                 self.asr.sampling_params = SamplingParams(
                     temperature=0.0,
                     max_tokens=self.config.max_new_tokens,
-                    skip_special_tokens=False,
+                    skip_special_tokens=True,
                     repetition_penalty=1.3,
                 )
                 logger.info("Greedy decoding with repetition_penalty=1.3")
@@ -1195,7 +1249,7 @@ class Qwen3ASRStreamingServer:
             self.asr.sampling_params = SamplingParams(
                 temperature=0.0,
                 max_tokens=self.config.max_new_tokens,
-                skip_special_tokens=False,
+                skip_special_tokens=True,
                 repetition_penalty=1.3,
             )
             logger.info("Greedy decoding with repetition_penalty=1.3")
