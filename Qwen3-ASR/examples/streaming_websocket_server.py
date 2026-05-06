@@ -903,7 +903,7 @@ class Qwen3ASRStreamingHandler:
             # 잔여 버퍼(chunk_size 미만 tail audio)를 모델에 통과시킨 후 flush
             await self._on_vad_commit(target_audio_end_sec)
             await self._asr_finish_streaming(old_active)
-            await self._process_slot_updates(old_active)
+            await self._process_slot_updates(old_active, force_reason="vad")
             await self.flush_uncommitted(force=True, reason="vad", slot_key=old_active)
             self._reset_stream_slot(self.standby_slot)
             await self._on_vad_done(old_active)
