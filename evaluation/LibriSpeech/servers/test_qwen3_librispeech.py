@@ -477,6 +477,8 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
                 continue
 
             elif msg_type == 'final':
+                if real_audio_done.is_set():
+                    vad_fired.set()  # SEG path: 실제 오디오 커밋 완료 → trailing silence 중단
                 if first_result_time is None:
                     first_result_time = time.perf_counter()
                 last_result_time = time.perf_counter()
