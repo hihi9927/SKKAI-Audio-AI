@@ -65,11 +65,8 @@ class ServerManager:
         logger.info('Starting Qwen3 server...')
         self.process = subprocess.Popen(
             cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            bufsize=1,
-            universal_newlines=True,
+            stdout=subprocess.DEVNULL,  # vLLM logs to stdout by default; discard to avoid pipe deadlock
+            stderr=subprocess.DEVNULL,
         )
 
         if not self._wait_for_server_ready(timeout=180):
