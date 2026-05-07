@@ -448,7 +448,7 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
 
         while True:
             try:
-                msg = await asyncio.wait_for(ws.recv(), timeout=0.5)
+                msg = await asyncio.wait_for(ws.recv(), timeout=5.0)
             except asyncio.TimeoutError:
                 if send_done.is_set():
                     break
@@ -584,7 +584,7 @@ async def process_batch(
         duration = len(audio) / SAMPLING_RATE
 
         try:
-            async with websockets.connect(ws_url, ping_interval=None, ping_timeout=None, max_size=10 * 1024 * 1024) as ws:
+            async with websockets.connect(ws_url, ping_interval=None, ping_timeout=None, open_timeout=30, max_size=10 * 1024 * 1024) as ws:
                 await recv_type(ws, 'hello', timeout=8)
                 out = await process_single_file(
                     ws,
