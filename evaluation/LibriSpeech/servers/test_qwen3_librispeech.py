@@ -407,6 +407,7 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
     send_done = asyncio.Event()
     real_audio_done = asyncio.Event()
     vad_done_event = asyncio.Event()
+    vad_fired = asyncio.Event()  # VAD 발동 시 trailing silence 전송 중단용
 
     async def _send():
         stream_origin = time.perf_counter()
@@ -426,11 +427,14 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
 
         real_audio_done.set()
 
-        # Append trailing silence so VAD can fire naturally
+        # Append trailing silence so VAD can fire naturally.
+        # VAD 발동(vad_fired) 즉시 중단 — 이후 silence는 slot B 할루시네이션만 유발함.
         if trailing_silence_ms > 0:
             silence = np.zeros(int(SAMPLING_RATE * trailing_silence_ms / 1000), dtype=np.int16)
             silence_origin = time.perf_counter()
             for i in range(0, len(silence), chunk_size):
+                if vad_fired.is_set():
+                    break
                 chunk = silence[i:i + chunk_size]
                 if send_interval_sec > 0:
                     target_send_at = silence_origin + (i + len(chunk)) / SAMPLING_RATE
@@ -439,6 +443,8 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
                         if remaining <= 0:
                             break
                         await asyncio.sleep(min(remaining, 0.02))
+                if vad_fired.is_set():
+                    break
                 await ws.send(chunk.tobytes())
 
         send_done.set()
@@ -464,6 +470,7 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
 
             if msg_type == 'vad_done':
                 if real_audio_done.is_set():
+                    vad_fired.set()  # trailing silence 전송 중단
                     vad_done_event.set()
                     break
                 # 실제 오디오 전송 중 자연 묵음 VAD — 무시
