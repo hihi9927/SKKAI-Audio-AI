@@ -411,6 +411,14 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
                 timing["encode_sec"] = d_start
                 timing["decode_sec"] = round(max(0.0, seg_info["elapsed_sec"] - d_start), 4)
             timing["seg_audio_sec"] = round(seg_info["audio_sec"], 3)
+            # FSL for SEG: translation end - estimated audio end (both stream-elapsed)
+            if trans_end_elapsed is not None:
+                effective_ae = (
+                    self._effective_audio_end_sec
+                    if self._effective_audio_end_sec is not None
+                    else audio_end_sec
+                )
+                timing["fsl_sec"] = round(max(0.0, trans_end_elapsed - effective_ae), 4)
         elif seg_info is not None:
             # VAD/finish path에서도 final decode 중 SEG 감지된 경우 위치 기록
             timing["seg_audio_sec"] = round(seg_info["audio_sec"], 3)
@@ -423,6 +431,9 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
                         timing["pre_trans_sec"] = pre_trans
                 if trans_end_elapsed is not None:
                     timing["fsl_sec"] = round(max(0.0, trans_end_elapsed - seg_elapsed), 4)
+            if "fsl_sec" not in timing:
+                # seg_elapsed가 없는 VAD-path SEG → final decode + 번역 시간으로 fallback
+                timing["fsl_sec"] = round(final_decode_sec + timing.get("trans_sec", 0.0), 4)
         else:
             # VAD/finish: SEG 감지 없음 → final decode + 번역 시간
             timing["fsl_sec"] = round(final_decode_sec + timing.get("trans_sec", 0.0), 4)

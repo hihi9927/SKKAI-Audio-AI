@@ -147,7 +147,7 @@ class StreamingConfig:
 
     # Commit 방식 설정
     enable_dot_commit: bool = False  # True면 온점/느낌표/물음표(dot) 기반 seg commit 활성화
-    force_commit_sec: float = 18.0
+
 
     # 언어 제한 설정
     restrict_languages: bool = True  # True면 앱 설정 두 언어 외 토큰 차단
@@ -512,6 +512,7 @@ class Qwen3ASRStreamingHandler:
             "committed_display": "",
             "committed_seg_count": 0,
             "audio_anchor_sec": self.current_time,
+
         }
 
     def _reset_stream_slot(self, slot_key: str):
@@ -579,40 +580,6 @@ class Qwen3ASRStreamingHandler:
             return ""
         return re.sub(r'\s+', ' ', uncommitted_raw.replace("<SEG>", "")).strip()
 
-    async def _force_commit_active_slot(self, reason: str = "timeout"):
-        old_active = self.active_slot
-        self.active_slot, self.standby_slot = self.standby_slot, self.active_slot
-        self.state = self.stream_slots[self.active_slot]["state"]
-        self.stream_slots[self.active_slot]["audio_anchor_sec"] = self.current_time
-        self.log.info(
-            f"[slot-switch/{reason}] old_active={old_active} new_active={self.active_slot} "
-            f"new_standby={self.standby_slot} at={self.current_time:.3f}s"
-        )
-
-        await self._asr_finish_streaming(old_active)
-        await self._process_slot_updates(old_active, force_reason=reason)
-        await self.flush_uncommitted(force=True, reason=reason, slot_key=old_active)
-        self._reset_stream_slot(self.standby_slot)
-
-    async def _maybe_force_commit_active_slot(self):
-        threshold = float(getattr(self.config, "force_commit_sec", 0.0) or 0.0)
-        if threshold <= 0:
-            return
-
-        slot = self._slot(self.active_slot)
-        anchor = float(slot.get("audio_anchor_sec", 0.0) or 0.0)
-        if (self.current_time - anchor) < threshold:
-            return
-
-        if not self._slot_uncommitted_display(self.active_slot):
-            slot["audio_anchor_sec"] = self.current_time
-            return
-
-        self.log.info(
-            f"[force-commit] slot={self.active_slot} span={self.current_time - anchor:.3f}s "
-            f"threshold={threshold:.3f}s"
-        )
-        await self._force_commit_active_slot(reason="timeout")
 
     async def _asr_streaming_transcribe(self, chunk: np.ndarray, slot_key: Optional[str] = None):
         slot = self._slot(slot_key)
@@ -686,6 +653,8 @@ class Qwen3ASRStreamingHandler:
             commit_reason = "vad"
         elif reason == "finish":
             commit_reason = "finish"
+        elif reason == "timeout":
+            commit_reason = "timeout"
         else:
             commit_reason = "seg"
         self.log.info(
@@ -944,7 +913,6 @@ class Qwen3ASRStreamingHandler:
         tail_chunk = chunk[seg_start:]
         if tail_chunk.size > 0:
             await self._asr_streaming_transcribe(tail_chunk, self.active_slot)
-        await self._maybe_force_commit_active_slot()
 
     async def finish_streaming(self):
         pass

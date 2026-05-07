@@ -1,0 +1,4454 @@
+{
+  "overall": {
+    "client": 9,
+    "num_files": 54,
+    "wer": 0.12261904761904761,
+    "avg_first_token_latency": 3.897881708592515
+  },
+  "raw_results": [
+    {
+      "file_id": "3005-163391-0004",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163391/3005-163391-0004.flac",
+      "reference": "WHER YOU BOUND FOR YOUNG MAN",
+      "hypothesis": "Where are you bound for, young man?",
+      "hyp_commit": "Where are you bound for, young man? <vad>",
+      "duration": 2.83,
+      "total_time": 4.221101695999096,
+      "first_token_latency": 4.221101415998419,
+      "model_runtime": 1.3911016959990956,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "Where are you bound for, young man?",
+          "translation": "젊은이여, 어디로 가려고 합니까?",
+          "commit_reason": "vad",
+          "output_token_count": 7,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 2.4619999999999997,
+          "seg_audio_sec": 2.462,
+          "fsl_sec": null,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.43890288900001906,
+          "trans_sec": 0.0736,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.4054,
+              "chunk_decode_sec": 0.4053,
+              "chunk_transcribe_start_elapsed": 2.0143,
+              "chunk_decode_start_elapsed": 2.0144
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": 3.262,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.221103369000048
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 1,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": null,
+        "avg_decode_sec": null,
+        "avg_final_decode_sec": 0.43890288900001906,
+        "avg_trans_sec": 0.0736
+      }
+    },
+    {
+      "file_id": "3005-163391-0005",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163391/3005-163391-0005.flac",
+      "reference": "GIT ABOARD SAYS THE KING",
+      "hypothesis": "Get aboard, says the king.",
+      "hyp_commit": "Get aboard, says the king. <seg>",
+      "duration": 2.32,
+      "total_time": 2.480965101000038,
+      "first_token_latency": 2.4809648110003764,
+      "model_runtime": 0.16096510100003814,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "Get aboard, says the king.",
+          "translation": "승선하라, 왕이 말했다.",
+          "commit_reason": "seg",
+          "output_token_count": 5,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 1.9999999999999998,
+          "seg_audio_sec": 2.0,
+          "fsl_sec": null,
+          "encode_sec": 2.004908421999062,
+          "decode_sec": 0.3834,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0748,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3836,
+              "chunk_decode_sec": 0.3835,
+              "chunk_transcribe_start_elapsed": 2.0048,
+              "chunk_decode_start_elapsed": 2.0049
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 2.480966498998896
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 1,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": 2.004908421999062,
+        "avg_decode_sec": 0.3834,
+        "avg_final_decode_sec": 0.0,
+        "avg_trans_sec": 0.0748
+      }
+    },
+    {
+      "file_id": "3005-163391-0006",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163391/3005-163391-0006.flac",
+      "reference": "I DONE SO AND THEN WE ALL THREE STARTED ON AGAIN",
+      "hypothesis": "I done so, and then we all three started on again.",
+      "hyp_commit": "I done so, <seg> and then we all three started on again. <vad>",
+      "duration": 3.765,
+      "total_time": 5.149522731000616,
+      "first_token_latency": 2.4302610510003433,
+      "model_runtime": 1.3845227310006156,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "I done so,",
+          "translation": "나는 그렇게 했다,",
+          "commit_reason": "seg",
+          "output_token_count": 3,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 1.9999999999999998,
+          "seg_audio_sec": 2.0,
+          "fsl_sec": null,
+          "encode_sec": 2.006546849001097,
+          "decode_sec": 0.3115,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0915,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3117,
+              "chunk_decode_sec": 0.3116,
+              "chunk_transcribe_start_elapsed": 2.0065,
+              "chunk_decode_start_elapsed": 2.0065
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 2.430262195000978
+        },
+        {
+          "segment_id": 2,
+          "text": "and then we all three started on again.",
+          "translation": "그리고 우리 셋 모두 다시 시작했어요.",
+          "commit_reason": "vad",
+          "output_token_count": 8,
+          "audio_start_sec": 1.9999999999999998,
+          "audio_end_sec": 3.6290000000000004,
+          "seg_audio_sec": 4.165,
+          "fsl_sec": 0.6032,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.1901628930008883,
+          "trans_sec": 0.0833,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.165,
+              "encode_sec": 0.3374,
+              "chunk_decode_sec": 0.3373,
+              "chunk_transcribe_start_elapsed": 4.1883,
+              "chunk_decode_start_elapsed": 4.1885
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": 4.429,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 5.149524014001145
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": 0.6032,
+        "avg_encode_sec": 2.006546849001097,
+        "avg_decode_sec": 0.3115,
+        "avg_final_decode_sec": 0.09508144650044414,
+        "avg_trans_sec": 0.0874
+      }
+    },
+    {
+      "file_id": "3005-163391-0007",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163391/3005-163391-0007.flac",
+      "reference": "THE YOUNG CHAP WAS MIGHTY THANKFUL SAID IT WAS TOUGH WORK TOTING HIS BAGGAGE SUCH WEATHER",
+      "hypothesis": "The young chap was mighty thankful. Said it was tough work toting his baggage such weather.",
+      "hyp_commit": "The young chap was mighty thankful. <seg> Said it was tough work toting his baggage such weather. <seg>",
+      "duration": 5.55,
+      "total_time": 6.612176709000778,
+      "first_token_latency": 4.4803318539998145,
+      "model_runtime": 1.062176709000778,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "The young chap was mighty thankful.",
+          "translation": "그 젊은 친구는 정말 감사했습니다.",
+          "commit_reason": "seg",
+          "output_token_count": 6,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 4.000000000000001,
+          "seg_audio_sec": 4.0,
+          "fsl_sec": null,
+          "encode_sec": 4.006354151999403,
+          "decode_sec": 0.34,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.1209,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3136,
+              "chunk_decode_sec": 0.3135,
+              "chunk_transcribe_start_elapsed": 2.0056,
+              "chunk_decode_start_elapsed": 2.0057
+            },
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.0,
+              "encode_sec": 0.3402,
+              "chunk_decode_sec": 0.3401,
+              "chunk_transcribe_start_elapsed": 4.0062,
+              "chunk_decode_start_elapsed": 4.0064
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.480332773000555
+        },
+        {
+          "segment_id": 2,
+          "text": "Said it was tough work toting his baggage such weather.",
+          "translation": "이런 날씨에 짐을 옮기는 일이 힘들다고 하더군요.",
+          "commit_reason": "seg",
+          "output_token_count": 10,
+          "audio_start_sec": 4.000000000000001,
+          "audio_end_sec": 6.150000000000003,
+          "seg_audio_sec": 6.15,
+          "fsl_sec": null,
+          "encode_sec": 6.159178674000941,
+          "decode_sec": 0.0815,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0717,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 2,
+              "audio_pos_sec": 6.15,
+              "encode_sec": 0.0822,
+              "chunk_decode_sec": 0.0817,
+              "chunk_transcribe_start_elapsed": 6.1587,
+              "chunk_decode_start_elapsed": 6.1592
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 6.612177716999213
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": 5.082766413000172,
+        "avg_decode_sec": 0.21075000000000002,
+        "avg_final_decode_sec": 0.0,
+        "avg_trans_sec": 0.0963
+      }
+    },
+    {
+      "file_id": "3005-163391-0008",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163391/3005-163391-0008.flac",
+      "reference": "HE ASKED THE KING WHERE HE WAS GOING AND THE KING TOLD HIM HE'D COME DOWN THE RIVER AND LANDED AT THE OTHER VILLAGE THIS MORNING AND NOW HE WAS GOING UP A FEW MILE TO SEE AN OLD FRIEND ON A FARM UP THERE THE YOUNG FELLOW SAYS",
+      "hypothesis": "He asked the king where he was going, and the king told him he'd come down the river and landed at the other village this morning, and now he was going up a few mile to see an old friend on a farm up there. The young fellow says.",
+      "hyp_commit": "He asked the king where he was going, <seg> and the king told him he'd come down the river and landed at the other village this morning, <seg> and now he was going up a few mile to see an old friend on a farm up there. <seg> The young fellow says. <vad>",
+      "duration": 13.265,
+      "total_time": 14.350898984001105,
+      "first_token_latency": 4.567467068000042,
+      "model_runtime": 1.0858989840011048,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "He asked the king where he was going,",
+          "translation": "그는 왕에게 어디로 가느냐고 물었습니다.",
+          "commit_reason": "seg",
+          "output_token_count": 8,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 4.000000000000001,
+          "seg_audio_sec": 4.0,
+          "fsl_sec": null,
+          "encode_sec": 4.022854592998556,
+          "decode_sec": 0.4348,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0915,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.4013,
+              "chunk_decode_sec": 0.4012,
+              "chunk_transcribe_start_elapsed": 2.0236,
+              "chunk_decode_start_elapsed": 2.0237
+            },
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.0,
+              "encode_sec": 0.435,
+              "chunk_decode_sec": 0.4349,
+              "chunk_transcribe_start_elapsed": 4.0227,
+              "chunk_decode_start_elapsed": 4.0229
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.567468056000507
+        },
+        {
+          "segment_id": 2,
+          "text": "and the king told him he'd come down the river and landed at the other village this morning,",
+          "translation": "왕은 그에게 오늘 아침 강을 따라 내려와 다른 마을에 도착하겠다고 말했습니다.",
+          "commit_reason": "seg",
+          "output_token_count": 18,
+          "audio_start_sec": 4.000000000000001,
+          "audio_end_sec": 8.000000000000004,
+          "seg_audio_sec": 6.0,
+          "fsl_sec": null,
+          "encode_sec": 6.007555483998658,
+          "decode_sec": 0.0991,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0735,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 2,
+              "audio_pos_sec": 6.0,
+              "encode_sec": 0.0997,
+              "chunk_decode_sec": 0.0992,
+              "chunk_transcribe_start_elapsed": 6.0071,
+              "chunk_decode_start_elapsed": 6.0076
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 8.44091229500009
+        },
+        {
+          "segment_id": 3,
+          "text": "and now he was going up a few mile to see an old friend on a farm up there.",
+          "translation": "그리고 지금 그는 저기 농장에 있는 오랜 친구를 만나기 위해 몇 마일을 올라가고 있었습니다.",
+          "commit_reason": "seg",
+          "output_token_count": 19,
+          "audio_start_sec": 8.000000000000004,
+          "audio_end_sec": 11.99999999999999,
+          "seg_audio_sec": 10.0,
+          "fsl_sec": null,
+          "encode_sec": 10.008214568999392,
+          "decode_sec": 0.102,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0818,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 3,
+              "audio_pos_sec": 8.0,
+              "encode_sec": 0.5233,
+              "chunk_decode_sec": 0.5228,
+              "chunk_transcribe_start_elapsed": 8.0086,
+              "chunk_decode_start_elapsed": 8.0091
+            },
+            {
+              "chunk_id": 4,
+              "audio_pos_sec": 10.0,
+              "encode_sec": 0.1027,
+              "chunk_decode_sec": 0.1021,
+              "chunk_transcribe_start_elapsed": 10.0077,
+              "chunk_decode_start_elapsed": 10.0082
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 12.550717937001536
+        },
+        {
+          "segment_id": 4,
+          "text": "The young fellow says.",
+          "translation": "젊은 친구가 말합니다.",
+          "commit_reason": "vad",
+          "output_token_count": 4,
+          "audio_start_sec": 11.99999999999999,
+          "audio_end_sec": 13.024999999999999,
+          "seg_audio_sec": 13.025,
+          "fsl_sec": null,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.3578431800015096,
+          "trans_sec": 0.1017,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 5,
+              "audio_pos_sec": 12.0,
+              "encode_sec": 0.527,
+              "chunk_decode_sec": 0.5264,
+              "chunk_transcribe_start_elapsed": 12.0069,
+              "chunk_decode_start_elapsed": 12.0075
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": 13.825,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 14.350900053999794
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 4,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": 6.679541548665536,
+        "avg_decode_sec": 0.21196666666666666,
+        "avg_final_decode_sec": 0.0894607950003774,
+        "avg_trans_sec": 0.087125
+      }
+    },
+    {
+      "file_id": "3005-163391-0009",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163391/3005-163391-0009.flac",
+      "reference": "BUT THEN I SAYS AGAIN NO I RECKON IT AIN'T HIM OR ELSE HE WOULDN'T BE PADDLING UP THE RIVER YOU AIN'T HIM ARE YOU",
+      "hypothesis": "But then I says again, 'No, I reckon it ain't him, or else he wouldn't be paddlin' up the river. You ain't him, are you?",
+      "hyp_commit": "But then I says again, 'No, I reckon it ain't him, or else he wouldn't be paddlin' up the river. <seg> You ain't him, are you? <vad>",
+      "duration": 8.69,
+      "total_time": 9.720291215000543,
+      "first_token_latency": 8.466472406000321,
+      "model_runtime": 1.0302912150005437,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "But then I says again, 'No, I reckon it ain't him, or else he wouldn't be paddlin' up the river.",
+          "translation": "하지만 나는 다시 '아니요, 그 사람이 아닌 것 같아요. 그렇지 않으면 그 사람은 강 위로 노를 젓지 않았을 겁니다.",
+          "commit_reason": "seg",
+          "output_token_count": 20,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 8.000000000000004,
+          "seg_audio_sec": 8.0,
+          "fsl_sec": null,
+          "encode_sec": 8.006246016999285,
+          "decode_sec": 0.3603,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0779,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.2963,
+              "chunk_decode_sec": 0.2962,
+              "chunk_transcribe_start_elapsed": 2.0058,
+              "chunk_decode_start_elapsed": 2.0059
+            },
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.0,
+              "encode_sec": 0.5676,
+              "chunk_decode_sec": 0.5674,
+              "chunk_transcribe_start_elapsed": 4.0069,
+              "chunk_decode_start_elapsed": 4.007
+            },
+            {
+              "chunk_id": 2,
+              "audio_pos_sec": 6.0,
+              "encode_sec": 0.5209,
+              "chunk_decode_sec": 0.5205,
+              "chunk_transcribe_start_elapsed": 6.0058,
+              "chunk_decode_start_elapsed": 6.0062
+            },
+            {
+              "chunk_id": 3,
+              "audio_pos_sec": 8.0,
+              "encode_sec": 0.3609,
+              "chunk_decode_sec": 0.3604,
+              "chunk_transcribe_start_elapsed": 8.0058,
+              "chunk_decode_start_elapsed": 8.0062
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 8.466473753000173
+        },
+        {
+          "segment_id": 2,
+          "text": "You ain't him, are you?",
+          "translation": "당신은 그 사람이 아니죠?",
+          "commit_reason": "vad",
+          "output_token_count": 5,
+          "audio_start_sec": 8.000000000000004,
+          "audio_end_sec": 8.354,
+          "seg_audio_sec": 8.354,
+          "fsl_sec": null,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.3167402020008012,
+          "trans_sec": 0.0832,
+          "chunk_encode_log": null,
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": 9.154,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 9.720292103000247
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": 8.006246016999285,
+        "avg_decode_sec": 0.3603,
+        "avg_final_decode_sec": 0.1583701010004006,
+        "avg_trans_sec": 0.08055
+      }
+    },
+    {
+      "file_id": "3005-163391-0010",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163391/3005-163391-0010.flac",
+      "reference": "NO MY NAME'S BLODGETT ELEXANDER BLODGETT REVEREND ELEXANDER BLODGETT I S'POSE I MUST SAY AS I'M ONE O THE LORD'S POOR SERVANTS",
+      "hypothesis": "No, my name's Blodgett, Alexander Blodgett.",
+      "hyp_commit": "No, my name's Blodgett, <seg> Alexander Blodgett. <seg>",
+      "duration": 10.695,
+      "total_time": 4.648899193000034,
+      "first_token_latency": 4.482334975999038,
+      "model_runtime": -6.046100806999966,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "No, my name's Blodgett,",
+          "translation": "아니요, 제 이름은 블로젯이에요",
+          "commit_reason": "seg",
+          "output_token_count": 4,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 4.000000000000001,
+          "seg_audio_sec": 4.0,
+          "fsl_sec": null,
+          "encode_sec": 4.008869430001141,
+          "decode_sec": 0.3892,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0714,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3731,
+              "chunk_decode_sec": 0.373,
+              "chunk_transcribe_start_elapsed": 2.0054,
+              "chunk_decode_start_elapsed": 2.0055
+            },
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.0,
+              "encode_sec": 0.3895,
+              "chunk_decode_sec": 0.3894,
+              "chunk_transcribe_start_elapsed": 4.0087,
+              "chunk_decode_start_elapsed": 4.0089
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.482335987000624
+        },
+        {
+          "segment_id": 2,
+          "text": "Alexander Blodgett.",
+          "translation": "알렉산더 블로젯.",
+          "commit_reason": "seg",
+          "output_token_count": 2,
+          "audio_start_sec": 4.000000000000001,
+          "audio_end_sec": 4.000000000000001,
+          "seg_audio_sec": 4.0,
+          "fsl_sec": null,
+          "encode_sec": 4.008869430001141,
+          "decode_sec": 0.5527,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0747,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.0,
+              "encode_sec": 0.5529,
+              "chunk_decode_sec": 0.5528,
+              "chunk_transcribe_start_elapsed": 4.0087,
+              "chunk_decode_start_elapsed": 4.0089
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.648900686999696
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": 4.008869430001141,
+        "avg_decode_sec": 0.47095,
+        "avg_final_decode_sec": 0.0,
+        "avg_trans_sec": 0.07305
+      }
+    },
+    {
+      "file_id": "3005-163391-0011",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163391/3005-163391-0011.flac",
+      "reference": "YOU SEE HE WAS PRETTY OLD AND GEORGE'S G'YIRLS WAS TOO YOUNG TO BE MUCH COMPANY FOR HIM EXCEPT MARY JANE THE RED HEADED ONE AND SO HE WAS KINDER LONESOME AFTER GEORGE AND HIS WIFE DIED AND DIDN'T SEEM TO CARE MUCH TO LIVE",
+      "hypothesis": "You see, he was pretty old, and George's girls was too young to be much company for him, except Mary Jane, the red-headed one, and so he was kinder lonesome after George and his wife died, and didn't seem to care much to live.",
+      "hyp_commit": "You see, he was pretty old, <seg> and George's girls was too young to be much company for him, except Mary Jane, the red-headed one, <seg> and so he was kinder lonesome after George and his wife died, <seg> and didn't seem to care much to live. <vad>",
+      "duration": 14.56,
+      "total_time": 15.709284100999866,
+      "first_token_latency": 4.628698475999045,
+      "model_runtime": 1.149284100999866,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "You see, he was pretty old,",
+          "translation": "그러고 보니 그 사람 꽤 늙었구나.",
+          "commit_reason": "seg",
+          "output_token_count": 6,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 2.1999999999999997,
+          "seg_audio_sec": 4.0,
+          "fsl_sec": null,
+          "encode_sec": 4.006765568001356,
+          "decode_sec": 0.4194,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0819,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3576,
+              "chunk_decode_sec": 0.3575,
+              "chunk_transcribe_start_elapsed": 2.006,
+              "chunk_decode_start_elapsed": 2.0062
+            },
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.0,
+              "encode_sec": 0.4196,
+              "chunk_decode_sec": 0.4195,
+              "chunk_transcribe_start_elapsed": 4.0066,
+              "chunk_decode_start_elapsed": 4.0068
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.628699392998897
+        },
+        {
+          "segment_id": 2,
+          "text": "and George's girls was too young to be much company for him, except Mary Jane, the red-headed one,",
+          "translation": "그리고 조지의 딸들은 너무 어려서 그와 많은 친구가 될 수 없었습니다. 빨간 머리의 메리 제인을 제외하고는",
+          "commit_reason": "seg",
+          "output_token_count": 18,
+          "audio_start_sec": 2.1999999999999997,
+          "audio_end_sec": 9.999999999999996,
+          "seg_audio_sec": 6.0,
+          "fsl_sec": null,
+          "encode_sec": 6.00739471199995,
+          "decode_sec": 0.0777,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0909,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 2,
+              "audio_pos_sec": 6.0,
+              "encode_sec": 0.0784,
+              "chunk_decode_sec": 0.0779,
+              "chunk_transcribe_start_elapsed": 6.0069,
+              "chunk_decode_start_elapsed": 6.0074
+            },
+            {
+              "chunk_id": 3,
+              "audio_pos_sec": 8.0,
+              "encode_sec": 0.356,
+              "chunk_decode_sec": 0.3554,
+              "chunk_transcribe_start_elapsed": 8.0066,
+              "chunk_decode_start_elapsed": 8.0072
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 10.719075244000123
+        },
+        {
+          "segment_id": 3,
+          "text": "and so he was kinder lonesome after George and his wife died,",
+          "translation": "그래서 조지와 그의 아내가 죽은 후 그는 더욱 외로워졌습니다.",
+          "commit_reason": "seg",
+          "output_token_count": 12,
+          "audio_start_sec": 9.999999999999996,
+          "audio_end_sec": 13.999999999999982,
+          "seg_audio_sec": 12.0,
+          "fsl_sec": null,
+          "encode_sec": 12.06996311200055,
+          "decode_sec": 0.1224,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0703,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 4,
+              "audio_pos_sec": 10.0,
+              "encode_sec": 0.5427,
+              "chunk_decode_sec": 0.5421,
+              "chunk_transcribe_start_elapsed": 10.0645,
+              "chunk_decode_start_elapsed": 10.0652
+            },
+            {
+              "chunk_id": 5,
+              "audio_pos_sec": 12.0,
+              "encode_sec": 0.1231,
+              "chunk_decode_sec": 0.1225,
+              "chunk_transcribe_start_elapsed": 12.0693,
+              "chunk_decode_start_elapsed": 12.07
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 14.512404167999193
+        },
+        {
+          "segment_id": 4,
+          "text": "and didn't seem to care much to live.",
+          "translation": "그리고 사는 데 별로 관심이 없는 것 같았어요.",
+          "commit_reason": "vad",
+          "output_token_count": 8,
+          "audio_start_sec": 13.999999999999982,
+          "audio_end_sec": 14.351999999999999,
+          "seg_audio_sec": 14.352,
+          "fsl_sec": null,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.3411160510004265,
+          "trans_sec": 0.079,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 6,
+              "audio_pos_sec": 14.0,
+              "encode_sec": 0.5537,
+              "chunk_decode_sec": 0.5529,
+              "chunk_transcribe_start_elapsed": 14.0077,
+              "chunk_decode_start_elapsed": 14.0085
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": 15.152,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 15.709285573999296
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 4,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": 7.361374464000619,
+        "avg_decode_sec": 0.2065,
+        "avg_final_decode_sec": 0.08527901275010663,
+        "avg_trans_sec": 0.080525
+      }
+    },
+    {
+      "file_id": "3005-163391-0012",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163391/3005-163391-0012.flac",
+      "reference": "TOO BAD TOO BAD HE COULDN'T A LIVED TO SEE HIS BROTHERS POOR SOUL",
+      "hypothesis": "Too bad. Too bad he couldn't have lived to see his brother's poor soul.",
+      "hyp_commit": "Too bad. <seg> Too bad he couldn't have lived to see his brother's poor soul. <vad>",
+      "duration": 4.595,
+      "total_time": 5.836848782999368,
+      "first_token_latency": 2.4049817899995105,
+      "model_runtime": 1.2418487829993685,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "Too bad.",
+          "translation": "안타깝네요.",
+          "commit_reason": "seg",
+          "output_token_count": 2,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 1.9999999999999998,
+          "seg_audio_sec": 2.0,
+          "fsl_sec": null,
+          "encode_sec": 2.006480449999799,
+          "decode_sec": 0.3047,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0788,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3049,
+              "chunk_decode_sec": 0.3048,
+              "chunk_transcribe_start_elapsed": 2.0064,
+              "chunk_decode_start_elapsed": 2.0065
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 2.4049828030001663
+        },
+        {
+          "segment_id": 2,
+          "text": "Too bad he couldn't have lived to see his brother's poor soul.",
+          "translation": "안타깝게도 그는 동생의 불쌍한 영혼을 볼 수 없었습니다.",
+          "commit_reason": "vad",
+          "output_token_count": 12,
+          "audio_start_sec": 1.9999999999999998,
+          "audio_end_sec": 4.4590000000000005,
+          "seg_audio_sec": 4.0,
+          "fsl_sec": 1.515,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.34180382100021234,
+          "trans_sec": 0.0754,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.0,
+              "encode_sec": 0.2986,
+              "chunk_decode_sec": 0.2984,
+              "chunk_transcribe_start_elapsed": 4.0084,
+              "chunk_decode_start_elapsed": 4.0086
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": 5.259,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 5.836850613999559
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": 1.515,
+        "avg_encode_sec": 2.006480449999799,
+        "avg_decode_sec": 0.3047,
+        "avg_final_decode_sec": 0.17090191050010617,
+        "avg_trans_sec": 0.0771
+      }
+    },
+    {
+      "file_id": "3005-163391-0013",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163391/3005-163391-0013.flac",
+      "reference": "I'M GOING IN A SHIP NEXT WEDNESDAY FOR RYO JANEERO WHERE MY UNCLE LIVES",
+      "hypothesis": "I'm going in a ship, next Wednesday, for Rio Janeiro, where my uncle is.",
+      "hyp_commit": "I'm going in a ship, next Wednesday, for Rio Janeiro, <seg> where my uncle is. <vad>",
+      "duration": 6.025,
+      "total_time": 7.2314799380001205,
+      "first_token_latency": 6.940944468000453,
+      "model_runtime": 1.20647993800012,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "I'm going in a ship, next Wednesday, for Rio Janeiro,",
+          "translation": "저는 다음 주 수요일에 배를 타고 리우 자네이루로 갈 예정입니다.",
+          "commit_reason": "seg",
+          "output_token_count": 10,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 6.000000000000003,
+          "seg_audio_sec": 6.0,
+          "fsl_sec": null,
+          "encode_sec": 6.006735294999089,
+          "decode_sec": 0.3318,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.5101,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.4085,
+              "chunk_decode_sec": 0.4084,
+              "chunk_transcribe_start_elapsed": 2.0089,
+              "chunk_decode_start_elapsed": 2.009
+            },
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.0,
+              "encode_sec": 0.5123,
+              "chunk_decode_sec": 0.5121,
+              "chunk_transcribe_start_elapsed": 4.0058,
+              "chunk_decode_start_elapsed": 4.0059
+            },
+            {
+              "chunk_id": 2,
+              "audio_pos_sec": 6.0,
+              "encode_sec": 0.3324,
+              "chunk_decode_sec": 0.3319,
+              "chunk_transcribe_start_elapsed": 6.0062,
+              "chunk_decode_start_elapsed": 6.0067
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 6.94094584099912
+        },
+        {
+          "segment_id": 2,
+          "text": "where my uncle is.",
+          "translation": "내 삼촌이 있는 곳.",
+          "commit_reason": "vad",
+          "output_token_count": 4,
+          "audio_start_sec": 6.000000000000003,
+          "audio_end_sec": 5.817,
+          "seg_audio_sec": 5.817,
+          "fsl_sec": null,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.20360183200136817,
+          "trans_sec": 0.0756,
+          "chunk_encode_log": null,
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": 6.617,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 7.231480827000269
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": 6.006735294999089,
+        "avg_decode_sec": 0.3318,
+        "avg_final_decode_sec": 0.10180091600068408,
+        "avg_trans_sec": 0.29285
+      }
+    },
+    {
+      "file_id": "3005-163391-0014",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163391/3005-163391-0014.flac",
+      "reference": "BUT IT'LL BE LOVELY WISHT I WAS A GOING",
+      "hypothesis": "But it'll be lovely. Wished I was a-going.",
+      "hyp_commit": "But it'll be lovely. <seg> Wished I was a-going. <seg>",
+      "duration": 3.705,
+      "total_time": 4.813731371999893,
+      "first_token_latency": 2.4640118190000067,
+      "model_runtime": 1.1087313719998928,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "But it'll be lovely.",
+          "translation": "하지만 정말 좋을 거예요.",
+          "commit_reason": "seg",
+          "output_token_count": 4,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 1.9999999999999998,
+          "seg_audio_sec": 2.0,
+          "fsl_sec": null,
+          "encode_sec": 2.005906030000915,
+          "decode_sec": 0.3684,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0763,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3685,
+              "chunk_decode_sec": 0.3685,
+              "chunk_transcribe_start_elapsed": 2.0058,
+              "chunk_decode_start_elapsed": 2.0059
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 2.464012927999647
+        },
+        {
+          "segment_id": 2,
+          "text": "Wished I was a-going.",
+          "translation": "내가 가고 싶었어요.",
+          "commit_reason": "seg",
+          "output_token_count": 4,
+          "audio_start_sec": 1.9999999999999998,
+          "audio_end_sec": 4.105000000000001,
+          "seg_audio_sec": 4.105,
+          "fsl_sec": null,
+          "encode_sec": 4.1114804160006315,
+          "decode_sec": 0.3702,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0824,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.105,
+              "encode_sec": 0.3705,
+              "chunk_decode_sec": 0.3703,
+              "chunk_transcribe_start_elapsed": 4.1113,
+              "chunk_decode_start_elapsed": 4.1115
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.813732311000422
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": 3.0586932230007733,
+        "avg_decode_sec": 0.36929999999999996,
+        "avg_final_decode_sec": 0.0,
+        "avg_trans_sec": 0.07935
+      }
+    },
+    {
+      "file_id": "3005-163391-0015",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163391/3005-163391-0015.flac",
+      "reference": "MARY JANE'S NINETEEN SUSAN'S FIFTEEN AND JOANNA'S ABOUT FOURTEENTHAT'S THE ONE THAT GIVES HERSELF TO GOOD WORKS AND HAS A HARE LIP POOR THINGS",
+      "hypothesis": "Mary Jane's nineteen. That's the one that gives herself to good works and has a hair lip. Poor things.",
+      "hyp_commit": "Mary Jane's nineteen. <seg> That's the one that gives herself to good works and has a hair lip. <vad> Poor things. <vad>",
+      "duration": 10.77,
+      "total_time": 12.019054730999414,
+      "first_token_latency": 2.48290452800029,
+      "model_runtime": 1.2490547309994149,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "Mary Jane's nineteen.",
+          "translation": "메리 제인은 열아홉 살이에요.",
+          "commit_reason": "seg",
+          "output_token_count": 3,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 1.9999999999999998,
+          "seg_audio_sec": 2.0,
+          "fsl_sec": null,
+          "encode_sec": 2.006356317000609,
+          "decode_sec": 0.3739,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0765,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3741,
+              "chunk_decode_sec": 0.374,
+              "chunk_transcribe_start_elapsed": 2.0062,
+              "chunk_decode_start_elapsed": 2.0064
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 2.4829057210008614
+        },
+        {
+          "segment_id": 2,
+          "text": "That's the one that gives herself to good works and has a hair lip.",
+          "translation": "선한 일에 헌신하고 머리숱이 많은 사람입니다.",
+          "commit_reason": "vad",
+          "output_token_count": 14,
+          "audio_start_sec": 1.9999999999999998,
+          "audio_end_sec": 8.792,
+          "seg_audio_sec": 6.0,
+          "fsl_sec": 3.6434,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.40414091300044674,
+          "trans_sec": 0.0771,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.0,
+              "encode_sec": 0.475,
+              "chunk_decode_sec": 0.4749,
+              "chunk_transcribe_start_elapsed": 4.0066,
+              "chunk_decode_start_elapsed": 4.0067
+            },
+            {
+              "chunk_id": 2,
+              "audio_pos_sec": 6.0,
+              "encode_sec": 0.4387,
+              "chunk_decode_sec": 0.4382,
+              "chunk_transcribe_start_elapsed": 6.0061,
+              "chunk_decode_start_elapsed": 6.0066
+            },
+            {
+              "chunk_id": 3,
+              "audio_pos_sec": 8.0,
+              "encode_sec": 0.4273,
+              "chunk_decode_sec": 0.4268,
+              "chunk_transcribe_start_elapsed": 8.0079,
+              "chunk_decode_start_elapsed": 8.0085
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": 9.592,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 10.113903392999418
+        },
+        {
+          "segment_id": 3,
+          "text": "Poor things.",
+          "translation": "불쌍한 것들.",
+          "commit_reason": "vad",
+          "output_token_count": 2,
+          "audio_start_sec": 8.792,
+          "audio_end_sec": 10.665999999999999,
+          "seg_audio_sec": 10.666,
+          "fsl_sec": null,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.28049510500022734,
+          "trans_sec": 0.1314,
+          "chunk_encode_log": null,
+          "slotAudioStartSec": 9.592,
+          "vad_trigger_sec": 11.466,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 12.019055722999838
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 3,
+        "avg_fsl_sec": 3.6434,
+        "avg_encode_sec": 2.006356317000609,
+        "avg_decode_sec": 0.3739,
+        "avg_final_decode_sec": 0.2282120060002247,
+        "avg_trans_sec": 0.095
+      }
+    },
+    {
+      "file_id": "3005-163391-0016",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163391/3005-163391-0016.flac",
+      "reference": "WELL THEY COULD BE WORSE OFF",
+      "hypothesis": "Well, they could be worse off.",
+      "hyp_commit": "Well, they could be worse off. <vad>",
+      "duration": 2.54,
+      "total_time": 3.8410137459995894,
+      "first_token_latency": 3.841013502000351,
+      "model_runtime": 1.3010137459995894,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "Well, they could be worse off.",
+          "translation": "글쎄, 그들은 더 나쁠 수도 있습니다.",
+          "commit_reason": "vad",
+          "output_token_count": 6,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 2.468,
+          "seg_audio_sec": 2.468,
+          "fsl_sec": null,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.3981313019994559,
+          "trans_sec": 0.0761,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3016,
+              "chunk_decode_sec": 0.3015,
+              "chunk_transcribe_start_elapsed": 2.0088,
+              "chunk_decode_start_elapsed": 2.0089
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": 3.268,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 3.8410144959998433
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 1,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": null,
+        "avg_decode_sec": null,
+        "avg_final_decode_sec": 0.3981313019994559,
+        "avg_trans_sec": 0.0761
+      }
+    },
+    {
+      "file_id": "3005-163391-0017",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163391/3005-163391-0017.flac",
+      "reference": "OLD PETER HAD FRIENDS AND THEY AIN'T GOING TO LET THEM COME TO NO HARM",
+      "hypothesis": "Old Peter had friends, and they ain't gonna let them come to no harm.",
+      "hyp_commit": "Old Peter had friends, <seg> and they ain't gonna let them come to no harm. <vad>",
+      "duration": 4.27,
+      "total_time": 5.603243005998593,
+      "first_token_latency": 2.423769541999718,
+      "model_runtime": 1.3332430059985931,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "Old Peter had friends,",
+          "translation": "늙은 피터에게는 친구가 있었고,",
+          "commit_reason": "seg",
+          "output_token_count": 4,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 1.9999999999999998,
+          "seg_audio_sec": 2.0,
+          "fsl_sec": null,
+          "encode_sec": 2.0070804370006954,
+          "decode_sec": 0.3206,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0728,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3208,
+              "chunk_decode_sec": 0.3207,
+              "chunk_transcribe_start_elapsed": 2.007,
+              "chunk_decode_start_elapsed": 2.0071
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 2.4237715740000567
+        },
+        {
+          "segment_id": 2,
+          "text": "and they ain't gonna let them come to no harm.",
+          "translation": "그리고 그들은 그들이 해를 입지 않도록 놔두지 않을 것입니다.",
+          "commit_reason": "vad",
+          "output_token_count": 10,
+          "audio_start_sec": 1.9999999999999998,
+          "audio_end_sec": 4.198,
+          "seg_audio_sec": 4.0,
+          "fsl_sec": 1.2188,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.42328884299968195,
+          "trans_sec": 0.0734,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.0,
+              "encode_sec": 0.2941,
+              "chunk_decode_sec": 0.2939,
+              "chunk_transcribe_start_elapsed": 4.0677,
+              "chunk_decode_start_elapsed": 4.0678
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": 4.998,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 5.603244466999968
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": 1.2188,
+        "avg_encode_sec": 2.0070804370006954,
+        "avg_decode_sec": 0.3206,
+        "avg_final_decode_sec": 0.21164442149984097,
+        "avg_trans_sec": 0.0731
+      }
+    },
+    {
+      "file_id": "3005-163391-0018",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163391/3005-163391-0018.flac",
+      "reference": "BLAMED IF HE DIDN'T INQUIRE ABOUT EVERYBODY AND EVERYTHING IN THAT BLESSED TOWN AND ALL ABOUT THE WILKSES AND ABOUT PETER'S BUSINESSWHICH WAS A TANNER AND ABOUT GEORGE'SWHICH WAS A CARPENTER AND ABOUT HARVEY'SWHICH WAS A DISSENTERING MINISTER AND SO ON AND SO ON THEN HE SAYS",
+      "hypothesis": "Blamed if he didn't inquire about everybody and everything in that blessed town and all about the Wilkes's. Then he says,",
+      "hyp_commit": "Blamed if he didn't inquire about everybody and everything in that blessed town <seg> and all about the Wilkes's. <seg> Then he says, <vad>",
+      "duration": 18.105,
+      "total_time": 19.055427066999982,
+      "first_token_latency": 6.3725073610003165,
+      "model_runtime": 0.9504270669999819,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "Blamed if he didn't inquire about everybody and everything in that blessed town",
+          "translation": "그 축복받은 마을의 모든 사람과 모든 것에 대해 묻지 않았다면 비난을 받았습니다.",
+          "commit_reason": "seg",
+          "output_token_count": 13,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 6.000000000000003,
+          "seg_audio_sec": 6.0,
+          "fsl_sec": null,
+          "encode_sec": 6.011173874001543,
+          "decode_sec": 0.2626,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0696,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.374,
+              "chunk_decode_sec": 0.374,
+              "chunk_transcribe_start_elapsed": 2.0071,
+              "chunk_decode_start_elapsed": 2.0072
+            },
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.0,
+              "encode_sec": 0.4981,
+              "chunk_decode_sec": 0.4979,
+              "chunk_transcribe_start_elapsed": 4.0106,
+              "chunk_decode_start_elapsed": 4.0108
+            },
+            {
+              "chunk_id": 2,
+              "audio_pos_sec": 6.0,
+              "encode_sec": 0.2632,
+              "chunk_decode_sec": 0.2627,
+              "chunk_transcribe_start_elapsed": 6.0107,
+              "chunk_decode_start_elapsed": 6.0112
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 6.372509099999661
+        },
+        {
+          "segment_id": 2,
+          "text": "and all about the Wilkes's.",
+          "translation": "그리고 Wilkes에 관한 모든 것.",
+          "commit_reason": "seg",
+          "output_token_count": 5,
+          "audio_start_sec": 6.000000000000003,
+          "audio_end_sec": 6.000000000000003,
+          "seg_audio_sec": 6.0,
+          "fsl_sec": null,
+          "encode_sec": 6.011173874001543,
+          "decode_sec": 0.4876,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0704,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 2,
+              "audio_pos_sec": 6.0,
+              "encode_sec": 0.4882,
+              "chunk_decode_sec": 0.4877,
+              "chunk_transcribe_start_elapsed": 6.0107,
+              "chunk_decode_start_elapsed": 6.0112
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 6.598265990000073
+        },
+        {
+          "segment_id": 3,
+          "text": "Then he says,",
+          "translation": "그러자 그는 이렇게 말합니다.",
+          "commit_reason": "vad",
+          "output_token_count": 3,
+          "audio_start_sec": 6.000000000000003,
+          "audio_end_sec": 17.897,
+          "seg_audio_sec": 8.0,
+          "fsl_sec": 10.9212,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.24122343599992746,
+          "trans_sec": 0.0717,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 3,
+              "audio_pos_sec": 8.0,
+              "encode_sec": 0.0911,
+              "chunk_decode_sec": 0.0905,
+              "chunk_transcribe_start_elapsed": 8.0144,
+              "chunk_decode_start_elapsed": 8.0149
+            },
+            {
+              "chunk_id": 4,
+              "audio_pos_sec": 10.0,
+              "encode_sec": 0.4413,
+              "chunk_decode_sec": 0.4407,
+              "chunk_transcribe_start_elapsed": 10.0098,
+              "chunk_decode_start_elapsed": 10.0105
+            },
+            {
+              "chunk_id": 5,
+              "audio_pos_sec": 12.0,
+              "encode_sec": 0.5632,
+              "chunk_decode_sec": 0.5625,
+              "chunk_transcribe_start_elapsed": 12.0101,
+              "chunk_decode_start_elapsed": 12.0108
+            },
+            {
+              "chunk_id": 6,
+              "audio_pos_sec": 14.0,
+              "encode_sec": 0.4582,
+              "chunk_decode_sec": 0.4575,
+              "chunk_transcribe_start_elapsed": 14.0077,
+              "chunk_decode_start_elapsed": 14.0085
+            },
+            {
+              "chunk_id": 7,
+              "audio_pos_sec": 16.0,
+              "encode_sec": 0.3838,
+              "chunk_decode_sec": 0.3831,
+              "chunk_transcribe_start_elapsed": 16.0074,
+              "chunk_decode_start_elapsed": 16.0081
+            },
+            {
+              "chunk_id": 8,
+              "audio_pos_sec": 18.0,
+              "encode_sec": 0.4555,
+              "chunk_decode_sec": 0.4547,
+              "chunk_transcribe_start_elapsed": 18.007,
+              "chunk_decode_start_elapsed": 18.0078
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": 18.697,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 19.055428697000025
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 3,
+        "avg_fsl_sec": 10.9212,
+        "avg_encode_sec": 6.011173874001543,
+        "avg_decode_sec": 0.3751,
+        "avg_final_decode_sec": 0.08040781199997582,
+        "avg_trans_sec": 0.07056666666666667
+      }
+    },
+    {
+      "file_id": "3005-163391-0019",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163391/3005-163391-0019.flac",
+      "reference": "WHEN THEY'RE DEEP THEY WON'T STOP FOR A HAIL",
+      "hypothesis": "When they're deep, they won't stop for a hale.",
+      "hyp_commit": "When they're deep, <seg> they won't stop for a hale. <vad>",
+      "duration": 2.57,
+      "total_time": 4.033131766998849,
+      "first_token_latency": 2.4666131920002954,
+      "model_runtime": 1.4631317669988495,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "When they're deep,",
+          "translation": "그들이 깊어지면,",
+          "commit_reason": "seg",
+          "output_token_count": 3,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 1.9999999999999998,
+          "seg_audio_sec": 2.0,
+          "fsl_sec": null,
+          "encode_sec": 2.005283982000037,
+          "decode_sec": 0.3107,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.1374,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.311,
+              "chunk_decode_sec": 0.3109,
+              "chunk_transcribe_start_elapsed": 2.0052,
+              "chunk_decode_start_elapsed": 2.0053
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 2.466614249999111
+        },
+        {
+          "segment_id": 2,
+          "text": "they won't stop for a hale.",
+          "translation": "그들은 잠시도 멈추지 않을 것입니다.",
+          "commit_reason": "vad",
+          "output_token_count": 6,
+          "audio_start_sec": 1.9999999999999998,
+          "audio_end_sec": 2.466,
+          "seg_audio_sec": 2.466,
+          "fsl_sec": null,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.5217178589991818,
+          "trans_sec": 0.1218,
+          "chunk_encode_log": null,
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": 3.266,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.033133146998807
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": 2.005283982000037,
+        "avg_decode_sec": 0.3107,
+        "avg_final_decode_sec": 0.2608589294995909,
+        "avg_trans_sec": 0.1296
+      }
+    },
+    {
+      "file_id": "3005-163391-0020",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163391/3005-163391-0020.flac",
+      "reference": "WAS PETER WILKS WELL OFF",
+      "hypothesis": "Was Peter Wilkes well off?",
+      "hyp_commit": "Was Peter Wilkes well off? <vad>",
+      "duration": 2.425,
+      "total_time": 3.5645142670000496,
+      "first_token_latency": 3.5645140710003034,
+      "model_runtime": 1.1395142670000498,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "Was Peter Wilkes well off?",
+          "translation": "피터 윌크스는 잘 살았나요?",
+          "commit_reason": "vad",
+          "output_token_count": 5,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 2.2169999999999996,
+          "seg_audio_sec": 2.217,
+          "fsl_sec": null,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.4264393129997188,
+          "trans_sec": 0.0937,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.2751,
+              "chunk_decode_sec": 0.275,
+              "chunk_transcribe_start_elapsed": 2.0051,
+              "chunk_decode_start_elapsed": 2.0052
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": 3.017,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 3.5645150740001554
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 1,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": null,
+        "avg_decode_sec": null,
+        "avg_final_decode_sec": 0.4264393129997188,
+        "avg_trans_sec": 0.0937
+      }
+    },
+    {
+      "file_id": "3005-163391-0021",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163391/3005-163391-0021.flac",
+      "reference": "WHEN WE STRUCK THE BOAT SHE WAS ABOUT DONE LOADING AND PRETTY SOON SHE GOT OFF",
+      "hypothesis": "When we struck the boat, she was about done loading, and pretty soon she got off.",
+      "hyp_commit": "When we struck the boat, <seg> she was about done loading, <seg> and pretty soon she got off. <vad>",
+      "duration": 5.15,
+      "total_time": 6.269018402999791,
+      "first_token_latency": 2.4746226600000227,
+      "model_runtime": 1.1190184029997905,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "When we struck the boat,",
+          "translation": "우리가 배를 쳤을 때,",
+          "commit_reason": "seg",
+          "output_token_count": 5,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 1.9999999999999998,
+          "seg_audio_sec": 2.0,
+          "fsl_sec": null,
+          "encode_sec": 2.006621640999583,
+          "decode_sec": 0.3786,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0738,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3788,
+              "chunk_decode_sec": 0.3787,
+              "chunk_transcribe_start_elapsed": 2.0065,
+              "chunk_decode_start_elapsed": 2.0066
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 2.4746235539987538
+        },
+        {
+          "segment_id": 2,
+          "text": "she was about done loading,",
+          "translation": "그녀는 로딩을 거의 마쳤고,",
+          "commit_reason": "seg",
+          "output_token_count": 5,
+          "audio_start_sec": 1.9999999999999998,
+          "audio_end_sec": 4.000000000000001,
+          "seg_audio_sec": 4.0,
+          "fsl_sec": null,
+          "encode_sec": 4.005289545999403,
+          "decode_sec": 0.3682,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0755,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.0,
+              "encode_sec": 0.3685,
+              "chunk_decode_sec": 0.3684,
+              "chunk_transcribe_start_elapsed": 4.0052,
+              "chunk_decode_start_elapsed": 4.0053
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.662644808999175
+        },
+        {
+          "segment_id": 3,
+          "text": "and pretty soon she got off.",
+          "translation": "그리고 곧 그녀는 내렸다.",
+          "commit_reason": "vad",
+          "output_token_count": 6,
+          "audio_start_sec": 4.000000000000001,
+          "audio_end_sec": 4.942,
+          "seg_audio_sec": 4.942,
+          "fsl_sec": null,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.4265137420006795,
+          "trans_sec": 0.0699,
+          "chunk_encode_log": null,
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": 5.742,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 6.269019304998437
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 3,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": 3.0059555934994933,
+        "avg_decode_sec": 0.3734,
+        "avg_final_decode_sec": 0.14217124733355982,
+        "avg_trans_sec": 0.07306666666666667
+      }
+    },
+    {
+      "file_id": "3005-163391-0022",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163391/3005-163391-0022.flac",
+      "reference": "NOW HUSTLE BACK RIGHT OFF AND FETCH THE DUKE UP HERE AND THE NEW CARPET BAGS",
+      "hypothesis": "Now, hustle back right off and fetch the Duke up here. and the new carpet bags.",
+      "hyp_commit": "Now, hustle back right off <seg> and fetch the Duke up here. <seg> and the new carpet bags. <seg>",
+      "duration": 5.775,
+      "total_time": 6.678677672998674,
+      "first_token_latency": 4.470070963998296,
+      "model_runtime": 0.9036776729986737,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "Now, hustle back right off",
+          "translation": "이제 다시 서둘러 돌아가자",
+          "commit_reason": "seg",
+          "output_token_count": 5,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 4.000000000000001,
+          "seg_audio_sec": 4.0,
+          "fsl_sec": null,
+          "encode_sec": 4.0066649000000325,
+          "decode_sec": 0.3565,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0775,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.319,
+              "chunk_decode_sec": 0.319,
+              "chunk_transcribe_start_elapsed": 2.0053,
+              "chunk_decode_start_elapsed": 2.0054
+            },
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.0,
+              "encode_sec": 0.3568,
+              "chunk_decode_sec": 0.3566,
+              "chunk_transcribe_start_elapsed": 4.0065,
+              "chunk_decode_start_elapsed": 4.0067
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.470071907999227
+        },
+        {
+          "segment_id": 2,
+          "text": "and fetch the Duke up here.",
+          "translation": "그리고 공작을 여기로 데려오세요.",
+          "commit_reason": "seg",
+          "output_token_count": 6,
+          "audio_start_sec": 4.000000000000001,
+          "audio_end_sec": 4.000000000000001,
+          "seg_audio_sec": 4.0,
+          "fsl_sec": null,
+          "encode_sec": 4.0066649000000325,
+          "decode_sec": 0.5999,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0759,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.0,
+              "encode_sec": 0.6002,
+              "chunk_decode_sec": 0.6,
+              "chunk_transcribe_start_elapsed": 4.0065,
+              "chunk_decode_start_elapsed": 4.0067
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.711867550999159
+        },
+        {
+          "segment_id": 3,
+          "text": "and the new carpet bags.",
+          "translation": "그리고 새 카펫 가방.",
+          "commit_reason": "seg",
+          "output_token_count": 5,
+          "audio_start_sec": 4.000000000000001,
+          "audio_end_sec": 6.1750000000000025,
+          "seg_audio_sec": 6.175,
+          "fsl_sec": null,
+          "encode_sec": 6.18164387700017,
+          "decode_sec": 0.0942,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.077,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 2,
+              "audio_pos_sec": 6.175,
+              "encode_sec": 0.0947,
+              "chunk_decode_sec": 0.0943,
+              "chunk_transcribe_start_elapsed": 6.1813,
+              "chunk_decode_start_elapsed": 6.1816
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 6.6786789529996895
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 3,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": 4.731657892333412,
+        "avg_decode_sec": 0.3502,
+        "avg_final_decode_sec": 0.0,
+        "avg_trans_sec": 0.0768
+      }
+    },
+    {
+      "file_id": "3005-163391-0023",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163391/3005-163391-0023.flac",
+      "reference": "SO THEN THEY WAITED FOR A STEAMBOAT",
+      "hypothesis": "So then they waited for a steamboat.",
+      "hyp_commit": "So then they waited for a steamboat. <vad>",
+      "duration": 2.61,
+      "total_time": 3.774760039001194,
+      "first_token_latency": 3.774759871999777,
+      "model_runtime": 1.164760039001194,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "So then they waited for a steamboat.",
+          "translation": "그래서 그들은 증기선을 기다렸습니다.",
+          "commit_reason": "vad",
+          "output_token_count": 7,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 2.37,
+          "seg_audio_sec": 2.37,
+          "fsl_sec": null,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.42296292900027765,
+          "trans_sec": 0.0798,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3625,
+              "chunk_decode_sec": 0.3624,
+              "chunk_transcribe_start_elapsed": 2.0048,
+              "chunk_decode_start_elapsed": 2.0049
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": 3.17,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 3.7747608200006653
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 1,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": null,
+        "avg_decode_sec": null,
+        "avg_final_decode_sec": 0.42296292900027765,
+        "avg_trans_sec": 0.0798
+      }
+    },
+    {
+      "file_id": "3005-163391-0024",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163391/3005-163391-0024.flac",
+      "reference": "BUT THE KING WAS CA'M HE SAYS",
+      "hypothesis": "But the king was calm. He says,",
+      "hyp_commit": "But the king was calm. <seg> He says, <vad>",
+      "duration": 2.715,
+      "total_time": 3.902042714000345,
+      "first_token_latency": 2.444852749000347,
+      "model_runtime": 1.187042714000345,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "But the king was calm.",
+          "translation": "그러나 왕은 침착했습니다.",
+          "commit_reason": "seg",
+          "output_token_count": 5,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 1.9999999999999998,
+          "seg_audio_sec": 2.0,
+          "fsl_sec": null,
+          "encode_sec": 2.0140013439995528,
+          "decode_sec": 0.3353,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0785,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3355,
+              "chunk_decode_sec": 0.3354,
+              "chunk_transcribe_start_elapsed": 2.0139,
+              "chunk_decode_start_elapsed": 2.014
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 2.4448544059996493
+        },
+        {
+          "segment_id": 2,
+          "text": "He says,",
+          "translation": "그는 말한다,",
+          "commit_reason": "vad",
+          "output_token_count": 2,
+          "audio_start_sec": 1.9999999999999998,
+          "audio_end_sec": 2.5069999999999997,
+          "seg_audio_sec": 2.507,
+          "fsl_sec": null,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.3666662279993034,
+          "trans_sec": 0.1107,
+          "chunk_encode_log": null,
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": 3.307,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 3.9020436869996047
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": 2.0140013439995528,
+        "avg_decode_sec": 0.3353,
+        "avg_final_decode_sec": 0.1833331139996517,
+        "avg_trans_sec": 0.0946
+      }
+    },
+    {
+      "file_id": "3005-163391-0025",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163391/3005-163391-0025.flac",
+      "reference": "THEY GIVE A GLANCE AT ONE ANOTHER AND NODDED THEIR HEADS AS MUCH AS TO SAY WHAT D I TELL YOU",
+      "hypothesis": "They gave a glance at one another and nodded their heads as much as to say, 'Would that tell you?'.",
+      "hyp_commit": "They gave a glance at one another <seg> and nodded their heads as much as to say, 'Would that tell you?'. <seg>",
+      "duration": 5.97,
+      "total_time": 6.798939637999865,
+      "first_token_latency": 4.4590022419997695,
+      "model_runtime": 0.8289396379998655,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "They gave a glance at one another",
+          "translation": "그들은 서로를 힐끗 쳐다보았다.",
+          "commit_reason": "seg",
+          "output_token_count": 7,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 4.000000000000001,
+          "seg_audio_sec": 4.0,
+          "fsl_sec": null,
+          "encode_sec": 4.004685063000579,
+          "decode_sec": 0.362,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0825,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3965,
+              "chunk_decode_sec": 0.3964,
+              "chunk_transcribe_start_elapsed": 2.0054,
+              "chunk_decode_start_elapsed": 2.0055
+            },
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.0,
+              "encode_sec": 0.3623,
+              "chunk_decode_sec": 0.3622,
+              "chunk_transcribe_start_elapsed": 4.0045,
+              "chunk_decode_start_elapsed": 4.0047
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.459003265999854
+        },
+        {
+          "segment_id": 2,
+          "text": "and nodded their heads as much as to say, 'Would that tell you?'.",
+          "translation": "'그게 말해줄까?'라며 고개를 끄덕였다.",
+          "commit_reason": "seg",
+          "output_token_count": 13,
+          "audio_start_sec": 4.000000000000001,
+          "audio_end_sec": 6.170000000000003,
+          "seg_audio_sec": 6.17,
+          "fsl_sec": null,
+          "encode_sec": 6.178596522000589,
+          "decode_sec": 0.1167,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.1002,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 2,
+              "audio_pos_sec": 6.17,
+              "encode_sec": 0.1173,
+              "chunk_decode_sec": 0.1168,
+              "chunk_transcribe_start_elapsed": 6.1781,
+              "chunk_decode_start_elapsed": 6.1786
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 6.798941129998639
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": 5.091640792500584,
+        "avg_decode_sec": 0.23935,
+        "avg_final_decode_sec": 0.0,
+        "avg_trans_sec": 0.09135
+      }
+    },
+    {
+      "file_id": "3005-163391-0026",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163391/3005-163391-0026.flac",
+      "reference": "THEN ONE OF THEM SAYS KIND OF SOFT AND GENTLE",
+      "hypothesis": "Then one of them says, kind of soft and gentle,",
+      "hyp_commit": "Then one of them says, kind of soft and gentle, <vad>",
+      "duration": 3.48,
+      "total_time": 4.824614962000851,
+      "first_token_latency": 4.8246147419995395,
+      "model_runtime": 1.344614962000851,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "Then one of them says, kind of soft and gentle,",
+          "translation": "그러자 그 중 한 사람이 부드럽고 온화한 말을 했습니다.",
+          "commit_reason": "vad",
+          "output_token_count": 10,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 3.112,
+          "seg_audio_sec": 3.112,
+          "fsl_sec": null,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.5065508289990248,
+          "trans_sec": 0.1466,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3683,
+              "chunk_decode_sec": 0.3682,
+              "chunk_transcribe_start_elapsed": 2.005,
+              "chunk_decode_start_elapsed": 2.0051
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": 3.912,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.8246156700006395
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 1,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": null,
+        "avg_decode_sec": null,
+        "avg_final_decode_sec": 0.5065508289990248,
+        "avg_trans_sec": 0.1466
+      }
+    },
+    {
+      "file_id": "3005-163399-0000",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163399/3005-163399-0000.flac",
+      "reference": "PHELPS WAS ONE OF THESE LITTLE ONE HORSE COTTON PLANTATIONS AND THEY ALL LOOK ALIKE",
+      "hypothesis": "Phelps's was one of these little one-horse cotton plantations, and they all look alike.",
+      "hyp_commit": "Phelps's was one of these little one-horse cotton plantations, <seg> and they all look alike. <seg>",
+      "duration": 6.135,
+      "total_time": 6.603066594998381,
+      "first_token_latency": 6.357577106999088,
+      "model_runtime": 0.46806659499838155,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "Phelps's was one of these little one-horse cotton plantations,",
+          "translation": "펠프스 농장은 작은 한 마리 목화 농장 중 하나였습니다.",
+          "commit_reason": "seg",
+          "output_token_count": 9,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 6.000000000000003,
+          "seg_audio_sec": 6.0,
+          "fsl_sec": null,
+          "encode_sec": 6.006120771999122,
+          "decode_sec": 0.2626,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0718,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3942,
+              "chunk_decode_sec": 0.3941,
+              "chunk_transcribe_start_elapsed": 2.0056,
+              "chunk_decode_start_elapsed": 2.0057
+            },
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.0,
+              "encode_sec": 0.5063,
+              "chunk_decode_sec": 0.5062,
+              "chunk_transcribe_start_elapsed": 4.0052,
+              "chunk_decode_start_elapsed": 4.0053
+            },
+            {
+              "chunk_id": 2,
+              "audio_pos_sec": 6.0,
+              "encode_sec": 0.2633,
+              "chunk_decode_sec": 0.2627,
+              "chunk_transcribe_start_elapsed": 6.0056,
+              "chunk_decode_start_elapsed": 6.0061
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 6.35757819599894
+        },
+        {
+          "segment_id": 2,
+          "text": "and they all look alike.",
+          "translation": "그리고 그들은 모두 비슷해 보입니다.",
+          "commit_reason": "seg",
+          "output_token_count": 5,
+          "audio_start_sec": 6.000000000000003,
+          "audio_end_sec": 6.000000000000003,
+          "seg_audio_sec": 6.0,
+          "fsl_sec": null,
+          "encode_sec": 6.006120771999122,
+          "decode_sec": 0.4778,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.1021,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 2,
+              "audio_pos_sec": 6.0,
+              "encode_sec": 0.4784,
+              "chunk_decode_sec": 0.4779,
+              "chunk_transcribe_start_elapsed": 6.0056,
+              "chunk_decode_start_elapsed": 6.0061
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 6.603067909998572
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": 6.006120771999122,
+        "avg_decode_sec": 0.3702,
+        "avg_final_decode_sec": 0.0,
+        "avg_trans_sec": 0.08695
+      }
+    },
+    {
+      "file_id": "3005-163399-0001",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163399/3005-163399-0001.flac",
+      "reference": "I WENT AROUND AND CLUMB OVER THE BACK STILE BY THE ASH HOPPER AND STARTED FOR THE KITCHEN",
+      "hypothesis": "I went around and climbed over the back stile by the ash hopper, and started for the kitchen.",
+      "hyp_commit": "I went around <seg> and climbed over the back stile by the ash hopper, <seg> and started for the kitchen. <seg>",
+      "duration": 5.775,
+      "total_time": 6.84163795799941,
+      "first_token_latency": 2.5497400690001086,
+      "model_runtime": 1.0666379579994096,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "I went around",
+          "translation": "나는 돌아다녔다",
+          "commit_reason": "seg",
+          "output_token_count": 3,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 1.9999999999999998,
+          "seg_audio_sec": 2.0,
+          "fsl_sec": null,
+          "encode_sec": 2.006449757000155,
+          "decode_sec": 0.2939,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.1303,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.2941,
+              "chunk_decode_sec": 0.294,
+              "chunk_transcribe_start_elapsed": 2.0064,
+              "chunk_decode_start_elapsed": 2.0064
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 2.549741622999136
+        },
+        {
+          "segment_id": 2,
+          "text": "and climbed over the back stile by the ash hopper,",
+          "translation": "그리고 재 호퍼 옆 뒷문 위로 올라갔습니다.",
+          "commit_reason": "seg",
+          "output_token_count": 10,
+          "audio_start_sec": 1.9999999999999998,
+          "audio_end_sec": 4.200000000000001,
+          "seg_audio_sec": 4.0,
+          "fsl_sec": null,
+          "encode_sec": 4.005441240999062,
+          "decode_sec": 0.271,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0895,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.0,
+              "encode_sec": 0.2712,
+              "chunk_decode_sec": 0.2711,
+              "chunk_transcribe_start_elapsed": 4.0053,
+              "chunk_decode_start_elapsed": 4.0054
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 6.63574661200073
+        },
+        {
+          "segment_id": 3,
+          "text": "and started for the kitchen.",
+          "translation": "그리고 부엌으로 향했습니다.",
+          "commit_reason": "seg",
+          "output_token_count": 5,
+          "audio_start_sec": 4.200000000000001,
+          "audio_end_sec": 6.1750000000000025,
+          "seg_audio_sec": 6.175,
+          "fsl_sec": null,
+          "encode_sec": 6.181786377999742,
+          "decode_sec": 0.4621,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0792,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 2,
+              "audio_pos_sec": 6.175,
+              "encode_sec": 0.4627,
+              "chunk_decode_sec": 0.4622,
+              "chunk_transcribe_start_elapsed": 6.1812,
+              "chunk_decode_start_elapsed": 6.1818
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 6.841639389000193
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 3,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": 4.064559125332987,
+        "avg_decode_sec": 0.3423333333333333,
+        "avg_final_decode_sec": 0.0,
+        "avg_trans_sec": 0.09966666666666667
+      }
+    },
+    {
+      "file_id": "3005-163399-0002",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163399/3005-163399-0002.flac",
+      "reference": "I OUT WITH A YES'M BEFORE I THOUGHT",
+      "hypothesis": "Ah, out with a yesum fore I thought.",
+      "hyp_commit": "Ah, out with a yesum fore I thought. <vad>",
+      "duration": 3.475,
+      "total_time": 4.74149328799831,
+      "first_token_latency": 4.741493098999854,
+      "model_runtime": 1.2664932879983097,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "Ah, out with a yesum fore I thought.",
+          "translation": "아, 내 생각에는 예섬이 나왔다.",
+          "commit_reason": "vad",
+          "output_token_count": 8,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 3.1390000000000002,
+          "seg_audio_sec": 3.139,
+          "fsl_sec": null,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.46089011000003666,
+          "trans_sec": 0.1322,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3158,
+              "chunk_decode_sec": 0.3157,
+              "chunk_transcribe_start_elapsed": 2.0052,
+              "chunk_decode_start_elapsed": 2.0053
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": 3.939,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.741494253999917
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 1,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": null,
+        "avg_decode_sec": null,
+        "avg_final_decode_sec": 0.46089011000003666,
+        "avg_trans_sec": 0.1322
+      }
+    },
+    {
+      "file_id": "3005-163399-0003",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163399/3005-163399-0003.flac",
+      "reference": "SO THEN SHE STARTED FOR THE HOUSE LEADING ME BY THE HAND AND THE CHILDREN TAGGING AFTER",
+      "hypothesis": "So then she started for the house, leading me by the hand , and the children tagging after.",
+      "hyp_commit": "So then she started for the house, leading me by the hand <seg> , and the children tagging after. <vad>",
+      "duration": 5.405,
+      "total_time": 6.79834339899935,
+      "first_token_latency": 4.627894603998357,
+      "model_runtime": 1.3933433989993498,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "So then she started for the house, leading me by the hand",
+          "translation": "그러자 그녀는 내 손을 잡고 집으로 향하기 시작했습니다.",
+          "commit_reason": "seg",
+          "output_token_count": 12,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 4.000000000000001,
+          "seg_audio_sec": 4.0,
+          "fsl_sec": null,
+          "encode_sec": 4.005959526000879,
+          "decode_sec": 0.5245,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0827,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3262,
+              "chunk_decode_sec": 0.3261,
+              "chunk_transcribe_start_elapsed": 2.0756,
+              "chunk_decode_start_elapsed": 2.0757
+            },
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.0,
+              "encode_sec": 0.5247,
+              "chunk_decode_sec": 0.5245,
+              "chunk_transcribe_start_elapsed": 4.0058,
+              "chunk_decode_start_elapsed": 4.006
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.6278954969984625
+        },
+        {
+          "segment_id": 2,
+          "text": ", and the children tagging after.",
+          "translation": ", 그리고 그 뒤에 태그를 달고 있는 아이들.",
+          "commit_reason": "vad",
+          "output_token_count": 6,
+          "audio_start_sec": 4.000000000000001,
+          "audio_end_sec": 5.301,
+          "seg_audio_sec": 6.005,
+          "fsl_sec": 0.6501,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.23201377199984563,
+          "trans_sec": 0.076,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 2,
+              "audio_pos_sec": 6.005,
+              "encode_sec": 0.1232,
+              "chunk_decode_sec": 0.1227,
+              "chunk_transcribe_start_elapsed": 6.0107,
+              "chunk_decode_start_elapsed": 6.0112
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": 6.101,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 6.7983444099991175
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": 0.6501,
+        "avg_encode_sec": 4.005959526000879,
+        "avg_decode_sec": 0.5245,
+        "avg_final_decode_sec": 0.11600688599992282,
+        "avg_trans_sec": 0.07935
+      }
+    },
+    {
+      "file_id": "3005-163399-0004",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163399/3005-163399-0004.flac",
+      "reference": "WHEN WE GOT THERE SHE SET ME DOWN IN A SPLIT BOTTOMED CHAIR AND SET HERSELF DOWN ON A LITTLE LOW STOOL IN FRONT OF ME HOLDING BOTH OF MY HANDS AND SAYS",
+      "hypothesis": "When we got there, she set me down in a split-bottom chair and set herself down on a little low stool in front of me, holding both of my hands and says,",
+      "hyp_commit": "When we got there, <seg> she set me down in a split-bottom chair <seg> and set herself down on a little low stool in front of me, holding both of my hands and says, <vad>",
+      "duration": 9.4,
+      "total_time": 10.697906793000584,
+      "first_token_latency": 2.4356218000011722,
+      "model_runtime": 1.2979067930005836,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "When we got there,",
+          "translation": "우리가 거기 도착했을 때,",
+          "commit_reason": "seg",
+          "output_token_count": 4,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 1.9999999999999998,
+          "seg_audio_sec": 2.0,
+          "fsl_sec": null,
+          "encode_sec": 2.0072875949990703,
+          "decode_sec": 0.3365,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0747,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3367,
+              "chunk_decode_sec": 0.3366,
+              "chunk_transcribe_start_elapsed": 2.0072,
+              "chunk_decode_start_elapsed": 2.0073
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 2.4356227410007705
+        },
+        {
+          "segment_id": 2,
+          "text": "she set me down in a split-bottom chair",
+          "translation": "그녀는 나를 바닥이 갈라진 의자에 앉혔어요",
+          "commit_reason": "seg",
+          "output_token_count": 8,
+          "audio_start_sec": 1.9999999999999998,
+          "audio_end_sec": 4.000000000000001,
+          "seg_audio_sec": 4.0,
+          "fsl_sec": null,
+          "encode_sec": 4.007474685999114,
+          "decode_sec": 0.3474,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0741,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.0,
+              "encode_sec": 0.3476,
+              "chunk_decode_sec": 0.3475,
+              "chunk_transcribe_start_elapsed": 4.0073,
+              "chunk_decode_start_elapsed": 4.0075
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.715866713000651
+        },
+        {
+          "segment_id": 3,
+          "text": "and set herself down on a little low stool in front of me, holding both of my hands and says,",
+          "translation": "그리고는 내 앞에 있는 작은 의자에 앉아 내 두 손을 잡고 이렇게 말했습니다.",
+          "commit_reason": "vad",
+          "output_token_count": 20,
+          "audio_start_sec": 4.000000000000001,
+          "audio_end_sec": 9.392,
+          "seg_audio_sec": 6.0,
+          "fsl_sec": 4.5729,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.2583023509996565,
+          "trans_sec": 0.0753,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 2,
+              "audio_pos_sec": 6.0,
+              "encode_sec": 0.1006,
+              "chunk_decode_sec": 0.1,
+              "chunk_transcribe_start_elapsed": 6.0076,
+              "chunk_decode_start_elapsed": 6.0081
+            },
+            {
+              "chunk_id": 3,
+              "audio_pos_sec": 8.0,
+              "encode_sec": 0.4235,
+              "chunk_decode_sec": 0.423,
+              "chunk_transcribe_start_elapsed": 8.0058,
+              "chunk_decode_start_elapsed": 8.0063
+            },
+            {
+              "chunk_id": 4,
+              "audio_pos_sec": 10.0,
+              "encode_sec": 0.3361,
+              "chunk_decode_sec": 0.3355,
+              "chunk_transcribe_start_elapsed": 10.007,
+              "chunk_decode_start_elapsed": 10.0076
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": 10.192,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 10.697907691001092
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 3,
+        "avg_fsl_sec": 4.5729,
+        "avg_encode_sec": 3.007381140499092,
+        "avg_decode_sec": 0.34195,
+        "avg_final_decode_sec": 0.08610078366655216,
+        "avg_trans_sec": 0.0747
+      }
+    },
+    {
+      "file_id": "3005-163399-0005",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163399/3005-163399-0005.flac",
+      "reference": "WELL IT'S LUCKY BECAUSE SOMETIMES PEOPLE DO GET HURT",
+      "hypothesis": "Well, it's lucky, because sometimes people do get hurt.",
+      "hyp_commit": "Well, it's lucky, <seg> because sometimes people do get hurt. <vad>",
+      "duration": 3.945,
+      "total_time": 5.340462030000708,
+      "first_token_latency": 2.4611587150011474,
+      "model_runtime": 1.3954620300007083,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "Well, it's lucky,",
+          "translation": "뭐, 다행이군요.",
+          "commit_reason": "seg",
+          "output_token_count": 3,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 1.9999999999999998,
+          "seg_audio_sec": 2.0,
+          "fsl_sec": null,
+          "encode_sec": 2.0050055280007655,
+          "decode_sec": 0.3597,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0757,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3599,
+              "chunk_decode_sec": 0.3599,
+              "chunk_transcribe_start_elapsed": 2.0049,
+              "chunk_decode_start_elapsed": 2.005
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 2.461160152000957
+        },
+        {
+          "segment_id": 2,
+          "text": "because sometimes people do get hurt.",
+          "translation": "왜냐하면 때로는 사람들이 상처를 받기도 하기 때문입니다.",
+          "commit_reason": "vad",
+          "output_token_count": 6,
+          "audio_start_sec": 1.9999999999999998,
+          "audio_end_sec": 3.809,
+          "seg_audio_sec": 4.145,
+          "fsl_sec": 0.5672,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.2070163689986657,
+          "trans_sec": 0.1453,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.145,
+              "encode_sec": 0.6019,
+              "chunk_decode_sec": 0.6018,
+              "chunk_transcribe_start_elapsed": 4.151,
+              "chunk_decode_start_elapsed": 4.1512
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": 4.609,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 5.340463436999926
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": 0.5672,
+        "avg_encode_sec": 2.0050055280007655,
+        "avg_decode_sec": 0.3597,
+        "avg_final_decode_sec": 0.10350818449933286,
+        "avg_trans_sec": 0.11050000000000001
+      }
+    },
+    {
+      "file_id": "3005-163399-0006",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163399/3005-163399-0006.flac",
+      "reference": "AND I THINK HE DIED AFTERWARDS HE WAS A BAPTIST",
+      "hypothesis": "And I think he died afterwards. He was a Baptist.",
+      "hyp_commit": "And I think he died afterwards. <seg> He was a Baptist. <seg>",
+      "duration": 3.52,
+      "total_time": 4.92578678999962,
+      "first_token_latency": 4.745743613000741,
+      "model_runtime": 1.40578678999962,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "And I think he died afterwards.",
+          "translation": "그리고 그 사람은 나중에 죽은 것 같아요.",
+          "commit_reason": "seg",
+          "output_token_count": 6,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 2.1999999999999997,
+          "seg_audio_sec": 4.12,
+          "fsl_sec": null,
+          "encode_sec": 4.125672525000482,
+          "decode_sec": 0.4379,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0759,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.5051,
+              "chunk_decode_sec": 0.505,
+              "chunk_transcribe_start_elapsed": 2.0062,
+              "chunk_decode_start_elapsed": 2.0063
+            },
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.12,
+              "encode_sec": 0.4382,
+              "chunk_decode_sec": 0.4381,
+              "chunk_transcribe_start_elapsed": 4.1255,
+              "chunk_decode_start_elapsed": 4.1257
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.7457449339999584
+        },
+        {
+          "segment_id": 2,
+          "text": "He was a Baptist.",
+          "translation": "그는 침례교인이었습니다.",
+          "commit_reason": "seg",
+          "output_token_count": 4,
+          "audio_start_sec": 2.1999999999999997,
+          "audio_end_sec": 4.120000000000001,
+          "seg_audio_sec": 4.12,
+          "fsl_sec": null,
+          "encode_sec": 4.125672525000482,
+          "decode_sec": 0.6098,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0841,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.12,
+              "encode_sec": 0.6101,
+              "chunk_decode_sec": 0.61,
+              "chunk_transcribe_start_elapsed": 4.1255,
+              "chunk_decode_start_elapsed": 4.1257
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.925788205000572
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": 4.125672525000482,
+        "avg_decode_sec": 0.52385,
+        "avg_final_decode_sec": 0.0,
+        "avg_trans_sec": 0.07999999999999999
+      }
+    },
+    {
+      "file_id": "3005-163399-0007",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163399/3005-163399-0007.flac",
+      "reference": "YES IT WAS MORTIFICATIONTHAT WAS IT",
+      "hypothesis": "Yes, it was mortification. That was it.",
+      "hyp_commit": "Yes, it was mortification. <vad> That was it. <vad>",
+      "duration": 3.11,
+      "total_time": 4.585070563000045,
+      "first_token_latency": 4.584911153999201,
+      "model_runtime": 1.475070563000045,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "Yes, it was mortification.",
+          "translation": "그렇다, 그것은 굴욕이었다.",
+          "commit_reason": "vad",
+          "output_token_count": 4,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 2.974,
+          "seg_audio_sec": 2.974,
+          "fsl_sec": null,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.5106147980004607,
+          "trans_sec": 0.077,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3205,
+              "chunk_decode_sec": 0.3204,
+              "chunk_transcribe_start_elapsed": 2.0048,
+              "chunk_decode_start_elapsed": 2.0049
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": 3.774,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.5849121139999625
+        },
+        {
+          "segment_id": 2,
+          "text": "That was it.",
+          "translation": "그게 다야.",
+          "commit_reason": "vad",
+          "output_token_count": 3,
+          "audio_start_sec": 2.974,
+          "audio_end_sec": 3.910000000000001,
+          "seg_audio_sec": null,
+          "fsl_sec": 0.0706,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0706,
+          "chunk_encode_log": null,
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.585071134999453
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": 0.0706,
+        "avg_encode_sec": null,
+        "avg_decode_sec": null,
+        "avg_final_decode_sec": 0.25530739900023036,
+        "avg_trans_sec": 0.0738
+      }
+    },
+    {
+      "file_id": "3005-163399-0008",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163399/3005-163399-0008.flac",
+      "reference": "YOUR UNCLE'S BEEN UP TO THE TOWN EVERY DAY TO FETCH YOU",
+      "hypothesis": "Your uncle's been up to the town every day to fetch you.",
+      "hyp_commit": "Your uncle's been up to the town every day to fetch you. <vad>",
+      "duration": 3.02,
+      "total_time": 4.6646112920007,
+      "first_token_latency": 4.664611080999748,
+      "model_runtime": 1.6446112920006999,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "Your uncle's been up to the town every day to fetch you.",
+          "translation": "당신의 삼촌은 당신을 데리러 매일 마을에 왔습니다.",
+          "commit_reason": "vad",
+          "output_token_count": 12,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 3.0839999999999996,
+          "seg_audio_sec": 3.084,
+          "fsl_sec": null,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.5492668570004753,
+          "trans_sec": 0.0807,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.4,
+              "chunk_decode_sec": 0.3999,
+              "chunk_transcribe_start_elapsed": 2.0065,
+              "chunk_decode_start_elapsed": 2.0066
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": 3.884,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.664612153001144
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 1,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": null,
+        "avg_decode_sec": null,
+        "avg_final_decode_sec": 0.5492668570004753,
+        "avg_trans_sec": 0.0807
+      }
+    },
+    {
+      "file_id": "3005-163399-0009",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163399/3005-163399-0009.flac",
+      "reference": "YOU MUST A MET HIM ON THE ROAD DIDN'T YOU OLDISH MAN WITH A",
+      "hypothesis": "You must have met him on the road, didn't you? Oldish man with a...",
+      "hyp_commit": "You must have met him on the road, didn't you? <seg> Oldish man with a... <vad>",
+      "duration": 4.33,
+      "total_time": 5.294435451998652,
+      "first_token_latency": 2.7124867099992116,
+      "model_runtime": 0.9644354519986518,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "You must have met him on the road, didn't you?",
+          "translation": "길에서 그 사람을 만났나 봐요, 그렇죠?",
+          "commit_reason": "seg",
+          "output_token_count": 10,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 1.9999999999999998,
+          "seg_audio_sec": 2.0,
+          "fsl_sec": null,
+          "encode_sec": 2.0050779700013663,
+          "decode_sec": 0.5503,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.1373,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.5505,
+              "chunk_decode_sec": 0.5504,
+              "chunk_transcribe_start_elapsed": 2.005,
+              "chunk_decode_start_elapsed": 2.0051
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 2.7124876620000578
+        },
+        {
+          "segment_id": 2,
+          "text": "Oldish man with a...",
+          "translation": "늙은이를 가진 남자...",
+          "commit_reason": "vad",
+          "output_token_count": 4,
+          "audio_start_sec": 1.9999999999999998,
+          "audio_end_sec": 3.9939999999999998,
+          "seg_audio_sec": 4.0,
+          "fsl_sec": 0.6439,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.25937972199972137,
+          "trans_sec": 0.0748,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.0,
+              "encode_sec": 0.6246,
+              "chunk_decode_sec": 0.6245,
+              "chunk_transcribe_start_elapsed": 4.0065,
+              "chunk_decode_start_elapsed": 4.0066
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": 4.794,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 5.294436559999667
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": 0.6439,
+        "avg_encode_sec": 2.0050779700013663,
+        "avg_decode_sec": 0.5503,
+        "avg_final_decode_sec": 0.12968986099986068,
+        "avg_trans_sec": 0.10605
+      }
+    },
+    {
+      "file_id": "3005-163399-0010",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163399/3005-163399-0010.flac",
+      "reference": "WHY CHILD IT LL BE STOLE",
+      "hypothesis": "Watch out! It'll be stole.",
+      "hyp_commit": "Watch out! <seg> It'll be stole. <vad>",
+      "duration": 2.23,
+      "total_time": 3.521921261000898,
+      "first_token_latency": 2.4226788970008784,
+      "model_runtime": 1.291921261000898,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "Watch out!",
+          "translation": "조심하세요!",
+          "commit_reason": "seg",
+          "output_token_count": 2,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 1.9999999999999998,
+          "seg_audio_sec": 2.0,
+          "fsl_sec": null,
+          "encode_sec": 2.0051423020013317,
+          "decode_sec": 0.2569,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.1403,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.2571,
+              "chunk_decode_sec": 0.257,
+              "chunk_transcribe_start_elapsed": 2.0051,
+              "chunk_decode_start_elapsed": 2.0051
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 2.4226799460011534
+        },
+        {
+          "segment_id": 2,
+          "text": "It'll be stole.",
+          "translation": "훔쳐갈 거예요.",
+          "commit_reason": "vad",
+          "output_token_count": 3,
+          "audio_start_sec": 1.9999999999999998,
+          "audio_end_sec": 2.1580000000000004,
+          "seg_audio_sec": 2.158,
+          "fsl_sec": null,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.3882016970001132,
+          "trans_sec": 0.0726,
+          "chunk_encode_log": null,
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": 2.958,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 3.521922648000327
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": 2.0051423020013317,
+        "avg_decode_sec": 0.2569,
+        "avg_final_decode_sec": 0.1941008485000566,
+        "avg_trans_sec": 0.10645
+      }
+    },
+    {
+      "file_id": "3005-163399-0011",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163399/3005-163399-0011.flac",
+      "reference": "IT WAS KINDER THIN ICE BUT I SAYS",
+      "hypothesis": "It was kinder thin ice, but I says,",
+      "hyp_commit": "It was kinder thin ice, <vad> but I says, <vad>",
+      "duration": 3.21,
+      "total_time": 4.666372634999789,
+      "first_token_latency": 4.588047506000294,
+      "model_runtime": 1.4563726349997888,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "It was kinder thin ice,",
+          "translation": "좀 더 얇은 얼음이었는데,",
+          "commit_reason": "vad",
+          "output_token_count": 5,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 3.074,
+          "seg_audio_sec": 3.074,
+          "fsl_sec": null,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.46434314799989806,
+          "trans_sec": 0.0865,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3654,
+              "chunk_decode_sec": 0.3653,
+              "chunk_transcribe_start_elapsed": 2.0047,
+              "chunk_decode_start_elapsed": 2.0047
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": 3.874,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.588048539000738
+        },
+        {
+          "segment_id": 2,
+          "text": "but I says,",
+          "translation": "하지만 나는 말한다.",
+          "commit_reason": "vad",
+          "output_token_count": 3,
+          "audio_start_sec": 3.074,
+          "audio_end_sec": 4.010000000000001,
+          "seg_audio_sec": null,
+          "fsl_sec": 0.0778,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0778,
+          "chunk_encode_log": null,
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.666373977999683
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": 0.0778,
+        "avg_encode_sec": null,
+        "avg_decode_sec": null,
+        "avg_final_decode_sec": 0.23217157399994903,
+        "avg_trans_sec": 0.08215
+      }
+    },
+    {
+      "file_id": "3005-163399-0012",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163399/3005-163399-0012.flac",
+      "reference": "I HAD MY MIND ON THE CHILDREN ALL THE TIME I WANTED TO GET THEM OUT TO ONE SIDE AND PUMP THEM A LITTLE AND FIND OUT WHO I WAS",
+      "hypothesis": "I had my mind on the children all the time. I wanted to get them out to one side and pump them a little and find out who I was.",
+      "hyp_commit": "I had my mind on the children all the time. <seg> I wanted to get them out to one side and pump them a little and find out who I was. <seg>",
+      "duration": 7.935,
+      "total_time": 8.741601458999867,
+      "first_token_latency": 4.6838586300000316,
+      "model_runtime": 0.8066014589998671,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "I had my mind on the children all the time.",
+          "translation": "나는 항상 아이들을 생각했습니다.",
+          "commit_reason": "seg",
+          "output_token_count": 10,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 4.000000000000001,
+          "seg_audio_sec": 4.0,
+          "fsl_sec": null,
+          "encode_sec": 4.080835795999519,
+          "decode_sec": 0.4759,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.1037,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3228,
+              "chunk_decode_sec": 0.3227,
+              "chunk_transcribe_start_elapsed": 2.0058,
+              "chunk_decode_start_elapsed": 2.0059
+            },
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.0,
+              "encode_sec": 0.4761,
+              "chunk_decode_sec": 0.476,
+              "chunk_transcribe_start_elapsed": 4.0807,
+              "chunk_decode_start_elapsed": 4.0808
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.683860213999651
+        },
+        {
+          "segment_id": 2,
+          "text": "I wanted to get them out to one side and pump them a little and find out who I was.",
+          "translation": "나는 그들을 한쪽으로 꺼내서 조금 펌핑하여 내가 누구인지 알아보고 싶었습니다.",
+          "commit_reason": "seg",
+          "output_token_count": 20,
+          "audio_start_sec": 4.000000000000001,
+          "audio_end_sec": 8.135000000000003,
+          "seg_audio_sec": 6.0,
+          "fsl_sec": null,
+          "encode_sec": 6.0070445429992105,
+          "decode_sec": 0.1328,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0714,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 2,
+              "audio_pos_sec": 6.0,
+              "encode_sec": 0.1335,
+              "chunk_decode_sec": 0.133,
+              "chunk_transcribe_start_elapsed": 6.0065,
+              "chunk_decode_start_elapsed": 6.007
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 8.741602492998936
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": 5.043940169499365,
+        "avg_decode_sec": 0.30435,
+        "avg_final_decode_sec": 0.0,
+        "avg_trans_sec": 0.08755
+      }
+    },
+    {
+      "file_id": "3005-163399-0013",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163399/3005-163399-0013.flac",
+      "reference": "PRETTY SOON SHE MADE THE COLD CHILLS STREAK ALL DOWN MY BACK BECAUSE SHE SAYS",
+      "hypothesis": "Pretty soon she made the cold chills streak all down my back,",
+      "hyp_commit": "Pretty soon she made the cold chills streak all down my back, <seg>",
+      "duration": 5.3750625,
+      "total_time": 4.634464573999139,
+      "first_token_latency": 4.634464417000345,
+      "model_runtime": -0.740597926000861,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "Pretty soon she made the cold chills streak all down my back,",
+          "translation": "곧 그녀는 내 등줄기에 차가운 오한을 일으켰습니다.",
+          "commit_reason": "seg",
+          "output_token_count": 12,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 4.000000000000001,
+          "seg_audio_sec": 4.0,
+          "fsl_sec": null,
+          "encode_sec": 4.00654362000023,
+          "decode_sec": 0.5147,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0694,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3146,
+              "chunk_decode_sec": 0.3145,
+              "chunk_transcribe_start_elapsed": 2.0107,
+              "chunk_decode_start_elapsed": 2.0107
+            },
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.0,
+              "encode_sec": 0.5149,
+              "chunk_decode_sec": 0.5147,
+              "chunk_transcribe_start_elapsed": 4.0064,
+              "chunk_decode_start_elapsed": 4.0065
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.6344654579988855
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 1,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": 4.00654362000023,
+        "avg_decode_sec": 0.5147,
+        "avg_final_decode_sec": 0.0,
+        "avg_trans_sec": 0.0694
+      }
+    },
+    {
+      "file_id": "3005-163399-0014",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163399/3005-163399-0014.flac",
+      "reference": "I SEE IT WARN'T A BIT OF USE TO TRY TO GO AHEAD I'D GOT TO THROW UP MY HAND",
+      "hypothesis": "I see it weren't a bit of use to try to go ahead. I'd got to throw up my hand.",
+      "hyp_commit": "I see it weren't a bit of use to try to go ahead. <seg> I'd got to throw up my hand. <vad>",
+      "duration": 5.285,
+      "total_time": 6.3822677549997024,
+      "first_token_latency": 4.699798200999794,
+      "model_runtime": 1.0972677549997023,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "I see it weren't a bit of use to try to go ahead.",
+          "translation": "계속하려고 노력하는 것이 조금도 소용이 없다는 것을 알았습니다.",
+          "commit_reason": "seg",
+          "output_token_count": 13,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 4.000000000000001,
+          "seg_audio_sec": 4.0,
+          "fsl_sec": null,
+          "encode_sec": 4.0056524709998484,
+          "decode_sec": 0.5925,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0848,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.4661,
+              "chunk_decode_sec": 0.466,
+              "chunk_transcribe_start_elapsed": 2.0055,
+              "chunk_decode_start_elapsed": 2.0056
+            },
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.0,
+              "encode_sec": 0.5928,
+              "chunk_decode_sec": 0.5926,
+              "chunk_transcribe_start_elapsed": 4.0055,
+              "chunk_decode_start_elapsed": 4.0057
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.69979913699899
+        },
+        {
+          "segment_id": 2,
+          "text": "I'd got to throw up my hand.",
+          "translation": "손을 내밀어야 했어요.",
+          "commit_reason": "vad",
+          "output_token_count": 7,
+          "audio_start_sec": 4.000000000000001,
+          "audio_end_sec": 5.077,
+          "seg_audio_sec": 5.077,
+          "fsl_sec": null,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.3900191470002028,
+          "trans_sec": 0.084,
+          "chunk_encode_log": null,
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": 5.877,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 6.382268815999851
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": 4.0056524709998484,
+        "avg_decode_sec": 0.5925,
+        "avg_final_decode_sec": 0.1950095735001014,
+        "avg_trans_sec": 0.0844
+      }
+    },
+    {
+      "file_id": "3005-163399-0015",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163399/3005-163399-0015.flac",
+      "reference": "SO I SAYS TO MYSELF HERE'S ANOTHER PLACE WHERE I GOT TO RESK THE TRUTH",
+      "hypothesis": "So I says to myself, here's another place where I got to risk the truth.",
+      "hyp_commit": "So I says to myself, here's another place where I got to risk the truth. <vad>",
+      "duration": 5.025,
+      "total_time": 6.050742348001222,
+      "first_token_latency": 6.050742108000122,
+      "model_runtime": 1.0257423480012218,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "So I says to myself, here's another place where I got to risk the truth.",
+          "translation": "그래서 저는 스스로에게 이렇게 말했습니다. 여기가 제가 진실을 위험에 빠뜨릴 수 있는 또 다른 장소입니다.",
+          "commit_reason": "vad",
+          "output_token_count": 15,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 4.817,
+          "seg_audio_sec": 4.817,
+          "fsl_sec": null,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.32717281599980197,
+          "trans_sec": 0.0752,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3063,
+              "chunk_decode_sec": 0.3062,
+              "chunk_transcribe_start_elapsed": 2.0051,
+              "chunk_decode_start_elapsed": 2.0052
+            },
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.0,
+              "encode_sec": 0.5082,
+              "chunk_decode_sec": 0.5081,
+              "chunk_transcribe_start_elapsed": 4.0064,
+              "chunk_decode_start_elapsed": 4.0065
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": 5.617,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 6.050743212999805
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 1,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": null,
+        "avg_decode_sec": null,
+        "avg_final_decode_sec": 0.32717281599980197,
+        "avg_trans_sec": 0.0752
+      }
+    },
+    {
+      "file_id": "3005-163399-0016",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163399/3005-163399-0016.flac",
+      "reference": "I OPENED MY MOUTH TO BEGIN BUT SHE GRABBED ME AND HUSTLED ME IN BEHIND THE BED AND SAYS HERE HE COMES",
+      "hypothesis": "I opened my mouth to begin but she grabbed me and hustled me in behind the bed and says, \"Here he comes!\"",
+      "hyp_commit": "I opened my mouth to begin <seg> but she grabbed me and hustled me in behind the bed and says, \"Here he comes!\" <vad>",
+      "duration": 7.08,
+      "total_time": 8.605203474999144,
+      "first_token_latency": 4.438573374998668,
+      "model_runtime": 1.5252034749991434,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "I opened my mouth to begin",
+          "translation": "시작하려고 입을 열었는데",
+          "commit_reason": "seg",
+          "output_token_count": 6,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 2.1999999999999997,
+          "seg_audio_sec": 4.0,
+          "fsl_sec": null,
+          "encode_sec": 4.00635055299972,
+          "decode_sec": 0.3442,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0713,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3441,
+              "chunk_decode_sec": 0.344,
+              "chunk_transcribe_start_elapsed": 2.0066,
+              "chunk_decode_start_elapsed": 2.0067
+            },
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.0,
+              "encode_sec": 0.3444,
+              "chunk_decode_sec": 0.3443,
+              "chunk_transcribe_start_elapsed": 4.0062,
+              "chunk_decode_start_elapsed": 4.0064
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.4385744009996415
+        },
+        {
+          "segment_id": 2,
+          "text": "but she grabbed me and hustled me in behind the bed and says, \"Here he comes!\"",
+          "translation": "하지만 그녀는 나를 붙잡고 침대 뒤로 밀어넣으며 \"여기 그 사람이 온다!\"라고 말했습니다.",
+          "commit_reason": "vad",
+          "output_token_count": 16,
+          "audio_start_sec": 2.1999999999999997,
+          "audio_end_sec": 7.144,
+          "seg_audio_sec": 6.0,
+          "fsl_sec": 2.4885,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.3840584419995139,
+          "trans_sec": 0.1184,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 2,
+              "audio_pos_sec": 6.0,
+              "encode_sec": 0.0939,
+              "chunk_decode_sec": 0.0933,
+              "chunk_transcribe_start_elapsed": 6.0064,
+              "chunk_decode_start_elapsed": 6.0069
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": 7.944,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 8.605204491999757
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": 2.4885,
+        "avg_encode_sec": 4.00635055299972,
+        "avg_decode_sec": 0.3442,
+        "avg_final_decode_sec": 0.19202922099975694,
+        "avg_trans_sec": 0.09485
+      }
+    },
+    {
+      "file_id": "3005-163399-0017",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163399/3005-163399-0017.flac",
+      "reference": "CHILDREN DON'T YOU SAY A WORD",
+      "hypothesis": "Children, don't you say a word.",
+      "hyp_commit": "Children, don't you say a word. <seg>",
+      "duration": 2.405,
+      "total_time": 2.5003958769993915,
+      "first_token_latency": 2.500395691000449,
+      "model_runtime": 0.09539587699939167,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "Children, don't you say a word.",
+          "translation": "얘들아, 아무 말도 하지 말아라.",
+          "commit_reason": "seg",
+          "output_token_count": 6,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 1.9999999999999998,
+          "seg_audio_sec": 2.0,
+          "fsl_sec": null,
+          "encode_sec": 2.0054527440006495,
+          "decode_sec": 0.4221,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0665,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.4224,
+              "chunk_decode_sec": 0.4223,
+              "chunk_transcribe_start_elapsed": 2.0054,
+              "chunk_decode_start_elapsed": 2.0055
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 2.5003974070004915
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 1,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": 2.0054527440006495,
+        "avg_decode_sec": 0.4221,
+        "avg_final_decode_sec": 0.0,
+        "avg_trans_sec": 0.0665
+      }
+    },
+    {
+      "file_id": "3005-163399-0018",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163399/3005-163399-0018.flac",
+      "reference": "I SEE I WAS IN A FIX NOW",
+      "hypothesis": "I see I was in a fix now.",
+      "hyp_commit": "I see I was in a fix now. <vad>",
+      "duration": 2.49,
+      "total_time": 3.868429225,
+      "first_token_latency": 3.868429064999873,
+      "model_runtime": 1.3784292249999996,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "I see I was in a fix now.",
+          "translation": "지금 보니 문제가 해결된 상태였습니다.",
+          "commit_reason": "vad",
+          "output_token_count": 8,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 2.45,
+          "seg_audio_sec": 2.45,
+          "fsl_sec": null,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.4700600510004733,
+          "trans_sec": 0.0812,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3269,
+              "chunk_decode_sec": 0.3268,
+              "chunk_transcribe_start_elapsed": 2.0061,
+              "chunk_decode_start_elapsed": 2.0062
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": 3.25,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 3.868430332000571
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 1,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": null,
+        "avg_decode_sec": null,
+        "avg_final_decode_sec": 0.4700600510004733,
+        "avg_trans_sec": 0.0812
+      }
+    },
+    {
+      "file_id": "3005-163399-0019",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163399/3005-163399-0019.flac",
+      "reference": "MISSUS PHELPS SHE JUMPS FOR HIM AND SAYS",
+      "hypothesis": "Mrs. Phelps she jumps for him and says,",
+      "hyp_commit": "Mrs. Phelps she jumps for him <vad> and says, <vad>",
+      "duration": 3.1,
+      "total_time": 4.409939614000905,
+      "first_token_latency": 4.264009259000886,
+      "model_runtime": 1.3099396140009048,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "Mrs. Phelps she jumps for him",
+          "translation": "펠프스 부인이 그를 위해 뛰어다닌다",
+          "commit_reason": "vad",
+          "output_token_count": 6,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 2.8280000000000003,
+          "seg_audio_sec": 2.828,
+          "fsl_sec": null,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.4652551380004297,
+          "trans_sec": 0.0779,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.349,
+              "chunk_decode_sec": 0.3489,
+              "chunk_transcribe_start_elapsed": 2.0053,
+              "chunk_decode_start_elapsed": 2.0054
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": 3.628,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.264010472999871
+        },
+        {
+          "segment_id": 2,
+          "text": "and says,",
+          "translation": "그리고 말한다,",
+          "commit_reason": "vad",
+          "output_token_count": 2,
+          "audio_start_sec": 2.8280000000000003,
+          "audio_end_sec": 3.700000000000001,
+          "seg_audio_sec": null,
+          "fsl_sec": 0.1454,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.1454,
+          "chunk_encode_log": null,
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.409940771000038
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": 0.1454,
+        "avg_encode_sec": null,
+        "avg_decode_sec": null,
+        "avg_final_decode_sec": 0.23262756900021486,
+        "avg_trans_sec": 0.11165
+      }
+    },
+    {
+      "file_id": "3005-163399-0020",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163399/3005-163399-0020.flac",
+      "reference": "HAS HE COME NO SAYS HER HUSBAND",
+      "hypothesis": "Has he come? No, says her husband.",
+      "hyp_commit": "Has he come? <seg> No, says her husband. <seg>",
+      "duration": 3.565,
+      "total_time": 4.725364920999709,
+      "first_token_latency": 2.397503443999085,
+      "model_runtime": 1.1603649209997093,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "Has he come?",
+          "translation": "그 사람 왔나요?",
+          "commit_reason": "seg",
+          "output_token_count": 3,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 1.9999999999999998,
+          "seg_audio_sec": 2.0,
+          "fsl_sec": null,
+          "encode_sec": 2.0070675010010746,
+          "decode_sec": 0.2812,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0952,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.2815,
+              "chunk_decode_sec": 0.2814,
+              "chunk_transcribe_start_elapsed": 2.007,
+              "chunk_decode_start_elapsed": 2.0071
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 2.3975048779993813
+        },
+        {
+          "segment_id": 2,
+          "text": "No, says her husband.",
+          "translation": "아니요, 남편은 말합니다.",
+          "commit_reason": "seg",
+          "output_token_count": 4,
+          "audio_start_sec": 1.9999999999999998,
+          "audio_end_sec": 4.165000000000001,
+          "seg_audio_sec": 4.165,
+          "fsl_sec": null,
+          "encode_sec": 4.171263748999991,
+          "decode_sec": 0.2738,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0775,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.165,
+              "encode_sec": 0.2741,
+              "chunk_decode_sec": 0.274,
+              "chunk_transcribe_start_elapsed": 4.1711,
+              "chunk_decode_start_elapsed": 4.1713
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.7253659250000055
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": 3.0891656250005326,
+        "avg_decode_sec": 0.27749999999999997,
+        "avg_final_decode_sec": 0.0,
+        "avg_trans_sec": 0.08635000000000001
+      }
+    },
+    {
+      "file_id": "3005-163399-0021",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163399/3005-163399-0021.flac",
+      "reference": "I CAN'T IMAGINE SAYS THE OLD GENTLEMAN AND I MUST SAY IT MAKES ME DREADFUL UNEASY",
+      "hypothesis": "I can't imagine,\" says the old gentleman. and I must say it makes me dreadful uneasy.",
+      "hyp_commit": "I can't imagine,\" says the old gentleman. <seg> and I must say it makes me dreadful uneasy. <vad>",
+      "duration": 5.27,
+      "total_time": 6.661109835000389,
+      "first_token_latency": 2.534497894001106,
+      "model_runtime": 1.391109835000389,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "I can't imagine,\" says the old gentleman.",
+          "translation": "상상할 수가 없어요.\" 노신사는 말했다.",
+          "commit_reason": "seg",
+          "output_token_count": 7,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 1.9999999999999998,
+          "seg_audio_sec": 2.0,
+          "fsl_sec": null,
+          "encode_sec": 2.0228247689992713,
+          "decode_sec": 0.4192,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0751,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.4194,
+              "chunk_decode_sec": 0.4193,
+              "chunk_transcribe_start_elapsed": 2.0227,
+              "chunk_decode_start_elapsed": 2.0228
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 2.534498828001233
+        },
+        {
+          "segment_id": 2,
+          "text": "and I must say it makes me dreadful uneasy.",
+          "translation": "그리고 나는 그것이 나를 몹시 불안하게 만든다고 말해야 합니다.",
+          "commit_reason": "vad",
+          "output_token_count": 9,
+          "audio_start_sec": 1.9999999999999998,
+          "audio_end_sec": 5.134,
+          "seg_audio_sec": 4.0,
+          "fsl_sec": 2.1189,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.48736324299898115,
+          "trans_sec": 0.079,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.0,
+              "encode_sec": 0.5142,
+              "chunk_decode_sec": 0.514,
+              "chunk_transcribe_start_elapsed": 4.0111,
+              "chunk_decode_start_elapsed": 4.0112
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": 5.934,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 6.661111442001129
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": 2.1189,
+        "avg_encode_sec": 2.0228247689992713,
+        "avg_decode_sec": 0.4192,
+        "avg_final_decode_sec": 0.24368162149949057,
+        "avg_trans_sec": 0.07705000000000001
+      }
+    },
+    {
+      "file_id": "3005-163399-0022",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163399/3005-163399-0022.flac",
+      "reference": "UNEASY SHE SAYS I'M READY TO GO DISTRACTED",
+      "hypothesis": "Uneasy, she says. I'm ready to go distracted.",
+      "hyp_commit": "Uneasy, she says. <seg> I'm ready to go distracted. <seg>",
+      "duration": 3.8,
+      "total_time": 4.698767145999227,
+      "first_token_latency": 2.414100578000216,
+      "model_runtime": 0.8987671459992272,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "Uneasy, she says.",
+          "translation": "불안하다고 그녀는 말합니다.",
+          "commit_reason": "seg",
+          "output_token_count": 3,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 1.9999999999999998,
+          "seg_audio_sec": 2.0,
+          "fsl_sec": null,
+          "encode_sec": 2.006658468999376,
+          "decode_sec": 0.3171,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0804,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3173,
+              "chunk_decode_sec": 0.3172,
+              "chunk_transcribe_start_elapsed": 2.0066,
+              "chunk_decode_start_elapsed": 2.0067
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 2.4141026489996875
+        },
+        {
+          "segment_id": 2,
+          "text": "I'm ready to go distracted.",
+          "translation": "나는 산만해질 준비가되어 있습니다.",
+          "commit_reason": "seg",
+          "output_token_count": 5,
+          "audio_start_sec": 1.9999999999999998,
+          "audio_end_sec": 4.000000000000001,
+          "seg_audio_sec": 4.0,
+          "fsl_sec": null,
+          "encode_sec": 4.0075244260006,
+          "decode_sec": 0.3226,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.1467,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.0,
+              "encode_sec": 0.323,
+              "chunk_decode_sec": 0.3228,
+              "chunk_transcribe_start_elapsed": 4.0074,
+              "chunk_decode_start_elapsed": 4.0075
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.698768140999164
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": 3.007091447499988,
+        "avg_decode_sec": 0.31984999999999997,
+        "avg_final_decode_sec": 0.0,
+        "avg_trans_sec": 0.11355
+      }
+    },
+    {
+      "file_id": "3005-163399-0023",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163399/3005-163399-0023.flac",
+      "reference": "HE MUST A COME AND YOU'VE MISSED HIM ALONG THE ROAD",
+      "hypothesis": "He must a come, and you've missed him along the road.",
+      "hyp_commit": "He must a come, <seg> and you've missed him along the road. <seg>",
+      "duration": 3.365,
+      "total_time": 5.050153305999629,
+      "first_token_latency": 2.4244820149997395,
+      "model_runtime": 1.6851533059996289,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "He must a come,",
+          "translation": "그 사람은 꼭 와야 해",
+          "commit_reason": "seg",
+          "output_token_count": 4,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 1.9999999999999998,
+          "seg_audio_sec": 2.0,
+          "fsl_sec": null,
+          "encode_sec": 2.0051189469995734,
+          "decode_sec": 0.3251,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.077,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3252,
+              "chunk_decode_sec": 0.3252,
+              "chunk_transcribe_start_elapsed": 2.005,
+              "chunk_decode_start_elapsed": 2.0051
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 2.424482964001072
+        },
+        {
+          "segment_id": 2,
+          "text": "and you've missed him along the road.",
+          "translation": "그리고 당신은 길에서 그를 그리워했습니다.",
+          "commit_reason": "seg",
+          "output_token_count": 7,
+          "audio_start_sec": 1.9999999999999998,
+          "audio_end_sec": 4.165000000000001,
+          "seg_audio_sec": 4.165,
+          "fsl_sec": null,
+          "encode_sec": 4.171754826000324,
+          "decode_sec": 0.3961,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.1095,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.165,
+              "encode_sec": 0.3964,
+              "chunk_decode_sec": 0.3963,
+              "chunk_transcribe_start_elapsed": 4.1716,
+              "chunk_decode_start_elapsed": 4.1718
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 5.050154212000052
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": 3.0884368864999487,
+        "avg_decode_sec": 0.36060000000000003,
+        "avg_final_decode_sec": 0.0,
+        "avg_trans_sec": 0.09325
+      }
+    },
+    {
+      "file_id": "3005-163399-0024",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163399/3005-163399-0024.flac",
+      "reference": "OH DON'T DISTRESS ME ANY MORE'N I'M ALREADY DISTRESSED",
+      "hypothesis": "Oh, don't distress me any more I'm already distressed.",
+      "hyp_commit": "Oh, don't distress me any more <seg> I'm already distressed. <seg>",
+      "duration": 3.73,
+      "total_time": 4.8238502309995965,
+      "first_token_latency": 4.642856492999272,
+      "model_runtime": 1.0938502309995966,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "Oh, don't distress me any more",
+          "translation": "아, 더 이상 나를 괴롭히지 마세요",
+          "commit_reason": "seg",
+          "output_token_count": 6,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 4.130000000000001,
+          "seg_audio_sec": 4.13,
+          "fsl_sec": null,
+          "encode_sec": 4.1365274990002945,
+          "decode_sec": 0.4115,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0849,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3332,
+              "chunk_decode_sec": 0.3331,
+              "chunk_transcribe_start_elapsed": 2.0144,
+              "chunk_decode_start_elapsed": 2.0145
+            },
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.13,
+              "encode_sec": 0.4117,
+              "chunk_decode_sec": 0.4116,
+              "chunk_transcribe_start_elapsed": 4.1364,
+              "chunk_decode_start_elapsed": 4.1365
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.642857545000879
+        },
+        {
+          "segment_id": 2,
+          "text": "I'm already distressed.",
+          "translation": "나는 이미 괴로워하고 있습니다.",
+          "commit_reason": "seg",
+          "output_token_count": 3,
+          "audio_start_sec": 4.130000000000001,
+          "audio_end_sec": 4.130000000000001,
+          "seg_audio_sec": 4.13,
+          "fsl_sec": null,
+          "encode_sec": 4.1365274990002945,
+          "decode_sec": 0.5884,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0889,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.13,
+              "encode_sec": 0.5887,
+              "chunk_decode_sec": 0.5886,
+              "chunk_transcribe_start_elapsed": 4.1364,
+              "chunk_decode_start_elapsed": 4.1365
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.82385112799966
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": 4.1365274990002945,
+        "avg_decode_sec": 0.49995,
+        "avg_final_decode_sec": 0.0,
+        "avg_trans_sec": 0.0869
+      }
+    },
+    {
+      "file_id": "3005-163399-0025",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163399/3005-163399-0025.flac",
+      "reference": "WHY SILAS LOOK YONDER UP THE ROAD AIN'T THAT SOMEBODY COMING",
+      "hypothesis": "Why, Silas, look yonder, up the road. Ain't that somebody comin'?",
+      "hyp_commit": "Why, Silas, look yonder, up the road. <seg> Ain't that somebody comin'? <vad>",
+      "duration": 4.94,
+      "total_time": 6.029500179000024,
+      "first_token_latency": 4.621267406999323,
+      "model_runtime": 1.0895001790000238,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "Why, Silas, look yonder, up the road.",
+          "translation": "사일래스여, 저쪽 길을 보세요.",
+          "commit_reason": "seg",
+          "output_token_count": 7,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 4.000000000000001,
+          "seg_audio_sec": 4.0,
+          "fsl_sec": null,
+          "encode_sec": 4.0146141610002815,
+          "decode_sec": 0.513,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0736,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3529,
+              "chunk_decode_sec": 0.3528,
+              "chunk_transcribe_start_elapsed": 2.012,
+              "chunk_decode_start_elapsed": 2.0121
+            },
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.0,
+              "encode_sec": 0.5133,
+              "chunk_decode_sec": 0.5131,
+              "chunk_transcribe_start_elapsed": 4.0145,
+              "chunk_decode_start_elapsed": 4.0146
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.621268982000402
+        },
+        {
+          "segment_id": 2,
+          "text": "Ain't that somebody comin'?",
+          "translation": "누군가 오는 것 아닌가요?",
+          "commit_reason": "vad",
+          "output_token_count": 4,
+          "audio_start_sec": 4.000000000000001,
+          "audio_end_sec": 4.668,
+          "seg_audio_sec": 4.668,
+          "fsl_sec": null,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.38113338599941926,
+          "trans_sec": 0.0819,
+          "chunk_encode_log": null,
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": 5.468,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 6.029501760998755
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": 4.0146141610002815,
+        "avg_decode_sec": 0.513,
+        "avg_final_decode_sec": 0.19056669299970963,
+        "avg_trans_sec": 0.07775
+      }
+    },
+    {
+      "file_id": "3005-163399-0026",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163399/3005-163399-0026.flac",
+      "reference": "THE OLD GENTLEMAN STARED AND SAYS",
+      "hypothesis": "The old gentleman stared and says,",
+      "hyp_commit": "The old gentleman stared <seg> and says, <vad>",
+      "duration": 2.45,
+      "total_time": 3.538343819000147,
+      "first_token_latency": 2.358313385000656,
+      "model_runtime": 1.0883438190001469,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "The old gentleman stared",
+          "translation": "노신사는 쳐다보았다.",
+          "commit_reason": "seg",
+          "output_token_count": 4,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 1.9999999999999998,
+          "seg_audio_sec": 2.0,
+          "fsl_sec": null,
+          "encode_sec": 2.0051569170009316,
+          "decode_sec": 0.2741,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0692,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.2742,
+              "chunk_decode_sec": 0.2742,
+              "chunk_transcribe_start_elapsed": 2.0051,
+              "chunk_decode_start_elapsed": 2.0052
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 2.3583146649998525
+        },
+        {
+          "segment_id": 2,
+          "text": "and says,",
+          "translation": "그리고 말한다,",
+          "commit_reason": "vad",
+          "output_token_count": 2,
+          "audio_start_sec": 1.9999999999999998,
+          "audio_end_sec": 2.242,
+          "seg_audio_sec": 2.242,
+          "fsl_sec": null,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.32587135799985845,
+          "trans_sec": 0.1459,
+          "chunk_encode_log": null,
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": 3.042,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 3.5383447210006125
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": 2.0051569170009316,
+        "avg_decode_sec": 0.2741,
+        "avg_final_decode_sec": 0.16293567899992922,
+        "avg_trans_sec": 0.10755
+      }
+    },
+    {
+      "file_id": "3005-163399-0027",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163399/3005-163399-0027.flac",
+      "reference": "I HAIN'T NO IDEA WHO IS IT",
+      "hypothesis": "I hain't no idea, Who is it?",
+      "hyp_commit": "I hain't no idea, <seg> Who is it? <vad>",
+      "duration": 3.025,
+      "total_time": 4.271453032999489,
+      "first_token_latency": 2.4617395799996302,
+      "model_runtime": 1.2464530329994887,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "I hain't no idea,",
+          "translation": "난 전혀 모르겠어",
+          "commit_reason": "seg",
+          "output_token_count": 4,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 1.9999999999999998,
+          "seg_audio_sec": 2.0,
+          "fsl_sec": null,
+          "encode_sec": 2.012975308998648,
+          "decode_sec": 0.3613,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0737,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3614,
+              "chunk_decode_sec": 0.3614,
+              "chunk_transcribe_start_elapsed": 2.0129,
+              "chunk_decode_start_elapsed": 2.013
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 2.4617405770004552
+        },
+        {
+          "segment_id": 2,
+          "text": "Who is it?",
+          "translation": "누구입니까?",
+          "commit_reason": "vad",
+          "output_token_count": 3,
+          "audio_start_sec": 1.9999999999999998,
+          "audio_end_sec": 2.753,
+          "seg_audio_sec": 2.753,
+          "fsl_sec": null,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.5443173910007317,
+          "trans_sec": 0.0827,
+          "chunk_encode_log": null,
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": 3.553,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.2714541779987485
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": 2.012975308998648,
+        "avg_decode_sec": 0.3613,
+        "avg_final_decode_sec": 0.27215869550036587,
+        "avg_trans_sec": 0.07819999999999999
+      }
+    },
+    {
+      "file_id": "3005-163399-0028",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163399/3005-163399-0028.flac",
+      "reference": "IT'S TOM SAWYER",
+      "hypothesis": "It's Tom Sawyer.",
+      "hyp_commit": "It's Tom Sawyer. <vad>",
+      "duration": 2.15,
+      "total_time": 3.159416502001477,
+      "first_token_latency": 3.159416295000483,
+      "model_runtime": 1.0094165020014771,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "It's Tom Sawyer.",
+          "translation": "톰 소여입니다.",
+          "commit_reason": "vad",
+          "output_token_count": 3,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 1.8139999999999998,
+          "seg_audio_sec": 1.814,
+          "fsl_sec": null,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.31136990200138825,
+          "trans_sec": 0.0796,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3542,
+              "chunk_decode_sec": 0.3541,
+              "chunk_transcribe_start_elapsed": 2.0055,
+              "chunk_decode_start_elapsed": 2.0056
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": 2.614,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 3.159417459000906
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 1,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": null,
+        "avg_decode_sec": null,
+        "avg_final_decode_sec": 0.31136990200138825,
+        "avg_trans_sec": 0.0796
+      }
+    },
+    {
+      "file_id": "3005-163399-0029",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163399/3005-163399-0029.flac",
+      "reference": "BEING TOM SAWYER WAS EASY AND COMFORTABLE AND IT STAYED EASY AND COMFORTABLE TILL BY AND BY I HEAR A STEAMBOAT COUGHING ALONG DOWN THE RIVER",
+      "hypothesis": "Being Tom Sawyer was easy and comfortable , and it stayed easy and comfortable till by and by I hear a steamboat coughing along down the river.",
+      "hyp_commit": "Being Tom Sawyer was easy and comfortable <seg> , and it stayed easy and comfortable till by and by I hear a steamboat coughing along down the river. <vad>",
+      "duration": 8.935,
+      "total_time": 10.26460964999933,
+      "first_token_latency": 4.562019369999689,
+      "model_runtime": 1.3296096499993286,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "Being Tom Sawyer was easy and comfortable",
+          "translation": "Tom Sawyer가 되는 것은 쉽고 편안했습니다.",
+          "commit_reason": "seg",
+          "output_token_count": 7,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 4.000000000000001,
+          "seg_audio_sec": 4.0,
+          "fsl_sec": null,
+          "encode_sec": 4.006374863000019,
+          "decode_sec": 0.3863,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0747,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.2843,
+              "chunk_decode_sec": 0.2842,
+              "chunk_transcribe_start_elapsed": 2.0059,
+              "chunk_decode_start_elapsed": 2.006
+            },
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.0,
+              "encode_sec": 0.3866,
+              "chunk_decode_sec": 0.3864,
+              "chunk_transcribe_start_elapsed": 4.0062,
+              "chunk_decode_start_elapsed": 4.0064
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.562020511999435
+        },
+        {
+          "segment_id": 2,
+          "text": ", and it stayed easy and comfortable till by and by I hear a steamboat coughing along down the river.",
+          "translation": ", 그리고 강을 따라 기침하는 증기선 소리가 들릴 때까지 쉽고 편안했습니다.",
+          "commit_reason": "vad",
+          "output_token_count": 20,
+          "audio_start_sec": 4.000000000000001,
+          "audio_end_sec": 8.726999999999999,
+          "seg_audio_sec": 6.0,
+          "fsl_sec": 3.9896,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.4003573059999326,
+          "trans_sec": 0.076,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 2,
+              "audio_pos_sec": 6.0,
+              "encode_sec": 0.1739,
+              "chunk_decode_sec": 0.1735,
+              "chunk_transcribe_start_elapsed": 6.0067,
+              "chunk_decode_start_elapsed": 6.0072
+            },
+            {
+              "chunk_id": 3,
+              "audio_pos_sec": 8.0,
+              "encode_sec": 0.458,
+              "chunk_decode_sec": 0.4574,
+              "chunk_transcribe_start_elapsed": 8.0058,
+              "chunk_decode_start_elapsed": 8.0064
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": 9.527,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 10.264610755999456
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": 3.9896,
+        "avg_encode_sec": 4.006374863000019,
+        "avg_decode_sec": 0.3863,
+        "avg_final_decode_sec": 0.2001786529999663,
+        "avg_trans_sec": 0.07535
+      }
+    },
+    {
+      "file_id": "3005-163399-0030",
+      "speaker_id": "3005",
+      "audio_path": "/home/ubuntu/STiTy/evaluation/LibriSpeech/test-other/3005/163399/3005-163399-0030.flac",
+      "reference": "THEN I SAYS TO MYSELF S'POSE TOM SAWYER COMES DOWN ON THAT BOAT",
+      "hypothesis": "Then I says to myself, 'Spos Tom Sawyer comes down on that boat.",
+      "hyp_commit": "Then I says to myself, 'Spos Tom Sawyer comes down on that boat. <vad>",
+      "duration": 4.62,
+      "total_time": 5.710365413000545,
+      "first_token_latency": 5.710365142000228,
+      "model_runtime": 1.0903654130005451,
+      "target_lang": "ko",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "Then I says to myself, 'Spos Tom Sawyer comes down on that boat.",
+          "translation": "그런 다음 나는 '톰 소여가 저 배를 타고 내려온다'고 속으로 말합니다.",
+          "commit_reason": "vad",
+          "output_token_count": 13,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 4.412,
+          "seg_audio_sec": 4.412,
+          "fsl_sec": null,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.3730913710005552,
+          "trans_sec": 0.082,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3,
+              "chunk_decode_sec": 0.3,
+              "chunk_transcribe_start_elapsed": 2.0053,
+              "chunk_decode_start_elapsed": 2.0054
+            },
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.0,
+              "encode_sec": 0.548,
+              "chunk_decode_sec": 0.5478,
+              "chunk_transcribe_start_elapsed": 4.0063,
+              "chunk_decode_start_elapsed": 4.0065
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": 5.212,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 5.710366613000588
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 1,
+        "avg_fsl_sec": null,
+        "avg_encode_sec": null,
+        "avg_decode_sec": null,
+        "avg_final_decode_sec": 0.3730913710005552,
+        "avg_trans_sec": 0.082
+      }
+    }
+  ]
+}

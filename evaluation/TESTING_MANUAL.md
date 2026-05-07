@@ -194,7 +194,25 @@ python evaluation/AMI/test_qwen3_ami.py \
 
 ---
 
-## 5. Resume (이어서 실행)
+## 5. 동시 접속 벤치마크 (multi_speaker_test)
+
+N명이 동시 접속할 때 WER / FSL 변화를 측정하는 전용 벤치마크입니다.  
+관련 코드와 결과는 `evaluation/LibriSpeech/multi_speaker_test/` 안에 자체 격리되어 있습니다.  
+자세한 내용은 [multi_speaker_test/README.md](LibriSpeech/multi_speaker_test/README.md)를 참조하세요.
+
+```bash
+# 기본 (full 모드, 1~10명, finetuned 모델)
+python evaluation/LibriSpeech/multi_speaker_test/run_benchmark.py
+
+# 특정 범위 / 모드 지정
+python evaluation/LibriSpeech/multi_speaker_test/run_benchmark.py --mode split --start-n 3 --end-n 5
+```
+
+결과 위치: `evaluation/LibriSpeech/multi_speaker_test/results/{model}/run_{N:02d}/`
+
+---
+
+## 6. Resume (이어서 실행)
 
 중단된 테스트를 이어서 실행하려면 `--tag`로 동일 폴더를 지정합니다.  
 이미 처리된 파일은 `metric.json`을 기준으로 자동으로 건너뜁니다.
