@@ -1,0 +1,676 @@
+INFO	Results → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	Manual mode. Ensure server is running at ws://localhost:8765
+INFO	Log capture enabled for 10 sampled files → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4/plots
+INFO	Processing 61 files (already done: 0)
+INFO	[1/61] 2033-164915-0010
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: BUT NOW I WILL NOT LEAVE THEE BETWEEN THIS PLACE AND BAGHDAD AND WHAT BETIDETH THY COMRADE SHALL BETIDE THEE
+INFO	  HYP: But now I will not leave thee between this place and Baghdad, and what betideth thy comrade shall betide thee.
+INFO	  FIRST_TOKEN_LATENCY: 6.500s
+INFO	  MODEL_RUNTIME(total-audio): 1.030s
+INFO	  FSL(avg): 1.610s
+INFO	  ENCODE(avg): 6.007s  DECODE(avg): 0.281s  FINAL_DECODE(avg): 0.182s
+INFO	  TRANS(avg): 0.094s
+INFO	  SPEAKER_2033_RUNNING_WER: 0.00% (1 files)
+INFO	  HYP_COMMIT: But now I will not leave thee between this place and Baghdad, <seg> and what betideth thy comrade shall betide thee. <vad>
+INFO	[2/61] 2033-164915-0011
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: TWAS AS I FEARED THE COMING ILLS DISCERNING BUT UNTO ALLAH WE ARE ALL RETURNING
+INFO	  HYP: Twas as I feared, the Camino's discerning. But unto Allah we are all returning.
+INFO	  FIRST_TOKEN_LATENCY: 4.609s
+INFO	  MODEL_RUNTIME(total-audio): 0.832s
+INFO	  FSL(avg): 1.666s
+INFO	  ENCODE(avg): 4.013s  DECODE(avg): 0.519s  FINAL_DECODE(avg): 0.168s
+INFO	  TRANS(avg): 0.066s
+INFO	  SPEAKER_2033_RUNNING_WER: 5.71% (2 files)
+INFO	  HYP_COMMIT: Twas as I feared, the Camino's discerning. <seg> But unto Allah we are all returning. <vad>
+INFO	[3/61] 2033-164915-0012
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: THEN THE EUNUCH CRIED UPON THE PAGES SAYING TAKE HIM OFF THE ASS
+INFO	  HYP: Then the eunuch cried upon the pages, saying, Take him off the ass!
+INFO	  FIRST_TOKEN_LATENCY: 4.621s
+INFO	  MODEL_RUNTIME(total-audio): 0.362s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 5.206s  DECODE(avg): 0.443s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.074s
+INFO	  SPEAKER_2033_RUNNING_WER: 4.17% (3 files)
+INFO	  HYP_COMMIT: Then the eunuch cried upon the pages, saying, <seg> Take him off the ass! <seg>
+INFO	[4/61] 2033-164915-0013
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: AND HE ANSWERED I AM THE CHAMBERLAIN OF THE EMIR OF DAMASCUS KING SHARRKAN SON OF OMAR BIN AL NU'UMAN LORD OF BAGHDAD AND OF THE LAND OF KHORASAN AND I BRING TRIBUTE AND PRESENTS FROM HIM TO HIS FATHER IN BAGHDAD
+INFO	  HYP: And he answered, "I am the chamberlain of the Emir of Damascus, King Shar Khan, 'Song of Omar bin Al-Nouman,' Lord of Baghdad, and of the land of Corasan, and I bring tribute and presents from him to his father in Baghdad.
+INFO	  FIRST_TOKEN_LATENCY: 14.379s
+INFO	  MODEL_RUNTIME(total-audio): 0.713s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 15.026s  DECODE(avg): 0.177s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.068s
+INFO	  SPEAKER_2033_RUNNING_WER: 8.79% (4 files)
+INFO	  HYP_COMMIT: And he answered, "I am the chamberlain of the Emir of Damascus, King Shar Khan, 'Song of Omar bin Al-Nouman,' Lord of Baghdad, and of the land of Corasan, <seg> and I bring tribute and presents from him to his father in Baghdad. <seg>
+INFO	[5/61] 2033-164915-0014
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: SO FARE YE FORWARDS NO HARM SHALL BEFAL YOU TILL YOU JOIN HIS GRAND WAZIR DANDAN
+INFO	  HYP: So fare ye forwards, no harm shall befall you till you join his grand vizier Dandan.
+INFO	  FIRST_TOKEN_LATENCY: 4.457s
+INFO	  MODEL_RUNTIME(total-audio): 0.793s
+INFO	  FSL(avg): 1.770s
+INFO	  ENCODE(avg): 4.008s  DECODE(avg): 0.316s  FINAL_DECODE(avg): 0.144s
+INFO	  TRANS(avg): 0.094s
+INFO	  SPEAKER_2033_RUNNING_WER: 9.35% (5 files)
+INFO	  HYP_COMMIT: So fare ye forwards, <seg> no harm shall befall you till you join his grand vizier Dandan. <vad>
+INFO	[6/61] 2033-164915-0015
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: THEN HE BADE HIM BE SEATED AND QUESTIONED HIM AND HE REPLIED THAT HE WAS CHAMBERLAIN TO THE EMIR OF DAMASCUS AND WAS BOUND TO KING OMAR WITH PRESENTS AND THE TRIBUTE OF SYRIA
+INFO	  HYP: Then he bade him be seated and questioned him. and he replied that he was chamberlain to the emir of Damascus. And was bound to King Omar with presents and the tribute of Syria.
+INFO	  FIRST_TOKEN_LATENCY: 4.450s
+INFO	  MODEL_RUNTIME(total-audio): 0.991s
+INFO	  FSL(avg): 3.909s
+INFO	  ENCODE(avg): 4.008s  DECODE(avg): 0.437s  FINAL_DECODE(avg): 0.158s
+INFO	  TRANS(avg): 0.071s
+INFO	  SPEAKER_2033_RUNNING_WER: 7.09% (6 files)
+INFO	  HYP_COMMIT: Then he bade him be seated <seg> and questioned him. <seg> and he replied that he was chamberlain to the emir of Damascus. <vad> And was bound to King Omar with presents and the tribute of Syria. <vad>
+INFO	[7/61] 2033-164915-0016
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: SO IT WAS AGREED THAT WE GO TO DAMASCUS AND FETCH THENCE THE KING'S SON SHARRKAN AND MAKE HIM SULTAN OVER HIS FATHER'S REALM
+INFO	  HYP: So it was agreed that we go to Damascus and fetch thence the king's son, Shar Khan, and make him Sultan over his father's realm.
+INFO	  FIRST_TOKEN_LATENCY: 4.535s
+INFO	  MODEL_RUNTIME(total-audio): 0.943s
+INFO	  FSL(avg): 0.969s
+INFO	  ENCODE(avg): 5.006s  DECODE(avg): 0.264s  FINAL_DECODE(avg): 0.078s
+INFO	  TRANS(avg): 0.089s
+INFO	  SPEAKER_2033_RUNNING_WER: 7.19% (7 files)
+INFO	  HYP_COMMIT: So it was agreed that we go to Damascus <seg> and fetch thence the king's son, Shar Khan, <seg> and make him Sultan over his father's realm. <vad>
+INFO	[8/61] 2033-164915-0017
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: AND AMONGST THEM WERE SOME WHO WOULD HAVE CHOSEN THE CADET ZAU AL MAKAN FOR QUOTH THEY HIS NAME BE LIGHT OF THE PLACE AND HE HATH A SISTER NUZHAT AL ZAMAN HIGHS THE DELIGHT OF THE TIME BUT THEY SET OUT FIVE YEARS AGO FOR AL HIJAZ AND NONE WOTTETH WHAT IS BECOME OF THEM
+INFO	  HYP: And amongst them were some who would have chosen the cadet, Zawal Makan. and he hath a sister, Nuzhat al Zaman, high's, the delight of the time. But they set out five years ago for Al Hijaz, and none woteth what is become of them.
+INFO	  FIRST_TOKEN_LATENCY: 6.514s
+INFO	  MODEL_RUNTIME(total-audio): 0.865s
+INFO	  FSL(avg): 5.984s
+INFO	  ENCODE(avg): 13.910s  DECODE(avg): 0.323s  FINAL_DECODE(avg): 0.206s
+INFO	  TRANS(avg): 0.082s
+INFO	  SPEAKER_2033_RUNNING_WER: 12.11% (8 files)
+INFO	  HYP_COMMIT: And amongst them were some who would have chosen the cadet, Zawal Makan. <seg> and he hath a sister, Nuzhat al Zaman, high's, the delight of the time. <vad> But they set out five years ago for Al Hijaz, <seg> and none woteth what is become of them. <vad>
+INFO	[9/61] 2033-164916-0000
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: SO HE TURNED TO THE WAZIR DANDAN AND SAID TO HIM VERILY YOUR TALE IS A WONDER OF WONDERS
+INFO	  HYP: So he turned to the Wazir Dandan, and said to him, Verily, your tale is a wonder of wonders.
+INFO	  FIRST_TOKEN_LATENCY: 4.627s
+INFO	  MODEL_RUNTIME(total-audio): 1.476s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.013s  DECODE(avg): 0.503s  FINAL_DECODE(avg): 0.260s
+INFO	  TRANS(avg): 0.078s
+INFO	  SPEAKER_2033_RUNNING_WER: 11.16% (9 files)
+INFO	  HYP_COMMIT: So he turned to the Wazir Dandan, <seg> and said to him, <vad> Verily, your tale is a wonder of wonders. <vad>
+INFO	[10/61] 2033-164916-0001
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: KNOW O CHIEF WAZIR THAT HERE WHERE YOU HAVE ENCOUNTERED ME ALLAH HATH GIVEN YOU REST FROM FATIGUE AND BRINGETH YOU YOUR DESIRE AFTER THE EASIEST OF FASHIONS FOR THAT HIS ALMIGHTY WILL RESTORETH TO YOU ZAU AL MAKAN AND HIS SISTER NUZHAT AL ZAMAN WHEREBY WE WILL SETTLE THE MATTER AS WE EASILY CAN
+INFO	  HYP: Know, O Chief Wazir, that here, where you have encountered me, Allah hath given you rest from fatigue, and bringeth you your desire. Whereby we will settle the matter as we easily can.
+INFO	  FIRST_TOKEN_LATENCY: 6.445s
+INFO	  MODEL_RUNTIME(total-audio): 0.603s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 12.164s  DECODE(avg): 0.384s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.070s
+INFO	  SPEAKER_2033_RUNNING_WER: 16.50% (10 files)
+INFO	  HYP_COMMIT: Know, O Chief Wazir, that here, where you have encountered me, <seg> Allah hath given you rest from fatigue, <seg> and bringeth you your desire. <seg> Whereby we will settle the matter as we easily can. <seg>
+INFO	[11/61] 2033-164916-0002
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: WHEN THE MINISTER HEARD THESE WORDS HE REJOICED WITH GREAT JOY AND SAID O CHAMBERLAIN TELL ME THE TALE OF THE TWAIN AND WHAT BEFEL THEM AND THE CAUSE OF THEIR LONG ABSENCE
+INFO	  HYP: When the minister heard these words, he rejoiced with great joy, and said, "O Chamberlayne, tell me the tale of the twain, and what befell them, and the cause of their long absence."
+INFO	  FIRST_TOKEN_LATENCY: 4.450s
+INFO	  MODEL_RUNTIME(total-audio): 0.510s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 8.810s  DECODE(avg): 0.232s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.080s
+INFO	  SPEAKER_2033_RUNNING_WER: 15.45% (11 files)
+INFO	  HYP_COMMIT: When the minister heard these words, <seg> he rejoiced with great joy, <seg> and said, "O Chamberlayne, tell me the tale of the twain, <seg> and what befell them, <seg> and the cause of their long absence." <seg>
+INFO	[12/61] 2033-164916-0003
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: ZAU AL MAKAN BOWED HIS HEAD AWHILE AND THEN SAID I ACCEPT THIS POSITION FOR INDEED THERE WAS NO REFUSING AND HE WAS CERTIFIED THAT THE CHAMBERLAIN HAD COUNSELLED HIM WELL AND WISELY AND SET HIM ON THE RIGHT WAY
+INFO	  HYP: Zawamakan bowed his head awhile, and then said, I accept the position. For indeed, there was no refusing. And he was certified that the chamberlain had counselled him well and wisely, and set him on the right way.
+INFO	  FIRST_TOKEN_LATENCY: 4.485s
+INFO	  MODEL_RUNTIME(total-audio): 0.545s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 10.207s  DECODE(avg): 0.292s  FINAL_DECODE(avg): 0.188s
+INFO	  TRANS(avg): 0.075s
+INFO	  SPEAKER_2033_RUNNING_WER: 14.86% (12 files)
+INFO	  HYP_COMMIT: Zawamakan bowed his head awhile, <seg> and then said, <vad> I accept the position. <seg> For indeed, there was no refusing. <vad> And he was certified that the chamberlain had counselled him well and wisely, <seg> and set him on the right way. <seg>
+INFO	[13/61] 2033-164916-0004
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: THEN HE ADDED O MY UNCLE HOW SHALL I DO WITH MY BROTHER SHARRKAN
+INFO	  HYP: Then he added, Oh, my uncle, how shall I do with my brother Sharkan?
+INFO	  FIRST_TOKEN_LATENCY: 2.843s
+INFO	  MODEL_RUNTIME(total-audio): 0.374s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 6.406s  DECODE(avg): 0.635s  FINAL_DECODE(avg): 0.173s
+INFO	  TRANS(avg): 0.090s
+INFO	  SPEAKER_2033_RUNNING_WER: 14.84% (13 files)
+INFO	  HYP_COMMIT: Then he added, <vad> Oh, my uncle, how shall I do with my brother Sharkan? <seg>
+INFO	[14/61] 2033-164916-0005
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: AFTER AWHILE THE DUST DISPERSED AND THERE APPEARED UNDER IT THE ARMY OF BAGHDAD AND KHORASAN A CONQUERING HOST LIKE THE FULL TIDE SEA AND SHAHRAZAD PERCEIVED THE DAWN OF DAY AND CEASED TO SAY HER PERMITTED SAY
+INFO	  HYP: After a while, the dust dispersed, and there appeared under it the army of Baghdad and Corasan. And Charizard perceived the dawn of day, and ceased to say her permitted say.
+INFO	  FIRST_TOKEN_LATENCY: 4.623s
+INFO	  MODEL_RUNTIME(total-audio): 0.996s
+INFO	  FSL(avg): 1.062s
+INFO	  ENCODE(avg): 8.811s  DECODE(avg): 0.374s  FINAL_DECODE(avg): 0.073s
+INFO	  TRANS(avg): 0.077s
+INFO	  SPEAKER_2033_RUNNING_WER: 16.35% (14 files)
+INFO	  HYP_COMMIT: After a while, the dust dispersed, <seg> and there appeared under it the army of Baghdad and Corasan. <seg> And Charizard perceived the dawn of day, <seg> and ceased to say her permitted say. <vad>
+INFO	[15/61] 2033-164916-0006
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: WHEN IT WAS THE SEVENTY EIGHTH NIGHT
+INFO	  HYP: When it was the seventy eighth night,
+INFO	  FIRST_TOKEN_LATENCY: 4.147s
+INFO	  MODEL_RUNTIME(total-audio): 1.387s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.482s
+INFO	  TRANS(avg): 0.068s
+INFO	  SPEAKER_2033_RUNNING_WER: 16.08% (15 files)
+INFO	  HYP_COMMIT: When it was the seventy eighth night, <vad>
+INFO	[16/61] 2033-164916-0007
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: AND IN IT ALL REJOICED AT THE ACCESSION OF THE LIGHT OF THE PLACE
+INFO	  HYP: And in it all rejoiced at the accession of the light of the place.
+INFO	  FIRST_TOKEN_LATENCY: 6.633s
+INFO	  MODEL_RUNTIME(total-audio): 0.968s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 6.124s  DECODE(avg): 0.391s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.075s
+INFO	  SPEAKER_2033_RUNNING_WER: 15.58% (16 files)
+INFO	  HYP_COMMIT: And in it all rejoiced at the accession of the light of the place. <seg>
+INFO	[17/61] 2033-164916-0008
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: LASTLY THE MINISTER WENT IN AND KISSED THE GROUND BEFORE ZAU AL MAKAN WHO ROSE TO MEET HIM SAYING WELCOME O WAZIR AND SIRE SANS PEER
+INFO	  HYP: Lastly, the minister went in and kissed the ground before Zawal Makan. Welcome, O Wazir, and Sire's Sons Peer.
+INFO	  FIRST_TOKEN_LATENCY: 4.469s
+INFO	  MODEL_RUNTIME(total-audio): 0.996s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 5.008s  DECODE(avg): 0.267s  FINAL_DECODE(avg): 0.103s
+INFO	  TRANS(avg): 0.067s
+INFO	  SPEAKER_2033_RUNNING_WER: 16.84% (17 files)
+INFO	  HYP_COMMIT: Lastly, the minister went in <seg> and kissed the ground before Zawal Makan. <seg> Welcome, O Wazir, and Sire's Sons Peer. <vad>
+INFO	[18/61] 2033-164916-0009
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: MOREOVER THE SULTAN COMMANDED HIS WAZIR DANDAN CALL A TEN DAYS HALT OF THE ARMY THAT HE MIGHT BE PRIVATE WITH HIM AND LEARN FROM HIM HOW AND WHEREFORE HIS FATHER HAD BEEN SLAIN
+INFO	  HYP: Moreover, the Sultan commanded his Wazir Dandan, call a ten days halt of the army, that he might be private with him, and learn from him how and wherefore his father had been slain.
+INFO	  FIRST_TOKEN_LATENCY: 12.364s
+INFO	  MODEL_RUNTIME(total-audio): 0.823s
+INFO	  FSL(avg): 3.251s
+INFO	  ENCODE(avg): 12.007s  DECODE(avg): 0.261s  FINAL_DECODE(avg): 0.168s
+INFO	  TRANS(avg): 0.072s
+INFO	  SPEAKER_2033_RUNNING_WER: 15.71% (18 files)
+INFO	  HYP_COMMIT: Moreover, the Sultan commanded his Wazir Dandan, call a ten days halt of the army, that he might be private with him, <seg> and learn from him how and wherefore his father had been slain. <vad>
+INFO	[19/61] 2033-164916-0010
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: HE THEN REPAIRED TO THE HEART OF THE ENCAMPMENT AND ORDERED THE HOST TO HALT TEN DAYS
+INFO	  HYP: He then repaired to the heart of the encampment, and ordered the host to halt ten days.
+INFO	  FIRST_TOKEN_LATENCY: 6.355s
+INFO	  MODEL_RUNTIME(total-audio): 0.402s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 7.026s  DECODE(avg): 0.174s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.071s
+INFO	  SPEAKER_2033_RUNNING_WER: 15.19% (19 files)
+INFO	  HYP_COMMIT: He then repaired to the heart of the encampment, <seg> and ordered the host to halt ten days. <seg>
+INFO	[20/61] 2414-128291-0000
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: WHAT HATH HAPPENED UNTO ME
+INFO	  HYP: What hath happened unto me?
+INFO	  FIRST_TOKEN_LATENCY: 3.980s
+INFO	  MODEL_RUNTIME(total-audio): 1.070s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.368s
+INFO	  TRANS(avg): 0.079s
+INFO	  SPEAKER_2414_RUNNING_WER: 0.00% (1 files)
+INFO	  HYP_COMMIT: What hath happened unto me? <vad>
+INFO	[21/61] 2414-128291-0001
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: HE ASKED HIMSELF SOMETHING WARM AND LIVING QUICKENETH ME IT MUST BE IN THE NEIGHBOURHOOD
+INFO	  HYP: He asked himself, something warm and living quickened me. It must be in that neighborhood.
+INFO	  FIRST_TOKEN_LATENCY: 6.564s
+INFO	  MODEL_RUNTIME(total-audio): 0.862s
+INFO	  FSL(avg): 1.029s
+INFO	  ENCODE(avg): 6.079s  DECODE(avg): 0.325s  FINAL_DECODE(avg): 0.136s
+INFO	  TRANS(avg): 0.078s
+INFO	  SPEAKER_2414_RUNNING_WER: 15.00% (2 files)
+INFO	  HYP_COMMIT: He asked himself, something warm and living quickened me. <seg> It must be in that neighborhood. <vad>
+INFO	[22/61] 2414-128291-0002
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: WHEN HOWEVER ZARATHUSTRA WAS QUITE NIGH UNTO THEM THEN DID HE HEAR PLAINLY THAT A HUMAN VOICE SPAKE IN THE MIDST OF THE KINE AND APPARENTLY ALL OF THEM HAD TURNED THEIR HEADS TOWARDS THE SPEAKER
+INFO	  HYP: When, however, the two straw was quite nigh unto them, Then did he hear plainly that human voice spake? And apparently all of them had turned their heads towards the speaker.
+INFO	  FIRST_TOKEN_LATENCY: 6.464s
+INFO	  MODEL_RUNTIME(total-audio): 1.092s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 8.108s  DECODE(avg): 0.408s  FINAL_DECODE(avg): 0.200s
+INFO	  TRANS(avg): 0.074s
+INFO	  SPEAKER_2414_RUNNING_WER: 23.21% (3 files)
+INFO	  HYP_COMMIT: When, however, the two straw was quite nigh unto them, <seg> Then did he hear plainly that human voice spake? <seg> And apparently all of them had turned their heads towards the speaker. <vad>
+INFO	[23/61] 2414-128291-0003
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: WHAT DO I HERE SEEK
+INFO	  HYP: What do I here seek?
+INFO	  FIRST_TOKEN_LATENCY: 3.786s
+INFO	  MODEL_RUNTIME(total-audio): 1.101s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.381s
+INFO	  TRANS(avg): 0.077s
+INFO	  SPEAKER_2414_RUNNING_WER: 21.31% (4 files)
+INFO	  HYP_COMMIT: What do I here seek? <vad>
+INFO	[24/61] 2414-128291-0004
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: ANSWERED HE THE SAME THAT THOU SEEKEST THOU MISCHIEF MAKER THAT IS TO SAY HAPPINESS UPON EARTH
+INFO	  HYP: Answered he. The same that thou seekest, thou mischief maker, that is to say, happiness upon earth.
+INFO	  FIRST_TOKEN_LATENCY: 2.510s
+INFO	  MODEL_RUNTIME(total-audio): 0.451s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 5.624s  DECODE(avg): 0.262s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.077s
+INFO	  SPEAKER_2414_RUNNING_WER: 16.67% (5 files)
+INFO	  HYP_COMMIT: Answered he. <seg> The same that thou seekest, <seg> thou mischief maker, that is to say, happiness upon earth. <seg>
+INFO	[25/61] 2414-128291-0005
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: FOR I TELL THEE THAT I HAVE ALREADY TALKED HALF A MORNING UNTO THEM AND JUST NOW WERE THEY ABOUT TO GIVE ME THEIR ANSWER
+INFO	  HYP: For I tell thee that I have already talked half a morning unto them, and just now were they about to give me their answer.
+INFO	  FIRST_TOKEN_LATENCY: 8.382s
+INFO	  MODEL_RUNTIME(total-audio): 1.028s
+INFO	  FSL(avg): 1.539s
+INFO	  ENCODE(avg): 8.006s  DECODE(avg): 0.270s  FINAL_DECODE(avg): 0.165s
+INFO	  TRANS(avg): 0.070s
+INFO	  SPEAKER_2414_RUNNING_WER: 12.62% (6 files)
+INFO	  HYP_COMMIT: For I tell thee that I have already talked half a morning unto them, <seg> and just now were they about to give me their answer. <vad>
+INFO	[26/61] 2414-128291-0006
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: HE WOULD NOT BE RID OF HIS AFFLICTION
+INFO	  HYP: He would not be rid of his affliction.
+INFO	  FIRST_TOKEN_LATENCY: 4.597s
+INFO	  MODEL_RUNTIME(total-audio): 1.132s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.449s
+INFO	  TRANS(avg): 0.067s
+INFO	  SPEAKER_2414_RUNNING_WER: 11.71% (7 files)
+INFO	  HYP_COMMIT: He would not be rid of his affliction. <vad>
+INFO	[27/61] 2414-128291-0007
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: WHO HATH NOT AT PRESENT HIS HEART HIS MOUTH AND HIS EYES FULL OF DISGUST
+INFO	  HYP: Who hath not at present his heart, his mouth and his eyes full of disgust?
+INFO	  FIRST_TOKEN_LATENCY: 7.648s
+INFO	  MODEL_RUNTIME(total-audio): 0.818s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.242s
+INFO	  TRANS(avg): 0.084s
+INFO	  SPEAKER_2414_RUNNING_WER: 10.32% (8 files)
+INFO	  HYP_COMMIT: Who hath not at present his heart, his mouth and his eyes full of disgust? <vad>
+INFO	[28/61] 2414-128291-0008
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: THOU ALSO THOU ALSO
+INFO	  HYP: Thou also, thou also,
+INFO	  FIRST_TOKEN_LATENCY: 2.370s
+INFO	  MODEL_RUNTIME(total-audio): 1.217s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.006s  DECODE(avg): 0.270s  FINAL_DECODE(avg): 0.160s
+INFO	  TRANS(avg): 0.066s
+INFO	  SPEAKER_2414_RUNNING_WER: 10.00% (9 files)
+INFO	  HYP_COMMIT: Thou also, <seg> thou also, <vad>
+INFO	[29/61] 2414-128291-0009
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: BUT BEHOLD THESE KINE
+INFO	  HYP: But behold this kind.
+INFO	  FIRST_TOKEN_LATENCY: 3.629s
+INFO	  MODEL_RUNTIME(total-audio): 1.094s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.392s
+INFO	  TRANS(avg): 0.090s
+INFO	  SPEAKER_2414_RUNNING_WER: 11.19% (10 files)
+INFO	  HYP_COMMIT: But behold this kind. <vad>
+INFO	[30/61] 2414-128291-0010
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: THE KINE HOWEVER GAZED AT IT ALL AND WONDERED
+INFO	  HYP: The kind, however, gazed at it all and wondered.
+INFO	  FIRST_TOKEN_LATENCY: 6.473s
+INFO	  MODEL_RUNTIME(total-audio): 1.220s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 6.061s  DECODE(avg): 0.231s  FINAL_DECODE(avg): 0.148s
+INFO	  TRANS(avg): 0.115s
+INFO	  SPEAKER_2414_RUNNING_WER: 11.19% (11 files)
+INFO	  HYP_COMMIT: The kind, however, gazed at it all <seg> and wondered. <vad>
+INFO	[31/61] 2414-128291-0011
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: WANTON AVIDITY BILIOUS ENVY CAREWORN REVENGE POPULACE PRIDE ALL THESE STRUCK MINE EYE
+INFO	  HYP: Wanton avidity, bilious envy. Care one revenge.
+INFO	  FIRST_TOKEN_LATENCY: 5.384s
+INFO	  MODEL_RUNTIME(total-audio): -3.853s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 7.007s  DECODE(avg): 0.269s  FINAL_DECODE(avg): 0.130s
+INFO	  TRANS(avg): 0.074s
+INFO	  SPEAKER_2414_RUNNING_WER: 16.03% (12 files)
+INFO	  HYP_COMMIT: Wanton avidity, bilious envy. <vad> Care one revenge. <seg>
+INFO	[32/61] 2414-128291-0012
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: IT IS NO LONGER TRUE THAT THE POOR ARE BLESSED
+INFO	  HYP: It is no longer true that the poor are blessed.
+INFO	  FIRST_TOKEN_LATENCY: 4.797s
+INFO	  MODEL_RUNTIME(total-audio): 0.832s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.172s  DECODE(avg): 0.524s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.078s
+INFO	  SPEAKER_2414_RUNNING_WER: 15.06% (13 files)
+INFO	  HYP_COMMIT: It is no longer true that the poor are blessed. <seg>
+INFO	[33/61] 2414-128291-0013
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: THE KINGDOM OF HEAVEN HOWEVER IS WITH THE KINE AND WHY IS IT NOT WITH THE RICH
+INFO	  HYP: The kingdom of heaven, however, is with the kind. I'm sorry, but I can't help you.
+INFO	  FIRST_TOKEN_LATENCY: 5.680s
+INFO	  MODEL_RUNTIME(total-audio): -1.862s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 7.206s  DECODE(avg): 0.488s  FINAL_DECODE(avg): 0.150s
+INFO	  TRANS(avg): 0.096s
+INFO	  SPEAKER_2414_RUNNING_WER: 19.13% (14 files)
+INFO	  HYP_COMMIT: The kingdom of heaven, however, is with the kind. <vad> I'm sorry, but I can't help you. <seg>
+INFO	[34/61] 2414-128291-0014
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: WHY DOST THOU TEMPT ME
+INFO	  HYP: Why thou dost tempt me?
+INFO	  FIRST_TOKEN_LATENCY: 4.409s
+INFO	  MODEL_RUNTIME(total-audio): 1.074s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.367s
+INFO	  TRANS(avg): 0.064s
+INFO	  SPEAKER_2414_RUNNING_WER: 19.68% (15 files)
+INFO	  HYP_COMMIT: Why thou dost tempt me? <vad>
+INFO	[35/61] 2414-128291-0015
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: ANSWERED THE OTHER
+INFO	  HYP: Answered the other.
+INFO	  FIRST_TOKEN_LATENCY: 2.634s
+INFO	  MODEL_RUNTIME(total-audio): 0.659s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.183s  DECODE(avg): 0.357s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.075s
+INFO	  SPEAKER_2414_RUNNING_WER: 19.37% (16 files)
+INFO	  HYP_COMMIT: Answered the other. <seg>
+INFO	[36/61] 2414-128291-0016
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: THOU KNOWEST IT THYSELF BETTER EVEN THAN I
+INFO	  HYP: Thou knowest it thyself, better even than I.
+INFO	  FIRST_TOKEN_LATENCY: 4.498s
+INFO	  MODEL_RUNTIME(total-audio): 0.983s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.006s  DECODE(avg): 0.421s  FINAL_DECODE(avg): 0.147s
+INFO	  TRANS(avg): 0.067s
+INFO	  SPEAKER_2414_RUNNING_WER: 18.59% (17 files)
+INFO	  HYP_COMMIT: Thou knowest it thyself, <seg> better even than I. <vad>
+INFO	[37/61] 2414-128291-0017
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: THUS SPAKE THE PEACEFUL ONE AND PUFFED HIMSELF AND PERSPIRED WITH HIS WORDS SO THAT THE KINE WONDERED ANEW
+INFO	  HYP: Thus begged the peaceful one, and puffed himself, and perspired with his words. So that the kind wondered anew.
+INFO	  FIRST_TOKEN_LATENCY: 4.442s
+INFO	  MODEL_RUNTIME(total-audio): 1.447s
+INFO	  FSL(avg): 2.325s
+INFO	  ENCODE(avg): 4.007s  DECODE(avg): 0.339s  FINAL_DECODE(avg): 0.281s
+INFO	  TRANS(avg): 0.072s
+INFO	  SPEAKER_2414_RUNNING_WER: 17.89% (18 files)
+INFO	  HYP_COMMIT: Thus begged the peaceful one, <seg> and puffed himself, and perspired with his words. <vad> So that the kind wondered anew. <vad>
+INFO	[38/61] 2414-128291-0018
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: THOU DOEST VIOLENCE TO THYSELF THOU PREACHER ON THE MOUNT WHEN THOU USEST SUCH SEVERE WORDS
+INFO	  HYP: Thou doest violence to thyself, thou preacher on the mount, and thou usest such savior words.
+INFO	  FIRST_TOKEN_LATENCY: 4.627s
+INFO	  MODEL_RUNTIME(total-audio): 0.968s
+INFO	  FSL(avg): 3.192s
+INFO	  ENCODE(avg): 4.006s  DECODE(avg): 0.471s  FINAL_DECODE(avg): 0.133s
+INFO	  TRANS(avg): 0.106s
+INFO	  SPEAKER_2414_RUNNING_WER: 17.52% (19 files)
+INFO	  HYP_COMMIT: Thou doest violence to thyself, <seg> thou preacher on the mount, and thou usest such savior words. <vad>
+INFO	[39/61] 2414-128291-0019
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: THEY ALSO ABSTAIN FROM ALL HEAVY THOUGHTS WHICH INFLATE THE HEART
+INFO	  HYP: They also abstain from all heavy thoughts, which inflate the heart.
+INFO	  FIRST_TOKEN_LATENCY: 6.373s
+INFO	  MODEL_RUNTIME(total-audio): 0.770s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 6.059s  DECODE(avg): 0.219s  FINAL_DECODE(avg): 0.139s
+INFO	  TRANS(avg): 0.077s
+INFO	  SPEAKER_2414_RUNNING_WER: 16.73% (20 files)
+INFO	  HYP_COMMIT: They also abstain from all heavy thoughts, <seg> which inflate the heart. <vad>
+INFO	[40/61] 2414-128291-0020
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: WELL
+INFO	  HYP: Well.
+INFO	  FIRST_TOKEN_LATENCY: 2.485s
+INFO	  MODEL_RUNTIME(total-audio): 1.235s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.284s
+INFO	  TRANS(avg): 0.064s
+INFO	  SPEAKER_2414_RUNNING_WER: 16.67% (21 files)
+INFO	  HYP_COMMIT: Well. <vad>
+INFO	[41/61] 2414-128291-0021
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: SAID ZARATHUSTRA THOU SHOULDST ALSO SEE MINE ANIMALS MINE EAGLE AND MY SERPENT THEIR LIKE DO NOT AT PRESENT EXIST ON EARTH
+INFO	  HYP: Say, sir, two extra. Thou shouldst also see mine animals, mine eagle, and my serpent. Their like do not at present exist on earth.
+INFO	  FIRST_TOKEN_LATENCY: 2.474s
+INFO	  MODEL_RUNTIME(total-audio): 0.967s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.006s  DECODE(avg): 0.388s  FINAL_DECODE(avg): 0.212s
+INFO	  TRANS(avg): 0.080s
+INFO	  SPEAKER_2414_RUNNING_WER: 16.79% (22 files)
+INFO	  HYP_COMMIT: Say, sir, two extra. <seg> Thou shouldst also see mine animals, mine eagle, and my serpent. <vad> Their like do not at present exist on earth. <seg>
+INFO	[42/61] 2414-128291-0022
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: AND TALK TO MINE ANIMALS OF THE HAPPINESS OF ANIMALS
+INFO	  HYP: And talk to mine animals of the happiness of animals.
+INFO	  FIRST_TOKEN_LATENCY: 5.489s
+INFO	  MODEL_RUNTIME(total-audio): 0.964s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.257s
+INFO	  TRANS(avg): 0.077s
+INFO	  SPEAKER_2414_RUNNING_WER: 16.19% (23 files)
+INFO	  HYP_COMMIT: And talk to mine animals of the happiness of animals. <vad>
+INFO	[43/61] 2414-128291-0023
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: NOW HOWEVER TAKE LEAVE AT ONCE OF THY KINE THOU STRANGE ONE
+INFO	  HYP: Now, however, take leave at once of thy kind, thou strange one.
+INFO	  FIRST_TOKEN_LATENCY: 6.408s
+INFO	  MODEL_RUNTIME(total-audio): 1.273s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 6.006s  DECODE(avg): 0.307s  FINAL_DECODE(avg): 0.127s
+INFO	  TRANS(avg): 0.094s
+INFO	  SPEAKER_2414_RUNNING_WER: 15.86% (24 files)
+INFO	  HYP_COMMIT: Now, however, take leave at once of thy kind, <seg> thou strange one. <vad>
+INFO	[44/61] 2414-128291-0024
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: THOU AMIABLE ONE
+INFO	  HYP: Thou amiable one!
+INFO	  FIRST_TOKEN_LATENCY: 3.326s
+INFO	  MODEL_RUNTIME(total-audio): 1.081s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.372s
+INFO	  TRANS(avg): 0.065s
+INFO	  SPEAKER_2414_RUNNING_WER: 15.70% (25 files)
+INFO	  HYP_COMMIT: Thou amiable one! <vad>
+INFO	[45/61] 2414-128291-0025
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: FOR THEY ARE THY WARMEST FRIENDS AND PRECEPTORS
+INFO	  HYP: For they are thy warmest friends and perceptors.
+INFO	  FIRST_TOKEN_LATENCY: 4.463s
+INFO	  MODEL_RUNTIME(total-audio): 0.885s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.009s  DECODE(avg): 0.354s  FINAL_DECODE(avg): 0.134s
+INFO	  TRANS(avg): 0.112s
+INFO	  SPEAKER_2414_RUNNING_WER: 15.61% (26 files)
+INFO	  HYP_COMMIT: For they are thy warmest friends <seg> and perceptors. <vad>
+INFO	[46/61] 2414-128291-0026
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: THOU EVIL FLATTERER
+INFO	  HYP: Thou evil flatterer!
+INFO	  FIRST_TOKEN_LATENCY: 3.350s
+INFO	  MODEL_RUNTIME(total-audio): 1.070s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.380s
+INFO	  TRANS(avg): 0.064s
+INFO	  SPEAKER_2414_RUNNING_WER: 15.46% (27 files)
+INFO	  HYP_COMMIT: Thou evil flatterer! <vad>
+INFO	[47/61] 2414-128292-0000
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: WHITHER HATH MY LONESOMENESS GONE SPAKE HE
+INFO	  HYP: Whither hath my lonesomeness gone? Spake he.
+INFO	  FIRST_TOKEN_LATENCY: 4.532s
+INFO	  MODEL_RUNTIME(total-audio): 0.789s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.006s  DECODE(avg): 0.441s  FINAL_DECODE(avg): 0.141s
+INFO	  TRANS(avg): 0.082s
+INFO	  SPEAKER_2414_RUNNING_WER: 15.11% (28 files)
+INFO	  HYP_COMMIT: Whither hath my lonesomeness gone? <seg> Spake he. <vad>
+INFO	[48/61] 2414-128292-0001
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: MY SHADOW CALLETH ME
+INFO	  HYP: My shadow calleth me.
+INFO	  FIRST_TOKEN_LATENCY: 3.586s
+INFO	  MODEL_RUNTIME(total-audio): 1.091s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.390s
+INFO	  TRANS(avg): 0.078s
+INFO	  SPEAKER_2414_RUNNING_WER: 14.92% (29 files)
+INFO	  HYP_COMMIT: My shadow calleth me. <vad>
+INFO	[49/61] 2414-128292-0002
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: WHAT MATTER ABOUT MY SHADOW
+INFO	  HYP: What matter about my shadow?
+INFO	  FIRST_TOKEN_LATENCY: 3.704s
+INFO	  MODEL_RUNTIME(total-audio): 1.114s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.396s
+INFO	  TRANS(avg): 0.082s
+INFO	  SPEAKER_2414_RUNNING_WER: 14.69% (30 files)
+INFO	  HYP_COMMIT: What matter about my shadow? <vad>
+INFO	[50/61] 2414-128292-0003
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: LET IT RUN AFTER ME I RUN AWAY FROM IT
+INFO	  HYP: Let it run after me. I run away from it.
+INFO	  FIRST_TOKEN_LATENCY: 2.493s
+INFO	  MODEL_RUNTIME(total-audio): 0.876s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 3.113s  DECODE(avg): 0.333s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.082s
+INFO	  SPEAKER_2414_RUNNING_WER: 14.24% (31 files)
+INFO	  HYP_COMMIT: Let it run after me. <seg> I run away from it. <seg>
+INFO	[51/61] 2414-128292-0004
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: THUS SPAKE ZARATHUSTRA TO HIS HEART AND RAN AWAY
+INFO	  HYP: Thus paying the two-struck to his heart, and ran away.
+INFO	  FIRST_TOKEN_LATENCY: 4.496s
+INFO	  MODEL_RUNTIME(total-audio): 0.553s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.007s  DECODE(avg): 0.484s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.067s
+INFO	  SPEAKER_2414_RUNNING_WER: 15.04% (32 files)
+INFO	  HYP_COMMIT: Thus paying the two-struck to his heart, <seg> and ran away. <seg>
+INFO	[52/61] 2414-128292-0005
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: VERILY MY FOLLY HATH GROWN BIG IN THE MOUNTAINS
+INFO	  HYP: Verily, my folly hath grown big, in the mountains.
+INFO	  FIRST_TOKEN_LATENCY: 5.791s
+INFO	  MODEL_RUNTIME(total-audio): 1.006s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.300s
+INFO	  TRANS(avg): 0.083s
+INFO	  SPEAKER_2414_RUNNING_WER: 14.66% (33 files)
+INFO	  HYP_COMMIT: Verily, my folly hath grown big, in the mountains. <vad>
+INFO	[53/61] 2414-128292-0006
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: NOW DO I HEAR SIX OLD FOOLS LEGS RATTLING BEHIND ONE ANOTHER
+INFO	  HYP: Now do I hear six old fool's legs rattling behind one another?
+INFO	  FIRST_TOKEN_LATENCY: 7.519s
+INFO	  MODEL_RUNTIME(total-audio): 0.974s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.272s
+INFO	  TRANS(avg): 0.082s
+INFO	  SPEAKER_2414_RUNNING_WER: 14.72% (34 files)
+INFO	  HYP_COMMIT: Now do I hear six old fool's legs rattling behind one another? <vad>
+INFO	[54/61] 2414-128292-0007
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: BUT DOTH ZARATHUSTRA NEED TO BE FRIGHTENED BY HIS SHADOW
+INFO	  HYP: But Dodos at Ustra need to be frightened by his shadow.
+INFO	  FIRST_TOKEN_LATENCY: 5.260s
+INFO	  MODEL_RUNTIME(total-audio): 0.940s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.258s
+INFO	  TRANS(avg): 0.069s
+INFO	  SPEAKER_2414_RUNNING_WER: 15.14% (35 files)
+INFO	  HYP_COMMIT: But Dodos at Ustra need to be frightened by his shadow. <vad>
+INFO	[55/61] 2414-128292-0008
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: ALSO METHINKETH THAT AFTER ALL IT HATH LONGER LEGS THAN MINE
+INFO	  HYP: Also, methink it that after all it hath longer legs than mine.
+INFO	  FIRST_TOKEN_LATENCY: 6.484s
+INFO	  MODEL_RUNTIME(total-audio): 0.634s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 6.059s  DECODE(avg): 0.322s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.090s
+INFO	  SPEAKER_2414_RUNNING_WER: 15.22% (36 files)
+INFO	  HYP_COMMIT: Also, methink it that after all it hath longer legs than mine. <seg>
+INFO	[56/61] 2414-128292-0009
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: FOR WHEN ZARATHUSTRA SCRUTINISED HIM WITH HIS GLANCE HE WAS FRIGHTENED AS BY A SUDDEN APPARITION SO SLENDER SWARTHY HOLLOW AND WORN OUT DID THIS FOLLOWER APPEAR
+INFO	  HYP: Who when that two-stress scrutinised him, with his glance he was frightened, as by a sudden apparition, so slender, swarthy, hollow and worn out did his follower appear.
+INFO	  FIRST_TOKEN_LATENCY: 4.515s
+INFO	  MODEL_RUNTIME(total-audio): 1.038s
+INFO	  FSL(avg): 8.054s
+INFO	  ENCODE(avg): 4.007s  DECODE(avg): 0.428s  FINAL_DECODE(avg): 0.169s
+INFO	  TRANS(avg): 0.073s
+INFO	  SPEAKER_2414_RUNNING_WER: 15.44% (37 files)
+INFO	  HYP_COMMIT: Who when that two-stress scrutinised him, <seg> with his glance he was frightened, as by a sudden apparition, so slender, swarthy, hollow and worn out did his follower appear. <vad>
+INFO	[57/61] 2414-128292-0010
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: ASKED ZARATHUSTRA VEHEMENTLY WHAT DOEST THOU HERE
+INFO	  HYP: As they twist ravagently, what doest thou here?
+INFO	  FIRST_TOKEN_LATENCY: 4.428s
+INFO	  MODEL_RUNTIME(total-audio): 1.150s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.005s  DECODE(avg): 0.338s  FINAL_DECODE(avg): 0.130s
+INFO	  TRANS(avg): 0.075s
+INFO	  SPEAKER_2414_RUNNING_WER: 16.14% (38 files)
+INFO	  HYP_COMMIT: As they twist ravagently, <seg> what doest thou here? <vad>
+INFO	[58/61] 2414-128292-0011
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: AND WHY CALLEST THOU THYSELF MY SHADOW
+INFO	  HYP: And why callest thou thyself my shadow?
+INFO	  FIRST_TOKEN_LATENCY: 4.535s
+INFO	  MODEL_RUNTIME(total-audio): 0.680s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.061s  DECODE(avg): 0.398s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.071s
+INFO	  SPEAKER_2414_RUNNING_WER: 15.88% (39 files)
+INFO	  HYP_COMMIT: And why callest thou thyself my shadow? <seg>
+INFO	[59/61] 2414-128292-0012
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: THOU ART NOT PLEASING UNTO ME
+INFO	  HYP: Thou art not pleasing unto me.
+INFO	  FIRST_TOKEN_LATENCY: 3.770s
+INFO	  MODEL_RUNTIME(total-audio): 1.060s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.386s
+INFO	  TRANS(avg): 0.062s
+INFO	  SPEAKER_2414_RUNNING_WER: 15.65% (40 files)
+INFO	  HYP_COMMIT: Thou art not pleasing unto me. <vad>
+INFO	[60/61] 2414-128292-0013
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: MUST I EVER BE ON THE WAY
+INFO	  HYP: Must I ever be on the way?
+INFO	  FIRST_TOKEN_LATENCY: 3.746s
+INFO	  MODEL_RUNTIME(total-audio): 1.281s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.397s
+INFO	  TRANS(avg): 0.068s
+INFO	  SPEAKER_2414_RUNNING_WER: 15.40% (41 files)
+INFO	  HYP_COMMIT: Must I ever be on the way? <vad>
+INFO	[61/61] 2414-128292-0014
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4
+INFO	  REF: O EARTH THOU HAST BECOME TOO ROUND FOR ME
+INFO	  HYP: O Earth, thou hast become too round for me.
+INFO	  FIRST_TOKEN_LATENCY: 5.299s
+INFO	  MODEL_RUNTIME(total-audio): 0.764s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.240s
+INFO	  TRANS(avg): 0.112s
+INFO	  SPEAKER_2414_RUNNING_WER: 15.09% (42 files)
+INFO	  HYP_COMMIT: O Earth, thou hast become too round for me. <vad>
+INFO	Completed. Results saved to /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c4

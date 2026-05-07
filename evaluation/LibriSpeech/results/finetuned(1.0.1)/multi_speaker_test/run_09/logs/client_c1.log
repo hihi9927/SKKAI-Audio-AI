@@ -1,0 +1,676 @@
+INFO	Results → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	Manual mode. Ensure server is running at ws://localhost:8765
+INFO	Log capture enabled for 10 sampled files → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1/plots
+INFO	Processing 61 files (already done: 0)
+INFO	[1/61] 1688-142285-0061
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: I BELIEVE WHAT I SEE AND NO MORE
+INFO	  HYP: I believe what I see and no more.
+INFO	  FIRST_TOKEN_LATENCY: 4.169s
+INFO	  MODEL_RUNTIME(total-audio): 1.039s
+INFO	  FSL(avg): 0.063s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.246s
+INFO	  TRANS(avg): 0.065s
+INFO	  SPEAKER_1688_RUNNING_WER: 0.00% (1 files)
+INFO	  HYP_COMMIT: I believe what I see <vad> and no more. <vad>
+INFO	[2/61] 1688-142285-0062
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: THAT'S WHAT I BELIEVE YOUNG WOMAN
+INFO	  HYP: That's what I believe, young woman.
+INFO	  FIRST_TOKEN_LATENCY: 2.386s
+INFO	  MODEL_RUNTIME(total-audio): 1.393s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.009s  DECODE(avg): 0.300s  FINAL_DECODE(avg): 0.202s
+INFO	  TRANS(avg): 0.066s
+INFO	  SPEAKER_1688_RUNNING_WER: 0.00% (2 files)
+INFO	  HYP_COMMIT: That's what I believe, <seg> young woman. <vad>
+INFO	[3/61] 1688-142285-0063
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: I DON'T BELIEVE ALL I HEAR NO NOT BY A BIG DEAL
+INFO	  HYP: I don't believe all I hear. No, not by a big deal.
+INFO	  FIRST_TOKEN_LATENCY: 4.533s
+INFO	  MODEL_RUNTIME(total-audio): 1.256s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.005s  DECODE(avg): 0.413s  FINAL_DECODE(avg): 0.155s
+INFO	  TRANS(avg): 0.077s
+INFO	  SPEAKER_1688_RUNNING_WER: 0.00% (3 files)
+INFO	  HYP_COMMIT: I don't believe all I hear. <seg> No, not by a big deal. <vad>
+INFO	[4/61] 1688-142285-0064
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: BUT HOO'S COME AT LAST AND HOO'S WELCOME AS LONG AS HOO'LL KEEP FROM PREACHING ON WHAT HOO KNOWS NOUGHT ABOUT
+INFO	  HYP: But who's come at last? and who's welcome as long as he'll keep from preaching on what who knows not about?
+INFO	  FIRST_TOKEN_LATENCY: 2.566s
+INFO	  MODEL_RUNTIME(total-audio): 0.949s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 3.029s  DECODE(avg): 0.404s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.066s
+INFO	  SPEAKER_1688_RUNNING_WER: 9.62% (4 files)
+INFO	  HYP_COMMIT: But who's come at last? <seg> and who's welcome as long as he'll keep from preaching on what who knows not about? <seg>
+INFO	[5/61] 1688-142285-0065
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: IT'S SIMPLE AND NOT FAR TO FETCH NOR HARD TO WORK
+INFO	  HYP: It's simple , and not far to fetch, nor hard to work.
+INFO	  FIRST_TOKEN_LATENCY: 2.398s
+INFO	  MODEL_RUNTIME(total-audio): 1.022s
+INFO	  FSL(avg): 0.829s
+INFO	  ENCODE(avg): 2.011s  DECODE(avg): 0.290s  FINAL_DECODE(avg): 0.096s
+INFO	  TRANS(avg): 0.095s
+INFO	  SPEAKER_1688_RUNNING_WER: 7.81% (5 files)
+INFO	  HYP_COMMIT: It's simple <seg> , and not far to fetch, nor hard to work. <vad>
+INFO	[6/61] 1688-142285-0066
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: BUT THE GIRL ONLY PLEADED THE MORE WITH MARGARET
+INFO	  HYP: But the girl only pleaded the more with Margaret.
+INFO	  FIRST_TOKEN_LATENCY: 4.448s
+INFO	  MODEL_RUNTIME(total-audio): 1.313s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.433s
+INFO	  TRANS(avg): 0.069s
+INFO	  SPEAKER_1688_RUNNING_WER: 6.85% (6 files)
+INFO	  HYP_COMMIT: But the girl only pleaded the more with Margaret. <vad>
+INFO	[7/61] 1688-142285-0067
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: DON'T THINK HARDLY ON HIM HE'S A GOOD MAN HE IS
+INFO	  HYP: Don't think hardly on him. He's a good man, he is.
+INFO	  FIRST_TOKEN_LATENCY: 4.574s
+INFO	  MODEL_RUNTIME(total-audio): 1.003s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.108s  DECODE(avg): 0.516s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.073s
+INFO	  SPEAKER_1688_RUNNING_WER: 5.81% (7 files)
+INFO	  HYP_COMMIT: Don't think hardly on him. <seg> He's a good man, he is. <seg>
+INFO	[8/61] 1688-142285-0068
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: I SOMETIMES THINK I SHALL BE MOPED WI SORROW EVEN IN THE CITY OF GOD IF FATHER IS NOT THERE
+INFO	  HYP: I sometimes think I shall be moped with sorrow even in the city of God if Arthur is not there.
+INFO	  FIRST_TOKEN_LATENCY: 6.501s
+INFO	  MODEL_RUNTIME(total-audio): 1.135s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 6.017s  DECODE(avg): 0.265s  FINAL_DECODE(avg): 0.175s
+INFO	  TRANS(avg): 0.104s
+INFO	  SPEAKER_1688_RUNNING_WER: 6.60% (8 files)
+INFO	  HYP_COMMIT: I sometimes think I shall be moped with sorrow even in the city of God <seg> if Arthur is not there. <vad>
+INFO	[9/61] 1688-142285-0069
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: THE FEVERISH COLOUR CAME INTO HER CHEEK AND THE FEVERISH FLAME INTO HER EYE
+INFO	  HYP: The feverish color came into her cheeks and the feverish flame into her eye.
+INFO	  FIRST_TOKEN_LATENCY: 4.486s
+INFO	  MODEL_RUNTIME(total-audio): 1.031s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.007s  DECODE(avg): 0.383s  FINAL_DECODE(avg): 0.171s
+INFO	  TRANS(avg): 0.072s
+INFO	  SPEAKER_1688_RUNNING_WER: 7.50% (9 files)
+INFO	  HYP_COMMIT: The feverish color came into her cheeks <seg> and the feverish flame into her eye. <vad>
+INFO	[10/61] 1688-142285-0070
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: BUT YOU WILL BE THERE FATHER YOU SHALL OH MY HEART
+INFO	  HYP: But you'll be there, father. You shall. Oh, my heart!
+INFO	  FIRST_TOKEN_LATENCY: 2.524s
+INFO	  MODEL_RUNTIME(total-audio): 1.041s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 3.005s  DECODE(avg): 0.400s  FINAL_DECODE(avg): 0.102s
+INFO	  TRANS(avg): 0.086s
+INFO	  SPEAKER_1688_RUNNING_WER: 7.63% (10 files)
+INFO	  HYP_COMMIT: But you'll be there, father. <seg> You shall. <seg> Oh, my heart! <vad>
+INFO	[11/61] 1688-142285-0071
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: SHE PUT HER HAND TO IT AND BECAME GHASTLY PALE
+INFO	  HYP: She put her hand to it. and became ghastly pale.
+INFO	  FIRST_TOKEN_LATENCY: 2.429s
+INFO	  MODEL_RUNTIME(total-audio): 0.913s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 3.049s  DECODE(avg): 0.343s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.072s
+INFO	  SPEAKER_1688_RUNNING_WER: 7.09% (11 files)
+INFO	  HYP_COMMIT: She put her hand to it. <seg> and became ghastly pale. <seg>
+INFO	[12/61] 1688-142285-0072
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: MARGARET HELD HER IN HER ARMS AND PUT THE WEARY HEAD TO REST UPON HER BOSOM
+INFO	  HYP: Margaret held her in her arms, and put the weary head to rest upon her bosom.
+INFO	  FIRST_TOKEN_LATENCY: 4.500s
+INFO	  MODEL_RUNTIME(total-audio): 0.686s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 5.031s  DECODE(avg): 0.249s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.069s
+INFO	  SPEAKER_1688_RUNNING_WER: 6.37% (12 files)
+INFO	  HYP_COMMIT: Margaret held her in her arms, <seg> and put the weary head to rest upon her bosom. <seg>
+INFO	[13/61] 1688-142285-0073
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: PRESENTLY THE SPASM THAT FORESHADOWED DEATH HAD PASSED AWAY AND BESSY ROUSED HERSELF AND SAID
+INFO	  HYP: Presently the spasm that foreshadowed death had passed away. And Bessy roused herself and said,
+INFO	  FIRST_TOKEN_LATENCY: 4.742s
+INFO	  MODEL_RUNTIME(total-audio): 1.086s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 5.406s  DECODE(avg): 0.471s  FINAL_DECODE(avg): 0.121s
+INFO	  TRANS(avg): 0.104s
+INFO	  SPEAKER_1688_RUNNING_WER: 5.81% (13 files)
+INFO	  HYP_COMMIT: Presently the spasm that foreshadowed death had passed away. <seg> And Bessy roused herself <seg> and said, <vad>
+INFO	[14/61] 1688-142285-0074
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: I'LL GO TO BED IT'S BEST PLACE BUT CATCHING AT MARGARET'S GOWN YO'LL COME AGAIN I KNOW YO WILL BUT JUST SAY IT
+INFO	  HYP: I'll go to bed. But... But just say it.
+INFO	  FIRST_TOKEN_LATENCY: 2.441s
+INFO	  MODEL_RUNTIME(total-audio): 0.798s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 5.852s  DECODE(avg): 0.378s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.070s
+INFO	  SPEAKER_1688_RUNNING_WER: 13.57% (14 files)
+INFO	  HYP_COMMIT: I'll go to bed. <seg> But... <seg> But just say it. <seg>
+INFO	[15/61] 1688-142285-0075
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: I WILL COME TO MORROW SAID MARGARET
+INFO	  HYP: I will come tomorrow, said Margaret.
+INFO	  FIRST_TOKEN_LATENCY: 4.036s
+INFO	  MODEL_RUNTIME(total-audio): 1.146s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.448s
+INFO	  TRANS(avg): 0.075s
+INFO	  SPEAKER_1688_RUNNING_WER: 14.08% (15 files)
+INFO	  HYP_COMMIT: I will come tomorrow, said Margaret. <vad>
+INFO	[16/61] 1688-142285-0076
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: MARGARET WENT AWAY VERY SAD AND THOUGHTFUL
+INFO	  HYP: Margaret went away very sad and thoughtful.
+INFO	  FIRST_TOKEN_LATENCY: 4.625s
+INFO	  MODEL_RUNTIME(total-audio): 0.785s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.045s  DECODE(avg): 0.406s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.079s
+INFO	  SPEAKER_1688_RUNNING_WER: 13.62% (16 files)
+INFO	  HYP_COMMIT: Margaret went away very sad and thoughtful. <seg>
+INFO	[17/61] 1688-142285-0077
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: SHE WAS LATE FOR TEA AT HOME
+INFO	  HYP: She was late for tea at home.
+INFO	  FIRST_TOKEN_LATENCY: 3.724s
+INFO	  MODEL_RUNTIME(total-audio): 1.124s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.435s
+INFO	  TRANS(avg): 0.070s
+INFO	  SPEAKER_1688_RUNNING_WER: 13.18% (17 files)
+INFO	  HYP_COMMIT: She was late for tea at home. <vad>
+INFO	[18/61] 1688-142285-0078
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: HAVE YOU MET WITH A SERVANT DEAR
+INFO	  HYP: Have you met with a servant, dear?
+INFO	  FIRST_TOKEN_LATENCY: 3.833s
+INFO	  MODEL_RUNTIME(total-audio): 1.143s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.454s
+INFO	  TRANS(avg): 0.072s
+INFO	  SPEAKER_1688_RUNNING_WER: 12.78% (18 files)
+INFO	  HYP_COMMIT: Have you met with a servant, dear? <vad>
+INFO	[19/61] 1688-142285-0079
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: NO MAMMA THAT ANNE BUCKLEY WOULD NEVER HAVE DONE
+INFO	  HYP: No, Mamma, that Ann Buckley would never have done.
+INFO	  FIRST_TOKEN_LATENCY: 4.938s
+INFO	  MODEL_RUNTIME(total-audio): 1.108s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.191s
+INFO	  TRANS(avg): 0.071s
+INFO	  SPEAKER_1688_RUNNING_WER: 12.71% (19 files)
+INFO	  HYP_COMMIT: No, Mamma, that Ann Buckley would never have done. <vad>
+INFO	[20/61] 1688-142285-0080
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: SUPPOSE I TRY SAID MISTER HALE
+INFO	  HYP: S'pose I try.
+INFO	  FIRST_TOKEN_LATENCY: 2.419s
+INFO	  MODEL_RUNTIME(total-audio): -1.061s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.007s  DECODE(avg): 0.320s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.067s
+INFO	  SPEAKER_1688_RUNNING_WER: 14.46% (20 files)
+INFO	  HYP_COMMIT: S'pose I try. <seg>
+INFO	[21/61] 1688-142285-0081
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: EVERYBODY ELSE HAS HAD THEIR TURN AT THIS GREAT DIFFICULTY NOW LET ME TRY
+INFO	  HYP: Everybody else has had their turn at this great difficulty. Now let me try.
+INFO	  FIRST_TOKEN_LATENCY: 6.451s
+INFO	  MODEL_RUNTIME(total-audio): 0.709s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 6.107s  DECODE(avg): 0.320s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.077s
+INFO	  SPEAKER_1688_RUNNING_WER: 13.67% (21 files)
+INFO	  HYP_COMMIT: Everybody else has had their turn at this great difficulty. <seg> Now let me try. <seg>
+INFO	[22/61] 1688-142285-0082
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: I MAY BE THE CINDERELLA TO PUT ON THE SLIPPER AFTER ALL
+INFO	  HYP: I may be the Cinderella to put on the slipper after all.
+INFO	  FIRST_TOKEN_LATENCY: 4.790s
+INFO	  MODEL_RUNTIME(total-audio): 1.320s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.599s
+INFO	  TRANS(avg): 0.073s
+INFO	  SPEAKER_1688_RUNNING_WER: 13.06% (22 files)
+INFO	  HYP_COMMIT: I may be the Cinderella to put on the slipper after all. <vad>
+INFO	[23/61] 1688-142285-0083
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: WHAT WOULD YOU DO PAPA HOW WOULD YOU SET ABOUT IT
+INFO	  HYP: What would you do, papa? How would you set about it?
+INFO	  FIRST_TOKEN_LATENCY: 2.524s
+INFO	  MODEL_RUNTIME(total-audio): 1.074s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 3.411s  DECODE(avg): 0.398s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.072s
+INFO	  SPEAKER_1688_RUNNING_WER: 12.54% (23 files)
+INFO	  HYP_COMMIT: What would you do, papa? <seg> How would you set about it? <seg>
+INFO	[24/61] 1688-142285-0084
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: WHY I WOULD APPLY TO SOME GOOD HOUSE MOTHER TO RECOMMEND ME ONE KNOWN TO HERSELF OR HER SERVANTS
+INFO	  HYP: Well, I, I would apply to some good house mother to recommend me one known to herself or her servants.
+INFO	  FIRST_TOKEN_LATENCY: 8.639s
+INFO	  MODEL_RUNTIME(total-audio): 0.929s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 8.118s  DECODE(avg): 0.382s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.117s
+INFO	  SPEAKER_1688_RUNNING_WER: 12.42% (24 files)
+INFO	  HYP_COMMIT: Well, I, I would apply to some good house mother to recommend me one known to herself or her servants. <seg>
+INFO	[25/61] 1688-142285-0085
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: VERY GOOD BUT WE MUST FIRST CATCH OUR HOUSE MOTHER
+INFO	  HYP: Very good, But we must first catch our house, mother.
+INFO	  FIRST_TOKEN_LATENCY: 2.440s
+INFO	  MODEL_RUNTIME(total-audio): 0.879s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 3.098s  DECODE(avg): 0.298s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.088s
+INFO	  SPEAKER_1688_RUNNING_WER: 12.01% (25 files)
+INFO	  HYP_COMMIT: Very good, <seg> But we must first catch our house, mother. <seg>
+INFO	[26/61] 1688-142285-0086
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: THE MOTHER OF WHOM HE SPOKE TO US SAID MARGARET
+INFO	  HYP: The mother of whom he spoke to us, said Margaret.
+INFO	  FIRST_TOKEN_LATENCY: 4.713s
+INFO	  MODEL_RUNTIME(total-audio): 1.403s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.582s
+INFO	  TRANS(avg): 0.075s
+INFO	  SPEAKER_1688_RUNNING_WER: 11.64% (26 files)
+INFO	  HYP_COMMIT: The mother of whom he spoke to us, said Margaret. <vad>
+INFO	[27/61] 1688-142285-0087
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: MISSUS THORNTON THE ONLY MOTHER HE HAS I BELIEVE SAID MISTER HALE QUIETLY
+INFO	  HYP: Mr. Thornton. Said Mr. Hale quietly.
+INFO	  FIRST_TOKEN_LATENCY: 2.405s
+INFO	  MODEL_RUNTIME(total-audio): 0.649s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.516s  DECODE(avg): 0.328s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.081s
+INFO	  SPEAKER_1688_RUNNING_WER: 13.90% (27 files)
+INFO	  HYP_COMMIT: Mr. Thornton. <seg> Said Mr. Hale quietly. <seg>
+INFO	[28/61] 1688-142285-0088
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: I SHALL LIKE TO SEE HER SHE MUST BE AN UNCOMMON PERSON HER MOTHER ADDED
+INFO	  HYP: I shall like to see her. She must be an uncommon person. Her mother added.
+INFO	  FIRST_TOKEN_LATENCY: 2.421s
+INFO	  MODEL_RUNTIME(total-audio): 1.211s
+INFO	  FSL(avg): 1.238s
+INFO	  ENCODE(avg): 2.006s  DECODE(avg): 0.337s  FINAL_DECODE(avg): 0.184s
+INFO	  TRANS(avg): 0.099s
+INFO	  SPEAKER_1688_RUNNING_WER: 13.29% (28 files)
+INFO	  HYP_COMMIT: I shall like to see her. <seg> She must be an uncommon person. <vad> Her mother added. <vad>
+INFO	[29/61] 1688-142285-0089
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: PERHAPS SHE MAY HAVE A RELATION WHO MIGHT SUIT US AND BE GLAD OF OUR PLACE
+INFO	  HYP: Perhaps she may have a relation who might suit us and be glad of our place.
+INFO	  FIRST_TOKEN_LATENCY: 4.451s
+INFO	  MODEL_RUNTIME(total-audio): 1.174s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 5.393s  DECODE(avg): 0.293s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.075s
+INFO	  SPEAKER_1688_RUNNING_WER: 12.71% (29 files)
+INFO	  HYP_COMMIT: Perhaps she may have a relation <seg> who might suit us <seg> and be glad of our place. <seg>
+INFO	[30/61] 1688-142285-0090
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: SHE SOUNDED TO BE SUCH A CAREFUL ECONOMICAL PERSON THAT I SHOULD LIKE ANY ONE OUT OF THE SAME FAMILY
+INFO	  HYP: She sounded to be such a careful, economical person, that I should like anyone out of the same family.
+INFO	  FIRST_TOKEN_LATENCY: 8.760s
+INFO	  MODEL_RUNTIME(total-audio): 0.800s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 8.199s  DECODE(avg): 0.426s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.121s
+INFO	  SPEAKER_1688_RUNNING_WER: 12.57% (30 files)
+INFO	  HYP_COMMIT: She sounded to be such a careful, economical person, that I should like anyone out of the same family. <seg>
+INFO	[31/61] 1688-142285-0091
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: MY DEAR SAID MISTER HALE ALARMED PRAY DON'T GO OFF ON THAT IDEA
+INFO	  HYP: My dear," said Mr. Howell alarmed, "pray don't go off on that idea."
+INFO	  FIRST_TOKEN_LATENCY: 6.600s
+INFO	  MODEL_RUNTIME(total-audio): 1.145s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 6.062s  DECODE(avg): 0.405s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.090s
+INFO	  SPEAKER_1688_RUNNING_WER: 12.63% (31 files)
+INFO	  HYP_COMMIT: My dear," said Mr. Howell alarmed, "pray don't go off on that idea." <seg>
+INFO	[32/61] 1688-142285-0092
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: I AM SURE AT ANY RATE SHE WOULD NOT LIKE STRANGERS TO KNOW ANYTHING ABOUT IT
+INFO	  HYP: I'm sure at any rate,
+INFO	  FIRST_TOKEN_LATENCY: 2.474s
+INFO	  MODEL_RUNTIME(total-audio): -2.196s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.005s  DECODE(avg): 0.361s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.095s
+INFO	  SPEAKER_1688_RUNNING_WER: 14.81% (32 files)
+INFO	  HYP_COMMIT: I'm sure at any rate, <seg>
+INFO	[33/61] 1688-142285-0093
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: TAKE NOTICE THAT IS NOT MY KIND OF HAUGHTINESS PAPA IF I HAVE ANY AT ALL WHICH I DON'T AGREE TO THOUGH YOU'RE ALWAYS ACCUSING ME OF IT
+INFO	  HYP: Take notice that this is not my kind of haughtiness, papa. if I have any at all.
+INFO	  FIRST_TOKEN_LATENCY: 4.652s
+INFO	  MODEL_RUNTIME(total-audio): -3.131s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 5.006s  DECODE(avg): 0.399s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.089s
+INFO	  SPEAKER_1688_RUNNING_WER: 17.19% (33 files)
+INFO	  HYP_COMMIT: Take notice that this is not my kind of haughtiness, papa. <seg> if I have any at all. <seg>
+INFO	[34/61] 1688-142285-0094
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: I DON'T KNOW POSITIVELY THAT IT IS HERS EITHER BUT FROM LITTLE THINGS I HAVE GATHERED FROM HIM I FANCY SO
+INFO	  HYP: I don't know positively that it is hers either, but from little things I have gathered from him, I fancy so.
+INFO	  FIRST_TOKEN_LATENCY: 4.553s
+INFO	  MODEL_RUNTIME(total-audio): 1.072s
+INFO	  FSL(avg): 2.263s
+INFO	  ENCODE(avg): 4.007s  DECODE(avg): 0.466s  FINAL_DECODE(avg): 0.194s
+INFO	  TRANS(avg): 0.069s
+INFO	  SPEAKER_1688_RUNNING_WER: 16.38% (34 files)
+INFO	  HYP_COMMIT: I don't know positively that it is hers either, <seg> but from little things I have gathered from him, I fancy so. <vad>
+INFO	[35/61] 1688-142285-0095
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: THEY CARED TOO LITTLE TO ASK IN WHAT MANNER HER SON HAD SPOKEN ABOUT HER
+INFO	  HYP: They cared too little to ask, in what manner her son had spoken about her.
+INFO	  FIRST_TOKEN_LATENCY: 4.467s
+INFO	  MODEL_RUNTIME(total-audio): 1.064s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.006s  DECODE(avg): 0.382s  FINAL_DECODE(avg): 0.186s
+INFO	  TRANS(avg): 0.072s
+INFO	  SPEAKER_1688_RUNNING_WER: 15.87% (35 files)
+INFO	  HYP_COMMIT: They cared too little to ask, <seg> in what manner her son had spoken about her. <vad>
+INFO	[36/61] 1998-15444-0000
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: IF CALLED TO A CASE SUPPOSED OR SUSPECTED TO BE ONE OF POISONING THE MEDICAL MAN HAS TWO DUTIES TO PERFORM TO SAVE THE PATIENT'S LIFE AND TO PLACE HIMSELF IN A POSITION TO GIVE EVIDENCE IF CALLED ON TO DO SO
+INFO	  HYP: If called to a case supposed or suspected to be one of poisoning, the medical man has two duties to perform, to save the patient's life and to place himself in a position to give evidence if called on to do so.
+INFO	  FIRST_TOKEN_LATENCY: 6.345s
+INFO	  MODEL_RUNTIME(total-audio): 1.164s
+INFO	  FSL(avg): 6.282s
+INFO	  ENCODE(avg): 6.007s  DECODE(avg): 0.229s  FINAL_DECODE(avg): 0.235s
+INFO	  TRANS(avg): 0.088s
+INFO	  SPEAKER_1998_RUNNING_WER: 0.00% (1 files)
+INFO	  HYP_COMMIT: If called to a case supposed or suspected to be one of poisoning, <seg> the medical man has two duties to perform, to save the patient's life and to place himself in a position to give evidence if called on to do so. <vad>
+INFO	[37/61] 1998-15444-0001
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: HE SHOULD MAKE INQUIRIES AS TO SYMPTOMS AND TIME AT WHICH FOOD OR MEDICINE WAS LAST TAKEN
+INFO	  HYP: He should make inquiries as to symptoms, and time at which food or medicine was last taken.
+INFO	  FIRST_TOKEN_LATENCY: 4.499s
+INFO	  MODEL_RUNTIME(total-audio): 0.470s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 5.006s  DECODE(avg): 0.242s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.074s
+INFO	  SPEAKER_1998_RUNNING_WER: 0.00% (2 files)
+INFO	  HYP_COMMIT: He should make inquiries as to symptoms, <seg> and time at which food or medicine was last taken. <seg>
+INFO	[38/61] 1998-15444-0002
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: HE SHOULD NOTICE THE POSITION AND TEMPERATURE OF THE BODY THE CONDITION OF RIGOR MORTIS MARKS OF VIOLENCE APPEARANCE OF LIPS AND MOUTH
+INFO	  HYP: He should notice the position and temperature of the body, the condition of rigor mortis, marks of violence, appearance of lips and mouth.
+INFO	  FIRST_TOKEN_LATENCY: 4.638s
+INFO	  MODEL_RUNTIME(total-audio): 1.053s
+INFO	  FSL(avg): 3.994s
+INFO	  ENCODE(avg): 4.007s  DECODE(avg): 0.507s  FINAL_DECODE(avg): 0.175s
+INFO	  TRANS(avg): 0.096s
+INFO	  SPEAKER_1998_RUNNING_WER: 0.00% (3 files)
+INFO	  HYP_COMMIT: He should notice the position and temperature of the body, <seg> the condition of rigor mortis, marks of violence, appearance of lips and mouth. <vad>
+INFO	[39/61] 1998-15444-0003
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: IN MAKING A POST MORTEM EXAMINATION THE ALIMENTARY CANAL SHOULD BE REMOVED AND PRESERVED FOR FURTHER INVESTIGATION
+INFO	  HYP: In making a post-mortem examination, the alimentary canal should be removed and preserved for further investigation.
+INFO	  FIRST_TOKEN_LATENCY: 4.516s
+INFO	  MODEL_RUNTIME(total-audio): -0.689s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 5.006s  DECODE(avg): 0.252s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.081s
+INFO	  SPEAKER_1998_RUNNING_WER: 0.00% (4 files)
+INFO	  HYP_COMMIT: In making a post-mortem examination, <seg> the alimentary canal should be removed and preserved for further investigation. <seg>
+INFO	[40/61] 1998-15444-0004
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: THE GUT AND THE GULLET BEING CUT ACROSS BETWEEN THESE LIGATURES THE STOMACH MAY BE REMOVED ENTIRE WITHOUT SPILLING ITS CONTENTS
+INFO	  HYP: The gut and the gallage being cut across between these ligatures, the stomach may be removed entire without spilling its contents.
+INFO	  FIRST_TOKEN_LATENCY: 6.390s
+INFO	  MODEL_RUNTIME(total-audio): 0.148s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 7.007s  DECODE(avg): 0.160s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.081s
+INFO	  SPEAKER_1998_RUNNING_WER: 0.83% (5 files)
+INFO	  HYP_COMMIT: The gut and the gallage being cut across between these ligatures, <seg> the stomach may be removed entire without spilling its contents. <seg>
+INFO	[41/61] 1998-15444-0005
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: IF THE MEDICAL PRACTITIONER IS IN DOUBT ON ANY POINT HE SHOULD OBTAIN TECHNICAL ASSISTANCE FROM SOMEONE WHO HAS PAID ATTENTION TO THE SUBJECT
+INFO	  HYP: If the medical practitioner is endowed on any point, he should obtain technical assistance from someone who has paid attention to the subject.
+INFO	  FIRST_TOKEN_LATENCY: 4.523s
+INFO	  MODEL_RUNTIME(total-audio): 0.835s
+INFO	  FSL(avg): 3.106s
+INFO	  ENCODE(avg): 4.012s  DECODE(avg): 0.421s  FINAL_DECODE(avg): 0.115s
+INFO	  TRANS(avg): 0.101s
+INFO	  SPEAKER_1998_RUNNING_WER: 2.07% (6 files)
+INFO	  HYP_COMMIT: If the medical practitioner is endowed on any point, <seg> he should obtain technical assistance from someone who has paid attention to the subject. <vad>
+INFO	[42/61] 1998-15444-0006
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: IN A CASE OF ATTEMPTED SUICIDE BY POISONING IS IT THE DUTY OF THE DOCTOR TO INFORM THE POLICE
+INFO	  HYP: In a case of attempted suicide by poisoning, is it the duty of the doctor to inform the police?
+INFO	  FIRST_TOKEN_LATENCY: 7.498s
+INFO	  MODEL_RUNTIME(total-audio): 1.068s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.318s
+INFO	  TRANS(avg): 0.078s
+INFO	  SPEAKER_1998_RUNNING_WER: 1.83% (7 files)
+INFO	  HYP_COMMIT: In a case of attempted suicide by poisoning, is it the duty of the doctor to inform the police? <vad>
+INFO	[43/61] 1998-15444-0007
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: THE BEST EMETIC IS THAT WHICH IS AT HAND
+INFO	  HYP: The best dramatic is that which is at hand.
+INFO	  FIRST_TOKEN_LATENCY: 4.332s
+INFO	  MODEL_RUNTIME(total-audio): 1.162s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.465s
+INFO	  TRANS(avg): 0.072s
+INFO	  SPEAKER_1998_RUNNING_WER: 2.31% (8 files)
+INFO	  HYP_COMMIT: The best dramatic is that which is at hand. <vad>
+INFO	[44/61] 1998-15444-0008
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: THE DOSE FOR AN ADULT IS TEN MINIMS
+INFO	  HYP: The dose for an adult is ten minims.
+INFO	  FIRST_TOKEN_LATENCY: 4.321s
+INFO	  MODEL_RUNTIME(total-audio): 1.376s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.487s
+INFO	  TRANS(avg): 0.064s
+INFO	  SPEAKER_1998_RUNNING_WER: 2.21% (9 files)
+INFO	  HYP_COMMIT: The dose for an adult is ten minims. <vad>
+INFO	[45/61] 1998-15444-0009
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: APOMORPHINE IS NOT ALLIED IN PHYSIOLOGICAL ACTION TO MORPHINE AND MAY BE GIVEN IN CASES OF NARCOTIC POISONING
+INFO	  HYP: Epomorphine is not allied in physiological action to morphine, and may be given in cases of narcotic poisoning.
+INFO	  FIRST_TOKEN_LATENCY: 6.364s
+INFO	  MODEL_RUNTIME(total-audio): 1.063s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 7.085s  DECODE(avg): 0.181s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.077s
+INFO	  SPEAKER_1998_RUNNING_WER: 2.51% (10 files)
+INFO	  HYP_COMMIT: Epomorphine is not allied in physiological action to morphine, <seg> and may be given in cases of narcotic poisoning. <seg>
+INFO	[46/61] 1998-15444-0010
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: TICKLING THE FAUCES WITH A FEATHER MAY EXCITE VOMITING
+INFO	  HYP: Tickling the fauces with a feather may excite vomiting.
+INFO	  FIRST_TOKEN_LATENCY: 4.665s
+INFO	  MODEL_RUNTIME(total-audio): 0.290s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.006s  DECODE(avg): 0.575s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.071s
+INFO	  SPEAKER_1998_RUNNING_WER: 2.40% (11 files)
+INFO	  HYP_COMMIT: Tickling the fauces with a feather may excite vomiting. <seg>
+INFO	[47/61] 1998-15444-0011
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: IN USING THE ELASTIC STOMACH TUBE SOME FLUID SHOULD BE INTRODUCED INTO THE STOMACH BEFORE ATTEMPTING TO EMPTY IT OR A PORTION OF THE MUCOUS MEMBRANE MAY BE SUCKED INTO THE APERTURE
+INFO	  HYP: In using the elastic stomach tube, some fluid should be introduced into the stomach before attempting to empty it, or a portion of the mucous membrane may be sucked into the aperture.
+INFO	  FIRST_TOKEN_LATENCY: 8.484s
+INFO	  MODEL_RUNTIME(total-audio): 0.894s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 9.006s  DECODE(avg): 0.240s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.082s
+INFO	  SPEAKER_1998_RUNNING_WER: 2.08% (12 files)
+INFO	  HYP_COMMIT: In using the elastic stomach tube, some fluid should be introduced into the stomach before attempting to empty it, <seg> or a portion of the mucous membrane may be sucked into the aperture. <seg>
+INFO	[48/61] 1998-15444-0012
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: THE TUBE SHOULD BE EXAMINED TO SEE THAT IT IS NOT BROKEN OR CRACKED AS ACCIDENTS HAVE HAPPENED FROM NEGLECTING THIS PRECAUTION
+INFO	  HYP: The tube should be examined to see that it is not broken or cracked, as accidents have happened from neglecting this precaution.
+INFO	  FIRST_TOKEN_LATENCY: 6.341s
+INFO	  MODEL_RUNTIME(total-audio): 0.995s
+INFO	  FSL(avg): 0.676s
+INFO	  ENCODE(avg): 6.007s  DECODE(avg): 0.246s  FINAL_DECODE(avg): 0.141s
+INFO	  TRANS(avg): 0.071s
+INFO	  SPEAKER_1998_RUNNING_WER: 1.91% (13 files)
+INFO	  HYP_COMMIT: The tube should be examined to see that it is not broken or cracked, <seg> as accidents have happened from neglecting this precaution. <vad>
+INFO	[49/61] 1998-15444-0013
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: ANTIDOTES ARE USUALLY GIVEN HYPODERMICALLY OR IF BY MOUTH IN THE FORM OF TABLETS
+INFO	  HYP: Antidotes are usually given hypodermically, or if by mouth in the form of tablets.
+INFO	  FIRST_TOKEN_LATENCY: 4.604s
+INFO	  MODEL_RUNTIME(total-audio): 0.964s
+INFO	  FSL(avg): 1.313s
+INFO	  ENCODE(avg): 4.005s  DECODE(avg): 0.508s  FINAL_DECODE(avg): 0.136s
+INFO	  TRANS(avg): 0.079s
+INFO	  SPEAKER_1998_RUNNING_WER: 1.81% (14 files)
+INFO	  HYP_COMMIT: Antidotes are usually given hypodermically, <seg> or if by mouth in the form of tablets. <vad>
+INFO	[50/61] 1998-15444-0014
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: IN THE ABSENCE OF A HYPODERMIC SYRINGE THE REMEDY MAY BE GIVEN BY THE RECTUM
+INFO	  HYP: In the absence of a hypodermic syringe, the remedy may be given by the rectum.
+INFO	  FIRST_TOKEN_LATENCY: 4.598s
+INFO	  MODEL_RUNTIME(total-audio): 0.909s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 5.021s  DECODE(avg): 0.298s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.066s
+INFO	  SPEAKER_1998_RUNNING_WER: 1.72% (15 files)
+INFO	  HYP_COMMIT: In the absence of a hypodermic syringe, <seg> the remedy may be given by the rectum. <seg>
+INFO	[51/61] 1998-15444-0015
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: NOTICE THE SMELL COLOUR AND GENERAL APPEARANCE OF THE MATTER SUBMITTED FOR EXAMINATION
+INFO	  HYP: Notice the smell, colour and general appearance of the matter submitted for examination.
+INFO	  FIRST_TOKEN_LATENCY: 6.493s
+INFO	  MODEL_RUNTIME(total-audio): 1.073s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 6.056s  DECODE(avg): 0.330s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.088s
+INFO	  SPEAKER_1998_RUNNING_WER: 1.64% (16 files)
+INFO	  HYP_COMMIT: Notice the smell, colour and general appearance of the matter submitted for examination. <seg>
+INFO	[52/61] 1998-15444-0016
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: FOR THE SEPARATION OF AN ALKALOID THE FOLLOWING IS THE PROCESS OF STAS OTTO
+INFO	  HYP: For the separation of an alkaloid, the following is the process of Staats Otto.
+INFO	  FIRST_TOKEN_LATENCY: 6.322s
+INFO	  MODEL_RUNTIME(total-audio): 1.147s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.389s
+INFO	  TRANS(avg): 0.146s
+INFO	  SPEAKER_1998_RUNNING_WER: 1.89% (17 files)
+INFO	  HYP_COMMIT: For the separation of an alkaloid, the following is the process of Staats Otto. <vad>
+INFO	[53/61] 1998-15444-0017
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: THIS PROCESS IS BASED UPON THE PRINCIPLE THAT THE SALTS OF THE ALKALOIDS ARE SOLUBLE IN ALCOHOL AND WATER AND INSOLUBLE IN ETHER
+INFO	  HYP: This process is based upon the principle that the salts of the alkaloids are soluble in alcohol and water, and insoluble in ether.
+INFO	  FIRST_TOKEN_LATENCY: 8.349s
+INFO	  MODEL_RUNTIME(total-audio): 0.975s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 8.006s  DECODE(avg): 0.256s  FINAL_DECODE(avg): 0.145s
+INFO	  TRANS(avg): 0.070s
+INFO	  SPEAKER_1998_RUNNING_WER: 1.76% (18 files)
+INFO	  HYP_COMMIT: This process is based upon the principle that the salts of the alkaloids are soluble in alcohol and water, <seg> and insoluble in ether. <vad>
+INFO	[54/61] 1998-15444-0018
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: THE PURE ALKALOIDS WITH THE EXCEPTION OF MORPHINE IN ITS CRYSTALLINE FORM ARE SOLUBLE IN ETHER
+INFO	  HYP: The pure alkaloids, with the exception of morphine in its crystalline form, are soluble in ether.
+INFO	  FIRST_TOKEN_LATENCY: 6.520s
+INFO	  MODEL_RUNTIME(total-audio): 0.010s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 6.006s  DECODE(avg): 0.436s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.068s
+INFO	  SPEAKER_1998_RUNNING_WER: 1.68% (19 files)
+INFO	  HYP_COMMIT: The pure alkaloids, with the exception of morphine in its crystalline form, are soluble in ether. <seg>
+INFO	[55/61] 1998-15444-0019
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: TWO COOL THE MIXTURE AND FILTER WASH THE RESIDUE WITH STRONG ALCOHOL AND MIX THE FILTRATES
+INFO	  HYP: Two, cool the mixture and filter. Wash the residue with strong alcohol and mix the filtrates.
+INFO	  FIRST_TOKEN_LATENCY: 4.552s
+INFO	  MODEL_RUNTIME(total-audio): 0.850s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 5.006s  DECODE(avg): 0.298s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.069s
+INFO	  SPEAKER_1998_RUNNING_WER: 1.61% (20 files)
+INFO	  HYP_COMMIT: Two, cool the mixture and filter. <seg> Wash the residue with strong alcohol and mix the filtrates. <seg>
+INFO	[56/61] 1998-15444-0020
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: THE RESIDUE MAY BE SET ASIDE FOR THE DETECTION OF THE METALLIC POISONS IF SUSPECTED EXPEL THE ALCOHOL BY CAREFUL EVAPORATION
+INFO	  HYP: The residue may be set aside for the detection of the metallic poisons if suspected. Expel the alcohol by careful evaporation.
+INFO	  FIRST_TOKEN_LATENCY: 6.467s
+INFO	  MODEL_RUNTIME(total-audio): 1.110s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 10.027s  DECODE(avg): 0.408s  FINAL_DECODE(avg): 0.188s
+INFO	  TRANS(avg): 0.069s
+INFO	  SPEAKER_1998_RUNNING_WER: 1.52% (21 files)
+INFO	  HYP_COMMIT: The residue may be set aside for the detection of the metallic poisons if suspected. <vad> Expel the alcohol by careful evaporation. <seg>
+INFO	[57/61] 1998-15444-0021
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: ON THE EVAPORATION OF THE ALCOHOL THE RESINOUS AND FATTY MATTERS SEPARATE
+INFO	  HYP: On the evaporation of the alcohol, the resinous and fatty matters separate.
+INFO	  FIRST_TOKEN_LATENCY: 4.494s
+INFO	  MODEL_RUNTIME(total-audio): 1.007s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.006s  DECODE(avg): 0.397s  FINAL_DECODE(avg): 0.155s
+INFO	  TRANS(avg): 0.071s
+INFO	  SPEAKER_1998_RUNNING_WER: 1.48% (22 files)
+INFO	  HYP_COMMIT: On the evaporation of the alcohol, <seg> the resinous and fatty matters separate. <vad>
+INFO	[58/61] 1998-15444-0022
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: EVAPORATE THE FILTRATE TO A SYRUP AND EXTRACT WITH SUCCESSIVE PORTIONS OF ABSOLUTE ALCOHOL
+INFO	  HYP: Evaporate the filtrate to a syrup, and extract with successive portions of absolute alcohol.
+INFO	  FIRST_TOKEN_LATENCY: 4.510s
+INFO	  MODEL_RUNTIME(total-audio): 0.240s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 5.006s  DECODE(avg): 0.244s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.075s
+INFO	  SPEAKER_1998_RUNNING_WER: 1.43% (23 files)
+INFO	  HYP_COMMIT: Evaporate the filtrate to a syrup, <seg> and extract with successive portions of absolute alcohol. <seg>
+INFO	[59/61] 1998-15444-0023
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: SEPARATE THE ETHEREAL SOLUTION AND EVAPORATE
+INFO	  HYP: Separate the ethereal solution and evaporate.
+INFO	  FIRST_TOKEN_LATENCY: 4.552s
+INFO	  MODEL_RUNTIME(total-audio): 1.220s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.077s  DECODE(avg): 0.423s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.082s
+INFO	  SPEAKER_1998_RUNNING_WER: 1.41% (24 files)
+INFO	  HYP_COMMIT: Separate the ethereal solution <seg> and evaporate. <seg>
+INFO	[60/61] 1998-15444-0024
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: FIVE A PART OF THIS ETHEREAL SOLUTION IS POURED INTO A WATCH GLASS AND ALLOWED TO EVAPORATE
+INFO	  HYP: Five. A part of this ethereal solution is poured into a watch glass and allowed to evaporate.
+INFO	  FIRST_TOKEN_LATENCY: 2.420s
+INFO	  MODEL_RUNTIME(total-audio): 1.243s
+INFO	  FSL(avg): 3.892s
+INFO	  ENCODE(avg): 2.123s  DECODE(avg): 0.218s  FINAL_DECODE(avg): 0.167s
+INFO	  TRANS(avg): 0.073s
+INFO	  SPEAKER_1998_RUNNING_WER: 1.35% (25 files)
+INFO	  HYP_COMMIT: Five. <seg> A part of this ethereal solution is poured into a watch glass and allowed to evaporate. <vad>
+INFO	[61/61] 1998-15444-0025
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1
+INFO	  REF: TO PURIFY IT ADD A SMALL QUANTITY OF DILUTE SULPHURIC ACID AND AFTER EVAPORATING TO THREE QUARTERS OF ITS BULK ADD A SATURATED SOLUTION OF CARBONATE OF POTASH OR SODA
+INFO	  HYP: To purify it, add a small quantity of dilute sulphuric acid, and after evaporating to three quarters of its bulk, add a saturated solution of carbonate of potash or soda.
+INFO	  FIRST_TOKEN_LATENCY: 6.359s
+INFO	  MODEL_RUNTIME(total-audio): 0.704s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 7.008s  DECODE(avg): 0.176s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.088s
+INFO	  SPEAKER_1998_RUNNING_WER: 1.27% (26 files)
+INFO	  HYP_COMMIT: To purify it, add a small quantity of dilute sulphuric acid, <seg> and after evaporating to three quarters of its bulk, add a saturated solution of carbonate of potash or soda. <seg>
+INFO	Completed. Results saved to /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_09_c1

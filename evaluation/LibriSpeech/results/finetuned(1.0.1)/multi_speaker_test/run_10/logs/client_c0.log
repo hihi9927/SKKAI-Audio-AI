@@ -1,0 +1,610 @@
+INFO	Results → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	Manual mode. Ensure server is running at ws://localhost:8765
+INFO	Log capture enabled for 10 sampled files → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0/plots
+INFO	Processing 55 files (already done: 0)
+INFO	[1/55] 1688-142285-0000
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: THERE'S IRON THEY SAY IN ALL OUR BLOOD AND A GRAIN OR TWO PERHAPS IS GOOD BUT HIS HE MAKES ME HARSHLY FEEL HAS GOT A LITTLE TOO MUCH OF STEEL ANON
+INFO	  HYP: There's iron, they say, in all our blood. And a grain or two perhaps is good. But his. Has got a little too much of steel. Anon.
+INFO	  FIRST_TOKEN_LATENCY: 5.074s
+INFO	  MODEL_RUNTIME(total-audio): 1.388s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 8.818s  DECODE(avg): 0.300s  FINAL_DECODE(avg): 0.458s
+INFO	  TRANS(avg): 0.076s
+INFO	  SPEAKER_1688_RUNNING_WER: 15.15% (1 files)
+INFO	  HYP_COMMIT: There's iron, they say, in all our blood. <vad> And a grain or two perhaps is good. <vad> But his. <seg> Has got a little too much of steel. <vad> Anon. <vad>
+INFO	[2/55] 1688-142285-0001
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: MARGARET SAID MISTER HALE AS HE RETURNED FROM SHOWING HIS GUEST DOWNSTAIRS I COULD NOT HELP WATCHING YOUR FACE WITH SOME ANXIETY WHEN MISTER THORNTON MADE HIS CONFESSION OF HAVING BEEN A SHOP BOY
+INFO	  HYP: Margaret," said Mr. Hale, as he returned from showing his guests downstairs, "I could not help watching your face with some anxiety, when Mr. Thornton made his confession of having been a shop boy.
+INFO	  FIRST_TOKEN_LATENCY: 13.741s
+INFO	  MODEL_RUNTIME(total-audio): 1.116s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.319s
+INFO	  TRANS(avg): 0.099s
+INFO	  SPEAKER_1688_RUNNING_WER: 11.94% (2 files)
+INFO	  HYP_COMMIT: Margaret," said Mr. Hale, as he returned from showing his guests downstairs, "I could not help watching your face with some anxiety, when Mr. Thornton made his confession of having been a shop boy. <vad>
+INFO	[3/55] 1688-142285-0002
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: YOU DON'T MEAN THAT YOU THOUGHT ME SO SILLY
+INFO	  HYP: You don't mean that you thought me so silly.
+INFO	  FIRST_TOKEN_LATENCY: 3.823s
+INFO	  MODEL_RUNTIME(total-audio): 0.988s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.481s
+INFO	  TRANS(avg): 0.076s
+INFO	  SPEAKER_1688_RUNNING_WER: 10.39% (3 files)
+INFO	  HYP_COMMIT: You don't mean that you thought me so silly. <vad>
+INFO	[4/55] 1688-142285-0003
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: I REALLY LIKED THAT ACCOUNT OF HIMSELF BETTER THAN ANYTHING ELSE HE SAID
+INFO	  HYP: I really like that account of himself better than anything else he said.
+INFO	  FIRST_TOKEN_LATENCY: 6.298s
+INFO	  MODEL_RUNTIME(total-audio): 1.238s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.474s
+INFO	  TRANS(avg): 0.146s
+INFO	  SPEAKER_1688_RUNNING_WER: 10.00% (4 files)
+INFO	  HYP_COMMIT: I really like that account of himself better than anything else he said. <vad>
+INFO	[5/55] 1688-142285-0004
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: HIS STATEMENT OF HAVING BEEN A SHOP BOY WAS THE THING I LIKED BEST OF ALL
+INFO	  HYP: His statement of having been a shop boy was the thing I liked best of all.
+INFO	  FIRST_TOKEN_LATENCY: 4.760s
+INFO	  MODEL_RUNTIME(total-audio): 0.285s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.006s  DECODE(avg): 0.636s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.094s
+INFO	  SPEAKER_1688_RUNNING_WER: 8.49% (5 files)
+INFO	  HYP_COMMIT: His statement of having been a shop boy was the thing I liked best of all. <seg>
+INFO	[6/55] 1688-142285-0005
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: YOU WHO WERE ALWAYS ACCUSING PEOPLE OF BEING SHOPPY AT HELSTONE
+INFO	  HYP: You who were always accusing people of being shoppy at Helston.
+INFO	  FIRST_TOKEN_LATENCY: 4.685s
+INFO	  MODEL_RUNTIME(total-audio): 0.385s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.005s  DECODE(avg): 0.566s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.089s
+INFO	  SPEAKER_1688_RUNNING_WER: 8.55% (6 files)
+INFO	  HYP_COMMIT: You who were always accusing people of being shoppy at Helston. <seg>
+INFO	[7/55] 1688-142285-0006
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: I DON'T THINK MISTER HALE YOU HAVE DONE QUITE RIGHT IN INTRODUCING SUCH A PERSON TO US WITHOUT TELLING US WHAT HE HAD BEEN
+INFO	  HYP: I don't think, Mr. Hale, you have done quite right in introducing such a person to us, without telling us what he had been.
+INFO	  FIRST_TOKEN_LATENCY: 8.466s
+INFO	  MODEL_RUNTIME(total-audio): 0.522s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 8.008s  DECODE(avg): 0.428s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.102s
+INFO	  SPEAKER_1688_RUNNING_WER: 7.75% (7 files)
+INFO	  HYP_COMMIT: I don't think, Mr. Hale, you have done quite right in introducing such a person to us, <seg> without telling us what he had been. <seg>
+INFO	[8/55] 1688-142285-0007
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: I REALLY WAS VERY MUCH AFRAID OF SHOWING HIM HOW MUCH SHOCKED I WAS AT SOME PARTS OF WHAT HE SAID
+INFO	  HYP: I really was very much afraid of showing him how much shocked I was at some parts of what he said.
+INFO	  FIRST_TOKEN_LATENCY: 8.292s
+INFO	  MODEL_RUNTIME(total-audio): 1.232s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.332s
+INFO	  TRANS(avg): 0.068s
+INFO	  SPEAKER_1688_RUNNING_WER: 6.75% (8 files)
+INFO	  HYP_COMMIT: I really was very much afraid of showing him how much shocked I was at some parts of what he said. <vad>
+INFO	[9/55] 1688-142285-0008
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: HIS FATHER DYING IN MISERABLE CIRCUMSTANCES
+INFO	  HYP: His father dying in miserable circumstances.
+INFO	  FIRST_TOKEN_LATENCY: 4.608s
+INFO	  MODEL_RUNTIME(total-audio): 0.473s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.005s  DECODE(avg): 0.418s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.146s
+INFO	  SPEAKER_1688_RUNNING_WER: 6.51% (9 files)
+INFO	  HYP_COMMIT: His father dying in miserable circumstances. <seg>
+INFO	[10/55] 1688-142285-0009
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: WHY IT MIGHT HAVE BEEN IN THE WORKHOUSE
+INFO	  HYP: Why, it might have been in the workhouse.
+INFO	  FIRST_TOKEN_LATENCY: 4.766s
+INFO	  MODEL_RUNTIME(total-audio): 1.231s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.509s
+INFO	  TRANS(avg): 0.089s
+INFO	  SPEAKER_1688_RUNNING_WER: 6.21% (10 files)
+INFO	  HYP_COMMIT: Why, it might have been in the workhouse. <vad>
+INFO	[11/55] 1688-142285-0010
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: HIS FATHER SPECULATED WILDLY FAILED AND THEN KILLED HIMSELF BECAUSE HE COULD NOT BEAR THE DISGRACE
+INFO	  HYP: His father speculated wildly, failed. And then killed himself because he could not bear the disgrace.
+INFO	  FIRST_TOKEN_LATENCY: 4.450s
+INFO	  MODEL_RUNTIME(total-audio): 0.977s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.006s  DECODE(avg): 0.359s  FINAL_DECODE(avg): 0.236s
+INFO	  TRANS(avg): 0.078s
+INFO	  SPEAKER_1688_RUNNING_WER: 5.70% (11 files)
+INFO	  HYP_COMMIT: His father speculated wildly, failed. <seg> And then killed himself because he could not bear the disgrace. <vad>
+INFO	[12/55] 1688-142285-0011
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: ALL HIS FORMER FRIENDS SHRUNK FROM THE DISCLOSURES THAT HAD TO BE MADE OF HIS DISHONEST GAMBLING WILD HOPELESS STRUGGLES MADE WITH OTHER PEOPLE'S MONEY TO REGAIN HIS OWN MODERATE PORTION OF WEALTH
+INFO	  HYP: All his former friends shrank from the disclosures that had to be made of his dishonest gambling, wild, hopeless struggles, made with other people's money, to regain his own moderate portion of wealth.
+INFO	  FIRST_TOKEN_LATENCY: 14.533s
+INFO	  MODEL_RUNTIME(total-audio): 0.483s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 14.009s  DECODE(avg): 0.425s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.084s
+INFO	  SPEAKER_1688_RUNNING_WER: 5.29% (12 files)
+INFO	  HYP_COMMIT: All his former friends shrank from the disclosures that had to be made of his dishonest gambling, wild, hopeless struggles, made with other people's money, to regain his own moderate portion of wealth. <seg>
+INFO	[13/55] 1688-142285-0012
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: NO ONE CAME FORWARDS TO HELP THE MOTHER AND THIS BOY
+INFO	  HYP: No one came fords to help the mother and this boy?
+INFO	  FIRST_TOKEN_LATENCY: 4.583s
+INFO	  MODEL_RUNTIME(total-audio): 1.263s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.539s
+INFO	  TRANS(avg): 0.105s
+INFO	  SPEAKER_1688_RUNNING_WER: 5.46% (13 files)
+INFO	  HYP_COMMIT: No one came fords to help the mother and this boy? <vad>
+INFO	[14/55] 1688-142285-0013
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: AT LEAST NO FRIEND CAME FORWARDS IMMEDIATELY AND MISSUS THORNTON IS NOT ONE I FANCY TO WAIT TILL TARDY KINDNESS COMES TO FIND HER OUT
+INFO	  HYP: At least no friend came forward immediately, and Mr. Thornton is not one I fancy, to wait till tardy kindness comes to find her out.
+INFO	  FIRST_TOKEN_LATENCY: 4.583s
+INFO	  MODEL_RUNTIME(total-audio): 0.540s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 5.007s  DECODE(avg): 0.303s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.102s
+INFO	  SPEAKER_1688_RUNNING_WER: 5.70% (14 files)
+INFO	  HYP_COMMIT: At least no friend came forward immediately, <seg> and Mr. Thornton is not one I fancy, to wait till tardy kindness comes to find her out. <seg>
+INFO	[15/55] 1688-142285-0014
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: SO THEY LEFT MILTON
+INFO	  HYP: So they left Milton.
+INFO	  FIRST_TOKEN_LATENCY: 2.437s
+INFO	  MODEL_RUNTIME(total-audio): 0.367s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.016s  DECODE(avg): 0.327s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.081s
+INFO	  SPEAKER_1688_RUNNING_WER: 5.62% (15 files)
+INFO	  HYP_COMMIT: So they left Milton. <seg>
+INFO	[16/55] 1688-142285-0015
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: HOW TAINTED ASKED HER FATHER
+INFO	  HYP: How tainted? Asked her father.
+INFO	  FIRST_TOKEN_LATENCY: 2.506s
+INFO	  MODEL_RUNTIME(total-audio): 1.113s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.008s  DECODE(avg): 0.347s  FINAL_DECODE(avg): 0.172s
+INFO	  TRANS(avg): 0.071s
+INFO	  SPEAKER_1688_RUNNING_WER: 5.51% (16 files)
+INFO	  HYP_COMMIT: How tainted? <seg> Asked her father. <vad>
+INFO	[17/55] 1688-142285-0016
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: OH PAPA BY THAT TESTING EVERYTHING BY THE STANDARD OF WEALTH
+INFO	  HYP: Oh, papa, by that testing everything by the standard of wealth!
+INFO	  FIRST_TOKEN_LATENCY: 5.855s
+INFO	  MODEL_RUNTIME(total-audio): 1.015s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.317s
+INFO	  TRANS(avg): 0.082s
+INFO	  SPEAKER_1688_RUNNING_WER: 5.30% (17 files)
+INFO	  HYP_COMMIT: Oh, papa, by that testing everything by the standard of wealth! <vad>
+INFO	[18/55] 1688-142285-0017
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: WHEN HE SPOKE OF THE MECHANICAL POWERS HE EVIDENTLY LOOKED UPON THEM ONLY AS NEW WAYS OF EXTENDING TRADE AND MAKING MONEY
+INFO	  HYP: When he spoke of the mechanical powers, he evidently looked upon them only as new ways of extending trade and making money.
+INFO	  FIRST_TOKEN_LATENCY: 4.529s
+INFO	  MODEL_RUNTIME(total-audio): 0.197s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 5.009s  DECODE(avg): 0.268s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.077s
+INFO	  SPEAKER_1688_RUNNING_WER: 4.92% (18 files)
+INFO	  HYP_COMMIT: When he spoke of the mechanical powers, <seg> he evidently looked upon them only as new ways of extending trade and making money. <seg>
+INFO	[19/55] 1688-142285-0018
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: AND THE POOR MEN AROUND HIM THEY WERE POOR BECAUSE THEY WERE VICIOUS OUT OF THE PALE OF HIS SYMPATHIES BECAUSE THEY HAD NOT HIS IRON NATURE AND THE CAPABILITIES THAT IT GIVES HIM FOR BEING RICH
+INFO	  HYP: And the poor men around him! They were poor because they were vicious, out of the pale of his sympathies because they had not his iron nature, and the capabilities that it gives him for being rich.
+INFO	  FIRST_TOKEN_LATENCY: 4.460s
+INFO	  MODEL_RUNTIME(total-audio): 1.003s
+INFO	  FSL(avg): 7.606s
+INFO	  ENCODE(avg): 4.007s  DECODE(avg): 0.353s  FINAL_DECODE(avg): 0.150s
+INFO	  TRANS(avg): 0.082s
+INFO	  SPEAKER_1688_RUNNING_WER: 4.39% (19 files)
+INFO	  HYP_COMMIT: And the poor men around him! <seg> They were poor because they were vicious, out of the pale of his sympathies because they had not his iron nature, and the capabilities that it gives him for being rich. <vad>
+INFO	[20/55] 1688-142285-0019
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: NOT VICIOUS HE NEVER SAID THAT
+INFO	  HYP: Not vicious. He never said that.
+INFO	  FIRST_TOKEN_LATENCY: 2.415s
+INFO	  MODEL_RUNTIME(total-audio): 1.130s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.006s  DECODE(avg): 0.260s  FINAL_DECODE(avg): 0.197s
+INFO	  TRANS(avg): 0.118s
+INFO	  SPEAKER_1688_RUNNING_WER: 4.31% (20 files)
+INFO	  HYP_COMMIT: Not vicious. <seg> He never said that. <vad>
+INFO	[21/55] 1688-142285-0020
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: IMPROVIDENT AND SELF INDULGENT WERE HIS WORDS
+INFO	  HYP: Improvident and self-indulgent were his words.
+INFO	  FIRST_TOKEN_LATENCY: 4.805s
+INFO	  MODEL_RUNTIME(total-audio): 1.235s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.180s  DECODE(avg): 0.489s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.112s
+INFO	  SPEAKER_1688_RUNNING_WER: 4.23% (21 files)
+INFO	  HYP_COMMIT: Improvident and self-indulgent were his words. <seg>
+INFO	[22/55] 1688-142285-0021
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: MARGARET WAS COLLECTING HER MOTHER'S WORKING MATERIALS AND PREPARING TO GO TO BED
+INFO	  HYP: Margaret was collecting her mother's working materials and preparing to go to bed.
+INFO	  FIRST_TOKEN_LATENCY: 4.524s
+INFO	  MODEL_RUNTIME(total-audio): 1.156s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.010s  DECODE(avg): 0.416s  FINAL_DECODE(avg): 0.195s
+INFO	  TRANS(avg): 0.086s
+INFO	  SPEAKER_1688_RUNNING_WER: 4.07% (22 files)
+INFO	  HYP_COMMIT: Margaret was collecting her mother's working materials <seg> and preparing to go to bed. <vad>
+INFO	[23/55] 1688-142285-0022
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: JUST AS SHE WAS LEAVING THE ROOM SHE HESITATED SHE WAS INCLINED TO MAKE AN ACKNOWLEDGMENT WHICH SHE THOUGHT WOULD PLEASE HER FATHER BUT WHICH TO BE FULL AND TRUE MUST INCLUDE A LITTLE ANNOYANCE
+INFO	  HYP: Just as she was leaving the room, she hesitated. She was inclined to make an acknowledgment, which she thought would please her father. But which, to be full and true, must include a little annoyance.
+INFO	  FIRST_TOKEN_LATENCY: 4.480s
+INFO	  MODEL_RUNTIME(total-audio): 0.548s
+INFO	  FSL(avg): 3.972s
+INFO	  ENCODE(avg): 7.207s  DECODE(avg): 0.492s  FINAL_DECODE(avg): 0.096s
+INFO	  TRANS(avg): 0.111s
+INFO	  SPEAKER_1688_RUNNING_WER: 3.71% (23 files)
+INFO	  HYP_COMMIT: Just as she was leaving the room, <seg> she hesitated. <seg> She was inclined to make an acknowledgment, which she thought would please her father. <vad> But which, to be full and true, must include a little annoyance. <seg>
+INFO	[24/55] 1688-142285-0023
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: HOWEVER OUT IT CAME
+INFO	  HYP: However, out it came.
+INFO	  FIRST_TOKEN_LATENCY: 3.689s
+INFO	  MODEL_RUNTIME(total-audio): 1.104s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.372s
+INFO	  TRANS(avg): 0.072s
+INFO	  SPEAKER_1688_RUNNING_WER: 3.68% (24 files)
+INFO	  HYP_COMMIT: However, out it came. <vad>
+INFO	[25/55] 1688-142285-0024
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: PAPA I DO THINK MISTER THORNTON A VERY REMARKABLE MAN BUT PERSONALLY I DON'T LIKE HIM AT ALL
+INFO	  HYP: Papa, I do think Mr. Thornton a very remarkable man. but personally, I don't like him at all.
+INFO	  FIRST_TOKEN_LATENCY: 6.438s
+INFO	  MODEL_RUNTIME(total-audio): 1.026s
+INFO	  FSL(avg): 1.834s
+INFO	  ENCODE(avg): 6.007s  DECODE(avg): 0.342s  FINAL_DECODE(avg): 0.160s
+INFO	  TRANS(avg): 0.082s
+INFO	  SPEAKER_1688_RUNNING_WER: 3.75% (25 files)
+INFO	  HYP_COMMIT: Papa, I do think Mr. Thornton a very remarkable man. <seg> but personally, I don't like him at all. <vad>
+INFO	[26/55] 1688-142285-0025
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: AND I DO SAID HER FATHER LAUGHING
+INFO	  HYP: And I do," said her father, laughing.
+INFO	  FIRST_TOKEN_LATENCY: 4.550s
+INFO	  MODEL_RUNTIME(total-audio): 1.150s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.442s
+INFO	  TRANS(avg): 0.082s
+INFO	  SPEAKER_1688_RUNNING_WER: 3.69% (26 files)
+INFO	  HYP_COMMIT: And I do," said her father, laughing. <vad>
+INFO	[27/55] 1688-142285-0026
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: PERSONALLY AS YOU CALL IT AND ALL
+INFO	  HYP: Personally, as you call it, and all.
+INFO	  FIRST_TOKEN_LATENCY: 4.656s
+INFO	  MODEL_RUNTIME(total-audio): 1.219s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.191s  DECODE(avg): 0.436s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.082s
+INFO	  SPEAKER_1688_RUNNING_WER: 3.63% (27 files)
+INFO	  HYP_COMMIT: Personally, as you call it, <seg> and all. <seg>
+INFO	[28/55] 1688-142285-0027
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: I DON'T SET HIM UP FOR A HERO OR ANYTHING OF THAT KIND
+INFO	  HYP: I don't set him up for a hero or anything of that kind.
+INFO	  FIRST_TOKEN_LATENCY: 4.672s
+INFO	  MODEL_RUNTIME(total-audio): 0.512s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.006s  DECODE(avg): 0.577s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.075s
+INFO	  SPEAKER_1688_RUNNING_WER: 3.52% (28 files)
+INFO	  HYP_COMMIT: I don't set him up for a hero or anything of that kind. <seg>
+INFO	[29/55] 1688-142285-0028
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: BUT GOOD NIGHT CHILD
+INFO	  HYP: But good night, child.
+INFO	  FIRST_TOKEN_LATENCY: 3.048s
+INFO	  MODEL_RUNTIME(total-audio): 1.108s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.397s
+INFO	  TRANS(avg): 0.082s
+INFO	  SPEAKER_1688_RUNNING_WER: 3.49% (29 files)
+INFO	  HYP_COMMIT: But good night, child. <vad>
+INFO	[30/55] 1688-142285-0029
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: THERE WERE SEVERAL OTHER SIGNS OF SOMETHING WRONG ABOUT MISSUS HALE
+INFO	  HYP: There were several other signs of something wrong about Mrs. Hale.
+INFO	  FIRST_TOKEN_LATENCY: 5.639s
+INFO	  MODEL_RUNTIME(total-audio): 1.089s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.376s
+INFO	  TRANS(avg): 0.090s
+INFO	  SPEAKER_1688_RUNNING_WER: 3.62% (30 files)
+INFO	  HYP_COMMIT: There were several other signs of something wrong about Mrs. Hale. <vad>
+INFO	[31/55] 1688-142285-0030
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: SHE AND DIXON HELD MYSTERIOUS CONSULTATIONS IN HER BEDROOM FROM WHICH DIXON WOULD COME OUT CRYING AND CROSS AS WAS HER CUSTOM WHEN ANY DISTRESS OF HER MISTRESS CALLED UPON HER SYMPATHY
+INFO	  HYP: She and Dixon held mysterious consultations in a bedroom, from which Dixon would come out crying and cross, as was the custom when any distress of her mistress called upon her sympathy.
+INFO	  FIRST_TOKEN_LATENCY: 6.389s
+INFO	  MODEL_RUNTIME(total-audio): 0.162s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 7.007s  DECODE(avg): 0.167s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.107s
+INFO	  SPEAKER_1688_RUNNING_WER: 3.78% (31 files)
+INFO	  HYP_COMMIT: She and Dixon held mysterious consultations in a bedroom, <seg> from which Dixon would come out crying and cross, as was the custom when any distress of her mistress called upon her sympathy. <seg>
+INFO	[32/55] 1688-142285-0031
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: ONCE MARGARET HAD GONE INTO THE CHAMBER SOON AFTER DIXON LEFT IT AND FOUND HER MOTHER ON HER KNEES AND AS MARGARET STOLE OUT SHE CAUGHT A FEW WORDS WHICH WERE EVIDENTLY A PRAYER FOR STRENGTH AND PATIENCE TO ENDURE SEVERE BODILY SUFFERING
+INFO	  HYP: Once Margaret had gone into the chambers soon after Dixon left it, and found her mother on her knees, and as Margaret stole out, she caught a few words, which were evidently a prayer for strength and patience, to endure severe bodily suffering.
+INFO	  FIRST_TOKEN_LATENCY: 6.364s
+INFO	  MODEL_RUNTIME(total-audio): 1.030s
+INFO	  FSL(avg): 5.699s
+INFO	  ENCODE(avg): 8.009s  DECODE(avg): 0.154s  FINAL_DECODE(avg): 0.080s
+INFO	  TRANS(avg): 0.077s
+INFO	  SPEAKER_1688_RUNNING_WER: 3.67% (32 files)
+INFO	  HYP_COMMIT: Once Margaret had gone into the chambers soon after Dixon left it, <seg> and found her mother on her knees, <seg> and as Margaret stole out, <seg> she caught a few words, which were evidently a prayer for strength and patience, to endure severe bodily suffering. <vad>
+INFO	[33/55] 1688-142285-0032
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: BUT THOUGH SHE RECEIVED CARESSES AND FOND WORDS BACK AGAIN IN SUCH PROFUSION AS WOULD HAVE GLADDENED HER FORMERLY YET SHE FELT THAT THERE WAS A SECRET WITHHELD FROM HER AND SHE BELIEVED IT BORE SERIOUS REFERENCE TO HER MOTHER'S HEALTH
+INFO	  HYP: But though she received caresses and fond words back again, in such profusion as would have gladdened her formerly, yet she felt that there was a secret withheld from her, and she believed it bore serious reference to her mother's health.
+INFO	  FIRST_TOKEN_LATENCY: 6.429s
+INFO	  MODEL_RUNTIME(total-audio): 1.123s
+INFO	  FSL(avg): 1.750s
+INFO	  ENCODE(avg): 8.674s  DECODE(avg): 0.147s  FINAL_DECODE(avg): 0.082s
+INFO	  TRANS(avg): 0.080s
+INFO	  SPEAKER_1688_RUNNING_WER: 3.41% (33 files)
+INFO	  HYP_COMMIT: But though she received caresses and fond words back again, <seg> in such profusion as would have gladdened her formerly, <seg> yet she felt that there was a secret withheld from her, <seg> and she believed it bore serious reference to her mother's health. <vad>
+INFO	[34/55] 1688-142285-0033
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: SHE LAY AWAKE VERY LONG THIS NIGHT PLANNING HOW TO LESSEN THE EVIL INFLUENCE OF THEIR MILTON LIFE ON HER MOTHER
+INFO	  HYP: She lay awake very long this night, planning how to lessen the evil influence of their Milton life on her mother.
+INFO	  FIRST_TOKEN_LATENCY: 9.721s
+INFO	  MODEL_RUNTIME(total-audio): 1.036s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.345s
+INFO	  TRANS(avg): 0.071s
+INFO	  SPEAKER_1688_RUNNING_WER: 3.29% (34 files)
+INFO	  HYP_COMMIT: She lay awake very long this night, planning how to lessen the evil influence of their Milton life on her mother. <vad>
+INFO	[35/55] 1688-142285-0034
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: A SERVANT TO GIVE DIXON PERMANENT ASSISTANCE SHOULD BE GOT IF SHE GAVE UP HER WHOLE TIME TO THE SEARCH AND THEN AT ANY RATE HER MOTHER MIGHT HAVE ALL THE PERSONAL ATTENTION SHE REQUIRED AND HAD BEEN ACCUSTOMED TO HER WHOLE LIFE
+INFO	  HYP: A servant to give Dixon permanent assistance should be got. if she gave up the whole time to the search, and then at any rate, her mother might have all the personal attention she required, and had been accustomed to her whole life.
+INFO	  FIRST_TOKEN_LATENCY: 4.599s
+INFO	  MODEL_RUNTIME(total-audio): 1.198s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 6.678s  DECODE(avg): 0.271s  FINAL_DECODE(avg): 0.110s
+INFO	  TRANS(avg): 0.088s
+INFO	  SPEAKER_1688_RUNNING_WER: 3.23% (35 files)
+INFO	  HYP_COMMIT: A servant to give Dixon permanent assistance should be got. <seg> if she gave up the whole time to the search, <seg> and then at any rate, her mother might have all the personal attention she required, <seg> and had been accustomed to her whole life. <vad>
+INFO	[36/55] 1688-142285-0035
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: VISITING REGISTER OFFICES SEEING ALL MANNER OF UNLIKELY PEOPLE AND VERY FEW IN THE LEAST LIKELY ABSORBED MARGARET'S TIME AND THOUGHTS FOR SEVERAL DAYS
+INFO	  HYP: Visiting register offices, seeing all manner of unlikely people, and very few in the least likely, absorbed Margaret's time and thoughts for several days.
+INFO	  FIRST_TOKEN_LATENCY: 6.421s
+INFO	  MODEL_RUNTIME(total-audio): 1.051s
+INFO	  FSL(avg): 3.807s
+INFO	  ENCODE(avg): 6.011s  DECODE(avg): 0.302s  FINAL_DECODE(avg): 0.172s
+INFO	  TRANS(avg): 0.082s
+INFO	  SPEAKER_1688_RUNNING_WER: 3.11% (36 files)
+INFO	  HYP_COMMIT: Visiting register offices, seeing all manner of unlikely people, <seg> and very few in the least likely, absorbed Margaret's time and thoughts for several days. <vad>
+INFO	[37/55] 1688-142285-0036
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: ONE AFTERNOON SHE MET BESSY HIGGINS IN THE STREET AND STOPPED TO SPEAK TO HER
+INFO	  HYP: One afternoon, she met Bessie Higgins in the street and stopped to speak to her.
+INFO	  FIRST_TOKEN_LATENCY: 4.609s
+INFO	  MODEL_RUNTIME(total-audio): 1.082s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.006s  DECODE(avg): 0.512s  FINAL_DECODE(avg): 0.196s
+INFO	  TRANS(avg): 0.071s
+INFO	  SPEAKER_1688_RUNNING_WER: 3.18% (37 files)
+INFO	  HYP_COMMIT: One afternoon, she met Bessie Higgins in the street <seg> and stopped to speak to her. <vad>
+INFO	[38/55] 1688-142285-0037
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: WELL BESSY HOW ARE YOU
+INFO	  HYP: Well, Bessie, how are you?
+INFO	  FIRST_TOKEN_LATENCY: 2.654s
+INFO	  MODEL_RUNTIME(total-audio): 0.579s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.005s  DECODE(avg): 0.485s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.073s
+INFO	  SPEAKER_1688_RUNNING_WER: 3.30% (38 files)
+INFO	  HYP_COMMIT: Well, Bessie, how are you? <seg>
+INFO	[39/55] 1688-142285-0038
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: BETTER AND NOT BETTER IF YO KNOW WHAT THAT MEANS
+INFO	  HYP: Better, and not better, if you know what that means.
+INFO	  FIRST_TOKEN_LATENCY: 2.339s
+INFO	  MODEL_RUNTIME(total-audio): 0.497s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 3.006s  DECODE(avg): 0.231s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.080s
+INFO	  SPEAKER_1688_RUNNING_WER: 3.40% (39 files)
+INFO	  HYP_COMMIT: Better, <seg> and not better, if you know what that means. <seg>
+INFO	[40/55] 1688-142285-0039
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: NOT EXACTLY REPLIED MARGARET SMILING
+INFO	  HYP: Not exactly, replied Margaret, smiling.
+INFO	  FIRST_TOKEN_LATENCY: 4.639s
+INFO	  MODEL_RUNTIME(total-audio): 0.699s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.146s  DECODE(avg): 0.391s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.078s
+INFO	  SPEAKER_1688_RUNNING_WER: 3.38% (40 files)
+INFO	  HYP_COMMIT: Not exactly, replied Margaret, smiling. <seg>
+INFO	[41/55] 1688-142285-0040
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: I'M BETTER IN NOT BEING TORN TO PIECES BY COUGHING O'NIGHTS BUT I'M WEARY AND TIRED O MILTON AND LONGING TO GET AWAY TO THE LAND O BEULAH AND WHEN I THINK I'M FARTHER AND FARTHER OFF MY HEART SINKS AND I'M NO BETTER I'M WORSE
+INFO	  HYP: I'm better than not being torn to pieces by coughing knights, but I'm weary and tired of Milton. And longing to get away to the land of Bula. And when I think I'm farther and farther off, my heart sinks and I'm no better, I'm worse.
+INFO	  FIRST_TOKEN_LATENCY: 6.425s
+INFO	  MODEL_RUNTIME(total-audio): 0.829s
+INFO	  FSL(avg): 1.367s
+INFO	  ENCODE(avg): 13.613s  DECODE(avg): 0.328s  FINAL_DECODE(avg): 0.198s
+INFO	  TRANS(avg): 0.081s
+INFO	  SPEAKER_1688_RUNNING_WER: 3.93% (41 files)
+INFO	  HYP_COMMIT: I'm better than not being torn to pieces by coughing knights, <seg> but I'm weary and tired of Milton. <vad> And longing to get away to the land of Bula. <vad> And when I think I'm farther and farther off, <seg> my heart sinks <seg> and I'm no better, I'm worse. <vad>
+INFO	[42/55] 1688-142285-0041
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: MARGARET TURNED ROUND TO WALK ALONGSIDE OF THE GIRL IN HER FEEBLE PROGRESS HOMEWARD
+INFO	  HYP: Margaret turned around. to walk alongside of the girl in her feeble progress homewards.
+INFO	  FIRST_TOKEN_LATENCY: 2.550s
+INFO	  MODEL_RUNTIME(total-audio): 1.222s
+INFO	  FSL(avg): 3.753s
+INFO	  ENCODE(avg): 2.006s  DECODE(avg): 0.296s  FINAL_DECODE(avg): 0.181s
+INFO	  TRANS(avg): 0.143s
+INFO	  SPEAKER_1688_RUNNING_WER: 4.12% (42 files)
+INFO	  HYP_COMMIT: Margaret turned around. <seg> to walk alongside of the girl in her feeble progress homewards. <vad>
+INFO	[43/55] 1688-142285-0042
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: BUT FOR A MINUTE OR TWO SHE DID NOT SPEAK
+INFO	  HYP: But for a minute or two she did not speak.
+INFO	  FIRST_TOKEN_LATENCY: 4.478s
+INFO	  MODEL_RUNTIME(total-audio): 1.218s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.502s
+INFO	  TRANS(avg): 0.080s
+INFO	  SPEAKER_1688_RUNNING_WER: 4.07% (43 files)
+INFO	  HYP_COMMIT: But for a minute or two she did not speak. <vad>
+INFO	[44/55] 1688-142285-0043
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: AT LAST SHE SAID IN A LOW VOICE
+INFO	  HYP: At last, she said in a low voice.
+INFO	  FIRST_TOKEN_LATENCY: 4.659s
+INFO	  MODEL_RUNTIME(total-audio): 1.234s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.543s
+INFO	  TRANS(avg): 0.074s
+INFO	  SPEAKER_1688_RUNNING_WER: 4.03% (44 files)
+INFO	  HYP_COMMIT: At last, she said in a low voice. <vad>
+INFO	[45/55] 1688-142285-0044
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: BESSY DO YOU WISH TO DIE
+INFO	  HYP: Bessie. Do you wish to die?
+INFO	  FIRST_TOKEN_LATENCY: 2.415s
+INFO	  MODEL_RUNTIME(total-audio): 1.056s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.340s
+INFO	  TRANS(avg): 0.075s
+INFO	  SPEAKER_1688_RUNNING_WER: 4.12% (45 files)
+INFO	  HYP_COMMIT: Bessie. <vad> Do you wish to die? <vad>
+INFO	[46/55] 1688-142285-0045
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: BESSY WAS SILENT IN HER TURN FOR A MINUTE OR TWO THEN SHE REPLIED
+INFO	  HYP: Bessie was silent, in her turn, for a minute or two. then she replied,
+INFO	  FIRST_TOKEN_LATENCY: 4.692s
+INFO	  MODEL_RUNTIME(total-audio): 0.908s
+INFO	  FSL(avg): 0.442s
+INFO	  ENCODE(avg): 4.006s  DECODE(avg): 0.593s  FINAL_DECODE(avg): 0.109s
+INFO	  TRANS(avg): 0.077s
+INFO	  SPEAKER_1688_RUNNING_WER: 4.17% (46 files)
+INFO	  HYP_COMMIT: Bessie was silent, in her turn, for a minute or two. <seg> then she replied, <vad>
+INFO	[47/55] 1688-142285-0046
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: NOUGHT WORSE THAN MANY OTHERS I RECKON
+INFO	  HYP: Not worse than many others, I reckon.
+INFO	  FIRST_TOKEN_LATENCY: 4.107s
+INFO	  MODEL_RUNTIME(total-audio): 1.312s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.422s
+INFO	  TRANS(avg): 0.071s
+INFO	  SPEAKER_1688_RUNNING_WER: 4.26% (47 files)
+INFO	  HYP_COMMIT: Not worse than many others, I reckon. <vad>
+INFO	[48/55] 1688-142285-0047
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: BUT WHAT WAS IT
+INFO	  HYP: But what was it?
+INFO	  FIRST_TOKEN_LATENCY: 2.563s
+INFO	  MODEL_RUNTIME(total-audio): 0.803s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.166s  DECODE(avg): 0.303s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.073s
+INFO	  SPEAKER_1688_RUNNING_WER: 4.24% (48 files)
+INFO	  HYP_COMMIT: But what was it? <seg>
+INFO	[49/55] 1688-142285-0048
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: YOU KNOW I'M A STRANGER HERE SO PERHAPS I'M NOT SO QUICK AT UNDERSTANDING WHAT YOU MEAN AS IF I'D LIVED ALL MY LIFE AT MILTON
+INFO	  HYP: You know, I'm a stranger here, so perhaps I'm not so quick at understanding what you mean, as if I'd lived all my life in Milton.
+INFO	  FIRST_TOKEN_LATENCY: 9.179s
+INFO	  MODEL_RUNTIME(total-audio): 0.929s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.226s
+INFO	  TRANS(avg): 0.075s
+INFO	  SPEAKER_1688_RUNNING_WER: 4.21% (49 files)
+INFO	  HYP_COMMIT: You know, I'm a stranger here, so perhaps I'm not so quick at understanding what you mean, as if I'd lived all my life in Milton. <vad>
+INFO	[50/55] 1688-142285-0049
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: I HAD FORGOTTEN WHAT I SAID FOR THE TIME CONTINUED MARGARET QUIETLY
+INFO	  HYP: I had forgotten what I said for the time. continued Margaret quietly.
+INFO	  FIRST_TOKEN_LATENCY: 4.492s
+INFO	  MODEL_RUNTIME(total-audio): 0.971s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.007s  DECODE(avg): 0.396s  FINAL_DECODE(avg): 0.141s
+INFO	  TRANS(avg): 0.076s
+INFO	  SPEAKER_1688_RUNNING_WER: 4.15% (50 files)
+INFO	  HYP_COMMIT: I had forgotten what I said for the time. <seg> continued Margaret quietly. <vad>
+INFO	[51/55] 1688-142285-0050
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: I SHOULD HAVE THOUGHT OF IT AGAIN WHEN I WAS LESS BUSY MAY I GO WITH YOU NOW
+INFO	  HYP: I should have thought of it again when I was less busy. May I go with you now?
+INFO	  FIRST_TOKEN_LATENCY: 4.575s
+INFO	  MODEL_RUNTIME(total-audio): 1.111s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.005s  DECODE(avg): 0.486s  FINAL_DECODE(avg): 0.212s
+INFO	  TRANS(avg): 0.072s
+INFO	  SPEAKER_1688_RUNNING_WER: 4.07% (51 files)
+INFO	  HYP_COMMIT: I should have thought of it again when I was less busy. <seg> May I go with you now? <vad>
+INFO	[52/55] 1688-142285-0051
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: THE SHARPNESS IN HER EYE TURNED TO A WISTFUL LONGING AS SHE MET MARGARET'S SOFT AND FRIENDLY GAZE
+INFO	  HYP: The sharpness in her eye turned to a wistful longing, as she met Margaret's soft and friendly gaze.
+INFO	  FIRST_TOKEN_LATENCY: 4.619s
+INFO	  MODEL_RUNTIME(total-audio): 0.959s
+INFO	  FSL(avg): 1.413s
+INFO	  ENCODE(avg): 4.017s  DECODE(avg): 0.522s  FINAL_DECODE(avg): 0.133s
+INFO	  TRANS(avg): 0.076s
+INFO	  SPEAKER_1688_RUNNING_WER: 3.98% (52 files)
+INFO	  HYP_COMMIT: The sharpness in her eye turned to a wistful longing, <seg> as she met Margaret's soft and friendly gaze. <vad>
+INFO	[53/55] 1688-142285-0052
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: AS THEY TURNED UP INTO A SMALL COURT OPENING OUT OF A SQUALID STREET BESSY SAID
+INFO	  HYP: As they turned up into a small court, opening out into a squalid street, Bessie said,
+INFO	  FIRST_TOKEN_LATENCY: 6.473s
+INFO	  MODEL_RUNTIME(total-audio): 1.009s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 6.006s  DECODE(avg): 0.374s  FINAL_DECODE(avg): 0.156s
+INFO	  TRANS(avg): 0.074s
+INFO	  SPEAKER_1688_RUNNING_WER: 4.13% (53 files)
+INFO	  HYP_COMMIT: As they turned up into a small court, opening out into a squalid street, <seg> Bessie said, <vad>
+INFO	[54/55] 1688-142285-0053
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: YO'LL NOT BE DAUNTED IF FATHER'S AT HOME AND SPEAKS A BIT GRUFFISH AT FIRST
+INFO	  HYP: You'll not be daunted if father's at home, and speaks a bit gruffish at first.
+INFO	  FIRST_TOKEN_LATENCY: 4.564s
+INFO	  MODEL_RUNTIME(total-audio): 0.665s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 5.012s  DECODE(avg): 0.285s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.077s
+INFO	  SPEAKER_1688_RUNNING_WER: 4.16% (54 files)
+INFO	  HYP_COMMIT: You'll not be daunted if father's at home, <seg> and speaks a bit gruffish at first. <seg>
+INFO	[55/55] 1688-142285-0054
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0
+INFO	  REF: BUT NICHOLAS WAS NOT AT HOME WHEN THEY ENTERED
+INFO	  HYP: But Nicholas was not at home when they entered.
+INFO	  FIRST_TOKEN_LATENCY: 4.294s
+INFO	  MODEL_RUNTIME(total-audio): 1.154s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.461s
+INFO	  TRANS(avg): 0.075s
+INFO	  SPEAKER_1688_RUNNING_WER: 4.12% (55 files)
+INFO	  HYP_COMMIT: But Nicholas was not at home when they entered. <vad>
+INFO	Completed. Results saved to /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c0

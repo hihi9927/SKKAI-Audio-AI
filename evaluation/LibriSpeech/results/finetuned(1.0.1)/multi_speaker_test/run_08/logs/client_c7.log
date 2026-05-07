@@ -1,0 +1,753 @@
+INFO	Results → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	Manual mode. Ensure server is running at ws://localhost:8765
+INFO	Log capture enabled for 10 sampled files → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7/plots
+INFO	Processing 68 files (already done: 0)
+INFO	[1/68] 3005-163390-0021
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: TAKE THEM ALL AROUND THEY'RE A MIGHTY ORNERY LOT IT'S THE WAY THEY'RE RAISED
+INFO	  HYP: Take them all around, they're a mighty ornery lot. It's the way they're raised.
+INFO	  FIRST_TOKEN_LATENCY: 2.809s
+INFO	  MODEL_RUNTIME(total-audio): 1.610s
+INFO	  FSL(avg): 1.894s
+INFO	  ENCODE(avg): 2.006s  DECODE(avg): 0.324s  FINAL_DECODE(avg): 0.189s
+INFO	  TRANS(avg): 0.103s
+INFO	  SPEAKER_3005_RUNNING_WER: 0.00% (1 files)
+INFO	  HYP_COMMIT: Take them all around, <seg> they're a mighty ornery lot. It's the way they're raised. <vad>
+INFO	[2/68] 3005-163390-0022
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: WELL THEY ALL DO JIM
+INFO	  HYP: Well, they all do, Jim.
+INFO	  FIRST_TOKEN_LATENCY: 3.501s
+INFO	  MODEL_RUNTIME(total-audio): 1.361s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.470s
+INFO	  TRANS(avg): 0.075s
+INFO	  SPEAKER_3005_RUNNING_WER: 0.00% (2 files)
+INFO	  HYP_COMMIT: Well, they all do, Jim. <vad>
+INFO	[3/68] 3005-163390-0023
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: NOW DE DUKE HE'S A TOLERBLE LIKELY MAN IN SOME WAYS
+INFO	  HYP: Now the Duke, he's a tolerable like the man in some ways.
+INFO	  FIRST_TOKEN_LATENCY: 5.708s
+INFO	  MODEL_RUNTIME(total-audio): 1.008s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.325s
+INFO	  TRANS(avg): 0.071s
+INFO	  SPEAKER_3005_RUNNING_WER: 11.76% (3 files)
+INFO	  HYP_COMMIT: Now the Duke, he's a tolerable like the man in some ways. <vad>
+INFO	[4/68] 3005-163390-0024
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: THIS ONE'S A MIDDLING HARD LOT FOR A DUKE
+INFO	  HYP: This one's a middling hard lot for a duke.
+INFO	  FIRST_TOKEN_LATENCY: 4.146s
+INFO	  MODEL_RUNTIME(total-audio): 1.446s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.550s
+INFO	  TRANS(avg): 0.076s
+INFO	  SPEAKER_3005_RUNNING_WER: 9.09% (4 files)
+INFO	  HYP_COMMIT: This one's a middling hard lot for a duke. <vad>
+INFO	[5/68] 3005-163390-0025
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: WHEN I WAKED UP JUST AT DAYBREAK HE WAS SITTING THERE WITH HIS HEAD DOWN BETWIXT HIS KNEES MOANING AND MOURNING TO HIMSELF
+INFO	  HYP: When I waked up just at daybreak, he was sitting there with his head down betwixt his knees, moaning and mourning to himself.
+INFO	  FIRST_TOKEN_LATENCY: 4.615s
+INFO	  MODEL_RUNTIME(total-audio): 0.226s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 5.006s  DECODE(avg): 0.344s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.074s
+INFO	  SPEAKER_3005_RUNNING_WER: 5.97% (5 files)
+INFO	  HYP_COMMIT: When I waked up just at daybreak, <seg> he was sitting there with his head down betwixt his knees, moaning and mourning to himself. <seg>
+INFO	[6/68] 3005-163390-0026
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: IT DON'T SEEM NATURAL BUT I RECKON IT'S SO
+INFO	  HYP: It don't seem natural, but I reckon it so.
+INFO	  FIRST_TOKEN_LATENCY: 2.493s
+INFO	  MODEL_RUNTIME(total-audio): 1.409s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.005s  DECODE(avg): 0.351s  FINAL_DECODE(avg): 0.246s
+INFO	  TRANS(avg): 0.092s
+INFO	  SPEAKER_3005_RUNNING_WER: 6.41% (6 files)
+INFO	  HYP_COMMIT: It don't seem natural, <seg> but I reckon it so. <vad>
+INFO	[7/68] 3005-163390-0027
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: HE WAS OFTEN MOANING AND MOURNING THAT WAY NIGHTS WHEN HE JUDGED I WAS ASLEEP AND SAYING PO LITTLE LIZABETH
+INFO	  HYP: He was often moaning and mourning that way nights, when he judged I was asleep, and saying, 'Poor little Elizabeth.'
+INFO	  FIRST_TOKEN_LATENCY: 4.619s
+INFO	  MODEL_RUNTIME(total-audio): 1.143s
+INFO	  FSL(avg): 0.775s
+INFO	  ENCODE(avg): 5.008s  DECODE(avg): 0.303s  FINAL_DECODE(avg): 0.079s
+INFO	  TRANS(avg): 0.078s
+INFO	  SPEAKER_3005_RUNNING_WER: 7.14% (7 files)
+INFO	  HYP_COMMIT: He was often moaning and mourning that way nights, <seg> when he judged I was asleep, <seg> and saying, 'Poor little Elizabeth.' <vad>
+INFO	[8/68] 3005-163390-0028
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: DOAN YOU HEAR ME SHET DE DO
+INFO	  HYP: Don't you hear me? Shut de door.
+INFO	  FIRST_TOKEN_LATENCY: 2.423s
+INFO	  MODEL_RUNTIME(total-audio): 1.172s
+INFO	  FSL(avg): 0.621s
+INFO	  ENCODE(avg): 2.008s  DECODE(avg): 0.314s  FINAL_DECODE(avg): 0.144s
+INFO	  TRANS(avg): 0.085s
+INFO	  SPEAKER_3005_RUNNING_WER: 10.48% (8 files)
+INFO	  HYP_COMMIT: Don't you hear me? <seg> Shut de door. <vad>
+INFO	[9/68] 3005-163390-0029
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: I LAY I MAKE YOU MINE
+INFO	  HYP: I lay I make you mine.
+INFO	  FIRST_TOKEN_LATENCY: 3.653s
+INFO	  MODEL_RUNTIME(total-audio): 0.918s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.417s
+INFO	  TRANS(avg): 0.077s
+INFO	  SPEAKER_3005_RUNNING_WER: 9.91% (9 files)
+INFO	  HYP_COMMIT: I lay I make you mine. <vad>
+INFO	[10/68] 3005-163390-0030
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: JIS AS LOUD AS I COULD YELL
+INFO	  HYP: Just as loud as I could yell.
+INFO	  FIRST_TOKEN_LATENCY: 3.582s
+INFO	  MODEL_RUNTIME(total-audio): 1.167s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.477s
+INFO	  TRANS(avg): 0.073s
+INFO	  SPEAKER_3005_RUNNING_WER: 10.17% (10 files)
+INFO	  HYP_COMMIT: Just as loud as I could yell. <vad>
+INFO	[11/68] 3005-163391-0000
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: WHICH WAS SOUND ENOUGH JUDGMENT BUT YOU TAKE THE AVERAGE MAN AND HE WOULDN'T WAIT FOR HIM TO HOWL
+INFO	  HYP: Which was sound enough judgment, but you take the average man, and he wouldn't wait for him to howl.
+INFO	  FIRST_TOKEN_LATENCY: 4.394s
+INFO	  MODEL_RUNTIME(total-audio): 1.194s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 5.007s  DECODE(avg): 0.202s  FINAL_DECODE(avg): 0.104s
+INFO	  TRANS(avg): 0.074s
+INFO	  SPEAKER_3005_RUNNING_WER: 8.70% (11 files)
+INFO	  HYP_COMMIT: Which was sound enough judgment, <seg> but you take the average man, <seg> and he wouldn't wait for him to howl. <vad>
+INFO	[12/68] 3005-163391-0001
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: THE KING'S DUDS WAS ALL BLACK AND HE DID LOOK REAL SWELL AND STARCHY
+INFO	  HYP: The King's duds was all black, and he did look real swell and starchy.
+INFO	  FIRST_TOKEN_LATENCY: 4.520s
+INFO	  MODEL_RUNTIME(total-audio): 1.273s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.006s  DECODE(avg): 0.416s  FINAL_DECODE(avg): 0.189s
+INFO	  TRANS(avg): 0.079s
+INFO	  SPEAKER_3005_RUNNING_WER: 7.84% (12 files)
+INFO	  HYP_COMMIT: The King's duds was all black, <seg> and he did look real swell and starchy. <vad>
+INFO	[13/68] 3005-163391-0002
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: WHY BEFORE HE LOOKED LIKE THE ORNERIEST OLD RIP THAT EVER WAS BUT NOW WHEN HE'D TAKE OFF HIS NEW WHITE BEAVER AND MAKE A BOW AND DO A SMILE HE LOOKED THAT GRAND AND GOOD AND PIOUS THAT YOU'D SAY HE HAD WALKED RIGHT OUT OF THE ARK AND MAYBE WAS OLD LEVITICUS HIMSELF
+INFO	  HYP: Why, before, he looked like the horniest old rip that ever was, but now, when he'd take off his new white beaver and make a bow and do a smile, he looked that grand and good and pious that you'd say he'd walked right out of the ark, and maybe was old Leviticus himself.
+INFO	  FIRST_TOKEN_LATENCY: 6.447s
+INFO	  MODEL_RUNTIME(total-audio): 1.040s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 7.010s  DECODE(avg): 0.245s  FINAL_DECODE(avg): 0.117s
+INFO	  TRANS(avg): 0.121s
+INFO	  SPEAKER_3005_RUNNING_WER: 6.67% (13 files)
+INFO	  HYP_COMMIT: Why, before, he looked like the horniest old rip that ever was, <seg> but now, when he'd take off his new white beaver and make a bow and do a smile, he looked that grand and good and pious that you'd say he'd walked right out of the ark, <seg> and maybe was old Leviticus himself. <vad>
+INFO	[14/68] 3005-163391-0003
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: JIM CLEANED UP THE CANOE AND I GOT MY PADDLE READY
+INFO	  HYP: Jim cleaned up the canoe, and I got my paddle ready.
+INFO	  FIRST_TOKEN_LATENCY: 4.533s
+INFO	  MODEL_RUNTIME(total-audio): 0.882s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.091s  DECODE(avg): 0.466s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.075s
+INFO	  SPEAKER_3005_RUNNING_WER: 6.33% (14 files)
+INFO	  HYP_COMMIT: Jim cleaned up the canoe, <seg> and I got my paddle ready. <seg>
+INFO	[15/68] 3005-163391-0004
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: WHER YOU BOUND FOR YOUNG MAN
+INFO	  HYP: Where are you bound for, young man?
+INFO	  FIRST_TOKEN_LATENCY: 3.947s
+INFO	  MODEL_RUNTIME(total-audio): 1.117s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.431s
+INFO	  TRANS(avg): 0.071s
+INFO	  SPEAKER_3005_RUNNING_WER: 7.05% (15 files)
+INFO	  HYP_COMMIT: Where are you bound for, young man? <vad>
+INFO	[16/68] 3005-163391-0005
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: GIT ABOARD SAYS THE KING
+INFO	  HYP: Get aboard, says the king.
+INFO	  FIRST_TOKEN_LATENCY: 2.479s
+INFO	  MODEL_RUNTIME(total-audio): 0.159s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.005s  DECODE(avg): 0.377s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.072s
+INFO	  SPEAKER_3005_RUNNING_WER: 7.33% (16 files)
+INFO	  HYP_COMMIT: Get aboard, says the king. <seg>
+INFO	[17/68] 3005-163391-0006
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: I DONE SO AND THEN WE ALL THREE STARTED ON AGAIN
+INFO	  HYP: I done so, and then we all three started on again.
+INFO	  FIRST_TOKEN_LATENCY: 2.379s
+INFO	  MODEL_RUNTIME(total-audio): 1.138s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 3.118s  DECODE(avg): 0.294s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.076s
+INFO	  SPEAKER_3005_RUNNING_WER: 7.00% (17 files)
+INFO	  HYP_COMMIT: I done so, <seg> and then we all three started on again. <seg>
+INFO	[18/68] 3005-163391-0007
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: THE YOUNG CHAP WAS MIGHTY THANKFUL SAID IT WAS TOUGH WORK TOTING HIS BAGGAGE SUCH WEATHER
+INFO	  HYP: The young chap was mighty thankful. Said it was tough work toting his baggage such weather.
+INFO	  FIRST_TOKEN_LATENCY: 4.452s
+INFO	  MODEL_RUNTIME(total-audio): 1.377s
+INFO	  FSL(avg): 0.671s
+INFO	  ENCODE(avg): 4.006s  DECODE(avg): 0.371s  FINAL_DECODE(avg): 0.139s
+INFO	  TRANS(avg): 0.070s
+INFO	  SPEAKER_3005_RUNNING_WER: 6.56% (18 files)
+INFO	  HYP_COMMIT: The young chap was mighty thankful. <seg> Said it was tough work toting his baggage such weather. <vad>
+INFO	[19/68] 3005-163391-0008
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: HE ASKED THE KING WHERE HE WAS GOING AND THE KING TOLD HIM HE'D COME DOWN THE RIVER AND LANDED AT THE OTHER VILLAGE THIS MORNING AND NOW HE WAS GOING UP A FEW MILE TO SEE AN OLD FRIEND ON A FARM UP THERE THE YOUNG FELLOW SAYS
+INFO	  HYP: He asked the king where he was going, and the king told him he'd come down the river and landed at the other village this morning, and now he was going up a few mile to see an old friend on a farm up there. The young fellow says.
+INFO	  FIRST_TOKEN_LATENCY: 4.589s
+INFO	  MODEL_RUNTIME(total-audio): 1.112s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 6.674s  DECODE(avg): 0.214s  FINAL_DECODE(avg): 0.083s
+INFO	  TRANS(avg): 0.100s
+INFO	  SPEAKER_3005_RUNNING_WER: 5.50% (19 files)
+INFO	  HYP_COMMIT: He asked the king where he was going, <seg> and the king told him he'd come down the river and landed at the other village this morning, <seg> and now he was going up a few mile to see an old friend on a farm up there. <seg> The young fellow says. <vad>
+INFO	[20/68] 3005-163391-0009
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: BUT THEN I SAYS AGAIN NO I RECKON IT AIN'T HIM OR ELSE HE WOULDN'T BE PADDLING UP THE RIVER YOU AIN'T HIM ARE YOU
+INFO	  HYP: But then I says again, 'No, I reckon it ain't him, or else he wouldn't be paddlin' up the river. You ain't him, are you?
+INFO	  FIRST_TOKEN_LATENCY: 8.417s
+INFO	  MODEL_RUNTIME(total-audio): 1.196s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 8.007s  DECODE(avg): 0.314s  FINAL_DECODE(avg): 0.248s
+INFO	  TRANS(avg): 0.077s
+INFO	  SPEAKER_3005_RUNNING_WER: 5.34% (20 files)
+INFO	  HYP_COMMIT: But then I says again, 'No, I reckon it ain't him, or else he wouldn't be paddlin' up the river. <seg> You ain't him, are you? <vad>
+INFO	[21/68] 3005-163391-0010
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: NO MY NAME'S BLODGETT ELEXANDER BLODGETT REVEREND ELEXANDER BLODGETT I S'POSE I MUST SAY AS I'M ONE O THE LORD'S POOR SERVANTS
+INFO	  HYP: No, my name's Blodgett, Alexander Blodgett.
+INFO	  FIRST_TOKEN_LATENCY: 4.573s
+INFO	  MODEL_RUNTIME(total-audio): -5.911s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.006s  DECODE(avg): 0.554s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.105s
+INFO	  SPEAKER_3005_RUNNING_WER: 10.47% (21 files)
+INFO	  HYP_COMMIT: No, my name's Blodgett, <seg> Alexander Blodgett. <seg>
+INFO	[22/68] 3005-163391-0011
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: YOU SEE HE WAS PRETTY OLD AND GEORGE'S G'YIRLS WAS TOO YOUNG TO BE MUCH COMPANY FOR HIM EXCEPT MARY JANE THE RED HEADED ONE AND SO HE WAS KINDER LONESOME AFTER GEORGE AND HIS WIFE DIED AND DIDN'T SEEM TO CARE MUCH TO LIVE
+INFO	  HYP: You see, he was pretty old, and George's girls was too young to be much company for him, except Mary Jane, the red-headed one, and so he was kinder lonesome after George and his wife died, and didn't seem to care much to live.
+INFO	  FIRST_TOKEN_LATENCY: 4.472s
+INFO	  MODEL_RUNTIME(total-audio): 1.090s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 7.347s  DECODE(avg): 0.180s  FINAL_DECODE(avg): 0.090s
+INFO	  TRANS(avg): 0.113s
+INFO	  SPEAKER_3005_RUNNING_WER: 9.73% (22 files)
+INFO	  HYP_COMMIT: You see, he was pretty old, <seg> and George's girls was too young to be much company for him, except Mary Jane, the red-headed one, <seg> and so he was kinder lonesome after George and his wife died, <seg> and didn't seem to care much to live. <vad>
+INFO	[23/68] 3005-163391-0012
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: TOO BAD TOO BAD HE COULDN'T A LIVED TO SEE HIS BROTHERS POOR SOUL
+INFO	  HYP: Too bad. Too bad he couldn't have lived to see his brother's poor soul.
+INFO	  FIRST_TOKEN_LATENCY: 2.379s
+INFO	  MODEL_RUNTIME(total-audio): 1.472s
+INFO	  FSL(avg): 1.749s
+INFO	  ENCODE(avg): 2.005s  DECODE(avg): 0.265s  FINAL_DECODE(avg): 0.159s
+INFO	  TRANS(avg): 0.200s
+INFO	  SPEAKER_3005_RUNNING_WER: 10.09% (23 files)
+INFO	  HYP_COMMIT: Too bad. <seg> Too bad he couldn't have lived to see his brother's poor soul. <vad>
+INFO	[24/68] 3005-163391-0013
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: I'M GOING IN A SHIP NEXT WEDNESDAY FOR RYO JANEERO WHERE MY UNCLE LIVES
+INFO	  HYP: I'm going in a ship. where my uncle is.
+INFO	  FIRST_TOKEN_LATENCY: 2.474s
+INFO	  MODEL_RUNTIME(total-audio): 0.532s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.006s  DECODE(avg): 0.318s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.094s
+INFO	  SPEAKER_3005_RUNNING_WER: 11.11% (24 files)
+INFO	  HYP_COMMIT: I'm going in a ship. <seg> where my uncle is. <seg>
+INFO	[25/68] 3005-163391-0014
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: BUT IT'LL BE LOVELY WISHT I WAS A GOING
+INFO	  HYP: But it'll be lovely. Wished I was a-going.
+INFO	  FIRST_TOKEN_LATENCY: 2.395s
+INFO	  MODEL_RUNTIME(total-audio): 1.061s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 3.058s  DECODE(avg): 0.333s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.072s
+INFO	  SPEAKER_3005_RUNNING_WER: 11.09% (25 files)
+INFO	  HYP_COMMIT: But it'll be lovely. <seg> Wished I was a-going. <seg>
+INFO	[26/68] 3005-163391-0015
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: MARY JANE'S NINETEEN SUSAN'S FIFTEEN AND JOANNA'S ABOUT FOURTEENTHAT'S THE ONE THAT GIVES HERSELF TO GOOD WORKS AND HAS A HARE LIP POOR THINGS
+INFO	  HYP: Mary Jane's nineteen, Susan's fifteen, and Joanna's about fourteen. That's the one that gives herself to good works and has a hair lip. Poor things.
+INFO	  FIRST_TOKEN_LATENCY: 7.189s
+INFO	  MODEL_RUNTIME(total-audio): 1.185s
+INFO	  FSL(avg): 1.973s
+INFO	  ENCODE(avg): 6.014s  DECODE(avg): 0.320s  FINAL_DECODE(avg): 0.220s
+INFO	  TRANS(avg): 0.337s
+INFO	  SPEAKER_3005_RUNNING_WER: 11.06% (26 files)
+INFO	  HYP_COMMIT: Mary Jane's nineteen, Susan's fifteen, and Joanna's about fourteen. <seg> That's the one that gives herself to good works and has a hair lip. <vad> Poor things. <vad>
+INFO	[27/68] 3005-163391-0016
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: WELL THEY COULD BE WORSE OFF
+INFO	  HYP: Well, they could be worse off.
+INFO	  FIRST_TOKEN_LATENCY: 3.906s
+INFO	  MODEL_RUNTIME(total-audio): 1.366s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.405s
+INFO	  TRANS(avg): 0.133s
+INFO	  SPEAKER_3005_RUNNING_WER: 10.93% (27 files)
+INFO	  HYP_COMMIT: Well, they could be worse off. <vad>
+INFO	[28/68] 3005-163391-0017
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: OLD PETER HAD FRIENDS AND THEY AIN'T GOING TO LET THEM COME TO NO HARM
+INFO	  HYP: Old Peter had friends, and they ain't gonna let them come to no harm.
+INFO	  FIRST_TOKEN_LATENCY: 2.373s
+INFO	  MODEL_RUNTIME(total-audio): 1.239s
+INFO	  FSL(avg): 1.163s
+INFO	  ENCODE(avg): 2.005s  DECODE(avg): 0.291s  FINAL_DECODE(avg): 0.171s
+INFO	  TRANS(avg): 0.074s
+INFO	  SPEAKER_3005_RUNNING_WER: 10.98% (28 files)
+INFO	  HYP_COMMIT: Old Peter had friends, <seg> and they ain't gonna let them come to no harm. <vad>
+INFO	[29/68] 3005-163391-0018
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: BLAMED IF HE DIDN'T INQUIRE ABOUT EVERYBODY AND EVERYTHING IN THAT BLESSED TOWN AND ALL ABOUT THE WILKSES AND ABOUT PETER'S BUSINESSWHICH WAS A TANNER AND ABOUT GEORGE'SWHICH WAS A CARPENTER AND ABOUT HARVEY'SWHICH WAS A DISSENTERING MINISTER AND SO ON AND SO ON THEN HE SAYS
+INFO	  HYP: Blamed if he didn't inquire about everybody and everything in that blessed town and all about the Wilkes's. Then he says,
+INFO	  FIRST_TOKEN_LATENCY: 6.419s
+INFO	  MODEL_RUNTIME(total-audio): 0.985s
+INFO	  FSL(avg): 10.942s
+INFO	  ENCODE(avg): 6.007s  DECODE(avg): 0.417s  FINAL_DECODE(avg): 0.090s
+INFO	  TRANS(avg): 0.072s
+INFO	  SPEAKER_3005_RUNNING_WER: 15.22% (29 files)
+INFO	  HYP_COMMIT: Blamed if he didn't inquire about everybody and everything in that blessed town <seg> and all about the Wilkes's. <seg> Then he says, <vad>
+INFO	[30/68] 3005-163391-0019
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: WHEN THEY'RE DEEP THEY WON'T STOP FOR A HAIL
+INFO	  HYP: When they're deep, they won't stop for a hale.
+INFO	  FIRST_TOKEN_LATENCY: 2.404s
+INFO	  MODEL_RUNTIME(total-audio): 1.459s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.005s  DECODE(avg): 0.290s  FINAL_DECODE(avg): 0.271s
+INFO	  TRANS(avg): 0.072s
+INFO	  SPEAKER_3005_RUNNING_WER: 15.10% (30 files)
+INFO	  HYP_COMMIT: When they're deep, <seg> they won't stop for a hale. <vad>
+INFO	[31/68] 3005-163391-0020
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: WAS PETER WILKS WELL OFF
+INFO	  HYP: Was Peter Wilkes well off?
+INFO	  FIRST_TOKEN_LATENCY: 3.506s
+INFO	  MODEL_RUNTIME(total-audio): 1.081s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.375s
+INFO	  TRANS(avg): 0.083s
+INFO	  SPEAKER_3005_RUNNING_WER: 15.14% (31 files)
+INFO	  HYP_COMMIT: Was Peter Wilkes well off? <vad>
+INFO	[32/68] 3005-163391-0021
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: WHEN WE STRUCK THE BOAT SHE WAS ABOUT DONE LOADING AND PRETTY SOON SHE GOT OFF
+INFO	  HYP: When we struck the boat, she was about done loading, and pretty soon she got off.
+INFO	  FIRST_TOKEN_LATENCY: 2.426s
+INFO	  MODEL_RUNTIME(total-audio): 1.116s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 3.005s  DECODE(avg): 0.320s  FINAL_DECODE(avg): 0.129s
+INFO	  TRANS(avg): 0.083s
+INFO	  SPEAKER_3005_RUNNING_WER: 14.73% (32 files)
+INFO	  HYP_COMMIT: When we struck the boat, <seg> she was about done loading, <seg> and pretty soon she got off. <vad>
+INFO	[33/68] 3005-163391-0022
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: NOW HUSTLE BACK RIGHT OFF AND FETCH THE DUKE UP HERE AND THE NEW CARPET BAGS
+INFO	  HYP: Now, hustle back right off and fetch the Duke up here. and the new carpet bags.
+INFO	  FIRST_TOKEN_LATENCY: 4.446s
+INFO	  MODEL_RUNTIME(total-audio): 0.908s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.732s  DECODE(avg): 0.342s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.086s
+INFO	  SPEAKER_3005_RUNNING_WER: 14.33% (33 files)
+INFO	  HYP_COMMIT: Now, hustle back right off <seg> and fetch the Duke up here. <seg> and the new carpet bags. <seg>
+INFO	[34/68] 3005-163391-0023
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: SO THEN THEY WAITED FOR A STEAMBOAT
+INFO	  HYP: So then they waited for a steamboat.
+INFO	  FIRST_TOKEN_LATENCY: 3.780s
+INFO	  MODEL_RUNTIME(total-audio): 1.170s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.427s
+INFO	  TRANS(avg): 0.132s
+INFO	  SPEAKER_3005_RUNNING_WER: 14.17% (34 files)
+INFO	  HYP_COMMIT: So then they waited for a steamboat. <vad>
+INFO	[35/68] 3005-163391-0024
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: BUT THE KING WAS CA'M HE SAYS
+INFO	  HYP: But the king was calm. He says,
+INFO	  FIRST_TOKEN_LATENCY: 2.416s
+INFO	  MODEL_RUNTIME(total-audio): 1.157s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.010s  DECODE(avg): 0.321s  FINAL_DECODE(avg): 0.194s
+INFO	  TRANS(avg): 0.075s
+INFO	  SPEAKER_3005_RUNNING_WER: 14.31% (35 files)
+INFO	  HYP_COMMIT: But the king was calm. <seg> He says, <vad>
+INFO	[36/68] 3005-163391-0025
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: THEY GIVE A GLANCE AT ONE ANOTHER AND NODDED THEIR HEADS AS MUCH AS TO SAY WHAT D I TELL YOU
+INFO	  HYP: They gave a glance at one another and nodded their heads as much as to say, 'Would that tell you?'.
+INFO	  FIRST_TOKEN_LATENCY: 4.480s
+INFO	  MODEL_RUNTIME(total-audio): 0.826s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 5.092s  DECODE(avg): 0.244s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.073s
+INFO	  SPEAKER_3005_RUNNING_WER: 14.47% (36 files)
+INFO	  HYP_COMMIT: They gave a glance at one another <seg> and nodded their heads as much as to say, 'Would that tell you?'. <seg>
+INFO	[37/68] 3005-163391-0026
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: THEN ONE OF THEM SAYS KIND OF SOFT AND GENTLE
+INFO	  HYP: Then one of them says, kind of soft and gentle,
+INFO	  FIRST_TOKEN_LATENCY: 4.722s
+INFO	  MODEL_RUNTIME(total-audio): 1.242s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.550s
+INFO	  TRANS(avg): 0.078s
+INFO	  SPEAKER_3005_RUNNING_WER: 14.24% (37 files)
+INFO	  HYP_COMMIT: Then one of them says, kind of soft and gentle, <vad>
+INFO	[38/68] 3005-163399-0000
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: PHELPS WAS ONE OF THESE LITTLE ONE HORSE COTTON PLANTATIONS AND THEY ALL LOOK ALIKE
+INFO	  HYP: Phelps's was one of these little one-horse cotton plantations, and they all look alike.
+INFO	  FIRST_TOKEN_LATENCY: 6.463s
+INFO	  MODEL_RUNTIME(total-audio): 0.470s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 6.032s  DECODE(avg): 0.382s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.087s
+INFO	  SPEAKER_3005_RUNNING_WER: 14.07% (38 files)
+INFO	  HYP_COMMIT: Phelps's was one of these little one-horse cotton plantations, <seg> and they all look alike. <seg>
+INFO	[39/68] 3005-163399-0001
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: I WENT AROUND AND CLUMB OVER THE BACK STILE BY THE ASH HOPPER AND STARTED FOR THE KITCHEN
+INFO	  HYP: I went around and climbed over the back stile by the ash hopper, and started for the kitchen.
+INFO	  FIRST_TOKEN_LATENCY: 2.501s
+INFO	  MODEL_RUNTIME(total-audio): 1.063s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.065s  DECODE(avg): 0.354s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.092s
+INFO	  SPEAKER_3005_RUNNING_WER: 13.84% (39 files)
+INFO	  HYP_COMMIT: I went around <seg> and climbed over the back stile by the ash hopper, <seg> and started for the kitchen. <seg>
+INFO	[40/68] 3005-163399-0002
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: I OUT WITH A YES'M BEFORE I THOUGHT
+INFO	  HYP: Ah, out with a yesum fore I thought.
+INFO	  FIRST_TOKEN_LATENCY: 4.656s
+INFO	  MODEL_RUNTIME(total-audio): 1.181s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.494s
+INFO	  TRANS(avg): 0.071s
+INFO	  SPEAKER_3005_RUNNING_WER: 14.24% (40 files)
+INFO	  HYP_COMMIT: Ah, out with a yesum fore I thought. <vad>
+INFO	[41/68] 3005-163399-0003
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: SO THEN SHE STARTED FOR THE HOUSE LEADING ME BY THE HAND AND THE CHILDREN TAGGING AFTER
+INFO	  HYP: So then she started for the house, leading me by the hand , and the children tagging after.
+INFO	  FIRST_TOKEN_LATENCY: 4.585s
+INFO	  MODEL_RUNTIME(total-audio): 1.430s
+INFO	  FSL(avg): 0.575s
+INFO	  ENCODE(avg): 4.008s  DECODE(avg): 0.487s  FINAL_DECODE(avg): 0.105s
+INFO	  TRANS(avg): 0.081s
+INFO	  SPEAKER_3005_RUNNING_WER: 13.90% (41 files)
+INFO	  HYP_COMMIT: So then she started for the house, leading me by the hand <seg> , and the children tagging after. <vad>
+INFO	[42/68] 3005-163399-0004
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: WHEN WE GOT THERE SHE SET ME DOWN IN A SPLIT BOTTOMED CHAIR AND SET HERSELF DOWN ON A LITTLE LOW STOOL IN FRONT OF ME HOLDING BOTH OF MY HANDS AND SAYS
+INFO	  HYP: When we got there, she set me down in a split-bottom chair and set herself down on a little low stool in front of me, holding both of my hands and says,
+INFO	  FIRST_TOKEN_LATENCY: 2.484s
+INFO	  MODEL_RUNTIME(total-audio): 1.345s
+INFO	  FSL(avg): 4.556s
+INFO	  ENCODE(avg): 3.007s  DECODE(avg): 0.316s  FINAL_DECODE(avg): 0.072s
+INFO	  TRANS(avg): 0.078s
+INFO	  SPEAKER_3005_RUNNING_WER: 13.41% (42 files)
+INFO	  HYP_COMMIT: When we got there, <seg> she set me down in a split-bottom chair <seg> and set herself down on a little low stool in front of me, holding both of my hands and says, <vad>
+INFO	[43/68] 3005-163399-0005
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: WELL IT'S LUCKY BECAUSE SOMETIMES PEOPLE DO GET HURT
+INFO	  HYP: Well, it's lucky, because sometimes people do get hurt.
+INFO	  FIRST_TOKEN_LATENCY: 2.503s
+INFO	  MODEL_RUNTIME(total-audio): 1.154s
+INFO	  FSL(avg): 0.387s
+INFO	  ENCODE(avg): 2.005s  DECODE(avg): 0.362s  FINAL_DECODE(avg): 0.111s
+INFO	  TRANS(avg): 0.091s
+INFO	  SPEAKER_3005_RUNNING_WER: 13.24% (43 files)
+INFO	  HYP_COMMIT: Well, it's lucky, <seg> because sometimes people do get hurt. <vad>
+INFO	[44/68] 3005-163399-0006
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: AND I THINK HE DIED AFTERWARDS HE WAS A BAPTIST
+INFO	  HYP: And I think he died afterwards. He was a Baptist.
+INFO	  FIRST_TOKEN_LATENCY: 2.465s
+INFO	  MODEL_RUNTIME(total-audio): 1.221s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 3.067s  DECODE(avg): 0.340s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.075s
+INFO	  SPEAKER_3005_RUNNING_WER: 13.06% (44 files)
+INFO	  HYP_COMMIT: And I think he died afterwards. <seg> He was a Baptist. <seg>
+INFO	[45/68] 3005-163399-0007
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: YES IT WAS MORTIFICATIONTHAT WAS IT
+INFO	  HYP: Yes, it was mortification. That was it.
+INFO	  FIRST_TOKEN_LATENCY: 4.627s
+INFO	  MODEL_RUNTIME(total-audio): 1.518s
+INFO	  FSL(avg): 0.074s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.273s
+INFO	  TRANS(avg): 0.076s
+INFO	  SPEAKER_3005_RUNNING_WER: 13.22% (45 files)
+INFO	  HYP_COMMIT: Yes, it was mortification. <vad> That was it. <vad>
+INFO	[46/68] 3005-163399-0008
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: YOUR UNCLE'S BEEN UP TO THE TOWN EVERY DAY TO FETCH YOU
+INFO	  HYP: Your uncle's been up to the town every day to fetch you.
+INFO	  FIRST_TOKEN_LATENCY: 4.733s
+INFO	  MODEL_RUNTIME(total-audio): 1.713s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.591s
+INFO	  TRANS(avg): 0.077s
+INFO	  SPEAKER_3005_RUNNING_WER: 13.00% (46 files)
+INFO	  HYP_COMMIT: Your uncle's been up to the town every day to fetch you. <vad>
+INFO	[47/68] 3005-163399-0009
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: YOU MUST A MET HIM ON THE ROAD DIDN'T YOU OLDISH MAN WITH A
+INFO	  HYP: You must have met him on the road, didn't you? Oldish man with a...
+INFO	  FIRST_TOKEN_LATENCY: 2.736s
+INFO	  MODEL_RUNTIME(total-audio): 1.001s
+INFO	  FSL(avg): 0.756s
+INFO	  ENCODE(avg): 2.005s  DECODE(avg): 0.581s  FINAL_DECODE(avg): 0.153s
+INFO	  TRANS(avg): 0.107s
+INFO	  SPEAKER_3005_RUNNING_WER: 12.88% (47 files)
+INFO	  HYP_COMMIT: You must have met him on the road, didn't you? <seg> Oldish man with a... <vad>
+INFO	[48/68] 3005-163399-0010
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: WHY CHILD IT LL BE STOLE
+INFO	  HYP: Watch out! It'll be stole.
+INFO	  FIRST_TOKEN_LATENCY: 2.399s
+INFO	  MODEL_RUNTIME(total-audio): 1.264s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.005s  DECODE(avg): 0.286s  FINAL_DECODE(avg): 0.183s
+INFO	  TRANS(avg): 0.083s
+INFO	  SPEAKER_3005_RUNNING_WER: 13.03% (48 files)
+INFO	  HYP_COMMIT: Watch out! <seg> It'll be stole. <vad>
+INFO	[49/68] 3005-163399-0011
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: IT WAS KINDER THIN ICE BUT I SAYS
+INFO	  HYP: It was kinder thin ice, but I says,
+INFO	  FIRST_TOKEN_LATENCY: 4.568s
+INFO	  MODEL_RUNTIME(total-audio): 1.429s
+INFO	  FSL(avg): 0.070s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.230s
+INFO	  TRANS(avg): 0.072s
+INFO	  SPEAKER_3005_RUNNING_WER: 12.90% (49 files)
+INFO	  HYP_COMMIT: It was kinder thin ice, <vad> but I says, <vad>
+INFO	[50/68] 3005-163399-0012
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: I HAD MY MIND ON THE CHILDREN ALL THE TIME I WANTED TO GET THEM OUT TO ONE SIDE AND PUMP THEM A LITTLE AND FIND OUT WHO I WAS
+INFO	  HYP: I had my mind on the children all the time. I wanted to get them out to one side and pump them a little and find out who I was.
+INFO	  FIRST_TOKEN_LATENCY: 4.568s
+INFO	  MODEL_RUNTIME(total-audio): 0.710s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 5.006s  DECODE(avg): 0.287s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.074s
+INFO	  SPEAKER_3005_RUNNING_WER: 12.44% (50 files)
+INFO	  HYP_COMMIT: I had my mind on the children all the time. <seg> I wanted to get them out to one side and pump them a little and find out who I was. <seg>
+INFO	[51/68] 3005-163399-0013
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: PRETTY SOON SHE MADE THE COLD CHILLS STREAK ALL DOWN MY BACK BECAUSE SHE SAYS
+INFO	  HYP: Pretty soon she made the cold chills streak all down my back,
+INFO	  FIRST_TOKEN_LATENCY: 4.619s
+INFO	  MODEL_RUNTIME(total-audio): -0.756s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.005s  DECODE(avg): 0.527s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.075s
+INFO	  SPEAKER_3005_RUNNING_WER: 12.57% (51 files)
+INFO	  HYP_COMMIT: Pretty soon she made the cold chills streak all down my back, <seg>
+INFO	[52/68] 3005-163399-0014
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: I SEE IT WARN'T A BIT OF USE TO TRY TO GO AHEAD I'D GOT TO THROW UP MY HAND
+INFO	  HYP: I see it weren't a bit of use to try to go ahead. I'd got to throw up my hand.
+INFO	  FIRST_TOKEN_LATENCY: 4.693s
+INFO	  MODEL_RUNTIME(total-audio): 1.109s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.010s  DECODE(avg): 0.596s  FINAL_DECODE(avg): 0.198s
+INFO	  TRANS(avg): 0.082s
+INFO	  SPEAKER_3005_RUNNING_WER: 12.37% (52 files)
+INFO	  HYP_COMMIT: I see it weren't a bit of use to try to go ahead. <seg> I'd got to throw up my hand. <vad>
+INFO	[53/68] 3005-163399-0015
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: SO I SAYS TO MYSELF HERE'S ANOTHER PLACE WHERE I GOT TO RESK THE TRUTH
+INFO	  HYP: So I says to myself, here's another place where I got to risk the truth.
+INFO	  FIRST_TOKEN_LATENCY: 6.072s
+INFO	  MODEL_RUNTIME(total-audio): 1.047s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.360s
+INFO	  TRANS(avg): 0.070s
+INFO	  SPEAKER_3005_RUNNING_WER: 12.26% (53 files)
+INFO	  HYP_COMMIT: So I says to myself, here's another place where I got to risk the truth. <vad>
+INFO	[54/68] 3005-163399-0016
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: I OPENED MY MOUTH TO BEGIN BUT SHE GRABBED ME AND HUSTLED ME IN BEHIND THE BED AND SAYS HERE HE COMES
+INFO	  HYP: I opened my mouth to begin but she grabbed me and hustled me in behind the bed and says, "Here he comes!"
+INFO	  FIRST_TOKEN_LATENCY: 4.436s
+INFO	  MODEL_RUNTIME(total-audio): 1.469s
+INFO	  FSL(avg): 2.430s
+INFO	  ENCODE(avg): 4.006s  DECODE(avg): 0.339s  FINAL_DECODE(avg): 0.181s
+INFO	  TRANS(avg): 0.080s
+INFO	  SPEAKER_3005_RUNNING_WER: 11.96% (54 files)
+INFO	  HYP_COMMIT: I opened my mouth to begin <seg> but she grabbed me and hustled me in behind the bed and says, "Here he comes!" <vad>
+INFO	[55/68] 3005-163399-0017
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: CHILDREN DON'T YOU SAY A WORD
+INFO	  HYP: Children, don't you say a word.
+INFO	  FIRST_TOKEN_LATENCY: 2.573s
+INFO	  MODEL_RUNTIME(total-audio): 0.168s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.006s  DECODE(avg): 0.474s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.084s
+INFO	  SPEAKER_3005_RUNNING_WER: 11.87% (55 files)
+INFO	  HYP_COMMIT: Children, don't you say a word. <seg>
+INFO	[56/68] 3005-163399-0018
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: I SEE I WAS IN A FIX NOW
+INFO	  HYP: I see I was in a fix now.
+INFO	  FIRST_TOKEN_LATENCY: 3.866s
+INFO	  MODEL_RUNTIME(total-audio): 1.376s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.481s
+INFO	  TRANS(avg): 0.072s
+INFO	  SPEAKER_3005_RUNNING_WER: 11.77% (56 files)
+INFO	  HYP_COMMIT: I see I was in a fix now. <vad>
+INFO	[57/68] 3005-163399-0019
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: MISSUS PHELPS SHE JUMPS FOR HIM AND SAYS
+INFO	  HYP: Mrs. Phelps she jumps for him and says,
+INFO	  FIRST_TOKEN_LATENCY: 4.261s
+INFO	  MODEL_RUNTIME(total-audio): 1.237s
+INFO	  FSL(avg): 0.075s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.224s
+INFO	  TRANS(avg): 0.077s
+INFO	  SPEAKER_3005_RUNNING_WER: 11.78% (57 files)
+INFO	  HYP_COMMIT: Mrs. Phelps she jumps for him <vad> and says, <vad>
+INFO	[58/68] 3005-163399-0020
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: HAS HE COME NO SAYS HER HUSBAND
+INFO	  HYP: Has he come? No, says her husband.
+INFO	  FIRST_TOKEN_LATENCY: 2.455s
+INFO	  MODEL_RUNTIME(total-audio): 1.610s
+INFO	  FSL(avg): 0.663s
+INFO	  ENCODE(avg): 2.006s  DECODE(avg): 0.310s  FINAL_DECODE(avg): 0.146s
+INFO	  TRANS(avg): 0.100s
+INFO	  SPEAKER_3005_RUNNING_WER: 11.69% (58 files)
+INFO	  HYP_COMMIT: Has he come? <seg> No, says her husband. <vad>
+INFO	[59/68] 3005-163399-0021
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: I CAN'T IMAGINE SAYS THE OLD GENTLEMAN AND I MUST SAY IT MAKES ME DREADFUL UNEASY
+INFO	  HYP: I can't imagine," says the old gentleman. and I must say it makes me dreadful uneasy.
+INFO	  FIRST_TOKEN_LATENCY: 2.556s
+INFO	  MODEL_RUNTIME(total-audio): 1.300s
+INFO	  FSL(avg): 2.086s
+INFO	  ENCODE(avg): 2.016s  DECODE(avg): 0.438s  FINAL_DECODE(avg): 0.198s
+INFO	  TRANS(avg): 0.070s
+INFO	  SPEAKER_3005_RUNNING_WER: 11.48% (59 files)
+INFO	  HYP_COMMIT: I can't imagine," says the old gentleman. <seg> and I must say it makes me dreadful uneasy. <vad>
+INFO	[60/68] 3005-163399-0022
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: UNEASY SHE SAYS I'M READY TO GO DISTRACTED
+INFO	  HYP: Uneasy, she says. I'm ready to go distracted.
+INFO	  FIRST_TOKEN_LATENCY: 2.413s
+INFO	  MODEL_RUNTIME(total-audio): 0.918s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 3.006s  DECODE(avg): 0.315s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.106s
+INFO	  SPEAKER_3005_RUNNING_WER: 11.38% (60 files)
+INFO	  HYP_COMMIT: Uneasy, she says. <seg> I'm ready to go distracted. <seg>
+INFO	[61/68] 3005-163399-0023
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: HE MUST A COME AND YOU'VE MISSED HIM ALONG THE ROAD
+INFO	  HYP: He must a come, and you've missed him along the road.
+INFO	  FIRST_TOKEN_LATENCY: 2.538s
+INFO	  MODEL_RUNTIME(total-audio): 1.517s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 3.119s  DECODE(avg): 0.328s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.112s
+INFO	  SPEAKER_3005_RUNNING_WER: 11.24% (61 files)
+INFO	  HYP_COMMIT: He must a come, <seg> and you've missed him along the road. <seg>
+INFO	[62/68] 3005-163399-0024
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: OH DON'T DISTRESS ME ANY MORE'N I'M ALREADY DISTRESSED
+INFO	  HYP: Oh, don't distress me any more I'm already distressed.
+INFO	  FIRST_TOKEN_LATENCY: 4.650s
+INFO	  MODEL_RUNTIME(total-audio): 1.091s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.141s  DECODE(avg): 0.494s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.090s
+INFO	  SPEAKER_3005_RUNNING_WER: 11.20% (62 files)
+INFO	  HYP_COMMIT: Oh, don't distress me any more <seg> I'm already distressed. <seg>
+INFO	[63/68] 3005-163399-0025
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: WHY SILAS LOOK YONDER UP THE ROAD AIN'T THAT SOMEBODY COMING
+INFO	  HYP: Why, Silas, look yonder, up the road. Ain't that somebody comin'?
+INFO	  FIRST_TOKEN_LATENCY: 4.717s
+INFO	  MODEL_RUNTIME(total-audio): 1.059s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.070s  DECODE(avg): 0.554s  FINAL_DECODE(avg): 0.180s
+INFO	  TRANS(avg): 0.080s
+INFO	  SPEAKER_3005_RUNNING_WER: 11.17% (63 files)
+INFO	  HYP_COMMIT: Why, Silas, look yonder, up the road. <seg> Ain't that somebody comin'? <vad>
+INFO	[64/68] 3005-163399-0026
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: THE OLD GENTLEMAN STARED AND SAYS
+INFO	  HYP: The old gentleman stared and says,
+INFO	  FIRST_TOKEN_LATENCY: 2.416s
+INFO	  MODEL_RUNTIME(total-audio): 1.024s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.005s  DECODE(avg): 0.307s  FINAL_DECODE(avg): 0.161s
+INFO	  TRANS(avg): 0.086s
+INFO	  SPEAKER_3005_RUNNING_WER: 11.10% (64 files)
+INFO	  HYP_COMMIT: The old gentleman stared <seg> and says, <vad>
+INFO	[65/68] 3005-163399-0027
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: I HAIN'T NO IDEA WHO IS IT
+INFO	  HYP: I hain't no idea, Who is it?
+INFO	  FIRST_TOKEN_LATENCY: 2.435s
+INFO	  MODEL_RUNTIME(total-audio): 1.211s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.005s  DECODE(avg): 0.345s  FINAL_DECODE(avg): 0.247s
+INFO	  TRANS(avg): 0.085s
+INFO	  SPEAKER_3005_RUNNING_WER: 11.01% (65 files)
+INFO	  HYP_COMMIT: I hain't no idea, <seg> Who is it? <vad>
+INFO	[66/68] 3005-163399-0028
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: IT'S TOM SAWYER
+INFO	  HYP: It's Tom Sawyer.
+INFO	  FIRST_TOKEN_LATENCY: 2.405s
+INFO	  MODEL_RUNTIME(total-audio): 0.255s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.006s  DECODE(avg): 0.314s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.071s
+INFO	  SPEAKER_3005_RUNNING_WER: 10.97% (66 files)
+INFO	  HYP_COMMIT: It's Tom Sawyer. <seg>
+INFO	[67/68] 3005-163399-0029
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: BEING TOM SAWYER WAS EASY AND COMFORTABLE AND IT STAYED EASY AND COMFORTABLE TILL BY AND BY I HEAR A STEAMBOAT COUGHING ALONG DOWN THE RIVER
+INFO	  HYP: Being Tom Sawyer was easy and comfortable , and it stayed easy and comfortable till by and by I hear a steamboat coughing along down the river.
+INFO	  FIRST_TOKEN_LATENCY: 4.479s
+INFO	  MODEL_RUNTIME(total-audio): 1.278s
+INFO	  FSL(avg): 4.003s
+INFO	  ENCODE(avg): 4.006s  DECODE(avg): 0.396s  FINAL_DECODE(avg): 0.194s
+INFO	  TRANS(avg): 0.074s
+INFO	  SPEAKER_3005_RUNNING_WER: 10.70% (67 files)
+INFO	  HYP_COMMIT: Being Tom Sawyer was easy and comfortable <seg> , and it stayed easy and comfortable till by and by I hear a steamboat coughing along down the river. <vad>
+INFO	[68/68] 3005-163399-0030
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7
+INFO	  REF: THEN I SAYS TO MYSELF S'POSE TOM SAWYER COMES DOWN ON THAT BOAT
+INFO	  HYP: Then I says to myself, 'Spos Tom Sawyer comes down on that boat.
+INFO	  FIRST_TOKEN_LATENCY: 5.621s
+INFO	  MODEL_RUNTIME(total-audio): 1.001s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.297s
+INFO	  TRANS(avg): 0.071s
+INFO	  SPEAKER_3005_RUNNING_WER: 10.74% (68 files)
+INFO	  HYP_COMMIT: Then I says to myself, 'Spos Tom Sawyer comes down on that boat. <vad>
+INFO	Completed. Results saved to /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_08_c7

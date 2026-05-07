@@ -1,0 +1,610 @@
+INFO	Results → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	Manual mode. Ensure server is running at ws://localhost:8765
+INFO	Log capture enabled for 10 sampled files → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2/plots
+INFO	Processing 55 files (already done: 0)
+INFO	[1/55] 1998-15444-0014
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: IN THE ABSENCE OF A HYPODERMIC SYRINGE THE REMEDY MAY BE GIVEN BY THE RECTUM
+INFO	  HYP: In the absence of a hypodermic syringe, the remedy may be given by the rectum.
+INFO	  FIRST_TOKEN_LATENCY: 5.003s
+INFO	  MODEL_RUNTIME(total-audio): 1.282s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 5.028s  DECODE(avg): 0.334s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.097s
+INFO	  SPEAKER_1998_RUNNING_WER: 0.00% (1 files)
+INFO	  HYP_COMMIT: In the absence of a hypodermic syringe, <seg> the remedy may be given by the rectum. <seg>
+INFO	[2/55] 1998-15444-0015
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: NOTICE THE SMELL COLOUR AND GENERAL APPEARANCE OF THE MATTER SUBMITTED FOR EXAMINATION
+INFO	  HYP: Notice the smell, colour and general appearance of the matter submitted for examination.
+INFO	  FIRST_TOKEN_LATENCY: 6.426s
+INFO	  MODEL_RUNTIME(total-audio): 1.006s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 6.027s  DECODE(avg): 0.306s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.073s
+INFO	  SPEAKER_1998_RUNNING_WER: 0.00% (2 files)
+INFO	  HYP_COMMIT: Notice the smell, colour and general appearance of the matter submitted for examination. <seg>
+INFO	[3/55] 1998-15444-0016
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: FOR THE SEPARATION OF AN ALKALOID THE FOLLOWING IS THE PROCESS OF STAS OTTO
+INFO	  HYP: For the separation of an alkaloid, the following is the process of Staats Otto.
+INFO	  FIRST_TOKEN_LATENCY: 6.328s
+INFO	  MODEL_RUNTIME(total-audio): 1.153s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.400s
+INFO	  TRANS(avg): 0.140s
+INFO	  SPEAKER_1998_RUNNING_WER: 2.38% (3 files)
+INFO	  HYP_COMMIT: For the separation of an alkaloid, the following is the process of Staats Otto. <vad>
+INFO	[4/55] 1998-15444-0017
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: THIS PROCESS IS BASED UPON THE PRINCIPLE THAT THE SALTS OF THE ALKALOIDS ARE SOLUBLE IN ALCOHOL AND WATER AND INSOLUBLE IN ETHER
+INFO	  HYP: This process is based upon the principle that the salts of the alkaloids are soluble in alcohol and water, and insoluble in ether.
+INFO	  FIRST_TOKEN_LATENCY: 8.393s
+INFO	  MODEL_RUNTIME(total-audio): 0.993s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 8.025s  DECODE(avg): 0.268s  FINAL_DECODE(avg): 0.139s
+INFO	  TRANS(avg): 0.098s
+INFO	  SPEAKER_1998_RUNNING_WER: 1.54% (4 files)
+INFO	  HYP_COMMIT: This process is based upon the principle that the salts of the alkaloids are soluble in alcohol and water, <seg> and insoluble in ether. <vad>
+INFO	[5/55] 1998-15444-0018
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: THE PURE ALKALOIDS WITH THE EXCEPTION OF MORPHINE IN ITS CRYSTALLINE FORM ARE SOLUBLE IN ETHER
+INFO	  HYP: The pure alkaloids, with the exception of morphine in its crystalline form, are soluble in ether.
+INFO	  FIRST_TOKEN_LATENCY: 6.526s
+INFO	  MODEL_RUNTIME(total-audio): 0.016s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 6.031s  DECODE(avg): 0.371s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.107s
+INFO	  SPEAKER_1998_RUNNING_WER: 1.23% (5 files)
+INFO	  HYP_COMMIT: The pure alkaloids, with the exception of morphine in its crystalline form, are soluble in ether. <seg>
+INFO	[6/55] 1998-15444-0019
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: TWO COOL THE MIXTURE AND FILTER WASH THE RESIDUE WITH STRONG ALCOHOL AND MIX THE FILTRATES
+INFO	  HYP: Two, cool the mixture and filter. Wash the residue with strong alcohol and mix the filtrates.
+INFO	  FIRST_TOKEN_LATENCY: 4.576s
+INFO	  MODEL_RUNTIME(total-audio): 0.844s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 5.006s  DECODE(avg): 0.296s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.080s
+INFO	  SPEAKER_1998_RUNNING_WER: 1.03% (6 files)
+INFO	  HYP_COMMIT: Two, cool the mixture and filter. <seg> Wash the residue with strong alcohol and mix the filtrates. <seg>
+INFO	[7/55] 1998-15444-0020
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: THE RESIDUE MAY BE SET ASIDE FOR THE DETECTION OF THE METALLIC POISONS IF SUSPECTED EXPEL THE ALCOHOL BY CAREFUL EVAPORATION
+INFO	  HYP: The residue may be set aside for the detection of the metallic poisons if suspected. Expel the alcohol by careful evaporation.
+INFO	  FIRST_TOKEN_LATENCY: 6.449s
+INFO	  MODEL_RUNTIME(total-audio): 1.169s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 10.028s  DECODE(avg): 0.400s  FINAL_DECODE(avg): 0.176s
+INFO	  TRANS(avg): 0.112s
+INFO	  SPEAKER_1998_RUNNING_WER: 0.85% (7 files)
+INFO	  HYP_COMMIT: The residue may be set aside for the detection of the metallic poisons if suspected. <vad> Expel the alcohol by careful evaporation. <seg>
+INFO	[8/55] 1998-15444-0021
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: ON THE EVAPORATION OF THE ALCOHOL THE RESINOUS AND FATTY MATTERS SEPARATE
+INFO	  HYP: On the evaporation of the alcohol, the resinous and fatty matters separate.
+INFO	  FIRST_TOKEN_LATENCY: 4.527s
+INFO	  MODEL_RUNTIME(total-audio): 0.944s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.023s  DECODE(avg): 0.412s  FINAL_DECODE(avg): 0.121s
+INFO	  TRANS(avg): 0.074s
+INFO	  SPEAKER_1998_RUNNING_WER: 0.77% (8 files)
+INFO	  HYP_COMMIT: On the evaporation of the alcohol, <seg> the resinous and fatty matters separate. <vad>
+INFO	[9/55] 1998-15444-0022
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: EVAPORATE THE FILTRATE TO A SYRUP AND EXTRACT WITH SUCCESSIVE PORTIONS OF ABSOLUTE ALCOHOL
+INFO	  HYP: Evaporate the filtrate to a syrup, and extract with successive portions of absolute alcohol.
+INFO	  FIRST_TOKEN_LATENCY: 4.616s
+INFO	  MODEL_RUNTIME(total-audio): 0.259s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 5.006s  DECODE(avg): 0.306s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.080s
+INFO	  SPEAKER_1998_RUNNING_WER: 0.69% (9 files)
+INFO	  HYP_COMMIT: Evaporate the filtrate to a syrup, <seg> and extract with successive portions of absolute alcohol. <seg>
+INFO	[10/55] 1998-15444-0023
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: SEPARATE THE ETHEREAL SOLUTION AND EVAPORATE
+INFO	  HYP: Separate the ethereal solution and evaporate.
+INFO	  FIRST_TOKEN_LATENCY: 4.624s
+INFO	  MODEL_RUNTIME(total-audio): 1.298s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.074s  DECODE(avg): 0.514s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.075s
+INFO	  SPEAKER_1998_RUNNING_WER: 0.67% (10 files)
+INFO	  HYP_COMMIT: Separate the ethereal solution <seg> and evaporate. <seg>
+INFO	[11/55] 1998-15444-0024
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: FIVE A PART OF THIS ETHEREAL SOLUTION IS POURED INTO A WATCH GLASS AND ALLOWED TO EVAPORATE
+INFO	  HYP: Five. A part of this ethereal solution is poured into a watch glass and allowed to evaporate.
+INFO	  FIRST_TOKEN_LATENCY: 2.325s
+INFO	  MODEL_RUNTIME(total-audio): 1.270s
+INFO	  FSL(avg): 3.875s
+INFO	  ENCODE(avg): 2.006s  DECODE(avg): 0.241s  FINAL_DECODE(avg): 0.157s
+INFO	  TRANS(avg): 0.075s
+INFO	  SPEAKER_1998_RUNNING_WER: 0.60% (11 files)
+INFO	  HYP_COMMIT: Five. <seg> A part of this ethereal solution is poured into a watch glass and allowed to evaporate. <vad>
+INFO	[12/55] 1998-15444-0025
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: TO PURIFY IT ADD A SMALL QUANTITY OF DILUTE SULPHURIC ACID AND AFTER EVAPORATING TO THREE QUARTERS OF ITS BULK ADD A SATURATED SOLUTION OF CARBONATE OF POTASH OR SODA
+INFO	  HYP: To purify it, add a small quantity of dilute sulphuric acid, and after evaporating to three quarters of its bulk, add a saturated solution of carbonate of potash or soda.
+INFO	  FIRST_TOKEN_LATENCY: 6.556s
+INFO	  MODEL_RUNTIME(total-audio): 0.880s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 7.039s  DECODE(avg): 0.236s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.131s
+INFO	  SPEAKER_1998_RUNNING_WER: 0.51% (12 files)
+INFO	  HYP_COMMIT: To purify it, add a small quantity of dilute sulphuric acid, <seg> and after evaporating to three quarters of its bulk, add a saturated solution of carbonate of potash or soda. <seg>
+INFO	[13/55] 1998-15444-0026
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: BOIL THE FINELY DIVIDED SUBSTANCE WITH ABOUT ONE EIGHTH ITS BULK OF PURE HYDROCHLORIC ACID ADD FROM TIME TO TIME POTASSIC CHLORATE UNTIL THE SOLIDS ARE REDUCED TO A STRAW YELLOW FLUID
+INFO	  HYP: Boil the finely divided substance with about one eighth its bulk of pure hydrochloric acid. Add from time to time potassium chloride until the solids are reduced to a straw yellow fluid.
+INFO	  FIRST_TOKEN_LATENCY: 6.440s
+INFO	  MODEL_RUNTIME(total-audio): 1.047s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 7.009s  DECODE(avg): 0.271s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.072s
+INFO	  SPEAKER_1998_RUNNING_WER: 1.31% (13 files)
+INFO	  HYP_COMMIT: Boil the finely divided substance with about one eighth its bulk of pure hydrochloric acid. <seg> Add from time to time potassium chloride until the solids are reduced to a straw yellow fluid. <seg>
+INFO	[14/55] 1998-15444-0027
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: THE RESIDUE OF THE MATERIAL AFTER DIGESTION WITH HYDROCHLORIC ACID AND POTASSIUM CHLORATE MAY HAVE TO BE EXAMINED FOR SILVER LEAD AND BARIUM
+INFO	  HYP: The residue of the material after digestion with hydrochloric acid and potassium chlorate, may have to be examined for silver, lead and barium.
+INFO	  FIRST_TOKEN_LATENCY: 10.295s
+INFO	  MODEL_RUNTIME(total-audio): 1.090s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.395s
+INFO	  TRANS(avg): 0.074s
+INFO	  SPEAKER_1998_RUNNING_WER: 1.19% (14 files)
+INFO	  HYP_COMMIT: The residue of the material after digestion with hydrochloric acid and potassium chlorate, may have to be examined for silver, lead and barium. <vad>
+INFO	[15/55] 1998-29454-0000
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: A THOUSAND BLESSINGS FROM A GRATEFUL HEART
+INFO	  HYP: A thousand blessings from a grateful heart.
+INFO	  FIRST_TOKEN_LATENCY: 3.970s
+INFO	  MODEL_RUNTIME(total-audio): 1.610s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.516s
+INFO	  TRANS(avg): 0.075s
+INFO	  SPEAKER_1998_RUNNING_WER: 1.16% (15 files)
+INFO	  HYP_COMMIT: A thousand blessings from a grateful heart. <vad>
+INFO	[16/55] 1998-29454-0001
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: PERUSAL SAID THE PAWNBROKER THAT'S THE WAY TO PERNOUNCE IT
+INFO	  HYP: Perusal, said the pawnbroker. That's the way to pronounce it.
+INFO	  FIRST_TOKEN_LATENCY: 4.582s
+INFO	  MODEL_RUNTIME(total-audio): 0.918s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.111s  DECODE(avg): 0.510s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.069s
+INFO	  SPEAKER_1998_RUNNING_WER: 1.48% (16 files)
+INFO	  HYP_COMMIT: Perusal, said the pawnbroker. <seg> That's the way to pronounce it. <seg>
+INFO	[17/55] 1998-29454-0002
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: HIS BOOKS TOLD HIM THAT TREASURE IS BEST HIDDEN UNDER LOOSE BOARDS UNLESS OF COURSE YOUR HOUSE HAS A SECRET PANEL WHICH HIS HAD NOT
+INFO	  HYP: His books told him that treasure is best hidden under loose boards, and as of course your house has a secret panel, which his had not.
+INFO	  FIRST_TOKEN_LATENCY: 4.623s
+INFO	  MODEL_RUNTIME(total-audio): 0.427s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 6.012s  DECODE(avg): 0.369s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.094s
+INFO	  SPEAKER_1998_RUNNING_WER: 2.03% (17 files)
+INFO	  HYP_COMMIT: His books told him that treasure is best hidden under loose boards, <seg> and as of course your house has a secret panel, <seg> which his had not. <seg>
+INFO	[18/55] 1998-29454-0003
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: HE GOT IT UP AND PUSHED HIS TREASURES AS FAR IN AS HE COULD ALONG THE ROUGH CRUMBLY SURFACE OF THE LATH AND PLASTER
+INFO	  HYP: He got it up and pushed his treasures as far in as he could.
+INFO	  FIRST_TOKEN_LATENCY: 2.432s
+INFO	  MODEL_RUNTIME(total-audio): -2.963s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 3.019s  DECODE(avg): 0.315s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.083s
+INFO	  SPEAKER_1998_RUNNING_WER: 5.02% (18 files)
+INFO	  HYP_COMMIT: He got it up <seg> and pushed his treasures as far in as he could. <seg>
+INFO	[19/55] 1998-29454-0004
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: WHEN DICKIE CAME DOWN HIS AUNT SLIGHTLY SLAPPED HIM AND HE TOOK THE HALFPENNY AND LIMPED OFF OBEDIENTLY
+INFO	  HYP: When Dicky came down, his aunt slightly slapped him, and he took the halfpenny and limped off obediently.
+INFO	  FIRST_TOKEN_LATENCY: 2.484s
+INFO	  MODEL_RUNTIME(total-audio): 0.959s
+INFO	  FSL(avg): 2.774s
+INFO	  ENCODE(avg): 2.006s  DECODE(avg): 0.363s  FINAL_DECODE(avg): 0.116s
+INFO	  TRANS(avg): 0.078s
+INFO	  SPEAKER_1998_RUNNING_WER: 5.04% (19 files)
+INFO	  HYP_COMMIT: When Dicky came down, <seg> his aunt slightly slapped him, and he took the halfpenny and limped off obediently. <vad>
+INFO	[20/55] 1998-29454-0005
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: HE HAD NEVER SEEN ONE BEFORE AND IT INTERESTED HIM EXTREMELY
+INFO	  HYP: He had never seen one before, and it interested him extremely.
+INFO	  FIRST_TOKEN_LATENCY: 2.546s
+INFO	  MODEL_RUNTIME(total-audio): 0.647s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 3.005s  DECODE(avg): 0.370s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.136s
+INFO	  SPEAKER_1998_RUNNING_WER: 4.89% (20 files)
+INFO	  HYP_COMMIT: He had never seen one before, <seg> and it interested him extremely. <seg>
+INFO	[21/55] 1998-29454-0006
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: HE LOOKED ABOUT HIM AND KNEW THAT HE DID NOT AT ALL KNOW WHERE HE WAS
+INFO	  HYP: He looked about him and knew that he did not at all know where he was.
+INFO	  FIRST_TOKEN_LATENCY: 2.451s
+INFO	  MODEL_RUNTIME(total-audio): 0.720s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 3.031s  DECODE(avg): 0.293s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.073s
+INFO	  SPEAKER_1998_RUNNING_WER: 4.67% (21 files)
+INFO	  HYP_COMMIT: He looked about him <seg> and knew that he did not at all know where he was. <seg>
+INFO	[22/55] 1998-29454-0007
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: WHAT'S UP MATEY LOST YOUR WAY DICKIE EXPLAINED
+INFO	  HYP: What's up, matey? Lost your way? Dicky explained.
+INFO	  FIRST_TOKEN_LATENCY: 2.494s
+INFO	  MODEL_RUNTIME(total-audio): 1.071s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.007s  DECODE(avg): 0.490s  FINAL_DECODE(avg): 0.119s
+INFO	  TRANS(avg): 0.083s
+INFO	  SPEAKER_1998_RUNNING_WER: 4.83% (22 files)
+INFO	  HYP_COMMIT: What's up, matey? <seg> Lost your way? <seg> Dicky explained. <vad>
+INFO	[23/55] 1998-29454-0008
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: WHEN HE SAID AVE I BIN ASLEEP
+INFO	  HYP: When he said, "Have I been asleep?"
+INFO	  FIRST_TOKEN_LATENCY: 4.236s
+INFO	  MODEL_RUNTIME(total-audio): 1.311s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.534s
+INFO	  TRANS(avg): 0.076s
+INFO	  SPEAKER_1998_RUNNING_WER: 5.26% (23 files)
+INFO	  HYP_COMMIT: When he said, "Have I been asleep?" <vad>
+INFO	[24/55] 1998-29454-0009
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: HERE WE ARE SAID THE MAN
+INFO	  HYP: Here we are, said the man.
+INFO	  FIRST_TOKEN_LATENCY: 2.466s
+INFO	  MODEL_RUNTIME(total-audio): 0.743s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.097s  DECODE(avg): 0.350s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.090s
+INFO	  SPEAKER_1998_RUNNING_WER: 5.18% (24 files)
+INFO	  HYP_COMMIT: Here we are, <seg> said the man. <seg>
+INFO	[25/55] 1998-29454-0010
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: NOT EXACKLY SAID THE MAN BUT IT'S ALL RIGHT
+INFO	  HYP: Not exactly," said the man, But it's all right.
+INFO	  FIRST_TOKEN_LATENCY: 2.502s
+INFO	  MODEL_RUNTIME(total-audio): 1.622s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.007s  DECODE(avg): 0.392s  FINAL_DECODE(avg): 0.253s
+INFO	  TRANS(avg): 0.078s
+INFO	  SPEAKER_1998_RUNNING_WER: 5.30% (25 files)
+INFO	  HYP_COMMIT: Not exactly," said the man, <seg> But it's all right. <vad>
+INFO	[26/55] 1998-29454-0011
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: WHEN IT WAS OVER THE MAN ASKED DICKIE IF HE COULD WALK A LITTLE WAY AND WHEN DICKIE SAID HE COULD THEY SET OUT IN THE MOST FRIENDLY WAY SIDE BY SIDE
+INFO	  HYP: When it was over, the man asked Dicky if he could walk a little way, and when Dicky said he could, they set out in the most friendly way, side by side.
+INFO	  FIRST_TOKEN_LATENCY: 2.431s
+INFO	  MODEL_RUNTIME(total-audio): 1.235s
+INFO	  FSL(avg): 5.082s
+INFO	  ENCODE(avg): 2.006s  DECODE(avg): 0.317s  FINAL_DECODE(avg): 0.162s
+INFO	  TRANS(avg): 0.104s
+INFO	  SPEAKER_1998_RUNNING_WER: 5.37% (26 files)
+INFO	  HYP_COMMIT: When it was over, <seg> the man asked Dicky if he could walk a little way, and when Dicky said he could, they set out in the most friendly way, side by side. <vad>
+INFO	[27/55] 1998-29454-0012
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: AND THE TEA AND ALL AN THE EGG
+INFO	  HYP: And the tea and all, and the egg.
+INFO	  FIRST_TOKEN_LATENCY: 2.456s
+INFO	  MODEL_RUNTIME(total-audio): 1.377s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.006s  DECODE(avg): 0.364s  FINAL_DECODE(avg): 0.238s
+INFO	  TRANS(avg): 0.077s
+INFO	  SPEAKER_1998_RUNNING_WER: 5.50% (27 files)
+INFO	  HYP_COMMIT: And the tea and all, <seg> and the egg. <vad>
+INFO	[28/55] 1998-29454-0013
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: AND THIS IS THE PRETTIEST PLACE EVER I SEE
+INFO	  HYP: And this is the prettiest place ever.
+INFO	  FIRST_TOKEN_LATENCY: 2.605s
+INFO	  MODEL_RUNTIME(total-audio): -0.030s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.005s  DECODE(avg): 0.462s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.086s
+INFO	  SPEAKER_1998_RUNNING_WER: 5.84% (28 files)
+INFO	  HYP_COMMIT: And this is the prettiest place ever. <seg>
+INFO	[29/55] 1998-29454-0014
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: I SHALL CATCH IT A FAIR TREAT AS IT IS
+INFO	  HYP: I shall catch it a fair treat as it is.
+INFO	  FIRST_TOKEN_LATENCY: 3.791s
+INFO	  MODEL_RUNTIME(total-audio): 1.511s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.534s
+INFO	  TRANS(avg): 0.071s
+INFO	  SPEAKER_1998_RUNNING_WER: 5.71% (29 files)
+INFO	  HYP_COMMIT: I shall catch it a fair treat as it is. <vad>
+INFO	[30/55] 1998-29454-0015
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: SHE WAS WAITIN FOR THE WOOD TO BOIL THE KETTLE WHEN I COME OUT MOTHER
+INFO	  HYP: She was waitin' for the wood to boil the kettle when I come out, mother.
+INFO	  FIRST_TOKEN_LATENCY: 4.921s
+INFO	  MODEL_RUNTIME(total-audio): 0.461s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.006s  DECODE(avg): 0.809s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.078s
+INFO	  SPEAKER_1998_RUNNING_WER: 5.53% (30 files)
+INFO	  HYP_COMMIT: She was waitin' for the wood to boil the kettle when I come out, mother. <seg>
+INFO	[31/55] 1998-29454-0016
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: AIN'T BAD WHEN SHE'S IN A GOOD TEMPER
+INFO	  HYP: Ain't bad when she's in a good temper.
+INFO	  FIRST_TOKEN_LATENCY: 3.716s
+INFO	  MODEL_RUNTIME(total-audio): 1.256s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.548s
+INFO	  TRANS(avg): 0.077s
+INFO	  SPEAKER_1998_RUNNING_WER: 5.42% (31 files)
+INFO	  HYP_COMMIT: Ain't bad when she's in a good temper. <vad>
+INFO	[32/55] 1998-29454-0017
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: THAT AIN'T WHAT SHE'LL BE IN WHEN YOU GETS BACK
+INFO	  HYP: That ain't what you'll be in when you gets back.
+INFO	  FIRST_TOKEN_LATENCY: 4.395s
+INFO	  MODEL_RUNTIME(total-audio): 1.730s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.638s
+INFO	  TRANS(avg): 0.080s
+INFO	  SPEAKER_1998_RUNNING_WER: 5.49% (32 files)
+INFO	  HYP_COMMIT: That ain't what you'll be in when you gets back. <vad>
+INFO	[33/55] 1998-29454-0018
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: I GOT TO STICK IT SAID DICKIE SADLY I'D BEST BE GETTING HOME
+INFO	  HYP: I got to stick it," said Dicky sadly. I'd best be getting home.
+INFO	  FIRST_TOKEN_LATENCY: 4.606s
+INFO	  MODEL_RUNTIME(total-audio): 1.118s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.010s  DECODE(avg): 0.492s  FINAL_DECODE(avg): 0.168s
+INFO	  TRANS(avg): 0.108s
+INFO	  SPEAKER_1998_RUNNING_WER: 5.53% (33 files)
+INFO	  HYP_COMMIT: I got to stick it," said Dicky sadly. <seg> I'd best be getting home. <vad>
+INFO	[34/55] 1998-29454-0019
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: I WOULDN'T GO OME NOT IF I WAS YOU SAID THE MAN
+INFO	  HYP: I wouldn't go home not if I was you, said the man.
+INFO	  FIRST_TOKEN_LATENCY: 4.769s
+INFO	  MODEL_RUNTIME(total-audio): 1.679s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.557s
+INFO	  TRANS(avg): 0.096s
+INFO	  SPEAKER_1998_RUNNING_WER: 5.59% (34 files)
+INFO	  HYP_COMMIT: I wouldn't go home not if I was you, said the man. <vad>
+INFO	[35/55] 1998-29454-0020
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: NO SAID DICKIE OH NO NO I NEVER
+INFO	  HYP: No, said Dicky. Oh, no, no, I never.
+INFO	  FIRST_TOKEN_LATENCY: 2.451s
+INFO	  MODEL_RUNTIME(total-audio): 1.164s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 3.081s  DECODE(avg): 0.338s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.074s
+INFO	  SPEAKER_1998_RUNNING_WER: 5.69% (35 files)
+INFO	  HYP_COMMIT: No, said Dicky. <seg> Oh, no, no, I never. <seg>
+INFO	[36/55] 1998-29454-0021
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: I AIN'T IT YER HAVE I LIKE WHAT YER AUNT DO
+INFO	  HYP: I ended here, have I? Like what yer ant to?
+INFO	  FIRST_TOKEN_LATENCY: 2.575s
+INFO	  MODEL_RUNTIME(total-audio): 1.587s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.005s  DECODE(avg): 0.482s  FINAL_DECODE(avg): 0.243s
+INFO	  TRANS(avg): 0.074s
+INFO	  SPEAKER_1998_RUNNING_WER: 6.68% (36 files)
+INFO	  HYP_COMMIT: I ended here, have I? <seg> Like what yer ant to? <vad>
+INFO	[37/55] 1998-29454-0022
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: WELL THAT'LL SHOW YOU THE SORT OF MAN I AM
+INFO	  HYP: Well, that'll show you the sort of man I am.
+INFO	  FIRST_TOKEN_LATENCY: 4.594s
+INFO	  MODEL_RUNTIME(total-audio): 1.679s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.568s
+INFO	  TRANS(avg): 0.074s
+INFO	  SPEAKER_1998_RUNNING_WER: 6.55% (37 files)
+INFO	  HYP_COMMIT: Well, that'll show you the sort of man I am. <vad>
+INFO	[38/55] 1998-29454-0023
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: THE MAN'S MANNER WAS SO KIND AND HEARTY THE WHOLE ADVENTURE WAS SO WONDERFUL AND NEW IS IT COUNTRY WHERE YOU GOING
+INFO	  HYP: The man's manner was so kind and hearty, the whole adventure was so wonderful and new. Is it country where you're going?
+INFO	  FIRST_TOKEN_LATENCY: 4.616s
+INFO	  MODEL_RUNTIME(total-audio): 0.689s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 6.043s  DECODE(avg): 0.328s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.093s
+INFO	  SPEAKER_1998_RUNNING_WER: 6.46% (38 files)
+INFO	  HYP_COMMIT: The man's manner was so kind and hearty, <seg> the whole adventure was so wonderful and new. <seg> Is it country where you're going? <seg>
+INFO	[39/55] 1998-29454-0024
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: THE SUN SHOT LONG GOLDEN BEAMS THROUGH THE GAPS IN THE HEDGE
+INFO	  HYP: The sun shot long golden beams through the gaps in the hedge.
+INFO	  FIRST_TOKEN_LATENCY: 4.735s
+INFO	  MODEL_RUNTIME(total-audio): 1.200s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.142s  DECODE(avg): 0.497s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.076s
+INFO	  SPEAKER_1998_RUNNING_WER: 6.32% (39 files)
+INFO	  HYP_COMMIT: The sun shot long golden beams through the gaps in the hedge. <seg>
+INFO	[40/55] 1998-29454-0025
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: A BIRD PAUSED IN ITS FLIGHT ON A BRANCH QUITE CLOSE AND CLUNG THERE SWAYING
+INFO	  HYP: A bird paused in its flight on a branch quite close and clung there swaying.
+INFO	  FIRST_TOKEN_LATENCY: 4.611s
+INFO	  MODEL_RUNTIME(total-audio): 0.978s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.007s  DECODE(avg): 0.522s  FINAL_DECODE(avg): 0.141s
+INFO	  TRANS(avg): 0.076s
+INFO	  SPEAKER_1998_RUNNING_WER: 6.17% (40 files)
+INFO	  HYP_COMMIT: A bird paused in its flight on a branch quite close <seg> and clung there swaying. <vad>
+INFO	[41/55] 1998-29454-0026
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: HE TOOK OUT OF HIS POCKET A NEW ENVELOPE A NEW SHEET OF PAPER AND A NEW PENCIL READY SHARPENED BY MACHINERY
+INFO	  HYP: He took out of his pocket a new envelope, a new sheet of paper and a new pencil, ready sharpened by machinery.
+INFO	  FIRST_TOKEN_LATENCY: 7.869s
+INFO	  MODEL_RUNTIME(total-audio): 1.209s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.315s
+INFO	  TRANS(avg): 0.074s
+INFO	  SPEAKER_1998_RUNNING_WER: 5.95% (41 files)
+INFO	  HYP_COMMIT: He took out of his pocket a new envelope, a new sheet of paper and a new pencil, ready sharpened by machinery. <vad>
+INFO	[42/55] 1998-29454-0027
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: AN I ASKS YOU LET ME COME ALONGER YOU GOT THAT
+INFO	  HYP: And I ask you let me come along, or you, got that?
+INFO	  FIRST_TOKEN_LATENCY: 4.852s
+INFO	  MODEL_RUNTIME(total-audio): 1.097s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.162s  DECODE(avg): 0.594s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.086s
+INFO	  SPEAKER_1998_RUNNING_WER: 6.48% (42 files)
+INFO	  HYP_COMMIT: And I ask you let me come along, or you, got that? <seg>
+INFO	[43/55] 1998-29454-0028
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: GET IT WROTE DOWN THEN DONE
+INFO	  HYP: Get it wrote down then. Done?
+INFO	  FIRST_TOKEN_LATENCY: 2.619s
+INFO	  MODEL_RUNTIME(total-audio): 1.300s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.078s  DECODE(avg): 0.442s  FINAL_DECODE(avg): 0.200s
+INFO	  TRANS(avg): 0.078s
+INFO	  SPEAKER_1998_RUNNING_WER: 6.42% (43 files)
+INFO	  HYP_COMMIT: Get it wrote down then. <seg> Done? <vad>
+INFO	[44/55] 1998-29454-0029
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: THEN HE FOLDED IT AND PUT IT IN HIS POCKET
+INFO	  HYP: Then he folded it and put it in his pocket.
+INFO	  FIRST_TOKEN_LATENCY: 2.462s
+INFO	  MODEL_RUNTIME(total-audio): 1.198s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.077s  DECODE(avg): 0.279s  FINAL_DECODE(avg): 0.240s
+INFO	  TRANS(avg): 0.076s
+INFO	  SPEAKER_1998_RUNNING_WER: 6.32% (44 files)
+INFO	  HYP_COMMIT: Then he folded it <seg> and put it in his pocket. <vad>
+INFO	[45/55] 1998-29454-0030
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: NOW WE'RE SQUARE HE SAID
+INFO	  HYP: Now we are square, he said.
+INFO	  FIRST_TOKEN_LATENCY: 2.655s
+INFO	  MODEL_RUNTIME(total-audio): 0.725s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.138s  DECODE(avg): 0.406s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.076s
+INFO	  SPEAKER_1998_RUNNING_WER: 6.41% (45 files)
+INFO	  HYP_COMMIT: Now we are square, he said. <seg>
+INFO	[46/55] 1998-29454-0031
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: THEY COULD PUT A MAN AWAY FOR LESS THAN THAT
+INFO	  HYP: They could put a man away for less than that.
+INFO	  FIRST_TOKEN_LATENCY: 3.813s
+INFO	  MODEL_RUNTIME(total-audio): 1.073s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.551s
+INFO	  TRANS(avg): 0.074s
+INFO	  SPEAKER_1998_RUNNING_WER: 6.32% (46 files)
+INFO	  HYP_COMMIT: They could put a man away for less than that. <vad>
+INFO	[47/55] 1998-29454-0032
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: I SEE THAT THERE IN A BOOK SAID DICKIE CHARMED
+INFO	  HYP: I see that there in a book, said Dickie charmed.
+INFO	  FIRST_TOKEN_LATENCY: 4.276s
+INFO	  MODEL_RUNTIME(total-audio): 1.471s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.561s
+INFO	  TRANS(avg): 0.083s
+INFO	  SPEAKER_1998_RUNNING_WER: 6.22% (47 files)
+INFO	  HYP_COMMIT: I see that there in a book, said Dickie charmed. <vad>
+INFO	[48/55] 1998-29454-0033
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: HE REWARD THE WAKE THE LAST OF THE ENGLISH AND I WUNNERED WHAT IT STOOD FOR
+INFO	  HYP: He reward the Wake, the last of the English, and I wondered what it stood for.
+INFO	  FIRST_TOKEN_LATENCY: 4.573s
+INFO	  MODEL_RUNTIME(total-audio): 1.034s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.031s  DECODE(avg): 0.464s  FINAL_DECODE(avg): 0.173s
+INFO	  TRANS(avg): 0.070s
+INFO	  SPEAKER_1998_RUNNING_WER: 6.22% (48 files)
+INFO	  HYP_COMMIT: He reward the Wake, the last of the English, <seg> and I wondered what it stood for. <vad>
+INFO	[49/55] 1998-29454-0034
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: WILD ONES AIN'T ALF THE SIZE I LAY
+INFO	  HYP: White ones and a half size.
+INFO	  FIRST_TOKEN_LATENCY: 2.553s
+INFO	  MODEL_RUNTIME(total-audio): 0.013s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.006s  DECODE(avg): 0.441s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.079s
+INFO	  SPEAKER_1998_RUNNING_WER: 7.14% (49 files)
+INFO	  HYP_COMMIT: White ones and a half size. <seg>
+INFO	[50/55] 1998-29454-0035
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: ADVENTURES I SHOULD THINK SO
+INFO	  HYP: Adventures? I should think so.
+INFO	  FIRST_TOKEN_LATENCY: 2.352s
+INFO	  MODEL_RUNTIME(total-audio): 1.114s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 2.006s  DECODE(avg): 0.257s  FINAL_DECODE(avg): 0.203s
+INFO	  TRANS(avg): 0.077s
+INFO	  SPEAKER_1998_RUNNING_WER: 7.09% (50 files)
+INFO	  HYP_COMMIT: Adventures? <seg> I should think so. <vad>
+INFO	[51/55] 1998-29454-0036
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: AH SAID DICKIE AND A FULL SILENCE FELL BETWEEN THEM
+INFO	  HYP: Ah, said Digby, and a full silence fell between them.
+INFO	  FIRST_TOKEN_LATENCY: 2.429s
+INFO	  MODEL_RUNTIME(total-audio): 0.445s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 3.009s  DECODE(avg): 0.339s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.075s
+INFO	  SPEAKER_1998_RUNNING_WER: 7.13% (51 files)
+INFO	  HYP_COMMIT: Ah, said Digby, <seg> and a full silence fell between them. <seg>
+INFO	[52/55] 1998-29454-0037
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: THAT WAS CHARMING BUT IT WAS PLEASANT TOO TO WASH THE MUD OFF ON THE WET GRASS
+INFO	  HYP: That was charming, but it was pleasant too, to wash the mud off on the wet grass.
+INFO	  FIRST_TOKEN_LATENCY: 2.447s
+INFO	  MODEL_RUNTIME(total-audio): 1.110s
+INFO	  FSL(avg): 2.263s
+INFO	  ENCODE(avg): 2.017s  DECODE(avg): 0.325s  FINAL_DECODE(avg): 0.199s
+INFO	  TRANS(avg): 0.076s
+INFO	  SPEAKER_1998_RUNNING_WER: 6.97% (52 files)
+INFO	  HYP_COMMIT: That was charming, <seg> but it was pleasant too, to wash the mud off on the wet grass. <vad>
+INFO	[53/55] 1998-29454-0038
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: DICKIE ALWAYS REMEMBERED THAT MOMENT
+INFO	  HYP: Dicky always remembered that moment.
+INFO	  FIRST_TOKEN_LATENCY: 3.785s
+INFO	  MODEL_RUNTIME(total-audio): 1.285s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.367s
+INFO	  TRANS(avg): 0.082s
+INFO	  SPEAKER_1998_RUNNING_WER: 7.06% (53 files)
+INFO	  HYP_COMMIT: Dicky always remembered that moment. <vad>
+INFO	[54/55] 1998-29454-0039
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: SO YOU SHALL SAID MISTER BEALE A REG'LER WASH ALL OVER THIS VERY NIGHT I ALWAYS LIKE A WASH MESELF
+INFO	  HYP: So you shall," said Mr. Beale, "a regular wash all over this very night. I always like a wash myself.
+INFO	  FIRST_TOKEN_LATENCY: 6.411s
+INFO	  MODEL_RUNTIME(total-audio): 1.282s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 6.009s  DECODE(avg): 0.302s  FINAL_DECODE(avg): 0.179s
+INFO	  TRANS(avg): 0.081s
+INFO	  SPEAKER_1998_RUNNING_WER: 7.39% (54 files)
+INFO	  HYP_COMMIT: So you shall," said Mr. Beale, "a regular wash all over this very night. <seg> I always like a wash myself. <vad>
+INFO	[55/55] 1998-29454-0040
+INFO	Results saved → /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
+INFO	  REF: SOME BLOKES THINK IT PAYS TO BE DIRTY BUT IT DON'T
+INFO	  HYP: Some blokes think it pays to be dirty, but it don't.
+INFO	  FIRST_TOKEN_LATENCY: 4.813s
+INFO	  MODEL_RUNTIME(total-audio): 1.209s
+INFO	  FSL(avg): N/A
+INFO	  ENCODE(avg): 4.172s  DECODE(avg): 0.613s  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.084s
+INFO	  SPEAKER_1998_RUNNING_WER: 7.27% (55 files)
+INFO	  HYP_COMMIT: Some blokes think it pays to be dirty, <seg> but it don't. <seg>
+INFO	Completed. Results saved to /home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned(1.0.1)/full/multi_speaker_test_tmp/run_10_c2
