@@ -38,10 +38,12 @@ MODEL         = PROJECT_ROOT / "Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged"
 PYTHON        = "/home/ubuntu/miniconda3/envs/qwen3-asr/bin/python"
 CONDA_BIN     = "/home/ubuntu/miniconda3/envs/qwen3-asr/bin"
 
-PORT      = 8765
-NUM_FILES = 548
-START_N   = 1
-END_N     = 10
+PORT       = 8765
+NUM_FILES  = 548
+# 실행할 동시접속 수 목록 (None이면 START_N~END_N 순차)
+RUN_LIST   = [20, 30, 40, 50, 60]
+START_N    = 1
+END_N      = 10
 
 # ── 유틸리티 ──────────────────────────────────────────────────────────────────
 
@@ -307,10 +309,11 @@ def main() -> None:
     log("파일 ID 목록 로딩...")
     file_ids = get_sorted_file_ids()
 
-    log(f"벤치마크 시작: 동시 {START_N}~{END_N}명, 각 클라이언트 {NUM_FILES}파일 전체 처리")
+    targets = RUN_LIST if RUN_LIST else list(range(START_N, END_N + 1))
+    log(f"벤치마크 시작: {targets}, 각 클라이언트 {NUM_FILES}파일 전체 처리")
     total_start = time.time()
 
-    for n_clients in range(START_N, END_N + 1):
+    for n_clients in targets:
         run_test(n_clients, file_ids)
 
     log("=" * 60)
@@ -318,7 +321,7 @@ def main() -> None:
     log(f"결과 위치: {RESULTS_DIR}")
 
     log("\n── 요약 ──")
-    for n_clients in range(START_N, END_N + 1):
+    for n_clients in targets:
         run_name = f"run_{n_clients:02d}"
         merged = RESULTS_DIR / run_name / "qwen3_test_other_fcl.json"
         if merged.exists():
