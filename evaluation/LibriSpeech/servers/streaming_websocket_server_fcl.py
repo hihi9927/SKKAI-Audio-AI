@@ -670,6 +670,7 @@ def main():
         port=args.port,
         no_idle_shutdown=args.no_idle_shutdown,
         idle_shutdown_sec=args.idle_shutdown_sec,
+        close_timeout=args.close_timeout,
         beam_size=args.beam_size,
         no_lora=not args.lora,
         adapter_en=args.adapter_en,

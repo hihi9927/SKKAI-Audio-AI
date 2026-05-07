@@ -166,6 +166,7 @@ class StreamingConfig:
     port: int = 8765
     no_idle_shutdown: bool = False
     idle_shutdown_sec: int = 60
+    close_timeout: Optional[int] = None
 
 
 def format_time(seconds: float) -> str:
@@ -1313,6 +1314,7 @@ class Qwen3ASRStreamingServer:
             self.config.port,
             ping_interval=None,
             ping_timeout=None,
+            close_timeout=self.config.close_timeout,
             max_size=10 * 1024 * 1024,
         ):
             logger.info(f"Server listening on ws://{self.config.host}:{self.config.port}")
@@ -1380,6 +1382,11 @@ def parse_args():
     parser.add_argument(
         "--idle-shutdown-sec", type=int, default=60,
         help="Seconds of no connections before server shuts down (default: 60)",
+    )
+    parser.add_argument(
+        "--close-timeout", type=int, default=None,
+        help="WebSocket close handshake timeout in seconds (default: websockets 기본값 10초). "
+             "추론 중 연결 종료 시 timeout이 발생하면 늘려서 진단 가능 (예: 30)",
     )
     parser.add_argument(
         "--beam-size", type=int, default=2,
@@ -1462,6 +1469,7 @@ def main():
         port=args.port,
         no_idle_shutdown=args.no_idle_shutdown,
         idle_shutdown_sec=args.idle_shutdown_sec,
+        close_timeout=args.close_timeout,
         beam_size=args.beam_size,
         adapter_en=args.adapter_en,
         adapter_ko=args.adapter_ko,
