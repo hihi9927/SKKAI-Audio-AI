@@ -594,6 +594,7 @@ async def process_batch(
                     target_lang=target_lang,
                     trailing_silence_ms=trailing_silence_ms,
                 )
+                await ws.send(json.dumps({'type': 'stop'}))
         except Exception as e:
             logger.error('WebSocket processing failed for %s: %s', file_id, e)
             continue
