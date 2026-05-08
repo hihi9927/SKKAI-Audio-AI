@@ -12,15 +12,20 @@ CIF Weight Predictor 학습 스크립트.
     인코더 없이 acoustic 피처만으로 경계 예측 가능한지 검증하는 baseline.
     encoder mode와 val_loss를 비교해 인코더 표현이 얼마나 기여하는지 확인.
 
-Loss:
-  quantity_loss = (Σw_t - N_seg)²
-  boundary_loss = MSE(w_t, gaussian_label_t)   [Gaussian normalized to sum=1.0 per SEG]
+Loss (원래 CIF 논문 방식):
+  quantity_loss = (Σw_t - N_interval)²   N_interval = 경계 수 + 1 (구간 수)
+  boundary_loss = MSE(w_t, label_t)
   total = λ_qty * quantity_loss + λ_bnd * boundary_loss
+
+  label: 각 세그먼트(0~마지막 SEG)에 1/n_frames 균등 분배 → sum(label) = N_seg
+         마지막 SEG 이후 무음 구간은 label=0
+  누적값 Σw_t가 각 SEG 위치에서 정수를 넘어가도록 학습됨.
 
 실행 예시:
   python core/cif/train.py                          # encoder mode
   python core/cif/train.py --mode mel               # mel baseline
   python core/cif/train.py --epochs 30 --lr 3e-4
+  python core/cif/train.py --resume checkpoints/encoder/cif_best.pt --epochs 40
 """
 
 import argparse
@@ -88,14 +93,17 @@ def load_audio_16k(path: str) -> np.ndarray:
 # Gaussian soft label
 # ---------------------------------------------------------------------------
 
-def make_gaussian_label(n_frames: int, boundary_frames: list, sigma: float = 5.0) -> torch.Tensor:
-    """Gaussian bumps at boundary_frames, each normalized to integrate to 1.0."""
-    t = torch.arange(n_frames, dtype=torch.float32)
+def make_uniform_label(n_frames: int, boundary_frames: list) -> torch.Tensor:
+    """CIF 논문 방식: 각 세그먼트 내 프레임에 1/n_segment_frames 균등 분배.
+    마지막 SEG 이후 구간(무음)은 label=0.
+    sum(label) = len(boundary_frames) = n_segs → quantity loss target과 일치."""
+    boundaries = [0] + sorted(boundary_frames)  # 마지막 SEG까지만
     label = torch.zeros(n_frames)
-    for b in boundary_frames:
-        g = torch.exp(-0.5 * ((t - b) / sigma) ** 2)
-        label += g / (g.sum() + 1e-8)
-    return label  # sum ≈ n_segs
+    for prev, curr in zip(boundaries[:-1], boundaries[1:]):
+        n = curr - prev
+        if n > 0:
+            label[prev:curr] = 1.0 / n
+    return label
 
 
 # ---------------------------------------------------------------------------
@@ -103,15 +111,23 @@ def make_gaussian_label(n_frames: int, boundary_frames: list, sigma: float = 5.0
 # ---------------------------------------------------------------------------
 
 class CIFWeightPredictor(nn.Module):
-    """encoder mode: Linear on top of frozen encoder output (T, 2048) → (T,)"""
-    def __init__(self, d_model: int = 2048):
+    """encoder mode: frozen encoder output (T, 2048) → temporal conv → (T,).
+    단순 Linear 대신 Conv1d를 추가해 인접 프레임 맥락(무음·운율 변화 등)을 활용."""
+    def __init__(self, d_model: int = 2048, hidden: int = 128, kernel_size: int = 7):
         super().__init__()
-        self.linear = nn.Linear(d_model, 1)
+        self.proj = nn.Linear(d_model, hidden)
+        self.conv = nn.Conv1d(hidden, hidden, kernel_size=kernel_size,
+                              padding=kernel_size // 2)
+        self.out = nn.Linear(hidden, 1)
+        self.act = nn.GELU()
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, encoder_output: torch.Tensor) -> torch.Tensor:
         # encoder_output: (T, d_model)
-        return self.sigmoid(self.linear(encoder_output)).squeeze(-1)  # (T,)
+        x = self.act(self.proj(encoder_output))          # (T, hidden)
+        x = x.T.unsqueeze(0)                             # (1, hidden, T)
+        x = self.act(self.conv(x)).squeeze(0).T          # (T, hidden)
+        return self.sigmoid(self.out(x)).squeeze(-1)     # (T,)
 
 
 class CIFMelPredictor(nn.Module):
@@ -158,16 +174,10 @@ def cif_loss(
 # ---------------------------------------------------------------------------
 
 class CIFDataset(Dataset):
-    def __init__(
-        self,
-        jsonl_path: str,
-        feature_extractor: WhisperFeatureExtractor,
-        sigma: float = 5.0,
-    ):
+    def __init__(self, jsonl_path: str, feature_extractor: WhisperFeatureExtractor):
         with open(jsonl_path) as f:
             self.records = [json.loads(l) for l in f if l.strip()]
         self.fe = feature_extractor
-        self.sigma = sigma
 
     def __len__(self):
         return len(self.records)
@@ -184,11 +194,14 @@ class CIFDataset(Dataset):
         mel = mel[:, :mel_len]                          # (128, mel_len)
 
         n_enc = mel_to_encoder_frames(mel_len)
-        seg_frames = rec["seg_encoder_frames"]
+        dur = len(audio) / 16000.0
 
-        # clamp boundary frames into valid range
-        seg_frames = [min(max(f, 0), n_enc - 1) for f in seg_frames]
-        labels = make_gaussian_label(n_enc, seg_frames, self.sigma)
+        # seg_timestamps(forced aligner 결과)로 정확하게 encoder frame 환산.
+        # 저장된 seg_encoder_frames는 int(ts * 12.5)로 근사돼 최대 3프레임 오차가 있음.
+        seg_ts = rec["seg_timestamps"]
+        seg_frames = [min(max(round(ts * n_enc / dur), 0), n_enc - 1) for ts in seg_ts]
+
+        labels = make_uniform_label(n_enc, seg_frames)
 
         # mel과 mel_len 모두 반환: encoder mode는 mel_len으로 encoder 호출,
         # mel mode는 mel을 직접 predictor에 넣음
@@ -256,7 +269,8 @@ def train(args):
     if args.mode == "encoder":
         print(f"Loading encoder from {args.model} …")
         encoder = load_encoder(args.model, args.device, dtype)
-        predictor = CIFWeightPredictor(d_model=2048).to(device)
+        predictor = CIFWeightPredictor(d_model=2048, hidden=args.hidden,
+                                       kernel_size=args.kernel_size).to(device)
         print(f"  mode=encoder  predictor params: {sum(p.numel() for p in predictor.parameters())}")
     else:
         encoder = None
@@ -274,13 +288,13 @@ def train(args):
         return_attention_mask=True,
     )
 
-    train_dataset = CIFDataset(args.train_data, feature_extractor, sigma=args.sigma)
+    train_dataset = CIFDataset(args.train_data, feature_extractor)
     train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True,
                               collate_fn=collate_fn, num_workers=0)
 
     val_loader = None
     if args.val_data and Path(args.val_data).exists():
-        val_dataset = CIFDataset(args.val_data, feature_extractor, sigma=args.sigma)
+        val_dataset = CIFDataset(args.val_data, feature_extractor)
         val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False,
                                 collate_fn=collate_fn, num_workers=0)
         print(f"  train={len(train_dataset)}  val={len(val_dataset)}")
@@ -290,15 +304,32 @@ def train(args):
     ckpt_dir = Path(args.ckpt_dir)
     ckpt_dir.mkdir(parents=True, exist_ok=True)
 
+    log_path = ckpt_dir / "train_log.jsonl"
+    log_file = open(log_path, "a")
+    print(f"  학습 로그: {log_path}")
+
     best_val_loss = float("inf")
     global_step = 0
+    start_epoch = 1
 
-    epoch_bar = tqdm(range(1, args.epochs + 1), desc="Epoch", unit="ep")
+    if args.resume:
+        ckpt = torch.load(args.resume, map_location=device)
+        predictor.load_state_dict(ckpt["state_dict"])
+        if "optimizer" in ckpt:
+            optimizer.load_state_dict(ckpt["optimizer"])
+        start_epoch = ckpt.get("epoch", 0) + 1
+        best_val_loss = ckpt.get("val_loss") or float("inf")
+        global_step = ckpt.get("global_step", 0)
+        print(f"  resumed from {args.resume} (epoch {start_epoch - 1}, best_val={best_val_loss:.4f})")
+
+    epoch_bar = tqdm(range(start_epoch, args.epochs + 1), desc="Epoch", unit="ep")
     for epoch in epoch_bar:
         # ── train ──
         predictor.train()
         epoch_loss = epoch_qty = epoch_bnd = 0.0
-        n_samples = 0
+        epoch_gnorm = 0.0
+        n_samples = n_steps = 0
+        last_gnorm = 0.0
         optimizer.zero_grad()
 
         train_bar = tqdm(train_loader, desc=f"  Train {epoch}/{args.epochs}",
@@ -323,17 +354,25 @@ def train(args):
             epoch_bnd += bnd
             n_samples += 1
 
-            train_bar.set_postfix(
-                loss=f"{epoch_loss/n_samples:.4f}",
-                qty=f"{epoch_qty/n_samples:.4f}",
-                bnd=f"{epoch_bnd/n_samples:.4f}",
-            )
-
             if (step + 1) % args.accum_steps == 0:
+                # clip_grad_norm_ with inf returns the norm without clipping
+                last_gnorm = nn.utils.clip_grad_norm_(predictor.parameters(), float("inf")).item()
+                epoch_gnorm += last_gnorm
+                n_steps += 1
                 optimizer.step()
                 optimizer.zero_grad()
                 global_step += 1
 
+            train_bar.set_postfix(
+                loss=f"{epoch_loss/n_samples:.4f}",
+                qty=f"{epoch_qty/n_samples:.4f}",
+                bnd=f"{epoch_bnd/n_samples:.4f}",
+                gnorm=f"{last_gnorm:.3f}",
+            )
+
+        last_gnorm = nn.utils.clip_grad_norm_(predictor.parameters(), float("inf")).item()
+        epoch_gnorm += last_gnorm
+        n_steps += 1
         optimizer.step()
         optimizer.zero_grad()
 
@@ -371,27 +410,52 @@ def train(args):
         else:
             val_tag = ""
 
+        avg_gnorm = epoch_gnorm / max(n_steps, 1)
         epoch_bar.write(
             f"Epoch {epoch}/{args.epochs}  "
-            f"train={train_loss:.4f} (qty={epoch_qty/n_samples:.4f} bnd={epoch_bnd/n_samples:.4f})"
+            f"train={train_loss:.4f} (qty={epoch_qty/n_samples:.4f} bnd={epoch_bnd/n_samples:.4f})  "
+            f"gnorm={avg_gnorm:.3f}"
             f"{val_tag}"
         )
 
+        log_entry = {
+            "epoch": epoch,
+            "global_step": global_step,
+            "train_loss": train_loss,
+            "train_qty": epoch_qty / n_samples,
+            "train_bnd": epoch_bnd / n_samples,
+            "gnorm": avg_gnorm,
+            "val_loss": val_loss if val_loader else None,
+            "val_qty": val_qty if val_loader else None,
+            "val_bnd": val_bnd if val_loader else None,
+        }
+        log_file.write(json.dumps(log_entry) + "\n")
+        log_file.flush()
+
         # best checkpoint은 val loss 기준 (val 없으면 train loss)
         monitor = val_loss if val_loader is not None else train_loss
+        def _save_ckpt(path):
+            torch.save({
+                "epoch": epoch,
+                "global_step": global_step,
+                "mode": args.mode,
+                "hidden": getattr(args, "hidden", 128),
+                "kernel_size": getattr(args, "kernel_size", 7),
+                "state_dict": predictor.state_dict(),
+                "optimizer": optimizer.state_dict(),
+                "train_loss": train_loss,
+                "val_loss": val_loss,
+            }, path)
+
         if monitor < best_val_loss:
             best_val_loss = monitor
-            ckpt_path = ckpt_dir / "cif_best.pt"
-            torch.save({"epoch": epoch, "mode": args.mode,
-                        "state_dict": predictor.state_dict(),
-                        "train_loss": train_loss, "val_loss": val_loss}, ckpt_path)
+            _save_ckpt(ckpt_dir / "cif_best.pt")
             print(f"  → best checkpoint saved (val_loss={monitor:.4f})")
 
         if epoch % args.save_every == 0:
-            ckpt_path = ckpt_dir / f"cif_epoch{epoch:03d}.pt"
-            torch.save({"epoch": epoch, "mode": args.mode,
-                        "state_dict": predictor.state_dict(),
-                        "train_loss": train_loss, "val_loss": val_loss}, ckpt_path)
+            _save_ckpt(ckpt_dir / f"cif_epoch{epoch:03d}.pt")
+
+    log_file.close()
 
 
 # ---------------------------------------------------------------------------
@@ -414,6 +478,10 @@ def main():
                         help="encoder mode에서만 사용")
     parser.add_argument("--mel-hidden", type=int, default=256,
                         help="mel mode Conv1d hidden dim")
+    parser.add_argument("--hidden", type=int, default=128,
+                        help="encoder mode predictor hidden dim")
+    parser.add_argument("--kernel-size", type=int, default=7,
+                        help="encoder mode predictor Conv1d kernel size")
     parser.add_argument(
         "--ckpt-dir",
         default=None,
@@ -421,8 +489,6 @@ def main():
     )
     parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--lr", type=float, default=1e-3)
-    parser.add_argument("--sigma", type=float, default=5.0,
-                        help="Gaussian soft label sigma (encoder frames)")
     parser.add_argument("--lambda-qty", type=float, default=1.0,
                         help="quantity loss weight")
     parser.add_argument("--lambda-bnd", type=float, default=1.0,
@@ -431,6 +497,12 @@ def main():
                         help="gradient accumulation (effective batch size)")
     parser.add_argument("--save-every", type=int, default=5)
     parser.add_argument("--device", default="cuda:0")
+    parser.add_argument(
+        "--resume",
+        default=None,
+        metavar="CKPT",
+        help="이어서 학습할 checkpoint 경로 (예: checkpoints/encoder/cif_best.pt)",
+    )
     args = parser.parse_args()
 
     if args.ckpt_dir is None:
