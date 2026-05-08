@@ -1,0 +1,30 @@
+{
+  "timestamp": "2026-05-07T05:59:05.208912",
+  "cli_args": {
+    "test_dir": "evaluation/LibriSpeech/LibriSpeech/test-other",
+    "policy": 3,
+    "host": "localhost",
+    "port": 8765,
+    "model": "finetuned_gpt_corrected",
+    "scope": "full",
+    "tag": "gpt_corrected_run",
+    "description": null,
+    "limit": 548,
+    "calculate_wer": true,
+    "log_level": "INFO",
+    "auto_server": false,
+    "server_script": "/home/ubuntu/STiTy/evaluation/LibriSpeech/servers/servers/streaming_websocket_server_fcl.py",
+    "server_model": "Qwen/Qwen3-ASR-1.7B",
+    "server_args": "",
+    "target_lang": "ko",
+    "common_files": null,
+    "random_sample": null,
+    "random_seed": 42,
+    "skip_protocol_smoke": true,
+    "chunk_size_ms": 200,
+    "send_interval_ms": 200,
+    "show_commit_slash": true,
+    "fresh_start": true,
+    "trailing_silence_ms": 5500
+  }
+}
