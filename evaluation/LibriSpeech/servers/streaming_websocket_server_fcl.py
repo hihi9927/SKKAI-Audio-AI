@@ -50,8 +50,8 @@ def _parse_hms_time(value: str) -> Optional[float]:
 
 
 class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
-    def __init__(self, websocket, asr_model, config, pairing_hub, http_session=None, vad_model_bytes=None):
-        super().__init__(websocket, asr_model, config, pairing_hub, vad_model_bytes=vad_model_bytes)
+    def __init__(self, websocket, asr_model, config, pairing_hub, http_session=None, vad_model_bytes=None, corrector=None, gpt_translator=None):
+        super().__init__(websocket, asr_model, config, pairing_hub, vad_model_bytes=vad_model_bytes, corrector=corrector, gpt_translator=gpt_translator)
         self._shared_http_session = http_session
         self.stream_start_perf = time.perf_counter()
         self.next_segment_id = 1
@@ -335,6 +335,17 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         self._effective_audio_end_sec = effective_audio_end
         return await self._translate_with_metadata(text, target_lang)
 
+    async def _correct_and_translate(self, text: str, current_lang: str, audio_end_sec: float):
+        if not self.gpt_translator:
+            return await super()._correct_and_translate(text, current_lang, audio_end_sec)
+        t0 = self._stream_elapsed_sec()
+        corrected, translation, lang_code, extra = await super()._correct_and_translate(text, current_lang, audio_end_sec)
+        t1 = self._stream_elapsed_sec()
+        extra["trans_sec"] = round(t1 - t0, 4)
+        extra["_trans_end_elapsed"] = t1
+        extra["_trans_start_elapsed"] = t0
+        return corrected, translation, lang_code, extra
+
     def _get_flush_audio_end_sec(self) -> float:
         return self.pending_audio_end_sec if self.pending_audio_end_sec is not None else self.current_time
 
@@ -480,6 +491,8 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         await self.send_message("final", **{k: v for k, v in payload.items() if k != "type"})
         self.segment_audio_start_sec = audio_end_sec
         self.pending_audio_end_sec = None
+        if self.gpt_translator and original and translation:
+            self._segment_history.append((original, translation))
 
     async def finish_streaming(self):
         self.pending_audio_end_sec = self.current_time
@@ -624,7 +637,7 @@ class FCLStreamingServer(base_server.Qwen3ASRStreamingServer):
             logger.info("Client connected (%s)", self.active_connections)
 
         try:
-            handler = FCLStreamingHandler(websocket, self.asr, self.config, self.pairing_hub, http_session=self._http_session, vad_model_bytes=self.vad_model_bytes)
+            handler = FCLStreamingHandler(websocket, self.asr, self.config, self.pairing_hub, http_session=self._http_session, vad_model_bytes=self.vad_model_bytes, corrector=self.corrector, gpt_translator=self.gpt_translator)
             await handler.handle()
         finally:
             async with self.connection_lock:

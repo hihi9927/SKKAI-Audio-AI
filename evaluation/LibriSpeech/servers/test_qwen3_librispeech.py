@@ -578,9 +578,37 @@ async def process_batch(
     logger.info('Processing %s files (already done: %s)', len(targets), len(all_results))
     results = []
 
-    for idx, audio_info in enumerate(targets, start=1):
+    current_chapter: str | None = None
+    ws = None
+
+    async def _open_ws():
+        nonlocal ws
+        ws = await websockets.connect(
+            ws_url, ping_interval=None, ping_timeout=None,
+            open_timeout=30, max_size=10 * 1024 * 1024,
+        )
+        await recv_type(ws, 'hello', timeout=8)
+
+    async def _close_ws():
+        nonlocal ws
+        if ws is None:
+            return
+        try:
+            await ws.send(json.dumps({'type': 'stop'}))
+        except Exception:
+            pass
+        try:
+            await ws.close()
+        except Exception:
+            pass
+        ws = None
+
+    try:
+      for idx, audio_info in enumerate(targets, start=1):
         file_id = audio_info['file_id']
         speaker_id = file_id.split('-')[0]
+        parts = file_id.split('-')
+        chapter_id = f'{parts[0]}-{parts[1]}' if len(parts) >= 2 else parts[0]
         logger.info('[%s/%s] %s', idx, len(targets), file_id)
 
         audio = load_audio_file(audio_info['path'])
@@ -589,20 +617,38 @@ async def process_batch(
 
         duration = len(audio) / SAMPLING_RATE
 
+        # chapter가 바뀌면 기존 연결 종료(컨텍스트 초기화) 후 새 연결
+        if chapter_id != current_chapter:
+            await _close_ws()
+            current_chapter = chapter_id
+            try:
+                await _open_ws()
+            except Exception as e:
+                logger.error('WebSocket connect failed for chapter %s: %s', chapter_id, e)
+                ws = None
+                continue
+
+        if ws is None:
+            try:
+                await _open_ws()
+            except Exception as e:
+                logger.error('WebSocket connect failed for %s: %s', file_id, e)
+                continue
+
         try:
-            async with websockets.connect(ws_url, ping_interval=None, ping_timeout=None, open_timeout=30, max_size=10 * 1024 * 1024) as ws:
-                await recv_type(ws, 'hello', timeout=8)
-                out = await process_single_file(
-                    ws,
-                    audio,
-                    chunk_size_ms=chunk_size_ms,
-                    send_interval_ms=send_interval_ms,
-                    target_lang=target_lang,
-                    trailing_silence_ms=trailing_silence_ms,
-                )
-                await ws.send(json.dumps({'type': 'stop'}))
+            out = await process_single_file(
+                ws,
+                audio,
+                chunk_size_ms=chunk_size_ms,
+                send_interval_ms=send_interval_ms,
+                target_lang=target_lang,
+                trailing_silence_ms=trailing_silence_ms,
+            )
+            # chapter 내 연결 유지 — finish로 서버 상태 초기화하되 히스토리는 보존
+            await ws.send(json.dumps({'type': 'finish'}))
         except Exception as e:
             logger.error('WebSocket processing failed for %s: %s', file_id, e)
+            await _close_ws()
             continue
 
         if not out['transcript']:
@@ -654,6 +700,9 @@ async def process_batch(
             logger.info('  SPEAKER_%s_RUNNING_WER: N/A (%s files)', speaker_id, len(speaker_rows))
         if show_commit_slash and out.get('segments'):
             logger.info('  HYP_COMMIT: %s', format_commit_markers(out.get('segment_events') or []))
+
+    finally:
+        await _close_ws()
 
     return all_results + results
 
