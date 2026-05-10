@@ -697,6 +697,7 @@ def main():
         api_key=args.api_key,
         enable_gpt_translation=args.gpt_translation,
         translation_model=args.translation_model,
+        context_window=args.context_window,
     )
 
     server = FCLStreamingServer(config)

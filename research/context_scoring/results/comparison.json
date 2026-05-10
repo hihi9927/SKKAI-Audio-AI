@@ -1,0 +1,253 @@
+{
+  "model": "gpt-5.4-mini",
+  "summary": [
+    {
+      "label": "chunk2.0",
+      "metric_json": "C:\\Users\\jduh1\\Desktop\\STiTy\\evaluation\\LibriSpeech\\results\\finetuned(1.0.1)\\chunk_size_test\\chunk2.0\\metric.json",
+      "avg_context_score": 41.1111,
+      "n_chapters": 18,
+      "total_pairs": 1033
+    },
+    {
+      "label": "run_02",
+      "metric_json": "C:\\Users\\jduh1\\Desktop\\STiTy\\evaluation\\LibriSpeech\\results\\finetuned(1.0.1)\\gpt_corrected_test\\run_02\\metric.json",
+      "avg_context_score": 52.8333,
+      "n_chapters": 18,
+      "total_pairs": 982
+    }
+  ],
+  "runs": [
+    {
+      "metric_json": "C:\\Users\\jduh1\\Desktop\\STiTy\\evaluation\\LibriSpeech\\results\\finetuned(1.0.1)\\chunk_size_test\\chunk2.0\\metric.json",
+      "chapter_scores": [
+        {
+          "chapter_id": "1688-142285",
+          "score": 41,
+          "reasoning": "The translation preserves some chapter-level continuity, but there are frequent context breaks in names, roles, and pronouns: Mr. Thornton is mistranslated as having been “a shop boy” in one place and the father/son references around Bessie and Arthur become confusing. There are also many sentence-isolated errors that disrupt narrative logic and register, such as “shop boy” vs. “shop owner,” “Mr. Howell” appearing for Mr. Hale, and several awkward or incorrect renderings that weaken the ongoing discussion about Margaret, her father, and the servants.",
+          "n_pairs": 169
+        },
+        {
+          "chapter_id": "1998-15444",
+          "score": 41,
+          "reasoning": "The translation keeps the overall forensic-toxicology topic and many technical terms consistent, but there are several clear context breaks and mistranslations that disrupt continuity. Examples include “the best dramatic” rendered as “최고의 드라마,” “tickling the fauces” as “수도꼭지를 간지럽히면,” and multiple awkward or incorrect technical renderings such as “사후검토,” “직장에 의해 주어질 수 있습니다,” and the garbled step numbering (“Two,” “Five.”), which weaken narrative/logical flow and register consistency. ",
+          "n_pairs": 48
+        },
+        {
+          "chapter_id": "1998-29454",
+          "score": 62,
+          "reasoning": "The translation keeps the chapter’s general narrative and many recurring references intact, including Dicky, Mr. Beale, and the ongoing walk/homeward sequence, so topical coherence is mostly preserved. However, there are frequent context-sensitive errors and register shifts: pronouns and roles become awkward or wrong in places, and several lines are mistranslated in ways that break continuity (e.g., “perusal,” “secret panel,” “I ended here,” “Now we are square,” and “Bless me!”), which weakens coreference and logical flow across the chapter.",
+          "n_pairs": 78
+        },
+        {
+          "chapter_id": "1998-29455",
+          "score": 34,
+          "reasoning": "The chapter shows frequent context loss in pronouns, word sense, and register. Several lines are mistranslated in ways that break continuity or established meaning, such as “rabbit” becoming “그 사람,” “straight” becoming “이성애자,” and “bed”/“green curtains” being rendered incoherently, while names also fluctuate between Dicky/디키 and Beale/빌. The narrative voice and dialogue tone are often flattened or distorted, so although some local continuity is preserved, overall contextual consistency is poor.",
+          "n_pairs": 70
+        },
+        {
+          "chapter_id": "2033-164914",
+          "score": 52,
+          "reasoning": "The chapter keeps the main participants and plot thread mostly intact, but there are repeated context breaks in referring expressions and role labels: “the eunuch,” “the fireman,” “the castrato,” and “the singer” are used inconsistently for what appears to be the same or related speaker, which weakens continuity. There are also several mistranslations that disrupt narrative logic and tone, such as “I wot him not” becoming “나는 그 사람이 아닐 거라고 생각해요,” “spake him fair” becoming “그에게 공정하게 말했다,” and “And Shahrazad perceived the dawn of day” being rendered awkwardly, though the recurring names Zawal-Makan and Nusret Al-Zaman are at least preserved consistently.",
+          "n_pairs": 76
+        },
+        {
+          "chapter_id": "2033-164915",
+          "score": 34,
+          "reasoning": "The translation shows frequent context breaks in names, roles, and pronouns: Usat Alzaman is rendered as female in one place, while later the chamberlain/emir/king references shift inconsistently, and terms like “pages,” “stalker,” and “Camino” are mistranslated or left incoherent. Narrative continuity is also weakened by several literal but context-mismatched renderings such as “girding his ass,” “book pages” for pages, and “take him off the ass,” which obscure who is doing what and how the scene progresses.",
+          "n_pairs": 56
+        },
+        {
+          "chapter_id": "2033-164916",
+          "score": 18,
+          "reasoning": "The translation shows frequent context loss and inconsistent entity handling: key names and titles shift wildly across sentences, with Wazir Dandan, Chamberlayne, Zawamakan, Charizard, and Zawal Makan all appearing for what seems to be the same or related figures. Coreference and narrative continuity are also broken by mistranslations like “the host” for the army and “repaired to the heart of the encampment,” which obscure the sequence of events and relationships. Tone and register are unstable as well, mixing archaic courtly language with odd modern or erroneous phrasing, so the chapter reads as only loosely connected sentence by sentence.",
+          "n_pairs": 33
+        },
+        {
+          "chapter_id": "2414-128291",
+          "score": 34,
+          "reasoning": "The translation shows frequent context breaks in pronoun/reference handling and terminology, with several lines rendered as if isolated: for example, “the kind” is inconsistently translated as “그 종류,” “이런 종류,” and “당신의 가장 따뜻한 친구들,” which obscures the recurring referent. There are also clear sense and continuity errors such as “something warm and living quickened me” becoming “나를 살렸다,” and multiple archaic/dialogic lines being flattened into modern, mismatched Korean, which disrupts the chapter’s tone and logical flow.",
+          "n_pairs": 45
+        },
+        {
+          "chapter_id": "2414-128292",
+          "score": 72,
+          "reasoning": "The translation generally preserves the chapter’s philosophical, archaic tone and keeps key motifs like “shadow,” “goal,” “wanderer,” and “home” consistent across the passage. However, there are several context-sensitive slips that weaken continuity, such as inconsistent pronoun/register handling (“그가 말했어요,” “당신은 나를 좋아하지 않습니다”), awkward or mistranslated lines that obscure logical flow, and some unclear references like “two-stress” and “Dodos at Ustra,” which reduce coherence in the surrounding argument.",
+          "n_pairs": 45
+        },
+        {
+          "chapter_id": "2414-159411",
+          "score": 42,
+          "reasoning": "The translation preserves the overall fable structure and most character references, but there are frequent context breaks in pronouns, speaker attribution, and terminology. Notable issues include inconsistent rendering of Brahmin/Braiman, confusion around who is speaking in several lines, and mistranslations that distort the logic of the judgment scene (e.g., lines 53-65 and 68-73), which weakens narrative continuity and contextual coherence.",
+          "n_pairs": 73
+        },
+        {
+          "chapter_id": "2414-165385",
+          "score": 84,
+          "reasoning": "The translation is mostly consistent in referring to the same subject across the chapter, preserving the narrative flow from admiration and contempt to the final punishment/incarnation. Coreference and logical continuity are generally maintained, though sentence 8’s “it” is a bit awkward for the previously described soul/body reference, and sentence 4 slightly shifts the nuance of “young gentlemen and ladies of understanding” into a more generic polite address. Terminology and tone remain stable overall, with no major breaks in the chapter’s satirical register.",
+          "n_pairs": 8
+        },
+        {
+          "chapter_id": "2609-156975",
+          "score": 41,
+          "reasoning": "The translation keeps some key terms stable, especially Moses, Egypt, Midian, and Jehovah, and the overall wilderness-training theme remains recognizable across the chapter. However, there are many severe context breaks and mistranslations that disrupt continuity, such as “ho-fats” becoming “맙소사,” “patience is genius” rendered oddly, “Joseph” being tangled with Ephraim and Manasseh, and especially the nonsensical “제트기와 강력한 총” for Moses’ quest, which breaks narrative sense and register. Several sentences also lose logical flow or coreference, making the chapter feel only partially connected rather than consistently contextualized.",
+          "n_pairs": 56
+        },
+        {
+          "chapter_id": "2609-157645",
+          "score": 34,
+          "reasoning": "The chapter’s overall topic—historical anecdotes about smoking in churches and clergy—is mostly preserved, but there are frequent context breaks and several mistranslations that disrupt coherence. Coreference and terminology are inconsistent or garbled (e.g., “Parr” becomes “파 씨,” “communicants” becomes “의사소통,” and several church/office terms are mistranslated), and some sentences lose logical continuity, especially 12–17 where the dialogue and actions become hard to follow. The tone also shifts awkwardly due to literal or erroneous renderings, making the chapter feel only partially connected rather than consistently contextualized.",
+          "n_pairs": 21
+        },
+        {
+          "chapter_id": "2609-169640",
+          "score": 18,
+          "reasoning": "The translation shows frequent context loss and many mistranslations that break narrative continuity, such as rendering ship-related actions and nautical terms inconsistently or nonsensically (“배에 노가 떨어지는 것,” “탑승 파이프,” “proa mopsinats”). Coreference and terminology are unstable throughout: the ship is alternately 존, John Wishart, and “she,” while several sentences become semantically garbled, obscuring the chase and near-collision sequence. Although the overall scene remains a maritime confrontation, the chapter-level coherence is seriously weakened by repeated isolated, literal, or erroneous renderings.",
+          "n_pairs": 45
+        },
+        {
+          "chapter_id": "3005-163389",
+          "score": 31,
+          "reasoning": "The translation preserves some local continuity in the crowd scene and repeated references to Sherburn, Buck Harkness, and the mob, but there are many context-breaking errors that disrupt coherence. Pronouns and roles are often mistranslated or shifted unnaturally (e.g., “you” becoming generic or incorrect, “ringmaster” for a different speaker, “he shed them” rendered as if he were wearing clothes), and several lines lose the narrative logic or tone entirely, making the chapter feel only partially connected.",
+          "n_pairs": 41
+        },
+        {
+          "chapter_id": "3005-163390",
+          "score": 34,
+          "reasoning": "The chapter shows frequent context loss in pronouns, register, and meaning: several lines are translated too literally or incorrectly, such as “The people most killed themselves laughing” becoming “웃으면서 자살한 사람들이 가장 많았고,” and “capered off behind the scenes” becoming “무대 뒤에서 도망쳤고,” which breaks narrative sense. Terminology and speaker voice are also inconsistent, with “king/duke/judge” sometimes preserved and sometimes distorted, and the colloquial, humorous Twain-like tone often shifting into awkward formal Korean or nonsensical phrasing. Some sequence is maintained in the raft and king/duke discussion, but overall the translation behaves like isolated sentence renderings rather than a coherent chapter-level narrative.",
+          "n_pairs": 56
+        },
+        {
+          "chapter_id": "3005-163391",
+          "score": 34,
+          "reasoning": "The translation keeps the broad narrative thread, but there are frequent context breaks in coreference and terminology: “the king” is sometimes rendered as 왕 and sometimes left awkwardly as if speaking in direct narration, and several references become unclear or mistranslated (e.g., “hair lip” as 머리숱이 많은 사람, “new white beaver” as 새 흰 비버). The chapter’s tone and register also wobble, with many literal or malformed Korean phrases that disrupt continuity, though the sequence of events is still mostly recoverable.",
+          "n_pairs": 58
+        },
+        {
+          "chapter_id": "3005-163399",
+          "score": 34,
+          "reasoning": "The translation shows frequent context loss in coreference and narrative continuity: “he/she” references are often flattened or mistranslated, and several lines become awkwardly literal or semantically off (e.g., “one-horse cotton plantations” as “작은 한 마리 목화 농장,” “pump them” as “펌핑,” “throw up my hand” as “손을 내밀어야 했어요”). Terminology and speaker tracking also wobble, with inconsistent handling of Mrs. Phelps/Silas/Tom Sawyer and several dialogue lines losing the original conversational tone, though the overall chapter topic and sequence remain partially recoverable.",
+          "n_pairs": 55
+        }
+      ],
+      "avg_context_score": 41.1111,
+      "n_chapters": 18,
+      "total_pairs": 1033
+    },
+    {
+      "metric_json": "C:\\Users\\jduh1\\Desktop\\STiTy\\evaluation\\LibriSpeech\\results\\finetuned(1.0.1)\\gpt_corrected_test\\run_02\\metric.json",
+      "chapter_scores": [
+        {
+          "chapter_id": "1688-142285",
+          "score": 62,
+          "reasoning": "The translation generally preserves the chapter’s ongoing discussion of Mr. Thornton, Margaret, and Bessy, with most names and the Milton/workhouse context carried through consistently. However, there are several context-sensitive slips that weaken continuity: pronouns and speakers sometimes shift awkwardly, and a few lines mistranslate key meanings or references (e.g., “shop boy,” “workhouse,” “father”/“papa,” and the repeated confusion around who is being discussed). These issues are noticeable but not so frequent as to destroy overall chapter coherence.",
+          "n_pairs": 159
+        },
+        {
+          "chapter_id": "1998-15444",
+          "score": 41,
+          "reasoning": "The translation is generally faithful sentence by sentence, but it shows noticeable context loss and several terminology/register inconsistencies. There are clear mistranslations or odd renderings such as “The best dramatic is that which is at hand” for a procedural sentence, “gallage” becoming 담낭, and “endowed on any point” rendered unnaturally, which disrupts coherence in this medical-legal chapter. Pronouns and procedural continuity are mostly preserved, but the chapter’s technical tone is uneven and some steps in the chemical procedure are translated inconsistently or awkwardly, reducing overall contextual consistency.",
+          "n_pairs": 46
+        },
+        {
+          "chapter_id": "1998-29454",
+          "score": 62,
+          "reasoning": "The translation generally preserves the chapter’s narrative flow and recurring references to Dicky, Mr. Beale, and the ongoing walk/adventure, so topical coherence and continuity are mostly intact. However, there are several context-sensitive slips and register inconsistencies: “Perusal” is rendered as a plain “훑어보기,” some dialogue shifts awkwardly in politeness and speaker voice, and a few lines become semantically distorted or unclear (e.g. 49–50, 61–62), which weakens contextual consistency overall.",
+          "n_pairs": 70
+        },
+        {
+          "chapter_id": "1998-29455",
+          "score": 52,
+          "reasoning": "The translation keeps the chapter’s general narrative and many recurring references intact, including Dicky/Beale, the begging scam, and the rabbit/free-life motif, so topical coherence is mostly preserved. However, there are several context-sensitive errors that break continuity: “he” becomes “그 사람” for the rabbit, “If he's straight” is mistranslated as “이성애자라면,” and some lines are awkwardly or inconsistently rendered, which weakens coreference, word sense, and register consistency across the chapter.",
+          "n_pairs": 65
+        },
+        {
+          "chapter_id": "2033-164914",
+          "score": 62,
+          "reasoning": "The translation generally preserves the chapter’s narrative flow and recurring roles like the eunuch, Zawal-Makan, and Shahrazad, so the overall topic and sequence remain understandable. However, there are several context-sensitive errors that weaken consistency: “the fireman” and “castrato” are inconsistent renderings for the same character, “my lady”/“my mistress”/“주인마님” shift unevenly, and some lines mistranslate actions or relations, such as “Rejoined the eunuch” becoming “내시와 다시 합류했다” and “first improvisation” becoming “첫 즉흥 연주.”",
+          "n_pairs": 74
+        },
+        {
+          "chapter_id": "2033-164915",
+          "score": 34,
+          "reasoning": "The translation keeps some recurring names and basic narrative flow, but context handling is often weak. Pronouns and roles become inconsistent or mistranslated in several places (e.g., “he wondered” rendered as “그는,” “the eunuch”/“the chamberlain”/“the pages” are sometimes confused, and “stalker” becomes “스토커”), which disrupts coreference and logical continuity. There are also notable sense errors and register shifts, such as “Oppression and depression laughed her” and the awkward modern loanword choices, making the chapter feel only partially connected across sentences.",
+          "n_pairs": 54
+        },
+        {
+          "chapter_id": "2033-164916",
+          "score": 34,
+          "reasoning": "The translation preserves some local meaning, but context handling is often unstable: key names and roles shift inconsistently, with Wazir Dandan rendered as both “와지르 단단” and “재상 단단,” Zawamakan/Zawal Makan varying, and “Charizard” clearly mistranslated for a narrative character. Coreference and narrative continuity also break in places, such as “the minister” becoming “장관,” and several lines read as isolated literal renderings rather than building a coherent chapter progression.",
+          "n_pairs": 33
+        },
+        {
+          "chapter_id": "2414-128291",
+          "score": 41,
+          "reasoning": "The translation keeps some recurring references stable, such as the repeated address to “thou/너/당신” and the ongoing contrast between “the kind” and “thy kind,” but it often mishandles who is speaking and to whom, making the dialogue hard to track. There are also several context-sensitive errors and awkward shifts in register, e.g. “the kind” becoming “친절한 사람” or “kind” as “친절한 이는,” “perceptors” rendered as “지각자들,” and multiple lines that read like isolated literal translations rather than a coherent chapter-level exchange.",
+          "n_pairs": 43
+        },
+        {
+          "chapter_id": "2414-128292",
+          "score": 62,
+          "reasoning": "The chapter’s core shadow/follower motif is mostly preserved, with consistent rendering of “my shadow” as “내 그림자” and later “Thou art my shadow” as “너는 나의 그림자다,” so the main narrative thread remains intelligible. However, there are several context and register breaks: sentence 5 mistranslates the idiom (“Let it run after me” → “그냥 내가 한 다음에 실행하게 해”), sentence 13 turns “two-struck” into “두 번의 스트레스,” and sentence 11/14/15 introduce awkward or misleading references that weaken continuity. The archaic, reflective tone is also unevenly handled, with some lines sounding modern or unnatural, which reduces contextual consistency across the chapter.",
+          "n_pairs": 46
+        },
+        {
+          "chapter_id": "2414-159411",
+          "score": 62,
+          "reasoning": "The translation generally preserves the story’s sequence and core references, including the Brahmin, tiger, and later jackal resolution, so the overall narrative remains understandable. However, there are several context-consistency problems: “cage” becomes “새장” at one point, the “sixth judge” is inconsistently rendered with singular/plural jackal forms, and some lines shift register awkwardly or mistranslate roles like “guard there,” which weakens continuity. The biggest issue is that the dialogue and judgment scene sometimes lose clarity in who is speaking and what is being asked, though the main plot is still intact.",
+          "n_pairs": 70
+        },
+        {
+          "chapter_id": "2414-165385",
+          "score": 72,
+          "reasoning": "The translation is generally consistent in referring to the same subject across sentences, preserving the contrast between admiration from some and contempt from others, and it keeps the narrative tone and register stable. However, there are some context-sensitive issues: sentence 6 is awkward and slightly obscures the causal link to the prior sentence, and sentence 7’s “그것” for the soul/body reference is understandable but less natural than a clearer coreferential rendering, which mildly weakens continuity.",
+          "n_pairs": 7
+        },
+        {
+          "chapter_id": "2609-156975",
+          "score": 34,
+          "reasoning": "The translation preserves some broad continuity around Moses, Egypt, Midian, and the wilderness, but there are frequent severe context breaks that disrupt coherence. Several sentences are mistranslated or nonsensical in context, such as “호-팻스,” “피니언,” “나아트리,” and especially “제트기와 강한 총,” which breaks the narrative sense entirely; terminology like Moses, Yahweh/Jehovah, and place names is also handled inconsistently or awkwardly. Coreference and logical flow are mostly maintained only at a surface level, while the register shifts erratically between scholarly prose and garbled phrasing.",
+          "n_pairs": 56
+        },
+        {
+          "chapter_id": "2609-157645",
+          "score": 52,
+          "reasoning": "The chapter stays broadly on the same topic—smoking in churches and clerical smokers—and most recurring references like St. Mary’s Church, the clergy, and tobacco are rendered consistently. However, there are several context-breaking mistranslations and distortions: “Parr” becomes “파르” but the surrounding sentence is awkwardly restructured, “answer-pipe” is mistranslated as a proper noun-like phrase, and “communicants” is rendered as generic church participation rather than sacramental communion. These issues weaken narrative continuity and contextual word sense, though the overall theme remains recognizable.",
+          "n_pairs": 21
+        },
+        {
+          "chapter_id": "2609-169640",
+          "score": 41,
+          "reasoning": "The translation keeps the overall nautical scene and sequence mostly intact, but there are several context breaks that hurt consistency: “John” becomes “존” while later the ship is clearly “John Wishart,” and “Mitsukai”/“Kite” are rendered inconsistently without clear anchoring. More seriously, some terms are mistranslated or isolated from context, such as “props” becoming “소품,” “borough” becoming “자치구,” and several ship-handling phrases are awkward enough to obscure the narrative flow and tactical continuity.",
+          "n_pairs": 42
+        },
+        {
+          "chapter_id": "3005-163389",
+          "score": 34,
+          "reasoning": "The translation often preserves the basic scene, but context consistency breaks frequently: pronouns and speaker perspective shift erratically between past and present tense, informal and polite registers, and first/third person forms (e.g., lines 16–21, 31–35). There are also clear contextual mistranslations, such as “looking tolerable cheap” rendered as “꽤 싸 보였다” and “shed seventeen suits” as “열일곱 벌의 양복을 흘렸어요,” which disrupt narrative continuity and word sense. Terminology and character references are mostly stable, but the chapter-level coherence is weakened by these repeated isolated-sentence renderings.",
+          "n_pairs": 40
+        },
+        {
+          "chapter_id": "3005-163390",
+          "score": 62,
+          "reasoning": "The translation is generally coherent and keeps the chapter’s rough, colloquial narrative voice, with recurring references to the Duke, kings, and Jim mostly handled consistently. However, there are several context-sensitive slips and register issues: “The people most killed themselves laughing” is rendered as “사람들은 대부분 웃다가 죽을 뻔했다,” which distorts the idiom, and “Ring up, fair Rosamond” becomes “전화해,” an anachronistic sense error that breaks the historical context. There are also some awkward or inconsistent choices like “색슨 헵타키들” for the Saxon heptarchies and shifts between informal and overly polite forms, but these do not fully disrupt the chapter’s overall continuity.",
+          "n_pairs": 54
+        },
+        {
+          "chapter_id": "3005-163391",
+          "score": 72,
+          "reasoning": "The translation keeps the chapter’s main narrative and most character references coherent, including the king/duke sequence, Jim, Mary Jane, and the Wilkes family details. Coreference and terminology are mostly stable, but there are a few context-sensitive slips such as inconsistent handling of the king’s speech and some awkward shifts in tense/register, plus minor mistranslations like “large poor servants” and “when we struck the boat,” which slightly weaken continuity.",
+          "n_pairs": 50
+        },
+        {
+          "chapter_id": "3005-163399",
+          "score": 72,
+          "reasoning": "The translation is generally coherent across the chapter: Tom/Huck’s disguise, Mrs. Phelps, and the uncle/old gentleman references are carried through consistently, and the narrative sequence is mostly preserved. However, there are several context-sensitive slips that weaken continuity, such as shifting pronouns and voices, awkward mistranslations like “예썸,” and some lines that lose the speaker identity or tense consistency, especially around the dialogue and the “Tom Sawyer” reveal.",
+          "n_pairs": 52
+        }
+      ],
+      "avg_context_score": 52.8333,
+      "n_chapters": 18,
+      "total_pairs": 982
+    }
+  ]
+}

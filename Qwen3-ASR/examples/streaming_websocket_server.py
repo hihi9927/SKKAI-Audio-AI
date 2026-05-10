@@ -160,6 +160,7 @@ class StreamingConfig:
     # GPT 번역 설정 (활성화 시 GPTCorrector + Google Translate 대신 단일 GPT 호출)
     enable_gpt_translation: bool = False
     translation_model: str = "gpt-5.4-mini"
+    context_window: int = 5
 
     # 서버 설정
     host: str = "0.0.0.0"
@@ -423,8 +424,9 @@ class Qwen3ASRStreamingHandler:
         self.session_logger: Optional[SessionLogger] = None
         self.corrector = corrector
         self.gpt_translator = gpt_translator
-        # GPT 번역 컨텍스트: 최근 5 세그먼트의 (corrected_original, translation) 보관
-        self._segment_history: deque[tuple[str, str]] = deque(maxlen=5)
+        # GPT 번역 컨텍스트: 최근 N 세그먼트의 (corrected_original, translation) 보관
+        _ctx = gpt_translator.max_context if gpt_translator else 5
+        self._segment_history: deque[tuple[str, str]] = deque(maxlen=_ctx)
 
         # Commit 방식 설정
         self.enable_dot_commit: bool = config.enable_dot_commit
@@ -1266,6 +1268,7 @@ class Qwen3ASRStreamingServer:
                 self.gpt_translator = GPTTranslator(
                     model=self.config.translation_model,
                     api_key=self.config.api_key,
+                    max_context=self.config.context_window,
                 )
                 logger.info(f"GPT translator enabled (model={self.config.translation_model})")
         elif self.config.enable_correction:
@@ -1447,6 +1450,10 @@ def parse_args():
         help="GPT 번역에 사용할 모델명 (기본값: gpt-5.4-mini, --gpt-translation 활성화 시 사용)",
     )
     parser.add_argument(
+        "--context-window", type=int, default=5,
+        help="GPT 번역 시 참고할 직전 세그먼트 최대 문장 수 (기본값: 5, --gpt-translation 활성화 시 사용)",
+    )
+    parser.add_argument(
         "--log-json", action="store_true",
         help="로그를 JSON 형식으로 출력",
     )
@@ -1483,6 +1490,7 @@ def main():
         api_key=args.api_key,
         enable_gpt_translation=args.gpt_translation,
         translation_model=args.translation_model,
+        context_window=args.context_window,
     )
 
     server = Qwen3ASRStreamingServer(config)

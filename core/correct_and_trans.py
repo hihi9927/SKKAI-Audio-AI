@@ -91,6 +91,7 @@ class GPTTranslator:
         api_key: Optional[str] = None,
         model: str = "gpt-5.4-mini",
         max_retries: int = 3,
+        max_context: int = 5,
     ):
         key = api_key or os.environ.get("OPENAI_API_KEY")
         if not key:
@@ -101,6 +102,7 @@ class GPTTranslator:
         self._client = AsyncOpenAI(api_key=key)
         self._model = model
         self._max_retries = max_retries
+        self.max_context = max_context
 
     async def correct_and_translate(
         self,
@@ -115,7 +117,7 @@ class GPTTranslator:
             text: ASR 출력 원문.
             source_lang_name: 원문 언어 이름 (예: "Korean"). 미감지 시 빈 문자열.
             target_lang_code: 번역 목표 언어 코드 (예: "en").
-            context: 직전 세그먼트들의 (교정된 원문, 번역) 쌍. 최대 5개 권장.
+            context: 직전 세그먼트들의 (교정된 원문, 번역) 쌍. max_context 개수만큼 전달.
 
         Returns:
             (corrected_original, translation)

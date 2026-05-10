@@ -10,6 +10,7 @@
 | @modules.py | 추상 베이스 클래스 시그니처 (구현 없음) |
 | `llm_corrector/gpt_corrector.py` | 독립형 GPT 교정기 (ablation/단독 사용) |
 | `correct_and_trans.py` | 교정 + 번역 통합 GPT 호출 (프로덕션 사용) |
+| `meaning_segmentator/` | 의미 분절 연구 유틸리티 — GPT로 `<SEG>` 태그 마킹, 점진적 컨텍스트 번역, COMET 평가 스크립트 모음 |
 
 ## 경계 규칙
 
