@@ -536,10 +536,13 @@ class Qwen3ASRStreamingHandler:
 
         1차: committed_display(SEG 제거 기준) prefix 매칭
         2차(fallback): committed_seg_count 번째 <SEG> 이후 텍스트
-        모델이 이전 텍스트를 수정해 display가 달라져도 SEG 카운트로 안전하게 찾는다.
+        3차(fallback): 후행 구두점 제거 후 prefix 매칭
+          — dot commit 후 모델이 "Okay." → "Okay, this is..."로 revision할 때,
+            1차(구두점 불일치)·2차(<SEG> 없음) 모두 실패해 uncommitted=""가 되는 문제를 커버.
         """
         seg_tag = "<SEG>"
         seg_len = len(seg_tag)
+        _punct = '.,!?;:。？！'
 
         # ── 1차: display prefix 매칭 ──────────────────────────────────────
         if committed_display:
@@ -556,13 +559,41 @@ class Qwen3ASRStreamingHandler:
 
         # ── 2차 fallback: SEG 카운트 기준 ───────────────────────────────
         pos, found = 0, 0
+        all_segs_found = True
         while found < committed_seg_count:
             idx = current_text.find(seg_tag, pos)
             if idx == -1:
-                return ""  # 커밋된 SEG 수보다 현재 텍스트의 SEG가 적음 → 모두 커밋됨
+                all_segs_found = False
+                break
             pos = idx + seg_len
             found += 1
-        return current_text[pos:]
+        if all_segs_found:
+            return current_text[pos:]
+
+        # ── 3차 fallback: 구두점 제거 후 prefix 매칭 ────────────────────
+        # dot commit 후 모델 revision 시 구두점이 바뀌어도 단어 경계로 커서를 찾는다.
+        # "Okay." → stripped "Okay" → "Okay, this is...".startswith("Okay") → True
+        if committed_display:
+            stripped = committed_display.rstrip(_punct)
+            if stripped:
+                current_no_seg = current_text.replace(seg_tag, "")
+                if current_no_seg.startswith(stripped):
+                    end = len(stripped)
+                    # 부분 단어 매칭 방지: 매칭 직후 문자가 알파이면 거짓 매칭
+                    if end >= len(current_no_seg) or not current_no_seg[end].isalpha():
+                        pos, disp_pos, target = 0, 0, len(stripped)
+                        while pos < len(current_text) and disp_pos < target:
+                            if current_text[pos:pos + seg_len] == seg_tag:
+                                pos += seg_len
+                            else:
+                                disp_pos += 1
+                                pos += 1
+                        # committed 구두점이 다른 구두점으로 revision된 경우 한 문자 건너뜀
+                        if pos < len(current_text) and current_text[pos] in _punct:
+                            pos += 1
+                        return current_text[pos:]
+
+        return ""
 
     def _get_lora_request(self, state):
         """언어에 따라 적절한 LoRA 어댑터 반환. 미지원 언어는 None(기본 모델)."""
