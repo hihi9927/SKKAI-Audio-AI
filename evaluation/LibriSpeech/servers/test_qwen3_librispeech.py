@@ -911,6 +911,18 @@ def main():
                         help='Ignore existing results and process all files from scratch')
     parser.add_argument('--trailing-silence-ms', type=int, default=5500,
                         help='Silence (ms) appended after each audio file so VAD fires before finish (default: 1000)')
+    parser.add_argument('--gpt-translation', action='store_true', default=False,
+                        help='GPT 교정+번역 활성화 (서버에 --gpt-translation 전달, meta.json 기록용)')
+    parser.add_argument('--translation-model', type=str, default='gpt-5.4-mini',
+                        help='GPT 번역 모델명 (기본값: gpt-5.4-mini, --gpt-translation 활성화 시 사용)')
+    parser.add_argument('--context-window', type=int, default=5,
+                        help='GPT 번역 컨텍스트 윈도우 크기 (서버에 --context-window 전달, 기본값: 5)')
+    parser.add_argument('--correction', action='store_true', default=False,
+                        help='GPT LLM 후처리 활성화 (서버에 --correction 전달)')
+    parser.add_argument('--correction-model', type=str, default='gpt-5.4-mini',
+                        help='GPT 후처리 모델명 (기본값: gpt-5.4-mini, --correction 활성화 시 사용)')
+    parser.add_argument('--api-key', type=str, default=None,
+                        help='OpenAI API 키 (미지정 시 OPENAI_API_KEY 환경변수 사용)')
 
     args = parser.parse_args()
     logger.setLevel(args.log_level)
@@ -960,6 +972,14 @@ def main():
                 sys.exit(1)
             server = ServerManager(args.server_script, args.host, args.port, args.server_model)
             extra = args.server_args.split() if args.server_args else []
+            if args.gpt_translation:
+                extra += ['--gpt-translation',
+                          '--translation-model', args.translation_model,
+                          '--context-window', str(args.context_window)]
+            if args.correction:
+                extra += ['--correction', '--correction-model', args.correction_model]
+            if args.api_key:
+                extra += ['--api-key', args.api_key]
             if not server.start_server(extra):
                 logger.error('Failed to start Qwen3 server.')
                 sys.exit(1)
