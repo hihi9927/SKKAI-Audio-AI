@@ -131,6 +131,9 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
 
         t0 = time.perf_counter()
         ts_elapsed = round(t0 - self.stream_start_perf, 4)  # wall-clock elapsed (plot x축 기준)
+        # 이전 슬롯에서 남은 stale _decode_start_perf가 t0 < dp 윈도우 체크를 통과해
+        # encode_sec/decode_sec가 null로 기록되는 문제 방지
+        state._decode_start_perf = None
         # _process_slot_updates(on_seg) 내부에서 조기 로깅이 가능하도록 t0 공유
         self._slot_active_transcribe_t0[key] = t0
         await super()._asr_streaming_transcribe(chunk, slot_key)
