@@ -34,6 +34,16 @@ SAMPLING_RATE = 16000
 DEFAULT_POLICY = 3
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent.parent
+STiTy_ROOT = SCRIPT_DIR.parent.parent.parent  # STiTy 저장소 루트
+
+# --model 값 → 실제 서버 모델 경로 자동 매핑
+# --server-model을 명시하면 이 매핑이 무시됩니다.
+MODEL_MAP = {
+    "baseline":        "Qwen/Qwen3-ASR-1.7B",
+    "baseline(1.0.0)": "Qwen/Qwen3-ASR-1.7B",
+    "finetuned":        str(STiTy_ROOT / "Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged"),
+    "finetuned(1.0.1)": str(STiTy_ROOT / "Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged"),
+}
 DEFAULT_TEST_DIR = PROJECT_ROOT / "LibriSpeech" / "test-other"
 DEFAULT_OUTPUT = SCRIPT_DIR / "results" / "fsl" / "test" / "test_other_fsl_test.json"
 DEFAULT_SERVER_SCRIPT = SCRIPT_DIR / "servers" / "streaming_websocket_server_fcl.py"
@@ -908,7 +918,8 @@ def main():
     parser.add_argument('--log-level', type=str, default='INFO', choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'])
     parser.add_argument('--auto-server', action='store_true')
     parser.add_argument('--server-script', type=str, default=str(DEFAULT_SERVER_SCRIPT))
-    parser.add_argument('--server-model', type=str, default='Qwen/Qwen3-ASR-1.7B')
+    parser.add_argument('--server-model', type=str, default=None,
+                        help='서버에 로드할 모델 경로. 미지정 시 --model 값으로 MODEL_MAP에서 자동 추론')
     parser.add_argument('--server-args', type=str, default='')
     parser.add_argument('--target-lang', type=str, default='ko')
     parser.add_argument('--common-files', type=str, default=None)
@@ -940,6 +951,10 @@ def main():
 
     args = parser.parse_args()
     logger.setLevel(args.log_level)
+
+    if args.server_model is None:
+        args.server_model = MODEL_MAP.get(args.model, 'Qwen/Qwen3-ASR-1.7B')
+        logger.info('server_model 자동 추론: --model %s → %s', args.model, args.server_model)
 
     if not os.path.isdir(args.test_dir):
         logger.error('Test directory not found: %s', args.test_dir)

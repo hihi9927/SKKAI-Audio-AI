@@ -63,6 +63,8 @@ except ImportError:
 
 _SERVER_DIR = os.path.dirname(os.path.abspath(__file__))
 _LOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../logs/asr_server.log")
+
+
 _BASELINE_MODEL_IDS = {
     "qwen/qwen3-asr-1.7b",
     "qwen3-asr-1.7b",
@@ -515,7 +517,8 @@ class Qwen3ASRStreamingHandler:
             "committed_display": "",
             "committed_seg_count": 0,
             "audio_anchor_sec": self.current_time,
-
+            "vad_speech_detected": False,
+            "last_committed_asr_text": "",  # cross-call 반복 억제용
         }
 
     def _reset_stream_slot(self, slot_key: str):
@@ -716,6 +719,7 @@ class Qwen3ASRStreamingHandler:
         )
         sentences_to_commit = []
         remaining = uncommitted
+        _last_extracted_display = None  # 한 번의 호출 내 연속 중복 억제용
 
         while True:
             # 우선순위 1: <SEG>
@@ -740,11 +744,22 @@ class Qwen3ASRStreamingHandler:
             after = remaining[match.end():]
             # 커서 추적을 위해 raw sentence(<SEG> 포함) 사용
             sentence = remaining[:match.end()].strip()
-            if sentence.replace("<SEG>", "").strip():
-                sentences_to_commit.append((sentence, trigger))
+            sentence_display_check = sentence.replace("<SEG>", "").strip()
+            if sentence_display_check:
+                if sentence_display_check == _last_extracted_display:
+                    # 같은 호출 내 연속 반복(hallucination loop) → 억제
+                    self.log.info(f"[rep-dedup] slot={slot_key} text={sentence_display_check!r}")
+                else:
+                    sentences_to_commit.append((sentence, trigger))
+                    _last_extracted_display = sentence_display_check
             remaining = after
 
         if sentences_to_commit:
+            if self.vad_enabled and not slot["vad_speech_detected"]:
+                self.log.info(
+                    f"[vad-gate] slot={slot_key} suppressed {len(sentences_to_commit)} seg(s): no speech detected"
+                )
+                return
             self.log.info(
                 f"[seg-detect] slot={slot_key} raw={current_text[:120]}..."
             )
@@ -752,6 +767,13 @@ class Qwen3ASRStreamingHandler:
             for sentence_raw, trigger_reason in sentences_to_commit:
                 # <SEG>는 사용자 출력/번역에서 제거
                 sentence_display = sentence_raw.replace("<SEG>", "").strip()
+                # 호출 간(cross-call) 반복 억제: 마지막 커밋과 동일 텍스트이고 오디오 경과가 짧으면 스킵
+                _audio_span = self.current_time - slot.get("audio_anchor_sec", 0.0)
+                if sentence_display == slot.get("last_committed_asr_text", "") and _audio_span < 1.0:
+                    self.log.info(
+                        f"[cross-dedup] slot={slot_key} span={_audio_span:.2f}s text={sentence_display!r}"
+                    )
+                    continue
                 sentence_display, translation, final_lang, extra = await self._correct_and_translate(
                     sentence_display, current_lang, self.current_time
                 )
@@ -806,6 +828,7 @@ class Qwen3ASRStreamingHandler:
                     ).strip()
                     slot["committed_seg_count"] += len(ready_to_emit)
                     slot["audio_anchor_sec"] = self.current_time
+                    slot["last_committed_asr_text"] = ready_to_emit[-1]["original"]
 
             for payload in ready_to_emit:
                 effective_reason = force_reason or payload["trigger_reason"]
@@ -847,6 +870,9 @@ class Qwen3ASRStreamingHandler:
                     self.log.info(
                         f"[vad] speech end detected; target_samples={end_sample}"
                     )
+                    self.stream_slots[self.active_slot]["vad_speech_detected"] = True
+                elif speech_dict is not None and "start" in speech_dict:
+                    self.stream_slots[self.active_slot]["vad_speech_detected"] = True
                 offset += VAD_WINDOW_SIZE_SAMPLES
         except Exception as e:
             self.log.warning(f"[vad] error, disabling for this session: {e}")
