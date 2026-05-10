@@ -502,7 +502,20 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         try:
             remote_addr = self.websocket.remote_address
             logger.info("New connection from %s", remote_addr)
-            await self.send_message("hello", message="Qwen3-ASR Streaming Server (FCL)")
+            await self.send_message(
+                "hello",
+                message="Qwen3-ASR Streaming Server (FCL)",
+                serverConfig={
+                    "model": self.config.model_path,
+                    "chunk_size_sec": self.config.chunk_size_sec,
+                    "enforce_eager": self.config.enforce_eager,
+                    "enable_gpt_translation": self.config.enable_gpt_translation,
+                    "translation_model": self.config.translation_model,
+                    "context_window": self.config.context_window,
+                    "enable_correction": self.config.enable_correction,
+                    "correction_model": self.config.correction_model,
+                },
+            )
             if self._shared_http_session is not None:
                 self.http_session = self._shared_http_session
             else:
