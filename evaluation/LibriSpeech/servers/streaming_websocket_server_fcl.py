@@ -233,8 +233,8 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
                         key, slot["state"].chunk_id, audio_pos, ts_elapsed,
                         chunk_decode_start_elapsed or -1, chunk_decode_sec,
                     )
-            elif force_reason in ("vad", "finish"):
-                # VAD/finish path: elapsed/decode_start는 stale → encode_sec/decode_sec 기록 금지
+            elif t0 is None:
+                # VAD/finish/timeout path: elapsed/decode_start는 stale → encode_sec/decode_sec 기록 금지
                 # SEG가 텍스트에 있으면 audio_sec만 기록해 seg_audio_sec 마커 표시에 사용
                 raw = (self._slot(slot_key)["state"].text or "").strip()
                 if "<SEG>" in raw:

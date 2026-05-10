@@ -596,6 +596,7 @@ class Qwen3ASRStreamingHandler:
 
         # 생성 중 lock 미보유 — state.text는 await 없는 단순 대입이므로 asyncio 안전
         await self.asr.streaming_transcribe(chunk, slot["state"], lora_request=lora_request, on_seg=_on_seg)
+        await self._process_slot_updates(slot_key)
 
         async with self.asr_lock:
             self.asr_processed_cursor = self.sample_cursor

@@ -172,7 +172,9 @@ python evaluation/AMI/test_qwen3_ami.py \
   --words-dir evaluation/AMI/words \
   --model "baseline(1.0.0)" \
   --scope sample \
-  --tag run_01
+  --tag run_01 \
+  --description "테스트 설명" \
+  --trailing-silence-ms 5000
 ```
 
 > **참고:** 현재 저장소의 AMI 데이터는 오디오가 `evaluation/AMI/AMI/`, 단어 XML이 `evaluation/AMI/words/` 아래에 있습니다.  

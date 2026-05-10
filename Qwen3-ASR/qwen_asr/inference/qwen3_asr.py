@@ -824,7 +824,13 @@ class Qwen3ASRModel:
                         await on_seg(state)
 
             gen_text = final.outputs[0].text
-            state._raw_decoded = (prefix + gen_text) if prefix is not None else gen_text
+            if prefix:
+                prev_ids = self.processor.tokenizer.encode(state._raw_decoded)
+                committed_ids = prev_ids[:-state.unfixed_token_num]
+                committed_text = self.processor.tokenizer.decode(committed_ids)
+                state._raw_decoded = committed_text + gen_text
+            else:
+                state._raw_decoded = gen_text
             lang, txt = parse_asr_output(state._raw_decoded, user_language=state.force_language)
             state.language = lang
             state.text = txt
@@ -892,7 +898,13 @@ class Qwen3ASRModel:
         async for out in self.model.generate(inp, sp, request_id=request_id, lora_request=lora_request):
             final = out
         gen_text = final.outputs[0].text
-        state._raw_decoded = (prefix + gen_text) if prefix is not None else gen_text
+        if prefix:
+            prev_ids = self.processor.tokenizer.encode(state._raw_decoded)
+            committed_ids = prev_ids[:-state.unfixed_token_num]
+            committed_text = self.processor.tokenizer.decode(committed_ids)
+            state._raw_decoded = committed_text + gen_text
+        else:
+            state._raw_decoded = gen_text
         lang, txt = parse_asr_output(state._raw_decoded, user_language=state.force_language)
         state.language = lang
         state.text = txt
