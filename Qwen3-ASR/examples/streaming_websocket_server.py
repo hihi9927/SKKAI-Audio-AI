@@ -1028,6 +1028,16 @@ class Qwen3ASRStreamingHandler:
                 message="Qwen3-ASR Streaming Server",
                 modelPath=self.config.model_path,
                 modelId=self.config.model_path,
+                serverConfig={
+                    "model": self.config.model_path,
+                    "chunk_size_sec": self.config.chunk_size_sec,
+                    "enforce_eager": self.config.enforce_eager,
+                    "enable_gpt_translation": self.config.enable_gpt_translation,
+                    "translation_model": self.config.translation_model,
+                    "context_window": self.config.context_window,
+                    "enable_correction": self.config.enable_correction,
+                    "correction_model": self.config.correction_model,
+                },
             )
             timeout = aiohttp.ClientTimeout(total=3)
             self.http_session = aiohttp.ClientSession(timeout=timeout)

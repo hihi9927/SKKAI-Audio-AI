@@ -138,6 +138,20 @@ async def recv_type(ws, expected_types, timeout=8.0, ignore_types=None):
     raise TimeoutError(f'Expected message types {sorted(expected_types)} not received in {timeout}s')
 
 
+async def fetch_server_config(ws_url):
+    """서버의 hello 메시지에서 serverConfig 필드를 읽어 반환."""
+    try:
+        async with websockets.connect(ws_url, ping_interval=None, open_timeout=10) as ws:
+            msg = await asyncio.wait_for(ws.recv(), timeout=8)
+            if isinstance(msg, str):
+                data = json.loads(msg)
+                if data.get('type') == 'hello':
+                    return data.get('serverConfig')
+    except Exception as e:
+        logger.warning('서버 config 수집 실패: %s', e)
+    return None
+
+
 async def run_protocol_smoke(ws_url):
     logger.info('Running protocol smoke test...')
 
@@ -948,16 +962,9 @@ def main():
         random.seed(args.random_seed)
         files = sorted(random.sample(sorted(files, key=lambda x: x['file_id']), args.random_sample), key=lambda x: x['file_id'])
 
-    # 결과 폴더 결정 및 meta/description 저장
+    # 결과 폴더 결정
     run_dir = resolve_run_dir(args)
     logger.info('Results → %s', run_dir)
-
-    meta = {
-        'timestamp': datetime.now().isoformat(),
-        'cli_args': {k: str(v) if isinstance(v, Path) else v for k, v in vars(args).items()},
-    }
-    with open(run_dir / 'meta.json', 'w', encoding='utf-8') as f:
-        json.dump(meta, f, indent=2, ensure_ascii=False)
 
     if args.description:
         (run_dir / 'description.txt').write_text(args.description, encoding='utf-8')
@@ -988,6 +995,16 @@ def main():
 
         if not args.skip_protocol_smoke:
             asyncio.run(run_protocol_smoke(ws_url))
+
+        # hello 메시지에서 서버 config 수집 후 meta.json 저장
+        server_config = asyncio.run(fetch_server_config(ws_url))
+        meta = {
+            'timestamp': datetime.now().isoformat(),
+            'cli_args': {k: str(v) if isinstance(v, Path) else v for k, v in vars(args).items()},
+            'server_config': server_config,
+        }
+        with open(run_dir / 'meta.json', 'w', encoding='utf-8') as f:
+            json.dump(meta, f, indent=2, ensure_ascii=False)
 
         results = asyncio.run(
             process_batch(
