@@ -40,7 +40,7 @@ from tqdm import tqdm
 import scipy.signal as signal
 import torch
 import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
 from transformers import WhisperFeatureExtractor
 
 _REPO_ROOT = Path(__file__).resolve().parents[2] / "Qwen3-ASR"
@@ -111,23 +111,33 @@ def make_uniform_label(n_frames: int, boundary_frames: list) -> torch.Tensor:
 # ---------------------------------------------------------------------------
 
 class CIFWeightPredictor(nn.Module):
-    """encoder mode: frozen encoder output (T, 2048) → temporal conv → (T,).
-    단순 Linear 대신 Conv1d를 추가해 인접 프레임 맥락(무음·운율 변화 등)을 활용."""
+    """encoder mode: frozen encoder output (T, 2048) → temporal conv → (T,) + qty_pred.
+
+    local weights: Conv1d 7-frame 컨텍스트 → 각 프레임의 경계 가중치
+    qty_head: 시퀀스 전체 mean-pool → n_segs 직접 예측 (전역 컨텍스트)"""
     def __init__(self, d_model: int = 2048, hidden: int = 128, kernel_size: int = 7):
         super().__init__()
         self.proj = nn.Linear(d_model, hidden)
         self.conv = nn.Conv1d(hidden, hidden, kernel_size=kernel_size,
                               padding=kernel_size // 2)
         self.out = nn.Linear(hidden, 1)
+        self.qty_head = nn.Sequential(
+            nn.Linear(hidden, 64),
+            nn.GELU(),
+            nn.Linear(64, 1),
+            nn.Softplus(),              # 항상 양수 (n_segs ≥ 0)
+        )
         self.act = nn.GELU()
         self.sigmoid = nn.Sigmoid()
 
-    def forward(self, encoder_output: torch.Tensor) -> torch.Tensor:
+    def forward(self, encoder_output: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         # encoder_output: (T, d_model)
         x = self.act(self.proj(encoder_output))          # (T, hidden)
         x = x.T.unsqueeze(0)                             # (1, hidden, T)
         x = self.act(self.conv(x)).squeeze(0).T          # (T, hidden)
-        return self.sigmoid(self.out(x)).squeeze(-1)     # (T,)
+        weights = self.sigmoid(self.out(x)).squeeze(-1)  # (T,)   로컬 경계 가중치
+        qty_pred = self.qty_head(x.mean(0)).squeeze(-1)  # scalar 전역 개수 예측
+        return weights, qty_pred
 
 
 class CIFMelPredictor(nn.Module):
@@ -161,12 +171,19 @@ def cif_loss(
     weights: torch.Tensor,
     labels: torch.Tensor,
     n_segs: int,
+    qty_pred: torch.Tensor | None = None,
     lambda_qty: float = 1.0,
     lambda_bnd: float = 1.0,
+    lambda_count: float = 1.0,
 ):
     qty = (weights.sum() - n_segs) ** 2
     bnd = nn.functional.mse_loss(weights, labels)
-    return lambda_qty * qty + lambda_bnd * bnd, qty.detach().item(), bnd.detach().item()
+    loss = lambda_qty * qty + lambda_bnd * bnd
+    cnt = weights.new_tensor(0.0)
+    if qty_pred is not None:
+        cnt = (qty_pred - float(n_segs)) ** 2
+        loss = loss + lambda_count * cnt
+    return loss, qty.detach().item(), bnd.detach().item(), cnt.detach().item()
 
 
 # ---------------------------------------------------------------------------
@@ -221,8 +238,10 @@ def collate_fn(batch):
 # Forward helper (mode 분기를 한 곳에서 처리)
 # ---------------------------------------------------------------------------
 
-def _forward(encoder, predictor, mel, mel_len, device, dtype) -> torch.Tensor:
-    """encoder mode / mel mode 공통 forward. weights (T,) 반환."""
+def _forward(encoder, predictor, mel, mel_len, device, dtype):
+    """encoder mode / mel mode 공통 forward.
+    encoder mode: (weights, qty_pred) 반환
+    mel mode:     (weights, None) 반환"""
     if encoder is not None:
         # encoder mode: mel → frozen encoder → (T, 2048) → CIFWeightPredictor
         with torch.no_grad():
@@ -231,10 +250,10 @@ def _forward(encoder, predictor, mel, mel_len, device, dtype) -> torch.Tensor:
                 feature_lens=torch.tensor([mel_len], device=device, dtype=torch.long),
             )
         features = enc_out.last_hidden_state.squeeze(0).float()  # (T, 2048)
-        return predictor(features)
+        return predictor(features)   # (weights, qty_pred)
     else:
-        # mel mode: mel (128, T_mel) → CIFMelPredictor
-        return predictor(mel.float())
+        # mel mode: CIFMelPredictor는 qty_head 없음
+        return predictor(mel.float()), None
 
 
 # ---------------------------------------------------------------------------
@@ -289,8 +308,19 @@ def train(args):
     )
 
     train_dataset = CIFDataset(args.train_data, feature_extractor)
-    train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True,
-                              collate_fn=collate_fn, num_workers=0)
+    if args.balanced:
+        nsegs_list = [len(r["seg_timestamps"]) for r in train_dataset.records]
+        from collections import Counter
+        counts = Counter(nsegs_list)
+        sample_weights = [1.0 / counts[n] for n in nsegs_list]
+        sampler = WeightedRandomSampler(sample_weights, num_samples=len(sample_weights),
+                                        replacement=True)
+        train_loader = DataLoader(train_dataset, batch_size=1, sampler=sampler,
+                                  collate_fn=collate_fn, num_workers=0)
+        print(f"  WeightedRandomSampler: {dict(sorted(counts.items()))}")
+    else:
+        train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True,
+                                  collate_fn=collate_fn, num_workers=0)
 
     val_loader = None
     if args.val_data and Path(args.val_data).exists():
@@ -314,7 +344,9 @@ def train(args):
 
     if args.resume:
         ckpt = torch.load(args.resume, map_location=device)
-        predictor.load_state_dict(ckpt["state_dict"])
+        missing, unexpected = predictor.load_state_dict(ckpt["state_dict"], strict=False)
+        if missing:
+            print(f"  [resume] new params (random init): {missing}")
         if "optimizer" in ckpt:
             optimizer.load_state_dict(ckpt["optimizer"])
         start_epoch = ckpt.get("epoch", 0) + 1
@@ -326,7 +358,7 @@ def train(args):
     for epoch in epoch_bar:
         # ── train ──
         predictor.train()
-        epoch_loss = epoch_qty = epoch_bnd = 0.0
+        epoch_loss = epoch_qty = epoch_bnd = epoch_cnt = 0.0
         epoch_gnorm = 0.0
         n_samples = n_steps = 0
         last_gnorm = 0.0
@@ -338,24 +370,24 @@ def train(args):
             mel = mel.to(device=device, dtype=dtype)
             labels = labels.to(device=device, dtype=torch.float32)
 
-            weights = _forward(encoder, predictor, mel, mel_len, device, dtype)
+            weights, qty_pred = _forward(encoder, predictor, mel, mel_len, device, dtype)
 
             T = weights.shape[0]
             if labels.shape[0] != T:
                 labels = labels[:T] if labels.shape[0] > T else \
                     torch.cat([labels, torch.zeros(T - labels.shape[0], device=device)])
 
-            loss, qty, bnd = cif_loss(weights, labels, n_segs,
-                                      args.lambda_qty, args.lambda_bnd)
+            loss, qty, bnd, cnt = cif_loss(weights, labels, n_segs, qty_pred,
+                                            args.lambda_qty, args.lambda_bnd, args.lambda_count)
             (loss / args.accum_steps).backward()
 
             epoch_loss += loss.item()
             epoch_qty += qty
             epoch_bnd += bnd
+            epoch_cnt += cnt
             n_samples += 1
 
             if (step + 1) % args.accum_steps == 0:
-                # clip_grad_norm_ with inf returns the norm without clipping
                 last_gnorm = nn.utils.clip_grad_norm_(predictor.parameters(), float("inf")).item()
                 epoch_gnorm += last_gnorm
                 n_steps += 1
@@ -366,6 +398,7 @@ def train(args):
             train_bar.set_postfix(
                 loss=f"{epoch_loss/n_samples:.4f}",
                 qty=f"{epoch_qty/n_samples:.4f}",
+                cnt=f"{epoch_cnt/n_samples:.4f}",
                 bnd=f"{epoch_bnd/n_samples:.4f}",
                 gnorm=f"{last_gnorm:.3f}",
             )
@@ -379,7 +412,7 @@ def train(args):
         train_loss = epoch_loss / max(n_samples, 1)
 
         # ── validation ──
-        val_loss = val_qty = val_bnd = 0.0
+        val_loss = val_qty = val_bnd = val_cnt = 0.0
         if val_loader is not None:
             predictor.eval()
             with torch.no_grad():
@@ -389,31 +422,34 @@ def train(args):
                     mel = mel.to(device=device, dtype=dtype)
                     labels = labels.to(device=device, dtype=torch.float32)
 
-                    weights = _forward(encoder, predictor, mel, mel_len, device, dtype)
+                    weights, qty_pred = _forward(encoder, predictor, mel, mel_len, device, dtype)
 
                     T = weights.shape[0]
                     if labels.shape[0] != T:
                         labels = labels[:T] if labels.shape[0] > T else \
                             torch.cat([labels, torch.zeros(T - labels.shape[0], device=device)])
 
-                    _, qty, bnd = cif_loss(weights, labels, n_segs,
-                                           args.lambda_qty, args.lambda_bnd)
+                    _, qty, bnd, cnt = cif_loss(weights, labels, n_segs, qty_pred,
+                                                args.lambda_qty, args.lambda_bnd, args.lambda_count)
                     val_qty += qty
                     val_bnd += bnd
-                    val_loss += args.lambda_qty * qty + args.lambda_bnd * bnd
+                    val_cnt += cnt
+                    val_loss += args.lambda_qty * qty + args.lambda_bnd * bnd + args.lambda_count * cnt
 
             n_val = len(val_loader)
             val_loss /= n_val
             val_qty /= n_val
             val_bnd /= n_val
-            val_tag = f"  val={val_loss:.4f} (qty={val_qty:.4f} bnd={val_bnd:.4f})"
+            val_cnt /= n_val
+            val_tag = f"  val={val_loss:.4f} (qty={val_qty:.4f} cnt={val_cnt:.4f} bnd={val_bnd:.4f})"
         else:
             val_tag = ""
 
         avg_gnorm = epoch_gnorm / max(n_steps, 1)
         epoch_bar.write(
             f"Epoch {epoch}/{args.epochs}  "
-            f"train={train_loss:.4f} (qty={epoch_qty/n_samples:.4f} bnd={epoch_bnd/n_samples:.4f})  "
+            f"train={train_loss:.4f} "
+            f"(qty={epoch_qty/n_samples:.4f} cnt={epoch_cnt/n_samples:.4f} bnd={epoch_bnd/n_samples:.4f})  "
             f"gnorm={avg_gnorm:.3f}"
             f"{val_tag}"
         )
@@ -423,10 +459,12 @@ def train(args):
             "global_step": global_step,
             "train_loss": train_loss,
             "train_qty": epoch_qty / n_samples,
+            "train_cnt": epoch_cnt / n_samples,
             "train_bnd": epoch_bnd / n_samples,
             "gnorm": avg_gnorm,
             "val_loss": val_loss if val_loader else None,
             "val_qty": val_qty if val_loader else None,
+            "val_cnt": val_cnt if val_loader else None,
             "val_bnd": val_bnd if val_loader else None,
         }
         log_file.write(json.dumps(log_entry) + "\n")
@@ -490,12 +528,16 @@ def main():
     parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--lambda-qty", type=float, default=1.0,
-                        help="quantity loss weight")
+                        help="quantity loss weight (Σw - n_segs)²")
     parser.add_argument("--lambda-bnd", type=float, default=1.0,
-                        help="boundary loss weight")
+                        help="boundary loss weight MSE(w, label)")
+    parser.add_argument("--lambda-count", type=float, default=1.0,
+                        help="global count head loss weight (qty_pred - n_segs)²")
     parser.add_argument("--accum-steps", type=int, default=32,
                         help="gradient accumulation (effective batch size)")
     parser.add_argument("--save-every", type=int, default=5)
+    parser.add_argument("--balanced", action="store_true",
+                        help="n_segs 별 균등 샘플링 (WeightedRandomSampler)")
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument(
         "--resume",
