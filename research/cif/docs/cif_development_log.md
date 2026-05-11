@@ -215,16 +215,162 @@ decoder 없이 boundary만 뽑아야 하므로 boundary_loss로 직접 지도.
 
 ---
 
+## mel mode 실험 (인코더 없는 경량 버전)
+
+### 동기
+
+인코더(2048-dim Transformer)를 거치지 않고 mel spectrogram에서 직접 weight를 예측하는 경량 버전 탐색.
+
+### 구현: `CIFMelPredictor`
+
+```python
+class CIFMelPredictor(nn.Module):
+    # mel (128, T) → Conv1d 스택 → weights (T',)
+    # 인코더 불필요, 추론 빠름
+```
+
+`train_one_seg.py`에 `--mode mel` / `--mel-hidden` 인자 추가.
+
+### 결과 및 실패 원인 분석
+
+| 지표 | 값 |
+|---|---|
+| fire_acc | 0.999 |
+| pos_mae | 22.33 frames (≈ 오디오 시작) |
+
+fire_acc는 거의 1인데 pos_mae가 최악 → **항상 오디오 시작점에서 즉시 fire**.
+
+**원인**: uniform label은 클립 전체 길이(global context)를 알아야 per-frame weight 크기를 보정할 수 있다.
+- 정답 label[t] = 1 / seg_frame: "seg_frame이 클수록 각 프레임의 weight는 작아야 한다"
+- 로컬 Conv1d는 전체 길이를 모름 → 학습 결과로 출력이 상수(≈ 1/mean_seg_frame)로 수렴
+- 상수 weight → cumsum이 바로 1.0 돌파 → frame 0에서 fire
+
+---
+
+## Spike Label 추가
+
+uniform label 실패 해결책. 로컬 conv가 학습 가능한 형태로 레이블 재설계.
+
+```python
+def make_spike_label(n_frames, seg_frame, sigma=2.0):
+    # seg_frame 중심 Gaussian, sum=1
+    frames = torch.arange(n_frames, dtype=torch.float32)
+    label = torch.exp(-0.5 * ((frames - seg_frame) / sigma) ** 2)
+    return label / label.sum()
+```
+
+**핵심 차이**: uniform label은 "각 프레임에 적절한 weight를 배분하라"는 global normalization 과제. spike label은 "이 프레임이 경계처럼 들리는지"를 묻는 local discrimination 과제 → 로컬 conv로 학습 가능.
+
+`train_one_seg.py`에 `--label-type spike` / `--label-sigma` 인자 추가.
+
+---
+
+## Encoder Linear Probe (`probe_encoder.py`, `probe_linear.py`)
+
+### 가설
+
+"Qwen3-ASR 인코더는 SEG 위치를 이미 암묵적으로 알고 있다."
+
+디코더가 <SEG>를 뱉는다면, 그 정보는 인코더 feature에 이미 들어 있어야 한다.
+
+### probe_encoder.py: 판별력 분석
+
+SEG 인접 프레임(pos)과 비인접 프레임(neg)의 인코더 특징을 비교.
+
+```
+discriminability[d] = |mean_pos[d] - mean_neg[d]| / pooled_std[d]
+```
+
+**결과**
+
+| 지표 | 값 |
+|---|---|
+| max_disc | 1.282 |
+| mean_acc (top-20 dims) | 0.737 |
+
+- SEG 정보는 수백 차원에 분산 (단일 차원으로 분리 불가)
+- sharp elbow 없음 → PCA/선형 결합으로 접근 필요
+
+### probe_linear.py: Logistic Regression Probe
+
+모든 2048차원을 입력으로 로지스틱 회귀를 학습해 per-frame P(SEG|frame) 추정.
+
+**데이터**: 원본 멀티-SEG 오디오 (`data/train.jsonl`, `data/test.jsonl`)
+
+**추론 방식**:
+```python
+proba = clf.predict_proba(features)[:, 1]   # per-frame P(SEG)
+peaks, _ = find_peaks(proba, height=peak_thr, distance=3)
+# peaks → 예측 SEG 경계
+```
+
+**초기 결과 (oracle n_gt 방식)**: count_acc=1.000  
+→ oracle이 정답 개수를 아는 상황이라 의미 없음
+
+**threshold 방식으로 전환**: `sweep_peak_thr()`로 0.1→0.95 스윕, 최적 threshold 자동 선택.
+
+**주요 구현 사항**
+
+| 기능 | 내용 |
+|---|---|
+| activation cache | X.npy / y.npy / clips.pkl (18분 인코더 재실행 방지) |
+| solver | saga (verbose=1, 에폭별 출력) |
+| probe 저장 | `linear_probe.pkl` (clf + peak_thr) |
+| `--no-cache`, `--peak-thr` | 캐시 우회 / threshold 수동 지정 |
+
+---
+
+## 파이프라인 통합 검토 (브랜치: `feat/cif-probe-gate`)
+
+### 목표
+
+linear probe를 실제 STiTy 파이프라인에 붙여 인코더 실행 후 SEG 여부를 판단, **fire일 때만 디코더를 실행**한다.
+
+### vLLM v1 아키텍처 분석
+
+vLLM v1 내부에서 인코더-디코더 분리 지점 확인:
+
+```
+gpu_model_runner._preprocess():
+  _execute_mm_encoder()   → encoder_cache에 저장
+  _gather_mm_embeddings() → 캐시에서 꺼냄
+  embed_input_ids()       → 텍스트 임베딩과 합침
+  language_model.forward() → 디코더
+```
+
+인코더와 디코더 사이에 hook 포인트 존재 (`gpu_model_runner.py` line 2636–2637).
+
+### 제약: 별도 ZMQ 프로세스
+
+`world_size == 1`이면 `UniProcExecutor`를 쓰지만, `AsyncLLMEngine`은 항상 `AsyncMPClient`(ZMQ 소켓) 를 통해 **백그라운드 프로세스**에서 모델을 실행한다.
+
+| 접근법 | 가능 여부 |
+|---|---|
+| `audio_tower` forward hook | **불가** (별도 프로세스) |
+| `encoder_cache` 직접 접근 | **불가** (별도 프로세스 메모리) |
+| `gpu_model_runner.py` 수정 | **가능** (서브프로세스 내 probe 탑재) |
+| 메인 프로세스 별도 인코더 | **가능** (vLLM 미접촉, RAM +~3GB) |
+
+### 다음 단계
+
+두 가지 구현 옵션 검토 중:
+
+- **A**: 메인 프로세스에 transformers 인코더 별도 로드 → probe 실행 → fire 시에만 `streaming_transcribe()` 호출
+- **B**: `gpu_model_runner.py` 수정 → 서브프로세스 내에서 probe 실행 → decoder 완전 차단
+
+---
+
 ## 현재 상태
 
-- `train_one_seg.py`: one-seg 학습 중 (학습 안정적, bnd 빠르게 수렴)
-- `eval_one_seg.py`: 두 가지 평가 모드
-  - `one_seg`: 트림 청크 기준 pos_mae / fire_acc
-  - `streaming`: 원본 멀티-SEG 오디오에서 반복 commit 시뮬레이션
-- `eval_cif.py`: CIF / qty_head / k-peak 세 방식 동시 비교 가능
+- `train_one_seg.py`: encoder / mel 두 모드, uniform / spike 두 레이블 타입 지원
+- `eval_one_seg.py`: `one_seg` / `streaming` 두 가지 평가 모드
+- `eval_cif.py`: CIF / qty_head / k-peak 세 방식 동시 비교
 - `plot_cif.py`: CIF(빨강 ▼) + k-peak(주황 ▲) 동시 시각화
+- `probe_encoder.py`: 인코더 판별력 분석 (discriminability curve, heatmap)
+- `probe_linear.py`: logistic regression probe (activation cache, threshold sweep, probe 저장)
 
 ## 다음 방향
 
-- one-seg 학습 완료 후 `eval_one_seg.py --mode streaming` 으로 멀티-SEG 성능 확인
-- streaming 시뮬레이션 pos_mae가 기존 k-peak(154ms)보다 개선되는지 검증
+- `probe_linear.py` threshold-based peak detection 실행 → real count_acc 검증
+- mel mode + spike label 학습 및 결과 비교
+- 파이프라인 통합 방식 (A/B) 결정 후 `feat/cif-probe-gate` 브랜치에서 구현

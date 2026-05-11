@@ -97,6 +97,18 @@ def make_uniform_label(n_frames: int, seg_frame: int) -> torch.Tensor:
     return label
 
 
+def make_spike_label(n_frames: int, seg_frame: int, sigma: float = 2.0) -> torch.Tensor:
+    """seg_frame 중심 Gaussian spike, sum=1.
+    local conv 모델용: 위치 정보 없이도 경계 근방 acoustic feature만으로 학습 가능.
+    sigma 단위: encoder frame (1f ≈ 80ms)."""
+    frames = torch.arange(n_frames, dtype=torch.float32)
+    label = torch.exp(-0.5 * ((frames - seg_frame) / sigma) ** 2)
+    s = label.sum()
+    if s > 0:
+        label = label / s
+    return label
+
+
 # ---------------------------------------------------------------------------
 # Model
 # ---------------------------------------------------------------------------
@@ -120,6 +132,29 @@ class CIFWeightPredictor(nn.Module):
         return self.sigmoid(self.out(x)).squeeze(-1)    # (T,)
 
 
+class CIFMelPredictor(nn.Module):
+    """mel mode: 3× Conv1d stride-2 (8x downsample) directly on mel → (T_enc,).
+    인코더 없이 acoustic 피처만으로 SEG 경계를 예측. context-independent (local conv only).
+    temporal resolution이 encoder mode와 동일하게 맞춰짐."""
+    def __init__(self, n_mel: int = 128, hidden: int = 256):
+        super().__init__()
+        self.convs = nn.Sequential(
+            nn.Conv1d(n_mel, hidden, kernel_size=3, stride=2, padding=1),
+            nn.GELU(),
+            nn.Conv1d(hidden, hidden, kernel_size=3, stride=2, padding=1),
+            nn.GELU(),
+            nn.Conv1d(hidden, hidden, kernel_size=3, stride=2, padding=1),
+            nn.GELU(),
+        )
+        self.linear  = nn.Linear(hidden, 1)
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, mel: torch.Tensor) -> torch.Tensor:
+        # mel: (n_mel, T_mel)
+        x = self.convs(mel.unsqueeze(0)).squeeze(0)         # (hidden, T_enc)
+        return self.sigmoid(self.linear(x.T)).squeeze(-1)   # (T_enc,)
+
+
 # ---------------------------------------------------------------------------
 # Loss
 # ---------------------------------------------------------------------------
@@ -141,10 +176,13 @@ def cif_loss(
 # ---------------------------------------------------------------------------
 
 class OneSegDataset(Dataset):
-    def __init__(self, jsonl_path: str, feature_extractor: WhisperFeatureExtractor):
+    def __init__(self, jsonl_path: str, feature_extractor: WhisperFeatureExtractor,
+                 label_type: str = "uniform", label_sigma: float = 2.0):
         with open(jsonl_path) as f:
             self.records = [json.loads(l) for l in f if l.strip()]
         self.fe = feature_extractor
+        self.label_type  = label_type
+        self.label_sigma = label_sigma
 
     def __len__(self):
         return len(self.records)
@@ -166,7 +204,11 @@ class OneSegDataset(Dataset):
 
         seg_t     = rec["seg_t"]
         seg_frame = min(max(round(seg_t * n_enc / dur), 0), n_enc - 1)
-        label     = make_uniform_label(n_enc, seg_frame)
+
+        if self.label_type == "spike":
+            label = make_spike_label(n_enc, seg_frame, sigma=self.label_sigma)
+        else:
+            label = make_uniform_label(n_enc, seg_frame)
 
         return mel, mel_len, label
 
@@ -199,13 +241,16 @@ def load_encoder(model_path: str, device: str, dtype: torch.dtype):
 # ---------------------------------------------------------------------------
 
 def _forward(encoder, predictor, mel, mel_len, device, dtype) -> torch.Tensor:
-    with torch.no_grad():
-        enc_out = encoder(
-            mel,
-            feature_lens=torch.tensor([mel_len], device=device, dtype=torch.long),
-        )
-    features = enc_out.last_hidden_state.squeeze(0).float()  # (T, 2048)
-    return predictor(features)  # (T,)
+    if encoder is not None:
+        with torch.no_grad():
+            enc_out = encoder(
+                mel,
+                feature_lens=torch.tensor([mel_len], device=device, dtype=torch.long),
+            )
+        features = enc_out.last_hidden_state.squeeze(0).float()  # (T, 2048)
+        return predictor(features)
+    else:
+        return predictor(mel.float())  # mel mode
 
 
 # ---------------------------------------------------------------------------
@@ -216,11 +261,18 @@ def train(args):
     device = torch.device(args.device)
     dtype  = torch.bfloat16
 
-    print(f"Loading encoder from {args.model} …")
-    encoder   = load_encoder(args.model, args.device, dtype)
-    predictor = CIFWeightPredictor(d_model=2048, hidden=args.hidden,
-                                   kernel_size=args.kernel_size).to(device)
-    print(f"  predictor params: {sum(p.numel() for p in predictor.parameters())}")
+    if args.ckpt_dir is None:
+        args.ckpt_dir = f"/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/checkpoints/{args.mode}/one_seg"
+
+    if args.mode == "encoder":
+        print(f"Loading encoder from {args.model} …")
+        encoder   = load_encoder(args.model, args.device, dtype)
+        predictor = CIFWeightPredictor(d_model=2048, hidden=args.hidden,
+                                       kernel_size=args.kernel_size).to(device)
+    else:
+        encoder   = None
+        predictor = CIFMelPredictor(n_mel=128, hidden=args.mel_hidden).to(device)
+    print(f"  mode={args.mode}  predictor params: {sum(p.numel() for p in predictor.parameters())}")
 
     optimizer = torch.optim.Adam(predictor.parameters(), lr=args.lr)
 
@@ -229,13 +281,17 @@ def train(args):
         chunk_length=30, n_fft=400, padding_value=0.0, return_attention_mask=True,
     )
 
-    train_dataset = OneSegDataset(args.train_data, feature_extractor)
+    label_kwargs = dict(label_type=args.label_type, label_sigma=args.label_sigma)
+    print(f"  label={args.label_type}" +
+          (f"  sigma={args.label_sigma}f" if args.label_type == "spike" else ""))
+
+    train_dataset = OneSegDataset(args.train_data, feature_extractor, **label_kwargs)
     train_loader  = DataLoader(train_dataset, batch_size=1, shuffle=True,
                                collate_fn=collate_fn, num_workers=0)
 
     val_loader = None
     if args.val_data and Path(args.val_data).exists():
-        val_dataset = OneSegDataset(args.val_data, feature_extractor)
+        val_dataset = OneSegDataset(args.val_data, feature_extractor, **label_kwargs)
         val_loader  = DataLoader(val_dataset, batch_size=1, shuffle=False,
                                  collate_fn=collate_fn, num_workers=0)
         print(f"  train={len(train_dataset)}  val={len(val_dataset)}")
@@ -379,8 +435,12 @@ def train(args):
             torch.save({
                 "epoch": epoch,
                 "global_step": global_step,
+                "mode": args.mode,
                 "hidden": args.hidden,
+                "mel_hidden": args.mel_hidden,
                 "kernel_size": args.kernel_size,
+                "label_type": args.label_type,
+                "label_sigma": args.label_sigma,
                 "state_dict": predictor.state_dict(),
                 "optimizer": optimizer.state_dict(),
                 "train_loss": train_loss,
@@ -408,15 +468,22 @@ def main():
     parser.add_argument("--train-data", default=str(_data / "train.jsonl"))
     parser.add_argument("--val-data",   default=str(_data / "val.jsonl"))
     parser.add_argument("--model",      default="Qwen/Qwen3-ASR-1.7B")
+    parser.add_argument("--mode",        choices=["encoder", "mel"], default="encoder")
     parser.add_argument("--hidden",     type=int,   default=128)
+    parser.add_argument("--mel-hidden", type=int,   default=256)
     parser.add_argument("--kernel-size",type=int,   default=7)
     parser.add_argument("--epochs",     type=int,   default=40)
     parser.add_argument("--lr",         type=float, default=1e-3)
     parser.add_argument("--lambda-qty", type=float, default=1.0)
     parser.add_argument("--lambda-bnd", type=float, default=1.0)
+    parser.add_argument("--label-type", choices=["uniform", "spike"], default="uniform",
+                        help="spike: mel mode에 적합. uniform: encoder mode에 적합.")
+    parser.add_argument("--label-sigma",type=float, default=2.0,
+                        help="spike label의 Gaussian sigma (encoder frame 단위, 1f≈80ms)")
     parser.add_argument("--accum-steps",type=int,   default=1)
     parser.add_argument("--save-every", type=int,   default=10)
-    parser.add_argument("--ckpt-dir",   default="checkpoints/encoder/one_seg")
+    parser.add_argument("--ckpt-dir",   default=None,
+                        help="저장 경로. 미지정 시 checkpoints/{mode}/one_seg")
     parser.add_argument("--resume",     default=None)
     parser.add_argument("--device",
                         default="cuda:0" if torch.cuda.is_available() else "cpu")

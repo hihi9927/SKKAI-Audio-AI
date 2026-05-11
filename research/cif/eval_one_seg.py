@@ -39,6 +39,7 @@ sys.path.insert(0, str(_SCRIPT_DIR))
 
 from train_one_seg import (
     CIFWeightPredictor,
+    CIFMelPredictor,
     load_audio_16k,
     mel_to_encoder_frames,
     load_encoder,
@@ -52,15 +53,23 @@ from train_one_seg import (
 
 def load_model(ckpt_path: str, device: str, model_path: str, dtype: torch.dtype):
     ckpt = torch.load(ckpt_path, map_location=device)
-    print(f"checkpoint: {ckpt_path}  epoch={ckpt.get('epoch','?')}  "
+    mode = ckpt.get("mode", "encoder")
+    print(f"checkpoint: {ckpt_path}  mode={mode}  epoch={ckpt.get('epoch','?')}  "
           f"val_loss={ckpt.get('val_loss','?'):.4f}")
 
-    encoder = load_encoder(model_path, device, dtype)
-    predictor = CIFWeightPredictor(
-        d_model=2048,
-        hidden=ckpt.get("hidden", 128),
-        kernel_size=ckpt.get("kernel_size", 7),
-    ).to(device)
+    if mode == "mel":
+        encoder = None
+        predictor = CIFMelPredictor(
+            n_mel=128,
+            hidden=ckpt.get("mel_hidden", 256),
+        ).to(device)
+    else:
+        encoder = load_encoder(model_path, device, dtype)
+        predictor = CIFWeightPredictor(
+            d_model=2048,
+            hidden=ckpt.get("hidden", 128),
+            kernel_size=ckpt.get("kernel_size", 7),
+        ).to(device)
     predictor.load_state_dict(ckpt["state_dict"], strict=False)
     predictor.eval()
     return encoder, predictor
@@ -71,27 +80,35 @@ def load_model(ckpt_path: str, device: str, model_path: str, dtype: torch.dtype)
 # ---------------------------------------------------------------------------
 
 def run_model(audio: np.ndarray, encoder, predictor, fe, device, dtype) -> tuple[np.ndarray, float]:
-    """오디오 배열을 받아 weight 배열과 enc_frame_duration(초)을 반환."""
+    """오디오 배열을 받아 weight 배열과 frame_duration(초)을 반환."""
     dur = len(audio) / 16000.0
     out = fe(audio, sampling_rate=16000, return_tensors="pt", return_attention_mask=True)
     mel     = out["input_features"].squeeze(0)
     mel_len = int(out["attention_mask"].squeeze(0).sum().item())
     mel     = mel[:, :mel_len]
-    n_enc   = mel_to_encoder_frames(mel_len)
 
     mel_dev = mel.to(device=device, dtype=dtype)
-    with torch.no_grad():
-        from qwen_asr.core.transformers_backend import Qwen3ASRConfig
-        enc_out = encoder(
-            mel_dev,
-            feature_lens=torch.tensor([mel_len], device=device, dtype=torch.long),
-        )
-    features = enc_out.last_hidden_state.squeeze(0).float()
-    with torch.no_grad():
-        weights = predictor(features).cpu().numpy()
 
-    enc_frame_dur = dur / max(n_enc, 1)
-    return weights, enc_frame_dur
+    if encoder is None:
+        # mel mode: Conv1d on mel directly
+        with torch.no_grad():
+            weights = predictor(mel_dev.float()).cpu().numpy()
+        n_frames = len(weights)
+    else:
+        n_enc = mel_to_encoder_frames(mel_len)
+        with torch.no_grad():
+            from qwen_asr.core.transformers_backend import Qwen3ASRConfig
+            enc_out = encoder(
+                mel_dev,
+                feature_lens=torch.tensor([mel_len], device=device, dtype=torch.long),
+            )
+        features = enc_out.last_hidden_state.squeeze(0).float()
+        with torch.no_grad():
+            weights = predictor(features).cpu().numpy()
+        n_frames = n_enc
+
+    frame_dur = dur / max(n_frames, 1)
+    return weights, frame_dur
 
 
 def first_fire(weights: np.ndarray) -> int | None:
@@ -182,10 +199,15 @@ def simulate_streaming(
     audio: np.ndarray,
     encoder, predictor, fe, device, dtype,
     max_commits: int = 10,
+    max_window: float | None = None,
 ) -> list[float]:
     """
     오디오 전체를 스트리밍처럼 처리.
     Σw≥1 → commit_time 기록 → 그 시점부터 다시 시작.
+
+    max_window: 매 iteration마다 cursor 이후 최대 몇 초까지만 모델에 넘길지.
+                None이면 파일 끝까지 전부 넘김.
+                학습이 trimmed clip 기준이므로 학습 최대 clip 길이와 맞추는 게 좋음.
     반환: 감지된 commit time 목록(초, 오디오 시작 기준 절대값).
     """
     dur = len(audio) / 16000.0
@@ -194,7 +216,11 @@ def simulate_streaming(
 
     for _ in range(max_commits):
         start_sample = int(cursor * 16000)
-        chunk = audio[start_sample:]
+        if max_window is not None:
+            end_sample = min(start_sample + int(max_window * 16000), len(audio))
+            chunk = audio[start_sample:end_sample]
+        else:
+            chunk = audio[start_sample:]
         if len(chunk) < 1600:   # 0.1s 미만이면 종료
             break
 
@@ -234,6 +260,7 @@ def eval_streaming(args, encoder, predictor, fe, device, dtype):
             commits = simulate_streaming(
                 audio, encoder, predictor, fe, device, dtype,
                 max_commits=n_segs + 2,
+                max_window=args.max_window,
             )
             n_pred = len(commits)
 
@@ -297,6 +324,9 @@ def main():
                         help="미지정 시 mode에 따라 자동 선택")
     parser.add_argument("--model", default="Qwen/Qwen3-ASR-1.7B")
     parser.add_argument("--device", default="cuda:0" if torch.cuda.is_available() else "cpu")
+    parser.add_argument("--max-window", type=float, default=None,
+                        help="streaming 모드: 매 iteration 최대 오디오 길이(초). "
+                             "None=파일 끝까지. 학습 clip 길이와 맞추면 분포 일치.")
     args = parser.parse_args()
 
     if args.test_data is None:
