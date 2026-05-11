@@ -964,6 +964,19 @@ class Qwen3ASRStreamingHandler:
             # 잔여 버퍼(chunk_size 미만 tail audio)를 모델에 통과시킨 후 flush
             await self._on_vad_commit(target_audio_end_sec)
             await self._asr_finish_streaming(old_active)
+            _dbg_state = self.stream_slots[old_active]["state"]
+            _dbg_committed = self.stream_slots[old_active]["committed_display"]
+            _dbg_seg_count = self.stream_slots[old_active]["committed_seg_count"]
+            _dbg_uncommitted = self._uncommitted_from(
+                (_dbg_state.text or "").strip(), _dbg_committed, _dbg_seg_count
+            )
+            self.log.info(
+                f"[vad-dbg] slot={old_active} "
+                f"state.text={(_dbg_state.text or '')!r} | "
+                f"committed_display={_dbg_committed!r} | "
+                f"committed_seg_count={_dbg_seg_count} | "
+                f"uncommitted={_dbg_uncommitted!r}"
+            )
             await self._process_slot_updates(old_active, force_reason="vad")
             await self.flush_uncommitted(force=True, reason="vad", slot_key=old_active)
             self._reset_stream_slot(self.standby_slot)
