@@ -312,12 +312,30 @@ def eval_frame_level(clf, X_te, y_te: np.ndarray,
     }
 
 
-def eval_clip_level(clf, clips: list, pos_window: int, peak_thr: float = 0.5):
+def _detect_peaks(proba: np.ndarray, thr: float, method: str) -> np.ndarray:
+    """proba 시계열에서 SEG 후보 프레임 인덱스 반환."""
+    if method == "run":
+        from scipy.ndimage import label as ndlabel
+        binary         = (proba >= thr).astype(np.int32)
+        labeled, n_run = ndlabel(binary)
+        if n_run == 0:
+            return np.array([], dtype=np.int64)
+        return np.array([int(np.argmax(proba * (labeled == i)))
+                         for i in range(1, n_run + 1)], dtype=np.int64)
+    else:
+        from scipy.signal import find_peaks
+        peaks, _ = find_peaks(proba, distance=3, height=thr)
+        return peaks
+
+
+def eval_clip_level(clf, clips: list, pos_window: int, peak_thr: float = 0.5,
+                    peak_method: str = "peaks"):
     """
     클립 단위 검출 평가.
-    - one_seg : argmax → pos_mae, pos_acc@2f/@5f
-    - multi_seg: threshold 기반 peak detection → count_acc, count_mae, pos_mae
-      peak_thr: P(SEG) >= peak_thr 인 peak만 선택 (oracle n_gt 미사용)
+    - one_seg  : argmax → pos_mae, pos_acc@2f/@5f
+    - multi_seg: peak_method 방식으로 경계 검출 → count_acc, count_mae, pos_mae
+        peaks : scipy.find_peaks(distance=3, height=thr)
+        run   : proba >= thr 연속 구간별 argmax
     """
     from scipy.signal import find_peaks
 
@@ -326,6 +344,7 @@ def eval_clip_level(clf, clips: list, pos_window: int, peak_thr: float = 0.5):
     pos_mae_sum = 0.0
     pos_acc_2f = pos_acc_5f = 0
     count_acc = count_mae_sum = 0
+    over_n = under_n = 0   # 과검출 / 미검출 카운트
     pos_n = n = 0
     enc_frame_dur_last = 0.08
 
@@ -348,17 +367,24 @@ def eval_clip_level(clf, clips: list, pos_window: int, peak_thr: float = 0.5):
             pos_acc_2f  += int(err <= 2)
             pos_acc_5f  += int(err <= 5)
         else:
-            # threshold 기반 peak 선택 (oracle n_gt 미사용)
-            peaks, _ = find_peaks(proba, distance=3, height=peak_thr)
+            peaks  = _detect_peaks(proba, peak_thr, peak_method)
             n_pred = len(peaks)
 
-            count_acc     += int(n_pred == n_gt)
-            count_mae_sum += abs(n_pred - n_gt)
+            diff = n_pred - n_gt
+            count_acc     += int(diff == 0)
+            count_mae_sum += abs(diff)
+            if diff > 0:
+                over_n  += 1
+            elif diff < 0:
+                under_n += 1
 
-            bucket = by_nsegs.setdefault(n_gt, {"n": 0, "acc": 0, "mae": 0})
-            bucket["n"]   += 1
-            bucket["acc"] += int(n_pred == n_gt)
-            bucket["mae"] += abs(n_pred - n_gt)
+            bucket = by_nsegs.setdefault(n_gt, {"n": 0, "acc": 0, "mae": 0,
+                                                  "over": 0, "under": 0})
+            bucket["n"]     += 1
+            bucket["acc"]   += int(diff == 0)
+            bucket["mae"]   += abs(diff)
+            bucket["over"]  += int(diff > 0)
+            bucket["under"] += int(diff < 0)
 
             if n_pred == n_gt and n_gt > 0:
                 errs = [abs(p - g) for p, g in
@@ -375,6 +401,8 @@ def eval_clip_level(clf, clips: list, pos_window: int, peak_thr: float = 0.5):
     if is_multi:
         result["count_acc"]  = count_acc  / n
         result["count_mae"]  = count_mae_sum / n
+        result["over_rate"]  = over_n  / n   # 과검출 비율
+        result["under_rate"] = under_n / n   # 미검출 비율
         result["by_nsegs"]   = by_nsegs
     else:
         result["pos_acc_2f"] = pos_acc_2f / n
@@ -385,16 +413,17 @@ def eval_clip_level(clf, clips: list, pos_window: int, peak_thr: float = 0.5):
 
 # ---------------------------------------------------------------------------
 # Plots
-def sweep_peak_thr(clf, clips: list, thresholds=None, out_path=None):
+def sweep_peak_thr(clf, clips: list, thresholds=None, out_path=None,
+                   peak_method: str = "peaks"):
     """threshold 범위를 sweep해서 count_acc / pos_mae 변화를 시각화."""
-    from scipy.signal import find_peaks
     if thresholds is None:
         thresholds = np.arange(0.1, 0.95, 0.05)
 
     count_accs, pos_maes, count_maes = [], [], []
 
     for thr in thresholds:
-        r = eval_clip_level(clf, clips, pos_window=2, peak_thr=float(thr))
+        r = eval_clip_level(clf, clips, pos_window=2, peak_thr=float(thr),
+                            peak_method=peak_method)
         count_accs.append(r.get("count_acc", 0))
         count_maes.append(r.get("count_mae", 0))
         pos_maes.append(r["pos_mae_f"])
@@ -409,7 +438,7 @@ def sweep_peak_thr(clf, clips: list, thresholds=None, out_path=None):
                     label=f"best thr={thresholds[best_i]:.2f}  acc={count_accs[best_i]:.3f}")
     axes[0].set_xlabel("peak threshold")
     axes[0].set_ylabel("count_acc")
-    axes[0].set_title("count_acc vs peak threshold")
+    axes[0].set_title(f"count_acc vs peak threshold  [{peak_method}]")
     axes[0].legend(fontsize=8)
     axes[0].grid(alpha=0.3)
 
@@ -583,10 +612,15 @@ def main():
     parser.add_argument("--disc-path",  default="research/cif/probe_results/disc.npy",
                         help="--top-k 사용 시 disc.npy 경로")
     parser.add_argument("--out-dir",    default="research/cif/probe_results")
-    parser.add_argument("--peak-thr",   type=float, default=None,
+    parser.add_argument("--peak-thr",    type=float, default=None,
                         help="peak threshold (None=sweep해서 자동 결정)")
+    parser.add_argument("--peak-method", default="peaks",
+                        choices=["peaks", "run"],
+                        help="경계 검출 방식: peaks=find_peaks, run=연속구간 argmax")
     parser.add_argument("--no-save-probe", action="store_true",
                         help="probe 저장 안 함 (기본: 저장)")
+    parser.add_argument("--load-probe",  default=None,
+                        help="저장된 probe pkl 경로 — 학습 건너뜀 (eval/plot만 실행)")
     parser.add_argument("--cache-dir",  default=None,
                         help="activation 캐시 디렉토리 (None=캐시 사용 안 함)")
     parser.add_argument("--no-cache",   action="store_true",
@@ -671,12 +705,33 @@ def main():
         X_te = X_te[:, dim_mask]
         for c in test_clips:
             c["feats"] = c["feats"][:, dim_mask]
+        for c in train_clips:
+            c["feats"] = c["feats"][:, dim_mask]
 
-    # ── train ──
-    clf = train_probe(X_tr, y_tr)
+    # ── train (or load) ──
+    if args.load_probe:
+        with open(args.load_probe, "rb") as f:
+            saved = pickle.load(f)
+        clf      = saved["clf"]
+        dim_mask = saved.get("dim_mask", dim_mask)
+        print(f"  probe loaded: {args.load_probe}  arch={saved.get('arch', '?')}")
+    elif args.arch in _TEMPORAL_ARCHS:
+        clf = train_temporal_probe(
+            train_clips, args.arch, X_tr.shape[1],
+            args.pos_window, args.device, args.epochs, args.lr,
+        )
+    else:
+        clf = train_probe(X_tr, y_tr)
+
+    is_temporal = args.arch in _TEMPORAL_ARCHS
 
     # ── eval ──
-    frame_res = eval_frame_level(clf, X_te, y_te)
+    if is_temporal:
+        proba_te = np.concatenate([clf.predict_proba(c["feats"])[:, 1]
+                                   for c in test_clips])
+        frame_res = eval_frame_level(clf, None, y_te, proba=proba_te)
+    else:
+        frame_res = eval_frame_level(clf, X_te, y_te)
     is_multi  = any(len(c["seg_frames"]) > 1 for c in test_clips)
 
     # threshold sweep → best_thr 결정
@@ -686,16 +741,18 @@ def main():
         best_peak_thr = sweep_peak_thr(
             clf, test_clips,
             out_path=out_dir / "probe_thr_sweep.png",
+            peak_method=args.peak_method,
         )
     elif best_peak_thr is None:
         best_peak_thr = 0.5
 
     clip_res = eval_clip_level(clf, test_clips, args.pos_window,
-                               peak_thr=best_peak_thr)
+                               peak_thr=best_peak_thr,
+                               peak_method=args.peak_method)
 
     dims_used = args.top_k if args.top_k else X_tr.shape[1]
     print(f"\n{'='*56}")
-    print(f"  Linear probe  dims={dims_used}  pos_window=±{args.pos_window}f"
+    print(f"  [{args.arch}]  dims={dims_used}  pos_window=±{args.pos_window}f"
           + (f"  peak_thr={best_peak_thr:.2f}" if is_multi else ""))
     print(f"{'─'*56}")
     print(f"  [Frame-level]")
@@ -707,18 +764,23 @@ def main():
           f"P={frame_res['best_prec']:.3f}  R={frame_res['best_rec']:.3f})")
     print(f"{'─'*56}")
     if is_multi:
-        print(f"  [Clip-level peak detection  (multi-SEG, thr={best_peak_thr:.2f})]")
+        print(f"  [Clip-level {args.peak_method}  (multi-SEG, thr={best_peak_thr:.2f})]")
         print(f"    count_acc    : {clip_res['count_acc']:.3f}")
         print(f"    count_mae    : {clip_res['count_mae']:.3f}")
+        print(f"    over_rate    : {clip_res['over_rate']:.3f}  (과검출)")
+        print(f"    under_rate   : {clip_res['under_rate']:.3f}  (미검출)")
         print(f"    pos_mae      : {clip_res['pos_mae_f']:.2f} f  "
               f"≈ {clip_res['pos_mae_ms']:.0f} ms  (count 일치 샘플)")
         print(f"    n_clips      : {clip_res['n']}")
         if clip_res.get("by_nsegs"):
-            print(f"\n  [ n_segs별 count_acc ]")
+            print(f"\n  [ n_segs별 count_acc / over / under ]")
             for k in sorted(clip_res["by_nsegs"]):
                 b = clip_res["by_nsegs"][k]
                 print(f"    n_segs={k}  n={b['n']:4d}  "
-                      f"acc={b['acc']/b['n']:.3f}  mae={b['mae']/b['n']:.2f}")
+                      f"acc={b['acc']/b['n']:.3f}  "
+                      f"over={b['over']/b['n']:.3f}  "
+                      f"under={b['under']/b['n']:.3f}  "
+                      f"mae={b['mae']/b['n']:.2f}")
     else:
         print(f"  [Clip-level argmax detection  (one-SEG)]")
         print(f"    pos_mae      : {clip_res['pos_mae_f']:.2f} f  "
@@ -730,18 +792,19 @@ def main():
 
     # ── plots ──
     print("\nPlotting …")
-    plot_pr_curve(clf, X_te, y_te,
-                  out_path=out_dir / "probe_pr_curve.png")
+    plot_pr_curve(clf, X_te if not is_temporal else test_clips, y_te,
+                  out_path=out_dir / "probe_pr_curve.png",
+                  is_temporal=is_temporal)
     plot_clip_examples(clf, test_clips, n_show=6,
                        out_path=out_dir / "probe_clip_examples.png")
     plot_error_hist(clf, test_clips,
                     out_path=out_dir / "probe_error_hist.png")
 
     if not args.no_save_probe:
-        probe_path = out_dir / "linear_probe.pkl"
+        probe_path = out_dir / f"probe_{args.arch}.pkl"
         with open(probe_path, "wb") as f:
             pickle.dump({"clf": clf, "dim_mask": dim_mask,
-                         "peak_thr": best_peak_thr}, f)
+                         "peak_thr": best_peak_thr, "arch": args.arch}, f)
         print(f"  probe saved: {probe_path}")
 
     print("Done.")
