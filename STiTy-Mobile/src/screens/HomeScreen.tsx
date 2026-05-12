@@ -16,7 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
-import Svg, { Circle, Path, Rect, Ellipse } from 'react-native-svg';
+import Svg, { Circle, Path, Rect, Ellipse, Text as SvgText } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { LANGUAGES, Language, CONVERSATION_MODES } from '../constants/languages';
 import { useWebSocketContext } from '../context/WebSocketContext';
@@ -42,17 +42,18 @@ const UI_STRINGS: Record<string, {
   stop: string; resume: string; back: string; cancel: string;
   endTitle: string; endMsg: string; end: string;
   errTitle: string; langMustDiffer: string; peerPickerTitle: string; connectionFailed: string;
+  waitingForSlot: string; capacityFullMsg: string; capacityFreeMsg: string;
 }> = {
-  en: { peerLanguage: 'PEER LANGUAGE', mode: 'MODE', modes: { 'mode-1': 'Speaker', 'mode-2': 'Earphone', 'mode-3': 'Both' }, collapse: 'Collapse ▲', configureAndStart: 'Configure and tap Start', startSpeaking: 'Start speaking', listening: 'Listening...', start: 'Start', connectingServer: 'Connecting to server...', startingServer: 'Starting server...', stop: 'Stop', resume: 'Resume', back: 'Back', cancel: 'Cancel', endTitle: 'End conversation', endMsg: 'Do you want to end the conversation?', end: 'End', errTitle: 'Error', langMustDiffer: 'My language and peer language must be different.', peerPickerTitle: 'Peer Language', connectionFailed: 'Connection failed' },
-  ko: { peerLanguage: '상대방 언어', mode: '모드', modes: { 'mode-1': '스피커', 'mode-2': '이어폰', 'mode-3': '둘다' }, collapse: '접기 ▲', configureAndStart: '설정 후 시작을 누르세요', startSpeaking: '말씀해 주세요', listening: '듣는 중...', start: '시작', connectingServer: '서버 연결 중...', startingServer: '서버 시작 중...', stop: '중지', resume: '재개', back: '종료', cancel: '취소', endTitle: '대화 종료', endMsg: '대화를 종료하시겠습니까?', end: '종료', errTitle: '오류', langMustDiffer: '내 언어와 상대방 언어가 달라야 합니다.', peerPickerTitle: '상대방 언어', connectionFailed: '연결 실패' },
-  ja: { peerLanguage: '相手の言語', mode: 'モード', modes: { 'mode-1': 'スピーカー', 'mode-2': 'イヤホン', 'mode-3': '両方' }, collapse: '閉じる ▲', configureAndStart: '設定して開始をタップ', startSpeaking: '話してください', listening: '聴いています...', start: '開始', connectingServer: 'サーバー接続中...', startingServer: 'サーバー起動中...', stop: '停止', resume: '再開', back: '終了', cancel: 'キャンセル', endTitle: '会話を終了', endMsg: '会話を終了しますか？', end: '終了', errTitle: 'エラー', langMustDiffer: '自分と相手の言語が異なる必要があります。', peerPickerTitle: '相手の言語', connectionFailed: '接続失敗' },
-  zh: { peerLanguage: '对方语言', mode: '模式', modes: { 'mode-1': '扬声器', 'mode-2': '耳机', 'mode-3': '两者' }, collapse: '收起 ▲', configureAndStart: '设置后点击开始', startSpeaking: '请开始说话', listening: '正在聆听...', start: '开始', connectingServer: '正在连接服务器...', startingServer: '正在启动服务器...', stop: '停止', resume: '继续', back: '结束', cancel: '取消', endTitle: '结束对话', endMsg: '确定要结束对话吗？', end: '结束', errTitle: '错误', langMustDiffer: '我的语言和对方语言必须不同。', peerPickerTitle: '对方语言', connectionFailed: '连接失败' },
-  es: { peerLanguage: 'IDIOMA DEL OTRO', mode: 'MODO', modes: { 'mode-1': 'Altavoz', 'mode-2': 'Auricular', 'mode-3': 'Ambos' }, collapse: 'Contraer ▲', configureAndStart: 'Configura y pulsa Iniciar', startSpeaking: 'Empieza a hablar', listening: 'Escuchando...', start: 'Iniciar', connectingServer: 'Conectando al servidor...', startingServer: 'Iniciando servidor...', stop: 'Detener', resume: 'Reanudar', back: 'Volver', cancel: 'Cancelar', endTitle: 'Finalizar conversación', endMsg: '¿Quieres finalizar la conversación?', end: 'Finalizar', errTitle: 'Error', langMustDiffer: 'Mi idioma y el del otro deben ser distintos.', peerPickerTitle: 'Idioma del otro', connectionFailed: 'Conexión fallida' },
-  fr: { peerLanguage: 'LANGUE DU PAIR', mode: 'MODE', modes: { 'mode-1': 'Haut-parleur', 'mode-2': 'Écouteur', 'mode-3': 'Les deux' }, collapse: 'Réduire ▲', configureAndStart: 'Configurez et appuyez sur Démarrer', startSpeaking: 'Commencez à parler', listening: 'En écoute...', start: 'Démarrer', connectingServer: 'Connexion au serveur...', startingServer: 'Démarrage du serveur...', stop: 'Arrêter', resume: 'Reprendre', back: 'Retour', cancel: 'Annuler', endTitle: 'Terminer la conversation', endMsg: 'Voulez-vous terminer la conversation ?', end: 'Terminer', errTitle: 'Erreur', langMustDiffer: 'Ma langue et celle du pair doivent être différentes.', peerPickerTitle: 'Langue du pair', connectionFailed: 'Connexion échouée' },
-  id: { peerLanguage: 'BAHASA LAWAN', mode: 'MODE', modes: { 'mode-1': 'Speaker', 'mode-2': 'Earphone', 'mode-3': 'Keduanya' }, collapse: 'Tutup ▲', configureAndStart: 'Atur dan ketuk Mulai', startSpeaking: 'Mulai berbicara', listening: 'Mendengarkan...', start: 'Mulai', connectingServer: 'Menghubungkan ke server...', startingServer: 'Memulai server...', stop: 'Berhenti', resume: 'Lanjutkan', back: 'Kembali', cancel: 'Batal', endTitle: 'Akhiri percakapan', endMsg: 'Apakah Anda ingin mengakhiri percakapan?', end: 'Akhiri', errTitle: 'Kesalahan', langMustDiffer: 'Bahasa saya dan bahasa lawan harus berbeda.', peerPickerTitle: 'Bahasa Lawan', connectionFailed: 'Koneksi gagal' },
-  vi: { peerLanguage: 'NGÔN NGỮ ĐỐI TÁC', mode: 'CHẾ ĐỘ', modes: { 'mode-1': 'Loa ngoài', 'mode-2': 'Tai nghe', 'mode-3': 'Cả hai' }, collapse: 'Thu gọn ▲', configureAndStart: 'Cài đặt và nhấn Bắt đầu', startSpeaking: 'Bắt đầu nói', listening: 'Đang nghe...', start: 'Bắt đầu', connectingServer: 'Đang kết nối máy chủ...', startingServer: 'Đang khởi động máy chủ...', stop: 'Dừng', resume: 'Tiếp tục', back: 'Quay lại', cancel: 'Hủy', endTitle: 'Kết thúc cuộc trò chuyện', endMsg: 'Bạn có muốn kết thúc cuộc trò chuyện không?', end: 'Kết thúc', errTitle: 'Lỗi', langMustDiffer: 'Ngôn ngữ của tôi và đối tác phải khác nhau.', peerPickerTitle: 'Ngôn ngữ đối tác', connectionFailed: 'Kết nối thất bại' },
-  th: { peerLanguage: 'ภาษาของคู่สนทนา', mode: 'โหมด', modes: { 'mode-1': 'ลำโพง', 'mode-2': 'หูฟัง', 'mode-3': 'ทั้งสอง' }, collapse: 'ย่อ ▲', configureAndStart: 'ตั้งค่าแล้วแตะเริ่มต้น', startSpeaking: 'เริ่มพูด', listening: 'กำลังฟัง...', start: 'เริ่มต้น', connectingServer: 'กำลังเชื่อมต่อเซิร์ฟเวอร์...', startingServer: 'กำลังเริ่มเซิร์ฟเวอร์...', stop: 'หยุด', resume: 'ดำเนินการต่อ', back: 'กลับ', cancel: 'ยกเลิก', endTitle: 'สิ้นสุดการสนทนา', endMsg: 'คุณต้องการสิ้นสุดการสนทนาหรือไม่?', end: 'สิ้นสุด', errTitle: 'ข้อผิดพลาด', langMustDiffer: 'ภาษาของฉันและคู่สนทนาต้องแตกต่างกัน', peerPickerTitle: 'ภาษาของคู่สนทนา', connectionFailed: 'การเชื่อมต่อล้มเหลว' },
-  de: { peerLanguage: 'SPRACHE DES ANDEREN', mode: 'MODUS', modes: { 'mode-1': 'Lautsprecher', 'mode-2': 'Kopfhörer', 'mode-3': 'Beide' }, collapse: 'Einklappen ▲', configureAndStart: 'Einstellen und Start tippen', startSpeaking: 'Anfangen zu sprechen', listening: 'Höre zu...', start: 'Start', connectingServer: 'Verbinde mit Server...', startingServer: 'Server wird gestartet...', stop: 'Stopp', resume: 'Fortsetzen', back: 'Zurück', cancel: 'Abbrechen', endTitle: 'Gespräch beenden', endMsg: 'Möchten Sie das Gespräch beenden?', end: 'Beenden', errTitle: 'Fehler', langMustDiffer: 'Meine Sprache und die des anderen müssen unterschiedlich sein.', peerPickerTitle: 'Sprache des anderen', connectionFailed: 'Verbindung fehlgeschlagen' },
+  en: { peerLanguage: 'PEER LANGUAGE', mode: 'MODE', modes: { 'mode-1': 'Speaker', 'mode-2': 'Earphone', 'mode-3': 'Both' }, collapse: 'Collapse ▲', configureAndStart: 'Configure and tap Start', startSpeaking: 'Start speaking', listening: 'Listening...', start: 'Start', connectingServer: 'Connecting to server...', startingServer: 'Starting server...', stop: 'Stop', resume: 'Resume', back: 'Back', cancel: 'Cancel', endTitle: 'End conversation', endMsg: 'Do you want to end the conversation?', end: 'End', errTitle: 'Error', langMustDiffer: 'My language and peer language must be different.', peerPickerTitle: 'Peer Language', connectionFailed: 'Connection failed', waitingForSlot: 'Waiting for a slot…', capacityFullMsg: 'Server is full. Start will activate when a slot frees up.', capacityFreeMsg: 'A slot just opened — you can start now.' },
+  ko: { peerLanguage: '상대방 언어', mode: '모드', modes: { 'mode-1': '스피커', 'mode-2': '이어폰', 'mode-3': '둘 다' }, collapse: '접기 ▲', configureAndStart: '설정 후 시작을 누르세요', startSpeaking: '말씀해 주세요', listening: '듣는 중...', start: '시작', connectingServer: '서버 연결 중...', startingServer: '서버 시작 중...', stop: '중지', resume: '재개', back: '종료', cancel: '취소', endTitle: '대화 종료', endMsg: '대화를 종료하시겠습니까?', end: '종료', errTitle: '오류', langMustDiffer: '내 언어와 상대방 언어가 달라야 합니다.', peerPickerTitle: '상대방 언어', connectionFailed: '연결 실패', waitingForSlot: '슬롯 대기 중…', capacityFullMsg: '서버가 꽉 찼습니다. 슬롯이 생기면 시작됩니다.', capacityFreeMsg: '슬롯이 생겼어요 — 지금 시작하세요!' },
+  ja: { peerLanguage: '相手の言語', mode: 'モード', modes: { 'mode-1': 'スピーカー', 'mode-2': 'イヤホン', 'mode-3': '両方' }, collapse: '閉じる ▲', configureAndStart: '設定して開始をタップ', startSpeaking: '話してください', listening: '聴いています...', start: '開始', connectingServer: 'サーバー接続中...', startingServer: 'サーバー起動中...', stop: '停止', resume: '再開', back: '終了', cancel: 'キャンセル', endTitle: '会話を終了', endMsg: '会話を終了しますか？', end: '終了', errTitle: 'エラー', langMustDiffer: '自分と相手の言語が異なる必要があります。', peerPickerTitle: '相手の言語', connectionFailed: '接続失敗', waitingForSlot: 'スロット待機中…', capacityFullMsg: 'サーバーが満員です。空き次第、開始できます。', capacityFreeMsg: 'スロットが空きました — 開始できます。' },
+  zh: { peerLanguage: '对方语言', mode: '模式', modes: { 'mode-1': '扬声器', 'mode-2': '耳机', 'mode-3': '两者' }, collapse: '收起 ▲', configureAndStart: '设置后点击开始', startSpeaking: '请开始说话', listening: '正在聆听...', start: '开始', connectingServer: '正在连接服务器...', startingServer: '正在启动服务器...', stop: '停止', resume: '继续', back: '结束', cancel: '取消', endTitle: '结束对话', endMsg: '确定要结束对话吗？', end: '结束', errTitle: '错误', langMustDiffer: '我的语言和对方语言必须不同。', peerPickerTitle: '对方语言', connectionFailed: '连接失败', waitingForSlot: '等待空位…', capacityFullMsg: '服务器已满，有空位时即可开始。', capacityFreeMsg: '有空位了 — 现在可以开始。' },
+  es: { peerLanguage: 'IDIOMA DEL OTRO', mode: 'MODO', modes: { 'mode-1': 'Altavoz', 'mode-2': 'Auricular', 'mode-3': 'Ambos' }, collapse: 'Contraer ▲', configureAndStart: 'Configura y pulsa Iniciar', startSpeaking: 'Empieza a hablar', listening: 'Escuchando...', start: 'Iniciar', connectingServer: 'Conectando al servidor...', startingServer: 'Iniciando servidor...', stop: 'Detener', resume: 'Reanudar', back: 'Volver', cancel: 'Cancelar', endTitle: 'Finalizar conversación', endMsg: '¿Quieres finalizar la conversación?', end: 'Finalizar', errTitle: 'Error', langMustDiffer: 'Mi idioma y el del otro deben ser distintos.', peerPickerTitle: 'Idioma del otro', connectionFailed: 'Conexión fallida', waitingForSlot: 'Esperando espacio…', capacityFullMsg: 'Servidor lleno. Inicio disponible al liberarse un espacio.', capacityFreeMsg: '¡Hay espacio libre — puedes iniciar!' },
+  fr: { peerLanguage: "LANGUE DE L'AUTRE", mode: 'MODE', modes: { 'mode-1': 'Haut-parleur', 'mode-2': 'Écouteur', 'mode-3': 'Les deux' }, collapse: 'Réduire ▲', configureAndStart: 'Configurez et appuyez sur Démarrer', startSpeaking: 'Commencez à parler', listening: 'En écoute...', start: 'Démarrer', connectingServer: 'Connexion au serveur...', startingServer: 'Démarrage du serveur...', stop: 'Arrêter', resume: 'Reprendre', back: 'Retour', cancel: 'Annuler', endTitle: 'Terminer la conversation', endMsg: 'Voulez-vous terminer la conversation ?', end: 'Terminer', errTitle: 'Erreur', langMustDiffer: "Ma langue et celle de l'autre doivent être différentes.", peerPickerTitle: "Langue de l'autre", connectionFailed: 'Connexion échouée', waitingForSlot: 'En attente…', capacityFullMsg: "Serveur plein. Démarrage possible dès qu'un créneau se libère.", capacityFreeMsg: 'Un créneau est libre — commencez !' },
+  id: { peerLanguage: 'BAHASA MITRA', mode: 'MODE', modes: { 'mode-1': 'Speaker', 'mode-2': 'Earphone', 'mode-3': 'Keduanya' }, collapse: 'Tutup ▲', configureAndStart: 'Atur dan ketuk Mulai', startSpeaking: 'Mulai berbicara', listening: 'Mendengarkan...', start: 'Mulai', connectingServer: 'Menghubungkan ke server...', startingServer: 'Memulai server...', stop: 'Berhenti', resume: 'Lanjutkan', back: 'Kembali', cancel: 'Batal', endTitle: 'Akhiri percakapan', endMsg: 'Apakah Anda ingin mengakhiri percakapan?', end: 'Akhiri', errTitle: 'Kesalahan', langMustDiffer: 'Bahasa saya dan bahasa mitra harus berbeda.', peerPickerTitle: 'Bahasa Mitra', connectionFailed: 'Koneksi gagal', waitingForSlot: 'Menunggu slot…', capacityFullMsg: 'Server penuh. Mulai tersedia saat ada slot kosong.', capacityFreeMsg: 'Slot tersedia — mulai sekarang!' },
+  vi: { peerLanguage: 'NGÔN NGỮ ĐỐI TÁC', mode: 'CHẾ ĐỘ', modes: { 'mode-1': 'Loa ngoài', 'mode-2': 'Tai nghe', 'mode-3': 'Cả hai' }, collapse: 'Thu gọn ▲', configureAndStart: 'Cài đặt và nhấn Bắt đầu', startSpeaking: 'Bắt đầu nói', listening: 'Đang nghe...', start: 'Bắt đầu', connectingServer: 'Đang kết nối máy chủ...', startingServer: 'Đang khởi động máy chủ...', stop: 'Dừng', resume: 'Tiếp tục', back: 'Quay lại', cancel: 'Hủy', endTitle: 'Kết thúc cuộc trò chuyện', endMsg: 'Bạn có muốn kết thúc cuộc trò chuyện không?', end: 'Kết thúc', errTitle: 'Lỗi', langMustDiffer: 'Ngôn ngữ của tôi và đối tác phải khác nhau.', peerPickerTitle: 'Ngôn ngữ đối tác', connectionFailed: 'Kết nối thất bại', waitingForSlot: 'Đang chờ chỗ trống…', capacityFullMsg: 'Máy chủ đầy. Sẽ bắt đầu khi có chỗ trống.', capacityFreeMsg: 'Có chỗ trống rồi — bắt đầu ngay!' },
+  th: { peerLanguage: 'ภาษาของคู่สนทนา', mode: 'โหมด', modes: { 'mode-1': 'ลำโพง', 'mode-2': 'หูฟัง', 'mode-3': 'ทั้งสอง' }, collapse: 'ย่อ ▲', configureAndStart: 'ตั้งค่าแล้วแตะเริ่มต้น', startSpeaking: 'เริ่มพูด', listening: 'กำลังฟัง...', start: 'เริ่มต้น', connectingServer: 'กำลังเชื่อมต่อเซิร์ฟเวอร์...', startingServer: 'กำลังเริ่มเซิร์ฟเวอร์...', stop: 'หยุด', resume: 'ดำเนินการต่อ', back: 'กลับ', cancel: 'ยกเลิก', endTitle: 'สิ้นสุดการสนทนา', endMsg: 'คุณต้องการสิ้นสุดการสนทนาหรือไม่?', end: 'สิ้นสุด', errTitle: 'ข้อผิดพลาด', langMustDiffer: 'ภาษาของฉันและคู่สนทนาต้องแตกต่างกัน', peerPickerTitle: 'ภาษาของคู่สนทนา', connectionFailed: 'การเชื่อมต่อล้มเหลว', waitingForSlot: 'รอช่อง…', capacityFullMsg: 'เซิร์ฟเวอร์เต็ม จะเริ่มได้เมื่อมีช่องว่าง', capacityFreeMsg: 'มีช่องว่างแล้ว — เริ่มได้เลย!' },
+  de: { peerLanguage: 'SPRACHE DES ANDEREN', mode: 'MODUS', modes: { 'mode-1': 'Lautsprecher', 'mode-2': 'Kopfhörer', 'mode-3': 'Beide' }, collapse: 'Einklappen ▲', configureAndStart: 'Einstellen und Start tippen', startSpeaking: 'Anfangen zu sprechen', listening: 'Zuhören...', start: 'Start', connectingServer: 'Verbinde mit Server...', startingServer: 'Server wird gestartet...', stop: 'Stopp', resume: 'Fortsetzen', back: 'Zurück', cancel: 'Abbrechen', endTitle: 'Gespräch beenden', endMsg: 'Möchten Sie das Gespräch beenden?', end: 'Beenden', errTitle: 'Fehler', langMustDiffer: 'Meine Sprache und die des anderen müssen unterschiedlich sein.', peerPickerTitle: 'Sprache des anderen', connectionFailed: 'Verbindung fehlgeschlagen', waitingForSlot: 'Warte auf Slot…', capacityFullMsg: 'Server voll. Start möglich, sobald ein Slot frei wird.', capacityFreeMsg: 'Ein Slot ist frei — jetzt starten!' },
 };
 
 // ─── Fixed card colors (from prototype) ──────────────────────────────────────
@@ -167,44 +168,112 @@ const RecordingBar = ({ label }: { label: string }) => (
   </View>
 );
 
-// SVG illustration from prototype
-const IdleIllustration = () => (
-  <Svg width={110} height={96} viewBox="0 0 160 140">
-    <Circle cx="80" cy="68" r="54" fill="#E8E0A0" opacity="0.35" />
-    <Circle cx="38" cy="28" r="2.5" fill="#E8E0A0" />
-    <Circle cx="122" cy="22" r="2" fill="#9BB4D4" />
-    <Circle cx="130" cy="45" r="1.5" fill="#E8E0A0" />
-    <Circle cx="30" cy="50" r="1.5" fill="#9BB4D4" />
-    <Circle cx="110" cy="15" r="3" fill="#E8E0A0" opacity="0.7" />
-    <Path d="M50 20 Q58 10 68 18 Q56 20 50 20Z" fill="#E8E0A0" />
-    <Ellipse cx="80" cy="118" rx="54" ry="14" fill="#7A9030" opacity="0.25" />
-    <Ellipse cx="80" cy="115" rx="44" ry="10" fill="#7A9030" opacity="0.4" />
-    <Rect x="32" y="98" width="5" height="14" rx="2" fill="#7A9030" opacity="0.6" />
-    <Ellipse cx="34.5" cy="94" rx="9" ry="10" fill="#7A9030" opacity="0.7" />
-    <Rect x="119" y="100" width="4" height="12" rx="2" fill="#7A9030" opacity="0.6" />
-    <Ellipse cx="121" cy="96" rx="7" ry="8" fill="#7A9030" opacity="0.7" />
-    <Circle cx="58" cy="90" r="10" fill="#9BB4D4" />
-    <Circle cx="58" cy="76" r="8" fill="#E8E0A0" />
-    <Circle cx="55.5" cy="75.5" r="1.2" fill="#6080C8" />
-    <Circle cx="60.5" cy="75.5" r="1.2" fill="#6080C8" />
-    <Path d="M56 79 Q58 81 60 79" stroke="#6080C8" strokeWidth="1.2" strokeLinecap="round" fill="none" />
-    <Circle cx="102" cy="90" r="10" fill="#6080C8" />
-    <Circle cx="102" cy="76" r="8" fill="#E8E0A0" />
-    <Circle cx="99.5" cy="75.5" r="1.2" fill="#7A9030" />
-    <Circle cx="104.5" cy="75.5" r="1.2" fill="#7A9030" />
-    <Path d="M100 79 Q102 81 104 79" stroke="#7A9030" strokeWidth="1.2" strokeLinecap="round" fill="none" />
-    <Rect x="30" y="52" width="34" height="18" rx="9" fill="white" stroke="#9BB4D4" strokeWidth="1.5" />
-    <Path d="M52 70 L56 76 L46 70Z" fill="white" stroke="#9BB4D4" strokeWidth="1.5" strokeLinejoin="round" />
-    <Circle cx="41" cy="61" r="2" fill="#9BB4D4" />
-    <Circle cx="48" cy="61" r="2" fill="#9BB4D4" />
-    <Circle cx="55" cy="61" r="2" fill="#9BB4D4" />
-    <Rect x="96" y="52" width="34" height="18" rx="9" fill="white" stroke="#6080C8" strokeWidth="1.5" />
-    <Path d="M108 70 L104 76 L114 70Z" fill="white" stroke="#6080C8" strokeWidth="1.5" strokeLinejoin="round" />
-    <Circle cx="105" cy="61" r="2" fill="#6080C8" />
-    <Circle cx="113" cy="61" r="2" fill="#6080C8" />
-    <Circle cx="121" cy="61" r="2" fill="#6080C8" />
+// Mode-based idle illustrations (from prototype)
+const SpeakerIllustration = () => (
+  <Svg width={150} height={125} viewBox="0 0 180 150">
+    <Circle cx="90" cy="82" r="62" fill="#E8E0A0" opacity="0.3" />
+    <Ellipse cx="90" cy="132" rx="58" ry="7" fill="#7A9030" opacity="0.22" />
+    <Rect x="84" y="70" width="12" height="28" rx="2.5" fill="#1a1a1a" />
+    <Rect x="85.4" y="74" width="9.2" height="20" rx="1" fill="#6080C8" />
+    <Rect x="87.5" y="71.8" width="5" height="1.2" rx="0.6" fill="#555" />
+    <Path d="M87 84 Q88.5 81 90 84 Q91.5 87 93 84" stroke="#E8E0A0" strokeWidth="1" fill="none" strokeLinecap="round" />
+    <Path d="M80 76 Q75 84 80 92" stroke="#6080C8" strokeWidth="1.4" fill="none" strokeLinecap="round" opacity="0.75" />
+    <Path d="M75 72 Q67 84 75 96" stroke="#6080C8" strokeWidth="1.4" fill="none" strokeLinecap="round" opacity="0.4" />
+    <Path d="M100 76 Q105 84 100 92" stroke="#6080C8" strokeWidth="1.4" fill="none" strokeLinecap="round" opacity="0.75" />
+    <Path d="M105 72 Q113 84 105 96" stroke="#6080C8" strokeWidth="1.4" fill="none" strokeLinecap="round" opacity="0.4" />
+    <Ellipse cx="55" cy="114" rx="14" ry="15" fill="#9BB4D4" />
+    <Circle cx="55" cy="92" r="13" fill="#E8E0A0" />
+    <Circle cx="59" cy="92" r="1.5" fill="#6080C8" />
+    <Circle cx="64" cy="92" r="1.5" fill="#6080C8" />
+    <Path d="M58 97 Q61 99 64 97" stroke="#6080C8" strokeWidth="1.3" strokeLinecap="round" fill="none" />
+    <Ellipse cx="125" cy="114" rx="14" ry="15" fill="#6080C8" />
+    <Circle cx="125" cy="92" r="13" fill="#E8E0A0" />
+    <Circle cx="116" cy="92" r="1.5" fill="#7A9030" />
+    <Circle cx="121" cy="92" r="1.5" fill="#7A9030" />
+    <Path d="M116 97 Q119 99 122 97" stroke="#7A9030" strokeWidth="1.3" strokeLinecap="round" fill="none" />
   </Svg>
 );
+
+const EarphoneIllustration = () => (
+  <Svg width={150} height={125} viewBox="0 0 180 150">
+    <Circle cx="90" cy="82" r="62" fill="#9BB4D4" opacity="0.22" />
+    <Ellipse cx="90" cy="132" rx="58" ry="7" fill="#7A9030" opacity="0.22" />
+    <Circle cx="74" cy="76" r="1.6" fill="#9BB4D4" />
+    <Circle cx="84" cy="70" r="2.2" fill="#E8E0A0" />
+    <Circle cx="96" cy="70" r="2.2" fill="#E8E0A0" />
+    <Circle cx="106" cy="76" r="1.6" fill="#6080C8" />
+    <Ellipse cx="55" cy="114" rx="14" ry="15" fill="#9BB4D4" />
+    <Circle cx="55" cy="92" r="13" fill="#E8E0A0" />
+    <Circle cx="59" cy="92" r="1.5" fill="#6080C8" />
+    <Circle cx="64" cy="92" r="1.5" fill="#6080C8" />
+    <Path d="M58 97 Q61 99 64 97" stroke="#6080C8" strokeWidth="1.3" strokeLinecap="round" fill="none" />
+    <Ellipse cx="43" cy="94" rx="2.6" ry="3.6" fill="#fff" stroke="#6080C8" strokeWidth="1.3" />
+    <Rect x="42" y="97.5" width="2" height="4.5" rx="1" fill="#fff" stroke="#6080C8" strokeWidth="1" />
+    <Ellipse cx="125" cy="114" rx="14" ry="15" fill="#6080C8" />
+    <Circle cx="125" cy="92" r="13" fill="#E8E0A0" />
+    <Circle cx="116" cy="92" r="1.5" fill="#7A9030" />
+    <Circle cx="121" cy="92" r="1.5" fill="#7A9030" />
+    <Path d="M116 97 Q119 99 122 97" stroke="#7A9030" strokeWidth="1.3" strokeLinecap="round" fill="none" />
+    <Ellipse cx="137" cy="94" rx="2.6" ry="3.6" fill="#fff" stroke="#7A9030" strokeWidth="1.3" />
+    <Rect x="136" y="97.5" width="2" height="4.5" rx="1" fill="#fff" stroke="#7A9030" strokeWidth="1" />
+  </Svg>
+);
+
+const BothIllustration = () => (
+  <Svg width={150} height={125} viewBox="0 0 180 150">
+    <Circle cx="90" cy="82" r="62" fill="#E8E0A0" opacity="0.25" />
+    <Ellipse cx="90" cy="132" rx="58" ry="7" fill="#7A9030" opacity="0.22" />
+    <Ellipse cx="55" cy="114" rx="14" ry="15" fill="#9BB4D4" />
+    <Circle cx="55" cy="92" r="13" fill="#E8E0A0" />
+    <Circle cx="59" cy="92" r="1.5" fill="#6080C8" />
+    <Circle cx="64" cy="92" r="1.5" fill="#6080C8" />
+    <Path d="M58 97 Q61 99 64 97" stroke="#6080C8" strokeWidth="1.3" strokeLinecap="round" fill="none" />
+    <Rect x="44" y="64" width="22" height="11" rx="5.5" fill="#6080C8" />
+    <Path d="M53 75 L55 78 L57 75 Z" fill="#6080C8" />
+    <SvgText x="55" y="72.5" textAnchor="middle" fontSize="7.5" fontWeight="800" fill="#fff" letterSpacing="0.5">ME</SvgText>
+    <Ellipse cx="43" cy="94" rx="2.6" ry="3.6" fill="#fff" stroke="#6080C8" strokeWidth="1.3" />
+    <Rect x="42" y="97.5" width="2" height="4.5" rx="1" fill="#fff" stroke="#6080C8" strokeWidth="1" />
+    <Rect x="84" y="76" width="12" height="28" rx="2.5" fill="#1a1a1a" />
+    <Rect x="85.4" y="80" width="9.2" height="20" rx="1" fill="#6080C8" />
+    <Rect x="87.5" y="77.8" width="5" height="1.2" rx="0.6" fill="#555" />
+    <Path d="M87 90 Q88.5 87 90 90 Q91.5 93 93 90" stroke="#E8E0A0" strokeWidth="1" fill="none" strokeLinecap="round" />
+    <Path d="M100 82 Q105 90 100 98" stroke="#6080C8" strokeWidth="1.4" fill="none" strokeLinecap="round" opacity="0.75" />
+    <Path d="M105 78 Q113 90 105 102" stroke="#6080C8" strokeWidth="1.4" fill="none" strokeLinecap="round" opacity="0.4" />
+    <Ellipse cx="125" cy="114" rx="14" ry="15" fill="#6080C8" />
+    <Circle cx="125" cy="92" r="13" fill="#E8E0A0" />
+    <Circle cx="116" cy="92" r="1.5" fill="#7A9030" />
+    <Circle cx="121" cy="92" r="1.5" fill="#7A9030" />
+    <Path d="M116 97 Q119 99 122 97" stroke="#7A9030" strokeWidth="1.3" strokeLinecap="round" fill="none" />
+  </Svg>
+);
+
+const ModeIllustration = ({ modeId }: { modeId: string }) => {
+  if (modeId === 'mode-2') return <EarphoneIllustration />;
+  if (modeId === 'mode-3') return <BothIllustration />;
+  return <SpeakerIllustration />;
+};
+
+// Pulsing dot for capacity notice
+const CapacityPulse = ({ isOk }: { isOk: boolean }) => {
+  const ringOpacity = useRef(new Animated.Value(0.2)).current;
+  useEffect(() => {
+    const anim = Animated.loop(
+      Animated.sequence([
+        Animated.timing(ringOpacity, { toValue: 0.05, duration: 750, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.timing(ringOpacity, { toValue: 0.2, duration: 750, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+      ])
+    );
+    anim.start();
+    return () => anim.stop();
+  }, []);
+  const color = isOk ? '#7A9030' : '#C8A030';
+  return (
+    <View style={{ width: 14, height: 14, alignItems: 'center', justifyContent: 'center' }}>
+      <Animated.View style={{ position: 'absolute', width: 14, height: 14, borderRadius: 7, backgroundColor: color, opacity: ringOpacity }} />
+      <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color }} />
+    </View>
+  );
+};
 
 const LangPickerSheet = ({
   visible, title, selectedCode, excludeCode, onSelect, onClose, myLangCode,
@@ -324,6 +393,9 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
   const [transcriptions, setTranscriptions] = useState<TranscriptionEntry[]>([]);
   const [isInitializing, setIsInitializing] = useState(false);
   const [sessionError, setSessionError] = useState('');
+  const [serverCapacity, setServerCapacity] = useState<{ active: number; max: number } | null>(null);
+  const [justFreed, setJustFreed] = useState(false);
+  const prevServerFullRef = useRef(false);
   const [connectPct, setConnectPct] = useState(0);
   const progressAnim = useRef(new Animated.Value(0)).current;
   const progressAnimRef = useRef<Animated.CompositeAnimation | null>(null);
@@ -516,8 +588,25 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
   });
 
   useEffect(() => {
-    return addMessageListener((msg: any) => handleMessageRef.current(msg));
+    return addMessageListener((msg: any) => {
+      if (msg.type === 'capacity' && typeof msg.active === 'number' && typeof msg.max === 'number') {
+        setServerCapacity({ active: msg.active, max: msg.max });
+      }
+      handleMessageRef.current(msg);
+    });
   }, [addMessageListener]);
+
+  // ── Server capacity: full→available transition 감지 ───────────────────────────
+  const serverFull = serverCapacity !== null && serverCapacity.active >= serverCapacity.max;
+  useEffect(() => {
+    if (prevServerFullRef.current && !serverFull) {
+      setJustFreed(true);
+      const t = setTimeout(() => setJustFreed(false), 2500);
+      prevServerFullRef.current = serverFull;
+      return () => clearTimeout(t);
+    }
+    prevServerFullRef.current = serverFull;
+  }, [serverFull]);
 
   // ── Auto-scroll ───────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -815,7 +904,7 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
                   onPress={() => updateMode(m.id)}
                   activeOpacity={0.8}
                 >
-                  <Text style={[S.modeOptionTxt, modeId === m.id && S.modeOptionTxtActive]}>
+                  <Text style={[S.modeOptionTxt, modeId === m.id && S.modeOptionTxtActive]} numberOfLines={1} adjustsFontSizeToFit>
                     {ui.modes[m.id] ?? m.name}
                   </Text>
                 </TouchableOpacity>
@@ -872,8 +961,37 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
       >
         {isIdle && (
           <View style={S.idleWrap}>
-            <IdleIllustration />
+            <ModeIllustration modeId={modeId} />
             <Text style={S.idleTxt}>{ui.configureAndStart}</Text>
+            {__DEV__ && (
+              <View style={{ flexDirection: 'row', gap: 6, marginTop: 10 }}>
+                <TouchableOpacity
+                  style={S.dbgBtn}
+                  onPress={() => setServerCapacity({ active: 20, max: 20 })}
+                >
+                  <Text style={[S.dbgBtnTxt, { color: '#996600' }]}>Full</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[S.dbgBtn, { backgroundColor: '#D4F0D4', borderColor: '#70C070' }]}
+                  onPress={() => {
+                    setServerCapacity({ active: 20, max: 20 });
+                    setTimeout(() => setServerCapacity({ active: 19, max: 20 }), 150);
+                  }}
+                >
+                  <Text style={[S.dbgBtnTxt, { color: '#336633' }]}>Freed</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[S.dbgBtn, { backgroundColor: '#f0f0f0', borderColor: '#ccc' }]}
+                  onPress={() => {
+                    prevServerFullRef.current = false;
+                    setJustFreed(false);
+                    setServerCapacity(null);
+                  }}
+                >
+                  <Text style={[S.dbgBtnTxt, { color: '#777' }]}>Clear</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         )}
 
@@ -912,18 +1030,38 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
         </View>
       )}
 
+      {/* ── Capacity notice (idle only) ── */}
+      {isIdle && (serverFull || justFreed) && (
+        <View style={[S.capacityNotice, !serverFull && justFreed && S.capacityNoticeOk]}>
+          <CapacityPulse isOk={!serverFull && justFreed} />
+          <Text style={[S.capText, !serverFull && justFreed && S.capTextOk]}>
+            {serverFull ? ui.capacityFullMsg : ui.capacityFreeMsg}
+          </Text>
+          {serverCapacity && (
+            <View style={[S.capBadge, !serverFull && justFreed && S.capBadgeOk]}>
+              <Text style={[S.capBadgeTxt, !serverFull && justFreed && S.capBadgeTxtOk]}>
+                {Math.round((serverCapacity.active / serverCapacity.max) * 100)}%
+              </Text>
+            </View>
+          )}
+        </View>
+      )}
+
       {/* ── Bottom bar ── */}
       <View style={[S.bottomBar, { paddingBottom: bottomPad + 8 }]}>
         {isIdle && (
           <TouchableOpacity
             style={[S.btn, S.btnOutline,
+              serverFull && S.btnFull,
               (serverStatus === 'ec2-starting' || serverStatus === 'connecting') && S.btnDisabled]}
             onPress={doStart}
             activeOpacity={0.85}
-            disabled={serverStatus === 'ec2-starting' || serverStatus === 'connecting' || isInitializing}
+            disabled={serverStatus === 'ec2-starting' || serverStatus === 'connecting' || isInitializing || serverFull}
           >
-            <Text style={[S.btnTxt, { color: '#7A9030' }]}>
-              {serverStatus === 'ready' || serverStatus === 'idle' || serverStatus === 'error'
+            <Text style={[S.btnTxt, { color: serverFull ? '#bbb' : '#7A9030' }]}>
+              {serverFull
+                ? ui.waitingForSlot
+                : serverStatus === 'ready' || serverStatus === 'idle' || serverStatus === 'error'
                 ? ui.start
                 : serverStatus === 'ec2-starting'
                 ? ui.startingServer
@@ -1061,6 +1199,21 @@ const S = StyleSheet.create({
   btnStop: { backgroundColor: '#fff0f0' },
   btnGhost: { flex: 0, width: 52, backgroundColor: '#f5f5f5' },
   btnDisabled: { opacity: 0.45 },
+
+  // Capacity notice
+  capacityNotice: { flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 20, marginBottom: 4, paddingVertical: 10, paddingHorizontal: 14, backgroundColor: '#fffaf0', borderWidth: 1, borderColor: '#f3e6c4', borderRadius: 14 },
+  capacityNoticeOk: { backgroundColor: '#f3faf0', borderColor: '#d8ebc8' },
+  capText: { flex: 1, fontSize: 12, fontWeight: '600', color: '#7A6010', lineHeight: 18 },
+  capTextOk: { color: '#56711F' },
+  capBadge: { paddingVertical: 3, paddingHorizontal: 8, borderRadius: 100, backgroundColor: 'rgba(200,160,48,0.12)' },
+  capBadgeOk: { backgroundColor: 'rgba(122,144,48,0.12)' },
+  capBadgeTxt: { fontSize: 12, fontWeight: '700', color: '#7A6010' },
+  capBadgeTxtOk: { color: '#56711F' },
+  btnFull: { borderColor: '#e2e2e2' },
+
+  // Debug (dev-only)
+  dbgBtn: { paddingVertical: 4, paddingHorizontal: 10, borderRadius: 8, backgroundColor: '#FFF3CD', borderWidth: 1, borderColor: '#F0C040' },
+  dbgBtnTxt: { fontSize: 11, fontWeight: '600' as const },
 
   // Language picker
   pickerOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.3)', justifyContent: 'flex-end' },

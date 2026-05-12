@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STiTy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="android-frame.jsx"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #1a1a2e;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Noto Sans KR', 'Noto Sans', sans-serif;
+  }
+
+  /* App inner styles */
+  .app {
+    width: 100%;
+    height: 100%;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Header - always visible */
+  .app-header {
+    padding: 16px 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .logo {
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -1px;
+  }
+  .logo .lS  { color: #6080C8; }
+  .logo .lT1 { color: #6080C8; }
+  .logo .li  { color: #9BB4D4; font-style: normal; }
+  .logo .lT2 { color: #7A9030; }
+  .logo .ly  { color: #E8E0A0; }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #ccc;
+    transition: background 0.3s;
+  }
+  .status-dot.active {
+    background: #22c55e;
+    box-shadow: 0 0 0 3px rgba(34,197,94,0.2);
+    animation: pulse-dot 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%,100% { box-shadow: 0 0 0 3px rgba(34,197,94,0.2); }
+    50%      { box-shadow: 0 0 0 6px rgba(34,197,94,0.08); }
+  }
+
+  /* Setup panel - collapses */
+  .setup-panel {
+    overflow: hidden;
+    transition: max-height 0.45s cubic-bezier(0.4,0,0.2,1),
+                opacity 0.35s ease,
+                padding 0.35s ease;
+    flex-shrink: 0;
+  }
+  .setup-panel.open {
+    max-height: 340px;
+    opacity: 1;
+    padding: 20px 20px 0;
+  }
+  .setup-panel.collapsed {
+    max-height: 0;
+    opacity: 0;
+    padding: 0 20px;
+  }
+
+  .setup-row {
+    display: flex;
+    align-items: center;
+    padding: 13px 0;
+    border-bottom: 1px solid #f0f0f0;
+    gap: 12px;
+  }
+  .setup-row:last-child { border-bottom: none; }
+  .setup-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #1a1a1a;
+    width: 68px;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .setup-select {
+    flex: 1;
+    appearance: none;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: #888;
+    cursor: pointer;
+    outline: none;
+  }
+  .setup-select-wrap {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .setup-select-wrap::after {
+    content: '›';
+    position: absolute;
+    right: 4px;
+    color: #aaa;
+    font-size: 18px;
+    pointer-events: none;
+    transform: rotate(90deg);
+    line-height: 1;
+  }
+
+  /* Session info bar - shows when session active */
+  .session-bar {
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1),
+                opacity 0.3s ease;
+    flex-shrink: 0;
+  }
+  .session-bar.open {
+    max-height: 60px;
+    opacity: 1;
+  }
+  .session-bar.collapsed {
+    max-height: 0;
+    opacity: 0;
+  }
+  .session-bar-inner {
+    margin: 12px 20px 0;
+    padding: 10px 14px;
+    background: linear-gradient(135deg, rgba(122,144,48,0.08), rgba(6,182,212,0.08));
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: #7A9030;
+    font-weight: 500;
+  }
+  .session-chip {
+    background: rgba(122,144,48,0.12);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #7A9030;
+  }
+  .session-chip.ko { color: #06B6D4; background: rgba(6,182,212,0.12); }
+  .session-arrow { color: #aaa; }
+
+  /* Conversation scroll area */
+  .conv-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 0 8px;
+    scroll-behavior: smooth;
+  }
+  .conv-area::-webkit-scrollbar { display: none; }
+
+  .conv-empty {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: #ccc;
+  }
+  .conv-empty-icon {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(122,144,48,0.1), rgba(6,182,212,0.1));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+  }
+  .conv-empty p { font-size: 13px; color: #ccc; }
+
+  /* Conversation items - chat bubble style */
+  .conv-item {
+    display: flex;
+    padding: 6px 16px;
+    gap: 8px;
+    animation: slideUp 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+  .conv-item.mine  { flex-direction: row-reverse; }
+  .conv-item.theirs { flex-direction: row; }
+
+  .bubble {
+    max-width: 72%;
+    padding: 10px 14px;
+    border-radius: 18px;
+    position: relative;
+  }
+  .mine .bubble {
+    background: #6080C8;
+    border-bottom-right-radius: 4px;
+  }
+  .theirs .bubble {
+    background: #f2f2f2;
+    border-bottom-left-radius: 4px;
+  }
+  .mine .conv-main  { color: #fff; font-size: 15px; font-weight: 600; line-height: 1.4; }
+  .mine .conv-sub   { color: rgba(255,255,255,0.65); font-size: 11px; margin-top: 2px; }
+  .theirs .conv-main { color: #1a1a1a; font-size: 15px; font-weight: 600; line-height: 1.4; }
+  .theirs .conv-sub  { color: #aaa; font-size: 11px; margin-top: 2px; }
+
+  .bubble-speaker {
+    width: 28px; height: 28px;
+    border: none; background: transparent;
+    cursor: pointer;
+    color: #ccc;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    align-self: flex-end;
+    margin-bottom: 2px;
+    border-radius: 50%;
+    transition: background 0.15s;
+  }
+  .bubble-speaker:active { background: #f0f0f0; }
+
+  /* Avatar dot */
+  .avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    flex-shrink: 0;
+    align-self: flex-end;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+  }
+  .avatar.mine   { background: #9BB4D4; color: #fff; }
+  .avatar.theirs { background: #E8E0A0; color: #7A9030; }
+
+  /* Recording bar */
+  .recording-bar {
+    margin: 0 16px 8px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, rgba(96,128,200,0.08), rgba(155,180,212,0.08));
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .rec-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #ef4444;
+    animation: pulse-dot 1s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  .rec-label { font-size: 12px; font-weight: 600; color: #6080C8; flex: 1; }
+  .waveform-inline {
+    display: flex; align-items: center; gap: 3px;
+  }
+
+  .wave-bar {
+    width: 3px; border-radius: 2px;
+    background: #6080C8;
+    animation: wave 0.8s ease-in-out infinite;
+  }
+  @keyframes wave {
+    0%,100% { height: 3px; opacity: 0.4; }
+    50%      { height: 14px; opacity: 1; }
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .bottom-bar {
+    padding: 12px 20px 16px;
+    flex-shrink: 0;
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn {
+    flex: 1;
+    height: 52px;
+    border-radius: 100px;
+    border: 2px solid transparent;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.12s, box-shadow 0.12s, opacity 0.12s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    letter-spacing: -0.2px;
+  }
+  .btn:active { transform: scale(0.97); opacity: 0.85; }
+
+  .btn-primary {
+    background: white;
+    color: #7A9030;
+    border: none;
+    position: relative;
+    box-shadow: none;
+  }
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 100px;
+    padding: 2px;
+    background: #7A9030;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  .btn-outline {
+    background: transparent;
+    color: #7A9030;
+    border: 2px solid;
+    border-image: linear-gradient(135deg, #7A9030, #06B6D4) 1;
+    border-radius: 100px;
+    /* border-image breaks border-radius; use box shadow instead */
+    border-image: none;
+    border-color: #7A9030;
+  }
+  .btn-outline.cyan { color: #06B6D4; border-color: #06B6D4; }
+  .btn-stop {
+    background: #fff0f0;
+    color: #ef4444;
+    border-color: transparent;
+  }
+  .btn-ghost {
+    background: #f5f5f5;
+    color: #555;
+    border-color: transparent;
+    flex: none;
+    width: 52px;
+    padding: 0;
+  }
+
+  /* Disabled Start (server full) */
+  .btn-primary.is-disabled {
+    color: #bbb;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+  .btn-primary.is-disabled::before {
+    background: #e2e2e2;
+  }
+  .btn-primary.is-disabled:active { transform: none; opacity: 1; }
+
+  /* Capacity notice (above bottom bar) */
+  .capacity-notice {
+    margin: 0 20px 4px;
+    padding: 10px 14px;
+    background: #fffaf0;
+    border: 1px solid #f3e6c4;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: inherit;
+    overflow: hidden;
+    transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1),
+                opacity 0.3s ease, margin-bottom 0.3s ease,
+                padding 0.3s ease, border-color 0.3s ease;
+    max-height: 60px;
+    opacity: 1;
+  }
+  .capacity-notice.hidden {
+    max-height: 0; opacity: 0;
+    padding-top: 0; padding-bottom: 0;
+    margin-bottom: 0;
+    border-color: transparent;
+  }
+  .capacity-notice.ok {
+    background: #f3faf0;
+    border-color: #d8ebc8;
+  }
+  .cap-pulse {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #C8A030; flex-shrink: 0;
+    box-shadow: 0 0 0 3px rgba(200,160,48,0.18);
+    animation: pulse-dot 1.5s ease-in-out infinite;
+  }
+  .ok .cap-pulse {
+    background: #7A9030;
+    box-shadow: 0 0 0 3px rgba(122,144,48,0.18);
+  }
+  .cap-text {
+    flex: 1;
+    font-size: 12px; font-weight: 600; color: #7A6010;
+    line-height: 1.35;
+  }
+  .ok .cap-text { color: #56711F; }
+  .cap-count {
+    font-variant-numeric: tabular-nums;
+    font-size: 12px; font-weight: 700; color: #7A6010;
+    background: rgba(200,160,48,0.12);
+    padding: 3px 8px; border-radius: 100px;
+    flex-shrink: 0;
+  }
+  .ok .cap-count {
+    color: #56711F;
+    background: rgba(122,144,48,0.12);
+  }
+
+  /* Bottom action area */
+  .setup-summary {
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1),
+                opacity 0.3s ease;
+    flex-shrink: 0;
+  }
+  .setup-summary.open {
+    max-height: 40px;
+    opacity: 1;
+  }
+  .setup-summary.collapsed {
+    max-height: 0;
+    opacity: 0;
+  }
+  .setup-summary-inner {
+    padding: 10px 20px 0;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .chip {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 100px;
+    background: #f0f4e8;
+    color: #7A9030;
+  }
+  .chip.cyan { background: #eaf2fb; color: #6080C8; }
+  .chip.gray { background: #f0f0f0; color: #777; }
+
+  .lang-picker-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.3);
+    z-index: 100;
+    display: flex;
+    align-items: flex-end;
+  }
+  .lang-picker-sheet {
+    width: 100%;
+    background: #fff;
+    border-radius: 24px 24px 0 0;
+    padding: 20px 20px 32px;
+    animation: slideUpSheet 0.25s cubic-bezier(0.4,0,0.2,1);
+  }
+  @keyframes slideUpSheet {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
+  .lang-picker-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+  }
+  .lang-picker-option {
+    display: flex;
+    align-items: center;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: none;
+    background: transparent;
+    width: 100%;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a1a;
+    cursor: pointer;
+    transition: background 0.15s;
+    text-align: left;
+  }
+  .lang-picker-option:active { background: #f5f5f5; }
+  .lang-picker-option.selected { color: #6080C8; background: #eaf2fb; }
+  .lang-picker-cancel {
+    margin-top: 8px;
+    width: 100%;
+    padding: 14px;
+    border-radius: 14px;
+    border: none;
+    background: #f5f5f5;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    color: #aaa;
+    cursor: pointer;
+  }
+  .setup-lang-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 0 8px;
+  }
+  .lang-card {
+    flex: 1; border-radius: 16px;
+    padding: 12px 14px;
+    cursor: pointer; position: relative;
+  }
+  .lang-card.mine   { background: #6080C8; }
+  .lang-card.theirs { background: #9BB4D4; }
+  .lang-card-label {
+    font-size: 10px; font-weight: 600;
+    color: rgba(255,255,255,0.7);
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;
+  }
+  .lang-card-value { font-size: 15px; font-weight: 700; color: #fff; }
+  .lang-card-arrow { position: absolute; top: 10px; right: 12px; font-size: 10px; color: rgba(255,255,255,0.5); }
+  .lang-swap { font-size: 18px; color: #ccc; flex-shrink: 0; }
+  .lang-card select {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+  .mode-row { padding: 0 0 4px; }
+  .mode-label { font-size: 10px; font-weight: 600; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .mode-segment {
+    display: flex; background: #f0f0f0; border-radius: 12px; padding: 3px; gap: 2px;
+  }
+  .mode-option {
+    flex: 1; padding: 8px 4px; border: none; border-radius: 10px;
+    font-family: inherit; font-size: 11px; font-weight: 600;
+    cursor: pointer; background: transparent; color: #999; line-height: 1.2;
+    transition: background 0.2s, color 0.2s;
+  }
+  .mode-option.active { background: #fff; color: #C8B830; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+
+  /* Tap to edit gear */
+  .edit-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #ccc;
+    font-size: 14px;
+    padding: 2px 4px;
+    line-height: 1;
+  }
+</style>
+</head>
+<body>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+const DEMO_ENTRIES = [
+  { id:1,  lang:'en', main:'Hello. Nice to meet you.',        sub:'안녕하세요. 반갑습니다.' },
+  { id:2,  lang:'ko', main:'제 이름은 위안이에요.',               sub:'My name is Yuan.' },
+  { id:3,  lang:'en', main:'How was your day?',               sub:'오늘 어땠나요?' },
+  { id:4,  lang:'ko', main:'난 괜찮아요. 고마워요.',              sub:"I'm fine, thank you." },
+  { id:5,  lang:'en', main:'That sounds great!',              sub:'그거 좋게 들려요!' },
+  { id:6,  lang:'ko', main:'오늘 날씨가 정말 좋네요.',            sub:'The weather is really nice today.' },
+  { id:7,  lang:'en', main:'Where are you from?',             sub:'어디서 오셨어요?' },
+  { id:8,  lang:'ko', main:'저는 서울 출신이에요.',               sub:'I am from Seoul.' },
+  { id:9,  lang:'en', main:'I love Korean food!',             sub:'한국 음식을 정말 좋아해요!' },
+  { id:10, lang:'ko', main:'어떤 음식을 제일 좋아하세요?',         sub:'What food do you like most?' },
+  { id:11, lang:'en', main:'Definitely bibimbap.',            sub:'확실히 비빔밥이요.' },
+  { id:12, lang:'ko', main:'좋은 선택이에요!',                  sub:'Great choice!' },
+  { id:13, lang:'en', main:'Can you teach me some Korean?',  sub:'한국어 좀 가르쳐 주실 수 있나요?' },
+  { id:14, lang:'ko', main:'물론이죠. 같이 공부해요!',            sub:"Of course. Let's study together!" },
+  { id:15, lang:'en', main:'Thank you so much!',             sub:'정말 감사합니다!' },
+  { id:16, lang:'ja', main:'私も参加していいですか？',              sub:'Can I join too?' },
+  { id:17, lang:'en', main:'Of course, welcome!',            sub:'물론이죠, 환영해요!' },
+  { id:18, lang:'ja', main:'ありがとうございます！',               sub:'Thank you!' },
+];
+
+const LANGS = ['English(en)', 'Korean(ko)', '日本語(ja)', '中文(zh)', 'Español(es)', 'Français(fr)'];
+const MODES = ['Speaker output', 'Earphone only', 'Both'];
+
+// Language color palette
+const LANG_COLORS = {
+  en: { bubble: '#6080C8', avatar: '#9BB4D4', text: '#fff', subText: 'rgba(255,255,255,0.65)' },
+  ko: { bubble: '#7A9030', avatar: '#A8B870', text: '#fff', subText: 'rgba(255,255,255,0.65)' },
+  ja: { bubble: '#C87060', avatar: '#E0A898', text: '#fff', subText: 'rgba(255,255,255,0.65)' },
+  zh: { bubble: '#9060C8', avatar: '#B898E0', text: '#fff', subText: 'rgba(255,255,255,0.65)' },
+  es: { bubble: '#C8A030', avatar: '#E0C878', text: '#fff', subText: 'rgba(255,255,255,0.65)' },
+  fr: { bubble: '#308898', avatar: '#78B8C8', text: '#fff', subText: 'rgba(255,255,255,0.65)' },
+  default: { bubble: '#999', avatar: '#bbb', text: '#fff', subText: 'rgba(255,255,255,0.65)' },
+};
+function getLangColor(lang) { return LANG_COLORS[lang] || LANG_COLORS.default; }
+const SpeakerIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+  </svg>
+);
+
+const WaveformBar = ({ delay }) => (
+  <div className="wave-bar" style={{ animationDelay: delay }} />
+);
+
+function App() {
+  const [state, setState] = useState('idle'); // idle | recording | paused
+  const [myLang, setMyLang] = useState('English(en)');
+  const [peerLang, setPeerLang] = useState('Korean(ko)');
+  const [mode, setMode] = useState('Speaker output');
+  const [entries, setEntries] = useState([]);
+  const [showSettings, setShowSettings] = useState(false);
+  const [setupExpanded, setSetupExpanded] = useState(true);
+  const [picker, setPicker] = useState(null); // null | 'my' | 'peer'
+  const [speakerOn, setSpeakerOn] = useState(true);
+  // Server capacity (max 20 concurrent users on the backend)
+  const [activeUsers, setActiveUsers] = useState(20);
+  const SERVER_MAX = 20;
+  const serverFull = activeUsers >= SERVER_MAX;
+  // Show a brief "slot just opened" affirmation right after capacity frees up
+  const [justFreed, setJustFreed] = useState(false);
+  const prevFullRef = useRef(serverFull);
+  const convRef = useRef(null);
+  const timerRef = useRef(null);
+
+  const isIdle = state === 'idle';
+  const isRecording = state === 'recording';
+  const isPaused = state === 'paused';
+  const hasEntries = entries.length > 0;
+
+  // Simulate incoming entries during recording
+  useEffect(() => {
+    if (isRecording) {
+      let idx = entries.length;
+      timerRef.current = setInterval(() => {
+        if (idx < DEMO_ENTRIES.length) {
+          setEntries(prev => [...prev, DEMO_ENTRIES[idx]]);
+          idx++;
+        } else {
+          clearInterval(timerRef.current);
+        }
+      }, 1800);
+    } else {
+      clearInterval(timerRef.current);
+    }
+    return () => clearInterval(timerRef.current);
+  }, [isRecording]);
+
+  // Auto scroll to bottom
+  useEffect(() => {
+    if (convRef.current) {
+      convRef.current.scrollTop = convRef.current.scrollHeight;
+    }
+  }, [entries]);
+
+  // Demo: while idle, simulate users connecting/disconnecting around the cap
+  useEffect(() => {
+    if (state !== 'idle') return;
+    const id = setInterval(() => {
+      setActiveUsers(u => {
+        // bias toward staying near the cap so the disabled state is visible
+        const delta = Math.random() < 0.55 ? -1 : 1;
+        const next = Math.max(17, Math.min(20, u + delta));
+        return next;
+      });
+    }, 2200);
+    return () => clearInterval(id);
+  }, [state]);
+
+  // When capacity transitions full -> available, briefly highlight
+  useEffect(() => {
+    if (prevFullRef.current && !serverFull) {
+      setJustFreed(true);
+      const t = setTimeout(() => setJustFreed(false), 2500);
+      prevFullRef.current = serverFull;
+      return () => clearTimeout(t);
+    }
+    prevFullRef.current = serverFull;
+  }, [serverFull]);
+
+  const handleStart = () => {
+    if (serverFull) return; // guarded by disabled state
+    setState('recording');
+    setEntries([]);
+  };
+  const handleStop = () => setState('paused');
+  const handleResume = () => setState('recording');
+  const handleReset = () => {
+    setState('idle');
+    setEntries([]);
+    setShowSettings(false);
+  };
+
+  const setupOpen = (isIdle || showSettings);
+  const summaryOpen = !isIdle && !showSettings;
+
+  return (
+    <div className="app">
+      {/* Header */}
+      <div className="app-header">
+        <div className="logo">
+          <span className="lS">S</span><span className="lT1">T</span><span className="li">i</span><span className="lT2">T</span><span className="ly">y</span>
+        </div>
+        <div style={{display:'flex', alignItems:'center', gap:10}}>
+          {!isIdle && (
+            <button className="edit-btn" onClick={() => setShowSettings(v => !v)} title="Settings">
+              ⚙
+            </button>
+          )}
+          <div className={`status-dot ${isRecording ? 'active' : ''}`} />
+          <button onClick={() => setSpeakerOn(v => !v)} style={{background:'none',border:'none',cursor:'pointer',color: speakerOn ? '#7A9030' : '#ccc',display:'flex',alignItems:'center',padding:'2px'}}>
+            {speakerOn ? (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+              </svg>
+            ) : (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                <line x1="23" y1="9" x2="17" y2="15"/>
+                <line x1="17" y1="9" x2="23" y2="15"/>
+              </svg>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Setup panel */}
+      <div className={`setup-panel ${setupOpen ? 'open' : 'collapsed'}`}>
+        <div style={{
+          overflow:'hidden',
+          maxHeight: setupExpanded ? 300 : 0,
+          opacity: setupExpanded ? 1 : 0,
+          transition: 'max-height 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.25s ease'
+        }}>
+          {/* Lang cards */}
+          <div className="setup-lang-row">
+            <div className="lang-card mine" onClick={() => setPicker('my')}>
+              <div className="lang-card-label">My Language</div>
+              <div className="lang-card-value">{myLang.split('(')[0]}</div>
+              <span className="lang-card-arrow">▾</span>
+            </div>
+            <div className="lang-swap">⇄</div>
+            <div className="lang-card theirs" onClick={() => setPicker('peer')}>
+              <div className="lang-card-label">Peer Language</div>
+              <div className="lang-card-value">{peerLang.split('(')[0]}</div>
+              <span className="lang-card-arrow">▾</span>
+            </div>
+          </div>
+          {/* Mode segmented */}
+          <div className="mode-row">
+            <div className="mode-label">Mode</div>
+            <div className="mode-segment">
+              {MODES.map(m => (
+                <button key={m} className={`mode-option ${mode===m ? 'active' : ''}`} onClick={() => setMode(m)}>
+                  {m}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+        {!isIdle && showSettings && (
+          <div style={{textAlign:'right', paddingTop:6, paddingBottom:4}}>
+            <button onClick={() => setShowSettings(false)} style={{
+              background:'none', border:'none', cursor:'pointer',
+              fontSize:12, color:'#aaa', fontWeight:600, fontFamily:'inherit',
+              display:'inline-flex', alignItems:'center', gap:4
+            }}>
+              Collapse ▲
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Language picker sheet */}
+      {picker && (
+        <div className="lang-picker-overlay" onClick={() => setPicker(null)}>
+          <div className="lang-picker-sheet" onClick={e => e.stopPropagation()}>
+            <div className="lang-picker-title">{picker === 'my' ? 'My Language' : 'Peer Language'}</div>
+            {LANGS.map(l => (
+              <button key={l} className={`lang-picker-option ${(picker==='my' ? myLang : peerLang) === l ? 'selected' : ''}`}
+                onClick={() => {
+                  if (picker === 'my') setMyLang(l);
+                  else setPeerLang(l);
+                  setPicker(null);
+                }}>
+                {l}
+              </button>
+            ))}
+            <button className="lang-picker-cancel" onClick={() => setPicker(null)}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {/* Summary chips when session active */}
+      <div className={`setup-summary ${summaryOpen ? 'open' : 'collapsed'}`}>
+        <div className="setup-summary-inner" onClick={() => setShowSettings(v => !v)} style={{cursor:'pointer'}}>
+          <span className="chip">{myLang.split('(')[0]}</span>
+          <span style={{fontSize:11, color:'#aaa', alignSelf:'center'}}>↔</span>
+          <span className="chip cyan">{peerLang.split('(')[0]}</span>
+          <span className="chip gray">{mode}</span>
+        </div>
+      </div>
+
+      {/* Conversation area */}
+      <div className="conv-area" ref={convRef}>
+        {!hasEntries && !isIdle && (
+          <div className="conv-empty">
+            <div className="conv-empty-icon">🎙</div>
+            <p>Start speaking</p>
+          </div>
+        )}
+
+        {hasEntries && entries.map((e, i) => {
+          const isMine = e.lang === myLang.split('(')[1]?.replace(')','');
+          const isPeer = e.lang === peerLang.split('(')[1]?.replace(')','');
+          const clr = isMine
+            ? { bubble:'#6080C8', avatar:'#9BB4D4' }
+            : isPeer
+            ? { bubble:'#f2f2f2', avatar:'#E8E0A0', text:'#1a1a1a', subText:'#aaa' }
+            : getLangColor(e.lang);
+          const side = isMine ? 'mine' : 'theirs';
+          const textColor = clr.text || '#fff';
+          const subColor = clr.subText || (isMine ? 'rgba(255,255,255,0.65)' : '#aaa');
+          return (
+            <div key={e.id} className={`conv-item ${side}`}>
+              <div className="avatar" style={{background: clr.avatar, color: isMine ? '#fff' : '#7A9030'}}>
+                {e.lang.toUpperCase()}
+              </div>
+              <div className="bubble" style={{background: clr.bubble}}>
+                <div className="conv-main" style={{color: textColor, fontSize:15, fontWeight:600, lineHeight:1.4}}>{e.main}</div>
+                <div className="conv-sub" style={{color: subColor, fontSize:11, marginTop:2}}>{e.sub}</div>
+              </div>
+            </div>
+          );
+        })}
+
+        {isRecording && (
+          <div style={{height:8}} />
+        )}
+
+        {/* Empty state when idle */}
+        {isIdle && (
+          <div className="conv-empty">
+            {mode === 'Speaker output' && (
+              <svg width="150" height="125" viewBox="0 0 180 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {/* round bg */}
+                <circle cx="90" cy="82" r="62" fill="#E8E0A0" opacity="0.3"/>
+                {/* ground */}
+                <ellipse cx="90" cy="132" rx="58" ry="7" fill="#7A9030" opacity="0.22"/>
+
+                {/* phone in center, smaller */}
+                <rect x="84" y="70" width="12" height="28" rx="2.5" fill="#1a1a1a"/>
+                <rect x="85.4" y="74" width="9.2" height="20" rx="1" fill="#6080C8"/>
+                {/* speaker grille */}
+                <rect x="87.5" y="71.8" width="5" height="1.2" rx="0.6" fill="#555"/>
+                {/* wave icon on screen */}
+                <path d="M87 84 Q88.5 81 90 84 Q91.5 87 93 84" stroke="#E8E0A0" strokeWidth="1" fill="none" strokeLinecap="round"/>
+
+                {/* sound waves left */}
+                <path d="M80 76 Q75 84 80 92" stroke="#6080C8" strokeWidth="1.4" fill="none" strokeLinecap="round" opacity="0.75"/>
+                <path d="M75 72 Q67 84 75 96" stroke="#6080C8" strokeWidth="1.4" fill="none" strokeLinecap="round" opacity="0.4"/>
+
+                {/* sound waves right */}
+                <path d="M100 76 Q105 84 100 92" stroke="#6080C8" strokeWidth="1.4" fill="none" strokeLinecap="round" opacity="0.75"/>
+                <path d="M105 72 Q113 84 105 96" stroke="#6080C8" strokeWidth="1.4" fill="none" strokeLinecap="round" opacity="0.4"/>
+
+                {/* left character — facing right toward phone */}
+                <ellipse cx="55" cy="114" rx="14" ry="15" fill="#9BB4D4"/>
+                <circle cx="55" cy="92" r="13" fill="#E8E0A0"/>
+                <circle cx="59" cy="92" r="1.5" fill="#6080C8"/>
+                <circle cx="64" cy="92" r="1.5" fill="#6080C8"/>
+                <path d="M58 97 Q61 99 64 97" stroke="#6080C8" strokeWidth="1.3" strokeLinecap="round" fill="none"/>
+
+                {/* right character — facing left toward phone */}
+                <ellipse cx="125" cy="114" rx="14" ry="15" fill="#6080C8"/>
+                <circle cx="125" cy="92" r="13" fill="#E8E0A0"/>
+                <circle cx="116" cy="92" r="1.5" fill="#7A9030"/>
+                <circle cx="121" cy="92" r="1.5" fill="#7A9030"/>
+                <path d="M116 97 Q119 99 122 97" stroke="#7A9030" strokeWidth="1.3" strokeLinecap="round" fill="none"/>
+              </svg>
+            )}
+
+            {mode === 'Earphone only' && (
+              <svg width="150" height="125" viewBox="0 0 180 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {/* round bg */}
+                <circle cx="90" cy="82" r="62" fill="#9BB4D4" opacity="0.22"/>
+                <ellipse cx="90" cy="132" rx="58" ry="7" fill="#7A9030" opacity="0.22"/>
+
+                {/* connection dots arcing between two listeners */}
+                <circle cx="74" cy="76" r="1.6" fill="#9BB4D4"/>
+                <circle cx="84" cy="70" r="2.2" fill="#E8E0A0"/>
+                <circle cx="96" cy="70" r="2.2" fill="#E8E0A0"/>
+                <circle cx="106" cy="76" r="1.6" fill="#6080C8"/>
+
+                {/* left character — facing right */}
+                <ellipse cx="55" cy="114" rx="14" ry="15" fill="#9BB4D4"/>
+                <circle cx="55" cy="92" r="13" fill="#E8E0A0"/>
+                <circle cx="59" cy="92" r="1.5" fill="#6080C8"/>
+                <circle cx="64" cy="92" r="1.5" fill="#6080C8"/>
+                <path d="M58 97 Q61 99 64 97" stroke="#6080C8" strokeWidth="1.3" strokeLinecap="round" fill="none"/>
+                {/* earbud on visible (right) ear */}
+                <ellipse cx="43" cy="94" rx="2.6" ry="3.6" fill="#fff" stroke="#6080C8" strokeWidth="1.3"/>
+                <rect x="42" y="97.5" width="2" height="4.5" rx="1" fill="#fff" stroke="#6080C8" strokeWidth="1"/>
+
+                {/* right character — facing left */}
+                <ellipse cx="125" cy="114" rx="14" ry="15" fill="#6080C8"/>
+                <circle cx="125" cy="92" r="13" fill="#E8E0A0"/>
+                <circle cx="116" cy="92" r="1.5" fill="#7A9030"/>
+                <circle cx="121" cy="92" r="1.5" fill="#7A9030"/>
+                <path d="M116 97 Q119 99 122 97" stroke="#7A9030" strokeWidth="1.3" strokeLinecap="round" fill="none"/>
+                {/* earbud on visible (left) ear */}
+                <ellipse cx="137" cy="94" rx="2.6" ry="3.6" fill="#fff" stroke="#7A9030" strokeWidth="1.3"/>
+                <rect x="136" y="97.5" width="2" height="4.5" rx="1" fill="#fff" stroke="#7A9030" strokeWidth="1"/>
+              </svg>
+            )}
+
+            {mode === 'Both' && (
+              <svg width="150" height="125" viewBox="0 0 180 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {/* round bg */}
+                <circle cx="90" cy="82" r="62" fill="#E8E0A0" opacity="0.25"/>
+                <ellipse cx="90" cy="132" rx="58" ry="7" fill="#7A9030" opacity="0.22"/>
+
+                {/* left character — with earbud */}
+                <ellipse cx="55" cy="114" rx="14" ry="15" fill="#9BB4D4"/>
+                <circle cx="55" cy="92" r="13" fill="#E8E0A0"/>
+                <circle cx="59" cy="92" r="1.5" fill="#6080C8"/>
+                <circle cx="64" cy="92" r="1.5" fill="#6080C8"/>
+                <path d="M58 97 Q61 99 64 97" stroke="#6080C8" strokeWidth="1.3" strokeLinecap="round" fill="none"/>
+                {/* "ME" tag above left character */}
+                <rect x="44" y="64" width="22" height="11" rx="5.5" fill="#6080C8"/>
+                <path d="M53 75 L55 78 L57 75 Z" fill="#6080C8"/>
+                <text x="55" y="72.5" textAnchor="middle" fontSize="7.5" fontWeight="800" fill="#fff" fontFamily="'Noto Sans KR','Noto Sans',sans-serif" letterSpacing="0.5">ME</text>
+                {/* earbud on left (visible) ear */}
+                <ellipse cx="43" cy="94" rx="2.6" ry="3.6" fill="#fff" stroke="#6080C8" strokeWidth="1.3"/>
+                <rect x="42" y="97.5" width="2" height="4.5" rx="1" fill="#fff" stroke="#6080C8" strokeWidth="1"/>
+
+                {/* phone between (smaller) */}
+                <rect x="84" y="76" width="12" height="28" rx="2.5" fill="#1a1a1a"/>
+                <rect x="85.4" y="80" width="9.2" height="20" rx="1" fill="#6080C8"/>
+                <rect x="87.5" y="77.8" width="5" height="1.2" rx="0.6" fill="#555"/>
+                <path d="M87 90 Q88.5 87 90 90 Q91.5 93 93 90" stroke="#E8E0A0" strokeWidth="1" fill="none" strokeLinecap="round"/>
+
+                {/* sound waves right (phone speaker -> right person) */}
+                <path d="M100 82 Q105 90 100 98" stroke="#6080C8" strokeWidth="1.4" fill="none" strokeLinecap="round" opacity="0.75"/>
+                <path d="M105 78 Q113 90 105 102" stroke="#6080C8" strokeWidth="1.4" fill="none" strokeLinecap="round" opacity="0.4"/>
+
+                {/* right character — listening to speaker */}
+                <ellipse cx="125" cy="114" rx="14" ry="15" fill="#6080C8"/>
+                <circle cx="125" cy="92" r="13" fill="#E8E0A0"/>
+                <circle cx="116" cy="92" r="1.5" fill="#7A9030"/>
+                <circle cx="121" cy="92" r="1.5" fill="#7A9030"/>
+                <path d="M116 97 Q119 99 122 97" stroke="#7A9030" strokeWidth="1.3" strokeLinecap="round" fill="none"/>
+              </svg>
+            )}
+            <p style={{fontSize:13, color:'#bbb', marginTop:4}}>Configure and tap Start</p>
+          </div>
+        )}
+      </div>
+
+      {/* Recording bar */}
+      {isRecording && (
+        <div className="recording-bar">
+          <div className="rec-dot" />
+          <span className="rec-label">Listening...</span>
+          <div className="waveform-inline">
+            {[0,0.1,0.2,0.3,0.4,0.3,0.2,0.1,0].map((d,i) => (
+              <div key={i} className="wave-bar" style={{animationDelay:`${d}s`}} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Capacity notice — only when idle */}
+      {isIdle && (
+        <div className={`capacity-notice ${serverFull ? '' : (justFreed ? 'ok' : 'hidden')}`}>
+          <div className="cap-pulse" />
+          <div className="cap-text">
+            {serverFull
+              ? 'Server is full. Start will activate when a slot frees up.'
+              : 'A slot just opened — you can start now.'}
+          </div>
+          <div className="cap-count">{Math.round((activeUsers / SERVER_MAX) * 100)}%</div>
+        </div>
+      )}
+
+      {/* Bottom actions */}
+      <div className="bottom-bar">
+        {isIdle && (
+          <button
+            className={`btn btn-primary ${serverFull ? 'is-disabled' : ''}`}
+            onClick={handleStart}
+            disabled={serverFull}
+            aria-disabled={serverFull}
+          >
+            {serverFull ? 'Waiting for a slot…' : 'Start'}
+          </button>
+        )}
+        {isRecording && (
+          <>
+            <button className="btn btn-stop" onClick={handleStop}>
+              Stop
+            </button>
+            <button className="btn btn-ghost" onClick={handleReset} style={{width:52}}>
+              ✕
+            </button>
+          </>
+        )}
+        {isPaused && (
+          <>
+            <button className="btn" onClick={handleResume} style={{flex:1, background:'transparent', color:'#aaa', border:'2px solid #ccc'}}>
+              Resume
+            </button>
+            <button className="btn" onClick={handleReset} style={{flex:1, background:'transparent', color:'#aaa', border:'2px solid #ccc'}}>
+              Back
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <AndroidDevice>
+    <App />
+  </AndroidDevice>
+);
+</script>
+<div id="root"></div>
+</body>
+</html>

@@ -519,6 +519,7 @@ class Qwen3ASRStreamingHandler:
             "audio_anchor_sec": self.current_time,
             "vad_speech_detected": False,
             "last_committed_asr_text": "",  # cross-call 반복 억제용
+            "pending_reset": False,
         }
 
     def _reset_stream_slot(self, slot_key: str):
@@ -631,6 +632,13 @@ class Qwen3ASRStreamingHandler:
         # 생성 중 lock 미보유 — state.text는 await 없는 단순 대입이므로 asyncio 안전
         await self.asr.streaming_transcribe(chunk, slot["state"], lora_request=lora_request, on_seg=_on_seg)
         await self._process_slot_updates(slot_key)
+
+        _s = self._slot(slot_key)
+        if _s.get("pending_reset"):
+            self._reset_stream_slot(slot_key)
+            if slot_key == self.active_slot:
+                self.state = self.stream_slots[self.active_slot]["state"]
+            self.log.info(f"[seg-slot-reset] slot={slot_key} reset after full SEG commit")
 
         async with self.asr_lock:
             self.asr_processed_cursor = self.sample_cursor
@@ -876,6 +884,11 @@ class Qwen3ASRStreamingHandler:
                     f"[final-sentence/{effective_reason.upper()}] slot={slot_key} lang={payload['language']} "
                     f"text={payload['original']}"
                 )
+
+            if ready_to_emit:
+                slot["pending_reset"] = not bool(remaining.strip())
+                if slot["pending_reset"]:
+                    self.log.info(f"[seg-reset-pending] slot={slot_key} trailing empty → slot reset queued")
 
     def _run_vad_sync(self, chunk: np.ndarray, chunk_base_sample: int):
         """VAD 추론을 동기로 실행 (run_in_executor에서 호출).
