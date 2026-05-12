@@ -802,6 +802,38 @@ class Qwen3ASRStreamingHandler:
             self.log.info(
                 f"[seg-detect] slot={slot_key} raw={current_text[:120]}..."
             )
+
+            # VAD 한정: 번역 전 텍스트 매칭으로 실제 partial에 없는 문장 조기 제거
+            if force_reason == "vad":
+                async with self.asr_lock:
+                    _pre_text = (slot["state"].text or "").strip() if slot["state"] else ""
+                    if "<asr_text>" in _pre_text:
+                        _pre_text = _pre_text.split("<asr_text>", 1)[-1].strip()
+                _pre_ns = re.sub(r'\s+', ' ', _pre_text.replace("<SEG>", "")).strip()
+                _cdisp = slot["committed_display"]
+                _pos = len(_cdisp) if (_cdisp and _pre_ns.startswith(_cdisp)) else 0
+                _PUNCT = '.,!?;:。？！'
+                _kept = []
+                for _sr, _tr in sentences_to_commit:
+                    _sd = re.sub(r'\s+', ' ', _sr.replace("<SEG>", "")).strip()
+                    _sd_core = _sd.rstrip(_PUNCT)
+                    _t = _pre_ns[_pos:].lstrip()
+                    _lead = len(_pre_ns[_pos:]) - len(_t)
+                    if _sd_core and _t.startswith(_sd_core):
+                        _end = len(_sd_core)
+                        if _end < len(_t) and _t[_end].isalpha():
+                            break  # 부분 단어 매칭 방지
+                        while _end < len(_t) and _t[_end] in _PUNCT:
+                            _end += 1
+                        _kept.append((_sr, _tr))
+                        _pos += _lead + _end
+                    else:
+                        break
+                sentences_to_commit = _kept
+                if not sentences_to_commit:
+                    self.log.info(f"[vad-prematch-skip] slot={slot_key} no sentences in partial, skipping translation")
+                    return
+
             translated_payloads = []
             for sentence_raw, trigger_reason in sentences_to_commit:
                 # <SEG>는 사용자 출력/번역에서 제거
@@ -836,38 +868,63 @@ class Qwen3ASRStreamingHandler:
                     latest_state = slot["state"]
                     latest_text = (latest_state.text or "").strip() if latest_state else ""
 
-                # committed_len은 이전 pass 기준 절대 위치라 텍스트가 바뀌면 무효.
-                # committed_seg_count 기준으로 latest_text 내 커서를 재계산해 안정성 확보.
-                _seg_tag = "<SEG>"
-                cursor, _found = 0, 0
-                while _found < slot["committed_seg_count"]:
-                    _idx = latest_text.find(_seg_tag, cursor)
-                    if _idx == -1:
-                        cursor = len(latest_text)
-                        break
-                    cursor = _idx + len(_seg_tag)
-                    _found += 1
-                tail = latest_text[cursor:]
-
-                for payload in translated_payloads:
-                    sentence_raw = payload["original_raw"]
-                    stripped_tail = tail.lstrip()
-                    leading_ws = len(tail) - len(stripped_tail)
-                    if not stripped_tail.startswith(sentence_raw):
-                        break
-                    cursor += leading_ws + len(sentence_raw)
+                if force_reason == "vad":
+                    # VAD: SEG 위치 무관, 텍스트 기반 매칭 (trailing punctuation 무시)
+                    _PUNCT = '.,!?;:。？！'
+                    latest_ns = re.sub(r'\s+', ' ', latest_text.replace("<SEG>", "")).strip()
+                    cdisp = slot["committed_display"]
+                    pos = len(cdisp) if (cdisp and latest_ns.startswith(cdisp)) else 0
+                    for payload in translated_payloads:
+                        sent_disp = payload["original"]
+                        sent_core = sent_disp.rstrip(_PUNCT)
+                        tail_ns = latest_ns[pos:].lstrip()
+                        lead = len(latest_ns[pos:]) - len(tail_ns)
+                        if not (sent_core and tail_ns.startswith(sent_core)):
+                            break
+                        end = len(sent_core)
+                        if end < len(tail_ns) and tail_ns[end].isalpha():
+                            break  # 부분 단어 매칭 방지
+                        while end < len(tail_ns) and tail_ns[end] in _PUNCT:
+                            end += 1
+                        pos += lead + end
+                        ready_to_emit.append(payload)
+                    if ready_to_emit:
+                        slot["committed_display"] = latest_ns[:pos].strip()
+                        slot["committed_len"] = len(latest_text)
+                        slot["audio_anchor_sec"] = self.current_time
+                        slot["last_committed_asr_text"] = ready_to_emit[-1]["original"]
+                else:
+                    # SEG: committed_seg_count 기준 커서로 latest_text 내 위치 재계산
+                    _seg_tag = "<SEG>"
+                    cursor, _found = 0, 0
+                    while _found < slot["committed_seg_count"]:
+                        _idx = latest_text.find(_seg_tag, cursor)
+                        if _idx == -1:
+                            cursor = len(latest_text)
+                            break
+                        cursor = _idx + len(_seg_tag)
+                        _found += 1
                     tail = latest_text[cursor:]
-                    ready_to_emit.append(payload)
 
-                if ready_to_emit:
-                    slot["committed_len"] = cursor
-                    slot["committed_prefix"] = latest_text[:slot["committed_len"]]
-                    slot["committed_display"] = re.sub(
-                        r'\s+', ' ', slot["committed_prefix"].replace("<SEG>", "")
-                    ).strip()
-                    slot["committed_seg_count"] += len(ready_to_emit)
-                    slot["audio_anchor_sec"] = self.current_time
-                    slot["last_committed_asr_text"] = ready_to_emit[-1]["original"]
+                    for payload in translated_payloads:
+                        sentence_raw = payload["original_raw"]
+                        stripped_tail = tail.lstrip()
+                        leading_ws = len(tail) - len(stripped_tail)
+                        if not stripped_tail.startswith(sentence_raw):
+                            break
+                        cursor += leading_ws + len(sentence_raw)
+                        tail = latest_text[cursor:]
+                        ready_to_emit.append(payload)
+
+                    if ready_to_emit:
+                        slot["committed_len"] = cursor
+                        slot["committed_prefix"] = latest_text[:slot["committed_len"]]
+                        slot["committed_display"] = re.sub(
+                            r'\s+', ' ', slot["committed_prefix"].replace("<SEG>", "")
+                        ).strip()
+                        slot["committed_seg_count"] += len(ready_to_emit)
+                        slot["audio_anchor_sec"] = self.current_time
+                        slot["last_committed_asr_text"] = ready_to_emit[-1]["original"]
 
             for payload in ready_to_emit:
                 effective_reason = force_reason or payload["trigger_reason"]
