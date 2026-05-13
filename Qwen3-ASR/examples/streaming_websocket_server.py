@@ -443,7 +443,6 @@ class Qwen3ASRStreamingHandler:
         # ── silero-vad 초기화 (VADIterator 사용) ──
         # 서버에서 미리 로드한 vad_model_bytes로 클라이언트마다 독립 인스턴스 생성.
         self.vad_enabled = False
-        self.vad_speech_detected = False
         self.vad_iterator = None
         if _SILERO_VAD_AVAILABLE and vad_model_bytes is not None:
             try:
@@ -795,11 +794,6 @@ class Qwen3ASRStreamingHandler:
             remaining = after
 
         if sentences_to_commit:
-            if self.vad_enabled and not self.vad_speech_detected:
-                self.log.info(
-                    f"[vad-gate] slot={slot_key} suppressed {len(sentences_to_commit)} seg(s): no speech detected"
-                )
-                return
             self.log.info(
                 f"[seg-detect] slot={slot_key} raw={current_text[:120]}..."
             )
@@ -968,9 +962,6 @@ class Qwen3ASRStreamingHandler:
                     self.log.info(
                         f"[vad] speech end detected; target_samples={end_sample}"
                     )
-                    self.vad_speech_detected = True
-                elif speech_dict is not None and "start" in speech_dict:
-                    self.vad_speech_detected = True
                 offset += VAD_WINDOW_SIZE_SAMPLES
         except Exception as e:
             self.log.warning(f"[vad] error, disabling for this session: {e}")
