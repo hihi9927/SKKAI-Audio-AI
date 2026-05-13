@@ -513,11 +513,16 @@ class Qwen3ASRStreamingHandler:
     def _new_stream_slot(self) -> dict:
         allowed_languages = None
         if self.config.restrict_languages and self.client_lang and self.client_lang != "auto":
-            # targetLang은 번역 대상이지 ASR 출력 언어가 아니므로 제외.
-            # ASR은 항상 발화 언어(client_lang)만 출력해야 한다.
-            name = lang_code_to_name(self.client_lang)
-            if name:
-                allowed_languages = [name]
+            langs = []
+            src_name = lang_code_to_name(self.client_lang)
+            if src_name:
+                langs.append(src_name)
+            if self.client_target_lang:
+                tgt_name = lang_code_to_name(self.client_target_lang)
+                if tgt_name and tgt_name not in langs:
+                    langs.append(tgt_name)
+            if langs:
+                allowed_languages = langs
 
         return {
             "state": self.asr.init_streaming_state(
