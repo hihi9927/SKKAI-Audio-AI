@@ -1023,7 +1023,6 @@ class Qwen3ASRStreamingHandler:
             self.active_slot, self.standby_slot = self.standby_slot, self.active_slot
             self.state = self.stream_slots[self.active_slot]["state"]
             self.stream_slots[self.active_slot]["audio_anchor_sec"] = target_audio_end_sec
-            self.vad_speech_detected = False  # 새 발화 대기 — speech start 이벤트로 다시 열림
             self.log.info(
                 f"[slot-switch] old_active={old_active} new_active={self.active_slot} "
                 f"new_standby={self.standby_slot}"
