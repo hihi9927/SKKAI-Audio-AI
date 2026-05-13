@@ -443,6 +443,7 @@ class Qwen3ASRStreamingHandler:
         # ── silero-vad 초기화 (VADIterator 사용) ──
         # 서버에서 미리 로드한 vad_model_bytes로 클라이언트마다 독립 인스턴스 생성.
         self.vad_enabled = False
+        self.vad_speech_detected = False
         self.vad_iterator = None
         if _SILERO_VAD_AVAILABLE and vad_model_bytes is not None:
             try:
@@ -517,7 +518,6 @@ class Qwen3ASRStreamingHandler:
             "committed_display": "",
             "committed_seg_count": 0,
             "audio_anchor_sec": self.current_time,
-            "vad_speech_detected": False,
             "last_committed_asr_text": "",  # cross-call 반복 억제용
         }
 
@@ -636,10 +636,7 @@ class Qwen3ASRStreamingHandler:
         _s = self._slot(slot_key)
         # transcribe 완료 후 판단: 이번 청크에서 새 SEG 커밋이 있었고 uncommitted가 없으면 리셋
         if _s.get("committed_seg_count", 0) > seg_count_before and not self._slot_uncommitted_display(slot_key):
-            vad_was_detected = _s.get("vad_speech_detected", False)
             self._reset_stream_slot(slot_key)
-            new_slot = self._slot(slot_key)
-            new_slot["vad_speech_detected"] = vad_was_detected
             if slot_key == self.active_slot:
                 self.state = self.stream_slots[self.active_slot]["state"]
             self.log.info(f"[seg-slot-reset] slot={slot_key} reset, no trailing after SEG commit")
@@ -798,7 +795,7 @@ class Qwen3ASRStreamingHandler:
             remaining = after
 
         if sentences_to_commit:
-            if self.vad_enabled and not slot["vad_speech_detected"]:
+            if self.vad_enabled and not self.vad_speech_detected:
                 self.log.info(
                     f"[vad-gate] slot={slot_key} suppressed {len(sentences_to_commit)} seg(s): no speech detected"
                 )
@@ -971,9 +968,9 @@ class Qwen3ASRStreamingHandler:
                     self.log.info(
                         f"[vad] speech end detected; target_samples={end_sample}"
                     )
-                    self.stream_slots[self.active_slot]["vad_speech_detected"] = True
+                    self.vad_speech_detected = True
                 elif speech_dict is not None and "start" in speech_dict:
-                    self.stream_slots[self.active_slot]["vad_speech_detected"] = True
+                    self.vad_speech_detected = True
                 offset += VAD_WINDOW_SIZE_SAMPLES
         except Exception as e:
             self.log.warning(f"[vad] error, disabling for this session: {e}")
@@ -1026,6 +1023,7 @@ class Qwen3ASRStreamingHandler:
             self.active_slot, self.standby_slot = self.standby_slot, self.active_slot
             self.state = self.stream_slots[self.active_slot]["state"]
             self.stream_slots[self.active_slot]["audio_anchor_sec"] = target_audio_end_sec
+            self.vad_speech_detected = False  # 새 발화 대기 — speech start 이벤트로 다시 열림
             self.log.info(
                 f"[slot-switch] old_active={old_active} new_active={self.active_slot} "
                 f"new_standby={self.standby_slot}"
