@@ -519,7 +519,6 @@ class Qwen3ASRStreamingHandler:
             "audio_anchor_sec": self.current_time,
             "vad_speech_detected": False,
             "last_committed_asr_text": "",  # cross-call 반복 억제용
-            "pending_reset": False,
         }
 
     def _reset_stream_slot(self, slot_key: str):
@@ -621,6 +620,7 @@ class Qwen3ASRStreamingHandler:
 
     async def _asr_streaming_transcribe(self, chunk: np.ndarray, slot_key: Optional[str] = None):
         slot = self._slot(slot_key)
+        seg_count_before = slot.get("committed_seg_count", 0)
 
         async def _on_seg(_):
             # lock 밖에서 호출되므로 _process_slot_updates가 asr_lock 자유롭게 획득 가능
@@ -634,11 +634,15 @@ class Qwen3ASRStreamingHandler:
         await self._process_slot_updates(slot_key)
 
         _s = self._slot(slot_key)
-        if _s.get("pending_reset"):
+        # transcribe 완료 후 판단: 이번 청크에서 새 SEG 커밋이 있었고 uncommitted가 없으면 리셋
+        if _s.get("committed_seg_count", 0) > seg_count_before and not self._get_partial_text(slot_key):
+            vad_was_detected = _s.get("vad_speech_detected", False)
             self._reset_stream_slot(slot_key)
+            new_slot = self._slot(slot_key)
+            new_slot["vad_speech_detected"] = vad_was_detected
             if slot_key == self.active_slot:
                 self.state = self.stream_slots[self.active_slot]["state"]
-            self.log.info(f"[seg-slot-reset] slot={slot_key} reset after full SEG commit")
+            self.log.info(f"[seg-slot-reset] slot={slot_key} reset, no trailing after SEG commit")
 
         async with self.asr_lock:
             self.asr_processed_cursor = self.sample_cursor
@@ -942,10 +946,6 @@ class Qwen3ASRStreamingHandler:
                     f"text={payload['original']}"
                 )
 
-            if ready_to_emit:
-                slot["pending_reset"] = not bool(remaining.strip())
-                if slot["pending_reset"]:
-                    self.log.info(f"[seg-reset-pending] slot={slot_key} trailing empty → slot reset queued")
 
     def _run_vad_sync(self, chunk: np.ndarray, chunk_base_sample: int):
         """VAD 추론을 동기로 실행 (run_in_executor에서 호출).
