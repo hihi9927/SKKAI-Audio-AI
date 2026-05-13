@@ -191,8 +191,23 @@ LANG_CODE_TO_NAME = {v: k for k, v in LANG_NAME_TO_CODE.items()}
 
 
 def lang_to_code(lang: str) -> str:
-    """언어 이름을 코드로 변환 (Korean -> ko)"""
-    return LANG_NAME_TO_CODE.get(lang, lang.lower()[:2])
+    """언어 이름을 코드로 변환 (Korean -> ko, Australian English -> en)"""
+    if not lang:
+        return ""
+    mapped = LANG_NAME_TO_CODE.get(lang)
+    if mapped:
+        return mapped
+    lower = lang.lower()
+    # "Australian English", "British English" 등 variant 처리
+    for keyword, code in (
+        ("english", "en"), ("korean", "ko"), ("japanese", "ja"),
+        ("chinese", "zh"), ("mandarin", "zh"), ("cantonese", "zh"),
+        ("french", "fr"), ("german", "de"), ("spanish", "es"),
+        ("vietnamese", "vi"), ("indonesian", "id"), ("thai", "th"),
+    ):
+        if keyword in lower:
+            return code
+    return lower[:2]
 
 
 def lang_code_to_name(code: str) -> Optional[str]:
@@ -1142,6 +1157,16 @@ class Qwen3ASRStreamingHandler:
                 text, self.client_lang, audio_end_sec
             )
             self.log.info(f"[translate-flip] tl={self.client_lang} -> translation='{translation}'")
+        elif not effective and text and self.client_lang in ("ko", "ja", "zh"):
+            # 언어 감지 완전 실패: Latin 문자 비율로 상대방 언어 추측
+            # 한중일 클라이언트인데 텍스트가 대부분 Latin → 상대방이 영어권 발화
+            alpha = [c for c in text if c.isalpha()]
+            if alpha and sum(1 for c in alpha if ord(c) < 128) / len(alpha) > 0.8:
+                translation, _, extra = await self._translate(
+                    text, self.client_lang, audio_end_sec
+                )
+                effective = self.client_target_lang
+                self.log.info(f"[translate-flip-latin] tl={self.client_lang} -> translation='{translation}'")
         return text, translation, effective, extra
 
     def _get_flush_audio_end_sec(self) -> float:
