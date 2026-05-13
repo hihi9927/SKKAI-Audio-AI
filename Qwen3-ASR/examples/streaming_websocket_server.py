@@ -458,7 +458,6 @@ class Qwen3ASRStreamingHandler:
         # ── silero-vad 초기화 (VADIterator 사용) ──
         # 서버에서 미리 로드한 vad_model_bytes로 클라이언트마다 독립 인스턴스 생성.
         self.vad_enabled = False
-        self.vad_waiting_for_start = False  # VAD end 후 다음 speech start까지 오디오 버림
         self.vad_iterator = None
         if _SILERO_VAD_AVAILABLE and vad_model_bytes is not None:
             try:
@@ -505,7 +504,6 @@ class Qwen3ASRStreamingHandler:
         # reset VAD
         self.sample_cursor = 0
         self.asr_processed_cursor = 0
-        self.vad_waiting_for_start = False
         if self.vad_iterator is not None:
             self.vad_iterator.reset_states()
         self._segment_history.clear()
@@ -964,10 +962,9 @@ class Qwen3ASRStreamingHandler:
         """VAD 추론을 동기로 실행 (run_in_executor에서 호출).
 
         Returns:
-            list[tuple[str, int]]: ("end"|"start", local_idx) 이벤트 목록 (시간순).
-            None if error.
+            list[int]: 발화 종료 local index 목록. 예외 발생 시 None 반환.
         """
-        events: list[tuple[str, int]] = []
+        vad_end_local_indices: list[int] = []
         try:
             offset = 0
             while offset + VAD_WINDOW_SIZE_SAMPLES <= chunk.size:
@@ -976,22 +973,18 @@ class Qwen3ASRStreamingHandler:
                     torch.from_numpy(window),
                     return_seconds=False,
                 )
-                if speech_dict is not None:
-                    if "end" in speech_dict:
-                        end_sample = self.sample_cursor - (chunk.size - offset - VAD_WINDOW_SIZE_SAMPLES)
-                        local_idx = int(end_sample - chunk_base_sample)
-                        local_idx = max(0, min(int(chunk.size), local_idx))
-                        events.append(("end", local_idx))
-                        self.log.info(f"[vad] speech end detected; target_samples={end_sample}")
-                    elif "start" in speech_dict:
-                        local_idx = max(0, min(int(chunk.size), offset))
-                        events.append(("start", local_idx))
-                        self.log.info(f"[vad] speech start detected; local_idx={local_idx}")
+                if speech_dict is not None and "end" in speech_dict:
+                    end_sample = self.sample_cursor - (chunk.size - offset - VAD_WINDOW_SIZE_SAMPLES)
+                    local_idx = int(end_sample - chunk_base_sample)
+                    local_idx = max(0, min(int(chunk.size), local_idx))
+                    if not vad_end_local_indices or local_idx > vad_end_local_indices[-1]:
+                        vad_end_local_indices.append(local_idx)
+                    self.log.info(f"[vad] speech end detected; target_samples={end_sample}")
                 offset += VAD_WINDOW_SIZE_SAMPLES
         except Exception as e:
             self.log.warning(f"[vad] error, disabling for this session: {e}")
             return None
-        return events
+        return vad_end_local_indices
 
     async def process_audio_chunk(self, audio_data: bytes):
         if not audio_data:
@@ -1003,7 +996,7 @@ class Qwen3ASRStreamingHandler:
 
         chunk_base_sample = self.sample_cursor
         self.sample_cursor += chunk.size
-        vad_events: list[tuple[str, int]] = []
+        vad_end_local_indices: list[int] = []
 
         # ── VAD: VADIterator로 스트리밍 음성 구간 탐지 ──
         # 이벤트 루프에서 직접 동기 실행 — 512 샘플 윈도우 기준 추론당 < 0.5ms이므로
@@ -1014,42 +1007,19 @@ class Qwen3ASRStreamingHandler:
             if vad_result is None:
                 self.vad_enabled = False
             else:
-                vad_events = vad_result
+                vad_end_local_indices = vad_result
 
         self.current_time += chunk.size / SAMPLING_RATE
-
         seg_start = 0
-        ev_idx = 0
-
-        # 이전 VAD end 후 아직 speech start를 기다리는 중 → 이번 청크에서 start 이벤트 탐색
-        if self.vad_waiting_for_start:
-            while ev_idx < len(vad_events) and vad_events[ev_idx][0] != "start":
-                ev_idx += 1
-            if ev_idx >= len(vad_events):
-                # 이번 청크 전체에 speech start 없음 → 전체 버림
-                return
-            _, seg_start = vad_events[ev_idx]
-            self.vad_waiting_for_start = False
-            self.log.info(f"[vad-resume] speech start detected; local_idx={seg_start}")
-            ev_idx += 1
-
-        while ev_idx < len(vad_events):
-            event_type, local_idx = vad_events[ev_idx]
-            ev_idx += 1
-
-            if event_type == "start":
-                # 대기 중이 아닌 상태에서 start → 무시 (이미 처리 중)
+        for local_cut in vad_end_local_indices:
+            if local_cut <= seg_start:
                 continue
 
-            # event_type == "end"
-            if local_idx <= seg_start:
-                continue
-
-            pre_chunk = chunk[seg_start:local_idx]
+            pre_chunk = chunk[seg_start:local_cut]
             if pre_chunk.size > 0:
                 await self._asr_streaming_transcribe(pre_chunk, self.active_slot)
 
-            target_sample = chunk_base_sample + local_idx
+            target_sample = chunk_base_sample + local_cut
             target_audio_end_sec = target_sample / SAMPLING_RATE
             self.log.info(
                 f"[vad-commit] target_samples={target_sample} "
@@ -1086,24 +1056,11 @@ class Qwen3ASRStreamingHandler:
             self._reset_stream_slot(self.standby_slot)
             await self._on_vad_done(old_active)
 
-            seg_start = local_idx
-            self.vad_waiting_for_start = True
+            seg_start = local_cut
 
-            # 같은 청크 내 다음 speech start 탐색
-            while ev_idx < len(vad_events) and vad_events[ev_idx][0] != "start":
-                ev_idx += 1
-            if ev_idx < len(vad_events):
-                _, next_start_local = vad_events[ev_idx]
-                self.vad_waiting_for_start = False
-                seg_start = next_start_local
-                self.log.info(f"[vad-resume] speech start detected; local_idx={next_start_local}")
-                ev_idx += 1
-
-        # tail chunk: speech start 대기 중이면 버림
-        if not self.vad_waiting_for_start:
-            tail_chunk = chunk[seg_start:]
-            if tail_chunk.size > 0:
-                await self._asr_streaming_transcribe(tail_chunk, self.active_slot)
+        tail_chunk = chunk[seg_start:]
+        if tail_chunk.size > 0:
+            await self._asr_streaming_transcribe(tail_chunk, self.active_slot)
 
     async def finish_streaming(self):
         pass
