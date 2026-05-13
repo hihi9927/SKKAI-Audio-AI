@@ -635,7 +635,7 @@ class Qwen3ASRStreamingHandler:
 
         _s = self._slot(slot_key)
         # transcribe 완료 후 판단: 이번 청크에서 새 SEG 커밋이 있었고 uncommitted가 없으면 리셋
-        if _s.get("committed_seg_count", 0) > seg_count_before and not self._get_partial_text(slot_key):
+        if _s.get("committed_seg_count", 0) > seg_count_before and not self._slot_uncommitted_display(slot_key):
             vad_was_detected = _s.get("vad_speech_detected", False)
             self._reset_stream_slot(slot_key)
             new_slot = self._slot(slot_key)
