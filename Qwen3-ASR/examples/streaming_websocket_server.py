@@ -508,7 +508,7 @@ class Qwen3ASRStreamingHandler:
             self.vad_iterator.reset_states()
         self._segment_history.clear()
     
-    def _new_stream_slot(self) -> dict:
+    def _new_stream_slot(self, seed_text: str = "", context: str = "") -> dict:
         allowed_languages = None
         if self.config.restrict_languages and self.client_lang and self.client_lang != "auto":
             langs = []
@@ -522,15 +522,25 @@ class Qwen3ASRStreamingHandler:
             if langs:
                 allowed_languages = langs
 
+        state = self.asr.init_streaming_state(
+            unfixed_chunk_num=self.config.unfixed_chunk_num,
+            unfixed_token_num=self.config.unfixed_token_num,
+            chunk_size_sec=self.config.chunk_size_sec,
+            allowed_languages=allowed_languages,
+            context=context,
+        )
+        # [Fix 2] SEG 커밋 후 remaining 텍스트를 새 슬롯에 이식:
+        # audio_accum은 빈 상태로 시작하지만, 모델이 이미 디코딩한 remaining은
+        # _raw_decoded / text seed로 넘겨 prefix로 즉시 활용한다.
+        if seed_text:
+            state._raw_decoded = seed_text
+            state.text = seed_text
+            state.chunk_id = state.unfixed_chunk_num  # prefix 즉시 활성화
+
         return {
-            "state": self.asr.init_streaming_state(
-                unfixed_chunk_num=self.config.unfixed_chunk_num,
-                unfixed_token_num=self.config.unfixed_token_num,
-                chunk_size_sec=self.config.chunk_size_sec,
-                allowed_languages=allowed_languages,
-            ),
+            "state": state,
             "flush_lock": asyncio.Lock(),
-            "last_text": "",
+            "last_text": seed_text,  # 이미 처리된 것으로 마킹해 중복 커밋 방지
             "last_text_lang": "",
             "committed_len": 0,
             "committed_prefix": "",
@@ -540,8 +550,8 @@ class Qwen3ASRStreamingHandler:
             "last_committed_asr_text": "",  # cross-call 반복 억제용
         }
 
-    def _reset_stream_slot(self, slot_key: str):
-        self.stream_slots[slot_key] = self._new_stream_slot()
+    def _reset_stream_slot(self, slot_key: str, seed_text: str = "", context: str = ""):
+        self.stream_slots[slot_key] = self._new_stream_slot(seed_text=seed_text, context=context)
         self.log.info(f"[slot-reset] slot={slot_key}")
 
     def _slot(self, slot_key: Optional[str] = None) -> dict:
@@ -653,12 +663,29 @@ class Qwen3ASRStreamingHandler:
         await self._process_slot_updates(slot_key)
 
         _s = self._slot(slot_key)
-        # transcribe 완료 후 판단: 이번 청크에서 새 SEG 커밋이 있었고 uncommitted가 없으면 리셋
-        if _s.get("committed_seg_count", 0) > seg_count_before and not self._slot_uncommitted_display(slot_key):
-            self._reset_stream_slot(slot_key)
+        # [Fix 1] SEG 커밋이 발생하면 remaining 유무와 관계없이 항상 슬롯 리셋.
+        # remaining이 있으면 seed_text로 이식하고, committed 히스토리는 context로 승계.
+        # → audio_accum / _raw_decoded 오염 제거로 무한 반복 할루시네이션 차단.
+        if _s.get("committed_seg_count", 0) > seg_count_before:
+            remaining = self._slot_uncommitted_display(slot_key)
+
+            # [Fix 3] committed_display 마지막 96토큰을 context(시스템 프롬프트)로 승계
+            committed = _s.get("committed_display", "")
+            if committed:
+                _tok = self.asr.processor.tokenizer
+                _ids = _tok.encode(committed)
+                ctx = _tok.decode(_ids[-96:] if len(_ids) > 96 else _ids)
+            else:
+                ctx = ""
+
+            self._reset_stream_slot(slot_key, seed_text=remaining, context=ctx)
             if slot_key == self.active_slot:
                 self.state = self.stream_slots[self.active_slot]["state"]
-            self.log.info(f"[seg-slot-reset] slot={slot_key} reset, no trailing after SEG commit")
+            label = "with trailing" if remaining else "no trailing"
+            self.log.info(
+                f"[seg-slot-reset] slot={slot_key} reset ({label})"
+                f" remaining={remaining!r} ctx_len={len(ctx)}"
+            )
 
         async with self.asr_lock:
             self.asr_processed_cursor = self.sample_cursor
