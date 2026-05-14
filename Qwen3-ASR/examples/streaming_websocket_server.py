@@ -677,12 +677,6 @@ class Qwen3ASRStreamingHandler:
         await self.asr.streaming_transcribe(chunk, slot["state"], lora_request=lora_request, on_seg=_on_seg)
         await self._process_slot_updates(slot_key)
 
-        _decoded = (self._slot(slot_key)["state"].text or "").strip()
-        if "<asr_text>" in _decoded:
-            _decoded = _decoded.split("<asr_text>", 1)[-1].strip()
-        if _decoded:
-            self.log.info(f"[CHUNK-DECODING] slot={slot_key} text={_decoded!r}")
-
         _s = self._slot(slot_key)
         # [Fix 1] SEG 커밋이 발생하면 remaining 유무와 관계없이 항상 슬롯 리셋.
         # remaining이 있으면 seed_text로 이식하고, committed 히스토리는 context로 승계.
@@ -804,6 +798,7 @@ class Qwen3ASRStreamingHandler:
 
         slot["last_text"] = current_text
         slot["last_text_lang"] = current_lang
+        self.log.info(f"[CHUNK-DECODING] slot={slot_key} text={current_text!r}")
         if "<SEG>" in current_text:
             self.log.info(f"[SEG-IN-TEXT] slot={slot_key} text={current_text!r}")
 
