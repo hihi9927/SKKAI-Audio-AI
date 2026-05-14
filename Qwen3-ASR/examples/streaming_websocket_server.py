@@ -678,27 +678,19 @@ class Qwen3ASRStreamingHandler:
         await self._process_slot_updates(slot_key)
 
         _s = self._slot(slot_key)
-        # [Fix 1] SEG 커밋이 발생하면 remaining 유무와 관계없이 항상 슬롯 리셋.
-        # remaining이 있으면 seed_text로 이식하고, committed 히스토리는 context로 승계.
-        # → audio_accum / _raw_decoded 오염 제거로 무한 반복 할루시네이션 차단.
+        # SEG 커밋 발생 시, remaining이 없을 때만 슬롯 리셋.
+        # remaining이 있으면 리셋하지 않고 같은 슬롯에서 디코딩 계속.
         if _s.get("committed_seg_count", 0) > seg_count_before:
             remaining = self._slot_uncommitted_display(slot_key)
-
-            # [Fix 3] committed_display 마지막 96토큰을 context(시스템 프롬프트)로 승계
-            committed = _s.get("committed_display", "")
-            if committed:
-                _tok = self.asr.processor.tokenizer
-                _ids = _tok.encode(committed)
-                ctx = _tok.decode(_ids[-96:] if len(_ids) > 96 else _ids)
+            if not remaining.strip():
+                self._reset_stream_slot(slot_key)
+                if slot_key == self.active_slot:
+                    self.state = self.stream_slots[self.active_slot]["state"]
+                self.log.info(f"[SEG-SLOT-SWITCH] slot={slot_key}")
             else:
-                ctx = ""
-
-            self._reset_stream_slot(slot_key, seed_text=remaining, context=ctx)
-            if slot_key == self.active_slot:
-                self.state = self.stream_slots[self.active_slot]["state"]
-            self.log.info(
-                f"[SEG-SLOT-SWITCH] slot={slot_key} remaining={remaining!r} ctx_len={len(ctx)}"
-            )
+                self.log.info(
+                    f"[SEG-PENDING] slot={slot_key} remaining={remaining!r}"
+                )
 
         async with self.asr_lock:
             self.asr_processed_cursor = self.sample_cursor
