@@ -40,9 +40,9 @@ DEFAULT_TEST_JSONL = (
     PROJECT_ROOT
     / "Qwen3-ASR" / "finetuning" / "data" / "DailyTalk" / "test.jsonl"
 )
-DEFAULT_OUTPUT = SCRIPT_DIR / "results" / "fcl" / "qwen3_dailytalk_fcl.json"
+DEFAULT_OUTPUT = SCRIPT_DIR / "results" / "fsl" / "qwen3_dailytalk_fsl.json"
 DEFAULT_SERVER_SCRIPT = (
-    PROJECT_ROOT / "LibriSpeech" / "servers" / "streaming_websocket_server_fcl.py"
+    PROJECT_ROOT / "LibriSpeech" / "servers" / "streaming_websocket_server_fsl.py"
 )
 
 
@@ -439,7 +439,7 @@ def summarize_segment_metrics(segment_metrics):
 
     return {
         'num_segments': len(segment_metrics),
-        'avg_server_fcl_sec': mean(_vals('server_fcl_sec')) if _vals('server_fcl_sec') else None,
+        'avg_server_fsl_sec': mean(_vals('server_fsl_sec')) if _vals('server_fsl_sec') else None,
         'avg_translation_latency_sec': mean(_vals('translation_latency_sec')) if _vals('translation_latency_sec') else None,
         'avg_asr_inference_sec': mean(_vals('asr_inference_sec')) if _vals('asr_inference_sec') else None,
     }
@@ -556,7 +556,7 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
                         'server_translate_done_elapsed_sec': data.get('translate_done_elapsed_sec'),
                         'translation_latency_sec': data.get('translation_latency_sec'),
                         'asr_inference_sec': data.get('asr_inference_sec'),
-                        'server_fcl_sec': data.get('fcl_sec'),
+                        'server_fsl_sec': data.get('fsl_sec'),
                         'final_payload_wall_utc': data.get('final_payload_wall_utc'),
                         'client_final_received_elapsed_sec': receive_elapsed_sec,
                     })
@@ -594,7 +594,7 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
                 'server_translate_done_elapsed_sec': None,
                 'translation_latency_sec': None,
                 'asr_inference_sec': None,
-                'server_fcl_sec': None,
+                'server_fsl_sec': None,
                 'final_payload_wall_utc': None,
                 'client_final_received_elapsed_sec': None,
             })
@@ -715,8 +715,8 @@ async def process_batch(
         logger.info('  MODEL_RUNTIME(total-audio): %.3fs', model_runtime)
         segment_summary = out.get('segment_metrics_summary') or {}
         if segment_summary:
-            logger.info('  FCL(avg server): %s',
-                        f"{segment_summary['avg_server_fcl_sec']:.3f}s" if segment_summary.get('avg_server_fcl_sec') is not None else 'N/A')
+            logger.info('  FSL(avg server): %s',
+                        f"{segment_summary['avg_server_fsl_sec']:.3f}s" if segment_summary.get('avg_server_fsl_sec') is not None else 'N/A')
             logger.info('  TRANSLATION_LATENCY(avg): %s',
                         f"{segment_summary['avg_translation_latency_sec']:.3f}s" if segment_summary.get('avg_translation_latency_sec') is not None else 'N/A')
         if dialog_wer is not None:
@@ -753,7 +753,7 @@ def build_summary_payload(results, policy):
     for dialog_id, rows in sorted(by_dialog.items()):
         lat = [r['first_token_latency'] for r in rows if r['first_token_latency'] is not None]
         model_runtime = [r['model_runtime'] for r in rows if r.get('model_runtime') is not None]
-        dialog_fcl = _collect_segment_metric('server_fcl_sec', rows)
+        dialog_fsl = _collect_segment_metric('server_fsl_sec', rows)
         dialog_translation = _collect_segment_metric('translation_latency_sec', rows)
         dialog_asr = _collect_segment_metric('asr_inference_sec', rows)
         dialog_stats[dialog_id] = {
@@ -761,14 +761,14 @@ def build_summary_payload(results, policy):
             'wer': dialog_wers.get(dialog_id),
             'first_token_latency': mean(lat) if lat else None,
             'model_runtime': mean(model_runtime) if model_runtime else None,
-            'avg_server_fcl_sec': mean(dialog_fcl) if dialog_fcl else None,
+            'avg_server_fsl_sec': mean(dialog_fsl) if dialog_fsl else None,
             'avg_translation_latency_sec': mean(dialog_translation) if dialog_translation else None,
             'avg_asr_inference_sec': mean(dialog_asr) if dialog_asr else None,
         }
 
     all_lat = [r['first_token_latency'] for r in results if r['first_token_latency'] is not None]
     all_model_runtime = [r['model_runtime'] for r in results if r.get('model_runtime') is not None]
-    all_server_fcl = _collect_segment_metric('server_fcl_sec', results)
+    all_server_fsl = _collect_segment_metric('server_fsl_sec', results)
     all_translation = _collect_segment_metric('translation_latency_sec', results)
     all_asr = _collect_segment_metric('asr_inference_sec', results)
 
@@ -780,7 +780,7 @@ def build_summary_payload(results, policy):
             'wer': wer_value,
             'first_token_latency': mean(all_lat) if all_lat else None,
             'model_runtime': mean(all_model_runtime) if all_model_runtime else None,
-            'avg_server_fcl_sec': mean(all_server_fcl) if all_server_fcl else None,
+            'avg_server_fsl_sec': mean(all_server_fsl) if all_server_fsl else None,
             'avg_translation_latency_sec': mean(all_translation) if all_translation else None,
             'avg_asr_inference_sec': mean(all_asr) if all_asr else None,
         },
@@ -854,7 +854,7 @@ def calculate_wer(results, policy=None, emit_summary=True):
 # ---------------------------------------------------------------------------
 
 def main():
-    parser = argparse.ArgumentParser(description='Qwen3 DailyTalk integration test with FCL metrics')
+    parser = argparse.ArgumentParser(description='Qwen3 DailyTalk integration test with FSL metrics')
     parser.add_argument('--test-jsonl', type=str, default=str(DEFAULT_TEST_JSONL),
                         help='Path to DailyTalk test.jsonl')
     parser.add_argument('--split-only', action=argparse.BooleanOptionalAction, default=True,

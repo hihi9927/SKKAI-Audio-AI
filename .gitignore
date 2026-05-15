@@ -65,7 +65,6 @@ Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-lora-ready
 Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged
 Qwen3-ASR/finetuning/en-merged
 Qwen3-ASR/finetuning/finetuning_silence/
-
 Qwen3-ASR/finetuning/no_split/
 
 Qwen3-ASR/finetuning/finetuning-out-en-plus/**
@@ -85,6 +84,7 @@ Qwen3-ASR/finetuning/checkpoint-420/
 !Qwen3-ASR/finetuning/finetuning-out-en-plus/results/
 !Qwen3-ASR/finetuning/finetuning-out-en-plus/results/**
 .env
+server_*.log
 
 # Evaluation datasets
 evaluation/AMI/AMI

@@ -1126,7 +1126,7 @@ class Qwen3ASRStreamingHandler:
         audio_end_sec: float,
         extra: Optional[dict] = None,  # noqa: ARG002
     ) -> None:
-        """최종 세그먼트 전송 훅. 서브클래스에서 오버라이드해 FCL 메타데이터 등 추가 가능."""
+        """최종 세그먼트 전송 훅. 서브클래스에서 오버라이드해 FSL 메타데이터 등 추가 가능."""
         await self.send_message(
             "final",
             start=format_time(self.segment_start_time),

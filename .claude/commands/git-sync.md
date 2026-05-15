@@ -52,7 +52,7 @@
 
 **scope 선택 기준** (변경된 영역에 따라):
 - `asr` — Qwen3-ASR, streaming_websocket_server
-- `fcl` — evaluation FCL 서버 및 테스트
+- `fsl` — evaluation FSL 서버 및 테스트
 - `eval` — 평가 스크립트, metric, context scoring
 - `core` — core/ 모듈 (corrector, translator 등)
 - `mobile` — STiTy-Mobile

@@ -1,6 +1,6 @@
 # evaluation/LibriSpeech/
 
-영어 읽기 음성 ASR 벤치마크. LibriSpeech `test-other` 서브셋 사용. 주요 메트릭: WER와 FCL(First Committed Latency).
+영어 읽기 음성 ASR 벤치마크. LibriSpeech `test-other` 서브셋 사용. 주요 메트릭: WER와 FSL(First Committed Latency).
 
 ## 디렉토리 구조
 
@@ -13,13 +13,13 @@
 
 ## 평가 서버 위치
 
-`servers/streaming_websocket_server_fcl.py` — 모든 데이터셋(LibriSpeech, AMI, KsponSpeech, KtelSpeech)이 이 서버를 공유함.
+`servers/streaming_websocket_server_fsl.py` — 모든 데이터셋(LibriSpeech, AMI, KsponSpeech, KtelSpeech)이 이 서버를 공유함.
 
 ## 빠른 시작
 
 ```bash
 # 터미널 1
-python evaluation/LibriSpeech/servers/streaming_websocket_server_fcl.py --no-idle-shutdown
+python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py --no-idle-shutdown
 
 # 터미널 2
 python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \
@@ -32,10 +32,10 @@ python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \
 `run_concurrent_benchmark.py`, `run_multi_speaker_full.py`: N개의 동시 클라이언트로 실행.  
 **주의**: `PROJECT_ROOT = Path("/home/ubuntu/STiTy")` 하드코딩됨 — 다른 머신에서 실행 시 수정 필요.
 
-## FCL 타이밍
+## FSL 타이밍
 
-FCL = 세그먼트 마지막 오디오 바이트부터 클라이언트가 `final` 메시지를 받기까지의 시간.  
-결과의 `fcl_sec` 필드. 플롯 출력: `utils/export_fcl_ftl_plots.py`
+FSL = 세그먼트 마지막 오디오 바이트부터 클라이언트가 `final` 메시지를 받기까지의 시간.  
+결과의 `fsl_sec` 필드. 플롯 출력: `utils/export_fsl_ftl_plots.py`
 
 ## 데이터 다운로드
 

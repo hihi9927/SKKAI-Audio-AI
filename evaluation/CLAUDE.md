@@ -6,7 +6,7 @@ STiTy ASR+번역 파이프라인의 벤치마킹 하네스. 모든 평가는 별
 
 ```bash
 # 터미널 1 — 평가 서버 (모든 데이터셋에서 공유)
-python evaluation/LibriSpeech/servers/streaming_websocket_server_fcl.py --no-idle-shutdown
+python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py --no-idle-shutdown
 
 # 터미널 2 — 벤치마크 클라이언트
 python evaluation/{Dataset}/test_qwen3_{dataset}.py \
@@ -17,7 +17,7 @@ python evaluation/{Dataset}/test_qwen3_{dataset}.py \
 
 | 디렉토리 | 언어 | 주요 메트릭 | 특이사항 |
 |---|---|---|---|
-| `LibriSpeech/` | 영어 | WER + FCL 타이밍 | 주 벤치마크, 평가 서버가 여기 있음 |
+| `LibriSpeech/` | 영어 | WER + FSL 타이밍 | 주 벤치마크, 평가 서버가 여기 있음 |
 | `AMI/` | 영어 | WER | 다화자 회의 코퍼스 |
 | `DailyTalk/` | 한국어 | CER | 대화 음성 |
 | `KsponSpeech/` | 한국어 | CER | 자유발화 |

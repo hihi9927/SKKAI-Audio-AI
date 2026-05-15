@@ -59,12 +59,12 @@ baseline 서버는 `dot commit`이 기본으로 켜지므로 별도 인자를 �
 cd ~/STiTy && git pull
 
 # Baseline 모델
-python evaluation/LibriSpeech/servers/streaming_websocket_server_fcl.py \
+python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py \
   --no-idle-shutdown \
   --log-file "evaluation/LibriSpeech/results/baseline(1.0.0)/sample/run_01/logs/server.log"
 
 # Finetuned 모델
-python evaluation/LibriSpeech/servers/streaming_websocket_server_fcl.py \
+python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py \
   --model /home/ubuntu/STiTy/Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged \
   --no-idle-shutdown \
   --enforce-eager \
@@ -134,7 +134,7 @@ python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \
 
 ```bash
 # 1) 서버 시작 (별도 터미널)
-python evaluation/LibriSpeech/servers/streaming_websocket_server_fcl.py \
+python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py \
   --model /home/ubuntu/STiTy/Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged \
   --no-idle-shutdown \
   --enforce-eager \
@@ -162,7 +162,7 @@ python evaluation/KtelSpeech/test_qwen3_ktelspeech.py \
 
 ```bash
 # 1) 서버 시작 (별도 터미널)
-python evaluation/LibriSpeech/servers/streaming_websocket_server_fcl.py \
+python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py \
   --no-idle-shutdown \
   --log-file "evaluation/AMI/results/baseline(1.0.0)/sample/run_01/logs/server.log"
 
@@ -190,7 +190,7 @@ python evaluation/AMI/test_qwen3_ami.py \
 
 ```bash
 # 1) 서버 시작 (별도 터미널)
-python evaluation/LibriSpeech/servers/streaming_websocket_server_fcl.py \
+python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py \
   --no-idle-shutdown \
   --log-file "evaluation/AliMeeting/results/baseline(1.0.0)/sample/run_01/logs/server.log"
 
@@ -202,7 +202,7 @@ python evaluation/AliMeeting/test_qwen3_alimeeting.py \
   --tag run_01 \
   --description "테스트 설명" \
   --src-lang zh \
-  --trailing-silence-ms 3000
+  --trailing-silence-ms 5000
 ```
 
 > **참고:**

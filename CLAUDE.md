@@ -26,7 +26,7 @@ pip install -e "./Qwen3-ASR[vllm]"          # with vLLM support
 python Qwen3-ASR/examples/streaming_websocket_server.py
 
 # Run evaluation servers
-python evaluation/LibriSpeech/servers/streaming_websocket_server_fcl.py
+python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py
 
 # Run benchmark evaluations
 python evaluation/LibriSpeech/test_qwen3_librispeech.py
@@ -58,7 +58,7 @@ Core type definitions live in [core/types.py](core/types.py) — `AudioSegment �
 | `core/llm_corrector/gpt_corrector.py` | Async OpenAI GPT corrector with retry/backoff |
 | `core/meaning_segmentator/` | Sentence boundary detection utilities |
 | `Qwen3-ASR/examples/streaming_websocket_server.py` | Main production WebSocket server |
-| `evaluation/LibriSpeech/servers/streaming_websocket_server_fcl.py` | Eval server with forced-alignment logging |
+| `evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py` | Eval server with forced-alignment logging |
 
 The `Qwen3-ASR/` directory is a git submodule. Its `pyproject.toml` exposes CLI entry points: `qwen-asr-demo`, `qwen-asr-serve`, `qwen-asr-demo-streaming`.
 
@@ -124,7 +124,7 @@ Language color scheme: Purple `#8B5CF6` (Korean), Blue `#3B82F6` (English/Tibeta
 ```
 `commitReason` values: `"seg"` (model SEG token), `"vad"` (silence detected), `"finish"` (stream ended), `"dot"` (sentence-ending punctuation, optional).
 
-The evaluation server (`streaming_websocket_server_fcl.py`) extends `final` with timing fields (`segmentId`, `audioStartSec`, `audioEndSec`, `fcl_sec`, `asr_inference_sec`, etc.) — these are for benchmarking only and not consumed by the mobile app.
+The evaluation server (`streaming_websocket_server_fsl.py`) extends `final` with timing fields (`segmentId`, `audioStartSec`, `audioEndSec`, `fsl_sec`, `asr_inference_sec`, etc.) — these are for benchmarking only and not consumed by the mobile app.
 
 ## Evaluation Datasets
 

@@ -29,7 +29,7 @@ from pathlib import Path
 
 PROJECT_ROOT  = Path("/home/ubuntu/STiTy")
 LIBRISPEECH   = PROJECT_ROOT / "evaluation/LibriSpeech"
-SERVER_SCRIPT = LIBRISPEECH / "servers/streaming_websocket_server_fcl.py"
+SERVER_SCRIPT = LIBRISPEECH / "servers/streaming_websocket_server_fsl.py"
 TEST_SCRIPT   = LIBRISPEECH / "servers/test_qwen3_librispeech.py"
 TEST_DIR      = LIBRISPEECH / "test-other"
 RESULTS_DIR   = LIBRISPEECH / "results/finetuned(1.0.1)/multi_speaker_test"
@@ -83,7 +83,7 @@ def kill_existing_server(port: int = PORT) -> None:
         except Exception:
             pass
 
-    for pattern in ["streaming_websocket_server_fcl", "VLLM::EngineCore"]:
+    for pattern in ["streaming_websocket_server_fsl", "VLLM::EngineCore"]:
         subprocess.run(["pkill", "-9", "-f", pattern], capture_output=True)
 
     if killed:
@@ -139,7 +139,7 @@ def merge_client_results(client_metric_jsons: list[Path], result_dir: Path) -> N
         log(f"  c{i}: {len(raw)}개 파일")
 
         # per-client JSON 저장 (run_01/02 포맷과 동일하게)
-        client_out = result_dir / f"qwen3_test_other_fcl_c{i}.json"
+        client_out = result_dir / f"qwen3_test_other_fsl_c{i}.json"
         client_data = {"policy_3": {"raw_results": raw}}
         with open(client_out, "w", encoding="utf-8") as f:
             json.dump(client_data, f, indent=2, ensure_ascii=False)
@@ -149,15 +149,15 @@ def merge_client_results(client_metric_jsons: list[Path], result_dir: Path) -> N
         return
 
     # 전체 통계 계산
-    fcl_vals, asr_vals, tl_vals, tok_vals = [], [], [], []
+    fsl_vals, asr_vals, tl_vals, tok_vals = [], [], [], []
     commit_counts: dict[str, int] = {"vad": 0, "seg": 0, "dot": 0, "finish": 0}
 
     for r in all_raw:
         for seg in r.get("segment_metrics", []):
-            fcl_key = "fsl_sec" if "fsl_sec" in seg else "server_fcl_sec"
+            fsl_key = "fsl_sec" if "fsl_sec" in seg else "server_fsl_sec"
             asr_key = "decode_sec" if "decode_sec" in seg else "asr_inference_sec"
             tl_key  = "trans_sec" if "trans_sec" in seg else "translation_latency_sec"
-            if seg.get(fcl_key) is not None: fcl_vals.append(seg[fcl_key])
+            if seg.get(fsl_key) is not None: fsl_vals.append(seg[fsl_key])
             if seg.get(asr_key) is not None: asr_vals.append(seg[asr_key])
             if seg.get(tl_key)  is not None: tl_vals.append(seg[tl_key])
             if seg.get("output_token_count") is not None:
@@ -173,7 +173,7 @@ def merge_client_results(client_metric_jsons: list[Path], result_dir: Path) -> N
     total = sum(commit_counts.values())
     overall = {
         "num_files": len(all_raw),
-        "avg_server_fcl_sec": avg(fcl_vals),
+        "avg_server_fsl_sec": avg(fsl_vals),
         "avg_asr_inference_sec": avg(asr_vals),
         "avg_translation_latency_sec": avg(tl_vals),
         "avg_output_tokens_per_commit": avg(tok_vals),
@@ -185,15 +185,15 @@ def merge_client_results(client_metric_jsons: list[Path], result_dir: Path) -> N
     }
 
     merged = {"policy_3": {"overall": overall, "raw_results": all_raw}}
-    merged_path = result_dir / "qwen3_test_other_fcl.json"
+    merged_path = result_dir / "qwen3_test_other_fsl.json"
     with open(merged_path, "w", encoding="utf-8") as f:
         json.dump(merged, f, indent=2, ensure_ascii=False)
 
-    fcl_str = f"{overall['avg_server_fcl_sec']:.3f}s" if overall['avg_server_fcl_sec'] else "N/A"
+    fsl_str = f"{overall['avg_server_fsl_sec']:.3f}s" if overall['avg_server_fsl_sec'] else "N/A"
     asr_str = f"{overall['avg_asr_inference_sec']:.3f}s" if overall['avg_asr_inference_sec'] else "N/A"
     tl_str  = f"{overall['avg_translation_latency_sec']:.3f}s" if overall['avg_translation_latency_sec'] else "N/A"
     log(f"  병합 완료: {len(all_raw)}개 항목 (클라이언트 {len(client_metric_jsons)}명 × {NUM_FILES}파일)")
-    log(f"  FSL={fcl_str}  ASR={asr_str}  번역={tl_str}")
+    log(f"  FSL={fsl_str}  ASR={asr_str}  번역={tl_str}")
 
 
 # ── 개별 테스트 실행 ────────────────────────────────────────────────────────────
@@ -323,16 +323,16 @@ def main() -> None:
     log("\n── 요약 ──")
     for n_clients in targets:
         run_name = f"run_{n_clients:02d}"
-        merged = RESULTS_DIR / run_name / "qwen3_test_other_fcl.json"
+        merged = RESULTS_DIR / run_name / "qwen3_test_other_fsl.json"
         if merged.exists():
             with open(merged, encoding="utf-8") as f:
                 data = json.load(f)
             ov = data.get("policy_3", {}).get("overall", {})
-            fcl = ov.get("avg_server_fcl_sec")
+            fsl = ov.get("avg_server_fsl_sec")
             asr = ov.get("avg_asr_inference_sec")
             n_f = ov.get("num_files", 0)
             log(f"  {n_clients:2d}명 ({run_name}): "
-                f"FSL={fcl:.3f}s  ASR={asr:.3f}s  항목={n_f}" if fcl and asr
+                f"FSL={fsl:.3f}s  ASR={asr:.3f}s  항목={n_f}" if fsl and asr
                 else f"  {n_clients:2d}명 ({run_name}): 항목={n_f}")
 
 

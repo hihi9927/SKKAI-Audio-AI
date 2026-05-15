@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-동시 클라이언트 FCL 벤치마크 러너
+동시 클라이언트 FSL 벤치마크 러너
 
-fcl_1.0.1_results_11 (동시 1명) ~ fcl_1.0.1_results_20 (동시 10명) 순차 실행.
+fsl_1.0.1_results_11 (동시 1명) ~ fsl_1.0.1_results_20 (동시 10명) 순차 실행.
 548개 파일을 N개 클라이언트에 균등 분배, 결과를 하나의 JSON으로 병합.
 
 실행 위치: /home/ubuntu/STiTy
@@ -24,10 +24,10 @@ from pathlib import Path
 
 PROJECT_ROOT  = Path("/home/ubuntu/STiTy")
 LIBRISPEECH   = PROJECT_ROOT / "evaluation/LibriSpeech"
-SERVER_SCRIPT = LIBRISPEECH / "servers/streaming_websocket_server_fcl.py"
+SERVER_SCRIPT = LIBRISPEECH / "servers/streaming_websocket_server_fsl.py"
 TEST_SCRIPT   = LIBRISPEECH / "servers/test_qwen3_librispeech.py"
 TEST_DIR      = LIBRISPEECH / "LibriSpeech/test-other"
-RESULTS_DIR   = LIBRISPEECH / "results/fcl"
+RESULTS_DIR   = LIBRISPEECH / "results/fsl"
 MODEL         = PROJECT_ROOT / "Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged"
 PYTHON        = "/home/ubuntu/miniconda3/envs/qwen3-asr/bin/python"
 CONDA_BIN     = "/home/ubuntu/miniconda3/envs/qwen3-asr/bin"
@@ -78,7 +78,7 @@ def kill_existing_server(port: int = PORT) -> None:
             pass
 
     # 2. 잔존 서버/EngineCore 프로세스 강제 종료 (VRAM 해제 보장)
-    for pattern in ["streaming_websocket_server_fcl", "VLLM::EngineCore"]:
+    for pattern in ["streaming_websocket_server_fsl", "VLLM::EngineCore"]:
         subprocess.run(["pkill", "-9", "-f", pattern], capture_output=True)
 
     if killed:
@@ -149,13 +149,13 @@ def merge_results(client_jsons: list[Path], merged_path: Path) -> None:
         return
 
     # segment_metrics에서 지표 추출
-    fcl_vals, asr_vals, tl_vals, tok_vals = [], [], [], []
+    fsl_vals, asr_vals, tl_vals, tok_vals = [], [], [], []
     commit_counts: dict[str, int] = {"vad": 0, "seg": 0, "dot": 0, "finish": 0}
 
     for r in all_raw:
         for seg in r.get("segment_metrics", []):
-            if "server_fcl_sec" in seg:
-                fcl_vals.append(seg["server_fcl_sec"])
+            if "server_fsl_sec" in seg:
+                fsl_vals.append(seg["server_fsl_sec"])
             if "asr_inference_sec" in seg:
                 asr_vals.append(seg["asr_inference_sec"])
             if "translation_latency_sec" in seg:
@@ -174,7 +174,7 @@ def merge_results(client_jsons: list[Path], merged_path: Path) -> None:
     total_commits = sum(commit_counts.values())
     overall = {
         "num_files": len(all_raw),
-        "avg_server_fcl_sec": avg(fcl_vals),
+        "avg_server_fsl_sec": avg(fsl_vals),
         "avg_asr_inference_sec": avg(asr_vals),
         "avg_translation_latency_sec": avg(tl_vals),
         "avg_output_tokens_per_commit": avg(tok_vals),
@@ -193,7 +193,7 @@ def merge_results(client_jsons: list[Path], merged_path: Path) -> None:
         json.dump(merged, f, indent=2, ensure_ascii=False)
 
     log(f"  병합 완료: {len(all_raw)}개 파일 → {merged_path.name}")
-    log(f"  FCL 평균: {overall['avg_server_fcl_sec']:.3f}s  "
+    log(f"  FSL 평균: {overall['avg_server_fsl_sec']:.3f}s  "
         f"ASR: {overall['avg_asr_inference_sec']:.3f}s  "
         f"번역: {overall['avg_translation_latency_sec']:.3f}s")
 
@@ -201,7 +201,7 @@ def merge_results(client_jsons: list[Path], merged_path: Path) -> None:
 # ── 개별 테스트 실행 ────────────────────────────────────────────────────────────
 
 def run_test(n_clients: int, result_idx: int, file_ids: list[str]) -> None:
-    result_dir = RESULTS_DIR / f"fcl_1.0.1_results_{result_idx}"
+    result_dir = RESULTS_DIR / f"fsl_1.0.1_results_{result_idx}"
     result_dir.mkdir(parents=True, exist_ok=True)
 
     sep = "=" * 60
@@ -246,7 +246,7 @@ def run_test(n_clients: int, result_idx: int, file_ids: list[str]) -> None:
 
     for i, chunk in enumerate(chunks):
         chunk_path = result_dir / f"_chunk_{i}.json"
-        client_out = result_dir / f"qwen3_test_other_fcl_c{i}.json"
+        client_out = result_dir / f"qwen3_test_other_fsl_c{i}.json"
         client_log = result_dir / f"test_stdout_c{i}.log"
         client_outputs.append(client_out)
 
@@ -281,7 +281,7 @@ def run_test(n_clients: int, result_idx: int, file_ids: list[str]) -> None:
     log(f"전체 소요: {time.time() - t0:.0f}s")
 
     # 5. 결과 병합
-    merged_path = result_dir / "qwen3_test_other_fcl.json"
+    merged_path = result_dir / "qwen3_test_other_fsl.json"
     if n_clients == 1 and client_outputs[0].exists():
         shutil.copy(client_outputs[0], merged_path)
         log(f"결과 복사 완료: {merged_path.name}")
@@ -314,21 +314,21 @@ def main() -> None:
 
     log("=" * 60)
     log(f"모든 테스트 완료 (총 {(time.time() - total_start) / 3600:.1f}h)")
-    log(f"결과 위치: {RESULTS_DIR}/fcl_1.0.1_results_11 ~ fcl_1.0.1_results_20")
+    log(f"결과 위치: {RESULTS_DIR}/fsl_1.0.1_results_11 ~ fsl_1.0.1_results_20")
 
     # 요약 출력
-    log("\n── FCL 요약 ──")
+    log("\n── FSL 요약 ──")
     for n_clients in range(1, 11):
         idx = RESULT_START + n_clients - 1
-        merged = RESULTS_DIR / f"fcl_1.0.1_results_{idx}" / "qwen3_test_other_fcl.json"
+        merged = RESULTS_DIR / f"fsl_1.0.1_results_{idx}" / "qwen3_test_other_fsl.json"
         if merged.exists():
             with open(merged, encoding="utf-8") as f:
                 data = json.load(f)
             overall = data.get("policy_3", {}).get("overall", {})
-            fcl = overall.get("avg_server_fcl_sec")
+            fsl = overall.get("avg_server_fsl_sec")
             asr = overall.get("avg_asr_inference_sec")
             n_files = overall.get("num_files", 0)
-            log(f"  {n_clients:2d}명 (results_{idx}): FCL={fcl:.3f}s  ASR={asr:.3f}s  파일={n_files}")
+            log(f"  {n_clients:2d}명 (results_{idx}): FSL={fsl:.3f}s  ASR={asr:.3f}s  파일={n_files}")
 
 
 if __name__ == "__main__":

@@ -22,7 +22,7 @@ python evaluation/KsponSpeech/test_qwen3_kspon.py \
 
 ## 서버
 
-공유 평가 서버: `evaluation/LibriSpeech/servers/streaming_websocket_server_fcl.py`
+공유 평가 서버: `evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py`
 
 ## 진단 도구
 
