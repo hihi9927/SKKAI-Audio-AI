@@ -5,7 +5,7 @@
 ## STiTy 통합 진입점
 
 - **프로덕션 서버**: `examples/streaming_websocket_server.py` — 모바일 앱이 연결하는 실제 WebSocket 서버
-- **평가 서버**: `evaluation/LibriSpeech/servers/streaming_websocket_server_fcl.py`가 이 파일을 래핑함
+- **평가 서버**: `evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py`가 이 파일을 래핑함
 - **파인튜닝 결과물**: `finetuning/Qwen3-ASR-1.7B-en-merged/` — 평가 스크립트의 `--model` 인자가 여기를 가리킴
 
 ## 서브모듈 규칙

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Evaluation-only Qwen3 streaming server with FCL instrumentation.
+"""Evaluation-only Qwen3 streaming server with FSL instrumentation.
 
 This server reuses the production streaming server implementation but augments
-final segment payloads with timing metadata that can be used to compute FCL.
+final segment payloads with timing metadata that can be used to compute FSL.
 It lives under evaluation/ so app traffic keeps using the production server.
 """
 
@@ -49,7 +49,7 @@ def _parse_hms_time(value: str) -> Optional[float]:
         return None
 
 
-class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
+class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
     def __init__(self, websocket, asr_model, config, pairing_hub, http_session=None, vad_model_bytes=None, corrector=None, gpt_translator=None):
         super().__init__(websocket, asr_model, config, pairing_hub, vad_model_bytes=vad_model_bytes, corrector=corrector, gpt_translator=gpt_translator)
         self._shared_http_session = http_session
@@ -512,7 +512,7 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
             logger.info("New connection from %s", remote_addr)
             await self.send_message(
                 "hello",
-                message="Qwen3-ASR Streaming Server (FCL)",
+                message="Qwen3-ASR Streaming Server (FSL)",
                 serverConfig={
                     "model": self.config.model_path,
                     "chunk_size_sec": self.config.chunk_size_sec,
@@ -636,7 +636,7 @@ class FCLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
             logger.info("Connection closed")
 
 
-class FCLStreamingServer(base_server.Qwen3ASRStreamingServer):
+class FSLStreamingServer(base_server.Qwen3ASRStreamingServer):
     def __init__(self, config):
         super().__init__(config)
         self._http_session: Optional[aiohttp.ClientSession] = None
@@ -658,7 +658,7 @@ class FCLStreamingServer(base_server.Qwen3ASRStreamingServer):
             logger.info("Client connected (%s)", self.active_connections)
 
         try:
-            handler = FCLStreamingHandler(websocket, self.asr, self.config, self.pairing_hub, http_session=self._http_session, vad_model_bytes=self.vad_model_bytes, corrector=self.corrector, gpt_translator=self.gpt_translator)
+            handler = FSLStreamingHandler(websocket, self.asr, self.config, self.pairing_hub, http_session=self._http_session, vad_model_bytes=self.vad_model_bytes, corrector=self.corrector, gpt_translator=self.gpt_translator)
             await handler.handle()
         finally:
             async with self.connection_lock:
@@ -679,7 +679,7 @@ def main():
         "--log-file",
         type=str,
         default=None,
-        help="서버 로그를 저장할 파일 경로 (예: results/fcl/fcl_server_log_v5/server.log)",
+        help="서버 로그를 저장할 파일 경로 (예: results/fsl/fsl_server_log_v5/server.log)",
     )
     extra_args, remaining = extra_parser.parse_known_args()
 
@@ -721,7 +721,7 @@ def main():
         context_window=args.context_window,
     )
 
-    server = FCLStreamingServer(config)
+    server = FSLStreamingServer(config)
     server.init_model()
     asyncio.run(server.start())
 

@@ -37,7 +37,7 @@ evaluation/{Dataset}/results/{model}/{scope}/{tag}/
 
 | 선택 | 데이터셋 | 언어 | 특이사항 |
 |---|---|---|---|
-| A | **LibriSpeech** | 영어 | WER + FCL 타이밍, GPT 번역/교정 옵션 있음 |
+| A | **LibriSpeech** | 영어 | WER + FSL 타이밍, GPT 번역/교정 옵션 있음 |
 | B | **DailyTalk** | 한국어 | CER, GPT 옵션 없음 |
 | C | **KtelSpeech** | 한국어 | CER, 전화 품질 음성 |
 | D | **AMI** | 영어 | WER, 다화자 회의, ami-dir/words-dir 별도 지정 |
@@ -150,19 +150,19 @@ baseline(1.0.0) / full / chunk 1.0s / GPT translation ctx=5 / correction on
 ## 4. 서버 실행 (SSH + tmux)
 
 **데이터셋과 관계없이 서버 스크립트는 공통:**
-`evaluation/LibriSpeech/servers/streaming_websocket_server_fcl.py`
+`evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py`
 
 **모델별 서버 명령:**
 
 ```bash
 # baseline
-python evaluation/LibriSpeech/servers/streaming_websocket_server_fcl.py \
+python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py \
   --chunk-size <n> \
   --no-idle-shutdown \
   --log-file "evaluation/{Dataset}/results/{model_label}/{scope}/{tag}/logs/server.log"
 
 # finetuned-merged
-python evaluation/LibriSpeech/servers/streaming_websocket_server_fcl.py \
+python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py \
   --model ~/STiTy/Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged \
   --chunk-size <n> \
   --enforce-eager \
@@ -170,7 +170,7 @@ python evaluation/LibriSpeech/servers/streaming_websocket_server_fcl.py \
   --log-file "evaluation/{Dataset}/results/{model_label}/{scope}/{tag}/logs/server.log"
 
 # finetuned-lora
-python evaluation/LibriSpeech/servers/streaming_websocket_server_fcl.py \
+python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py \
   --model ~/STiTy/Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-lora-ready \
   --lora \
   --chunk-size <n> \
@@ -315,7 +315,7 @@ ssh <host_alias> "cat <remote_dir>/evaluation/{Dataset}/results/{model_label}/{s
 **출력 지표:**
 - WER (영어) / CER (한국어)
 - COMET score (있으면)
-- FCL: median / mean / P90
+- FSL: median / mean / P90
 - encode_sec / decode_sec
 - SEG / VAD / finish 커밋 비율
 

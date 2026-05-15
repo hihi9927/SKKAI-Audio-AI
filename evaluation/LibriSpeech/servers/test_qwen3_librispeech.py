@@ -46,7 +46,7 @@ MODEL_MAP = {
 }
 DEFAULT_TEST_DIR = PROJECT_ROOT / "LibriSpeech" / "test-other"
 DEFAULT_OUTPUT = SCRIPT_DIR / "results" / "fsl" / "test" / "test_other_fsl_test.json"
-DEFAULT_SERVER_SCRIPT = SCRIPT_DIR / "servers" / "streaming_websocket_server_fcl.py"
+DEFAULT_SERVER_SCRIPT = SCRIPT_DIR / "servers" / "streaming_websocket_server_fsl.py"
 
 
 class ServerManager:
@@ -895,7 +895,7 @@ def calculate_wer(results, policy=None, emit_summary=True):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Qwen3 LibriSpeech integration test with FCL metrics')
+    parser = argparse.ArgumentParser(description='Qwen3 LibriSpeech integration test with FSL metrics')
     parser.add_argument('--test-dir', type=str, default=str(DEFAULT_TEST_DIR))
     parser.add_argument('--policy', type=int, default=DEFAULT_POLICY, choices=[DEFAULT_POLICY],
                         help='Compatibility-only policy field. Qwen3 uses policy=3.')

@@ -85,7 +85,7 @@ def merge_lora(base_model: str, checkpoint: str, merged_dir: str) -> str:
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Launch LibriSpeech FCL server with a finetuned Qwen3-ASR LoRA checkpoint"
+        description="Launch LibriSpeech FSL server with a finetuned Qwen3-ASR LoRA checkpoint"
     )
     parser.add_argument(
         "--base-model",
@@ -132,7 +132,7 @@ def main():
         merged_dir=args.merged_dir,
     )
 
-    server_script = HERE / "streaming_websocket_server_fcl.py"
+    server_script = HERE / "streaming_websocket_server_fsl.py"
     cmd = [
         sys.executable,
         str(server_script),
@@ -149,7 +149,7 @@ def main():
         "--no-idle-shutdown",
     ]
 
-    print("[server] Launching FCL server with merged finetuned model")
+    print("[server] Launching FSL server with merged finetuned model")
     print("[server] Command:", " ".join(cmd))
     subprocess.run(cmd, check=True)
 
