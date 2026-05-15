@@ -184,6 +184,37 @@ python evaluation/AMI/test_qwen3_ami.py \
 
 ---
 
+### 3.5 AliMeeting (다화자 회의, Chinese)
+
+서버를 먼저 시작할 때 `--tag`를 미리 고정하고 `--log-file`을 맞춰줍니다.
+
+```bash
+# 1) 서버 시작 (별도 터미널)
+python evaluation/LibriSpeech/servers/streaming_websocket_server_fcl.py \
+  --no-idle-shutdown \
+  --log-file "evaluation/AliMeeting/results/baseline(1.0.0)/sample/run_01/logs/server.log"
+
+# 2) 테스트 실행
+python evaluation/AliMeeting/test_qwen3_alimeeting.py \
+  --data-dir evaluation/AliMeeting \
+  --model "baseline(1.0.0)" \
+  --scope sample \
+  --tag run_01 \
+  --description "테스트 설명" \
+  --src-lang zh \
+  --trailing-silence-ms 3000
+```
+
+> **참고:**
+> - `--data-dir` 아래에 `AliMeeting/` (혼합 WAV)와 `label/` (화자별 TextGrid)가 있어야 합니다.
+> - 레이블은 화자별로 분리된 Praat TextGrid(`.TextGrid`) 형식이며, 같은 미팅의 모든 화자 파일을 시간순으로 병합해 reference를 구성합니다.
+> - 평가 지표는 **CER** (Character Error Rate, 중국어 문자 단위) 입니다.
+> - `--src-lang zh`가 기본값이므로 생략 가능합니다.
+
+결과 위치: `evaluation/AliMeeting/results/{model}/{scope}/{tag}/`
+
+---
+
 ## 4. 결과 파일 설명
 
 | 파일 | 설명 |
