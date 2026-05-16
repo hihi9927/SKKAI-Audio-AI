@@ -330,47 +330,67 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
     ax  = ax_gantt
     bh  = 0.5   # row half-height (±0.25 from y-center)
 
-    # 행을 위/아래 두 존으로 분리: 위=오디오(초록), 아래=디코드/번역(주황/빨강)
-    bh_enc  = bh * 0.44           # 오디오 intake bar 높이
-    y_enc   = lambda y: y + bh * 0.26  # 오디오 바 y-center (위쪽 존)
-    bh_dec  = bh * 0.44           # 디코드/번역 바 높이
-    y_dec   = lambda y: y - bh * 0.32  # 디코드 바 y-center (아래쪽 존)
+    # 행을 세 존으로 분리: 위=encode(초록) / 중=decode(주황) / 하=trans(빨강)
+    bh_enc   = bh * 0.28
+    y_enc    = lambda y: y + bh * 0.36
+    bh_dec   = bh * 0.28
+    y_dec    = lambda y: y + bh * 0.05
+    bh_trans = bh * 0.24
+    y_trans  = lambda y: y - bh * 0.26
 
     _CHUNK_COLORS = ["#4CAF50", "#81C784"]
 
     legend_handles = {}
     prev_end = 0.0
+    _prev_seg_det_x:      float | None = None
+    _prev_seg_encode_sec: float | None = None
+    _prev_was_same_generate: bool  = False
+    _prev_slot_start_val:    float = 0.0
+    _prev_chunk_count:       int   = 0   # len(sorted_chunks) of prev _same_generate seg
 
     for i, seg in enumerate(segs):
-        y      = n_segs - i   # seg[0] → top (y=n_segs), seg[-1] → bottom (y=1)
+        y      = n_segs - i
         a_start = _audio_start(seg)
         a_end   = _audio_end(seg)
         reason  = _reason(seg)
         ye      = y_enc(y)
         yd      = y_dec(y)
+        yt      = y_trans(y)
 
         if new_fmt and _has_new_format(seg):
-            fsl        = seg.get("fsl_sec")
-            encode_sec = seg.get("encode_sec")
-            decode_sec = seg.get("decode_sec") or 0
-            trans_sec  = seg.get("trans_sec", 0) or 0
-            fd_sec     = seg.get("final_decode_sec", 0) or 0
-            seg_audio  = seg.get("seg_audio_sec")
-            # 슬롯 실제 오디오 수신 시작 시점 — 없으면 audioStartSec 사용
-            slot_start = seg.get("slotAudioStartSec") or a_start
+            fsl           = seg.get("fsl_sec")
+            encode_sec    = seg.get("encode_sec")
+            decode_sec    = seg.get("decode_sec") or 0
+            trans_sec     = seg.get("trans_sec", 0) or 0
+            remaining_dec = seg.get("remaining_decode_sec") or 0
+            fd_sec        = seg.get("final_decode_sec", 0) or 0
+            seg_audio     = seg.get("seg_audio_sec")
+            slot_start    = seg.get("slotAudioStartSec") or a_start
 
-            # ── Empty flush gap: prev slot processed audio but produced no committed output ──
-            # 노멀 VAD→VAD: gap = 0.8s (이전 seg VAD bar로 이미 표시) → 중복 방지
-            # Empty flush: gap > 0.8s (빈 flush + VAD silence) → gap bar 추가
-            _vad_sil = VAD_MIN_SILENCE_MS / 1000.0
+            # slotAudioStartSec 미기록 시 이전 세그먼트 마지막 chunk audio_pos로 추론
+            if seg.get("slotAudioStartSec") is None and i > 0:
+                prev_chunks = segs[i - 1].get("chunk_encode_log") or []
+                if prev_chunks:
+                    prev_last = prev_chunks[-1].get("audio_pos_sec") or 0
+                    # _prev_was_same_generate면 다음 슬롯은 반드시 prev_last에서 시작
+                    if _prev_was_same_generate or prev_last > slot_start:
+                        slot_start = prev_last
+                else:
+                    _prev_aend = _audio_end(segs[i - 1])
+                    if _prev_aend and _prev_aend > slot_start:
+                        slot_start = _prev_aend
+
+            # 이전 seg가 _same_generate였으면 gap bar 시작을 prev slot_start로 조정
+            _vad_sil     = VAD_MIN_SILENCE_MS / 1000.0
+            _gap_a_start = _prev_slot_start_val if _prev_was_same_generate else a_start
             prev_speech_end = seg.get("prevSlotSpeechEndSec")
-            if prev_speech_end is None and slot_start > a_start + _vad_sil + 0.05:
-                prev_speech_end = max(a_start, slot_start - _vad_sil)
-            if prev_speech_end is not None and slot_start > a_start + _vad_sil + 0.05:
-                gap_speech_w = max(0.0, prev_speech_end - a_start)
+            if prev_speech_end is None and slot_start > _gap_a_start + _vad_sil + 0.05:
+                prev_speech_end = max(_gap_a_start, slot_start - _vad_sil)
+            if prev_speech_end is not None and slot_start > _gap_a_start + _vad_sil + 0.05:
+                gap_speech_w = max(0.0, prev_speech_end - _gap_a_start)
                 gap_vad_w    = max(0.0, slot_start - prev_speech_end)
                 if gap_speech_w > 0.01:
-                    ax.barh(ye, gap_speech_w, left=a_start, height=bh_enc,
+                    ax.barh(ye, gap_speech_w, left=_gap_a_start, height=bh_enc,
                             color=STYLE["encode"], alpha=0.30, zorder=2)
                 if gap_vad_w > 0.01:
                     ax.barh(ye, gap_vad_w, left=prev_speech_end, height=bh_enc,
@@ -380,45 +400,60 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
                         color=STYLE["encode"], alpha=0.30,
                         label="Prev slot audio (empty flush)")
 
+            # 이전 seg와 같은 generate() 공유 여부 — encode_sec 동일 시 True
+            _same_generate = (
+                encode_sec is not None
+                and _prev_seg_encode_sec is not None
+                and abs(encode_sec - _prev_seg_encode_sec) < 0.02
+                and _prev_seg_det_x is not None
+            )
+
             if encode_sec is not None:
-                # ── SEG commit: 위=encode(초록), 아래=decode(주황)+pre_trans(회색)+trans(빨강) ──
-                # x축 = wall-clock elapsed (stream_start_perf 기준)
-                # 청크별 bar는 chunk_transcribe_start_elapsed / chunk_decode_start_elapsed 사용
-                chunk_log = seg.get("chunk_encode_log", [])
+                chunk_log     = seg.get("chunk_encode_log", [])
                 pre_trans_sec = seg.get("pre_trans_sec", 0) or 0
 
                 if chunk_log:
                     sorted_chunks = sorted(chunk_log, key=lambda c: c.get("chunk_id", 0))
                     prev_pos = slot_start
+                    # 이전 _same_generate seg가 이 row에 bars를 그렸으면 색 연속성을 위해 offset
+                    _k_color_off = _prev_chunk_count if _prev_was_same_generate else 0
                     for k, chunk in enumerate(sorted_chunks):
                         audio_pos = chunk.get("audio_pos_sec", prev_pos)
                         audio_w   = audio_pos - prev_pos
                         cdec      = chunk.get("chunk_decode_sec", 0) or 0
                         ds_el     = chunk.get("chunk_decode_start_elapsed")
 
-                        # Encode bar (위쪽 존): audio-time 기준 — 청크가 커버하는 음성 구간 표시
-                        # wall-clock이 아닌 audio time으로 그려야 "2초짜리 청크" 등 직관적 크기가 보임
+                        # _same_generate: 이 chunk_log는 다음 슬롯(seg[i+1]) 오디오 → 다음 row
+                        _ye_enc = y_enc(y - 1) if _same_generate else ye
+                        _k_color = (k + _k_color_off) % 2
                         if audio_w > 0:
-                            ax.barh(ye, audio_w, left=prev_pos, height=bh_enc,
-                                    color=_CHUNK_COLORS[k % 2], alpha=0.9, zorder=3)
+                            ax.barh(_ye_enc, audio_w, left=prev_pos, height=bh_enc,
+                                    color=_CHUNK_COLORS[_k_color], alpha=0.9, zorder=3)
 
-                        # Decode bar (아래쪽 존): wall-clock 기준 — 실제 model.generate() 실행 시점
-                        # ds_el(= chunk_decode_start_elapsed) 이 있으면 정확한 wall-clock 위치 사용
-                        # 없으면 audio_pos fallback (구형 데이터 호환)
                         dec_left = ds_el if ds_el is not None else audio_pos
-                        if cdec > 0:
-                            ax.barh(yd, cdec, left=dec_left, height=bh_dec,
-                                    color=STYLE["decode"], alpha=0.85, zorder=3)
+                        if (_same_generate and k == 0
+                                and _prev_seg_det_x is not None
+                                and dec_left < _prev_seg_det_x):
+                            # cont_w: seg1 generate()가 seg2 토큰까지 뽑는 구간 → 현재(seg2) row decode 존
+                            cont_w = max(0.0, (encode_sec + decode_sec) - _prev_seg_det_x)
+                            if cont_w > 0:
+                                ax.barh(yd, cont_w, left=_prev_seg_det_x, height=bh_dec,
+                                        color=STYLE["decode"], alpha=0.85, zorder=3)
+                        else:
+                            # _same_generate면 decode도 다음 row
+                            _yd_dec = y_dec(y - 1) if _same_generate else yd
+                            if cdec > 0:
+                                ax.barh(_yd_dec, cdec, left=dec_left, height=bh_dec,
+                                        color=STYLE["decode"], alpha=0.85, zorder=3)
 
                         prev_pos = audio_pos
 
-                    # 마지막 chunk audio_pos ~ encode_sec gap (연한 초록)
+                    _ye_gap = y_enc(y - 1) if _same_generate else ye
                     gap = encode_sec - prev_pos
                     if gap > 0.005:
-                        ax.barh(ye, gap, left=prev_pos, height=bh_enc,
+                        ax.barh(_ye_gap, gap, left=prev_pos, height=bh_enc,
                                 color=STYLE["encode_tail"], alpha=0.7, zorder=3)
                 else:
-                    # chunk_encode_log 없음: audio duration으로 단일 encode 바 + decode 바
                     audio_dur = max((_audio_end(seg) or encode_sec) - a_start, 0)
                     if audio_dur > 0:
                         ax.barh(ye, audio_dur, left=a_start, height=bh_enc,
@@ -434,27 +469,36 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
                     legend_handles["decode"] = mpatches.Patch(
                         color=STYLE["decode"], label="Decode (model.generate(), wall-clock)")
 
-                # SEG 감지 x 좌표 = encode_sec + decode_sec (wall-clock)
                 seg_det_x = encode_sec + decode_sec
+                _prev_seg_det_x      = seg_det_x
+                _prev_seg_encode_sec = encode_sec
+                _prev_was_same_generate = _same_generate
+                _prev_slot_start_val    = slot_start
+                _prev_chunk_count       = len(sorted_chunks) if chunk_log else 0
 
-                # pre_trans bar (회색): SEG 감지 ~ 번역 API 호출 시작 (텍스트 처리/correction)
+                # remaining_decode bar: SEG 이후 generate()가 계속 돈 구간
+                if remaining_dec > 0.005:
+                    ax.barh(yd, remaining_dec, left=seg_det_x, height=bh_dec,
+                            color=STYLE["decode"], alpha=0.75, zorder=3)
+
+                # pre_trans bar (회색) → trans zone
                 trans_left = seg_det_x + pre_trans_sec
                 if pre_trans_sec > 0.005:
-                    ax.barh(yd, pre_trans_sec, left=seg_det_x, height=bh_dec,
+                    ax.barh(yt, pre_trans_sec, left=seg_det_x, height=bh_trans,
                             color=STYLE["pre_trans"], alpha=0.75, zorder=3)
                     if "pre_trans" not in legend_handles:
                         legend_handles["pre_trans"] = mpatches.Patch(
                             color=STYLE["pre_trans"], label="Pre-trans (text proc / correction)")
 
-                # trans bar (빨강): 번역 API 호출
+                # trans bar (빨강) → trans zone
                 if trans_sec > 0:
-                    ax.barh(yd, trans_sec, left=trans_left, height=bh_dec,
+                    ax.barh(yt, trans_sec, left=trans_left, height=bh_trans,
                             color=STYLE["trans"], alpha=0.9, zorder=3)
                 if "trans" not in legend_handles:
                     legend_handles["trans"] = mpatches.Patch(
                         color=STYLE["trans"], label="Trans layer")
 
-                # ◆ SEG 감지 마커 (decode bar 오른쪽 끝 = yd 존)
+                # ◆ SEG 감지 마커
                 ax.scatter(seg_det_x, yd, marker="D", color=STYLE["seg_marker"],
                            s=55, zorder=7, linewidths=0.5, edgecolors="#888888")
                 if "seg_det" not in legend_handles:
@@ -462,13 +506,11 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
                         [], [], marker="D", color=STYLE["seg_marker"],
                         markersize=6, linestyle="None", label="SEG detected")
 
-                # FSL 레이블: seg_det_x + fsl_sec = 번역 완료 시점
                 if fsl is not None:
                     ax.text(seg_det_x + fsl + 0.05, y + bh / 2 + 0.06,
                             f"FSL {fsl:.2f}s", fontsize=7, color=STYLE["seg_marker"],
                             va="bottom", zorder=8)
 
-                # audioEndSec 마커 (추정 발화 끝, 초록 실선)
                 if a_end:
                     _vlines_seg(ax, a_end, y, bh / 2 + 0.05,
                                 STYLE["audio_end"], lw=2.0, ls="-", zorder=6)
@@ -477,7 +519,6 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
                             [], [], color=STYLE["audio_end"], lw=2,
                             label="audioEndSec (추정 발화 끝)")
 
-                # seg_audio_sec 마커 (SEG 감지 청크 경계, 회색 점선)
                 if seg_audio:
                     _vlines_seg(ax, seg_audio, y, bh / 2,
                                 STYLE["seg_audio"], lw=1.5, ls=":", zorder=6)
@@ -487,8 +528,7 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
                             label="seg_audio_sec (SEG 감지 청크 경계)")
 
             elif fd_sec > 0 or trans_sec > 0 or seg.get("chunk_encode_log"):
-                # ── VAD/finish commit: final_decode + trans (audioEndSec 기준) ──
-                # 오디오 커버리지 바 (encode zone): chunk_log 있으면 청크별 분리
+                # ── VAD/finish commit ──
                 chunk_log = seg.get("chunk_encode_log", [])
                 if chunk_log:
                     sorted_chunks = sorted(chunk_log, key=lambda c: c.get("chunk_id", 0))
@@ -498,20 +538,25 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
                         audio_w   = audio_pos - prev_pos
                         cdec      = chunk.get("chunk_decode_sec", 0) or 0
                         ds_el     = chunk.get("chunk_decode_start_elapsed")
-                        # 오디오 bar (위쪽)
                         if audio_w > 0:
                             ax.barh(ye, audio_w, left=prev_pos, height=bh_enc,
                                     color=_CHUNK_COLORS[k % 2], alpha=0.9, zorder=3)
-                        # 디코드 bar (아래쪽)
                         dec_left = ds_el if ds_el is not None else audio_pos
-                        if cdec > 0:
-                            ax.barh(yd, cdec, left=dec_left, height=bh_dec,
-                                    color=STYLE["decode"], alpha=0.85, zorder=3)
-                            if "decode" not in legend_handles:
-                                legend_handles["decode"] = mpatches.Patch(
-                                    color=STYLE["decode"], label="Decode (model.generate(), wall-clock)")
+                        if (k == 0 and _prev_seg_det_x is not None
+                                and dec_left < _prev_seg_det_x):
+                            # VAD tail: 이전 SEG generate()가 VAD commit까지 계속 돈 구간
+                            cont_w = max(0.0, (dec_left + cdec) - _prev_seg_det_x)
+                            if cont_w > 0:
+                                ax.barh(y_dec(y + 1), cont_w, left=_prev_seg_det_x, height=bh_dec,
+                                        color=STYLE["decode"], alpha=0.75, zorder=3)
+                        else:
+                            if cdec > 0:
+                                ax.barh(yd, cdec, left=dec_left, height=bh_dec,
+                                        color=STYLE["decode"], alpha=0.85, zorder=3)
+                                if "decode" not in legend_handles:
+                                    legend_handles["decode"] = mpatches.Patch(
+                                        color=STYLE["decode"], label="Decode (model.generate(), wall-clock)")
                         prev_pos = audio_pos
-                    # 마지막 청크 ~ a_end 잔여 구간
                     if a_end and a_end > prev_pos:
                         ax.barh(ye, a_end - prev_pos, left=prev_pos, height=bh_enc,
                                 color=_CHUNK_COLORS[len(sorted_chunks) % 2], alpha=0.7, zorder=3)
@@ -523,10 +568,9 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
                 if "encode" not in legend_handles:
                     legend_handles["encode"] = mpatches.Patch(
                         color=STYLE["encode"], label="Encode (audio coverage, audio-time)")
-                # VAD 0.8초 침묵 감지 구간: audioEndSec(발화 끝) → vad_trigger_sec(VAD 트리거)
-                speech_end = a_end or a_start
+                speech_end  = a_end or a_start
                 vad_trigger = seg.get("vad_trigger_sec") or (speech_end + VAD_MIN_SILENCE_MS / 1000.0)
-                silence_w = vad_trigger - speech_end
+                silence_w   = vad_trigger - speech_end
                 if silence_w > 0.01 and reason == "vad":
                     ax.barh(ye, silence_w, left=speech_end, height=bh_enc,
                             color=STYLE["vad_silence"], alpha=0.55, hatch="///", zorder=3)
@@ -542,7 +586,7 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
                         legend_handles["final_decode"] = mpatches.Patch(
                             color=STYLE["final_decode"], label="Final decode (VAD/finish)")
                 if trans_sec > 0:
-                    ax.barh(yd, trans_sec, left=bar_start + fd_sec, height=bh_dec,
+                    ax.barh(yt, trans_sec, left=bar_start + fd_sec, height=bh_trans,
                             color=STYLE["trans"], alpha=0.9, zorder=3)
                     if "trans" not in legend_handles:
                         legend_handles["trans"] = mpatches.Patch(
@@ -551,7 +595,6 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
                     ax.text(bar_start + fd_sec + trans_sec + 0.05, y + bh / 2 + 0.06,
                             f"FSL {fsl:.2f}s", fontsize=7, color=STYLE["seg_marker"],
                             va="bottom", zorder=8)
-                # VAD final decode 중 SEG 감지된 경우: seg_audio_sec 마커 표시
                 if seg_audio:
                     _vlines_seg(ax, seg_audio, y, bh / 2,
                                 STYLE["seg_audio"], lw=1.5, ls=":", zorder=6)
@@ -562,6 +605,12 @@ def plot_file(record: dict, audio_root: str | None, out_path: str, vad_model=Non
                         legend_handles["seg_audio"] = plt.Line2D(
                             [], [], color=STYLE["seg_audio"], lw=1.5, ls=":",
                             label="seg_audio_sec (SEG 감지 청크 경계)")
+                # VAD commit 이후 체인 리셋
+                _prev_seg_det_x         = None
+                _prev_seg_encode_sec    = None
+                _prev_was_same_generate = False
+                _prev_slot_start_val    = slot_start
+                _prev_chunk_count       = 0
 
             else:
                 ax.barh(y, a_end - a_start, left=a_start, height=bh,

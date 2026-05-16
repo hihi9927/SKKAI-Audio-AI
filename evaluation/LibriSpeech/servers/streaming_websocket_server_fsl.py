@@ -58,11 +58,6 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         self.segment_audio_start_sec = 0.0
         self.pending_audio_end_sec: Optional[float] = None
         self._effective_audio_end_sec: Optional[float] = None
-        # (current_time, partial_text) snapshots — used to find the earliest
-        # audio position at which a committed sentence first appeared, giving a
-        # better audio_end_sec estimate for seg commits than current_time at
-        # detection (which includes look-ahead audio needed for punctuation).
-        self._partial_snapshots: list[tuple[float, str]] = []
         self._slot_final_decode_sec: dict[str, float] = {}  # _asr_finish_streaming 누적
         self._slot_seg_detected: dict[str, dict] = {}       # 첫 SEG 감지 시점 {elapsed_sec, audio_sec, decode_start_elapsed_sec}
         self._slot_chunk_encode_log: dict[str, list] = {}   # 청크별 타이밍 로그
@@ -71,6 +66,10 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         self._slot_active_transcribe_t0: dict[str, float] = {}
         # VAD 트리거 시점 (speech_end + 800ms) — VAD 커밋 시 payload에 포함
         self._pending_vad_trigger_sec: Optional[float] = None
+        # VAD 트리거 wall-clock elapsed — FSL = trans_end_elapsed - vad_trigger_elapsed
+        self._pending_vad_trigger_elapsed: Optional[float] = None
+        # SEG commit deferred emit queue (generate 완료 후 total_tokens 확정 뒤 flush)
+        self._deferred_seg_emits: list = []
         # 슬롯별 실제 오디오 수신 시작 시점 (VAD trigger of the switch that created this slot)
         self._slot_audio_start_sec: dict[str, float] = {"A": 0.0}
         # Empty flush (VAD fired but no segment produced): prev slot's speech_end for gap bar
@@ -100,13 +99,14 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         self.segment_audio_start_sec = 0.0
         self.pending_audio_end_sec = None
         self._effective_audio_end_sec = None
-        self._partial_snapshots = []
         self._slot_final_decode_sec = {}
         self._slot_seg_detected = {}
         self._slot_chunk_encode_log = {}
         self._slot_last_emitted_chunk_id = {}
         self._slot_active_transcribe_t0 = {}
         self._pending_vad_trigger_sec = None
+        self._pending_vad_trigger_elapsed = None
+        self._deferred_seg_emits = []
         self._slot_audio_start_sec = {"A": 0.0}
         self._prev_slot_speech_end_sec = None
         self._connection_log = []
@@ -122,13 +122,6 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         if state.chunk_id == 0:
             self._slot_last_emitted_chunk_id.pop(key, None)
 
-        # base server가 "partial" WebSocket 메시지를 전송하지 않아 send_message("partial")
-        # 인터셉트로는 스냅샷이 채워지지 않음. 대신 각 청크 추론 직전에 이전 청크까지의
-        # 누적 텍스트를 current_time 기준으로 저장해 _seg_audio_end_sec()가 동작하게 함.
-        raw_text = (state.text or "").strip()
-        if raw_text:
-            self._partial_snapshots.append((self.current_time, raw_text))
-
         t0 = time.perf_counter()
         ts_elapsed = round(t0 - self.stream_start_perf, 4)  # wall-clock elapsed (plot x축 기준)
         # 이전 슬롯에서 남은 stale _decode_start_perf가 t0 < dp 윈도우 체크를 통과해
@@ -136,7 +129,15 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         state._decode_start_perf = None
         # _process_slot_updates(on_seg) 내부에서 조기 로깅이 가능하도록 t0 공유
         self._slot_active_transcribe_t0[key] = t0
+        # generate 완료 후 _last_chunk_new_tokens를 읽기 위해 state 레퍼런스 보존
+        # (슬롯이 리셋돼 dict가 바뀌어도 객체는 유지됨)
+        state_ref = state
         await super()._asr_streaming_transcribe(chunk, slot_key)
+        # generate() 완료 → deferred SEG emit flush
+        generate_end_elapsed = self._stream_elapsed_sec()
+        total_tokens = getattr(state_ref, "_last_chunk_new_tokens", None)
+        if self._deferred_seg_emits:
+            await self._flush_deferred_seg_emits(total_tokens or 0, generate_end_elapsed)
         t1 = time.perf_counter()
         elapsed = t1 - t0
         self._slot_active_transcribe_t0.pop(key, None)
@@ -196,10 +197,15 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
                     elapsed = self._stream_elapsed_sec()
                     decode_start_perf = getattr(slot["state"], "_decode_start_perf", None)
                     decode_start_elapsed = (decode_start_perf - self.stream_start_perf) if decode_start_perf else None
+                    seg_token_idx = getattr(slot["state"], "_seg_token_idx", None)
+                    chunk_audio_start = max(0.0, self.current_time - self.config.chunk_size_sec)
                     self._slot_seg_detected[key] = {
                         "elapsed_sec": elapsed,
                         "audio_sec": self.current_time,
                         "decode_start_elapsed_sec": decode_start_elapsed,
+                        "seg_token_idx": seg_token_idx,
+                        "chunk_audio_start": chunk_audio_start,
+                        "chunk_size_sec": self.config.chunk_size_sec,
                     }
                     logger.info(
                         "[SEG] slot=%s elapsed=%.3fs decode_start=%.3fs audio_pos=%.3fs",
@@ -277,70 +283,21 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
     # ── 훅 오버라이드 ──────────────────────────────────────────────────────────
 
     async def send_message(self, msg_type: str, **kwargs) -> None:
-        """Intercept partial messages to record (current_time, text) snapshots."""
         if msg_type == "partial":
             text = (kwargs.get("original") or "").strip()
             if text:
-                self._partial_snapshots.append((self.current_time, text))
                 logger.info("[PARTIAL] t=%.3fs | %s", self.current_time, text)
                 self._clog(f"[PARTIAL] t={self.current_time:.3f}s | {text}")
         await super().send_message(msg_type, **kwargs)
-
-    def _seg_audio_end_sec(self, sentence: str) -> float:
-        """Return the current_time of the last partial snapshot that contains
-        the sentence body *without* its final punctuation.
-
-        Two-stage lookahead problem with seg commits:
-          1. The model needs extra audio chunks after the sentence ends to
-             decide to add the sentence-final punctuation.
-          2. The base server only commits once text *after* the punctuation
-             appears (line 544 in base server), adding another chunk of delay.
-
-        Using the first snapshot that contains the full sentence (with punct)
-        removes stage-2 lookahead but leaves stage-1.  Using the last snapshot
-        that contains the sentence body *before* the punctuation appeared
-        removes both stages and gives the best approximation of T_end (the
-        actual moment the sentence audio finished).
-
-        Falls back to the first-with-punct snapshot, then self.current_time.
-        """
-        needle = sentence.strip()
-        # Strip sentence-final punctuation to match the pre-punct partial text.
-        needle_no_punct = needle.rstrip('.,!?;:…。！？').strip()
-
-        last_pre_punct_time: Optional[float] = None
-        first_with_punct_time: Optional[float] = None
-
-        for t, text in self._partial_snapshots:
-            if t < self.segment_audio_start_sec:
-                continue
-            if needle in text:
-                first_with_punct_time = t
-                break
-            if needle_no_punct and needle_no_punct in text:
-                last_pre_punct_time = t
-
-        if last_pre_punct_time is not None:
-            logger.info("[SEG_AUDIO_END] sentence='%s' → last_pre_punct_time=%.3fs (needle_no_punct='%s')", needle, last_pre_punct_time, needle_no_punct)
-            return last_pre_punct_time
-        if first_with_punct_time is not None:
-            logger.info("[SEG_AUDIO_END] sentence='%s' → first_with_punct_time=%.3fs (fallback)", needle, first_with_punct_time)
-            return first_with_punct_time
-        logger.info("[SEG_AUDIO_END] sentence='%s' → current_time=%.3fs (no snapshot matched)", needle, self.current_time)
-        return self.current_time
 
     async def _translate(
         self, text: str, target_lang: str, audio_end_sec: Optional[float] = None
     ) -> tuple[str, str, dict]:
         if self.pending_audio_end_sec is not None:
-            # VAD commit or finish flush: use the accurate VAD/finish timestamp.
-            effective_audio_end = self.pending_audio_end_sec
-        else:
-            # Seg commit: find the earliest snapshot containing this sentence,
-            # which is closer to the true end of the sentence audio than
-            # current_time (which includes look-ahead chunks for punctuation).
-            effective_audio_end = self._seg_audio_end_sec(text)
-        self._effective_audio_end_sec = effective_audio_end
+            # VAD/finish: pending_audio_end_sec = speech_end (accurate)
+            self._effective_audio_end_sec = self.pending_audio_end_sec
+        # SEG path: _effective_audio_end_sec는 None으로 유지 → _emit_final_payload에서 current_time
+        # 사용. 실제 audio_end는 _flush_deferred_seg_emits에서 token ratio로 확정.
         return await self._translate_with_metadata(text, target_lang)
 
     async def _correct_and_translate(self, text: str, current_lang: str, audio_end_sec: float):
@@ -366,6 +323,7 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         self._clog(f"[VAD_COMMIT] audio_end_sec={audio_end_sec:.3f}s → speech_end_sec={speech_end_sec:.3f}s")
         self.pending_audio_end_sec = speech_end_sec
         self._pending_vad_trigger_sec = audio_end_sec
+        self._pending_vad_trigger_elapsed = self._stream_elapsed_sec()
         # 슬롯 스위치 후 _on_vad_commit 호출 시점에 self.active_slot은 이미 새 슬롯
         self._slot_audio_start_sec[self.active_slot] = audio_end_sec
 
@@ -402,8 +360,9 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         # encode / decode / FSL
         # - encode_sec: stream 시작 ~ model.generate() 직전 (오디오 입력 + prefill)
         # - decode_sec: model.generate() 시작 ~ SEG 토큰 감지 (autoregressive decode)
-        # - fsl_sec (SEG commit): SEG 감지 시점 ~ 번역 완료 시점 (post-SEG 처리 레이턴시)
-        # - fsl_sec (VAD/finish): final_decode_sec + trans_sec
+        # - fsl_sec (SEG): generate 완료 후 _flush_deferred_seg_emits에서 token 기반으로 확정
+        # - fsl_sec (VAD): trans_end_elapsed - vad_trigger_elapsed (VAD trigger 기준)
+        # - fsl_sec (finish): final_decode_sec + trans_sec
         seg_info = self._slot_seg_detected.pop(slot_key, None)
         trans_end_elapsed = timing.pop("_trans_end_elapsed", None)
         trans_start_elapsed = timing.pop("_trans_start_elapsed", None)
@@ -415,7 +374,9 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
 
         # VAD 트리거 시점 (0.8초 침묵 후) — VAD 커밋에서만 기록
         vad_trigger_sec = self._pending_vad_trigger_sec
+        vad_trigger_elapsed = self._pending_vad_trigger_elapsed
         self._pending_vad_trigger_sec = None
+        self._pending_vad_trigger_elapsed = None
         if reason == "vad" and vad_trigger_sec is not None:
             timing["vad_trigger_sec"] = round(vad_trigger_sec, 3)
 
@@ -424,24 +385,27 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
             timing["prevSlotSpeechEndSec"] = round(self._prev_slot_speech_end_sec, 3)
             self._prev_slot_speech_end_sec = None
 
-        if reason not in ("vad", "finish") and seg_info is not None:
+        is_seg = reason not in ("vad", "finish")
+
+        if is_seg and seg_info is not None:
+            # ── SEG path ─────────────────────────────────────────────────────
+            # encode/decode 기록; FSL·audioEndSec는 _flush_deferred_seg_emits에서 확정
             d_start = seg_info.get("decode_start_elapsed_sec")
             if d_start is not None:
                 timing["encode_sec"] = d_start
                 timing["decode_sec"] = round(max(0.0, seg_info["elapsed_sec"] - d_start), 4)
             timing["seg_audio_sec"] = round(seg_info["audio_sec"], 3)
-            # FSL for SEG: translation end - estimated audio end (both stream-elapsed)
+            # 임시 FSL (deferred flush에서 token-based로 덮어씀)
+            effective_ae = (
+                self._effective_audio_end_sec
+                if self._effective_audio_end_sec is not None
+                else audio_end_sec
+            )
             if trans_end_elapsed is not None:
-                effective_ae = (
-                    self._effective_audio_end_sec
-                    if self._effective_audio_end_sec is not None
-                    else audio_end_sec
-                )
                 timing["fsl_sec"] = round(max(0.0, trans_end_elapsed - effective_ae), 4)
         elif seg_info is not None:
-            # VAD/finish path에서도 final decode 중 SEG 감지된 경우 위치 기록
+            # ── VAD/finish path + SEG 감지 ────────────────────────────────────
             timing["seg_audio_sec"] = round(seg_info["audio_sec"], 3)
-            # elapsed_sec is None for VAD-path SEG (no wall-clock timing available)
             seg_elapsed = seg_info.get("elapsed_sec")
             if seg_elapsed is not None:
                 if trans_start_elapsed is not None:
@@ -451,11 +415,14 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
                 if trans_end_elapsed is not None:
                     timing["fsl_sec"] = round(max(0.0, trans_end_elapsed - seg_elapsed), 4)
             if "fsl_sec" not in timing:
-                # seg_elapsed가 없는 VAD-path SEG → final decode + 번역 시간으로 fallback
                 timing["fsl_sec"] = round(final_decode_sec + timing.get("trans_sec", 0.0), 4)
-        else:
-            # VAD/finish: SEG 감지 없음 → final decode + 번역 시간
-            timing["fsl_sec"] = round(final_decode_sec + timing.get("trans_sec", 0.0), 4)
+
+        # VAD/finish path FSL (seg 있건 없건 VAD는 trigger 기준으로 통일)
+        if not is_seg:
+            if reason == "vad" and trans_end_elapsed is not None and vad_trigger_elapsed is not None:
+                timing["fsl_sec"] = round(max(0.0, trans_end_elapsed - vad_trigger_elapsed), 4)
+            elif "fsl_sec" not in timing:
+                timing["fsl_sec"] = round(final_decode_sec + timing.get("trans_sec", 0.0), 4)
 
         encoding_sec = timing.get("encode_sec", 0.0)
 
@@ -478,6 +445,29 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
             "commitReason": reason,
             **timing,
         }
+        self.segment_audio_start_sec = audio_end_sec
+        self.pending_audio_end_sec = None
+        if self.gpt_translator and original and translation:
+            self._segment_history.append((original, translation))
+
+        if is_seg:
+            # SEG: generate() 완료 후 total_tokens로 audio_end/FSL 확정 (defer)
+            self._deferred_seg_emits.append({
+                "payload": payload,
+                "_trans_end_elapsed": trans_end_elapsed,
+                "_trans_start_elapsed": trans_start_elapsed,
+                "_seg_token_idx": seg_info.get("seg_token_idx") if seg_info else None,
+                "_chunk_audio_start": seg_info.get("chunk_audio_start") if seg_info else None,
+                "_chunk_size_sec": (
+                    seg_info.get("chunk_size_sec", self.config.chunk_size_sec)
+                    if seg_info else self.config.chunk_size_sec
+                ),
+                "_encoding_sec": encoding_sec,
+                "_final_decode_sec": final_decode_sec,
+            })
+            return
+
+        # VAD/finish: 즉시 전송
         logger.info(
             "[FINAL] seg=%d reason=%s audio=[%.3f, %.3f] "
             "fsl=%.3fs encode=%.3fs decode=%.3fs final_decode=%.3fs trans=%.3fs | text='%s'",
@@ -497,12 +487,90 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
             f"text='{original}' | translation='{translation}'"
         )
         await self.send_message("final", **{k: v for k, v in payload.items() if k != "type"})
-        self.segment_audio_start_sec = audio_end_sec
-        self.pending_audio_end_sec = None
-        if self.gpt_translator and original and translation:
-            self._segment_history.append((original, translation))
+
+    async def _flush_deferred_seg_emits(self, total_tokens: int, generate_end_elapsed: float = None) -> None:
+        """generate() 완료 후 SEG deferred emit을 token 비율로 audio_end/FSL 확정 후 전송."""
+        emits = self._deferred_seg_emits
+        self._deferred_seg_emits = []
+        # 연속 SEG commit 간 audio_start 전파용: 이전 emit의 new_audio_end를 다음 emit의
+        # audioStartSec / slotAudioStartSec에 기록해 추측 없이 정확한 오디오 구간 복원
+        next_audio_start: float | None = None
+        for item in emits:
+            payload = item["payload"]
+            trans_end_elapsed = item["_trans_end_elapsed"]
+            trans_start_elapsed = item.get("_trans_start_elapsed")
+            seg_token_idx = item["_seg_token_idx"]
+            chunk_audio_start = item["_chunk_audio_start"]
+            chunk_size_sec = item["_chunk_size_sec"]
+            encoding_sec = item["_encoding_sec"]
+            final_decode_sec = item["_final_decode_sec"]
+
+            # generate() 완료 시점 기준으로 trans_sec 재계산:
+            # on_seg 콜백 내부에서 기록된 trans_sec은 generate()가 이벤트 루프를 점유한 채
+            # HTTP 응답 처리가 밀려 remaining_decode 시간을 포함함. generate_end 이후 실제
+            # 번역 응답 처리 시간만 trans_sec에 기록하고, SEG→generate 완료 구간은
+            # remaining_decode_sec으로 분리 기록.
+            if generate_end_elapsed is not None:
+                seg_det_x = encoding_sec + payload.get("decode_sec", 0.0)
+                remaining = round(max(0.0, generate_end_elapsed - seg_det_x), 4)
+                if remaining > 0:
+                    payload["remaining_decode_sec"] = remaining
+                if trans_end_elapsed is not None:
+                    payload["trans_sec"] = round(max(0.0, trans_end_elapsed - generate_end_elapsed), 4)
+
+            # 연속 SEG commit: 이전 emit에서 확정된 audio_end를 이번 emit의 audioStartSec로 patch
+            if next_audio_start is not None:
+                payload["audioStartSec"] = round(next_audio_start, 3)
+                payload["start"] = base_server.format_time(next_audio_start)
+                payload["slotAudioStartSec"] = round(next_audio_start, 3)
+
+            # token-based audio_end 역추적: chunk 시작 + (k/n) * chunk_duration
+            if seg_token_idx is not None and chunk_audio_start is not None and total_tokens > 0:
+                seg_ratio = min(1.0, seg_token_idx / total_tokens)
+                new_audio_end = max(0.0, chunk_audio_start + seg_ratio * chunk_size_sec)
+                payload["audioEndSec"] = round(new_audio_end, 3)
+                payload["end"] = base_server.format_time(new_audio_end)
+                if trans_end_elapsed is not None:
+                    payload["fsl_sec"] = round(max(0.0, trans_end_elapsed - new_audio_end), 4)
+                # 다음 세그먼트의 audioStartSec / slotAudioStartSec 전파
+                self.segment_audio_start_sec = new_audio_end
+                next_audio_start = new_audio_end
+                logger.info(
+                    "[FLUSH-SEG] seg=%d tok=%d/%d ratio=%.3f audio_end=%.3fs fsl=%.3fs",
+                    payload["segmentId"], seg_token_idx, total_tokens, seg_ratio,
+                    new_audio_end, payload.get("fsl_sec", 0.0),
+                )
+            else:
+                logger.info(
+                    "[FLUSH-SEG] seg=%d no-token-info → audio_end=%.3fs fsl=%.3fs",
+                    payload["segmentId"], payload.get("audioEndSec", 0.0), payload.get("fsl_sec", 0.0),
+                )
+
+            logger.info(
+                "[FINAL] seg=%d reason=%s audio=[%.3f, %.3f] "
+                "fsl=%.3fs encode=%.3fs decode=%.3fs final_decode=%.3fs trans=%.3fs | text='%s'",
+                payload["segmentId"], payload["commitReason"],
+                payload["audioStartSec"], payload.get("audioEndSec", 0.0),
+                payload.get("fsl_sec", 0.0), encoding_sec,
+                payload.get("decode_sec", 0.0), final_decode_sec,
+                payload.get("trans_sec", 0.0), payload["original"],
+            )
+            self._clog(
+                f"[FINAL] seg={payload['segmentId']} reason={payload['commitReason']} "
+                f"audio=[{payload['audioStartSec']:.3f}, {payload.get('audioEndSec', 0.0):.3f}] "
+                f"fsl={payload.get('fsl_sec', 0.0):.3f}s "
+                f"encode={encoding_sec:.3f}s "
+                f"decode={payload.get('decode_sec', 0.0):.3f}s "
+                f"final_decode={final_decode_sec:.3f}s "
+                f"trans={payload.get('trans_sec', 0.0):.3f}s | "
+                f"text='{payload['original']}' | translation='{payload['translation']}'"
+            )
+            await self.send_message("final", **{k: v for k, v in payload.items() if k != "type"})
 
     async def finish_streaming(self):
+        # 미전송 SEG deferred emit을 토큰 정보 없이 best-effort로 먼저 전송
+        if self._deferred_seg_emits:
+            await self._flush_deferred_seg_emits(0)
         self.pending_audio_end_sec = self.current_time
         await super().finish_streaming()
 

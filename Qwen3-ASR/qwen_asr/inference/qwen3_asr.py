@@ -821,8 +821,10 @@ class Qwen3ASRModel:
                     seg_count = txt_p.count("<SEG>")
                     if seg_count > prev_seg_count:
                         prev_seg_count = seg_count
+                        state._seg_token_idx = len(out.outputs[0].token_ids)
                         await on_seg(state)
 
+            state._last_chunk_new_tokens = len(final.outputs[0].token_ids)
             gen_text = final.outputs[0].text
             if prefix:
                 prev_ids = self.processor.tokenizer.encode(state._raw_decoded)

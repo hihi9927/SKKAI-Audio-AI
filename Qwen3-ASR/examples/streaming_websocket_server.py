@@ -665,6 +665,7 @@ class Qwen3ASRStreamingHandler:
     async def _asr_streaming_transcribe(self, chunk: np.ndarray, slot_key: Optional[str] = None):
         slot = self._slot(slot_key)
         seg_count_before = slot.get("committed_seg_count", 0)
+        committed_len_before = slot.get("committed_len", 0)
 
         async def _on_seg(_):
             # lock 밖에서 호출되므로 _process_slot_updates가 asr_lock 자유롭게 획득 가능
@@ -678,18 +679,23 @@ class Qwen3ASRStreamingHandler:
         await self._process_slot_updates(slot_key)
 
         _s = self._slot(slot_key)
-        # SEG 커밋 발생 시, remaining이 없을 때만 슬롯 리셋.
+        # SEG/dot commit 발생 시, remaining이 없을 때만 슬롯 리셋.
         # remaining이 있으면 리셋하지 않고 같은 슬롯에서 디코딩 계속.
-        if _s.get("committed_seg_count", 0) > seg_count_before:
+        any_commit = (
+            _s.get("committed_seg_count", 0) > seg_count_before
+            or _s.get("committed_len", 0) > committed_len_before
+        )
+        if any_commit:
             remaining = self._slot_uncommitted_display(slot_key)
             if not remaining.strip():
+                trigger = "SEG" if _s.get("committed_seg_count", 0) > seg_count_before else "DOT"
                 self._reset_stream_slot(slot_key)
                 if slot_key == self.active_slot:
                     self.state = self.stream_slots[self.active_slot]["state"]
-                self.log.info(f"[SEG-SLOT-SWITCH] slot={slot_key}")
+                self.log.info(f"[{trigger}-SLOT-SWITCH] slot={slot_key}")
             else:
                 self.log.info(
-                    f"[SEG-PENDING] slot={slot_key} remaining={remaining!r}"
+                    f"[COMMIT-PENDING] slot={slot_key} remaining={remaining!r}"
                 )
 
         async with self.asr_lock:

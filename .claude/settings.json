@@ -95,11 +95,21 @@
       "Bash(Sort-Object LastWriteTime -Descending)",
       "Bash(Select-Object Name, LastWriteTime)",
       "PowerShell(scp -i \"C:\\\\Users\\\\gyuye\\\\.ssh\\\\Audio_AI.pem\" -o StrictHostKeyChecking=no ubuntu@13.209.202.8:/tmp/new_results.tar.gz d:\\\\tmp\\\\new_results.tar.gz)",
-      "Bash(tar xzf *)"
+      "Bash(tar xzf *)",
+      "Bash(aws ec2 *)",
+      "PowerShell(Get-ChildItem -Path \"d:\\\\STiTy-main\\\\evaluation\" -Recurse | Where-Object { $_.Extension -match \"\\\\.\\(png|jpg|svg\\)$\" } | Select-Object -First 20 FullName)",
+      "Bash(powershell -command \"\\(Get-Item 'd:\\\\STiTy-main\\\\evaluation\\\\LibriSpeech\\\\results\\\\finetuned_silence\\(1.0.3\\)\\\\sample\\\\run_01\\\\plots\\\\2033-164914-0017.png'\\).LastWriteTime\")",
+      "Bash(powershell -command \"Get-ChildItem 'd:\\\\STiTy-main\\\\evaluation\\\\LibriSpeech\\\\results\\\\finetuned_silence\\(1.0.3\\)\\\\sample\\\\run_01\\\\plots\\\\*.png' | Select-Object Name, LastWriteTime | Sort-Object LastWriteTime\")",
+      "Bash(rm evaluation/LibriSpeech/results/finetuned_silence\\\\\\(1.0.3\\\\\\)/sample/run_01/plots/*.png 2>&1 && echo \"done\")",
+      "Bash(ping -n 3 15.165.227.114)",
+      "Bash(Remove-Item -Recurse -Force \"d:/STiTy-main/evaluation/AliMeeting/results\")",
+      "Bash(rm -rf \"d:/STiTy-main/evaluation/AliMeeting/results\")"
     ],
     "additionalDirectories": [
       "\\tmp",
-      "d:\\STiTy-main"
+      "d:\\STiTy-main",
+      "D:\\STiTy-main\\evaluation\\LibriSpeech\\results\\finetuned_silence(1.0.3)\\sample\\run_01\\plots",
+      "d:\\STiTy-main\\evaluation\\AliMeeting\\results"
     ]
   }
 }
