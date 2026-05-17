@@ -104,6 +104,8 @@ def _configure_logging(use_json: bool = False) -> None:
 logger = logging.getLogger(__name__)
 
 SAMPLING_RATE = 16000
+MAX_AUDIO_ACCUM_SEC = 90.0          # audio_accum 강제 리셋 임계값 (초)
+MAX_SEED_COMMITTED_SENTENCES = 5    # 강제 리셋 시 seed_text에 포함할 직전 committed 문장 수
 # VADIterator 설정
 VAD_THRESHOLD = 0.5
 VAD_MIN_SILENCE_MS = 800       # 발화 종료 판정까지 필요한 침묵 길이
@@ -675,6 +677,24 @@ class Qwen3ASRStreamingHandler:
             return ""
         return re.sub(r'\s+', ' ', uncommitted_raw.replace("<SEG>", "")).strip()
 
+    def _build_forced_reset_seed(self, slot_key: str, remaining: str) -> str:
+        """강제 리셋용 seed_text: 마지막 N committed 문장 + remaining"""
+        slot = self._slot(slot_key)
+        committed = slot.get("committed_display", "")
+        sentences = re.split(r'(?<=[。？！?!])', committed)
+        sentences = [s for s in sentences if s.strip()]
+        last_n = "".join(sentences[-MAX_SEED_COMMITTED_SENTENCES:])
+        return last_n + remaining
+
+    def _init_forced_reset_slot(self, slot_key: str, seed_text: str, remaining: str) -> None:
+        """강제 리셋 슬롯의 커서/rollback 초기화"""
+        slot = self._slot(slot_key)
+        committed_part = seed_text[: len(seed_text) - len(remaining)]
+
+        slot["committed_display"] = committed_part   # cursor 위치 고정
+        slot["committed_len"] = len(committed_part)  # 이중 커밋 방지
+        slot["last_text"] = seed_text
+        slot["state"].unfixed_token_num = 0          # rollback 비활성화 (seed_text는 확정 텍스트)
 
     async def _asr_streaming_transcribe(self, chunk: np.ndarray, slot_key: Optional[str] = None):
         slot = self._slot(slot_key)
@@ -693,20 +713,29 @@ class Qwen3ASRStreamingHandler:
         await self._process_slot_updates(slot_key)
 
         _s = self._slot(slot_key)
-        # SEG/dot commit 발생 시, remaining이 없을 때만 슬롯 리셋.
-        # remaining이 있으면 리셋하지 않고 같은 슬롯에서 디코딩 계속.
+        # SEG/dot commit 발생 시, remaining이 없거나 audio_accum 임계값 초과 시 슬롯 리셋.
         any_commit = (
             _s.get("committed_seg_count", 0) > seg_count_before
             or _s.get("committed_len", 0) > committed_len_before
         )
         if any_commit:
             remaining = self._slot_uncommitted_display(slot_key)
-            if not remaining.strip():
-                trigger = "SEG" if _s.get("committed_seg_count", 0) > seg_count_before else "DOT"
-                self._reset_stream_slot(slot_key)
+            audio_sec = _s["state"].audio_accum.shape[0] / SAMPLING_RATE
+            force_reset = audio_sec > MAX_AUDIO_ACCUM_SEC
+
+            if not remaining.strip() or force_reset:
+                trigger = "FORCE" if force_reset else (
+                    "SEG" if _s.get("committed_seg_count", 0) > seg_count_before else "DOT"
+                )
+                if force_reset:
+                    seed_text = self._build_forced_reset_seed(slot_key, remaining)
+                    self._reset_stream_slot(slot_key, seed_text=seed_text)
+                    self._init_forced_reset_slot(slot_key, seed_text, remaining)
+                else:
+                    self._reset_stream_slot(slot_key)
                 if slot_key == self.active_slot:
                     self.state = self.stream_slots[self.active_slot]["state"]
-                self.log.info(f"[{trigger}-SLOT-SWITCH] slot={slot_key}")
+                self.log.info(f"[{trigger}-SLOT-SWITCH] slot={slot_key} audio_sec={audio_sec:.1f}s")
             else:
                 self.log.info(
                     f"[COMMIT-PENDING] slot={slot_key} remaining={remaining!r}"
