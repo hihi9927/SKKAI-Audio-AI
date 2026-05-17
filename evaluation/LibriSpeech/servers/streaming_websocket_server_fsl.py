@@ -452,12 +452,23 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
 
         if is_seg:
             # SEG: generate() 완료 후 total_tokens로 audio_end/FSL 확정 (defer)
+            # DOT: seg_info is None이지만 char ratio로 token position 근사 (공평한 FSL 측정)
+            dot_char_ratio = None
+            dot_chunk_audio_start = None
+            if seg_info is None:  # DOT commit: char ratio 기반 역추적
+                slot = self._slot(slot_key)
+                full_raw = (slot["state"].text or "").strip() if slot["state"] else ""
+                committed_raw_len = slot.get("committed_len", 0)
+                if full_raw:
+                    dot_char_ratio = min(1.0, committed_raw_len / len(full_raw))
+                dot_chunk_audio_start = max(0.0, self.current_time - self.config.chunk_size_sec)
             self._deferred_seg_emits.append({
                 "payload": payload,
                 "_trans_end_elapsed": trans_end_elapsed,
                 "_trans_start_elapsed": trans_start_elapsed,
                 "_seg_token_idx": seg_info.get("seg_token_idx") if seg_info else None,
-                "_chunk_audio_start": seg_info.get("chunk_audio_start") if seg_info else None,
+                "_dot_char_ratio": dot_char_ratio,
+                "_chunk_audio_start": seg_info.get("chunk_audio_start") if seg_info else dot_chunk_audio_start,
                 "_chunk_size_sec": (
                     seg_info.get("chunk_size_sec", self.config.chunk_size_sec)
                     if seg_info else self.config.chunk_size_sec
@@ -500,6 +511,10 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
             trans_end_elapsed = item["_trans_end_elapsed"]
             trans_start_elapsed = item.get("_trans_start_elapsed")
             seg_token_idx = item["_seg_token_idx"]
+            dot_char_ratio = item.get("_dot_char_ratio")
+            # DOT commit: char ratio로 approximate token index 계산 (SEG와 동일한 역추적)
+            if seg_token_idx is None and dot_char_ratio is not None and total_tokens > 0:
+                seg_token_idx = int(dot_char_ratio * total_tokens)
             chunk_audio_start = item["_chunk_audio_start"]
             chunk_size_sec = item["_chunk_size_sec"]
             encoding_sec = item["_encoding_sec"]
