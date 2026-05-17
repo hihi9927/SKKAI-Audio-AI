@@ -703,6 +703,7 @@ class Qwen3ASRStreamingHandler:
         slot = self._slot(slot_key)
         seg_count_before = slot.get("committed_seg_count", 0)
         committed_len_before = slot.get("committed_len", 0)
+        prev_uncommitted = self._slot_uncommitted_display(slot_key)
 
         async def _on_seg(_):
             # lock 밖에서 호출되므로 _process_slot_updates가 asr_lock 자유롭게 획득 가능
@@ -740,9 +741,29 @@ class Qwen3ASRStreamingHandler:
                     self.state = self.stream_slots[self.active_slot]["state"]
                 self.log.info(f"[{trigger}-SLOT-SWITCH] slot={slot_key} audio_sec={audio_sec:.1f}s")
             else:
-                self.log.info(
-                    f"[COMMIT-PENDING] slot={slot_key} remaining={remaining!r}"
-                )
+                # 이전 decode 출력이 마침표로 끝났고 이번 decode에서 \.\s+ 가 그걸 commit했으면
+                # remaining을 seed로 슬롯 리셋 (cross-decode trailing-period reset)
+                prev_strip = prev_uncommitted.strip()
+                if prev_strip and re.search(r'[.?!。？！]$', prev_strip):
+                    seed = remaining.strip()
+                    # partial-1 오디오(이미 commit된 구간)만 버리고 partial-2 오디오는 새 슬롯에 유지
+                    chunk_samples = int(round(self.config.chunk_size_sec * SAMPLING_RATE))
+                    old_accum = _s["state"].audio_accum
+                    carry_audio = old_accum[-chunk_samples:] if old_accum.shape[0] >= chunk_samples else old_accum.copy()
+                    self._reset_stream_slot(slot_key, seed_text=seed)
+                    if seed:
+                        self._init_forced_reset_slot(slot_key, seed_text=seed, remaining=seed)
+                    self._slot(slot_key)["state"].audio_accum = carry_audio
+                    if slot_key == self.active_slot:
+                        self.state = self.stream_slots[self.active_slot]["state"]
+                    self.log.info(
+                        f"[DOT-SLOT-SWITCH] slot={slot_key} audio_sec={audio_sec:.1f}s "
+                        f"prev={prev_strip!r} seed={seed!r}"
+                    )
+                else:
+                    self.log.info(
+                        f"[COMMIT-PENDING] slot={slot_key} remaining={remaining!r}"
+                    )
 
         async with self.asr_lock:
             self.asr_processed_cursor = self.sample_cursor
@@ -863,8 +884,8 @@ class Qwen3ASRStreamingHandler:
             if self.enable_dot_commit:
                 match = re.search(
                     r"(?:"
-                    r"(?<!Mr)(?<!Mrs)(?<!Dr)(?<!St)(?<!Jr)(?<!Sr)(?<!vs)(?<!No)\.(?:\s+|$)"
-                    r"|[?!](?:\s+|$)"
+                    r"(?<!Mr)(?<!Mrs)(?<!Dr)(?<!St)(?<!Jr)(?<!Sr)(?<!vs)(?<!No)\.\s+"
+                    r"|[?!]\s+"
                     r"|[\u3002\uff1f\uff01]"
                     r"|<SEG>"
                     r")",
