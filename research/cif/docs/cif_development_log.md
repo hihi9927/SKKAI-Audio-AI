@@ -360,7 +360,7 @@ gpu_model_runner._preprocess():
 
 ---
 
-## 현재 상태
+## 현재 상태 (linear probe 단계)
 
 - `train_one_seg.py`: encoder / mel 두 모드, uniform / spike 두 레이블 타입 지원
 - `eval_one_seg.py`: `one_seg` / `streaming` 두 가지 평가 모드
@@ -369,8 +369,151 @@ gpu_model_runner._preprocess():
 - `probe_encoder.py`: 인코더 판별력 분석 (discriminability curve, heatmap)
 - `probe_linear.py`: logistic regression probe (activation cache, threshold sweep, probe 저장)
 
+---
+
+## 방향 전환: Causal GRU 스트리밍 검출기 (`train_causal.py`)
+
+### 동기
+
+CIF 누적 방식과 linear probe의 한계:
+- CIF: 전체 dialog를 하나의 forward로 처리 → 스트리밍 특성과 불일치
+- linear probe: 시간 의존성 없음, per-frame 독립 → 문맥 포착 불가
+
+**새 접근**: dialog 단위 연속 스트리밍 시퀀스를 causal 모델(GRU/Transformer)로 처리.  
+각 프레임에서 과거 정보만 참조(causal)하여 P(SEG|frame) 추정, run detection으로 trigger.
+
+### 아키텍처
+
+```
+dialog turns concat → Qwen3-ASR encoder → (T, 2048)
+    → CausalGRUProbe(hidden=128, n_layers=2)
+    → logits (T,) → sigmoid → proba (T,)
+run detection → peaks → SEG triggers
+```
+
+- **CausalGRUProbe**: GRU + Linear head
+- **CausalTransformerProbe**: Proj + SinusoidalPE + Causal MHA + Head (sliding window 옵션)
+- **CausalCNN1DProbe**: Causal Conv1d 스택
+
+### 데이터 구성
+
+DailyTalk 10,000 records → dialog 단위 그룹 → 1,058 dialogs  
+train/val/test = 958/50/50 split (dialog 단위)
+
+각 dialog: turn들을 이어붙인 연속 오디오 → encoder feature (T, 2048)  
+label: SEG 프레임 ±pos_window 내 1, 나머지 0 (hard binary)
+
+---
+
+## Causal 검출기 실험 결과
+
+### 평가 지표
+
+| 지표 | 설명 |
+|---|---|
+| PR-AUC | SEG ±1프레임 기준 정밀도-재현율 곡선 면적 |
+| ROC-AUC | SEG ±1프레임 기준 ROC 곡선 면적 |
+| count_acc | dialog당 SEG 개수가 GT와 일치하는 비율 |
+| over_rate | 과검출 dialog 비율 |
+| under_rate | 미검출 dialog 비율 |
+| pos_mae | count 일치한 dialog에서의 peak 위치 오차 (ms) |
+
+**공정 비교 원칙**: label type에 관계없이 평가는 항상 SEG ±pos_window binary GT 기준(`make_gt_binary`).
+
+### 전체 실험 비교표
+
+| 실험 | PR-AUC | ROC-AUC | best F1 | count_acc | over_rate | under_rate | pos_mae |
+|---|---|---|---|---|---|---|---|
+| pos1 GRU (baseline) | 0.880 | 0.980 | 0.808 | 0.340 | 0.520 | 0.140 | 305ms |
+| h256/l2/focal | 0.876 | 0.980 | 0.806 | 0.340 | 0.460 | 0.200 | 524ms |
+| Gaussian label | 0.876 | 0.954 | 0.819 | 0.280 | 0.440 | 0.280 | 318ms |
+| Delta feature | 0.881 | 0.981 | 0.808 | 0.260 | 0.460 | 0.280 | 453ms |
+| Transformer w256 | 0.851 | 0.975 | 0.786 | 0.280 | 0.460 | 0.260 | 740ms |
+| Distance d30 | 0.387* | 0.709* | 0.408* | 0.360 | 0.360 | 0.280 | 557ms |
+| Combined α=0.5 | 0.867 | 0.970 | 0.803 | 0.240 | 0.560 | 0.200 | **154ms** |
+| Combined α=2.0 | 0.880 | 0.981 | 0.810 | 0.360 | 0.500 | 0.140 | 337ms |
+| Curriculum (15+10) | 0.883 | 0.981 | 0.815 | 0.300 | 0.440 | 0.260 | 185ms |
+| Curriculum + freeze | 0.849 | 0.973 | 0.795 | 0.300 | 0.360 | 0.340 | 350ms |
+| **Curriculum (100+100)** | **0.884** | **0.981** | **0.812** | **0.340** | **0.420** | 0.240 | **196ms** |
+
+*Distance 단독은 학습 label 기준으로 평가돼 부풀려진 값. 공정 재평가 수치.
+
+### 주요 실험별 인사이트
+
+**GRU > Transformer**: 데이터 958 dialogs로 Transformer의 귀납적 편향 부재가 단점으로 작용.
+
+**Distance regression**: proximity ramp(`1 - dist/D`) 타깃으로 MSE 학습 시 pos_mae가 대폭 개선되나 PR-AUC 하락. 단독으로는 열위.
+
+**Combined loss** (`MSE(proximity) + α×BCE(hard_binary)`):
+- gradient 충돌: SEG 직전 구간에서 MSE는 "높게", BCE는 "낮게" 요구
+- α=0.5: pos_mae **154ms** (최고) but count_acc 하락
+- α=2.0: BCE 우세 → PR-AUC pos1과 동일 회복, count_acc도 0.360으로 개선
+
+**Curriculum learning** (Phase1 distance → Phase2 BCE):
+- gradient 충돌 없이 두 단계 분리
+- Phase1에서 "SEG 접근" anticipatory signal 학습
+- Phase2에서 정확한 SEG 위치로 sharpen
+- freeze backbone 실험: head 2개 파라미터만으로 proximity → binary 변환 불가 → 실패
+- **최종 curriculum (100+100, cosine scheduler)**: PR-AUC **0.884** (전체 최고), pos_mae **196ms** (pos1 305ms 대비 36% 개선), count_acc pos1과 동일 복원
+
+---
+
+## 구현 사항 (`train_causal.py`)
+
+### 주요 인자
+
+| 인자 | 설명 |
+|---|---|
+| `--arch` | `gru` / `cnn1d` / `transformer` |
+| `--hidden` | GRU hidden dim 또는 Transformer d_model |
+| `--label-type` | `hard` / `gaussian` / `distance` |
+| `--decay-frames` | distance 타깃 ramp-up 프레임 수 |
+| `--loss` | `bce` / `focal` / `distance` / `combined` |
+| `--loss-alpha` | combined loss BCE 비중 |
+| `--delta` | encoder output에 delta feature concat |
+| `--curriculum` | 2단계 학습 활성화 |
+| `--phase2-epochs` | Phase2 epoch 수 |
+| `--phase2-lr` | Phase2 LR (미지정 시 lr/5) |
+| `--phase1-scheduler` | Phase1 LR scheduler (plateau/cosine/none) |
+| `--phase2-scheduler` | Phase2 LR scheduler (cosine 권장) |
+| `--freeze-backbone` | Phase2에서 backbone freeze |
+| `--attn-window` | Transformer sliding window 크기 |
+
+### 캐시 구조
+
+encoder feature 추출은 오래 걸리므로 dialog별 feature를 pkl로 캐시.  
+캐시 key: `{data_stem}_pw{pos_window}_causal[_{label_type}][_d{decay}][_delta].pkl`  
+label type이 다를 때는 hard 캐시를 재활용해 label만 재계산.
+
+### 최적 실행 명령
+
+```bash
+python research/cif/train_causal.py \
+  --curriculum \
+  --label-type   distance \
+  --decay-frames 30 \
+  --epochs       100 \
+  --phase2-epochs 100 \
+  --phase1-scheduler cosine \
+  --phase2-scheduler cosine \
+  --cache-dir    research/cif/causal_results/gru/pos1 \
+  --out-dir      research/cif/causal_results/curriculum/d30_pw1_epoch
+```
+
+---
+
+## 현재 최종 상태
+
+**최선 모델**: curriculum (100+100) — `research/cif/causal_results/curriculum/d30_pw1_epoch/causal_gru.pkl`
+
+pos1 GRU 대비 개선:
+- PR-AUC: 0.880 → **0.884**
+- pos_mae: 305ms → **196ms** (36% 개선)
+- over_rate: 0.520 → **0.420**
+- count_acc: 동일 유지 (0.340)
+
 ## 다음 방향
 
-- `probe_linear.py` threshold-based peak detection 실행 → real count_acc 검증
-- mel mode + spike label 학습 및 결과 비교
-- 파이프라인 통합 방식 (A/B) 결정 후 `feat/cif-probe-gate` 브랜치에서 구현
+- 최소 간격 제약 post-processing 추가 → over_rate 추가 개선 가능성
+- DailyTalk 외 추가 데이터(KSponSpeech 영어 데이터 등) 확보 시 재학습
+- 파이프라인 통합: STiTy 서버에서 causal GRU probe를 SEG 선제 trigger로 활용
