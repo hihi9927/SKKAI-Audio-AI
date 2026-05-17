@@ -17,6 +17,7 @@
 import argparse
 import json
 import os
+import random
 import re
 import shutil
 from dataclasses import dataclass
@@ -24,9 +25,11 @@ from typing import Any, Dict, List, Optional
 
 import jiwer
 import librosa
+import numpy as np
+import soundfile as sf
 import torch
-from datasets import load_dataset
-from peft import LoraConfig, TaskType, get_peft_model
+from datasets import concatenate_datasets, load_dataset
+from peft import LoraConfig, PeftModel, TaskType, get_peft_model
 from qwen_asr import Qwen3ASRModel
 from transformers import (GenerationConfig, Trainer, TrainerCallback,
                           TrainingArguments)
@@ -88,6 +91,37 @@ def find_latest_checkpoint(output_dir: str) -> Optional[str]:
 def load_audio(path: str, sr: int = 16000):
     wav, _ = librosa.load(path, sr=sr, mono=True)
     return wav
+
+
+def generate_silence_dataset(n_samples: int, output_dir: str, sr: int = 16000, prompt: str = "") -> str:
+    """무음(pure silence + white noise) WAV 파일을 생성하고 JSONL 경로를 반환."""
+    os.makedirs(output_dir, exist_ok=True)
+
+    # 길이 분포: 0.5s 20% / 1.0s 30% / 2.0s 30% / 3.0s 20%
+    durations = [0.5, 1.0, 2.0, 3.0]
+    weights   = [0.2, 0.3, 0.3, 0.2]
+
+    records = []
+    for i in range(n_samples):
+        dur     = random.choices(durations, weights=weights)[0]
+        n_frame = int(sr * dur)
+
+        if i % 2 == 0:
+            wav = np.zeros(n_frame, dtype=np.float32)                      # pure silence
+        else:
+            wav = (np.random.randn(n_frame) * 0.002).astype(np.float32)   # white noise
+
+        fpath = os.path.join(output_dir, f"silence_{i:05d}.wav")
+        sf.write(fpath, wav, sr)
+        records.append({"audio": fpath, "text": "", "prompt": prompt})
+
+    jsonl_path = os.path.join(output_dir, "silence_data.jsonl")
+    with open(jsonl_path, "w", encoding="utf-8") as f:
+        for r in records:
+            f.write(json.dumps(r, ensure_ascii=False) + "\n")
+
+    print(f"[silence] {n_samples}개 생성 → {jsonl_path}")
+    return jsonl_path
 
 
 def build_prefix_messages(prompt: str, audio_array):
@@ -378,6 +412,14 @@ def parse_args():
 
     # LoRA
     p.add_argument("--use_lora", type=int, default=1)
+    p.add_argument("--adapter_path", type=str, default="",
+                   help="기존 LoRA 어댑터 경로. 지정 시 새 LoRA 대신 해당 어댑터를 로드해서 이어서 학습.")
+
+    # Silence augmentation
+    p.add_argument("--silence_samples", type=int, default=0,
+                   help="무음 학습 데이터 생성 개수 (0 = 사용 안 함)")
+    p.add_argument("--silence_dir", type=str, default="./data/silence_generated",
+                   help="생성된 무음 WAV 및 JSONL 저장 경로")
     p.add_argument("--lora_r", type=int, default=128)
     p.add_argument("--lora_alpha", type=int, default=256)
     p.add_argument("--lora_dropout", type=float, default=0.1)
@@ -409,14 +451,19 @@ def main():
     seg_id = processor.tokenizer.convert_tokens_to_ids("<SEG>")
 
     if args_cli.use_lora:
-        lora_config = LoraConfig(
-            task_type=TaskType.CAUSAL_LM,
-            r=args_cli.lora_r,
-            lora_alpha=args_cli.lora_alpha,
-            lora_dropout=args_cli.lora_dropout,
-            target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
-        )
-        model = get_peft_model(model, lora_config)
+        adapter_path = (args_cli.adapter_path or "").strip()
+        if adapter_path:
+            model = PeftModel.from_pretrained(model, adapter_path, is_trainable=True)
+            print(f"[lora] 기존 어댑터 로드: {adapter_path}")
+        else:
+            lora_config = LoraConfig(
+                task_type=TaskType.CAUSAL_LM,
+                r=args_cli.lora_r,
+                lora_alpha=args_cli.lora_alpha,
+                lora_dropout=args_cli.lora_dropout,
+                target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
+            )
+            model = get_peft_model(model, lora_config)
 
     # PEFT가 freeze한 이후 SEG 임베딩 unfreeze + gradient hook (resume 포함 항상 등록)
     def _make_seg_only_hook(sid):
@@ -451,6 +498,33 @@ def main():
         remove_columns=raw_ds["train"].column_names,
     )
 
+    if args_cli.silence_samples > 0:
+        default_prompt = raw_ds["train"][0].get("prompt", "") if len(raw_ds["train"]) > 0 else ""
+        preprocess_fn = make_preprocess_fn_with_features(processor, sampling_rate=args_cli.sr)
+
+        silence_jsonl = generate_silence_dataset(
+            args_cli.silence_samples, args_cli.silence_dir, args_cli.sr, prompt=default_prompt
+        )
+        silence_raw = load_dataset("json", data_files={"train": silence_jsonl})
+        silence_ds = silence_raw.map(preprocess_fn, remove_columns=silence_raw["train"].column_names)
+        ds["train"] = concatenate_datasets([ds["train"], silence_ds["train"]]).shuffle(seed=42)
+        print(f"[silence] train: {len(ds['train'])}개 "
+              f"(원본 {len(ds['train']) - args_cli.silence_samples} + 무음 {args_cli.silence_samples})")
+
+        if "validation" in ds:
+            val_silence_n = max(1, round(len(ds["validation"]) * 0.15 / 0.85))
+            val_silence_jsonl = generate_silence_dataset(
+                val_silence_n,
+                os.path.join(args_cli.silence_dir, "val"),
+                args_cli.sr,
+                prompt=default_prompt,
+            )
+            val_silence_raw = load_dataset("json", data_files={"train": val_silence_jsonl})
+            val_silence_ds = val_silence_raw.map(preprocess_fn, remove_columns=val_silence_raw["train"].column_names)
+            ds["validation"] = concatenate_datasets([ds["validation"], val_silence_ds["train"]]).shuffle(seed=42)
+            print(f"[silence] val:   {len(ds['validation'])}개 "
+                  f"(원본 {len(ds['validation']) - val_silence_n} + 무음 {val_silence_n})")
+
     collator = DataCollatorForQwen3ASRFinetuning(processor=processor)
 
     training_args = TrainingArguments(
@@ -478,6 +552,7 @@ def main():
         ddp_find_unused_parameters=False,
         remove_unused_columns=False,
         label_names=["labels"],
+        ignore_data_skip=True,
         report_to="tensorboard",
     )
 

@@ -35,10 +35,10 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 from transformers import WhisperFeatureExtractor
 
-_REPO_ROOT = Path(__file__).resolve().parents[2] / "Qwen3-ASR"
+_REPO_ROOT = Path(__file__).resolve().parents[3] / "Qwen3-ASR"
+_CIF_TRAIN = Path(__file__).resolve().parents[1] / "utils" / "cif_train"
 sys.path.insert(0, str(_REPO_ROOT))
-_SCRIPT_DIR = Path(__file__).resolve().parent
-sys.path.insert(0, str(_SCRIPT_DIR))
+sys.path.insert(0, str(_CIF_TRAIN))
 
 from train_one_seg import load_audio_16k, mel_to_encoder_frames, load_encoder
 
