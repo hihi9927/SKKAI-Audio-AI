@@ -462,6 +462,8 @@ class Qwen3ASRStreamingHandler:
         # GPT 번역 컨텍스트: 최근 N 세그먼트의 (corrected_original, translation) 보관
         _ctx = gpt_translator.max_context if gpt_translator else 5
         self._segment_history: deque[tuple[str, str]] = deque(maxlen=_ctx)
+        # 첫 번째 발화는 Google Translate, 두 번째부터 GPT로 전환
+        self._committed_utterance_count: int = 0
 
         # Commit 방식 설정
         self.enable_dot_commit: bool = config.enable_dot_commit
@@ -525,6 +527,7 @@ class Qwen3ASRStreamingHandler:
         if self.vad_iterator is not None:
             self.vad_iterator.reset_states()
         self._segment_history.clear()
+        self._committed_utterance_count = 0
     
     def _new_stream_slot(self, seed_text: str = "", context: str = "") -> dict:
         allowed_languages = None
@@ -860,9 +863,9 @@ class Qwen3ASRStreamingHandler:
             if self.enable_dot_commit:
                 match = re.search(
                     r"(?:"
-                    r"(?<!Mr)(?<!Mrs)(?<!Dr)(?<!St)(?<!Jr)(?<!Sr)(?<!vs)(?<!No)\.\s+"
-                    r"|[?!]\s+"
-                    r"|[\u3002\uff1f\uff01](?=\S)"
+                    r"(?<!Mr)(?<!Mrs)(?<!Dr)(?<!St)(?<!Jr)(?<!Sr)(?<!vs)(?<!No)\.(?:\s+|$)"
+                    r"|[?!](?:\s+|$)"
+                    r"|[\u3002\uff1f\uff01]"
                     r"|<SEG>"
                     r")",
                     remaining,
@@ -1115,13 +1118,13 @@ class Qwen3ASRStreamingHandler:
         Returns:
             (corrected_text, translation, detected_lang_code, extra)
         """
-        if self.gpt_translator:
+        if self.gpt_translator and self._committed_utterance_count > 0:
             src_code = lang_to_code(current_lang) if current_lang else ""
-            # ASR이 이미 target_lang 언어를 감지했다면 반대 방향으로 번역
+            # 내 언어로 말하면 → 상대방 언어로, 그 외(상대방·제3자) → 내 언어로
             target = (
-                self.client_lang
-                if src_code and src_code == self.client_target_lang
-                else self.client_target_lang
+                self.client_target_lang
+                if src_code and src_code == self.client_lang
+                else self.client_lang
             )
             corrected, translation = await self.gpt_translator.correct_and_translate(
                 text, current_lang, target,
@@ -1129,15 +1132,15 @@ class Qwen3ASRStreamingHandler:
             )
             return corrected, translation, src_code, {}
 
-        # Google Translate 경로
+        # Google Translate 경로 (첫 번째 발화 또는 gpt_translator 비활성)
         if self.corrector:
             text = await self.corrector.correct_text(text, current_lang)
         translation, detected_lang, extra = await self._translate(
             text, self.client_target_lang, audio_end_sec
         )
-        # Google Translate가 동일 언어 번역 시 detected_lang을 null로 반환하는 경우 fallback
+        # 내 언어가 아니면(상대방·제3자 모두) 내 언어로 번역
         effective = detected_lang or lang_to_code(current_lang)
-        if effective == self.client_target_lang:
+        if effective and effective != self.client_lang:
             translation, _, extra = await self._translate(
                 text, self.client_lang, audio_end_sec
             )
@@ -1192,6 +1195,7 @@ class Qwen3ASRStreamingHandler:
                 text=original,
                 translation=translation,
             )
+        self._committed_utterance_count += 1
         if self.gpt_translator and original and translation:
             self._segment_history.append((original, translation))
 
