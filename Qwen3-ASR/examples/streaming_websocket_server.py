@@ -574,15 +574,16 @@ class Qwen3ASRStreamingHandler:
         return self.stream_slots[key]
 
     @staticmethod
-    def _uncommitted_from(current_text: str, committed_display: str,
-                          committed_seg_count: int = 0) -> str:
-        """committed 경계 이후의 current_text를 반환.
+    def _committed_cursor(text: str, committed_display: str,
+                          committed_seg_count: int = 0) -> int:
+        """committed 영역 끝의 커서 위치(int)를 반환.
+
+        3-way fallback으로 커서를 찾는다. 모든 fallback 실패 시 -1(sentinel) 반환.
 
         1차: committed_display(SEG 제거 기준) prefix 매칭
-        2차(fallback): committed_seg_count 번째 <SEG> 이후 텍스트
+        2차(fallback): committed_seg_count 번째 <SEG> 이후 위치
         3차(fallback): 후행 구두점 제거 후 prefix 매칭
-          — dot commit 후 모델이 "Okay." → "Okay, this is..."로 revision할 때,
-            1차(구두점 불일치)·2차(<SEG> 없음) 모두 실패해 uncommitted=""가 되는 문제를 커버.
+          — dot commit 후 모델이 "Okay." → "Okay, this is..."로 revision할 때 커버.
         """
         seg_tag = "<SEG>"
         seg_len = len(seg_tag)
@@ -590,54 +591,67 @@ class Qwen3ASRStreamingHandler:
 
         # ── 1차: display prefix 매칭 ──────────────────────────────────────
         if committed_display:
-            current_no_seg = current_text.replace(seg_tag, "")
-            if current_no_seg.startswith(committed_display):
+            text_no_seg = text.replace(seg_tag, "")
+            if text_no_seg.startswith(committed_display):
                 pos, disp_pos, target = 0, 0, len(committed_display)
-                while pos < len(current_text) and disp_pos < target:
-                    if current_text[pos:pos + seg_len] == seg_tag:
+                while pos < len(text) and disp_pos < target:
+                    if text[pos:pos + seg_len] == seg_tag:
                         pos += seg_len
                     else:
                         disp_pos += 1
                         pos += 1
-                return current_text[pos:]
+                return pos
 
         # ── 2차 fallback: SEG 카운트 기준 ───────────────────────────────
         pos, found = 0, 0
         all_segs_found = True
         while found < committed_seg_count:
-            idx = current_text.find(seg_tag, pos)
+            idx = text.find(seg_tag, pos)
             if idx == -1:
                 all_segs_found = False
                 break
             pos = idx + seg_len
             found += 1
         if all_segs_found:
-            return current_text[pos:]
+            return pos
 
         # ── 3차 fallback: 구두점 제거 후 prefix 매칭 ────────────────────
-        # dot commit 후 모델 revision 시 구두점이 바뀌어도 단어 경계로 커서를 찾는다.
-        # "Okay." → stripped "Okay" → "Okay, this is...".startswith("Okay") → True
         if committed_display:
             stripped = committed_display.rstrip(_punct)
             if stripped:
-                current_no_seg = current_text.replace(seg_tag, "")
-                if current_no_seg.startswith(stripped):
+                text_no_seg = text.replace(seg_tag, "")
+                if text_no_seg.startswith(stripped):
                     end = len(stripped)
                     # 부분 단어 매칭 방지: 매칭 직후 문자가 알파이면 거짓 매칭
-                    if end >= len(current_no_seg) or not current_no_seg[end].isalpha():
+                    if end >= len(text_no_seg) or not text_no_seg[end].isalpha():
                         pos, disp_pos, target = 0, 0, len(stripped)
-                        while pos < len(current_text) and disp_pos < target:
-                            if current_text[pos:pos + seg_len] == seg_tag:
+                        while pos < len(text) and disp_pos < target:
+                            if text[pos:pos + seg_len] == seg_tag:
                                 pos += seg_len
                             else:
                                 disp_pos += 1
                                 pos += 1
                         # committed 구두점이 다른 구두점으로 revision된 경우 한 문자 건너뜀
-                        if pos < len(current_text) and current_text[pos] in _punct:
+                        if pos < len(text) and text[pos] in _punct:
                             pos += 1
-                        return current_text[pos:]
+                        return pos
 
-        return ""
+        return -1  # 모든 fallback 실패
+
+    @staticmethod
+    def _uncommitted_from(current_text: str, committed_display: str,
+                          committed_seg_count: int = 0) -> str:
+        """committed 경계 이후의 current_text를 반환.
+
+        _committed_cursor의 3-way fallback으로 커서를 구한 뒤
+        해당 위치 이후 텍스트를 반환한다. 모든 fallback 실패 시 "" 반환.
+        """
+        pos = Qwen3ASRStreamingHandler._committed_cursor(
+            current_text, committed_display, committed_seg_count
+        )
+        if pos == -1:
+            return ""
+        return current_text[pos:]
 
     def _get_lora_request(self, state):
         """언어에 따라 적절한 LoRA 어댑터 반환. 미지원 언어는 None(기본 모델)."""
@@ -898,16 +912,16 @@ class Qwen3ASRStreamingHandler:
                         slot["audio_anchor_sec"] = self.current_time
                         slot["last_committed_asr_text"] = ready_to_emit[-1]["original"]
                 else:
-                    # SEG: committed_seg_count 기준 커서로 latest_text 내 위치 재계산
-                    _seg_tag = "<SEG>"
-                    cursor, _found = 0, 0
-                    while _found < slot["committed_seg_count"]:
-                        _idx = latest_text.find(_seg_tag, cursor)
-                        if _idx == -1:
-                            cursor = len(latest_text)
-                            break
-                        cursor = _idx + len(_seg_tag)
-                        _found += 1
+                    # 3-way fallback으로 committed 영역 끝 커서를 찾는다.
+                    # dot commit(SEG 없음)·모델 revision 등 모든 케이스를 커버.
+                    cursor = self._committed_cursor(
+                        latest_text,
+                        slot["committed_display"],
+                        slot["committed_seg_count"],
+                    )
+                    if cursor == -1:
+                        # 커서 특정 불가 → double-commit 위험 없이 skip
+                        cursor = len(latest_text)
                     tail = latest_text[cursor:]
 
                     for payload in translated_payloads:
