@@ -828,8 +828,7 @@ class Qwen3ASRModel:
             gen_text = final.outputs[0].text
             if prefix:
                 prev_ids = self.processor.tokenizer.encode(state._raw_decoded)
-                # [:-0] == [:0] == [] in Python, so guard explicitly
-                committed_ids = prev_ids[:-state.unfixed_token_num] if state.unfixed_token_num > 0 else prev_ids
+                committed_ids = prev_ids[:-state.unfixed_token_num]
                 committed_text = self.processor.tokenizer.decode(committed_ids)
                 state._raw_decoded = committed_text + gen_text
             else:
@@ -903,8 +902,7 @@ class Qwen3ASRModel:
         gen_text = final.outputs[0].text
         if prefix:
             prev_ids = self.processor.tokenizer.encode(state._raw_decoded)
-            # [:-0] == [:0] == [] in Python, so guard explicitly
-            committed_ids = prev_ids[:-state.unfixed_token_num] if state.unfixed_token_num > 0 else prev_ids
+            committed_ids = prev_ids[:-state.unfixed_token_num]
             committed_text = self.processor.tokenizer.decode(committed_ids)
             state._raw_decoded = committed_text + gen_text
         else:
