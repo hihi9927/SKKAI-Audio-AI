@@ -133,8 +133,9 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         # (슬롯이 리셋돼 dict가 바뀌어도 객체는 유지됨)
         state_ref = state
         await super()._asr_streaming_transcribe(chunk, slot_key)
-        # generate() 완료 → deferred SEG emit flush
-        generate_end_elapsed = self._stream_elapsed_sec()
+        # generate() 완료 직후 elapsed (base server가 _last_generate_end_time에 저장)
+        # _flush_pending_gpt_tasks 이전 시점을 써야 remaining_decode_sec이 정확하게 계산됨
+        generate_end_elapsed = self._last_generate_end_time - self.stream_start_perf
         total_tokens = getattr(state_ref, "_last_chunk_new_tokens", None)
         if self._deferred_seg_emits:
             await self._flush_deferred_seg_emits(total_tokens or 0, generate_end_elapsed)

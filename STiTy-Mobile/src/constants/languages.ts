@@ -7,16 +7,11 @@ export interface Language {
 }
 
 export const LANGUAGES: Language[] = [
-  { code: 'ko', name: 'Korean', nativeName: '한국어', translations: { ko: '한국어', en: 'Korean', ja: '韓国語', zh: '韩语', id: 'Korea', vi: 'Tiếng Hàn', th: 'เกาหลี', es: 'Coreano', fr: 'Coréen', de: 'Koreanisch' } },
-  { code: 'en', name: 'English', nativeName: 'English', translations: { ko: '영어', en: 'English', ja: '英語', zh: '英语', id: 'Inggris', vi: 'Tiếng Anh', th: 'อังกฤษ', es: 'Inglés', fr: 'Anglais', de: 'Englisch' } },
-  { code: 'ja', name: 'Japanese', nativeName: '日本語', translations: { ko: '일본어', en: 'Japanese', ja: '日本語', zh: '日语', id: 'Jepang', vi: 'Tiếng Nhật', th: 'ญี่ปุ่น', es: 'Japonés', fr: 'Japonais', de: 'Japanisch' } },
-  { code: 'zh', name: 'Chinese', nativeName: '中文', translations: { ko: '중국어', en: 'Chinese', ja: '中国語', zh: '中文', id: 'Mandarin', vi: 'Tiếng Trung', th: 'จีน', es: 'Chino', fr: 'Chinois', de: 'Chinesisch' } },
-  { code: 'id', name: 'Indonesian', nativeName: 'Indonesia', translations: { ko: '인도네시아어', en: 'Indonesian', ja: 'インドネシア語', zh: '印尼语', id: 'Indonesia', vi: 'Tiếng Indonesia', th: 'อินโดนีเซีย', es: 'Indonesio', fr: 'Indonésien', de: 'Indonesisch' } },
-  { code: 'vi', name: 'Vietnamese', nativeName: 'Tiếng Việt', translations: { ko: '베트남어', en: 'Vietnamese', ja: 'ベトナム語', zh: '越南语', id: 'Vietnam', vi: 'Tiếng Việt', th: 'เวียดนาม', es: 'Vietnamita', fr: 'Vietnamien', de: 'Vietnamesisch' } },
-  { code: 'th', name: 'Thai', nativeName: 'ไทย', translations: { ko: '태국어', en: 'Thai', ja: 'タイ語', zh: '泰语', id: 'Thailand', vi: 'Tiếng Thái', th: 'ไทย', es: 'Tailandés', fr: 'Thaï', de: 'Thailändisch' } },
-  { code: 'es', name: 'Spanish', nativeName: 'Español', translations: { ko: '스페인어', en: 'Spanish', ja: 'スペイン語', zh: '西班牙语', id: 'Spanyol', vi: 'Tiếng Tây Ban Nha', th: 'สเปน', es: 'Español', fr: 'Espagnol', de: 'Spanisch' } },
-  { code: 'fr', name: 'French', nativeName: 'Français', translations: { ko: '프랑스어', en: 'French', ja: 'フランス語', zh: '法语', id: 'Prancis', vi: 'Tiếng Pháp', th: 'ฝรั่งเศส', es: 'Francés', fr: 'Français', de: 'Französisch' } },
-  { code: 'de', name: 'German', nativeName: 'Deutsch', translations: { ko: '독일어', en: 'German', ja: 'ドイツ語', zh: '德语', id: 'Jerman', vi: 'Tiếng Đức', th: 'เยอรมัน', es: 'Alemán', fr: 'Allemand', de: 'Deutsch' } },
+  { code: 'ko', name: 'Korean',   nativeName: '한국어', translations: { ko: '한국어', en: 'Korean',   ja: '韓国語', zh: '韩语',   es: 'Coreano'  } },
+  { code: 'ja', name: 'Japanese', nativeName: '日本語', translations: { ko: '일본어', en: 'Japanese', ja: '日本語', zh: '日语',   es: 'Japonés'  } },
+  { code: 'zh', name: 'Chinese',  nativeName: '中文',   translations: { ko: '중국어', en: 'Chinese',  ja: '中国語', zh: '中文',   es: 'Chino'    } },
+  { code: 'es', name: 'Spanish',  nativeName: 'Español',translations: { ko: '스페인어',en: 'Spanish',  ja: 'スペイン語',zh: '西班牙语',es: 'Español'  } },
+  { code: 'en', name: 'English',  nativeName: 'English',translations: { ko: '영어',   en: 'English',  ja: '英語',   zh: '英语',   es: 'Inglés'   } },
 ];
 
 export const CONVERSATION_MODES = [

@@ -23,6 +23,7 @@ import json
 import logging
 import os
 import re
+import time
 import traceback
 from collections import deque
 from dataclasses import dataclass
@@ -96,9 +97,11 @@ def _configure_logging(use_json: bool = False) -> None:
         logging.StreamHandler(),
         logging.FileHandler(_LOG_FILE),
     ]
+    root = logging.getLogger()
+    root.setLevel(logging.INFO)
     for h in handlers:
         h.setFormatter(fmt)
-    logging.basicConfig(level=logging.INFO, handlers=handlers)
+        root.addHandler(h)
 
 
 logger = logging.getLogger(__name__)
@@ -459,11 +462,17 @@ class Qwen3ASRStreamingHandler:
         self.session_logger: Optional[SessionLogger] = None
         self.corrector = corrector
         self.gpt_translator = gpt_translator
+        self.use_correction = True  # overridden per-session by start message speed field
         # GPT 번역 컨텍스트: 최근 N 세그먼트의 (corrected_original, translation) 보관
         _ctx = gpt_translator.max_context if gpt_translator else 5
         self._segment_history: deque[tuple[str, str]] = deque(maxlen=_ctx)
         # 첫 번째 발화는 Google Translate, 두 번째부터 GPT로 전환
         self._committed_utterance_count: int = 0
+
+        # generate() 루프 내 병렬 GPT 처리
+        self._in_generate_loop: bool = False
+        self._pending_gpt_tasks: list = []
+        self._last_generate_end_time: float = 0.0  # generate() 완료 직후 perf_counter
 
         # Commit 방식 설정
         self.enable_dot_commit: bool = config.enable_dot_commit
@@ -528,7 +537,9 @@ class Qwen3ASRStreamingHandler:
             self.vad_iterator.reset_states()
         self._segment_history.clear()
         self._committed_utterance_count = 0
-    
+        self._in_generate_loop = False
+        self._pending_gpt_tasks = []
+
     def _new_stream_slot(self, seed_text: str = "", context: str = "") -> dict:
         allowed_languages = None
         if self.config.restrict_languages and self.client_lang and self.client_lang != "auto":
@@ -594,10 +605,13 @@ class Qwen3ASRStreamingHandler:
         seg_len = len(seg_tag)
         _punct = '.,!?;:。？！'
 
-        # ── 1차: display prefix 매칭 ──────────────────────────────────────
+        # ── 1차: display prefix 매칭 (구두점 동치 포함) ──────────────────
+        # 모델이 온점을 쉼표로(또는 반대로) revision해도 같은 위치로 인식
+        _norm_punct = lambda s: re.sub(r'[.,!?;:。？！、，]', '.', s)
         if committed_display:
             text_no_seg = text.replace(seg_tag, "")
-            if text_no_seg.startswith(committed_display):
+            if text_no_seg.startswith(committed_display) or \
+                    _norm_punct(text_no_seg).startswith(_norm_punct(committed_display)):
                 pos, disp_pos, target = 0, 0, len(committed_display)
                 while pos < len(text) and disp_pos < target:
                     if text[pos:pos + seg_len] == seg_tag:
@@ -608,17 +622,21 @@ class Qwen3ASRStreamingHandler:
                 return pos
 
         # ── 2차 fallback: SEG 카운트 기준 ───────────────────────────────
-        pos, found = 0, 0
-        all_segs_found = True
-        while found < committed_seg_count:
-            idx = text.find(seg_tag, pos)
-            if idx == -1:
-                all_segs_found = False
-                break
-            pos = idx + seg_len
-            found += 1
-        if all_segs_found:
-            return pos
+        # committed_seg_count=0이고 committed_display가 있으면 skip:
+        # DOT commit은 SEG count를 올리지 않으므로 pos=0을 리턴하면
+        # 3차 fallback이 실행되지 않아 uncommitted가 전체 텍스트가 됨
+        if committed_seg_count > 0 or not committed_display:
+            pos, found = 0, 0
+            all_segs_found = True
+            while found < committed_seg_count:
+                idx = text.find(seg_tag, pos)
+                if idx == -1:
+                    all_segs_found = False
+                    break
+                pos = idx + seg_len
+                found += 1
+            if all_segs_found:
+                return pos
 
         # ── 3차 fallback: 구두점 제거 후 prefix 매칭 ────────────────────
         if committed_display:
@@ -681,18 +699,33 @@ class Qwen3ASRStreamingHandler:
     def _get_lora_request(self, state):
         """언어에 따라 적절한 LoRA 어댑터 반환. 미지원 언어는 None(기본 모델)."""
         lang = state.force_language or state.language  # canonical name e.g. "Korean"
+        if not lang and self.client_lang and self.client_lang != "auto":
+            lang = lang_code_to_name(self.client_lang) or ""
         if lang == "English":
             return self.lora_request_en
         if lang == "Korean":
             return self.lora_request_ko
         return None
 
+    @staticmethod
+    def _strip_asr_text(text: str) -> str:
+        """state.text에서 <asr_text> 태그를 제거한다.
+
+        force_language 모드에서 parse_asr_output은 'language X<asr_text>...'를 그대로
+        state.text에 넣는다. 첫 번째 <asr_text> 앞이 language 메타데이터이면 버리고,
+        나머지 <asr_text>는 공백으로 치환한다.
+        """
+        if "<asr_text>" not in text:
+            return text
+        first, rest = text.split("<asr_text>", 1)
+        if re.match(r'^\s*language\s+\w', first, re.IGNORECASE):
+            text = rest
+        return re.sub(r'\s*<asr_text>\s*', ' ', text).strip()
+
     def _slot_uncommitted_display(self, slot_key: Optional[str] = None) -> str:
         slot = self._slot(slot_key)
         state = slot["state"]
-        current_text = (state.text or "").strip() if state else ""
-        if "<asr_text>" in current_text:
-            current_text = current_text.split("<asr_text>", 1)[-1].strip()
+        current_text = self._strip_asr_text((state.text or "").strip() if state else "")
         uncommitted_raw = self._uncommitted_from(
             current_text, slot["committed_display"], slot["committed_seg_count"]
         )
@@ -721,8 +754,7 @@ class Qwen3ASRStreamingHandler:
 
     async def _asr_streaming_transcribe(self, chunk: np.ndarray, slot_key: Optional[str] = None):
         slot = self._slot(slot_key)
-        seg_count_before = slot.get("committed_seg_count", 0)
-        committed_len_before = slot.get("committed_len", 0)
+        committed_display_before = slot.get("committed_display", "")
         prev_uncommitted = self._slot_uncommitted_display(slot_key)
 
         async def _on_seg(_):
@@ -733,24 +765,26 @@ class Qwen3ASRStreamingHandler:
             lora_request = self._get_lora_request(slot["state"])
 
         # 생성 중 lock 미보유 — state.text는 await 없는 단순 대입이므로 asyncio 안전
-        await self.asr.streaming_transcribe(chunk, slot["state"], lora_request=lora_request, on_seg=_on_seg)
+        self._in_generate_loop = True
+        try:
+            await self.asr.streaming_transcribe(chunk, slot["state"], lora_request=lora_request, on_seg=_on_seg)
+        finally:
+            self._in_generate_loop = False
+            self._last_generate_end_time = time.perf_counter()
         await self._process_slot_updates(slot_key)
+        if self._pending_gpt_tasks:
+            await self._flush_pending_gpt_tasks()
 
         _s = self._slot(slot_key)
         # SEG/dot commit 발생 시, remaining이 없거나 audio_accum 임계값 초과 시 슬롯 리셋.
-        any_commit = (
-            _s.get("committed_seg_count", 0) > seg_count_before
-            or _s.get("committed_len", 0) > committed_len_before
-        )
+        any_commit = _s.get("committed_display", "") != committed_display_before
         if any_commit:
             remaining = self._slot_uncommitted_display(slot_key)
             audio_sec = _s["state"].audio_accum.shape[0] / SAMPLING_RATE
             force_reset = audio_sec > MAX_AUDIO_ACCUM_SEC
 
             if not remaining.strip() or force_reset:
-                trigger = "FORCE" if force_reset else (
-                    "SEG" if _s.get("committed_seg_count", 0) > seg_count_before else "DOT"
-                )
+                trigger = "FORCE" if force_reset else "SEG"
                 if force_reset:
                     seed_text = self._build_forced_reset_seed(slot_key, remaining)
                     self._reset_stream_slot(slot_key, seed_text=seed_text)
@@ -761,24 +795,40 @@ class Qwen3ASRStreamingHandler:
                     self.state = self.stream_slots[self.active_slot]["state"]
                 self.log.info(f"[{trigger}-SLOT-SWITCH] slot={slot_key} audio_sec={audio_sec:.1f}s")
             else:
-                # 이전 decode 출력이 마침표로 끝났고 이번 decode에서 \.\s+ 가 그걸 commit했으면
-                # remaining을 seed로 슬롯 리셋 (cross-decode trailing-period reset)
+                # cross-decode trailing-period reset:
+                # prev_uncommitted 온점 위치가 이번 commit과 동일한 경우에만 슬롯 리셋.
+                # 온점이 이동했으면(임시 추측 온점) DOT-SLOT-SWITCH 불필요.
                 prev_strip = prev_uncommitted.strip()
+                period_in_place = False
                 if prev_strip and re.search(r'[.?!。？！]$', prev_strip):
-                    seed = remaining.strip()
+                    committed_display_after = _s.get("committed_display", "")
+                    newly_committed_text = committed_display_after[len(committed_display_before):]
+                    prev_core = re.sub(r'\s+', '', prev_strip.rstrip('.?!。？！'))
+                    newly_committed_norm = re.sub(r'\s+', '', newly_committed_text)
+                    period_in_place = bool(
+                        prev_core
+                        and re.match(re.escape(prev_core) + r'[.?!。？！]', newly_committed_norm)
+                    )
+                if period_in_place:
                     # partial-1 오디오(이미 commit된 구간)만 버리고 partial-2 오디오는 새 슬롯에 유지
+                    # 오디오가 carry-over되므로 seed 텍스트 불필요 — 모델이 재디코딩함
                     chunk_samples = int(round(self.config.chunk_size_sec * SAMPLING_RATE))
                     old_accum = _s["state"].audio_accum
                     carry_audio = old_accum[-chunk_samples:] if old_accum.shape[0] >= chunk_samples else old_accum.copy()
-                    self._reset_stream_slot(slot_key, seed_text=seed)
-                    if seed:
-                        self._init_forced_reset_slot(slot_key, seed_text=seed, remaining=seed)
-                    self._slot(slot_key)["state"].audio_accum = carry_audio
+                    carry_lang = _s.get("last_text_lang", "")
+                    prev_committed = _s.get("committed_display", "")
+                    self._reset_stream_slot(slot_key)
+                    new_slot = self._slot(slot_key)
+                    new_slot["state"].audio_accum = carry_audio
+                    if carry_lang:
+                        new_slot["last_text_lang"] = carry_lang
+                    if prev_committed:
+                        new_slot["dot_switch_prev_committed"] = prev_committed
                     if slot_key == self.active_slot:
                         self.state = self.stream_slots[self.active_slot]["state"]
                     self.log.info(
                         f"[DOT-SLOT-SWITCH] slot={slot_key} audio_sec={audio_sec:.1f}s "
-                        f"prev={prev_strip!r} seed={seed!r}"
+                        f"prev={prev_strip!r}"
                     )
                 else:
                     self.log.info(
@@ -787,6 +837,37 @@ class Qwen3ASRStreamingHandler:
 
         async with self.asr_lock:
             self.asr_processed_cursor = self.sample_cursor
+
+    async def _flush_pending_gpt_tasks(self) -> None:
+        """generate() 중 백그라운드로 발사된 GPT 태스크를 순서대로 await하고 emit."""
+        tasks = self._pending_gpt_tasks
+        self._pending_gpt_tasks = []
+        for item in tasks:
+            try:
+                corrected, translation, lang, extra = await item["task"]
+            except Exception as e:
+                self.log.warning(f"[GPT-TASK-ERROR] {e} — Google Translate로 폴백")
+                try:
+                    translation, lang, extra = await self._translate(
+                        item["original"], self.client_target_lang, item["audio_end_sec"]
+                    )
+                    corrected = item["original"]
+                except Exception as e2:
+                    self.log.error(f"[GPT-FALLBACK-ERROR] {e2} — 세그먼트 스킵")
+                    continue
+            await self._emit_final_payload(
+                slot_key=item["slot_key"],
+                original=item["original"],
+                translation=translation,
+                language=lang,
+                reason=item["trigger_reason"],
+                audio_end_sec=item["audio_end_sec"],
+                extra=extra,
+            )
+            self.log.info(
+                f"[TRANS-SEG-ASYNC] slot={item['slot_key']} lang={lang} "
+                f"original='{item['original']}' translation='{translation}'"
+            )
 
     async def _asr_finish_streaming(self, slot_key: Optional[str] = None):
         slot = self._slot(slot_key)
@@ -812,9 +893,7 @@ class Qwen3ASRStreamingHandler:
         async with slot_flush_lock:
             async with self.asr_lock:
                 state = slot["state"]
-                current_text = (state.text or "").strip() if state else ""
-                if "<asr_text>" in current_text:
-                    current_text = current_text.split("<asr_text>", 1)[-1].strip()
+                current_text = self._strip_asr_text((state.text or "").strip() if state else "")
                 current_lang = slot["last_text_lang"] or ""
             snapshot_committed_len = slot["committed_len"]
             snapshot_committed_display = slot["committed_display"]
@@ -827,6 +906,30 @@ class Qwen3ASRStreamingHandler:
                 return
             if not force and len(uncommitted_display) < 2:
                 logger.info(f"[COMMIT-SKIP] reason=timeout-skip text='{uncommitted_display}'")
+                return
+            # DOT-SLOT-SWITCH 후: 이전 커밋 tail이 uncommitted 앞에 붙어있으면 제거
+            prev_committed_dot = slot.get("dot_switch_prev_committed", "")
+            if prev_committed_dot:
+                slot.pop("dot_switch_prev_committed", None)
+                _last_sents = re.split(r'(?<=[.!?。！？])\s+', prev_committed_dot.strip())
+                _last_sent = _last_sents[-1].strip() if _last_sents else ""
+                if _last_sent:
+                    _norm_last = re.sub(r'[.,!?;:。？！\s]+', '', _last_sent)
+                    _norm_ud = re.sub(r'[.,!?;:。？！\s]+', '', uncommitted_display)
+                    if _norm_ud.startswith(_norm_last):
+                        _skip = 0
+                        _norm_cnt = 0
+                        for _ch in uncommitted_display:
+                            if _norm_cnt >= len(_norm_last):
+                                break
+                            _skip += 1
+                            if not re.match(r'[.,!?;:。？！\s]', _ch):
+                                _norm_cnt += 1
+                        while _skip < len(uncommitted_display) and uncommitted_display[_skip] in '.,!?;:。？！ ':
+                            _skip += 1
+                        uncommitted_display = uncommitted_display[_skip:].strip()
+                        self.log.info(f"[COMMIT-SKIP] reason=dot-suffix-dedup slot={slot_key} stripped={uncommitted_display!r}")
+            if not uncommitted_display:
                 return
 
         # 2단계: lock 해제 후 I/O (교정 + 번역) 수행 → 다른 슬롯 flush 비차단
@@ -874,9 +977,7 @@ class Qwen3ASRStreamingHandler:
     async def _process_slot_updates(self, slot_key: str, force_reason: Optional[str] = None):
         slot = self._slot(slot_key)
         state = slot["state"]
-        current_text = (state.text or "").strip()
-        if "<asr_text>" in current_text:
-            current_text = current_text.split("<asr_text>", 1)[-1].strip()
+        current_text = self._strip_asr_text((state.text or "").strip())
         current_lang = state.language or ""
         if not current_text or current_text == slot["last_text"]:
             return
@@ -904,9 +1005,9 @@ class Qwen3ASRStreamingHandler:
             if self.enable_dot_commit:
                 match = re.search(
                     r"(?:"
-                    r"(?<!Mr)(?<!Mrs)(?<!Dr)(?<!St)(?<!Jr)(?<!Sr)(?<!vs)(?<!No)\.\s+"
-                    r"|[?!]\s+"
-                    r"|[\u3002\uff1f\uff01]"
+                    r"(?<!Mr)(?<!Mrs)(?<!Dr)(?<!St)(?<!Jr)(?<!Sr)(?<!vs)(?<!No)\.\s+(?=\S)"
+                    r"|[?!]\s+(?=\S)"
+                    r"|[\u3002\uff1f\uff01](?=\S)"
                     r"|<SEG>"
                     r")",
                     remaining,
@@ -925,112 +1026,137 @@ class Qwen3ASRStreamingHandler:
                 if sentence_display_check == _last_extracted_display:
                     self.log.info(f"[COMMIT-SKIP] reason=rep-dedup slot={slot_key} text={sentence_display_check!r}")
                 else:
+                    prev_committed = slot.get("dot_switch_prev_committed", "")
+                    if trigger == "dot" and prev_committed:
+                        slot.pop("dot_switch_prev_committed", None)
+                        _norm_c = re.sub(r'[.,!?;:。？！\s]+', '', prev_committed)
+                        _norm_s = re.sub(r'[.,!?;:。？！\s]+', '', sentence_display_check)
+                        if _norm_c.endswith(_norm_s):
+                            self.log.info(f"[COMMIT-SKIP] reason=dot-suffix-dedup slot={slot_key} text={sentence_display_check!r}")
+                            remaining = after
+                            continue
                     sentences_to_commit.append((sentence, trigger))
                     _last_extracted_display = sentence_display_check
             remaining = after
 
-        if sentences_to_commit:
-            translated_payloads = []
-            for sentence_raw, trigger_reason in sentences_to_commit:
-                # <SEG>는 사용자 출력/번역에서 제거
-                sentence_display = sentence_raw.replace("<SEG>", "").strip()
-                # 호출 간(cross-call) 반복 억제: 마지막 커밋과 동일 텍스트이고 오디오 경과가 짧으면 스킵
-                _audio_span = self.current_time - slot.get("audio_anchor_sec", 0.0)
-                if sentence_display == slot.get("last_committed_asr_text", "") and _audio_span < 1.0:
-                    self.log.info(
-                        f"[COMMIT-SKIP] reason=cross-dedup slot={slot_key} span={_audio_span:.2f}s text={sentence_display!r}"
-                    )
-                    continue
-                sentence_display, translation, final_lang, extra = await self._correct_and_translate(
+        if not sentences_to_commit:
+            return
+
+        # ── Phase 1: 커서 추적 + committed_len 즉시 확정 (GPT 호출 전) ─────────
+        # raw ASR 텍스트 기준으로 커서를 확정하므로 GPT 교정 결과와 무관하게 안전.
+        committed_items = []  # list of (sentence_display, trigger_reason)
+
+        async with slot["flush_lock"]:
+            async with self.asr_lock:
+                latest_state = slot["state"]
+                latest_text = (latest_state.text or "").strip() if latest_state else ""
+
+            if force_reason == "vad":
+                _PUNCT = '.,!?;:。？！'
+                latest_ns = re.sub(r'\s+', ' ', latest_text.replace("<SEG>", "")).strip()
+                cdisp = slot["committed_display"]
+                pos = len(cdisp) if (cdisp and latest_ns.startswith(cdisp)) else 0
+                for sentence_raw, trigger_reason in sentences_to_commit:
+                    sentence_display = sentence_raw.replace("<SEG>", "").strip()
+                    _audio_span = self.current_time - slot.get("audio_anchor_sec", 0.0)
+                    if sentence_display == slot.get("last_committed_asr_text", "") and _audio_span < 1.0:
+                        self.log.info(
+                            f"[COMMIT-SKIP] reason=cross-dedup slot={slot_key} span={_audio_span:.2f}s text={sentence_display!r}"
+                        )
+                        continue
+                    sent_core = sentence_display.rstrip(_PUNCT)
+                    tail_ns = latest_ns[pos:].lstrip()
+                    lead = len(latest_ns[pos:]) - len(tail_ns)
+                    if not (sent_core and tail_ns.startswith(sent_core)):
+                        break
+                    end = len(sent_core)
+                    if end < len(tail_ns) and tail_ns[end].isalpha():
+                        break
+                    while end < len(tail_ns) and tail_ns[end] in _PUNCT:
+                        end += 1
+                    pos += lead + end
+                    committed_items.append((sentence_display, trigger_reason))
+                if committed_items:
+                    slot["committed_display"] = latest_ns[:pos].strip()
+                    slot["committed_len"] = len(latest_text)
+                    slot["audio_anchor_sec"] = self.current_time
+                    slot["last_committed_asr_text"] = committed_items[-1][0]
+            else:
+                cursor = self._committed_cursor(
+                    latest_text,
+                    slot["committed_display"],
+                    slot["committed_seg_count"],
+                )
+                if cursor == -1:
+                    cursor = len(latest_text)
+                tail = latest_text[cursor:]
+                for sentence_raw, trigger_reason in sentences_to_commit:
+                    sentence_display = sentence_raw.replace("<SEG>", "").strip()
+                    _audio_span = self.current_time - slot.get("audio_anchor_sec", 0.0)
+                    if sentence_display == slot.get("last_committed_asr_text", "") and _audio_span < 1.0:
+                        self.log.info(
+                            f"[COMMIT-SKIP] reason=cross-dedup slot={slot_key} span={_audio_span:.2f}s text={sentence_display!r}"
+                        )
+                        continue
+                    stripped_tail = tail.lstrip()
+                    leading_ws = len(tail) - len(stripped_tail)
+                    # <SEG> 토큰이 문장 사이에 있을 때 건너뜀
+                    while stripped_tail.startswith("<SEG>"):
+                        stripped_tail = stripped_tail[len("<SEG>"):].lstrip()
+                        leading_ws = len(tail) - len(stripped_tail)
+                    if not stripped_tail.startswith(sentence_raw):
+                        break
+                    cursor += leading_ws + len(sentence_raw)
+                    tail = latest_text[cursor:]
+                    committed_items.append((sentence_display, trigger_reason))
+                if committed_items:
+                    slot["committed_len"] = cursor
+                    slot["committed_prefix"] = latest_text[:cursor]
+                    slot["committed_display"] = re.sub(
+                        r'\s+', ' ', slot["committed_prefix"].replace("<SEG>", "")
+                    ).strip()
+                    slot["committed_seg_count"] += sum(1 for _, tr in committed_items if tr == "seg")
+                    slot["audio_anchor_sec"] = self.current_time
+                    slot["last_committed_asr_text"] = committed_items[-1][0]
+
+        if not committed_items:
+            return
+
+        # ── Phase 2: GPT 번역 ─────────────────────────────────────────────────
+        if self._in_generate_loop:
+            # generate() 루프 안: GPT를 백그라운드 태스크로 발사하고 즉시 반환.
+            # ASR 디코딩과 번역이 병렬 실행된다.
+            for sentence_display, trigger_reason in committed_items:
+                effective_reason = force_reason or trigger_reason
+                task = asyncio.create_task(
+                    self._correct_and_translate(sentence_display, current_lang, self.current_time)
+                )
+                self._pending_gpt_tasks.append({
+                    "task": task,
+                    "slot_key": slot_key,
+                    "original": sentence_display,
+                    "trigger_reason": effective_reason,
+                    "audio_end_sec": self.current_time,
+                })
+        else:
+            # generate() 루프 밖 (VAD/finish/post-generate): 직접 await
+            for sentence_display, trigger_reason in committed_items:
+                effective_reason = force_reason or trigger_reason
+                corrected, translation, lang, extra = await self._correct_and_translate(
                     sentence_display, current_lang, self.current_time
                 )
-                translated_payloads.append({
-                    "original_raw": sentence_raw,   # 커서 추적용 (raw, <SEG> 포함)
-                    "original": sentence_display,   # 사용자 출력용
-                    "translation": translation,
-                    "language": final_lang,
-                    "extra": extra,
-                    "trigger_reason": trigger_reason,
-                })
-
-            ready_to_emit = []
-            async with slot["flush_lock"]:
-                async with self.asr_lock:
-                    latest_state = slot["state"]
-                    latest_text = (latest_state.text or "").strip() if latest_state else ""
-
-                if force_reason == "vad":
-                    # VAD: SEG 위치 무관, 텍스트 기반 매칭 (trailing punctuation 무시)
-                    _PUNCT = '.,!?;:。？！'
-                    latest_ns = re.sub(r'\s+', ' ', latest_text.replace("<SEG>", "")).strip()
-                    cdisp = slot["committed_display"]
-                    pos = len(cdisp) if (cdisp and latest_ns.startswith(cdisp)) else 0
-                    for payload in translated_payloads:
-                        sent_disp = payload["original"]
-                        sent_core = sent_disp.rstrip(_PUNCT)
-                        tail_ns = latest_ns[pos:].lstrip()
-                        lead = len(latest_ns[pos:]) - len(tail_ns)
-                        if not (sent_core and tail_ns.startswith(sent_core)):
-                            break
-                        end = len(sent_core)
-                        if end < len(tail_ns) and tail_ns[end].isalpha():
-                            break  # 부분 단어 매칭 방지
-                        while end < len(tail_ns) and tail_ns[end] in _PUNCT:
-                            end += 1
-                        pos += lead + end
-                        ready_to_emit.append(payload)
-                    if ready_to_emit:
-                        slot["committed_display"] = latest_ns[:pos].strip()
-                        slot["committed_len"] = len(latest_text)
-                        slot["audio_anchor_sec"] = self.current_time
-                        slot["last_committed_asr_text"] = ready_to_emit[-1]["original"]
-                else:
-                    # 3-way fallback으로 committed 영역 끝 커서를 찾는다.
-                    # dot commit(SEG 없음)·모델 revision 등 모든 케이스를 커버.
-                    cursor = self._committed_cursor(
-                        latest_text,
-                        slot["committed_display"],
-                        slot["committed_seg_count"],
-                    )
-                    if cursor == -1:
-                        # 커서 특정 불가 → double-commit 위험 없이 skip
-                        cursor = len(latest_text)
-                    tail = latest_text[cursor:]
-
-                    for payload in translated_payloads:
-                        sentence_raw = payload["original_raw"]
-                        stripped_tail = tail.lstrip()
-                        leading_ws = len(tail) - len(stripped_tail)
-                        if not stripped_tail.startswith(sentence_raw):
-                            break
-                        cursor += leading_ws + len(sentence_raw)
-                        tail = latest_text[cursor:]
-                        ready_to_emit.append(payload)
-
-                    if ready_to_emit:
-                        slot["committed_len"] = cursor
-                        slot["committed_prefix"] = latest_text[:slot["committed_len"]]
-                        slot["committed_display"] = re.sub(
-                            r'\s+', ' ', slot["committed_prefix"].replace("<SEG>", "")
-                        ).strip()
-                        slot["committed_seg_count"] += len(ready_to_emit)
-                        slot["audio_anchor_sec"] = self.current_time
-                        slot["last_committed_asr_text"] = ready_to_emit[-1]["original"]
-
-            for payload in ready_to_emit:
-                effective_reason = force_reason or payload["trigger_reason"]
                 await self._emit_final_payload(
                     slot_key=slot_key,
-                    original=payload["original"],
-                    translation=payload["translation"],
-                    language=payload["language"],
+                    original=sentence_display,
+                    translation=translation,
+                    language=lang,
                     reason=effective_reason,
                     audio_end_sec=self.current_time,
-                    extra=payload.get("extra"),
+                    extra=extra,
                 )
                 self.log.info(
-                    f"[TRANS-SEG] slot={slot_key} lang={payload['language']} "
-                    f"original='{payload['original']}' translation='{payload['translation']}'"
+                    f"[TRANS-SEG] slot={slot_key} lang={lang} "
+                    f"original='{sentence_display}' translation='{translation}'"
                 )
 
 
@@ -1107,18 +1233,29 @@ class Qwen3ASRStreamingHandler:
             )
 
             await self._on_vad_commit(target_audio_end_sec)
-            await self._asr_finish_streaming(old_active)
-            _dbg_state = self.stream_slots[old_active]["state"]
-            _dbg_committed = self.stream_slots[old_active]["committed_display"]
-            _dbg_seg_count = self.stream_slots[old_active]["committed_seg_count"]
-            _dbg_text = (_dbg_state.text or "").strip()
-            _dbg_uncommitted = self._uncommitted_from(_dbg_text, _dbg_committed, _dbg_seg_count)
-            self.log.info(f"[VAD-DECODING] slot={old_active} text={_dbg_text!r}")
+            # 스트리밍 상태 스냅샷 (finish_streaming 전)
+            _pre_state = self.stream_slots[old_active]["state"]
+            _pre_committed = self.stream_slots[old_active]["committed_display"]
+            _pre_seg_count = self.stream_slots[old_active]["committed_seg_count"]
+            _pre_text = (_pre_state.text or "").strip()
+            _pre_uncommitted = self._uncommitted_from(_pre_text, _pre_committed, _pre_seg_count)
+            self.log.info(f"[VAD-DECODING] slot={old_active} text={_pre_text!r}")
             self.log.info(
                 f"[VAD-HISTORY] slot={old_active} "
-                f"committed={_dbg_committed!r} uncommitted={_dbg_uncommitted!r}"
+                f"committed={_pre_committed!r} uncommitted={_pre_uncommitted!r}"
             )
             await self._process_slot_updates(old_active, force_reason="vad")
+            await self._asr_finish_streaming(old_active)
+            # finish_streaming이 uncommitted를 날려버렸으면 스트리밍 텍스트로 복원
+            _post_state = self.stream_slots[old_active]["state"]
+            _post_text = (_post_state.text or "").strip()
+            _post_uncommitted = self._uncommitted_from(
+                _post_text,
+                self.stream_slots[old_active]["committed_display"],
+                self.stream_slots[old_active]["committed_seg_count"],
+            )
+            if not _post_uncommitted and _pre_uncommitted:
+                _post_state.text = _pre_text
             await self.flush_uncommitted(force=True, reason="vad", slot_key=old_active)
             self._reset_stream_slot(self.standby_slot)
             await self._on_vad_done(old_active)
@@ -1174,7 +1311,7 @@ class Qwen3ASRStreamingHandler:
             return corrected, translation, src_code, {}
 
         # Google Translate 경로 (첫 번째 발화 또는 gpt_translator 비활성)
-        if self.corrector:
+        if self.corrector and self.use_correction:
             text = await self.corrector.correct_text(text, current_lang)
         translation, detected_lang, extra = await self._translate(
             text, self.client_target_lang, audio_end_sec
@@ -1279,9 +1416,11 @@ class Qwen3ASRStreamingHandler:
                             self.session_logger = SessionLogger(client_id=self.log.extra["cid"])
                             self.client_lang = data.get("lang", "auto")
                             self.client_target_lang = data.get("targetLang", "")
+                            self.use_correction = data.get("speed", "accurate") != "fast"
                             self.log.info(
                                 f"Received start: lang={self.client_lang}, "
-                                f"targetLang={self.client_target_lang}"
+                                f"targetLang={self.client_target_lang}, "
+                                f"speed={data.get('speed', 'accurate')}"
                             )
 
                             self.init_streaming_state()
@@ -1436,6 +1575,7 @@ class Qwen3ASRStreamingServer:
                 logger.warning(f"Silero VAD model load failed: {e}")
 
         logger.info(f"Loading model: {self.config.model_path}")
+        tokenizer_path = adapter_ko_path or adapter_en_path or None
         self.asr = Qwen3ASRModel.LLM(
             model=self.config.model_path,
             gpu_memory_utilization=self.config.gpu_memory_utilization,
@@ -1444,6 +1584,7 @@ class Qwen3ASRStreamingServer:
             enable_lora=use_lora,
             max_lora_rank=self.config.max_lora_rank if use_lora else 16,
             enforce_eager=self.config.enforce_eager,
+            **({"tokenizer": tokenizer_path} if tokenizer_path and use_lora else {}),
         )
         if self.config.beam_size > 1:
             from vllm import SamplingParams

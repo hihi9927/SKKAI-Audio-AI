@@ -4,6 +4,7 @@ import { startServer } from '../utils/serverUtils';
 interface WebSocketConfig {
   lang: string;
   targetLang?: string;
+  speed?: 'fast' | 'accurate';
 }
 
 export type ServerStatus = 'idle' | 'ec2-starting' | 'connecting' | 'ready' | 'error';
@@ -28,6 +29,7 @@ const PROBE_SOCKET_TIMEOUT_MS = 15000;
 const PROBE_RETRY_INTERVAL_MS = 10000;
 const MAX_WEBSOCKET_PROBE_WAIT_MS = 4 * 60 * 1000;
 const KEEPALIVE_RECONNECT_MS = 3000;
+const HEARTBEAT_INTERVAL_MS = 20000;
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -46,15 +48,44 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const listenersRef = useRef<Set<(msg: any) => void>>(new Set());
   const keepAliveFailCountRef = useRef(0);
   const probeAbortRef = useRef<AbortController | null>(null);
+  const heartbeatIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const errorRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     serverStatusRef.current = serverStatus;
   }, [serverStatus]);
 
+  const stopHeartbeat = useCallback(() => {
+    if (heartbeatIntervalRef.current) {
+      clearInterval(heartbeatIntervalRef.current);
+      heartbeatIntervalRef.current = null;
+    }
+  }, []);
+
+  const startHeartbeat = useCallback(() => {
+    stopHeartbeat();
+    heartbeatIntervalRef.current = setInterval(() => {
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        try {
+          wsRef.current.send(JSON.stringify({ type: 'ping' }));
+        } catch {
+          // ignore
+        }
+      }
+    }, HEARTBEAT_INTERVAL_MS);
+  }, [stopHeartbeat]);
+
   const clearKeepAliveTimer = useCallback(() => {
     if (keepAliveTimerRef.current) {
       clearTimeout(keepAliveTimerRef.current);
       keepAliveTimerRef.current = null;
+    }
+  }, []);
+
+  const clearErrorRetryTimer = useCallback(() => {
+    if (errorRetryTimerRef.current) {
+      clearTimeout(errorRetryTimerRef.current);
+      errorRetryTimerRef.current = null;
     }
   }, []);
 
@@ -88,6 +119,10 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
       ws.onopen = () => {
         keepAliveFailCountRef.current = 0;
+        if (serverStatusRef.current === 'idle' || serverStatusRef.current === 'error') {
+          clearErrorRetryTimer();
+          setServerStatus('ready');
+        }
       };
 
       ws.onmessage = () => {
@@ -115,9 +150,10 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     };
 
     connectKeepAlive();
-  }, [clearKeepAliveTimer]);
+  }, [clearKeepAliveTimer, clearErrorRetryTimer]);
 
   const probeServer = useCallback(async (force = false) => {
+    clearErrorRetryTimer();
     if (isProbingRef.current) return;
     if (!force && serverStatusRef.current === 'ready' && keepAliveWsRef.current?.readyState === WebSocket.OPEN) return;
     isProbingRef.current = true;
@@ -203,10 +239,12 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (e?.name === 'AbortError') return; // app closed mid-probe, silently exit
       setServerStatus('error');
       stopKeepAlive();
+      // 서버가 살아나면 자동 감지하도록 30초 후 재시도
+      errorRetryTimerRef.current = setTimeout(() => { probeServer(false); }, 30000);
     } finally {
       isProbingRef.current = false;
     }
-  }, [startKeepAlive, stopKeepAlive]);
+  }, [startKeepAlive, stopKeepAlive, clearErrorRetryTimer]);
 
   const connect = useCallback(async (config: WebSocketConfig): Promise<void> => {
     return new Promise((resolve, reject) => {
@@ -246,8 +284,10 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                   lang: config.lang,
                   targetLang: config.targetLang || '',
                   translate: !!config.targetLang,
+                  speed: config.speed ?? 'fast',
                 })
               );
+              startHeartbeat();
               resolve();
               return;
             }
@@ -283,9 +323,10 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         reject(err);
       }
     });
-  }, [stopKeepAlive]);
+  }, [stopKeepAlive, startHeartbeat]);
 
   const disconnect = useCallback(() => {
+    stopHeartbeat();
     if (wsRef.current) {
       if (wsRef.current.readyState === WebSocket.OPEN) {
         try {
@@ -303,12 +344,14 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     if (serverStatusRef.current === 'ready') {
       startKeepAlive();
     }
-  }, [startKeepAlive]);
+  }, [stopHeartbeat, startKeepAlive]);
 
   useEffect(() => {
     return () => {
       probeAbortRef.current?.abort();
+      clearErrorRetryTimer();
       stopKeepAlive();
+      stopHeartbeat();
       if (wsRef.current) {
         wsRef.current.close(1000, 'Provider unmount');
       }
@@ -316,7 +359,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         probeWsRef.current.close(1000, 'Provider unmount');
       }
     };
-  }, [stopKeepAlive]);
+  }, [stopKeepAlive, stopHeartbeat, clearErrorRetryTimer]);
 
   const sendAudio = useCallback((audioData: ArrayBuffer) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
