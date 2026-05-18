@@ -641,6 +641,26 @@ class Qwen3ASRStreamingHandler:
                             pos += 1
                         return pos
 
+        # ── 4차 fallback: 따옴표·콜론 제거 후 prefix 매칭 ─────────────────
+        # 모델이 "说："要..." → "说要..." 처럼 인용 부호·콜론을 삭제/추가하는
+        # revision 시에도 커서를 복원한다.
+        if committed_display:
+            _quote_colon = re.compile(r'[“”‘’"\'：:]+')
+            committed_norm = _quote_colon.sub('', committed_display)
+            text_no_seg_norm = _quote_colon.sub('', text.replace(seg_tag, ""))
+            if committed_norm and text_no_seg_norm.startswith(committed_norm):
+                target = len(committed_norm)
+                disp_pos, pos = 0, 0
+                while pos < len(text) and disp_pos < target:
+                    if text[pos:pos + seg_len] == seg_tag:
+                        pos += seg_len
+                    elif _quote_colon.match(text[pos]):
+                        pos += 1
+                    else:
+                        disp_pos += 1
+                        pos += 1
+                return pos
+
         return -1  # 모든 fallback 실패
 
     @staticmethod
