@@ -8,13 +8,13 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TEST_SCRIPT="$SCRIPT_DIR/test_qwen3_librispeech.py"
-SERVER_SCRIPT="$SCRIPT_DIR/streaming_websocket_server_fcl.py"
+SERVER_SCRIPT="$SCRIPT_DIR/streaming_websocket_server_fsl.py"
 
 # ── 기본값 ────────────────────────────────────────────────────────────────────
-SERVER_MODEL="/home/ubuntu/STiTy/Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged"
-MODEL_TAG="finetuned(1.0.1)"
+SERVER_MODEL="/home/ubuntu/STiTy/Qwen3-ASR/finetuning/finetuning_silence/Qwen3-ASR-1.7B-en-merged-silence"
+MODEL_TAG="finetuned_silence(1.0.3)"
 SCOPE="chunk_size_test"
-LIMIT=""
+LIMIT="548"
 EXTRA_TEST_ARGS=""
 CHUNK_SIZES=(2.0 1.5 1.0 0.5)
 
@@ -51,7 +51,7 @@ for CS in "${CHUNK_SIZES[@]}"; do
         --auto-server \
         --server-script "$SERVER_SCRIPT" \
         --server-model  "$SERVER_MODEL" \
-        --server-args   "--chunk-size ${CS} --enforce-eager --no-idle-shutdown --log-file ${SCRIPT_DIR}/../results/${MODEL_TAG}/${SCOPE}/${TAG}/server.log" \
+        --server-args   "--chunk-size ${CS} --enforce-eager --no-idle-shutdown --log-file ${SCRIPT_DIR}/../results/${MODEL_TAG}/${SCOPE}/${TAG}/logs/server.log" \
         --model  "$MODEL_TAG" \
         --scope  "$SCOPE" \
         --tag    "$TAG" \
