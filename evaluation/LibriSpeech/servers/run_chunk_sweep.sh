@@ -16,7 +16,7 @@ MODEL_TAG="finetuned_silence(1.0.3)"
 SCOPE="chunk_size_test"
 LIMIT="548"
 EXTRA_TEST_ARGS=""
-CHUNK_SIZES=(2.0 1.5 1.0 0.5)
+CHUNK_SIZES=(0.5 0.25)
 
 # ── 인자 파싱 ─────────────────────────────────────────────────────────────────
 while [[ $# -gt 0 ]]; do
@@ -61,6 +61,20 @@ for CS in "${CHUNK_SIZES[@]}"; do
         $EXTRA_TEST_ARGS
 
     echo "  ✓ chunk_size=${CS}s 완료"
+
+    # vllm EngineCore 고아 프로세스 강제 종료 후 GPU 해제 대기
+    pkill -9 -f "vllm" 2>/dev/null || true
+    pkill -9 -f "streaming_websocket_server" 2>/dev/null || true
+    echo "  GPU 해제 대기 중..."
+    for i in $(seq 1 30); do
+        GPU_PROCS=$(nvidia-smi --query-compute-apps=pid --format=csv,noheader 2>/dev/null | wc -l)
+        if [[ "$GPU_PROCS" -eq 0 ]]; then
+            echo "  GPU 해제 완료 (${i}x2s)"
+            break
+        fi
+        sleep 2
+    done
+    sleep 3
 done
 
 echo ""
