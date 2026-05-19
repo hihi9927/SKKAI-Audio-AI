@@ -110,3 +110,5 @@ evaluation/LibriSpeech/results/finetuned(1.0.1)/multi_speaker_test/
 # Root-level run scripts/logs (may contain API keys)
 run_*.sh
 run_*.log
+# ASR session logs (runtime data)
+logs/asr_logs/

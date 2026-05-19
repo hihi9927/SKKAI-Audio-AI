@@ -873,15 +873,6 @@ class Qwen3ASRStreamingHandler:
         slot = self._slot(slot_key)
         async with self.asr_lock:
             state = slot["state"]
-            partial_lang = slot["last_text_lang"]  # canonical name e.g. "Korean"
-            # partial에서 감지된 언어가 있고, state에 force_language가 없으면
-            # finish pass에서도 같은 언어를 강제해 hallucination 방지
-            if partial_lang and not state.force_language:
-                state.prompt_raw = self.asr._build_text_prompt(
-                    context=state.context,
-                    force_language=partial_lang,
-                )
-                state.force_language = partial_lang
             lora_request = self._get_lora_request(state)
             await self.asr.finish_streaming_transcribe(state, lora_request=lora_request)
 
@@ -1245,7 +1236,8 @@ class Qwen3ASRStreamingHandler:
                 f"committed={_pre_committed!r} uncommitted={_pre_uncommitted!r}"
             )
             await self._process_slot_updates(old_active, force_reason="vad")
-            await self._asr_finish_streaming(old_active)
+            if _pre_text:
+                await self._asr_finish_streaming(old_active)
             # finish_streaming이 uncommitted를 날려버렸으면 스트리밍 텍스트로 복원
             _post_state = self.stream_slots[old_active]["state"]
             _post_text = (_post_state.text or "").strip()
