@@ -87,6 +87,10 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
   const serverStatusRef = useRef(serverStatus);
 
   const [isInitializing, setIsInitializing] = useState(false);
+  const [isReconnecting, setIsReconnecting] = useState(false);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hasConnectedOnceRef = useRef(false);
+  const isUnmountedRef = useRef(false);
   const progressAnim = useRef(new Animated.Value(0)).current;
   const progressAnimRunning = useRef<Animated.CompositeAnimation | null>(null);
   const sendAudioRef = useRef(sendAudio);
@@ -171,6 +175,22 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     },
   });
 
+  const scheduleReconnect = useCallback(() => {
+    if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+    reconnectTimerRef.current = setTimeout(async () => {
+      if (isUnmountedRef.current || isPausedRef.current) return;
+      try {
+        await connect({ lang: myLang.code, targetLang: targetLang.code });
+        await startRecording();
+        setSpeakerphoneOn(modeRef.current !== 'mode-2');
+        hasConnectedOnceRef.current = true;
+        setIsReconnecting(false);
+      } catch {
+        scheduleReconnect();
+      }
+    }, 3000);
+  }, [connect, startRecording, myLang.code, targetLang.code]);
+
   const entryIdRef = useRef(0);
 
   const shouldPlayTTS = (detectedLang: string): boolean => {
@@ -242,22 +262,25 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     }
   });
 
-  // ── 화면 진입 시 WebSocket 연결 + 녹음 시작 ──
+  // ── 화면 진입 시 녹음 시작 (WebSocket 연결은 HomeScreen에서 이미 완료) ──
   useEffect(() => {
     const initSession = async () => {
       setConnectionError('');
       try {
-        if (serverStatusRef.current !== 'ready') {
-          setIsInitializing(true);
-          await probeServer();
+        if (!isConnectedRef.current) {
+          // HomeScreen에서 연결이 안 된 경우에만 여기서 연결
+          if (serverStatusRef.current !== 'ready') {
+            setIsInitializing(true);
+            await probeServer();
+          }
+          await connect({ lang: myLang.code, targetLang: targetLang.code });
         }
-        await connect({ lang: myLang.code, targetLang: targetLang.code });
         await startRecording();
         setSpeakerphoneOn(modeRef.current !== 'mode-2');
       } catch (error: any) {
-        console.error('Connection failed:', error);
-        setSessionStatus('error');
-        setConnectionError(error.message || '연결에 실패했습니다');
+        console.error('Connection failed, retrying:', error);
+        setIsReconnecting(true);
+        scheduleReconnect();
       } finally {
         setIsInitializing(false);
       }
@@ -266,6 +289,8 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     initSession();
 
     return () => {
+      isUnmountedRef.current = true;
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
       stopRecording();
       disconnect();
       ttsQueueRef.current = [];
@@ -302,9 +327,10 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
               await startRecording();
               setSpeakerphoneOn(modeRef.current !== 'mode-2');
               setIsPaused(false);
-            } catch (error: any) {
-              setSessionStatus('error');
-              setConnectionError(error.message || '연결에 실패했습니다');
+            } catch {
+              setIsReconnecting(true);
+              setIsPaused(false);
+              scheduleReconnect();
             } finally {
               setIsInitializing(false);
             }
@@ -315,6 +341,21 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     });
     return () => subscription.remove();
   }, []);
+
+  // 연결 끊김 시 자동 재연결 (isPausedRef 사용 — 동기 업데이트로 race condition 방지)
+  useEffect(() => {
+    if (isConnected) {
+      hasConnectedOnceRef.current = true;
+      setIsReconnecting(false);
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
+    } else if (hasConnectedOnceRef.current && !isPausedRef.current) {
+      setIsReconnecting(true);
+      scheduleReconnect();
+    }
+  }, [isConnected, scheduleReconnect]);
 
   // 새 항목 추가 시 맨 아래로 스크롤
   useEffect(() => {
@@ -333,18 +374,25 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
 
   const handleStopResume = async () => {
     if (isPaused) {
+      isPausedRef.current = false; // sync
       setDisplayText(null);
-      if (!isConnectedRef.current) {
-        await connect({ lang: myLang.code, targetLang: targetLang.code });
+      try {
+        if (!isConnectedRef.current) {
+          await connect({ lang: myLang.code, targetLang: targetLang.code });
+        }
+        await startRecording();
+        setSpeakerphoneOn(modeRef.current !== 'mode-2');
+      } catch {
+        // 자동 재연결이 처리
       }
-      await startRecording();
-      setSpeakerphoneOn(modeRef.current !== 'mode-2');
       setIsPaused(false);
     } else {
+      isPausedRef.current = true; // AppState race condition 방지 (sync)
       ttsQueueRef.current = [];
       isSpeakingRef.current = false;
       ttsStop();
       await stopRecording();
+      disconnect(); // WS 정리 + keepalive 시작 → 서버 idle 방지
       setIsPaused(true);
     }
   };
@@ -368,6 +416,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
           text: '종료',
           style: 'destructive',
           onPress: async () => {
+            if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
             await stopRecording();
             disconnect();
             ttsQueueRef.current = [];
@@ -433,22 +482,6 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
     );
   }
 
-  // ── 에러 오버레이 ──
-  if (sessionStatus === 'error') {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.overlayContainer}>
-          <Text style={styles.errorText}>
-            {connectionError || '현재 이용자가 가득 차 이용이 불가합니다'}
-          </Text>
-          <View style={styles.overlayButtonRow}>
-            <GradientButton title="재시도" onPress={handleRetry} />
-            <GradientButton title="돌아가기" onPress={handleGoBack} />
-          </View>
-        </View>
-      </SafeAreaView>
-    );
-  }
 
   // ── 정상 대화 UI (sessionStatus === 'ready') ──
   return (
@@ -493,6 +526,12 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({ navigati
               color={isTTSMuted ? COLORS.gradientMiddle : COLORS.textMuted}
             />
           </TouchableOpacity>
+        </View>
+      )}
+
+      {isReconnecting && (
+        <View style={styles.reconnectBanner}>
+          <Text style={styles.reconnectText}>재연결 중...</Text>
         </View>
       )}
 
@@ -667,6 +706,18 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 3,
     overflow: 'hidden',
+  },
+  reconnectBanner: {
+    position: 'absolute',
+    top: 78,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 5,
+  },
+  reconnectText: {
+    fontSize: FONTS.sizes.sm,
+    color: COLORS.textMuted,
   },
 });
 

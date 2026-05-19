@@ -732,8 +732,10 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
       Alert.alert(s.errTitle, s.langMustDiffer);
       return;
     }
+    if (isInitializing) return;
     const s = UI_STRINGS[myLang.code] ?? UI_STRINGS.en;
     setSessionError('');
+    setIsInitializing(true);
     try {
       // 서버가 준비 안 됐거나 오류 상태면 재시작
       if (serverStatusRef.current !== 'ready') {
@@ -759,6 +761,8 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
       setShowSetup(false);
     } catch (e: any) {
       setSessionError(e?.message ?? s.connectionFailed);
+    } finally {
+      setIsInitializing(false);
     }
   };
 
