@@ -3,6 +3,7 @@
 # 사용법:
 #   bash run_chunk_sweep.sh
 #   bash run_chunk_sweep.sh --model finetuned --scope full --limit 100
+#   bash run_chunk_sweep.sh --tag my_run --chunks 0.5,1.0
 
 set -euo pipefail
 
@@ -15,8 +16,9 @@ SERVER_MODEL="/home/ubuntu/STiTy/Qwen3-ASR/finetuning/finetuning_silence/Qwen3-A
 MODEL_TAG="finetuned_silence(1.0.3)"
 SCOPE="chunk_size_test"
 LIMIT="548"
+TAG_OVERRIDE=""
 EXTRA_TEST_ARGS=""
-CHUNK_SIZES=(0.5 0.25)
+CHUNK_SIZES=(0.25)
 
 # ── 인자 파싱 ─────────────────────────────────────────────────────────────────
 while [[ $# -gt 0 ]]; do
@@ -25,6 +27,7 @@ while [[ $# -gt 0 ]]; do
         --model)        MODEL_TAG="$2";    shift 2 ;;
         --scope)        SCOPE="$2";        shift 2 ;;
         --limit)        LIMIT="$2";        shift 2 ;;
+        --tag)          TAG_OVERRIDE="$2"; shift 2 ;;
         --chunks)       IFS=',' read -ra CHUNK_SIZES <<< "$2"; shift 2 ;;
         *) EXTRA_TEST_ARGS="$EXTRA_TEST_ARGS $1"; shift ;;
     esac
@@ -41,7 +44,7 @@ echo "  tag    : $MODEL_TAG / $SCOPE"
 echo "============================================================"
 
 for CS in "${CHUNK_SIZES[@]}"; do
-    TAG="chunk${CS}"
+    TAG="${TAG_OVERRIDE:-chunk${CS}}"
     echo ""
     echo "------------------------------------------------------------"
     echo "  chunk_size=${CS}s  →  tag=${TAG}"
