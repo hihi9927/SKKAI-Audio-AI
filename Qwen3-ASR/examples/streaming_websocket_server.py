@@ -19,6 +19,7 @@ Client protocol (WhisperLiveKit app compatible):
 import argparse
 import asyncio
 import contextlib
+import http
 import json
 import logging
 import os
@@ -1677,6 +1678,10 @@ class Qwen3ASRStreamingServer:
                 if self.active_connections == 0:
                     self._restart_idle_timer()
 
+    async def _handle_http_request(self, connection, request):
+        if "Upgrade" not in request.headers:
+            return connection.respond(http.HTTPStatus.OK, "OK\n")
+
     async def start(self):
         logger.info(f"Starting WebSocket server on ws://{self.config.host}:{self.config.port}")
         logger.info("Warming up model...")
@@ -1690,6 +1695,7 @@ class Qwen3ASRStreamingServer:
             ping_timeout=None,
             close_timeout=self.config.close_timeout,
             max_size=10 * 1024 * 1024,
+            process_request=self._handle_http_request,
         ):
             logger.info(f"Server listening on ws://{self.config.host}:{self.config.port}")
             self._restart_idle_timer()  # start idle timer so server shuts down if no client connects
