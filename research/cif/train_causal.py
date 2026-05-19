@@ -30,7 +30,8 @@ import matplotlib.pyplot as plt
 from scipy.ndimage import label as ndlabel
 from sklearn.metrics import (balanced_accuracy_score, f1_score,
                               roc_auc_score, roc_curve,
-                              precision_recall_curve, auc as sklearn_auc)
+                              precision_recall_curve, auc as sklearn_auc,
+                              confusion_matrix, ConfusionMatrixDisplay)
 from tqdm import tqdm
 from transformers import WhisperFeatureExtractor
 
@@ -89,7 +90,9 @@ def group_by_dialog(records: list) -> dict[str, list]:
 def build_dialog_feats(turns: list, encoder, fe, device, dtype,
                        pos_window: int, max_sec: float = 28.0,
                        label_type: str = "hard", use_delta: bool = False,
-                       decay_frames: int = 30) -> dict:
+                       decay_frames: int = 30,
+                       features: str = "projected",
+                       raw_layer_indices: list[int] | None = None) -> dict:
     """
     Turn 목록을 이어붙여 하나의 스트리밍 시퀀스로 인코딩.
     30초 제한으로 잘리는 걸 방지하기 위해 max_sec 단위로 chunk하여 인코딩 후 concat.
@@ -109,13 +112,18 @@ def build_dialog_feats(turns: list, encoder, fe, device, dtype,
 
     # 30초 초과 시 chunk 단위로 인코딩 후 concat
     max_samples = int(max_sec * 16000)
+    def _enc(audio_chunk):
+        if features == "raw":
+            return _encode_chunk_raw(audio_chunk, encoder, fe, device, dtype,
+                                     raw_layer_indices)
+        return _encode_chunk(audio_chunk, encoder, fe, device, dtype)
+
     if len(full_audio) <= max_samples:
-        feats = _encode_chunk(full_audio, encoder, fe, device, dtype)
+        feats = _enc(full_audio)
     else:
         parts = []
         for i in range(0, len(full_audio), max_samples):
-            chunk = full_audio[i: i + max_samples]
-            parts.append(_encode_chunk(chunk, encoder, fe, device, dtype))
+            parts.append(_enc(full_audio[i: i + max_samples]))
         feats = np.concatenate(parts, axis=0)
 
     if use_delta:
@@ -166,25 +174,65 @@ def _encode_chunk(audio: np.ndarray, encoder, fe, device, dtype) -> np.ndarray:
     return enc_out.last_hidden_state.squeeze(0).float().cpu().numpy()
 
 
+def _encode_chunk_raw(audio: np.ndarray, encoder, fe, device, dtype,
+                       layer_indices: list[int]) -> np.ndarray:
+    """encoder 24개 레이어에 hook을 걸어 (T, n_layers×d_model) raw feature 반환."""
+    out     = fe(audio, sampling_rate=16000,
+                 return_tensors="pt", return_attention_mask=True)
+    mel     = out["input_features"].squeeze(0)
+    mel_len = int(out["attention_mask"].squeeze(0).sum().item())
+    mel     = mel[:, :mel_len]
+
+    layer_acts: dict[int, np.ndarray] = {}
+    hooks = []
+    idx_set = set(layer_indices)
+    for i, layer in enumerate(encoder.layers):
+        if i not in idx_set:
+            continue
+        def _hook(module, inp, output, idx=i):
+            act = output[0] if isinstance(output, (tuple, list)) else output
+            layer_acts[idx] = act.detach().float().cpu().numpy()
+        hooks.append(layer.register_forward_hook(_hook))
+
+    with torch.no_grad():
+        encoder(mel.to(device=device, dtype=dtype),
+                feature_lens=torch.tensor([mel_len], device=device, dtype=torch.long))
+
+    for h in hooks:
+        h.remove()
+
+    return np.concatenate([layer_acts[i] for i in sorted(layer_indices)], axis=1)
+
+
 # ---------------------------------------------------------------------------
 # Cache
 # ---------------------------------------------------------------------------
 
 def _cache_path(cache_dir: Path, data_path: str, pos_window: int,
                 label_type: str = "hard", use_delta: bool = False,
-                decay_frames: int = 30) -> Path:
+                decay_frames: int = 30,
+                features: str = "projected",
+                raw_layer_indices: list[int] | None = None) -> Path:
     label_tag = "" if label_type == "hard" else f"_{label_type}"
     decay_tag  = f"_d{decay_frames}" if label_type == "distance" else ""
     delta_tag  = "_delta" if use_delta else ""
-    key = Path(data_path).stem + f"_pw{pos_window}_causal{label_tag}{decay_tag}{delta_tag}"
+    if features == "raw":
+        n = len(raw_layer_indices) if raw_layer_indices else 24
+        feat_tag = f"_raw{n}L"
+    else:
+        feat_tag = ""
+    key = Path(data_path).stem + f"_pw{pos_window}_causal{label_tag}{decay_tag}{delta_tag}{feat_tag}"
     return cache_dir / f"{key}.pkl"
 
 
 def save_cache(cache_dir: Path, data_path: str, pos_window: int, dialogs: dict,
                label_type: str = "hard", use_delta: bool = False,
-               decay_frames: int = 30):
+               decay_frames: int = 30,
+               features: str = "projected",
+               raw_layer_indices: list[int] | None = None):
     cache_dir.mkdir(parents=True, exist_ok=True)
-    path = _cache_path(cache_dir, data_path, pos_window, label_type, use_delta, decay_frames)
+    path = _cache_path(cache_dir, data_path, pos_window, label_type, use_delta,
+                       decay_frames, features, raw_layer_indices)
     with open(path, "wb") as f:
         pickle.dump(dialogs, f)
     print(f"  cache saved: {path.name}  ({len(dialogs)} dialogs)")
@@ -192,8 +240,11 @@ def save_cache(cache_dir: Path, data_path: str, pos_window: int, dialogs: dict,
 
 def load_cache(cache_dir: Path, data_path: str, pos_window: int,
                label_type: str = "hard", use_delta: bool = False,
-               decay_frames: int = 30) -> dict | None:
-    path = _cache_path(cache_dir, data_path, pos_window, label_type, use_delta, decay_frames)
+               decay_frames: int = 30,
+               features: str = "projected",
+               raw_layer_indices: list[int] | None = None) -> dict | None:
+    path = _cache_path(cache_dir, data_path, pos_window, label_type, use_delta,
+                       decay_frames, features, raw_layer_indices)
     if not path.exists():
         print(f"  cache miss: {path.resolve()}")
         return None
@@ -659,24 +710,34 @@ def plot_pr_curve(proba_all: np.ndarray, y_gt: np.ndarray, out_path):
     fpr, tpr, _ = roc_curve(y_gt, proba_all)
     roc_auc     = roc_auc_score(y_gt, proba_all)
 
-    fig, axes = plt.subplots(1, 3, figsize=(18, 4))
+    best_thr_val = thr[bi]
+    y_pred = (proba_all >= best_thr_val).astype(int)
+    cm = confusion_matrix(y_gt, y_pred)
 
-    axes[0].plot(rec, prec, lw=1.2)
-    axes[0].set_xlabel("Recall"); axes[0].set_ylabel("Precision")
-    axes[0].set_title(f"Precision-Recall  [causal]  PR-AUC={pr_auc:.3f}")
-    axes[0].grid(alpha=0.3)
+    fig, axes = plt.subplots(2, 2, figsize=(12, 10))
+    ax_pr, ax_roc, ax_f1, ax_cm = axes[0, 0], axes[0, 1], axes[1, 0], axes[1, 1]
 
-    axes[1].plot(fpr, tpr, lw=1.2, color="darkorange")
-    axes[1].plot([0, 1], [0, 1], lw=0.8, ls="--", color="gray")
-    axes[1].set_xlabel("FPR"); axes[1].set_ylabel("TPR")
-    axes[1].set_title(f"ROC  [causal]  AUC={roc_auc:.3f}")
-    axes[1].grid(alpha=0.3)
+    ax_pr.plot(rec, prec, lw=1.2)
+    ax_pr.set_xlabel("Recall"); ax_pr.set_ylabel("Precision")
+    ax_pr.set_title(f"Precision-Recall  [causal]  PR-AUC={pr_auc:.3f}")
+    ax_pr.grid(alpha=0.3)
 
-    axes[2].plot(thr, f1c[:-1], lw=1.2)
-    axes[2].axvline(thr[bi], color="red", ls="--",
-                    label=f"best thr={thr[bi]:.3f}  F1={f1c[bi]:.3f}")
-    axes[2].set_xlabel("threshold"); axes[2].set_ylabel("F1")
-    axes[2].set_title("F1 vs threshold"); axes[2].legend(); axes[2].grid(alpha=0.3)
+    ax_roc.plot(fpr, tpr, lw=1.2, color="darkorange")
+    ax_roc.plot([0, 1], [0, 1], lw=0.8, ls="--", color="gray")
+    ax_roc.set_xlabel("FPR"); ax_roc.set_ylabel("TPR")
+    ax_roc.set_title(f"ROC  [causal]  AUC={roc_auc:.3f}")
+    ax_roc.grid(alpha=0.3)
+
+    ax_f1.plot(thr, f1c[:-1], lw=1.2)
+    ax_f1.axvline(best_thr_val, color="red", ls="--",
+                  label=f"best thr={best_thr_val:.3f}  F1={f1c[bi]:.3f}")
+    ax_f1.set_xlabel("threshold"); ax_f1.set_ylabel("F1")
+    ax_f1.set_title("F1 vs threshold"); ax_f1.legend(); ax_f1.grid(alpha=0.3)
+
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm,
+                                  display_labels=["non-SEG", "SEG"])
+    disp.plot(ax=ax_cm, colorbar=False, cmap="Blues")
+    ax_cm.set_title(f"Confusion Matrix  (thr={best_thr_val:.3f})")
 
     plt.tight_layout()
     plt.savefig(out_path, dpi=120, bbox_inches="tight"); plt.close()
@@ -741,6 +802,12 @@ def main():
                         choices=["hard", "gaussian", "distance"])
     parser.add_argument("--decay-frames", type=int, default=30,
                         help="distance 타깃: SEG에서 몇 프레임 전부터 ramp-up (기본 30≈0.6초)")
+    parser.add_argument("--features",     default="projected",
+                        choices=["projected", "raw"],
+                        help="projected=last_hidden_state(2048) / raw=encoder 레이어 직접")
+    parser.add_argument("--raw-layers",   default=None,
+                        help="raw 모드에서 사용할 레이어 인덱스 (쉼표 구분, 예: 11,16,20). "
+                             "미지정 시 전체 24개")
     parser.add_argument("--delta",        action="store_true",
                         help="encoder output에 delta feature를 concat (in_dim 2배)")
     parser.add_argument("--epochs",      type=int,   default=20)
@@ -786,6 +853,17 @@ def main():
 
     out_dir   = Path(args.out_dir);  out_dir.mkdir(parents=True, exist_ok=True)
 
+    # raw-layers 파싱
+    if args.features == "raw":
+        if args.raw_layers:
+            raw_layer_indices = [int(x) for x in args.raw_layers.split(",")]
+        else:
+            raw_layer_indices = list(range(24))   # 전체 24레이어
+        print(f"  features=raw  layers={raw_layer_indices}  "
+              f"in_dim={len(raw_layer_indices) * 1024}")
+    else:
+        raw_layer_indices = None
+
     log_path = Path(args.log_file) if args.log_file else \
                out_dir / f"run_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
     tee = _Tee(log_path)
@@ -797,7 +875,7 @@ def main():
     # ── load / build dialog sequences ──
     cached = None if args.no_cache else load_cache(
         cache_dir, args.data, args.pos_window, args.label_type,
-        args.delta, args.decay_frames)
+        args.delta, args.decay_frames, args.features, raw_layer_indices)
 
     if cached is None:
         # label만 다른 경우: 동일 delta 설정의 hard 캐시에서 feats/seg_frames 재활용
@@ -830,7 +908,8 @@ def main():
                                                 np.exp(-0.5 * (df / sigma) ** 2))
                 all_dialogs[did] = {**d, "labels": labels}
             save_cache(cache_dir, args.data, args.pos_window, all_dialogs,
-                       args.label_type, args.delta, args.decay_frames)
+                       args.label_type, args.delta, args.decay_frames,
+                       args.features, raw_layer_indices)
         else:
             with open(args.data) as f:
                 records = [json.loads(l) for l in f if l.strip()]
@@ -853,13 +932,16 @@ def main():
                     all_dialogs[did] = build_dialog_feats(
                         turns, encoder, fe, args.device, dtype, args.pos_window,
                         label_type=args.label_type, use_delta=args.delta,
-                        decay_frames=args.decay_frames)
+                        decay_frames=args.decay_frames,
+                        features=args.features,
+                        raw_layer_indices=raw_layer_indices)
                 except Exception as e:
                     tqdm.write(f"  SKIP dialog {did}: {e}")
 
             del encoder; torch.cuda.empty_cache()
             save_cache(cache_dir, args.data, args.pos_window, all_dialogs,
-                       args.label_type, args.delta, args.decay_frames)
+                       args.label_type, args.delta, args.decay_frames,
+                       args.features, raw_layer_indices)
     else:
         all_dialogs = cached
 
