@@ -299,6 +299,13 @@ def run_pass2(encoder, fe, records, configs: dict, pos_window, device, dtype, de
                     for li in sorted(cfg["layers"]):
                         act  = layer_acts[li]
                         dims = cfg["dims"].get(li)
+                        if dims is not None and int(dims.max()) >= act.shape[1]:
+                            raise ValueError(
+                                f"config '{name}' L{li}: dim {dims.max()} >= "
+                                f"act.shape[1]={act.shape[1]}. "
+                                f"disc_mat이 postencode(2048) 기준으로 저장된 것 같습니다. "
+                                f"--mode preencode로 pass1을 다시 실행하세요."
+                            )
                         parts.append(act[:, dims] if dims is not None else act)
                     X_lists[name].append(np.concatenate(parts, axis=1))
 
@@ -850,7 +857,9 @@ def main():
         plot_consistency_profiles(disc_mat, out_dir / "p2_consistency_profiles.png")
 
     # ── Pass 2: 분류기 ───────────────────────────────────────────────────
-    if not args.no_classifier:
+    if args.mode == "postencode":
+        print("\n[Pass 2: postencode 모드는 분류기 생략]")
+    elif not args.no_classifier:
         print("\n[Pass 2: 분류기]")
         ensure_encoder()
 
