@@ -766,14 +766,17 @@ class Qwen3ASRStreamingHandler:
             lora_request = self._get_lora_request(slot["state"])
 
         # 생성 중 lock 미보유 — state.text는 await 없는 단순 대입이므로 asyncio 안전
+        _accum_len_before = slot["state"].audio_accum.shape[0]
         self._in_generate_loop = True
         try:
             await self.asr.streaming_transcribe(chunk, slot["state"], lora_request=lora_request, on_seg=_on_seg)
         finally:
             self._in_generate_loop = False
             self._last_generate_end_time = time.perf_counter()
-        _decoded_text = self._strip_asr_text((slot["state"].text or "").strip())
-        self.log.info(f"[TRANSCRIBE-DECODING] slot={slot_key} text={_decoded_text!r}")
+        # audio_accum이 늘었을 때만 실제 추론이 실행된 것
+        if slot["state"].audio_accum.shape[0] > _accum_len_before:
+            _decoded_text = self._strip_asr_text((slot["state"].text or "").strip())
+            self.log.info(f"[TRANSCRIBE-DECODING] slot={slot_key} text={_decoded_text!r}")
         await self._process_slot_updates(slot_key)
         if self._pending_gpt_tasks:
             await self._flush_pending_gpt_tasks()
