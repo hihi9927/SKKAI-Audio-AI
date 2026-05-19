@@ -778,7 +778,7 @@ class Qwen3ASRStreamingHandler:
         if slot["state"].audio_accum.shape[0] > _accum_len_before:
             _decoded_text = self._strip_asr_text((slot["state"].text or "").strip())
             self.log.info(f"[TRANSCRIBE-DECODING] slot={slot_key} text={_decoded_text!r}")
-        await self._process_slot_updates(slot_key)
+        await self._process_slot_updates(slot_key, log_chunk=False)
         if self._pending_gpt_tasks:
             await self._flush_pending_gpt_tasks()
 
@@ -974,7 +974,7 @@ class Qwen3ASRStreamingHandler:
             slot["committed_seg_count"] = current_text.count("<SEG>")
             slot["audio_anchor_sec"] = audio_end_sec
 
-    async def _process_slot_updates(self, slot_key: str, force_reason: Optional[str] = None):
+    async def _process_slot_updates(self, slot_key: str, force_reason: Optional[str] = None, log_chunk: bool = True):
         slot = self._slot(slot_key)
         state = slot["state"]
         current_text = self._strip_asr_text((state.text or "").strip())
@@ -984,7 +984,8 @@ class Qwen3ASRStreamingHandler:
 
         slot["last_text"] = current_text
         slot["last_text_lang"] = current_lang
-        self.log.info(f"[CHUNK-DECODING] slot={slot_key} text={current_text!r}")
+        if log_chunk:
+            self.log.info(f"[CHUNK-DECODING] slot={slot_key} text={current_text!r}")
         if "<SEG>" in current_text:
             self.log.info(f"[SEG-IN-TEXT] slot={slot_key} text={current_text!r}")
 
