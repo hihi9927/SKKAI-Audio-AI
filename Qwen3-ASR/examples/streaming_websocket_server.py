@@ -19,6 +19,7 @@ Client protocol (WhisperLiveKit app compatible):
 import argparse
 import asyncio
 import contextlib
+import http
 import json
 import logging
 import os
@@ -98,6 +99,7 @@ def _configure_logging(use_json: bool = False) -> None:
         logging.FileHandler(_LOG_FILE),
     ]
     root = logging.getLogger()
+    root.handlers.clear()
     root.setLevel(logging.INFO)
     for h in handlers:
         h.setFormatter(fmt)
@@ -765,13 +767,18 @@ class Qwen3ASRStreamingHandler:
             lora_request = self._get_lora_request(slot["state"])
 
         # 생성 중 lock 미보유 — state.text는 await 없는 단순 대입이므로 asyncio 안전
+        _accum_len_before = slot["state"].audio_accum.shape[0]
         self._in_generate_loop = True
         try:
             await self.asr.streaming_transcribe(chunk, slot["state"], lora_request=lora_request, on_seg=_on_seg)
         finally:
             self._in_generate_loop = False
             self._last_generate_end_time = time.perf_counter()
-        await self._process_slot_updates(slot_key)
+        # audio_accum이 늘었을 때만 실제 추론이 실행된 것
+        if slot["state"].audio_accum.shape[0] > _accum_len_before:
+            _decoded_text = self._strip_asr_text((slot["state"].text or "").strip())
+            self.log.info(f"[TRANSCRIBE-DECODING] slot={slot_key} text={_decoded_text!r}")
+        await self._process_slot_updates(slot_key, log_chunk=False)
         if self._pending_gpt_tasks:
             await self._flush_pending_gpt_tasks()
 
@@ -784,19 +791,21 @@ class Qwen3ASRStreamingHandler:
             force_reset = audio_sec > MAX_AUDIO_ACCUM_SEC
 
             if not remaining.strip() or force_reset:
-                trigger = "FORCE" if force_reset else "SEG"
                 if force_reset:
                     seed_text = self._build_forced_reset_seed(slot_key, remaining)
                     self._reset_stream_slot(slot_key, seed_text=seed_text)
                     self._init_forced_reset_slot(slot_key, seed_text, remaining)
+                    if slot_key == self.active_slot:
+                        self.state = self.stream_slots[self.active_slot]["state"]
+                    self.log.info(f"[FORCE-SLOT-SWITCH] slot={slot_key} audio_sec={audio_sec:.1f}s")
                 else:
                     last_committed = _s.get("committed_display", "")
                     self._reset_stream_slot(slot_key)
                     if last_committed:
                         self._slot(slot_key)["seg_reset_last_committed"] = last_committed
-                if slot_key == self.active_slot:
-                    self.state = self.stream_slots[self.active_slot]["state"]
-                self.log.info(f"[{trigger}-SLOT-SWITCH] slot={slot_key} audio_sec={audio_sec:.1f}s")
+                    if slot_key == self.active_slot:
+                        self.state = self.stream_slots[self.active_slot]["state"]
+                    self.log.info(f"[SEG-SLOT-RESET] slot={slot_key} audio_sec={audio_sec:.1f}s")
             else:
                 # cross-decode trailing-period reset:
                 # prev_uncommitted 온점 위치가 이번 commit과 동일한 경우에만 슬롯 리셋.
@@ -968,7 +977,7 @@ class Qwen3ASRStreamingHandler:
             slot["committed_seg_count"] = current_text.count("<SEG>")
             slot["audio_anchor_sec"] = audio_end_sec
 
-    async def _process_slot_updates(self, slot_key: str, force_reason: Optional[str] = None):
+    async def _process_slot_updates(self, slot_key: str, force_reason: Optional[str] = None, log_chunk: bool = True):
         slot = self._slot(slot_key)
         state = slot["state"]
         current_text = self._strip_asr_text((state.text or "").strip())
@@ -978,7 +987,8 @@ class Qwen3ASRStreamingHandler:
 
         slot["last_text"] = current_text
         slot["last_text_lang"] = current_lang
-        self.log.info(f"[CHUNK-DECODING] slot={slot_key} text={current_text!r}")
+        if log_chunk:
+            self.log.info(f"[CHUNK-DECODING] slot={slot_key} text={current_text!r}")
         if "<SEG>" in current_text:
             self.log.info(f"[SEG-IN-TEXT] slot={slot_key} text={current_text!r}")
 
@@ -1682,6 +1692,10 @@ class Qwen3ASRStreamingServer:
                 if self.active_connections == 0:
                     self._restart_idle_timer()
 
+    async def _handle_http_request(self, connection, request):
+        if "Upgrade" not in request.headers:
+            return connection.respond(http.HTTPStatus.OK, "OK\n")
+
     async def start(self):
         logger.info(f"Starting WebSocket server on ws://{self.config.host}:{self.config.port}")
         logger.info("Warming up model...")
@@ -1695,6 +1709,7 @@ class Qwen3ASRStreamingServer:
             ping_timeout=None,
             close_timeout=self.config.close_timeout,
             max_size=10 * 1024 * 1024,
+            process_request=self._handle_http_request,
         ):
             logger.info(f"Server listening on ws://{self.config.host}:{self.config.port}")
             self._restart_idle_timer()  # start idle timer so server shuts down if no client connects
