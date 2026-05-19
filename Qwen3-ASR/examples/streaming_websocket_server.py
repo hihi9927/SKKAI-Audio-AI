@@ -98,6 +98,7 @@ def _configure_logging(use_json: bool = False) -> None:
         logging.FileHandler(_LOG_FILE),
     ]
     root = logging.getLogger()
+    root.handlers.clear()
     root.setLevel(logging.INFO)
     for h in handlers:
         h.setFormatter(fmt)
@@ -771,6 +772,8 @@ class Qwen3ASRStreamingHandler:
         finally:
             self._in_generate_loop = False
             self._last_generate_end_time = time.perf_counter()
+        _decoded_text = self._strip_asr_text((slot["state"].text or "").strip())
+        self.log.info(f"[TRANSCRIBE-DECODING] slot={slot_key} text={_decoded_text!r}")
         await self._process_slot_updates(slot_key)
         if self._pending_gpt_tasks:
             await self._flush_pending_gpt_tasks()
@@ -784,16 +787,18 @@ class Qwen3ASRStreamingHandler:
             force_reset = audio_sec > MAX_AUDIO_ACCUM_SEC
 
             if not remaining.strip() or force_reset:
-                trigger = "FORCE" if force_reset else "SEG"
                 if force_reset:
                     seed_text = self._build_forced_reset_seed(slot_key, remaining)
                     self._reset_stream_slot(slot_key, seed_text=seed_text)
                     self._init_forced_reset_slot(slot_key, seed_text, remaining)
+                    if slot_key == self.active_slot:
+                        self.state = self.stream_slots[self.active_slot]["state"]
+                    self.log.info(f"[FORCE-SLOT-SWITCH] slot={slot_key} audio_sec={audio_sec:.1f}s")
                 else:
                     self._reset_stream_slot(slot_key)
-                if slot_key == self.active_slot:
-                    self.state = self.stream_slots[self.active_slot]["state"]
-                self.log.info(f"[{trigger}-SLOT-SWITCH] slot={slot_key} audio_sec={audio_sec:.1f}s")
+                    if slot_key == self.active_slot:
+                        self.state = self.stream_slots[self.active_slot]["state"]
+                    self.log.info(f"[SEG-SLOT-RESET] slot={slot_key} audio_sec={audio_sec:.1f}s")
             else:
                 # cross-decode trailing-period reset:
                 # prev_uncommitted 온점 위치가 이번 commit과 동일한 경우에만 슬롯 리셋.
