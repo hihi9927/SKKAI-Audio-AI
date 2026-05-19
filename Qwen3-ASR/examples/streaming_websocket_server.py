@@ -108,7 +108,7 @@ logger = logging.getLogger(__name__)
 
 SAMPLING_RATE = 16000
 MAX_AUDIO_ACCUM_SEC = 90.0          # audio_accum 강제 리셋 임계값 (초)
-MAX_SEED_COMMITTED_SENTENCES = 5    # 강제 리셋 시 seed_text에 포함할 직전 committed 문장 수
+MAX_SEED_COMMITTED_SENTENCES = 1    # 강제 리셋 시 seed_text에 포함할 직전 committed 문장 수
 # VADIterator 설정
 VAD_THRESHOLD = 0.5
 VAD_MIN_SILENCE_MS = 800       # 발화 종료 판정까지 필요한 침묵 길이
@@ -790,7 +790,10 @@ class Qwen3ASRStreamingHandler:
                     self._reset_stream_slot(slot_key, seed_text=seed_text)
                     self._init_forced_reset_slot(slot_key, seed_text, remaining)
                 else:
+                    last_committed = _s.get("committed_display", "")
                     self._reset_stream_slot(slot_key)
+                    if last_committed:
+                        self._slot(slot_key)["seg_reset_last_committed"] = last_committed
                 if slot_key == self.active_slot:
                     self.state = self.stream_slots[self.active_slot]["state"]
                 self.log.info(f"[{trigger}-SLOT-SWITCH] slot={slot_key} audio_sec={audio_sec:.1f}s")
@@ -1017,6 +1020,16 @@ class Qwen3ASRStreamingHandler:
                 if sentence_display_check == _last_extracted_display:
                     self.log.info(f"[COMMIT-SKIP] reason=rep-dedup slot={slot_key} text={sentence_display_check!r}")
                 else:
+                    if "seg_reset_last_committed" in slot:
+                        seg_reset_last = slot.pop("seg_reset_last_committed")
+                        first_word = sentence_display_check.split()[0] if sentence_display_check.split() else ""
+                        _strip_p = lambda w: re.sub(r'[.,!?;:。？！]+$', '', w)
+                        last_word = _strip_p(seg_reset_last.split()[-1]) if seg_reset_last.split() else ""
+                        first_word = _strip_p(first_word)
+                        if first_word and last_word and (first_word == last_word or last_word.endswith(first_word)):
+                            self.log.info(f"[COMMIT-SKIP] reason=seg-boundary-dedup slot={slot_key} text={sentence_display_check!r}")
+                            remaining = after
+                            continue
                     prev_committed = slot.get("dot_switch_prev_committed", "")
                     if trigger == "dot" and prev_committed:
                         slot.pop("dot_switch_prev_committed", None)
