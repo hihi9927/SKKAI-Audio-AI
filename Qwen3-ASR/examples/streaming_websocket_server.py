@@ -1567,7 +1567,6 @@ class Qwen3ASRStreamingServer:
                 logger.warning(f"Silero VAD model load failed: {e}")
 
         logger.info(f"Loading model: {self.config.model_path}")
-        tokenizer_path = adapter_ko_path or adapter_en_path or None
         self.asr = Qwen3ASRModel.LLM(
             model=self.config.model_path,
             gpu_memory_utilization=self.config.gpu_memory_utilization,
@@ -1576,7 +1575,6 @@ class Qwen3ASRStreamingServer:
             enable_lora=use_lora,
             max_lora_rank=self.config.max_lora_rank if use_lora else 16,
             enforce_eager=self.config.enforce_eager,
-            **({"tokenizer": tokenizer_path} if tokenizer_path and use_lora else {}),
         )
         if self.config.beam_size > 1:
             from vllm import SamplingParams
