@@ -73,7 +73,8 @@ Qwen3-ASR/finetuning/finetuning-out-en-silence/**
 Qwen3-ASR/finetuning/finetuning-out-ko-silence/**
 Qwen3-ASR/finetuning/checkpoint-420/
 Qwen3-ASR/finetuning/data/silence_generated/
-research/cif/causal_results/
+research/cif/causal_results/**/cache/
+research/cif/causal_results/**/*.pkl
 
 # 파인튜닝 가중치 파일 예외 허용
 !Qwen3-ASR/finetuning/finetuning-out-en-plus/runs/
