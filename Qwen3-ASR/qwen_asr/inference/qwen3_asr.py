@@ -819,8 +819,8 @@ class Qwen3ASRModel:
                     state.language = lang_p
                     state.text = txt_p
                     seg_count = txt_p.count("<SEG>")
-                    if seg_count > prev_seg_count:
-                        prev_seg_count = seg_count
+                    while seg_count > prev_seg_count:
+                        prev_seg_count += 1
                         state._seg_token_idx = len(out.outputs[0].token_ids)
                         await on_seg(state)
 
