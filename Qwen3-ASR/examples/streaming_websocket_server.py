@@ -1243,6 +1243,10 @@ class Qwen3ASRStreamingHandler:
                 continue
 
             pre_chunk = chunk[seg_start:local_cut]
+            # VAD 커밋 직전 buffer 크기 스냅샷 (SEG 리셋 전)
+            _active_state_pre = self.stream_slots[self.active_slot]["state"]
+            _buf_pre_transcribe = _active_state_pre.buffer.shape[0] + pre_chunk.size
+            _accum_pre_transcribe = _active_state_pre.audio_accum.shape[0]
             if pre_chunk.size > 0:
                 await self._asr_streaming_transcribe(pre_chunk, self.active_slot)
 
@@ -1270,9 +1274,20 @@ class Qwen3ASRStreamingHandler:
                 f"committed={_pre_committed!r} uncommitted={_pre_uncommitted!r}"
             )
             await self._process_slot_updates(old_active, force_reason="vad")
-            _has_buffered_audio = _pre_state.buffer.shape[0] > 0
+            # SEG 리셋이 일어났으면 _pre_state.buffer는 0이므로, 리셋 전 snapshot 사용
+            _cur_buf = _pre_state.buffer.shape[0]
+            # audio_accum이 없는 경우(첫 청크 미만)만 short-utterance로 간주
+            _is_short_utterance = _accum_pre_transcribe == 0 and _buf_pre_transcribe > 0
+            _has_buffered_audio = _cur_buf > 0 or _is_short_utterance
+            self.log.info(
+                f"[VAD-BUFFER] slot={old_active} cur_buf={_cur_buf} "
+                f"buf_pre={_buf_pre_transcribe} accum_pre={_accum_pre_transcribe} "
+                f"short={_is_short_utterance} has_buf={_has_buffered_audio}"
+            )
             if _pre_text or _has_buffered_audio:
                 await self._asr_finish_streaming(old_active)
+                _finish_text = (self.stream_slots[old_active]["state"].text or "").strip()
+                self.log.info(f"[VAD-FINISH] slot={old_active} text={_finish_text!r}")
             # finish_streaming이 uncommitted를 날려버렸으면 스트리밍 텍스트로 복원
             _post_state = self.stream_slots[old_active]["state"]
             _post_text = (_post_state.text or "").strip()
