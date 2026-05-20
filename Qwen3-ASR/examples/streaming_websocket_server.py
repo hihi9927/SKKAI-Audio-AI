@@ -609,16 +609,22 @@ class Qwen3ASRStreamingHandler:
 
         # ── 1차: display prefix 매칭 (구두점 동치 포함) ──────────────────
         # 모델이 온점을 쉼표로(또는 반대로) revision해도 같은 위치로 인식
+        # text_no_seg는 \s+ 정규화: SEG 제거 후 남는 이중 공백을 committed_display와 동일하게 맞춤
         _norm_punct = lambda s: re.sub(r'[.,!?;:。？！、，]', '.', s)
         if committed_display:
-            text_no_seg = text.replace(seg_tag, "")
+            text_no_seg = re.sub(r'\s+', ' ', text.replace(seg_tag, ""))
             if text_no_seg.startswith(committed_display) or \
                     _norm_punct(text_no_seg).startswith(_norm_punct(committed_display)):
                 pos, disp_pos, target = 0, 0, len(committed_display)
+                _prev_space = False
                 while pos < len(text) and disp_pos < target:
                     if text[pos:pos + seg_len] == seg_tag:
                         pos += seg_len
+                        _prev_space = True  # SEG 경계는 공백으로 취급
+                    elif text[pos] == ' ' and _prev_space:
+                        pos += 1  # SEG 제거 후 남는 연속 공백 스킵 (committed_display와 공백 수 맞춤)
                     else:
+                        _prev_space = (text[pos] == ' ')
                         disp_pos += 1
                         pos += 1
                 return pos
@@ -724,10 +730,13 @@ class Qwen3ASRStreamingHandler:
             text = rest
         return re.sub(r'\s*<asr_text>\s*', ' ', text).strip()
 
-    def _slot_uncommitted_display(self, slot_key: Optional[str] = None) -> str:
+    def _slot_uncommitted_display(self, slot_key: Optional[str] = None, text_snapshot: Optional[str] = None) -> str:
         slot = self._slot(slot_key)
-        state = slot["state"]
-        current_text = self._strip_asr_text((state.text or "").strip() if state else "")
+        if text_snapshot is not None:
+            current_text = text_snapshot
+        else:
+            state = slot["state"]
+            current_text = self._strip_asr_text((state.text or "").strip() if state else "")
         uncommitted_raw = self._uncommitted_from(
             current_text, slot["committed_display"], slot["committed_seg_count"]
         )
@@ -778,7 +787,7 @@ class Qwen3ASRStreamingHandler:
         if slot["state"].audio_accum.shape[0] > _accum_len_before:
             _decoded_text = self._strip_asr_text((slot["state"].text or "").strip())
             self.log.info(f"[TRANSCRIBE-DECODING] slot={slot_key} text={_decoded_text!r}")
-        await self._process_slot_updates(slot_key, log_chunk=False)
+        _committed_text_snapshot = await self._process_slot_updates(slot_key, log_chunk=False)
         if self._pending_gpt_tasks:
             await self._flush_pending_gpt_tasks()
 
@@ -786,7 +795,7 @@ class Qwen3ASRStreamingHandler:
         # SEG/dot commit 발생 시, remaining이 없거나 audio_accum 임계값 초과 시 슬롯 리셋.
         any_commit = _s.get("committed_display", "") != committed_display_before
         if any_commit:
-            remaining = self._slot_uncommitted_display(slot_key)
+            remaining = self._slot_uncommitted_display(slot_key, text_snapshot=_committed_text_snapshot)
             audio_sec = _s["state"].audio_accum.shape[0] / SAMPLING_RATE
             force_reset = audio_sec > MAX_AUDIO_ACCUM_SEC
 
@@ -844,7 +853,7 @@ class Qwen3ASRStreamingHandler:
                     )
                 else:
                     self.log.info(
-                        f"[COMMIT-PENDING] slot={slot_key} remaining={remaining!r}"
+                        f"[SLOT-PENDING] slot={slot_key} remaining={remaining!r}"
                     )
 
         async with self.asr_lock:
@@ -977,13 +986,13 @@ class Qwen3ASRStreamingHandler:
             slot["committed_seg_count"] = current_text.count("<SEG>")
             slot["audio_anchor_sec"] = audio_end_sec
 
-    async def _process_slot_updates(self, slot_key: str, force_reason: Optional[str] = None, log_chunk: bool = True):
+    async def _process_slot_updates(self, slot_key: str, force_reason: Optional[str] = None, log_chunk: bool = True) -> Optional[str]:
         slot = self._slot(slot_key)
         state = slot["state"]
         current_text = self._strip_asr_text((state.text or "").strip())
         current_lang = state.language or ""
         if not current_text or current_text == slot["last_text"]:
-            return
+            return None
 
         slot["last_text"] = current_text
         slot["last_text_lang"] = current_lang
@@ -1054,11 +1063,12 @@ class Qwen3ASRStreamingHandler:
             remaining = after
 
         if not sentences_to_commit:
-            return
+            return None
 
         # ── Phase 1: 커서 추적 + committed_len 즉시 확정 (GPT 호출 전) ─────────
         # raw ASR 텍스트 기준으로 커서를 확정하므로 GPT 교정 결과와 무관하게 안전.
         committed_items = []  # list of (sentence_display, trigger_reason)
+        latest_text: Optional[str] = None  # flush_lock 안에서 읽은 스냅샷, 호출자에게 반환
 
         async with slot["flush_lock"]:
             async with self.asr_lock:
@@ -1134,7 +1144,7 @@ class Qwen3ASRStreamingHandler:
                     slot["last_committed_asr_text"] = committed_items[-1][0]
 
         if not committed_items:
-            return
+            return None
 
         # ── Phase 2: GPT 번역 ─────────────────────────────────────────────────
         if self._in_generate_loop:
@@ -1173,6 +1183,7 @@ class Qwen3ASRStreamingHandler:
                     f"original='{sentence_display}' translation='{translation}'"
                 )
 
+        return self._strip_asr_text(latest_text) if latest_text is not None else None
 
     def _run_vad_sync(self, chunk: np.ndarray, chunk_base_sample: int):
         """VAD 추론을 동기로 실행 (run_in_executor에서 호출).
