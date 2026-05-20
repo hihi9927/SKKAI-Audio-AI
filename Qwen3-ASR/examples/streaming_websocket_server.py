@@ -1270,7 +1270,8 @@ class Qwen3ASRStreamingHandler:
                 f"committed={_pre_committed!r} uncommitted={_pre_uncommitted!r}"
             )
             await self._process_slot_updates(old_active, force_reason="vad")
-            if _pre_text:
+            _has_buffered_audio = _pre_state.buffer.shape[0] > 0
+            if _pre_text or _has_buffered_audio:
                 await self._asr_finish_streaming(old_active)
             # finish_streaming이 uncommitted를 날려버렸으면 스트리밍 텍스트로 복원
             _post_state = self.stream_slots[old_active]["state"]
