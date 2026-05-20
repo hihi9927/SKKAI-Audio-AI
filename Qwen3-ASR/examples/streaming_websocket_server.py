@@ -485,6 +485,7 @@ class Qwen3ASRStreamingHandler:
         self.active_slot = "A"
         self.standby_slot = "B"
         self.stream_slots: dict[str, dict] = {}
+        self.vad_last_speech_start_sample: int = 0  # 마지막 VAD speech_start 글로벌 샘플 위치
 
         # ── silero-vad 초기화 (VADIterator 사용) ──
         # 서버에서 미리 로드한 vad_model_bytes로 클라이언트마다 독립 인스턴스 생성.
@@ -1200,13 +1201,18 @@ class Qwen3ASRStreamingHandler:
                     torch.from_numpy(window),
                     return_seconds=False,
                 )
-                if speech_dict is not None and "end" in speech_dict:
-                    end_sample = self.sample_cursor - (chunk.size - offset - VAD_WINDOW_SIZE_SAMPLES)
-                    local_idx = int(end_sample - chunk_base_sample)
-                    local_idx = max(0, min(int(chunk.size), local_idx))
-                    if not vad_end_local_indices or local_idx > vad_end_local_indices[-1]:
-                        vad_end_local_indices.append(local_idx)
-                    self.log.info(f"[VAD-DETECT] speech_end target_samples={end_sample}")
+                if speech_dict is not None:
+                    window_end_sample = self.sample_cursor - (chunk.size - offset - VAD_WINDOW_SIZE_SAMPLES)
+                    if "start" in speech_dict:
+                        self.vad_last_speech_start_sample = int(window_end_sample)
+                        self.log.info(f"[VAD-DETECT] speech_start target_samples={window_end_sample}")
+                    if "end" in speech_dict:
+                        end_sample = window_end_sample
+                        local_idx = int(end_sample - chunk_base_sample)
+                        local_idx = max(0, min(int(chunk.size), local_idx))
+                        if not vad_end_local_indices or local_idx > vad_end_local_indices[-1]:
+                            vad_end_local_indices.append(local_idx)
+                        self.log.info(f"[VAD-DETECT] speech_end target_samples={end_sample}")
                 offset += VAD_WINDOW_SIZE_SAMPLES
         except Exception as e:
             self.log.warning(f"[vad] error, disabling for this session: {e}")
@@ -1288,6 +1294,11 @@ class Qwen3ASRStreamingHandler:
                 await self._asr_finish_streaming(old_active)
                 _finish_text = (self.stream_slots[old_active]["state"].text or "").strip()
                 self.log.info(f"[VAD-FINISH] slot={old_active} text={_finish_text!r}")
+                # 결과가 비어있고 VAD speech_start 위치가 있으면 발화 구간만 트림하여 재시도
+                if not _finish_text and self.vad_last_speech_start_sample > 0:
+                    await self._retry_vad_short_utterance(old_active)
+                    _finish_text = (self.stream_slots[old_active]["state"].text or "").strip()
+            self.vad_last_speech_start_sample = 0  # 이 VAD 이벤트 처리 완료 후 초기화
             # finish_streaming이 uncommitted를 날려버렸으면 스트리밍 텍스트로 복원
             _post_state = self.stream_slots[old_active]["state"]
             _post_text = (_post_state.text or "").strip()
@@ -1379,6 +1390,61 @@ class Qwen3ASRStreamingHandler:
     def _get_flush_audio_end_sec(self) -> float:
         """flush 시 사용할 오디오 종료 시각(초). 서브클래스에서 오버라이드 가능."""
         return self.current_time
+
+    async def _retry_vad_short_utterance(self, slot_key: str) -> None:
+        """finish_streaming이 빈 결과를 반환했을 때, VAD speech_start 기준으로 오디오를 트림하여 재시도.
+
+        vad_last_speech_start_sample을 기준으로 슬롯의 audio_accum에서 발화 시작 지점 이후만
+        잘라내어 fresh state로 재디코딩. 짧은 발화가 긴 침묵 앞에 묻히는 문제를 완화한다.
+        """
+        slot = self._slot(slot_key)
+        state = slot["state"]
+        full_audio = state.audio_accum  # finish_streaming 완료 후 전체 누적 오디오
+        if full_audio is None or full_audio.shape[0] == 0:
+            return
+
+        slot_anchor_samples = int(slot["audio_anchor_sec"] * SAMPLING_RATE)
+        pre_pad_samples = int(0.3 * SAMPLING_RATE)  # 300ms 사전 패딩
+        speech_start_in_slot = self.vad_last_speech_start_sample - slot_anchor_samples - pre_pad_samples
+        speech_start_in_slot = max(0, speech_start_in_slot)
+
+        # 트리밍 효과가 없을 때(500ms 미만 단축) 건너뜀
+        if speech_start_in_slot < int(0.5 * SAMPLING_RATE):
+            self.log.info(
+                f"[VAD-RETRY] slot={slot_key} skip: trim too small "
+                f"speech_start_in_slot={speech_start_in_slot}"
+            )
+            return
+
+        speech_audio = full_audio[speech_start_in_slot:]
+        if speech_audio.shape[0] == 0:
+            return
+
+        self.log.info(
+            f"[VAD-RETRY] slot={slot_key} "
+            f"speech_start_sample={self.vad_last_speech_start_sample} "
+            f"trim_from={speech_start_in_slot} ({speech_start_in_slot / SAMPLING_RATE:.2f}s) "
+            f"audio_len={speech_audio.shape[0]} ({speech_audio.shape[0] / SAMPLING_RATE:.2f}s)"
+        )
+
+        fresh_state = self.asr.init_streaming_state(
+            unfixed_chunk_num=self.config.unfixed_chunk_num,
+            unfixed_token_num=self.config.unfixed_token_num,
+            chunk_size_sec=self.config.chunk_size_sec,
+            allowed_languages=state.allowed_languages,
+        )
+        # buffer에 발화 오디오를 넣어 finish_streaming_transcribe가 처리하도록 함
+        fresh_state.buffer = speech_audio.copy()
+
+        async with self.asr_lock:
+            lora_request = self._get_lora_request(fresh_state)
+            await self.asr.finish_streaming_transcribe(fresh_state, lora_request=lora_request)
+
+        retry_text = (fresh_state.text or "").strip()
+        self.log.info(f"[VAD-RETRY-RESULT] slot={slot_key} text={retry_text!r}")
+
+        if retry_text:
+            slot["state"] = fresh_state
 
     async def _on_vad_commit(self, audio_end_sec: float) -> None:  # noqa: ARG002
         """VAD 발화 종료 커밋 직전에 호출되는 훅. 서브클래스에서 오버라이드 가능."""
