@@ -1381,11 +1381,11 @@ class Qwen3ASRStreamingHandler:
                 if src_code and src_code == self.client_lang
                 else self.client_lang
             )
-            corrected, translation = await self.gpt_translator.correct_and_translate(
+            corrected, translation, gpt_detected = await self.gpt_translator.correct_and_translate(
                 text, current_lang, target,
                 context=list(self._segment_history) if self._segment_history else None,
             )
-            return corrected, translation, src_code, {}
+            return corrected, translation, gpt_detected or src_code, {}
 
         # Google Translate 경로 (첫 번째 발화 또는 gpt_translator 비활성)
         if self.corrector and self.use_correction:

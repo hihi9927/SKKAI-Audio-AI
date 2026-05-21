@@ -39,7 +39,10 @@ Step 2 — Translate the corrected text to {target_name} (output as "translation
 - Proper nouns (names, places, organizations): transliterate consistently.
 - Translate faithfully — do not add, omit, or infer meaning beyond what is stated.
 
-JSON format: {{"corrected": "<corrected original>", "translation": "<{target_name} translation>"}}\
+Step 3 — Detect the source language (output as "detected_lang"):
+- Output the ISO 639-1 code of the source text (e.g. "ko", "en", "ja", "zh", "id").
+
+JSON format: {{"corrected": "<corrected original>", "translation": "<{target_name} translation>", "detected_lang": "<ISO 639-1 code>"}}\
 """
 
 # gpt_trans.py SEG_CONTEXT_SYSTEM_PROMPT 기반 — 이전 세그먼트 컨텍스트 있을 때
@@ -63,7 +66,10 @@ Step 2 — Translate the corrected text to {target_name} (output as "translation
 - Proper nouns (names, places, organizations): transliterate consistently with preceding segments.
 - Translate faithfully — do not add, omit, or infer meaning beyond what is stated.
 
-JSON format: {{"corrected": "<corrected original>", "translation": "<{target_name} translation>"}}\
+Step 3 — Detect the source language (output as "detected_lang"):
+- Output the ISO 639-1 code of the source text (e.g. "ko", "en", "ja", "zh", "id").
+
+JSON format: {{"corrected": "<corrected original>", "translation": "<{target_name} translation>", "detected_lang": "<ISO 639-1 code>"}}\
 """
 
 
@@ -110,7 +116,7 @@ class GPTTranslator:
         source_lang_name: str,
         target_lang_code: str,
         context: Optional[list[tuple[str, str]]] = None,
-    ) -> tuple[str, str]:
+    ) -> tuple[str, str, str]:
         """ASR 텍스트를 교정하고 target_lang_code 언어로 번역.
 
         Args:
@@ -120,10 +126,10 @@ class GPTTranslator:
             context: 직전 세그먼트들의 (교정된 원문, 번역) 쌍. max_context 개수만큼 전달.
 
         Returns:
-            (corrected_original, translation)
+            (corrected_original, translation, detected_lang_code)
         """
         if not text.strip() or not target_lang_code:
-            return text, ""
+            return text, "", ""
 
         target_name = _LANG_CODE_TO_NAME.get(target_lang_code, target_lang_code)
 
@@ -162,7 +168,8 @@ class GPTTranslator:
                 result = json.loads(resp.choices[0].message.content)
                 corrected = result.get("corrected", text).strip() or text
                 translation = result.get("translation", "").strip()
-                return corrected, translation
+                detected_lang = result.get("detected_lang", "").strip().lower()
+                return corrected, translation, detected_lang
             except Exception as e:
                 msg = str(e)
                 if "429" in msg or "rate_limit" in msg.lower():
