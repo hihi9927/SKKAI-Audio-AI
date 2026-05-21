@@ -582,7 +582,7 @@ class Qwen3ASRStreamingHandler:
             "committed_display": "",
             "committed_seg_count": 0,
             "audio_anchor_sec": self.current_time,
-            "last_committed_asr_text": "",  # cross-call 반복 억제용
+            "committed_asr_set": set(),  # 세그먼트 내 커밋된 문장 전체 (공백 정규화 후)
         }
 
     def _reset_stream_slot(self, slot_key: str, seed_text: str = "", context: str = ""):
@@ -1100,7 +1100,7 @@ class Qwen3ASRStreamingHandler:
                 for sentence_raw, trigger_reason in sentences_to_commit:
                     sentence_display = sentence_raw.replace("<SEG>", "").strip()
                     _audio_span = self.current_time - slot.get("audio_anchor_sec", 0.0)
-                    if sentence_display == slot.get("last_committed_asr_text", "") and _audio_span < 1.0:
+                    if ' '.join(sentence_display.split()) in slot.get("committed_asr_set", set()):
                         self.log.info(
                             f"[COMMIT-SKIP] reason=cross-dedup slot={slot_key} span={_audio_span:.2f}s text={sentence_display!r}"
                         )
@@ -1121,7 +1121,7 @@ class Qwen3ASRStreamingHandler:
                     slot["committed_display"] = latest_ns[:pos].strip()
                     slot["committed_len"] = len(latest_text)
                     slot["audio_anchor_sec"] = self.current_time
-                    slot["last_committed_asr_text"] = committed_items[-1][0]
+                    slot["committed_asr_set"].update(' '.join(t.split()) for t, _ in committed_items)
             else:
                 cursor = self._committed_cursor(
                     latest_text,
@@ -1142,7 +1142,7 @@ class Qwen3ASRStreamingHandler:
                 for sentence_raw, trigger_reason in sentences_to_commit:
                     sentence_display = sentence_raw.replace("<SEG>", "").strip()
                     _audio_span = self.current_time - slot.get("audio_anchor_sec", 0.0)
-                    if sentence_display == slot.get("last_committed_asr_text", "") and _audio_span < 1.0:
+                    if ' '.join(sentence_display.split()) in slot.get("committed_asr_set", set()):
                         self.log.info(
                             f"[COMMIT-SKIP] reason=cross-dedup slot={slot_key} span={_audio_span:.2f}s text={sentence_display!r}"
                         )
@@ -1166,7 +1166,7 @@ class Qwen3ASRStreamingHandler:
                     ).strip()
                     slot["committed_seg_count"] += sum(1 for _, tr in committed_items if tr == "seg")
                     slot["audio_anchor_sec"] = self.current_time
-                    slot["last_committed_asr_text"] = committed_items[-1][0]
+                    slot["committed_asr_set"].update(' '.join(t.split()) for t, _ in committed_items)
 
         if not committed_items:
             return None
