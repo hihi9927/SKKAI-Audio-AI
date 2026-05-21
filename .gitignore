@@ -93,14 +93,27 @@ research/cif/causal_results/**/*.pkl
 server_*.log
 
 # Evaluation datasets
+# Evaluation datasets
 evaluation/AMI/AMI
 evaluation/AMI/words
+evaluation/AMI/__pycache__
+
+evaluation/(es)CIEMPIESS/CIEMPIESS
+evaluation/(es)CIEMPIESS/label
+
+evaluation/ReazonSpeech/ReazonSpeech
+evaluation/ReazonSpeech/label
 
 evaluation/KtelSpeech/KtelSpeech
 evaluation/KtelSpeech/label
+evaluation/KtelSpeech/__pycache__
 
 evaluation/AliMeeting/AliMeeting
 evaluation/AliMeeting/label
+
+evaluation/(zh)RAMC/RAMC
+evaluation/(zh)RAMC/label
+
 
 core/cif/checkpoints/
 checkpoints/
