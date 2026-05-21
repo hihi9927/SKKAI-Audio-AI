@@ -19,7 +19,7 @@ interface WebSocketContextType {
   sendAudio: (audioData: ArrayBuffer) => void;
   sendMessage: (message: object) => void;
   addMessageListener: (listener: (msg: any) => void) => () => void;
-  probeServer: (force?: boolean) => void;
+  probeServer: (force?: boolean) => Promise<boolean>;
 }
 
 const WebSocketContext = createContext<WebSocketContextType | null>(null);
@@ -169,10 +169,10 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     connectKeepAlive();
   }, [clearKeepAliveTimer, clearErrorRetryTimer, clearKeepAliveHeartbeat]);
 
-  const probeServer = useCallback(async (force = false) => {
+  const probeServer = useCallback(async (force = false): Promise<boolean> => {
     clearErrorRetryTimer();
-    if (isProbingRef.current) return;
-    if (!force && serverStatusRef.current === 'ready' && keepAliveWsRef.current?.readyState === WebSocket.OPEN) return;
+    if (isProbingRef.current) return false;
+    if (!force && serverStatusRef.current === 'ready' && keepAliveWsRef.current?.readyState === WebSocket.OPEN) return true;
     isProbingRef.current = true;
     stopKeepAlive();
     setServerStatus('ec2-starting');
@@ -187,7 +187,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     try {
       await startServer(abort.signal);
-      if (abort.signal.aborted) return;
+      if (abort.signal.aborted) return false;
       setServerStatus('connecting');
 
       const tryProbe = (): Promise<void> =>
@@ -252,12 +252,14 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (!connected) throw new Error('Server connection timeout');
       setServerStatus('ready');
       startKeepAlive();
+      return true;
     } catch (e: any) {
-      if (e?.name === 'AbortError') return; // app closed mid-probe, silently exit
+      if (e?.name === 'AbortError') return false; // app closed mid-probe, silently exit
       setServerStatus('error');
       stopKeepAlive();
       // 서버가 살아나면 자동 감지하도록 30초 후 재시도
       errorRetryTimerRef.current = setTimeout(() => { probeServer(false); }, 30000);
+      return false;
     } finally {
       isProbingRef.current = false;
     }

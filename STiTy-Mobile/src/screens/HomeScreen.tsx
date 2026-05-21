@@ -739,19 +739,15 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
     try {
       // 서버가 준비 안 됐거나 오류 상태면 재시작
       if (serverStatusRef.current !== 'ready') {
-        await probeServer(serverStatusRef.current === 'error');
-      }
-      if (serverStatusRef.current !== 'ready') {
-        throw new Error(s.connectionFailed);
+        const ok = await probeServer(serverStatusRef.current === 'error');
+        if (!ok) throw new Error(s.connectionFailed);
       }
       try {
         await connect({ lang: myLang.code, targetLang: targetLang.code, speed });
       } catch {
         // connect 실패 = serverStatus는 'ready'였지만 서버 실제로 죽어있음 → 강제 재시작
-        await probeServer(true);
-        if (serverStatusRef.current !== 'ready') {
-          throw new Error(s.connectionFailed);
-        }
+        const ok = await probeServer(true);
+        if (!ok) throw new Error(s.connectionFailed);
         await connect({ lang: myLang.code, targetLang: targetLang.code, speed });
       }
       await startRecording();
@@ -780,14 +776,16 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
       if (!isConnectedRef.current) {
         if (serverStatusRef.current !== 'ready') {
           setIsInitializing(true);
-          await probeServer();
+          const ok = await probeServer();
+          if (!ok) throw new Error('Connection failed');
         }
         try {
           await connect({ lang: myLangRef.current.code, targetLang: targetLangRef.current.code });
         } catch {
           // connect 실패 = 서버가 이미 종료됨. 강제로 서버 재시작 후 재연결
           setIsInitializing(true);
-          await probeServer(true);
+          const ok = await probeServer(true);
+          if (!ok) throw new Error('Connection failed');
           await connect({ lang: myLangRef.current.code, targetLang: targetLangRef.current.code });
         }
       }
@@ -1035,7 +1033,7 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
       )}
 
       {/* ── Error banner ── */}
-      {!!sessionError && (
+      {!!sessionError && serverStatus !== 'ready' && (
         <View style={S.errorBanner}>
           <Text style={S.errorBannerTxt}>{ui.restartApp}</Text>
         </View>
