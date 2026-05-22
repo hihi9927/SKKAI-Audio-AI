@@ -1367,48 +1367,35 @@ class Qwen3ASRStreamingHandler:
     ) -> tuple[str, str, str, dict]:
         """교정 + 번역 통합 메서드. flush_uncommitted / _process_slot_updates 공통 경로.
 
-        gpt_translator 활성화 시: 단일 GPT 호출로 교정 + 번역 처리.
-        비활성화 시: corrector(선택) → Google Translate → 언어 flip 처리.
+        ASR 감지 언어 기준으로 번역 방향을 결정하고 번역 1회 호출.
 
         Returns:
             (corrected_text, translation, detected_lang_code, extra)
         """
+        src_code = lang_to_code(current_lang) if current_lang else ""
+
+        # 번역 방향 결정: ASR 감지 언어 기준, 1회 번역
+        if not self.client_lang or self.client_lang == "auto":
+            target = self.client_target_lang        # 방향 모름 → targetLang으로
+        elif src_code == self.client_lang:
+            target = self.client_target_lang        # 내 언어 감지 → 상대 언어로
+        elif src_code:
+            target = self.client_lang               # 상대 언어 감지 → 내 언어로
+        else:
+            target = self.client_target_lang        # ASR 감지 실패 → targetLang으로
+
         if self.gpt_translator and self._committed_utterance_count > 0:
-            src_code = lang_to_code(current_lang) if current_lang else ""
-            # 내 언어로 말하면 → 상대방 언어로, 그 외(상대방·제3자) → 내 언어로
-            target = (
-                self.client_target_lang
-                if src_code and src_code == self.client_lang
-                else self.client_lang
-            )
             corrected, translation, gpt_detected = await self.gpt_translator.correct_and_translate(
                 text, current_lang, target,
                 context=list(self._segment_history) if self._segment_history else None,
             )
             return corrected, translation, gpt_detected or src_code, {}
 
-        # Google Translate 경로 (첫 번째 발화 또는 gpt_translator 비활성)
+        # Google Translate 경로
         if self.corrector and self.use_correction:
             text = await self.corrector.correct_text(text, current_lang)
-        translation, detected_lang, extra = await self._translate(
-            text, self.client_target_lang, audio_end_sec
-        )
-        # 내 언어가 아니면(상대방·제3자 모두) 내 언어로 번역
-        effective = detected_lang or lang_to_code(current_lang)
-        if effective and effective != self.client_lang:
-            translation, _, extra = await self._translate(
-                text, self.client_lang, audio_end_sec
-            )
-        elif not effective and text and self.client_lang in ("ko", "ja", "zh"):
-            # 언어 감지 완전 실패: Latin 문자 비율로 상대방 언어 추측
-            # 한중일 클라이언트인데 텍스트가 대부분 Latin → 상대방이 영어권 발화
-            alpha = [c for c in text if c.isalpha()]
-            if alpha and sum(1 for c in alpha if ord(c) < 128) / len(alpha) > 0.8:
-                translation, _, extra = await self._translate(
-                    text, self.client_lang, audio_end_sec
-                )
-                effective = self.client_target_lang
-                self.log.info(f"[translate-flip-latin] tl={self.client_lang} -> translation='{translation}'")
+        translation, detected_lang, extra = await self._translate(text, target, audio_end_sec)
+        effective = detected_lang or src_code
         return text, translation, effective, extra
 
     def _get_flush_audio_end_sec(self) -> float:
