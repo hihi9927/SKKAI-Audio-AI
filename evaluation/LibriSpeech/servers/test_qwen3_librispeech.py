@@ -401,6 +401,7 @@ def summarize_segment_metrics(segment_metrics):
     summary = {
         'num_segments': len(segment_metrics),
         'avg_fsl_sec': mean(_vals('fsl_sec')) if _vals('fsl_sec') else None,
+        'avg_fsl_normalized_sec': mean(_vals('fsl_normalized_sec')) if _vals('fsl_normalized_sec') else None,
         'avg_encode_sec': mean(_vals('encode_sec')) if _vals('encode_sec') else None,
         'avg_decode_sec': mean(_vals('decode_sec')) if _vals('decode_sec') else None,
         'avg_final_decode_sec': mean(_vals('final_decode_sec')) if _vals('final_decode_sec') else None,
@@ -532,6 +533,14 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
                         'audio_end_sec': audio_end_sec,
                         'seg_audio_sec': data.get('seg_audio_sec') or data.get('segAudioSec'),
                         'fsl_sec': data.get('fsl_sec'),
+                        'fsl_normalized_sec': (
+                            (data.get('fsl_sec') + 0.8)
+                            if data.get('fsl_sec') is not None
+                            and normalize_commit_reason(
+                                data.get('commitReason') or data.get('commit_reason') or data.get('reason')
+                            ) == 'vad'
+                            else data.get('fsl_sec')
+                        ),
                         'encode_sec': data.get('encode_sec'),
                         'decode_sec': data.get('decode_sec'),
                         'final_decode_sec': data.get('final_decode_sec'),
@@ -761,6 +770,7 @@ def build_summary_payload(results, policy):
         lat = [r['first_token_latency'] for r in rows if r['first_token_latency'] is not None]
         model_runtime = [r['model_runtime'] for r in rows if r.get('model_runtime') is not None]
         speaker_fsl = _collect_segment_metric('fsl_sec', rows)
+        speaker_fsl_norm = _collect_segment_metric('fsl_normalized_sec', rows)
         speaker_encode = _collect_segment_metric('encode_sec', rows)
         speaker_decode = _collect_segment_metric('decode_sec', rows)
         speaker_final_decode = _collect_segment_metric('final_decode_sec', rows)
@@ -773,6 +783,7 @@ def build_summary_payload(results, policy):
             'first_token_latency': mean(lat) if lat else None,
             'model_runtime': mean(model_runtime) if model_runtime else None,
             'avg_fsl_sec': mean(speaker_fsl) if speaker_fsl else None,
+            'avg_fsl_normalized_sec': mean(speaker_fsl_norm) if speaker_fsl_norm else None,
             'avg_encode_sec': mean(speaker_encode) if speaker_encode else None,
             'avg_decode_sec': mean(speaker_decode) if speaker_decode else None,
             'avg_final_decode_sec': mean(speaker_final_decode) if speaker_final_decode else None,
@@ -784,6 +795,7 @@ def build_summary_payload(results, policy):
     all_lat = [r['first_token_latency'] for r in results if r['first_token_latency'] is not None]
     all_model_runtime = [r['model_runtime'] for r in results if r.get('model_runtime') is not None]
     all_fsl = _collect_segment_metric('fsl_sec', results)
+    all_fsl_norm = _collect_segment_metric('fsl_normalized_sec', results)
     all_encode = _collect_segment_metric('encode_sec', results)
     all_decode = _collect_segment_metric('decode_sec', results)
     all_final_decode = _collect_segment_metric('final_decode_sec', results)
@@ -800,6 +812,7 @@ def build_summary_payload(results, policy):
             'first_token_latency': mean(all_lat) if all_lat else None,
             'model_runtime': mean(all_model_runtime) if all_model_runtime else None,
             'avg_fsl_sec': mean(all_fsl) if all_fsl else None,
+            'avg_fsl_normalized_sec': mean(all_fsl_norm) if all_fsl_norm else None,
             'avg_encode_sec': mean(all_encode) if all_encode else None,
             'avg_decode_sec': mean(all_decode) if all_decode else None,
             'avg_final_decode_sec': mean(all_final_decode) if all_final_decode else None,

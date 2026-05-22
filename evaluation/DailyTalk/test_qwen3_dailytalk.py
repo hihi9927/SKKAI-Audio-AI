@@ -440,6 +440,7 @@ def summarize_segment_metrics(segment_metrics):
     return {
         'num_segments': len(segment_metrics),
         'avg_server_fsl_sec': mean(_vals('server_fsl_sec')) if _vals('server_fsl_sec') else None,
+        'avg_server_fsl_normalized_sec': mean(_vals('server_fsl_normalized_sec')) if _vals('server_fsl_normalized_sec') else None,
         'avg_translation_latency_sec': mean(_vals('translation_latency_sec')) if _vals('translation_latency_sec') else None,
         'avg_asr_inference_sec': mean(_vals('asr_inference_sec')) if _vals('asr_inference_sec') else None,
     }
@@ -557,6 +558,14 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
                         'translation_latency_sec': data.get('translation_latency_sec'),
                         'asr_inference_sec': data.get('asr_inference_sec'),
                         'server_fsl_sec': data.get('fsl_sec'),
+                        'server_fsl_normalized_sec': (
+                            (data.get('fsl_sec') + 0.8)
+                            if data.get('fsl_sec') is not None
+                            and normalize_commit_reason(
+                                data.get('commitReason') or data.get('commit_reason') or data.get('reason')
+                            ) == 'vad'
+                            else data.get('fsl_sec')
+                        ),
                         'final_payload_wall_utc': data.get('final_payload_wall_utc'),
                         'client_final_received_elapsed_sec': receive_elapsed_sec,
                     })
@@ -754,6 +763,7 @@ def build_summary_payload(results, policy):
         lat = [r['first_token_latency'] for r in rows if r['first_token_latency'] is not None]
         model_runtime = [r['model_runtime'] for r in rows if r.get('model_runtime') is not None]
         dialog_fsl = _collect_segment_metric('server_fsl_sec', rows)
+        dialog_fsl_norm = _collect_segment_metric('server_fsl_normalized_sec', rows)
         dialog_translation = _collect_segment_metric('translation_latency_sec', rows)
         dialog_asr = _collect_segment_metric('asr_inference_sec', rows)
         dialog_stats[dialog_id] = {
@@ -762,6 +772,7 @@ def build_summary_payload(results, policy):
             'first_token_latency': mean(lat) if lat else None,
             'model_runtime': mean(model_runtime) if model_runtime else None,
             'avg_server_fsl_sec': mean(dialog_fsl) if dialog_fsl else None,
+            'avg_server_fsl_normalized_sec': mean(dialog_fsl_norm) if dialog_fsl_norm else None,
             'avg_translation_latency_sec': mean(dialog_translation) if dialog_translation else None,
             'avg_asr_inference_sec': mean(dialog_asr) if dialog_asr else None,
         }
@@ -769,6 +780,7 @@ def build_summary_payload(results, policy):
     all_lat = [r['first_token_latency'] for r in results if r['first_token_latency'] is not None]
     all_model_runtime = [r['model_runtime'] for r in results if r.get('model_runtime') is not None]
     all_server_fsl = _collect_segment_metric('server_fsl_sec', results)
+    all_server_fsl_norm = _collect_segment_metric('server_fsl_normalized_sec', results)
     all_translation = _collect_segment_metric('translation_latency_sec', results)
     all_asr = _collect_segment_metric('asr_inference_sec', results)
 
@@ -781,6 +793,7 @@ def build_summary_payload(results, policy):
             'first_token_latency': mean(all_lat) if all_lat else None,
             'model_runtime': mean(all_model_runtime) if all_model_runtime else None,
             'avg_server_fsl_sec': mean(all_server_fsl) if all_server_fsl else None,
+            'avg_server_fsl_normalized_sec': mean(all_server_fsl_norm) if all_server_fsl_norm else None,
             'avg_translation_latency_sec': mean(all_translation) if all_translation else None,
             'avg_asr_inference_sec': mean(all_asr) if all_asr else None,
         },

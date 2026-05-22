@@ -91,6 +91,11 @@ research/cif/causal_results/**/*.pkl
 !Qwen3-ASR/finetuning/finetuning-out-en-plus/results/**
 .env
 server_*.log
+server_log*.txt
+server_log*.text
+server_output*.txt
+chunk_decoding.txt
+ec2_logs/
 
 # Evaluation datasets
 # Evaluation datasets
