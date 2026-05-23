@@ -448,6 +448,7 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         }
         self.segment_audio_start_sec = audio_end_sec
         self.pending_audio_end_sec = None
+        self._committed_utterance_count += 1
         if self.gpt_translator and original and translation:
             self._segment_history.append((original, translation))
 
