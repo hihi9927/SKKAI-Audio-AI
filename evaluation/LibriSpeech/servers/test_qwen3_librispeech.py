@@ -494,7 +494,13 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
                 if real_audio_done.is_set():
                     vad_fired.set()  # trailing silence 전송 중단
                     vad_done_event.set()
-                    break
+                    # GPT 딜레이 중 다음 슬롯에 오디오가 쌓였을 수 있음
+                    # → finish로 서버 잔여 슬롯 플러시, 추가 final은 timeout으로 자연 종료
+                    try:
+                        await ws.send(json.dumps({'type': 'finish'}))
+                    except Exception:
+                        break
+                    continue  # break 대신 continue — send_done + 5s timeout으로 종료
                 # 실제 오디오 전송 중 자연 묵음 VAD — 무시
                 continue
 
