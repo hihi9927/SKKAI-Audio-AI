@@ -202,13 +202,23 @@
       "Bash(ssh -i \"C:\\\\Users\\\\gyuye\\\\.ssh\\\\Audio_AI.pem\" ubuntu@13.209.202.8 \" *)",
       "Read(//tmp/**)",
       "Bash(sed -i 's/--server-args \"--enforce-eager\"/--server-args=--enforce-eager/g; s/--server-args \"--enforce-eager --gpt-translation\"/--server-args=\"--enforce-eager --gpt-translation\"/g' /tmp/run_all_eval.sh *)",
-      "Bash(grep -v \"^[-+]\\\\s*$\")"
+      "Bash(grep -v \"^[-+]\\\\s*$\")",
+      "Bash(mkdir -p \"d:/STiTy-main/evaluation/LibriSpeech/results/baseline\\(1.0.0\\)/full/run_16\" && scp -i \"C:\\\\Users\\\\gyuye\\\\.ssh\\\\Audio_AI.pem\" -o StrictHostKeyChecking=no \"ubuntu@54.116.64.206:/home/ubuntu/STiTy/evaluation/LibriSpeech/results/baseline\\(1.0.0\\)/full/run_16/metric.json\" \"d:/STiTy-main/evaluation/LibriSpeech/results/baseline\\(1.0.0\\)/full/run_16/metric.json\")",
+      "Bash(ssh -i \"C:\\\\Users\\\\gyuye\\\\.ssh\\\\Audio_AI.pem\" -o StrictHostKeyChecking=no ubuntu@54.116.64.206 \"cat -n /home/ubuntu/STiTy/evaluation/LibriSpeech/servers/test_qwen3_librispeech.py\" > /tmp/test_qwen3_librispeech.py.bak && scp -i \"C:\\\\Users\\\\gyuye\\\\.ssh\\\\Audio_AI.pem\" -o StrictHostKeyChecking=no ubuntu@54.116.64.206:/home/ubuntu/STiTy/evaluation/LibriSpeech/servers/test_qwen3_librispeech.py d:/tmp/test_qwen3_librispeech.py)",
+      "PowerShell(scp -i \"C:\\\\Users\\\\gyuye\\\\.ssh\\\\Audio_AI.pem\" -o StrictHostKeyChecking=no -r 'ubuntu@54.116.64.206:/home/ubuntu/STiTy/evaluation/LibriSpeech/results/finetuned\\(1.0.1\\)/full/run_08' 'd:\\\\STiTy-main\\\\evaluation\\\\LibriSpeech\\\\results\\\\finetuned\\(1.0.1\\)\\\\full\\\\')",
+      "Bash(rsync -avz --progress -e \"ssh -i C:/Users/gyuye/.ssh/Audio_AI.pem\" ubuntu@54.116.64.206:~/STiTy/evaluation/ \"d:/STiTy-main/evaluation/\" --exclude=\"*/LibriSpeech/test-other/\" --exclude=\"*/AMI/AMI/\" --exclude=\"*/AMI/words/\")",
+      "Bash(cd \"d:/STiTy-main\" && tar xzf \"d:/tmp/eval_results_new.tar.gz\" && echo \"압축 해제 완료\" && rm \"d:/tmp/eval_results_new.tar.gz\")",
+      "Bash(scp -i \"C:/Users/gyuye/.ssh/Audio_AI.pem\" -o StrictHostKeyChecking=no \"ubuntu@54.116.64.206:/home/ubuntu/STiTy/evaluation/AMI/results/baseline\\(1.0.0\\)/full/run_13/metric.json\" \"d:/STiTy-main/evaluation/AMI/results/baseline\\(1.0.0\\)/full/run_13/metric.json\" 2>&1 *)",
+      "Bash(git restore *)"
     ],
     "additionalDirectories": [
       "\\tmp",
       "d:\\STiTy-main",
       "D:\\STiTy-main\\evaluation\\LibriSpeech\\results\\finetuned_silence(1.0.3)\\sample\\run_01\\plots",
-      "d:\\STiTy-main\\evaluation\\AliMeeting\\results"
+      "d:\\STiTy-main\\evaluation\\AliMeeting\\results",
+      "d:\\STiTy-main\\evaluation\\LibriSpeech\\results\\baseline(1.0.0)\\full",
+      "d:\\tmp",
+      "d:\\STiTy-main\\evaluation\\AMI\\results\\baseline(1.0.0)\\full"
     ]
   }
 }

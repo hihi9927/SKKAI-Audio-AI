@@ -18,6 +18,9 @@ weights/
 *.arrow
 *.parquet
 
+# Evaluation temp results
+**/results_tmp/
+
 # Node.js dependencies
 node_modules/
 
