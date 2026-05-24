@@ -151,6 +151,9 @@ class StreamingConfig:
     # 빔 서치 설정
     beam_size: int = 2  # 1이면 greedy, 2+ 이면 beam search
 
+    # VAD 설정
+    no_vad: bool = False  # True면 silero-vad 비활성화 (VAD 없이 SEG/finish 커밋만 사용)
+
     # vLLM 컴파일 설정
     enforce_eager: bool = False  # True면 Triton 컴파일 우회 (sm_121a 등 미지원 GPU)
 
@@ -1684,7 +1687,9 @@ class Qwen3ASRStreamingServer:
         use_lora = bool(adapter_en_path or adapter_ko_path)
 
         # VAD 모델을 한 번만 로드해 bytes로 보관 — 클라이언트마다 이 bytes로 독립 인스턴스 생성
-        if _SILERO_VAD_AVAILABLE:
+        if self.config.no_vad:
+            logger.info("VAD disabled via --no-vad flag")
+        elif _SILERO_VAD_AVAILABLE:
             try:
                 _buf = io.BytesIO()
                 torch.jit.save(load_silero_vad(), _buf)
@@ -1949,6 +1954,10 @@ def parse_args():
         help="GPT 번역 시 참고할 직전 세그먼트 최대 문장 수 (기본값: 5, --gpt-translation 활성화 시 사용)",
     )
     parser.add_argument(
+        "--no-vad", action="store_true",
+        help="Silero VAD 비활성화 — SEG/finish 커밋만 사용 (VAD 없이 동작)",
+    )
+    parser.add_argument(
         "--log-json", action="store_true",
         help="로그를 JSON 형식으로 출력",
     )
@@ -1978,6 +1987,7 @@ def main():
         no_lora=not args.lora,
         max_lora_rank=args.max_lora_rank,
         enforce_eager=args.enforce_eager,
+        no_vad=args.no_vad,
         enable_dot_commit=args.enable_dot_commit,
         restrict_languages=not args.no_restrict_languages,
         enable_correction=args.correction,
