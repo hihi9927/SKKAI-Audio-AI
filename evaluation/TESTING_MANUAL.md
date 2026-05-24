@@ -184,7 +184,39 @@ python evaluation/AMI/test_qwen3_ami.py \
 
 ---
 
-### 3.5 AliMeeting (다화자 회의, Chinese)
+### 3.5 RAMC (단문 발화, Chinese)
+
+서버를 먼저 시작할 때 `--tag`를 미리 고정하고 `--log-file`을 맞춰줍니다.
+
+```bash
+# 1) 서버 시작 (별도 터미널)
+python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py \
+  --no-idle-shutdown \
+  --log-file "evaluation/(zh)RAMC/results/baseline(1.0.0)/sample/run_01/logs/server.log"
+
+# 2) 테스트 실행
+python "evaluation/(zh)RAMC/test_qwen3_ramc.py" \
+  --data-dir "evaluation/(zh)RAMC" \
+  --model "baseline(1.0.0)" \
+  --scope sample \
+  --tag run_01 \
+  --description "테스트 설명" \
+  --trailing-silence-ms 5000
+```
+
+> **참고:**
+> - `--data-dir` 아래에 `RAMC/` (화자별 WAV 폴더)와 `label/TRANS.txt` (TSV 레이블)가 있어야 합니다.
+> - 총 11,793개 발화, 20명 화자. 발화당 평균 3초 내외의 단문 음성입니다.
+> - 레이블은 탭 구분 TSV (`UtteranceID`, `SpeakerID`, `Transcription`) 형식입니다.
+> - 평가 지표는 **CER** (Character Error Rate, 중국어 문자 단위) 입니다.
+> - `--speakers 37_5622 5_2197` 처럼 특정 화자만 선택해 실행할 수 있습니다.
+> - `--random-sample N` 으로 전체에서 무작위 N개만 샘플링할 수 있습니다.
+
+결과 위치: `evaluation/(zh)RAMC/results/{model}/{scope}/{tag}/`
+
+---
+
+### 3.6 AliMeeting (다화자 회의, Chinese)
 
 서버를 먼저 시작할 때 `--tag`를 미리 고정하고 `--log-file`을 맞춰줍니다.
 
