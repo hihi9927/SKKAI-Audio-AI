@@ -1528,7 +1528,9 @@ class Qwen3ASRStreamingHandler:
                     "enable_gpt_translation": self.config.enable_gpt_translation,
                     "translation_model": self.config.translation_model,
                     "context_window": self.config.context_window,
-                    "enable_correction": self.config.enable_correction,
+                    # GPTTranslator는 교정+번역을 단일 호출로 처리하므로
+                    # enable_gpt_translation이 켜지면 correction도 사실상 활성화됨
+                    "enable_correction": self.config.enable_correction or self.config.enable_gpt_translation,
                     "correction_model": self.config.correction_model,
                 },
             )
