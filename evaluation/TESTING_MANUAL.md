@@ -247,6 +247,36 @@ python evaluation/AliMeeting/test_qwen3_alimeeting.py \
 
 ---
 
+### 3.6 ReazonSpeech (단문 클립, Japanese)
+
+ReazonSpeech는 독립적인 단문 일본어 클립(평균 5초 내외) 350개로 구성됩니다.  
+클립마다 새 WebSocket 연결을 맺어 컨텍스트 오염을 방지합니다. 평가 지표: **CER** (문자 오류율).
+
+```bash
+# 1) 서버 시작 (별도 터미널)
+python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py \
+  --no-idle-shutdown \
+  --log-file "evaluation/ReazonSpeech/results/baseline(1.0.0)/sample/run_01/logs/server.log"
+
+# 2) 테스트 실행
+python evaluation/ReazonSpeech/test_qwen3_reazonspeech.py \
+  --data-dir evaluation/ReazonSpeech \
+  --model "baseline(1.0.0)" \
+  --scope sample \
+  --tag run_01 \
+  --description "테스트 설명" \
+  --trailing-silence-ms 3000
+```
+
+> **참고:**
+> - `--data-dir` 아래에 `ReazonSpeech/` (WAV 오디오)와 `label/metadata.csv` (CSV 레이블)가 있어야 합니다.
+> - `--src-lang ja`가 기본값이므로 생략 가능합니다.
+> - `--limit 50`으로 일부 클립만 빠르게 테스트할 수 있습니다.
+
+결과 위치: `evaluation/ReazonSpeech/results/{model}/{scope}/{tag}/`
+
+---
+
 ## 4. 결과 파일 설명
 
 | 파일 | 설명 |
