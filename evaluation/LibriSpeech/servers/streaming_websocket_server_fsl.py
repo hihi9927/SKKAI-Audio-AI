@@ -605,7 +605,7 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
                     "enable_gpt_translation": self.config.enable_gpt_translation,
                     "translation_model": self.config.translation_model,
                     "context_window": self.config.context_window,
-                    "enable_correction": self.config.enable_correction,
+                    "enable_correction": self.config.enable_correction or self.config.enable_gpt_translation,
                     "correction_model": self.config.correction_model,
                 },
             )
