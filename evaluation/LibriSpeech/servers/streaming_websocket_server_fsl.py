@@ -796,6 +796,7 @@ def main():
         adapter_ko=args.adapter_ko,
         max_lora_rank=args.max_lora_rank,
         enforce_eager=args.enforce_eager,
+        no_vad=args.no_vad,
         enable_dot_commit=args.enable_dot_commit,
         restrict_languages=not args.no_restrict_languages,
         enable_correction=args.correction,
