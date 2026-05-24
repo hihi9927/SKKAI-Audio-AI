@@ -808,6 +808,7 @@ class Qwen3ASRStreamingHandler:
             _decoded_text = self._strip_asr_text((slot["state"].text or "").strip())
             self.log.info(f"[TRANSCRIBE-DECODING] slot={slot_key} text={_decoded_text!r}")
         _committed_text_snapshot = await self._process_slot_updates(slot_key)
+        _accum_size_pre_gpt = self._slot(slot_key)["state"].audio_accum.shape[0]
         if self._pending_gpt_tasks:
             await self._flush_pending_gpt_tasks()
 
@@ -831,7 +832,19 @@ class Qwen3ASRStreamingHandler:
                     self.log.info(f"[FORCE-SLOT-SWITCH] slot={slot_key} audio_sec={audio_sec:.1f}s")
                 else:
                     last_committed = _s.get("committed_display", "")
+                    # GPT 딜레이 동안 쌓인 오디오(주로 trailing silence)를 새 슬롯에 carry-over.
+                    # 리셋 후 즉시 삭제하면 VAD 발동에 필요한 침묵 구간이 사라져 발화 누락이 발생함.
+                    _accum_now = _s["state"].audio_accum.shape[0]
+                    _carry_samples = _accum_now - _accum_size_pre_gpt
+                    carry_audio = (
+                        _s["state"].audio_accum[-_carry_samples:].copy()
+                        if _carry_samples > 0 else None
+                    )
                     self._reset_stream_slot(slot_key)
+                    if carry_audio is not None:
+                        self._slot(slot_key)["state"].audio_accum = carry_audio
+                        carry_sec = round(_carry_samples / SAMPLING_RATE, 3)
+                        self.log.info(f"[SEG-CARRY-AUDIO] slot={slot_key} carry={carry_sec}s")
                     if last_committed:
                         self._slot(slot_key)["seg_reset_last_committed"] = last_committed
                     if slot_key == self.active_slot:
