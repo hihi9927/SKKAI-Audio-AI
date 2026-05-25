@@ -22,6 +22,7 @@ python evaluation/{Dataset}/test_qwen3_{dataset}.py \
 | `DailyTalk/` | 한국어 | CER | 대화 음성 |
 | `KsponSpeech/` | 한국어 | CER | 자유발화 |
 | `KtelSpeech/` | 한국어 | CER | 전화 품질 음성 |
+| `KokoroSpeech/` | 일본어 | CER | 단문 낭독 클립(tiny=308개), 파이프 구분 메타데이터 |
 | `ReazonSpeech/` | 일본어 | CER | 단문 독립 클립, CSV 레이블 |
 | `smartturn/` | — | VAD F1/지연 | SmartTurn VAD 실험 (독립 트랙) |
 
