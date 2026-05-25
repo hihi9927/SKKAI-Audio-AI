@@ -778,6 +778,8 @@ def main():
 
     if extra_args.log_file:
         log_path = Path(extra_args.log_file)
+        if log_path.is_dir() or not log_path.suffix:
+            log_path = log_path / "server.log"
         log_path.parent.mkdir(parents=True, exist_ok=True)
         file_handler = logging.FileHandler(log_path, encoding="utf-8")
         file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(name)s - %(message)s"))
