@@ -503,6 +503,16 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
                 # 실제 오디오 전송 중 자연 묵음 VAD — 무시
                 continue
 
+            elif msg_type == 'seg_done':
+                if real_audio_done.is_set():
+                    vad_fired.set()  # trailing silence 전송 중단
+                    # has_remaining: GPT 딜레이 중 carry audio가 있는지 알려줌.
+                    # False면 carry audio 없음 → 즉시 종료. True면 carry 처리 완료까지 대기.
+                    if not data.get('has_remaining', True):
+                        break
+                    continue
+                continue
+
             elif msg_type == 'final':
                 if real_audio_done.is_set():
                     vad_fired.set()  # SEG path: 실제 오디오 커밋 완료 → trailing silence 중단

@@ -850,6 +850,7 @@ class Qwen3ASRStreamingHandler:
                     if slot_key == self.active_slot:
                         self.state = self.stream_slots[self.active_slot]["state"]
                     self.log.info(f"[SEG-SLOT-RESET] slot={slot_key} audio_sec={audio_sec:.1f}s")
+                    await self._on_seg_done(slot_key, carry_samples=_carry_samples)
             else:
                 # cross-decode trailing-period reset:
                 # prev_uncommitted 온점 위치가 이번 commit과 동일한 경우에만 슬롯 리셋.
@@ -1481,6 +1482,14 @@ class Qwen3ASRStreamingHandler:
         """VAD 발화 종료 플러시 완료 후 호출되는 훅. 서브클래스에서 오버라이드 가능.
 
         tail_samples: VAD 커트 이후 같은 청크에 남아 있는 샘플 수.
+        0이면 서버에 처리할 잔여 오디오가 없음을 의미한다.
+        """
+        pass
+
+    async def _on_seg_done(self, slot_key: str, carry_samples: int = 0) -> None:  # noqa: ARG002
+        """SEG 커밋 후 슬롯 리셋 완료 시 호출되는 훅. 서브클래스에서 오버라이드 가능.
+
+        carry_samples: GPT 딜레이 동안 슬롯에 쌓인 오디오 샘플 수.
         0이면 서버에 처리할 잔여 오디오가 없음을 의미한다.
         """
         pass

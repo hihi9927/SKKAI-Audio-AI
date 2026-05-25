@@ -332,6 +332,10 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         logger.info("[VAD_DONE] slot=%s tail_samples=%d", slot_key, tail_samples)
         await self.send_message("vad_done", has_remaining=(tail_samples > 0))
 
+    async def _on_seg_done(self, slot_key: str, carry_samples: int = 0) -> None:
+        logger.info("[SEG_DONE] slot=%s carry_samples=%d", slot_key, carry_samples)
+        await self.send_message("seg_done", has_remaining=(carry_samples > 0))
+
     async def _emit_final_payload(
         self,
         *,
