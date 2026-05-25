@@ -328,9 +328,9 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         # 슬롯 스위치 후 _on_vad_commit 호출 시점에 self.active_slot은 이미 새 슬롯
         self._slot_audio_start_sec[self.active_slot] = audio_end_sec
 
-    async def _on_vad_done(self, slot_key: str) -> None:
-        logger.info("[VAD_DONE] slot=%s", slot_key)
-        await self.send_message("vad_done")
+    async def _on_vad_done(self, slot_key: str, tail_samples: int = 0) -> None:
+        logger.info("[VAD_DONE] slot=%s tail_samples=%d", slot_key, tail_samples)
+        await self.send_message("vad_done", has_remaining=(tail_samples > 0))
 
     async def _emit_final_payload(
         self,

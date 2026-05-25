@@ -1351,7 +1351,7 @@ class Qwen3ASRStreamingHandler:
                 _post_state.text = _pre_text
             await self.flush_uncommitted(force=True, reason="vad", slot_key=old_active)
             self._reset_stream_slot(self.standby_slot)
-            await self._on_vad_done(old_active)
+            await self._on_vad_done(old_active, tail_samples=chunk.size - local_cut)
 
             seg_start = local_cut
 
@@ -1477,8 +1477,12 @@ class Qwen3ASRStreamingHandler:
         """VAD 발화 종료 커밋 직전에 호출되는 훅. 서브클래스에서 오버라이드 가능."""
         pass
 
-    async def _on_vad_done(self, slot_key: str) -> None:  # noqa: ARG002
-        """VAD 발화 종료 플러시 완료 후 호출되는 훅. 서브클래스에서 오버라이드 가능."""
+    async def _on_vad_done(self, slot_key: str, tail_samples: int = 0) -> None:  # noqa: ARG002
+        """VAD 발화 종료 플러시 완료 후 호출되는 훅. 서브클래스에서 오버라이드 가능.
+
+        tail_samples: VAD 커트 이후 같은 청크에 남아 있는 샘플 수.
+        0이면 서버에 처리할 잔여 오디오가 없음을 의미한다.
+        """
         pass
 
     async def _emit_final_payload(
