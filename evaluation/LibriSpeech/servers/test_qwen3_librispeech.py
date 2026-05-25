@@ -492,13 +492,13 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
 
             if msg_type == 'vad_done':
                 if real_audio_done.is_set():
-                    vad_fired.set()  # trailing silence 전송 중단
                     vad_done_event.set()
-                    # has_remaining: 서버가 같은 청크 내 VAD 커트 이후 처리할 오디오가 있는지 알려줌.
-                    # False면 서버 잔여 작업 없음 → 즉시 종료. True면 tail 처리 완료까지 대기.
                     if not data.get('has_remaining', True):
+                        # tail 없음 → trailing silence 중단 후 즉시 종료
+                        vad_fired.set()
                         break
-                    # 잔여 오디오 있음 — tail final 수신 후 15s safety timeout으로 자연 종료
+                    # has_remaining=True: tail 오디오가 다음 슬롯으로 넘어감.
+                    # trailing silence 계속 전송해야 다음 슬롯 VAD가 정상 발동함.
                     continue
                 # 실제 오디오 전송 중 자연 묵음 VAD — 무시
                 continue
