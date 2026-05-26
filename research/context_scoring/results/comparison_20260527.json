@@ -1,0 +1,253 @@
+{
+  "model": "gpt-5.4-mini",
+  "summary": [
+    {
+      "label": "run_05",
+      "metric_json": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/evaluation/LibriSpeech/results/finetuned_silence(1.0.3)/full/run_05/metric.json",
+      "avg_context_score": 28.2778,
+      "n_chapters": 18,
+      "total_pairs": 1125
+    },
+    {
+      "label": "run_10",
+      "metric_json": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/evaluation/LibriSpeech/results/finetuned_silence_gpt(1.0.4)/full/run_10/metric.json",
+      "avg_context_score": 33.6667,
+      "n_chapters": 18,
+      "total_pairs": 1136
+    }
+  ],
+  "runs": [
+    {
+      "metric_json": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/evaluation/LibriSpeech/results/finetuned_silence(1.0.3)/full/run_05/metric.json",
+      "chapter_scores": [
+        {
+          "chapter_id": "1688-142285",
+          "score": 34,
+          "reasoning": "전반적으로 인물 관계와 대화 흐름은 따라가지만, 문장 단위 직역과 오역이 많아 장 전체의 의미 연결이 자주 끊깁니다. 예를 들어 7번의 \"shop boy\"를 \"가게 주인\"으로 잘못 옮기고, 80번의 \"knights\"를 \"기사\"로 처리하는 등 문맥상 어색한 오역이 있으며, 53~70번과 104~149번에서는 시제·주어·대명사 처리가 흔들려 한국어 읽기 경험이 크게 저하됩니다. 또한 38~39, 65~70, 142~143처럼 동작의 진행과 결과를 자연스럽게 잇지 못한 문장이 많아 글로벌 응집력도 약합니다.",
+          "n_pairs": 188
+        },
+        {
+          "chapter_id": "1998-15444",
+          "score": 34,
+          "reasoning": "전반적으로 의학·독극물 검사 절차의 주제는 유지되지만, 문장 단위 번역이 많아 연결감이 약하고 일부 핵심 용어가 부정확합니다(예: 9번 ‘사후검토’, 23번 ‘fauces’를 ‘수도꼭지’로 오역, 31번 ‘직장에 의해 주어질 수 있습니다’처럼 비자연스러운 표현). 또한 38번 이후의 단계 번호가 ‘Two, cool…’, ‘Five.’처럼 원문 구조를 제대로 반영하지 못해 절차의 논리적 연속성이 흔들리고, 19번 ‘The best dramatic…’ 같은 문장은 문맥상 어색하게 남아 전체 읽기 경험을 떨어뜨립니다.",
+          "n_pairs": 55
+        },
+        {
+          "chapter_id": "1998-29454",
+          "score": 34,
+          "reasoning": "전체적으로 인물 호칭과 대화 흐름이 자주 흔들리고, 특히 31, 33, 40, 49, 53, 55, 66, 72 같은 문장은 직역·오역이 심해 한국어 독자가 문맥을 따라가기 어렵습니다. Dicky/Digby/Beale 같은 이름 표기도 일관성이 약하고, 시제·존대·구어체가 섞여 있어 장면 전환과 화자 관계의 연속성이 크게 손상됩니다. 다만 일부 문장은 기본 의미를 유지해 chapter의 큰 줄기는 보이므로 완전히 붕괴된 수준은 아닙니다.",
+          "n_pairs": 82
+        },
+        {
+          "chapter_id": "1998-29455",
+          "score": 34,
+          "reasoning": "전반적으로 문장별로는 의미를 대충 따라가지만, 대명사·지시어와 인물 호칭이 자주 흔들려 문맥 일관성이 크게 떨어집니다. 예를 들어 14~16번의 rabbit이 ‘토끼’인데 ‘그 사람’으로 바뀌고, 59~61번의 ‘If he's straight’가 ‘이성애자’로 오역되어 맥락이 완전히 어긋납니다. 또한 ‘pre-embrillator’, ‘Operation’, ‘mags out’ 같은 핵심 표현들이 부자연스럽거나 잘못 번역되어 한국어 읽기 흐름이 끊기며, 전체적으로는 연결된 서사라기보다 단편 번역처럼 느껴집니다.",
+          "n_pairs": 78
+        },
+        {
+          "chapter_id": "2033-164914",
+          "score": 34,
+          "reasoning": "The chapter has frequent context and continuity problems: key terms and roles shift inconsistently, such as translating the reciter/singer/fireman/castrato in ways that obscure who is speaking and who is being sought. There are also many unnatural or incorrect Korean phrases that break the reading flow, for example “내시와 다시 합류했습니다,” “알라에 의해,” and “우리의 마칸은 무엇입니까?”, which make the text feel fragmented rather than a coherent narrative. Pronoun and reference handling is also unstable across the passage, with several lines losing the logical thread of who heard whom and who is being addressed.",
+          "n_pairs": 85
+        },
+        {
+          "chapter_id": "2033-164915",
+          "score": 34,
+          "reasoning": "대화의 인물 지시가 자주 흔들립니다. 예를 들어 5–7번에서 복수/단수 주어가 뒤섞이고, 13–21번에서는 ‘그녀/그에게’가 문맥상 맞지 않게 반복되며, 24–31번과 44–50번에서는 ‘카스트라토’, ‘페이지’, ‘엉덩이에서 떼어내세요’ 같은 직역·오역이 이어져 자연스러운 한국어 읽기 경험이 크게 떨어집니다. 또한 고유명사와 호칭(샤르칸, 오마르, 다마스커스 국왕, 대승 등)이 일관되지 않고, 39–42번처럼 의미가 불분명한 번역이 있어 서사적 연속성과 톤 유지가 약합니다.",
+          "n_pairs": 62
+        },
+        {
+          "chapter_id": "2033-164916",
+          "score": 18,
+          "reasoning": "고유명사와 호칭이 매우 불안정합니다: wazir/와지르, chamberlain/체임벌린, Zawamakan/Zawal-Makan, Charizard/리자몽처럼 서로 다른 인물·용어가 뒤섞여 핵심 인물 추적이 어렵습니다. 또한 7, 18, 21, 26, 27, 28, 39, 40번은 의미가 크게 왜곡되거나 영어식/오역 표현이 그대로 남아 있어 서사와 논리 흐름이 자주 끊깁니다. 다만 일부 문장(예: 3, 12, 14~15, 24~25)은 기본 의미를 유지해 완전히 붕괴한 수준은 아니므로 매우 낮지만 0점대는 아닙니다.",
+          "n_pairs": 40
+        },
+        {
+          "chapter_id": "2414-128291",
+          "score": 18,
+          "reasoning": "전반적으로 문장별 직역이 많고, 문맥에 맞지 않는 오역이 여러 곳에서 반복되어 chapter 전체의 의미 흐름이 크게 흔들립니다. 예를 들어 5, 6, 7, 42, 50번은 원문의 의미와 거의 무관하거나 기계 번역 잡음처럼 보이며, 11-14, 46-49번에서도 존칭/반말이 뒤섞여 화자 관계와 어조가 일관되지 않습니다. 다만 ‘kind’를 일관되게 ‘종류’로 처리한 점처럼 일부 용어 반복은 유지되지만, 자연스러운 한국어 읽기 경험과 서사적 연속성은 크게 저하됩니다.",
+          "n_pairs": 51
+        },
+        {
+          "chapter_id": "2414-128292",
+          "score": 42,
+          "reasoning": "전반적으로 고어체 영어를 한국어로 옮기려는 시도는 보이지만, 대명사·호칭·문체가 문장마다 크게 흔들려 화자와 대상의 관계가 일관되게 유지되지 않습니다. 예를 들어 11, 13, 14, 16, 17, 24, 28, 39번 등에서 의미가 불명확하거나 직역이 어색해 문맥상 연결이 끊기고, 40번의 \"aigrous\" 같은 오역과 45번의 부자연스러운 표현도 읽기 흐름을 해칩니다. 다만 핵심 이미지인 그림자, 방랑자, 목표 상실 같은 주제는 대체로 유지되어 완전히 붕괴된 수준은 아닙니다.",
+          "n_pairs": 45
+        },
+        {
+          "chapter_id": "2414-159411",
+          "score": 18,
+          "reasoning": "대명사·지시어와 화자 관계가 자주 무너져 있어, 예를 들어 1번에서 호랑이가 ‘마을 사람들이 그를 붙잡아 놓은’ 식으로 주어가 뒤섞이고 6번, 28번, 60번 등에서는 누가 누구에게 말하는지 문장이 심하게 꼬여 있습니다. 또한 ‘ban and tree’, ‘bantry’, ‘낙타 경’, ‘경비병인 자칼’ 같은 오역과 용어 불일치가 반복되어 이야기의 논리적 흐름과 인물 추적이 어렵습니다. 문장 단위로도 ‘나는하지 않을 것이다’, ‘그를 제외시켰으니’, ‘새장에 뛰어 들다’처럼 한국어 자연성이 크게 떨어져 전체적으로 분절된 인상을 줍니다.",
+          "n_pairs": 82
+        },
+        {
+          "chapter_id": "2414-165385",
+          "score": 41,
+          "reasoning": "전반적으로 문장별 의미는 대체로 따라가지만, 3번의 “procom”처럼 원문 맥락상 불명확한 용어가 그대로 남아 있고 4번은 “young gentlemen and ladies of understanding”를 어색하게 “이해심을 갖고 있는”으로 옮겨 자연스러운 한국어 흐름이 떨어집니다. 6~8번에서는 대명사와 지시어가 문맥상 연결되긴 하나, “그것은 달성되었습니다” 같은 단절된 시작과 “이제 당신은 그것을 당신 앞에 보고 있습니다”의 부자연스러운 표현 때문에 전체적으로 고전적 풍자 문장의 연속성이 약해집니다. 다만 핵심 내용과 화자의 비꼬는 톤은 어느 정도 유지되어 완전히 붕괴한 수준은 아닙니다.",
+          "n_pairs": 8
+        },
+        {
+          "chapter_id": "2609-156975",
+          "score": 18,
+          "reasoning": "전반적으로 문장들이 문맥 없이 개별적으로 번역된 흔적이 매우 강하고, 여러 곳에서 의미가 크게 왜곡됩니다. 예를 들어 25~27, 53~54처럼 원문이 심하게 깨졌고, 46, 48, 49는 종교 용어와 관계 표현이 부자연스럽거나 오역되어 서술의 연속성이 무너집니다. 다만 모세, 미디안, 광야, 여호와 같은 핵심 용어는 대체로 반복 유지되어 최소한의 주제 일관성은 보입니다.",
+          "n_pairs": 61
+        },
+        {
+          "chapter_id": "2609-157645",
+          "score": 28,
+          "reasoning": "전체적으로 담배와 교회 관습이라는 주제는 유지되지만, 문장별 번역이 원문 의미를 제대로 따라가지 못해 문맥 일관성이 크게 흔들립니다. 특히 8번의 “vestry”를 “조끼”로 옮기고, 12–16번의 대화는 “pipe”를 “응답”으로 처리하는 등 핵심 어휘와 논리 연결이 무너져 있으며, 17–18번은 거의 비문 수준이라 한국어 독자가 연속된 서술로 읽기 어렵습니다. 인명·지명 표기도 Par/Parr, St. Hays 등에서 흔들리고, 21–22번의 “communicants”를 “의사소통”으로 번역해 종교적 맥락이 크게 훼손됩니다.",
+          "n_pairs": 22
+        },
+        {
+          "chapter_id": "2609-169640",
+          "score": 18,
+          "reasoning": "전반적으로 문장들이 문맥 없이 직역된 흔적이 매우 강해, 선원 용어와 서술 흐름이 한국어에서 자연스럽게 이어지지 않습니다. 예를 들어 4–5, 11–14, 24, 37, 39–42번은 의미가 크게 왜곡되거나 어색한 표현이 많아 사건의 연속성과 논리 관계를 따라가기 어렵습니다. 인명/선박명은 일부 유지되지만, 대명사·지시어 처리와 용어 일관성이 불안정해 chapter 전체의 읽기 경험이 크게 저하됩니다.",
+          "n_pairs": 44
+        },
+        {
+          "chapter_id": "3005-163389",
+          "score": 18,
+          "reasoning": "전반적으로 문장들이 개별적으로도 어색하고, 시제·인칭·어휘가 크게 흔들려 chapter 전체의 흐름이 잘 이어지지 않습니다. 예를 들어 2번의 “소음에 대해 생각하는 것을 들을 수 없었습니다”, 21번의 “콧방귀를 뀌었습니다”, 26번의 “견딜 수 있을 만큼 저렴해 보입니다”처럼 원문의 의미와 동떨어진 번역이 많고, 32~35번에서는 ringmaster, promise, ride 등의 관계가 제대로 전달되지 않아 논리적 연속성이 무너집니다. 다만 Sherburn, Buck Harkness 같은 고유명사는 대체로 유지되어 완전히 붕괴된 수준은 아니지만, 자연스러운 한국어 읽기 경험은 매우 낮습니다.",
+          "n_pairs": 41
+        },
+        {
+          "chapter_id": "3005-163390",
+          "score": 18,
+          "reasoning": "번역이 문장별로 매우 분절되어 있고, 대명사·지시어·논리 흐름이 자주 무너집니다. 예를 들어 3번의 “killed themselves laughing”을 “웃으면서 자살한 사람들”로 오역해 의미가 완전히 깨지고, 4–7번의 공연 장면도 “케이핑”, “무대 뒤에서 도망쳤어요”처럼 맥락에 맞지 않게 처리되어 서술 연속성이 크게 손상됩니다. 또한 17–18번, 21–25번, 31–45번에서 구어체/서술체가 뒤섞이고 어색한 직역이 많아 한국어 읽기 자연스러움과 전체적 응집성이 낮습니다.",
+          "n_pairs": 59
+        },
+        {
+          "chapter_id": "3005-163391",
+          "score": 34,
+          "reasoning": "전반적으로 인물 지칭과 대화 흐름은 따라가지만, 여러 곳에서 핵심 의미가 크게 흔들립니다. 예를 들어 43번의 “hair lip”이 “머리숱이 많은 사람”으로 오역되고, 19–20번과 21번처럼 이동 방향과 화자의 발화 관계가 어색하게 꼬여 서사 연속성이 약해집니다. 또한 “new white beaver”를 “새 하얀 비버”로 옮기는 등 자연스러운 한국어 읽기 경험이 떨어지는 표현이 반복되어, 문장 단위로는 이해되더라도 장 전체의 응집력이 낮습니다.",
+          "n_pairs": 69
+        },
+        {
+          "chapter_id": "3005-163399",
+          "score": 34,
+          "reasoning": "전반적으로 인물 지칭과 시점이 자주 흔들려, ‘he/she/it’와 화자 전환이 한국어에서 일관되게 유지되지 않습니다. 예를 들어 22–23번의 “pump them a little / find out who I was”가 “펌핑하고 싶었는데 / 내가 누구였는지 알아보세요”로 의미가 크게 어긋나고, 26–27번, 33번, 40–42번처럼 관용구와 서술 논리가 부자연스럽게 번역되어 읽기 흐름이 끊깁니다. 다만 고유명사인 Phelps, Tom Sawyer는 대체로 유지되고, 전체 사건 전개 자체는 어느 정도 따라가므로 완전히 붕괴된 수준은 아닙니다.",
+          "n_pairs": 53
+        }
+      ],
+      "avg_context_score": 28.2778,
+      "n_chapters": 18,
+      "total_pairs": 1125
+    },
+    {
+      "metric_json": "/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/evaluation/LibriSpeech/results/finetuned_silence_gpt(1.0.4)/full/run_10/metric.json",
+      "chapter_scores": [
+        {
+          "chapter_id": "1688-142285",
+          "score": 34,
+          "reasoning": "전반적으로 인물 관계와 대화 흐름은 따라가지만, 대명사·호칭·성별 지시가 자주 흔들려 읽는 경험이 크게 떨어집니다. 예를 들어 25번의 \"her\"가 \"그녀를\"로 잘못 이어지고, 52~69번과 103~151번에서도 문장 조각이 어색하게 끊기거나 주어가 뒤섞여 서사적 연속성이 약해집니다. 또한 \"shop boy\"를 \"점원 소년\"으로 옮기거나 79번의 \"knights\"처럼 문맥상 부자연스러운 오역이 있어, 전체적으로는 의미는 대체로 보이지만 문장 단위 자연성과 일관성이 부족합니다.",
+          "n_pairs": 187
+        },
+        {
+          "chapter_id": "1998-15444",
+          "score": 34,
+          "reasoning": "The translation is often understandable, but it shows frequent context and terminology problems that disrupt continuity, such as “사후검토” for post-mortem, “gallage” rendered as “담즙,” and “fauces” mistranslated as “수도꼭지,” which harms both accuracy and naturalness. There are also several awkward or inconsistent passages in procedural steps (“둘째,” after no first step; “에테르 용액을 분리하세요 / 그리고 증발합니다”) and register shifts between formal instructional Korean and odd literal phrasing, making the chapter feel fragmented rather than cohesively translated.",
+          "n_pairs": 54
+        },
+        {
+          "chapter_id": "1998-29454",
+          "score": 34,
+          "reasoning": "전반적으로 인물 호칭(Dicky, Mr. Beale 등)은 어느 정도 유지되지만, 대명사·지시어와 화자 관계가 자주 흔들리고 문장별로 의미가 끊겨 읽힙니다. 특히 31, 56, 57, 58, 68, 74, 80, 84처럼 원문의 뜻이 크게 어긋나거나 부자연스러운 번역이 많아, 장 전체의 서사적 연속성과 자연스러운 한국어 읽기 경험이 크게 손상됩니다.",
+          "n_pairs": 84
+        },
+        {
+          "chapter_id": "1998-29455",
+          "score": 42,
+          "reasoning": "전반적으로 문장별 의미는 대체로 따라가지만, 대명사·지시어와 인물 호칭이 자주 흔들려 읽는 흐름이 끊깁니다(예: 13, 15-16, 25, 31-33, 61-67에서 인칭과 화자 관계가 어색하거나 불명확함). 또한 ‘pre-embrillator’, ‘broom and pram’, ‘mags’, ‘straight’ 같은 핵심 표현이 직역되거나 오역되어 맥락상 의미가 크게 흐려지고, 40, 49, 52, 54, 57, 59처럼 자연스럽지 않은 한국어가 여러 군데 보여 chapter 전체의 cohesion과 register가 불안정합니다.",
+          "n_pairs": 77
+        },
+        {
+          "chapter_id": "2033-164914",
+          "score": 18,
+          "reasoning": "The translation shows frequent context breaks and several mistranslations that disrupt the chapter’s logic, such as “What's our makan?” becoming “우리 밥은 뭐야?” and “the castrato” being rendered inconsistently as “카스트라토,” while names like Zawal-Makan are handled unevenly. Coreference and narrative continuity are also weak: the eunuch/fireman exchanges are often mistranslated or reordered awkwardly, and lines like “Rejoined the eunuch” → “내시와 다시 합류했습니다.” and “Then he kissed the onyx head” → “오닉스 머리에 키스했습니다.” read unnaturally and obscure who is doing what. Although some repeated references to the eunuch, fireman, and Zawal-Makan remain recognizable, the chapter as a whole feels fragmented and often reads like isolated sentence-level output rather than a coherent Korean narrative.",
+          "n_pairs": 86
+        },
+        {
+          "chapter_id": "2033-164915",
+          "score": 28,
+          "reasoning": "대체로 문장별 대응은 유지되지만, 대명사와 지시 대상이 자주 흔들리고 인물 관계가 혼란스럽습니다. 예를 들어 5–7번에서 복수/단수 주어가 뒤섞이고, 13–21번과 47–57번에서는 샤라칸, 오마르, 다마스쿠스, 바그다드 관련 호칭과 서술이 어색하게 섞여 자연스러운 서사 흐름이 크게 깨집니다. 또한 32–38번, 42번, 44번 등에는 직역·오역과 비문이 많아 한국어 읽기 경험과 전반적 응집성이 크게 저하됩니다.",
+          "n_pairs": 62
+        },
+        {
+          "chapter_id": "2033-164916",
+          "score": 34,
+          "reasoning": "전반적으로 인명과 호칭이 흔들립니다. wazir/minister/chamberlain이 와지르·장관·시종장·체임벌레인으로 제각각 번역되고, Zawamakan/Zawal-Makan도 혼용되며, 28행의 Charizard처럼 완전히 다른 고유명사가 끼어들어 서사 연속성이 크게 깨집니다. 또한 39행의 “진영의 중심부까지 수리했습니다”는 의미가 어색하고, 36–40행의 명령·이동·질문의 논리 연결도 한국어로 자연스럽게 이어지지 않아 전체 읽기 경험이 거칠게 느껴집니다.",
+          "n_pairs": 40
+        },
+        {
+          "chapter_id": "2414-128291",
+          "score": 18,
+          "reasoning": "The chapter shows frequent context loss and many mistranslations that break coherence, such as “two straw” becoming “두 짚,” “the kind” being rendered inconsistently as “그 종류/이런 종류/친절한 이,” and several lines turning into nonsensical or unrelated Korean like “Size two extra.” Pronouns, address forms, and register also fluctuate sharply between archaic, polite, and casual Korean, which makes the dialogue hard to follow as a continuous narrative. While some sentences are understandable in isolation, the overall reading experience is highly fragmented and often semantically distorted.",
+          "n_pairs": 53
+        },
+        {
+          "chapter_id": "2414-128292",
+          "score": 41,
+          "reasoning": "전반적으로 고어체의 철학적 독백이라는 주제는 유지되지만, 문장별 번역이 매우 불안정해 의미와 화자가 자주 흐려집니다. 예를 들어 10, 13, 18, 25, 29번은 원문의 뜻을 자연스럽게 살리지 못했고, 11~12번과 36~47번에서는 ‘그/당신’ 지칭이 일관되게 이어지지 않아 독자가 인물 관계와 논리를 따라가기 어렵습니다. 다만 그림자, 목표, 방랑자 같은 핵심 어휘는 대체로 반복 유지되어 완전히 বিচ্ছিন্ন된 번역은 아니지만, 자연스러움과 문맥 적합성에서 누적된 손실이 큽니다.",
+          "n_pairs": 47
+        },
+        {
+          "chapter_id": "2414-159411",
+          "score": 34,
+          "reasoning": "전체적으로 이야기의 흐름은 따라가지만, 인칭·호칭과 화자 표지가 자주 무너져 읽는 경험이 크게 흔들립니다. 예를 들어 1번에서 ‘쇠우리에 갇히게 되었는데’처럼 주어 관계가 틀어지고, 6번·28번·60번 등에서는 누가 누구에게 말하는지 번역이 뒤섞여 핵심 대화 구조가 불명확해집니다. 또한 ‘브라민/브라만/브라말’, ‘새장/우리’, ‘판결/판단’ 같은 용어가 일관되지 않고, 20번·28번·60번·71번처럼 원문 의미가 깨진 문장이 여러 곳 보여 전반적 응집성이 낮습니다.",
+          "n_pairs": 82
+        },
+        {
+          "chapter_id": "2414-165385",
+          "score": 62,
+          "reasoning": "전반적으로 인물 지칭과 문장 흐름은 유지되지만, 3번의 “procom”을 그대로 음차한 듯한 표현은 의미 전달이 불명확하고, 6번은 시제와 문맥상 어색하게 미래형으로 번역되어 앞뒤 논리와 맞지 않습니다. 7~8번은 ‘그것’으로 이어지는 지시가 비교적 일관되지만, 전체적으로는 원문의 풍자적 어조와 자연스러운 한국어 문장감이 다소 약해 읽기 경험이 매끄럽지 않습니다.",
+          "n_pairs": 8
+        },
+        {
+          "chapter_id": "2609-156975",
+          "score": 18,
+          "reasoning": "The chapter is highly inconsistent and often reads like fragmented or mistranslated output, with many sentences losing their original sense entirely (e.g., “Hold on, ho-fats…,” “이집트 압정 마스터,” “제트기와 강력한 총”). Coreference and terminology are also unstable, with names and concepts shifting awkwardly or incorrectly, and several lines fail to preserve the logical flow of Moses’s story, making the Korean text feel disconnected and difficult to follow as a coherent chapter.",
+          "n_pairs": 62
+        },
+        {
+          "chapter_id": "2609-157645",
+          "score": 41,
+          "reasoning": "전반적으로 담배와 교회 관련 주제가 유지되지만, 문장별로 의미가 많이 흔들리고 자연스러운 한국어 흐름이 약합니다. 특히 1, 2, 7, 12, 17~18번은 원문의 뜻이 어색하게 왜곡되거나 문법적으로 부자연스러워서, 앞뒤 맥락과 연결해 읽을 때 이해가 끊깁니다. 인명과 용어는 대체로 유지되지만, ‘Par’/‘Parr’처럼 표기가 흔들리고, 논리 연결도 매끄럽지 않아 전체적인 일관성과 읽기 경험이 크게 떨어집니다.",
+          "n_pairs": 22
+        },
+        {
+          "chapter_id": "2609-169640",
+          "score": 18,
+          "reasoning": "전반적으로 문장들이 개별적으로도 어색한 직역이 많아 한국어 읽기 경험이 크게 떨어집니다. 특히 4–5, 8–9, 20–21, 24, 33–34, 40–43번은 의미가 불명확하거나 원문의 관계를 제대로 살리지 못해 서사적 연속성이 약해졌고, 고유명사와 지시 대상도 일관되게 정리되지 않았습니다. 다만 1–3, 15–16, 25–26처럼 일부 구간은 기본적인 흐름은 유지되어 완전히 붕괴된 수준은 아닙니다.",
+          "n_pairs": 46
+        },
+        {
+          "chapter_id": "3005-163389",
+          "score": 34,
+          "reasoning": "전반적으로 인물 지칭과 시점이 자주 흔들리고, 16–18, 27–36처럼 존댓말·반말·서술체가 섞여 톤과 등록이 불안정합니다. 특히 26의 “꽤 싸 보이네”, 36의 “재미없다고 경고합니다”, 38의 “말 역시 불타오르는 집처럼 변하고 있습니다”처럼 문맥에 맞지 않거나 어색한 번역이 여러 군데 보여 자연스러운 한국어 읽기 흐름이 크게 깨집니다. 다만 Sherburn의 군중 제압 장면과 폭도 해산, 이후 공연 중단이라는 큰 사건 흐름은 대체로 유지되어 완전히 단절되지는 않았습니다.",
+          "n_pairs": 41
+        },
+        {
+          "chapter_id": "3005-163390",
+          "score": 34,
+          "reasoning": "전반적으로 구어체와 서술 흐름이 자주 깨지고, 특히 2번의 \"웃으면서 자살한 사람들이\"처럼 의미가 완전히 어긋난 번역이 있어 핵심 내용 전달이 크게 손상됩니다. 또한 38번의 \"전화해\"처럼 시대·문맥에 맞지 않는 어휘가 섞이고, 48–49번처럼 지시 대상과 문장 구조가 불안정해져 장 전체의 일관성과 자연스러움이 떨어집니다. 다만 일부 구간에서는 사건 순서와 대화 흐름이 대체로 유지되어 완전히 붕괴된 수준은 아닙니다.",
+          "n_pairs": 60
+        },
+        {
+          "chapter_id": "3005-163391",
+          "score": 41,
+          "reasoning": "전반적으로 사건의 흐름은 따라가지만, 대명사와 지칭이 자주 흔들리고 문장별 번역투가 강해 한국어 읽기 경험이 많이 떨어집니다. 예를 들어 6번의 \"the horniest old rip\"이 \"역사상 가장 늙고 늙어 보이는 찢겨진 사람\"으로 오역되고, 48~53번에서는 인물·직업 정보가 이어지는데도 \"사업\"처럼 부자연스러운 표현과 영어식 구조가 반복되어 맥락적 자연스러움이 약합니다. 또한 13, 25, 47, 58, 62~64번처럼 화자와 인용부 처리, 호칭, 명령문이 일관되지 않아 전체적으로는 중간 이하의 일관성만 유지됩니다.",
+          "n_pairs": 70
+        },
+        {
+          "chapter_id": "3005-163399",
+          "score": 41,
+          "reasoning": "전반적으로 인물 지칭과 대화 흐름은 어느 정도 따라가지만, 시제와 화자 일관성이 자주 흔들려 읽는 경험이 거칠습니다. 예를 들어 28, 35, 39, 53-55번에서 현재형·과거형이 뒤섞이고, 6번의 \"예썸\"처럼 의미가 불명확한 번역도 있어 문맥 이해가 어렵습니다. 또한 \"one-horse cotton plantations\"를 \"작은 한 마리 목화 농장\"으로 옮긴 부분처럼 핵심 표현이 부자연스럽고, 24-25번의 \"find out who I was\"가 \"내가 누구였는지 알아내고\"로 잘못 전달되어 서사적 논리가 흔들립니다.",
+          "n_pairs": 55
+        }
+      ],
+      "avg_context_score": 33.6667,
+      "n_chapters": 18,
+      "total_pairs": 1136
+    }
+  ]
+}

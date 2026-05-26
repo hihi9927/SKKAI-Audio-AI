@@ -15,6 +15,11 @@ Usage:
     python evaluation/LibriSpeech/utils/compute_comet.py \
         --metric-json evaluation/LibriSpeech/results/finetuned_silence(1.0.3)/full/run_05/metric.json \
         --translator gpt --api-key sk-...
+
+    # Reference-free QE (src + mt only, no ref needed)
+    python evaluation/LibriSpeech/utils/compute_comet.py \
+        --metric-json evaluation/LibriSpeech/results/finetuned_silence_gpt(1.0.4)/full/run_09/metric.json \
+        --qe
 """
 
 import argparse
@@ -82,8 +87,11 @@ async def translate_files_with_context(
     return await asyncio.gather(*[translate_file(segs) for segs in file_segments])
 
 
-def run_comet(model, srcs, refs, mts):
-    data = [{"src": s, "ref": r, "mt": m} for s, r, m in zip(srcs, refs, mts)]
+def run_comet(model, srcs, mts, refs=None):
+    if refs is not None:
+        data = [{"src": s, "ref": r, "mt": m} for s, r, m in zip(srcs, refs, mts)]
+    else:
+        data = [{"src": s, "mt": m} for s, m in zip(srcs, mts)]
     output = model.predict(data, batch_size=8, gpus=1, progress_bar=True)
     return {"system_score": output.system_score, "segment_scores": output.scores}
 
@@ -93,8 +101,9 @@ def main():
     parser.add_argument("--metric-json", required=True)
     parser.add_argument("--target-lang", default="ko")
     parser.add_argument("--src-lang", default="en", help="원문 언어 코드 (GPT context 번역 시 사용)")
-    parser.add_argument("--comet-model", default="Unbabel/wmt22-comet-da")
+    parser.add_argument("--comet-model", default=None, help="COMET 모델 (기본값: QE 모드 시 wmt22-cometkiwi-da, 일반 모드 시 wmt22-comet-da)")
     parser.add_argument("--output", default=None)
+    parser.add_argument("--qe", action="store_true", help="Reference-free QE 모드: src + mt만 사용, ref 번역 생략")
     parser.add_argument(
         "--translator", choices=["google", "gpt"], default="google",
         help="ref 번역에 사용할 번역기 (default: google). gpt는 파이프라인과 동일한 컨텍스트 반영 번역 사용",
@@ -103,6 +112,9 @@ def main():
     parser.add_argument("--api-key", default=None, help="OpenAI API 키 (미지정 시 OPENAI_API_KEY 환경변수 사용)")
     parser.add_argument("--max-context", type=int, default=5, help="GPT context 번역 시 유지할 직전 세그먼트 수")
     args = parser.parse_args()
+
+    if args.comet_model is None:
+        args.comet_model = "Unbabel/wmt22-cometkiwi-da" if args.qe else "Unbabel/wmt22-comet-da"
 
     metric_path = Path(args.metric_json)
     with open(metric_path) as f:
@@ -126,8 +138,11 @@ def main():
     n = len(file_ids)
     print(f"Loaded {n} files from {metric_path}")
 
-    print(f"\nTranslating {n} hypothesis texts → {args.target_lang} (COMET ref, translator={args.translator}) ...")
-    if args.translator == "gpt":
+    if args.qe:
+        hyp_translations = None
+        print("QE 모드: ref 번역 생략")
+    elif args.translator == "gpt":
+        print(f"\nTranslating {n} hypothesis texts → {args.target_lang} (COMET ref, translator=gpt) ...")
         hyp_translations = asyncio.run(
             translate_files_with_context(
                 file_segments,
@@ -139,6 +154,7 @@ def main():
             )
         )
     else:
+        print(f"\nTranslating {n} hypothesis texts → {args.target_lang} (COMET ref, translator=google) ...")
         hyp_translations = asyncio.run(translate_texts(hypotheses, args.target_lang))
 
     print(f"\nLoading COMET model: {args.comet_model}")
@@ -147,37 +163,46 @@ def main():
     model = load_from_checkpoint(model_path)
 
     print("\nRunning COMET ...")
-    result = run_comet(model, hypotheses, hyp_translations, seg_translations)
+    result = run_comet(model, hypotheses, seg_translations, refs=hyp_translations)
 
-    ref_desc = (
-        "Google Translate of full hypothesis"
-        if args.translator == "google"
-        else f"GPT ({args.gpt_model}) context-aware translation of hypothesis segments (max_context={args.max_context})"
-    )
-    output = {
-        "comet_model": args.comet_model,
-        "ref_translator": args.translator if args.translator == "google" else f"gpt/{args.gpt_model}",
-        "target_lang": args.target_lang,
-        "num_files": n,
-        "comet_inputs": {
+    if args.qe:
+        comet_inputs = {
+            "src": "hypothesis (ASR English)",
+            "mt": "pipeline seg translations concatenated per file_id",
+        }
+        per_file = [
+            {"file_id": fid, "src": hyp, "mt": seg_tr, "comet_score": score}
+            for fid, hyp, seg_tr, score in zip(
+                file_ids, hypotheses, seg_translations, result["segment_scores"]
+            )
+        ]
+    else:
+        ref_desc = (
+            "Google Translate of full hypothesis"
+            if args.translator == "google"
+            else f"GPT ({args.gpt_model}) context-aware translation of hypothesis segments (max_context={args.max_context})"
+        )
+        comet_inputs = {
             "src": "hypothesis (ASR English)",
             "ref": ref_desc,
             "mt": "pipeline seg translations concatenated per file_id",
-        },
-        "system_score": result["system_score"],
-        "per_file": [
-            {
-                "file_id": fid,
-                "src": hyp,
-                "ref": ref_tr,
-                "mt": seg_tr,
-                "comet_score": score,
-            }
+        }
+        per_file = [
+            {"file_id": fid, "src": hyp, "ref": ref_tr, "mt": seg_tr, "comet_score": score}
             for fid, hyp, ref_tr, seg_tr, score in zip(
-                file_ids, hypotheses, hyp_translations, seg_translations,
-                result["segment_scores"],
+                file_ids, hypotheses, hyp_translations, seg_translations, result["segment_scores"]
             )
-        ],
+        ]
+
+    output = {
+        "comet_model": args.comet_model,
+        "mode": "qe" if args.qe else "ref",
+        **({"ref_translator": args.translator if args.translator == "google" else f"gpt/{args.gpt_model}"} if not args.qe else {}),
+        "target_lang": args.target_lang,
+        "num_files": n,
+        "comet_inputs": comet_inputs,
+        "system_score": result["system_score"],
+        "per_file": per_file,
     }
 
     out_path = Path(args.output) if args.output else metric_path.parent / "comet_results.json"

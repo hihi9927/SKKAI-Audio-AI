@@ -47,7 +47,8 @@ that does NOT have access to future sentences — each segment was translated \
 the moment it was spoken.
 
 Your task: score how well the translations maintain CONTEXTUAL CONSISTENCY \
-across the entire chapter.
+across the entire chapter, including both informational accuracy and the \
+reading experience of a native Korean speaker.
 
 Evaluation criteria (weigh equally):
 
@@ -67,24 +68,36 @@ translated according to the meaning established by the surrounding context \
 (e.g., a technical term in a medical chapter vs. the same word in casual speech)?
 5. Narrative/logical continuity – Are cause-effect relationships, temporal \
 sequences, and references to earlier events in the chapter correctly carried \
-forward? Does the translation make it clear that later sentences build on \
-earlier ones?
+forward? Does the translation use appropriate Korean discourse markers \
+(그래서, 그러나, 한편, 결국, 그런데, 게다가, etc.) to make logical relationships \
+explicit, rather than leaving readers to infer connections?
 6. Tone and register consistency – Is the formality level, emotional register, \
 and narrative voice kept stable across the chapter? Sudden unexplained shifts \
 in register should be penalised.
+
+Reader-experience criteria:
+7. Translation naturalness – Does each translated sentence read as natural \
+Korean — free from awkward word order, calque phrasing, or foreign-language \
+interference — even when read in isolation? Evaluate each sentence on its own \
+surface quality, independent of context.
+8. Global cohesion – Does the chapter, read as a continuous Korean text, form \
+a unified whole? Even if individual sentence connections are locally correct, \
+does the overall translation feel organically structured rather than a sequence \
+of disconnected fragments?
 
 Scoring:
 - Use any integer from 0 to 100. Do NOT round to multiples of 5 or 10.
 - Base your score on the specific evidence you observe in this chapter; \
   do not default to a "safe" middle score.
-- Deduct points proportionally to how often and how severely context breaks occur.
+- Deduct points proportionally to how often and how severely context breaks \
+  or readability issues occur.
 
 Reference points:
-  90-100  Excellent – strong context awareness throughout, minor slips only
-  70-89   Good – context generally well maintained, a few lapses
-  50-69   Moderate – noticeable context loss in places
-  30-49   Poor – frequent context breaks affecting comprehension
-   0-29   Very poor – translations appear largely isolated from each other
+  90-100  Excellent – strong context awareness and smooth reading experience throughout, minor slips only
+  70-89   Good – context generally well maintained and readable, a few lapses
+  50-69   Moderate – noticeable context loss or unnatural phrasing in places
+  30-49   Poor – frequent context breaks or awkward expressions affecting comprehension
+   0-29   Very poor – translations appear largely isolated and difficult to follow as a whole
 
 Respond with ONLY a valid JSON object (no markdown, no extra text):
 {"score": <integer 0-100>, "reasoning": "<two to three sentences citing specific evidence from the chapter>"}\

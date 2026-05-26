@@ -1,0 +1,3301 @@
+{
+  "comet_model": "Unbabel/wmt22-cometkiwi-da",
+  "mode": "qe",
+  "target_lang": "ko",
+  "num_files": 548,
+  "comet_inputs": {
+    "src": "hypothesis (ASR English)",
+    "mt": "pipeline seg translations concatenated per file_id"
+  },
+  "system_score": 0.8092498270264508,
+  "per_file": [
+    {
+      "file_id": "1688-142285-0000",
+      "src": "There's iron, they say, in all our blood. And a grain or two perhaps is good. But his, he makes me harshly feel. Has got a little too much of steel. Anon.",
+      "mt": "우리의 혈액에는 철분이 들어있다고 합니다. 그리고 아마도 한두 알 정도가 좋을 것입니다. 하지만 그 사람은 나를 가혹하게 느끼게 만듭니다. 강철이 너무 많이 들어갔습니다. 곧.",
+      "comet_score": 0.7632839679718018
+    },
+    {
+      "file_id": "1688-142285-0001",
+      "src": "Margaret,\" said Mr. Hale, as he returned from showing his guests downstairs, \"I could not help watching your face with some anxiety, when Mr. Thornton made his confession of having been a shop boy.",
+      "mt": "마가렛.\" 헤일 씨가 말했습니다. 그는 손님들에게 아래층을 보여주고 돌아오면서 \"손튼 씨가 가게 주인이었다고 고백했을 때 나는 약간 불안한 마음으로 당신의 얼굴을 지켜보지 않을 수 없었습니다.",
+      "comet_score": 0.8306446075439453
+    },
+    {
+      "file_id": "1688-142285-0002",
+      "src": "You don't mean that you thought me so silly.",
+      "mt": "당신이 나를 그렇게 바보처럼 생각했다는 뜻은 아닙니다.",
+      "comet_score": 0.8639049530029297
+    },
+    {
+      "file_id": "1688-142285-0003",
+      "src": "I really like that account of himself better than anything else he said.",
+      "mt": "나는 그가 말한 다른 어떤 것보다 자신에 대한 그 설명을 정말 좋아합니다.",
+      "comet_score": 0.8840610980987549
+    },
+    {
+      "file_id": "1688-142285-0004",
+      "src": "His statement of having been a shop boy was the thing I liked best of all.",
+      "mt": "가게 소년이었다는 그의 진술은 내가 가장 좋아하는 것이었습니다.",
+      "comet_score": 0.8693795204162598
+    },
+    {
+      "file_id": "1688-142285-0005",
+      "src": "You who were always accusing people of being shoppy at Helston.",
+      "mt": "헬스톤에서는 항상 사람들이 쇼핑만 한다고 비난하던 당신.",
+      "comet_score": 0.8063802719116211
+    },
+    {
+      "file_id": "1688-142285-0006",
+      "src": "I don't think, Mr. Hale, you have done quite right in introducing such a person to us, without telling us what he had been.",
+      "mt": "헤일 씨, 당신이 그런 사람을 우리에게 소개한 것은 아주 옳은 일이라고 생각하지 않습니다. 그가 어떤 사람이었는지 우리에게 말하지 않고.",
+      "comet_score": 0.8692622184753418
+    },
+    {
+      "file_id": "1688-142285-0007",
+      "src": "I really was very much afraid of showing him how much shocked I was at some parts of what he said.",
+      "mt": "나는 그가 말한 일부 부분에 내가 얼마나 충격을 받았는지 그에게 보여주기가 정말 두려웠습니다.",
+      "comet_score": 0.8914051651954651
+    },
+    {
+      "file_id": "1688-142285-0008",
+      "src": "His father dying in miserable circumstances.",
+      "mt": "그의 아버지는 비참한 상황에서 죽었습니다.",
+      "comet_score": 0.8832366466522217
+    },
+    {
+      "file_id": "1688-142285-0009",
+      "src": "Why, it might have been in the workhouse.",
+      "mt": "왜, 작업장에 있었을 수도 있습니다.",
+      "comet_score": 0.7269446849822998
+    },
+    {
+      "file_id": "1688-142285-0010",
+      "src": "His father speculated wildly, failed, And then killed himself because he could not bear the disgrace.",
+      "mt": "그의 아버지는 미친 듯이 추측했다. 실패한, 그리고 그 치욕을 견디다 못해 스스로 목숨을 끊었습니다.",
+      "comet_score": 0.819343090057373
+    },
+    {
+      "file_id": "1688-142285-0011",
+      "src": "All his former friends shrank from the disclosures that had to be made of his dishonest gambling. Rambling, wild, hopeless struggles, made with other people's money, to regain his own moderate portion of wealth!",
+      "mt": "그의 이전 친구들은 모두 그의 부정직한 도박에 대한 폭로를 꺼렸습니다. 남의 돈으로 만든 방황하고, 거칠고, 절망적인 투쟁, 자신의 적당한 부의 부분을 되찾기 위해!",
+      "comet_score": 0.7564974427223206
+    },
+    {
+      "file_id": "1688-142285-0012",
+      "src": "No one came fords to help the mother and this boy?",
+      "mt": "엄마와 이 소년을 도우러 오는 사람이 아무도 없나요?",
+      "comet_score": 0.7591906785964966
+    },
+    {
+      "file_id": "1688-142285-0013",
+      "src": "At least no friend came forward immediately, and Mr. Thornton is not one I fancy, to wait till tardy kindness comes to find her out.",
+      "mt": "적어도 즉시 나서는 친구는 없었고, 그리고 손튼 씨는 지각한 친절이 그녀를 알아낼 때까지 기다리는 사람이 아닙니다.",
+      "comet_score": 0.6738672852516174
+    },
+    {
+      "file_id": "1688-142285-0014",
+      "src": "So they left Milton.",
+      "mt": "그래서 그들은 밀턴을 떠났습니다.",
+      "comet_score": 0.8848845362663269
+    },
+    {
+      "file_id": "1688-142285-0015",
+      "src": "How tainted? Asked her father.",
+      "mt": "얼마나 오염됐나요? 그녀의 아버지에게 물었습니다.",
+      "comet_score": 0.8579094409942627
+    },
+    {
+      "file_id": "1688-142285-0016",
+      "src": "Oh, papa, by that testing everything by the standard of wealth!",
+      "mt": "아, 아버지, 부의 기준으로 모든 것을 시험하시다니!",
+      "comet_score": 0.8338389992713928
+    },
+    {
+      "file_id": "1688-142285-0017",
+      "src": "When he spoke of the mechanical powers, he evidently looked upon them only as new ways of extending trade and making money.",
+      "mt": "그가 기계적인 힘에 관해 이야기했을 때, 그는 분명히 그것들을 무역을 확대하고 돈을 버는 새로운 방법으로만 여겼습니다.",
+      "comet_score": 0.8876605033874512
+    },
+    {
+      "file_id": "1688-142285-0018",
+      "src": "And the poor men around him! They were poor because they were vicious, out of the pale of his sympathies because they had not his iron nature, and the capabilities that it gives him for being rich.",
+      "mt": "그리고 그 주변의 불쌍한 남자들! 그들은 사악했기 때문에 가난했고, 그의 강철 같은 본성이 없었기 때문에 그의 동정심이 창백했습니다. 그리고 그것이 그에게 부자가 되는 능력을 제공합니다.",
+      "comet_score": 0.7406519651412964
+    },
+    {
+      "file_id": "1688-142285-0019",
+      "src": "Not vicious. He never said that.",
+      "mt": "사악하지 않습니다. 그는 그런 말을 한 적이 없습니다.",
+      "comet_score": 0.8970847725868225
+    },
+    {
+      "file_id": "1688-142285-0020",
+      "src": "Improvident and self-indulgent were his words.",
+      "mt": "그의 말은 경솔하고 방종했습니다.",
+      "comet_score": 0.6007158756256104
+    },
+    {
+      "file_id": "1688-142285-0021",
+      "src": "Margaret was collecting her mother's working materials and preparing to go to bed.",
+      "mt": "마가렛은 어머니의 작업 재료를 수집하고 있었습니다 그리고 잠자리에 들 준비를 합니다.",
+      "comet_score": 0.886123538017273
+    },
+    {
+      "file_id": "1688-142285-0022",
+      "src": "Just as she was leaving the room, she hesitated. She was inclined to make an acknowledgment, which she thought would please her father. But which, to be full and true, must include a little annoyance.",
+      "mt": "그녀가 방을 나가던 중, 그녀는 망설였다. 그녀는 인정하려는 경향이 있었고, 그녀는 아버지를 기쁘게 할 것이라고 생각했습니다. 그러나 이것이 완전하고 사실이 되려면 약간의 성가심을 포함해야 합니다.",
+      "comet_score": 0.8333938121795654
+    },
+    {
+      "file_id": "1688-142285-0023",
+      "src": "However, out it came.",
+      "mt": "그러나 그것이 나왔습니다.",
+      "comet_score": 0.7462013959884644
+    },
+    {
+      "file_id": "1688-142285-0024",
+      "src": "Papa, I do think Mr. Thornton a very remarkable man. But personally, I don't like him at all.",
+      "mt": "아빠, 저는 손튼 씨가 정말 뛰어난 사람이라고 생각해요. 하지만 개인적으로 나는 그를 전혀 좋아하지 않습니다.",
+      "comet_score": 0.8935710787773132
+    },
+    {
+      "file_id": "1688-142285-0025",
+      "src": "And I do,\" said her father, laughing.",
+      "mt": "저도 그렇습니다.\" 그녀의 아버지가 웃으며 말했습니다.",
+      "comet_score": 0.893014132976532
+    },
+    {
+      "file_id": "1688-142285-0026",
+      "src": "Personally, as you call it, and all.",
+      "mt": "개인적으로는 이렇게 부르죠. 그리고 모두.",
+      "comet_score": 0.5727243423461914
+    },
+    {
+      "file_id": "1688-142285-0027",
+      "src": "I don't set him up for a hero or anything of that kind.",
+      "mt": "나는 그를 영웅이나 그런 종류의 인물로 설정하지 않습니다.",
+      "comet_score": 0.8782340884208679
+    },
+    {
+      "file_id": "1688-142285-0028",
+      "src": "But good night, child.",
+      "mt": "하지만 잘 자라, 얘야.",
+      "comet_score": 0.8875468373298645
+    },
+    {
+      "file_id": "1688-142285-0029",
+      "src": "There were several other signs of something wrong about Mrs. Hale.",
+      "mt": "Hale 부인에게는 뭔가 잘못된 징후가 몇 가지 더 있었습니다.",
+      "comet_score": 0.8720816373825073
+    },
+    {
+      "file_id": "1688-142285-0030",
+      "src": "She and Dixon held mysterious consultations in a bedroom, from which Dixon would come out crying and cross, as was the custom when any distress of her mistress called upon her sympathy.",
+      "mt": "그녀와 딕슨은 침실에서 신비한 상담을 했고, 그녀의 여주인의 고통이 그녀의 동정심을 불러일으킬 때의 관습처럼 딕슨은 울면서 나와서 건너곤 했습니다.",
+      "comet_score": 0.7313211560249329
+    },
+    {
+      "file_id": "1688-142285-0031",
+      "src": "Once Margaret had gone into the chambers soon after Dixon left it, and found her mother on her knees, and as Margaret stole out, she caught a few words, which were evidently a prayer for strength and patience, to endure severe bodily suffering.",
+      "mt": "한번은 딕슨이 방을 떠난 직후 마가렛이 방으로 들어갔을 때, 그리고 그녀의 어머니가 무릎을 꿇고 있는 것을 발견했습니다. 그리고 마가렛이 훔쳐나가자, 그녀는 분명히 힘과 인내를 구하는 기도인 몇 마디 말을 들었습니다. 극심한 육체적 고통을 견뎌야 합니다.",
+      "comet_score": 0.7443151473999023
+    },
+    {
+      "file_id": "1688-142285-0032",
+      "src": "But though she received caresses and fond words back again, in such profusion as would have gladdened her formerly, yet she felt that there was a secret withheld from her, and she believed it bore serious reference to her mother's health.",
+      "mt": "하지만 그녀는 다시 애무와 다정한 말을 받았지만, 예전에는 그녀를 기쁘게 했을 만큼 풍성하게, 하지만 그녀는 자신에게 숨겨져 있는 비밀이 있다고 느꼈습니다. 그리고 그녀는 그것이 어머니의 건강과 심각한 관련이 있다고 믿었습니다.",
+      "comet_score": 0.7931115627288818
+    },
+    {
+      "file_id": "1688-142285-0033",
+      "src": "She lay awake very long this night, planning how to lessen the evil influence of their Milton life on her mother.",
+      "mt": "그녀는 오늘 밤 아주 오랫동안 깨어 누워 있었습니다. 밀턴의 삶이 그녀의 어머니에게 미치는 사악한 영향을 줄이는 방법을 계획합니다.",
+      "comet_score": 0.8088489174842834
+    },
+    {
+      "file_id": "1688-142285-0034",
+      "src": "A servant to give Dixon permanent assistance should be got. If she gave up the whole time to the search, and then at any rate, her mother might have all the personal attention she required, and had been accustomed to her whole life.",
+      "mt": "딕슨에게 영구적인 도움을 줄 하인을 구해야 합니다. 만약 그녀가 수색을 내내 포기했다면, 그러면 어쨌든 그녀의 어머니는 그녀에게 필요한 모든 개인적인 관심을 받을 수 있을 것입니다. 그리고 그녀의 평생에 익숙해졌습니다.",
+      "comet_score": 0.7646167874336243
+    },
+    {
+      "file_id": "1688-142285-0035",
+      "src": "Visiting register offices, seeing all manner of unlikely people, and very few in the least likely, absorbed Margaret's time and thoughts for several days.",
+      "mt": "등기소 방문, 온갖 종류의 예상치 못한 사람들을 보고, 그리고 며칠 동안 마가렛의 시간과 생각을 흡수한 사람은 거의 없었습니다.",
+      "comet_score": 0.7094603776931763
+    },
+    {
+      "file_id": "1688-142285-0036",
+      "src": "One afternoon, she met Bessie Higgins in the street and stopped to speak to her.",
+      "mt": "어느 날 오후, 그녀는 거리에서 베시 히긴스를 만났습니다. 그리고 그녀에게 말을 걸기 위해 멈춰 섰습니다.",
+      "comet_score": 0.8915653824806213
+    },
+    {
+      "file_id": "1688-142285-0037",
+      "src": "Well, Bessie, how are you?",
+      "mt": "베시, 잘 지내?",
+      "comet_score": 0.88114994764328
+    },
+    {
+      "file_id": "1688-142285-0038",
+      "src": "Better, and not better, if you know what that means.",
+      "mt": "더 나은, 그게 무슨 뜻인지 안다면 더 좋지 않을 것입니다.",
+      "comet_score": 0.6199221611022949
+    },
+    {
+      "file_id": "1688-142285-0039",
+      "src": "Not exactly, replied Margaret, smiling.",
+      "mt": "정확히는 아닙니다. 마가렛은 웃으며 대답했습니다.",
+      "comet_score": 0.8887866735458374
+    },
+    {
+      "file_id": "1688-142285-0040",
+      "src": "I'm better than not being torn to pieces, by coughing or knights, but I'm weary and tired of Milton. And longing to get away to the land of Bula. And when I think I'm farther and farther off, my heart sinks, and I'm no better, I'm worse.",
+      "mt": "기침이나 기사에게 찢겨지지 않는 것보다는 낫지만 하지만 나는 밀턴이 지겹고 지쳤어요. 그리고 불라 땅으로 떠나고 싶어합니다. 그리고 내가 점점 더 멀리 떨어져 있다고 생각할 때, 내 마음이 가라앉고, 그리고 나는 더 나은 것이 아니라 더 나쁩니다.",
+      "comet_score": 0.721063494682312
+    },
+    {
+      "file_id": "1688-142285-0041",
+      "src": "Margaret turned around. To walk long side of the girl in her feeble progress homewards.",
+      "mt": "마가렛은 돌아섰다. 집으로 향하는 미약한 발걸음으로 소녀의 긴 옆을 걷는 것.",
+      "comet_score": 0.6778533458709717
+    },
+    {
+      "file_id": "1688-142285-0042",
+      "src": "But for a minute or two, she",
+      "mt": "하지만 1~2분 정도, 그녀",
+      "comet_score": 0.6814583539962769
+    },
+    {
+      "file_id": "1688-142285-0043",
+      "src": "At last, she said in a low voice.",
+      "mt": "마침내 그녀는 낮은 목소리로 말했다.",
+      "comet_score": 0.8803259134292603
+    },
+    {
+      "file_id": "1688-142285-0044",
+      "src": "Bessie. Do you wish to die?",
+      "mt": "베시. 죽고 싶나요?",
+      "comet_score": 0.8936561346054077
+    },
+    {
+      "file_id": "1688-142285-0045",
+      "src": "Bessie was silent, in her turn, for a minute or two. Then she replied,",
+      "mt": "Bessie는 1~2분 정도 침묵을 지켰습니다. 그러자 그녀는 이렇게 대답했습니다.",
+      "comet_score": 0.852986752986908
+    },
+    {
+      "file_id": "1688-142285-0046",
+      "src": "Not worse than many others, I reckon.",
+      "mt": "다른 많은 것보다 나쁘지는 않다고 생각합니다.",
+      "comet_score": 0.862890362739563
+    },
+    {
+      "file_id": "1688-142285-0047",
+      "src": "But what was it?",
+      "mt": "그런데 그게 뭐였지?",
+      "comet_score": 0.8627434968948364
+    },
+    {
+      "file_id": "1688-142285-0048",
+      "src": "You know, I'm a stranger here, so perhaps I'm not so quick at understanding what you mean, as if I'd lived all my life in Milton.",
+      "mt": "알다시피, 저는 이곳에서 낯선 사람입니다. 그래서 아마도 제가 평생을 밀턴에서 살았던 것처럼 당신이 의미하는 바를 이해하는 데 그렇게 빠르지 않을 수도 있습니다.",
+      "comet_score": 0.8764278888702393
+    },
+    {
+      "file_id": "1688-142285-0049",
+      "src": "I had forgotten what I said for the time, continued Margaret quietly.",
+      "mt": "그동안 내가 한 말을 잊어버렸는데, 마가렛은 조용히 계속했다.",
+      "comet_score": 0.8566285967826843
+    },
+    {
+      "file_id": "1688-142285-0050",
+      "src": "I should have thought of it again when I was less busy. May I go with you now?",
+      "mt": "좀 덜 바쁠 때 다시 생각했어야 했는데. 지금 같이 가도 될까요?",
+      "comet_score": 0.874439001083374
+    },
+    {
+      "file_id": "1688-142285-0051",
+      "src": "The sharpness in her eye turned to a wistful longing, as she met Margaret's soft and friendly gaze.",
+      "mt": "그녀의 날카로운 눈빛은 아련한 그리움으로 변했고, 마가렛의 부드럽고 다정한 시선을 만난 순간.",
+      "comet_score": 0.8650808930397034
+    },
+    {
+      "file_id": "1688-142285-0052",
+      "src": "As they turned up into a small court, opening out into a squalid street, Bessie said,",
+      "mt": "그들이 작은 마당으로 들어서자 누추한 거리가 나왔다. 베시가 말했다.",
+      "comet_score": 0.7283551692962646
+    },
+    {
+      "file_id": "1688-142285-0053",
+      "src": "You'll not be daunted if father's at home, and speaks a bit gruffish at first.",
+      "mt": "집에 아빠가 계시면 당황하지 않으실 거예요. 그리고 처음에는 좀 무뚝뚝하게 말해요.",
+      "comet_score": 0.8332923054695129
+    },
+    {
+      "file_id": "1688-142285-0054",
+      "src": "But Nicholas was not at home when they entered.",
+      "mt": "하지만 그들이 들어갔을 때 니콜라스는 집에 없었습니다.",
+      "comet_score": 0.8977010846138
+    },
+    {
+      "file_id": "1688-142285-0055",
+      "src": "Gasped she at last.",
+      "mt": "마침내 그녀는 숨을 헐떡였다.",
+      "comet_score": 0.8265957236289978
+    },
+    {
+      "file_id": "1688-142285-0056",
+      "src": "Bessie took a long and feverish draught, and then fell back and shut her eyes.",
+      "mt": "Bessie는 길고 열이 나는 한 모금을 마셨습니다. 그리고 뒤로 물러나 눈을 감았습니다.",
+      "comet_score": 0.6722233295440674
+    },
+    {
+      "file_id": "1688-142285-0057",
+      "src": "Margaret bent over her and said, 'Bessie, Don't be impatient with your life, whatever it is, or may have been.",
+      "mt": "마가렛은 그녀 위로 몸을 굽히며 말했습니다. '베시, 인생이 무엇이든 조급해하지 마세요. 아니면 그랬을 수도 있습니다.",
+      "comet_score": 0.7862198948860168
+    },
+    {
+      "file_id": "1688-142285-0058",
+      "src": "Remember who gave it to you. And made it what it is.",
+      "mt": "누가 준 것인지 기억해 보세요. 그리고 그것을 그대로 만들었습니다.",
+      "comet_score": 0.8289149403572083
+    },
+    {
+      "file_id": "1688-142285-0059",
+      "src": "Now, I'll not have my wench preached to.",
+      "mt": "이제 나는 내 처녀에게 설교를 하지 않을 것입니다.",
+      "comet_score": 0.7341587543487549
+    },
+    {
+      "file_id": "1688-142285-0060",
+      "src": "But surely,\" said Margaret, facing round, \"you believe in what I said, that God gave her life, and ordered what kind of life it was to be.",
+      "mt": "하지만 확실히,\" 마가렛이 돌아보며 말했습니다. \"당신은 하나님께서 그녀에게 생명을 주셨다는 내 말을 믿으세요. 그리고 어떤 삶을 살아야 할지 명령했습니다.",
+      "comet_score": 0.8490204811096191
+    },
+    {
+      "file_id": "1688-142285-0061",
+      "src": "I believe what I see and no more.",
+      "mt": "나는 내가 보는 것만 믿으며 그 이상은 믿지 않습니다.",
+      "comet_score": 0.8842353820800781
+    },
+    {
+      "file_id": "1688-142285-0062",
+      "src": "That's what I believe, young woman.",
+      "mt": "나는 그렇게 믿는다. 젊은 숙녀.",
+      "comet_score": 0.8614513874053955
+    },
+    {
+      "file_id": "1688-142285-0063",
+      "src": "I don't believe all I hear. No, not by a big deal.",
+      "mt": "나는 내가 듣는 모든 것을 믿지 않습니다. 아니요, 별거 아닙니다.",
+      "comet_score": 0.8759204149246216
+    },
+    {
+      "file_id": "1688-142285-0064",
+      "src": "But who's come at last? And who's welcome, as long as he'll keep from preaching on what who knows naught about.",
+      "mt": "그런데 마지막에 누가 왔나요? 그리고 누가 천만에요, 그가 아무것도 모르는 것에 대해 설교하지 않는 한.",
+      "comet_score": 0.6663092374801636
+    },
+    {
+      "file_id": "1688-142285-0065",
+      "src": "It's simple, and not far to fetch, nor hard to work.",
+      "mt": "그것은 간단하다. 그리 멀지도 않은 곳에, 일하기 힘들지도 않고.",
+      "comet_score": 0.8159000873565674
+    },
+    {
+      "file_id": "1688-142285-0066",
+      "src": "But the girl only pleaded the more with Margaret.",
+      "mt": "그러나 그 소녀는 마가렛에게 더욱 애원했습니다.",
+      "comet_score": 0.837841272354126
+    },
+    {
+      "file_id": "1688-142285-0067",
+      "src": "Don't think hardly on him. He's a good man, he is.",
+      "mt": "그에 대해 심각하게 생각하지 마세요. 그는 좋은 사람이에요.",
+      "comet_score": 0.8494625687599182
+    },
+    {
+      "file_id": "1688-142285-0068",
+      "src": "I sometimes think I shall be moped with sorrow even in the city of God if Arthur is not there.",
+      "mt": "나는 때때로 하나님의 도성에서도 슬픔에 잠길 것이라고 생각합니다. Arthur가 거기에 없다면.",
+      "comet_score": 0.7829405069351196
+    },
+    {
+      "file_id": "1688-142285-0069",
+      "src": "The feverish color came into her cheeks and the feverish flame into her eye.",
+      "mt": "그녀의 뺨에 열이 나는 듯한 색이 스며들었다 그리고 그녀의 눈에 뜨거운 불꽃이 들어왔습니다.",
+      "comet_score": 0.8118231296539307
+    },
+    {
+      "file_id": "1688-142285-0070",
+      "src": "But you'll be there, father, you shall!",
+      "mt": "하지만 당신은 거기 있을 거예요, 아버지 너는 그래야 한다!",
+      "comet_score": 0.8551932573318481
+    },
+    {
+      "file_id": "1688-142285-0071",
+      "src": "She put her hand to it. And became ghastly pale.",
+      "mt": "그녀는 그것에 손을 댔다. 그리고 끔찍할 정도로 창백해졌습니다.",
+      "comet_score": 0.7795637845993042
+    },
+    {
+      "file_id": "1688-142285-0072",
+      "src": "Margaret held her in her arms, and put the weary head to rest upon her bosom.",
+      "mt": "마가렛은 그녀를 팔에 안고, 그리고 지친 머리를 그녀의 품에 안겨주세요.",
+      "comet_score": 0.717348039150238
+    },
+    {
+      "file_id": "1688-142285-0073",
+      "src": "Presently the spasm that foreshadowed death had passed away. And Bessy roused herself and said,",
+      "mt": "이제 죽음을 예고했던 경련은 사라졌습니다. 그리고 Bessy는 정신을 차렸습니다. 그리고 말했다,",
+      "comet_score": 0.8568784594535828
+    },
+    {
+      "file_id": "1688-142285-0074",
+      "src": "I'll go to bed, it's best place. But, catching at Margaret's gown, you'll come again. I know you will. But just say it.",
+      "mt": "나는 자러 갈 것이다. 최고의 장소입니다. 하지만 마가렛의 가운을 잡으면 다시 올 것입니다. 나는 당신이 그럴 것이라는 것을 압니다. 하지만 그냥 말해보세요.",
+      "comet_score": 0.7524094581604004
+    },
+    {
+      "file_id": "1688-142285-0075",
+      "src": "I will come tomorrow, said Margaret.",
+      "mt": "내일 올게요, 마가렛이 말했습니다.",
+      "comet_score": 0.8972742557525635
+    },
+    {
+      "file_id": "1688-142285-0076",
+      "src": "Margaret went away very sad and thoughtful.",
+      "mt": "마가렛은 매우 슬프고 생각에 잠긴 채 떠났습니다.",
+      "comet_score": 0.8951020240783691
+    },
+    {
+      "file_id": "1688-142285-0077",
+      "src": "She was late for tea at home.",
+      "mt": "그녀는 집에서 차를 마시느라 늦었습니다.",
+      "comet_score": 0.8682103753089905
+    },
+    {
+      "file_id": "1688-142285-0078",
+      "src": "Have you met with a servant, dear?",
+      "mt": "하인을 만났나요?",
+      "comet_score": 0.7985749244689941
+    },
+    {
+      "file_id": "1688-142285-0079",
+      "src": "No, Mamma, that Ann Buckley would never have done.",
+      "mt": "아니요, 엄마, 앤 버클리는 결코 하지 않았을 일이다.",
+      "comet_score": 0.8751713633537292
+    },
+    {
+      "file_id": "1688-142285-0080",
+      "src": "S'pose I try. Said Mr. Hale.",
+      "mt": "내가 시도해 볼까. 헤일 씨가 말했습니다.",
+      "comet_score": 0.8634870648384094
+    },
+    {
+      "file_id": "1688-142285-0081",
+      "src": "Everybody else has had their turn at this great difficulty. Now let me try.",
+      "mt": "다른 모든 사람들도 이 큰 어려움을 겪을 차례였습니다. 이제 시도해 보겠습니다.",
+      "comet_score": 0.8624072670936584
+    },
+    {
+      "file_id": "1688-142285-0082",
+      "src": "I may be the Cinderella to put on the slipper after all.",
+      "mt": "결국 나는 슬리퍼를 신는 신데렐라가 될 수도 있다.",
+      "comet_score": 0.8489285111427307
+    },
+    {
+      "file_id": "1688-142285-0083",
+      "src": "What would you do, papa? How would you set about it?",
+      "mt": "어떻게 하시겠습니까, 아빠? 당신은 그것에 대해 어떻게 설정 하시겠습니까?",
+      "comet_score": 0.7464304566383362
+    },
+    {
+      "file_id": "1688-142285-0084",
+      "src": "Well, I, I would apply to some good house mother to recommend me one known to herself or her servants.",
+      "mt": "글쎄요, 저는 좋은 가정주부에게 신청하여 자신이나 하인들이 아는 사람을 추천해 드리고 싶습니다.",
+      "comet_score": 0.8179773688316345
+    },
+    {
+      "file_id": "1688-142285-0085",
+      "src": "Very good, but we must first catch our house, mother.",
+      "mt": "매우 좋은, 하지만 먼저 우리 집을 잡아야 해요, 어머니.",
+      "comet_score": 0.6254082918167114
+    },
+    {
+      "file_id": "1688-142285-0086",
+      "src": "The mother of whom he spoke to us, said Margaret.",
+      "mt": "그가 우리에게 말한 어머니는 마가렛이 말했습니다.",
+      "comet_score": 0.7965331077575684
+    },
+    {
+      "file_id": "1688-142285-0087",
+      "src": "Mr. Thornton. The only mother he has, I believe. Said Mr. Hale quietly.",
+      "mt": "손튼 씨. 나는 그에게 유일한 어머니가 있다고 믿습니다. 헤일 씨가 조용히 말했다.",
+      "comet_score": 0.8572332262992859
+    },
+    {
+      "file_id": "1688-142285-0088",
+      "src": "I shall like to see her. She must be an uncommon person. Her mother added.",
+      "mt": "나는 그녀를 만나고 싶습니다. 그녀는 흔하지 않은 사람임에 틀림없다. 그녀의 어머니가 덧붙였다.",
+      "comet_score": 0.8932626247406006
+    },
+    {
+      "file_id": "1688-142285-0089",
+      "src": "Perhaps she may have a relation who might suit us and be glad of our place.",
+      "mt": "아마도 그녀는 관계가 있을 수도 있습니다 누가 우리에게 어울릴까 그리고 우리 집이 기뻐요.",
+      "comet_score": 0.6471811532974243
+    },
+    {
+      "file_id": "1688-142285-0090",
+      "src": "She sounded to be such a careful, economical person, that I should like anyone out of the same family.",
+      "mt": "그녀는 매우 신중하고 경제적인 사람이어서 같은 가족 중 누구라도 좋아할 것 같았습니다.",
+      "comet_score": 0.8003371953964233
+    },
+    {
+      "file_id": "1688-142285-0091",
+      "src": "My dear,\" said Mr. Howell alarmed, \"pray don't go off on that idea.\"",
+      "mt": "얘야,\" Howell 씨는 놀라서 말했다. \"그 생각을 계속하지 마세요.\"",
+      "comet_score": 0.816266655921936
+    },
+    {
+      "file_id": "1688-142285-0092",
+      "src": "I'm sure at any rate,",
+      "mt": "어쨌든 확신해요.",
+      "comet_score": 0.8483536243438721
+    },
+    {
+      "file_id": "1688-142285-0093",
+      "src": "Take notice that this is not my kind of haughtiness, papa. If I have any at all. Which I don't agree to, though you're always accusing me of it.",
+      "mt": "이건 내 거만한 태도가 아니라는 걸 알아두세요, 아빠. 내가 가지고 있다면. 나는 동의하지 않습니다. 당신은 항상 나를 비난하지만.",
+      "comet_score": 0.752598226070404
+    },
+    {
+      "file_id": "1688-142285-0094",
+      "src": "I don't know positively that it is hers either, but from little things I have gathered from him, I fancy so.",
+      "mt": "나도 그것이 그녀의 것인지 확실하게는 모르지만, 그러나 내가 그에게서 모은 작은 것들로부터 나는 그렇게 생각합니다.",
+      "comet_score": 0.8728271126747131
+    },
+    {
+      "file_id": "1688-142285-0095",
+      "src": "They cared too little to ask, in what manner her son had spoken about her.",
+      "mt": "그들은 물어볼 데가 너무 적었습니다. 그녀의 아들이 그녀에 대해 어떤 방식으로 말했는지.",
+      "comet_score": 0.8409550786018372
+    },
+    {
+      "file_id": "1998-15444-0000",
+      "src": "If called to a case supposed or suspected to be one of poisoning, The medical man has two duties to perform, to save the patient's life and to place himself in a position to give evidence if called on to do so.",
+      "mt": "중독 사건으로 추정되거나 의심되는 사건에 호출된 경우, 의료인은 두 가지 임무를 수행해야 합니다. 환자의 생명을 구하기 위해 그리고 요청이 있을 경우 증거를 제시할 수 있는 위치에 자신을 두는 것입니다.",
+      "comet_score": 0.8680295348167419
+    },
+    {
+      "file_id": "1998-15444-0001",
+      "src": "He should make inquiries as to symptoms, and time at which food or medicine was last taken.",
+      "mt": "증상에 대해 문의해야 하며, 음식이나 약을 마지막으로 복용한 시간.",
+      "comet_score": 0.8242880702018738
+    },
+    {
+      "file_id": "1998-15444-0002",
+      "src": "He should notice the position and temperature of the body, the condition of rigor mortis, marks of violence, appearance of lips and mouth.",
+      "mt": "그는 몸의 위치와 온도를 알아차려야 하며, 사후경직 상태, 폭력의 흔적, 입술과 입의 모습.",
+      "comet_score": 0.8262419700622559
+    },
+    {
+      "file_id": "1998-15444-0003",
+      "src": "In making a post-mortem examination, the alimentary canal should be removed and preserved for further investigation. Investigation.",
+      "mt": "사후검토를 하던 중, 추가 조사를 위해 소화관을 제거하고 보존해야 합니다. 조사.",
+      "comet_score": 0.8116026520729065
+    },
+    {
+      "file_id": "1998-15444-0004",
+      "src": "The gut and the gallage, being cut across between these ligatures, the stomach may be removed entire without spilling its contents.",
+      "mt": "장과 담즙, 이 합자 사이에서 잘려지고, 내용물을 흘리지 않고 위 전체를 제거할 수 있습니다.",
+      "comet_score": 0.753285825252533
+    },
+    {
+      "file_id": "1998-15444-0005",
+      "src": "If the medical practitioner is indoubt on any point, he should obtain technical assistance from someone who has paid attention to the subject.",
+      "mt": "의사가 어떤 점에서든 의심스러울 경우, 그는 해당 주제에 주의를 기울인 사람으로부터 기술 지원을 받아야 합니다.",
+      "comet_score": 0.8891777396202087
+    },
+    {
+      "file_id": "1998-15444-0006",
+      "src": "In a case of attempted suicide by poisoning, is it the duty of the doctor to inform the police?",
+      "mt": "독극물로 자살을 시도한 경우, 경찰에 알리는 것이 의사의 의무인가요?",
+      "comet_score": 0.8907201290130615
+    },
+    {
+      "file_id": "1998-15444-0007",
+      "src": "The best dramatic is that which is at hand.",
+      "mt": "최고의 드라마는 바로 눈앞에 있는 것이다.",
+      "comet_score": 0.834904670715332
+    },
+    {
+      "file_id": "1998-15444-0008",
+      "src": "The dose for an adult is ten minims.",
+      "mt": "성인의 복용량은 최소 10회입니다.",
+      "comet_score": 0.7627225518226624
+    },
+    {
+      "file_id": "1998-15444-0009",
+      "src": "Epomorphine is not allied in physiological action to morphine, and may be given in cases of narcotic poisoning.",
+      "mt": "에포모르핀은 생리학적 작용에 있어서 모르핀과 관련이 없습니다. 마약 중독의 경우 투여될 수 있습니다.",
+      "comet_score": 0.8950332999229431
+    },
+    {
+      "file_id": "1998-15444-0010",
+      "src": "Tickling the fauces with a feather may excite vomiting.",
+      "mt": "깃털로 수도꼭지를 간지럽히면 구토를 유발할 수 있습니다.",
+      "comet_score": 0.79254150390625
+    },
+    {
+      "file_id": "1998-15444-0011",
+      "src": "In using the elastic stomach tube, some fluid should be introduced into the stomach before attempting to empty it, or a portion of the mucus membrane may be sucked into the aperture.",
+      "mt": "탄력 있는 위 튜브를 사용하는 경우, 위를 비우기 전에 위로 약간의 액체를 주입해야 합니다. 또는 점막의 일부가 구멍으로 빨려 들어갈 수도 있습니다.",
+      "comet_score": 0.8220304250717163
+    },
+    {
+      "file_id": "1998-15444-0012",
+      "src": "The tube should be examined to see that it is not broken or cracked, as accidents have happened from neglecting this precaution.",
+      "mt": "튜브가 부러지거나 갈라지지 않았는지 검사해야 합니다. 이 예방 조치를 무시하여 사고가 발생했기 때문입니다.",
+      "comet_score": 0.8893906474113464
+    },
+    {
+      "file_id": "1998-15444-0013",
+      "src": "Antidotes are usually given hypodermically, or if by mouth in the form of tablets.",
+      "mt": "해독제는 일반적으로 피하 주사로 투여됩니다. 또는 정제 형태로 경구 복용하는 경우.",
+      "comet_score": 0.7688252329826355
+    },
+    {
+      "file_id": "1998-15444-0014",
+      "src": "In the absence of a hypodermic syringe, the remedy may be given by the rectum.",
+      "mt": "피하 주사기가 없는 경우, 치료법은 직장에 의해 주어질 수 있습니다.",
+      "comet_score": 0.8253414630889893
+    },
+    {
+      "file_id": "1998-15444-0015",
+      "src": "Notice the smell, colour and general appearance of the matter submitted for examination.",
+      "mt": "검사를 위해 제출된 물질의 냄새, 색상 및 일반적인 외관을 확인하십시오.",
+      "comet_score": 0.8830441832542419
+    },
+    {
+      "file_id": "1998-15444-0016",
+      "src": "For the separation of an alkaloid, the following is the process of Staats Otto.",
+      "mt": "알칼로이드 분리를 위해, Staats Otto의 과정은 다음과 같습니다.",
+      "comet_score": 0.8622643351554871
+    },
+    {
+      "file_id": "1998-15444-0017",
+      "src": "This process is based upon the principle that the salts of the alkaloids are soluble in alcohol and water, and insoluble in ether.",
+      "mt": "이 과정은 알칼로이드의 염이 알코올과 물에 용해된다는 원리에 기초합니다. 그리고 에테르에는 녹지 않습니다.",
+      "comet_score": 0.8924849629402161
+    },
+    {
+      "file_id": "1998-15444-0018",
+      "src": "The pure alkaloids, with the exception of morphine in its crystalline form, are soluble in ether.",
+      "mt": "결정 형태의 모르핀을 제외한 순수한 알칼로이드는 에테르에 용해됩니다.",
+      "comet_score": 0.8920482993125916
+    },
+    {
+      "file_id": "1998-15444-0019",
+      "src": "Two, cool the mixture and filter. Wash the residue with strong alcohol and mix the filtrates.",
+      "mt": "둘째, 혼합물을 식힌 후 여과합니다. 잔류물을 강한 알코올로 씻어내고 여액을 섞는다.",
+      "comet_score": 0.8537079691886902
+    },
+    {
+      "file_id": "1998-15444-0020",
+      "src": "The residue may be set aside for the detection of the metallic poisons if suspected. Expel the alcohol by careful evaporation.",
+      "mt": "의심되는 경우 금속 독극물을 검출하기 위해 잔여물을 따로 보관할 수 있습니다. 조심스럽게 증발시켜 알코올을 제거하십시오.",
+      "comet_score": 0.871986985206604
+    },
+    {
+      "file_id": "1998-15444-0021",
+      "src": "On the evaporation of the alcohol, the resinous and fatty matters separate.",
+      "mt": "알코올이 증발하면서, 수지성 물질과 지방성 물질이 분리됩니다.",
+      "comet_score": 0.8780727386474609
+    },
+    {
+      "file_id": "1998-15444-0022",
+      "src": "Evaporate the filtrate to a syrup, and extract with successive portions of absolute alcohol.",
+      "mt": "여액을 증발시켜 시럽으로 만들고, 연속적인 무수 알코올로 추출합니다.",
+      "comet_score": 0.7365232110023499
+    },
+    {
+      "file_id": "1998-15444-0023",
+      "src": "Separate the ethereal solution and evaporate.",
+      "mt": "에테르 용액을 분리하세요 그리고 증발합니다.",
+      "comet_score": 0.7862565517425537
+    },
+    {
+      "file_id": "1998-15444-0024",
+      "src": "Five. A part of this ethereal solution is poured into a watch glass and allowed to evaporate.",
+      "mt": "다섯. 이 에테르 용액의 일부를 시계 유리에 붓습니다. 그리고 증발하도록 허용했습니다.",
+      "comet_score": 0.8565623760223389
+    },
+    {
+      "file_id": "1998-15444-0025",
+      "src": "To purify it, add a small quantity of dilute sulphuric acid, and after evaporating to three quarters of its bulk, add a saturated solution of carbonate of potash or soda.",
+      "mt": "정제하려면 소량의 묽은황산을 첨가하고, 벌크의 3/4까지 증발시킨 후 칼륨 또는 소다의 탄산염 포화 용액을 첨가하십시오.",
+      "comet_score": 0.8322569727897644
+    },
+    {
+      "file_id": "1998-15444-0026",
+      "src": "Boil the finely divided substance with about one eighth its bulk of pure hydrochloric acid. Add from time to time potassium chloride until the solids are reduced to a straw yellow fluid.",
+      "mt": "잘게 나눈 물질에 순수한 염산의 약 1/8을 넣고 끓입니다. 고체가 담황색 액체로 줄어들 때까지 때때로 염화칼륨을 추가합니다.",
+      "comet_score": 0.8629549145698547
+    },
+    {
+      "file_id": "1998-15444-0027",
+      "src": "The residue of the material after digestion with hydrochloric acid and potassium chloride, may have to be examined for silver, lead and barium.",
+      "mt": "염산 및 염화칼륨으로 소화한 후 물질의 잔류물에 은, 납 및 바륨이 있는지 검사해야 할 수도 있습니다.",
+      "comet_score": 0.864482045173645
+    },
+    {
+      "file_id": "1998-29454-0000",
+      "src": "A thousand blessings from a grateful heart.",
+      "mt": "감사하는 마음으로 천배의 축복을 드립니다.",
+      "comet_score": 0.8872810006141663
+    },
+    {
+      "file_id": "1998-29454-0001",
+      "src": "Perusal, said the pawnbroker. That's the way to pronounce it.",
+      "mt": "전당포 주인이 말했습니다. 그렇게 발음하는 거죠.",
+      "comet_score": 0.5746099948883057
+    },
+    {
+      "file_id": "1998-29454-0002",
+      "src": "His books told him that treasure is best hidden under loose boards, and as of course your house has a secret panel,",
+      "mt": "그의 책에서는 보물은 헐거운 판자 아래에 숨겨져 있는 것이 가장 좋다고 말했습니다. 물론 여러분의 집에는 비밀 패널이 있습니다.",
+      "comet_score": 0.8459613919258118
+    },
+    {
+      "file_id": "1998-29454-0003",
+      "src": "He got it up and pushed his treasures as far in as he could. Along the rough, crumbly surface of the lath and plaster.",
+      "mt": "그가 일어섰어 그리고 그의 보물을 가능한 한 멀리 밀어 넣었습니다. 라스와 석고의 거칠고 부서지기 쉬운 표면을 따라.",
+      "comet_score": 0.7587435841560364
+    },
+    {
+      "file_id": "1998-29454-0004",
+      "src": "When Dicky came down, his aunt slightly slapped him, and he took the halfpenny and limped off obediently.",
+      "mt": "디키가 내려왔을 때, 그의 이모가 그를 살짝 때렸어요 그리고 그는 반 페니를 받고 순종적으로 절뚝거리며 걸어갔습니다.",
+      "comet_score": 0.8426945805549622
+    },
+    {
+      "file_id": "1998-29454-0005",
+      "src": "He had never seen one before, and it interested him extremely.",
+      "mt": "그는 이전에 한 번도 본 적이 없었습니다. 그리고 그것은 그에게 매우 흥미로웠습니다.",
+      "comet_score": 0.867279052734375
+    },
+    {
+      "file_id": "1998-29454-0006",
+      "src": "He looked about him and knew that he did not at all know where he was.",
+      "mt": "그는 주위를 둘러보았다 그리고 그는 자신이 어디에 있는지 전혀 몰랐다는 것을 알았습니다.",
+      "comet_score": 0.8678979277610779
+    },
+    {
+      "file_id": "1998-29454-0007",
+      "src": "What's up, matey? Lost your way? Dicky explained.",
+      "mt": "무슨 일이야, 친구? 길을 잃었나요? 디키가 설명했다.",
+      "comet_score": 0.8826927542686462
+    },
+    {
+      "file_id": "1998-29454-0008",
+      "src": "When he said, 'Have I been asleep?'.",
+      "mt": "그가 '내가 자고 있었나요?'라고 말했을 때.",
+      "comet_score": 0.8513770699501038
+    },
+    {
+      "file_id": "1998-29454-0009",
+      "src": "Here we are, said the man.",
+      "mt": "여기 있습니다. 그 남자가 말했다.",
+      "comet_score": 0.8867964148521423
+    },
+    {
+      "file_id": "1998-29454-0010",
+      "src": "Not exactly,\" said the man, But it's all right.",
+      "mt": "정확하진 않아요.\" 남자가 말했다. 하지만 괜찮아요.",
+      "comet_score": 0.885049045085907
+    },
+    {
+      "file_id": "1998-29454-0011",
+      "src": "When it was over, the man asked Dicky if he could walk a little way, and when Dicky said he could, they set out in the most friendly way, side by side.",
+      "mt": "그것이 끝났을 때, 그 남자는 디키에게 조금 걸어가도 되냐고 물었고, 그리고 디키가 할 수 있다고 말하자 그들은 가장 친근한 방식으로 나란히 출발했습니다.",
+      "comet_score": 0.8650623559951782
+    },
+    {
+      "file_id": "1998-29454-0012",
+      "src": "And the tea and all, and the egg.",
+      "mt": "그리고 차이니 뭐니, 그리고 계란.",
+      "comet_score": 0.6881826519966125
+    },
+    {
+      "file_id": "1998-29454-0013",
+      "src": "And this is the prettiest place ever I see.",
+      "mt": "그리고 이곳은 내가 본 것 중 가장 아름다운 곳이다.",
+      "comet_score": 0.8943067789077759
+    },
+    {
+      "file_id": "1998-29454-0014",
+      "src": "I shall catch it a fair treat as it is.",
+      "mt": "나는 그것을 있는 그대로 공정하게 대접할 것이다.",
+      "comet_score": 0.7215399742126465
+    },
+    {
+      "file_id": "1998-29454-0015",
+      "src": "She was waitin' for the wood to boil the kettle when I come out, mother.",
+      "mt": "제가 나올 때 그 분은 주전자에 장작이 끓기를 기다리고 계셨어요, 어머니.",
+      "comet_score": 0.707356870174408
+    },
+    {
+      "file_id": "1998-29454-0016",
+      "src": "Ain't bad when she's in a good temper.",
+      "mt": "그녀가 기분이 좋을 때는 나쁘지 않습니다.",
+      "comet_score": 0.8402354717254639
+    },
+    {
+      "file_id": "1998-29454-0017",
+      "src": "That ain't what you'll be in when you gets back.",
+      "mt": "그것은 당신이 돌아올 때 당신이 할 일이 아닙니다.",
+      "comet_score": 0.7415112257003784
+    },
+    {
+      "file_id": "1998-29454-0018",
+      "src": "I got to stick it,\" said Dicky sadly. I'd best be getting home.",
+      "mt": "난 그걸 붙여야 해.\" 디키가 슬프게 말했다. 집에 가는 게 좋을 것 같아요.",
+      "comet_score": 0.8229137659072876
+    },
+    {
+      "file_id": "1998-29454-0019",
+      "src": "I wouldn't go home not if I was you, said the man.",
+      "mt": "내가 당신이 아니었다면 집에 가지 않았을 거에요,라고 그 남자가 말했습니다.",
+      "comet_score": 0.8637564778327942
+    },
+    {
+      "file_id": "1998-29454-0020",
+      "src": "No, said Dicky. Oh, no, no, I never.",
+      "mt": "아니, 디키가 말했다. 아, 아뇨, 아뇨, 절대요.",
+      "comet_score": 0.860619306564331
+    },
+    {
+      "file_id": "1998-29454-0021",
+      "src": "I ended here, have I? Like what yer ant to?",
+      "mt": "난 여기서 끝났지, 그렇지? 당신 개미는 무엇을 좋아합니까?",
+      "comet_score": 0.6706487536430359
+    },
+    {
+      "file_id": "1998-29454-0022",
+      "src": "Well, that'll show you the sort of man I am.",
+      "mt": "글쎄, 그러면 내가 어떤 사람인지 보여줄 거야.",
+      "comet_score": 0.8685540556907654
+    },
+    {
+      "file_id": "1998-29454-0023",
+      "src": "The man's manner was so kind and hearty, the whole adventure was so wonderful and new. Is it country where you're going?",
+      "mt": "그 남자의 태도는 너무 친절하고 다정했어요. 전체 모험은 정말 훌륭하고 새롭습니다. 당신이 가는 나라인가요?",
+      "comet_score": 0.8576122522354126
+    },
+    {
+      "file_id": "1998-29454-0024",
+      "src": "The sun shot long golden beams through the gaps in the hedge.",
+      "mt": "태양은 울타리 틈새로 긴 황금빛 광선을 쏘아냈습니다.",
+      "comet_score": 0.8500795364379883
+    },
+    {
+      "file_id": "1998-29454-0025",
+      "src": "A bird paused in its flight on a branch quite close and clung there swaying.",
+      "mt": "새 한 마리가 아주 가까운 나뭇가지에 날아가다가 멈춰 섰다. 그리고 거기에 매달려 흔들리고 있었다.",
+      "comet_score": 0.8633445501327515
+    },
+    {
+      "file_id": "1998-29454-0026",
+      "src": "He took out of his pocket a new envelope, a new sheet of paper and a new pencil, ready sharpened by machinery.",
+      "mt": "그는 주머니에서 새 봉투와 새 종이, 그리고 기계로 깎아 놓은 새 연필을 꺼냈습니다.",
+      "comet_score": 0.8608279824256897
+    },
+    {
+      "file_id": "1998-29454-0027",
+      "src": "And I ask you let me come along, or you, got that?",
+      "mt": "그리고 나도 같이 갈 수 있게 해달라고 부탁해요. 아니면 당신이 알겠어요?",
+      "comet_score": 0.7665560841560364
+    },
+    {
+      "file_id": "1998-29454-0028",
+      "src": "Get it wrote down then.",
+      "mt": "그럼 적어두세요.",
+      "comet_score": 0.7411258220672607
+    },
+    {
+      "file_id": "1998-29454-0029",
+      "src": "Then he folded it and put it in his pocket.",
+      "mt": "그런 다음 그는 그것을 접었습니다. 그리고 그것을 그의 주머니에 넣었습니다.",
+      "comet_score": 0.8651743531227112
+    },
+    {
+      "file_id": "1998-29454-0030",
+      "src": "Now we are square, he said.",
+      "mt": "이제 우리는 정사각형이 됐다고 그는 말했다.",
+      "comet_score": 0.8045040965080261
+    },
+    {
+      "file_id": "1998-29454-0031",
+      "src": "They could put a man away for less than that.",
+      "mt": "그들은 그보다 적은 비용으로 사람을 쫓아낼 수 있었습니다.",
+      "comet_score": 0.8479043245315552
+    },
+    {
+      "file_id": "1998-29454-0032",
+      "src": "I see that there in a book, said Dickie charmed.",
+      "mt": "책에서 보니까 디키가 매력적이라고 ​​하더군요.",
+      "comet_score": 0.7005642056465149
+    },
+    {
+      "file_id": "1998-29454-0033",
+      "src": "He reward the wake, and I wondered what it stood for.",
+      "mt": "그는 깨어난 것에 대해 보상하고, 그리고 나는 그것이 무엇을 의미하는지 궁금했습니다.",
+      "comet_score": 0.613582968711853
+    },
+    {
+      "file_id": "1998-29454-0034",
+      "src": "White ones and a half size. I lay.",
+      "mt": "흰색은 반 사이즈. 나는 누워 있었다.",
+      "comet_score": 0.6420371532440186
+    },
+    {
+      "file_id": "1998-29454-0035",
+      "src": "Adventures, I should think so.",
+      "mt": "모험, 나는 그렇게 생각해야 한다.",
+      "comet_score": 0.7792021036148071
+    },
+    {
+      "file_id": "1998-29454-0036",
+      "src": "Ah, said Digby, and a full silence fell between them.",
+      "mt": "아, Digby가 말했다. 그리고 그들 사이에는 완전한 침묵이 흘렀습니다.",
+      "comet_score": 0.8608348965644836
+    },
+    {
+      "file_id": "1998-29454-0037",
+      "src": "That was charming, but it was pleasant too, to wash the mud off on the wet grass.",
+      "mt": "그게 매력적이었는데, 하지만 젖은 풀밭의 진흙을 씻어내는 것도 즐거웠습니다.",
+      "comet_score": 0.8653835654258728
+    },
+    {
+      "file_id": "1998-29454-0038",
+      "src": "Dicky always remembered that moment.",
+      "mt": "Dicky는 항상 그 순간을 기억했습니다.",
+      "comet_score": 0.8929038047790527
+    },
+    {
+      "file_id": "1998-29454-0039",
+      "src": "So you shall,\" said Mr. Beale, \"a regular wash all over this very night. I always like a wash myself.",
+      "mt": "그러니까 오늘 밤 내내 정기적으로 세탁을 하세요.\" Beale 씨가 말했습니다. 나는 항상 나 자신을 씻는 것을 좋아합니다.",
+      "comet_score": 0.7910675406455994
+    },
+    {
+      "file_id": "1998-29454-0040",
+      "src": "Some blokes think it pays to be dirty, but it don't.",
+      "mt": "어떤 놈들은 더러운 것이 유익하다고 생각하지만 하지만 그렇지 않습니다.",
+      "comet_score": 0.8153148889541626
+    },
+    {
+      "file_id": "1998-29454-0041",
+      "src": "If you're clean, they say, honest poverty, and if you're dirty, they say, serve you right.",
+      "mt": "당신이 깨끗하다면 사람들은 이렇게 말합니다. 정직한 가난, 그리고 당신이 더럽다면, 그들은 당신에게 제대로 봉사하라고 말합니다.",
+      "comet_score": 0.7212290167808533
+    },
+    {
+      "file_id": "1998-29454-0042",
+      "src": "You are good, said Dicky. I do like you.",
+      "mt": "넌 괜찮아, 디키가 말했다. 나는 당신을 정말로 좋아합니다.",
+      "comet_score": 0.8919121623039246
+    },
+    {
+      "file_id": "1998-29454-0043",
+      "src": "I know you will,\" said Dicky with enthusiasm. I know how good you are.",
+      "mt": "난 당신이 그럴 거라는 걸 알아요.\" 디키가 열성적으로 말했다. 나는 당신이 얼마나 좋은지 알아요.",
+      "comet_score": 0.87818843126297
+    },
+    {
+      "file_id": "1998-29454-0044",
+      "src": "Bless me! said Mr. Beale uncomprehendingly. Comfortably. Well, there.",
+      "mt": "저를 축복해주세요! 빌 씨가 이해할 수 없다는 듯이 말했다. 편안하게. 글쎄요.",
+      "comet_score": 0.7930174469947815
+    },
+    {
+      "file_id": "1998-29454-0045",
+      "src": "Step out, Sunny, or we'll never get there this side of Christmas.",
+      "mt": "나가세요, 써니님, 아니면 우리는 이번 크리스마스에는 결코 거기에 가지 못할 것입니다.",
+      "comet_score": 0.8599040508270264
+    },
+    {
+      "file_id": "1998-29454-0046",
+      "src": "Well, you'll know all about it presently.",
+      "mt": "글쎄, 당신은 현재 그것에 대해 모두 알게 될 것입니다.",
+      "comet_score": 0.8406429886817932
+    },
+    {
+      "file_id": "1998-29455-0000",
+      "src": "The singing and laughing went on long after he had fallen asleep, and if later in the evening there were loud-voiced arguments or quarrels even, Dicky did not hear them.",
+      "mt": "노래와 웃음소리는 그가 잠든 후에도 오랫동안 계속되었고, 저녁때에 시끄러운 말다툼이나 다툼이 일어나거든 디키는 그 말을 듣지 못했습니다.",
+      "comet_score": 0.849392294883728
+    },
+    {
+      "file_id": "1998-29455-0001",
+      "src": "What's on that there? Dicky asked, pointing to the odd knobbly bundles of all sorts and shapes. Tied on to the pre-embrillator's front.",
+      "mt": "거기엔 뭐가 있지? 디키는 온갖 종류와 모양의 이상하고 울퉁불퉁한 묶음을 가리키며 물었다. 프리-엠브리레이터의 전면에 묶여 있습니다.",
+      "comet_score": 0.7960847020149231
+    },
+    {
+      "file_id": "1998-29455-0002",
+      "src": "Tell you what, mate. Looks to me as if I took a fancy to you.",
+      "mt": "말해봐, 친구. 제가 보기엔 당신에게 반한 것 같군요.",
+      "comet_score": 0.8621526956558228
+    },
+    {
+      "file_id": "1998-29455-0003",
+      "src": "Swap me, he said helplessly.",
+      "mt": "나를 바꿔라, 그는 무기력하게 말했다.",
+      "comet_score": 0.8749662041664124
+    },
+    {
+      "file_id": "1998-29455-0004",
+      "src": "Oh, look, said Dicky, the flowers.",
+      "mt": "아, 보세요, 디키가 말했습니다. 꽃.",
+      "comet_score": 0.8559926748275757
+    },
+    {
+      "file_id": "1998-29455-0005",
+      "src": "They are only weeds, said Beale.",
+      "mt": "Beale은 그것들은 단지 잡초일 뿐이라고 말했습니다.",
+      "comet_score": 0.8834074139595032
+    },
+    {
+      "file_id": "1998-29455-0006",
+      "src": "But I shall have them while they are alive, said Dicky, as he had said to the pawnbroker about the moonflowers.",
+      "mt": "하지만 전당포에게 달꽃에 관해 말했던 것처럼, 디키는 그것이 살아있는 동안 그것을 가질 것이라고 말했습니다.",
+      "comet_score": 0.7855486869812012
+    },
+    {
+      "file_id": "1998-29455-0007",
+      "src": "Hi, there goes a rabbit.",
+      "mt": "안녕하세요, 토끼가 갑니다.",
+      "comet_score": 0.7715466618537903
+    },
+    {
+      "file_id": "1998-29455-0008",
+      "src": "See him? Cross the road there, see him?",
+      "mt": "그 사람 보여요? 거기 길을 건너세요. 그 사람 보여요?",
+      "comet_score": 0.8084710836410522
+    },
+    {
+      "file_id": "1998-29455-0009",
+      "src": "How beautiful! said Dicky, wriggling with delight.",
+      "mt": "너무나 아름다워요! 디키가 기쁨에 몸부림치며 말했다.",
+      "comet_score": 0.8798269033432007
+    },
+    {
+      "file_id": "1998-29455-0010",
+      "src": "This life of the rabbit, as described by Mr. Beale, was the child's first glimpse of freedom. I'd like to be a rabbit.",
+      "mt": "Beale 씨가 묘사한 토끼의 이 삶은 아이가 처음으로 자유를 맛본 순간이었습니다. 나는 토끼가 되고 싶다.",
+      "comet_score": 0.8923589587211609
+    },
+    {
+      "file_id": "1998-29455-0011",
+      "src": "How am I to wear the broom and pram if you goes on like as if you was a bag of eels?",
+      "mt": "당신이 장어 한 봉지인 양 계속 굴면 어떻게 빗자루와 유모차를 맬 수 있겠습니까?",
+      "comet_score": 0.7567095756530762
+    },
+    {
+      "file_id": "1998-29455-0012",
+      "src": "I like you next to my own daddy, and Mr. Baxter next door.",
+      "mt": "나는 당신이 내 아빠 옆에있는 것을 좋아합니다. 그리고 옆집에는 백스터 씨가 있어요.",
+      "comet_score": 0.8700125217437744
+    },
+    {
+      "file_id": "1998-29455-0013",
+      "src": "That's all right,\" said Mr. Beale awkwardly.",
+      "mt": "괜찮아요.\" Beale 씨가 어색하게 말했습니다.",
+      "comet_score": 0.8678637146949768
+    },
+    {
+      "file_id": "1998-29455-0014",
+      "src": "Dicky, quick to imitate, touched his.",
+      "mt": "흉내를 잘 내는 디키가 그의 손을 만졌다.",
+      "comet_score": 0.8530400395393372
+    },
+    {
+      "file_id": "1998-29455-0015",
+      "src": "Poor little man,\" said the lady. \"You miss your mother, don't you?\"",
+      "mt": "불쌍한 꼬마야.\" 부인이 말했다. \"너는 엄마가 보고 싶구나, 그렇지?\"",
+      "comet_score": 0.8824490904808044
+    },
+    {
+      "file_id": "1998-29455-0016",
+      "src": "Oh, well done, little one,\" said Mr. Beale to himself.",
+      "mt": "오, 잘했어, 꼬마야.” Beale 씨가 혼잣말로 말했습니다.",
+      "comet_score": 0.8494104146957397
+    },
+    {
+      "file_id": "1998-29455-0017",
+      "src": "The two travellers were left facing each other, the richer by a penny, and oh, wonderful good fortune, a whole half-crown.",
+      "mt": "두 여행자는 서로 마주보게 되었는데, 둘이 1페니씩 더 부자였다. 그리고 오, 놀라운 행운이군요. 반 크라운 정도요.",
+      "comet_score": 0.7482631802558899
+    },
+    {
+      "file_id": "1998-29455-0018",
+      "src": "No, I never, said Dicky. Yes, the steeple.",
+      "mt": "아니요, 절대로요. Dicky가 말했습니다. 응, 첨탑.",
+      "comet_score": 0.8453473448753357
+    },
+    {
+      "file_id": "1998-29455-0019",
+      "src": "You stick to that, said Beale, radiant with delight. You're a fair masterpiece you are. You earned it honest if ever a kid done.",
+      "mt": "당신은 그것을 고수하고 있습니다. Beale이 기쁨으로 빛나며 말했습니다. 당신은 정말 훌륭한 걸작입니다. 아이가 다했다면 정직하게 얻은 것입니다.",
+      "comet_score": 0.653266966342926
+    },
+    {
+      "file_id": "1998-29455-0020",
+      "src": "They went on up the hill as happy as anyone need wish to be.",
+      "mt": "그들은 누구든지 원하는 만큼 행복하게 언덕을 올라갔습니다.",
+      "comet_score": 0.853598952293396
+    },
+    {
+      "file_id": "1998-29455-0021",
+      "src": "Please do not be too shocked.",
+      "mt": "너무 놀라지 마시기 바랍니다.",
+      "comet_score": 0.8964369893074036
+    },
+    {
+      "file_id": "1998-29455-0022",
+      "src": "Remember that neither of them knew any better.",
+      "mt": "그들 중 누구도 더 나은 것을 알지 못했다는 것을 기억하십시오.",
+      "comet_score": 0.8716798424720764
+    },
+    {
+      "file_id": "1998-29455-0023",
+      "src": "To the other tramp, lies and begging were natural means of livelihood. Hood.",
+      "mt": "다른 부랑자에게는 거짓말과 구걸이 자연스러운 생계 수단이었습니다. 후드.",
+      "comet_score": 0.8748417496681213
+    },
+    {
+      "file_id": "1998-29455-0024",
+      "src": "But you said the bed was the green curtains, urged Dickie.",
+      "mt": "하지만 당신은 침대가 녹색 커튼이라고 디키에게 촉구했습니다.",
+      "comet_score": 0.7511432766914368
+    },
+    {
+      "file_id": "1998-29455-0025",
+      "src": "Which this end not by no means.",
+      "mt": "결코 끝나지 않습니다.",
+      "comet_score": 0.6864235401153564
+    },
+    {
+      "file_id": "1998-29455-0026",
+      "src": "The night is full of interesting little sounds that will not at first let you sleep. The rustle of little white things on the hedges, the barking of dogs in distant farms, the chirp of crickets and the croaking of frogs.",
+      "mt": "밤은 재미있는 작은 소리들로 가득 차 있어요 처음에는 잠을 잘 수 없을 것입니다. 울타리에 있는 작고 하얀 것들이 바스락거리는 소리, 먼 농장에서 개들이 짖는 소리, 귀뚜라미 울음소리와 개구리 울음소리.",
+      "comet_score": 0.8500273823738098
+    },
+    {
+      "file_id": "1998-29455-0027",
+      "src": "The new game of begging and inventing stories to interest the people from whom it was worthwhile to beg, went on gaily, day by day and week by week, and Dicky, by constant practice, grew so clever at taking his part in the acting, that Mr. Beale was quite dazed with admiration. Operation.",
+      "mt": "구걸할 가치가 있는 사람들의 관심을 끌기 위해 구걸하고 이야기를 만들어내는 새로운 게임은 날마다, 매주 즐겁게 진행되었습니다. 그리고 꾸준한 연습을 통해 Dicky는 연기에 참여하는 데 너무 영리해져서 Beale 씨는 감탄에 휩싸였습니다. 작업.",
+      "comet_score": 0.78315269947052
+    },
+    {
+      "file_id": "1998-29455-0028",
+      "src": "Blest if I ever see such a nipper! He said, over and over again.",
+      "mt": "이런 니퍼를 본다면 축복이 있기를! 그는 계속해서 말했습니다.",
+      "comet_score": 0.6313653588294983
+    },
+    {
+      "file_id": "1998-29455-0029",
+      "src": "Clever as a train dog he is, and all out his own net.",
+      "mt": "그는 기차견만큼 영리하고, 그리고 그 자신의 그물을 모두 꺼냅니다.",
+      "comet_score": 0.6772568821907043
+    },
+    {
+      "file_id": "1998-29455-0030",
+      "src": "I am sure, and keep away from old ends like you, Jim.",
+      "mt": "나는 확신한다. 그리고 너처럼 낡은 목적을 멀리하라, 짐.",
+      "comet_score": 0.7491917610168457
+    },
+    {
+      "file_id": "1998-29455-0031",
+      "src": "I hope he is clever enough to do what is told, keep us mags out, that's all.",
+      "mt": "나는 그가 시키는 대로 할 만큼 영리하기를 바랍니다. 우리가 잡지에 접근하지 못하게 하세요. 그게 전부입니다.",
+      "comet_score": 0.8209850192070007
+    },
+    {
+      "file_id": "1998-29455-0032",
+      "src": "If he's straight, he'll do for me. And if the end, I'll do for him.",
+      "mt": "그 사람이 이성애자라면, 그는 나를 위해 할 것입니다. 그리고 끝이라면 내가 그를 위해 할 것입니다.",
+      "comet_score": 0.818185031414032
+    },
+    {
+      "file_id": "1998-29455-0033",
+      "src": "See that bloke just now? Said Mr. Beale. Yes, said Dicky.",
+      "mt": "방금 그 사람 봤어? 빌 씨가 말했습니다. 응, 디키가 말했다.",
+      "comet_score": 0.8693854808807373
+    },
+    {
+      "file_id": "1998-29455-0034",
+      "src": "Well, you never see em.",
+      "mt": "글쎄요, 당신은 결코 그들을 볼 수 없습니다.",
+      "comet_score": 0.8633620738983154
+    },
+    {
+      "file_id": "1998-29455-0035",
+      "src": "If anyone asks you if you ever see him, you never set eyes on him in all your born, not to remember him.",
+      "mt": "누가 그 사람을 본 적이 있냐고 묻는다면, 당신은 태어날 때마다 그 사람을 한 번도 본 적이 없습니다. 그를 기억하지 말라고.",
+      "comet_score": 0.731292188167572
+    },
+    {
+      "file_id": "1998-29455-0036",
+      "src": "Dicky was full of questions, but Mr. Beale had no answers for them.",
+      "mt": "디키는 질문으로 가득 차 있었고, 그러나 Beale 씨는 그들에게 아무런 대답도 하지 못했습니다.",
+      "comet_score": 0.8761537075042725
+    },
+    {
+      "file_id": "1998-29455-0037",
+      "src": "Nor was it Sunday, on which they took a rest and washed their shirts, according to Mr. Beale's rule of life.",
+      "mt": "일요일도 아니었고, 그곳에서 그들은 Beale 씨의 생활 규칙에 따라 휴식을 취하고 셔츠를 세탁했습니다.",
+      "comet_score": 0.802520751953125
+    },
+    {
+      "file_id": "1998-29455-0038",
+      "src": "They did not stay there, but walked out across the downs, where the skylarks were singing, and on a dip of the downs, came upon great stone walls and towers, very strong and grey.",
+      "mt": "그들은 거기에 머물지 않았고, 하지만 언덕을 가로질러 걸어 나갔죠. 종달새가 노래하던 곳, 그리고 언덕 아래로 매우 튼튼하고 회색인 거대한 돌담과 탑이 나타났습니다.",
+      "comet_score": 0.7838461995124817
+    },
+    {
+      "file_id": "1998-29455-0039",
+      "src": "What's that there? said Dicky.",
+      "mt": "거기 그게 뭐죠? 디키가 말했다.",
+      "comet_score": 0.8635708093643188
+    },
+    {
+      "file_id": "2033-164914-0000",
+      "src": "Replied he, Of a truth I heard him not, and I wot him not, and folks are all sleeping.",
+      "mt": "그는 대답했다. 사실 나는 그 사람의 말을 듣지 못했습니다. 그리고 나는 그 사람이 아닐 거라고 생각해요. 그리고 사람들은 모두 자고 있어요.",
+      "comet_score": 0.8009031414985657
+    },
+    {
+      "file_id": "2033-164914-0001",
+      "src": "But she said, Whomsoever thou seekest wake, he is the reciter.",
+      "mt": "하지만 그녀는 이렇게 말했습니다. 네가 찾는 사람은 누구든지 일어나라. 그는 낭독자입니다.",
+      "comet_score": 0.7383365631103516
+    },
+    {
+      "file_id": "2033-164914-0002",
+      "src": "Then said the eunuch, 'Art thou he who repeated poetry but now, and my lady heard him?",
+      "mt": "그러자 내시가 말했다. '당신은 시를 읊은 사람이었는데 지금은 내 부인이 그 말을 들었습니까?",
+      "comet_score": 0.7198824286460876
+    },
+    {
+      "file_id": "2033-164914-0003",
+      "src": "Rejoined the eunuch. Who then was the reciter? Point him out to me.",
+      "mt": "내시와 다시 합류했습니다. 그렇다면 낭송자는 누구였습니까? 그 사람을 나에게 지적해 주세요.",
+      "comet_score": 0.8376770615577698
+    },
+    {
+      "file_id": "2033-164914-0004",
+      "src": "By Allah! replied the fireman,",
+      "mt": "알라에 의해! 소방관이 대답했다.",
+      "comet_score": 0.7932969331741333
+    },
+    {
+      "file_id": "2033-164914-0005",
+      "src": "Tell me what happened. What's our makan?",
+      "mt": "무슨 일이 일어났는지 말해주세요. 우리의 마칸은 무엇입니까?",
+      "comet_score": 0.7712140679359436
+    },
+    {
+      "file_id": "2033-164914-0006",
+      "src": "What ails thee then, that thou must needs recite verses, seeing that we are tired out? With walking and watching, and all the forecare asleep, For they require sleep to rest them of their fatigue.",
+      "mt": "그러면 무슨 문제가 있나요? 우리가 피곤한데 시를 외워야 한다고요? 걷고 구경하면서, 그리고 모든 조카들은 잠들어 있고, 그들에게는 잠이 필요하기 때문이다 피로를 풀기 위해.",
+      "comet_score": 0.7125425338745117
+    },
+    {
+      "file_id": "2033-164914-0007",
+      "src": "And he also improvised the two following distichs.",
+      "mt": "그리고 그는 또한 다음 두 곡을 즉석에서 연주했습니다.",
+      "comet_score": 0.7271372675895691
+    },
+    {
+      "file_id": "2033-164914-0008",
+      "src": "When Nusret Al-Zaman heard the first improvisation, She called to mind her father and her mother, and her brother, and their willow home. Then she wept and cried to the eunuch and said to him, 'Woe to thee!",
+      "mt": "Nusret Al-Zaman이 첫 번째 즉흥 연주를 들었을 때, 그녀는 아버지와 어머니를 떠올렸다. 그리고 그녀의 오빠, 그리고 그들의 버드나무 집. 그러자 그녀는 울었다 그리고 내시에게 소리쳤다. 그리고 그에게 말했습니다. '화 있을진저!",
+      "comet_score": 0.8021644353866577
+    },
+    {
+      "file_id": "2033-164914-0009",
+      "src": "He who recited the first time, hath recited the second time, and I heard him hard by.",
+      "mt": "처음으로 낭독한 사람은, 두 번째로 낭독했는데, 그리고 나는 그의 말을 열심히 들었다.",
+      "comet_score": 0.8123555183410645
+    },
+    {
+      "file_id": "2033-164914-0010",
+      "src": "By Allah, and thou fetch him not to me, I will assuredly rouse the chamberlain on thee, and he shall beat thee and cast thee out.",
+      "mt": "알라에 의해, 그리고 당신은 그를 나에게 데려오지 마십시오. 나는 반드시 시종을 깨워 너를 공격할 것이다. 그러면 그가 너를 때리고 쫓아낼 것이다.",
+      "comet_score": 0.7524315714836121
+    },
+    {
+      "file_id": "2033-164914-0011",
+      "src": "But take these hundred dinars and give them to the singer and bring him to me gently, and do him no hurt.",
+      "mt": "하지만 이 100디나르를 가져가세요 그리고 가수에게 줘 그리고 그를 부드럽게 나에게 데려오십시오. 그리고 그에게 상처를 주지 마세요.",
+      "comet_score": 0.827799379825592
+    },
+    {
+      "file_id": "2033-164914-0012",
+      "src": "Return quickly , and linger not.",
+      "mt": "빨리 돌아오세요 , 그리고 머뭇거리지 마세요.",
+      "comet_score": 0.8796125650405884
+    },
+    {
+      "file_id": "2033-164914-0013",
+      "src": "When it was the seventy third night,",
+      "mt": "일흔셋째 밤이 되었을 때,",
+      "comet_score": 0.8465521931648254
+    },
+    {
+      "file_id": "2033-164914-0014",
+      "src": "But the eunuch said, I will not leave thee till thou show me who it was that recited the verses. For I dread returning to my lady without him.",
+      "mt": "그런데 내시가 말했습니다. 당신이 그 구절을 낭송한 사람이 누구인지 보여주기 전까지 나는 당신을 떠나지 않을 것입니다. 그 사람 없이 내 부인에게 돌아가는 것이 두렵기 때문이다.",
+      "comet_score": 0.8611942529678345
+    },
+    {
+      "file_id": "2033-164914-0015",
+      "src": "Now when the fireman heard these words, he feared for Zawal Makan, and wept with exceeding weeping, and said to the eunuch, By Allah, it was not I, and I know him not.",
+      "mt": "이제 소방관이 이 말을 들었을 때, 그는 Zawal Makan을 두려워했고 심히 통곡하여 울었더니 그리고 내시에게 말했습니다. 알라에 따르면 나는 아니었습니다. 나는 그를 모른다.",
+      "comet_score": 0.7864409685134888
+    },
+    {
+      "file_id": "2033-164914-0016",
+      "src": "So go thou to thy station, and if thou again meet any one after this hour, whether he be near or far, it will be I or some one I know, and thou shalt not learn of him, but",
+      "mt": "그러니 너는 네 역으로 가거라. 그리고 이 시간 이후에 또 누구를 만나면 그 사람이 가까이 있든 멀리 있든 나일 수도 있고 내가 아는 누군가일 수도 있다. 너는 그에게서 배우지 못할 것이요 하지만",
+      "comet_score": 0.8572319149971008
+    },
+    {
+      "file_id": "2033-164914-0017",
+      "src": "Then he kissed the onyx head, and spake him fair, till he went away. But the castrato fetched around and returning secretly, came and stood behind the fireman, fearing to go back to his mistress without tidings.",
+      "mt": "그런 다음 그는 오닉스 머리에 키스했습니다. 그리고 그에게 공정하게 말했다. 그가 떠날 때까지. 하지만 카스트라토가 주변에 끌려왔어 그리고 몰래 돌아와 소식도 없이 여주인에게 돌아갈까 봐 두려워 소방관 뒤에 섰다.",
+      "comet_score": 0.7004315853118896
+    },
+    {
+      "file_id": "2033-164914-0018",
+      "src": "I say, what made my ignominy? Whatever the bitter cup I drain, far be from me thy land to flee. Nor will I bow to those who blame, and for such love would deal me shame.",
+      "mt": "나는 말한다, 무엇이 나의 무지함을 만들었는가? 내가 쓴 잔을 비우더라도 도망칠 너의 땅은 나에게서 멀리 떨어져 있느니라. 나는 비난하는 자들에게 고개를 숙이지 않을 것이며, 그런 사랑 때문에 나는 부끄러움을 당할 것입니다.",
+      "comet_score": 0.7433324456214905
+    },
+    {
+      "file_id": "2033-164914-0019",
+      "src": "Then said the eunuch to Zawal-Makan, Peace be with thee, O my lord.",
+      "mt": "그러자 내시가 Zawal-Makan에게 말했습니다. 오 나의 주여, 평화를 누리소서.",
+      "comet_score": 0.8391567468643188
+    },
+    {
+      "file_id": "2033-164914-0020",
+      "src": "O my Lord! Continued the Eunuch. And Shahrazad perceived the dawn of day, and ceased to say her permitted say.",
+      "mt": "오 나의 주님! 내시는 계속했다. 그리고 샤흐라자드는 새벽을 인지했고, 그리고 그녀가 허락한 말을 멈추었습니다.",
+      "comet_score": 0.724908709526062
+    },
+    {
+      "file_id": "2033-164914-0021",
+      "src": "We will do thee no upright, O my son, nor wrong thee in aught. But our object is that thou bend thy gracious steps with me to my mistress, to receive her answer, and return in real and safety. Thou shalt have a handsome present, as one who bringeth good news.",
+      "mt": "내 아들아, 우리는 너를 의롭게 행하지 않을 것이며, 어떤 일에서도 너를 해롭게 하지 않을 것이다. 그러나 우리의 목적은 당신이 나의 여주인에게 나와 함께 당신의 은혜로운 발걸음을 굽히는 것입니다. 그녀의 대답을 받기 위해 실제적이고 안전하게 돌아옵니다. 당신은 멋진 선물을 받게 될 것입니다, 좋은 소식을 전하는 사람으로서.",
+      "comet_score": 0.7945824861526489
+    },
+    {
+      "file_id": "2033-164914-0022",
+      "src": "Then the eunuch went out to Zawal-Makan and said to him, Recite what verses thou knowest, for my lady is here hard by, listening to thee, and after I will ask thee of thy name and thy native country and thy condition.",
+      "mt": "그러자 내시는 Zawal-Makan으로 나갔다. 그리고 그에게 말했다. 당신이 아는 구절을 암송하십시오. 내 부인이 여기 당신의 말을 듣고 있기 때문입니다. 그 후에 나는 당신의 이름과 출신 국가와 상태에 대해 물을 것입니다.",
+      "comet_score": 0.8061239123344421
+    },
+    {
+      "file_id": "2033-164915-0000",
+      "src": "And also these.",
+      "mt": "그리고 이것들도요.",
+      "comet_score": 0.8632024526596069
+    },
+    {
+      "file_id": "2033-164915-0001",
+      "src": "Then she threw herself upon him, and he gathered her to his bosom, and the twain fell down in a fainting fit.",
+      "mt": "그런 다음 그녀는 그에게 몸을 던졌습니다. 그리고 그는 그녀를 자신의 품에 모았습니다. 그러자 두 사람은 기절해서 쓰러졌습니다.",
+      "comet_score": 0.868148684501648
+    },
+    {
+      "file_id": "2033-164915-0002",
+      "src": "When the eunuchs saw these cakes, he wondered at them, and throwing over them somewhat to cover them, waited till they should recover.",
+      "mt": "내시들이 이 과자를 보고 그는 그들을 보고 궁금해했다. 그리고 그것들을 덮기 위해 어느 정도 던져 놓고 회복될 때까지 기다렸습니다.",
+      "comet_score": 0.7224239110946655
+    },
+    {
+      "file_id": "2033-164915-0003",
+      "src": "After a while, they came to themselves, and Usat Al-Zaman rejoiced with exceeding joy. Oppression and depression laughed her, and gladness took the mastery of her, and she repeated these verses.",
+      "mt": "잠시 후, 그들은 스스로 찾아왔습니다. 그리고 Usat Al-Zaman은 큰 기쁨으로 기뻐했습니다. 억압과 우울증이 그녀를 비웃었고, 기쁨이 그녀를 사로잡았고, 그리고 그녀는 이 구절을 반복했습니다.",
+      "comet_score": 0.8039484620094299
+    },
+    {
+      "file_id": "2033-164915-0004",
+      "src": "Accordingly, she told him all that had come to her since their separation at the Cannes, and what had happened to her with the Badawi. How the merchant had bought her of him, and had taken her to her brother Sharakan. And had sold her to him. How he had freed her at the time of buying, how How he had made a marriage contract with her, and had gone in to her, and how the king, their sire, had sent and asked for her from Sharkan.",
+      "mt": "그래서 그녀는 칸에서 헤어진 이후로 그녀에게 일어난 모든 일을 그에게 말했다. 바다위와 함께 그녀에게 무슨 일이 일어났는지. 상인이 어떻게 그녀를 그에게서 샀는지, 그리고 그녀를 그녀의 오빠 샤라칸에게 데려갔습니다. 그리고 그녀를 그에게 팔았습니다. 구매 당시 그가 어떻게 그녀를 해방시켰는지, 어떻게 그가 그녀와 어떻게 결혼 계약을 맺었는지, 그리고 그녀에게로 들어갔습니다. 그리고 그들의 폐하인 왕이 어떻게 샤르칸에게 사람을 보내어 그녀를 요청했는지도 알게 되었습니다.",
+      "comet_score": 0.7379772663116455
+    },
+    {
+      "file_id": "2033-164915-0005",
+      "src": "But now go to thy master and bring him quickly to me.",
+      "mt": "이제 네 주인에게로 가라 그리고 그를 빨리 나에게 데려오너라.",
+      "comet_score": 0.88087397813797
+    },
+    {
+      "file_id": "2033-164915-0006",
+      "src": "The chamberlain called the castrato and charged him to do accordingly. So he replied, 'I hear and I obey.' And he took his pages with him, and went out in search of the stalker, till he found him in the rear of the caravan, girding his ass and preparing for flight.",
+      "mt": "카스트라토라고 불리는 시종장 그리고 그에게 그에 따라 행하라고 명령했습니다. 그래서 그는 이렇게 대답했습니다. '나는 듣고 순종한다.' 그리고 그는 그와 함께 그의 페이지를 가져갔습니다. 그리고 스토커를 찾으러 나갔습니다. 그가 캐러밴 뒤쪽에서 그를 발견할 때까지, 엉덩이를 동이고 날아갈 준비를 하고 있다.",
+      "comet_score": 0.720795750617981
+    },
+    {
+      "file_id": "2033-164915-0007",
+      "src": "She said, 'It hath reached me, O auspicious king, that when the stalker girded his ass for flight, and bespake himself, saying, 'O would I knew what is become of him.",
+      "mt": "그녀가 말했습니다. '오 상서로운 왕이시여, 추적자가 도망치려고 엉덩이에 띠를 띠고 있을 때, 그리고 스스로에게 이렇게 말했습니다. '오, 그 사람이 어떻게 되었는지 내가 알았더라면 좋았을 텐데.",
+      "comet_score": 0.7196387052536011
+    },
+    {
+      "file_id": "2033-164915-0008",
+      "src": "I believe he hath denounced me to the eunuch, hence these pages at about me. And he hath made me an accomplice in his crime.",
+      "mt": "나는 그가 나를 내시에게 고발했다고 믿습니다. 따라서 이 페이지는 나에 관한 것입니다. 그리고 그는 나를 그의 범죄에 공범으로 만들었습니다.",
+      "comet_score": 0.8626676797866821
+    },
+    {
+      "file_id": "2033-164915-0009",
+      "src": "Why didst thou say, I never repeated these couplets, nor do I know who repeated them, when it was thy companion?",
+      "mt": "왜 말했습니까? 나는 이 두 구절을 반복한 적이 없으며, 그것이 당신의 동반자였을 때 누가 반복했는지도 모릅니다.",
+      "comet_score": 0.8243796825408936
+    },
+    {
+      "file_id": "2033-164915-0010",
+      "src": "But now I will not leave thee between this place and Baghdad, and what betideth thy comrade shall betide thee.",
+      "mt": "그러나 이제 나는 너를 이곳과 바그다드 사이에 남겨두지 않을 것이다. 그리고 네 동료의 경계에 있는 것이 너와도 경계가 될 것이다.",
+      "comet_score": 0.7277964949607849
+    },
+    {
+      "file_id": "2033-164915-0011",
+      "src": "'Twas as I feared, the Camino's discerning. But on to Allah we are all returning.",
+      "mt": "'내가 두려워했던 대로였어. 까미노의 안목. 그러나 우리는 모두 알라께로 돌아가고 있습니다.",
+      "comet_score": 0.7756326198577881
+    },
+    {
+      "file_id": "2033-164915-0012",
+      "src": "Then the eunuch cried upon the pages, saying, Take him off the ass.",
+      "mt": "그러자 내시는 책장을 넘기며 외쳤습니다. 속담, 그를 엉덩이에서 떼어내세요.",
+      "comet_score": 0.5678789019584656
+    },
+    {
+      "file_id": "2033-164915-0013",
+      "src": "And he answered, \"I am the chamberlain of the Emir of Damascus, King Sharkan, Song of Omar bin Al-Nouman, Lord of Baghdad, and of the land of Corasan, and I bring tribute and presents from him to his father in Baghdad.",
+      "mt": "그가 대답하되 나는 다마스커스 국왕 샤르칸 왕 오마르 빈 알누만의 노래 바그다드와 코라산 땅의 영주의 시종입니다. 그리고 나는 그에게서 바그다드에 있는 그의 아버지에게 공물과 선물을 가져왔습니다.",
+      "comet_score": 0.7676873803138733
+    },
+    {
+      "file_id": "2033-164915-0014",
+      "src": "So fare ye forwards, no harm shall befall you till you join his grand vizier Dandan.",
+      "mt": "그러니 앞으로 나아가세요. 당신이 그의 대승 단단(Dandan)과 합류할 때까지 당신에게 아무런 해가 끼치지 않을 것입니다.",
+      "comet_score": 0.8287989497184753
+    },
+    {
+      "file_id": "2033-164915-0015",
+      "src": "Then he bade him be seated and questioned him. And he replied that he was chamberlain to the emir of Damascus. And was bound to King Omar with presents and the tribute of Syria.",
+      "mt": "그런 다음 그는 앉으라고 말했습니다. 그리고 그에게 질문했습니다. 그리고 그는 자신이 다마스커스 국왕의 시종이라고 대답했습니다. 그리고 시리아의 선물과 공물로 오마르 왕에게 묶였습니다.",
+      "comet_score": 0.8267677426338196
+    },
+    {
+      "file_id": "2033-164915-0016",
+      "src": "So it was agreed that we go to Damascus and fetch thence the king's son, Sharkan, and make him sultan over his father's realm.",
+      "mt": "그래서 우리는 다메섹으로 가기로 합의했습니다. 거기서 왕의 아들 샤르칸을 데려오너라. 그리고 그를 그의 아버지 나라의 술탄으로 삼으십시오.",
+      "comet_score": 0.8674544095993042
+    },
+    {
+      "file_id": "2033-164915-0017",
+      "src": "And amongst them were some who would have chosen the cadet, Zawal Makan. For, quoth they, his name belight of the place, and he hath a sister, Nuzhat al-Zaman, Hize, the delight of the time. But they set out five years ago for Al Hijaz, and none woteth what is become of them.",
+      "mt": "그리고 그들 중에는 자왈 마칸(Zawal Makan) 생도를 선택했을 사람들도 있었습니다. 그들은 말하기를 그의 이름이 그 곳에서 빛나느니라 그리고 그에게는 당시의 즐거움이었던 누자트 알 자만(Nuzhat al-Zaman), 히즈(Hize)라는 자매가 있습니다. 하지만 그들은 5년 전에 알 히자즈를 향해 떠났습니다. 그리고 그들이 어떻게 되었는지 아는 사람은 아무도 없습니다.",
+      "comet_score": 0.7977805733680725
+    },
+    {
+      "file_id": "2033-164916-0000",
+      "src": "So he turned to the wazir Dandan, and said to him, Verily, your tale is a wonder of wonders.",
+      "mt": "그래서 그는 wazir Dandan으로 향했습니다. 그리고 그에게 말했다. 진실로, 당신의 이야기는 경이로움 중의 경이로움입니다.",
+      "comet_score": 0.8304998874664307
+    },
+    {
+      "file_id": "2033-164916-0001",
+      "src": "Know, O Chief Wazir, that here, where you have encountered me, Allah hath given you rest from fatigue, and bringeth you your desire. After the easiest of fashions. For that His Almighty will restore it to you, Zawamakan, and his sister, Nusat al Zaman. Whereby we will settle the matter as we easily can.",
+      "mt": "오 추장 와지르여, 당신이 나를 만난 이곳에서 알라께서 너희에게 피로로부터의 휴식을 주셨느니라 그리고 당신에게 당신의 욕망을 가져옵니다. 가장 쉬운 패션 이후. 전능하신 하나님께서 그것을 당신에게 회복시켜 주실 것입니다, 자와마칸, 그리고 그의 여동생 Nusat al Zaman. 이로써 우리는 가능한 한 쉽게 문제를 해결하겠습니다.",
+      "comet_score": 0.7197837829589844
+    },
+    {
+      "file_id": "2033-164916-0002",
+      "src": "When the minister heard these words, he rejoiced with great joy, and said, \"O Chamberlayne, tell me the tale of the twain, and what befell them, and the cause of their long absence.\"",
+      "mt": "장관이 이 말을 듣자 그는 큰 기쁨으로 기뻐했다. 그리고 말했어요, \"오 체임벌린, 두 사람의 이야기를 나에게 말해주세요. 그리고 그들에게 무슨 일이 일어났는지, 그리고 그들이 오랫동안 부재한 이유도.\"",
+      "comet_score": 0.8774747848510742
+    },
+    {
+      "file_id": "2033-164916-0003",
+      "src": "Zawamakan bowed his head awhile, and then said, I accept the position. For indeed, there was no refusing. And he was certified that the chamberlain had counselled him well and wisely, and set him on the right way.",
+      "mt": "자와마칸은 잠시 고개를 숙였다. 그리고는 말했다. 나는 그 입장을 받아들인다. 사실, 거부할 수는 없었습니다. 그리고 그는 시종장이 그에게 훌륭하고 현명하게 조언했다는 것을 증명했습니다. 그를 올바른 길로 인도해 주옵소서.",
+      "comet_score": 0.8187178373336792
+    },
+    {
+      "file_id": "2033-164916-0004",
+      "src": "Then he added, Oh, my uncle, how shall I do with my brother Sharkan?",
+      "mt": "그런 다음 그는 덧붙였습니다. 아, 삼촌, 내 동생 샤르칸은 어떻게 해야 할까요?",
+      "comet_score": 0.8849378228187561
+    },
+    {
+      "file_id": "2033-164916-0005",
+      "src": "After a while, the dust dispersed, and there appeared under it the army of Baghdad and Corasan. A conquering host, like the pool-tide sea, And Charizard perceived the dawn of day, and ceased to say her permitted say.",
+      "mt": "잠시 후 먼지가 흩어지더니 그리고 그 밑에 바그다드와 코라산의 군대가 나타났다. 정복하는 호스트, 풀장 바다처럼, 그리고 리자몽은 새벽을 인지했고, 그리고 그녀가 허락한 말을 멈추었습니다.",
+      "comet_score": 0.6829742789268494
+    },
+    {
+      "file_id": "2033-164916-0006",
+      "src": "When it was the seventy eighth night,",
+      "mt": "칠십팔번째 밤이었을 때,",
+      "comet_score": 0.72003173828125
+    },
+    {
+      "file_id": "2033-164916-0007",
+      "src": "And in it all rejoiced at the accession of the light of the place.",
+      "mt": "그리고 그 곳의 빛이 도달하자 모두가 기뻐했습니다.",
+      "comet_score": 0.7643071413040161
+    },
+    {
+      "file_id": "2033-164916-0008",
+      "src": "Lastly, the minister went in, and kissed the ground before Zawal-Makan. Who rose to meet him, saying, Welcome, O Wazir, and sires Sons of Peer.",
+      "mt": "마지막으로 장관님이 입장하셨습니다. Zawal-Makan 앞에서 땅에 키스했습니다. 누가 일어나 그를 맞으며 말했습니다. 환영합니다, O Wazir, 그리고 Sons of Peer의 후손들.",
+      "comet_score": 0.6923730373382568
+    },
+    {
+      "file_id": "2033-164916-0009",
+      "src": "Moreover, the Sultan commanded his Wazir Dandan, call a ten days halt of the army, that he might be private with him, and learn from him how and wherefore his father had been slain.",
+      "mt": "더욱이 술탄은 와지르 단단(Wazir Dandan)에게 군대를 10일간 정지하라고 명령했습니다. 그 사람과 사적으로 지내게 하려고 그리고 그의 아버지가 어떻게, 왜 죽임을 당했는지 그에게서 배우십시오.",
+      "comet_score": 0.8323861360549927
+    },
+    {
+      "file_id": "2033-164916-0010",
+      "src": "He then repaired to the heart of the encampment, and ordered the host to halt ten days.",
+      "mt": "그런 다음 그는 진영의 중심부까지 수리했습니다. 그리고 호스트에게 열흘 동안 작업을 중단하라고 명령했습니다.",
+      "comet_score": 0.8275923132896423
+    },
+    {
+      "file_id": "2414-128291-0000",
+      "src": "What hath happened unto me?",
+      "mt": "나에게 무슨 일이 일어난 걸까요?",
+      "comet_score": 0.8963398337364197
+    },
+    {
+      "file_id": "2414-128291-0001",
+      "src": "He asked himself, something warm and living quickeneth me. It must be in that neighbourhood.",
+      "mt": "그는 스스로에게 물었다. 뭔가 따뜻하고 살아있는 것이 나를 활기차게 한다. 그 동네에 있을 거에요.",
+      "comet_score": 0.84149569272995
+    },
+    {
+      "file_id": "2414-128291-0002",
+      "src": "When, however, the two straw was quite nigh unto them, Then did he hear plainly that human voice spake? In the midst of the kind. And apparently all of them had turned their heads towards the speaker.",
+      "mt": "그러나 두 짚이 그들에게 아주 가까이 다가왔을 때, 그렇다면 그는 인간의 목소리가 말하는 것을 분명히 들었습니까? 종류의 중간에. 그리고 분명히 그들 모두는 연사를 향해 고개를 돌렸습니다.",
+      "comet_score": 0.6542150378227234
+    },
+    {
+      "file_id": "2414-128291-0003",
+      "src": "What do I here seek?",
+      "mt": "나는 여기서 무엇을 추구하는가?",
+      "comet_score": 0.8853429555892944
+    },
+    {
+      "file_id": "2414-128291-0004",
+      "src": "Answered he. The same that thou seekest, thou mischief maker, that is to say, happiness upon earth.",
+      "mt": "그는 대답했다. 당신이 찾고 있는 바로 그것, 너 장난꾸러기, 즉 지상의 행복이여.",
+      "comet_score": 0.7638415694236755
+    },
+    {
+      "file_id": "2414-128291-0005",
+      "src": "For I tell thee that I have already talked half a morning unto them, and just now were they about to give me their answer.",
+      "mt": "내가 네게 말하노니 내가 이미 그들에게 오전 반 동안 이야기하였느니라 그리고 지금 막 그들은 나에게 대답을 하려고 했습니다.",
+      "comet_score": 0.8702812790870667
+    },
+    {
+      "file_id": "2414-128291-0006",
+      "src": "He would not be rid of his affliction.",
+      "mt": "그는 자신의 고난을 없애지 않을 것입니다.",
+      "comet_score": 0.8612225651741028
+    },
+    {
+      "file_id": "2414-128291-0007",
+      "src": "Who hath not at present his heart, his mouth and his eyes full of discouragement? Just.",
+      "mt": "현재 마음과 입과 눈이 낙담에 가득 차 있지 않은 사람이 어디 있겠습니까? 단지.",
+      "comet_score": 0.7800084948539734
+    },
+    {
+      "file_id": "2414-128291-0008",
+      "src": "Thou also, thou also,",
+      "mt": "너도, 너도,",
+      "comet_score": 0.78884357213974
+    },
+    {
+      "file_id": "2414-128291-0009",
+      "src": "But behold this kind.",
+      "mt": "그러나 이런 종류를 보라.",
+      "comet_score": 0.8403623700141907
+    },
+    {
+      "file_id": "2414-128291-0010",
+      "src": "The kind, however, gazed at it all and wondered.",
+      "mt": "그러나 그 종류는 그것을 모두 바라 보았다. 그리고 궁금했다.",
+      "comet_score": 0.7482600808143616
+    },
+    {
+      "file_id": "2414-128291-0011",
+      "src": "Wanton avidity, baseless envy. Care one revenge. Populous pride. Or distract my eye.",
+      "mt": "무자비한 탐욕, 근거 없는 질투. 하나의 복수를 관리하십시오. 대중적인 자부심. 아니면 내 눈을 산만하게 만드세요.",
+      "comet_score": 0.6916086673736572
+    },
+    {
+      "file_id": "2414-128291-0012",
+      "src": "It is no longer true that the poor are blessed.",
+      "mt": "가난한 사람이 복을 받는다는 말은 더 이상 사실이 아닙니다.",
+      "comet_score": 0.9049578905105591
+    },
+    {
+      "file_id": "2414-128291-0013",
+      "src": "The kingdom of heaven, however, is with the kind. And why is it not with the rich?",
+      "mt": "그러나 천국은 이런 종류의 사람들과 함께 있습니다. 그리고 왜 부자들은 그렇지 않습니까?",
+      "comet_score": 0.8561819791793823
+    },
+    {
+      "file_id": "2414-128291-0014",
+      "src": "Why thou dost tempt me?",
+      "mt": "왜 나를 유혹합니까?",
+      "comet_score": 0.8622097373008728
+    },
+    {
+      "file_id": "2414-128291-0015",
+      "src": "Answered the other.",
+      "mt": "다른 사람이 대답했습니다.",
+      "comet_score": 0.7355562448501587
+    },
+    {
+      "file_id": "2414-128291-0016",
+      "src": "Thou knowest it thyself,",
+      "mt": "당신은 그것을 스스로 알고 있습니다.",
+      "comet_score": 0.8823050260543823
+    },
+    {
+      "file_id": "2414-128291-0017",
+      "src": "Thus begged the peaceful one, and puffed himself, and perspired with his words. So that the kind wondered anew.",
+      "mt": "평화로운 사람은 이렇게 간청했습니다. 그리고 몸을 부풀렸다. 그리고 그의 말에 땀을 흘렸다. 그래서 그 종류는 다시 궁금해졌습니다.",
+      "comet_score": 0.6781389117240906
+    },
+    {
+      "file_id": "2414-128291-0018",
+      "src": "Thou doest violence to thyself, thou preacher on the mount, and thou usest such savior words.",
+      "mt": "당신은 자신에게 폭력을 행사합니다. 산 위의 설교자여, 그리고 당신은 그러한 구원의 말을 사용합니다.",
+      "comet_score": 0.809402585029602
+    },
+    {
+      "file_id": "2414-128291-0019",
+      "src": "They also abstain from all heavy thoughts,",
+      "mt": "그들은 또한 모든 무거운 생각을 삼가고,",
+      "comet_score": 0.8614755272865295
+    },
+    {
+      "file_id": "2414-128291-0020",
+      "src": "Well,",
+      "mt": "잘,",
+      "comet_score": 0.8426254391670227
+    },
+    {
+      "file_id": "2414-128291-0021",
+      "src": "Size two extra. Thou shouldst also see mine animals, mine eagle, and my serpent. Their like do not at present exist on earth.",
+      "mt": "사이즈 2개 추가. 너는 또한 나의 동물들과 나의 독수리와 나의 뱀을 보아야 한다. 그들과 같은 존재는 현재 지구상에 존재하지 않습니다.",
+      "comet_score": 0.8529788851737976
+    },
+    {
+      "file_id": "2414-128291-0022",
+      "src": "And talk to mine animals of the happiness of animals.",
+      "mt": "그리고 내 동물들에게 동물의 행복에 대해 이야기해 보세요.",
+      "comet_score": 0.8698388934135437
+    },
+    {
+      "file_id": "2414-128291-0023",
+      "src": "Now, however, take leave at once of thy kind, thou strange one.",
+      "mt": "그러나 이제 당신은 즉시 작별 인사를 하십시오. 너 이상한 놈아.",
+      "comet_score": 0.7670260071754456
+    },
+    {
+      "file_id": "2414-128291-0024",
+      "src": "Thou amiable one!",
+      "mt": "당신은 사랑스러운 사람입니다!",
+      "comet_score": 0.8381630182266235
+    },
+    {
+      "file_id": "2414-128291-0025",
+      "src": "For they are thy warmest friends and perceptors.",
+      "mt": "그들은 당신의 가장 따뜻한 친구이기 때문입니다 그리고 지각자.",
+      "comet_score": 0.7582131624221802
+    },
+    {
+      "file_id": "2414-128291-0026",
+      "src": "Thou evil flatterer!",
+      "mt": "사악한 아첨꾼이여!",
+      "comet_score": 0.8463293313980103
+    },
+    {
+      "file_id": "2414-128292-0000",
+      "src": "Whither hath my lonesomeness gone? Spake he.",
+      "mt": "나의 외로움은 어디로 갔는가? 그가 말했어요.",
+      "comet_score": 0.8804197311401367
+    },
+    {
+      "file_id": "2414-128292-0001",
+      "src": "My shadow calleth me.",
+      "mt": "내 그림자가 나를 부른다.",
+      "comet_score": 0.8679040670394897
+    },
+    {
+      "file_id": "2414-128292-0002",
+      "src": "What matter about my shadow?",
+      "mt": "내 그림자가 무슨 상관이야?",
+      "comet_score": 0.8600617051124573
+    },
+    {
+      "file_id": "2414-128292-0003",
+      "src": "Let it run after me. I run away from it.",
+      "mt": "나를 따라가도록 해주세요. 나는 그것으로부터 도망친다.",
+      "comet_score": 0.7874126434326172
+    },
+    {
+      "file_id": "2414-128292-0004",
+      "src": "Thus paying the two-struck to his heart, and ran away.",
+      "mt": "그리하여 그의 마음에 두 번의 충격을 갚고, 그리고 도망갔습니다.",
+      "comet_score": 0.6747205257415771
+    },
+    {
+      "file_id": "2414-128292-0005",
+      "src": "Verily, my folly hath grown big, in the mountains.",
+      "mt": "진실로 나의 어리석음은 산에서 더욱 커졌습니다.",
+      "comet_score": 0.8662077784538269
+    },
+    {
+      "file_id": "2414-128292-0006",
+      "src": "Now do I hear six old fool's legs rattling behind one another?",
+      "mt": "이제 여섯 바보의 다리가 서로 뒤에서 덜거덕거리는 소리가 들립니까?",
+      "comet_score": 0.7295794486999512
+    },
+    {
+      "file_id": "2414-128292-0007",
+      "src": "But Dodos at Ustra need to be frightened by his shadow.",
+      "mt": "그러나 우스트라의 도도스는 그의 그림자 때문에 겁을 먹을 필요가 있습니다.",
+      "comet_score": 0.8336771130561829
+    },
+    {
+      "file_id": "2414-128292-0008",
+      "src": "Also, methink it that after all it hath longer legs than mine.",
+      "mt": "그리고 결국 그 사람이 나보다 다리가 더 긴 것 같아요.",
+      "comet_score": 0.7671146392822266
+    },
+    {
+      "file_id": "2414-128292-0009",
+      "src": "Who when that two-stress scrutinised him, with his glance he was frightened, as by a sudden apparition, so slender, swarthy, hollow and worn out did his follower appear.",
+      "mt": "그 두 가지 스트레스로 인해 그를 면밀히 조사한 사람은 누구였습니까? 그의 추종자가 너무나 마르고, 거무스름하고, 공허하고, 지쳐가는 갑작스런 유령처럼 그의 시선으로 그는 겁에 질렸다.",
+      "comet_score": 0.6625953912734985
+    },
+    {
+      "file_id": "2414-128292-0010",
+      "src": "As they twist ravagently,",
+      "mt": "그들이 사납게 뒤틀릴 때,",
+      "comet_score": 0.655452311038971
+    },
+    {
+      "file_id": "2414-128292-0011",
+      "src": "And why callest thou thyself my shadow?",
+      "mt": "그런데 왜 너는 너를 내 그림자라고 부르느냐?",
+      "comet_score": 0.8698142766952515
+    },
+    {
+      "file_id": "2414-128292-0012",
+      "src": "Thou art not pleasing unto me.",
+      "mt": "당신은 나를 좋아하지 않습니다.",
+      "comet_score": 0.885357141494751
+    },
+    {
+      "file_id": "2414-128292-0013",
+      "src": "Must I ever be on the way?",
+      "mt": "내가 도중에 있어야 합니까?",
+      "comet_score": 0.5941742658615112
+    },
+    {
+      "file_id": "2414-128292-0014",
+      "src": "O Earth, thou hast become too round for me.",
+      "mt": "오 지구여, 당신은 나에게 너무 둥글게 되었습니다.",
+      "comet_score": 0.7976343631744385
+    },
+    {
+      "file_id": "2414-128292-0015",
+      "src": "When the devil casteth his skin, doth not his name also fall away? It is also skinned.",
+      "mt": "악마가 그의 가죽을 벗겨낼 때, 그 이름도 떨어져 나가지 아니하겠느냐? 껍질도 벗겨졌습니다.",
+      "comet_score": 0.7306312322616577
+    },
+    {
+      "file_id": "2414-128292-0016",
+      "src": "The devil himself is perhaps kin.",
+      "mt": "악마 자신도 아마도 친척일 것입니다.",
+      "comet_score": 0.8907830715179443
+    },
+    {
+      "file_id": "2414-128292-0017",
+      "src": "Sometimes I am meant to lie and behold.",
+      "mt": "때때로 나는 거짓말을 하고 지켜보아야 할 때도 있습니다.",
+      "comet_score": 0.814874529838562
+    },
+    {
+      "file_id": "2414-128292-0018",
+      "src": "Then only did I hate that truth.",
+      "mt": "그렇다면 나는 그 진실이 싫었다.",
+      "comet_score": 0.799068033695221
+    },
+    {
+      "file_id": "2414-128292-0019",
+      "src": "How have I still inclinations?",
+      "mt": "나는 아직도 어떤 성향을 가지고 있습니까?",
+      "comet_score": 0.6999593377113342
+    },
+    {
+      "file_id": "2414-128292-0020",
+      "src": "Have I still a goal?",
+      "mt": "아직 목표가 있나요?",
+      "comet_score": 0.8244847655296326
+    },
+    {
+      "file_id": "2414-128292-0021",
+      "src": "A haven towards which my sail is set.",
+      "mt": "나의 항해가 향하는 안식처.",
+      "comet_score": 0.8360157012939453
+    },
+    {
+      "file_id": "2414-128292-0022",
+      "src": "For it too I ask and seek, and have sought,",
+      "mt": "그것을 위하여 나도 구하고 구하노니 그리고 추구했다,",
+      "comet_score": 0.7208762764930725
+    },
+    {
+      "file_id": "2414-128292-0023",
+      "src": "O eternal everywhere, o eternal nowhere, o eternal in vain.",
+      "mt": "오 어디든 영원하고, 오 영원한 아무데도, 오 영원히 헛되도다.",
+      "comet_score": 0.6077810525894165
+    },
+    {
+      "file_id": "2414-128292-0024",
+      "src": "Thou art my shadow.",
+      "mt": "당신은 나의 그림자입니다.",
+      "comet_score": 0.8930536508560181
+    },
+    {
+      "file_id": "2414-128292-0025",
+      "src": "Said he at last sadly.",
+      "mt": "마침내 그는 슬프게 말했다.",
+      "comet_score": 0.8427760601043701
+    },
+    {
+      "file_id": "2414-128292-0026",
+      "src": "Thy danger is not small, thou free spirit and wanderer.",
+      "mt": "당신의 위험은 작지 않습니다. 너는 자유로운 영혼이자 방랑자이다.",
+      "comet_score": 0.8737579584121704
+    },
+    {
+      "file_id": "2414-128292-0027",
+      "src": "They sleep quietly. They enjoy their new security.",
+      "mt": "그들은 조용히 잔다. 그들은 새로운 보안을 즐깁니다.",
+      "comet_score": 0.8873739838600159
+    },
+    {
+      "file_id": "2414-128292-0028",
+      "src": "Be well lest, in the end, a narrow faith capture thee, a hard, aigrous delusion.",
+      "mt": "결국 편협한 믿음, 즉 완악하고 사악한 망상에 사로잡히지 않도록 잘 지내십시오.",
+      "comet_score": 0.7454597353935242
+    },
+    {
+      "file_id": "2414-128292-0029",
+      "src": "For now everything that is narrow, and fixed, seduceth and tempteth thee.",
+      "mt": "이제는 편협하고 고정된 모든 것이 당신을 유혹하고 시험합니다.",
+      "comet_score": 0.8748024106025696
+    },
+    {
+      "file_id": "2414-128292-0030",
+      "src": "Thou hast lost thy goal.",
+      "mt": "당신은 목표를 잃었습니다.",
+      "comet_score": 0.8760849237442017
+    },
+    {
+      "file_id": "2414-128292-0031",
+      "src": "Thou poor rover and rambler, thou tired butterfly!",
+      "mt": "불쌍한 방랑자이자 산책자여, 피곤한 나비야!",
+      "comet_score": 0.8435531258583069
+    },
+    {
+      "file_id": "2414-128292-0032",
+      "src": "Wilt thou have a rest and a home this evening?",
+      "mt": "오늘 저녁에 집과 휴식을 취하시겠어요?",
+      "comet_score": 0.7567034959793091
+    },
+    {
+      "file_id": "2414-159411-0000",
+      "src": "Once upon a time, a Brahmin, who was walking along the road, came upon an iron cage, in which a great tiger had been shut up by the villagers who caught him.",
+      "mt": "옛날 어느 바라문이 길을 가다가 쇠우리에 갇히게 되었는데, 마을 사람들이 그를 붙잡아 놓은 큰 호랑이가 그 안에 있었습니다.",
+      "comet_score": 0.8222070336341858
+    },
+    {
+      "file_id": "2414-159411-0001",
+      "src": "The Brahmin answered, No, I will not. For if I let you out of the cage, you will eat me.",
+      "mt": "브라만이 대답했다. 아니요, 나는하지 않을 것이다. 내가 당신을 새장에서 내보내면 당신은 나를 먹을 것이기 때문입니다.",
+      "comet_score": 0.854174017906189
+    },
+    {
+      "file_id": "2414-159411-0002",
+      "src": "O, Father of Mercy, answered the tiger, in truth that I will not.",
+      "mt": "오, 자비의 아버지시여, 호랑이에게 대답하셨습니다. 사실 나는 그렇지 않을 것이다.",
+      "comet_score": 0.8425010442733765
+    },
+    {
+      "file_id": "2414-159411-0003",
+      "src": "I will never be so ungrateful. Only let me out, that I may drink some water and return.",
+      "mt": "나는 결코 그렇게 배은망덕하지 않을 것입니다. 나만 내보내 주십시오. 그러면 나로 물을 좀 마시고 돌아올 수 있을 것입니다.",
+      "comet_score": 0.8344375491142273
+    },
+    {
+      "file_id": "2414-159411-0004",
+      "src": "Then the Brahmin took pity on him and opened the cage door, but no sooner had he done so, than the tiger, jumping out, said, \"Now I will eat you first, and drink the water afterwards.\"",
+      "mt": "그러자 브라만은 그를 불쌍히 여겼습니다. 그리고 우리 문을 열었고, 그러나 그가 그렇게 하자마자, 호랑이가 뛰쳐나오더니 \"이제 내가 먼저 너를 잡아먹을게. 그리고 나중에 물을 마셔요.\"",
+      "comet_score": 0.8074203133583069
+    },
+    {
+      "file_id": "2414-159411-0005",
+      "src": "So the Brahmin and the tiger walked on. Till they came to a barren tree, and the Brahmin said to it, Ban and tree, ban and tree, hear and give judgment.",
+      "mt": "그래서 브라만과 호랑이는 계속 걸어갔습니다. 그들이 메마른 나무에 다다를 때까지, 그러자 브라만이 그에게 말했습니다. 금지와 나무, 금지와 나무, 듣고 판단하십시오.",
+      "comet_score": 0.7394956350326538
+    },
+    {
+      "file_id": "2414-159411-0006",
+      "src": "On what must I give judgment? asked the bantry.",
+      "mt": "내가 무엇을 판단해야 합니까? 밴트리가 물었다.",
+      "comet_score": 0.8424600958824158
+    },
+    {
+      "file_id": "2414-159411-0007",
+      "src": "This tiger,\" said the Brahmin, \"begged me to let him out of his cage to drink a little water, and he promised not to hurt me if I did so. But now that I have left him out, he wishes to eat me.",
+      "mt": "브라만이 말했다. \"이 호랑이는 우리에서 물을 조금 마시게 해달라고 나에게 간청했습니다. 그리고 그는 내가 그렇게 해도 나에게 상처를 주지 않겠다고 약속했습니다. 하지만 이제 내가 그를 제외시켰으니, 그는 나를 먹고 싶어한다.",
+      "comet_score": 0.8023808598518372
+    },
+    {
+      "file_id": "2414-159411-0008",
+      "src": "Is it just that he should do so, or no?",
+      "mt": "그가 그렇게 해야 하는가, 아니면 그렇지 않은가?",
+      "comet_score": 0.8225870132446289
+    },
+    {
+      "file_id": "2414-159411-0009",
+      "src": "Let the tiger eat the man, for men are an ungrateful race.",
+      "mt": "호랑이가 사람을 잡아먹게 놔두세요. 남자들은 배은망덕한 종족이기 때문이다.",
+      "comet_score": 0.8817761540412903
+    },
+    {
+      "file_id": "2414-159411-0010",
+      "src": "Sir Camel, sir Camel, cried the Brahmin, 'Hear and give judgment.'",
+      "mt": "낙타 경, 낙타 경은 브라민에게 '듣고 판단하라'고 외쳤습니다.",
+      "comet_score": 0.6648930311203003
+    },
+    {
+      "file_id": "2414-159411-0011",
+      "src": "At a little distance they found a bullock lying by the roadside.",
+      "mt": "조금 떨어진 곳에서 그들은 길가에 누워 있는 황소 한 마리를 발견했습니다.",
+      "comet_score": 0.8905478119850159
+    },
+    {
+      "file_id": "2414-159411-0012",
+      "src": "Is it fair that he should do so or not?",
+      "mt": "그가 그렇게 해야 하는가, 아니면 하지 말아야 하는가?",
+      "comet_score": 0.828702986240387
+    },
+    {
+      "file_id": "2414-159411-0013",
+      "src": "Let the tiger eat the man, for men have no pity.",
+      "mt": "호랑이가 사람을 잡아먹게 놔두세요. 남자들은 동정심이 없습니다.",
+      "comet_score": 0.8792856335639954
+    },
+    {
+      "file_id": "2414-159411-0014",
+      "src": "Three out of the six. but still he did not lose all hope, and determined to ask the other three.",
+      "mt": "6개 중 3개입니다. 하지만 그래도 그는 모든 희망을 잃지 않았습니다. 나머지 세 명에게 물어보기로 결심했습니다.",
+      "comet_score": 0.8505529761314392
+    },
+    {
+      "file_id": "2414-159411-0015",
+      "src": "On what must I give judgment? asked the eagle.",
+      "mt": "내가 무엇을 판단해야 합니까? 독수리가 물었다.",
+      "comet_score": 0.8763552308082581
+    },
+    {
+      "file_id": "2414-159411-0016",
+      "src": "The Brahman suited the case, and the eagle answered. Whenever men see me, they try to shoot me. They climb the rocks and steal away my little ones.",
+      "mt": "브라만은 이 경우에 적합했습니다. 그러자 독수리가 대답했습니다. 남자들이 볼때마다 그들이 나를 쏘려고 해요. 그들은 바위를 오른다 내 어린 것들을 훔쳐가느니라.",
+      "comet_score": 0.8113683462142944
+    },
+    {
+      "file_id": "2414-159411-0017",
+      "src": "Then the tiger began to roar and said, 'Judgement of all is against you, O Brahmin.'",
+      "mt": "그러자 호랑이가 포효하기 시작했어요 그리고 말했다, '오 브라만이여, 모든 것에 대한 심판은 당신에게 불리합니다.'",
+      "comet_score": 0.822729766368866
+    },
+    {
+      "file_id": "2414-159411-0018",
+      "src": "After this they saw an alligator, and the Brahman related the matter to him, hoping for a more favourable verdict.",
+      "mt": "그 후 그들은 악어를 보았습니다. 브라만은 좀 더 유리한 판결이 내려지기를 바라면서 그 문제를 그에게 이야기했습니다.",
+      "comet_score": 0.8807252049446106
+    },
+    {
+      "file_id": "2414-159411-0019",
+      "src": "But the alligator said, Whenever I put my nose out of the water, men torment me, and try to kill me.",
+      "mt": "그런데 악어가 말했습니다. 코를 물 밖으로 내밀 때마다 남자들이 나를 괴롭히고, 그리고 나를 죽이려고 해요.",
+      "comet_score": 0.8870439529418945
+    },
+    {
+      "file_id": "2414-159411-0020",
+      "src": "The Brahman gave himself up as lost. But again, he prayed the tiger to have patience, and let him ask the opinion of the sixth judge.",
+      "mt": "브라만은 자신을 잃어버린 것처럼 포기했습니다. 그러나 그는 다시 호랑이에게 인내심을 가지라고 기도했고, 여섯째 재판관에게 의견을 물어보게 하라.",
+      "comet_score": 0.789233386516571
+    },
+    {
+      "file_id": "2414-159411-0021",
+      "src": "Now the sixth was a jackal.",
+      "mt": "이제 여섯 번째는 자칼이었습니다.",
+      "comet_score": 0.869196355342865
+    },
+    {
+      "file_id": "2414-159411-0022",
+      "src": "The Brahmin told his story, and said to him, 'Uncle Jackal, Uncle Jackal, Say, what is your judgment?",
+      "mt": "브라민은 자신의 이야기를 이렇게 말했습니다. 그리고 그에게 말했습니다. '자칼 삼촌, 자칼 삼촌, 말해봐, 당신의 판단은 어떻습니까?",
+      "comet_score": 0.8492096662521362
+    },
+    {
+      "file_id": "2414-159411-0023",
+      "src": "Show me the place.",
+      "mt": "장소를 보여주세요.",
+      "comet_score": 0.886202335357666
+    },
+    {
+      "file_id": "2414-159411-0024",
+      "src": "And the guard there, the jackal said, 'Now Brahman, show me exactly where you stood.",
+      "mt": "그러자 그곳의 경비병인 자칼이 말했습니다. '이제 브라만님, 당신이 서 있는 곳을 정확히 보여주세요.",
+      "comet_score": 0.8616586327552795
+    },
+    {
+      "file_id": "2414-159411-0025",
+      "src": "Exactly there was it, asked the jackal.",
+      "mt": "딱 거기까지였지, 자칼이 물었다.",
+      "comet_score": 0.773997962474823
+    },
+    {
+      "file_id": "2414-159411-0026",
+      "src": "Exactly here, replied the Brahmin.",
+      "mt": "바로 여기라고 브라만이 대답했습니다.",
+      "comet_score": 0.8766291737556458
+    },
+    {
+      "file_id": "2414-159411-0027",
+      "src": "Where was the tiger then?",
+      "mt": "그때 호랑이는 어디에 있었나요?",
+      "comet_score": 0.8857167363166809
+    },
+    {
+      "file_id": "2414-159411-0028",
+      "src": "Why? I stood so, said the tiger, jumping into the cage. And my head was on this side.",
+      "mt": "왜? 나는 그렇게 서서 호랑이가 말했습니다. 새장에 뛰어 들다. 그리고 내 머리는 이쪽에 있었어.",
+      "comet_score": 0.6403513550758362
+    },
+    {
+      "file_id": "2414-159411-0029",
+      "src": "Very good, said the jackal, but I cannot judge without understanding the whole matter exactly.",
+      "mt": "아주 좋아요, 자칼이 말했습니다. 그러나 나는 전체 문제를 정확히 이해하지 않고서는 판단할 수 없습니다.",
+      "comet_score": 0.876494824886322
+    },
+    {
+      "file_id": "2414-159411-0030",
+      "src": "Shut and bolted. Said the Brahmin.",
+      "mt": "닫고 볼트로 고정했습니다. 브라만이 말했다.",
+      "comet_score": 0.7879622578620911
+    },
+    {
+      "file_id": "2414-159411-0031",
+      "src": "Then shut and bolt it, say",
+      "mt": "그런 다음 닫고 볼트로 고정하십시오. 말하다",
+      "comet_score": 0.774578869342804
+    },
+    {
+      "file_id": "2414-159411-0032",
+      "src": "When the Brahmin had turned this, the jackals said, Oh, you wicked and ungrateful tyger!",
+      "mt": "브라만이 이것을 바꾸었을 때, 자칼들이 말했다. 아, 사악하고 배은망덕한 호랑이야!",
+      "comet_score": 0.7844901084899902
+    },
+    {
+      "file_id": "2414-159411-0033",
+      "src": "When a good Brahmin opened your cage door, is to eat him the only return you would make?",
+      "mt": "좋은 브라민이 우리의 문을 열었을 때, 그를 먹는 것이 당신이 할 수 있는 유일한 보답입니까?",
+      "comet_score": 0.7576020956039429
+    },
+    {
+      "file_id": "2414-159411-0034",
+      "src": "Proceed on your journey, friend Bramal.",
+      "mt": "여행을 계속하세요, 친구 브라말.",
+      "comet_score": 0.8756692409515381
+    },
+    {
+      "file_id": "2414-159411-0035",
+      "src": "Your road lies that way, and mine this.",
+      "mt": "당신의 길은 저쪽에 있습니다. 그리고 이건 내꺼야.",
+      "comet_score": 0.8310878872871399
+    },
+    {
+      "file_id": "2414-165385-0000",
+      "src": "That's accomplished. He excited the admiration of every silly coquette. And the envy of every flattering procom. But by all young gentlemen and ladies of understanding, he was heartily despised as a mere civilised monkey.",
+      "mt": "그것은 달성되었습니다. 그는 모든 어리석은 요염한 여자의 감탄을 자극했습니다. 그리고 모든 아첨하는 procom의 부러움. 그러나 이해심을 갖고 있는 모든 젊은 신사 숙녀 여러분, 그는 단순한 문명화된 원숭이로 진심으로 경멸을 받았습니다.",
+      "comet_score": 0.660746693611145
+    },
+    {
+      "file_id": "2414-165385-0001",
+      "src": "That his soul might afterwards occupy, such a station as would be most suitable to his character. It was sentenced to inhabit the body of that vengeful grinning, and mischievous little mimic with four legs. Which you now behold before you.",
+      "mt": "그의 영혼은 나중에 그의 성격에 가장 적합한 지위를 차지하게 될 것입니다. 복수심에 가득 찬 미소를 짓고 다리가 네 개 달린 장난꾸러기 작은 흉내쟁이의 몸에 살라는 선고를 받았습니다. 이제 당신은 그것을 당신 앞에 보고 있습니다.",
+      "comet_score": 0.8233479857444763
+    },
+    {
+      "file_id": "2609-156975-0000",
+      "src": "Then Moses was afraid",
+      "mt": "그러자 모세는 두려워했습니다.",
+      "comet_score": 0.8955902457237244
+    },
+    {
+      "file_id": "2609-156975-0001",
+      "src": "Hold on, ho-fats, hold out, patience is genius.",
+      "mt": "잠깐만, 맙소사, 잠깐만요, 인내심은 천재입니다.",
+      "comet_score": 0.7359301447868347
+    },
+    {
+      "file_id": "2609-156975-0002",
+      "src": "Let us have faith that right makes might. And in that faith, Lincoln.",
+      "mt": "정의가 힘을 만든다는 믿음을 가지자. 그리고 그 믿음 안에서 링컨.",
+      "comet_score": 0.7717142105102539
+    },
+    {
+      "file_id": "2609-156975-0003",
+      "src": "The Egyptian background of the bondage.",
+      "mt": "속박의 이집트 배경.",
+      "comet_score": 0.8686717748641968
+    },
+    {
+      "file_id": "2609-156975-0004",
+      "src": "Every one whose turban has been found by Geemernath Path. The testimony of the oldest biblical narratives, regarding the sojourn of the Hebrews in Egypt, is also in perfect accord with the picture, which the contemporary Egyptian inscriptions, give of the period.",
+      "mt": "Geemernath Path에서 터번을 발견한 모든 사람. 히브리인의 이집트 체류에 관한 가장 오래된 성서 이야기의 증언은 동시대의 이집트 비문이 그 시대에 대해 제시하는 그림과도 완벽하게 일치합니다.",
+      "comet_score": 0.7566878199577332
+    },
+    {
+      "file_id": "2609-156975-0005",
+      "src": "The absence of detailed reference to the Hebrews is therefore perfectly natural. Sure.",
+      "mt": "그러므로 히브리서에 대한 자세한 언급이 없는 것은 너무나 자연스러운 일입니다. 확신하는.",
+      "comet_score": 0.8274442553520203
+    },
+    {
+      "file_id": "2609-156975-0006",
+      "src": "It seems probable that not all, but only part of the tribes which ultimately culverts into the Hebrew nation, found their way to Egypt.",
+      "mt": "전체가 아니라 궁극적으로 히브리 민족으로 변질되는 지파의 일부만이 이집트로 가는 길을 찾았을 가능성이 있는 것 같습니다.",
+      "comet_score": 0.8701137900352478
+    },
+    {
+      "file_id": "2609-156975-0007",
+      "src": "The stories regarding Joseph, the traditional father Ephraim and Manasseh, imply that these strong central tribes, possibly together with the southern tribes of Benjamin and Judah, were the chief actors in the opening scene in Israel's history.",
+      "mt": "전통적 조상인 에브라임과 므낫세의 요셉에 관한 이야기는, 이 강력한 중앙 지파들은 아마도 베냐민과 유다의 남쪽 지파들과 함께 이스라엘 역사의 첫 장면에서 주요 행위자였음을 암시합니다.",
+      "comet_score": 0.8687484264373779
+    },
+    {
+      "file_id": "2609-156975-0008",
+      "src": "The biblical narratives apparently disagree regarding the duration of the sojourn in Egypt.",
+      "mt": "이집트에서의 체류 기간에 관해 성경의 서술은 명백히 일치하지 않습니다.",
+      "comet_score": 0.9002009034156799
+    },
+    {
+      "file_id": "2609-156975-0009",
+      "src": "The later traditions tend to extend the period.",
+      "mt": "후기 전통은 기간을 연장하는 경향이 있습니다.",
+      "comet_score": 0.8864973783493042
+    },
+    {
+      "file_id": "2609-156975-0010",
+      "src": "Here were found several inscriptions bearing the Egyptian name of the city Ptolemais. House of the God Atom.",
+      "mt": "여기서 프톨레마이스라는 도시의 이집트 이름이 새겨진 여러 개의 비문이 발견되었습니다. 신 원자의 집.",
+      "comet_score": 0.8634975552558899
+    },
+    {
+      "file_id": "2609-156975-0011",
+      "src": "A contemporary inscription also states, that he founded near Pithom, the house of Ramses, a city with the royal residence and temples.",
+      "mt": "현대의 비문에는 그가 왕실 거주지와 사원이 있는 도시인 람세스의 집인 피톰 근처에 설립했다고 적혀 있습니다.",
+      "comet_score": 0.842380940914154
+    },
+    {
+      "file_id": "2609-156975-0012",
+      "src": "That the Hebrews were receptive under this ceremony was naturally inevitable.",
+      "mt": "히브리인들이 이 의식을 받아들인 것은 당연히 불가피한 일이었습니다.",
+      "comet_score": 0.8720821738243103
+    },
+    {
+      "file_id": "2609-156975-0013",
+      "src": "Was any other procedure to be expected from it, the despotic roar of that land and bay?",
+      "mt": "다른 절차가 예상됩니까? 그 땅과 만의 독재적인 포효?",
+      "comet_score": 0.686257541179657
+    },
+    {
+      "file_id": "2609-156975-0014",
+      "src": "The making of a loyal patriot.",
+      "mt": "충성스러운 애국자를 만드는 것입니다.",
+      "comet_score": 0.8445244431495667
+    },
+    {
+      "file_id": "2609-156975-0015",
+      "src": "The story of Moses's birth, and early childhood, is one of the most interesting chapters in biblical history.",
+      "mt": "모세의 탄생 이야기, 유아기는 성경 역사상 가장 흥미로운 장 중 하나입니다.",
+      "comet_score": 0.8933624029159546
+    },
+    {
+      "file_id": "2609-156975-0016",
+      "src": "Which moves its just fine in resistance the Egyptian tacks master?",
+      "mt": "이집트 압정 마스터의 저항에 잘 맞는 것은 어느 것입니까?",
+      "comet_score": 0.5736138224601746
+    },
+    {
+      "file_id": "2609-156975-0017",
+      "src": "Is pinage always disastrous, but also to the government imposing it?",
+      "mt": "피나쥬는 항상 비참한가, 하지만 정부가 그것을 부과하는 것에도요?",
+      "comet_score": 0.6600631475448608
+    },
+    {
+      "file_id": "2609-156975-0018",
+      "src": "Na'atree, he went to the land of Midian.",
+      "mt": "나아트리, 그는 미디안 땅으로 갔습니다.",
+      "comet_score": 0.8539854884147644
+    },
+    {
+      "file_id": "2609-156975-0019",
+      "src": "The wilderness to the east of Egypt, and for centuries been the place of refuge for Egyptian fugitives.",
+      "mt": "애굽 동쪽 광야, 수세기 동안 이집트 도망자들의 피난처였습니다.",
+      "comet_score": 0.8814021348953247
+    },
+    {
+      "file_id": "2609-156975-0020",
+      "src": "From about two thousand B.C.",
+      "mt": "기원전 약 2000년부터",
+      "comet_score": 0.8106955289840698
+    },
+    {
+      "file_id": "2609-156975-0021",
+      "src": "On the borders of the wilderness, he found certain Bedouin herdsmen, who received him hospitably.",
+      "mt": "광야의 경계에서, 그는 그를 친절하게 맞아주는 베두인족 목동들을 발견했습니다.",
+      "comet_score": 0.8616948127746582
+    },
+    {
+      "file_id": "2609-156975-0022",
+      "src": "These sand-wanderers sent him on from tribe to tribe, until he reached the land of Kedam, east of the Dead Sea, where he remained for a year and a half.",
+      "mt": "이 모래방랑자들은 그를 부족에서 부족으로 보냈습니다. 그가 사해 동쪽 게담 땅에 이르러 거기서 일 년 반 동안 머물다가",
+      "comet_score": 0.8415350914001465
+    },
+    {
+      "file_id": "2609-156975-0023",
+      "src": "Later he found his way to the court of one of the local kings in Central Palestine, where he married and became, in time, a prosperous local prince.",
+      "mt": "나중에 그는 중앙 팔레스타인 지역 왕 중 한 사람의 궁정으로 가는 길을 찾았습니다. 그곳에서 그는 결혼하여 시간이 지나면서 부유한 지역 왕자가 되었습니다.",
+      "comet_score": 0.8876324892044067
+    },
+    {
+      "file_id": "2609-156975-0024",
+      "src": "The School of the Wilderness.",
+      "mt": "광야의 학교.",
+      "comet_score": 0.8739047646522522
+    },
+    {
+      "file_id": "2609-156975-0025",
+      "src": "The story of Moses, is in many ways close in parallel to that of Senuet.",
+      "mt": "모세의 이야기는 여러 면에서 세누에트의 이야기와 유사합니다.",
+      "comet_score": 0.8962588310241699
+    },
+    {
+      "file_id": "2609-156975-0026",
+      "src": "The priests of the sub tribe of the Canaanites received him into his home, and gave him his daughter in marriage.",
+      "mt": "가나안 지파 제사장들이 그를 그의 집으로 영접하고 그리고 그에게 그의 딸을 시집보내주었다.",
+      "comet_score": 0.866107702255249
+    },
+    {
+      "file_id": "2609-156975-0027",
+      "src": "Note the characteristic Oriental idea of marriage.",
+      "mt": "결혼에 대한 동양의 특징적인 생각을 주목해 보십시오.",
+      "comet_score": 0.889221727848053
+    },
+    {
+      "file_id": "2609-156975-0028",
+      "src": "Here Moses learned the lessons that were essential for his training as a leader and deliverer of his people.",
+      "mt": "여기서 모세는 백성의 지도자이자 구원자로서의 훈련에 필수적인 교훈을 배웠습니다.",
+      "comet_score": 0.8970479965209961
+    },
+    {
+      "file_id": "2609-156975-0029",
+      "src": "After the capture of Jericho, certain of them went up with the southern tribes to conquer southern Palestine.",
+      "mt": "여리고를 함락시킨 후에 그들 중 어떤 사람들은 남쪽 지파들과 함께 팔레스타인 남부를 정복하려고 올라갔습니다.",
+      "comet_score": 0.8913690447807312
+    },
+    {
+      "file_id": "2609-156975-0030",
+      "src": "Many modern scholars draw the conclusion from the biblical narrative, that it was from the Canaanites that Moses first learned of Yahweh. Or as the distinctive name of Israel's God was translated by later Jewish scribes, Jehovah.",
+      "mt": "많은 현대 학자들은 성경 이야기를 통해 모세가 처음으로 야훼에 대해 배운 사람이 가나안 사람들에게서 나왔다는 결론을 내립니다. 또는 후대의 유대인 서기관들이 이스라엘 하나님의 고유한 이름인 여호와를 번역했습니다.",
+      "comet_score": 0.8416810631752014
+    },
+    {
+      "file_id": "2609-156975-0031",
+      "src": "Do the Urartu Sebrew traditions imply that the ancestors of the Israelites were worshippers of Jehovah?",
+      "mt": "우라르투 세브루 전통은 이스라엘 사람들의 조상이 여호와의 숭배자였음을 암시합니까?",
+      "comet_score": 0.8980545997619629
+    },
+    {
+      "file_id": "2609-156975-0032",
+      "src": "The title of his father-in-law, implies that this priest ministered at some wilderness sanctuary.",
+      "mt": "그의 장인이라는 칭호는 이 제사장이 어떤 광야 성소에서 봉사했음을 암시합니다.",
+      "comet_score": 0.8440353870391846
+    },
+    {
+      "file_id": "2609-156975-0033",
+      "src": "Moses in the home of the Midian priest, was brought into direct and constant contact, with the Jehovah worship.",
+      "mt": "미디안 제사장의 집에 있던 모세는 여호와 숭배와 직접적이고도 지속적인 접촉을 갖게 되었습니다.",
+      "comet_score": 0.8846626877784729
+    },
+    {
+      "file_id": "2609-156975-0034",
+      "src": "The cruel fate of his people, and the painful experience in Egypt, that had driven him into the wilderness, prepared his mind to receive this training.",
+      "mt": "그의 백성의 잔인한 운명, 그리고 그를 광야로 몰아넣은 애굽에서의 고통스러운 경험, 이 훈련을 받기 위해 마음을 준비했습니다.",
+      "comet_score": 0.8669782876968384
+    },
+    {
+      "file_id": "2609-156975-0035",
+      "src": "His quest was for a jet and strong gun, able to deliver the oppressed.",
+      "mt": "그의 탐구는 제트기와 강력한 총을 찾는 것이었고, 억압받는 사람들을 구원할 수 있습니다.",
+      "comet_score": 0.8328342437744141
+    },
+    {
+      "file_id": "2609-156975-0036",
+      "src": "The wilderness with its lurking foes, and the ever-present dread of hunger and thirst, deepens the sense of need, and of dependence upon a power able to guide the destitute man.",
+      "mt": "적들이 도사리고 있는 광야, 배고픔과 목마름에 대한 항상 존재하는 두려움은 필요의식을 심화시킵니다. 그리고 가난한 사람을 인도할 수 있는 힘에 의존하는 것입니다.",
+      "comet_score": 0.8010193109512329
+    },
+    {
+      "file_id": "2609-156975-0037",
+      "src": "The peasants of the Vats-Entorian plain of Central Asia Minor, still call every life given spring, God hath given.",
+      "mt": "소 중앙아시아 바츠-엔토리안 평야의 농민들은 아직도 모든 생명에게 주어진 봄을 신이 주신 것이라 부르고 있습니다.",
+      "comet_score": 0.7670466303825378
+    },
+    {
+      "file_id": "2609-156975-0038",
+      "src": "The constant necessity of meeting the dangers of the wilderness, and of defending the flocks entrusted to Moses' care, developed his courage and power of leadership and action.",
+      "mt": "광야의 위험에 맞서야 하는 끊임없는 필요성, 모세에게 맡겨진 양 떼를 보호하며 그의 용기와 리더십 및 행동력을 발전시켰습니다.",
+      "comet_score": 0.8564491868019104
+    },
+    {
+      "file_id": "2609-157645-0000",
+      "src": "Evidently the intention was to make things present for the royal folk at tobacco, during his visit.",
+      "mt": "분명히 그 의도는 그가 방문하는 동안 담배 가게에서 왕실 사람들을 위해 선물을 제공하는 것이었습니다.",
+      "comet_score": 0.8070722818374634
+    },
+    {
+      "file_id": "2609-157645-0001",
+      "src": "There are prohibitions in the regulating code as to smoking, in St Mary's Church, referred it may be noted, to the act which was held therein.",
+      "mt": "세인트 메리 교회에서는 흡연에 관한 규제법에 금지 조항이 있는데, 그 법에서 언급된 바 있습니다.",
+      "comet_score": 0.7341034412384033
+    },
+    {
+      "file_id": "2609-157645-0002",
+      "src": "Sometimes turpao is used in church for disinfectant or deodorizing purposes.",
+      "mt": "때때로 투르파오는 소독이나 탈취 목적으로 교회에서 사용되기도 합니다.",
+      "comet_score": 0.8892943859100342
+    },
+    {
+      "file_id": "2609-157645-0003",
+      "src": "Bartholomew, Archbishop of York, was a great smoker.",
+      "mt": "요크 대주교 바르톨로메오(Bartholomew)는 훌륭한 흡연자였습니다.",
+      "comet_score": 0.8916502594947815
+    },
+    {
+      "file_id": "2609-157645-0004",
+      "src": "On one occasion, he was at St Mary's Church, Nadenham, for a camp for masons.",
+      "mt": "한번은 그는 석공 캠프를 위해 Nadenham에 있는 St Mary's Church에 있었습니다.",
+      "comet_score": 0.8392806053161621
+    },
+    {
+      "file_id": "2609-157645-0005",
+      "src": "Another eighteenth-century clerical worthy, the famous Dr. Parr, an inveterate smoker, was accustomed to do what Mr. Disney prevented Archbishops of Blackburn from doing. He smoked in his vestry at Hampton.",
+      "mt": "또 다른 18세기 성직자의 가치 있는 인물, 열성적인 흡연자인 유명한 Parr 박사는 디즈니 씨가 블랙번 대주교가 하지 못하도록 막은 일을 하는 데 익숙했습니다. 그는 Hampton의 조끼에서 담배를 피웠습니다.",
+      "comet_score": 0.7496766448020935
+    },
+    {
+      "file_id": "2609-157645-0006",
+      "src": "Par was such a continuous smoker, that anyone who came into his company, if he had never smoked before, had to learn the use of a pipe as a means of self defence.",
+      "mt": "파 씨는 워낙 담배를 많이 피웠기 때문에 그의 회사에 들어온 사람은 담배를 한 번도 피워 본 적이 없는 사람이라면 누구나 자기 방어 수단으로 파이프 사용법을 배워야 했습니다.",
+      "comet_score": 0.8308390378952026
+    },
+    {
+      "file_id": "2609-157645-0007",
+      "src": "One Sunday, says Mr. Ditsfield, He didn't answer pipe, and Joshua, the clerk, told him that the people were getting impatient.",
+      "mt": "어느 일요일, Ditsfield 씨는 이렇게 말했습니다. 그는 파이프에 응답하지 않았습니다. 서기인 여호수아는 사람들이 참을성이 없어진다고 그에게 말했습니다.",
+      "comet_score": 0.7059017419815063
+    },
+    {
+      "file_id": "2609-157645-0008",
+      "src": "Let them sing another psalm, said the curate.",
+      "mt": "부목사는 또 다른 시편을 부르게 하라고 말했습니다.",
+      "comet_score": 0.8692681193351746
+    },
+    {
+      "file_id": "2609-157645-0009",
+      "src": "They have, sir,\" replied the clerk.",
+      "mt": "그렇습니다.\" 점원이 대답했습니다.",
+      "comet_score": 0.8593732714653015
+    },
+    {
+      "file_id": "2609-157645-0010",
+      "src": "Then let them sing the hundred and nineteenth, replied the curate.",
+      "mt": "그런 다음 그들에게 119번 노래를 부르게 하십시오. 라고 부목사는 대답했습니다.",
+      "comet_score": 0.8586123585700989
+    },
+    {
+      "file_id": "2609-157645-0011",
+      "src": "Six arms the nearest within reach presented with an obedient start, as many tobacco pouches to the man of office.",
+      "mt": "손이 닿는 곳에 가장 가까운 여섯 개의 팔이 순종적인 시작을 선보이고, 공직자에게 담배 주머니만큼 많이.",
+      "comet_score": 0.6430985927581787
+    },
+    {
+      "file_id": "2609-157645-0012",
+      "src": "David Deans, however, did not at all approve this irreverence.",
+      "mt": "그러나 David Deans는 이러한 불경을 전혀 승인하지 않았습니다.",
+      "comet_score": 0.7374486923217773
+    },
+    {
+      "file_id": "2609-157645-0013",
+      "src": "Going to church St. Hays in those days must have been quite an exciting experience.",
+      "mt": "그 당시 세인트 헤이스 교회에 가는 것은 꽤 흥미로운 경험이었을 것입니다.",
+      "comet_score": 0.8877715468406677
+    },
+    {
+      "file_id": "2609-157645-0014",
+      "src": "When these men in the course of my remonstrance found out that I was not going to continue the custom, they no longer cared to be communicants.",
+      "mt": "이 사람들이 내가 변론하는 중에 내가 그 관습을 이어가지 아니할 것을 알았더니 그들은 더 이상 의사소통을 하는 데 관심이 없었습니다.",
+      "comet_score": 0.8356962203979492
+    },
+    {
+      "file_id": "2609-169640-0000",
+      "src": "Princes in that quarter were usually distracted by the ships it is true, but the sea has thwarted them, and far more are innocent than are guilty of any acts of violence.",
+      "mt": "그 지역의 왕자들은 대개 배 때문에 주의가 산만해진 것이 사실입니다. 그러나 바다는 그들을 좌절시켰고, 폭력 행위로 유죄를 받은 사람보다 무고한 사람이 훨씬 더 많았습니다.",
+      "comet_score": 0.8331246376037598
+    },
+    {
+      "file_id": "2609-169640-0001",
+      "src": "An hour after the sun had set, the wind fell to and let air, that did its cut steerage way on the ship.",
+      "mt": "해가 진 지 한 시간쯤 지나서, 바람이 불어서 공기를 내보내고, 그것은 배에서 방향을 잘랐습니다.",
+      "comet_score": 0.6157974600791931
+    },
+    {
+      "file_id": "2609-169640-0002",
+      "src": "Fortunately, the John was not only fast, but she minded her helm, as a light-footed girl turns in a lively dance.",
+      "mt": "다행히 존은 빨랐을 뿐만 아니라, 그러나 그녀는 발이 가벼운 소녀가 활기차게 춤을 추는 것처럼 투구에 신경을 썼습니다.",
+      "comet_score": 0.6352233290672302
+    },
+    {
+      "file_id": "2609-169640-0003",
+      "src": "I never was in a better steering ship, Patsy Spotsylvania, moderate weather.",
+      "mt": "나는 온화한 날씨에 더 나은 조종선인 Patsy Spotsylvania에 가본 적이 없습니다.",
+      "comet_score": 0.7320972681045532
+    },
+    {
+      "file_id": "2609-169640-0004",
+      "src": "Mr. Marple, he ought to breathe, was fairly snoozing on the hinkups, being like the sails as one might say, very asleep.",
+      "mt": "숨을 쉬어야 할 마플 씨는 마치 돛과도 같은 존재로, 아주 잠 들어 있는 것 같았습니다.",
+      "comet_score": 0.6951615214347839
+    },
+    {
+      "file_id": "2609-169640-0005",
+      "src": "At that moment I heard a noise, when familiar to seamen, that of an oar falling in the boat.",
+      "mt": "그 순간, 굉음이 들렸다. 선원들에게 친숙할 때, 배에 노가 떨어지는 것과 같은 것입니다.",
+      "comet_score": 0.7564603090286255
+    },
+    {
+      "file_id": "2609-169640-0006",
+      "src": "I say yet, sail ho and close aboard!",
+      "mt": "아직은 항해하고 배에 가까이 다가가세요!",
+      "comet_score": 0.6861656904220581
+    },
+    {
+      "file_id": "2609-169640-0007",
+      "src": "He was too much of a seaman to require a second look, in order to ascertain, what was to be done.",
+      "mt": "그는 다시 한 번 살펴보기를 요구하기에는 너무 많은 선원이었습니다. 무엇을 해야 할지 확인하기 위해.",
+      "comet_score": 0.7383087873458862
+    },
+    {
+      "file_id": "2609-169640-0008",
+      "src": "Although they went three feet to our two, this gave us a moment of breathing time.",
+      "mt": "그들은 우리 둘에게 3피트나 갔지만, 이것은 우리에게 잠시 숨을 쉴 수 있는 시간을 주었다.",
+      "comet_score": 0.7884187698364258
+    },
+    {
+      "file_id": "2609-169640-0009",
+      "src": "As our seats were all lying forward and remained so for a few minutes, it gave me leisure to look about.",
+      "mt": "우리 좌석은 모두 앞으로 누워 있었기 때문에 그리고 몇 분 동안 그대로 머물렀다. 그것은 나에게 둘러볼 여유를 주었다.",
+      "comet_score": 0.7796982526779175
+    },
+    {
+      "file_id": "2609-169640-0010",
+      "src": "I soon saw both props, and glad enough was I to perceive that they had not approached materially nearer.",
+      "mt": "나는 곧 두 소품을 모두 보았고, 그리고 나는 그들이 물질적으로 더 가까이 접근하지 않았다는 것을 깨닫고 충분히 기뻤습니다.",
+      "comet_score": 0.8146282434463501
+    },
+    {
+      "file_id": "2609-169640-0011",
+      "src": "Mitsukai observed this also and remarked that our movements had been so prompt as to take the rascals aback.",
+      "mt": "미츠카이도 이를 관찰했다 그리고 우리의 움직임이 너무 빨라서 악당들을 당황하게 만들었다고 말했습니다.",
+      "comet_score": 0.8668778538703918
+    },
+    {
+      "file_id": "2609-169640-0012",
+      "src": "A breath of its stillness succeeded.",
+      "mt": "그 고요함의 숨결이 성공했습니다.",
+      "comet_score": 0.673434317111969
+    },
+    {
+      "file_id": "2609-169640-0013",
+      "src": "The prows did not alter their course, but neared us fast.",
+      "mt": "뱃머리는 진로를 바꾸지 않았고, 그러나 우리에게 빨리 다가왔다.",
+      "comet_score": 0.5861979722976685
+    },
+    {
+      "file_id": "2609-169640-0014",
+      "src": "I heard the rattering of the boarding-pipes too, as they were cut adrift from the spanker-boom. And fell upon the decks.",
+      "mt": "탑승 파이프의 달그락거리는 소리도 들렸어요 그들은 스팽커 붐에서 표류했습니다. 그리고 갑판에 떨어졌습니다.",
+      "comet_score": 0.7397199869155884
+    },
+    {
+      "file_id": "2609-169640-0015",
+      "src": "Kite went aft, and returned with three or four muskets and as many pikes.",
+      "mt": "연이 뒤로 갔다, 그리고 서너 개의 머스킷총과 그만큼의 장창을 가지고 돌아왔습니다.",
+      "comet_score": 0.5744032263755798
+    },
+    {
+      "file_id": "2609-169640-0016",
+      "src": "The stillness that reigned on both sides was like that of death.",
+      "mt": "양쪽을 지배하는 고요함은 죽음의 고요함과 같았습니다.",
+      "comet_score": 0.8875995874404907
+    },
+    {
+      "file_id": "2609-169640-0017",
+      "src": "The job behaved beautifully,",
+      "mt": "그 일은 아름답게 행동했고,",
+      "comet_score": 0.5281516909599304
+    },
+    {
+      "file_id": "2609-169640-0018",
+      "src": "The question was now whether we could pass them or not, before they got near enough to grapple.",
+      "mt": "이제 문제는 통과할 수 있느냐 없느냐 였는데, 그들이 맞붙을 수 있을 만큼 가까워지기 전에.",
+      "comet_score": 0.8025079965591431
+    },
+    {
+      "file_id": "2609-169640-0019",
+      "src": "The captain behaved perfectly well in this critical instant, commanding a dead silence in the close attendance on to his orders.",
+      "mt": "선장은 이 중요한 순간에 완벽하게 행동했고, 그의 명령에 긴밀히 참석하면서 죽은 침묵을 명령했습니다.",
+      "comet_score": 0.7607130408287048
+    },
+    {
+      "file_id": "2609-169640-0020",
+      "src": "Not a soul on board the John Hussert.",
+      "mt": "John Hussert 호에는 영혼이 하나도 없습니다.",
+      "comet_score": 0.8781068325042725
+    },
+    {
+      "file_id": "2609-169640-0021",
+      "src": "On our side we gave the gentlemen the four sixes, two ounces nearest and two ounces sternmost proa, which were still nearer cable's length distant.",
+      "mt": "우리 쪽에서는 여러분에게 4개의 6을 주었습니다. 가장 가까운 곳은 2온스, 가장 먼 곳은 2온스였는데, 여전히 케이블 길이에 더 가깝습니다.",
+      "comet_score": 0.6557595729827881
+    },
+    {
+      "file_id": "2609-169640-0022",
+      "src": "They were like the yells of fiends in anguish.",
+      "mt": "그것은 마치 괴로움에 빠진 마귀의 외침 같았습니다.",
+      "comet_score": 0.8694005608558655
+    },
+    {
+      "file_id": "2609-169640-0023",
+      "src": "I doubt if we touched a man in the nearest borough.",
+      "mt": "우리가 가장 가까운 자치구에 있는 사람을 만졌는지 의심스럽습니다.",
+      "comet_score": 0.8516917824745178
+    },
+    {
+      "file_id": "2609-169640-0024",
+      "src": "In that state, the ship passed ahead, all her canvas been full,",
+      "mt": "그 상태에서는 배가 앞으로 지나갔고, 그녀의 캔버스는 모두 가득 찼습니다.",
+      "comet_score": 0.6934143900871277
+    },
+    {
+      "file_id": "3005-163389-0000",
+      "src": "They swarmed up in front of Sherburn's palings as thick as they could jam together, and you couldn't hear yourself think for the noise.",
+      "mt": "그들은 서로 뭉칠 수 있을 만큼 두꺼운 셔번의 울타리 앞에 떼지어 모여들었고, 그리고 당신은 소음에 대해 생각하는 것을 들을 수 없었습니다.",
+      "comet_score": 0.6927697062492371
+    },
+    {
+      "file_id": "3005-163389-0001",
+      "src": "Some sung out, \"Tear down the fence, tear down the fence!\"",
+      "mt": "일부는 노래를 불렀고, \"담장을 허물어라, 담장을 허물어라!\"",
+      "comet_score": 0.8639065027236938
+    },
+    {
+      "file_id": "3005-163389-0002",
+      "src": "The stillness was awful creepy and uncomfortable.",
+      "mt": "그 고요함은 끔찍할 정도로 소름끼치고 불편했습니다.",
+      "comet_score": 0.8800047039985657
+    },
+    {
+      "file_id": "3005-163389-0003",
+      "src": "Sherburne run his eyes slow along the crowd, and wherever it struck the people tried a little to out-gaze him, but they couldn't. They dropped their eyes and looked sneaky.",
+      "mt": "Sherburne은 군중을 따라 천천히 눈을 돌렸습니다. 그리고 그것이 닿는 곳마다 사람들은 그를 외면하려고 노력했습니다. 하지만 그들은 그럴 수 없었습니다. 그들은 눈을 내리깔고 교활해 보였습니다.",
+      "comet_score": 0.8024993538856506
+    },
+    {
+      "file_id": "3005-163389-0004",
+      "src": "The average man's a coward.",
+      "mt": "보통 사람은 겁쟁이예요.",
+      "comet_score": 0.8895694613456726
+    },
+    {
+      "file_id": "3005-163389-0005",
+      "src": "Because they're afraid the man's friends will shoot them in the back in the dark, and it's just what they would do.",
+      "mt": "그 남자의 친구들이 어둠 속에서 뒤에서 총을 쏠까 두려워서, 그리고 그것은 그들이 할 일입니다.",
+      "comet_score": 0.8257395029067993
+    },
+    {
+      "file_id": "3005-163389-0006",
+      "src": "So they always acquit, and then a man goes in the night, with a hundred masked cowards at his back, and lynches the rascal.",
+      "mt": "그래서 그들은 항상 무죄를 선고받습니다. 그리고 한 남자가 밤에 가면을 쓴 겁쟁이 백 마리를 데리고 갑니다. 그리고 악당을 린치합니다.",
+      "comet_score": 0.8304129242897034
+    },
+    {
+      "file_id": "3005-163389-0007",
+      "src": "You didn't want to come.",
+      "mt": "당신은오고 싶지 않았습니다.",
+      "comet_score": 0.8704376220703125
+    },
+    {
+      "file_id": "3005-163389-0008",
+      "src": "But a mob without any man at the head of it is beneath pitifulness.",
+      "mt": "그러나 선두에 선 사람이 없는 폭도들은 불쌍할 따름입니다.",
+      "comet_score": 0.7941064238548279
+    },
+    {
+      "file_id": "3005-163389-0009",
+      "src": "Now leave, and take your half-a-man with you. Tossing his gun up across his left arm and cocking it when he says this.",
+      "mt": "이제 떠나세요, 그리고 당신의 반 남자를 데리고 가십시오. 왼팔 위로 총을 던지며 그리고 그가 이렇게 말하자 콧방귀를 뀌었습니다.",
+      "comet_score": 0.6971402168273926
+    },
+    {
+      "file_id": "3005-163389-0010",
+      "src": "The crowd washed back sudden, and then broke all apart, and went tearing off every which way, and Buck Harkness he heeled it after them, Looking tolerable cheap.",
+      "mt": "군중이 갑자기 물러나고, 그러다가 다 부서지고, 사방팔방으로 찢어버리고, 그리고 Buck Harkness는 그들을 뒤따랐습니다. 견딜 수 있을 만큼 저렴해 보입니다.",
+      "comet_score": 0.630439281463623
+    },
+    {
+      "file_id": "3005-163389-0011",
+      "src": "You can't be too careful.",
+      "mt": "너무 조심할 수는 없습니다.",
+      "comet_score": 0.873680591583252
+    },
+    {
+      "file_id": "3005-163389-0012",
+      "src": "They argued, but he wouldn't listen, and the whole show come to a standstill.",
+      "mt": "그들은 주장했다, 하지만 그 사람은 듣지 않을 거에요. 쇼 전체가 멈췄습니다.",
+      "comet_score": 0.8319449424743652
+    },
+    {
+      "file_id": "3005-163389-0013",
+      "src": "And one or two women begin to scream.",
+      "mt": "그리고 한두 명의 여성이 비명을 지르기 시작합니다.",
+      "comet_score": 0.8893560171127319
+    },
+    {
+      "file_id": "3005-163389-0014",
+      "src": "So then, the ringmaster, he made a little speech. And said he hoped there wouldn't be no disturbance, and if the man would promise he wouldn't make no more trouble, he would let him ride if he thought he could stay on the horse.",
+      "mt": "그러자, 감독님이 짧은 연설을 하셨습니다. 그리고 방해가 없었으면 좋겠다고 하더군요. 그리고 그 사람이 약속하면 더 이상 문제를 일으키지 않겠다고 약속합니다. 그는 말에 머물 수 있다고 생각하면 말을 타게 할 것입니다.",
+      "comet_score": 0.7176108956336975
+    },
+    {
+      "file_id": "3005-163389-0015",
+      "src": "It warn't funny to me, though. I was all of a tremble to see his danger.",
+      "mt": "하지만 그것은 나에게 재미없다고 경고합니다. 나는 그의 위험을 보고 온 몸이 떨렸습니다.",
+      "comet_score": 0.701538622379303
+    },
+    {
+      "file_id": "3005-163389-0016",
+      "src": "And the horse are going like a house on fire, too.",
+      "mt": "그리고 말 역시 불타오르는 집처럼 변하고 있습니다.",
+      "comet_score": 0.6919404864311218
+    },
+    {
+      "file_id": "3005-163389-0017",
+      "src": "He shed them so thick they kind of clogged up the air. And altogether he shed seventeen suits.",
+      "mt": "그는 그것들을 너무 두꺼워서 공기가 막힐 정도였습니다. 그리고 그는 모두 17벌의 옷을 벗었습니다.",
+      "comet_score": 0.6839354038238525
+    },
+    {
+      "file_id": "3005-163389-0018",
+      "src": "Why, it was one of his own men.",
+      "mt": "그 사람은 그 사람의 부하 중 하나였지요.",
+      "comet_score": 0.7799065113067627
+    },
+    {
+      "file_id": "3005-163390-0000",
+      "src": "And, but never mind the rest of his outfit. It was just wild, but it was awful funny.",
+      "mt": "그리고, 하지만 그의 옷의 나머지 부분은 신경쓰지 마세요. 그것은 단지 거칠었지만 끔찍할 정도로 재밌었습니다.",
+      "comet_score": 0.7737565636634827
+    },
+    {
+      "file_id": "3005-163390-0001",
+      "src": "The people most killed themselves laughing, and when the king got done capering, and capered off behind the scenes, they roared and clapped and stormed and ha ha till he come back and done it over again, and after that they made him do it another time.",
+      "mt": "웃으면서 자살한 사람들이 가장 많았고, 그리고 왕이 케이핑을 마쳤을 때, 그리고 무대 뒤에서 도망쳤어요 그들은 으르렁거리고 박수치고 폭풍우를 쳤고 하하 그가 돌아와서 다시 할 때까지, 그 후에 그들은 그에게 또 다른 일을 하게 했습니다.",
+      "comet_score": 0.6724825501441956
+    },
+    {
+      "file_id": "3005-163390-0002",
+      "src": "Twenty people sings out.",
+      "mt": "20명이 노래를 부른다.",
+      "comet_score": 0.8386605978012085
+    },
+    {
+      "file_id": "3005-163390-0003",
+      "src": "The Duke says yes.",
+      "mt": "공작은 그렇다고 말합니다.",
+      "comet_score": 0.8897401690483093
+    },
+    {
+      "file_id": "3005-163390-0004",
+      "src": "Everybody sings out, ' Sold! '",
+      "mt": "다들 'Sold!'를 외친다. '",
+      "comet_score": 0.8159153461456299
+    },
+    {
+      "file_id": "3005-163390-0005",
+      "src": "But a big, fine-looking man jumps up on a bench and shouts. Hold on.",
+      "mt": "그런데 덩치 크고 잘생긴 남자가 벤치 위로 뛰어올라 그리고 소리친다. 기다리다.",
+      "comet_score": 0.8433761596679688
+    },
+    {
+      "file_id": "3005-163390-0006",
+      "src": "Just a word, gentlemen, They stopped to listen.",
+      "mt": "한마디만 해주세요, 여러분. 그들은 듣기 위해 멈춰 섰습니다.",
+      "comet_score": 0.8672425746917725
+    },
+    {
+      "file_id": "3005-163390-0007",
+      "src": "What we want is to go out of here quiet, and talk this show up, and sell the rest of the town.",
+      "mt": "우리가 원하는 것은 여기서 조용히 나가는 것입니다. 이 쇼에 대해 이야기해 보세요. 그리고 마을의 나머지 부분을 팔아라.",
+      "comet_score": 0.756826639175415
+    },
+    {
+      "file_id": "3005-163390-0008",
+      "src": "You bet it is, The judge is right.",
+      "mt": "당신은 그럴 것이라고 확신합니다. 판사님 말씀이 맞습니다.",
+      "comet_score": 0.8563494086265564
+    },
+    {
+      "file_id": "3005-163390-0009",
+      "src": "We struck the raft at the same time and in less than two seconds we was glidin' downstream, all dark and still, and edging towards the middle of the river. Nobody saying a word.",
+      "mt": "우리는 동시에 뗏목을 쳤다 그리고 2초도 안 되어 우리는 어둡고 고요한 하류로 미끄러져 내려갔습니다. 그리고 강 중앙을 향해 나아갑니다. 아무도 한마디도하지 않습니다.",
+      "comet_score": 0.8147204518318176
+    },
+    {
+      "file_id": "3005-163390-0010",
+      "src": "We never showed a light till we was about ten mile below the village.",
+      "mt": "우리는 마을에서 약 10마일 아래로 내려갈 때까지 결코 빛을 보여주지 않았습니다.",
+      "comet_score": 0.875584065914154
+    },
+    {
+      "file_id": "3005-163390-0011",
+      "src": "Greenhorns, flatheads.",
+      "mt": "그린혼, 납작머리.",
+      "comet_score": 0.7844357490539551
+    },
+    {
+      "file_id": "3005-163390-0012",
+      "src": "No, I says it don't.",
+      "mt": "아니요, 그렇지 않다고 말씀드립니다.",
+      "comet_score": 0.8035477995872498
+    },
+    {
+      "file_id": "3005-163390-0013",
+      "src": "Well, it don't, because it's in the breeze. I reckon they're all alike.",
+      "mt": "글쎄요, 그렇지 않아요. 바람이 불고 있으니까요. 나는 그들이 모두 비슷하다고 생각합니다.",
+      "comet_score": 0.8380250930786133
+    },
+    {
+      "file_id": "3005-163390-0014",
+      "src": "Well, that's what I'm a saying. All kings is mostly rapsagians, as far as I can make out. Is that so?",
+      "mt": "글쎄요, 그게 제가 말하는 것입니다. 모든 왕은 대부분 랩사기안이고, 내가 알아낼 수 있는 한. 그렇습니까?",
+      "comet_score": 0.7545319199562073
+    },
+    {
+      "file_id": "3005-163390-0015",
+      "src": "And look at Charles second, and Louis fourteen, and Louis fifteen, and James second, and Edward second, and Richard third, and forty more. Besides all them Saxon heptarchies that used to rip around so in old times and raise Cain,",
+      "mt": "그리고 두 번째 찰스, 루이 14세, 루이 15세, 제임스 두 번째, 에드워드 두 번째, 리차드 세 번째, 그리고 40명 이상을 보세요. 게다가 옛날에 그렇게 찢어발기고 카인을 키우던 색슨족 헵타키들,",
+      "comet_score": 0.7313702702522278
+    },
+    {
+      "file_id": "3005-163390-0016",
+      "src": "My, you ought to seen old Henry the eighth when he was in bloom.",
+      "mt": "아, 헨리 8세의 꽃이 피었을 때 보셔야 해요.",
+      "comet_score": 0.78438401222229
+    },
+    {
+      "file_id": "3005-163390-0017",
+      "src": "Ring up, fair Rosamond.",
+      "mt": "전화해, 아름다운 로자몬드.",
+      "comet_score": 0.8529084324836731
+    },
+    {
+      "file_id": "3005-163390-0018",
+      "src": "Well, Henry, he takes a notion he wants to get up some trouble with this country.",
+      "mt": "글쎄요, 헨리는 이 나라에 문제를 일으키고 싶다고 생각하고 있어요.",
+      "comet_score": 0.8434454798698425
+    },
+    {
+      "file_id": "3005-163390-0019",
+      "src": "S'pose he opened his mouth. What then?",
+      "mt": "그가 입을 열었다고 가정해보자. 그럼 어쩌지?",
+      "comet_score": 0.8892005085945129
+    },
+    {
+      "file_id": "3005-163390-0020",
+      "src": "All I say is, kings is kings, and you got to make allowances.",
+      "mt": "내가 말하는 건, 왕은 왕이고, 그리고 당신은 수당을 주어야합니다.",
+      "comet_score": 0.8560118675231934
+    },
+    {
+      "file_id": "3005-163390-0021",
+      "src": "Take them all around, they're a mighty ornery lot. It's the way they're raised.",
+      "mt": "사방으로 데려가세요. 그들은 매우 고약한 사람들입니다. 그것이 그들이 자라나는 방식입니다.",
+      "comet_score": 0.7521443963050842
+    },
+    {
+      "file_id": "3005-163390-0022",
+      "src": "Well, they all do, Jim.",
+      "mt": "글쎄요, 다들 그렇죠, 짐.",
+      "comet_score": 0.877082347869873
+    },
+    {
+      "file_id": "3005-163390-0023",
+      "src": "Now the Duke, he's a tolerable like the man in some ways.",
+      "mt": "이제 공작은 어떤 면에서는 그 남자와 마찬가지로 견딜만하다.",
+      "comet_score": 0.7580180168151855
+    },
+    {
+      "file_id": "3005-163390-0024",
+      "src": "This one's a middling hard lot for a duke.",
+      "mt": "이것은 공작에게는 중간 정도의 어려운 일입니다.",
+      "comet_score": 0.8294060230255127
+    },
+    {
+      "file_id": "3005-163390-0025",
+      "src": "When I waked up just at daybreak, he was sitting there with his head down betwixt his knees, moaning and mourning to himself.",
+      "mt": "새벽에 막 일어났을 때, 그는 무릎 사이에 머리를 파묻고 앉아 신음하며 혼자 애도하고 있었습니다.",
+      "comet_score": 0.8678335547447205
+    },
+    {
+      "file_id": "3005-163390-0026",
+      "src": "It don't seem natural, but I reckon it so.",
+      "mt": "자연스럽지 않은 것 같은데, 하지만 나는 그렇게 생각한다.",
+      "comet_score": 0.8807376623153687
+    },
+    {
+      "file_id": "3005-163390-0027",
+      "src": "He was often moaning and mourning that way nights, when he judged I was asleep, and saying, 'Poor little Elizabeth.'",
+      "mt": "그는 종종 밤마다 그렇게 신음하고 애도했습니다. 그가 내가 자고 있다고 판단했을 때, 그리고는 '불쌍한 엘리자베스'라고 말했습니다.",
+      "comet_score": 0.8552718758583069
+    },
+    {
+      "file_id": "3005-163390-0028",
+      "src": "Don't you hear me? Shut that door.",
+      "mt": "내 말 안 들려? 그 문을 닫으세요.",
+      "comet_score": 0.8708898425102234
+    },
+    {
+      "file_id": "3005-163390-0029",
+      "src": "I lay I make you mine.",
+      "mt": "나는 누워서 당신을 내 것으로 만듭니다.",
+      "comet_score": 0.7191751003265381
+    },
+    {
+      "file_id": "3005-163390-0030",
+      "src": "Just as loud as I could yell.",
+      "mt": "내가 소리칠 수 있을 만큼 크게.",
+      "comet_score": 0.8213614821434021
+    },
+    {
+      "file_id": "3005-163391-0000",
+      "src": "Which was sound enough, but you take the average man, and he wouldn't wait for him to howl.",
+      "mt": "충분히 소리가 났지만 하지만 당신은 보통 사람을 생각합니다. 그리고 그는 그가 울부짖을 때까지 기다리지 않았습니다.",
+      "comet_score": 0.6815311312675476
+    },
+    {
+      "file_id": "3005-163391-0001",
+      "src": "The king's duds was all black, and he did look real swell and starchy.",
+      "mt": "왕의 옷은 온통 검은색이었고, 그리고 그는 정말 부풀고 딱딱해 보였습니다.",
+      "comet_score": 0.8013887405395508
+    },
+    {
+      "file_id": "3005-163391-0002",
+      "src": "Why, before, he looked like the horniest old rip that ever was, but now, when he'd take off his new white beaver and make a bow and do a smile, he looked that grand and good and pious that you'd say he'd walked right out of the ark, and maybe was old Leviticus himself.",
+      "mt": "왜 전에는 그 사람이 역사상 가장 늙고 늙어 보이는 찢겨진 사람처럼 보였나요? 하지만 지금은 새 하얀 비버를 벗고 인사를 하고 미소를 지을 때, 그는 방주에서 바로 걸어 나왔다고 말할 만큼 웅장하고 착하고 경건해 보였습니다. 어쩌면 늙은 레위기 자신이었을 수도 있습니다.",
+      "comet_score": 0.7089262008666992
+    },
+    {
+      "file_id": "3005-163391-0003",
+      "src": "Jim cleaned up the canoe, and I got my paddle ready.",
+      "mt": "짐은 카누를 청소했고, 그리고 노를 준비했어요.",
+      "comet_score": 0.8308411836624146
+    },
+    {
+      "file_id": "3005-163391-0004",
+      "src": "Where are you bound for, young man?",
+      "mt": "젊은이여, 어디로 가려고 합니까?",
+      "comet_score": 0.8796808123588562
+    },
+    {
+      "file_id": "3005-163391-0005",
+      "src": "Get aboard, says the king.",
+      "mt": "승선하라, 왕이 말했다.",
+      "comet_score": 0.8907228112220764
+    },
+    {
+      "file_id": "3005-163391-0006",
+      "src": "I done so, and then we all three started on again.",
+      "mt": "나는 그렇게 했다, 그리고 우리 셋 모두 다시 시작했어요.",
+      "comet_score": 0.8397892713546753
+    },
+    {
+      "file_id": "3005-163391-0007",
+      "src": "The young chap was mighty thankful. Said it was tough work toting his baggage such weather.",
+      "mt": "그 젊은 친구는 정말 감사했습니다. 이런 날씨에 짐을 옮기는 일이 힘들다고 하더군요.",
+      "comet_score": 0.8722038269042969
+    },
+    {
+      "file_id": "3005-163391-0008",
+      "src": "He asked the king where he was going, and the king told him he'd come down the river and landed at the other village this morning, and now he was going up a few mile to see an old friend on a farm up there. The young fellow says.",
+      "mt": "그는 왕에게 어디로 가느냐고 물었습니다. 왕은 그에게 오늘 아침 강을 따라 내려와 다른 마을에 도착하겠다고 말했습니다. 그리고 지금 그는 저기 농장에 있는 오랜 친구를 만나기 위해 몇 마일을 올라가고 있었습니다. 젊은 친구가 말합니다.",
+      "comet_score": 0.8819562196731567
+    },
+    {
+      "file_id": "3005-163391-0009",
+      "src": "But then I says again, 'No, I reckon it ain't him, or else he wouldn't be paddlin' up the river. You ain't him, are you?",
+      "mt": "하지만 나는 다시 '아니요, 그 사람이 아닌 것 같아요. 그렇지 않으면 그 사람은 강 위로 노를 젓지 않았을 겁니다. 당신은 그 사람이 아니죠?",
+      "comet_score": 0.8583123683929443
+    },
+    {
+      "file_id": "3005-163391-0010",
+      "src": "No, my name's Blodgett, Alexander Blodgett. Reverend Alexander Blodgett, I suppose I must say. As I'm one of the large poor servants.",
+      "mt": "아니요, 제 이름은 블로젯이에요 알렉산더 블로젯. Alexander Blodgett 목사님, 꼭 말씀드리고 싶습니다. 나는 크고 가난한 하인 중 하나이기 때문입니다.",
+      "comet_score": 0.8203428387641907
+    },
+    {
+      "file_id": "3005-163391-0011",
+      "src": "You see, he was pretty old, and George's girls was too young to be much company for him, except Mary Jane, the red-headed one, and so he was kinder lonesome after George and his wife died, and didn't seem to care much to live.",
+      "mt": "알다시피, 그 사람 꽤 늙었지, 그리고 조지의 딸들은 너무 어려서 그와 많은 친구가 될 수 없었습니다. 빨간 머리의 메리 제인만 빼고요. 그래서 조지와 그의 아내가 죽은 후 그는 더욱 외로워졌습니다. 그리고 사는 데 별로 관심이 없는 것 같았어요.",
+      "comet_score": 0.8373773097991943
+    },
+    {
+      "file_id": "3005-163391-0012",
+      "src": "Too bad. Too bad he couldn't have lived to see his brother's poor soul.",
+      "mt": "안타깝네요. 안타깝게도 그는 동생의 불쌍한 영혼을 볼 수 없었습니다.",
+      "comet_score": 0.8747290968894958
+    },
+    {
+      "file_id": "3005-163391-0013",
+      "src": "I'm going in a ship. next Wednesday, for Rio de Janeiro. Where my uncle is.",
+      "mt": "나는 배를 타고 갈 거예요. 다음 주 수요일, 리우데자네이루로 향합니다. 내 삼촌이 있는 곳.",
+      "comet_score": 0.883725643157959
+    },
+    {
+      "file_id": "3005-163391-0014",
+      "src": "But it'll be lovely. Wished I was a-going.",
+      "mt": "하지만 정말 좋을 거예요. 내가 가고 싶었어요.",
+      "comet_score": 0.8389739394187927
+    },
+    {
+      "file_id": "3005-163391-0015",
+      "src": "Mary Jane's nineteen. Susan's fifteen, and Joanne is about fourteen. That's the one that gives herself to good works and has a hair lip. Poor things!",
+      "mt": "메리 제인은 열아홉 살이에요. 수잔은 열다섯 살이에요. 조앤은 열네 살쯤 됐어요. 선한 일에 헌신하고 머리숱이 많은 사람입니다. 불쌍한 것들!",
+      "comet_score": 0.8136168718338013
+    },
+    {
+      "file_id": "3005-163391-0016",
+      "src": "Well, they could be worse off.",
+      "mt": "글쎄, 그들은 더 나쁠 수도 있습니다.",
+      "comet_score": 0.885787844657898
+    },
+    {
+      "file_id": "3005-163391-0017",
+      "src": "Old Peter had friends, and they ain't gonna let them come to no harm.",
+      "mt": "늙은 피터에게는 친구가 있었고, 그리고 그들은 그들이 해를 입지 않도록 놔두지 않을 것입니다.",
+      "comet_score": 0.8416728377342224
+    },
+    {
+      "file_id": "3005-163391-0018",
+      "src": "Blamed if he didn't inquire about everybody and everything in that blessed town and all about the Wilkes's. And about Peter's business, which was a tanner, and about George's, which was a carpenter, and about Harvey's, which was a dissenting minister, and so on and so on.",
+      "mt": "그 축복받은 마을의 모든 사람과 모든 것에 대해 묻지 않았다면 비난을 받았습니다. 그리고 Wilkes에 관한 모든 것. 그리고 피터의 사업에 관해서는, 그것은 태너였고, 그리고 목수였던 조지에 대해서, 그리고 반대하는 목사였던 Harvey's에 대해서, 등등.",
+      "comet_score": 0.7191308736801147
+    },
+    {
+      "file_id": "3005-163391-0019",
+      "src": "When they're deep, they won't stop for a hale.",
+      "mt": "그들이 깊어지면, 그들은 잠시도 멈추지 않을 것입니다.",
+      "comet_score": 0.7484133839607239
+    },
+    {
+      "file_id": "3005-163391-0020",
+      "src": "Was Peter Wilkes well off?",
+      "mt": "피터 윌크스는 잘 살았나요?",
+      "comet_score": 0.860661506652832
+    },
+    {
+      "file_id": "3005-163391-0021",
+      "src": "When we struck the boat, she was about done loading, and pretty soon she got off.",
+      "mt": "우리가 배를 쳤을 때, 그녀는 로딩을 거의 마쳤고, 그리고 곧 그녀는 내렸다.",
+      "comet_score": 0.7834311127662659
+    },
+    {
+      "file_id": "3005-163391-0022",
+      "src": "Now, hustle back right off and fetch the Duke up here. And the new carpet bags.",
+      "mt": "이제 다시 서둘러 돌아가자 그리고 공작을 여기로 데려오세요. 그리고 새로운 카펫 가방.",
+      "comet_score": 0.8060965538024902
+    },
+    {
+      "file_id": "3005-163391-0023",
+      "src": "So then they waited for a steamboat.",
+      "mt": "그래서 그들은 증기선을 기다렸습니다.",
+      "comet_score": 0.8846240639686584
+    },
+    {
+      "file_id": "3005-163391-0024",
+      "src": "But the king was calm. He says,",
+      "mt": "그러나 왕은 침착했습니다. 그는 말한다,",
+      "comet_score": 0.8921751976013184
+    },
+    {
+      "file_id": "3005-163391-0025",
+      "src": "They gave a glance at one another and nodded their heads as much as to say, 'Would that tell you?'.",
+      "mt": "그들은 서로를 힐끗 쳐다보았다. '그게 말해줄까?'라며 고개를 끄덕였다.",
+      "comet_score": 0.7483339905738831
+    },
+    {
+      "file_id": "3005-163391-0026",
+      "src": "Then one of them says, kind of soft and gentle,",
+      "mt": "그러자 그 중 한 사람이 부드럽고 온화한 말을 했습니다.",
+      "comet_score": 0.8634520769119263
+    },
+    {
+      "file_id": "3005-163399-0000",
+      "src": "Phelps's was one of these little one-horse cotton plantations, and they all look alike.",
+      "mt": "펠프스 농장은 작은 한 마리 목화 농장 중 하나였습니다. 그리고 그들은 모두 비슷해 보입니다.",
+      "comet_score": 0.6981893181800842
+    },
+    {
+      "file_id": "3005-163399-0001",
+      "src": "I went around and climbed over the back stile by the ash hopper, and started for the kitchen.",
+      "mt": "나는 돌아다녔다 그리고 재 호퍼 옆 뒷문 위로 올라갔습니다. 그리고 부엌으로 향했습니다.",
+      "comet_score": 0.6596801280975342
+    },
+    {
+      "file_id": "3005-163399-0002",
+      "src": "Ay, out with a yesome fore I thought.",
+      "mt": "아, 내 생각에는 예썸을 가지고 나가는 것 같았습니다.",
+      "comet_score": 0.5042202472686768
+    },
+    {
+      "file_id": "3005-163399-0003",
+      "src": "So then she started for the house, leading me by the hand, and the children tagging after.",
+      "mt": "그러자 그녀는 내 손을 잡고 집으로 향했습니다. 그리고 그 뒤에 태그를 달고 있는 아이들.",
+      "comet_score": 0.7229160070419312
+    },
+    {
+      "file_id": "3005-163399-0004",
+      "src": "When we got there, she set me down in a split-bottom chair and set herself down on a little low stool in front of me, holding both of my hands and says,",
+      "mt": "우리가 거기 도착했을 때, 그녀는 나를 바닥이 갈라진 의자에 앉혔어요 그리고는 내 앞에 있는 작은 의자에 앉아 내 두 손을 잡고 이렇게 말했습니다.",
+      "comet_score": 0.8340373039245605
+    },
+    {
+      "file_id": "3005-163399-0005",
+      "src": "Well, it's lucky, because sometimes people do get hurt.",
+      "mt": "뭐, 다행이군요. 왜냐하면 때로는 사람들이 상처를 받기도 하기 때문입니다.",
+      "comet_score": 0.8799033164978027
+    },
+    {
+      "file_id": "3005-163399-0006",
+      "src": "And I think he died afterwards. He was a Baptist.",
+      "mt": "그리고 그 사람은 나중에 죽은 것 같아요. 그는 침례교인이었습니다.",
+      "comet_score": 0.8969539999961853
+    },
+    {
+      "file_id": "3005-163399-0007",
+      "src": "Yes, it was mortification. That was it.",
+      "mt": "그렇다, 그것은 굴욕이었다. 그게 다야.",
+      "comet_score": 0.8427087068557739
+    },
+    {
+      "file_id": "3005-163399-0008",
+      "src": "Your uncle's been up to the town every day to fetch you.",
+      "mt": "당신의 삼촌은 당신을 데리러 매일 마을에 왔습니다.",
+      "comet_score": 0.8891459703445435
+    },
+    {
+      "file_id": "3005-163399-0009",
+      "src": "You must have met him on the road, didn't you?",
+      "mt": "길에서 그 사람을 만났나 봐요, 그렇죠?",
+      "comet_score": 0.8771096467971802
+    },
+    {
+      "file_id": "3005-163399-0010",
+      "src": "Watch out!",
+      "mt": "조심하세요!",
+      "comet_score": 0.8755082488059998
+    },
+    {
+      "file_id": "3005-163399-0011",
+      "src": "It was kinder thin ice, but I says,",
+      "mt": "좀 더 얇은 얼음이었지만 나는 이렇게 말했다.",
+      "comet_score": 0.6608086824417114
+    },
+    {
+      "file_id": "3005-163399-0012",
+      "src": "I had my mind on the children all the time. I wanted to get them out to one side and pump them a little and find out who I was.",
+      "mt": "나는 항상 아이들을 생각했습니다. 한쪽으로 꺼내서 살짝 펌핑하고 싶었는데 그리고 내가 누구였는지 알아보세요.",
+      "comet_score": 0.7612183094024658
+    },
+    {
+      "file_id": "3005-163399-0013",
+      "src": "Pretty soon she made the cold chills streak all down my back, because she says,",
+      "mt": "곧 그녀는 내 등줄기에 차가운 오한을 일으켰습니다. 왜냐하면 그녀가 말하기를,",
+      "comet_score": 0.6515434384346008
+    },
+    {
+      "file_id": "3005-163399-0014",
+      "src": "I see it warn't a bit of use to try to go ahead. I'd got to throw up my hand.",
+      "mt": "나는 앞으로 나아가려고 노력하는 것이 조금도 쓸모가 없다고 경고합니다. 손을 내밀어야 했어요.",
+      "comet_score": 0.6419656276702881
+    },
+    {
+      "file_id": "3005-163399-0015",
+      "src": "So I says to myself, here's another place where I got to risk the truth.",
+      "mt": "그래서 나는 스스로에게 이렇게 말했습니다. 여기 내가 진실을 위험에 빠뜨릴 수 있는 또 다른 장소가 있습니다.",
+      "comet_score": 0.8795581459999084
+    },
+    {
+      "file_id": "3005-163399-0016",
+      "src": "I opened my mouth to begin, but she grabbed me and hustled me in behind the bed, and says, \"Here he comes!\"",
+      "mt": "시작하려고 입을 열었는데, 하지만 그녀는 나를 붙잡고 침대 뒤로 밀어넣었어요. \"여기 그 사람이 온다!\"",
+      "comet_score": 0.8745645880699158
+    },
+    {
+      "file_id": "3005-163399-0017",
+      "src": "Children, don't you say a word.",
+      "mt": "얘들아, 아무 말도 하지 말아라.",
+      "comet_score": 0.8892369270324707
+    },
+    {
+      "file_id": "3005-163399-0018",
+      "src": "I see I was in a fix now.",
+      "mt": "지금 보니 문제가 해결된 상태였습니다.",
+      "comet_score": 0.7159756422042847
+    },
+    {
+      "file_id": "3005-163399-0019",
+      "src": "Mrs. Phelps she jumps for him and says,",
+      "mt": "펠프스 부인은 그에게 달려가서 말했습니다.",
+      "comet_score": 0.8135974407196045
+    },
+    {
+      "file_id": "3005-163399-0020",
+      "src": "Has he come? No, says her husband.",
+      "mt": "그 사람 왔나요? 아니요, 남편은 말합니다.",
+      "comet_score": 0.8737907409667969
+    },
+    {
+      "file_id": "3005-163399-0021",
+      "src": "I can't imagine,\" says the old gentleman. And I must say it makes me dreadful uneasy.",
+      "mt": "상상할 수가 없어요.\" 노신사는 말했다. 그리고 나는 그것이 나를 몹시 불안하게 만든다고 말해야 합니다.",
+      "comet_score": 0.8546416163444519
+    },
+    {
+      "file_id": "3005-163399-0022",
+      "src": "Uneasy, she says. I'm ready to go distracted.",
+      "mt": "불안하다고 그녀는 말합니다. 나는 산만해질 준비가되어 있습니다.",
+      "comet_score": 0.7832738757133484
+    },
+    {
+      "file_id": "3005-163399-0023",
+      "src": "He must have come, and you've missed him along the road.",
+      "mt": "그 사람이 왔나 봐요, 그리고 당신은 길에서 그를 그리워했습니다.",
+      "comet_score": 0.8538508415222168
+    },
+    {
+      "file_id": "3005-163399-0024",
+      "src": "Oh, don't distress me any more I'm already distressed.",
+      "mt": "아, 더 이상 나를 괴롭히지 마세요 나는 이미 괴로워하고 있습니다.",
+      "comet_score": 0.8922151923179626
+    },
+    {
+      "file_id": "3005-163399-0025",
+      "src": "Why, Silas, look yonder, up the road. Ain't that somebody comin'?",
+      "mt": "사일래스여, 저쪽 길을 보세요. 누군가 오는 것 아닌가요?",
+      "comet_score": 0.8478400707244873
+    },
+    {
+      "file_id": "3005-163399-0026",
+      "src": "The old gentleman stared and says,",
+      "mt": "노신사는 쳐다보았다. 그리고 말한다,",
+      "comet_score": 0.8535022139549255
+    },
+    {
+      "file_id": "3005-163399-0027",
+      "src": "I hain't no idea, Who is it?",
+      "mt": "난 전혀 모르겠어 누구입니까?",
+      "comet_score": 0.8647484183311462
+    },
+    {
+      "file_id": "3005-163399-0028",
+      "src": "It's Tom Sawyer.",
+      "mt": "톰 소여입니다.",
+      "comet_score": 0.87020343542099
+    },
+    {
+      "file_id": "3005-163399-0029",
+      "src": "Being Tom Sawyer was easy and comfortable, and it stayed easy and comfortable till by and by I hear a steamboat coughing along down the river.",
+      "mt": "톰 소여가 되는 것은 쉽고 편했어요. 그리고 강을 따라 기침하는 증기선 소리가 들릴 때까지 쉽고 편안했습니다.",
+      "comet_score": 0.7429823279380798
+    },
+    {
+      "file_id": "3005-163399-0030",
+      "src": "Then I says to myself, 'Spos Tom Sawyer comes down on that boat.",
+      "mt": "그런 다음 나는 '톰 소여가 저 배를 타고 내려온다'고 속으로 말합니다.",
+      "comet_score": 0.8218765258789062
+    }
+  ]
+}
