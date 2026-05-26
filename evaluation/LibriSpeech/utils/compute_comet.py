@@ -3,25 +3,37 @@ COMET evaluation for LibriSpeech translation results.
 
 COMET inputs (per file_id):
   src  – ASR hypothesis (raw English)
-  ref  – Google Translate of the full hypothesis (used as gold reference)
+  ref  – translation of hypothesis segments with rolling context (gold reference)
   mt   – pipeline real-time translations concatenated per file_id (seg_translation)
 
 Usage:
+    # Google Translate ref (default)
     python evaluation/LibriSpeech/utils/compute_comet.py \
         --metric-json evaluation/LibriSpeech/results/finetuned_silence(1.0.3)/full/run_05/metric.json
+
+    # GPT ref with context (matches pipeline translation environment)
+    python evaluation/LibriSpeech/utils/compute_comet.py \
+        --metric-json evaluation/LibriSpeech/results/finetuned_silence(1.0.3)/full/run_05/metric.json \
+        --translator gpt --api-key sk-...
 """
 
 import argparse
 import asyncio
 import json
+import os
+import re
 import sys
+from collections import deque
 from pathlib import Path
 
 import aiohttp
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT / "Qwen3-ASR" / "examples"))
+sys.path.insert(0, str(PROJECT_ROOT))
 from streaming_websocket_server import google_translate_async  # noqa: E402
+
+_LANG_NAMES = {"ko": "Korean", "ja": "Japanese", "zh": "Chinese", "en": "English"}
 
 
 async def translate_texts(texts: list[str], target_lang: str = "ko") -> list[str]:
@@ -29,6 +41,45 @@ async def translate_texts(texts: list[str], target_lang: str = "ko") -> list[str
         tasks = [google_translate_async(session, t, target_lang) for t in texts]
         results = await asyncio.gather(*tasks)
     return [r[0] for r in results]
+
+
+async def translate_files_with_context(
+    file_segments: list[list[str]],
+    target_lang: str = "ko",
+    src_lang: str = "en",
+    model: str = "gpt-5.4-mini",
+    api_key: str | None = None,
+    max_context: int = 5,
+) -> list[str]:
+    """각 파일의 segment 텍스트를 컨텍스트를 유지하며 순차 번역 후 concat.
+
+    파이프라인의 GPTTranslator + _segment_history 방식과 동일한 환경으로 번역.
+    파일 간 병렬, 파일 내 세그먼트는 순차 처리.
+    """
+    from core.correct_and_trans import GPTTranslator
+
+    translator = GPTTranslator(api_key=api_key, model=model, max_context=max_context)
+    src_lang_name = _LANG_NAMES.get(src_lang, src_lang)
+    sem = asyncio.Semaphore(10)
+
+    async def translate_file(segments: list[str]) -> str:
+        async with sem:
+            context: deque[tuple[str, str]] = deque(maxlen=max_context)
+            translations = []
+            for seg in segments:
+                if not seg.strip():
+                    continue
+                _, translation, _ = await translator.correct_and_translate(
+                    text=seg,
+                    source_lang_name=src_lang_name,
+                    target_lang_code=target_lang,
+                    context=list(context) if context else None,
+                )
+                translations.append(translation)
+                context.append((seg, translation))
+            return " ".join(translations)
+
+    return await asyncio.gather(*[translate_file(segs) for segs in file_segments])
 
 
 def run_comet(model, srcs, refs, mts):
@@ -41,8 +92,16 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--metric-json", required=True)
     parser.add_argument("--target-lang", default="ko")
+    parser.add_argument("--src-lang", default="en", help="원문 언어 코드 (GPT context 번역 시 사용)")
     parser.add_argument("--comet-model", default="Unbabel/wmt22-comet-da")
     parser.add_argument("--output", default=None)
+    parser.add_argument(
+        "--translator", choices=["google", "gpt"], default="google",
+        help="ref 번역에 사용할 번역기 (default: google). gpt는 파이프라인과 동일한 컨텍스트 반영 번역 사용",
+    )
+    parser.add_argument("--gpt-model", default="gpt-5.4-mini", help="--translator gpt 시 사용할 모델")
+    parser.add_argument("--api-key", default=None, help="OpenAI API 키 (미지정 시 OPENAI_API_KEY 환경변수 사용)")
+    parser.add_argument("--max-context", type=int, default=5, help="GPT context 번역 시 유지할 직전 세그먼트 수")
     args = parser.parse_args()
 
     metric_path = Path(args.metric_json)
@@ -53,7 +112,7 @@ def main():
     if not raw:
         sys.exit("No raw_results found in metric.json")
 
-    file_ids, hypotheses, seg_translations = [], [], []
+    file_ids, hypotheses, seg_translations, file_segments = [], [], [], []
     for entry in raw:
         segs = entry.get("segment_metrics", [])
         seg_trans = " ".join(
@@ -62,12 +121,25 @@ def main():
         file_ids.append(entry["file_id"])
         hypotheses.append(entry["hypothesis"])
         seg_translations.append(seg_trans)
+        file_segments.append([s["text"] for s in segs if s.get("text", "").strip()])
 
     n = len(file_ids)
     print(f"Loaded {n} files from {metric_path}")
 
-    print(f"\nTranslating {n} hypothesis texts → {args.target_lang} (COMET ref) ...")
-    hyp_translations = asyncio.run(translate_texts(hypotheses, args.target_lang))
+    print(f"\nTranslating {n} hypothesis texts → {args.target_lang} (COMET ref, translator={args.translator}) ...")
+    if args.translator == "gpt":
+        hyp_translations = asyncio.run(
+            translate_files_with_context(
+                file_segments,
+                target_lang=args.target_lang,
+                src_lang=args.src_lang,
+                model=args.gpt_model,
+                api_key=args.api_key,
+                max_context=args.max_context,
+            )
+        )
+    else:
+        hyp_translations = asyncio.run(translate_texts(hypotheses, args.target_lang))
 
     print(f"\nLoading COMET model: {args.comet_model}")
     from comet import download_model, load_from_checkpoint
@@ -77,13 +149,19 @@ def main():
     print("\nRunning COMET ...")
     result = run_comet(model, hypotheses, hyp_translations, seg_translations)
 
+    ref_desc = (
+        "Google Translate of full hypothesis"
+        if args.translator == "google"
+        else f"GPT ({args.gpt_model}) context-aware translation of hypothesis segments (max_context={args.max_context})"
+    )
     output = {
         "comet_model": args.comet_model,
+        "ref_translator": args.translator if args.translator == "google" else f"gpt/{args.gpt_model}",
         "target_lang": args.target_lang,
         "num_files": n,
         "comet_inputs": {
             "src": "hypothesis (ASR English)",
-            "ref": "Google Translate of full hypothesis",
+            "ref": ref_desc,
             "mt": "pipeline seg translations concatenated per file_id",
         },
         "system_score": result["system_score"],
