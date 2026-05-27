@@ -209,7 +209,8 @@
       "Bash(rsync -avz --progress -e \"ssh -i C:/Users/gyuye/.ssh/Audio_AI.pem\" ubuntu@54.116.64.206:~/STiTy/evaluation/ \"d:/STiTy-main/evaluation/\" --exclude=\"*/LibriSpeech/test-other/\" --exclude=\"*/AMI/AMI/\" --exclude=\"*/AMI/words/\")",
       "Bash(cd \"d:/STiTy-main\" && tar xzf \"d:/tmp/eval_results_new.tar.gz\" && echo \"압축 해제 완료\" && rm \"d:/tmp/eval_results_new.tar.gz\")",
       "Bash(scp -i \"C:/Users/gyuye/.ssh/Audio_AI.pem\" -o StrictHostKeyChecking=no \"ubuntu@54.116.64.206:/home/ubuntu/STiTy/evaluation/AMI/results/baseline\\(1.0.0\\)/full/run_13/metric.json\" \"d:/STiTy-main/evaluation/AMI/results/baseline\\(1.0.0\\)/full/run_13/metric.json\" 2>&1 *)",
-      "Bash(git restore *)"
+      "Bash(git restore *)",
+      "Bash(rm /tmp/es_run01.tar.gz /tmp/zh_run02.tar.gz /tmp/ja_reazonspeech_run01.tar.gz /tmp/ja_kokoro_run01.tar.gz /tmp/zh_run03.tar.gz && echo \"cleanup done\")"
     ],
     "additionalDirectories": [
       "\\tmp",
