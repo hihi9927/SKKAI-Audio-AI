@@ -1,0 +1,154 @@
+{
+  "model": "gpt-5.4-mini",
+  "summary": [
+    {
+      "label": "results",
+      "metric_json": "evaluation\\DailyTalk\\results\\eval_dailytalk_seg_en_p2_gpt_ctx.json",
+      "avg_context_score": 90.77,
+      "n_chapters": 22,
+      "total_pairs": 200
+    }
+  ],
+  "runs": [
+    {
+      "metric_json": "evaluation\\DailyTalk\\results\\eval_dailytalk_seg_en_p2_gpt_ctx.json",
+      "chapter_scores": [
+        {
+          "chapter_id": "dialogue_0000",
+          "score": 92,
+          "reasoning": "The translation is highly consistent across the dialogue: the budget topic is maintained throughout, and key references like “shopping budget,” “three hundred dollars a month,” “save the rest,” and “pay my bills” are rendered coherently. Pronouns and conversational flow are preserved well, with only minor naturalness issues such as “네 예산” in line 11, which is understandable in context and does not disrupt the chapter’s meaning or tone.",
+          "n_pairs": 12
+        },
+        {
+          "chapter_id": "dialogue_0001",
+          "score": 96,
+          "reasoning": "The translation is highly consistent across the dialogue: pronouns, turn-taking, and the purchase/payment sequence are all preserved naturally, and the register stays appropriately polite and conversational throughout. Terminology is stable as well, with payment-related terms like 신용카드 and 서명 used consistently, and there are no noticeable context-driven sense errors or narrative breaks.",
+          "n_pairs": 8
+        },
+        {
+          "chapter_id": "dialogue_0002",
+          "score": 84,
+          "reasoning": "The dialogue is translated consistently overall, with the telephone-call register and sequence preserved well across turns. Terminology is mostly stable, and the key exchange about a collect call to Japan remains coherent; the main issue is a likely mistranslation in line 6/7 where “Mr. Edna Kent” is rendered literally as if Edna were a surname/title combination, but this is a source-side ambiguity and does not disrupt the chapter’s flow. Minor awkwardness such as “해외 운영자” for “Overseas operator” and the slightly unnatural formatting of numbers does not materially break contextual consistency.",
+          "n_pairs": 13
+        },
+        {
+          "chapter_id": "dialogue_0003",
+          "score": 94,
+          "reasoning": "The translation maintains strong cross-sentence coherence: the lunch mentioned in sentence 1 is carried through naturally in sentence 2, and sentence 5 correctly refers back to the same food item. Terminology and tone are also consistent overall, with the health/beauty framing in sentence 4 preserved well as \"건강식 점심\" and \"건강과 미용에 좋아.\" The only minor issue is that sentence 3 renders \"That looks beautiful\" as a generic compliment, but this does not disrupt the dialogue’s context.",
+          "n_pairs": 5
+        },
+        {
+          "chapter_id": "dialogue_0004",
+          "score": 92,
+          "reasoning": "The translation maintains strong cross-sentence coherence throughout the beauty/makeup dialogue, with pronouns and advice flowing naturally from one turn to the next. Terminology is highly consistent for recurring terms like 화장, 아이섀도, 립스틱, and 손톱, and the topical sense stays firmly within makeup and grooming. The only minor issue is the name rendering \"Miss Wang\" as \"왕 양,\" which is slightly inconsistent but does not disrupt the overall tone or register.",
+          "n_pairs": 12
+        },
+        {
+          "chapter_id": "dialogue_0005",
+          "score": 96,
+          "reasoning": "The translations are highly consistent across the short dialogue: the referent \"that music book\" is rendered coherently as \"그 악보\" and then maintained as \"저 선반에 있어요\" / \"여기 있습니다\" without any pronoun or entity confusion. The conversational flow, cause-effect sequence, and polite register are all preserved well, with only a minor lexical choice issue in translating \"music book\" as \"악보\" rather than a more general \"음악책,\" but this does not disrupt contextual consistency.",
+          "n_pairs": 5
+        },
+        {
+          "chapter_id": "dialogue_0006",
+          "score": 72,
+          "reasoning": "Overall the dialogue is coherent and the key terms stay consistent: Quipu Corporation, the interview, diploma, ID card, and resume are all rendered appropriately and with stable register. The main issue is in sentence 1, where “Miss Zhang” is mistranslated as “저분이 장 씨인가요?” instead of addressing the caller directly, which slightly disrupts the interaction and pronoun/reference flow, but the rest of the exchange follows the established context well.",
+          "n_pairs": 5
+        },
+        {
+          "chapter_id": "dialogue_0007",
+          "score": 92,
+          "reasoning": "The translation maintains the dialogue flow and speaker references well across the exchange: John Smith, Mrs. White, the house-for-sale topic, and the appointment at three o’clock are all carried consistently. Terminology and register are stable and appropriate for a polite phone conversation, with only minor naturalness issues such as “집을 파는 게 있다고” for “you have a house for sale,” which does not disrupt contextual coherence.",
+          "n_pairs": 9
+        },
+        {
+          "chapter_id": "dialogue_0008",
+          "score": 92,
+          "reasoning": "The dialogue is handled consistently across the short exchange: the porter reference is maintained correctly from sentence 2 to 3, and the pricing question/answer sequence is coherent. Tone and register stay stable and appropriately polite throughout, with only a minor lexical awkwardness in \"pieces of luggages\" being rendered naturally as \"짐이 몇 개냐\" rather than causing any contextual inconsistency.",
+          "n_pairs": 6
+        },
+        {
+          "chapter_id": "dialogue_0009",
+          "score": 92,
+          "reasoning": "The translation maintains the dialogue flow and referents well across the chapter: the brother/the little boy is consistently tracked, and the later clarification about the boy sleeping after taking the pills is coherent with the earlier exchange. Terminology is mostly stable, with \"멀미\" used consistently for carsickness and the medicine explanation preserved, including the later correction to sleeping pills; tone and register also remain appropriately polite and conversational throughout.",
+          "n_pairs": 13
+        },
+        {
+          "chapter_id": "dialogue_0010",
+          "score": 96,
+          "reasoning": "The translation is highly consistent across the dialogue: names are rendered steadily as 톰 and 스카일러, pronouns and turn-taking are preserved naturally, and the conversational flow remains intact from greeting to farewell. Terminology and topical meaning are also stable, with “air conditioner,” family references, and work-related fatigue all translated appropriately in a casual register that matches the source. Only very minor stylistic variation is present, but there are no meaningful context breaks or terminology drifts.",
+          "n_pairs": 13
+        },
+        {
+          "chapter_id": "dialogue_0011",
+          "score": 72,
+          "reasoning": "The dialogue stays coherent overall: the wedding timeline, fiancee, bridesmaid, and best man are all carried through consistently, and the chapter’s conversational tone is preserved. There is one notable terminology/register issue in sentence 6, where “best man” is rendered as “들러리 남자,” which is awkward and less standard than the earlier “들러리,” but it does not break the overall thread. Pronoun use and the sequence of questions and answers remain clear, with only minor real-time translation limitations.",
+          "n_pairs": 7
+        },
+        {
+          "chapter_id": "dialogue_0012",
+          "score": 84,
+          "reasoning": "The translation maintains the dialogue flow and causal sequence well across the chapter: each misfortune is carried forward clearly, and the reactions match the preceding statements. Terminology and tone are also consistent, with stable informal conversational Korean throughout; the only minor issue is a slightly awkward rendering in sentence 1 (“방금” for “just had”), but it does not disrupt cross-sentence coherence.",
+          "n_pairs": 10
+        },
+        {
+          "chapter_id": "dialogue_0013",
+          "score": 94,
+          "reasoning": "The translation maintains strong cross-sentence coherence: the supermarket closure, tomorrow morning plan, and the sister’s arrival all carry through naturally, with pronouns and sequence preserved. Terminology and names are consistent throughout (Jeff, supermarket, San Francisco, San Diego), and the tone stays stable in casual conversational Korean without unexplained register shifts. Only minor streaming-typical limitations appear, such as slightly repetitive phrasing, but there are no meaningful context breaks.",
+          "n_pairs": 14
+        },
+        {
+          "chapter_id": "dialogue_0014",
+          "score": 96,
+          "reasoning": "The translation maintains the dialogue flow and speaker roles consistently, with polite register preserved throughout. Key references are handled coherently: the speaker remains a visitor from England, the hotel name is rendered consistently, and the request for a town map and English version is accurately carried forward without contextual drift. Minor issues are limited to natural real-time choices like slightly awkward phrasing in sentence 3, but they do not disrupt cross-sentence consistency.",
+          "n_pairs": 11
+        },
+        {
+          "chapter_id": "dialogue_0015",
+          "score": 84,
+          "reasoning": "The translation is highly consistent across the dialogue: the sandstorm topic, environmental concern, and cause-effect sequence are all preserved clearly from sentence to sentence. Terminology is stable for key terms like 모래폭풍, 나무, 풀, and 숲, and the tone remains appropriately conversational and coherent throughout. The only minor issue is sentence 5, where \"we need the wood\" becomes \"우리는 나무가 필요해요,\" which is understandable but slightly less precise than \"wood\"; however, this does not materially disrupt contextual consistency.",
+          "n_pairs": 6
+        },
+        {
+          "chapter_id": "dialogue_0016",
+          "score": 94,
+          "reasoning": "The translation maintains strong cross-sentence coherence: the speaker’s uncertainty, consideration of the new job, concerns about creativity and pay, and the final encouragement all stay aligned across the dialogue. Terminology is consistent for key terms like 새 직무/그 직무 and 급여, and the tone remains appropriately conversational and tentative throughout, with only minor awkwardness in a few phrasings that does not disrupt context.",
+          "n_pairs": 10
+        },
+        {
+          "chapter_id": "dialogue_0017",
+          "score": 96,
+          "reasoning": "The translation maintains the dialogue flow and reference chain well: the restaurant setting is preserved, the reservation request is rendered naturally, and the name \"Michael\" is carried through consistently. Terminology and register are stable across the exchange, with polite Korean matching the source’s customer-service tone; only a minor nuance shift occurs in \"sir\" becoming \"손님,\" which is appropriate in context and does not disrupt coherence.",
+          "n_pairs": 5
+        },
+        {
+          "chapter_id": "dialogue_0018",
+          "score": 96,
+          "reasoning": "The Korean translation is highly consistent across the dialogue: the exchange/refund context is maintained, the sale topic is carried through naturally, and the sequence of actions and responses remains coherent. Terminology and register are stable throughout, with polite customer-service speech preserved and no notable drift in meaning or tone beyond minor, unavoidable streaming-style phrasing choices.",
+          "n_pairs": 8
+        },
+        {
+          "chapter_id": "dialogue_0019",
+          "score": 94,
+          "reasoning": "The translation is highly consistent across the dialogue: the size distinction in lines 2–3 is preserved, the sale information in line 4 is rendered clearly, and the follow-up about other styles/colors in line 6 maintains the same referents and shopping context. Tone and register also stay stable and natural throughout, with polite conversational Korean matching the source; only minor wording choices like \"유일한 종류\" are slightly less idiomatic but do not disrupt coherence.",
+          "n_pairs": 8
+        },
+        {
+          "chapter_id": "dialogue_0020",
+          "score": 84,
+          "reasoning": "The translation maintains the dialogue flow well: the cancellation in sentence 2 is coherent with the follow-up offer in sentence 3, and the seafood ordering sequence is preserved consistently through sentences 4–6. Terminology is stable enough for this short passage, with \"swordfish steak\" and \"oysters\" rendered appropriately, and the register remains conversational and polite overall. Minor awkwardness in sentence 1 and the slightly unnatural phrasing of \"굴로 부탁해요\" do not materially disrupt cross-sentence consistency.",
+          "n_pairs": 6
+        },
+        {
+          "chapter_id": "dialogue_0021",
+          "score": 92,
+          "reasoning": "The translation is highly consistent across the dialogue: the apartment-viewing context is maintained, with terms like 월세, 공과금, 세탁실, and 보증금 used coherently throughout. Pronouns and references are handled naturally, and the pet-deposit explanation in later turns correctly preserves the earlier deposit terminology and cause-effect relationship. Minor issues like “super intendent” being rendered as 관리인 rather than superintendent are understandable in context and do not disrupt overall consistency.",
+          "n_pairs": 14
+        }
+      ],
+      "avg_context_score": 90.77,
+      "n_chapters": 22,
+      "total_pairs": 200
+    }
+  ]
+}
