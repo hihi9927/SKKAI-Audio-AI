@@ -301,7 +301,7 @@ python evaluation/ReazonSpeech/test_qwen3_reazonspeech.py \
   --scope sample \
   --tag run_01 \
   --description "테스트 설명" \
-  --trailing-silence-ms 3000
+  --trailing-silence-ms 5000
 ```
 
 > **참고:**
@@ -310,6 +310,38 @@ python evaluation/ReazonSpeech/test_qwen3_reazonspeech.py \
 > - `--limit 50`으로 일부 클립만 빠르게 테스트할 수 있습니다.
 
 결과 위치: `evaluation/ReazonSpeech/results/{model}/{scope}/{tag}/`
+
+---
+
+### 3.7 (es)CIEMPIESS (단문 발화, Spanish)
+
+CIEMPIESS는 1,000개의 스페인어 단문 음성 클립으로 구성됩니다.  
+서브셋: `train` (700개, 25개 라디오 세션), `description` (200개), `read` (83개, 낭독 음성), `fm` (17개, FM 라디오).  
+세션/그룹 단위로 WebSocket 연결을 재사용합니다. 평가 지표: **WER** (단어 오류율).
+
+```bash
+# 1) 서버 시작 (별도 터미널)
+python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py \
+  --no-idle-shutdown \
+  --log-file "evaluation/(es)CIEMPIESS/results/baseline(1.0.0)/sample/run_01/logs/server.log"
+
+# 2) 테스트 실행
+python "evaluation/(es)CIEMPIESS/test_qwen3_ciempiess.py" \
+  --data-dir "evaluation/(es)CIEMPIESS" \
+  --model "baseline(1.0.0)" \
+  --scope sample \
+  --tag run_01 \
+  --description "테스트 설명" \
+  --trailing-silence-ms 5000
+```
+
+> **참고:**
+> - `--data-dir` 아래에 `CIEMPIESS/{train,read,fm,description}/` (WAV)와 `label/CIEMPIESS_test.{fileids,transcription}` (레이블)가 있어야 합니다.
+> - 레이블 전사에서 대문자 모음은 어휘 강세 표시(`cOn respEcto A`)이며, 정규화 시 자동으로 소문자 변환됩니다.
+> - `--subsets train read` 처럼 특정 서브셋만 선택할 수 있습니다.
+> - `--random-sample N` 으로 전체에서 무작위 N개만 샘플링할 수 있습니다.
+
+결과 위치: `evaluation/(es)CIEMPIESS/results/{model}/{scope}/{tag}/`
 
 ---
 

@@ -24,6 +24,7 @@ python evaluation/{Dataset}/test_qwen3_{dataset}.py \
 | `KtelSpeech/` | 한국어 | CER | 전화 품질 음성 |
 | `KokoroSpeech/` | 일본어 | CER | 단문 낭독 클립(tiny=308개), 파이프 구분 메타데이터 |
 | `ReazonSpeech/` | 일본어 | CER | 단문 독립 클립, CSV 레이블 |
+| `(es)CIEMPIESS/` | 스페인어 | WER | 1,000개 단문 클립, 4개 서브셋(train/read/fm/description) |
 | `smartturn/` | — | VAD F1/지연 | SmartTurn VAD 실험 (독립 트랙) |
 
 ## 결과 디렉토리 구조
