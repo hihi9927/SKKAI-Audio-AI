@@ -174,6 +174,9 @@ class StreamingConfig:
     translation_model: str = "gpt-5.4-mini"
     context_window: int = 5
 
+    # Google Translate 컨텍스트 활성화 (--google-context 플래그, 문장 수는 context_window 공유)
+    google_context: bool = False
+
     # 서버 설정
     host: str = "0.0.0.0"
     port: int = 8765
@@ -420,6 +423,29 @@ async def google_translate_async(
         return "", ""
 
 
+async def google_translate_with_context_async(
+    session: aiohttp.ClientSession,
+    text: str,
+    target_lang: str,
+    context_originals: list[str],
+) -> tuple[str, str]:
+    """컨텍스트 문장을 함께 전송해 Google Translate의 문맥 인식을 활용.
+
+    이전 N개 원문을 현재 문장 앞에 붙여 한 번에 번역 요청하고,
+    줄바꿈으로 분리한 뒤 마지막 줄만 현재 문장의 번역으로 반환.
+    """
+    if not context_originals:
+        return await google_translate_async(session, text, target_lang)
+
+    parts = context_originals + [text]
+    combined = "\n".join(parts)
+    translated_combined, detected_lang = await google_translate_async(session, combined, target_lang)
+
+    lines = [l.strip() for l in translated_combined.split("\n") if l.strip()]
+    translation = lines[-1] if lines else translated_combined
+    return translation, detected_lang
+
+
 class _ClientAdapter(logging.LoggerAdapter):
     """클라이언트 ID 태그를 자동으로 앞에 붙이는 LoggerAdapter"""
 
@@ -468,8 +494,10 @@ class Qwen3ASRStreamingHandler:
         self.corrector = corrector
         self.gpt_translator = gpt_translator
         self.use_correction = True  # overridden per-session by start message speed field
-        # GPT 번역 컨텍스트: 최근 N 세그먼트의 (corrected_original, translation) 보관
-        _ctx = gpt_translator.max_context if gpt_translator else 5
+        # 번역 컨텍스트: 최근 N 세그먼트의 (corrected_original, translation) 보관
+        _ctx = (gpt_translator.max_context if gpt_translator
+                else config.context_window if config.google_context
+                else 5)
         self._segment_history: deque[tuple[str, str]] = deque(maxlen=_ctx)
         # 첫 번째 발화는 Google Translate, 두 번째부터 GPT로 전환
         self._committed_utterance_count: int = 0
@@ -1410,7 +1438,14 @@ class Qwen3ASRStreamingHandler:
         # Google Translate 경로
         if self.corrector and self.use_correction:
             text = await self.corrector.correct_text(text, current_lang)
-        translation, detected_lang, extra = await self._translate(text, target, audio_end_sec)
+        if self.config.google_context and self._segment_history:
+            context_originals = [orig for orig, _ in self._segment_history]
+            translation, detected_lang = await google_translate_with_context_async(
+                self.http_session, text, target, context_originals
+            )
+            extra = {}
+        else:
+            translation, detected_lang, extra = await self._translate(text, target, audio_end_sec)
         effective = detected_lang or src_code
         return text, translation, effective, extra
 
@@ -1513,7 +1548,7 @@ class Qwen3ASRStreamingHandler:
                 translation=translation,
             )
         self._committed_utterance_count += 1
-        if self.gpt_translator and original and translation:
+        if original and translation and (self.gpt_translator or self.config.google_context):
             self._segment_history.append((original, translation))
 
     async def handle(self):
@@ -1970,7 +2005,11 @@ def parse_args():
     )
     parser.add_argument(
         "--context-window", type=int, default=5,
-        help="GPT 번역 시 참고할 직전 세그먼트 최대 문장 수 (기본값: 5, --gpt-translation 활성화 시 사용)",
+        help="번역 컨텍스트 문장 수 (기본값: 5, --gpt-translation / --google-context 공유)",
+    )
+    parser.add_argument(
+        "--google-context", action="store_true",
+        help="Google Translate에 이전 N개 원문을 함께 전송해 문맥 인식 개선 (--context-window 문장 수 사용)",
     )
     parser.add_argument(
         "--no-vad", action="store_true",
@@ -2015,6 +2054,7 @@ def main():
         enable_gpt_translation=args.gpt_translation,
         translation_model=args.translation_model,
         context_window=args.context_window,
+        google_context=args.google_context,
     )
 
     server = Qwen3ASRStreamingServer(config)
