@@ -156,7 +156,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         }
         if (keepAliveEnabledRef.current && !wsRef.current) {
           keepAliveFailCountRef.current += 1;
-          if (keepAliveFailCountRef.current >= 3 && serverStatusRef.current === 'ready') {
+          if (keepAliveFailCountRef.current >= 1 && serverStatusRef.current === 'ready') {
             setServerStatus('idle');
             keepAliveFailCountRef.current = 0;
           }

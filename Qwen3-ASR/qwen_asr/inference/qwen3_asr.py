@@ -58,6 +58,20 @@ except:
     pass
 
 
+def _cut_repeat_hallucination(text: str, max_repeat: int = 4) -> str:
+    """동일 토큰이 max_repeat회 이상 연속되면 그 앞에서 잘라냄."""
+    tokens = text.split()
+    i = 0
+    while i < len(tokens):
+        j = i + 1
+        while j < len(tokens) and tokens[j] == tokens[i]:
+            j += 1
+        if j - i >= max_repeat:
+            return ' '.join(tokens[:i]).strip()
+        i = j
+    return text
+
+
 MAX_STREAMING_PREFIX_TOKENS = 96
 
 
@@ -810,20 +824,31 @@ class Qwen3ASRModel:
             final = None
             prev_seg_count = 0
             state._decode_start_perf = time.perf_counter()
+            _hallucination_aborted = False
             async for out in self.model.generate(inp, sp, request_id=request_id, lora_request=lora_request):
                 final = out
-                if on_seg and not out.finished:
+                if not out.finished:
                     gen_text_partial = out.outputs[0].text
                     raw_partial = (prefix + gen_text_partial) if prefix is not None else gen_text_partial
                     lang_p, txt_p = parse_asr_output(raw_partial, user_language=state.force_language)
                     state.language = lang_p
                     state.text = txt_p
-                    seg_count = txt_p.count("<SEG>")
-                    while seg_count > prev_seg_count:
-                        prev_seg_count += 1
-                        state._seg_token_idx = len(out.outputs[0].token_ids)
-                        await on_seg(state)
+                    cut = _cut_repeat_hallucination(txt_p)
+                    if cut != txt_p:
+                        await self.model.abort(request_id)
+                        state.text = cut
+                        _hallucination_aborted = True
+                        break
+                    if on_seg:
+                        seg_count = txt_p.count("<SEG>")
+                        while seg_count > prev_seg_count:
+                            prev_seg_count += 1
+                            state._seg_token_idx = len(out.outputs[0].token_ids)
+                            await on_seg(state)
 
+            if _hallucination_aborted:
+                state.chunk_id += 1
+                continue
             state._last_chunk_new_tokens = len(final.outputs[0].token_ids)
             gen_text = final.outputs[0].text
             if prefix:

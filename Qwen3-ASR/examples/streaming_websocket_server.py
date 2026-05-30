@@ -771,11 +771,27 @@ class Qwen3ASRStreamingHandler:
         나머지 <asr_text>는 공백으로 치환한다.
         """
         if "<asr_text>" not in text:
-            return text
-        first, rest = text.split("<asr_text>", 1)
-        if re.match(r'^\s*language\s+\w', first, re.IGNORECASE):
-            text = rest
-        return re.sub(r'\s*<asr_text>\s*', ' ', text).strip()
+            result = text
+        else:
+            first, rest = text.split("<asr_text>", 1)
+            if re.match(r'^\s*language\s+\w', first, re.IGNORECASE):
+                text = rest
+            result = re.sub(r'\s*<asr_text>\s*', ' ', text).strip()
+        return Qwen3ASRStreamingHandler._cut_repeats(result)
+
+    @staticmethod
+    def _cut_repeats(text: str, max_repeat: int = 4) -> str:
+        """동일 토큰이 max_repeat회 이상 연속되면 그 앞에서 잘라냄 (할루시네이션 반복 제거)."""
+        tokens = text.split()
+        i = 0
+        while i < len(tokens):
+            j = i + 1
+            while j < len(tokens) and tokens[j] == tokens[i]:
+                j += 1
+            if j - i >= max_repeat:
+                return ' '.join(tokens[:i]).strip()
+            i = j
+        return text
 
     def _slot_uncommitted_display(self, slot_key: Optional[str] = None, text_snapshot: Optional[str] = None) -> str:
         slot = self._slot(slot_key)
@@ -838,7 +854,7 @@ class Qwen3ASRStreamingHandler:
         _committed_text_snapshot = await self._process_slot_updates(slot_key)
         _accum_size_pre_gpt = self._slot(slot_key)["state"].audio_accum.shape[0]
         if self._pending_gpt_tasks:
-            await self._flush_pending_gpt_tasks()
+            asyncio.create_task(self._flush_pending_gpt_tasks())
 
         _s = self._slot(slot_key)
         # SEG/dot commit 발생 시, 추론 결과 text가 <SEG>로 끝나면 uncommitted 없음 → 슬롯 리셋.

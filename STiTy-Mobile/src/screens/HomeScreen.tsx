@@ -737,10 +737,11 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
     setSessionError('');
     setIsInitializing(true);
     try {
-      // 서버가 준비 안 됐거나 오류 상태면 재시작
+      // 서버가 준비 안 됐거나 오류 상태면 재시작만 하고 리턴 (사용자가 다시 시작 버튼을 눌러야 함)
       if (serverStatusRef.current !== 'ready') {
         const ok = await probeServer(serverStatusRef.current === 'error');
         if (!ok) throw new Error(s.connectionFailed);
+        return;
       }
       try {
         await connect({ lang: myLang.code, targetLang: targetLang.code, speed });
@@ -748,7 +749,7 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
         // connect 실패 = serverStatus는 'ready'였지만 서버 실제로 죽어있음 → 강제 재시작
         const ok = await probeServer(true);
         if (!ok) throw new Error(s.connectionFailed);
-        await connect({ lang: myLang.code, targetLang: targetLang.code, speed });
+        return;
       }
       await startRecording();
       applySpeakerRouting();
@@ -1226,7 +1227,7 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
                 </TouchableOpacity>
 
                 <Text style={S.menuDisclaimer}>{ui.settingsDisclaimer}</Text>
-                <Text style={S.menuVersion}>STiTy v1.0.0 · Build 2026.05</Text>
+                <Text style={S.menuVersion}>STiTy v1.0.4 · Build 2026.05</Text>
               </ScrollView>
             )}
 
@@ -1314,7 +1315,7 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
                     <Text style={{ color: '#7A9030' }}>T</Text>
                     <Text style={{ color: '#E8E0A0' }}>y</Text>
                   </Text>
-                  <Text style={S.aboutVersion}>v1.0.0 · Build 2026.05</Text>
+                  <Text style={S.aboutVersion}>v1.0.4 · Build 2026.05</Text>
                 </View>
                 <Text style={S.detailP}>{ui.aboutP}</Text>
                 <Text style={[S.detailP, { marginTop: 12, color: '#888', fontSize: 11 }]}>{ui.aboutCopyright}</Text>

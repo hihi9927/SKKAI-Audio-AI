@@ -1,5 +1,4 @@
 {
-  "enableAllProjectMcpServers": true,
   "permissions": {
     "allow": [
       "Bash(git add:*)",
@@ -78,9 +77,29 @@
       "Bash(tmux list-sessions:*)",
       "Bash(chmod 600 \"c:/Users/gyuye/Downloads/Audio_AI.pem\")",
       "Bash(cp \"c:/Users/gyuye/Downloads/Audio_AI.pem\" /tmp/Audio_AI.pem)",
-      "Bash(chmod 400 /tmp/Audio_AI.pem)"
+      "Bash(chmod 400 /tmp/Audio_AI.pem)",
+      "Bash(Get-Content \"C:\\\\Users\\\\gyuye\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--STiTy-main\\\\b9286212-ae05-4cd1-a764-02f1c43143b9\\\\tasks\\\\b4oml4m6c.output\" -Wait)",
+      "Bash(Select-String -Pattern \"BUILD|FAILED|ERROR|error:|Exception|apk|APK|SUCCESS\" --SimpleMatch)",
+      "Bash(export ANDROID_HOME=\"C:/Users/gyuye/AppData/Local/Android/Sdk\")",
+      "Bash(export ANDROID_SDK_ROOT=\"C:/Users/gyuye/AppData/Local/Android/Sdk\")",
+      "PowerShell($env:ANDROID_HOME = \"C:\\\\Users\\\\gyuye\\\\AppData\\\\Local\\\\Android\\\\Sdk\"; $env:ANDROID_SDK_ROOT = \"C:\\\\Users\\\\gyuye\\\\AppData\\\\Local\\\\Android\\\\Sdk\"; $env:JAVA_HOME = \"C:\\\\Program Files\\\\Common Files\\\\Oracle\\\\Java\\\\javapath\"; Set-Location \"d:\\\\STiTy-main\\\\STiTy-Mobile\\\\android\"; $proc = Start-Process -FilePath \"cmd.exe\" -ArgumentList \"/c gradlew.bat assembleRelease > C:\\\\Users\\\\gyuye\\\\AppData\\\\Local\\\\Temp\\\\gradle_build.log 2>&1\" -NoNewWindow -PassThru; Write-Host \"PID: $\\($proc.Id\\)\")",
+      "PowerShell($env:ANDROID_HOME = \"C:\\\\Users\\\\gyuye\\\\AppData\\\\Local\\\\Android\\\\Sdk\"; $env:ANDROID_SDK_ROOT = \"C:\\\\Users\\\\gyuye\\\\AppData\\\\Local\\\\Android\\\\Sdk\"; $proc = Start-Process -FilePath \"cmd.exe\" -ArgumentList '/c \"d:\\\\STiTy-main\\\\STiTy-Mobile\\\\android\\\\gradlew.bat\" assembleRelease > C:\\\\Users\\\\gyuye\\\\AppData\\\\Local\\\\Temp\\\\gradle_build.log 2>&1' -WorkingDirectory \"d:\\\\STiTy-main\\\\STiTy-Mobile\\\\android\" -NoNewWindow -PassThru; Write-Host \"PID: $\\($proc.Id\\)\")",
+      "PowerShell(Get-ChildItem env: | Where-Object { $_.Name -match \"JAVA|GRADLE|CLASSPATH\" } | Format-List)",
+      "PowerShell($env:Classpath = \"\"; $env:CLASSPATH = \"\"; $env:ANDROID_HOME = \"C:\\\\Users\\\\gyuye\\\\AppData\\\\Local\\\\Android\\\\Sdk\"; $env:ANDROID_SDK_ROOT = \"C:\\\\Users\\\\gyuye\\\\AppData\\\\Local\\\\Android\\\\Sdk\"; Set-Location \"d:\\\\STiTy-main\\\\STiTy-Mobile\\\\android\"; .\\\\gradlew.bat assembleRelease 2>&1 | Tee-Object -FilePath \"C:\\\\Users\\\\gyuye\\\\AppData\\\\Local\\\\Temp\\\\gradle_build.log\")",
+      "PowerShell($env:Classpath = \"\"; $env:CLASSPATH = \"\"; $env:ANDROID_HOME = \"C:\\\\Users\\\\gyuye\\\\AppData\\\\Local\\\\Android\\\\Sdk\"; $env:JAVA_HOME = \"C:\\\\Program Files\\\\Java\\\\jdk-17.0.2\"; $cmd = \"`\"C:\\\\Program Files\\\\Java\\\\jdk-17.0.2\\\\bin\\\\java.exe`\" -version\"; Invoke-Expression $cmd 2>&1)",
+      "PowerShell(& \"C:\\\\Program Files\\\\Java\\\\jdk-17.0.2\\\\bin\\\\java.exe\" -version 2>&1)",
+      "PowerShell($proc = Start-Process -FilePath \"cmd.exe\" -ArgumentList '/c C:\\\\Users\\\\gyuye\\\\AppData\\\\Local\\\\Temp\\\\build_apk.bat > C:\\\\Users\\\\gyuye\\\\AppData\\\\Local\\\\Temp\\\\gradle_build.log 2>&1' -NoNewWindow -PassThru; Write-Host \"PID: $\\($proc.Id\\)\"; $proc.WaitForExit\\(300000\\); Write-Host \"Exit code: $\\($proc.ExitCode\\)\")",
+      "PowerShell($proc = Start-Process -FilePath \"cmd.exe\" -ArgumentList '/c C:\\\\Users\\\\gyuye\\\\AppData\\\\Local\\\\Temp\\\\build_apk.bat > C:\\\\Users\\\\gyuye\\\\AppData\\\\Local\\\\Temp\\\\gradle_build.log 2>&1' -NoNewWindow -PassThru; Write-Host \"PID: $\\($proc.Id\\)\"; $proc.WaitForExit\\(600000\\); Write-Host \"Exit code: $\\($proc.ExitCode\\)\")",
+      "Bash(findstr -E \"\\\\.\\(sh|bat|ps1|json|js|yml|yaml\\)$\")",
+      "Bash(Get-ChildItem -File)",
+      "Bash(Get-Item \"d:\\\\STiTy-main\\\\logs\\\\server_log3.txt\")",
+      "Bash(Select-Object Name, Length, LastWriteTime)"
     ],
     "deny": [],
-    "ask": []
-  }
+    "ask": [],
+    "additionalDirectories": [
+      "C:\\Users\\gyuye\\AppData\\Local\\Temp"
+    ]
+  },
+  "enableAllProjectMcpServers": true
 }

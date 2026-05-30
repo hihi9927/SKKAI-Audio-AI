@@ -210,7 +210,11 @@
       "Bash(cd \"d:/STiTy-main\" && tar xzf \"d:/tmp/eval_results_new.tar.gz\" && echo \"압축 해제 완료\" && rm \"d:/tmp/eval_results_new.tar.gz\")",
       "Bash(scp -i \"C:/Users/gyuye/.ssh/Audio_AI.pem\" -o StrictHostKeyChecking=no \"ubuntu@54.116.64.206:/home/ubuntu/STiTy/evaluation/AMI/results/baseline\\(1.0.0\\)/full/run_13/metric.json\" \"d:/STiTy-main/evaluation/AMI/results/baseline\\(1.0.0\\)/full/run_13/metric.json\" 2>&1 *)",
       "Bash(git restore *)",
-      "Bash(rm /tmp/es_run01.tar.gz /tmp/zh_run02.tar.gz /tmp/ja_reazonspeech_run01.tar.gz /tmp/ja_kokoro_run01.tar.gz /tmp/zh_run03.tar.gz && echo \"cleanup done\")"
+      "Bash(rm /tmp/es_run01.tar.gz /tmp/zh_run02.tar.gz /tmp/ja_reazonspeech_run01.tar.gz /tmp/ja_kokoro_run01.tar.gz /tmp/zh_run03.tar.gz && echo \"cleanup done\")",
+      "PowerShell($env:ANDROID_HOME; $env:ANDROID_SDK_ROOT; Get-ChildItem \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\" -ErrorAction SilentlyContinue | Select-Object -First 5)",
+      "Bash(Get-Content \"C:\\\\Users\\\\gyuye\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--STiTy-main\\\\b9286212-ae05-4cd1-a764-02f1c43143b9\\\\tasks\\\\bidd1kllj.output\" -Wait)",
+      "Bash(Select-String -Pattern \"error|Error|ERROR|success|Success|apk|APK|Build|build|warning|✓|✗|✘|failed|Failed|FAILED|finished|Finished|complete|Complete\" --SimpleMatch)",
+      "PowerShell($env:ANDROID_HOME = \"C:\\\\Users\\\\gyuye\\\\AppData\\\\Local\\\\Android\\\\Sdk\"; Set-Location \"d:\\\\STiTy-main\\\\STiTy-Mobile\\\\android\"; .\\\\gradlew.bat assembleRelease 2>&1)"
     ],
     "additionalDirectories": [
       "\\tmp",
