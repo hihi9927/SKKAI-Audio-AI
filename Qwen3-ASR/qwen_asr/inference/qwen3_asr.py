@@ -150,6 +150,8 @@ class ASRStreamingState:
 
     allowed_languages: Optional[List[str]] = None
 
+    hallucination_detected: bool = False
+
 
 class Qwen3ASRModel:
     """
@@ -848,7 +850,8 @@ class Qwen3ASRModel:
 
             if _hallucination_aborted:
                 state.chunk_id += 1
-                continue
+                state.hallucination_detected = True
+                break
             state._last_chunk_new_tokens = len(final.outputs[0].token_ids)
             gen_text = final.outputs[0].text
             if prefix:

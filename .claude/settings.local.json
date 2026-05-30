@@ -93,7 +93,8 @@
       "Bash(findstr -E \"\\\\.\\(sh|bat|ps1|json|js|yml|yaml\\)$\")",
       "Bash(Get-ChildItem -File)",
       "Bash(Get-Item \"d:\\\\STiTy-main\\\\logs\\\\server_log3.txt\")",
-      "Bash(Select-Object Name, Length, LastWriteTime)"
+      "Bash(Select-Object Name, Length, LastWriteTime)",
+      "Bash(npx eas *)"
     ],
     "deny": [],
     "ask": [],

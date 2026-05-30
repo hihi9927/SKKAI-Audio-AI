@@ -600,15 +600,6 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
     return () => sub.remove();
   }, []);
 
-  // ── keepalive 실패 감지: serverStatus 'ready'→'idle' 전환 시 자동 재기동 ────────
-  const prevServerStatusRef = useRef<string>(serverStatus);
-  useEffect(() => {
-    const prev = prevServerStatusRef.current;
-    prevServerStatusRef.current = serverStatus;
-    if (serverStatus === 'idle' && prev !== 'idle' && sessionStateRef.current === 'idle') {
-      probeServer();
-    }
-  }, [serverStatus]);
 
   // ── Message listener ─────────────────────────────────────────────────────────
   const handleMessageRef = useRef((msg: any) => {

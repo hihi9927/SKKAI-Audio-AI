@@ -257,8 +257,6 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (e?.name === 'AbortError') return false; // app closed mid-probe, silently exit
       setServerStatus('error');
       stopKeepAlive();
-      // 서버가 살아나면 자동 감지하도록 30초 후 재시도
-      errorRetryTimerRef.current = setTimeout(() => { probeServer(false); }, 30000);
       return false;
     } finally {
       isProbingRef.current = false;

@@ -851,6 +851,23 @@ class Qwen3ASRStreamingHandler:
         if slot["state"].audio_accum.shape[0] > _accum_len_before:
             _decoded_text = self._strip_asr_text((slot["state"].text or "").strip())
             self.log.info(f"[TRANSCRIBE-DECODING] slot={slot_key} text={_decoded_text!r}")
+
+        # 할루시네이션 감지: 반복 직전까지 부분 커밋 후 슬롯 완전 초기화
+        if slot["state"].hallucination_detected:
+            slot["state"].hallucination_detected = False
+            _cut_text = self._strip_asr_text((slot["state"].text or "").strip())
+            self.log.info(f"[HALLUCINATION-PARTIAL-COMMIT] slot={slot_key} text={_cut_text!r}")
+            # generate 루프 안에서 _on_seg로 쌓인 GPT 태스크를 먼저 flush
+            if self._pending_gpt_tasks:
+                asyncio.create_task(self._flush_pending_gpt_tasks())
+            await self.flush_uncommitted(force=True, reason="vad", slot_key=slot_key)
+            self._reset_stream_slot(slot_key)
+            if slot_key == self.active_slot:
+                self.state = self.stream_slots[self.active_slot]["state"]
+            async with self.asr_lock:
+                self.asr_processed_cursor = self.sample_cursor
+            return
+
         _committed_text_snapshot = await self._process_slot_updates(slot_key)
         _accum_size_pre_gpt = self._slot(slot_key)["state"].audio_accum.shape[0]
         if self._pending_gpt_tasks:
@@ -1470,10 +1487,10 @@ class Qwen3ASRStreamingHandler:
         return self.current_time
 
     async def _retry_vad_short_utterance(self, slot_key: str) -> None:
-        """finish_streaming이 빈 결과를 반환했을 때, VAD speech_start 기준으로 오디오를 트림하여 재시도.
+        """finish_streaming이 빈 결과를 반환했을 때, VAD 구간 기준으로 오디오를 트림하여 재시도.
 
-        vad_last_speech_start_sample을 기준으로 슬롯의 audio_accum에서 발화 시작 지점 이후만
-        잘라내어 fresh state로 재디코딩. 짧은 발화가 긴 침묵 앞에 묻히는 문제를 완화한다.
+        앞: VAD speech_start - 200ms 패딩
+        뒤: VAD 종료 감지 시점 - 700ms (VAD_MIN_SILENCE_MS 800ms - 100ms 여유)
         """
         slot = self._slot(slot_key)
         state = slot["state"]
@@ -1482,26 +1499,23 @@ class Qwen3ASRStreamingHandler:
             return
 
         slot_anchor_samples = int(slot["audio_anchor_sec"] * SAMPLING_RATE)
-        pre_pad_samples = int(0.3 * SAMPLING_RATE)  # 300ms 사전 패딩
-        speech_start_in_slot = self.vad_last_speech_start_sample - slot_anchor_samples - pre_pad_samples
-        speech_start_in_slot = max(0, speech_start_in_slot)
+        speech_start = self.vad_last_speech_start_sample - slot_anchor_samples - int(0.2 * SAMPLING_RATE)
+        speech_start = max(0, speech_start)
+        speech_end = full_audio.shape[0] - int(0.7 * SAMPLING_RATE)
 
-        # 트리밍 효과가 없을 때(500ms 미만 단축) 건너뜀
-        if speech_start_in_slot < int(0.5 * SAMPLING_RATE):
-            self.log.info(
-                f"[VAD-RETRY] slot={slot_key} skip: trim too small "
-                f"speech_start_in_slot={speech_start_in_slot}"
-            )
+        if speech_end <= speech_start:
+            self.log.info(f"[VAD-RETRY] slot={slot_key} skip: empty range start={speech_start} end={speech_end}")
             return
 
-        speech_audio = full_audio[speech_start_in_slot:]
+        speech_audio = full_audio[speech_start:speech_end]
         if speech_audio.shape[0] == 0:
             return
 
         self.log.info(
             f"[VAD-RETRY] slot={slot_key} "
             f"speech_start_sample={self.vad_last_speech_start_sample} "
-            f"trim_from={speech_start_in_slot} ({speech_start_in_slot / SAMPLING_RATE:.2f}s) "
+            f"trim_from={speech_start} ({speech_start / SAMPLING_RATE:.2f}s) "
+            f"trim_to={speech_end} ({speech_end / SAMPLING_RATE:.2f}s) "
             f"audio_len={speech_audio.shape[0]} ({speech_audio.shape[0] / SAMPLING_RATE:.2f}s)"
         )
 
