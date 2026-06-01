@@ -140,13 +140,12 @@ class GPTTranslator:
         ).format(target_name=target_name)
 
         if has_context:
-            src_label = source_lang_name or "Source"
             context_lines = "\n".join(
-                f"[{i + 1}] {src_label}: {orig} → {target_name}: {trans}"
-                for i, (orig, trans) in enumerate(context)
+                f"[{i + 1}] {trans}"
+                for i, (_, trans) in enumerate(context)
             )
             user_content = (
-                f"=== Preceding segments (FINAL — do NOT reproduce or modify) ===\n"
+                f"=== Preceding {target_name} translations (FINAL — do NOT reproduce or modify) ===\n"
                 f"{context_lines}\n\n"
                 f"=== Translate ONLY this new segment ===\n"
                 f"{text}"
@@ -178,6 +177,31 @@ class GPTTranslator:
                 else:
                     raise
         raise RuntimeError(f"최대 재시도({self._max_retries}회) 초과: '{text[:40]}'")
+
+    async def detect_language(self, text: str) -> str:
+        """텍스트의 언어를 감지하여 ISO 639-1 코드 반환. 감지 실패 시 빈 문자열."""
+        if not text.strip():
+            return ""
+        try:
+            resp = await self._client.chat.completions.create(
+                model=self._model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            "Detect the language of the given text. "
+                            "Reply with the ISO 639-1 code only (e.g. 'ko', 'en', 'ja', 'zh', 'id'). "
+                            "No explanation, no punctuation."
+                        ),
+                    },
+                    {"role": "user", "content": text},
+                ],
+                temperature=0,
+                max_tokens=5,
+            )
+            return resp.choices[0].message.content.strip().lower()
+        except Exception:
+            return ""
 
 
 def _parse_retry_after(msg: str, attempt: int) -> float:

@@ -51,6 +51,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const probeAbortRef = useRef<AbortController | null>(null);
   const heartbeatIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const errorRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const probeServerRef = useRef<(force?: boolean) => Promise<boolean>>(async () => false);
 
   useEffect(() => {
     serverStatusRef.current = serverStatus;
@@ -257,11 +258,16 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (e?.name === 'AbortError') return false; // app closed mid-probe, silently exit
       setServerStatus('error');
       stopKeepAlive();
+      errorRetryTimerRef.current = setTimeout(() => {
+        probeServerRef.current(true);
+      }, PROBE_RETRY_INTERVAL_MS * 3);
       return false;
     } finally {
       isProbingRef.current = false;
     }
   }, [startKeepAlive, stopKeepAlive, clearErrorRetryTimer]);
+
+  probeServerRef.current = probeServer;
 
   const connect = useCallback(async (config: WebSocketConfig): Promise<void> => {
     return new Promise((resolve, reject) => {

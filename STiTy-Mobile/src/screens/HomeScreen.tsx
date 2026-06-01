@@ -455,7 +455,10 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
   useEffect(() => { isConnectedRef.current = isConnected; }, [isConnected]);
   useEffect(() => { sendAudioRef.current = sendAudio; }, [sendAudio]);
   useEffect(() => { sendMessageRef.current = sendMessage; }, [sendMessage]);
-  useEffect(() => { serverStatusRef.current = serverStatus; }, [serverStatus]);
+  useEffect(() => {
+    serverStatusRef.current = serverStatus;
+    if (serverStatus === 'ready') setSessionError('');
+  }, [serverStatus]);
   useEffect(() => { isTTSMutedRef.current = isTTSMuted; }, [isTTSMuted]);
   useEffect(() => { modeRef.current = modeId; }, [modeId]);
   useEffect(() => { myLangRef.current = myLang; }, [myLang]);
@@ -728,11 +731,9 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
     setSessionError('');
     setIsInitializing(true);
     try {
-      // 서버가 준비 안 됐거나 오류 상태면 재시작만 하고 리턴 (사용자가 다시 시작 버튼을 눌러야 함)
       if (serverStatusRef.current !== 'ready') {
         const ok = await probeServer(serverStatusRef.current === 'error');
         if (!ok) throw new Error(s.connectionFailed);
-        return;
       }
       try {
         await connect({ lang: myLang.code, targetLang: targetLang.code, speed });
@@ -740,7 +741,7 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
         // connect 실패 = serverStatus는 'ready'였지만 서버 실제로 죽어있음 → 강제 재시작
         const ok = await probeServer(true);
         if (!ok) throw new Error(s.connectionFailed);
-        return;
+        await connect({ lang: myLang.code, targetLang: targetLang.code, speed });
       }
       await startRecording();
       applySpeakerRouting();
@@ -950,46 +951,6 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
             </View>
           </View>
 
-          {/* Translation speed pill */}
-          <View style={S.speedSection}>
-            <Text style={S.speedLabel}>{ui.translation}</Text>
-            <TouchableOpacity
-              style={[S.speedPill, speed === 'fast' ? S.speedPillFast : S.speedPillAccurate]}
-              onPress={() => setPicker('speed')}
-              activeOpacity={0.85}
-            >
-              <View style={[S.speedPillIco, { backgroundColor: speed === 'fast' ? '#6080C8' : '#7A9030' }]}>
-                {speed === 'fast' ? (
-                  <Svg width={16} height={16} viewBox="0 0 24 24">
-                    <Path d="M13 2 L4 14 H11 L10 22 L20 9 H13 Z" fill="#fff" />
-                  </Svg>
-                ) : (
-                  <Svg width={16} height={16} viewBox="0 0 24 24">
-                    <Circle cx="12" cy="12" r="9" stroke="#fff" strokeWidth="2.2" fill="none" />
-                    <Circle cx="12" cy="12" r="5" stroke="#fff" strokeWidth="2.2" fill="none" />
-                    <Circle cx="12" cy="12" r="1.5" fill="#fff" />
-                  </Svg>
-                )}
-              </View>
-              <View style={S.speedPillMeta}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Text style={[S.speedPillName, { color: speed === 'fast' ? '#4865A8' : '#5B7022' }]}>
-                    {speed === 'fast' ? ui.fast : ui.accurate}
-                  </Text>
-                  <View style={[S.speedPillTag, speed === 'fast' ? S.speedPillTagFast : S.speedPillTagAccurate]}>
-                    <Text style={[S.speedPillTagTxt, { color: speed === 'fast' ? '#6080C8' : '#7A9030' }]}>
-                      {speed === 'fast' ? '≈0.5s' : '≈1.5s'}
-                    </Text>
-                  </View>
-                </View>
-                <Text style={S.speedPillSub}>
-                  {speed === 'fast' ? ui.fastSub : ui.accurateSub}
-                </Text>
-              </View>
-              <Text style={S.speedPillChev}>›</Text>
-            </TouchableOpacity>
-          </View>
-
           {!isIdle && (
             <TouchableOpacity style={S.collapseBtn} onPress={() => setShowSetup(false)}>
               <Text style={S.collapseBtnTxt}>{ui.collapse}</Text>
@@ -1016,9 +977,6 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
             </View>
             <View style={[S.chip, { backgroundColor: '#f0f0f0' }]}>
               <Text style={[S.chipTxt, { color: '#777' }]}>{ui.modes[modeObj.id] ?? modeObj.name}</Text>
-            </View>
-            <View style={[S.chip, { backgroundColor: '#f0f0f0' }]}>
-              <Text style={[S.chipTxt, { color: '#777' }]}>{speed === 'fast' ? `⚡ ${ui.fast}` : `◎ ${ui.accurate}`}</Text>
             </View>
           </TouchableOpacity>
         </Animated.View>
@@ -1340,76 +1298,6 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
       />
 
       {/* ── Speed picker ── */}
-      <Modal visible={picker === 'speed'} animationType="slide" transparent onRequestClose={() => setPicker(null)}>
-        <View style={S.pickerOverlay}>
-          <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={() => setPicker(null)} />
-          <View style={[S.pickerSheet, { paddingBottom: Math.max(insets.bottom, 16) + 16 }]}>
-            <Text style={S.pickerTitle}>{ui.translation}</Text>
-
-            <TouchableOpacity
-              style={[S.speedPickerOption, speed === 'fast' && S.speedPickerOptionSelFast]}
-              onPress={() => { updateSpeed('fast'); setPicker(null); }}
-              activeOpacity={0.85}
-            >
-              <View style={[S.speedPickerIco, { backgroundColor: '#6080C8' }]}>
-                <Svg width={18} height={18} viewBox="0 0 24 24">
-                  <Path d="M13 2 L4 14 H11 L10 22 L20 9 H13 Z" fill="#fff" />
-                </Svg>
-              </View>
-              <View style={S.speedPickerMeta}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 3 }}>
-                  <Text style={S.speedPickerName}>{ui.fast}</Text>
-                  <View style={[S.speedPickerTag, { backgroundColor: 'rgba(96,128,200,0.12)' }]}>
-                    <Text style={[S.speedPickerTagTxt, { color: '#6080C8' }]}>≈0.5s</Text>
-                  </View>
-                </View>
-                <Text style={S.speedPickerDesc}>{ui.fastDesc}</Text>
-              </View>
-              <View style={S.speedPickerCheck}>
-                {speed === 'fast' && (
-                  <Svg width={18} height={18} viewBox="0 0 24 24">
-                    <Path d="M20 6 L9 17 L4 12" stroke="#6080C8" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                  </Svg>
-                )}
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[S.speedPickerOption, speed === 'accurate' && S.speedPickerOptionSelAccurate]}
-              onPress={() => { updateSpeed('accurate'); setPicker(null); }}
-              activeOpacity={0.85}
-            >
-              <View style={[S.speedPickerIco, { backgroundColor: '#7A9030' }]}>
-                <Svg width={18} height={18} viewBox="0 0 24 24">
-                  <Circle cx="12" cy="12" r="9" stroke="#fff" strokeWidth="2.2" fill="none" />
-                  <Circle cx="12" cy="12" r="5" stroke="#fff" strokeWidth="2.2" fill="none" />
-                  <Circle cx="12" cy="12" r="1.5" fill="#fff" />
-                </Svg>
-              </View>
-              <View style={S.speedPickerMeta}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 3 }}>
-                  <Text style={S.speedPickerName}>{ui.accurate}</Text>
-                  <View style={[S.speedPickerTag, { backgroundColor: 'rgba(122,144,48,0.12)' }]}>
-                    <Text style={[S.speedPickerTagTxt, { color: '#7A9030' }]}>≈1.5s</Text>
-                  </View>
-                </View>
-                <Text style={S.speedPickerDesc}>{ui.accurateDesc}</Text>
-              </View>
-              <View style={S.speedPickerCheck}>
-                {speed === 'accurate' && (
-                  <Svg width={18} height={18} viewBox="0 0 24 24">
-                    <Path d="M20 6 L9 17 L4 12" stroke="#7A9030" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                  </Svg>
-                )}
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={S.pickerCancel} onPress={() => setPicker(null)}>
-              <Text style={S.pickerCancelTxt}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 };

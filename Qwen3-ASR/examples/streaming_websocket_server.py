@@ -498,7 +498,7 @@ class Qwen3ASRStreamingHandler:
         _ctx = (gpt_translator.max_context if gpt_translator
                 else config.context_window if config.google_context
                 else 5)
-        self._segment_history: deque[tuple[str, str]] = deque(maxlen=_ctx)
+        self._segment_history: deque[tuple[str, str, str]] = deque(maxlen=_ctx)
         # 첫 번째 발화는 Google Translate, 두 번째부터 GPT로 전환
         self._committed_utterance_count: int = 0
 
@@ -1451,6 +1451,10 @@ class Qwen3ASRStreamingHandler:
         """
         src_code = lang_to_code(current_lang) if current_lang else ""
 
+        # ASR이 언어 감지 실패 시 GPT로 텍스트 기반 언어 감지
+        if not src_code and self.gpt_translator and self.client_lang and self.client_lang != "auto":
+            src_code = await self.gpt_translator.detect_language(text)
+
         # 번역 방향 결정: ASR 감지 언어 기준, 1회 번역
         if not self.client_lang or self.client_lang == "auto":
             target = self.client_target_lang        # 방향 모름 → targetLang으로
@@ -1462,9 +1466,13 @@ class Qwen3ASRStreamingHandler:
             target = self.client_target_lang        # ASR 감지 실패 → targetLang으로
 
         if self.gpt_translator and self._committed_utterance_count > 0:
+            if self._segment_history and src_code:
+                ctx_pairs = [(o, t) for o, t, l in self._segment_history if l == src_code]
+            else:
+                ctx_pairs = [(o, t) for o, t, _ in self._segment_history]
             corrected, translation, gpt_detected = await self.gpt_translator.correct_and_translate(
                 text, current_lang, target,
-                context=list(self._segment_history) if self._segment_history else None,
+                context=ctx_pairs if ctx_pairs else None,
             )
             return corrected, translation, gpt_detected or src_code, {}
 
@@ -1472,7 +1480,7 @@ class Qwen3ASRStreamingHandler:
         if self.corrector and self.use_correction:
             text = await self.corrector.correct_text(text, current_lang)
         if self.config.google_context and self._segment_history:
-            context_originals = [orig for orig, _ in self._segment_history]
+            context_originals = [orig for orig, _, l in self._segment_history if not src_code or l == src_code]
             translation, detected_lang = await google_translate_with_context_async(
                 self.http_session, text, target, context_originals
             )
@@ -1579,7 +1587,7 @@ class Qwen3ASRStreamingHandler:
             )
         self._committed_utterance_count += 1
         if original and translation and (self.gpt_translator or self.config.google_context):
-            self._segment_history.append((original, translation))
+            self._segment_history.append((original, translation, language))
 
     async def handle(self):
         try:
