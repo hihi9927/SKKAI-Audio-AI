@@ -1,0 +1,913 @@
+{
+  "adapter_a": "/home/ubuntu/STiTy/Qwen3-ASR/finetuning/finetuning-silence/checkpoint_en_vllm",
+  "adapter_b": "/home/ubuntu/STiTy/Qwen3-ASR/finetuning/finetuning-silence/checkpoint_ko_vllm",
+  "lora_r_a": 128,
+  "lora_r_b": 128,
+  "lora_alpha_a": 256,
+  "lora_alpha_b": 256,
+  "total_layers": 112,
+  "conflict_layers": 0,
+  "mean_cos_sim": 0.026281,
+  "min_cos_sim": 0.004901,
+  "max_cos_sim": 0.175228,
+  "mean_sign_conflict_ratio": 0.493277,
+  "recommendation": "높은 충돌 (mean cos_sim=0.026, 충돌 레이어 0%). TIES-Merging 또는 per-layer 가중치 조정 권장.",
+  "layers": [
+    {
+      "layer_path": "layers.0.self_attn.k_proj",
+      "cos_sim": 0.021524,
+      "sign_conflict_ratio": 0.494543,
+      "norm_a": 0.605849,
+      "norm_b": 0.706385,
+      "norm_ratio": 1.165943
+    },
+    {
+      "layer_path": "layers.0.self_attn.o_proj",
+      "cos_sim": 0.00756,
+      "sign_conflict_ratio": 0.497726,
+      "norm_a": 0.707398,
+      "norm_b": 0.875439,
+      "norm_ratio": 1.237549
+    },
+    {
+      "layer_path": "layers.0.self_attn.q_proj",
+      "cos_sim": 0.00724,
+      "sign_conflict_ratio": 0.498173,
+      "norm_a": 0.851525,
+      "norm_b": 1.01561,
+      "norm_ratio": 1.192695
+    },
+    {
+      "layer_path": "layers.0.self_attn.v_proj",
+      "cos_sim": 0.014701,
+      "sign_conflict_ratio": 0.496221,
+      "norm_a": 0.506239,
+      "norm_b": 0.599982,
+      "norm_ratio": 1.185176
+    },
+    {
+      "layer_path": "layers.1.self_attn.k_proj",
+      "cos_sim": 0.007659,
+      "sign_conflict_ratio": 0.498084,
+      "norm_a": 0.557135,
+      "norm_b": 0.640584,
+      "norm_ratio": 1.149782
+    },
+    {
+      "layer_path": "layers.1.self_attn.o_proj",
+      "cos_sim": 0.009343,
+      "sign_conflict_ratio": 0.497462,
+      "norm_a": 0.773617,
+      "norm_b": 0.893328,
+      "norm_ratio": 1.154742
+    },
+    {
+      "layer_path": "layers.1.self_attn.q_proj",
+      "cos_sim": 0.010325,
+      "sign_conflict_ratio": 0.496837,
+      "norm_a": 0.83365,
+      "norm_b": 0.925415,
+      "norm_ratio": 1.110077
+    },
+    {
+      "layer_path": "layers.1.self_attn.v_proj",
+      "cos_sim": 0.013271,
+      "sign_conflict_ratio": 0.496621,
+      "norm_a": 0.48777,
+      "norm_b": 0.565325,
+      "norm_ratio": 1.158999
+    },
+    {
+      "layer_path": "layers.10.self_attn.k_proj",
+      "cos_sim": 0.010525,
+      "sign_conflict_ratio": 0.497802,
+      "norm_a": 0.592939,
+      "norm_b": 0.651744,
+      "norm_ratio": 1.099176
+    },
+    {
+      "layer_path": "layers.10.self_attn.o_proj",
+      "cos_sim": 0.018191,
+      "sign_conflict_ratio": 0.494339,
+      "norm_a": 0.812568,
+      "norm_b": 0.869437,
+      "norm_ratio": 1.069987
+    },
+    {
+      "layer_path": "layers.10.self_attn.q_proj",
+      "cos_sim": 0.010595,
+      "sign_conflict_ratio": 0.497574,
+      "norm_a": 0.794722,
+      "norm_b": 0.860348,
+      "norm_ratio": 1.082577
+    },
+    {
+      "layer_path": "layers.10.self_attn.v_proj",
+      "cos_sim": 0.023127,
+      "sign_conflict_ratio": 0.495085,
+      "norm_a": 0.52842,
+      "norm_b": 0.554109,
+      "norm_ratio": 1.048614
+    },
+    {
+      "layer_path": "layers.11.self_attn.k_proj",
+      "cos_sim": 0.022361,
+      "sign_conflict_ratio": 0.494417,
+      "norm_a": 0.561182,
+      "norm_b": 0.620458,
+      "norm_ratio": 1.105627
+    },
+    {
+      "layer_path": "layers.11.self_attn.o_proj",
+      "cos_sim": 0.019239,
+      "sign_conflict_ratio": 0.494615,
+      "norm_a": 0.814582,
+      "norm_b": 0.914508,
+      "norm_ratio": 1.122672
+    },
+    {
+      "layer_path": "layers.11.self_attn.q_proj",
+      "cos_sim": 0.027837,
+      "sign_conflict_ratio": 0.493335,
+      "norm_a": 0.835937,
+      "norm_b": 0.917094,
+      "norm_ratio": 1.097086
+    },
+    {
+      "layer_path": "layers.11.self_attn.v_proj",
+      "cos_sim": 0.046457,
+      "sign_conflict_ratio": 0.487136,
+      "norm_a": 0.565292,
+      "norm_b": 0.584459,
+      "norm_ratio": 1.033906
+    },
+    {
+      "layer_path": "layers.12.self_attn.k_proj",
+      "cos_sim": 0.013249,
+      "sign_conflict_ratio": 0.496952,
+      "norm_a": 0.542727,
+      "norm_b": 0.618094,
+      "norm_ratio": 1.138869
+    },
+    {
+      "layer_path": "layers.12.self_attn.o_proj",
+      "cos_sim": 0.01831,
+      "sign_conflict_ratio": 0.494462,
+      "norm_a": 0.804108,
+      "norm_b": 0.889175,
+      "norm_ratio": 1.105791
+    },
+    {
+      "layer_path": "layers.12.self_attn.q_proj",
+      "cos_sim": 0.019419,
+      "sign_conflict_ratio": 0.494631,
+      "norm_a": 0.833725,
+      "norm_b": 0.914414,
+      "norm_ratio": 1.096781
+    },
+    {
+      "layer_path": "layers.12.self_attn.v_proj",
+      "cos_sim": 0.027755,
+      "sign_conflict_ratio": 0.494148,
+      "norm_a": 0.523928,
+      "norm_b": 0.568645,
+      "norm_ratio": 1.08535
+    },
+    {
+      "layer_path": "layers.13.self_attn.k_proj",
+      "cos_sim": 0.017949,
+      "sign_conflict_ratio": 0.497005,
+      "norm_a": 0.529908,
+      "norm_b": 0.58018,
+      "norm_ratio": 1.094868
+    },
+    {
+      "layer_path": "layers.13.self_attn.o_proj",
+      "cos_sim": 0.017303,
+      "sign_conflict_ratio": 0.494717,
+      "norm_a": 0.79537,
+      "norm_b": 0.884482,
+      "norm_ratio": 1.112039
+    },
+    {
+      "layer_path": "layers.13.self_attn.q_proj",
+      "cos_sim": 0.006897,
+      "sign_conflict_ratio": 0.49906,
+      "norm_a": 0.78841,
+      "norm_b": 0.852449,
+      "norm_ratio": 1.081226
+    },
+    {
+      "layer_path": "layers.13.self_attn.v_proj",
+      "cos_sim": 0.045856,
+      "sign_conflict_ratio": 0.487098,
+      "norm_a": 0.544193,
+      "norm_b": 0.572265,
+      "norm_ratio": 1.051584
+    },
+    {
+      "layer_path": "layers.14.self_attn.k_proj",
+      "cos_sim": 0.015405,
+      "sign_conflict_ratio": 0.496434,
+      "norm_a": 0.629654,
+      "norm_b": 0.614603,
+      "norm_ratio": 0.976096
+    },
+    {
+      "layer_path": "layers.14.self_attn.o_proj",
+      "cos_sim": 0.017011,
+      "sign_conflict_ratio": 0.494829,
+      "norm_a": 0.84987,
+      "norm_b": 0.929955,
+      "norm_ratio": 1.094231
+    },
+    {
+      "layer_path": "layers.14.self_attn.q_proj",
+      "cos_sim": 0.022271,
+      "sign_conflict_ratio": 0.494104,
+      "norm_a": 0.874729,
+      "norm_b": 0.876989,
+      "norm_ratio": 1.002584
+    },
+    {
+      "layer_path": "layers.14.self_attn.v_proj",
+      "cos_sim": 0.03633,
+      "sign_conflict_ratio": 0.48998,
+      "norm_a": 0.541705,
+      "norm_b": 0.554578,
+      "norm_ratio": 1.023764
+    },
+    {
+      "layer_path": "layers.15.self_attn.k_proj",
+      "cos_sim": 0.027007,
+      "sign_conflict_ratio": 0.491447,
+      "norm_a": 0.563184,
+      "norm_b": 0.583513,
+      "norm_ratio": 1.036096
+    },
+    {
+      "layer_path": "layers.15.self_attn.o_proj",
+      "cos_sim": 0.029314,
+      "sign_conflict_ratio": 0.491097,
+      "norm_a": 0.84874,
+      "norm_b": 0.943438,
+      "norm_ratio": 1.111574
+    },
+    {
+      "layer_path": "layers.15.self_attn.q_proj",
+      "cos_sim": 0.016771,
+      "sign_conflict_ratio": 0.495063,
+      "norm_a": 0.818924,
+      "norm_b": 0.857533,
+      "norm_ratio": 1.047146
+    },
+    {
+      "layer_path": "layers.15.self_attn.v_proj",
+      "cos_sim": 0.053849,
+      "sign_conflict_ratio": 0.487082,
+      "norm_a": 0.585809,
+      "norm_b": 0.564465,
+      "norm_ratio": 0.963565
+    },
+    {
+      "layer_path": "layers.16.self_attn.k_proj",
+      "cos_sim": 0.016596,
+      "sign_conflict_ratio": 0.496237,
+      "norm_a": 0.61956,
+      "norm_b": 0.675056,
+      "norm_ratio": 1.089575
+    },
+    {
+      "layer_path": "layers.16.self_attn.o_proj",
+      "cos_sim": 0.032809,
+      "sign_conflict_ratio": 0.490256,
+      "norm_a": 0.888535,
+      "norm_b": 1.016461,
+      "norm_ratio": 1.143974
+    },
+    {
+      "layer_path": "layers.16.self_attn.q_proj",
+      "cos_sim": 0.037785,
+      "sign_conflict_ratio": 0.489943,
+      "norm_a": 0.9609,
+      "norm_b": 0.995618,
+      "norm_ratio": 1.036131
+    },
+    {
+      "layer_path": "layers.16.self_attn.v_proj",
+      "cos_sim": 0.032053,
+      "sign_conflict_ratio": 0.491672,
+      "norm_a": 0.553268,
+      "norm_b": 0.599999,
+      "norm_ratio": 1.084464
+    },
+    {
+      "layer_path": "layers.17.self_attn.k_proj",
+      "cos_sim": 0.013834,
+      "sign_conflict_ratio": 0.496867,
+      "norm_a": 0.633477,
+      "norm_b": 0.615445,
+      "norm_ratio": 0.971535
+    },
+    {
+      "layer_path": "layers.17.self_attn.o_proj",
+      "cos_sim": 0.032482,
+      "sign_conflict_ratio": 0.490618,
+      "norm_a": 0.89754,
+      "norm_b": 0.959062,
+      "norm_ratio": 1.068545
+    },
+    {
+      "layer_path": "layers.17.self_attn.q_proj",
+      "cos_sim": 0.022365,
+      "sign_conflict_ratio": 0.493197,
+      "norm_a": 0.873749,
+      "norm_b": 0.920199,
+      "norm_ratio": 1.053161
+    },
+    {
+      "layer_path": "layers.17.self_attn.v_proj",
+      "cos_sim": 0.034912,
+      "sign_conflict_ratio": 0.49093,
+      "norm_a": 0.597899,
+      "norm_b": 0.586621,
+      "norm_ratio": 0.981138
+    },
+    {
+      "layer_path": "layers.18.self_attn.k_proj",
+      "cos_sim": 0.027976,
+      "sign_conflict_ratio": 0.493035,
+      "norm_a": 0.600168,
+      "norm_b": 0.660207,
+      "norm_ratio": 1.100037
+    },
+    {
+      "layer_path": "layers.18.self_attn.o_proj",
+      "cos_sim": 0.036772,
+      "sign_conflict_ratio": 0.490215,
+      "norm_a": 0.969746,
+      "norm_b": 0.994246,
+      "norm_ratio": 1.025264
+    },
+    {
+      "layer_path": "layers.18.self_attn.q_proj",
+      "cos_sim": 0.026662,
+      "sign_conflict_ratio": 0.49213,
+      "norm_a": 0.954778,
+      "norm_b": 1.033611,
+      "norm_ratio": 1.082566
+    },
+    {
+      "layer_path": "layers.18.self_attn.v_proj",
+      "cos_sim": 0.031351,
+      "sign_conflict_ratio": 0.492381,
+      "norm_a": 0.613656,
+      "norm_b": 0.62178,
+      "norm_ratio": 1.013238
+    },
+    {
+      "layer_path": "layers.19.self_attn.k_proj",
+      "cos_sim": 0.014596,
+      "sign_conflict_ratio": 0.496014,
+      "norm_a": 0.692762,
+      "norm_b": 0.670672,
+      "norm_ratio": 0.968113
+    },
+    {
+      "layer_path": "layers.19.self_attn.o_proj",
+      "cos_sim": 0.02396,
+      "sign_conflict_ratio": 0.493022,
+      "norm_a": 0.946436,
+      "norm_b": 1.035293,
+      "norm_ratio": 1.093887
+    },
+    {
+      "layer_path": "layers.19.self_attn.q_proj",
+      "cos_sim": 0.021246,
+      "sign_conflict_ratio": 0.493868,
+      "norm_a": 1.009009,
+      "norm_b": 1.012307,
+      "norm_ratio": 1.003269
+    },
+    {
+      "layer_path": "layers.19.self_attn.v_proj",
+      "cos_sim": 0.024144,
+      "sign_conflict_ratio": 0.493969,
+      "norm_a": 0.616314,
+      "norm_b": 0.624899,
+      "norm_ratio": 1.013931
+    },
+    {
+      "layer_path": "layers.2.self_attn.k_proj",
+      "cos_sim": 0.009329,
+      "sign_conflict_ratio": 0.497878,
+      "norm_a": 0.600267,
+      "norm_b": 0.674391,
+      "norm_ratio": 1.123485
+    },
+    {
+      "layer_path": "layers.2.self_attn.o_proj",
+      "cos_sim": 0.009548,
+      "sign_conflict_ratio": 0.496917,
+      "norm_a": 0.838645,
+      "norm_b": 0.910972,
+      "norm_ratio": 1.086242
+    },
+    {
+      "layer_path": "layers.2.self_attn.q_proj",
+      "cos_sim": 0.006321,
+      "sign_conflict_ratio": 0.498705,
+      "norm_a": 0.925754,
+      "norm_b": 0.998412,
+      "norm_ratio": 1.078485
+    },
+    {
+      "layer_path": "layers.2.self_attn.v_proj",
+      "cos_sim": 0.009687,
+      "sign_conflict_ratio": 0.498228,
+      "norm_a": 0.495647,
+      "norm_b": 0.559088,
+      "norm_ratio": 1.127996
+    },
+    {
+      "layer_path": "layers.20.self_attn.k_proj",
+      "cos_sim": 0.023787,
+      "sign_conflict_ratio": 0.493247,
+      "norm_a": 0.669681,
+      "norm_b": 0.701018,
+      "norm_ratio": 1.046793
+    },
+    {
+      "layer_path": "layers.20.self_attn.o_proj",
+      "cos_sim": 0.020815,
+      "sign_conflict_ratio": 0.493401,
+      "norm_a": 0.951065,
+      "norm_b": 1.060466,
+      "norm_ratio": 1.11503
+    },
+    {
+      "layer_path": "layers.20.self_attn.q_proj",
+      "cos_sim": 0.016343,
+      "sign_conflict_ratio": 0.494854,
+      "norm_a": 0.952252,
+      "norm_b": 1.010505,
+      "norm_ratio": 1.061175
+    },
+    {
+      "layer_path": "layers.20.self_attn.v_proj",
+      "cos_sim": 0.019389,
+      "sign_conflict_ratio": 0.495926,
+      "norm_a": 0.614337,
+      "norm_b": 0.635203,
+      "norm_ratio": 1.033966
+    },
+    {
+      "layer_path": "layers.21.self_attn.k_proj",
+      "cos_sim": 0.039749,
+      "sign_conflict_ratio": 0.490305,
+      "norm_a": 0.64987,
+      "norm_b": 0.715644,
+      "norm_ratio": 1.101212
+    },
+    {
+      "layer_path": "layers.21.self_attn.o_proj",
+      "cos_sim": 0.035371,
+      "sign_conflict_ratio": 0.490037,
+      "norm_a": 0.990729,
+      "norm_b": 1.125818,
+      "norm_ratio": 1.136353
+    },
+    {
+      "layer_path": "layers.21.self_attn.q_proj",
+      "cos_sim": 0.044523,
+      "sign_conflict_ratio": 0.487562,
+      "norm_a": 1.053167,
+      "norm_b": 1.077355,
+      "norm_ratio": 1.022966
+    },
+    {
+      "layer_path": "layers.21.self_attn.v_proj",
+      "cos_sim": 0.031868,
+      "sign_conflict_ratio": 0.491695,
+      "norm_a": 0.614008,
+      "norm_b": 0.605129,
+      "norm_ratio": 0.985539
+    },
+    {
+      "layer_path": "layers.22.self_attn.k_proj",
+      "cos_sim": 0.015527,
+      "sign_conflict_ratio": 0.495274,
+      "norm_a": 0.645112,
+      "norm_b": 0.695607,
+      "norm_ratio": 1.078274
+    },
+    {
+      "layer_path": "layers.22.self_attn.o_proj",
+      "cos_sim": 0.043223,
+      "sign_conflict_ratio": 0.48742,
+      "norm_a": 1.006045,
+      "norm_b": 1.123143,
+      "norm_ratio": 1.116394
+    },
+    {
+      "layer_path": "layers.22.self_attn.q_proj",
+      "cos_sim": 0.024233,
+      "sign_conflict_ratio": 0.493279,
+      "norm_a": 1.004226,
+      "norm_b": 1.103353,
+      "norm_ratio": 1.09871
+    },
+    {
+      "layer_path": "layers.22.self_attn.v_proj",
+      "cos_sim": 0.031005,
+      "sign_conflict_ratio": 0.491743,
+      "norm_a": 0.609629,
+      "norm_b": 0.63783,
+      "norm_ratio": 1.046258
+    },
+    {
+      "layer_path": "layers.23.self_attn.k_proj",
+      "cos_sim": 0.009981,
+      "sign_conflict_ratio": 0.497391,
+      "norm_a": 0.647549,
+      "norm_b": 0.679713,
+      "norm_ratio": 1.04967
+    },
+    {
+      "layer_path": "layers.23.self_attn.o_proj",
+      "cos_sim": 0.043055,
+      "sign_conflict_ratio": 0.488001,
+      "norm_a": 1.115856,
+      "norm_b": 1.195413,
+      "norm_ratio": 1.071296
+    },
+    {
+      "layer_path": "layers.23.self_attn.q_proj",
+      "cos_sim": 0.024585,
+      "sign_conflict_ratio": 0.492717,
+      "norm_a": 1.01993,
+      "norm_b": 1.084585,
+      "norm_ratio": 1.063392
+    },
+    {
+      "layer_path": "layers.23.self_attn.v_proj",
+      "cos_sim": 0.02816,
+      "sign_conflict_ratio": 0.492223,
+      "norm_a": 0.648388,
+      "norm_b": 0.691745,
+      "norm_ratio": 1.06687
+    },
+    {
+      "layer_path": "layers.24.self_attn.k_proj",
+      "cos_sim": 0.021687,
+      "sign_conflict_ratio": 0.494375,
+      "norm_a": 0.709458,
+      "norm_b": 0.701487,
+      "norm_ratio": 0.988764
+    },
+    {
+      "layer_path": "layers.24.self_attn.o_proj",
+      "cos_sim": 0.049959,
+      "sign_conflict_ratio": 0.48677,
+      "norm_a": 1.173652,
+      "norm_b": 1.244029,
+      "norm_ratio": 1.059964
+    },
+    {
+      "layer_path": "layers.24.self_attn.q_proj",
+      "cos_sim": 0.01726,
+      "sign_conflict_ratio": 0.495094,
+      "norm_a": 1.118075,
+      "norm_b": 1.146207,
+      "norm_ratio": 1.025161
+    },
+    {
+      "layer_path": "layers.24.self_attn.v_proj",
+      "cos_sim": 0.028793,
+      "sign_conflict_ratio": 0.492414,
+      "norm_a": 0.761883,
+      "norm_b": 0.741198,
+      "norm_ratio": 0.97285
+    },
+    {
+      "layer_path": "layers.25.self_attn.k_proj",
+      "cos_sim": 0.008691,
+      "sign_conflict_ratio": 0.497466,
+      "norm_a": 0.708095,
+      "norm_b": 0.73607,
+      "norm_ratio": 1.039507
+    },
+    {
+      "layer_path": "layers.25.self_attn.o_proj",
+      "cos_sim": 0.145557,
+      "sign_conflict_ratio": 0.466521,
+      "norm_a": 1.242709,
+      "norm_b": 1.441713,
+      "norm_ratio": 1.160137
+    },
+    {
+      "layer_path": "layers.25.self_attn.q_proj",
+      "cos_sim": 0.025994,
+      "sign_conflict_ratio": 0.492784,
+      "norm_a": 1.158638,
+      "norm_b": 1.14768,
+      "norm_ratio": 0.990542
+    },
+    {
+      "layer_path": "layers.25.self_attn.v_proj",
+      "cos_sim": 0.03055,
+      "sign_conflict_ratio": 0.492278,
+      "norm_a": 0.701154,
+      "norm_b": 0.763702,
+      "norm_ratio": 1.089207
+    },
+    {
+      "layer_path": "layers.26.self_attn.k_proj",
+      "cos_sim": 0.015424,
+      "sign_conflict_ratio": 0.495576,
+      "norm_a": 0.660065,
+      "norm_b": 0.67853,
+      "norm_ratio": 1.027973
+    },
+    {
+      "layer_path": "layers.26.self_attn.o_proj",
+      "cos_sim": 0.104303,
+      "sign_conflict_ratio": 0.474701,
+      "norm_a": 1.124224,
+      "norm_b": 1.367498,
+      "norm_ratio": 1.216393
+    },
+    {
+      "layer_path": "layers.26.self_attn.q_proj",
+      "cos_sim": 0.019404,
+      "sign_conflict_ratio": 0.493999,
+      "norm_a": 1.070352,
+      "norm_b": 1.109492,
+      "norm_ratio": 1.036568
+    },
+    {
+      "layer_path": "layers.26.self_attn.v_proj",
+      "cos_sim": 0.035516,
+      "sign_conflict_ratio": 0.49192,
+      "norm_a": 0.706315,
+      "norm_b": 0.714871,
+      "norm_ratio": 1.012113
+    },
+    {
+      "layer_path": "layers.27.self_attn.k_proj",
+      "cos_sim": 0.065847,
+      "sign_conflict_ratio": 0.481422,
+      "norm_a": 0.86133,
+      "norm_b": 0.796683,
+      "norm_ratio": 0.924946
+    },
+    {
+      "layer_path": "layers.27.self_attn.o_proj",
+      "cos_sim": 0.171586,
+      "sign_conflict_ratio": 0.4652,
+      "norm_a": 1.871687,
+      "norm_b": 1.381042,
+      "norm_ratio": 0.737859
+    },
+    {
+      "layer_path": "layers.27.self_attn.q_proj",
+      "cos_sim": 0.03699,
+      "sign_conflict_ratio": 0.490831,
+      "norm_a": 1.184581,
+      "norm_b": 1.0631,
+      "norm_ratio": 0.897448
+    },
+    {
+      "layer_path": "layers.27.self_attn.v_proj",
+      "cos_sim": 0.175228,
+      "sign_conflict_ratio": 0.464613,
+      "norm_a": 1.123133,
+      "norm_b": 0.912129,
+      "norm_ratio": 0.812128
+    },
+    {
+      "layer_path": "layers.3.self_attn.k_proj",
+      "cos_sim": 0.004901,
+      "sign_conflict_ratio": 0.498179,
+      "norm_a": 0.621874,
+      "norm_b": 0.608332,
+      "norm_ratio": 0.978225
+    },
+    {
+      "layer_path": "layers.3.self_attn.o_proj",
+      "cos_sim": 0.023087,
+      "sign_conflict_ratio": 0.49348,
+      "norm_a": 0.821936,
+      "norm_b": 0.952139,
+      "norm_ratio": 1.15841
+    },
+    {
+      "layer_path": "layers.3.self_attn.q_proj",
+      "cos_sim": 0.020252,
+      "sign_conflict_ratio": 0.493957,
+      "norm_a": 0.849396,
+      "norm_b": 0.933221,
+      "norm_ratio": 1.098688
+    },
+    {
+      "layer_path": "layers.3.self_attn.v_proj",
+      "cos_sim": 0.017143,
+      "sign_conflict_ratio": 0.495494,
+      "norm_a": 0.592285,
+      "norm_b": 0.618746,
+      "norm_ratio": 1.044675
+    },
+    {
+      "layer_path": "layers.4.self_attn.k_proj",
+      "cos_sim": 0.009007,
+      "sign_conflict_ratio": 0.497638,
+      "norm_a": 0.615492,
+      "norm_b": 0.631224,
+      "norm_ratio": 1.02556
+    },
+    {
+      "layer_path": "layers.4.self_attn.o_proj",
+      "cos_sim": 0.02073,
+      "sign_conflict_ratio": 0.494146,
+      "norm_a": 0.900555,
+      "norm_b": 0.943103,
+      "norm_ratio": 1.047247
+    },
+    {
+      "layer_path": "layers.4.self_attn.q_proj",
+      "cos_sim": 0.014504,
+      "sign_conflict_ratio": 0.495528,
+      "norm_a": 0.863901,
+      "norm_b": 0.949604,
+      "norm_ratio": 1.099204
+    },
+    {
+      "layer_path": "layers.4.self_attn.v_proj",
+      "cos_sim": 0.026707,
+      "sign_conflict_ratio": 0.49345,
+      "norm_a": 0.597751,
+      "norm_b": 0.615458,
+      "norm_ratio": 1.029622
+    },
+    {
+      "layer_path": "layers.5.self_attn.k_proj",
+      "cos_sim": 0.012063,
+      "sign_conflict_ratio": 0.496656,
+      "norm_a": 0.61414,
+      "norm_b": 0.63695,
+      "norm_ratio": 1.037141
+    },
+    {
+      "layer_path": "layers.5.self_attn.o_proj",
+      "cos_sim": 0.011323,
+      "sign_conflict_ratio": 0.497177,
+      "norm_a": 0.886945,
+      "norm_b": 0.949117,
+      "norm_ratio": 1.070096
+    },
+    {
+      "layer_path": "layers.5.self_attn.q_proj",
+      "cos_sim": 0.01599,
+      "sign_conflict_ratio": 0.495197,
+      "norm_a": 0.906791,
+      "norm_b": 0.922673,
+      "norm_ratio": 1.017515
+    },
+    {
+      "layer_path": "layers.5.self_attn.v_proj",
+      "cos_sim": 0.014799,
+      "sign_conflict_ratio": 0.496776,
+      "norm_a": 0.566719,
+      "norm_b": 0.599027,
+      "norm_ratio": 1.05701
+    },
+    {
+      "layer_path": "layers.6.self_attn.k_proj",
+      "cos_sim": 0.014217,
+      "sign_conflict_ratio": 0.497177,
+      "norm_a": 0.571685,
+      "norm_b": 0.605619,
+      "norm_ratio": 1.059357
+    },
+    {
+      "layer_path": "layers.6.self_attn.o_proj",
+      "cos_sim": 0.01193,
+      "sign_conflict_ratio": 0.496606,
+      "norm_a": 0.837282,
+      "norm_b": 0.880992,
+      "norm_ratio": 1.052204
+    },
+    {
+      "layer_path": "layers.6.self_attn.q_proj",
+      "cos_sim": 0.009817,
+      "sign_conflict_ratio": 0.497749,
+      "norm_a": 0.919429,
+      "norm_b": 0.886211,
+      "norm_ratio": 0.963871
+    },
+    {
+      "layer_path": "layers.6.self_attn.v_proj",
+      "cos_sim": 0.017412,
+      "sign_conflict_ratio": 0.49562,
+      "norm_a": 0.590877,
+      "norm_b": 0.598611,
+      "norm_ratio": 1.01309
+    },
+    {
+      "layer_path": "layers.7.self_attn.k_proj",
+      "cos_sim": 0.017678,
+      "sign_conflict_ratio": 0.495275,
+      "norm_a": 0.625662,
+      "norm_b": 0.67902,
+      "norm_ratio": 1.085282
+    },
+    {
+      "layer_path": "layers.7.self_attn.o_proj",
+      "cos_sim": 0.010993,
+      "sign_conflict_ratio": 0.496882,
+      "norm_a": 0.81277,
+      "norm_b": 0.890897,
+      "norm_ratio": 1.096125
+    },
+    {
+      "layer_path": "layers.7.self_attn.q_proj",
+      "cos_sim": 0.011984,
+      "sign_conflict_ratio": 0.497057,
+      "norm_a": 0.876219,
+      "norm_b": 0.914009,
+      "norm_ratio": 1.043128
+    },
+    {
+      "layer_path": "layers.7.self_attn.v_proj",
+      "cos_sim": 0.009556,
+      "sign_conflict_ratio": 0.49879,
+      "norm_a": 0.567231,
+      "norm_b": 0.574856,
+      "norm_ratio": 1.013443
+    },
+    {
+      "layer_path": "layers.8.self_attn.k_proj",
+      "cos_sim": 0.012113,
+      "sign_conflict_ratio": 0.497502,
+      "norm_a": 0.518671,
+      "norm_b": 0.591757,
+      "norm_ratio": 1.140909
+    },
+    {
+      "layer_path": "layers.8.self_attn.o_proj",
+      "cos_sim": 0.016411,
+      "sign_conflict_ratio": 0.494802,
+      "norm_a": 0.774602,
+      "norm_b": 0.827503,
+      "norm_ratio": 1.068294
+    },
+    {
+      "layer_path": "layers.8.self_attn.q_proj",
+      "cos_sim": 0.006384,
+      "sign_conflict_ratio": 0.498317,
+      "norm_a": 0.789214,
+      "norm_b": 0.879431,
+      "norm_ratio": 1.114312
+    },
+    {
+      "layer_path": "layers.8.self_attn.v_proj",
+      "cos_sim": 0.016333,
+      "sign_conflict_ratio": 0.49655,
+      "norm_a": 0.539637,
+      "norm_b": 0.566793,
+      "norm_ratio": 1.050323
+    },
+    {
+      "layer_path": "layers.9.self_attn.k_proj",
+      "cos_sim": 0.020165,
+      "sign_conflict_ratio": 0.496975,
+      "norm_a": 0.584665,
+      "norm_b": 0.564048,
+      "norm_ratio": 0.964737
+    },
+    {
+      "layer_path": "layers.9.self_attn.o_proj",
+      "cos_sim": 0.012263,
+      "sign_conflict_ratio": 0.496336,
+      "norm_a": 0.780063,
+      "norm_b": 0.842095,
+      "norm_ratio": 1.079522
+    },
+    {
+      "layer_path": "layers.9.self_attn.q_proj",
+      "cos_sim": 0.017572,
+      "sign_conflict_ratio": 0.495228,
+      "norm_a": 0.861395,
+      "norm_b": 0.843546,
+      "norm_ratio": 0.97928
+    },
+    {
+      "layer_path": "layers.9.self_attn.v_proj",
+      "cos_sim": 0.024613,
+      "sign_conflict_ratio": 0.49332,
+      "norm_a": 0.538111,
+      "norm_b": 0.589214,
+      "norm_ratio": 1.094968
+    }
+  ]
+}
