@@ -675,8 +675,12 @@ class Qwen3ASRStreamingHandler:
                     break
                 pos = idx + seg_len
                 found += 1
-            if all_segs_found:
+            if all_segs_found and pos < len(text):
                 return pos
+            # pos == len(text): 모든 SEG가 "커밋 완료"로 소비됐지만 실제로는
+            # 모델이 이전 커밋 경계 SEG + 새 미커밋 SEG를 함께 출력해
+            # count가 우연히 일치한 경우. 3차 fallback으로 fall-through해
+            # prefix 매칭으로 커서를 재확인한다.
 
         # ── 3차 fallback: 구두점 제거 후 prefix 매칭 ────────────────────
         if committed_display:
