@@ -152,6 +152,7 @@ class ASRStreamingState:
 
     hallucination_detected: bool = False
     committed_token_len: int = 0  # 커밋된 SEG 경계 — rollback이 이 위치를 넘지 못함
+    _prefix_end_idx: int = 0  # _build_streaming_prefix가 산출한 end_idx — 재구성 시 committed_text 경계로 사용
 
 
 class Qwen3ASRModel:
@@ -720,23 +721,37 @@ class Qwen3ASRModel:
         return bias
 
     def _build_streaming_prefix(self, state: ASRStreamingState) -> str:
-        """Keep only a bounded decode tail as continuation prefix."""
+        """마지막 <SEG> 경계까지 롤백하여 SEG 이후 불완전한 tail을 prefix에서 제거한다.
+        이렇게 하면 모델이 misheard prefix를 revision하면서 발생하는 중복 아티팩트를 예방한다.
+        <SEG>가 없으면 unfixed_token_num 롤백으로 포뱩.
+        """
         if state.chunk_id < state.unfixed_chunk_num:
+            state._prefix_end_idx = 0
             return ""
 
         cur_ids = self.processor.tokenizer.encode(state._raw_decoded)
-        rollback = int(state.unfixed_token_num)
+
+        # 마지막 <SEG> 경계로 롤백 (SEG 이후 불완전한 세그먼트 전체 제거)
+        last_seg_pos = state._raw_decoded.rfind("<SEG>")
+        if last_seg_pos != -1:
+            committed_str = state._raw_decoded[:last_seg_pos + len("<SEG>")]
+            end_idx = len(self.processor.tokenizer.encode(committed_str))
+        else:
+            end_idx = max(0, len(cur_ids) - int(state.unfixed_token_num))
+
+        # 커밋된 SEG 경계를 넘어 롤백하지 않음
+        end_idx = max(end_idx, state.committed_token_len)
+
         while True:
-            end_idx = max(0, len(cur_ids) - rollback)
-            # 커밋된 SEG 경계를 넘어 롤백하지 않음
-            end_idx = max(end_idx, state.committed_token_len)
             start_idx = max(0, end_idx - MAX_STREAMING_PREFIX_TOKENS)
             prefix = self.processor.tokenizer.decode(cur_ids[start_idx:end_idx]) if end_idx > start_idx else ""
             if "\ufffd" not in prefix:
+                state._prefix_end_idx = end_idx
                 return prefix
-            if start_idx == 0 and end_idx == 0:
+            if end_idx == 0:
+                state._prefix_end_idx = 0
                 return ""
-            rollback += 1
+            end_idx -= 1
 
     async def streaming_transcribe(self, pcm16k: np.ndarray, state: ASRStreamingState, lora_request=None, on_seg=None) -> ASRStreamingState:
         """
@@ -859,7 +874,7 @@ class Qwen3ASRModel:
             gen_text = final.outputs[0].text
             if prefix:
                 prev_ids = self.processor.tokenizer.encode(state._raw_decoded)
-                committed_ids = prev_ids[:-state.unfixed_token_num]
+                committed_ids = prev_ids[:state._prefix_end_idx]
                 committed_text = self.processor.tokenizer.decode(committed_ids)
                 state._raw_decoded = committed_text + gen_text
             else:
@@ -933,7 +948,7 @@ class Qwen3ASRModel:
         gen_text = final.outputs[0].text
         if prefix:
             prev_ids = self.processor.tokenizer.encode(state._raw_decoded)
-            committed_ids = prev_ids[:-state.unfixed_token_num]
+            committed_ids = prev_ids[:state._prefix_end_idx]
             committed_text = self.processor.tokenizer.decode(committed_ids)
             state._raw_decoded = committed_text + gen_text
         else:
