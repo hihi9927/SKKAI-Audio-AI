@@ -151,6 +151,7 @@ class ASRStreamingState:
     allowed_languages: Optional[List[str]] = None
 
     hallucination_detected: bool = False
+    committed_token_len: int = 0  # 커밋된 SEG 경계 — rollback이 이 위치를 넘지 못함
 
 
 class Qwen3ASRModel:
@@ -727,6 +728,8 @@ class Qwen3ASRModel:
         rollback = int(state.unfixed_token_num)
         while True:
             end_idx = max(0, len(cur_ids) - rollback)
+            # 커밋된 SEG 경계를 넘어 롤백하지 않음
+            end_idx = max(end_idx, state.committed_token_len)
             start_idx = max(0, end_idx - MAX_STREAMING_PREFIX_TOKENS)
             prefix = self.processor.tokenizer.decode(cur_ids[start_idx:end_idx]) if end_idx > start_idx else ""
             if "\ufffd" not in prefix:

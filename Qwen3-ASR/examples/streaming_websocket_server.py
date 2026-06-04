@@ -626,45 +626,65 @@ class Qwen3ASRStreamingHandler:
     @staticmethod
     def _committed_cursor(text: str, committed_display: str,
                           committed_seg_count: int = 0) -> int:
-        """committed 영역 끝의 커서 위치(int)를 반환.
+        “””committed 영역 끝의 커서 위치(int)를 반환.
 
-        3-way fallback으로 커서를 찾는다. 모든 fallback 실패 시 -1(sentinel) 반환.
-
-        1차: committed_display(SEG 제거 기준) prefix 매칭
-        2차(fallback): committed_seg_count 번째 <SEG> 이후 위치
-        3차(fallback): 후행 구두점 제거 후 prefix 매칭
-          — dot commit 후 모델이 "Okay." → "Okay, this is..."로 revision할 때 커버.
-        """
-        seg_tag = "<SEG>"
+        정규화 수준을 단계적으로 높여가며 prefix 매칭을 시도한 뒤,
+        모두 실패하면 SEG 카운트 기준으로 fallback한다.
+        모든 fallback 실패 시 -1(sentinel) 반환.
+        “””
+        seg_tag = “<SEG>”
         seg_len = len(seg_tag)
-        _punct = '.,!?;:。？！'
+        _punct = ‘.,!?;:。？！’
+        _quote_colon = re.compile(r’[“”’’”\’：:]+’)
 
-        # ── 1차: display prefix 매칭 (구두점 동치 포함) ──────────────────
-        # 모델이 온점을 쉼표로(또는 반대로) revision해도 같은 위치로 인식
-        # text_no_seg는 \s+ 정규화: SEG 제거 후 남는 이중 공백을 committed_display와 동일하게 맞춤
-        _norm_punct = lambda s: re.sub(r'[.,!?;:。？！、，]', '.', s)
+        # SEG 제거 + 공백 정규화 — prefix 매칭 전체에서 공통 사용
+        text_no_seg = re.sub(r’\s+’, ‘ ‘, text.replace(seg_tag, “”)).strip()
+
+        # ── 공통 커서 워커 ───────────────────────────────────────────────
+        def _walk(target_len: int, skip_re=None, advance_punct: bool = False) -> int:
+            “””raw text에서 target_len개의 표시 문자를 소비하는 커서 위치 반환.”””
+            pos, disp_pos = 0, 0
+            _prev_space = False
+            while pos < len(text) and disp_pos < target_len:
+                if text[pos:pos + seg_len] == seg_tag:
+                    pos += seg_len
+                    _prev_space = True
+                elif text[pos] == ‘ ‘ and _prev_space:
+                    pos += 1  # SEG 제거 후 남는 연속 공백 스킵
+                elif skip_re and skip_re.match(text[pos]):
+                    pos += 1  # 정규화로 제거된 문자(따옴표 등) 건너뜀
+                else:
+                    _prev_space = (text[pos] == ‘ ‘)
+                    disp_pos += 1
+                    pos += 1
+            if advance_punct and pos < len(text) and text[pos] in _punct:
+                pos += 1
+            return pos
+
+        # ── prefix 매칭: 정규화 수준을 단계적으로 높여가며 시도 ────────────
         if committed_display:
-            text_no_seg = re.sub(r'\s+', ' ', text.replace(seg_tag, "")).strip()
-            if text_no_seg.startswith(committed_display) or \
-                    _norm_punct(text_no_seg).startswith(_norm_punct(committed_display)):
-                pos, disp_pos, target = 0, 0, len(committed_display)
-                _prev_space = False
-                while pos < len(text) and disp_pos < target:
-                    if text[pos:pos + seg_len] == seg_tag:
-                        pos += seg_len
-                        _prev_space = True  # SEG 경계는 공백으로 취급
-                    elif text[pos] == ' ' and _prev_space:
-                        pos += 1  # SEG 제거 후 남는 연속 공백 스킵 (committed_display와 공백 수 맞춤)
-                    else:
-                        _prev_space = (text[pos] == ' ')
-                        disp_pos += 1
-                        pos += 1
-                return pos
+            _norm_p = lambda s: re.sub(r’[.,!?;:。？！、，]’, ‘.’, s)
+            candidates = [
+                # (committed_norm,                           text_norm,                         advance_punct, skip_re)
+                (committed_display,                          text_no_seg,                        False, None),
+                (_norm_p(committed_display),                 _norm_p(text_no_seg),                False, None),
+                (committed_display.rstrip(_punct),           text_no_seg,                        True,  None),
+                (_quote_colon.sub(‘’, committed_display),    _quote_colon.sub(‘’, text_no_seg),  False, _quote_colon),
+            ]
+            for committed_norm, text_norm, advance_punct, skip_re in candidates:
+                if not committed_norm:
+                    continue
+                if not text_norm.startswith(committed_norm):
+                    continue
+                end = len(committed_norm)
+                if end < len(text_norm) and text_norm[end].isalpha():
+                    continue  # 부분 단어 매칭 방지
+                return _walk(len(committed_norm), skip_re=skip_re, advance_punct=advance_punct)
 
-        # ── 2차 fallback: SEG 카운트 기준 ───────────────────────────────
+        # ── SEG 카운트 fallback ──────────────────────────────────────────
         # committed_seg_count=0이고 committed_display가 있으면 skip:
         # DOT commit은 SEG count를 올리지 않으므로 pos=0을 리턴하면
-        # 3차 fallback이 실행되지 않아 uncommitted가 전체 텍스트가 됨
+        # uncommitted가 전체 텍스트가 됨
         if committed_seg_count > 0 or not committed_display:
             pos, found = 0, 0
             all_segs_found = True
@@ -677,57 +697,8 @@ class Qwen3ASRStreamingHandler:
                 found += 1
             if all_segs_found and pos < len(text):
                 return pos
-            # pos == len(text): 모든 SEG가 "커밋 완료"로 소비됐지만 실제로는
-            # 모델이 이전 커밋 경계 SEG + 새 미커밋 SEG를 함께 출력해
-            # count가 우연히 일치한 경우. 3차 fallback으로 fall-through해
-            # prefix 매칭으로 커서를 재확인한다.
 
-        # ── 3차 fallback: 구두점 제거 후 prefix 매칭 ────────────────────
-        if committed_display:
-            stripped = committed_display.rstrip(_punct)
-            if stripped:
-                text_no_seg = text.replace(seg_tag, "")
-                if text_no_seg.startswith(stripped):
-                    end = len(stripped)
-                    # 부분 단어 매칭 방지: 매칭 직후 문자가 알파이면 거짓 매칭
-                    if end >= len(text_no_seg) or not text_no_seg[end].isalpha():
-                        pos, disp_pos, target = 0, 0, len(stripped)
-                        while pos < len(text) and disp_pos < target:
-                            if text[pos:pos + seg_len] == seg_tag:
-                                pos += seg_len
-                                if pos < len(text) and text[pos] == ' ':
-                                    pos += 1
-                            else:
-                                disp_pos += 1
-                                pos += 1
-                        # committed 구두점이 다른 구두점으로 revision된 경우 한 문자 건너뜀
-                        if pos < len(text) and text[pos] in _punct:
-                            pos += 1
-                        return pos
-
-        # ── 4차 fallback: 따옴표·콜론 제거 후 prefix 매칭 ─────────────────
-        # 모델이 "说："要..." → "说要..." 처럼 인용 부호·콜론을 삭제/추가하는
-        # revision 시에도 커서를 복원한다.
-        if committed_display:
-            _quote_colon = re.compile(r'[“”‘’"\'：:]+')
-            committed_norm = _quote_colon.sub('', committed_display)
-            text_no_seg_norm = _quote_colon.sub('', text.replace(seg_tag, ""))
-            if committed_norm and text_no_seg_norm.startswith(committed_norm):
-                target = len(committed_norm)
-                disp_pos, pos = 0, 0
-                while pos < len(text) and disp_pos < target:
-                    if text[pos:pos + seg_len] == seg_tag:
-                        pos += seg_len
-                        if pos < len(text) and text[pos] == ' ':
-                            pos += 1
-                    elif _quote_colon.match(text[pos]):
-                        pos += 1
-                    else:
-                        disp_pos += 1
-                        pos += 1
-                return pos
-
-        return -1  # 모든 fallback 실패
+        return -1
 
     @staticmethod
     def _uncommitted_from(current_text: str, committed_display: str,
@@ -851,6 +822,14 @@ class Qwen3ASRStreamingHandler:
         finally:
             self._in_generate_loop = False
             self._last_generate_end_time = time.perf_counter()
+        # 이번 청크에서 SEG 커밋이 발생했으면 committed_token_len 업데이트
+        # → 다음 청크의 rollback이 커밋된 SEG 경계를 넘지 못하도록 고정
+        if slot.get("committed_display", "") != committed_display_before:
+            _cur_ids = self.asr.processor.tokenizer.encode(slot["state"]._raw_decoded)
+            slot["state"].committed_token_len = max(
+                slot["state"].committed_token_len,
+                max(0, len(_cur_ids) - slot["state"].unfixed_token_num),
+            )
         # audio_accum이 늘었을 때만 실제 추론이 실행된 것
         if slot["state"].audio_accum.shape[0] > _accum_len_before:
             _decoded_text = self._strip_asr_text((slot["state"].text or "").strip())
@@ -1167,6 +1146,8 @@ class Qwen3ASRStreamingHandler:
         # raw ASR 텍스트 기준으로 커서를 확정하므로 GPT 교정 결과와 무관하게 안전.
         committed_items = []  # list of (sentence_display, trigger_reason)
         latest_text: Optional[str] = None  # flush_lock 안에서 읽은 스냅샷, 호출자에게 반환
+        # ASR revision으로 trailing punct가 바뀌어도 (거고, → 거고) 같은 문장으로 취급
+        _asr_key = lambda s: ' '.join(s.split()).rstrip('.,!?;:。？！').strip()
 
         async with slot["flush_lock"]:
             async with self.asr_lock:
@@ -1181,7 +1162,7 @@ class Qwen3ASRStreamingHandler:
                 for sentence_raw, trigger_reason in sentences_to_commit:
                     sentence_display = sentence_raw.replace("<SEG>", "").strip()
                     _audio_span = self.current_time - slot.get("audio_anchor_sec", 0.0)
-                    if ' '.join(sentence_display.split()) in slot.get("committed_asr_set", set()):
+                    if _asr_key(sentence_display) in slot.get("committed_asr_set", set()):
                         self.log.info(
                             f"[COMMIT-SKIP] reason=cross-dedup slot={slot_key} span={_audio_span:.2f}s text={sentence_display!r}"
                         )
@@ -1202,7 +1183,7 @@ class Qwen3ASRStreamingHandler:
                     slot["committed_display"] = latest_ns[:pos].strip()
                     slot["committed_len"] = len(latest_text)
                     slot["audio_anchor_sec"] = self.current_time
-                    slot["committed_asr_set"].update(' '.join(t.split()) for t, _ in committed_items)
+                    slot["committed_asr_set"].update(_asr_key(t) for t, _ in committed_items)
             else:
                 cursor = self._committed_cursor(
                     latest_text,
@@ -1223,7 +1204,7 @@ class Qwen3ASRStreamingHandler:
                 for sentence_raw, trigger_reason in sentences_to_commit:
                     sentence_display = sentence_raw.replace("<SEG>", "").strip()
                     _audio_span = self.current_time - slot.get("audio_anchor_sec", 0.0)
-                    if ' '.join(sentence_display.split()) in slot.get("committed_asr_set", set()):
+                    if _asr_key(sentence_display) in slot.get("committed_asr_set", set()):
                         self.log.info(
                             f"[COMMIT-SKIP] reason=cross-dedup slot={slot_key} span={_audio_span:.2f}s text={sentence_display!r}"
                         )
@@ -1247,7 +1228,7 @@ class Qwen3ASRStreamingHandler:
                     ).strip()
                     slot["committed_seg_count"] += sum(1 for _, tr in committed_items if tr == "seg")
                     slot["audio_anchor_sec"] = self.current_time
-                    slot["committed_asr_set"].update(' '.join(t.split()) for t, _ in committed_items)
+                    slot["committed_asr_set"].update(_asr_key(t) for t, _ in committed_items)
 
         if not committed_items:
             return None
@@ -1379,7 +1360,6 @@ class Qwen3ASRStreamingHandler:
             _pre_seg_count = self.stream_slots[old_active]["committed_seg_count"]
             _pre_text = (_pre_state.text or "").strip()
             _pre_uncommitted = self._uncommitted_from(_pre_text, _pre_committed, _pre_seg_count)
-            self.log.info(f"[VAD-DECODING] slot={old_active} text={_pre_text!r}")
             self.log.info(
                 f"[VAD-HISTORY] slot={old_active} "
                 f"committed={_pre_committed!r} uncommitted={_pre_uncommitted!r}"
@@ -1478,7 +1458,7 @@ class Qwen3ASRStreamingHandler:
                 text, current_lang, target,
                 context=ctx_pairs if ctx_pairs else None,
             )
-            return corrected, translation, gpt_detected or src_code, {}
+            return corrected, translation, src_code or gpt_detected, {}
 
         # Google Translate 경로
         if self.corrector and self.use_correction:
