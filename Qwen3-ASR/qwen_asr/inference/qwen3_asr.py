@@ -17,7 +17,10 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Union
 
 import asyncio
+import logging
 import time
+
+logger = logging.getLogger(__name__)
 import uuid
 
 import numpy as np
@@ -737,10 +740,7 @@ class Qwen3ASRModel:
             committed_str = state._raw_decoded[:last_seg_pos + len("<SEG>")]
             end_idx = len(self.processor.tokenizer.encode(committed_str))
         else:
-            end_idx = max(0, len(cur_ids) - int(state.unfixed_token_num))
-
-        # 커밋된 SEG 경계를 넘어 롤백하지 않음
-        end_idx = max(end_idx, state.committed_token_len)
+            end_idx = 0
 
         while True:
             start_idx = max(0, end_idx - MAX_STREAMING_PREFIX_TOKENS)
@@ -876,6 +876,14 @@ class Qwen3ASRModel:
                 prev_ids = self.processor.tokenizer.encode(state._raw_decoded)
                 committed_ids = prev_ids[:state._prefix_end_idx]
                 committed_text = self.processor.tokenizer.decode(committed_ids)
+                logger.info(
+                    f"[REASSEMBLY] chunk={state.chunk_id} prefix_end_idx={state._prefix_end_idx} "
+                    f"prev_ids_len={len(prev_ids)} committed_ids_len={len(committed_ids)}\n"
+                    f"  OLD _raw_decoded={state._raw_decoded!r}\n"
+                    f"  committed_text   ={committed_text!r}\n"
+                    f"  gen_text         ={gen_text!r}\n"
+                    f"  NEW _raw_decoded ={committed_text + gen_text!r}"
+                )
                 state._raw_decoded = committed_text + gen_text
             else:
                 state._raw_decoded = gen_text

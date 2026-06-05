@@ -135,3 +135,12 @@ run_*.sh
 run_*.log
 # ASR session logs (runtime data)
 logs/asr_logs/
+
+# Runtime logs / temp outputs
+.codegraph/
+build_output*.txt
+pkg_log.txt
+logs/*.log
+logs/*.tar.gz
+logs/*.png
+logs/session_*.json

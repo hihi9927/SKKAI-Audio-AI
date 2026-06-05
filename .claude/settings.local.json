@@ -142,7 +142,19 @@
       "Bash(git -C d:/STiTy-main diff -- Qwen3-ASR/examples/streaming_websocket_server.py Qwen3-ASR/qwen_asr/inference/qwen3_asr.py)",
       "Bash(git -C d:/STiTy-main diff -- .claude/settings.local.json)",
       "Bash(git -C d:/STiTy-main diff --stat -- logs/asr_server.log)",
-      "Bash(git -C d:/STiTy-main add Qwen3-ASR/examples/streaming_websocket_server.py Qwen3-ASR/qwen_asr/inference/qwen3_asr.py .claude/settings.local.json)"
+      "Bash(git -C d:/STiTy-main add Qwen3-ASR/examples/streaming_websocket_server.py Qwen3-ASR/qwen_asr/inference/qwen3_asr.py .claude/settings.local.json)",
+      "Bash(git -C d:/STiTy-main commit -m ' *)",
+      "Bash(git -C d:/STiTy-main push)",
+      "Bash(Get-Item \"d:\\\\STiTy-main\\\\logs\\\\asr_server_recent.log\")",
+      "Bash(ssh -i \"C:\\\\Users\\\\gyuye\\\\.ssh\\\\Audio_AI.pem\" -o StrictHostKeyChecking=no ubuntu@15.165.227.114 \"tail -n +20043 ~/STiTy/logs/asr_server.log\" > \"d:\\\\STiTy-main\\\\logs\\\\asr_server_recent.log\")",
+      "Bash(awk '{print $1, $2, $\\(NF-3\\), $\\(NF-1\\)}')",
+      "Bash(awk 'NR>1{if\\($1==\"A\"&&prev==\"B\"\\)print NR\": B->A, prev=\"NR-1; if\\($1==\"B\"&&prev==\"A\"\\)prev=$1;else prev=$1} {prev=$1}')",
+      "Bash(awk '{print $1\" \"$2}')",
+      "Bash(awk 'NR>1{if\\($0<prev\\) print \"OUT OF ORDER at line \"NR\": \"$0\" after \"prev; prev=$0} {prev=$0}')",
+      "Bash(curl -s https://ifconfig.me)",
+      "PowerShell(aws ec2 describe-instances --filters \"Name=ip-address,Values=15.165.227.114\" --query \"Reservations[].Instances[].SecurityGroups\" --output json)",
+      "Bash(Get-Content \"d:\\\\STiTy-main\\\\logs\\\\asr_server.log\" -Tail 80)",
+      "Read(//d/STiTy-main/logs/**)"
     ],
     "deny": [],
     "ask": [],
@@ -151,7 +163,8 @@
       "\\tmp",
       "d:\\STiTy-main\\logs\\tmp",
       "d:\\STiTy-main",
-      "D:\\STiTy-main"
+      "D:\\STiTy-main",
+      "d:\\STiTy-main\\logs"
     ]
   },
   "enableAllProjectMcpServers": true
