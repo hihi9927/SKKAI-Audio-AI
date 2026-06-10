@@ -12,6 +12,7 @@ seg_trans : 각 세그먼트 번역을 공백으로 이어붙인 결과 (COMET h
 
 import json
 import os
+import re
 import time
 import argparse
 from pathlib import Path
@@ -59,8 +60,32 @@ FULL_SYSTEM_PROMPT = (
 )
 
 
-def translate_full(client: OpenAI, text: str, model: str) -> str | None:
+def _chat_translate(client: OpenAI, system_prompt: str, user_content: str, model: str, provider: str) -> tuple[str, float]:
+    """Chat Completions API로 번역. (결과, 소요시간_초) 반환."""
+    kwargs = dict(
+        model=model,
+        messages=[
+            {"role": "system",    "content": system_prompt},
+            {"role": "user",      "content": user_content},
+            {"role": "assistant", "content": ""},  # prefill: 설명 없이 번역만 출력 유도
+        ],
+        temperature=0,
+    )
+    if provider == "ollama":
+        kwargs["extra_body"] = {"think": False}
+    t0 = time.perf_counter()
+    response = client.chat.completions.create(**kwargs)
+    elapsed = time.perf_counter() - t0
+    return response.choices[0].message.content.strip(), elapsed
+
+
+def translate_full(client: OpenAI, text: str, model: str, provider: str = "openai") -> str | None:
     try:
+        if provider == "ollama":
+            result, elapsed = _chat_translate(client, FULL_SYSTEM_PROMPT, text, model, provider)
+            print(f"    [full {elapsed:.2f}s]")
+            return result
+        t0 = time.perf_counter()
         response = client.responses.create(
             model=model,
             instructions=FULL_SYSTEM_PROMPT,
@@ -68,6 +93,7 @@ def translate_full(client: OpenAI, text: str, model: str) -> str | None:
             reasoning={"effort": "none"},
             temperature=0,
         )
+        print(f"    [full {time.perf_counter() - t0:.2f}s]")
         return response.output_text.strip()
     except Exception as e:
         print(f"  [full 번역 실패] {e}")
@@ -79,6 +105,7 @@ def translate_segments_with_context(
     segments: list[str],
     model: str,
     delay: float = 0.3,
+    provider: str = "openai",
 ) -> list[str | None]:
     """
     세그먼트를 순서대로 번역.
@@ -86,7 +113,7 @@ def translate_segments_with_context(
     - 전체 원문(entry["text"])은 절대 GPT에 전달하지 않음
     - translations 리스트는 이 함수 호출마다 새로 초기화 → 파일(entry) 단위로 컨텍스트 리셋
     """
-    translations: list[str | None] = []  # 파일 단위 초기화 — 이전 entry 컨텍스트 미전달
+    translations: list[str | None] = []
 
     for i, seg in enumerate(segments):
         if i == 0:
@@ -96,7 +123,7 @@ def translate_segments_with_context(
             context_lines = []
             for j in range(i):
                 if translations[j] is None:
-                    continue  # 실패 세그먼트는 컨텍스트에서 제외
+                    continue
                 context_lines.append(f"[{j+1}] KO: {segments[j]} → EN: {translations[j]}")
             context_str = "\n".join(context_lines)
 
@@ -109,17 +136,22 @@ def translate_segments_with_context(
             )
 
         try:
-            response = client.responses.create(
-                model=model,
-                instructions=system_prompt,
-                input=user_content,
-                reasoning={"effort": "none"},
-            temperature=0,
-            )
-            t = response.output_text.strip()
+            if provider == "ollama":
+                t, elapsed = _chat_translate(client, system_prompt, user_content, model, provider)
+            else:
+                t0 = time.perf_counter()
+                response = client.responses.create(
+                    model=model,
+                    instructions=system_prompt,
+                    input=user_content,
+                    reasoning={"effort": "none"},
+                    temperature=0,
+                )
+                elapsed = time.perf_counter() - t0
+                t = response.output_text.strip()
             translations.append(t)
             print(f"    seg[{i+1}] KO: {seg}")
-            print(f"    seg[{i+1}] EN: {t}")
+            print(f"    seg[{i+1}] EN: {t}  [{elapsed:.2f}s]")
         except Exception as e:
             print(f"    [seg[{i+1}] 번역 실패] {e}")
             translations.append(None)
@@ -141,8 +173,12 @@ def main():
                         help="출력 파일명 (기본: 입력과 동일 — 덮어씀)")
     parser.add_argument("--input-dir", type=str, default=str(_results_dir),
                         help="입력 파일 디렉토리")
-    parser.add_argument("--model",     type=str, default="gpt-5.4-nano",
-                        help="OpenAI 모델명")
+    parser.add_argument("--model",     type=str, default=None,
+                        help="모델명 (openai 기본값: gpt-5.4-nano, ollama 기본값: exaone3.5:32b)")
+    parser.add_argument("--provider",  type=str, default="openai", choices=["openai", "ollama"],
+                        help="API 제공자 (openai 또는 ollama)")
+    parser.add_argument("--ollama-host", type=str, default=None,
+                        help="Ollama 호스트 (기본값: OLLAMA_HOST 환경변수 또는 localhost:11434)")
     parser.add_argument("--api-key",   type=str, default=None,
                         help="OpenAI API 키 (미입력 시 OPENAI_API_KEY 환경변수 사용)")
     parser.add_argument("--delay",     type=float, default=0.3,
@@ -154,11 +190,22 @@ def main():
     parser.set_defaults(resume=True)
     args = parser.parse_args()
 
-    api_key = args.api_key or os.environ.get("OPENAI_API_KEY")
-    if not api_key:
-        raise ValueError("OpenAI API 키가 필요합니다. --api-key 또는 OPENAI_API_KEY 환경변수를 설정하세요.")
+    if args.provider == "ollama":
+        host = args.ollama_host or os.environ.get("OLLAMA_HOST", "localhost:11434")
+        client = OpenAI(base_url=f"http://{host}/v1", api_key="ollama")
+        model = args.model or "exaone3.5:32b"
+        prefix = re.sub(r'[.\-]', '_', model.split(':')[0])
+    else:
+        api_key = args.api_key or os.environ.get("OPENAI_API_KEY")
+        if not api_key:
+            raise ValueError("OpenAI API 키가 필요합니다. --api-key 또는 OPENAI_API_KEY 환경변수를 설정하세요.")
+        client = OpenAI(api_key=api_key)
+        model = args.model or "gpt-5.4-nano"
+        prefix = "gpt"
 
-    client = OpenAI(api_key=api_key)
+    field_full = f"{prefix}_full_trans"
+    field_seg  = f"{prefix}_seg_trans"
+    print(f"저장 필드: {field_full}, {field_seg}")
 
     input_path  = Path(args.input_dir) / args.input
     output_path = input_path if args.output is None else Path(args.input_dir) / args.output
@@ -168,8 +215,8 @@ def main():
 
     total = len(data)
     for i, entry in enumerate(data):
-        has_full = bool(entry.get("gpt_full_trans"))
-        has_seg  = bool(entry.get("gpt_seg_trans"))
+        has_full = bool(entry.get(field_full))
+        has_seg  = bool(entry.get(field_seg))
 
         if args.resume and has_full and has_seg:
             print(f"[{i+1}/{total}] 건너뜀: {entry['file']}")
@@ -182,30 +229,28 @@ def main():
         print(f"[{i+1}/{total}] {entry['file']}")
         print(f"  원문: {entry['text']}")
 
-        # ── gpt_full_trans ──────────────────────────────────────────────────
+        # ── full_trans ──────────────────────────────────────────────────────
         if not args.skip_full and not (args.resume and has_full):
-            entry["gpt_full_trans"] = translate_full(client, entry["text"], args.model)
-            print(f"  gpt_full: {entry['gpt_full_trans']}")
+            entry[field_full] = translate_full(client, entry["text"], model, args.provider)
+            print(f"  {field_full}: {entry[field_full]}")
             if args.delay > 0:
                 time.sleep(args.delay)
 
-        # ── gpt_seg_trans ───────────────────────────────────────────────────
+        # ── seg_trans ───────────────────────────────────────────────────────
         if not (args.resume and has_seg):
             seg_text = entry["seg_text"]
             segments = [s.strip() for s in seg_text.split("<SEG>") if s.strip()]
 
             if len(segments) <= 1:
-                # 분절 없으면 gpt_full_trans와 동일하게 처리
-                entry["gpt_seg_trans"] = entry.get("gpt_full_trans")
-                print(f"  seg : (분절 없음, gpt_full_trans 사용)")
+                entry[field_seg] = entry.get(field_full)
+                print(f"  {field_seg}: (분절 없음, {field_full} 사용)")
             else:
                 translations = translate_segments_with_context(
-                    client, segments, args.model, args.delay
+                    client, segments, model, args.delay, args.provider
                 )
-                # None인 세그먼트는 제외하고 이어붙임
                 valid = [t for t in translations if t is not None]
-                entry["gpt_seg_trans"] = " ".join(valid) if valid else None
-                print(f"  seg : {entry['gpt_seg_trans']}")
+                entry[field_seg] = " ".join(valid) if valid else None
+                print(f"  {field_seg}: {entry[field_seg]}")
 
         output_path.write_text(json.dumps(raw, ensure_ascii=False, indent=2), encoding="utf-8")
 

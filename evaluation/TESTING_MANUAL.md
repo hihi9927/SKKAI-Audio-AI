@@ -156,6 +156,38 @@ python evaluation/KtelSpeech/test_qwen3_ktelspeech.py \
 
 ---
 
+### 3.3.1 KsponSpeech (자유발화, Korean)
+
+KsponSpeech eval_clean 클립으로 구성됩니다.  
+오디오: raw PCM (s16le, 16 kHz, mono). 클립마다 새 WebSocket 연결을 맺어 컨텍스트 오염을 방지합니다. 평가 지표: **CER** (문자 오류율).
+
+```bash
+# 1) 서버 시작 (별도 터미널)
+python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py \
+  --no-idle-shutdown \
+  --log-file "evaluation/KsponSpeech/results/baseline(1.0.0)/sample/run_01/logs/server.log"
+
+# 2) 테스트 실행
+python evaluation/KsponSpeech/test_qwen3_kspon.py \
+  --data-json evaluation/KsponSpeech/transcribe/eval_clean_1000.json \
+  --data-dir evaluation/KsponSpeech/data/eval_clean \
+  --model "baseline(1.0.0)" \
+  --scope sample \
+  --tag run_01 \
+  --description "테스트 설명" \
+  --trailing-silence-ms 5500
+```
+
+> **참고:**
+> - `--data-json`: 레이블 JSON 파일. `eval_clean_1000.json`(1000개, 빠른 실행) 또는 `eval_clean.json`(전체).
+> - `--data-dir`: PCM 오디오 파일이 있는 디렉토리.
+> - `--src-lang ko`가 기본값이므로 생략 가능합니다.
+> - `--limit 100`으로 일부 클립만 빠르게 테스트할 수 있습니다.
+
+결과 위치: `evaluation/KsponSpeech/results/{model}/{scope}/{tag}/`
+
+---
+
 ### 3.4 AMI
 
 서버를 먼저 시작할 때 `--tag`를 미리 고정하고 `--log-file`을 맞춰줍니다.

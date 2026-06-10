@@ -49,7 +49,10 @@ def get_pcm_path(data_dir: Path, file_id: str) -> Path:
 
 
 def load_pcm(path: Path) -> np.ndarray:
-    return np.frombuffer(path.read_bytes(), dtype=np.int16)
+    buf = path.read_bytes()
+    if len(buf) % 2:          # 홀수 바이트(eval PCM) → 마지막 1바이트 버림
+        buf = buf[:-1]
+    return np.frombuffer(buf, dtype=np.int16)
 
 
 def trim_and_save_wav(pcm: np.ndarray, end_time: float, dst: Path, sr: int = PCM_SR):
@@ -153,6 +156,11 @@ def main():
     parser.add_argument("--data-dir",  default=str(DATA_DIR))
     parser.add_argument("--split-dir", default=str(SPLIT_DIR))
     parser.add_argument("--output",    default=str(OUTPUT_JSON))
+    parser.add_argument("--skipped-output", default=None,
+                        help="split 불가(너무 짧음 등)로 스킵된 소스 목록 출력 경로. 교차(원본 흡수)용. "
+                             "미지정 시 --output과 같은 폴더에 *_skipped.json")
+    parser.add_argument("--flat-pcm",  action="store_true",
+                        help="data_dir/{file}.pcm 평면 구조 사용 (eval E-파일용). 미지정 시 KsponSpeech_NNNN/ 폴더 구조")
     parser.add_argument("--seed",      type=int, default=42)
     parser.add_argument("--device",    default="cuda" if torch.cuda.is_available() else "cpu")
     parser.add_argument("--resume",    action="store_true", default=True)
@@ -173,15 +181,29 @@ def main():
         raw = json.load(f)
     src_data = raw['data'] if isinstance(raw, dict) else raw
 
+    # 스킵(너무 짧음 등 split 불가) 소스 출력 경로 — 교차(원본 흡수)용
+    if args.skipped_output:
+        skipped_path = Path(args.skipped_output)
+    else:
+        skipped_path = output_path.with_name(output_path.stem + "_skipped.json")
+
     if args.resume and output_path.exists():
         with open(output_path, encoding='utf-8') as f:
             out_raw = json.load(f)
         out_data = out_raw['data'] if isinstance(out_raw, dict) else out_raw
         done_files = {e['original_file'] for e in out_data}
-        print(f"Resume: 이미 처리된 {len(done_files)}건 건너뜀")
+        # 스킵 기록도 resume
+        if skipped_path.exists():
+            sk_raw = json.loads(skipped_path.read_text(encoding='utf-8'))
+            skipped_records = sk_raw['data'] if isinstance(sk_raw, dict) else sk_raw
+            done_files |= {e['file'] for e in skipped_records}
+        else:
+            skipped_records = []
+        print(f"Resume: 이미 처리된 {len(done_files)}건 건너뜀 (split {len(out_data)} / skip {len(skipped_records)})")
     else:
         out_data = []
         done_files = set()
+        skipped_records = []
 
     print(f"Aligner 로드 중: {args.model}")
     sys.path.insert(0, str(_STiTy_BASE / "Qwen3-ASR"))
@@ -200,6 +222,16 @@ def main():
             json.dumps({"data": out_data}, ensure_ascii=False, indent=2),
             encoding='utf-8',
         )
+        skipped_path.write_text(
+            json.dumps({"data": skipped_records}, ensure_ascii=False, indent=2),
+            encoding='utf-8',
+        )
+
+    def record_skip(file_id, text, seg_text, reason):
+        # split 불가 소스 → 원본(full)으로 교차 흡수할 수 있게 seg_text 보존
+        skipped_records.append({
+            "file": file_id, "text": text, "seg_text": seg_text, "skip_reason": reason,
+        })
 
     total = len(src_data)
     processed = skipped = no_valid_cut = 0
@@ -226,6 +258,8 @@ def main():
         if n_eojeols < 3:
             print(f" → 어절 수 {n_eojeols}개, 스킵")
             no_valid_cut += 1
+            record_skip(file_id, text, seg_text, "too_short")
+            save()
             continue
 
         # 어절 경계 중에서 유효한 cut 후보 선정
@@ -240,10 +274,12 @@ def main():
         if not valid_cuts:
             print(f" → 유효 cut 없음, 스킵")
             no_valid_cut += 1
+            record_skip(file_id, text, seg_text, "no_valid_cut")
+            save()
             continue
 
         # ── PCM 로드 ───────────────────────────────────────────────
-        pcm_path = get_pcm_path(data_dir, file_id)
+        pcm_path = (data_dir / f"{file_id}.pcm") if args.flat_pcm else get_pcm_path(data_dir, file_id)
         if not pcm_path.exists():
             print(f" → PCM 없음, 스킵")
             skipped += 1
@@ -276,6 +312,8 @@ def main():
         if not valid_cuts:
             print(f" → align 토큰 수 불일치 ({n_aligned} vs {n_tokens}), 스킵")
             no_valid_cut += 1
+            record_skip(file_id, text, seg_text, "align_mismatch")
+            save()
             continue
 
         # ── 랜덤 cut (어절 경계) ───────────────────────────────────
@@ -307,8 +345,10 @@ def main():
         print(f" → cut@{k} ({end_time:.2f}s) | \"{partial_text[:40]}\"")
         processed += 1
 
-    print(f"\n완료: 처리 {processed} / 건너뜀 {skipped} / 유효 cut 없음 {no_valid_cut}")
+    save()
+    print(f"\n완료: split 생성 {processed} / 건너뜀(이미/PCM없음) {skipped} / 교차대상(스킵) {len(skipped_records)}")
     print(f"출력: {output_path}")
+    print(f"교차(원본 흡수) 대상: {skipped_path}  ({len(skipped_records)}건)")
 
 
 if __name__ == "__main__":

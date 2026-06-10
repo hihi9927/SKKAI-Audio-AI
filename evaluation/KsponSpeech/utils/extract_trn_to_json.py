@@ -41,8 +41,8 @@ def build_folder_pattern(start: int, end: int) -> re.Pattern:
 
 def clean_text(raw: str) -> str:
     t = raw
-    # (구어체)/(문어체) → 문어체 선택
-    t = re.sub(r"\([^)]*\)/\(([^)]*)\)", r"\1", t)
+    # (표준어/문어체)/(구어체) → 표준어(전자) 선택
+    t = re.sub(r"\(([^)]*)\)/\([^)]*\)", r"\1", t)
     # 단일 영문자 노이즈 마커 제거: b/, n/, o/, l/, u/ 등
     t = re.sub(r"\b[a-zA-Z]\/", "", t)
     # 반복(+), 불명확(*) 마커 제거

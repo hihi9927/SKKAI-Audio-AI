@@ -144,3 +144,22 @@ logs/*.log
 logs/*.tar.gz
 logs/*.png
 logs/session_*.json
+
+# 100h 데이터셋 빌드 — 모델/오디오/학습출력 (대용량)
+Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-ko-merged-silence/
+Qwen3-ASR/finetuning/data/KSponSpeech/eval_audio/
+Qwen3-ASR/finetuning/data/KSponSpeech/eval_split_audio/
+Qwen3-ASR/finetuning/finetuning-out-ko-silence-v2/
+Qwen3-ASR/finetuning/finetuning-out-ko-silence-v2/**
+
+# 100h 데이터셋 — 생성 데이터 (코드/문서만 추적, 데이터는 재생성 가능)
+Qwen3-ASR/finetuning/data/KSponSpeech/train.jsonl
+Qwen3-ASR/finetuning/data/KSponSpeech/val.jsonl
+Qwen3-ASR/finetuning/data/KSponSpeech/eval_clean.jsonl
+Qwen3-ASR/finetuning/data/KSponSpeech/eval_other.jsonl
+evaluation/KsponSpeech/dataset_100h/seg/
+evaluation/KsponSpeech/dataset_100h/split/
+evaluation/KsponSpeech/dataset_100h/inputs/
+evaluation/KsponSpeech/results/finetuned_silence(1.0.3)/
+evaluation/KsponSpeech/results/prev/
+evaluation/KsponSpeech/results/seg_tuning/
