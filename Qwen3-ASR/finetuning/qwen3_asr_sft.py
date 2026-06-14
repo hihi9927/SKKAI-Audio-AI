@@ -94,33 +94,41 @@ def load_audio(path: str, sr: int = 16000):
 
 
 def generate_silence_dataset(n_samples: int, output_dir: str, sr: int = 16000, prompt: str = "") -> str:
-    """무음(pure silence + white noise) WAV 파일을 생성하고 JSONL 경로를 반환."""
+    """무음(pure silence + white noise) WAV 파일을 생성하고 JSONL 경로를 반환.
+
+    인덱스(silence_00000 ~ silence_{N-1})별로 wav가 이미 있으면 재활용하고 없는 것만 생성:
+      - 기존 wav가 요청 개수 이상 → 앞 N개만 잘라서 재활용 (생성 없음)
+      - 기존 wav가 요청 개수 미만 → 부족분만 추가 생성
+    """
     os.makedirs(output_dir, exist_ok=True)
+    jsonl_path = os.path.join(output_dir, "silence_data.jsonl")
 
     # 길이 분포: 0.5s 20% / 1.0s 30% / 2.0s 30% / 3.0s 20%
     durations = [0.5, 1.0, 2.0, 3.0]
     weights   = [0.2, 0.3, 0.3, 0.2]
 
     records = []
+    reused = generated = 0
     for i in range(n_samples):
-        dur     = random.choices(durations, weights=weights)[0]
-        n_frame = int(sr * dur)
-
-        if i % 2 == 0:
-            wav = np.zeros(n_frame, dtype=np.float32)                      # pure silence
-        else:
-            wav = (np.random.randn(n_frame) * 0.002).astype(np.float32)   # white noise
-
         fpath = os.path.join(output_dir, f"silence_{i:05d}.wav")
-        sf.write(fpath, wav, sr)
+        if os.path.exists(fpath):
+            reused += 1
+        else:
+            dur     = random.choices(durations, weights=weights)[0]
+            n_frame = int(sr * dur)
+            if i % 2 == 0:
+                wav = np.zeros(n_frame, dtype=np.float32)                      # pure silence
+            else:
+                wav = (np.random.randn(n_frame) * 0.002).astype(np.float32)   # white noise
+            sf.write(fpath, wav, sr)
+            generated += 1
         records.append({"audio": fpath, "text": "", "prompt": prompt})
 
-    jsonl_path = os.path.join(output_dir, "silence_data.jsonl")
     with open(jsonl_path, "w", encoding="utf-8") as f:
         for r in records:
             f.write(json.dumps(r, ensure_ascii=False) + "\n")
 
-    print(f"[silence] {n_samples}개 생성 → {jsonl_path}")
+    print(f"[silence] {n_samples}개 (재활용 {reused} + 생성 {generated}) → {jsonl_path}")
     return jsonl_path
 
 
@@ -270,9 +278,10 @@ def make_compute_metrics(processor):
             decoded_labels.append(l_str)
 
         if not decoded_labels:
-            return {"wer": 1.0, "token_accuracy": 0.0, "seg_accuracy": 0.0}
+            return {"wer": 1.0, "cer": 1.0, "token_accuracy": 0.0, "seg_accuracy": 0.0}
 
         wer = jiwer.wer(decoded_labels, decoded_preds)
+        cer = jiwer.cer(decoded_labels, decoded_preds)
         token_accuracy = correct_tokens / total_tokens if total_tokens > 0 else 0.0
         seg_accuracy = correct_seg / total_seg if total_seg > 0 else 0.0
         # label에 실제로 seg_token_id가 있는지, 모델이 뭘 예측하는지 샘플 확인
@@ -289,6 +298,7 @@ def make_compute_metrics(processor):
         print(f"[val] total_seg={total_seg}, correct_seg={correct_seg}, seg_accuracy={seg_accuracy}")
         return {
             "wer": round(wer, 4),
+            "cer": round(cer, 4),
             "token_accuracy": round(token_accuracy, 4),
             "seg_accuracy": round(seg_accuracy, 4),
         }
@@ -390,10 +400,13 @@ def parse_args():
     p.add_argument("--batch_size", type=int, default=8)
     p.add_argument("--grad_acc", type=int, default=16)
     p.add_argument("--lr", type=float, default=1e-4)
+    p.add_argument("--weight_decay", type=float, default=0.0)
     p.add_argument("--epochs", type=float, default=3)
     p.add_argument("--log_steps", type=int, default=10)
     p.add_argument("--lr_scheduler_type", type=str, default="cosine")
     p.add_argument("--warmup_ratio", type=float, default=0.03)
+    p.add_argument("--gradient_checkpointing", type=int, default=1,
+                   help="활성값 메모리 절감(50~70%↓, 속도 20~30%↓). 1=on, 0=off")
 
     # DataLoader
     p.add_argument("--num_workers", type=int, default=8)
@@ -405,6 +418,15 @@ def parse_args():
     p.add_argument("--save_strategy", type=str, default="steps")
     p.add_argument("--save_steps", type=int, default=20)
     p.add_argument("--save_total_limit", type=int, default=10)
+
+    # Speed / best-model
+    p.add_argument("--attn_impl", type=str, default="sdpa",
+                   choices=["sdpa", "flash_attention_2", "eager"],
+                   help="attention 구현 (sdpa 권장, eager는 느림)")
+    p.add_argument("--group_by_length", type=int, default=1,
+                   help="유사 길이끼리 배치(패딩 낭비 감소). 1=on")
+    p.add_argument("--load_best", type=int, default=1,
+                   help="학습 종료 시 best(eval_loss) 체크포인트 로드/보존. 1=on")
 
     # Resume
     p.add_argument("--resume_from", type=str, default="")
@@ -512,7 +534,9 @@ def main():
               f"(원본 {len(ds['train']) - args_cli.silence_samples} + 무음 {args_cli.silence_samples})")
 
         if "validation" in ds:
-            val_silence_n = max(1, round(len(ds["validation"]) * 0.15 / 0.85))
+            # val 무음 비율을 train과 동일하게 유지 (기존 하드코딩 15% → train 비율)
+            _sil_ratio = args_cli.silence_samples / max(1, len(raw_ds["train"]))
+            val_silence_n = max(1, round(len(ds["validation"]) * _sil_ratio))
             val_silence_jsonl = generate_silence_dataset(
                 val_silence_n,
                 os.path.join(args_cli.silence_dir, "val"),
@@ -532,6 +556,7 @@ def main():
         per_device_train_batch_size=args_cli.batch_size,
         gradient_accumulation_steps=args_cli.grad_acc,
         learning_rate=args_cli.lr,
+        weight_decay=args_cli.weight_decay,
         num_train_epochs=args_cli.epochs,
         logging_steps=args_cli.log_steps,
         lr_scheduler_type=args_cli.lr_scheduler_type,
@@ -547,8 +572,13 @@ def main():
         eval_strategy="steps" if args_cli.eval_file else "no",
         eval_steps=args_cli.save_steps if args_cli.eval_file else None,
         do_eval=bool(args_cli.eval_file),
+        load_best_model_at_end=bool(args_cli.eval_file and args_cli.load_best),
+        metric_for_best_model="eval_loss",
+        greater_is_better=False,
         bf16=use_bf16,
         fp16=not use_bf16,
+        gradient_checkpointing=bool(args_cli.gradient_checkpointing),
+        gradient_checkpointing_kwargs={"use_reentrant": False} if args_cli.gradient_checkpointing else None,
         ddp_find_unused_parameters=False,
         remove_unused_columns=False,
         label_names=["labels"],
