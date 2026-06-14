@@ -626,35 +626,35 @@ class Qwen3ASRStreamingHandler:
     @staticmethod
     def _committed_cursor(text: str, committed_display: str,
                           committed_seg_count: int = 0) -> int:
-        “””committed 영역 끝의 커서 위치(int)를 반환.
+        """committed 영역 끝의 커서 위치(int)를 반환.
 
         정규화 수준을 단계적으로 높여가며 prefix 매칭을 시도한 뒤,
         모두 실패하면 SEG 카운트 기준으로 fallback한다.
         모든 fallback 실패 시 -1(sentinel) 반환.
-        “””
-        seg_tag = “<SEG>”
+        """
+        seg_tag = "<SEG>"
         seg_len = len(seg_tag)
-        _punct = ‘.,!?;:。？！’
-        _quote_colon = re.compile(r’[“”’’”\’：:]+’)
+        _punct = '.,!?;:。？！'
+        _quote_colon = re.compile("[\"\u201C\u201D'\u2018\u2019\uFF1A:]+")
 
         # SEG 제거 + 공백 정규화 — prefix 매칭 전체에서 공통 사용
-        text_no_seg = re.sub(r’\s+’, ‘ ‘, text.replace(seg_tag, “”)).strip()
+        text_no_seg = re.sub(r'\s+', ' ', text.replace(seg_tag, "")).strip()
 
         # ── 공통 커서 워커 ───────────────────────────────────────────────
         def _walk(target_len: int, skip_re=None, advance_punct: bool = False) -> int:
-            “””raw text에서 target_len개의 표시 문자를 소비하는 커서 위치 반환.”””
+            """raw text에서 target_len개의 표시 문자를 소비하는 커서 위치 반환."""
             pos, disp_pos = 0, 0
             _prev_space = False
             while pos < len(text) and disp_pos < target_len:
                 if text[pos:pos + seg_len] == seg_tag:
                     pos += seg_len
                     _prev_space = True
-                elif text[pos] == ‘ ‘ and _prev_space:
+                elif text[pos] == ' ' and _prev_space:
                     pos += 1  # SEG 제거 후 남는 연속 공백 스킵
                 elif skip_re and skip_re.match(text[pos]):
                     pos += 1  # 정규화로 제거된 문자(따옴표 등) 건너뜀
                 else:
-                    _prev_space = (text[pos] == ‘ ‘)
+                    _prev_space = (text[pos] == ' ')
                     disp_pos += 1
                     pos += 1
             if advance_punct and pos < len(text) and text[pos] in _punct:
@@ -663,13 +663,13 @@ class Qwen3ASRStreamingHandler:
 
         # ── prefix 매칭: 정규화 수준을 단계적으로 높여가며 시도 ────────────
         if committed_display:
-            _norm_p = lambda s: re.sub(r’[.,!?;:。？！、，]’, ‘.’, s)
+            _norm_p = lambda s: re.sub(r'[.,!?;:。？！、，]', '.', s)
             candidates = [
                 # (committed_norm,                           text_norm,                         advance_punct, skip_re)
                 (committed_display,                          text_no_seg,                        False, None),
                 (_norm_p(committed_display),                 _norm_p(text_no_seg),                False, None),
                 (committed_display.rstrip(_punct),           text_no_seg,                        True,  None),
-                (_quote_colon.sub(‘’, committed_display),    _quote_colon.sub(‘’, text_no_seg),  False, _quote_colon),
+                (_quote_colon.sub('', committed_display),    _quote_colon.sub('', text_no_seg),  False, _quote_colon),
             ]
             for committed_norm, text_norm, advance_punct, skip_re in candidates:
                 if not committed_norm:
