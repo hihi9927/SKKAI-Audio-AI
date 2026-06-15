@@ -89,14 +89,16 @@ class _JsonFormatter(logging.Formatter):
         return json.dumps(entry, ensure_ascii=False)
 
 
-def _configure_logging(use_json: bool = False) -> None:
+def _configure_logging(use_json: bool = False, log_file: Optional[str] = None) -> None:
     fmt: logging.Formatter = (
         _JsonFormatter() if use_json
         else logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
     )
+    target_log_file = log_file or _LOG_FILE
+    os.makedirs(os.path.dirname(os.path.abspath(target_log_file)), exist_ok=True)
     handlers: list[logging.Handler] = [
         logging.StreamHandler(),
-        logging.FileHandler(_LOG_FILE),
+        logging.FileHandler(target_log_file),
     ]
     root = logging.getLogger()
     root.handlers.clear()
@@ -2071,6 +2073,10 @@ def parse_args():
         "--log-json", action="store_true",
         help="로그를 JSON 형식으로 출력",
     )
+    parser.add_argument(
+        "--log-file", type=str, default=None,
+        help="로그 파일 경로 (미지정 시 기본 경로 사용)",
+    )
     args = parser.parse_args()
     if args.enable_dot_commit is None:
         args.enable_dot_commit = _infer_dot_commit_default(args.model)
@@ -2079,7 +2085,7 @@ def parse_args():
 
 def main():
     args = parse_args()
-    _configure_logging(use_json=args.log_json)
+    _configure_logging(use_json=args.log_json, log_file=args.log_file)
 
     config = StreamingConfig(
         model_path=args.model,
