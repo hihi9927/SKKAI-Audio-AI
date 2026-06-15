@@ -841,6 +841,10 @@ class Qwen3ASRStreamingHandler:
         # 할루시네이션 감지: 반복 직전까지 부분 커밋 후 슬롯 완전 초기화
         if slot["state"].hallucination_detected:
             slot["state"].hallucination_detected = False
+            # 환각 컷으로 현재 text가 비었으면 마지막 비어있지 않던 디코드 텍스트로 복원해 커밋한다.
+            # (짧은 발화가 침묵 재디코드+반복 환각으로 ''가 되어 통째로 버려지는 것 방지)
+            if not (slot["state"].text or "").strip() and getattr(slot["state"], "_last_nonempty_text", ""):
+                slot["state"].text = slot["state"]._last_nonempty_text
             _cut_text = self._strip_asr_text((slot["state"].text or "").strip())
             self.log.info(f"[HALLUCINATION-PARTIAL-COMMIT] slot={slot_key} text={_cut_text!r}")
             # generate 루프 안에서 _on_seg로 쌓인 GPT 태스크를 먼저 flush
@@ -1428,7 +1432,10 @@ class Qwen3ASRStreamingHandler:
             await self._asr_streaming_transcribe(tail_chunk, self.active_slot)
 
     async def finish_streaming(self):
-        pass
+        # 스트림 종료(finish/stop) 시 VAD가 커밋하지 않은 남은 텍스트를 마저 커밋한다.
+        # 짧은 발화 등으로 VAD speech_start가 안 잡히면 디코드된 텍스트가 커밋 없이 버려지는데,
+        # finish 시점에 flush해 복구한다(정상 클립은 이미 커밋돼 uncommitted가 없어 no-op).
+        await self.flush_uncommitted(force=True, reason="finish", slot_key=self.active_slot)
 
     # ── 서브클래스 훅 ──────────────────────────────────────────────────────────
 

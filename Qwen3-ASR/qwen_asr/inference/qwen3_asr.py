@@ -155,6 +155,7 @@ class ASRStreamingState:
 
     hallucination_detected: bool = False
     committed_token_len: int = 0  # 커밋된 SEG 경계 — rollback이 이 위치를 넘지 못함
+    _last_nonempty_text: str = ""  # 마지막으로 비어있지 않게 디코드된 텍스트(환각/침묵 재디코드로 비워질 때 복구용)
     _prefix_end_idx: int = 0  # _build_streaming_prefix가 산출한 end_idx — 재구성 시 committed_text 경계로 사용
 
 
@@ -890,6 +891,8 @@ class Qwen3ASRModel:
             lang, txt = parse_asr_output(state._raw_decoded, user_language=state.force_language)
             state.language = lang
             state.text = txt
+            if txt.replace("<SEG>", "").strip():
+                state._last_nonempty_text = txt
             state.chunk_id += 1
 
         return state
@@ -940,7 +943,17 @@ class Qwen3ASRModel:
         prefix = self._build_streaming_prefix(state)
 
         prompt = state.prompt_raw + prefix
-        inp = {"prompt": prompt, "multi_modal_data": {"audio": [state.audio_accum]}}
+        # 매우 짧은 오디오(예: VAD short-utterance retry의 트림 조각)는 Whisper feature
+        # extractor의 STFT reflect padding(n_fft=400, pad 200)보다 짧으면 RuntimeError로
+        # 크래시한다. 입력만 최소 길이로 zero-padding해 방지한다(state.audio_accum은 불변).
+        _MIN_FEAT_SAMPLES = 1600  # 0.1s @ 16kHz (n_fft=400 충분 상회)
+        _audio = state.audio_accum
+        if _audio.shape[0] < _MIN_FEAT_SAMPLES:
+            _audio = np.concatenate(
+                [_audio, np.zeros(_MIN_FEAT_SAMPLES - _audio.shape[0], dtype=np.float32)],
+                axis=0,
+            )
+        inp = {"prompt": prompt, "multi_modal_data": {"audio": [_audio]}}
 
         if state.allowed_languages and not state.force_language:
             from copy import copy
