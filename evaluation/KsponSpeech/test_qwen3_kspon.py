@@ -489,6 +489,27 @@ async def process_single_file(
     total_time = (last_result_time - processing_start) if last_result_time else (time.perf_counter() - processing_start)
     first_token_latency = (first_result_time - processing_start) if first_result_time else None
 
+    # 비동기 커밋(SEG/VAD)으로 final 도착 순서가 오디오 시간순과 어긋날 수 있어 정렬한다.
+    # 이 시점에서 finals/segment_events/segment_metrics는 1:1로 정렬되어 있다.
+    # 서버가 커밋(오디오) 순서로 segmentId를 부여하므로 segmentId를 1차 키로 사용한다.
+    # (audioStartSec는 token-ratio로 재구성돼 인접 SEG/VAD 간 정밀도가 떨어져 재오염을 유발)
+    if len(finals) > 1:
+        _order = sorted(
+            range(len(finals)),
+            key=lambda i: (
+                segment_metrics[i].get('segment_id')
+                if segment_metrics[i].get('segment_id') is not None
+                else float('inf'),
+                segment_metrics[i].get('audio_start_sec')
+                if segment_metrics[i].get('audio_start_sec') is not None
+                else float('inf'),
+                i,
+            ),
+        )
+        finals = [finals[i] for i in _order]
+        segment_events = [segment_events[i] for i in _order]
+        segment_metrics = [segment_metrics[i] for i in _order]
+
     return {
         'transcript': ' '.join(finals).strip(),
         'segments': finals,

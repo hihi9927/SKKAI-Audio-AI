@@ -505,6 +505,8 @@ class Qwen3ASRStreamingHandler:
         # generate() 루프 내 병렬 GPT 처리
         self._in_generate_loop: bool = False
         self._pending_gpt_tasks: list = []
+        # 진행 중인(fire-and-forget) GPT flush 태스크 핸들 — VAD/finish emit 전 await용
+        self._gpt_flush_task: Optional[asyncio.Task] = None
         self._last_generate_end_time: float = 0.0  # generate() 완료 직후 perf_counter
 
         # Commit 방식 설정
@@ -842,7 +844,7 @@ class Qwen3ASRStreamingHandler:
             self.log.info(f"[HALLUCINATION-PARTIAL-COMMIT] slot={slot_key} text={_cut_text!r}")
             # generate 루프 안에서 _on_seg로 쌓인 GPT 태스크를 먼저 flush
             if self._pending_gpt_tasks:
-                asyncio.create_task(self._flush_pending_gpt_tasks())
+                self._gpt_flush_task = asyncio.create_task(self._flush_pending_gpt_tasks())
             await self.flush_uncommitted(force=True, reason="vad", slot_key=slot_key)
             self._reset_stream_slot(slot_key)
             if slot_key == self.active_slot:
@@ -854,7 +856,7 @@ class Qwen3ASRStreamingHandler:
         _committed_text_snapshot = await self._process_slot_updates(slot_key)
         _accum_size_pre_gpt = self._slot(slot_key)["state"].audio_accum.shape[0]
         if self._pending_gpt_tasks:
-            asyncio.create_task(self._flush_pending_gpt_tasks())
+            self._gpt_flush_task = asyncio.create_task(self._flush_pending_gpt_tasks())
 
         _s = self._slot(slot_key)
         # SEG/dot commit 발생 시, 추론 결과 text가 <SEG>로 끝나면 uncommitted 없음 → 슬롯 리셋.
@@ -937,6 +939,23 @@ class Qwen3ASRStreamingHandler:
 
         async with self.asr_lock:
             self.asr_processed_cursor = self.sample_cursor
+
+    async def _drain_pending_gpt(self) -> None:
+        """진행 중인(fire-and-forget) GPT flush 태스크와 남은 pending을 모두 완료·emit한다.
+        VAD/finish 커밋(뒤 오디오)이 emit되기 전에 호출해, 앞 오디오의 SEG 커밋이 먼저
+        emit되도록 보장한다(비동기 번역 완료 순서로 인한 세그먼트 역전 방지). fire-and-forget
+        태스크가 _pending_gpt_tasks를 이미 가져간 경우 리스트는 비어있으므로, 리스트 체크가
+        아니라 태스크 핸들을 await해야 결정적으로 동작한다."""
+        t = self._gpt_flush_task
+        if t is not None and not t.done():
+            try:
+                await t
+            except Exception:
+                pass
+        self._gpt_flush_task = None
+        # 핸들이 없던(직접 발사 안 된) pending이 남아있으면 마저 flush
+        if self._pending_gpt_tasks:
+            await self._flush_pending_gpt_tasks()
 
     async def _flush_pending_gpt_tasks(self) -> None:
         """generate() 중 백그라운드로 발사된 GPT 태스크를 순서대로 await하고 emit."""
@@ -1394,6 +1413,9 @@ class Qwen3ASRStreamingHandler:
             )
             if not _post_uncommitted and _pre_uncommitted:
                 _post_state.text = _pre_text
+            # slot-switch에서 같은 발화의 SEG 커밋(앞 오디오)이 아직 emit 안 됐을 수 있으므로,
+            # VAD 커밋(뒤 오디오) 전에 먼저 완료·emit해 segment_id가 오디오 순서로 부여되게 한다.
+            await self._drain_pending_gpt()
             await self.flush_uncommitted(force=True, reason="vad", slot_key=old_active)
             self._reset_stream_slot(self.standby_slot)
             await self._on_vad_done(old_active, tail_samples=chunk.size - local_cut)

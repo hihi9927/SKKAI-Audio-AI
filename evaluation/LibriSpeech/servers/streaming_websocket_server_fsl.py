@@ -345,6 +345,23 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
     ) -> None:
         timing = extra or {}
 
+        # ── 세그먼트 순서 보정 ────────────────────────────────────────────────
+        # 앞쪽 오디오의 SEG 커밋은 (1) generate 중 번역이 백그라운드 태스크(_pending_gpt_tasks)로
+        # 발사되고 → (2) 번역 완료 후 _emit_final_payload(deferred 큐)된다. 같은 발화의 VAD/finish
+        # 커밋(뒤쪽 오디오)이 그 전에 emit되면 공유 커서(next_segment_id / segment_audio_start_sec)를
+        # 먼저 소비해 segment_id·audioStartSec가 오디오 순서와 반대로 부여된다(역전).
+        # 따라서 VAD/finish emit 직전에 ① pending SEG 번역을 완료·emit하고 ② deferred SEG를 flush해,
+        # 앞 오디오 SEG가 먼저 커서를 소비하도록 한다.
+        if reason in ("vad", "finish"):
+            # 진행 중인 SEG 번역(fire-and-forget)을 핸들 await로 결정적으로 완료시킨다.
+            # (단순 _pending_gpt_tasks 체크는 fire-and-forget가 리스트를 이미 가져가면 빈값이라 race)
+            await self._drain_pending_gpt()
+            if self._deferred_seg_emits:
+                _slot = self._slot(slot_key)
+                _state = _slot.get("state") if _slot else None
+                _tt = getattr(_state, "_last_chunk_new_tokens", 0) if _state else 0
+                await self._flush_deferred_seg_emits(_tt or 0)
+
         # VAD/finish 커밋 전용: _asr_finish_streaming 시간
         final_decode_sec = self._slot_final_decode_sec.pop(slot_key, 0.0)
         timing["final_decode_sec"] = final_decode_sec
