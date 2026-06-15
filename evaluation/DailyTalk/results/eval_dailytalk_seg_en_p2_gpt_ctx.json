@@ -14,7 +14,8 @@
         "seg_text": "Well, how does it look?",
         "gdt_full_trans": "글쎄요, 어때요?",
         "gdt_seg_trans": "글쎄요, 어때요?",
-        "gpt_seg_trans": "음, 어떻게 보여?"
+        "gpt_seg_trans": "음, 어떻게 보여?",
+        "gdt_context_trans": "글쎄요, 어때요?"
       },
       {
         "file": "1_1_d1",
@@ -22,7 +23,8 @@
         "seg_text": "It's a perfect fit.",
         "gdt_full_trans": "완벽하게 맞습니다.",
         "gdt_seg_trans": "완벽하게 맞습니다.",
-        "gpt_seg_trans": "완벽하게 맞아요."
+        "gpt_seg_trans": "완벽하게 맞아요.",
+        "gdt_context_trans": "완벽하게 맞습니다."
       },
       {
         "file": "2_0_d1",
@@ -30,7 +32,8 @@
         "seg_text": "Let me pay for it now.",
         "gdt_full_trans": "지금 결제하겠습니다.",
         "gdt_seg_trans": "지금 결제하겠습니다.",
-        "gpt_seg_trans": "지금 제가 계산할게요."
+        "gpt_seg_trans": "지금 제가 계산할게요.",
+        "gdt_context_trans": "지금 결제하겠습니다."
       },
       {
         "file": "3_1_d1",
@@ -38,7 +41,8 @@
         "seg_text": "Cash, credit card, or debit card?",
         "gdt_full_trans": "현금, 신용카드, 아니면 직불카드?",
         "gdt_seg_trans": "현금, 신용카드, 아니면 직불카드?",
-        "gpt_seg_trans": "현금, 신용카드, 아니면 체크카드요?"
+        "gpt_seg_trans": "현금, 신용카드, 아니면 체크카드요?",
+        "gdt_context_trans": "현금, 신용카드, 아니면 직불카드?"
       },
       {
         "file": "4_0_d1",
@@ -46,7 +50,8 @@
         "seg_text": "Umm I think I'll use my credit card.",
         "gdt_full_trans": "음, 신용카드를 사용할 것 같아요.",
         "gdt_seg_trans": "음, 신용카드를 사용할 것 같아요.",
-        "gpt_seg_trans": "음, 신용카드를 쓸게요."
+        "gpt_seg_trans": "음, 신용카드를 쓸게요.",
+        "gdt_context_trans": "음, 신용카드를 사용할 것 같아요."
       },
       {
         "file": "5_1_d1",
@@ -55,7 +60,8 @@
         "gdt_full_trans": "여기에 서명해 주시면 끝입니다.",
         "gdt_seg_trans": "여기에 서명해주세요. 이제 끝났습니다.",
         "gdt_comet_score": 0.9458,
-        "gpt_seg_trans": "여기에 서명해 주세요, 그리고 끝났어요."
+        "gpt_seg_trans": "여기에 서명해 주세요, 그리고 끝났어요.",
+        "gdt_context_trans": "여기에 <SEG> 서명을 해주시면 완료됩니다."
       },
       {
         "file": "6_0_d1",
@@ -63,7 +69,8 @@
         "seg_text": "Here's my John Hancock.",
         "gdt_full_trans": "여기 내 존 핸콕이 있습니다.",
         "gdt_seg_trans": "여기 내 존 핸콕이 있습니다.",
-        "gpt_seg_trans": "여기 제 서명이에요."
+        "gpt_seg_trans": "여기 제 서명이에요.",
+        "gdt_context_trans": "여기 내 존 핸콕이 있습니다."
       },
       {
         "file": "7_1_d1",
@@ -72,7 +79,8 @@
         "gdt_full_trans": "안녕. 곧 다시 방문해주세요!",
         "gdt_seg_trans": "안녕. 곧 다시 방문해주세요!",
         "gdt_comet_score": 0.9903,
-        "gpt_seg_trans": "안녕히 가세요. 다음에 또 방문해 주세요!"
+        "gpt_seg_trans": "안녕히 가세요. 다음에 또 방문해 주세요!",
+        "gdt_context_trans": "안녕. <SEG> 곧 다시 방문해주세요!"
       }
     ]
   },
@@ -84,7 +92,8 @@
         "seg_text": "What are you working on?",
         "gdt_full_trans": "무슨 일을 하고 있나요?",
         "gdt_seg_trans": "무슨 일을 하고 있나요?",
-        "gpt_seg_trans": "뭐 하고 있어?"
+        "gpt_seg_trans": "뭐 하고 있어?",
+        "gdt_context_trans": "무슨 일을 하고 있나요?"
       },
       {
         "file": "1_0_d0",
@@ -92,7 +101,8 @@
         "seg_text": "I'm figuring out my budget.",
         "gdt_full_trans": "예산을 알아보고 있어요.",
         "gdt_seg_trans": "예산을 알아보고 있어요.",
-        "gpt_seg_trans": "예산을 계산하고 있어."
+        "gpt_seg_trans": "예산을 계산하고 있어.",
+        "gdt_context_trans": "예산을 알아보고 있어요."
       },
       {
         "file": "2_1_d0",
@@ -100,7 +110,8 @@
         "seg_text": "Umm…. What budget?",
         "gdt_full_trans": "음… 어떤 예산?",
         "gdt_seg_trans": "음… 어떤 예산?",
-        "gpt_seg_trans": "음… 무슨 예산?"
+        "gpt_seg_trans": "음… 무슨 예산?",
+        "gdt_context_trans": "음… 어떤 예산?"
       },
       {
         "file": "3_0_d0",
@@ -109,7 +120,8 @@
         "gdt_full_trans": "나는 돈을 너무 많이 쓰지 않기 위해 쇼핑 예산을 세우고 있다.",
         "gdt_seg_trans": "쇼핑 예산을 세우고 있어요. 돈을 너무 많이 쓰지 않도록요.",
         "gdt_comet_score": 0.9143,
-        "gpt_seg_trans": "쇼핑 예산을 짜고 있어, 너무 많은 돈을 쓰지 않도록."
+        "gpt_seg_trans": "쇼핑 예산을 짜고 있어, 너무 많은 돈을 쓰지 않도록.",
+        "gdt_context_trans": "돈을 너무 많이 쓰지 않도록 쇼핑예산 <SEG>를 만들고 있어요."
       },
       {
         "file": "4_1_d0",
@@ -117,7 +129,8 @@
         "seg_text": "How much money can you spend?",
         "gdt_full_trans": "얼마나 많은 돈을 쓸 수 있나요?",
         "gdt_seg_trans": "얼마나 많은 돈을 쓸 수 있나요?",
-        "gpt_seg_trans": "얼마나 쓸 수 있어?"
+        "gpt_seg_trans": "얼마나 쓸 수 있어?",
+        "gdt_context_trans": "얼마나 많은 돈을 쓸 수 있나요?"
       },
       {
         "file": "5_0_d0",
@@ -125,7 +138,8 @@
         "seg_text": "I can only spend three hundred dollars a month.",
         "gdt_full_trans": "한 달에 300달러밖에 쓸 수 없어요.",
         "gdt_seg_trans": "한 달에 300달러밖에 쓸 수 없어요.",
-        "gpt_seg_trans": "한 달에 300달러밖에 쓸 수 없어."
+        "gpt_seg_trans": "한 달에 300달러밖에 쓸 수 없어.",
+        "gdt_context_trans": "한 달에 300달러밖에 쓸 수 없어요."
       },
       {
         "file": "6_1_d0",
@@ -133,7 +147,8 @@
         "seg_text": "Why only three hundred dollars?",
         "gdt_full_trans": "왜 300달러밖에 안 됩니까?",
         "gdt_seg_trans": "왜 300달러밖에 안 됩니까?",
-        "gpt_seg_trans": "왜 겨우 300달러야?"
+        "gpt_seg_trans": "왜 겨우 300달러야?",
+        "gdt_context_trans": "왜 300달러밖에 안 됩니까?"
       },
       {
         "file": "7_0_d0",
@@ -141,7 +156,8 @@
         "seg_text": "I need to save the rest.",
         "gdt_full_trans": "나머지는 저장해야 해요.",
         "gdt_seg_trans": "나머지는 저장해야 해요.",
-        "gpt_seg_trans": "나머지는 저축해야 해."
+        "gpt_seg_trans": "나머지는 저축해야 해.",
+        "gdt_context_trans": "나머지는 저장해야 해요."
       },
       {
         "file": "8_1_d0",
@@ -149,7 +165,8 @@
         "seg_text": "For what?",
         "gdt_full_trans": "무엇을 위해?",
         "gdt_seg_trans": "무엇을 위해?",
-        "gpt_seg_trans": "뭐 때문에?"
+        "gpt_seg_trans": "뭐 때문에?",
+        "gdt_context_trans": "무엇을 위해?"
       },
       {
         "file": "9_0_d0",
@@ -157,7 +174,8 @@
         "seg_text": "I need to pay my bills.",
         "gdt_full_trans": "청구서를 지불해야 해요.",
         "gdt_seg_trans": "청구서를 지불해야 해요.",
-        "gpt_seg_trans": "청구서를 내야 해."
+        "gpt_seg_trans": "청구서를 내야 해.",
+        "gdt_context_trans": "청구서를 지불해야 해요."
       },
       {
         "file": "10_1_d0",
@@ -165,7 +183,8 @@
         "seg_text": "Your budget is a good idea.",
         "gdt_full_trans": "귀하의 예산은 좋은 생각입니다.",
         "gdt_seg_trans": "귀하의 예산은 좋은 생각입니다.",
-        "gpt_seg_trans": "네 예산은 좋은 생각이야."
+        "gpt_seg_trans": "네 예산은 좋은 생각이야.",
+        "gdt_context_trans": "귀하의 예산은 좋은 생각입니다."
       },
       {
         "file": "11_0_d0",
@@ -174,7 +193,8 @@
         "gdt_full_trans": "알아요. 그러면 많은 돈이 절약될 것 같아요.",
         "gdt_seg_trans": "알아요. 그러면 많은 돈이 절약될 것 같아요.",
         "gdt_comet_score": 0.9881,
-        "gpt_seg_trans": "알아. 돈을 많이 아끼게 될 거야, 그러길 바라."
+        "gpt_seg_trans": "알아. 돈을 많이 아끼게 될 거야, 그러길 바라.",
+        "gdt_context_trans": "알아요. <SEG> 돈을 많이 절약할 수 있을 것 같아요."
       }
     ]
   },
@@ -186,7 +206,8 @@
         "seg_text": "Did you bring some lunch with you?",
         "gdt_full_trans": "점심은 좀 가져오셨나요?",
         "gdt_seg_trans": "점심은 좀 가져오셨나요?",
-        "gpt_seg_trans": "점심 좀 가져왔어?"
+        "gpt_seg_trans": "점심 좀 가져왔어?",
+        "gdt_context_trans": "점심은 좀 가져오셨나요?"
       },
       {
         "file": "1_0_d3",
@@ -195,7 +216,8 @@
         "gdt_full_trans": "네, 제가 직접 포장했어요.",
         "gdt_seg_trans": "예, 제가 직접 포장했어요.",
         "gdt_comet_score": 0.9792,
-        "gpt_seg_trans": "응, 내가 직접 싸왔어."
+        "gpt_seg_trans": "응, 내가 직접 싸왔어.",
+        "gdt_context_trans": "네, <SEG> 제가 직접 포장했어요."
       },
       {
         "file": "2_1_d3",
@@ -203,7 +225,8 @@
         "seg_text": "Wow, that looks beautiful.",
         "gdt_full_trans": "와, 정말 아름다워 보이는군요.",
         "gdt_seg_trans": "와, 정말 아름다워 보이는군요.",
-        "gpt_seg_trans": "와, 정말 아름답다."
+        "gpt_seg_trans": "와, 정말 아름답다.",
+        "gdt_context_trans": "와, 정말 아름다워 보이는군요."
       },
       {
         "file": "3_0_d3",
@@ -211,7 +234,8 @@
         "seg_text": "It's my health-conscious lunch, good for my health and beauty.",
         "gdt_full_trans": "나의 건강과 미용에 좋은, 건강을 생각한 도시락입니다.",
         "gdt_seg_trans": "나의 건강과 미용에 좋은, 건강을 생각한 도시락입니다.",
-        "gpt_seg_trans": "내 건강식 점심이야, 건강과 미용에 좋아."
+        "gpt_seg_trans": "내 건강식 점심이야, 건강과 미용에 좋아.",
+        "gdt_context_trans": "나의 건강과 미용에 좋은, 건강을 생각한 도시락입니다."
       },
       {
         "file": "4_1_d3",
@@ -219,7 +243,8 @@
         "seg_text": "Umm, I might try it myself.",
         "gdt_full_trans": "음, 제가 직접 해볼 수도 있겠네요.",
         "gdt_seg_trans": "음, 제가 직접 해볼 수도 있겠네요.",
-        "gpt_seg_trans": "음, 나도 한번 먹어볼까."
+        "gpt_seg_trans": "음, 나도 한번 먹어볼까.",
+        "gdt_context_trans": "음, 제가 직접 해볼 수도 있겠네요."
       }
     ]
   },
@@ -232,7 +257,8 @@
         "gdt_full_trans": "안녕하세요. 해외 운영자. 도와드릴까요?",
         "gdt_seg_trans": "안녕하세요. 해외 운영자. 도와드릴까요?",
         "gdt_comet_score": 0.9892,
-        "gpt_seg_trans": "안녕하세요. 해외 운영자. 도와드릴까요?"
+        "gpt_seg_trans": "안녕하세요. 해외 운영자. 도와드릴까요?",
+        "gdt_context_trans": "안녕하세요. <SEG> 해외 사업자. <SEG> 도와드릴까요?"
       },
       {
         "file": "1_1_d2",
@@ -241,7 +267,8 @@
         "gdt_full_trans": "예. 일본에 수신자 부담 전화를 걸고 싶습니다.",
         "gdt_seg_trans": "예. 일본에 수신자 부담 전화를 걸고 싶습니다.",
         "gdt_comet_score": 0.9728,
-        "gpt_seg_trans": "네. 일본으로 수신자 부담 전화를 하고 싶습니다."
+        "gpt_seg_trans": "네. 일본으로 수신자 부담 전화를 하고 싶습니다.",
+        "gdt_context_trans": "예. <SEG> 일본에 수신자 부담전화를 걸고 싶습니다."
       },
       {
         "file": "2_0_d2",
@@ -249,7 +276,8 @@
         "seg_text": "Your name, please?",
         "gdt_full_trans": "당신의 이름은 무엇입니까?",
         "gdt_seg_trans": "당신의 이름은 무엇입니까?",
-        "gpt_seg_trans": "성함이 어떻게 되시나요?"
+        "gpt_seg_trans": "성함이 어떻게 되시나요?",
+        "gdt_context_trans": "당신의 이름은 무엇입니까?"
       },
       {
         "file": "3_1_d2",
@@ -257,7 +285,8 @@
         "seg_text": "It's Helen Kent.",
         "gdt_full_trans": "헬렌 켄트입니다.",
         "gdt_seg_trans": "헬렌 켄트입니다.",
-        "gpt_seg_trans": "헬렌 켄트입니다."
+        "gpt_seg_trans": "헬렌 켄트입니다.",
+        "gdt_context_trans": "헬렌 켄트입니다."
       },
       {
         "file": "4_0_d2",
@@ -265,7 +294,8 @@
         "seg_text": "Who would you like to talk to?",
         "gdt_full_trans": "누구와 이야기하고 싶나요?",
         "gdt_seg_trans": "누구와 이야기하고 싶나요?",
-        "gpt_seg_trans": "누구와 통화하시겠습니까?"
+        "gpt_seg_trans": "누구와 통화하시겠습니까?",
+        "gdt_context_trans": "누구와 이야기하고 싶나요?"
       },
       {
         "file": "5_1_d2",
@@ -273,7 +303,8 @@
         "seg_text": "I'd like to talk to Mr. Edna Kent.",
         "gdt_full_trans": "에드나 켄트 씨와 통화하고 싶습니다.",
         "gdt_seg_trans": "에드나 켄트 씨와 통화하고 싶습니다.",
-        "gpt_seg_trans": "에드나 켄트 씨와 통화하고 싶습니다."
+        "gpt_seg_trans": "에드나 켄트 씨와 통화하고 싶습니다.",
+        "gdt_context_trans": "에드나 켄트 씨와 통화하고 싶습니다."
       },
       {
         "file": "6_0_d2",
@@ -281,7 +312,8 @@
         "seg_text": "Is that Mr. Edna Kent?",
         "gdt_full_trans": "에드나 켄트 씨인가요?",
         "gdt_seg_trans": "에드나 켄트 씨인가요?",
-        "gpt_seg_trans": "에드나 켄트 씨인가요?"
+        "gpt_seg_trans": "에드나 켄트 씨인가요?",
+        "gdt_context_trans": "에드나 켄트 씨인가요?"
       },
       {
         "file": "7_1_d2",
@@ -289,7 +321,8 @@
         "seg_text": "That's right.",
         "gdt_full_trans": "좋아요.",
         "gdt_seg_trans": "좋아요.",
-        "gpt_seg_trans": "맞습니다."
+        "gpt_seg_trans": "맞습니다.",
+        "gdt_context_trans": "좋아요."
       },
       {
         "file": "8_0_d2",
@@ -297,7 +330,8 @@
         "seg_text": "What number are you calling from, please?",
         "gdt_full_trans": "어느 번호로 전화하고 계시나요?",
         "gdt_seg_trans": "어느 번호로 전화하고 계시나요?",
-        "gpt_seg_trans": "전화번호가 어떻게 되시나요?"
+        "gpt_seg_trans": "전화번호가 어떻게 되시나요?",
+        "gdt_context_trans": "어느 번호로 전화하고 계시나요?"
       },
       {
         "file": "9_1_d2",
@@ -305,7 +339,8 @@
         "seg_text": "From code five one three four three two six seven four eight.",
         "gdt_full_trans": "코드는 5일 3 4 3 2 6 7 4 8입니다.",
         "gdt_seg_trans": "코드는 5일 3 4 3 2 6 7 4 8입니다.",
-        "gpt_seg_trans": "코드 5 1 3 4 3 2 6 7 4 8에서요."
+        "gpt_seg_trans": "코드 5 1 3 4 3 2 6 7 4 8에서요.",
+        "gdt_context_trans": "코드는 5일 3 4 3 2 6 7 4 8입니다."
       },
       {
         "file": "10_0_d2",
@@ -313,7 +348,8 @@
         "seg_text": "And the number in Japan, please?",
         "gdt_full_trans": "그리고 일본 전화번호 좀 알려주세요.",
         "gdt_seg_trans": "그리고 일본 전화번호 좀 알려주세요.",
-        "gpt_seg_trans": "그리고 일본 번호도 부탁드립니다?"
+        "gpt_seg_trans": "그리고 일본 번호도 부탁드립니다?",
+        "gdt_context_trans": "그리고 일본 전화번호 좀 알려주세요."
       },
       {
         "file": "11_1_d2",
@@ -322,7 +358,8 @@
         "gdt_full_trans": "국가번호는 81, 지역번호는 38, 숫자는 8468972입니다.",
         "gdt_seg_trans": "국가번호는 81, 지역번호는 38, 숫자는 팔넷육팔아홉칠둘입니다.",
         "gdt_comet_score": 0.8189,
-        "gpt_seg_trans": "국가 코드는 81이고, 지역 번호는 38입니다, 그리고 번호는 8 4 6 8 9 7 2입니다."
+        "gpt_seg_trans": "국가 코드는 81이고, 지역 번호는 38입니다, 그리고 번호는 8 4 6 8 9 7 2입니다.",
+        "gdt_context_trans": "국가번호는 81, 지역번호는 38, <SEG>이고 숫자는 8468972입니다."
       },
       {
         "file": "12_0_d2",
@@ -331,7 +368,8 @@
         "gdt_full_trans": "줄을 잡아주세요. 전화를 연결해 드리겠습니다.",
         "gdt_seg_trans": "줄을 잡아주세요. 전화를 연결해 드리겠습니다.",
         "gdt_comet_score": 0.9791,
-        "gpt_seg_trans": "잠시만 기다려 주세요. 전화를 연결해 드리겠습니다."
+        "gpt_seg_trans": "잠시만 기다려 주세요. 전화를 연결해 드리겠습니다.",
+        "gdt_context_trans": "줄을 잡아주세요. <SEG> 전화를 연결해 드리겠습니다."
       }
     ]
   },
@@ -343,7 +381,8 @@
         "seg_text": "Excuse me, could you tell me where you have got that music book?",
         "gdt_full_trans": "실례합니다. 그 악보집을 어디서 구했는지 알려주실 수 있나요?",
         "gdt_seg_trans": "실례합니다. 그 악보집을 어디서 구했는지 알려주실 수 있나요?",
-        "gpt_seg_trans": "실례합니다만, 그 악보를 어디서 구하셨는지 말씀해 주실 수 있나요?"
+        "gpt_seg_trans": "실례합니다만, 그 악보를 어디서 구하셨는지 말씀해 주실 수 있나요?",
+        "gdt_context_trans": "실례합니다. 그 악보집을 어디서 구했는지 알려주실 수 있나요?"
       },
       {
         "file": "1_1_d5",
@@ -352,7 +391,8 @@
         "gdt_full_trans": "틀림없이. 어디 보자. 아, 저 선반 위에 있어요.",
         "gdt_seg_trans": "틀림없이. 어디 보자. 아, 저 선반 위에 있어요.",
         "gdt_comet_score": 0.9758,
-        "gpt_seg_trans": "물론입니다. 어디 보자. 아, 저 선반에 있어요."
+        "gpt_seg_trans": "물론입니다. 어디 보자. 아, 저 선반에 있어요.",
+        "gdt_context_trans": "틀림없이. <SEG> 어디 보자. <SEG> 아, 저 선반 위에 있어요."
       },
       {
         "file": "2_0_d5",
@@ -361,7 +401,8 @@
         "gdt_full_trans": "어, 너무 높아요. 나는 그것에 도달할 수 없습니다. 저를 도와주실 수 있나요?",
         "gdt_seg_trans": "어, 너무 높아요. 나는 그것에 도달할 수 없습니다. 저를 도와주실 수 있나요?",
         "gdt_comet_score": 0.9772,
-        "gpt_seg_trans": "아, 너무 높아요. 손이 닿지 않아요. 도와주실 수 있나요?"
+        "gpt_seg_trans": "아, 너무 높아요. 손이 닿지 않아요. 도와주실 수 있나요?",
+        "gdt_context_trans": "어, 너무 높아요. <SEG> 닿을 수가 없어요. <SEG> 도와주실 수 있나요?"
       },
       {
         "file": "3_1_d5",
@@ -370,7 +411,8 @@
         "gdt_full_trans": "물론. 여기 있어요.",
         "gdt_seg_trans": "물론. 여기 있어요.",
         "gdt_comet_score": 0.992,
-        "gpt_seg_trans": "물론이죠. 여기 있습니다."
+        "gpt_seg_trans": "물론이죠. 여기 있습니다.",
+        "gdt_context_trans": "물론. <SEG> 여기 있습니다."
       },
       {
         "file": "4_0_d5",
@@ -378,7 +420,8 @@
         "seg_text": "Thank you very much.",
         "gdt_full_trans": "매우 감사합니다.",
         "gdt_seg_trans": "매우 감사합니다.",
-        "gpt_seg_trans": "대단히 감사합니다."
+        "gpt_seg_trans": "대단히 감사합니다.",
+        "gdt_context_trans": "매우 감사합니다."
       }
     ]
   },
@@ -391,7 +434,8 @@
         "gdt_full_trans": "안녕하세요 퀴푸코퍼레이션 입니다. 그 분이 장 씨인가요?",
         "gdt_seg_trans": "안녕하세요 퀴푸코퍼레이션 입니다. 그 분이 장 씨인가요?",
         "gdt_comet_score": 0.984,
-        "gpt_seg_trans": "안녕하세요, 여기는 키푸 코퍼레이션입니다. 저분이 장 씨인가요?"
+        "gpt_seg_trans": "안녕하세요, 여기는 키푸 코퍼레이션입니다. 저분이 장 씨인가요?",
+        "gdt_context_trans": "안녕하세요 퀴푸코퍼레이션 입니다. <SEG> 장 선생님이신가요?"
       },
       {
         "file": "1_1_d6",
@@ -400,7 +444,8 @@
         "gdt_full_trans": "네, 말이에요. 음, 제가 당신을 위해 할 수 있는 일이 있나요?",
         "gdt_seg_trans": "네, 말이에요. 음, 제가 당신을 위해 할 수 있는 일이 있나요?",
         "gdt_comet_score": 0.9834,
-        "gpt_seg_trans": "네, 접니다. 음, 제가 도와드릴 수 있는 게 있을까요?"
+        "gpt_seg_trans": "네, 접니다. 음, 제가 도와드릴 수 있는 게 있을까요?",
+        "gdt_context_trans": "네, 말이에요. <SEG> 음, 혹시 제가 도와드릴 수 있는 게 있나요?"
       },
       {
         "file": "2_0_d6",
@@ -409,7 +454,8 @@
         "gdt_full_trans": "내일 모레 면접에 가져가야 할 물품을 알려드리기 위해 전화드렸습니다.",
         "gdt_seg_trans": "면접에 가져가야 할 물품을 알려드리기 위해 전화드렸습니다. 모레.",
         "gdt_comet_score": 0.9107,
-        "gpt_seg_trans": "면접에 가져오셔야 할 물품들을 알려드리려고 전화드렸습니다. 모레."
+        "gpt_seg_trans": "면접에 가져오셔야 할 물품들을 알려드리려고 전화드렸습니다. 모레.",
+        "gdt_context_trans": "내일 모레 <SEG> 면접에 가져가야 할 물품을 알려드리기 위해 전화드렸습니다."
       },
       {
         "file": "3_1_d6",
@@ -417,7 +463,8 @@
         "seg_text": "What do I need to take with me?",
         "gdt_full_trans": "무엇을 가져가야 합니까?",
         "gdt_seg_trans": "무엇을 가져가야 합니까?",
-        "gpt_seg_trans": "제가 무엇을 가져가야 하나요?"
+        "gpt_seg_trans": "제가 무엇을 가져가야 하나요?",
+        "gdt_context_trans": "무엇을 가져가야 합니까?"
       },
       {
         "file": "4_0_d6",
@@ -425,7 +472,8 @@
         "seg_text": "You'd better bring the diploma, identification card and several copies of your resume.",
         "gdt_full_trans": "졸업장, 신분증, 이력서 여러 장을 지참하는 것이 좋습니다.",
         "gdt_seg_trans": "졸업장, 신분증, 이력서 여러 장을 지참하는 것이 좋습니다.",
-        "gpt_seg_trans": "졸업장, 신분증, 그리고 이력서 몇 부를 가져오시는 게 좋습니다."
+        "gpt_seg_trans": "졸업장, 신분증, 그리고 이력서 몇 부를 가져오시는 게 좋습니다.",
+        "gdt_context_trans": "졸업장, 신분증, 이력서 여러 장을 지참하는 것이 좋습니다."
       }
     ]
   },
@@ -438,7 +486,8 @@
         "gdt_full_trans": "좋은 아침이에요, 왕 선생님. 오늘 정말 아름다워요!",
         "gdt_seg_trans": "좋은 아침이에요, 왕 선생님. 오늘 정말 아름다워요!",
         "gdt_comet_score": 0.9877,
-        "gpt_seg_trans": "좋은 아침입니다, 왕 양. 오늘 정말 아름다워 보여요!"
+        "gpt_seg_trans": "좋은 아침입니다, 왕 양. 오늘 정말 아름다워 보여요!",
+        "gdt_context_trans": "좋은 아침이에요, 왕 선생님. <SEG> 오늘 정말 예뻐요!"
       },
       {
         "file": "1_1_d4",
@@ -447,7 +496,8 @@
         "gdt_full_trans": "감사합니다. 나는 화장을 하고 있다.",
         "gdt_seg_trans": "감사합니다. 나는 화장을 하고 있다.",
         "gdt_comet_score": 0.9889,
-        "gpt_seg_trans": "감사합니다. 화장했어요."
+        "gpt_seg_trans": "감사합니다. 화장했어요.",
+        "gdt_context_trans": "감사합니다. <SEG> 화장을 하고 있어요."
       },
       {
         "file": "2_0_d4",
@@ -455,7 +505,8 @@
         "seg_text": "Who taught you to put on make-up?",
         "gdt_full_trans": "화장하는 법은 누구한테 배웠나요?",
         "gdt_seg_trans": "화장하는 법은 누구한테 배웠나요?",
-        "gpt_seg_trans": "누가 화장하는 법을 가르쳐 줬어요?"
+        "gpt_seg_trans": "누가 화장하는 법을 가르쳐 줬어요?",
+        "gdt_context_trans": "화장하는 법은 누구한테 배웠나요?"
       },
       {
         "file": "3_1_d4",
@@ -464,7 +515,8 @@
         "gdt_full_trans": "나야. 저는 미용실에서 메이크업을 공부했어요.",
         "gdt_seg_trans": "나야. 저는 미용실에서 메이크업을 공부했어요.",
         "gdt_comet_score": 0.9818,
-        "gpt_seg_trans": "저예요. 미용실에서 화장하는 법을 배웠어요."
+        "gpt_seg_trans": "저예요. 미용실에서 화장하는 법을 배웠어요.",
+        "gdt_context_trans": "나야. <SEG> 뷰티샵에서 메이크업을 공부한 적이 있어요."
       },
       {
         "file": "4_0_d4",
@@ -472,7 +524,8 @@
         "seg_text": "Can you teach me how to do make-up?",
         "gdt_full_trans": "나에게 화장하는 법을 가르쳐 줄 수 있나요?",
         "gdt_seg_trans": "나에게 화장하는 법을 가르쳐 줄 수 있나요?",
-        "gpt_seg_trans": "화장하는 법을 가르쳐 주실 수 있나요?"
+        "gpt_seg_trans": "화장하는 법을 가르쳐 주실 수 있나요?",
+        "gdt_context_trans": "나에게 화장하는 법을 가르쳐 줄 수 있나요?"
       },
       {
         "file": "5_1_d4",
@@ -481,7 +534,8 @@
         "gdt_full_trans": "물론. 먼저, 아이섀도를 사용하여 눈매를 또렷하게 만들어주세요.",
         "gdt_seg_trans": "물론. 먼저, 아이섀도를 사용하여 눈매를 또렷하게 만들어주세요.",
         "gdt_comet_score": 0.9864,
-        "gpt_seg_trans": "물론이죠. 먼저 아이섀도로 눈을 더 돋보이게 하세요."
+        "gpt_seg_trans": "물론이죠. 먼저 아이섀도로 눈을 더 돋보이게 하세요.",
+        "gdt_context_trans": "물론. <SEG> 먼저, 아이섀도를 사용하여 눈매를 또렷하게 만들어주세요."
       },
       {
         "file": "6_0_d4",
@@ -489,7 +543,8 @@
         "seg_text": "What eye shadow do you think is the most fit for me?",
         "gdt_full_trans": "나에게 가장 잘 어울리는 아이섀도는 무엇이라고 생각하시나요?",
         "gdt_seg_trans": "나에게 가장 잘 어울리는 아이섀도는 무엇이라고 생각하시나요?",
-        "gpt_seg_trans": "어떤 아이섀도가 저한테 가장 잘 어울린다고 생각하세요?"
+        "gpt_seg_trans": "어떤 아이섀도가 저한테 가장 잘 어울린다고 생각하세요?",
+        "gdt_context_trans": "나에게 가장 잘 어울리는 아이섀도는 무엇이라고 생각하시나요?"
       },
       {
         "file": "7_1_d4",
@@ -497,7 +552,8 @@
         "seg_text": "I think pink eye shadow is popular among Chinese people.",
         "gdt_full_trans": "중국인들 사이에서는 핑크색 아이섀도우가 인기가 많은 것 같아요.",
         "gdt_seg_trans": "중국인들 사이에서는 핑크색 아이섀도우가 인기가 많은 것 같아요.",
-        "gpt_seg_trans": "제 생각엔 분홍색 아이섀도가 중국 사람들 사이에서 인기 있는 것 같아요."
+        "gpt_seg_trans": "제 생각엔 분홍색 아이섀도가 중국 사람들 사이에서 인기 있는 것 같아요.",
+        "gdt_context_trans": "중국인들 사이에서는 핑크색 아이섀도우가 인기가 많은 것 같아요."
       },
       {
         "file": "8_0_d4",
@@ -505,7 +561,8 @@
         "seg_text": "How do you protect yourself from chapped lips?",
         "gdt_full_trans": "갈라진 입술로부터 자신을 어떻게 보호합니까?",
         "gdt_seg_trans": "갈라진 입술로부터 자신을 어떻게 보호합니까?",
-        "gpt_seg_trans": "입술이 트는 걸 어떻게 막아요?"
+        "gpt_seg_trans": "입술이 트는 걸 어떻게 막아요?",
+        "gdt_context_trans": "갈라진 입술로부터 자신을 어떻게 보호합니까?"
       },
       {
         "file": "9_1_d4",
@@ -514,7 +571,8 @@
         "gdt_full_trans": "입술을 더욱 돋보이게 해주는 립스틱을 추천해드려요.",
         "gdt_seg_trans": "립스틱을 사용하는 것이 좋습니다. 입술을 더욱 돋보이게 만들어줍니다.",
         "gdt_comet_score": 0.9351,
-        "gpt_seg_trans": "립스틱을 사용하는 걸 추천해요, 입술도 더 돋보이게 해 줘요."
+        "gpt_seg_trans": "립스틱을 사용하는 걸 추천해요, 입술도 더 돋보이게 해 줘요.",
+        "gdt_context_trans": "입술을 더욱 돋보이게 해주는 립스틱, <SEG>를 추천해드려요."
       },
       {
         "file": "10_0_d4",
@@ -522,7 +580,8 @@
         "seg_text": "How did you grow such long nails?",
         "gdt_full_trans": "손톱이 어떻게 이렇게 길어졌나요?",
         "gdt_seg_trans": "손톱이 어떻게 이렇게 길어졌나요?",
-        "gpt_seg_trans": "어떻게 그렇게 긴 손톱을 기르셨어요?"
+        "gpt_seg_trans": "어떻게 그렇게 긴 손톱을 기르셨어요?",
+        "gdt_context_trans": "손톱이 어떻게 이렇게 길어졌나요?"
       },
       {
         "file": "11_1_d4",
@@ -530,7 +589,8 @@
         "seg_text": "You have to pay attention to trimming them from time to time.",
         "gdt_full_trans": "때때로 다듬기에주의를 기울여야합니다.",
         "gdt_seg_trans": "때때로 다듬기에주의를 기울여야합니다.",
-        "gpt_seg_trans": "가끔씩 다듬는 데 신경 써야 해요."
+        "gpt_seg_trans": "가끔씩 다듬는 데 신경 써야 해요.",
+        "gdt_context_trans": "때때로 다듬기에주의를 기울여야합니다."
       }
     ]
   },
@@ -542,7 +602,8 @@
         "seg_text": "Can I help you?",
         "gdt_full_trans": "제가 도와드릴까요?",
         "gdt_seg_trans": "제가 도와드릴까요?",
-        "gpt_seg_trans": "도와드릴까요?"
+        "gpt_seg_trans": "도와드릴까요?",
+        "gdt_context_trans": "제가 도와드릴까요?"
       },
       {
         "file": "1_1_d8",
@@ -551,7 +612,8 @@
         "gdt_full_trans": "아, 포터를 찾고 있는데 어디서 찾을 수 있는지 아시나요?",
         "gdt_seg_trans": "아, 포터를 찾고 있어요. 내가 어디서 찾을 수 있는지 아세요?",
         "gdt_comet_score": 0.8794,
-        "gpt_seg_trans": "어, 포터를 찾고 있어요, 어디서 찾을 수 있는지 아세요?"
+        "gpt_seg_trans": "어, 포터를 찾고 있어요, 어디서 찾을 수 있는지 아세요?",
+        "gdt_context_trans": "아, 포터를 찾고 있는데 <SEG> 어디서 찾을 수 있는지 아시나요?"
       },
       {
         "file": "2_0_d8",
@@ -560,7 +622,8 @@
         "gdt_full_trans": "여기에는 너무 많은 사람들이 있습니다. 빨간 모자를 쓴 남자들은 포터들이다.",
         "gdt_seg_trans": "여기에는 너무 많은 사람들이 있습니다. 빨간 모자를 쓴 남자들은 포터들이다.",
         "gdt_comet_score": 0.9815,
-        "gpt_seg_trans": "여기 너무 많아요. 빨간 모자를 쓴 사람들이 포터예요."
+        "gpt_seg_trans": "여기 너무 많아요. 빨간 모자를 쓴 사람들이 포터예요.",
+        "gdt_context_trans": "여기에는 너무 많은 사람들이 있습니다. <SEG> 빨간 모자를 쓴 남자들은 포터들이다."
       },
       {
         "file": "3_1_d8",
@@ -568,7 +631,8 @@
         "seg_text": "What's the charge?",
         "gdt_full_trans": "요금은 얼마인가요?",
         "gdt_seg_trans": "요금은 얼마인가요?",
-        "gpt_seg_trans": "요금이 얼마예요?"
+        "gpt_seg_trans": "요금이 얼마예요?",
+        "gdt_context_trans": "요금은 얼마인가요?"
       },
       {
         "file": "4_0_d8",
@@ -576,7 +640,8 @@
         "seg_text": "Well, it depends how many pieces of luggages you have.",
         "gdt_full_trans": "글쎄, 그것은 당신이 가지고 있는 수하물의 개수에 따라 다릅니다.",
         "gdt_seg_trans": "글쎄, 그것은 당신이 가지고 있는 수하물의 개수에 따라 다릅니다.",
-        "gpt_seg_trans": "음, 짐이 몇 개냐에 따라 달라요."
+        "gpt_seg_trans": "음, 짐이 몇 개냐에 따라 달라요.",
+        "gdt_context_trans": "글쎄, 그것은 당신이 가지고 있는 수하물의 개수에 따라 다릅니다."
       },
       {
         "file": "5_1_d8",
@@ -584,7 +649,8 @@
         "seg_text": "Thank you.",
         "gdt_full_trans": "감사합니다.",
         "gdt_seg_trans": "감사합니다.",
-        "gpt_seg_trans": "감사합니다."
+        "gpt_seg_trans": "감사합니다.",
+        "gdt_context_trans": "감사합니다."
       }
     ]
   },
@@ -597,7 +663,8 @@
         "gdt_full_trans": "안녕하세요? 저는 존 스미스입니다. 화이트 부인과 통화할 수 있나요?",
         "gdt_seg_trans": "안녕하세요? 저는 존 스미스입니다. 화이트 부인과 통화할 수 있나요?",
         "gdt_comet_score": 0.9783,
-        "gpt_seg_trans": "안녕하세요? 존 스미스입니다. 화이트 부인과 통화할 수 있을까요?"
+        "gpt_seg_trans": "안녕하세요? 존 스미스입니다. 화이트 부인과 통화할 수 있을까요?",
+        "gdt_context_trans": "안녕하세요? <SEG> 저는 존 스미스입니다. <SEG> 화이트 부인과 통화할 수 있을까요?"
       },
       {
         "file": "1_1_d7",
@@ -605,7 +672,8 @@
         "seg_text": "This is Mrs. White speaking.",
         "gdt_full_trans": "저는 화이트 부인입니다.",
         "gdt_seg_trans": "저는 화이트 부인입니다.",
-        "gpt_seg_trans": "화이트입니다."
+        "gpt_seg_trans": "화이트입니다.",
+        "gdt_context_trans": "저는 화이트 부인입니다."
       },
       {
         "file": "2_0_d7",
@@ -614,7 +682,8 @@
         "gdt_full_trans": "안녕. 나는 당신이 판매할 집을 가지고 있다는 것을 알고 있습니다. 그렇지 않습니까?",
         "gdt_seg_trans": "안녕. 나는 당신이 판매할 집을 가지고 있다는 것을 알고 있습니다. 그렇지 않습니까?",
         "gdt_comet_score": 0.9796,
-        "gpt_seg_trans": "안녕하세요. 집을 파는 게 있다고 알고 있는데, 그렇죠?"
+        "gpt_seg_trans": "안녕하세요. 집을 파는 게 있다고 알고 있는데, 그렇죠?",
+        "gdt_context_trans": "안녕. <SEG> 집이 매물로 나온 걸로 알고 있어요, 그렇죠?"
       },
       {
         "file": "3_1_d7",
@@ -622,7 +691,8 @@
         "seg_text": "Yes.",
         "gdt_full_trans": "예.",
         "gdt_seg_trans": "예.",
-        "gpt_seg_trans": "네."
+        "gpt_seg_trans": "네.",
+        "gdt_context_trans": "예."
       },
       {
         "file": "4_0_d7",
@@ -630,7 +700,8 @@
         "seg_text": "Umm I’d like to know more about it.",
         "gdt_full_trans": "음, 그것에 대해 더 알고 싶습니다.",
         "gdt_seg_trans": "음, 그것에 대해 더 알고 싶습니다.",
-        "gpt_seg_trans": "음, 그것에 대해 좀 더 알고 싶어요."
+        "gpt_seg_trans": "음, 그것에 대해 좀 더 알고 싶어요.",
+        "gdt_context_trans": "음, 그것에 대해 더 알고 싶습니다."
       },
       {
         "file": "5_1_d7",
@@ -638,7 +709,8 @@
         "seg_text": "Can you come to my office this afternoon at three o’clock?",
         "gdt_full_trans": "오늘 오후 3시에 내 사무실로 올 수 있나요?",
         "gdt_seg_trans": "오늘 오후 3시에 내 사무실로 올 수 있나요?",
-        "gpt_seg_trans": "오늘 오후 세 시에 제 사무실로 오실 수 있나요?"
+        "gpt_seg_trans": "오늘 오후 세 시에 제 사무실로 오실 수 있나요?",
+        "gdt_context_trans": "오늘 오후 3시에 내 사무실로 올 수 있나요?"
       },
       {
         "file": "6_0_d7",
@@ -647,7 +719,8 @@
         "gdt_full_trans": "좋아요. 나는 거기 있을 것이다.",
         "gdt_seg_trans": "좋아요. 나는 거기 있을 것이다.",
         "gdt_comet_score": 0.9899,
-        "gpt_seg_trans": "네. 그때 갈게요."
+        "gpt_seg_trans": "네. 그때 갈게요.",
+        "gdt_context_trans": "좋아요. <SEG> 제가 거기 있을게요."
       },
       {
         "file": "7_1_d7",
@@ -656,7 +729,8 @@
         "gdt_full_trans": "전화해주셔서 감사합니다. 안녕히 가세요.",
         "gdt_seg_trans": "전화해주셔서 감사합니다. 안녕히 가세요.",
         "gdt_comet_score": 0.9879,
-        "gpt_seg_trans": "전화 주셔서 감사합니다. 안녕히 가세요."
+        "gpt_seg_trans": "전화 주셔서 감사합니다. 안녕히 가세요.",
+        "gdt_context_trans": "전화해주셔서 감사합니다. <SEG> 안녕히 계세요."
       },
       {
         "file": "8_0_d7",
@@ -664,7 +738,8 @@
         "seg_text": "Bye.",
         "gdt_full_trans": "안녕.",
         "gdt_seg_trans": "안녕.",
-        "gpt_seg_trans": "안녕."
+        "gpt_seg_trans": "안녕.",
+        "gdt_context_trans": "안녕."
       }
     ]
   },
@@ -676,7 +751,8 @@
         "seg_text": "Hello, Tom!",
         "gdt_full_trans": "안녕, 톰!",
         "gdt_seg_trans": "안녕, 톰!",
-        "gpt_seg_trans": "안녕, 톰!"
+        "gpt_seg_trans": "안녕, 톰!",
+        "gdt_context_trans": "안녕, 톰!"
       },
       {
         "file": "1_0_d10",
@@ -684,7 +760,8 @@
         "seg_text": "Hello, Skylar!",
         "gdt_full_trans": "안녕, 스카이라!",
         "gdt_seg_trans": "안녕, 스카이라!",
-        "gpt_seg_trans": "안녕, 스카일러!"
+        "gpt_seg_trans": "안녕, 스카일러!",
+        "gdt_context_trans": "안녕, 스카이라!"
       },
       {
         "file": "2_1_d10",
@@ -692,7 +769,8 @@
         "seg_text": "How are you doing?",
         "gdt_full_trans": "어떻게 지내세요?",
         "gdt_seg_trans": "어떻게 지내세요?",
-        "gpt_seg_trans": "잘 지내?"
+        "gpt_seg_trans": "잘 지내?",
+        "gdt_context_trans": "어떻게 지내세요?"
       },
       {
         "file": "3_0_d10",
@@ -701,7 +779,8 @@
         "gdt_full_trans": "나쁘지 않아요. 당신은 어때요?",
         "gdt_seg_trans": "나쁘지 않아요. 당신은 어때요?",
         "gdt_comet_score": 0.9865,
-        "gpt_seg_trans": "나쁘지 않아. 너는 어때?"
+        "gpt_seg_trans": "나쁘지 않아. 너는 어때?",
+        "gdt_context_trans": "나쁘지 않아요. <SEG> 당신은 어떻습니까?"
       },
       {
         "file": "4_1_d10",
@@ -709,7 +788,8 @@
         "seg_text": "I'm just a little tired.",
         "gdt_full_trans": "나는 단지 조금 피곤할 뿐입니다.",
         "gdt_seg_trans": "나는 단지 조금 피곤할 뿐입니다.",
-        "gpt_seg_trans": "그냥 좀 피곤해."
+        "gpt_seg_trans": "그냥 좀 피곤해.",
+        "gdt_context_trans": "나는 단지 조금 피곤할 뿐입니다."
       },
       {
         "file": "5_0_d10",
@@ -717,7 +797,8 @@
         "seg_text": "Why?",
         "gdt_full_trans": "왜?",
         "gdt_seg_trans": "왜?",
-        "gpt_seg_trans": "왜?"
+        "gpt_seg_trans": "왜?",
+        "gdt_context_trans": "왜?"
       },
       {
         "file": "6_1_d10",
@@ -725,7 +806,8 @@
         "seg_text": "I have a lot of work to do in the company recently.",
         "gdt_full_trans": "나는 최근 회사에서 할 일이 많다.",
         "gdt_seg_trans": "나는 최근 회사에서 할 일이 많다.",
-        "gpt_seg_trans": "요즘 회사에서 해야 할 일이 많아."
+        "gpt_seg_trans": "요즘 회사에서 해야 할 일이 많아.",
+        "gdt_context_trans": "나는 최근 회사에서 할 일이 많다."
       },
       {
         "file": "7_0_d10",
@@ -733,7 +815,8 @@
         "seg_text": "How is your family?",
         "gdt_full_trans": "당신의 가족은 안녕하십니까?",
         "gdt_seg_trans": "당신의 가족은 안녕하십니까?",
-        "gpt_seg_trans": "가족은 잘 지내?"
+        "gpt_seg_trans": "가족은 잘 지내?",
+        "gdt_context_trans": "당신의 가족은 안녕하십니까?"
       },
       {
         "file": "8_1_d10",
@@ -741,7 +824,8 @@
         "seg_text": "Pretty fine, thanks.",
         "gdt_full_trans": "꽤 괜찮습니다. 감사합니다.",
         "gdt_seg_trans": "꽤 괜찮습니다. 감사합니다.",
-        "gpt_seg_trans": "꽤 괜찮아, 고마워."
+        "gpt_seg_trans": "꽤 괜찮아, 고마워.",
+        "gdt_context_trans": "꽤 괜찮습니다. 감사합니다."
       },
       {
         "file": "9_0_d10",
@@ -749,7 +833,8 @@
         "seg_text": "Where are you going now?",
         "gdt_full_trans": "지금 어디로 가시나요?",
         "gdt_seg_trans": "지금 어디로 가시나요?",
-        "gpt_seg_trans": "지금 어디 가는 거야?"
+        "gpt_seg_trans": "지금 어디 가는 거야?",
+        "gdt_context_trans": "지금 어디로 가시나요?"
       },
       {
         "file": "10_1_d10",
@@ -758,7 +843,8 @@
         "gdt_full_trans": "나는 부모님을 위해 새 에어컨을 사려고 합니다. 아, 두 시구나. 나는 지금 가야만 한다.",
         "gdt_seg_trans": "나는 부모님을 위해 새 에어컨을 사려고 합니다. 아, 두 시구나. 나는 지금 가야만 한다.",
         "gdt_comet_score": 0.9708,
-        "gpt_seg_trans": "부모님께 새 에어컨을 사 드릴 거야. 아, 두 시네. 이제 가야 해."
+        "gpt_seg_trans": "부모님께 새 에어컨을 사 드릴 거야. 아, 두 시네. 이제 가야 해.",
+        "gdt_context_trans": "나는 부모님을 위해 새 에어컨을 사려고 합니다. <SEG> 아, 2시네요. <SEG> 이제 가야 해요."
       },
       {
         "file": "11_0_d10",
@@ -767,7 +853,8 @@
         "gdt_full_trans": "알았어, 다음에 보자.",
         "gdt_seg_trans": "좋아요, 다음에 또 만나요.",
         "gdt_comet_score": 0.8152,
-        "gpt_seg_trans": "알겠어, 다음에 봐."
+        "gpt_seg_trans": "알겠어, 다음에 봐.",
+        "gdt_context_trans": "네, <SEG> 다음에 뵙겠습니다."
       },
       {
         "file": "12_1_d10",
@@ -775,7 +862,8 @@
         "seg_text": "See you.",
         "gdt_full_trans": "또 봐요.",
         "gdt_seg_trans": "또 봐요.",
-        "gpt_seg_trans": "또 봐."
+        "gpt_seg_trans": "또 봐.",
+        "gdt_context_trans": "또 봐요."
       }
     ]
   },
@@ -787,7 +875,8 @@
         "seg_text": "When’re you getting married?",
         "gdt_full_trans": "언제 결혼해요?",
         "gdt_seg_trans": "언제 결혼해요?",
-        "gpt_seg_trans": "언제 결혼해?"
+        "gpt_seg_trans": "언제 결혼해?",
+        "gdt_context_trans": "언제 결혼해요?"
       },
       {
         "file": "1_0_d11",
@@ -795,7 +884,8 @@
         "seg_text": "We planned our wedding for next May.",
         "gdt_full_trans": "우리는 내년 5월에 결혼식을 계획했습니다.",
         "gdt_seg_trans": "우리는 내년 5월에 결혼식을 계획했습니다.",
-        "gpt_seg_trans": "우리는 내년 5월로 결혼식을 잡았어."
+        "gpt_seg_trans": "우리는 내년 5월로 결혼식을 잡았어.",
+        "gdt_context_trans": "우리는 내년 5월에 결혼식을 계획했습니다."
       },
       {
         "file": "2_1_d11",
@@ -804,7 +894,8 @@
         "gdt_full_trans": "왜 이렇게 늦었어? 그녀는 이번 10월에 결혼하고 싶지 않았나요?",
         "gdt_seg_trans": "왜 이렇게 늦었어? 그녀는 이번 10월에 결혼하고 싶지 않았나요?",
         "gdt_comet_score": 0.9785,
-        "gpt_seg_trans": "왜 이렇게 늦어? 그녀는 이번 10월에 결혼하고 싶어 하지 않았어?"
+        "gpt_seg_trans": "왜 이렇게 늦어? 그녀는 이번 10월에 결혼하고 싶어 하지 않았어?",
+        "gdt_context_trans": "왜 이렇게 늦었어? <SEG> 올해 10월에 결혼하고 싶지 않았나요?"
       },
       {
         "file": "3_0_d11",
@@ -813,7 +904,8 @@
         "gdt_full_trans": "응, 그랬어. 하지만 내 약혼녀에게는 중요한 프로젝트가 있습니다.",
         "gdt_seg_trans": "응, 그랬어. 하지만 내 약혼녀에게는 중요한 프로젝트가 있습니다.",
         "gdt_comet_score": 0.9848,
-        "gpt_seg_trans": "응, 그랬어. 근데 내 약혼녀가 중요한 프로젝트가 있어."
+        "gpt_seg_trans": "응, 그랬어. 근데 내 약혼녀가 중요한 프로젝트가 있어.",
+        "gdt_context_trans": "응, 그랬어. <SEG> 그런데 제 약혼녀가 중요한 프로젝트를 가지고 있어요."
       },
       {
         "file": "4_1_d11",
@@ -822,7 +914,8 @@
         "gdt_full_trans": "정말 안타까운 일이에요. 그런데 신부 들러리는 누가 될까요?",
         "gdt_seg_trans": "정말 안타까운 일이에요. 그런데 신부 들러리는 누가 될까요?",
         "gdt_comet_score": 0.9787,
-        "gpt_seg_trans": "그건 정말 안타깝네. 그런데, 들러리는 누가 할 거야?"
+        "gpt_seg_trans": "그건 정말 안타깝네. 그런데, 들러리는 누가 할 거야?",
+        "gdt_context_trans": "정말 안타까운 일이에요. <SEG> 그런데 신부 들러리는 누가 될까요?"
       },
       {
         "file": "5_0_d11",
@@ -831,7 +924,8 @@
         "gdt_full_trans": "줄리의 친구 메리. 그리고 John은 최고의 사람이 될 것입니다.",
         "gdt_seg_trans": "줄리의 친구 메리. 그리고 John은 최고의 사람이 될 것입니다.",
         "gdt_comet_score": 0.9815,
-        "gpt_seg_trans": "줄리의 친구, 메리. 그리고 존이 들러리 남자가 될 거야."
+        "gpt_seg_trans": "줄리의 친구, 메리. 그리고 존이 들러리 남자가 될 거야.",
+        "gdt_context_trans": "줄리의 친구 메리. <SEG> 그리고 John은 최고의 남자가 될 거예요."
       },
       {
         "file": "6_1_d11",
@@ -840,7 +934,8 @@
         "gdt_full_trans": "우와! 나는 당신의 결혼식이 매우 기대됩니다.",
         "gdt_seg_trans": "우와! 나는 당신의 결혼식이 매우 기대됩니다.",
         "gdt_comet_score": 0.985,
-        "gpt_seg_trans": "와! 네 결혼식이 정말 기대돼."
+        "gpt_seg_trans": "와! 네 결혼식이 정말 기대돼.",
+        "gdt_context_trans": "우와! <SEG> 귀하의 시상식이 매우 기대됩니다."
       }
     ]
   },
@@ -853,7 +948,8 @@
         "gdt_full_trans": "실례합니다? 차멀미에 좋은 것이 있나요?",
         "gdt_seg_trans": "실례합니다? 차멀미에 좋은 것이 있나요?",
         "gdt_comet_score": 0.9816,
-        "gpt_seg_trans": "실례합니다? 멀미에 쓸 만한 거 있나요?"
+        "gpt_seg_trans": "실례합니다? 멀미에 쓸 만한 거 있나요?",
+        "gdt_context_trans": "실례합니다? <SEG> 차멀미에 대비한 것이 있나요?"
       },
       {
         "file": "1_0_d9",
@@ -862,7 +958,8 @@
         "gdt_full_trans": "응, 하지만 너 괜찮아 보이는데.",
         "gdt_seg_trans": "예, 하지만 당신은 괜찮아 보여요.",
         "gdt_comet_score": 0.9425,
-        "gpt_seg_trans": "네, 근데 괜찮아 보이시네요."
+        "gpt_seg_trans": "네, 근데 괜찮아 보이시네요.",
+        "gdt_context_trans": "네, <SEG>님, 하지만 괜찮아 보이는데요."
       },
       {
         "file": "2_1_d9",
@@ -871,7 +968,8 @@
         "gdt_full_trans": "아, 그건 내 동생을 위한 거예요. 저기 있는 어린 소년. 그는 차멀미를 앓고 있습니다.",
         "gdt_seg_trans": "아, 그건 내 동생을 위한 거예요. 저기 있는 어린 소년. 그는 차멀미를 앓고 있습니다.",
         "gdt_comet_score": 0.9765,
-        "gpt_seg_trans": "아, 제 동생한테 줄 거예요. 저기 있는 어린 소년. 그는 멀미를 하고 있어요."
+        "gpt_seg_trans": "아, 제 동생한테 줄 거예요. 저기 있는 어린 소년. 그는 멀미를 하고 있어요.",
+        "gdt_context_trans": "아, 그건 내 동생을 위한 거예요. <SEG> 저기 있는 꼬마. <SEG> 그는 차멀미를 앓고 있습니다."
       },
       {
         "file": "3_0_d9",
@@ -880,7 +978,8 @@
         "gdt_full_trans": "불쌍한 소년! 하지만 걱정하지 마세요. 여기 독일에서 만들어진 알약 두 개가 있습니다. 정말 효과적입니다. 그는 괜찮을 것입니다.",
         "gdt_seg_trans": "불쌍한 소년! 하지만 걱정하지 마세요. 여기 독일에서 만들어진 알약 두 개가 있습니다. 정말 효과적입니다. 그는 괜찮을 것입니다.",
         "gdt_comet_score": 0.9797,
-        "gpt_seg_trans": "불쌍한 아이! 하지만 걱정하지 마세요. 여기 독일산 알약 두 개가 있어요. 정말 효과가 좋아요. 괜찮아질 거예요."
+        "gpt_seg_trans": "불쌍한 아이! 하지만 걱정하지 마세요. 여기 독일산 알약 두 개가 있어요. 정말 효과가 좋아요. 괜찮아질 거예요.",
+        "gdt_context_trans": "불쌍한 소년! <SEG> 하지만 걱정하지 마세요. <SEG> 여기 독일에서 만든 알약 두 개가 있습니다. <SEG> 정말 효과적이에요. <SEG> 그는 괜찮을 거예요."
       },
       {
         "file": "4_1_d9",
@@ -888,7 +987,8 @@
         "seg_text": "Thank you so much.",
         "gdt_full_trans": "매우 감사합니다.",
         "gdt_seg_trans": "매우 감사합니다.",
-        "gpt_seg_trans": "정말 감사합니다."
+        "gpt_seg_trans": "정말 감사합니다.",
+        "gdt_context_trans": "매우 감사합니다."
       },
       {
         "file": "5_0_d9",
@@ -897,7 +997,8 @@
         "gdt_full_trans": "만약을 대비해 다음번에는 좀 가져가세요.",
         "gdt_seg_trans": "다음에는 좀 가지고 가세요. 혹시라도.",
         "gdt_comet_score": 0.8762,
-        "gpt_seg_trans": "다음번에는 좀 챙겨 가세요, 혹시 모르니까."
+        "gpt_seg_trans": "다음번에는 좀 챙겨 가세요, 혹시 모르니까.",
+        "gdt_context_trans": "만약을 대비해 다음에는 <SEG>를 가져가세요."
       },
       {
         "file": "6_1_d9",
@@ -906,7 +1007,8 @@
         "gdt_full_trans": "방해해서 미안하지만 내 동생은 아직 자고 있어요.",
         "gdt_seg_trans": "방해해서 죄송해요, 그런데 내 동생은 아직도 자고 있어요.",
         "gdt_comet_score": 0.9591,
-        "gpt_seg_trans": "잠시 방해해서 죄송합니다, 근데 제 동생은 아직 자고 있어요."
+        "gpt_seg_trans": "잠시 방해해서 죄송합니다, 근데 제 동생은 아직 자고 있어요.",
+        "gdt_context_trans": "방해해서 미안해요, <SEG>. 하지만 내 동생은 아직 자고 있어요."
       },
       {
         "file": "7_0_d9",
@@ -914,7 +1016,8 @@
         "seg_text": "You mean the boy who felt carsick just now?",
         "gdt_full_trans": "방금 차 멀미를 느낀 그 소년 말인가요?",
         "gdt_seg_trans": "방금 차 멀미를 느낀 그 소년 말인가요?",
-        "gpt_seg_trans": "방금 멀미를 했던 그 소년 말인가요?"
+        "gpt_seg_trans": "방금 멀미를 했던 그 소년 말인가요?",
+        "gdt_context_trans": "방금 차 멀미를 느낀 그 소년 말인가요?"
       },
       {
         "file": "8_1_d9",
@@ -923,7 +1026,8 @@
         "gdt_full_trans": "예. 이상하게도 약을 먹고도 계속 잠을 잔다.",
         "gdt_seg_trans": "예. 이상하게도 약을 먹고도 계속 잠을 잔다.",
         "gdt_comet_score": 0.9836,
-        "gpt_seg_trans": "네. 알약을 먹고 나서 계속 잠만 잔다는 게 정말 이상하네요."
+        "gpt_seg_trans": "네. 알약을 먹고 나서 계속 잠만 잔다는 게 정말 이상하네요.",
+        "gdt_context_trans": "예. <SEG> 약을 먹고도 계속 잠을 잔다는 게 참 이상해요."
       },
       {
         "file": "9_0_d9",
@@ -931,7 +1035,8 @@
         "seg_text": "Oh, sorry, maybe I gave you the wrong medicine.",
         "gdt_full_trans": "아, 미안해요. 제가 약을 잘못 준 것 같아요.",
         "gdt_seg_trans": "아, 미안해요. 제가 약을 잘못 준 것 같아요.",
-        "gpt_seg_trans": "아, 죄송해요. 아마 제가 잘못된 약을 드린 것 같아요."
+        "gpt_seg_trans": "아, 죄송해요. 아마 제가 잘못된 약을 드린 것 같아요.",
+        "gdt_context_trans": "아, 미안해요. 제가 약을 잘못 준 것 같아요."
       },
       {
         "file": "10_1_d9",
@@ -939,7 +1044,8 @@
         "seg_text": "What?",
         "gdt_full_trans": "무엇?",
         "gdt_seg_trans": "무엇?",
-        "gpt_seg_trans": "뭐라고요?"
+        "gpt_seg_trans": "뭐라고요?",
+        "gdt_context_trans": "무엇?"
       },
       {
         "file": "11_0_d9",
@@ -948,7 +1054,8 @@
         "gdt_full_trans": "그냥 미국산 수면제인데 그것도 아주 좋아요. 하지만 걱정하지 마세요. 바람직하지 않은 부작용이 없습니다.",
         "gdt_seg_trans": "그냥 미국산 수면제인데 그것도 아주 좋아요. 하지만 걱정하지 마세요. 바람직하지 않은 부작용이 없습니다.",
         "gdt_comet_score": 0.9762,
-        "gpt_seg_trans": "그냥 미국에서 만든 수면제예요. 그것도 아주 좋은 거예요. 하지만 걱정하지 마세요. 원치 않는 부작용은 없습니다."
+        "gpt_seg_trans": "그냥 미국에서 만든 수면제예요. 그것도 아주 좋은 거예요. 하지만 걱정하지 마세요. 원치 않는 부작용은 없습니다.",
+        "gdt_context_trans": "그냥 미국산 수면제인데 그것도 아주 좋아요. <SEG> 하지만 걱정하지 마세요. <SEG> 바람직하지 않은 부작용이 없습니다."
       },
       {
         "file": "12_1_d9",
@@ -956,7 +1063,8 @@
         "seg_text": "I see.",
         "gdt_full_trans": "알겠어요.",
         "gdt_seg_trans": "알겠어요.",
-        "gpt_seg_trans": "알겠습니다."
+        "gpt_seg_trans": "알겠습니다.",
+        "gdt_context_trans": "알겠어요."
       }
     ]
   },
@@ -968,7 +1076,8 @@
         "seg_text": "I just had a terrible week.",
         "gdt_full_trans": "방금 끔찍한 한 주를 보냈어요.",
         "gdt_seg_trans": "방금 끔찍한 한 주를 보냈어요.",
-        "gpt_seg_trans": "방금 정말 끔찍한 한 주를 보냈어."
+        "gpt_seg_trans": "방금 정말 끔찍한 한 주를 보냈어.",
+        "gdt_context_trans": "방금 끔찍한 한 주를 보냈어요."
       },
       {
         "file": "1_0_d12",
@@ -976,7 +1085,8 @@
         "seg_text": "What a shame!",
         "gdt_full_trans": "정말 부끄러운 일입니다!",
         "gdt_seg_trans": "정말 부끄러운 일입니다!",
-        "gpt_seg_trans": "정말 안타깝네!"
+        "gpt_seg_trans": "정말 안타깝네!",
+        "gdt_context_trans": "정말 부끄러운 일입니다!"
       },
       {
         "file": "2_1_d12",
@@ -985,7 +1095,8 @@
         "gdt_full_trans": "넘어져서 팔을 다쳤어요.",
         "gdt_seg_trans": "나는 넘어졌다 그리고 팔을 다쳤어요.",
         "gdt_comet_score": 0.9197,
-        "gpt_seg_trans": "넘어졌어 그리고 팔을 다쳤어."
+        "gpt_seg_trans": "넘어졌어 그리고 팔을 다쳤어.",
+        "gdt_context_trans": "<SEG>에서 넘어져서 팔을 다쳤어요."
       },
       {
         "file": "3_0_d12",
@@ -993,7 +1104,8 @@
         "seg_text": "That's too bad.",
         "gdt_full_trans": "안됐네요.",
         "gdt_seg_trans": "안됐네요.",
-        "gpt_seg_trans": "그거 안됐네."
+        "gpt_seg_trans": "그거 안됐네.",
+        "gdt_context_trans": "안됐네요."
       },
       {
         "file": "4_1_d12",
@@ -1001,7 +1113,8 @@
         "seg_text": "Then my son drove into a tree.",
         "gdt_full_trans": "그러다가 내 아들이 나무 속으로 차를 몰고 갔습니다.",
         "gdt_seg_trans": "그러다가 내 아들이 나무 속으로 차를 몰고 갔습니다.",
-        "gpt_seg_trans": "그다음에 내 아들이 나무에 들이받았어."
+        "gpt_seg_trans": "그다음에 내 아들이 나무에 들이받았어.",
+        "gdt_context_trans": "그러다가 내 아들이 나무 속으로 차를 몰고 갔습니다."
       },
       {
         "file": "5_0_d12",
@@ -1009,7 +1122,8 @@
         "seg_text": "I'm sorry to hear that.",
         "gdt_full_trans": "그 말을 들으니 안타깝습니다.",
         "gdt_seg_trans": "그 말을 들으니 안타깝습니다.",
-        "gpt_seg_trans": "그런 말을 들어서 유감이야."
+        "gpt_seg_trans": "그런 말을 들어서 유감이야.",
+        "gdt_context_trans": "그 말을 들으니 안타깝습니다."
       },
       {
         "file": "6_1_d12",
@@ -1017,7 +1131,8 @@
         "seg_text": "The dog bit the delivery boy.",
         "gdt_full_trans": "개가 배달원을 물었습니다.",
         "gdt_seg_trans": "개가 배달원을 물었습니다.",
-        "gpt_seg_trans": "개가 배달 소년을 물었어."
+        "gpt_seg_trans": "개가 배달 소년을 물었어.",
+        "gdt_context_trans": "개가 배달원을 물었습니다."
       },
       {
         "file": "7_0_d12",
@@ -1025,7 +1140,8 @@
         "seg_text": "What a pity!",
         "gdt_full_trans": "정말 안타깝습니다!",
         "gdt_seg_trans": "정말 안타깝습니다!",
-        "gpt_seg_trans": "안됐네!"
+        "gpt_seg_trans": "안됐네!",
+        "gdt_context_trans": "정말 안타깝습니다!"
       },
       {
         "file": "8_1_d12",
@@ -1033,7 +1149,8 @@
         "seg_text": "And a storm blew our roof away.",
         "gdt_full_trans": "그리고 폭풍이 우리 지붕을 날려버렸어요.",
         "gdt_seg_trans": "그리고 폭풍이 우리 지붕을 날려버렸어요.",
-        "gpt_seg_trans": "그리고 폭풍이 우리 지붕을 날려버렸어."
+        "gpt_seg_trans": "그리고 폭풍이 우리 지붕을 날려버렸어.",
+        "gdt_context_trans": "그리고 폭풍이 우리 지붕을 날려버렸어요."
       },
       {
         "file": "9_0_d12",
@@ -1041,7 +1158,8 @@
         "seg_text": "Ho, no!",
         "gdt_full_trans": "호, 안돼!",
         "gdt_seg_trans": "호, 안돼!",
-        "gpt_seg_trans": "아, 안 돼!"
+        "gpt_seg_trans": "아, 안 돼!",
+        "gdt_context_trans": "호, 안돼!"
       }
     ]
   },
@@ -1054,7 +1172,8 @@
         "gdt_full_trans": "음 실례합니다? 부탁 하나만 들어주실 수 있나요?",
         "gdt_seg_trans": "음 실례합니다? 부탁 하나만 들어주실 수 있나요?",
         "gdt_comet_score": 0.9883,
-        "gpt_seg_trans": "음, 실례합니다? 저 좀 부탁 하나 들어주실 수 있나요?"
+        "gpt_seg_trans": "음, 실례합니다? 저 좀 부탁 하나 들어주실 수 있나요?",
+        "gdt_context_trans": "음 실례합니다? <SEG> 부탁 하나만 들어주실 수 있나요?"
       },
       {
         "file": "1_1_d14",
@@ -1063,7 +1182,8 @@
         "gdt_full_trans": "기쁘네요. 무엇을 도와드릴까요?",
         "gdt_seg_trans": "별말씀을요, 내가 당신을 위해 무엇을 도와드릴까요?",
         "gdt_comet_score": 0.7002,
-        "gpt_seg_trans": "천만에요, 무엇을 도와드릴까요?"
+        "gpt_seg_trans": "천만에요, 무엇을 도와드릴까요?",
+        "gdt_context_trans": "다행입니다. <SEG> 무엇을 도와드릴까요?"
       },
       {
         "file": "2_0_d14",
@@ -1072,7 +1192,8 @@
         "gdt_full_trans": "저는 영국에서 왔고 오늘 여행 계획을 세우려고 합니다.",
         "gdt_seg_trans": "나는 영국에서 왔어요 그리고 오늘은 여행 계획을 세우려고 해요.",
         "gdt_comet_score": 0.9584,
-        "gpt_seg_trans": "저는 영국에서 왔어요 그리고 오늘 여행 계획을 세우려고 하고 있어요."
+        "gpt_seg_trans": "저는 영국에서 왔어요 그리고 오늘 여행 계획을 세우려고 하고 있어요.",
+        "gdt_context_trans": "저는 영국 <SEG>에서 왔고 오늘 여행 계획을 세우려고 합니다."
       },
       {
         "file": "3_1_d14",
@@ -1080,7 +1201,8 @@
         "seg_text": "What brings you here?",
         "gdt_full_trans": "무슨 일로 여기까지 왔나요?",
         "gdt_seg_trans": "무슨 일로 여기까지 왔나요?",
-        "gpt_seg_trans": "여기엔 무슨 일로 오셨어요?"
+        "gpt_seg_trans": "여기엔 무슨 일로 오셨어요?",
+        "gdt_context_trans": "무슨 일로 여기까지 왔나요?"
       },
       {
         "file": "4_0_d14",
@@ -1089,7 +1211,8 @@
         "gdt_full_trans": "저는 승무원이고 휴가차 이곳에 왔어요.",
         "gdt_seg_trans": "나는 승무원이다 그리고 난 여기 휴가 중이야.",
         "gdt_comet_score": 0.9093,
-        "gpt_seg_trans": "저는 승무원이에요 그리고 저는 휴가차 여기 왔어요."
+        "gpt_seg_trans": "저는 승무원이에요 그리고 저는 휴가차 여기 왔어요.",
+        "gdt_context_trans": "저는 승무원 <SEG>이고 휴가차 왔습니다."
       },
       {
         "file": "5_1_d14",
@@ -1097,7 +1220,8 @@
         "seg_text": "Where are you staying?",
         "gdt_full_trans": "어디에 머물고 있나요?",
         "gdt_seg_trans": "어디에 머물고 있나요?",
-        "gpt_seg_trans": "어디에 머무르고 계세요?"
+        "gpt_seg_trans": "어디에 머무르고 계세요?",
+        "gdt_context_trans": "어디에 머물고 있나요?"
       },
       {
         "file": "6_0_d14",
@@ -1105,7 +1229,8 @@
         "seg_text": "I live in the Holiday Inn Lido Hotel.",
         "gdt_full_trans": "저는 홀리데이 인 리도 호텔에 살고 있습니다.",
         "gdt_seg_trans": "저는 홀리데이 인 리도 호텔에 살고 있습니다.",
-        "gpt_seg_trans": "저는 홀리데이 인 리도 호텔에 묵고 있어요."
+        "gpt_seg_trans": "저는 홀리데이 인 리도 호텔에 묵고 있어요.",
+        "gdt_context_trans": "저는 홀리데이 인 리도 호텔에 살고 있습니다."
       },
       {
         "file": "7_1_d14",
@@ -1114,7 +1239,8 @@
         "gdt_full_trans": "아, 별로 멀지 않네요. 그리고 내가 아는 한 그곳은 멋진 곳이다.",
         "gdt_seg_trans": "아, 별로 멀지 않네요. 그리고 내가 아는 한 그곳은 멋진 곳이다.",
         "gdt_comet_score": 0.9808,
-        "gpt_seg_trans": "아, 그리 멀지 않아요. 제가 알기로는 꽤 고급스러운 곳이에요."
+        "gpt_seg_trans": "아, 그리 멀지 않아요. 제가 알기로는 꽤 고급스러운 곳이에요.",
+        "gdt_context_trans": "아, 별로 멀지 않네요. <SEG> 그리고 제가 아는 한 그곳은 멋진 곳이에요."
       },
       {
         "file": "8_0_d14",
@@ -1123,7 +1249,8 @@
         "gdt_full_trans": "예, 그렇습니다. 마을 지도를 어디서 구할 수 있는지 아시나요?",
         "gdt_seg_trans": "예, 그렇습니다. 마을 지도를 어디서 구할 수 있는지 아시나요?",
         "gdt_comet_score": 0.9882,
-        "gpt_seg_trans": "네, 맞아요. 시내 지도를 어디서 구할 수 있는지 아세요?"
+        "gpt_seg_trans": "네, 맞아요. 시내 지도를 어디서 구할 수 있는지 아세요?",
+        "gdt_context_trans": "예, 그렇습니다. <SEG> 마을 지도를 어디서 구할 수 있는지 아시나요?"
       },
       {
         "file": "9_1_d14",
@@ -1131,7 +1258,8 @@
         "seg_text": "We sell them, right here.",
         "gdt_full_trans": "바로 여기서 판매합니다.",
         "gdt_seg_trans": "바로 여기서 판매합니다.",
-        "gpt_seg_trans": "저희가 여기서 팔아요."
+        "gpt_seg_trans": "저희가 여기서 팔아요.",
+        "gdt_context_trans": "바로 여기서 판매합니다."
       },
       {
         "file": "10_0_d14",
@@ -1140,7 +1268,8 @@
         "gdt_full_trans": "좋습니다. 외국인을 위한 것도 있나요? 영어 버전을 말하는 건가요?",
         "gdt_seg_trans": "좋습니다. 외국인을 위한 것도 있나요? 영어 버전을 말하는 건가요?",
         "gdt_comet_score": 0.9867,
-        "gpt_seg_trans": "좋아요, 외국인용도 있나요? 영어판 말인가요?"
+        "gpt_seg_trans": "좋아요, 외국인용도 있나요? 영어판 말인가요?",
+        "gdt_context_trans": "좋습니다. 외국인을 위한 것도 있나요? <SEG> 영어 버전이라는 뜻인가요?"
       }
     ]
   },
@@ -1152,7 +1281,8 @@
         "seg_text": "There will be another sandstorm here tomorrow.",
         "gdt_full_trans": "내일 이곳에는 또 다른 모래 폭풍이 있을 것입니다.",
         "gdt_seg_trans": "내일 이곳에는 또 다른 모래 폭풍이 있을 것입니다.",
-        "gpt_seg_trans": "내일 여기 또 모래폭풍이 있을 거예요."
+        "gpt_seg_trans": "내일 여기 또 모래폭풍이 있을 거예요.",
+        "gdt_context_trans": "내일 이곳에는 또 다른 모래 폭풍이 있을 것입니다."
       },
       {
         "file": "1_1_d15",
@@ -1161,7 +1291,8 @@
         "gdt_full_trans": "올해로 네 번째다. 끔찍하지 않나요?",
         "gdt_seg_trans": "올해로 네 번째다. 끔찍하지 않나요?",
         "gdt_comet_score": 0.9904,
-        "gpt_seg_trans": "올해 네 번째예요. 끔찍하지 않나요."
+        "gpt_seg_trans": "올해 네 번째예요. 끔찍하지 않나요.",
+        "gdt_context_trans": "올해로 네 번째다. <SEG> 끔찍하지 않나요?"
       },
       {
         "file": "2_0_d15",
@@ -1170,7 +1301,8 @@
         "gdt_full_trans": "예. 모래가 퍼지는 것을 막기 위해 나무와 풀을 더 많이 심어야 합니다.",
         "gdt_seg_trans": "예. 모래가 퍼지는 것을 막기 위해 나무와 풀을 더 많이 심어야 합니다.",
         "gdt_comet_score": 0.9815,
-        "gpt_seg_trans": "네. 모래가 퍼지는 걸 막으려면 나무랑 풀을 더 심어야 해요."
+        "gpt_seg_trans": "네. 모래가 퍼지는 걸 막으려면 나무랑 풀을 더 심어야 해요.",
+        "gdt_context_trans": "예. <SEG> 모래가 퍼지는 것을 막기 위해 나무와 풀을 더 많이 심어야 합니다."
       },
       {
         "file": "3_1_d15",
@@ -1179,7 +1311,8 @@
         "gdt_full_trans": "나무가 자라는 데는 수년이 걸릴 수 있습니다. 사람들이 나무 베는 일을 그만뒀으면 좋겠어요.",
         "gdt_seg_trans": "나무가 자라는 데는 수년이 걸릴 수 있습니다. 사람들이 나무 베는 일을 그만뒀으면 좋겠어요.",
         "gdt_comet_score": 0.9823,
-        "gpt_seg_trans": "나무가 자라는 데는 여러 해가 걸릴 수도 있어요. 사람들이 나무를 베는 걸 멈췄으면 좋겠어요."
+        "gpt_seg_trans": "나무가 자라는 데는 여러 해가 걸릴 수도 있어요. 사람들이 나무를 베는 걸 멈췄으면 좋겠어요.",
+        "gdt_context_trans": "나무가 자라는 데는 수년이 걸릴 수 있습니다. <SEG> 사람들이 나무 베는 일을 그만뒀으면 좋겠어요."
       },
       {
         "file": "4_0_d15",
@@ -1187,7 +1320,8 @@
         "seg_text": "But we need the wood.",
         "gdt_full_trans": "하지만 우리에겐 나무가 필요해요.",
         "gdt_seg_trans": "하지만 우리에겐 나무가 필요해요.",
-        "gpt_seg_trans": "하지만 우리는 나무가 필요해요."
+        "gpt_seg_trans": "하지만 우리는 나무가 필요해요.",
+        "gdt_context_trans": "하지만 우리에겐 나무가 필요해요."
       },
       {
         "file": "5_1_d15",
@@ -1196,7 +1330,8 @@
         "gdt_full_trans": "하지만 우리는 목재를 얻기 위해 숲을 파괴할 수는 없습니다.",
         "gdt_seg_trans": "하지만 우리는 숲을 파괴할 수 없습니다 나무를 얻으러.",
         "gdt_comet_score": 0.7831,
-        "gpt_seg_trans": "하지만 우리 숲을 파괴할 수는 없어요 나무를 얻으려고요."
+        "gpt_seg_trans": "하지만 우리 숲을 파괴할 수는 없어요 나무를 얻으려고요.",
+        "gdt_context_trans": "하지만 나무를 얻기 위해 숲 <SEG>을 파괴할 수는 없습니다."
       }
     ]
   },
@@ -1209,7 +1344,8 @@
         "gdt_full_trans": "제프, 나 슈퍼마켓에 갈 거야. 나와 함께 갈래?",
         "gdt_seg_trans": "제프, 나 슈퍼마켓에 갈 거야. 나와 함께 갈래?",
         "gdt_comet_score": 0.9872,
-        "gpt_seg_trans": "제프, 나 슈퍼마켓에 갈 거야. 나랑 같이 갈래?"
+        "gpt_seg_trans": "제프, 나 슈퍼마켓에 갈 거야. 나랑 같이 갈래?",
+        "gdt_context_trans": "제프, 나 슈퍼마켓에 갈 거야. <SEG> 나랑 같이 갈래?"
       },
       {
         "file": "1_0_d13",
@@ -1217,7 +1353,8 @@
         "seg_text": "I think the supermarket is closed now.",
         "gdt_full_trans": "지금은 슈퍼마켓이 문을 닫은 것 같아요.",
         "gdt_seg_trans": "지금은 슈퍼마켓이 문을 닫은 것 같아요.",
-        "gpt_seg_trans": "내 생각엔 슈퍼마켓이 지금 문 닫은 것 같아."
+        "gpt_seg_trans": "내 생각엔 슈퍼마켓이 지금 문 닫은 것 같아.",
+        "gdt_context_trans": "지금은 슈퍼마켓이 문을 닫은 것 같아요."
       },
       {
         "file": "2_1_d13",
@@ -1226,7 +1363,8 @@
         "gdt_full_trans": "아, 언제 닫나요?",
         "gdt_seg_trans": "오, 언제 닫나요?",
         "gdt_comet_score": 0.9888,
-        "gpt_seg_trans": "아, 몇 시에 문 닫아?"
+        "gpt_seg_trans": "아, 몇 시에 문 닫아?",
+        "gdt_context_trans": "아, <SEG> 언제 닫아요?"
       },
       {
         "file": "3_0_d13",
@@ -1234,7 +1372,8 @@
         "seg_text": "It closes at seven on Sundays.",
         "gdt_full_trans": "일요일은 일곱시에 문을 닫습니다.",
         "gdt_seg_trans": "일요일은 일곱시에 문을 닫습니다.",
-        "gpt_seg_trans": "일요일에는 7시에 문을 닫아."
+        "gpt_seg_trans": "일요일에는 7시에 문을 닫아.",
+        "gdt_context_trans": "일요일은 일곱시에 문을 닫습니다."
       },
       {
         "file": "4_1_d13",
@@ -1242,7 +1381,8 @@
         "seg_text": "That's too bad.",
         "gdt_full_trans": "안됐네요.",
         "gdt_seg_trans": "안됐네요.",
-        "gpt_seg_trans": "아, 아쉽네."
+        "gpt_seg_trans": "아, 아쉽네.",
+        "gdt_context_trans": "안됐네요."
       },
       {
         "file": "5_0_d13",
@@ -1251,7 +1391,8 @@
         "gdt_full_trans": "걱정하지 마세요. 내일 아침에 갈 수 있어요. 8시에 문을 엽니다.",
         "gdt_seg_trans": "걱정하지 마세요. 내일 아침에 갈 수 있어요. 8시에 문을 엽니다.",
         "gdt_comet_score": 0.9857,
-        "gpt_seg_trans": "걱정 마, 내일 아침에 갈 수 있어. 8시에 열어."
+        "gpt_seg_trans": "걱정 마, 내일 아침에 갈 수 있어. 8시에 열어.",
+        "gdt_context_trans": "걱정하지 마세요. 내일 아침에 갈 수 있어요. <SEG> 8시에 오픈합니다."
       },
       {
         "file": "6_1_d13",
@@ -1260,7 +1401,8 @@
         "gdt_full_trans": "괜찮은. 지금 무엇을 하고 싶나요?",
         "gdt_seg_trans": "괜찮은. 지금 무엇을 하고 싶나요?",
         "gdt_comet_score": 0.9857,
-        "gpt_seg_trans": "알았어. 지금 뭐 하고 싶어?"
+        "gpt_seg_trans": "알았어. 지금 뭐 하고 싶어?",
+        "gdt_context_trans": "괜찮은. <SEG> 지금 무엇을 하고 싶으신가요?"
       },
       {
         "file": "7_0_d13",
@@ -1269,7 +1411,8 @@
         "gdt_full_trans": "30분 동안 산책하자. 내 여동생이 오후 8시 30분쯤 여기에 도착할 것이고 그 후에는 우리 모두 나가서 저녁을 먹을 수 있습니다.",
         "gdt_seg_trans": "30분 동안 산책하자. 내 여동생이 오후 8시 30분쯤에 여기에 올 거야 그러면 우리 모두 저녁 먹으러 나가면 돼요.",
         "gdt_comet_score": 0.9103,
-        "gpt_seg_trans": "30분 정도 산책하자. 내 여동생은 대략 밤 8시 30분쯤 도착할 거야. 그리고 나서 우리 다 같이 저녁 먹으러 나갈 수 있어."
+        "gpt_seg_trans": "30분 정도 산책하자. 내 여동생은 대략 밤 8시 30분쯤 도착할 거야. 그리고 나서 우리 다 같이 저녁 먹으러 나갈 수 있어.",
+        "gdt_context_trans": "30분 동안 산책하자. <SEG> 제 여동생이 오후 8시 30분쯤에 여기에 올 거예요. <SEG> 그러면 우리 모두 저녁 먹으러 나가면 돼요."
       },
       {
         "file": "8_1_d13",
@@ -1277,7 +1420,8 @@
         "seg_text": "Where does she live?",
         "gdt_full_trans": "그녀는 어디에 살고 있나요?",
         "gdt_seg_trans": "그녀는 어디에 살고 있나요?",
-        "gpt_seg_trans": "그녀는 어디 살아?"
+        "gpt_seg_trans": "그녀는 어디 살아?",
+        "gdt_context_trans": "그녀는 어디에 살고 있나요?"
       },
       {
         "file": "9_0_d13",
@@ -1285,7 +1429,8 @@
         "seg_text": "She lives in San Francisco.",
         "gdt_full_trans": "그녀는 샌프란시스코에 살고 있습니다.",
         "gdt_seg_trans": "그녀는 샌프란시스코에 살고 있습니다.",
-        "gpt_seg_trans": "그녀는 샌프란시스코에 살아."
+        "gpt_seg_trans": "그녀는 샌프란시스코에 살아.",
+        "gdt_context_trans": "그녀는 샌프란시스코에 살고 있습니다."
       },
       {
         "file": "10_1_d13",
@@ -1293,7 +1438,8 @@
         "seg_text": "How long has she lived there?",
         "gdt_full_trans": "그녀는 그곳에서 얼마나 오래 살았나요?",
         "gdt_seg_trans": "그녀는 그곳에서 얼마나 오래 살았나요?",
-        "gpt_seg_trans": "그녀는 거기서 얼마나 오래 살았어?"
+        "gpt_seg_trans": "그녀는 거기서 얼마나 오래 살았어?",
+        "gdt_context_trans": "그녀는 그곳에서 얼마나 오래 살았나요?"
       },
       {
         "file": "11_0_d13",
@@ -1301,7 +1447,8 @@
         "seg_text": "I think she's lived there for about ten years.",
         "gdt_full_trans": "내 생각엔 그녀가 그곳에서 10년 정도 살았던 것 같아요.",
         "gdt_seg_trans": "내 생각엔 그녀가 그곳에서 10년 정도 살았던 것 같아요.",
-        "gpt_seg_trans": "내 생각엔 그녀가 거기서 한 10년 정도 살았어."
+        "gpt_seg_trans": "내 생각엔 그녀가 거기서 한 10년 정도 살았어.",
+        "gdt_context_trans": "내 생각엔 그녀가 그곳에서 10년 정도 살았던 것 같아요."
       },
       {
         "file": "12_1_d13",
@@ -1310,7 +1457,8 @@
         "gdt_full_trans": "오랜만이네요. 그 전에는 어디에서 살았나요?",
         "gdt_seg_trans": "오랜만이네요. 그 전에는 어디에서 살았나요?",
         "gdt_comet_score": 0.9905,
-        "gpt_seg_trans": "꽤 오래됐네. 그전에는 어디 살았어?"
+        "gpt_seg_trans": "꽤 오래됐네. 그전에는 어디 살았어?",
+        "gdt_context_trans": "오랜만이네요. <SEG> 그 전에는 어디에서 살았나요?"
       },
       {
         "file": "13_0_d13",
@@ -1318,7 +1466,8 @@
         "seg_text": "San Diego.",
         "gdt_full_trans": "샌디에고.",
         "gdt_seg_trans": "샌디에고.",
-        "gpt_seg_trans": "샌디에이고."
+        "gpt_seg_trans": "샌디에이고.",
+        "gdt_context_trans": "샌디에이고."
       }
     ]
   },
@@ -1331,7 +1480,8 @@
         "gdt_full_trans": "시애틀 레스토랑. 내가 당신을 위해 할 수 있는 일이 있나요?",
         "gdt_seg_trans": "시애틀 레스토랑. 내가 당신을 위해 할 수 있는 일이 있나요?",
         "gdt_comet_score": 0.9815,
-        "gpt_seg_trans": "시애틀 식당. 제가 도와드릴 수 있는 게 있을까요?"
+        "gpt_seg_trans": "시애틀 식당. 제가 도와드릴 수 있는 게 있을까요?",
+        "gdt_context_trans": "시애틀 레스토랑. <SEG> 제가 도와드릴 수 있는 게 있나요?"
       },
       {
         "file": "1_0_d17",
@@ -1339,7 +1489,8 @@
         "seg_text": "I would like to book a table for five at seven tonight.",
         "gdt_full_trans": "오늘 밤 7시에 5인용 테이블을 예약하고 싶습니다.",
         "gdt_seg_trans": "오늘 밤 7시에 5인용 테이블을 예약하고 싶습니다.",
-        "gpt_seg_trans": "오늘 밤 7시에 다섯 명 자리 예약하고 싶습니다."
+        "gpt_seg_trans": "오늘 밤 7시에 다섯 명 자리 예약하고 싶습니다.",
+        "gdt_context_trans": "오늘 밤 7시에 5인용 테이블을 예약하고 싶습니다."
       },
       {
         "file": "2_1_d17",
@@ -1347,7 +1498,8 @@
         "seg_text": "Umm, may I have your name, please?",
         "gdt_full_trans": "음, 성함을 알려주시겠어요?",
         "gdt_seg_trans": "음, 성함을 알려주시겠어요?",
-        "gpt_seg_trans": "음, 성함을 알려주시겠어요?"
+        "gpt_seg_trans": "음, 성함을 알려주시겠어요?",
+        "gdt_context_trans": "음, 성함을 알려주시겠어요?"
       },
       {
         "file": "3_0_d17",
@@ -1355,7 +1507,8 @@
         "seg_text": "Michael.",
         "gdt_full_trans": "남자 이름.",
         "gdt_seg_trans": "남자 이름.",
-        "gpt_seg_trans": "마이클."
+        "gpt_seg_trans": "마이클.",
+        "gdt_context_trans": "남자 이름."
       },
       {
         "file": "4_1_d17",
@@ -1364,7 +1517,8 @@
         "gdt_full_trans": "알겠습니다. 우리는 당신을 위해 그것을 준비할 것입니다.",
         "gdt_seg_trans": "알겠습니다. 우리는 당신을 위해 그것을 준비할 것입니다.",
         "gdt_comet_score": 0.9865,
-        "gpt_seg_trans": "알겠습니다, 손님. 저희가 준비해드리겠습니다."
+        "gpt_seg_trans": "알겠습니다, 손님. 저희가 준비해드리겠습니다.",
+        "gdt_context_trans": "알겠습니다. <SEG> 저희가 준비해 드리겠습니다."
       }
     ]
   },
@@ -1377,7 +1531,8 @@
         "gdt_full_trans": "음 확실하진 않지만 새 직장에 고려해 달라고 요청할 수도 있을 것 같아요.",
         "gdt_seg_trans": "음 확실하진 않지만 내 생각엔 새 직장에 고려해 달라고 요청할 수도 있을 것 같아요.",
         "gdt_comet_score": 0.9615,
-        "gpt_seg_trans": "음, 저는 확실하지 않지만 새 직무에 고려해 달라고 요청할 수도 있을 것 같아요."
+        "gpt_seg_trans": "음, 저는 확실하지 않지만 새 직무에 고려해 달라고 요청할 수도 있을 것 같아요.",
+        "gdt_context_trans": "음 잘은 모르겠지만 <SEG> 새 직장에 고려해 보시는 게 좋을 것 같아요."
       },
       {
         "file": "1_0_d16",
@@ -1385,7 +1540,8 @@
         "seg_text": "Why are you considering trying for it?",
         "gdt_full_trans": "왜 그것을 시도하려고 고려하고 있습니까?",
         "gdt_seg_trans": "왜 그것을 시도하려고 고려하고 있습니까?",
-        "gpt_seg_trans": "왜 그걸 해보려고 고려하고 있어요?"
+        "gpt_seg_trans": "왜 그걸 해보려고 고려하고 있어요?",
+        "gdt_context_trans": "왜 그것을 시도하려고 고려하고 있습니까?"
       },
       {
         "file": "2_1_d16",
@@ -1394,7 +1550,8 @@
         "gdt_full_trans": "좋아할 수도 있겠다는 생각이 들지만, 아직도 고민 중이에요.",
         "gdt_seg_trans": "좋아할 수도 있을 것 같은데, 하지만 나는 아직도 그것에 대해 생각하고 있어요.",
         "gdt_comet_score": 0.9179,
-        "gpt_seg_trans": "그걸 좋아할지도 모르겠어요, 하지만 아직도 그걸 생각하고 있어요."
+        "gpt_seg_trans": "그걸 좋아할지도 모르겠어요, 하지만 아직도 그걸 생각하고 있어요.",
+        "gdt_context_trans": "<SEG>를 좋아할 수도 있을 것 같은데 아직 고민 중이에요."
       },
       {
         "file": "3_0_d16",
@@ -1402,7 +1559,8 @@
         "seg_text": "What is it about this job that appeals to you?",
         "gdt_full_trans": "이 직업의 어떤 점에 매력을 느끼나요?",
         "gdt_seg_trans": "이 직업의 어떤 점에 매력을 느끼나요?",
-        "gpt_seg_trans": "이 직무의 어떤 점이 당신을 끌리게 하나요?"
+        "gpt_seg_trans": "이 직무의 어떤 점이 당신을 끌리게 하나요?",
+        "gdt_context_trans": "이 직업의 어떤 점에 매력을 느끼나요?"
       },
       {
         "file": "4_1_d16",
@@ -1411,7 +1569,8 @@
         "gdt_full_trans": "나는 그 자리를 즐길 것이라고 생각하지만 창의성이 많이 관련되지는 않습니다.",
         "gdt_seg_trans": "나는 그 자리를 즐길 것이라고 생각한다. 하지만 창의성이 많이 개입되지는 않습니다.",
         "gdt_comet_score": 0.9414,
-        "gpt_seg_trans": "그 직무를 즐길 것 같아요 하지만 창의성이 많이 필요한 건 아니에요."
+        "gpt_seg_trans": "그 직무를 즐길 것 같아요 하지만 창의성이 많이 필요한 건 아니에요.",
+        "gdt_context_trans": "나는 <SEG>라는 자리를 좋아할 것이라고 생각하지만 창의성이 많이 발휘되지는 않습니다."
       },
       {
         "file": "5_0_d16",
@@ -1420,7 +1579,8 @@
         "gdt_full_trans": "예, 당신 말이 맞을 수도 있습니다. 고려해야 할 사항이 많습니다.",
         "gdt_seg_trans": "예, 당신 말이 맞을 수도 있습니다. 고려해야 할 사항이 많습니다.",
         "gdt_comet_score": 0.9888,
-        "gpt_seg_trans": "네, 당신 말이 맞을 수도 있어요. 고려할 게 많아요."
+        "gpt_seg_trans": "네, 당신 말이 맞을 수도 있어요. 고려할 게 많아요.",
+        "gdt_context_trans": "예, 당신 말이 맞을 수도 있습니다. <SEG> 고려해야 할 사항이 많습니다."
       },
       {
         "file": "6_1_d16",
@@ -1428,7 +1588,8 @@
         "seg_text": "I am also wondering about the pay.",
         "gdt_full_trans": "그리고 급여도 궁금합니다.",
         "gdt_seg_trans": "그리고 급여도 궁금합니다.",
-        "gpt_seg_trans": "저도 급여에 대해서 궁금해하고 있어요."
+        "gpt_seg_trans": "저도 급여에 대해서 궁금해하고 있어요.",
+        "gdt_context_trans": "그리고 급여도 궁금합니다."
       },
       {
         "file": "7_0_d16",
@@ -1437,7 +1598,8 @@
         "gdt_full_trans": "급여를 약간 삭감해도 새로운 성장 기회를 얻을 수 있을까요?",
         "gdt_seg_trans": "급여를 약간 삭감하는 것이 가치가 있습니까? 새로운 성장의 기회를 위해?",
         "gdt_comet_score": 0.9271,
-        "gpt_seg_trans": "약간의 급여 감소가 그만한 가치가 있을까요 성장을 위한 새로운 기회를 위해서요?"
+        "gpt_seg_trans": "약간의 급여 감소가 그만한 가치가 있을까요 성장을 위한 새로운 기회를 위해서요?",
+        "gdt_context_trans": "급여를 약간 삭감해도 새로운 성장 기회를 얻을 수 있습니까? <SEG>"
       },
       {
         "file": "8_1_d16",
@@ -1445,7 +1607,8 @@
         "seg_text": "I am thinking that might be the case.",
         "gdt_full_trans": "그럴 수도 있겠다는 생각이 듭니다.",
         "gdt_seg_trans": "그럴 수도 있겠다는 생각이 듭니다.",
-        "gpt_seg_trans": "그럴 수도 있다고 생각하고 있어요."
+        "gpt_seg_trans": "그럴 수도 있다고 생각하고 있어요.",
+        "gdt_context_trans": "그럴 수도 있겠다는 생각이 듭니다."
       },
       {
         "file": "9_0_d16",
@@ -1454,7 +1617,8 @@
         "gdt_full_trans": "나는 당신이 시도해야한다고 생각합니다. 무엇을 잃어야 합니까? 언제든지 마음을 바꿀 수 있습니다.",
         "gdt_seg_trans": "나는 당신이 시도해야한다고 생각합니다. 무엇을 잃어야 합니까? 언제든지 마음을 바꿀 수 있습니다.",
         "gdt_comet_score": 0.9788,
-        "gpt_seg_trans": "한번 해보는 게 좋을 것 같아요. 잃을 게 뭐가 있죠? 언제든 마음을 바꿀 수 있어요."
+        "gpt_seg_trans": "한번 해보는 게 좋을 것 같아요. 잃을 게 뭐가 있죠? 언제든 마음을 바꿀 수 있어요.",
+        "gdt_context_trans": "나는 당신이 시도해야한다고 생각합니다. <SEG> 당신이 잃어야 할 것은 무엇입니까? <SEG> 마음은 언제든지 바뀔 수 있습니다."
       }
     ]
   },
@@ -1466,7 +1630,8 @@
         "seg_text": "How much is this?",
         "gdt_full_trans": "이것은 얼마입니까?",
         "gdt_seg_trans": "이것은 얼마입니까?",
-        "gpt_seg_trans": "이거 얼마예요?"
+        "gpt_seg_trans": "이거 얼마예요?",
+        "gdt_context_trans": "이것은 얼마입니까?"
       },
       {
         "file": "1_0_d19",
@@ -1474,7 +1639,8 @@
         "seg_text": "You mean the large one or the small one?",
         "gdt_full_trans": "큰 것 말인가요, 작은 것 말인가요?",
         "gdt_seg_trans": "큰 것 말인가요, 작은 것 말인가요?",
-        "gpt_seg_trans": "큰 거 말씀하시는 거예요, 아니면 작은 거예요?"
+        "gpt_seg_trans": "큰 거 말씀하시는 거예요, 아니면 작은 거예요?",
+        "gdt_context_trans": "큰 것 말인가요, 작은 것 말인가요?"
       },
       {
         "file": "2_1_d19",
@@ -1482,7 +1648,8 @@
         "seg_text": "The large one.",
         "gdt_full_trans": "큰 것.",
         "gdt_seg_trans": "큰 것.",
-        "gpt_seg_trans": "큰 거요."
+        "gpt_seg_trans": "큰 거요.",
+        "gdt_context_trans": "큰 것."
       },
       {
         "file": "3_0_d19",
@@ -1491,7 +1658,8 @@
         "gdt_full_trans": "이번 주에는 특별 행사가 있어요. 5달러로 인하됐습니다.",
         "gdt_seg_trans": "이번 주에는 특별 행사가 있어요. 5달러로 인하됐습니다.",
         "gdt_comet_score": 0.9858,
-        "gpt_seg_trans": "이번 주에 특별 할인 중이에요. 5달러로 할인됐어요."
+        "gpt_seg_trans": "이번 주에 특별 할인 중이에요. 5달러로 할인됐어요.",
+        "gdt_context_trans": "이번 주에는 특별 행사가 있어요. <SEG> 5달러로 인하되었습니다."
       },
       {
         "file": "4_1_d19",
@@ -1499,7 +1667,8 @@
         "seg_text": "Is this the only kind you have?",
         "gdt_full_trans": "당신이 가진 유일한 종류인가요?",
         "gdt_seg_trans": "당신이 가진 유일한 종류인가요?",
-        "gpt_seg_trans": "이게 유일한 종류예요?"
+        "gpt_seg_trans": "이게 유일한 종류예요?",
+        "gdt_context_trans": "당신이 가진 유일한 종류인가요?"
       },
       {
         "file": "5_0_d19",
@@ -1508,7 +1677,8 @@
         "gdt_full_trans": "아니요. 스타일은 다르지만 색상이 다른 제품도 있습니다. 그들은 저쪽에 있습니다. 표지판이 보이나요?",
         "gdt_seg_trans": "아니요. 스타일은 다르지만 색상이 다른 제품도 있습니다. 그들은 저쪽에 있습니다. 표지판이 보이나요?",
         "gdt_comet_score": 0.975,
-        "gpt_seg_trans": "아니요. 스타일은 다르지만 색은 같은 것도 있어요. 저기 있어요. 표지판 보이세요?"
+        "gpt_seg_trans": "아니요. 스타일은 다르지만 색은 같은 것도 있어요. 저기 있어요. 표지판 보이세요?",
+        "gdt_context_trans": "아니요. <SEG> 스타일은 다르지만 색상이 다른 제품도 있습니다. <SEG> 저쪽에 있어요. <SEG> 표지판이 보이시나요?"
       },
       {
         "file": "6_1_d19",
@@ -1517,7 +1687,8 @@
         "gdt_full_trans": "아, 그렇죠. 결정하기 전에 저기 있는 것들을 살펴 볼 것 같아요.",
         "gdt_seg_trans": "아, 그렇죠. 결정하기 전에 저기 있는 것들을 살펴 볼 것 같아요.",
         "gdt_comet_score": 0.9845,
-        "gpt_seg_trans": "아, 네. 결정하기 전에 저기 있는 것들을 좀 볼게요."
+        "gpt_seg_trans": "아, 네. 결정하기 전에 저기 있는 것들을 좀 볼게요.",
+        "gdt_context_trans": "아, 그렇죠. <SEG> 저쪽에 있는 것들은 좀 더 살펴보고 결정할 것 같아요."
       },
       {
         "file": "7_0_d19",
@@ -1526,7 +1697,8 @@
         "gdt_full_trans": "아주 좋습니다. 천천히 시간을 가지세요.",
         "gdt_seg_trans": "아주 좋습니다. 천천히 시간을 가지세요.",
         "gdt_comet_score": 0.9846,
-        "gpt_seg_trans": "좋아요. 천천히 보세요."
+        "gpt_seg_trans": "좋아요. 천천히 보세요.",
+        "gdt_context_trans": "아주 좋습니다. <SEG> 천천히 시간을 가져보세요."
       }
     ]
   },
@@ -1538,7 +1710,8 @@
         "seg_text": "I've brought this dress back to exchange it.",
         "gdt_full_trans": "교환하려고 이 드레스를 가져왔어요.",
         "gdt_seg_trans": "교환하려고 이 드레스를 가져왔어요.",
-        "gpt_seg_trans": "이 드레스를 교환하러 가져왔어요."
+        "gpt_seg_trans": "이 드레스를 교환하러 가져왔어요.",
+        "gdt_context_trans": "교환하려고 이 드레스를 가져왔어요."
       },
       {
         "file": "1_0_d18",
@@ -1547,7 +1720,8 @@
         "gdt_full_trans": "그건 문제가 되지 않습니다. 나에게 맡겨두고 마음에 드는 것을 찾으세요.",
         "gdt_seg_trans": "그건 문제가 되지 않습니다. 나에게 맡겨주세요. 그리고 당신이 좋아하는 것을 찾으십시오.",
         "gdt_comet_score": 0.9606,
-        "gpt_seg_trans": "문제없어요. 저한테 맡겨 주세요, 그리고 마음에 드는 걸 찾아보세요."
+        "gpt_seg_trans": "문제없어요. 저한테 맡겨 주세요, 그리고 마음에 드는 걸 찾아보세요.",
+        "gdt_context_trans": "그건 문제가 되지 않습니다. <SEG> 나에게 맡겨 <SEG> 마음에 드는 걸 찾아보세요."
       },
       {
         "file": "2_1_d18",
@@ -1555,7 +1729,8 @@
         "seg_text": "I was hoping you'd have something on sale today.",
         "gdt_full_trans": "오늘 뭔가 세일할 줄 알았는데.",
         "gdt_seg_trans": "오늘 뭔가 세일할 줄 알았는데.",
-        "gpt_seg_trans": "오늘 세일하는 게 있으면 좋겠다고 생각했어요."
+        "gpt_seg_trans": "오늘 세일하는 게 있으면 좋겠다고 생각했어요.",
+        "gdt_context_trans": "오늘 뭔가 세일할 줄 알았는데."
       },
       {
         "file": "3_0_d18",
@@ -1564,7 +1739,8 @@
         "gdt_full_trans": "음 오늘은 세일하는 게 없어요. 그런데 다음 주말에 큰 세일이 있어요.",
         "gdt_seg_trans": "음 오늘은 세일하는 게 없어요. 그런데 다음 주말에 큰 세일이 있어요.",
         "gdt_comet_score": 0.9858,
-        "gpt_seg_trans": "음, 오늘은 세일하는 게 없어요. 하지만 다음 주말에 큰 세일을 해요."
+        "gpt_seg_trans": "음, 오늘은 세일하는 게 없어요. 하지만 다음 주말에 큰 세일을 해요.",
+        "gdt_context_trans": "음 오늘은 세일하는 게 없어요. <SEG> 그런데 다음 주말에 큰 세일이 있어요."
       },
       {
         "file": "4_1_d18",
@@ -1572,7 +1748,8 @@
         "seg_text": "Is the sale going to include dresses?",
         "gdt_full_trans": "세일에 드레스도 포함되나요?",
         "gdt_seg_trans": "세일에 드레스도 포함되나요?",
-        "gpt_seg_trans": "세일에 드레스도 포함되나요?"
+        "gpt_seg_trans": "세일에 드레스도 포함되나요?",
+        "gdt_context_trans": "세일에 드레스도 포함되나요?"
       },
       {
         "file": "5_0_d18",
@@ -1581,7 +1758,8 @@
         "gdt_full_trans": "당신이 볼 수 있는 모든 것이 판매될 것입니다.",
         "gdt_seg_trans": "당신이 볼 수 있는 모든 것 판매될 예정입니다.",
         "gdt_comet_score": 0.9651,
-        "gpt_seg_trans": "보이는 건 다 세일할 거예요."
+        "gpt_seg_trans": "보이는 건 다 세일할 거예요.",
+        "gdt_context_trans": "<SEG>에서 볼 수 있는 모든 것이 판매됩니다."
       },
       {
         "file": "6_1_d18",
@@ -1590,7 +1768,8 @@
         "gdt_full_trans": "나는 그 소리를 좋아한다. 다음 주말에 다시 오겠습니다.",
         "gdt_seg_trans": "나는 그 소리를 좋아한다. 다음 주말에 다시 오겠습니다.",
         "gdt_comet_score": 0.9857,
-        "gpt_seg_trans": "좋네요. 그럼 다음 주말에 다시 올게요."
+        "gpt_seg_trans": "좋네요. 그럼 다음 주말에 다시 올게요.",
+        "gdt_context_trans": "나는 그 소리를 좋아한다. <SEG> 다음 주말에 다시 오겠습니다."
       },
       {
         "file": "7_0_d18",
@@ -1599,7 +1778,8 @@
         "gdt_full_trans": "절약된 금액은 짧은 기다림의 가치가 있을 것입니다. 다음 주말에 뵙겠습니다.",
         "gdt_seg_trans": "절약된 금액은 짧은 기다림의 가치가 있을 것입니다. 다음 주말에 뵙겠습니다.",
         "gdt_comet_score": 0.9772,
-        "gpt_seg_trans": "잠깐 기다릴 만한 가치가 있을 거예요. 다음 주말에 봬요."
+        "gpt_seg_trans": "잠깐 기다릴 만한 가치가 있을 거예요. 다음 주말에 봬요.",
+        "gdt_context_trans": "절약된 금액은 짧은 기다림의 가치가 있을 것입니다. <SEG> 다음 주말에 만나요."
       }
     ]
   },
@@ -1611,7 +1791,8 @@
         "seg_text": "Are you ready for a second?",
         "gdt_full_trans": "잠시만 기다리실 준비가 되셨나요?",
         "gdt_seg_trans": "잠시만 기다리실 준비가 되셨나요?",
-        "gpt_seg_trans": "잠깐 준비됐어?"
+        "gpt_seg_trans": "잠깐 준비됐어?",
+        "gdt_context_trans": "잠시만 기다리실 준비가 되셨나요?"
       },
       {
         "file": "1_1_d20",
@@ -1620,7 +1801,8 @@
         "gdt_full_trans": "아니요, 죄송하지만 주문을 취소해야 할 것 같습니다. 그것이 나와 동의하는지 잘 모르겠습니다.",
         "gdt_seg_trans": "아니요, 죄송하지만 주문을 취소해야 할 것 같습니다. 그것이 나와 동의하는지 잘 모르겠습니다.",
         "gdt_comet_score": 0.9816,
-        "gpt_seg_trans": "아니요, 유감스럽지만 주문을 취소해야 할 것 같습니다. 그게 나랑 맞는지 잘 모르겠어."
+        "gpt_seg_trans": "아니요, 유감스럽지만 주문을 취소해야 할 것 같습니다. 그게 나랑 맞는지 잘 모르겠어.",
+        "gdt_context_trans": "아니요, 죄송하지만 주문을 취소해야 할 것 같습니다. <SEG> 그것이 나와 동의하는지 잘 모르겠습니다."
       },
       {
         "file": "2_0_d20",
@@ -1628,7 +1810,8 @@
         "seg_text": "Would you like anything else?",
         "gdt_full_trans": "다른 것을 원하시나요?",
         "gdt_seg_trans": "다른 것을 원하시나요?",
-        "gpt_seg_trans": "다른 거 더 필요하세요?"
+        "gpt_seg_trans": "다른 거 더 필요하세요?",
+        "gdt_context_trans": "다른 것을 원하시나요?"
       },
       {
         "file": "3_1_d20",
@@ -1636,7 +1819,8 @@
         "seg_text": "I'd prefer swordfish steak.",
         "gdt_full_trans": "저는 황새치 스테이크를 더 좋아해요.",
         "gdt_seg_trans": "저는 황새치 스테이크를 더 좋아해요.",
-        "gpt_seg_trans": "저는 황새치 스테이크가 더 좋겠어요."
+        "gpt_seg_trans": "저는 황새치 스테이크가 더 좋겠어요.",
+        "gdt_context_trans": "저는 황새치 스테이크를 더 좋아해요."
       },
       {
         "file": "4_0_d20",
@@ -1645,7 +1829,8 @@
         "gdt_full_trans": "죄송합니다. 지금은 시즌아웃이에요.",
         "gdt_seg_trans": "죄송합니다. 지금은 시즌아웃이에요.",
         "gdt_comet_score": 0.9936,
-        "gpt_seg_trans": "죄송합니다. 지금은 제철이 아니에요."
+        "gpt_seg_trans": "죄송합니다. 지금은 제철이 아니에요.",
+        "gdt_context_trans": "죄송합니다. <SEG> 이제 시즌이 끝났어요."
       },
       {
         "file": "5_1_d20",
@@ -1653,7 +1838,8 @@
         "seg_text": "Oysters, please.",
         "gdt_full_trans": "굴 주세요.",
         "gdt_seg_trans": "굴 주세요.",
-        "gpt_seg_trans": "굴로 부탁해요."
+        "gpt_seg_trans": "굴로 부탁해요.",
+        "gdt_context_trans": "굴 주세요."
       }
     ]
   },
@@ -1666,7 +1852,8 @@
         "gdt_full_trans": "안녕하세요, 저는 이 건물의 최고 책임자입니다. 제가 당신을 위해 무엇을 도와드릴까요?",
         "gdt_seg_trans": "안녕하세요, 저는 이 건물의 최고 책임자입니다. 제가 당신을 위해 무엇을 도와드릴까요?",
         "gdt_comet_score": 0.987,
-        "gpt_seg_trans": "안녕하세요, 저는 이 건물의 관리인입니다. 무엇을 도와드릴까요?"
+        "gpt_seg_trans": "안녕하세요, 저는 이 건물의 관리인입니다. 무엇을 도와드릴까요?",
+        "gdt_context_trans": "안녕하세요, 저는 이 건물의 최고 책임자입니다. <SEG> 무엇을 도와드릴까요?"
       },
       {
         "file": "1_0_d21",
@@ -1675,7 +1862,8 @@
         "gdt_full_trans": "안녕하세요, 저는 폴입니다. 1층에 있는 아파트를 보여 주시겠어요?",
         "gdt_seg_trans": "안녕하세요, 저는 폴입니다. 1층에 있는 아파트를 보여 주시겠어요?",
         "gdt_comet_score": 0.9867,
-        "gpt_seg_trans": "안녕하세요, 저는 폴입니다. 1층에 있는 아파트를 보여주실 수 있나요?"
+        "gpt_seg_trans": "안녕하세요, 저는 폴입니다. 1층에 있는 아파트를 보여주실 수 있나요?",
+        "gdt_context_trans": "안녕하세요, 저는 폴입니다. <SEG> 1층 아파트를 보여주시겠어요?"
       },
       {
         "file": "2_1_d21",
@@ -1684,7 +1872,8 @@
         "gdt_full_trans": "확신하는. 갑시다.",
         "gdt_seg_trans": "확신하는. 갑시다.",
         "gdt_comet_score": 0.969,
-        "gpt_seg_trans": "물론이죠. 가죠."
+        "gpt_seg_trans": "물론이죠. 가죠.",
+        "gdt_context_trans": "확신하는. <SEG> 가자."
       },
       {
         "file": "3_0_d21",
@@ -1693,7 +1882,8 @@
         "gdt_full_trans": "음 이거 마음에 드네요. 임대료는 얼마입니까?",
         "gdt_seg_trans": "음 이거 마음에 드네요. 임대료는 얼마인가요?",
         "gdt_comet_score": 0.982,
-        "gpt_seg_trans": "음, 이게 마음에 드네요. 월세가 얼마인가요?"
+        "gpt_seg_trans": "음, 이게 마음에 드네요. 월세가 얼마인가요?",
+        "gdt_context_trans": "음 이거 마음에 드네요. <SEG> 임대료는 얼마인가요?"
       },
       {
         "file": "4_1_d21",
@@ -1701,7 +1891,8 @@
         "seg_text": "Eight fifty dollars a month.",
         "gdt_full_trans": "한 달에 850달러.",
         "gdt_seg_trans": "한 달에 850달러.",
-        "gpt_seg_trans": "한 달에 850달러입니다."
+        "gpt_seg_trans": "한 달에 850달러입니다.",
+        "gdt_context_trans": "한 달에 850달러."
       },
       {
         "file": "5_0_d21",
@@ -1709,7 +1900,8 @@
         "seg_text": "Does the rent include utilities?",
         "gdt_full_trans": "임대료에 공과금이 포함되어 있나요?",
         "gdt_seg_trans": "임대료에 공과금이 포함되어 있나요?",
-        "gpt_seg_trans": "월세에 공과금이 포함되나요?"
+        "gpt_seg_trans": "월세에 공과금이 포함되나요?",
+        "gdt_context_trans": "임대료에 공과금이 포함되어 있나요?"
       },
       {
         "file": "6_1_d21",
@@ -1718,7 +1910,8 @@
         "gdt_full_trans": "아니요. 유틸리티는 별도입니다.",
         "gdt_seg_trans": "아니요. 유틸리티는 별도입니다.",
         "gdt_comet_score": 0.9905,
-        "gpt_seg_trans": "아니요. 공과금은 별도입니다."
+        "gpt_seg_trans": "아니요. 공과금은 별도입니다.",
+        "gdt_context_trans": "아니요. <SEG> 유틸리티는 별도입니다."
       },
       {
         "file": "7_0_d21",
@@ -1726,7 +1919,8 @@
         "seg_text": "Where’s the laundry room?",
         "gdt_full_trans": "세탁실은 어디에 있나요?",
         "gdt_seg_trans": "세탁실은 어디에 있나요?",
-        "gpt_seg_trans": "세탁실은 어디에 있나요?"
+        "gpt_seg_trans": "세탁실은 어디에 있나요?",
+        "gdt_context_trans": "세탁실은 어디에 있나요?"
       },
       {
         "file": "8_1_d21",
@@ -1734,7 +1928,8 @@
         "seg_text": "It’s on the other side of this floor.",
         "gdt_full_trans": "이 층 반대편에 있어요.",
         "gdt_seg_trans": "이 층 반대편에 있어요.",
-        "gpt_seg_trans": "이 층 반대편에 있어요."
+        "gpt_seg_trans": "이 층 반대편에 있어요.",
+        "gdt_context_trans": "이 층 반대편에 있어요."
       },
       {
         "file": "9_0_d21",
@@ -1742,7 +1937,8 @@
         "seg_text": "What’s your rule about pets?",
         "gdt_full_trans": "애완동물에 대한 당신의 규칙은 무엇입니까?",
         "gdt_seg_trans": "애완동물에 대한 당신의 규칙은 무엇입니까?",
-        "gpt_seg_trans": "반려동물에 대한 규정이 어떻게 되나요?"
+        "gpt_seg_trans": "반려동물에 대한 규정이 어떻게 되나요?",
+        "gdt_context_trans": "애완동물에 대한 당신의 규칙은 무엇입니까?"
       },
       {
         "file": "10_1_d21",
@@ -1751,7 +1947,8 @@
         "gdt_full_trans": "애완동물 한두 마리를 허용하지만 보증금 300달러를 지불해야 합니다.",
         "gdt_seg_trans": "우리는 한두 마리의 애완동물을 허용합니다. 하지만 보증금 300달러를 내야 합니다.",
         "gdt_comet_score": 0.9547,
-        "gpt_seg_trans": "반려동물은 한두 마리까지 허용합니다 하지만 300달러 보증금을 내야 해요."
+        "gpt_seg_trans": "반려동물은 한두 마리까지 허용합니다 하지만 300달러 보증금을 내야 해요.",
+        "gdt_context_trans": "<SEG> 애완동물은 한두 마리 허용되지만 보증금 300달러를 지불해야 합니다."
       },
       {
         "file": "11_0_d21",
@@ -1759,7 +1956,8 @@
         "seg_text": "How come?",
         "gdt_full_trans": "왜요?",
         "gdt_seg_trans": "왜요?",
-        "gpt_seg_trans": "왜요?"
+        "gpt_seg_trans": "왜요?",
+        "gdt_context_trans": "왜요?"
       },
       {
         "file": "12_1_d21",
@@ -1768,7 +1966,8 @@
         "gdt_full_trans": "애완동물이 아파트 벽이나 카펫을 망친 경우 애완동물 보증금은 저희가 보관해 드립니다. 그렇지 않은 경우 퇴실 시 보증금을 돌려드립니다.",
         "gdt_seg_trans": "애완동물이 아파트 벽이나 카펫을 망친 경우 애완동물 보증금은 저희가 보관해 드립니다. 그렇지 않은 경우 퇴실 시 보증금을 돌려드립니다.",
         "gdt_comet_score": 0.968,
-        "gpt_seg_trans": "반려동물이 아파트 벽이나 카펫을 망가뜨리면 보증금을 돌려드리지 않을 거예요. 그렇지 않으면 퇴실할 때 보증금을 돌려드릴게요."
+        "gpt_seg_trans": "반려동물이 아파트 벽이나 카펫을 망가뜨리면 보증금을 돌려드리지 않을 거예요. 그렇지 않으면 퇴실할 때 보증금을 돌려드릴게요.",
+        "gdt_context_trans": "애완동물이 아파트 벽이나 카펫을 망친 경우 애완동물 보증금은 저희가 보관해 드립니다. <SEG> 그렇지 않을 경우 퇴실 시 보증금을 돌려드립니다."
       },
       {
         "file": "13_0_d21",
@@ -1776,7 +1975,8 @@
         "seg_text": "Who takes care of bug control?",
         "gdt_full_trans": "버그 관리는 누가 담당하나요?",
         "gdt_seg_trans": "버그 관리는 누가 담당하나요?",
-        "gpt_seg_trans": "벌레 방제는 누가 하나요?"
+        "gpt_seg_trans": "벌레 방제는 누가 하나요?",
+        "gdt_context_trans": "버그 관리는 누가 담당하나요?"
       }
     ]
   }
