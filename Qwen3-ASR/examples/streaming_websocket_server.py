@@ -135,7 +135,8 @@ class StreamingConfig:
     # 모델 설정
     model_path: str = "Qwen/Qwen3-ASR-1.7B"
     gpu_memory_utilization: float = 0.8
-    max_new_tokens: int = 32
+    # per-chunk 생성 토큰 상한. 32는 dense/긴 발화에서 꼬리가 잘려(truncation) 128로 상향.
+    max_new_tokens: int = 128
 
     # LoRA 어댑터 경로 (examples/ 디렉토리 기준 상대경로)
     adapter_en: str = "../finetuning/finetuning-out-en-plus/checkpoint-420_vllm"
@@ -1961,8 +1962,8 @@ def parse_args():
         help="GPU memory utilization (0.0 ~ 1.0)",
     )
     parser.add_argument(
-        "--max-new-tokens", type=int, default=32,
-        help="Max new tokens per chunk",
+        "--max-new-tokens", type=int, default=128,
+        help="Max new tokens per chunk (32은 긴 발화 truncation 유발 → 128)",
     )
     parser.add_argument(
         "--chunk-size", type=float, default=2.0,
