@@ -418,6 +418,12 @@ async def process_single_file(
                 if vad_fired.is_set():
                     break
                 await ws.send(chunk.tobytes())
+        # VAD가 커밋하지 않은 짧은 발화 등을 서버가 마저 flush(reason=finish)하도록 finish 전송.
+        # 연결이 열린 상태에서 보내야 finish-final이 클라에 도달한다(연결 종료로 트리거하면 늦음).
+        try:
+            await ws.send(json.dumps({'type': 'finish'}))
+        except Exception:
+            pass
         send_done.set()
 
     async def _recv():
@@ -483,6 +489,9 @@ async def process_single_file(
                         'prevSlotSpeechEndSec': data.get('prevSlotSpeechEndSec'),
                         'client_final_received_elapsed_sec': receive_elapsed_sec,
                     })
+                # finish 커밋(종료 flush)을 받으면 더 받을 게 없으므로 종료
+                if commit_reason == 'finish' and send_done.is_set():
+                    break
 
     await asyncio.gather(_send(), _recv())
 
