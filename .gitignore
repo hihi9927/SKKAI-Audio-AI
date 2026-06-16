@@ -65,6 +65,7 @@ evaluation/LibriSpeech/test-other
 # Weights
 Qwen3-ASR/finetuning/Qwen3-ASR-1.7B
 Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-lora-ready
+Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-lora-ready_new/
 Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged
 Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-ko-merged/
 Qwen3-ASR/finetuning/en-merged
@@ -137,6 +138,8 @@ run_*.sh
 run_*.log
 # ASR session logs (runtime data)
 logs/asr_logs/
+# ASR recorded audio (runtime data, --record-audio)
+logs/asr_audio/
 
 # Runtime logs / temp outputs
 .codegraph/

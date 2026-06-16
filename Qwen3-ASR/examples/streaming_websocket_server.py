@@ -26,6 +26,7 @@ import os
 import re
 import time
 import traceback
+import wave
 from collections import deque
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -180,6 +181,9 @@ class StreamingConfig:
     # Google Translate 컨텍스트 활성화 (--google-context 플래그, 문장 수는 context_window 공유)
     google_context: bool = False
 
+    # 오디오 녹음 설정 (로그 분석용)
+    record_audio: bool = False  # True면 수신 PCM을 세션별 WAV로 저장
+
     # 서버 설정
     host: str = "0.0.0.0"
     port: int = 8765
@@ -284,6 +288,49 @@ class SessionLogger:
             })
             with open(self.path, "w", encoding="utf-8") as f:
                 json.dump(self._entries, f, ensure_ascii=False, indent=2)
+
+
+class AudioRecorder:
+    """수신 PCM(s16le, 16kHz mono)을 세션별 WAV 파일로 저장.
+
+    세션 로그(session_{ts}.json)와 동일한 타임스탬프 stem을 사용해
+    로그 ↔ 오디오를 1:1로 매칭할 수 있게 한다.
+    """
+
+    def __init__(
+        self,
+        session_log_path: str,
+        client_id: int = 0,
+        sample_rate: int = SAMPLING_RATE,
+        audio_dir: str = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "../../logs/asr_audio"
+        ),
+    ):
+        os.makedirs(audio_dir, exist_ok=True)
+        stem = os.path.splitext(os.path.basename(session_log_path))[0]
+        self.path = os.path.join(audio_dir, f"{stem}.wav")
+        self.client_id = client_id
+        self._closed = False
+        self._wav = wave.open(self.path, "wb")
+        self._wav.setnchannels(1)
+        self._wav.setsampwidth(2)  # s16le = 2 bytes/sample
+        self._wav.setframerate(sample_rate)
+        logger.info(f"[C{client_id}] [audio-rec] wav file: {self.path}")
+
+    def write(self, pcm: bytes) -> None:
+        if self._closed or not pcm:
+            return
+        try:
+            self._wav.writeframes(pcm)
+        except Exception as e:
+            logger.warning(f"[C{self.client_id}] [audio-rec] write failed: {e}")
+
+    def close(self) -> None:
+        if self._closed:
+            return
+        self._closed = True
+        with contextlib.suppress(Exception):
+            self._wav.close()
 
 
 class PairingHub:
@@ -494,6 +541,7 @@ class Qwen3ASRStreamingHandler:
         self.asr_lock = asyncio.Lock()
         self.http_session: Optional[aiohttp.ClientSession] = None
         self.session_logger: Optional[SessionLogger] = None
+        self.recorder: Optional[AudioRecorder] = None
         self.corrector = corrector
         self.gpt_translator = gpt_translator
         self.use_correction = True  # overridden per-session by start message speed field
@@ -1335,6 +1383,9 @@ class Qwen3ASRStreamingHandler:
         if not audio_data:
             return
 
+        if self.recorder is not None:
+            self.recorder.write(audio_data)
+
         chunk = np.frombuffer(audio_data, dtype=np.int16).astype(np.float32) / 32768.0
         if chunk.size == 0:
             return
@@ -1644,6 +1695,13 @@ class Qwen3ASRStreamingHandler:
                                 streaming_id = await self._get_streaming_id()
                                 self.log.extra["cid"] = streaming_id
                             self.session_logger = SessionLogger(client_id=self.log.extra["cid"])
+                            if self.config.record_audio:
+                                if self.recorder is not None:
+                                    self.recorder.close()
+                                self.recorder = AudioRecorder(
+                                    self.session_logger.path,
+                                    client_id=self.log.extra["cid"],
+                                )
                             self.client_lang = data.get("lang", "auto")
                             self.client_target_lang = data.get("targetLang", "")
                             self.use_correction = data.get("speed", "accurate") != "fast"
@@ -1747,6 +1805,9 @@ class Qwen3ASRStreamingHandler:
                 with contextlib.suppress(Exception):
                     await self.http_session.close()
                 self.http_session = None
+            if self.recorder is not None:
+                self.recorder.close()
+                self.recorder = None
             await self.pairing_hub.leave(self.websocket)
             self.log.info("Connection closed")
 
@@ -2074,6 +2135,11 @@ def parse_args():
         help="로그를 JSON 형식으로 출력",
     )
     parser.add_argument(
+        "--record-audio", action="store_true",
+        help="수신 오디오를 세션별 WAV(logs/asr_audio/session_{ts}.wav)로 저장 — "
+             "세션 로그와 동일 타임스탬프로 매칭됨 (기본값: 비활성화)",
+    )
+    parser.add_argument(
         "--log-file", type=str, default=None,
         help="로그 파일 경로 (미지정 시 기본 경로 사용)",
     )
@@ -2113,6 +2179,7 @@ def main():
         translation_model=args.translation_model,
         context_window=args.context_window,
         google_context=args.google_context,
+        record_audio=args.record_audio,
     )
 
     server = Qwen3ASRStreamingServer(config)
