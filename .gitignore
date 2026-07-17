@@ -171,3 +171,10 @@ evaluation/KsponSpeech/dataset_100h/split/
 evaluation/KsponSpeech/dataset_100h/inputs/
 evaluation/KsponSpeech/results/prev/
 evaluation/KsponSpeech/results/seg_tuning/
+
+# dualbase 서버용 merge 모델 및 v4 학습 체크포인트 (대용량)
+Qwen3-ASR/finetuning/finetuning-out-ko-silence-v4/
+Qwen3-ASR/finetuning/finetuning-out-ko-silence-v4/**
+Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-silence-c80-merged/
+Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-ko-silence-v4c100-merged/
+Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-ko-silence-v4c900-merged/
