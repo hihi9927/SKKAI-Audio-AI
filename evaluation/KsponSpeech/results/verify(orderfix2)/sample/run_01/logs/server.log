@@ -1,0 +1,1228 @@
+/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/torch/cuda/__init__.py:283: UserWarning: 
+    Found GPU0 NVIDIA GB10 which is of cuda capability 12.1.
+    Minimum and Maximum cuda capability supported by this version of PyTorch is
+    (8.0) - (12.0)
+    
+  warnings.warn(
+Server log file: /home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/evaluation/KsponSpeech/results/verify(orderfix2)/sample/run_01/logs/server.log
+2026-06-15 01:07:28,089 - INFO - __main__ - Server log file: /home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/evaluation/KsponSpeech/results/verify(orderfix2)/sample/run_01/logs/server.log
+Silero VAD model loaded (server-level)
+2026-06-15 01:07:28,124 - INFO - examples.streaming_websocket_server - Silero VAD model loaded (server-level)
+Loading model: /home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-ko-silence-v3-merged
+2026-06-15 01:07:28,124 - INFO - examples.streaming_websocket_server - Loading model: /home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-ko-silence-v3-merged
+The tokenizer you are loading from '/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-ko-silence-v3-merged' with an incorrect regex pattern: https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503/discussions/84#69121093e8b480e709447d5e. This will lead to incorrect tokenization. You should set the `fix_mistral_regex=True` flag when loading this tokenizer to fix this issue.
+The following generation flags are not valid and may be ignored: ['temperature']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
+/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/torch/cuda/__init__.py:283: UserWarning: 
+    Found GPU0 NVIDIA GB10 which is of cuda capability 12.1.
+    Minimum and Maximum cuda capability supported by this version of PyTorch is
+    (8.0) - (12.0)
+    
+  warnings.warn(
+[0;36m(EngineCore_DP0 pid=2242340)[0;0m The tokenizer you are loading from '/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-ko-silence-v3-merged' with an incorrect regex pattern: https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503/discussions/84#69121093e8b480e709447d5e. This will lead to incorrect tokenization. You should set the `fix_mistral_regex=True` flag when loading this tokenizer to fix this issue.
+[0;36m(EngineCore_DP0 pid=2242340)[0;0m The tokenizer you are loading from '/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-ko-silence-v3-merged' with an incorrect regex pattern: https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503/discussions/84#69121093e8b480e709447d5e. This will lead to incorrect tokenization. You should set the `fix_mistral_regex=True` flag when loading this tokenizer to fix this issue.
+[0;36m(EngineCore_DP0 pid=2242340)[0;0m The tokenizer you are loading from '/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-ko-silence-v3-merged' with an incorrect regex pattern: https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503/discussions/84#69121093e8b480e709447d5e. This will lead to incorrect tokenization. You should set the `fix_mistral_regex=True` flag when loading this tokenizer to fix this issue.
+[0;36m(EngineCore_DP0 pid=2242340)[0;0m Loading safetensors checkpoint shards:   0% Completed | 0/2 [00:00<?, ?it/s]
+[0;36m(EngineCore_DP0 pid=2242340)[0;0m Loading safetensors checkpoint shards:  50% Completed | 1/2 [00:01<00:01,  1.36s/it]
+[0;36m(EngineCore_DP0 pid=2242340)[0;0m Loading safetensors checkpoint shards: 100% Completed | 2/2 [00:21<00:00, 12.59s/it]
+[0;36m(EngineCore_DP0 pid=2242340)[0;0m Loading safetensors checkpoint shards: 100% Completed | 2/2 [00:21<00:00, 10.91s/it]
+[0;36m(EngineCore_DP0 pid=2242340)[0;0m 
+[0;36m(EngineCore_DP0 pid=2242340)[0;0m 2026-06-15 01:08:14,022 - INFO - autotuner.py:256 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+[0;36m(EngineCore_DP0 pid=2242340)[0;0m 2026-06-15 01:08:14,043 - INFO - autotuner.py:262 - flashinfer.jit: [Autotuner]: Autotuning process ends
+[0;36m(EngineCore_DP0 pid=2242340)[0;0m Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   0%|          | 0/35 [00:00<?, ?it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   3%|▎         | 1/35 [00:00<00:16,  2.04it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   6%|▌         | 2/35 [00:00<00:09,  3.58it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   9%|▊         | 3/35 [00:00<00:06,  4.72it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  11%|█▏        | 4/35 [00:00<00:05,  5.56it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  14%|█▍        | 5/35 [00:01<00:04,  6.17it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  17%|█▋        | 6/35 [00:01<00:04,  6.62it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  20%|██        | 7/35 [00:01<00:04,  6.94it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  23%|██▎       | 8/35 [00:01<00:03,  7.16it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  26%|██▌       | 9/35 [00:01<00:03,  7.51it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  29%|██▊       | 10/35 [00:01<00:03,  7.80it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  31%|███▏      | 11/35 [00:01<00:02,  8.00it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  34%|███▍      | 12/35 [00:01<00:02,  8.17it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  37%|███▋      | 13/35 [00:01<00:02,  8.29it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  40%|████      | 14/35 [00:02<00:02,  8.37it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  43%|████▎     | 15/35 [00:02<00:02,  8.46it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  46%|████▌     | 16/35 [00:02<00:02,  8.50it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  49%|████▊     | 17/35 [00:02<00:02,  8.58it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  51%|█████▏    | 18/35 [00:02<00:01,  8.70it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  54%|█████▍    | 19/35 [00:02<00:01,  8.86it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  57%|█████▋    | 20/35 [00:02<00:01,  8.97it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  60%|██████    | 21/35 [00:02<00:01,  9.01it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  63%|██████▎   | 22/35 [00:03<00:01,  9.00it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  66%|██████▌   | 23/35 [00:03<00:01,  9.10it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  69%|██████▊   | 24/35 [00:03<00:01,  9.19it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  71%|███████▏  | 25/35 [00:03<00:01,  9.35it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  77%|███████▋  | 27/35 [00:03<00:00,  9.68it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  83%|████████▎ | 29/35 [00:03<00:00,  9.80it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  89%|████████▊ | 31/35 [00:03<00:00,  9.96it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  94%|█████████▍| 33/35 [00:04<00:00, 10.03it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE): 100%|██████████| 35/35 [00:04<00:00, 11.14it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE): 100%|██████████| 35/35 [00:04<00:00,  8.24it/s]
+[0;36m(EngineCore_DP0 pid=2242340)[0;0m Capturing CUDA graphs (decode, FULL):   0%|          | 0/19 [00:00<?, ?it/s]Capturing CUDA graphs (decode, FULL):   5%|▌         | 1/19 [00:00<00:04,  4.23it/s]Capturing CUDA graphs (decode, FULL):  11%|█         | 2/19 [00:00<00:02,  6.13it/s]Capturing CUDA graphs (decode, FULL):  16%|█▌        | 3/19 [00:00<00:02,  7.17it/s]Capturing CUDA graphs (decode, FULL):  21%|██        | 4/19 [00:00<00:01,  7.78it/s]Capturing CUDA graphs (decode, FULL):  26%|██▋       | 5/19 [00:00<00:01,  8.17it/s]Capturing CUDA graphs (decode, FULL):  32%|███▏      | 6/19 [00:00<00:01,  8.50it/s]Capturing CUDA graphs (decode, FULL):  37%|███▋      | 7/19 [00:00<00:01,  8.75it/s]Capturing CUDA graphs (decode, FULL):  42%|████▏     | 8/19 [00:01<00:01,  8.89it/s]Capturing CUDA graphs (decode, FULL):  47%|████▋     | 9/19 [00:01<00:01,  9.15it/s]Capturing CUDA graphs (decode, FULL):  58%|█████▊    | 11/19 [00:01<00:00,  9.61it/s]Capturing CUDA graphs (decode, FULL):  68%|██████▊   | 13/19 [00:01<00:00,  9.85it/s]Capturing CUDA graphs (decode, FULL):  79%|███████▉  | 15/19 [00:01<00:00, 10.02it/s]Capturing CUDA graphs (decode, FULL):  89%|████████▉ | 17/19 [00:01<00:00, 10.15it/s]Capturing CUDA graphs (decode, FULL): 100%|██████████| 19/19 [00:02<00:00, 11.59it/s]Capturing CUDA graphs (decode, FULL): 100%|██████████| 19/19 [00:02<00:00,  9.45it/s]
+이 vLLM 버전은 use_beam_search를 지원하지 않습니다. Greedy decoding으로 fallback합니다. (beam_size=2 무시)
+2026-06-15 01:08:21,925 - WARNING - examples.streaming_websocket_server - 이 vLLM 버전은 use_beam_search를 지원하지 않습니다. Greedy decoding으로 fallback합니다. (beam_size=2 무시)
+Greedy decoding (no repetition_penalty)
+2026-06-15 01:08:21,925 - INFO - examples.streaming_websocket_server - Greedy decoding (no repetition_penalty)
+Model loaded successfully
+2026-06-15 01:08:21,925 - INFO - examples.streaming_websocket_server - Model loaded successfully
+Starting WebSocket server on ws://localhost:8765
+2026-06-15 01:08:21,925 - INFO - examples.streaming_websocket_server - Starting WebSocket server on ws://localhost:8765
+Warming up model...
+2026-06-15 01:08:21,925 - INFO - examples.streaming_websocket_server - Warming up model...
+The tokenizer you are loading from '/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-ko-silence-v3-merged' with an incorrect regex pattern: https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503/discussions/84#69121093e8b480e709447d5e. This will lead to incorrect tokenization. You should set the `fix_mistral_regex=True` flag when loading this tokenizer to fix this issue.
+The tokenizer you are loading from '/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-ko-silence-v3-merged' with an incorrect regex pattern: https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503/discussions/84#69121093e8b480e709447d5e. This will lead to incorrect tokenization. You should set the `fix_mistral_regex=True` flag when loading this tokenizer to fix this issue.
+Warmup complete
+2026-06-15 01:08:24,515 - INFO - examples.streaming_websocket_server - Warmup complete
+server listening on 127.0.0.1:8765
+2026-06-15 01:08:24,523 - INFO - websockets.server - server listening on 127.0.0.1:8765
+Server listening on ws://localhost:8765
+2026-06-15 01:08:24,523 - INFO - examples.streaming_websocket_server - Server listening on ws://localhost:8765
+connection open
+2026-06-15 01:08:25,013 - INFO - websockets.server - connection open
+Client connected (1)
+2026-06-15 01:08:25,013 - INFO - __main__ - Client connected (1)
+[C-] Silero VAD (VADIterator) loaded successfully
+2026-06-15 01:08:25,042 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+New connection from ('127.0.0.1', 36106)
+2026-06-15 01:08:25,043 - INFO - __main__ - New connection from ('127.0.0.1', 36106)
+Connection closed
+2026-06-15 01:08:25,043 - INFO - __main__ - Connection closed
+Client disconnected (0)
+2026-06-15 01:08:25,043 - INFO - __main__ - Client disconnected (0)
+connection open
+2026-06-15 01:08:25,046 - INFO - websockets.server - connection open
+Client connected (1)
+2026-06-15 01:08:25,046 - INFO - __main__ - Client connected (1)
+[C-] Silero VAD (VADIterator) loaded successfully
+2026-06-15 01:08:25,073 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+New connection from ('127.0.0.1', 36118)
+2026-06-15 01:08:25,073 - INFO - __main__ - New connection from ('127.0.0.1', 36118)
+Received start: lang=ko, targetLang=
+2026-06-15 01:08:25,074 - INFO - __main__ - Received start: lang=ko, targetLang=
+[C-] Streaming state initialized
+2026-06-15 01:08:25,074 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+Received finish command
+2026-06-15 01:08:25,139 - INFO - __main__ - Received finish command
+[C-] Streaming state initialized
+2026-06-15 01:08:25,139 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+Received start: lang=ko, targetLang=
+2026-06-15 01:08:25,139 - INFO - __main__ - Received start: lang=ko, targetLang=
+[C-] Streaming state initialized
+2026-06-15 01:08:25,140 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+Received stop command
+2026-06-15 01:08:25,140 - INFO - __main__ - Received stop command
+Connection closed
+2026-06-15 01:08:25,140 - INFO - __main__ - Connection closed
+Client disconnected (0)
+2026-06-15 01:08:25,140 - INFO - __main__ - Client disconnected (0)
+connection open
+2026-06-15 01:08:25,145 - INFO - websockets.server - connection open
+Client connected (1)
+2026-06-15 01:08:25,146 - INFO - __main__ - Client connected (1)
+[C-] Silero VAD (VADIterator) loaded successfully
+2026-06-15 01:08:25,172 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+New connection from ('127.0.0.1', 36132)
+2026-06-15 01:08:25,172 - INFO - __main__ - New connection from ('127.0.0.1', 36132)
+Connection closed
+2026-06-15 01:08:25,173 - INFO - __main__ - Connection closed
+Client disconnected (0)
+2026-06-15 01:08:25,173 - INFO - __main__ - Client disconnected (0)
+connection open
+2026-06-15 01:08:25,175 - INFO - websockets.server - connection open
+Client connected (1)
+2026-06-15 01:08:25,175 - INFO - __main__ - Client connected (1)
+[C-] Silero VAD (VADIterator) loaded successfully
+2026-06-15 01:08:25,202 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+New connection from ('127.0.0.1', 36140)
+2026-06-15 01:08:25,202 - INFO - __main__ - New connection from ('127.0.0.1', 36140)
+Received start: lang=ko, targetLang=en
+2026-06-15 01:08:25,202 - INFO - __main__ - Received start: lang=ko, targetLang=en
+[C-] Streaming state initialized
+2026-06-15 01:08:25,203 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+[C-] [VAD-DETECT] speech_start target_samples=4224
+2026-06-15 01:08:25,611 - INFO - examples.streaming_websocket_server - [C-] [VAD-DETECT] speech_start target_samples=4224
+opening handshake failed
+Traceback (most recent call last):
+  File "/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/websockets/http11.py", line 138, in parse
+    request_line = yield from parse_line(read_line)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/websockets/http11.py", line 320, in parse_line
+    line = yield from read_line(MAX_LINE_LENGTH)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/websockets/streams.py", line 46, in read_line
+    raise EOFError(f"stream ends after {p} bytes, before end of line")
+EOFError: stream ends after 0 bytes, before end of line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/websockets/server.py", line 547, in parse
+    request = yield from Request.parse(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/websockets/http11.py", line 140, in parse
+    raise EOFError("connection closed while reading HTTP request line") from exc
+EOFError: connection closed while reading HTTP request line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/websockets/asyncio/server.py", line 356, in conn_handler
+    await connection.handshake(
+  File "/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/websockets/asyncio/server.py", line 207, in handshake
+    raise self.protocol.handshake_exc
+websockets.exceptions.InvalidMessage: did not receive a valid HTTP request
+2026-06-15 01:08:25,837 - ERROR - websockets.server - opening handshake failed
+Traceback (most recent call last):
+  File "/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/websockets/http11.py", line 138, in parse
+    request_line = yield from parse_line(read_line)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/websockets/http11.py", line 320, in parse_line
+    line = yield from read_line(MAX_LINE_LENGTH)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/websockets/streams.py", line 46, in read_line
+    raise EOFError(f"stream ends after {p} bytes, before end of line")
+EOFError: stream ends after 0 bytes, before end of line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/websockets/server.py", line 547, in parse
+    request = yield from Request.parse(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/websockets/http11.py", line 140, in parse
+    raise EOFError("connection closed while reading HTTP request line") from exc
+EOFError: connection closed while reading HTTP request line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/websockets/asyncio/server.py", line 356, in conn_handler
+    await connection.handshake(
+  File "/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/websockets/asyncio/server.py", line 207, in handshake
+    raise self.protocol.handshake_exc
+websockets.exceptions.InvalidMessage: did not receive a valid HTTP request
+opening handshake failed
+Traceback (most recent call last):
+  File "/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/websockets/http11.py", line 138, in parse
+    request_line = yield from parse_line(read_line)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/websockets/http11.py", line 320, in parse_line
+    line = yield from read_line(MAX_LINE_LENGTH)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/websockets/streams.py", line 46, in read_line
+    raise EOFError(f"stream ends after {p} bytes, before end of line")
+EOFError: stream ends after 0 bytes, before end of line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/websockets/server.py", line 547, in parse
+    request = yield from Request.parse(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/websockets/http11.py", line 140, in parse
+    raise EOFError("connection closed while reading HTTP request line") from exc
+EOFError: connection closed while reading HTTP request line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/websockets/asyncio/server.py", line 356, in conn_handler
+    await connection.handshake(
+  File "/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/websockets/asyncio/server.py", line 207, in handshake
+    raise self.protocol.handshake_exc
+websockets.exceptions.InvalidMessage: did not receive a valid HTTP request
+2026-06-15 01:08:25,838 - ERROR - websockets.server - opening handshake failed
+Traceback (most recent call last):
+  File "/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/websockets/http11.py", line 138, in parse
+    request_line = yield from parse_line(read_line)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/websockets/http11.py", line 320, in parse_line
+    line = yield from read_line(MAX_LINE_LENGTH)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/websockets/streams.py", line 46, in read_line
+    raise EOFError(f"stream ends after {p} bytes, before end of line")
+EOFError: stream ends after 0 bytes, before end of line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/websockets/server.py", line 547, in parse
+    request = yield from Request.parse(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/websockets/http11.py", line 140, in parse
+    raise EOFError("connection closed while reading HTTP request line") from exc
+EOFError: connection closed while reading HTTP request line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/websockets/asyncio/server.py", line 356, in conn_handler
+    await connection.handshake(
+  File "/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/websockets/asyncio/server.py", line 207, in handshake
+    raise self.protocol.handshake_exc
+websockets.exceptions.InvalidMessage: did not receive a valid HTTP request
+[C-] [TRANSCRIBE-DECODING] slot=A text='혼인신고를 또 해야 되잖아.'
+2026-06-15 01:08:27,843 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='혼인신고를 또 해야 되잖아.'
+[ENCODE] slot=A chunk=0 audio_pos=2.188s ts=2.201s ds=2.202s decode=0.437s
+2026-06-15 01:08:27,843 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=2.188s ts=2.201s ds=2.202s decode=0.437s
+[C-] [VAD-DETECT] speech_end target_samples=42432
+2026-06-15 01:08:28,002 - INFO - examples.streaming_websocket_server - [C-] [VAD-DETECT] speech_end target_samples=42432
+[C-] [VAD-SLOT-SWITCH] old=A new=B at=2.652s
+2026-06-15 01:08:28,007 - INFO - examples.streaming_websocket_server - [C-] [VAD-SLOT-SWITCH] old=A new=B at=2.652s
+[VAD_COMMIT] audio_end_sec=2.652s → speech_end_sec=1.852s
+2026-06-15 01:08:28,007 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=2.652s → speech_end_sec=1.852s
+[C-] [VAD-HISTORY] slot=A committed='' uncommitted='혼인신고를 또 해야 되잖아.'
+2026-06-15 01:08:28,007 - INFO - examples.streaming_websocket_server - [C-] [VAD-HISTORY] slot=A committed='' uncommitted='혼인신고를 또 해야 되잖아.'
+[C-] [VAD-BUFFER] slot=A cur_buf=10432 buf_pre=10432 accum_pre=32000 short=False has_buf=True
+2026-06-15 01:08:28,007 - INFO - examples.streaming_websocket_server - [C-] [VAD-BUFFER] slot=A cur_buf=10432 buf_pre=10432 accum_pre=32000 short=False has_buf=True
+[C-] [VAD-FINISH] slot=A text='혼인신고를 또 해야 되잖아.'
+2026-06-15 01:08:28,451 - INFO - examples.streaming_websocket_server - [C-] [VAD-FINISH] slot=A text='혼인신고를 또 해야 되잖아.'
+[C-] [TRANS-VAD] slot=A reason=vad lang=ko original='혼인신고를 또 해야 되잖아.' translation='You have to register your marriage again.'
+2026-06-15 01:08:28,626 - INFO - examples.streaming_websocket_server - [C-] [TRANS-VAD] slot=A reason=vad lang=ko original='혼인신고를 또 해야 되잖아.' translation='You have to register your marriage again.'
+[FINAL] seg=1 reason=vad audio=[0.000, 1.852] fsl=0.620s encode=0.000s decode=0.000s final_decode=0.444s trans=0.175s | text='혼인신고를 또 해야 되잖아.'
+2026-06-15 01:08:28,627 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 1.852] fsl=0.620s encode=0.000s decode=0.000s final_decode=0.444s trans=0.175s | text='혼인신고를 또 해야 되잖아.'
+[VAD_DONE] slot=A tail_samples=2176
+2026-06-15 01:08:28,627 - INFO - __main__ - [VAD_DONE] slot=A tail_samples=2176
+[C-] [TRANSCRIBE-DECODING] slot=B text=''
+2026-06-15 01:08:30,153 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=B text=''
+[ENCODE] slot=B chunk=0 audio_pos=4.788s ts=4.801s ds=4.802s decode=0.147s
+2026-06-15 01:08:30,153 - INFO - __main__ - [ENCODE] slot=B chunk=0 audio_pos=4.788s ts=4.801s ds=4.802s decode=0.147s
+[C-] [TRANSCRIBE-DECODING] slot=B text=''
+2026-06-15 01:08:32,166 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=B text=''
+[ENCODE] slot=B chunk=1 audio_pos=6.788s ts=6.801s ds=6.802s decode=0.160s
+2026-06-15 01:08:32,166 - INFO - __main__ - [ENCODE] slot=B chunk=1 audio_pos=6.788s ts=6.801s ds=6.802s decode=0.160s
+Connection closed
+2026-06-15 01:08:43,640 - INFO - __main__ - Connection closed
+Client disconnected (0)
+2026-06-15 01:08:43,640 - INFO - __main__ - Client disconnected (0)
+connection open
+2026-06-15 01:08:43,647 - INFO - websockets.server - connection open
+Client connected (1)
+2026-06-15 01:08:43,647 - INFO - __main__ - Client connected (1)
+[C-] Silero VAD (VADIterator) loaded successfully
+2026-06-15 01:08:43,674 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+New connection from ('127.0.0.1', 44280)
+2026-06-15 01:08:43,674 - INFO - __main__ - New connection from ('127.0.0.1', 44280)
+Received start: lang=ko, targetLang=en
+2026-06-15 01:08:43,675 - INFO - __main__ - Received start: lang=ko, targetLang=en
+[C-] Streaming state initialized
+2026-06-15 01:08:43,675 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+[C-] [VAD-DETECT] speech_start target_samples=4736
+2026-06-15 01:08:44,089 - INFO - examples.streaming_websocket_server - [C-] [VAD-DETECT] speech_start target_samples=4736
+[C-] [TRANSCRIBE-DECODING] slot=A text='그 나는 지금 7월 달에는'
+2026-06-15 01:08:46,083 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='그 나는 지금 7월 달에는'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.010s ds=2.011s decode=0.394s
+2026-06-15 01:08:46,083 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.010s ds=2.011s decode=0.394s
+[C-] [TRANSCRIBE-DECODING] slot=A text='그 나는 지금 7월 달에는 사람들이 돈 30만'
+2026-06-15 01:08:48,248 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='그 나는 지금 7월 달에는 사람들이 돈 30만'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.015s ds=4.017s decode=0.554s
+2026-06-15 01:08:48,248 - INFO - __main__ - [ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.015s ds=4.017s decode=0.554s
+[C-] [TRANSCRIBE-DECODING] slot=A text='그 나는 지금 7월 달에는 사람들이 돈 30만원씩 뭐 달마다'
+2026-06-15 01:08:50,392 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='그 나는 지금 7월 달에는 사람들이 돈 30만원씩 뭐 달마다'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.014s ds=6.016s decode=0.699s
+2026-06-15 01:08:50,393 - INFO - __main__ - [ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.014s ds=6.016s decode=0.699s
+[C-] [TRANSCRIBE-DECODING] slot=A text='그 나는 지금 7월 달에는 사람들이 돈 30만원씩 뭐 달마다 30만원씩 모아서 지금'
+2026-06-15 01:08:52,598 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='그 나는 지금 7월 달에는 사람들이 돈 30만원씩 뭐 달마다 30만원씩 모아서 지금'
+[ENCODE] slot=A chunk=3 audio_pos=8.000s ts=8.014s ds=8.015s decode=0.906s
+2026-06-15 01:08:52,598 - INFO - __main__ - [ENCODE] slot=A chunk=3 audio_pos=8.000s ts=8.014s ds=8.015s decode=0.906s
+[SEG] slot=A elapsed=11.134s decode_start=10.212s audio_pos=10.190s
+2026-06-15 01:08:54,811 - INFO - __main__ - [SEG] slot=A elapsed=11.134s decode_start=10.212s audio_pos=10.190s
+[ENCODE-EARLY] slot=A chunk=4 audio_pos=10.190s ts=10.210s ds=10.212s decode=0.922s
+2026-06-15 01:08:54,811 - INFO - __main__ - [ENCODE-EARLY] slot=A chunk=4 audio_pos=10.190s ts=10.210s ds=10.212s decode=0.922s
+[C-] [SEG-IN-TEXT] slot=A text='그 나는 지금 7월 달에는 사람들이 돈 30만원씩 뭐 달마다 30만원씩 모아서 <SEG>'
+2026-06-15 01:08:54,812 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='그 나는 지금 7월 달에는 사람들이 돈 30만원씩 뭐 달마다 30만원씩 모아서 <SEG>'
+[C-] [TRANSCRIBE-DECODING] slot=A text='그 나는 지금 7월 달에는 사람들이 돈 30만원씩 뭐 달마다 30만원씩 모아서 <SEG> 지금 우리 태국 여행 가기로 했거든.'
+2026-06-15 01:08:55,120 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='그 나는 지금 7월 달에는 사람들이 돈 30만원씩 뭐 달마다 30만원씩 모아서 <SEG> 지금 우리 태국 여행 가기로 했거든.'
+[C-] [SEG-IN-TEXT] slot=A text='그 나는 지금 7월 달에는 사람들이 돈 30만원씩 뭐 달마다 30만원씩 모아서 <SEG> 지금 우리 태국 여행 가기로 했거든.'
+2026-06-15 01:08:55,120 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='그 나는 지금 7월 달에는 사람들이 돈 30만원씩 뭐 달마다 30만원씩 모아서 <SEG> 지금 우리 태국 여행 가기로 했거든.'
+[C-] [COMMIT-PENDING] slot=A remaining='지금 우리 태국 여행 가기로 했거든.'
+2026-06-15 01:08:55,121 - INFO - examples.streaming_websocket_server - [C-] [COMMIT-PENDING] slot=A remaining='지금 우리 태국 여행 가기로 했거든.'
+[C-] [VAD-DETECT] speech_end target_samples=173664
+2026-06-15 01:08:55,172 - INFO - examples.streaming_websocket_server - [C-] [VAD-DETECT] speech_end target_samples=173664
+[C-] [VAD-SLOT-SWITCH] old=A new=B at=10.854s
+2026-06-15 01:08:55,181 - INFO - examples.streaming_websocket_server - [C-] [VAD-SLOT-SWITCH] old=A new=B at=10.854s
+[VAD_COMMIT] audio_end_sec=10.854s → speech_end_sec=10.054s
+2026-06-15 01:08:55,181 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=10.854s → speech_end_sec=10.054s
+[C-] [VAD-HISTORY] slot=A committed='그 나는 지금 7월 달에는 사람들이 돈 30만원씩 뭐 달마다 30만원씩 모아서' uncommitted=' <SEG> 지금 우리 태국 여행 가기로 했거든.'
+2026-06-15 01:08:55,181 - INFO - examples.streaming_websocket_server - [C-] [VAD-HISTORY] slot=A committed='그 나는 지금 7월 달에는 사람들이 돈 30만원씩 뭐 달마다 30만원씩 모아서' uncommitted=' <SEG> 지금 우리 태국 여행 가기로 했거든.'
+[C-] [VAD-BUFFER] slot=A cur_buf=13664 buf_pre=13664 accum_pre=160000 short=False has_buf=True
+2026-06-15 01:08:55,181 - INFO - examples.streaming_websocket_server - [C-] [VAD-BUFFER] slot=A cur_buf=13664 buf_pre=13664 accum_pre=160000 short=False has_buf=True
+[C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='그 나는 지금 7월 달에는 사람들이 돈 30만원씩 뭐 달마다 30만원씩 모아서' translation='Right now, in July, people save 300,000 won each month.'
+2026-06-15 01:08:55,193 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='그 나는 지금 7월 달에는 사람들이 돈 30만원씩 뭐 달마다 30만원씩 모아서' translation='Right now, in July, people save 300,000 won each month.'
+[C-] [VAD-FINISH] slot=A text='그 나는 지금 7월 달에는 사람들이 돈 30만원씩 뭐 달마다 30만원씩 모아서 <SEG> 지금 우리 태국 여행 가기로 했거든.'
+2026-06-15 01:08:55,665 - INFO - examples.streaming_websocket_server - [C-] [VAD-FINISH] slot=A text='그 나는 지금 7월 달에는 사람들이 돈 30만원씩 뭐 달마다 30만원씩 모아서 <SEG> 지금 우리 태국 여행 가기로 했거든.'
+[C-] [TRANS-VAD] slot=A reason=vad lang=ko original='지금 우리 태국 여행 가기로 했거든.' translation='We decided to go on a trip to Thailand now.'
+2026-06-15 01:08:55,779 - INFO - examples.streaming_websocket_server - [C-] [TRANS-VAD] slot=A reason=vad lang=ko original='지금 우리 태국 여행 가기로 했거든.' translation='We decided to go on a trip to Thailand now.'
+[FLUSH-SEG] seg=1 tok=37/52 ratio=0.712 audio_end=9.613s fsl=1.697s
+2026-06-15 01:08:55,779 - INFO - __main__ - [FLUSH-SEG] seg=1 tok=37/52 ratio=0.712 audio_end=9.613s fsl=1.697s
+[FINAL] seg=1 reason=seg audio=[0.000, 9.613] fsl=1.697s encode=10.212s decode=0.922s final_decode=0.000s trans=0.176s | text='그 나는 지금 7월 달에는 사람들이 돈 30만원씩 뭐 달마다 30만원씩 모아서'
+2026-06-15 01:08:55,779 - INFO - __main__ - [FINAL] seg=1 reason=seg audio=[0.000, 9.613] fsl=1.697s encode=10.212s decode=0.922s final_decode=0.000s trans=0.176s | text='그 나는 지금 7월 달에는 사람들이 돈 30만원씩 뭐 달마다 30만원씩 모아서'
+[FINAL] seg=2 reason=vad audio=[9.613, 10.990] fsl=0.597s encode=0.000s decode=0.000s final_decode=0.483s trans=0.114s | text='지금 우리 태국 여행 가기로 했거든.'
+2026-06-15 01:08:55,779 - INFO - __main__ - [FINAL] seg=2 reason=vad audio=[9.613, 10.990] fsl=0.597s encode=0.000s decode=0.000s final_decode=0.483s trans=0.114s | text='지금 우리 태국 여행 가기로 했거든.'
+[VAD_DONE] slot=A tail_samples=2176
+2026-06-15 01:08:55,780 - INFO - __main__ - [VAD_DONE] slot=A tail_samples=2176
+[C-] [TRANSCRIBE-DECODING] slot=B text=''
+2026-06-15 01:08:56,789 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=B text=''
+[ENCODE] slot=B chunk=0 audio_pos=12.990s ts=13.009s ds=13.011s decode=0.101s
+2026-06-15 01:08:56,789 - INFO - __main__ - [ENCODE] slot=B chunk=0 audio_pos=12.990s ts=13.009s ds=13.011s decode=0.101s
+[C-] [TRANSCRIBE-DECODING] slot=B text=''
+2026-06-15 01:08:58,785 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=B text=''
+[ENCODE] slot=B chunk=1 audio_pos=14.990s ts=15.010s ds=15.011s decode=0.096s
+2026-06-15 01:08:58,785 - INFO - __main__ - [ENCODE] slot=B chunk=1 audio_pos=14.990s ts=15.010s ds=15.011s decode=0.096s
+Connection closed
+2026-06-15 01:09:10,792 - INFO - __main__ - Connection closed
+Client disconnected (0)
+2026-06-15 01:09:10,792 - INFO - __main__ - Client disconnected (0)
+connection open
+2026-06-15 01:09:10,801 - INFO - websockets.server - connection open
+Client connected (1)
+2026-06-15 01:09:10,801 - INFO - __main__ - Client connected (1)
+[C-] Silero VAD (VADIterator) loaded successfully
+2026-06-15 01:09:10,856 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+New connection from ('127.0.0.1', 42214)
+2026-06-15 01:09:10,856 - INFO - __main__ - New connection from ('127.0.0.1', 42214)
+Received start: lang=ko, targetLang=en
+2026-06-15 01:09:10,858 - INFO - __main__ - Received start: lang=ko, targetLang=en
+[C-] Streaming state initialized
+2026-06-15 01:09:10,858 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+[C-] [VAD-DETECT] speech_start target_samples=3072
+2026-06-15 01:09:11,130 - INFO - examples.streaming_websocket_server - [C-] [VAD-DETECT] speech_start target_samples=3072
+[SEG] slot=A elapsed=2.373s decode_start=2.020s audio_pos=2.000s
+2026-06-15 01:09:13,233 - INFO - __main__ - [SEG] slot=A elapsed=2.373s decode_start=2.020s audio_pos=2.000s
+[ENCODE-EARLY] slot=A chunk=0 audio_pos=2.000s ts=2.018s ds=2.020s decode=0.353s
+2026-06-15 01:09:13,233 - INFO - __main__ - [ENCODE-EARLY] slot=A chunk=0 audio_pos=2.000s ts=2.018s ds=2.020s decode=0.353s
+[C-] [SEG-IN-TEXT] slot=A text='왜 그런지 모르겠는데 <SEG>'
+2026-06-15 01:09:13,233 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='왜 그런지 모르겠는데 <SEG>'
+[C-] [TRANSCRIBE-DECODING] slot=A text='왜 그런지 모르겠는데 <SEG> 큰 연기를'
+2026-06-15 01:09:13,314 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='왜 그런지 모르겠는데 <SEG> 큰 연기를'
+[C-] [SEG-IN-TEXT] slot=A text='왜 그런지 모르겠는데 <SEG> 큰 연기를'
+2026-06-15 01:09:13,315 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='왜 그런지 모르겠는데 <SEG> 큰 연기를'
+[C-] [COMMIT-PENDING] slot=A remaining='큰 연기를'
+2026-06-15 01:09:13,315 - INFO - examples.streaming_websocket_server - [C-] [COMMIT-PENDING] slot=A remaining='큰 연기를'
+[C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='왜 그런지 모르겠는데' translation='I don't know why'
+2026-06-15 01:09:13,935 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='왜 그런지 모르겠는데' translation='I don't know why'
+[SEG] slot=A elapsed=3.218s decode_start=-1.000s audio_pos=3.200s
+2026-06-15 01:09:14,078 - INFO - __main__ - [SEG] slot=A elapsed=3.218s decode_start=-1.000s audio_pos=3.200s
+[ENCODE-EARLY] slot=A chunk=1 audio_pos=3.200s ts=3.218s ds=-1.000s decode=0.000s
+2026-06-15 01:09:14,078 - INFO - __main__ - [ENCODE-EARLY] slot=A chunk=1 audio_pos=3.200s ts=3.218s ds=-1.000s decode=0.000s
+[FLUSH-SEG] seg=1 tok=11/15 ratio=0.733 audio_end=1.467s fsl=1.608s
+2026-06-15 01:09:14,078 - INFO - __main__ - [FLUSH-SEG] seg=1 tok=11/15 ratio=0.733 audio_end=1.467s fsl=1.608s
+[FINAL] seg=1 reason=seg audio=[0.000, 1.467] fsl=1.608s encode=2.020s decode=0.352s final_decode=0.000s trans=0.000s | text='왜 그런지 모르겠는데'
+2026-06-15 01:09:14,078 - INFO - __main__ - [FINAL] seg=1 reason=seg audio=[0.000, 1.467] fsl=1.608s encode=2.020s decode=0.352s final_decode=0.000s trans=0.000s | text='왜 그런지 모르겠는데'
+[C-] [SEG-IN-TEXT] slot=A text='왜 그런지 모르겠는데 큰 연기를 잘하니까 그러겠죠. <SEG>'
+2026-06-15 01:09:15,460 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='왜 그런지 모르겠는데 큰 연기를 잘하니까 그러겠죠. <SEG>'
+[C-] [TRANSCRIBE-DECODING] slot=A text='왜 그런지 모르겠는데 큰 연기를 잘하니까 그러겠죠. <SEG> 근데 목소리도 한'
+2026-06-15 01:09:15,646 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='왜 그런지 모르겠는데 큰 연기를 잘하니까 그러겠죠. <SEG> 근데 목소리도 한'
+[C-] [SEG-IN-TEXT] slot=A text='왜 그런지 모르겠는데 큰 연기를 잘하니까 그러겠죠. <SEG> 근데 목소리도 한'
+2026-06-15 01:09:15,646 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='왜 그런지 모르겠는데 큰 연기를 잘하니까 그러겠죠. <SEG> 근데 목소리도 한'
+[C-] [COMMIT-PENDING] slot=A remaining='근데 목소리도 한'
+2026-06-15 01:09:15,646 - INFO - examples.streaming_websocket_server - [C-] [COMMIT-PENDING] slot=A remaining='근데 목소리도 한'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.020s ds=4.021s decode=0.765s
+2026-06-15 01:09:15,646 - INFO - __main__ - [ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.020s ds=4.021s decode=0.765s
+[C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='큰 연기를 잘하니까 그러겠죠.' translation='That's probably because he's good at acting.'
+2026-06-15 01:09:15,696 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='큰 연기를 잘하니까 그러겠죠.' translation='That's probably because he's good at acting.'
+[SEG] slot=A elapsed=4.851s decode_start=-1.000s audio_pos=4.800s
+2026-06-15 01:09:15,711 - INFO - __main__ - [SEG] slot=A elapsed=4.851s decode_start=-1.000s audio_pos=4.800s
+[ENCODE-EARLY] slot=A chunk=2 audio_pos=4.800s ts=4.851s ds=-1.000s decode=0.000s
+2026-06-15 01:09:15,711 - INFO - __main__ - [ENCODE-EARLY] slot=A chunk=2 audio_pos=4.800s ts=4.851s ds=-1.000s decode=0.000s
+[FLUSH-SEG] seg=2 tok=11/30 ratio=0.367 audio_end=1.933s fsl=2.758s
+2026-06-15 01:09:15,711 - INFO - __main__ - [FLUSH-SEG] seg=2 tok=11/30 ratio=0.367 audio_end=1.933s fsl=2.758s
+[FINAL] seg=2 reason=seg audio=[1.467, 1.933] fsl=2.758s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='큰 연기를 잘하니까 그러겠죠.'
+2026-06-15 01:09:15,711 - INFO - __main__ - [FINAL] seg=2 reason=seg audio=[1.467, 1.933] fsl=2.758s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='큰 연기를 잘하니까 그러겠죠.'
+[C-] [SEG-IN-TEXT] slot=A text='왜 그런지 모르겠는데 큰 연기를 잘하니까 그러겠죠. <SEG>'
+2026-06-15 01:09:17,039 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='왜 그런지 모르겠는데 큰 연기를 잘하니까 그러겠죠. <SEG>'
+[REASSEMBLY] chunk=2 prefix_end_idx=21 prev_ids_len=29 committed_ids_len=21
+  OLD _raw_decoded='language Korean<asr_text>왜 그런지 모르겠는데 큰 연기를 잘하니까 그러겠죠. <SEG> 근데 목소리도 한'
+  committed_text   ='language Korean<asr_text>왜 그런지 모르겠는데 큰 연기를 잘하니까 그러겠죠. <SEG>'
+  gen_text         =' 근데 목소리도 한 목소리 하시고 시'
+  NEW _raw_decoded ='language Korean<asr_text>왜 그런지 모르겠는데 큰 연기를 잘하니까 그러겠죠. <SEG> 근데 목소리도 한 목소리 하시고 시'
+2026-06-15 01:09:17,349 - INFO - qwen_asr.inference.qwen3_asr - [REASSEMBLY] chunk=2 prefix_end_idx=21 prev_ids_len=29 committed_ids_len=21
+  OLD _raw_decoded='language Korean<asr_text>왜 그런지 모르겠는데 큰 연기를 잘하니까 그러겠죠. <SEG> 근데 목소리도 한'
+  committed_text   ='language Korean<asr_text>왜 그런지 모르겠는데 큰 연기를 잘하니까 그러겠죠. <SEG>'
+  gen_text         =' 근데 목소리도 한 목소리 하시고 시'
+  NEW _raw_decoded ='language Korean<asr_text>왜 그런지 모르겠는데 큰 연기를 잘하니까 그러겠죠. <SEG> 근데 목소리도 한 목소리 하시고 시'
+[C-] [TRANSCRIBE-DECODING] slot=A text='왜 그런지 모르겠는데 큰 연기를 잘하니까 그러겠죠. <SEG> 근데 목소리도 한 목소리 하시고 시'
+2026-06-15 01:09:17,349 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='왜 그런지 모르겠는데 큰 연기를 잘하니까 그러겠죠. <SEG> 근데 목소리도 한 목소리 하시고 시'
+[C-] [SEG-IN-TEXT] slot=A text='왜 그런지 모르겠는데 큰 연기를 잘하니까 그러겠죠. <SEG> 근데 목소리도 한 목소리 하시고 시'
+2026-06-15 01:09:17,349 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='왜 그런지 모르겠는데 큰 연기를 잘하니까 그러겠죠. <SEG> 근데 목소리도 한 목소리 하시고 시'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.016s ds=6.017s decode=0.472s
+2026-06-15 01:09:17,349 - INFO - __main__ - [ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.016s ds=6.017s decode=0.472s
+[C-] [VAD-DETECT] speech_end target_samples=115712
+2026-06-15 01:09:18,266 - INFO - examples.streaming_websocket_server - [C-] [VAD-DETECT] speech_end target_samples=115712
+[C-] [VAD-DETECT] speech_start target_samples=117760
+2026-06-15 01:09:18,271 - INFO - examples.streaming_websocket_server - [C-] [VAD-DETECT] speech_start target_samples=117760
+[C-] [VAD-SLOT-SWITCH] old=A new=B at=7.232s
+2026-06-15 01:09:18,272 - INFO - examples.streaming_websocket_server - [C-] [VAD-SLOT-SWITCH] old=A new=B at=7.232s
+[VAD_COMMIT] audio_end_sec=7.232s → speech_end_sec=6.432s
+2026-06-15 01:09:18,272 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=7.232s → speech_end_sec=6.432s
+[C-] [VAD-HISTORY] slot=A committed='왜 그런지 모르겠는데 큰 연기를 잘하니까 그러겠죠.' uncommitted=' <SEG> 근데 목소리도 한 목소리 하시고 시'
+2026-06-15 01:09:18,272 - INFO - examples.streaming_websocket_server - [C-] [VAD-HISTORY] slot=A committed='왜 그런지 모르겠는데 큰 연기를 잘하니까 그러겠죠.' uncommitted=' <SEG> 근데 목소리도 한 목소리 하시고 시'
+[C-] [VAD-BUFFER] slot=A cur_buf=19712 buf_pre=19712 accum_pre=96000 short=False has_buf=True
+2026-06-15 01:09:18,272 - INFO - examples.streaming_websocket_server - [C-] [VAD-BUFFER] slot=A cur_buf=19712 buf_pre=19712 accum_pre=96000 short=False has_buf=True
+[C-] [VAD-FINISH] slot=A text='왜 그런지 모르겠는데 큰 연기를 잘하니까 그러겠죠. <SEG> 근데 목소리도 한 목소리 하시고 셜록'
+2026-06-15 01:09:18,814 - INFO - examples.streaming_websocket_server - [C-] [VAD-FINISH] slot=A text='왜 그런지 모르겠는데 큰 연기를 잘하니까 그러겠죠. <SEG> 근데 목소리도 한 목소리 하시고 셜록'
+[C-] [TRANS-VAD] slot=A reason=vad lang=ko original='근데 목소리도 한 목소리 하시고 셜록' translation='But you speak with one voice, Sherlock.'
+2026-06-15 01:09:18,904 - INFO - examples.streaming_websocket_server - [C-] [TRANS-VAD] slot=A reason=vad lang=ko original='근데 목소리도 한 목소리 하시고 셜록' translation='But you speak with one voice, Sherlock.'
+[FINAL] seg=3 reason=vad audio=[1.933, 6.432] fsl=0.632s encode=0.000s decode=0.000s final_decode=0.542s trans=0.090s | text='근데 목소리도 한 목소리 하시고 셜록'
+2026-06-15 01:09:18,904 - INFO - __main__ - [FINAL] seg=3 reason=vad audio=[1.933, 6.432] fsl=0.632s encode=0.000s decode=0.000s final_decode=0.542s trans=0.090s | text='근데 목소리도 한 목소리 하시고 셜록'
+[VAD_DONE] slot=A tail_samples=2688
+2026-06-15 01:09:18,904 - INFO - __main__ - [VAD_DONE] slot=A tail_samples=2688
+[C-] [VAD-DETECT] speech_end target_samples=141728
+2026-06-15 01:09:19,864 - INFO - examples.streaming_websocket_server - [C-] [VAD-DETECT] speech_end target_samples=141728
+[C-] [VAD-SLOT-SWITCH] old=B new=A at=8.858s
+2026-06-15 01:09:19,872 - INFO - examples.streaming_websocket_server - [C-] [VAD-SLOT-SWITCH] old=B new=A at=8.858s
+[VAD_COMMIT] audio_end_sec=8.858s → speech_end_sec=8.058s
+2026-06-15 01:09:19,872 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=8.858s → speech_end_sec=8.058s
+[C-] [VAD-HISTORY] slot=B committed='' uncommitted=''
+2026-06-15 01:09:19,872 - INFO - examples.streaming_websocket_server - [C-] [VAD-HISTORY] slot=B committed='' uncommitted=''
+[C-] [VAD-BUFFER] slot=B cur_buf=26016 buf_pre=26016 accum_pre=0 short=True has_buf=True
+2026-06-15 01:09:19,872 - INFO - examples.streaming_websocket_server - [C-] [VAD-BUFFER] slot=B cur_buf=26016 buf_pre=26016 accum_pre=0 short=True has_buf=True
+[C-] [VAD-FINISH] slot=B text='이제'
+2026-06-15 01:09:20,125 - INFO - examples.streaming_websocket_server - [C-] [VAD-FINISH] slot=B text='이제'
+[C-] [TRANS-VAD] slot=B reason=vad lang=ko original='이제' translation='now'
+2026-06-15 01:09:20,214 - INFO - examples.streaming_websocket_server - [C-] [TRANS-VAD] slot=B reason=vad lang=ko original='이제' translation='now'
+[FINAL] seg=4 reason=vad audio=[6.432, 8.058] fsl=0.342s encode=0.000s decode=0.000s final_decode=0.253s trans=0.089s | text='이제'
+2026-06-15 01:09:20,214 - INFO - __main__ - [FINAL] seg=4 reason=vad audio=[6.432, 8.058] fsl=0.342s encode=0.000s decode=0.000s final_decode=0.253s trans=0.089s | text='이제'
+[VAD_DONE] slot=B tail_samples=2176
+2026-06-15 01:09:20,215 - INFO - __main__ - [VAD_DONE] slot=B tail_samples=2176
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+2026-06-15 01:09:21,968 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=10.994s ts=11.011s ds=11.012s decode=0.097s
+2026-06-15 01:09:21,969 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=10.994s ts=11.011s ds=11.012s decode=0.097s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+2026-06-15 01:09:23,965 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=12.994s ts=13.008s ds=13.009s decode=0.096s
+2026-06-15 01:09:23,965 - INFO - __main__ - [ENCODE] slot=A chunk=1 audio_pos=12.994s ts=13.008s ds=13.009s decode=0.096s
+Connection closed
+2026-06-15 01:09:35,224 - INFO - __main__ - Connection closed
+Client disconnected (0)
+2026-06-15 01:09:35,224 - INFO - __main__ - Client disconnected (0)
+connection open
+2026-06-15 01:09:35,230 - INFO - websockets.server - connection open
+Client connected (1)
+2026-06-15 01:09:35,230 - INFO - __main__ - Client connected (1)
+[C-] Silero VAD (VADIterator) loaded successfully
+2026-06-15 01:09:35,257 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+New connection from ('127.0.0.1', 59242)
+2026-06-15 01:09:35,257 - INFO - __main__ - New connection from ('127.0.0.1', 59242)
+Received start: lang=ko, targetLang=en
+2026-06-15 01:09:35,258 - INFO - __main__ - Received start: lang=ko, targetLang=en
+[C-] Streaming state initialized
+2026-06-15 01:09:35,258 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+[C-] [VAD-DETECT] speech_start target_samples=4224
+2026-06-15 01:09:35,667 - INFO - examples.streaming_websocket_server - [C-] [VAD-DETECT] speech_start target_samples=4224
+[SEG] slot=A elapsed=2.466s decode_start=2.117s audio_pos=2.101s
+2026-06-15 01:09:37,726 - INFO - __main__ - [SEG] slot=A elapsed=2.466s decode_start=2.117s audio_pos=2.101s
+[ENCODE-EARLY] slot=A chunk=0 audio_pos=2.101s ts=2.116s ds=2.117s decode=0.349s
+2026-06-15 01:09:37,727 - INFO - __main__ - [ENCODE-EARLY] slot=A chunk=0 audio_pos=2.101s ts=2.116s ds=2.117s decode=0.349s
+[C-] [SEG-IN-TEXT] slot=A text='아니 그럴 거면 <SEG>'
+2026-06-15 01:09:37,727 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='아니 그럴 거면 <SEG>'
+[C-] [TRANSCRIBE-DECODING] slot=A text='아니 그럴 거면 <SEG> 소개팅을 왜 나와.'
+2026-06-15 01:09:37,912 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='아니 그럴 거면 <SEG> 소개팅을 왜 나와.'
+[C-] [SEG-IN-TEXT] slot=A text='아니 그럴 거면 <SEG> 소개팅을 왜 나와.'
+2026-06-15 01:09:37,912 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='아니 그럴 거면 <SEG> 소개팅을 왜 나와.'
+[C-] [COMMIT-PENDING] slot=A remaining='소개팅을 왜 나와.'
+2026-06-15 01:09:37,912 - INFO - examples.streaming_websocket_server - [C-] [COMMIT-PENDING] slot=A remaining='소개팅을 왜 나와.'
+[C-] [VAD-DETECT] speech_end target_samples=44240
+2026-06-15 01:09:38,176 - INFO - examples.streaming_websocket_server - [C-] [VAD-DETECT] speech_end target_samples=44240
+[C-] [VAD-SLOT-SWITCH] old=A new=B at=2.765s
+2026-06-15 01:09:38,185 - INFO - examples.streaming_websocket_server - [C-] [VAD-SLOT-SWITCH] old=A new=B at=2.765s
+[VAD_COMMIT] audio_end_sec=2.765s → speech_end_sec=1.965s
+2026-06-15 01:09:38,185 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=2.765s → speech_end_sec=1.965s
+[C-] [VAD-HISTORY] slot=A committed='아니 그럴 거면' uncommitted=' <SEG> 소개팅을 왜 나와.'
+2026-06-15 01:09:38,185 - INFO - examples.streaming_websocket_server - [C-] [VAD-HISTORY] slot=A committed='아니 그럴 거면' uncommitted=' <SEG> 소개팅을 왜 나와.'
+[C-] [VAD-BUFFER] slot=A cur_buf=12240 buf_pre=12240 accum_pre=32000 short=False has_buf=True
+2026-06-15 01:09:38,185 - INFO - examples.streaming_websocket_server - [C-] [VAD-BUFFER] slot=A cur_buf=12240 buf_pre=12240 accum_pre=32000 short=False has_buf=True
+[C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='아니 그럴 거면' translation='No, if that's the case'
+2026-06-15 01:09:38,684 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='아니 그럴 거면' translation='No, if that's the case'
+[C-] [VAD-FINISH] slot=A text='아니 그럴 거면 <SEG> 소개팅을 왜 나와?'
+2026-06-15 01:09:38,728 - INFO - examples.streaming_websocket_server - [C-] [VAD-FINISH] slot=A text='아니 그럴 거면 <SEG> 소개팅을 왜 나와?'
+[C-] [TRANS-VAD] slot=A reason=vad lang=ko original='소개팅을 왜 나와?' translation='Why are you going on a blind date?'
+2026-06-15 01:09:39,792 - INFO - examples.streaming_websocket_server - [C-] [TRANS-VAD] slot=A reason=vad lang=ko original='소개팅을 왜 나와?' translation='Why are you going on a blind date?'
+[FLUSH-SEG] seg=1 tok=11/20 ratio=0.550 audio_end=1.201s fsl=2.223s
+2026-06-15 01:09:39,792 - INFO - __main__ - [FLUSH-SEG] seg=1 tok=11/20 ratio=0.550 audio_end=1.201s fsl=2.223s
+[FINAL] seg=1 reason=seg audio=[0.000, 1.201] fsl=2.223s encode=2.117s decode=0.349s final_decode=0.000s trans=0.957s | text='아니 그럴 거면'
+2026-06-15 01:09:39,792 - INFO - __main__ - [FINAL] seg=1 reason=seg audio=[0.000, 1.201] fsl=2.223s encode=2.117s decode=0.349s final_decode=0.000s trans=0.957s | text='아니 그럴 거면'
+[FINAL] seg=2 reason=vad audio=[1.201, 2.901] fsl=1.607s encode=0.000s decode=0.000s final_decode=0.543s trans=1.064s | text='소개팅을 왜 나와?'
+2026-06-15 01:09:39,792 - INFO - __main__ - [FINAL] seg=2 reason=vad audio=[1.201, 2.901] fsl=1.607s encode=0.000s decode=0.000s final_decode=0.543s trans=1.064s | text='소개팅을 왜 나와?'
+[VAD_DONE] slot=A tail_samples=2176
+2026-06-15 01:09:39,793 - INFO - __main__ - [VAD_DONE] slot=A tail_samples=2176
+[C-] [TRANSCRIBE-DECODING] slot=B text=''
+2026-06-15 01:09:40,279 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=B text=''
+[ENCODE] slot=B chunk=0 audio_pos=4.901s ts=4.919s ds=4.921s decode=0.098s
+2026-06-15 01:09:40,279 - INFO - __main__ - [ENCODE] slot=B chunk=0 audio_pos=4.901s ts=4.919s ds=4.921s decode=0.098s
+[C-] [TRANSCRIBE-DECODING] slot=B text=''
+2026-06-15 01:09:42,277 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=B text=''
+[ENCODE] slot=B chunk=1 audio_pos=6.901s ts=6.919s ds=6.921s decode=0.096s
+2026-06-15 01:09:42,277 - INFO - __main__ - [ENCODE] slot=B chunk=1 audio_pos=6.901s ts=6.919s ds=6.921s decode=0.096s
+Connection closed
+2026-06-15 01:09:54,806 - INFO - __main__ - Connection closed
+Client disconnected (0)
+2026-06-15 01:09:54,806 - INFO - __main__ - Client disconnected (0)
+connection open
+2026-06-15 01:09:54,815 - INFO - websockets.server - connection open
+Client connected (1)
+2026-06-15 01:09:54,815 - INFO - __main__ - Client connected (1)
+[C-] Silero VAD (VADIterator) loaded successfully
+2026-06-15 01:09:54,871 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+New connection from ('127.0.0.1', 34286)
+2026-06-15 01:09:54,871 - INFO - __main__ - New connection from ('127.0.0.1', 34286)
+Received start: lang=ko, targetLang=en
+2026-06-15 01:09:54,871 - INFO - __main__ - Received start: lang=ko, targetLang=en
+[C-] Streaming state initialized
+2026-06-15 01:09:54,872 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+[C-] [VAD-DETECT] speech_start target_samples=4224
+2026-06-15 01:09:55,282 - INFO - examples.streaming_websocket_server - [C-] [VAD-DETECT] speech_start target_samples=4224
+[C-] [TRANSCRIBE-DECODING] slot=A text='나 1년만 더 버텼으면은'
+2026-06-15 01:09:57,304 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='나 1년만 더 버텼으면은'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.014s ds=2.015s decode=0.416s
+2026-06-15 01:09:57,305 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.014s ds=2.015s decode=0.416s
+[C-] [VAD-DETECT] speech_end target_samples=65920
+2026-06-15 01:09:59,047 - INFO - examples.streaming_websocket_server - [C-] [VAD-DETECT] speech_end target_samples=65920
+[SEG] slot=A elapsed=4.624s decode_start=4.176s audio_pos=4.160s
+2026-06-15 01:09:59,497 - INFO - __main__ - [SEG] slot=A elapsed=4.624s decode_start=4.176s audio_pos=4.160s
+[ENCODE-EARLY] slot=A chunk=1 audio_pos=4.160s ts=4.175s ds=4.176s decode=0.448s
+2026-06-15 01:09:59,498 - INFO - __main__ - [ENCODE-EARLY] slot=A chunk=1 audio_pos=4.160s ts=4.175s ds=4.176s decode=0.448s
+[C-] [SEG-IN-TEXT] slot=A text='나 1년만 더 버텼으면은 <SEG>'
+2026-06-15 01:09:59,498 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='나 1년만 더 버텼으면은 <SEG>'
+[C-] [TRANSCRIBE-DECODING] slot=A text='나 1년만 더 버텼으면은 <SEG> 면제받을 수 있었잖아.'
+2026-06-15 01:09:59,703 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='나 1년만 더 버텼으면은 <SEG> 면제받을 수 있었잖아.'
+[C-] [SEG-IN-TEXT] slot=A text='나 1년만 더 버텼으면은 <SEG> 면제받을 수 있었잖아.'
+2026-06-15 01:09:59,704 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='나 1년만 더 버텼으면은 <SEG> 면제받을 수 있었잖아.'
+[C-] [COMMIT-PENDING] slot=A remaining='면제받을 수 있었잖아.'
+2026-06-15 01:09:59,704 - INFO - examples.streaming_websocket_server - [C-] [COMMIT-PENDING] slot=A remaining='면제받을 수 있었잖아.'
+[C-] [VAD-SLOT-SWITCH] old=A new=B at=4.120s
+2026-06-15 01:09:59,704 - INFO - examples.streaming_websocket_server - [C-] [VAD-SLOT-SWITCH] old=A new=B at=4.120s
+[VAD_COMMIT] audio_end_sec=4.120s → speech_end_sec=3.320s
+2026-06-15 01:09:59,704 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=4.120s → speech_end_sec=3.320s
+[C-] [VAD-HISTORY] slot=A committed='나 1년만 더 버텼으면은' uncommitted=' <SEG> 면제받을 수 있었잖아.'
+2026-06-15 01:09:59,704 - INFO - examples.streaming_websocket_server - [C-] [VAD-HISTORY] slot=A committed='나 1년만 더 버텼으면은' uncommitted=' <SEG> 면제받을 수 있었잖아.'
+[C-] [VAD-BUFFER] slot=A cur_buf=1920 buf_pre=33920 accum_pre=32000 short=False has_buf=True
+2026-06-15 01:09:59,704 - INFO - examples.streaming_websocket_server - [C-] [VAD-BUFFER] slot=A cur_buf=1920 buf_pre=33920 accum_pre=32000 short=False has_buf=True
+[C-] [VAD-FINISH] slot=A text='나 1년만 더 버텼으면은 <SEG> 면제받을 수 있었잖아.'
+2026-06-15 01:10:00,066 - INFO - examples.streaming_websocket_server - [C-] [VAD-FINISH] slot=A text='나 1년만 더 버텼으면은 <SEG> 면제받을 수 있었잖아.'
+[C-] [TRANS-VAD] slot=A reason=vad lang=ko original='면제받을 수 있었잖아.' translation='You could have been exempted.'
+2026-06-15 01:10:01,844 - INFO - examples.streaming_websocket_server - [C-] [TRANS-VAD] slot=A reason=vad lang=ko original='면제받을 수 있었잖아.' translation='You could have been exempted.'
+[FINAL] seg=1 reason=vad audio=[0.000, 3.320] fsl=2.140s encode=0.000s decode=0.000s final_decode=0.362s trans=1.778s | text='면제받을 수 있었잖아.'
+2026-06-15 01:10:01,844 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 3.320] fsl=2.140s encode=0.000s decode=0.000s final_decode=0.362s trans=1.778s | text='면제받을 수 있었잖아.'
+[VAD_DONE] slot=A tail_samples=640
+2026-06-15 01:10:01,844 - INFO - __main__ - [VAD_DONE] slot=A tail_samples=640
+[C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='나 1년만 더 버텼으면은' translation='If only I could last one more year'
+2026-06-15 01:10:01,907 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='나 1년만 더 버텼으면은' translation='If only I could last one more year'
+[C-] [TRANSCRIBE-DECODING] slot=B text=''
+2026-06-15 01:10:02,003 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=B text=''
+[FLUSH-SEG] seg=2 no-token-info → audio_end=4.160s fsl=0.000s
+2026-06-15 01:10:02,003 - INFO - __main__ - [FLUSH-SEG] seg=2 no-token-info → audio_end=4.160s fsl=0.000s
+[FINAL] seg=2 reason=seg audio=[3.320, 4.160] fsl=0.000s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='나 1년만 더 버텼으면은'
+2026-06-15 01:10:02,003 - INFO - __main__ - [FINAL] seg=2 reason=seg audio=[3.320, 4.160] fsl=0.000s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='나 1년만 더 버텼으면은'
+[ENCODE] slot=B chunk=0 audio_pos=6.160s ts=7.031s ds=7.032s decode=0.098s
+2026-06-15 01:10:02,004 - INFO - __main__ - [ENCODE] slot=B chunk=0 audio_pos=6.160s ts=7.031s ds=7.032s decode=0.098s
+[C-] [TRANSCRIBE-DECODING] slot=B text=''
+2026-06-15 01:10:03,145 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=B text=''
+[ENCODE] slot=B chunk=1 audio_pos=8.160s ts=8.175s ds=8.176s decode=0.096s
+2026-06-15 01:10:03,145 - INFO - __main__ - [ENCODE] slot=B chunk=1 audio_pos=8.160s ts=8.175s ds=8.176s decode=0.096s
+Connection closed
+2026-06-15 01:10:17,010 - INFO - __main__ - Connection closed
+Client disconnected (0)
+2026-06-15 01:10:17,010 - INFO - __main__ - Client disconnected (0)
+connection open
+2026-06-15 01:10:17,017 - INFO - websockets.server - connection open
+Client connected (1)
+2026-06-15 01:10:17,017 - INFO - __main__ - Client connected (1)
+[C-] Silero VAD (VADIterator) loaded successfully
+2026-06-15 01:10:17,045 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+New connection from ('127.0.0.1', 34404)
+2026-06-15 01:10:17,045 - INFO - __main__ - New connection from ('127.0.0.1', 34404)
+Received start: lang=ko, targetLang=en
+2026-06-15 01:10:17,047 - INFO - __main__ - Received start: lang=ko, targetLang=en
+[C-] Streaming state initialized
+2026-06-15 01:10:17,047 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+[C-] [VAD-DETECT] speech_start target_samples=3072
+2026-06-15 01:10:17,320 - INFO - examples.streaming_websocket_server - [C-] [VAD-DETECT] speech_start target_samples=3072
+[C-] [TRANSCRIBE-DECODING] slot=A text='주관식으로 나왔을 때는 그 영어로 다 써야 된'
+2026-06-15 01:10:19,661 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='주관식으로 나왔을 때는 그 영어로 다 써야 된'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.012s ds=2.013s decode=0.599s
+2026-06-15 01:10:19,661 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.012s ds=2.013s decode=0.599s
+[SEG] slot=A elapsed=4.737s decode_start=4.019s audio_pos=4.000s
+2026-06-15 01:10:21,786 - INFO - __main__ - [SEG] slot=A elapsed=4.737s decode_start=4.019s audio_pos=4.000s
+[ENCODE-EARLY] slot=A chunk=1 audio_pos=4.000s ts=4.018s ds=4.019s decode=0.718s
+2026-06-15 01:10:21,787 - INFO - __main__ - [ENCODE-EARLY] slot=A chunk=1 audio_pos=4.000s ts=4.018s ds=4.019s decode=0.718s
+[C-] [SEG-IN-TEXT] slot=A text='주관식으로 나왔을 때는 그 영어로 다 써야 된다는 거야. <SEG>'
+2026-06-15 01:10:21,787 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='주관식으로 나왔을 때는 그 영어로 다 써야 된다는 거야. <SEG>'
+[C-] [TRANSCRIBE-DECODING] slot=A text='주관식으로 나왔을 때는 그 영어로 다 써야 된다는 거야. <SEG> 근데 한두 글자만 틀려지지 맛 게이즈'
+2026-06-15 01:10:22,199 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='주관식으로 나왔을 때는 그 영어로 다 써야 된다는 거야. <SEG> 근데 한두 글자만 틀려지지 맛 게이즈'
+[C-] [SEG-IN-TEXT] slot=A text='주관식으로 나왔을 때는 그 영어로 다 써야 된다는 거야. <SEG> 근데 한두 글자만 틀려지지 맛 게이즈'
+2026-06-15 01:10:22,199 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='주관식으로 나왔을 때는 그 영어로 다 써야 된다는 거야. <SEG> 근데 한두 글자만 틀려지지 맛 게이즈'
+[C-] [COMMIT-PENDING] slot=A remaining='근데 한두 글자만 틀려지지 맛 게이즈'
+2026-06-15 01:10:22,199 - INFO - examples.streaming_websocket_server - [C-] [COMMIT-PENDING] slot=A remaining='근데 한두 글자만 틀려지지 맛 게이즈'
+[C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='주관식으로 나왔을 때는 그 영어로 다 써야 된다는 거야.' translation='When it comes to subjective writing, everything has to be written in English.'
+2026-06-15 01:10:22,976 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='주관식으로 나왔을 때는 그 영어로 다 써야 된다는 거야.' translation='When it comes to subjective writing, everything has to be written in English.'
+[SEG] slot=A elapsed=6.264s decode_start=6.092s audio_pos=6.071s
+2026-06-15 01:10:23,313 - INFO - __main__ - [SEG] slot=A elapsed=6.264s decode_start=6.092s audio_pos=6.071s
+[ENCODE-EARLY] slot=A chunk=2 audio_pos=6.071s ts=6.091s ds=6.092s decode=0.172s
+2026-06-15 01:10:23,313 - INFO - __main__ - [ENCODE-EARLY] slot=A chunk=2 audio_pos=6.071s ts=6.091s ds=6.092s decode=0.172s
+[C-] [SEG-IN-TEXT] slot=A text='주관식으로 나왔을 때는 그 영어로 다 써야 된다는 거야. <SEG>'
+2026-06-15 01:10:23,313 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='주관식으로 나왔을 때는 그 영어로 다 써야 된다는 거야. <SEG>'
+[C-] [SEG-IN-TEXT] slot=A text='주관식으로 나왔을 때는 그 영어로 다 써야 된다는 거야. <SEG> 근데 한두 글자만 틀려지면 맞게 해준겠다는 거야. <SEG>'
+2026-06-15 01:10:23,809 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='주관식으로 나왔을 때는 그 영어로 다 써야 된다는 거야. <SEG> 근데 한두 글자만 틀려지면 맞게 해준겠다는 거야. <SEG>'
+[REASSEMBLY] chunk=2 prefix_end_idx=28 prev_ids_len=47 committed_ids_len=28
+  OLD _raw_decoded='language Korean<asr_text>주관식으로 나왔을 때는 그 영어로 다 써야 된다는 거야. <SEG> 근데 한두 글자만 틀려지지 맛 게이즈'
+  committed_text   ='language Korean<asr_text>주관식으로 나왔을 때는 그 영어로 다 써야 된다는 거야. <SEG>'
+  gen_text         =' 근데 한두 글자만 틀려지면 맞게 해준겠다는 거야. <SEG> 다른 거 이제 한'
+  NEW _raw_decoded ='language Korean<asr_text>주관식으로 나왔을 때는 그 영어로 다 써야 된다는 거야. <SEG> 근데 한두 글자만 틀려지면 맞게 해준겠다는 거야. <SEG> 다른 거 이제 한'
+2026-06-15 01:10:23,912 - INFO - qwen_asr.inference.qwen3_asr - [REASSEMBLY] chunk=2 prefix_end_idx=28 prev_ids_len=47 committed_ids_len=28
+  OLD _raw_decoded='language Korean<asr_text>주관식으로 나왔을 때는 그 영어로 다 써야 된다는 거야. <SEG> 근데 한두 글자만 틀려지지 맛 게이즈'
+  committed_text   ='language Korean<asr_text>주관식으로 나왔을 때는 그 영어로 다 써야 된다는 거야. <SEG>'
+  gen_text         =' 근데 한두 글자만 틀려지면 맞게 해준겠다는 거야. <SEG> 다른 거 이제 한'
+  NEW _raw_decoded ='language Korean<asr_text>주관식으로 나왔을 때는 그 영어로 다 써야 된다는 거야. <SEG> 근데 한두 글자만 틀려지면 맞게 해준겠다는 거야. <SEG> 다른 거 이제 한'
+[C-] [TRANSCRIBE-DECODING] slot=A text='주관식으로 나왔을 때는 그 영어로 다 써야 된다는 거야. <SEG> 근데 한두 글자만 틀려지면 맞게 해준겠다는 거야. <SEG> 다른 거 이제 한'
+2026-06-15 01:10:23,913 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='주관식으로 나왔을 때는 그 영어로 다 써야 된다는 거야. <SEG> 근데 한두 글자만 틀려지면 맞게 해준겠다는 거야. <SEG> 다른 거 이제 한'
+[C-] [SEG-IN-TEXT] slot=A text='주관식으로 나왔을 때는 그 영어로 다 써야 된다는 거야. <SEG> 근데 한두 글자만 틀려지면 맞게 해준겠다는 거야. <SEG> 다른 거 이제 한'
+2026-06-15 01:10:23,913 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='주관식으로 나왔을 때는 그 영어로 다 써야 된다는 거야. <SEG> 근데 한두 글자만 틀려지면 맞게 해준겠다는 거야. <SEG> 다른 거 이제 한'
+[C-] [COMMIT-PENDING] slot=A remaining='다른 거 이제 한'
+2026-06-15 01:10:23,913 - INFO - examples.streaming_websocket_server - [C-] [COMMIT-PENDING] slot=A remaining='다른 거 이제 한'
+[FLUSH-SEG] seg=1 tok=28/30 ratio=0.933 audio_end=3.867s fsl=2.060s
+2026-06-15 01:10:23,913 - INFO - __main__ - [FLUSH-SEG] seg=1 tok=28/30 ratio=0.933 audio_end=3.867s fsl=2.060s
+[FINAL] seg=1 reason=seg audio=[0.000, 3.867] fsl=2.060s encode=4.019s decode=0.718s final_decode=0.000s trans=0.000s | text='주관식으로 나왔을 때는 그 영어로 다 써야 된다는 거야.'
+2026-06-15 01:10:23,913 - INFO - __main__ - [FINAL] seg=1 reason=seg audio=[0.000, 3.867] fsl=2.060s encode=4.019s decode=0.718s final_decode=0.000s trans=0.000s | text='주관식으로 나왔을 때는 그 영어로 다 써야 된다는 거야.'
+[C-] [VAD-DETECT] speech_end target_samples=101360
+2026-06-15 01:10:23,937 - INFO - examples.streaming_websocket_server - [C-] [VAD-DETECT] speech_end target_samples=101360
+[C-] [VAD-SLOT-SWITCH] old=A new=B at=6.335s
+2026-06-15 01:10:23,946 - INFO - examples.streaming_websocket_server - [C-] [VAD-SLOT-SWITCH] old=A new=B at=6.335s
+[VAD_COMMIT] audio_end_sec=6.335s → speech_end_sec=5.535s
+2026-06-15 01:10:23,946 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=6.335s → speech_end_sec=5.535s
+[C-] [VAD-HISTORY] slot=A committed='주관식으로 나왔을 때는 그 영어로 다 써야 된다는 거야. 근데 한두 글자만 틀려지면 맞게 해준겠다는 거야.' uncommitted=' <SEG> 다른 거 이제 한'
+2026-06-15 01:10:23,946 - INFO - examples.streaming_websocket_server - [C-] [VAD-HISTORY] slot=A committed='주관식으로 나왔을 때는 그 영어로 다 써야 된다는 거야. 근데 한두 글자만 틀려지면 맞게 해준겠다는 거야.' uncommitted=' <SEG> 다른 거 이제 한'
+[C-] [VAD-BUFFER] slot=A cur_buf=5360 buf_pre=5360 accum_pre=96000 short=False has_buf=True
+2026-06-15 01:10:23,946 - INFO - examples.streaming_websocket_server - [C-] [VAD-BUFFER] slot=A cur_buf=5360 buf_pre=5360 accum_pre=96000 short=False has_buf=True
+[C-] [VAD-FINISH] slot=A text='주관식으로 나왔을 때는 그 영어로 다 써야 된다는 거야. <SEG> 근데 한두 글자만 틀려지면 맞게 해준겠다는 거야. <SEG> 다른 거 이제 한'
+2026-06-15 01:10:24,201 - INFO - examples.streaming_websocket_server - [C-] [VAD-FINISH] slot=A text='주관식으로 나왔을 때는 그 영어로 다 써야 된다는 거야. <SEG> 근데 한두 글자만 틀려지면 맞게 해준겠다는 거야. <SEG> 다른 거 이제 한'
+[C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='근데 한두 글자만 틀려지면 맞게 해준겠다는 거야.' translation='However, if there are only one or two letters wrong, they will correct it.'
+2026-06-15 01:10:24,712 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='근데 한두 글자만 틀려지면 맞게 해준겠다는 거야.' translation='However, if there are only one or two letters wrong, they will correct it.'
+[C-] [TRANS-VAD] slot=A reason=vad lang=ko original='다른 거 이제 한' translation='I've done something else now'
+2026-06-15 01:10:24,890 - INFO - examples.streaming_websocket_server - [C-] [TRANS-VAD] slot=A reason=vad lang=ko original='다른 거 이제 한' translation='I've done something else now'
+[FLUSH-SEG] seg=2 tok=1/30 ratio=0.033 audio_end=4.138s fsl=3.525s
+2026-06-15 01:10:24,891 - INFO - __main__ - [FLUSH-SEG] seg=2 tok=1/30 ratio=0.033 audio_end=4.138s fsl=3.525s
+[FINAL] seg=2 reason=seg audio=[3.867, 4.138] fsl=3.525s encode=6.092s decode=0.172s final_decode=0.255s trans=0.902s | text='근데 한두 글자만 틀려지면 맞게 해준겠다는 거야.'
+2026-06-15 01:10:24,891 - INFO - __main__ - [FINAL] seg=2 reason=seg audio=[3.867, 4.138] fsl=3.525s encode=6.092s decode=0.172s final_decode=0.255s trans=0.902s | text='근데 한두 글자만 틀려지면 맞게 해준겠다는 거야.'
+[FINAL] seg=3 reason=vad audio=[4.138, 5.535] fsl=0.689s encode=0.000s decode=0.000s final_decode=0.000s trans=0.689s | text='다른 거 이제 한'
+2026-06-15 01:10:24,891 - INFO - __main__ - [FINAL] seg=3 reason=vad audio=[4.138, 5.535] fsl=0.689s encode=0.000s decode=0.000s final_decode=0.000s trans=0.689s | text='다른 거 이제 한'
+[VAD_DONE] slot=A tail_samples=2176
+2026-06-15 01:10:24,891 - INFO - __main__ - [VAD_DONE] slot=A tail_samples=2176
+[C-] [TRANSCRIBE-DECODING] slot=B text=''
+2026-06-15 01:10:25,631 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=B text=''
+[ENCODE] slot=B chunk=0 audio_pos=8.471s ts=8.483s ds=8.484s decode=0.098s
+2026-06-15 01:10:25,631 - INFO - __main__ - [ENCODE] slot=B chunk=0 audio_pos=8.471s ts=8.483s ds=8.484s decode=0.098s
+[C-] [TRANSCRIBE-DECODING] slot=B text=''
+2026-06-15 01:10:27,635 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=B text=''
+[ENCODE] slot=B chunk=1 audio_pos=10.471s ts=10.489s ds=10.490s decode=0.097s
+2026-06-15 01:10:27,636 - INFO - __main__ - [ENCODE] slot=B chunk=1 audio_pos=10.471s ts=10.489s ds=10.490s decode=0.097s
+Connection closed
+2026-06-15 01:10:39,906 - INFO - __main__ - Connection closed
+Client disconnected (0)
+2026-06-15 01:10:39,906 - INFO - __main__ - Client disconnected (0)
+connection open
+2026-06-15 01:10:39,913 - INFO - websockets.server - connection open
+Client connected (1)
+2026-06-15 01:10:39,913 - INFO - __main__ - Client connected (1)
+[C-] Silero VAD (VADIterator) loaded successfully
+2026-06-15 01:10:39,941 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+New connection from ('127.0.0.1', 46454)
+2026-06-15 01:10:39,941 - INFO - __main__ - New connection from ('127.0.0.1', 46454)
+Received start: lang=ko, targetLang=en
+2026-06-15 01:10:39,942 - INFO - __main__ - Received start: lang=ko, targetLang=en
+[C-] Streaming state initialized
+2026-06-15 01:10:39,943 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+[C-] [VAD-DETECT] speech_start target_samples=3072
+2026-06-15 01:10:40,201 - INFO - examples.streaming_websocket_server - [C-] [VAD-DETECT] speech_start target_samples=3072
+[C-] [TRANSCRIBE-DECODING] slot=A text='근데 한 두 시간 정도만 하고서'
+2026-06-15 01:10:42,358 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='근데 한 두 시간 정도만 하고서'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.016s ds=2.018s decode=0.396s
+2026-06-15 01:10:42,358 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.016s ds=2.018s decode=0.396s
+[SEG] slot=A elapsed=4.511s decode_start=4.083s audio_pos=4.070s
+2026-06-15 01:10:44,455 - INFO - __main__ - [SEG] slot=A elapsed=4.511s decode_start=4.083s audio_pos=4.070s
+[ENCODE-EARLY] slot=A chunk=1 audio_pos=4.070s ts=4.082s ds=4.083s decode=0.428s
+2026-06-15 01:10:44,455 - INFO - __main__ - [ENCODE-EARLY] slot=A chunk=1 audio_pos=4.070s ts=4.082s ds=4.083s decode=0.428s
+[C-] [SEG-IN-TEXT] slot=A text='근데 한 두 시간 정도만 하고서 <SEG>'
+2026-06-15 01:10:44,456 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='근데 한 두 시간 정도만 하고서 <SEG>'
+[C-] [TRANSCRIBE-DECODING] slot=A text='근데 한 두 시간 정도만 하고서 <SEG> 그냥 일이 없으니까 빨리'
+2026-06-15 01:10:44,662 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='근데 한 두 시간 정도만 하고서 <SEG> 그냥 일이 없으니까 빨리'
+[C-] [SEG-IN-TEXT] slot=A text='근데 한 두 시간 정도만 하고서 <SEG> 그냥 일이 없으니까 빨리'
+2026-06-15 01:10:44,663 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='근데 한 두 시간 정도만 하고서 <SEG> 그냥 일이 없으니까 빨리'
+[C-] [COMMIT-PENDING] slot=A remaining='그냥 일이 없으니까 빨리'
+2026-06-15 01:10:44,663 - INFO - examples.streaming_websocket_server - [C-] [COMMIT-PENDING] slot=A remaining='그냥 일이 없으니까 빨리'
+[C-] [VAD-DETECT] speech_end target_samples=66144
+2026-06-15 01:10:44,670 - INFO - examples.streaming_websocket_server - [C-] [VAD-DETECT] speech_end target_samples=66144
+[C-] [VAD-SLOT-SWITCH] old=A new=B at=4.134s
+2026-06-15 01:10:44,680 - INFO - examples.streaming_websocket_server - [C-] [VAD-SLOT-SWITCH] old=A new=B at=4.134s
+[VAD_COMMIT] audio_end_sec=4.134s → speech_end_sec=3.334s
+2026-06-15 01:10:44,680 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=4.134s → speech_end_sec=3.334s
+[C-] [VAD-HISTORY] slot=A committed='근데 한 두 시간 정도만 하고서' uncommitted=' <SEG> 그냥 일이 없으니까 빨리'
+2026-06-15 01:10:44,680 - INFO - examples.streaming_websocket_server - [C-] [VAD-HISTORY] slot=A committed='근데 한 두 시간 정도만 하고서' uncommitted=' <SEG> 그냥 일이 없으니까 빨리'
+[C-] [VAD-BUFFER] slot=A cur_buf=2144 buf_pre=2144 accum_pre=64000 short=False has_buf=True
+2026-06-15 01:10:44,680 - INFO - examples.streaming_websocket_server - [C-] [VAD-BUFFER] slot=A cur_buf=2144 buf_pre=2144 accum_pre=64000 short=False has_buf=True
+[C-] [VAD-FINISH] slot=A text='근데 한 두 시간 정도만 하고서 <SEG> 그냥 일이 없으니까 빨리'
+2026-06-15 01:10:45,029 - INFO - examples.streaming_websocket_server - [C-] [VAD-FINISH] slot=A text='근데 한 두 시간 정도만 하고서 <SEG> 그냥 일이 없으니까 빨리'
+[C-] [TRANS-VAD] slot=A reason=vad lang=ko original='그냥 일이 없으니까 빨리' translation='Just hurry up because I don't have any work to do.'
+2026-06-15 01:10:45,699 - INFO - examples.streaming_websocket_server - [C-] [TRANS-VAD] slot=A reason=vad lang=ko original='그냥 일이 없으니까 빨리' translation='Just hurry up because I don't have any work to do.'
+[FINAL] seg=1 reason=vad audio=[0.000, 3.334] fsl=1.019s encode=0.000s decode=0.000s final_decode=0.349s trans=0.670s | text='그냥 일이 없으니까 빨리'
+2026-06-15 01:10:45,699 - INFO - __main__ - [FINAL] seg=1 reason=vad audio=[0.000, 3.334] fsl=1.019s encode=0.000s decode=0.000s final_decode=0.349s trans=0.670s | text='그냥 일이 없으니까 빨리'
+[VAD_DONE] slot=A tail_samples=2176
+2026-06-15 01:10:45,699 - INFO - __main__ - [VAD_DONE] slot=A tail_samples=2176
+[C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='근데 한 두 시간 정도만 하고서' translation='But after only an hour or two'
+2026-06-15 01:10:45,742 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='근데 한 두 시간 정도만 하고서' translation='But after only an hour or two'
+[FLUSH-SEG] seg=2 no-token-info → audio_end=4.070s fsl=0.000s
+2026-06-15 01:10:45,835 - INFO - __main__ - [FLUSH-SEG] seg=2 no-token-info → audio_end=4.070s fsl=0.000s
+[FINAL] seg=2 reason=seg audio=[3.334, 4.070] fsl=0.000s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='근데 한 두 시간 정도만 하고서'
+2026-06-15 01:10:45,835 - INFO - __main__ - [FINAL] seg=2 reason=seg audio=[3.334, 4.070] fsl=0.000s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='근데 한 두 시간 정도만 하고서'
+[C-] [TRANSCRIBE-DECODING] slot=B text=''
+2026-06-15 01:10:46,336 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=B text=''
+[ENCODE] slot=B chunk=0 audio_pos=6.270s ts=6.292s ds=6.294s decode=0.098s
+2026-06-15 01:10:46,336 - INFO - __main__ - [ENCODE] slot=B chunk=0 audio_pos=6.270s ts=6.292s ds=6.294s decode=0.098s
+[C-] [TRANSCRIBE-DECODING] slot=B text=''
+2026-06-15 01:10:48,335 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=B text=''
+[ENCODE] slot=B chunk=1 audio_pos=8.270s ts=8.291s ds=8.293s decode=0.097s
+2026-06-15 01:10:48,335 - INFO - __main__ - [ENCODE] slot=B chunk=1 audio_pos=8.270s ts=8.291s ds=8.293s decode=0.097s
+Connection closed
+2026-06-15 01:11:00,850 - INFO - __main__ - Connection closed
+Client disconnected (0)
+2026-06-15 01:11:00,851 - INFO - __main__ - Client disconnected (0)
+connection open
+2026-06-15 01:11:00,861 - INFO - websockets.server - connection open
+Client connected (1)
+2026-06-15 01:11:00,861 - INFO - __main__ - Client connected (1)
+[C-] Silero VAD (VADIterator) loaded successfully
+2026-06-15 01:11:00,916 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+New connection from ('127.0.0.1', 46086)
+2026-06-15 01:11:00,916 - INFO - __main__ - New connection from ('127.0.0.1', 46086)
+Received start: lang=ko, targetLang=en
+2026-06-15 01:11:00,917 - INFO - __main__ - Received start: lang=ko, targetLang=en
+[C-] Streaming state initialized
+2026-06-15 01:11:00,918 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+[C-] [VAD-DETECT] speech_start target_samples=3072
+2026-06-15 01:11:01,179 - INFO - examples.streaming_websocket_server - [C-] [VAD-DETECT] speech_start target_samples=3072
+[SEG] slot=A elapsed=2.329s decode_start=2.018s audio_pos=2.000s
+2026-06-15 01:11:03,248 - INFO - __main__ - [SEG] slot=A elapsed=2.329s decode_start=2.018s audio_pos=2.000s
+[ENCODE-EARLY] slot=A chunk=0 audio_pos=2.000s ts=2.017s ds=2.018s decode=0.311s
+2026-06-15 01:11:03,248 - INFO - __main__ - [ENCODE-EARLY] slot=A chunk=0 audio_pos=2.000s ts=2.017s ds=2.018s decode=0.311s
+[C-] [SEG-IN-TEXT] slot=A text='그런 게 어 <SEG>'
+2026-06-15 01:11:03,248 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='그런 게 어 <SEG>'
+[C-] [TRANSCRIBE-DECODING] slot=A text='그런 게 어 <SEG> 뭐 사람들이'
+2026-06-15 01:11:03,332 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='그런 게 어 <SEG> 뭐 사람들이'
+[C-] [SEG-IN-TEXT] slot=A text='그런 게 어 <SEG> 뭐 사람들이'
+2026-06-15 01:11:03,332 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='그런 게 어 <SEG> 뭐 사람들이'
+[C-] [COMMIT-PENDING] slot=A remaining='뭐 사람들이'
+2026-06-15 01:11:03,332 - INFO - examples.streaming_websocket_server - [C-] [COMMIT-PENDING] slot=A remaining='뭐 사람들이'
+[C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='그런 게 어' translation='Something like that'
+2026-06-15 01:11:03,937 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='그런 게 어' translation='Something like that'
+[SEG] slot=A elapsed=3.221s decode_start=-1.000s audio_pos=3.200s
+2026-06-15 01:11:04,140 - INFO - __main__ - [SEG] slot=A elapsed=3.221s decode_start=-1.000s audio_pos=3.200s
+[ENCODE-EARLY] slot=A chunk=1 audio_pos=3.200s ts=3.220s ds=-1.000s decode=0.000s
+2026-06-15 01:11:04,140 - INFO - __main__ - [ENCODE-EARLY] slot=A chunk=1 audio_pos=3.200s ts=3.220s ds=-1.000s decode=0.000s
+[FLUSH-SEG] seg=1 tok=9/13 ratio=0.692 audio_end=1.385s fsl=1.633s
+2026-06-15 01:11:04,140 - INFO - __main__ - [FLUSH-SEG] seg=1 tok=9/13 ratio=0.692 audio_end=1.385s fsl=1.633s
+[FINAL] seg=1 reason=seg audio=[0.000, 1.385] fsl=1.633s encode=2.018s decode=0.310s final_decode=0.000s trans=0.000s | text='그런 게 어'
+2026-06-15 01:11:04,140 - INFO - __main__ - [FINAL] seg=1 reason=seg audio=[0.000, 1.385] fsl=1.633s encode=2.018s decode=0.310s final_decode=0.000s trans=0.000s | text='그런 게 어'
+[C-] [SEG-IN-TEXT] slot=A text='그런 게 어 사람 들이 당연히 안 듣고 있겠지만 <SEG>'
+2026-06-15 01:11:05,534 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='그런 게 어 사람 들이 당연히 안 듣고 있겠지만 <SEG>'
+[C-] [TRANSCRIBE-DECODING] slot=A text='그런 게 어 사람 들이 당연히 안 듣고 있겠지만 <SEG> 확신하 듸'
+2026-06-15 01:11:05,658 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='그런 게 어 사람 들이 당연히 안 듣고 있겠지만 <SEG> 확신하 듸'
+[C-] [SEG-IN-TEXT] slot=A text='그런 게 어 사람 들이 당연히 안 듣고 있겠지만 <SEG> 확신하 듸'
+2026-06-15 01:11:05,658 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='그런 게 어 사람 들이 당연히 안 듣고 있겠지만 <SEG> 확신하 듸'
+[C-] [COMMIT-PENDING] slot=A remaining='확신하 듸'
+2026-06-15 01:11:05,658 - INFO - examples.streaming_websocket_server - [C-] [COMMIT-PENDING] slot=A remaining='확신하 듸'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.021s ds=4.023s decode=0.716s
+2026-06-15 01:11:05,658 - INFO - __main__ - [ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.021s ds=4.023s decode=0.716s
+[C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='사람 들이 당연히 안 듣고 있겠지만' translation='Of course people won't listen'
+2026-06-15 01:11:05,698 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='사람 들이 당연히 안 듣고 있겠지만' translation='Of course people won't listen'
+[SEG] slot=A elapsed=4.814s decode_start=-1.000s audio_pos=4.800s
+2026-06-15 01:11:05,733 - INFO - __main__ - [SEG] slot=A elapsed=4.814s decode_start=-1.000s audio_pos=4.800s
+[ENCODE-EARLY] slot=A chunk=2 audio_pos=4.800s ts=4.814s ds=-1.000s decode=0.000s
+2026-06-15 01:11:05,733 - INFO - __main__ - [ENCODE-EARLY] slot=A chunk=2 audio_pos=4.800s ts=4.814s ds=-1.000s decode=0.000s
+[FLUSH-SEG] seg=2 tok=9/28 ratio=0.321 audio_end=1.843s fsl=2.891s
+2026-06-15 01:11:05,734 - INFO - __main__ - [FLUSH-SEG] seg=2 tok=9/28 ratio=0.321 audio_end=1.843s fsl=2.891s
+[FINAL] seg=2 reason=seg audio=[1.385, 1.843] fsl=2.891s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='사람 들이 당연히 안 듣고 있겠지만'
+2026-06-15 01:11:05,734 - INFO - __main__ - [FINAL] seg=2 reason=seg audio=[1.385, 1.843] fsl=2.891s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='사람 들이 당연히 안 듣고 있겠지만'
+[C-] [VAD-DETECT] speech_end target_samples=87968
+2026-06-15 01:11:06,476 - INFO - examples.streaming_websocket_server - [C-] [VAD-DETECT] speech_end target_samples=87968
+[C-] [VAD-SLOT-SWITCH] old=A new=B at=5.498s
+2026-06-15 01:11:06,479 - INFO - examples.streaming_websocket_server - [C-] [VAD-SLOT-SWITCH] old=A new=B at=5.498s
+[VAD_COMMIT] audio_end_sec=5.498s → speech_end_sec=4.698s
+2026-06-15 01:11:06,479 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=5.498s → speech_end_sec=4.698s
+[C-] [VAD-HISTORY] slot=A committed='그런 게 어 사람 들이 당연히 안 듣고 있겠지만' uncommitted=' <SEG> 확신하 듸'
+2026-06-15 01:11:06,479 - INFO - examples.streaming_websocket_server - [C-] [VAD-HISTORY] slot=A committed='그런 게 어 사람 들이 당연히 안 듣고 있겠지만' uncommitted=' <SEG> 확신하 듸'
+[C-] [VAD-BUFFER] slot=A cur_buf=23968 buf_pre=23968 accum_pre=64000 short=False has_buf=True
+2026-06-15 01:11:06,479 - INFO - examples.streaming_websocket_server - [C-] [VAD-BUFFER] slot=A cur_buf=23968 buf_pre=23968 accum_pre=64000 short=False has_buf=True
+[C-] [VAD-FINISH] slot=A text='그런 게 어 사람 들이 당연히 안 듣고 있겠지만 <SEG> 혹시나 듣는다면'
+2026-06-15 01:11:06,790 - INFO - examples.streaming_websocket_server - [C-] [VAD-FINISH] slot=A text='그런 게 어 사람 들이 당연히 안 듣고 있겠지만 <SEG> 혹시나 듣는다면'
+[C-] [TRANS-VAD] slot=A reason=vad lang=ko original='혹시나 듣는다면' translation='If you ever hear it'
+2026-06-15 01:11:07,779 - INFO - examples.streaming_websocket_server - [C-] [TRANS-VAD] slot=A reason=vad lang=ko original='혹시나 듣는다면' translation='If you ever hear it'
+[FINAL] seg=3 reason=vad audio=[1.843, 4.698] fsl=1.300s encode=0.000s decode=0.000s final_decode=0.311s trans=0.989s | text='혹시나 듣는다면'
+2026-06-15 01:11:07,780 - INFO - __main__ - [FINAL] seg=3 reason=vad audio=[1.843, 4.698] fsl=1.300s encode=0.000s decode=0.000s final_decode=0.311s trans=0.989s | text='혹시나 듣는다면'
+[VAD_DONE] slot=A tail_samples=640
+2026-06-15 01:11:07,780 - INFO - __main__ - [VAD_DONE] slot=A tail_samples=640
+[C-] [TRANSCRIBE-DECODING] slot=B text=''
+2026-06-15 01:11:08,576 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=B text=''
+[ENCODE] slot=B chunk=0 audio_pos=7.538s ts=7.559s ds=7.561s decode=0.096s
+2026-06-15 01:11:08,577 - INFO - __main__ - [ENCODE] slot=B chunk=0 audio_pos=7.538s ts=7.559s ds=7.561s decode=0.096s
+[C-] [TRANSCRIBE-DECODING] slot=B text=''
+2026-06-15 01:11:10,577 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=B text=''
+[ENCODE] slot=B chunk=1 audio_pos=9.538s ts=9.560s ds=9.562s decode=0.096s
+2026-06-15 01:11:10,578 - INFO - __main__ - [ENCODE] slot=B chunk=1 audio_pos=9.538s ts=9.560s ds=9.562s decode=0.096s
+Connection closed
+2026-06-15 01:11:22,793 - INFO - __main__ - Connection closed
+Client disconnected (0)
+2026-06-15 01:11:22,793 - INFO - __main__ - Client disconnected (0)
+connection open
+2026-06-15 01:11:22,799 - INFO - websockets.server - connection open
+Client connected (1)
+2026-06-15 01:11:22,799 - INFO - __main__ - Client connected (1)
+[C-] Silero VAD (VADIterator) loaded successfully
+2026-06-15 01:11:22,826 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+New connection from ('127.0.0.1', 54790)
+2026-06-15 01:11:22,826 - INFO - __main__ - New connection from ('127.0.0.1', 54790)
+Received start: lang=ko, targetLang=en
+2026-06-15 01:11:22,827 - INFO - __main__ - Received start: lang=ko, targetLang=en
+[C-] Streaming state initialized
+2026-06-15 01:11:22,827 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+[C-] [VAD-DETECT] speech_start target_samples=5248
+2026-06-15 01:11:23,243 - INFO - examples.streaming_websocket_server - [C-] [VAD-DETECT] speech_start target_samples=5248
+[C-] [TRANSCRIBE-DECODING] slot=A text='근데 내가 한참 떠'
+2026-06-15 01:11:25,229 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='근데 내가 한참 떠'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.021s ds=2.022s decode=0.378s
+2026-06-15 01:11:25,229 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.021s ds=2.022s decode=0.378s
+[SEG] slot=A elapsed=4.469s decode_start=4.020s audio_pos=4.000s
+2026-06-15 01:11:27,298 - INFO - __main__ - [SEG] slot=A elapsed=4.469s decode_start=4.020s audio_pos=4.000s
+[ENCODE-EARLY] slot=A chunk=1 audio_pos=4.000s ts=4.018s ds=4.020s decode=0.449s
+2026-06-15 01:11:27,298 - INFO - __main__ - [ENCODE-EARLY] slot=A chunk=1 audio_pos=4.000s ts=4.018s ds=4.020s decode=0.449s
+[C-] [SEG-IN-TEXT] slot=A text='근데 내가 한참 동안 있었거든? <SEG>'
+2026-06-15 01:11:27,298 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='근데 내가 한참 동안 있었거든? <SEG>'
+[C-] [TRANSCRIBE-DECODING] slot=A text='근데 내가 한참 동안 있었거든? <SEG> 근데 이제'
+2026-06-15 01:11:27,402 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='근데 내가 한참 동안 있었거든? <SEG> 근데 이제'
+[C-] [SEG-IN-TEXT] slot=A text='근데 내가 한참 동안 있었거든? <SEG> 근데 이제'
+2026-06-15 01:11:27,402 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='근데 내가 한참 동안 있었거든? <SEG> 근데 이제'
+[C-] [COMMIT-PENDING] slot=A remaining='근데 이제'
+2026-06-15 01:11:27,403 - INFO - examples.streaming_websocket_server - [C-] [COMMIT-PENDING] slot=A remaining='근데 이제'
+[C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='근데 내가 한참 동안 있었거든?' translation='But I've been around for a while?'
+2026-06-15 01:11:27,470 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='근데 내가 한참 동안 있었거든?' translation='But I've been around for a while?'
+[SEG] slot=A elapsed=4.719s decode_start=-1.000s audio_pos=4.700s
+2026-06-15 01:11:27,548 - INFO - __main__ - [SEG] slot=A elapsed=4.719s decode_start=-1.000s audio_pos=4.700s
+[ENCODE-EARLY] slot=A chunk=2 audio_pos=4.700s ts=4.719s ds=-1.000s decode=0.000s
+2026-06-15 01:11:27,548 - INFO - __main__ - [ENCODE-EARLY] slot=A chunk=2 audio_pos=4.700s ts=4.719s ds=-1.000s decode=0.000s
+[FLUSH-SEG] seg=1 tok=15/20 ratio=0.750 audio_end=3.500s fsl=1.141s
+2026-06-15 01:11:27,548 - INFO - __main__ - [FLUSH-SEG] seg=1 tok=15/20 ratio=0.750 audio_end=3.500s fsl=1.141s
+[FINAL] seg=1 reason=seg audio=[0.000, 3.500] fsl=1.141s encode=4.020s decode=0.449s final_decode=0.000s trans=0.000s | text='근데 내가 한참 동안 있었거든?'
+2026-06-15 01:11:27,548 - INFO - __main__ - [FINAL] seg=1 reason=seg audio=[0.000, 3.500] fsl=1.141s encode=4.020s decode=0.449s final_decode=0.000s trans=0.000s | text='근데 내가 한참 동안 있었거든?'
+[C-] [VAD-DETECT] speech_end target_samples=77760
+2026-06-15 01:11:27,746 - INFO - examples.streaming_websocket_server - [C-] [VAD-DETECT] speech_end target_samples=77760
+[C-] [VAD-SLOT-SWITCH] old=A new=B at=4.860s
+2026-06-15 01:11:27,749 - INFO - examples.streaming_websocket_server - [C-] [VAD-SLOT-SWITCH] old=A new=B at=4.860s
+[VAD_COMMIT] audio_end_sec=4.860s → speech_end_sec=4.060s
+2026-06-15 01:11:27,749 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=4.860s → speech_end_sec=4.060s
+[C-] [VAD-HISTORY] slot=A committed='근데 내가 한참 동안 있었거든?' uncommitted=' <SEG> 근데 이제'
+2026-06-15 01:11:27,749 - INFO - examples.streaming_websocket_server - [C-] [VAD-HISTORY] slot=A committed='근데 내가 한참 동안 있었거든?' uncommitted=' <SEG> 근데 이제'
+[C-] [VAD-BUFFER] slot=A cur_buf=13760 buf_pre=13760 accum_pre=64000 short=False has_buf=True
+2026-06-15 01:11:27,749 - INFO - examples.streaming_websocket_server - [C-] [VAD-BUFFER] slot=A cur_buf=13760 buf_pre=13760 accum_pre=64000 short=False has_buf=True
+[C-] [VAD-FINISH] slot=A text='근데 내가 한참 동안 있었거든? <SEG> 근데 이제'
+2026-06-15 01:11:27,998 - INFO - examples.streaming_websocket_server - [C-] [VAD-FINISH] slot=A text='근데 내가 한참 동안 있었거든? <SEG> 근데 이제'
+[C-] [TRANS-VAD] slot=A reason=vad lang=ko original='근데 이제' translation='But now'
+2026-06-15 01:11:28,149 - INFO - examples.streaming_websocket_server - [C-] [TRANS-VAD] slot=A reason=vad lang=ko original='근데 이제' translation='But now'
+[FINAL] seg=2 reason=vad audio=[3.500, 4.060] fsl=0.401s encode=0.000s decode=0.000s final_decode=0.249s trans=0.151s | text='근데 이제'
+2026-06-15 01:11:28,150 - INFO - __main__ - [FINAL] seg=2 reason=vad audio=[3.500, 4.060] fsl=0.401s encode=0.000s decode=0.000s final_decode=0.249s trans=0.151s | text='근데 이제'
+[VAD_DONE] slot=A tail_samples=640
+2026-06-15 01:11:28,150 - INFO - __main__ - [VAD_DONE] slot=A tail_samples=640
+[C-] [TRANSCRIBE-DECODING] slot=B text=''
+2026-06-15 01:11:29,849 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=B text=''
+[ENCODE] slot=B chunk=0 audio_pos=6.900s ts=6.920s ds=6.922s decode=0.099s
+2026-06-15 01:11:29,850 - INFO - __main__ - [ENCODE] slot=B chunk=0 audio_pos=6.900s ts=6.920s ds=6.922s decode=0.099s
+[C-] [TRANSCRIBE-DECODING] slot=B text=''
+2026-06-15 01:11:31,846 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=B text=''
+[ENCODE] slot=B chunk=1 audio_pos=8.900s ts=8.919s ds=8.921s decode=0.097s
+2026-06-15 01:11:31,846 - INFO - __main__ - [ENCODE] slot=B chunk=1 audio_pos=8.900s ts=8.919s ds=8.921s decode=0.097s
+Connection closed
+2026-06-15 01:11:43,161 - INFO - __main__ - Connection closed
+Client disconnected (0)
+2026-06-15 01:11:43,161 - INFO - __main__ - Client disconnected (0)
+connection open
+2026-06-15 01:11:43,170 - INFO - websockets.server - connection open
+Client connected (1)
+2026-06-15 01:11:43,170 - INFO - __main__ - Client connected (1)
+[C-] Silero VAD (VADIterator) loaded successfully
+2026-06-15 01:11:43,226 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+New connection from ('127.0.0.1', 33050)
+2026-06-15 01:11:43,226 - INFO - __main__ - New connection from ('127.0.0.1', 33050)
+Received start: lang=ko, targetLang=en
+2026-06-15 01:11:43,227 - INFO - __main__ - Received start: lang=ko, targetLang=en
+[C-] Streaming state initialized
+2026-06-15 01:11:43,228 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+[C-] [VAD-DETECT] speech_start target_samples=1024
+2026-06-15 01:11:43,476 - INFO - examples.streaming_websocket_server - [C-] [VAD-DETECT] speech_start target_samples=1024
+[C-] [TRANSCRIBE-DECODING] slot=A text='그럼 인제 주제 좀 넘어가 볼까?'
+2026-06-15 01:11:45,727 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='그럼 인제 주제 좀 넘어가 볼까?'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.020s ds=2.022s decode=0.476s
+2026-06-15 01:11:45,727 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.020s ds=2.022s decode=0.476s
+[SEG] slot=A elapsed=4.574s decode_start=4.061s audio_pos=4.039s
+2026-06-15 01:11:47,803 - INFO - __main__ - [SEG] slot=A elapsed=4.574s decode_start=4.061s audio_pos=4.039s
+[ENCODE-EARLY] slot=A chunk=1 audio_pos=4.039s ts=4.059s ds=4.061s decode=0.513s
+2026-06-15 01:11:47,804 - INFO - __main__ - [ENCODE-EARLY] slot=A chunk=1 audio_pos=4.039s ts=4.059s ds=4.061s decode=0.513s
+[C-] [SEG-IN-TEXT] slot=A text='그럼 인제 주제 좀 넘어가 볼까? <SEG>'
+2026-06-15 01:11:47,804 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='그럼 인제 주제 좀 넘어가 볼까? <SEG>'
+[C-] [TRANSCRIBE-DECODING] slot=A text='그럼 인제 주제 좀 넘어가 볼까? <SEG> 어 영화 얘기해볼까?'
+2026-06-15 01:11:47,967 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='그럼 인제 주제 좀 넘어가 볼까? <SEG> 어 영화 얘기해볼까?'
+[C-] [SEG-IN-TEXT] slot=A text='그럼 인제 주제 좀 넘어가 볼까? <SEG> 어 영화 얘기해볼까?'
+2026-06-15 01:11:47,967 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='그럼 인제 주제 좀 넘어가 볼까? <SEG> 어 영화 얘기해볼까?'
+[C-] [DOT-SLOT-SWITCH] slot=A audio_sec=4.0s prev='그럼 인제 주제 좀 넘어가 볼까?'
+2026-06-15 01:11:47,968 - INFO - examples.streaming_websocket_server - [C-] [DOT-SLOT-SWITCH] slot=A audio_sec=4.0s prev='그럼 인제 주제 좀 넘어가 볼까?'
+[C-] [VAD-DETECT] speech_end target_samples=73072
+2026-06-15 01:11:48,005 - INFO - examples.streaming_websocket_server - [C-] [VAD-DETECT] speech_end target_samples=73072
+[C-] [VAD-SLOT-SWITCH] old=A new=B at=4.567s
+2026-06-15 01:11:48,008 - INFO - examples.streaming_websocket_server - [C-] [VAD-SLOT-SWITCH] old=A new=B at=4.567s
+[VAD_COMMIT] audio_end_sec=4.567s → speech_end_sec=3.767s
+2026-06-15 01:11:48,008 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=4.567s → speech_end_sec=3.767s
+[C-] [VAD-HISTORY] slot=A committed='' uncommitted=''
+2026-06-15 01:11:48,008 - INFO - examples.streaming_websocket_server - [C-] [VAD-HISTORY] slot=A committed='' uncommitted=''
+[C-] [VAD-BUFFER] slot=A cur_buf=8448 buf_pre=8448 accum_pre=32000 short=False has_buf=True
+2026-06-15 01:11:48,008 - INFO - examples.streaming_websocket_server - [C-] [VAD-BUFFER] slot=A cur_buf=8448 buf_pre=8448 accum_pre=32000 short=False has_buf=True
+[C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='그럼 인제 주제 좀 넘어가 볼까?' translation='Now then, shall we move on to the topic?'
+2026-06-15 01:11:48,020 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='그럼 인제 주제 좀 넘어가 볼까?' translation='Now then, shall we move on to the topic?'
+[C-] [VAD-FINISH] slot=A text='어 영화 얘기해볼까?'
+2026-06-15 01:11:48,366 - INFO - examples.streaming_websocket_server - [C-] [VAD-FINISH] slot=A text='어 영화 얘기해볼까?'
+[C-] [TRANS-VAD] slot=A reason=vad lang=ko original='어 영화 얘기해볼까?' translation='Shall we talk about the movie?'
+2026-06-15 01:11:48,459 - INFO - examples.streaming_websocket_server - [C-] [TRANS-VAD] slot=A reason=vad lang=ko original='어 영화 얘기해볼까?' translation='Shall we talk about the movie?'
+[FLUSH-SEG] seg=1 no-token-info → audio_end=4.039s fsl=0.751s
+2026-06-15 01:11:48,460 - INFO - __main__ - [FLUSH-SEG] seg=1 no-token-info → audio_end=4.039s fsl=0.751s
+[FINAL] seg=1 reason=seg audio=[0.000, 4.039] fsl=0.751s encode=4.061s decode=0.513s final_decode=0.000s trans=0.215s | text='그럼 인제 주제 좀 넘어가 볼까?'
+2026-06-15 01:11:48,460 - INFO - __main__ - [FINAL] seg=1 reason=seg audio=[0.000, 4.039] fsl=0.751s encode=4.061s decode=0.513s final_decode=0.000s trans=0.215s | text='그럼 인제 주제 좀 넘어가 볼까?'
+[FINAL] seg=2 reason=vad audio=[4.039, 4.639] fsl=0.450s encode=0.000s decode=0.000s final_decode=0.358s trans=0.092s | text='어 영화 얘기해볼까?'
+2026-06-15 01:11:48,460 - INFO - __main__ - [FINAL] seg=2 reason=vad audio=[4.039, 4.639] fsl=0.450s encode=0.000s decode=0.000s final_decode=0.358s trans=0.092s | text='어 영화 얘기해볼까?'
+[VAD_DONE] slot=A tail_samples=1152
+2026-06-15 01:11:48,460 - INFO - __main__ - [VAD_DONE] slot=A tail_samples=1152
+[C-] [TRANSCRIBE-DECODING] slot=B text=''
+2026-06-15 01:11:49,984 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=B text=''
+[ENCODE] slot=B chunk=0 audio_pos=6.639s ts=6.656s ds=6.657s decode=0.097s
+2026-06-15 01:11:49,984 - INFO - __main__ - [ENCODE] slot=B chunk=0 audio_pos=6.639s ts=6.656s ds=6.657s decode=0.097s
+[C-] [TRANSCRIBE-DECODING] slot=B text=''
+2026-06-15 01:11:51,984 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=B text=''
+[ENCODE] slot=B chunk=1 audio_pos=8.639s ts=8.658s ds=8.659s decode=0.096s
+2026-06-15 01:11:51,984 - INFO - __main__ - [ENCODE] slot=B chunk=1 audio_pos=8.639s ts=8.658s ds=8.659s decode=0.096s
+Connection closed
+2026-06-15 01:12:03,468 - INFO - __main__ - Connection closed
+Client disconnected (0)
+2026-06-15 01:12:03,468 - INFO - __main__ - Client disconnected (0)
+connection open
+2026-06-15 01:12:03,475 - INFO - websockets.server - connection open
+Client connected (1)
+2026-06-15 01:12:03,475 - INFO - __main__ - Client connected (1)
+[C-] Silero VAD (VADIterator) loaded successfully
+2026-06-15 01:12:03,501 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+New connection from ('127.0.0.1', 35312)
+2026-06-15 01:12:03,502 - INFO - __main__ - New connection from ('127.0.0.1', 35312)
+Received start: lang=ko, targetLang=en
+2026-06-15 01:12:03,503 - INFO - __main__ - Received start: lang=ko, targetLang=en
+[C-] Streaming state initialized
+2026-06-15 01:12:03,503 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+[C-] [VAD-DETECT] speech_start target_samples=4224
+2026-06-15 01:12:03,913 - INFO - examples.streaming_websocket_server - [C-] [VAD-DETECT] speech_start target_samples=4224
+[SEG] slot=A elapsed=2.415s decode_start=2.020s audio_pos=2.000s
+2026-06-15 01:12:05,920 - INFO - __main__ - [SEG] slot=A elapsed=2.415s decode_start=2.020s audio_pos=2.000s
+[ENCODE-EARLY] slot=A chunk=0 audio_pos=2.000s ts=2.018s ds=2.020s decode=0.395s
+2026-06-15 01:12:05,920 - INFO - __main__ - [ENCODE-EARLY] slot=A chunk=0 audio_pos=2.000s ts=2.018s ds=2.020s decode=0.395s
+[C-] [SEG-IN-TEXT] slot=A text='홈페이지를 한 번 찾으면은 <SEG>'
+2026-06-15 01:12:05,920 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='홈페이지를 한 번 찾으면은 <SEG>'
+[C-] [TRANSCRIBE-DECODING] slot=A text='홈페이지를 한 번 찾으면은 <SEG> 알'
+2026-06-15 01:12:05,963 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='홈페이지를 한 번 찾으면은 <SEG> 알'
+[C-] [SEG-IN-TEXT] slot=A text='홈페이지를 한 번 찾으면은 <SEG> 알'
+2026-06-15 01:12:05,963 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='홈페이지를 한 번 찾으면은 <SEG> 알'
+[C-] [COMMIT-PENDING] slot=A remaining='알'
+2026-06-15 01:12:05,963 - INFO - examples.streaming_websocket_server - [C-] [COMMIT-PENDING] slot=A remaining='알'
+[C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='홈페이지를 한 번 찾으면은' translation='Once you find the homepage,'
+2026-06-15 01:12:06,146 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='홈페이지를 한 번 찾으면은' translation='Once you find the homepage,'
+[SEG] slot=A elapsed=2.818s decode_start=-1.000s audio_pos=2.800s
+2026-06-15 01:12:06,323 - INFO - __main__ - [SEG] slot=A elapsed=2.818s decode_start=-1.000s audio_pos=2.800s
+[ENCODE-EARLY] slot=A chunk=1 audio_pos=2.800s ts=2.818s ds=-1.000s decode=0.000s
+2026-06-15 01:12:06,323 - INFO - __main__ - [ENCODE-EARLY] slot=A chunk=1 audio_pos=2.800s ts=2.818s ds=-1.000s decode=0.000s
+[FLUSH-SEG] seg=1 tok=13/15 ratio=0.867 audio_end=1.733s fsl=0.907s
+2026-06-15 01:12:06,323 - INFO - __main__ - [FLUSH-SEG] seg=1 tok=13/15 ratio=0.867 audio_end=1.733s fsl=0.907s
+[FINAL] seg=1 reason=seg audio=[0.000, 1.733] fsl=0.907s encode=2.020s decode=0.395s final_decode=0.000s trans=0.000s | text='홈페이지를 한 번 찾으면은'
+2026-06-15 01:12:06,324 - INFO - __main__ - [FINAL] seg=1 reason=seg audio=[0.000, 1.733] fsl=0.907s encode=2.020s decode=0.395s final_decode=0.000s trans=0.000s | text='홈페이지를 한 번 찾으면은'
+[C-] [SEG-IN-TEXT] slot=A text='홈페이지를 한 번 찾으면은 <SEG>'
+2026-06-15 01:12:07,936 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='홈페이지를 한 번 찾으면은 <SEG>'
+[C-] [TRANSCRIBE-DECODING] slot=A text='홈페이지를 한 번 찾으면은 <SEG> 알 수 있는 것들을 모두 다 물어'
+2026-06-15 01:12:08,142 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='홈페이지를 한 번 찾으면은 <SEG> 알 수 있는 것들을 모두 다 물어'
+[C-] [SEG-IN-TEXT] slot=A text='홈페이지를 한 번 찾으면은 <SEG> 알 수 있는 것들을 모두 다 물어'
+2026-06-15 01:12:08,142 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='홈페이지를 한 번 찾으면은 <SEG> 알 수 있는 것들을 모두 다 물어'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.020s ds=4.021s decode=0.616s
+2026-06-15 01:12:08,142 - INFO - __main__ - [ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.020s ds=4.021s decode=0.616s
+[C-] [SEG-IN-TEXT] slot=A text='홈페이지를 한 번 찾으면은 <SEG> 알'
+2026-06-15 01:12:09,687 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='홈페이지를 한 번 찾으면은 <SEG> 알'
+[C-] [SEG-IN-TEXT] slot=A text='홈페이지를 한 번 찾으면은 <SEG> 알 수 있는 것들을 모두 다 물어보는 거야. <SEG>'
+2026-06-15 01:12:09,997 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='홈페이지를 한 번 찾으면은 <SEG> 알 수 있는 것들을 모두 다 물어보는 거야. <SEG>'
+[REASSEMBLY] chunk=2 prefix_end_idx=13 prev_ids_len=22 committed_ids_len=13
+  OLD _raw_decoded='language Korean<asr_text>홈페이지를 한 번 찾으면은 <SEG> 알 수 있는 것들을 모두 다 물어'
+  committed_text   ='language Korean<asr_text>홈페이지를 한 번 찾으면은 <SEG>'
+  gen_text         =' 알 수 있는 것들을 모두 다 물어보는 거야. <SEG> 근데 교 교학팀이 좀 멍청하긴 하거든.'
+  NEW _raw_decoded ='language Korean<asr_text>홈페이지를 한 번 찾으면은 <SEG> 알 수 있는 것들을 모두 다 물어보는 거야. <SEG> 근데 교 교학팀이 좀 멍청하긴 하거든.'
+2026-06-15 01:12:10,369 - INFO - qwen_asr.inference.qwen3_asr - [REASSEMBLY] chunk=2 prefix_end_idx=13 prev_ids_len=22 committed_ids_len=13
+  OLD _raw_decoded='language Korean<asr_text>홈페이지를 한 번 찾으면은 <SEG> 알 수 있는 것들을 모두 다 물어'
+  committed_text   ='language Korean<asr_text>홈페이지를 한 번 찾으면은 <SEG>'
+  gen_text         =' 알 수 있는 것들을 모두 다 물어보는 거야. <SEG> 근데 교 교학팀이 좀 멍청하긴 하거든.'
+  NEW _raw_decoded ='language Korean<asr_text>홈페이지를 한 번 찾으면은 <SEG> 알 수 있는 것들을 모두 다 물어보는 거야. <SEG> 근데 교 교학팀이 좀 멍청하긴 하거든.'
+[C-] [TRANSCRIBE-DECODING] slot=A text='홈페이지를 한 번 찾으면은 <SEG> 알 수 있는 것들을 모두 다 물어보는 거야. <SEG> 근데 교 교학팀이 좀 멍청하긴 하거든.'
+2026-06-15 01:12:10,369 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='홈페이지를 한 번 찾으면은 <SEG> 알 수 있는 것들을 모두 다 물어보는 거야. <SEG> 근데 교 교학팀이 좀 멍청하긴 하거든.'
+[C-] [SEG-IN-TEXT] slot=A text='홈페이지를 한 번 찾으면은 <SEG> 알 수 있는 것들을 모두 다 물어보는 거야. <SEG> 근데 교 교학팀이 좀 멍청하긴 하거든.'
+2026-06-15 01:12:10,369 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='홈페이지를 한 번 찾으면은 <SEG> 알 수 있는 것들을 모두 다 물어보는 거야. <SEG> 근데 교 교학팀이 좀 멍청하긴 하거든.'
+[C-] [COMMIT-PENDING] slot=A remaining='근데 교 교학팀이 좀 멍청하긴 하거든.'
+2026-06-15 01:12:10,369 - INFO - examples.streaming_websocket_server - [C-] [COMMIT-PENDING] slot=A remaining='근데 교 교학팀이 좀 멍청하긴 하거든.'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.018s ds=6.020s decode=0.845s
+2026-06-15 01:12:10,369 - INFO - __main__ - [ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.018s ds=6.020s decode=0.845s
+[C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='알 수 있는 것들을 모두 다 물어보는 거야.' translation='Asking everything you can know.'
+2026-06-15 01:12:10,415 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='알 수 있는 것들을 모두 다 물어보는 거야.' translation='Asking everything you can know.'
+[C-] [VAD-DETECT] speech_end target_samples=111904
+2026-06-15 01:12:10,527 - INFO - examples.streaming_websocket_server - [C-] [VAD-DETECT] speech_end target_samples=111904
+[SEG] slot=A elapsed=7.022s decode_start=-1.000s audio_pos=7.002s
+2026-06-15 01:12:10,527 - INFO - __main__ - [SEG] slot=A elapsed=7.022s decode_start=-1.000s audio_pos=7.002s
+[ENCODE-EARLY] slot=A chunk=3 audio_pos=7.002s ts=7.022s ds=-1.000s decode=0.000s
+2026-06-15 01:12:10,527 - INFO - __main__ - [ENCODE-EARLY] slot=A chunk=3 audio_pos=7.002s ts=7.022s ds=-1.000s decode=0.000s
+[FLUSH-SEG] seg=2 tok=13/34 ratio=0.382 audio_end=1.565s fsl=5.021s
+2026-06-15 01:12:10,527 - INFO - __main__ - [FLUSH-SEG] seg=2 tok=13/34 ratio=0.382 audio_end=1.565s fsl=5.021s
+[FINAL] seg=2 reason=seg audio=[1.733, 1.565] fsl=5.021s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='알 수 있는 것들을 모두 다 물어보는 거야.'
+2026-06-15 01:12:10,527 - INFO - __main__ - [FINAL] seg=2 reason=seg audio=[1.733, 1.565] fsl=5.021s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='알 수 있는 것들을 모두 다 물어보는 거야.'
+[C-] [VAD-SLOT-SWITCH] old=A new=B at=6.994s
+2026-06-15 01:12:10,527 - INFO - examples.streaming_websocket_server - [C-] [VAD-SLOT-SWITCH] old=A new=B at=6.994s
+[VAD_COMMIT] audio_end_sec=6.994s → speech_end_sec=6.194s
+2026-06-15 01:12:10,527 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=6.994s → speech_end_sec=6.194s
+[C-] [VAD-HISTORY] slot=A committed='홈페이지를 한 번 찾으면은 알 수 있는 것들을 모두 다 물어보는 거야.' uncommitted=' <SEG> 근데 교 교학팀이 좀 멍청하긴 하거든.'
+2026-06-15 01:12:10,528 - INFO - examples.streaming_websocket_server - [C-] [VAD-HISTORY] slot=A committed='홈페이지를 한 번 찾으면은 알 수 있는 것들을 모두 다 물어보는 거야.' uncommitted=' <SEG> 근데 교 교학팀이 좀 멍청하긴 하거든.'
+[C-] [VAD-BUFFER] slot=A cur_buf=15904 buf_pre=15904 accum_pre=96000 short=False has_buf=True
+2026-06-15 01:12:10,528 - INFO - examples.streaming_websocket_server - [C-] [VAD-BUFFER] slot=A cur_buf=15904 buf_pre=15904 accum_pre=96000 short=False has_buf=True
+[C-] [VAD-FINISH] slot=A text='홈페이지를 한 번 찾으면은 <SEG> 알 수 있는 것들을 모두 다 물어보는 거야. <SEG> 근데 교 교학팀이 좀 멍청하긴 하거든.'
+2026-06-15 01:12:11,053 - INFO - examples.streaming_websocket_server - [C-] [VAD-FINISH] slot=A text='홈페이지를 한 번 찾으면은 <SEG> 알 수 있는 것들을 모두 다 물어보는 거야. <SEG> 근데 교 교학팀이 좀 멍청하긴 하거든.'
+[C-] [TRANS-VAD] slot=A reason=vad lang=ko original='근데 교 교학팀이 좀 멍청하긴 하거든.' translation='But the school academic team is a bit stupid.'
+2026-06-15 01:12:11,141 - INFO - examples.streaming_websocket_server - [C-] [TRANS-VAD] slot=A reason=vad lang=ko original='근데 교 교학팀이 좀 멍청하긴 하거든.' translation='But the school academic team is a bit stupid.'
+[FINAL] seg=3 reason=vad audio=[1.565, 6.194] fsl=0.613s encode=0.000s decode=0.000s final_decode=0.525s trans=0.088s | text='근데 교 교학팀이 좀 멍청하긴 하거든.'
+2026-06-15 01:12:11,141 - INFO - __main__ - [FINAL] seg=3 reason=vad audio=[1.565, 6.194] fsl=0.613s encode=0.000s decode=0.000s final_decode=0.525s trans=0.088s | text='근데 교 교학팀이 좀 멍청하긴 하거든.'
+[VAD_DONE] slot=A tail_samples=128
+2026-06-15 01:12:11,142 - INFO - __main__ - [VAD_DONE] slot=A tail_samples=128
+[C-] [TRANSCRIBE-DECODING] slot=B text=''
+2026-06-15 01:12:12,624 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=B text=''
+[ENCODE] slot=B chunk=0 audio_pos=9.002s ts=9.021s ds=9.023s decode=0.097s
+2026-06-15 01:12:12,625 - INFO - __main__ - [ENCODE] slot=B chunk=0 audio_pos=9.002s ts=9.021s ds=9.023s decode=0.097s
+[C-] [TRANSCRIBE-DECODING] slot=B text=''
+2026-06-15 01:12:14,624 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=B text=''
+[ENCODE] slot=B chunk=1 audio_pos=11.002s ts=11.021s ds=11.023s decode=0.096s
+2026-06-15 01:12:14,624 - INFO - __main__ - [ENCODE] slot=B chunk=1 audio_pos=11.002s ts=11.021s ds=11.023s decode=0.096s
+Connection closed
+2026-06-15 01:12:26,155 - INFO - __main__ - Connection closed
+Client disconnected (0)
+2026-06-15 01:12:26,156 - INFO - __main__ - Client disconnected (0)
+connection open
+2026-06-15 01:12:26,165 - INFO - websockets.server - connection open
+Client connected (1)
+2026-06-15 01:12:26,165 - INFO - __main__ - Client connected (1)
+[C-] Silero VAD (VADIterator) loaded successfully
+2026-06-15 01:12:26,220 - INFO - examples.streaming_websocket_server - [C-] Silero VAD (VADIterator) loaded successfully
+New connection from ('127.0.0.1', 34122)
+2026-06-15 01:12:26,220 - INFO - __main__ - New connection from ('127.0.0.1', 34122)
+Received start: lang=ko, targetLang=en
+2026-06-15 01:12:26,222 - INFO - __main__ - Received start: lang=ko, targetLang=en
+[C-] Streaming state initialized
+2026-06-15 01:12:26,222 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+[C-] [VAD-DETECT] speech_start target_samples=13312
+2026-06-15 01:12:27,230 - INFO - examples.streaming_websocket_server - [C-] [VAD-DETECT] speech_start target_samples=13312
+[C-] [TRANSCRIBE-DECODING] slot=A text='근데 첫날 리트는'
+2026-06-15 01:12:28,614 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='근데 첫날 리트는'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.016s ds=2.017s decode=0.373s
+2026-06-15 01:12:28,614 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.016s ds=2.017s decode=0.373s
+[SEG] slot=A elapsed=4.669s decode_start=4.015s audio_pos=4.000s
+2026-06-15 01:12:30,892 - INFO - __main__ - [SEG] slot=A elapsed=4.669s decode_start=4.015s audio_pos=4.000s
+[ENCODE-EARLY] slot=A chunk=1 audio_pos=4.000s ts=4.014s ds=4.015s decode=0.654s
+2026-06-15 01:12:30,893 - INFO - __main__ - [ENCODE-EARLY] slot=A chunk=1 audio_pos=4.000s ts=4.014s ds=4.015s decode=0.654s
+[C-] [SEG-IN-TEXT] slot=A text='근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG>'
+2026-06-15 01:12:30,893 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG>'
+[C-] [TRANSCRIBE-DECODING] slot=A text='근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가'
+2026-06-15 01:12:30,955 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가'
+[C-] [SEG-IN-TEXT] slot=A text='근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가'
+2026-06-15 01:12:30,955 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가'
+[C-] [COMMIT-PENDING] slot=A remaining='내가 내가'
+2026-06-15 01:12:30,955 - INFO - examples.streaming_websocket_server - [C-] [COMMIT-PENDING] slot=A remaining='내가 내가'
+[C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='근데 첫날, 이틀날 해봤는데 너무 힘든 거야.' translation='But I tried it on the first and second days and it was very difficult.'
+2026-06-15 01:12:31,091 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='근데 첫날, 이틀날 해봤는데 너무 힘든 거야.' translation='But I tried it on the first and second days and it was very difficult.'
+[SEG] slot=A elapsed=5.019s decode_start=-1.000s audio_pos=5.000s
+2026-06-15 01:12:31,243 - INFO - __main__ - [SEG] slot=A elapsed=5.019s decode_start=-1.000s audio_pos=5.000s
+[ENCODE-EARLY] slot=A chunk=2 audio_pos=5.000s ts=5.019s ds=-1.000s decode=0.000s
+2026-06-15 01:12:31,243 - INFO - __main__ - [ENCODE-EARLY] slot=A chunk=2 audio_pos=5.000s ts=5.019s ds=-1.000s decode=0.000s
+[FLUSH-SEG] seg=1 tok=25/28 ratio=0.893 audio_end=3.786s fsl=1.081s
+2026-06-15 01:12:31,243 - INFO - __main__ - [FLUSH-SEG] seg=1 tok=25/28 ratio=0.893 audio_end=3.786s fsl=1.081s
+[FINAL] seg=1 reason=seg audio=[0.000, 3.786] fsl=1.081s encode=4.015s decode=0.654s final_decode=0.000s trans=0.000s | text='근데 첫날, 이틀날 해봤는데 너무 힘든 거야.'
+2026-06-15 01:12:31,243 - INFO - __main__ - [FINAL] seg=1 reason=seg audio=[0.000, 3.786] fsl=1.081s encode=4.015s decode=0.654s final_decode=0.000s trans=0.000s | text='근데 첫날, 이틀날 해봤는데 너무 힘든 거야.'
+[C-] [SEG-IN-TEXT] slot=A text='근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가'
+2026-06-15 01:12:32,407 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가'
+[REASSEMBLY] chunk=2 prefix_end_idx=25 prev_ids_len=27 committed_ids_len=25
+  OLD _raw_decoded='language Korean<asr_text>근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가'
+  committed_text   ='language Korean<asr_text>근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG>'
+  gen_text         =' 내가 내가 도저히 이 포스기를 외울 수 없을 거 같단'
+  NEW _raw_decoded ='language Korean<asr_text>근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가 도저히 이 포스기를 외울 수 없을 거 같단'
+2026-06-15 01:12:32,780 - INFO - qwen_asr.inference.qwen3_asr - [REASSEMBLY] chunk=2 prefix_end_idx=25 prev_ids_len=27 committed_ids_len=25
+  OLD _raw_decoded='language Korean<asr_text>근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가'
+  committed_text   ='language Korean<asr_text>근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG>'
+  gen_text         =' 내가 내가 도저히 이 포스기를 외울 수 없을 거 같단'
+  NEW _raw_decoded ='language Korean<asr_text>근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가 도저히 이 포스기를 외울 수 없을 거 같단'
+[C-] [TRANSCRIBE-DECODING] slot=A text='근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가 도저히 이 포스기를 외울 수 없을 거 같단'
+2026-06-15 01:12:32,780 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가 도저히 이 포스기를 외울 수 없을 거 같단'
+[C-] [SEG-IN-TEXT] slot=A text='근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가 도저히 이 포스기를 외울 수 없을 거 같단'
+2026-06-15 01:12:32,780 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가 도저히 이 포스기를 외울 수 없을 거 같단'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.016s ds=6.018s decode=0.538s
+2026-06-15 01:12:32,781 - INFO - __main__ - [ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.016s ds=6.018s decode=0.538s
+[C-] [SEG-IN-TEXT] slot=A text='근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가'
+2026-06-15 01:12:34,411 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가'
+[C-] [SEG-IN-TEXT] slot=A text='근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가 도저히 이 포스기를 외울 수 없을 거 같다라고 생각을 했어. <SEG>'
+2026-06-15 01:12:34,947 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가 도저히 이 포스기를 외울 수 없을 거 같다라고 생각을 했어. <SEG>'
+[REASSEMBLY] chunk=3 prefix_end_idx=25 prev_ids_len=43 committed_ids_len=25
+  OLD _raw_decoded='language Korean<asr_text>근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가 도저히 이 포스기를 외울 수 없을 거 같단'
+  committed_text   ='language Korean<asr_text>근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG>'
+  gen_text         =' 내가 내가 도저히 이 포스기를 외울 수 없을 거 같다라고 생각을 했어. <SEG> 여 과장님한테 전화를'
+  NEW _raw_decoded ='language Korean<asr_text>근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가 도저히 이 포스기를 외울 수 없을 거 같다라고 생각을 했어. <SEG> 여 과장님한테 전화를'
+2026-06-15 01:12:35,155 - INFO - qwen_asr.inference.qwen3_asr - [REASSEMBLY] chunk=3 prefix_end_idx=25 prev_ids_len=43 committed_ids_len=25
+  OLD _raw_decoded='language Korean<asr_text>근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가 도저히 이 포스기를 외울 수 없을 거 같단'
+  committed_text   ='language Korean<asr_text>근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG>'
+  gen_text         =' 내가 내가 도저히 이 포스기를 외울 수 없을 거 같다라고 생각을 했어. <SEG> 여 과장님한테 전화를'
+  NEW _raw_decoded ='language Korean<asr_text>근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가 도저히 이 포스기를 외울 수 없을 거 같다라고 생각을 했어. <SEG> 여 과장님한테 전화를'
+[C-] [TRANSCRIBE-DECODING] slot=A text='근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가 도저히 이 포스기를 외울 수 없을 거 같다라고 생각을 했어. <SEG> 여 과장님한테 전화를'
+2026-06-15 01:12:35,156 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가 도저히 이 포스기를 외울 수 없을 거 같다라고 생각을 했어. <SEG> 여 과장님한테 전화를'
+[C-] [SEG-IN-TEXT] slot=A text='근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가 도저히 이 포스기를 외울 수 없을 거 같다라고 생각을 했어. <SEG> 여 과장님한테 전화를'
+2026-06-15 01:12:35,156 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가 도저히 이 포스기를 외울 수 없을 거 같다라고 생각을 했어. <SEG> 여 과장님한테 전화를'
+[C-] [COMMIT-PENDING] slot=A remaining='여 과장님한테 전화를'
+2026-06-15 01:12:35,156 - INFO - examples.streaming_websocket_server - [C-] [COMMIT-PENDING] slot=A remaining='여 과장님한테 전화를'
+[ENCODE] slot=A chunk=3 audio_pos=8.000s ts=8.017s ds=8.018s decode=0.914s
+2026-06-15 01:12:35,156 - INFO - __main__ - [ENCODE] slot=A chunk=3 audio_pos=8.000s ts=8.017s ds=8.018s decode=0.914s
+[C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='내가 내가 도저히 이 포스기를 외울 수 없을 거 같다라고 생각을 했어.' translation='I thought I would never be able to memorize this pose.'
+2026-06-15 01:12:35,179 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG-ASYNC] slot=A lang=ko original='내가 내가 도저히 이 포스기를 외울 수 없을 거 같다라고 생각을 했어.' translation='I thought I would never be able to memorize this pose.'
+[SEG] slot=A elapsed=9.011s decode_start=-1.000s audio_pos=9.000s
+2026-06-15 01:12:35,235 - INFO - __main__ - [SEG] slot=A elapsed=9.011s decode_start=-1.000s audio_pos=9.000s
+[ENCODE-EARLY] slot=A chunk=4 audio_pos=9.000s ts=9.011s ds=-1.000s decode=0.000s
+2026-06-15 01:12:35,235 - INFO - __main__ - [ENCODE-EARLY] slot=A chunk=4 audio_pos=9.000s ts=9.011s ds=-1.000s decode=0.000s
+[FLUSH-SEG] seg=2 tok=25/37 ratio=0.676 audio_end=4.351s fsl=4.493s
+2026-06-15 01:12:35,235 - INFO - __main__ - [FLUSH-SEG] seg=2 tok=25/37 ratio=0.676 audio_end=4.351s fsl=4.493s
+[FINAL] seg=2 reason=seg audio=[3.786, 4.351] fsl=4.493s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='내가 내가 도저히 이 포스기를 외울 수 없을 거 같다라고 생각을 했어.'
+2026-06-15 01:12:35,235 - INFO - __main__ - [FINAL] seg=2 reason=seg audio=[3.786, 4.351] fsl=4.493s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='내가 내가 도저히 이 포스기를 외울 수 없을 거 같다라고 생각을 했어.'
+[C-] [SEG-IN-TEXT] slot=A text='근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가 도저히 이 포스기를 외울 수 없을 거 같다라고 생각을 했어. <SEG>'
+2026-06-15 01:12:36,527 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가 도저히 이 포스기를 외울 수 없을 거 같다라고 생각을 했어. <SEG>'
+[REASSEMBLY] chunk=4 prefix_end_idx=52 prev_ids_len=61 committed_ids_len=52
+  OLD _raw_decoded='language Korean<asr_text>근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가 도저히 이 포스기를 외울 수 없을 거 같다라고 생각을 했어. <SEG> 여 과장님한테 전화를'
+  committed_text   ='language Korean<asr_text>근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가 도저히 이 포스기를 외울 수 없을 거 같다라고 생각을 했어. <SEG>'
+  gen_text         =' 과장님한테 전화를 드렸어. 나는 이제'
+  NEW _raw_decoded ='language Korean<asr_text>근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가 도저히 이 포스기를 외울 수 없을 거 같다라고 생각을 했어. <SEG> 과장님한테 전화를 드렸어. 나는 이제'
+2026-06-15 01:12:36,840 - INFO - qwen_asr.inference.qwen3_asr - [REASSEMBLY] chunk=4 prefix_end_idx=52 prev_ids_len=61 committed_ids_len=52
+  OLD _raw_decoded='language Korean<asr_text>근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가 도저히 이 포스기를 외울 수 없을 거 같다라고 생각을 했어. <SEG> 여 과장님한테 전화를'
+  committed_text   ='language Korean<asr_text>근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가 도저히 이 포스기를 외울 수 없을 거 같다라고 생각을 했어. <SEG>'
+  gen_text         =' 과장님한테 전화를 드렸어. 나는 이제'
+  NEW _raw_decoded ='language Korean<asr_text>근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가 도저히 이 포스기를 외울 수 없을 거 같다라고 생각을 했어. <SEG> 과장님한테 전화를 드렸어. 나는 이제'
+[C-] [TRANSCRIBE-DECODING] slot=A text='근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가 도저히 이 포스기를 외울 수 없을 거 같다라고 생각을 했어. <SEG> 과장님한테 전화를 드렸어. 나는 이제'
+2026-06-15 01:12:36,840 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가 도저히 이 포스기를 외울 수 없을 거 같다라고 생각을 했어. <SEG> 과장님한테 전화를 드렸어. 나는 이제'
+[C-] [SEG-IN-TEXT] slot=A text='근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가 도저히 이 포스기를 외울 수 없을 거 같다라고 생각을 했어. <SEG> 과장님한테 전화를 드렸어. 나는 이제'
+2026-06-15 01:12:36,840 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text='근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가 도저히 이 포스기를 외울 수 없을 거 같다라고 생각을 했어. <SEG> 과장님한테 전화를 드렸어. 나는 이제'
+[ENCODE] slot=A chunk=4 audio_pos=10.100s ts=10.119s ds=10.120s decode=0.496s
+2026-06-15 01:12:36,840 - INFO - __main__ - [ENCODE] slot=A chunk=4 audio_pos=10.100s ts=10.119s ds=10.120s decode=0.496s
+[C-] [VAD-DETECT] speech_end target_samples=163136
+2026-06-15 01:12:36,851 - INFO - examples.streaming_websocket_server - [C-] [VAD-DETECT] speech_end target_samples=163136
+[C-] [VAD-SLOT-SWITCH] old=A new=B at=10.196s
+2026-06-15 01:12:36,859 - INFO - examples.streaming_websocket_server - [C-] [VAD-SLOT-SWITCH] old=A new=B at=10.196s
+[VAD_COMMIT] audio_end_sec=10.196s → speech_end_sec=9.396s
+2026-06-15 01:12:36,859 - INFO - __main__ - [VAD_COMMIT] audio_end_sec=10.196s → speech_end_sec=9.396s
+[C-] [VAD-HISTORY] slot=A committed='근데 첫날, 이틀날 해봤는데 너무 힘든 거야. 내가 내가 도저히 이 포스기를 외울 수 없을 거 같다라고 생각을 했어.' uncommitted=' <SEG> 과장님한테 전화를 드렸어. 나는 이제'
+2026-06-15 01:12:36,859 - INFO - examples.streaming_websocket_server - [C-] [VAD-HISTORY] slot=A committed='근데 첫날, 이틀날 해봤는데 너무 힘든 거야. 내가 내가 도저히 이 포스기를 외울 수 없을 거 같다라고 생각을 했어.' uncommitted=' <SEG> 과장님한테 전화를 드렸어. 나는 이제'
+[C-] [VAD-BUFFER] slot=A cur_buf=3136 buf_pre=3136 accum_pre=160000 short=False has_buf=True
+2026-06-15 01:12:36,859 - INFO - examples.streaming_websocket_server - [C-] [VAD-BUFFER] slot=A cur_buf=3136 buf_pre=3136 accum_pre=160000 short=False has_buf=True
+[C-] [VAD-FINISH] slot=A text='근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가 도저히 이 포스기를 외울 수 없을 거 같다라고 생각을 했어. <SEG> 여 과장님한테 전화를 드렸어. 나는 이제'
+2026-06-15 01:12:37,379 - INFO - examples.streaming_websocket_server - [C-] [VAD-FINISH] slot=A text='근데 첫날, 이틀날 해봤는데 너무 힘든 거야. <SEG> 내가 내가 도저히 이 포스기를 외울 수 없을 거 같다라고 생각을 했어. <SEG> 여 과장님한테 전화를 드렸어. 나는 이제'
+[C-] [TRANS-VAD] slot=A reason=vad lang=ko original='여 과장님한테 전화를 드렸어. 나는 이제' translation='I called Manager W. I am now'
+2026-06-15 01:12:37,472 - INFO - examples.streaming_websocket_server - [C-] [TRANS-VAD] slot=A reason=vad lang=ko original='여 과장님한테 전화를 드렸어. 나는 이제' translation='I called Manager W. I am now'
+[FINAL] seg=3 reason=vad audio=[4.351, 9.396] fsl=0.613s encode=0.000s decode=0.000s final_decode=0.520s trans=0.093s | text='여 과장님한테 전화를 드렸어. 나는 이제'
+2026-06-15 01:12:37,472 - INFO - __main__ - [FINAL] seg=3 reason=vad audio=[4.351, 9.396] fsl=0.613s encode=0.000s decode=0.000s final_decode=0.520s trans=0.093s | text='여 과장님한테 전화를 드렸어. 나는 이제'
+[VAD_DONE] slot=A tail_samples=1664
+2026-06-15 01:12:37,472 - INFO - __main__ - [VAD_DONE] slot=A tail_samples=1664
+[C-] [TRANSCRIBE-DECODING] slot=B text=''
+2026-06-15 01:12:38,636 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=B text=''
+[ENCODE] slot=B chunk=0 audio_pos=12.300s ts=12.315s ds=12.316s decode=0.097s
+2026-06-15 01:12:38,637 - INFO - __main__ - [ENCODE] slot=B chunk=0 audio_pos=12.300s ts=12.315s ds=12.316s decode=0.097s
+[C-] [TRANSCRIBE-DECODING] slot=B text=''
+2026-06-15 01:12:40,637 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=B text=''
+[ENCODE] slot=B chunk=1 audio_pos=14.300s ts=14.315s ds=14.317s decode=0.096s
+2026-06-15 01:12:40,637 - INFO - __main__ - [ENCODE] slot=B chunk=1 audio_pos=14.300s ts=14.315s ds=14.317s decode=0.096s
+Connection closed
+2026-06-15 01:12:52,476 - INFO - __main__ - Connection closed
+Client disconnected (0)
+2026-06-15 01:12:52,476 - INFO - __main__ - Client disconnected (0)
+/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/multiprocessing/resource_tracker.py:279: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '

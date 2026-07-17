@@ -1,0 +1,694 @@
+{
+  "overall": {
+    "num_files": 8,
+    "corpus_cer": 0.22413793103448276,
+    "first_token_latency": 4.787665471136279,
+    "model_runtime": 3.5113033705063863,
+    "avg_fsl_sec": 0.33085555555555557,
+    "avg_fsl_normalized_sec": 0.6864111111111112,
+    "avg_encode_sec": 1.0139676029793918,
+    "avg_decode_sec": 0.3683,
+    "avg_final_decode_sec": 0.1321886354384737,
+    "avg_trans_sec": 0.12207777777777777,
+    "avg_output_chars_per_commit": 8,
+    "commit_stats": {
+      "counts": {
+        "vad": 4,
+        "seg": 1,
+        "dot": 0,
+        "finish": 4
+      },
+      "total": 9,
+      "ratios": {
+        "vad": 0.4444444444444444,
+        "seg": 0.1111111111111111,
+        "dot": 0.0,
+        "finish": 0.4444444444444444
+      }
+    }
+  },
+  "raw_results": [
+    {
+      "file_id": "KsponSpeech_E00043",
+      "audio_path": "evaluation/KsponSpeech/data/eval_clean/KsponSpeech_E00043.pcm",
+      "reference": "그래 가지고 아디다스로 내가 어 살려고 하는 것도 있고.",
+      "hypothesis": "그래가지고 아디다스로 내가 어 살려고 하는 것도 있고",
+      "hyp_commit": "그래가지고 아디다스로 내가 어 살려고 하는 것도 있고 <vad>",
+      "cer": 0.0,
+      "duration": 4.04,
+      "total_time": 5.658313722989988,
+      "first_token_latency": 5.6583136430126615,
+      "model_runtime": 1.6183137229899875,
+      "src_lang": "ko",
+      "target_lang": "en",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "그래가지고 아디다스로 내가 어 살려고 하는 것도 있고",
+          "translation": "Yes, I am trying to make a living with Adidas.",
+          "commit_reason": "vad",
+          "output_token_count": 29,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 3.904,
+          "seg_audio_sec": null,
+          "fsl_sec": 0.7956,
+          "fsl_normalized_sec": 1.5956000000000001,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.5591960829915479,
+          "trans_sec": 0.236,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 1.0,
+              "encode_sec": 0.3541,
+              "chunk_decode_sec": 0.3521,
+              "chunk_transcribe_start_elapsed": 1.0181,
+              "chunk_decode_start_elapsed": 1.0202
+            },
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.3968,
+              "chunk_decode_sec": 0.3951,
+              "chunk_transcribe_start_elapsed": 2.0165,
+              "chunk_decode_start_elapsed": 2.0183
+            },
+            {
+              "chunk_id": 2,
+              "audio_pos_sec": 3.0,
+              "encode_sec": 0.4829,
+              "chunk_decode_sec": 0.481,
+              "chunk_transcribe_start_elapsed": 3.0183,
+              "chunk_decode_start_elapsed": 3.0202
+            },
+            {
+              "chunk_id": 3,
+              "audio_pos_sec": 4.0,
+              "encode_sec": 0.5498,
+              "chunk_decode_sec": 0.5489,
+              "chunk_transcribe_start_elapsed": 4.0169,
+              "chunk_decode_start_elapsed": 4.0178
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": 4.704,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 5.658314746979158
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 1,
+        "avg_fsl_sec": 0.7956,
+        "avg_fsl_normalized_sec": 1.5956000000000001,
+        "avg_encode_sec": null,
+        "avg_decode_sec": null,
+        "avg_final_decode_sec": 0.5591960829915479,
+        "avg_trans_sec": 0.236
+      }
+    },
+    {
+      "file_id": "KsponSpeech_E00146",
+      "audio_path": "evaluation/KsponSpeech/data/eval_clean/KsponSpeech_E00146.pcm",
+      "reference": "어 제잔가 봐. 우리 우리 학교에서 갔나?",
+      "hypothesis": "어. 재장 가봐. 우리 우리 학교에서 갔나?",
+      "hyp_commit": "어. 재장 가봐. <seg> 우리 우리 학교에서 갔나? <vad>",
+      "cer": 0.13333333333333333,
+      "duration": 2.471,
+      "total_time": 3.398282078036573,
+      "first_token_latency": 1.6151797469938174,
+      "model_runtime": 0.9272820780365727,
+      "src_lang": "ko",
+      "target_lang": "en",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "어. 재장 가봐.",
+          "translation": "uh. Go to bed.",
+          "commit_reason": "seg",
+          "output_token_count": 9,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 0.857,
+          "seg_audio_sec": 1.0,
+          "fsl_sec": 0.6883,
+          "fsl_normalized_sec": 0.6883,
+          "encode_sec": 1.0139676029793918,
+          "decode_sec": 0.3683,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 1.0,
+              "encode_sec": 0.3693,
+              "chunk_decode_sec": 0.3685,
+              "chunk_transcribe_start_elapsed": 1.0131,
+              "chunk_decode_start_elapsed": 1.014
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 1.6151812989846803
+        },
+        {
+          "segment_id": 2,
+          "text": "우리 우리 학교에서 갔나?",
+          "translation": "Did we go to our school?",
+          "commit_reason": "vad",
+          "output_token_count": 14,
+          "audio_start_sec": 0.8571428571428571,
+          "audio_end_sec": 1.9029999999999998,
+          "seg_audio_sec": 1.6,
+          "fsl_sec": 0.5035,
+          "fsl_normalized_sec": 1.3035,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.3599092129734345,
+          "trans_sec": 0.1433,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 1.6,
+              "encode_sec": 0.0002,
+              "chunk_decode_sec": 0.0,
+              "chunk_transcribe_start_elapsed": 1.6123,
+              "chunk_decode_start_elapsed": null
+            },
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.5775,
+              "chunk_decode_sec": 0.5766,
+              "chunk_transcribe_start_elapsed": 2.0163,
+              "chunk_decode_start_elapsed": 2.0171
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": 2.703,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 3.3982831180328503
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": 0.5959,
+        "avg_fsl_normalized_sec": 0.9959,
+        "avg_encode_sec": 1.0139676029793918,
+        "avg_decode_sec": 0.3683,
+        "avg_final_decode_sec": 0.17995460648671724,
+        "avg_trans_sec": 0.07165
+      }
+    },
+    {
+      "file_id": "KsponSpeech_E00319",
+      "audio_path": "evaluation/KsponSpeech/data/eval_clean/KsponSpeech_E00319.pcm",
+      "reference": "어 못하겠어.",
+      "hypothesis": "아 못",
+      "hyp_commit": "아 못 <vad>",
+      "cer": 0.8,
+      "duration": 1.316,
+      "total_time": 2.6503790440037847,
+      "first_token_latency": 2.650378932012245,
+      "model_runtime": 1.3343790440037846,
+      "src_lang": "ko",
+      "target_lang": "en",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "아 못",
+          "translation": "Oh no",
+          "commit_reason": "vad",
+          "output_token_count": 3,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 2.116,
+          "seg_audio_sec": null,
+          "fsl_sec": 0.1624,
+          "fsl_normalized_sec": 0.9624,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.1624,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 1.0,
+              "encode_sec": 0.2459,
+              "chunk_decode_sec": 0.245,
+              "chunk_transcribe_start_elapsed": 1.0155,
+              "chunk_decode_start_elapsed": 1.0164
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 2.6503799239872023
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 1,
+        "avg_fsl_sec": 0.1624,
+        "avg_fsl_normalized_sec": 0.9624,
+        "avg_encode_sec": null,
+        "avg_decode_sec": null,
+        "avg_final_decode_sec": 0.0,
+        "avg_trans_sec": 0.1624
+      }
+    },
+    {
+      "file_id": "KsponSpeech_E00386",
+      "audio_path": "evaluation/KsponSpeech/data/eval_clean/KsponSpeech_E00386.pcm",
+      "reference": "미쳤어",
+      "hypothesis": "미쳤어.",
+      "hyp_commit": "미쳤어. <finish>",
+      "cer": 0.0,
+      "duration": 0.777,
+      "total_time": 6.67268353397958,
+      "first_token_latency": 6.672683326003607,
+      "model_runtime": 5.89568353397958,
+      "src_lang": "ko",
+      "target_lang": "en",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "미쳤어.",
+          "translation": "it's crazy.",
+          "commit_reason": "finish",
+          "output_token_count": 4,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 6.277000000000003,
+          "seg_audio_sec": null,
+          "fsl_sec": 0.1621,
+          "fsl_normalized_sec": 0.1621,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.1621,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 1.177,
+              "encode_sec": 0.291,
+              "chunk_decode_sec": 0.2893,
+              "chunk_transcribe_start_elapsed": 1.1951,
+              "chunk_decode_start_elapsed": 1.1969
+            },
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 2.177,
+              "encode_sec": 0.2935,
+              "chunk_decode_sec": 0.2917,
+              "chunk_transcribe_start_elapsed": 2.1965,
+              "chunk_decode_start_elapsed": 2.1983
+            },
+            {
+              "chunk_id": 2,
+              "audio_pos_sec": 3.177,
+              "encode_sec": 0.2961,
+              "chunk_decode_sec": 0.2943,
+              "chunk_transcribe_start_elapsed": 3.1967,
+              "chunk_decode_start_elapsed": 3.1985
+            },
+            {
+              "chunk_id": 3,
+              "audio_pos_sec": 4.177,
+              "encode_sec": 0.3029,
+              "chunk_decode_sec": 0.3019,
+              "chunk_transcribe_start_elapsed": 4.1923,
+              "chunk_decode_start_elapsed": 4.1932
+            },
+            {
+              "chunk_id": 4,
+              "audio_pos_sec": 5.177,
+              "encode_sec": 0.3019,
+              "chunk_decode_sec": 0.3011,
+              "chunk_transcribe_start_elapsed": 5.1932,
+              "chunk_decode_start_elapsed": 5.1941
+            },
+            {
+              "chunk_id": 5,
+              "audio_pos_sec": 6.177,
+              "encode_sec": 0.3061,
+              "chunk_decode_sec": 0.3053,
+              "chunk_transcribe_start_elapsed": 6.1911,
+              "chunk_decode_start_elapsed": 6.1919
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 6.672684461984318
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 1,
+        "avg_fsl_sec": 0.1621,
+        "avg_fsl_normalized_sec": 0.1621,
+        "avg_encode_sec": null,
+        "avg_decode_sec": null,
+        "avg_final_decode_sec": 0.0,
+        "avg_trans_sec": 0.1621
+      }
+    },
+    {
+      "file_id": "KsponSpeech_E00807",
+      "audio_path": "evaluation/KsponSpeech/data/eval_clean/KsponSpeech_E00807.pcm",
+      "reference": "아니야",
+      "hypothesis": "아냐.",
+      "hyp_commit": "아냐. <finish>",
+      "cer": 0.6666666666666666,
+      "duration": 1.028,
+      "total_time": 6.625539066968486,
+      "first_token_latency": 6.625538938969839,
+      "model_runtime": 5.597539066968485,
+      "src_lang": "ko",
+      "target_lang": "en",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "아냐.",
+          "translation": "no.",
+          "commit_reason": "finish",
+          "output_token_count": 3,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 6.528000000000003,
+          "seg_audio_sec": null,
+          "fsl_sec": 0.0824,
+          "fsl_normalized_sec": 0.0824,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0824,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 1.0,
+              "encode_sec": 0.2888,
+              "chunk_decode_sec": 0.2879,
+              "chunk_transcribe_start_elapsed": 1.0195,
+              "chunk_decode_start_elapsed": 1.0203
+            },
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 2.028,
+              "encode_sec": 0.2943,
+              "chunk_decode_sec": 0.2926,
+              "chunk_transcribe_start_elapsed": 2.0465,
+              "chunk_decode_start_elapsed": 2.0483
+            },
+            {
+              "chunk_id": 2,
+              "audio_pos_sec": 3.028,
+              "encode_sec": 0.29,
+              "chunk_decode_sec": 0.2891,
+              "chunk_transcribe_start_elapsed": 3.0425,
+              "chunk_decode_start_elapsed": 3.0434
+            },
+            {
+              "chunk_id": 3,
+              "audio_pos_sec": 4.028,
+              "encode_sec": 0.2833,
+              "chunk_decode_sec": 0.2824,
+              "chunk_transcribe_start_elapsed": 4.0454,
+              "chunk_decode_start_elapsed": 4.0463
+            },
+            {
+              "chunk_id": 4,
+              "audio_pos_sec": 5.028,
+              "encode_sec": 0.2822,
+              "chunk_decode_sec": 0.2814,
+              "chunk_transcribe_start_elapsed": 5.0427,
+              "chunk_decode_start_elapsed": 5.0436
+            },
+            {
+              "chunk_id": 5,
+              "audio_pos_sec": 6.028,
+              "encode_sec": 0.2854,
+              "chunk_decode_sec": 0.2845,
+              "chunk_transcribe_start_elapsed": 6.0466,
+              "chunk_decode_start_elapsed": 6.0475
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 6.625539994973224
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 1,
+        "avg_fsl_sec": 0.0824,
+        "avg_fsl_normalized_sec": 0.0824,
+        "avg_encode_sec": null,
+        "avg_decode_sec": null,
+        "avg_final_decode_sec": 0.0,
+        "avg_trans_sec": 0.0824
+      }
+    },
+    {
+      "file_id": "KsponSpeech_E00922",
+      "audio_path": "evaluation/KsponSpeech/data/eval_clean/KsponSpeech_E00922.pcm",
+      "reference": "그냥 갈까?",
+      "hypothesis": "나 갈까?",
+      "hyp_commit": "나 갈까? <finish>",
+      "cer": 0.5,
+      "duration": 1.066,
+      "total_time": 6.658549336018041,
+      "first_token_latency": 6.658549256040715,
+      "model_runtime": 5.592549336018041,
+      "src_lang": "ko",
+      "target_lang": "en",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "나 갈까?",
+          "translation": "Shall I go?",
+          "commit_reason": "finish",
+          "output_token_count": 5,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 6.566000000000003,
+          "seg_audio_sec": null,
+          "fsl_sec": 0.0789,
+          "fsl_normalized_sec": 0.0789,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0789,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 1.0,
+              "encode_sec": 0.3089,
+              "chunk_decode_sec": 0.3081,
+              "chunk_transcribe_start_elapsed": 1.0131,
+              "chunk_decode_start_elapsed": 1.0139
+            },
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 2.066,
+              "encode_sec": 0.3112,
+              "chunk_decode_sec": 0.3104,
+              "chunk_transcribe_start_elapsed": 2.0799,
+              "chunk_decode_start_elapsed": 2.0807
+            },
+            {
+              "chunk_id": 2,
+              "audio_pos_sec": 3.066,
+              "encode_sec": 0.3129,
+              "chunk_decode_sec": 0.312,
+              "chunk_transcribe_start_elapsed": 3.0818,
+              "chunk_decode_start_elapsed": 3.0827
+            },
+            {
+              "chunk_id": 3,
+              "audio_pos_sec": 4.066,
+              "encode_sec": 0.3226,
+              "chunk_decode_sec": 0.3218,
+              "chunk_transcribe_start_elapsed": 4.082,
+              "chunk_decode_start_elapsed": 4.0829
+            },
+            {
+              "chunk_id": 4,
+              "audio_pos_sec": 5.066,
+              "encode_sec": 0.3275,
+              "chunk_decode_sec": 0.3257,
+              "chunk_transcribe_start_elapsed": 5.084,
+              "chunk_decode_start_elapsed": 5.0858
+            },
+            {
+              "chunk_id": 5,
+              "audio_pos_sec": 6.066,
+              "encode_sec": 0.3316,
+              "chunk_decode_sec": 0.3298,
+              "chunk_transcribe_start_elapsed": 6.0842,
+              "chunk_decode_start_elapsed": 6.086
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 6.658549992018379
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 1,
+        "avg_fsl_sec": 0.0789,
+        "avg_fsl_normalized_sec": 0.0789,
+        "avg_encode_sec": null,
+        "avg_decode_sec": null,
+        "avg_final_decode_sec": 0.0,
+        "avg_trans_sec": 0.0789
+      }
+    },
+    {
+      "file_id": "KsponSpeech_E00939",
+      "audio_path": "evaluation/KsponSpeech/data/eval_clean/KsponSpeech_E00939.pcm",
+      "reference": "그니까",
+      "hypothesis": "그니까.",
+      "hyp_commit": "그니까. <vad>",
+      "cer": 0.0,
+      "duration": 0.39,
+      "total_time": 1.854867031041067,
+      "first_token_latency": 1.85486696701264,
+      "model_runtime": 1.464867031041067,
+      "src_lang": "ko",
+      "target_lang": "en",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "그니까.",
+          "translation": "So.",
+          "commit_reason": "vad",
+          "output_token_count": 4,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 0.45399999999999996,
+          "seg_audio_sec": null,
+          "fsl_sec": 0.3569,
+          "fsl_normalized_sec": 1.1569,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.27059242298128083,
+          "trans_sec": 0.086,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 1.19,
+              "encode_sec": 0.2701,
+              "chunk_decode_sec": 0.2684,
+              "chunk_transcribe_start_elapsed": 1.2086,
+              "chunk_decode_start_elapsed": 1.2103
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": 1.254,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 1.8548679749947041
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 1,
+        "avg_fsl_sec": 0.3569,
+        "avg_fsl_normalized_sec": 1.1569,
+        "avg_encode_sec": null,
+        "avg_decode_sec": null,
+        "avg_final_decode_sec": 0.27059242298128083,
+        "avg_trans_sec": 0.086
+      }
+    },
+    {
+      "file_id": "KsponSpeech_E00981",
+      "audio_path": "evaluation/KsponSpeech/data/eval_clean/KsponSpeech_E00981.pcm",
+      "reference": "으으음.",
+      "hypothesis": "응",
+      "hyp_commit": "응 <finish>",
+      "cer": 1.0,
+      "duration": 0.906,
+      "total_time": 6.565813151013572,
+      "first_token_latency": 6.565812959044706,
+      "model_runtime": 5.659813151013572,
+      "src_lang": "ko",
+      "target_lang": "en",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "응",
+          "translation": "huh",
+          "commit_reason": "finish",
+          "output_token_count": 1,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 6.406000000000003,
+          "seg_audio_sec": null,
+          "fsl_sec": 0.1476,
+          "fsl_normalized_sec": 0.1476,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.1476,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 1.106,
+              "encode_sec": 0.2473,
+              "chunk_decode_sec": 0.2465,
+              "chunk_transcribe_start_elapsed": 1.1209,
+              "chunk_decode_start_elapsed": 1.1217
+            },
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 2.106,
+              "encode_sec": 0.2295,
+              "chunk_decode_sec": 0.2278,
+              "chunk_transcribe_start_elapsed": 2.1251,
+              "chunk_decode_start_elapsed": 2.1268
+            },
+            {
+              "chunk_id": 2,
+              "audio_pos_sec": 3.106,
+              "encode_sec": 0.2329,
+              "chunk_decode_sec": 0.2311,
+              "chunk_transcribe_start_elapsed": 3.1264,
+              "chunk_decode_start_elapsed": 3.1281
+            },
+            {
+              "chunk_id": 3,
+              "audio_pos_sec": 4.106,
+              "encode_sec": 0.2437,
+              "chunk_decode_sec": 0.242,
+              "chunk_transcribe_start_elapsed": 4.1247,
+              "chunk_decode_start_elapsed": 4.1264
+            },
+            {
+              "chunk_id": 4,
+              "audio_pos_sec": 5.106,
+              "encode_sec": 0.2408,
+              "chunk_decode_sec": 0.2399,
+              "chunk_transcribe_start_elapsed": 5.1162,
+              "chunk_decode_start_elapsed": 5.117
+            },
+            {
+              "chunk_id": 5,
+              "audio_pos_sec": 6.106,
+              "encode_sec": 0.2409,
+              "chunk_decode_sec": 0.24,
+              "chunk_transcribe_start_elapsed": 6.1252,
+              "chunk_decode_start_elapsed": 6.1261
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 6.565814063011203
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 1,
+        "avg_fsl_sec": 0.1476,
+        "avg_fsl_normalized_sec": 0.1476,
+        "avg_encode_sec": null,
+        "avg_decode_sec": null,
+        "avg_final_decode_sec": 0.0,
+        "avg_trans_sec": 0.1476
+      }
+    }
+  ]
+}
