@@ -19,7 +19,7 @@ interface UseWebSocketReturn {
 // ===== Server URL =====
 // ngrok example: 'wss://abcd-1234.ngrok-free.app'
 // LAN example: 'ws://192.168.x.x:8001'
-const SERVER_URL = 'wss://supervigorously-unforded-lavone.ngrok-free.dev';
+const SERVER_URL = 'wss://edra-raspiest-eagerly.ngrok-free.dev';
 
 export const useWebSocket = (): UseWebSocketReturn => {
   const [isConnected, setIsConnected] = useState(false);

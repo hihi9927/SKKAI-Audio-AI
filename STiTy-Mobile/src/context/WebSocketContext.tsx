@@ -1,4 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { Platform } from 'react-native';
 import { startServer } from '../utils/serverUtils';
 
 interface WebSocketConfig {
@@ -24,11 +25,21 @@ interface WebSocketContextType {
 
 const WebSocketContext = createContext<WebSocketContextType | null>(null);
 
-const SERVER_URL = 'wss://edra-raspiest-eagerly.ngrok-free.dev';
-const PROBE_SOCKET_TIMEOUT_MS = 15000;
-const PROBE_RETRY_INTERVAL_MS = 10000;
+// 웹(브라우저)에서는 이 환경의 로컬 ASR 서버(8765)로 직접 연결.
+// SSH 터널(-L 8765:localhost:8765)을 통해 localhost로 접속 → secure context 충족(마이크 동작).
+// 네이티브 앱은 기존 ngrok 엔드포인트 유지.
+const SERVER_URL =
+  Platform.OS === 'web'
+    ? 'ws://localhost:8765'
+    : 'wss://edra-raspiest-eagerly.ngrok-free.dev';
+// 웹은 이 환경의 로컬 서버에 직접 붙으므로(콜드스타트 없음) 짧은 타임아웃/빠른 재시도로
+// 서버가 떠 있으면 1초 안에 ready로 갱신되게 한다.
+const IS_WEB = Platform.OS === 'web';
+const PROBE_SOCKET_TIMEOUT_MS = IS_WEB ? 3000 : 15000;
+const PROBE_RETRY_INTERVAL_MS = IS_WEB ? 1000 : 10000;
+const ERROR_RETRY_MS = IS_WEB ? 1500 : PROBE_RETRY_INTERVAL_MS * 3;
 const MAX_WEBSOCKET_PROBE_WAIT_MS = 4 * 60 * 1000;
-const KEEPALIVE_RECONNECT_MS = 3000;
+const KEEPALIVE_RECONNECT_MS = IS_WEB ? 1500 : 3000;
 const HEARTBEAT_INTERVAL_MS = 20000;
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -176,7 +187,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     if (!force && serverStatusRef.current === 'ready' && keepAliveWsRef.current?.readyState === WebSocket.OPEN) return true;
     isProbingRef.current = true;
     stopKeepAlive();
-    setServerStatus('ec2-starting');
+    setServerStatus(IS_WEB ? 'connecting' : 'ec2-starting');
 
     probeAbortRef.current?.abort();
     const abort = new AbortController();
@@ -260,7 +271,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       stopKeepAlive();
       errorRetryTimerRef.current = setTimeout(() => {
         probeServerRef.current(true);
-      }, PROBE_RETRY_INTERVAL_MS * 3);
+      }, ERROR_RETRY_MS);
       return false;
     } finally {
       isProbingRef.current = false;

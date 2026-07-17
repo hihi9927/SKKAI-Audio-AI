@@ -1,3 +1,5 @@
+import { Platform } from 'react-native';
+
 const SERVER_STARTER_URL =
   'https://r61duqe7w4.execute-api.ap-northeast-2.amazonaws.com/default/Serverstarter_Speech_AI';
 
@@ -11,6 +13,9 @@ const sleep = (ms: number, signal?: AbortSignal) =>
   });
 
 export const startServer = async (signal?: AbortSignal): Promise<void> => {
+  // 웹: 이 환경의 로컬 서버가 항상 떠 있으므로 AWS 서버스타터(CORS 차단 대상)를 건너뜀.
+  if (Platform.OS === 'web') return;
+
   const deadline = Date.now() + MAX_SERVER_START_WAIT_MS;
 
   while (Date.now() < deadline) {

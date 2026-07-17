@@ -11,6 +11,7 @@ import {
   Animated,
   Easing,
   StatusBar,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -708,6 +709,43 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
     }
   };
 
+  // ── Demo (서버 없이 가짜 입출력 미리보기) ──────────────────────────────────────
+  const demoTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  const clearDemo = () => {
+    demoTimersRef.current.forEach(clearTimeout);
+    demoTimersRef.current = [];
+  };
+
+  const runDemo = () => {
+    clearDemo();
+    const DEMO_SCRIPT: { language: string; text: string; translatedText: string }[] = [
+      { language: 'en', text: 'Hi! I heard STiTy can translate our conversation in real time. Is that right?', translatedText: '안녕하세요! STiTy가 우리 대화를 실시간으로 번역해 준다고 들었어요. 맞나요?' },
+      { language: 'ko', text: '네, 맞아요. 제가 한국어로 말하면 바로 영어로 들려드려요.', translatedText: 'Yes, that\'s right. When I speak in Korean, you hear it in English right away.' },
+      { language: 'en', text: "That's amazing. So we can talk naturally without an interpreter?", translatedText: '정말 놀랍네요. 그럼 통역사 없이 자연스럽게 대화할 수 있는 거네요?' },
+      { language: 'ko', text: '맞아요. 음성 인식부터 번역까지 한 번에 처리돼서 회의나 여행에서 편해요.', translatedText: 'Exactly. It handles everything from speech recognition to translation at once, so it\'s great for meetings or travel.' },
+      { language: 'en', text: 'And it supports many languages too, doesn\'t it?', translatedText: '여러 언어도 지원한다면서요?' },
+      { language: 'ko', text: '네, 50개가 넘는 언어를 지원해서 언어 장벽 없이 소통할 수 있어요.', translatedText: 'Yes, it supports over 50 languages, so you can communicate without language barriers.' },
+    ];
+    setShowSetup(false);
+    setTranscriptions([]);
+    sessionStateRef.current = 'recording';
+    setSessionState('recording');
+    DEMO_SCRIPT.forEach((line, i) => {
+      const t = setTimeout(() => {
+        entryIdRef.current += 1;
+        setTranscriptions(prev => [...prev, {
+          id: `demo-${entryIdRef.current}`,
+          language: line.language,
+          text: line.text,
+          translatedText: line.translatedText,
+          timestamp: Date.now(),
+        }]);
+      }, 700 + i * 1400);
+      demoTimersRef.current.push(t);
+    });
+  };
+
   // ── Session actions ───────────────────────────────────────────────────────────
   const stopTTS = () => {
     ttsQueueRef.current = [];
@@ -800,6 +838,7 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
       {
         text: s.end, style: 'destructive',
         onPress: async () => {
+          clearDemo();
           stopTTS();
           await stopRecording();
           disconnect();
@@ -1130,6 +1169,18 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
                 <Text style={S.pickerTitle}>{ui.settingsTitle}</Text>
 
                 <Text style={S.menuSectionTitle}>{ui.settingsGeneral}</Text>
+                {(Platform.OS === 'web' || __DEV__) && (
+                  <TouchableOpacity style={S.menuItem} onPress={() => { setMenuOpen(false); runDemo(); }}>
+                    <View style={[S.menuIco, { backgroundColor: '#7A9030' }]}>
+                      <Ionicons name="play-circle-outline" size={16} color="#fff" />
+                    </View>
+                    <View style={S.menuMeta}>
+                      <Text style={S.menuItemTxt}>데모 보기</Text>
+                      <Text style={S.menuItemSub}>서버 없이 가짜 대화 미리보기</Text>
+                    </View>
+                    <Text style={S.menuChev}>›</Text>
+                  </TouchableOpacity>
+                )}
                 <TouchableOpacity style={S.menuItem} onPress={() => setMenuPage('about')}>
                   <View style={[S.menuIco, { backgroundColor: '#6080C8' }]}>
                     <Ionicons name="information-circle-outline" size={16} color="#fff" />
