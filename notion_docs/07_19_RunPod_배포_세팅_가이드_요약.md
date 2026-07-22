@@ -15,31 +15,53 @@
 ```bash
 apt-get update && apt-get install -y ffmpeg sox libsndfile1 git
 
-git clone --recurse-submodules <REPO_URL> STiTy
+git clone --recurse-submodules https://github.com/hihi9927/STiTy.git STiTy
 cd STiTy
 
 pip install -e "./Qwen3-ASR[vllm]"
+apt-get remove -y python3-blinker
 pip install websockets aiohttp silero-vad
 
 ln -s $(which python3) /usr/local/bin/python   # python 커맨드 별칭
 ```
 
-### 3. 서버 실행
+### 3. HF에 올린 파인튜닝 모델 가중치 다운로드
+- 계정 `Doo12`(HF)에 private repo로 merged 모델 2개가 push되어 있음:
+  - `Doo12/Qwen3-ASR-1.7B-en-silence-c80-merged`
+  - `Doo12/Qwen3-ASR-1.7B-ko-silence-v4c900-merged`
+- private repo라 `HF_TOKEN` 없이는 401로 다운로드 실패. 로컬 `~/.cache/huggingface/token` 값을 RunPod에도 그대로 사용.
+
 ```bash
-python Qwen3-ASR/examples/streaming_websocket_server.py \
+export HF_TOKEN=hf_xxxxxxxxxxxx   # RunPod 콘솔 Secret으로 등록 권장, 터미널 히스토리에 노출 금지
+pip install hf_transfer
+export HF_HUB_ENABLE_HF_TRANSFER=1
+
+hf download Doo12/Qwen3-ASR-1.7B-en-silence-c80-merged \
+  --local-dir /workspace/models/Qwen3-ASR-1.7B-en-silence-c80-merged
+
+hf download Doo12/Qwen3-ASR-1.7B-ko-silence-v4c900-merged \
+  --local-dir /workspace/models/Qwen3-ASR-1.7B-ko-silence-v4c900-merged
+```
+- 로컬엔 v2/v3/v4c100 등 다른 버전 체크포인트도 있지만 HF엔 이 두 개(en-c80, ko-v4c900)만 push됨. 다른 버전이 필요하면 로컬 GB10에서 먼저 `hf upload`로 올려야 함.
+
+### 4. 서버 실행
+```bash
+python Qwen3-ASR/examples/streaming_websocket_server_dualbase.py \
+  --model /workspace/models/Qwen3-ASR-1.7B-en-silence-c80-merged \
+  --model-ko /workspace/models/Qwen3-ASR-1.7B-ko-silence-v4c900-merged \
   --host 0.0.0.0 --port 8765 --no-idle-shutdown
 ```
 - `--no-idle-shutdown`: 테스트 중 유휴 자동 종료 방지.
 - 세션 끊김에도 서버가 죽지 않도록 `tmux new -s asr` 안에서 실행 권장.
 
-### 4. 모바일 앱 서버 주소 연결
+### 5. 모바일 앱 서버 주소 연결
 - `STiTy-Mobile/src/hooks/useWebSocket.ts:22`의 `SERVER_URL` 하드코딩 상수를 RunPod 프록시 주소로 교체:
   ```ts
-  const SERVER_URL = 'wss://2ru6q7iwdkz4d5-8765.proxy.runpod.net';
+  const SERVER_URL = 'wss://kg7hmbaupwv7e8-8765.proxy.runpod.net';
   ```
 - Expo 개발 모드(`npm start`)면 저장만으로 핫 리로드. EAS로 만든 독립 APK/IPA는 URL이 빌드에 고정되므로 재빌드 또는 EAS Update 필요.
 
-### 5. 앱 없이 파이프라인 검증
+### 6. 앱 없이 파이프라인 검증
 - 레포에 이미 있는 진단 클라이언트 `evaluation/KsponSpeech/send_one.py` 사용 — 오디오 파일 하나를 서버에 보내고 ASR 원문 + 번역 결과를 콘솔에 출력.
 - 테스트용 한국어 PCM 샘플이 git으로 이미 추적됨: `evaluation/KsponSpeech/sample_data/KsponSpeech_0001/*.pcm`.
 ```bash
