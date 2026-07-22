@@ -43,15 +43,38 @@ hf download Doo12/Qwen3-ASR-1.7B-ko-silence-v4c900-merged \
   --local-dir /workspace/models/Qwen3-ASR-1.7B-ko-silence-v4c900-merged
 ```
 - 로컬엔 v2/v3/v4c100 등 다른 버전 체크포인트도 있지만 HF엔 이 두 개(en-c80, ko-v4c900)만 push됨. 다른 버전이 필요하면 로컬 GB10에서 먼저 `hf upload`로 올려야 함.
+- en 모델(`en-silence-c80-merged`)은 아래 4번의 **옵션 B(dualbase)**를 쓸 때만 필요. 옵션 A(단일 모델)만 쓸 거면 ko 모델만 받으면 됨.
 
 ### 4. 서버 실행
+
+**옵션 A: 단일 ko 모델로 en/ko 모두 처리 (권장, 검증됨)**
+
+Qwen3-ASR가 원래 멀티링구얼 베이스라 ko 모델 하나로 영어도 인식 가능. 7/19 dualbase 라우팅 실험([[dualbase-lang-routing-experiment]])에서 dualbase(en+ko 두 엔진 라우팅) 대비 언어 정확도·지연 둘 다 더 좋았고, 현재 로컬 GB10 systemd 배포도 이 구성으로 운영 중.
+
+```bash
+python Qwen3-ASR/examples/streaming_websocket_server.py \
+  --model /workspace/models/Qwen3-ASR-1.7B-ko-silence-v4c900-merged \
+  --chunk-size 1.0 \
+  --host 0.0.0.0 --port 8765 --no-idle-shutdown
+```
+
+| 방식 | 언어 정확도 | 지연(중앙값) |
+|---|---|---|
+| dualbase 라우팅 (여러 시도) | 40~89% | +225~1589ms |
+| **단일 ko 모델** | **89% (16/18)** | **638ms** |
+
+**옵션 B: dualbase (en/ko 두 엔진 분리)**
+
 ```bash
 python Qwen3-ASR/examples/streaming_websocket_server_dualbase.py \
   --model /workspace/models/Qwen3-ASR-1.7B-en-silence-c80-merged \
   --model-ko /workspace/models/Qwen3-ASR-1.7B-ko-silence-v4c900-merged \
   --host 0.0.0.0 --port 8765 --no-idle-shutdown
 ```
+- 언어 전환 순간 라우팅이 1청크 지연되는 구조적 한계 있음 ([[dualbase-lang-routing-experiment]] 참고). en 특화 모델이 한국어를 확신에 차 오인식하는 케이스도 있어 현재는 옵션 A가 더 안정적.
+
 - `--no-idle-shutdown`: 테스트 중 유휴 자동 종료 방지.
+- `--disable-dot-commit --no-vad`는 안 켜도 됨(dot-commit/VAD 켜둬도 문제없음).
 - 세션 끊김에도 서버가 죽지 않도록 `tmux new -s asr` 안에서 실행 권장.
 
 ### 5. 모바일 앱 서버 주소 연결
@@ -60,6 +83,15 @@ python Qwen3-ASR/examples/streaming_websocket_server_dualbase.py \
   const SERVER_URL = 'wss://kg7hmbaupwv7e8-8765.proxy.runpod.net';
   ```
 - Expo 개발 모드(`npm start`)면 저장만으로 핫 리로드. EAS로 만든 독립 APK/IPA는 URL이 빌드에 고정되므로 재빌드 또는 EAS Update 필요.
+
+**참고: Expo 터널 URL**
+```
+https://m-b8iew-anonymous-8081.exp.direct
+```
+- `npx expo start --tunnel`(또는 web 모드에서 터널 옵션) 실행 시 Expo CLI가 발급하는 임시 공개 HTTPS 주소. 로컬 `localhost:8081` Metro 서버를 외부에서 접속 가능하도록 프록시([[mobile-web-build]] 참고).
+- `getUserMedia`(마이크 녹음)는 secure context(HTTPS)가 필요한데, LAN IP로는 HTTP라 막힘 → 이 터널 주소를 쓰면 실기기/외부 브라우저에서도 마이크 권한이 정상 동작.
+- RunPod 프록시(`wss://<podid>-8765.proxy.runpod.net`)와는 별개: 이건 **모바일 웹 프론트엔드**(Expo web) 접속용 주소이고, RunPod 쪽은 **ASR/번역 WebSocket 백엔드** 주소.
+- Expo CLI가 세션마다 새로 발급하므로 재시작하면 서브도메인(`m-b8iew-anonymous`)이 바뀔 수 있어 고정 주소로 쓸 수 없음 — 임시 테스트/공유용.
 
 ### 6. 앱 없이 파이프라인 검증
 - 레포에 이미 있는 진단 클라이언트 `evaluation/KsponSpeech/send_one.py` 사용 — 오디오 파일 하나를 서버에 보내고 ASR 원문 + 번역 결과를 콘솔에 출력.
@@ -80,10 +112,3 @@ python evaluation/KsponSpeech/send_one.py \
 | `Free memory on device cuda:0 (1.11/44.42 GiB)` 로 엔진 기동 실패 | RunPod `vLLM latest` 템플릿이 부팅 시 자동 실행한 vLLM 서버(PID 549)가 GPU 44GB 선점 | 자동 실행 프로세스 kill 시도 → 컨테이너 메인 프로세스라 연결 종료됨 → 근본 해결로 **PyTorch 템플릿으로 Pod 재생성** 결정 |
 | `ModuleNotFoundError: No module named 'hf_transfer'` | PyTorch 이미지에 `HF_HUB_ENABLE_HF_TRANSFER=1`이 기본 설정되어 있으나 해당 패키지 미설치 | `pip install hf_transfer` (권장) 또는 `export HF_HUB_ENABLE_HF_TRANSFER=0` |
 | Android 에뮬레이터 실행 실패 (`No Android connected device found`) | 로컬에 연결된 실기기/에뮬레이터 없음 | 실기기 USB 디버깅 연결 또는 EAS 클라우드 빌드(`eas build --profile preview`)로 APK 생성 후 직접 설치 |
-
-## ⏭ 해결되지 않은 작업
-
-- **Pod ID 변경 시 APK 무효화**: 현재 방식은 RunPod 프록시 주소(`<podid>-8765.proxy.runpod.net`)가 앱 빌드에 고정됨. Pod를 삭제/재생성하면 ID가 바뀌어 기존 APK가 연결 실패함 → 서버 주소를 앱 내에서 런타임 입력받는 방식으로 개선하거나, Pod를 계속 유지하는 운영 방식 필요.
-- **빌드된 APK의 서버 주소 교체 가능 여부**: EAS로 이미 구운 APK에서 URL만 바꾸는 방법을 논의하던 중 세션 중단됨 — 다음 세션에서 이어서 확인 필요 (일반적으로 JS 번들에 값이 굳어 있어 재빌드나 OTA(EAS Update)가 필요함).
-- **RunPod 자동 vLLM 서버 재발 방지**: 현재는 이미지를 PyTorch로 바꿔서 회피했으나, 만약 다시 vLLM 계열 템플릿을 쓸 경우 Container Start Command를 `sleep infinity`로 override하는 방법을 아직 실제 적용/검증하지 않음.
-- **실기기 마이크 스트리밍 검증 미완료**: `send_one.py`로 서버-파이프라인 자체는 확인 가능하지만, 실제 모바일 앱에서 `react-native-live-audio-stream` 기반 실시간 오디오 캡처 → WebSocket 전송까지는 아직 실기기/APK로 테스트하지 못함.
