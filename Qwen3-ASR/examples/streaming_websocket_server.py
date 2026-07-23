@@ -858,6 +858,7 @@ class Qwen3ASRStreamingHandler:
     async def _asr_streaming_transcribe(self, chunk: np.ndarray, slot_key: Optional[str] = None):
         slot = self._slot(slot_key)
         committed_display_before = slot.get("committed_display", "")
+        committed_seg_count_before = slot.get("committed_seg_count", 0)
         prev_uncommitted = self._slot_uncommitted_display(slot_key)
 
         async def _on_seg(_):
@@ -922,35 +923,55 @@ class Qwen3ASRStreamingHandler:
             remaining = "" if ends_with_seg else self._slot_uncommitted_display(slot_key, text_snapshot=_committed_text_snapshot)
             audio_sec = _s["state"].audio_accum.shape[0] / SAMPLING_RATE
             force_reset = audio_sec > MAX_AUDIO_ACCUM_SEC
+            # 진짜 <SEG> 경계를 이번 라운드에 실제로 커밋했는지(추측성 dot-switch가 아님).
+            # 이 경우 remaining이 남아있어도 슬롯을 리셋해 "language X<asr_text>" 프리픽스가
+            # 다음 문장(언어가 바뀌었을 수 있음)으로 이어져 언어가 오염되는 것을 막는다.
+            seg_committed_this_round = _s.get("committed_seg_count", 0) > committed_seg_count_before
 
-            if ends_with_seg or not remaining.strip() or force_reset:
-                if force_reset:
-                    seed_text = self._build_forced_reset_seed(slot_key, remaining)
-                    self._reset_stream_slot(slot_key, seed_text=seed_text)
-                    self._init_forced_reset_slot(slot_key, seed_text, remaining)
-                    if slot_key == self.active_slot:
-                        self.state = self.stream_slots[self.active_slot]["state"]
-                    self.log.info(f"[FORCE-SLOT-SWITCH] slot={slot_key} audio_sec={audio_sec:.1f}s")
-                else:
-                    last_committed = _s.get("committed_display", "")
-                    # GPT 딜레이 동안 쌓인 오디오(주로 trailing silence)를 새 슬롯에 carry-over.
-                    # 리셋 후 즉시 삭제하면 VAD 발동에 필요한 침묵 구간이 사라져 발화 누락이 발생함.
-                    _accum_now = _s["state"].audio_accum.shape[0]
-                    _carry_samples = _accum_now - _accum_size_pre_gpt
-                    carry_audio = (
-                        _s["state"].audio_accum[-_carry_samples:].copy()
-                        if _carry_samples > 0 else None
-                    )
-                    self._reset_stream_slot(slot_key)
-                    if carry_audio is not None:
-                        self._slot(slot_key)["state"].audio_accum = carry_audio
-                        carry_sec = round(_carry_samples / SAMPLING_RATE, 3)
-                        self.log.info(f"[SEG-CARRY-AUDIO] slot={slot_key} carry={carry_sec}s")
-                    if last_committed:
-                        self._slot(slot_key)["seg_reset_last_committed"] = last_committed
-                    if slot_key == self.active_slot:
-                        self.state = self.stream_slots[self.active_slot]["state"]
-                    self.log.info(f"[SEG-SLOT-RESET] slot={slot_key} audio_sec={audio_sec:.1f}s")
+            if force_reset:
+                seed_text = self._build_forced_reset_seed(slot_key, remaining)
+                self._reset_stream_slot(slot_key, seed_text=seed_text)
+                self._init_forced_reset_slot(slot_key, seed_text, remaining)
+                if slot_key == self.active_slot:
+                    self.state = self.stream_slots[self.active_slot]["state"]
+                self.log.info(f"[FORCE-SLOT-SWITCH] slot={slot_key} audio_sec={audio_sec:.1f}s")
+            elif seg_committed_this_round and remaining.strip():
+                # <SEG> 커밋 시점에 이미 다음 문장의 오디오까지 audio_accum에 섞여 들어와 있으므로
+                # (remaining은 그 오디오에 대한 미확정 추측 텍스트), 텍스트/프리픽스는 버리되
+                # 오디오는 전부 보존해서 재디코딩한다. 일부만 carry하면 이미 녹음된 다음 문장
+                # 오디오가 유실된다. committed된 앞부분은 재디코딩돼도 dedup에서 걸러진다.
+                last_committed = _s.get("committed_display", "")
+                full_audio = _s["state"].audio_accum.copy()
+                self._reset_stream_slot(slot_key)
+                self._slot(slot_key)["state"].audio_accum = full_audio
+                if last_committed:
+                    self._slot(slot_key)["seg_reset_last_committed"] = last_committed
+                if slot_key == self.active_slot:
+                    self.state = self.stream_slots[self.active_slot]["state"]
+                self.log.info(
+                    f"[SEG-LANG-GUARD-RESET] slot={slot_key} audio_sec={audio_sec:.1f}s "
+                    f"discarded_remaining={remaining.strip()!r}"
+                )
+            elif ends_with_seg or not remaining.strip():
+                last_committed = _s.get("committed_display", "")
+                # GPT 딜레이 동안 쌓인 오디오(주로 trailing silence)를 새 슬롯에 carry-over.
+                # 리셋 후 즉시 삭제하면 VAD 발동에 필요한 침묵 구간이 사라져 발화 누락이 발생함.
+                _accum_now = _s["state"].audio_accum.shape[0]
+                _carry_samples = _accum_now - _accum_size_pre_gpt
+                carry_audio = (
+                    _s["state"].audio_accum[-_carry_samples:].copy()
+                    if _carry_samples > 0 else None
+                )
+                self._reset_stream_slot(slot_key)
+                if carry_audio is not None:
+                    self._slot(slot_key)["state"].audio_accum = carry_audio
+                    carry_sec = round(_carry_samples / SAMPLING_RATE, 3)
+                    self.log.info(f"[SEG-CARRY-AUDIO] slot={slot_key} carry={carry_sec}s")
+                if last_committed:
+                    self._slot(slot_key)["seg_reset_last_committed"] = last_committed
+                if slot_key == self.active_slot:
+                    self.state = self.stream_slots[self.active_slot]["state"]
+                self.log.info(f"[SEG-SLOT-RESET] slot={slot_key} audio_sec={audio_sec:.1f}s")
             else:
                 # cross-decode trailing-period reset:
                 # prev_uncommitted 온점 위치가 이번 commit과 동일한 경우에만 슬롯 리셋.
@@ -1554,7 +1575,7 @@ class Qwen3ASRStreamingHandler:
             extra = {}
         else:
             translation, detected_lang, extra = await self._translate(text, target, audio_end_sec)
-        effective = detected_lang or src_code
+        effective = src_code or detected_lang
         return text, translation, effective, extra
 
     def _get_flush_audio_end_sec(self) -> float:
