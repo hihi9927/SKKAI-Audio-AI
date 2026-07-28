@@ -19,6 +19,7 @@ Client protocol (WhisperLiveKit app compatible):
 import argparse
 import asyncio
 import contextlib
+import difflib
 import http
 import json
 import logging
@@ -163,6 +164,7 @@ class StreamingConfig:
 
     # Commit 방식 설정
     enable_dot_commit: bool = False  # True면 온점/느낌표/물음표(dot) 기반 seg commit 활성화
+    always_commit: bool = False  # True면 SEG/dot 트리거 없이 매 청크 디코딩 결과를 그대로 커밋 (모드2)
 
 
     # 언어 제한 설정
@@ -562,6 +564,7 @@ class Qwen3ASRStreamingHandler:
 
         # Commit 방식 설정
         self.enable_dot_commit: bool = config.enable_dot_commit
+        self.always_commit: bool = config.always_commit
 
         # VAD / stream alignment
         self.sample_cursor = 0
@@ -749,6 +752,14 @@ class Qwen3ASRStreamingHandler:
                 pos = idx + seg_len
                 found += 1
             if all_segs_found and pos < len(text):
+                # 스트리밍 재디코딩으로 committed_display가 raw text에서 통째로
+                # 사라진 경우(prefix rollback으로 이전 SEG가 밀려나는 등), 지금 센
+                # SEG는 옛 커밋 경계가 아니라 새 문장의 SEG일 수 있다. skip한 구간이
+                # committed_display와 실제로 닮아 있을 때만(=revision) 신뢰한다.
+                candidate = re.sub(r'\s+', ' ', text[:pos].replace(seg_tag, "")).strip()
+                similarity = difflib.SequenceMatcher(None, candidate, committed_display).ratio()
+                if similarity < 0.5:
+                    return -1
                 return pos
 
         return -1
@@ -1162,29 +1173,37 @@ class Qwen3ASRStreamingHandler:
         _last_extracted_display = None  # 한 번의 호출 내 연속 중복 억제용
 
         while True:
-            # 우선순위 1: <SEG>
-            # 우선순위 2: VAD (flush_uncommitted 에서 처리)
-            # 우선순위 3: dot (enable_dot_commit=True일 때만 활성화)
-            # dot 패턴: Mr./Mrs./Dr./St./Jr./Sr./vs./No. 등 약어 제외
-            if self.enable_dot_commit:
-                match = re.search(
-                    r"(?:"
-                    r"(?<!Mr)(?<!Mrs)(?<!Dr)(?<!St)(?<!Jr)(?<!Sr)(?<!vs)(?<!No)\.\s+(?=\S)"
-                    r"|[?!]\s+(?=\S)"
-                    r"|[\u3002\uff1f\uff01](?=\S)"
-                    r"|<SEG>"
-                    r")",
-                    remaining,
-                )
+            if self.always_commit:
+                # 모드2: SEG/dot 트리거 없이 이번 청크에서 새로 디코딩된 부분을 통째로 커밋
+                if not remaining.strip():
+                    break
+                trigger = "always"
+                after = ""
+                sentence = remaining.strip()
             else:
-                match = re.search(r"<SEG>", remaining)
-            if not match:
-                break
-            matched_text = match.group()
-            trigger = "seg" if "<SEG>" in matched_text else "dot"
-            after = remaining[match.end():]
-            # 커서 추적을 위해 raw sentence(<SEG> 포함) 사용
-            sentence = remaining[:match.end()].strip()
+                # 우선순위 1: <SEG>
+                # 우선순위 2: VAD (flush_uncommitted 에서 처리)
+                # 우선순위 3: dot (enable_dot_commit=True일 때만 활성화)
+                # dot 패턴: Mr./Mrs./Dr./St./Jr./Sr./vs./No. 등 약어 제외
+                if self.enable_dot_commit:
+                    match = re.search(
+                        r"(?:"
+                        r"(?<!Mr)(?<!Mrs)(?<!Dr)(?<!St)(?<!Jr)(?<!Sr)(?<!vs)(?<!No)\.\s+(?=\S)"
+                        r"|[?!]\s+(?=\S)"
+                        r"|[\u3002\uff1f\uff01](?=\S)"
+                        r"|<SEG>"
+                        r")",
+                        remaining,
+                    )
+                else:
+                    match = re.search(r"<SEG>", remaining)
+                if not match:
+                    break
+                matched_text = match.group()
+                trigger = "seg" if "<SEG>" in matched_text else "dot"
+                after = remaining[match.end():]
+                # 커서 추적을 위해 raw sentence(<SEG> 포함) 사용
+                sentence = remaining[:match.end()].strip()
             sentence_display_check = sentence.replace("<SEG>", "").strip()
             if sentence_display_check:
                 if sentence_display_check == _last_extracted_display:
@@ -1506,12 +1525,32 @@ class Qwen3ASRStreamingHandler:
         )
         return translation, detected_lang, {}
 
+    def _maybe_fix_direction(self, detected: str, used_target: str) -> Optional[str]:
+        """양방향(non-auto) 모드에서 감지된 소스 언어가 번역 target과 같으면(= 같은 언어로
+        번역된 no-op) 올바른 반대편 앱 언어를 반환한다. 수정 불필요 시 None.
+
+        언어 전환 경계(예: 한국어 직후 짧은 영어)에서 스트림 단위 state.language가 아직
+        안 넘어가 방향이 틀어진 경우를, 번역 후 신뢰 가능한 감지 결과로 자가교정한다.
+        client_lang/client_target_lang/detected는 모두 언어 코드(예: 'en','ko').
+        """
+        if not detected or not self.client_lang or self.client_lang == "auto":
+            return None
+        if self.client_lang == self.client_target_lang:
+            return None
+        if detected != used_target:
+            return None
+        other = self.client_lang if used_target == self.client_target_lang else self.client_target_lang
+        if not other or other == detected:
+            return None
+        return other
+
     async def _correct_and_translate(
         self, text: str, current_lang: str, audio_end_sec: float
     ) -> tuple[str, str, str, dict]:
         """교정 + 번역 통합 메서드. flush_uncommitted / _process_slot_updates 공통 경로.
 
         ASR 감지 언어 기준으로 번역 방향을 결정하고 번역 1회 호출.
+        번역 결과의 감지 언어가 target과 같아 무의미한 경우(en→en 등) 반대 방향으로 1회 재시도.
 
         Returns:
             (corrected_text, translation, detected_lang_code, extra)
@@ -1541,6 +1580,13 @@ class Qwen3ASRStreamingHandler:
                 text, current_lang, target,
                 context=ctx_pairs if ctx_pairs else None,
             )
+            # 방향 자가교정: 감지 소스가 번역 target과 같으면(같은언어 no-op) 반대 앱 언어로 1회 재번역
+            fixed_target = self._maybe_fix_direction(gpt_detected, target)
+            if fixed_target:
+                corrected, translation, gpt_detected = await self.gpt_translator.correct_and_translate(
+                    text, current_lang, fixed_target,
+                    context=ctx_pairs if ctx_pairs else None,
+                )
             return corrected, translation, src_code or gpt_detected, {}
 
         # Google Translate 경로
@@ -1554,6 +1600,10 @@ class Qwen3ASRStreamingHandler:
             extra = {}
         else:
             translation, detected_lang, extra = await self._translate(text, target, audio_end_sec)
+        # 방향 자가교정: 감지 소스가 번역 target과 같으면 반대 앱 언어로 재번역
+        fixed_target = self._maybe_fix_direction(detected_lang or src_code, target)
+        if fixed_target:
+            translation, detected_lang, extra = await self._translate(text, fixed_target, audio_end_sec)
         effective = detected_lang or src_code
         return text, translation, effective, extra
 
@@ -2095,6 +2145,11 @@ def parse_args():
         help="Disable dot-based commit even for baseline models",
     )
     parser.add_argument(
+        "--always-commit", action="store_true",
+        help="SEG/dot 트리거 없이 매 청크 디코딩 결과를 그대로 커밋 (모드2 테스트용, "
+             "enable_dot_commit보다 우선)",
+    )
+    parser.add_argument(
         "--no-restrict-languages", action="store_true",
         help="앱 설정 두 언어 외 언어 차단 비활성화 (기본값: 활성화)",
     )
@@ -2171,6 +2226,7 @@ def main():
         enforce_eager=args.enforce_eager,
         no_vad=args.no_vad,
         enable_dot_commit=args.enable_dot_commit,
+        always_commit=args.always_commit,
         restrict_languages=not args.no_restrict_languages,
         enable_correction=args.correction,
         correction_model=args.correction_model,

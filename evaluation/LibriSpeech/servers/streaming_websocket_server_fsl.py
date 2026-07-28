@@ -817,6 +817,7 @@ def main():
         enforce_eager=args.enforce_eager,
         no_vad=args.no_vad,
         enable_dot_commit=args.enable_dot_commit,
+        always_commit=args.always_commit,
         restrict_languages=not args.no_restrict_languages,
         enable_correction=args.correction,
         correction_model=args.correction_model,

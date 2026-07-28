@@ -19,7 +19,7 @@ interface UseWebSocketReturn {
 // ===== Server URL =====
 // ngrok example: 'wss://abcd-1234.ngrok-free.app'
 // LAN example: 'ws://192.168.x.x:8001'
-const SERVER_URL = 'wss://kg7hmbaupwv7e8-8765.proxy.runpod.net';
+const SERVER_URL = 'wss://h2b9loruk400f8-8765.proxy.runpod.net';
 
 export const useWebSocket = (): UseWebSocketReturn => {
   const [isConnected, setIsConnected] = useState(false);
