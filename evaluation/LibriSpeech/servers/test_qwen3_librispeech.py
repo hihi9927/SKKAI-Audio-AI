@@ -856,7 +856,7 @@ def resolve_run_dir(args) -> Path:
       results/{model}/{scope}/{tag}/
     --tag 미지정 시 run_01, run_02 ... 순으로 자동 생성.
     """
-    results_root = SCRIPT_DIR.parent / 'results'
+    results_root = Path(args.results_root) if args.results_root else (SCRIPT_DIR.parent / 'results')
     base = results_root / args.model / args.scope
     if args.tag:
         run_dir = base / args.tag
@@ -926,6 +926,9 @@ def main():
                         help='결과 폴더명. 미지정 시 run_01, run_02 ... 자동 생성')
     parser.add_argument('--description', type=str, default=None,
                         help='테스트 설명 (description.txt에 저장)')
+    parser.add_argument('--results-root', type=str, default=None,
+                        help='결과 저장 루트 디렉토리. 미지정 시 evaluation/LibriSpeech/results 사용 '
+                             '(구조는 동일: {results-root}/{model}/{scope}/{tag}/)')
     # ────────────────────────────────────────────────────────────────────────
     parser.add_argument('--limit', type=int, default=None,
                         help='Maximum number of files to process (default: all files)')
