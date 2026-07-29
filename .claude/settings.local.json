@@ -190,7 +190,8 @@
       "Bash(git -C /home/skkai/STiTy push --dry-run)",
       "Bash(mkdir -p evaluation/LibriSpeech/paper_result/ASR/scripts)",
       "Bash(mv evaluation/LibriSpeech/paper_result/ASR/serve_mode2.sh evaluation/LibriSpeech/paper_result/ASR/scripts/serve_mode2.sh)",
-      "Bash(mv evaluation/LibriSpeech/paper_result/ASR/run_mode2.sh evaluation/LibriSpeech/paper_result/ASR/scripts/run_mode2.sh)"
+      "Bash(mv evaluation/LibriSpeech/paper_result/ASR/run_mode2.sh evaluation/LibriSpeech/paper_result/ASR/scripts/run_mode2.sh)",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('evaluation/LibriSpeech/paper_result/check_server_config.py', encoding='utf-8'\\).read\\(\\)\\)\")"
     ],
     "deny": [],
     "ask": [],
