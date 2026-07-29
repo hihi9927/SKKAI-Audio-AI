@@ -186,7 +186,8 @@
       "Bash(ssh -T git@github.com -o BatchMode=yes -o ConnectTimeout=5)",
       "Bash(git -C /home/skkai/STiTy config --local --list)",
       "Bash(gh api *)",
-      "Bash(git -C /home/skkai/STiTy status --short)"
+      "Bash(git -C /home/skkai/STiTy status --short)",
+      "Bash(git -C /home/skkai/STiTy push --dry-run)"
     ],
     "deny": [],
     "ask": [],
