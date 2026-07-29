@@ -15,5 +15,7 @@ RUN_DIR="$PAPER_RESULT_DIR/ASR/mode3/$SCOPE/$TAG"
 python "$SCRIPT_DIR/../../../servers/streaming_websocket_server_fsl.py" \
   --model "Qwen/Qwen3-ASR-1.7B" \
   --enable-dot-commit \
+  --no-vad \
+  --port 8766 \
   --no-idle-shutdown \
   --log-file "$RUN_DIR/logs/server.log"

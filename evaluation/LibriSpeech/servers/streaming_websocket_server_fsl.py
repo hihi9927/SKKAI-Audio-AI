@@ -621,6 +621,7 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
                     "enforce_eager": self.config.enforce_eager,
                     "enable_dot_commit": self.config.enable_dot_commit,
                     "always_commit": self.config.always_commit,
+                    "no_vad": self.config.no_vad,
                     "enable_gpt_translation": self.config.enable_gpt_translation,
                     "translation_model": self.config.translation_model,
                     "context_window": self.config.context_window,

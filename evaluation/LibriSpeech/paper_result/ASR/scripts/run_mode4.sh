@@ -16,9 +16,11 @@ PAPER_RESULT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 # 벤치마크 시작 전, 지금 떠 있는 서버가 진짜 모드4 설정인지 확인.
 # 실패하면 set -e 에 의해 여기서 바로 중단됨 (잘못된 설정으로 실험 도는 것 방지).
 python "$PAPER_RESULT_DIR/check_server_config.py" \
+  --port 8767 \
   --expect model=Doo12/Qwen3-ASR-1.7B-ko-silence-v4c900-merged \
   --expect always_commit=false \
-  --expect enable_dot_commit=false
+  --expect enable_dot_commit=false \
+  --expect no_vad=true
 
 python "$SCRIPT_DIR/../../../servers/test_qwen3_librispeech.py" \
   --test-dir evaluation/LibriSpeech/LibriSpeech/test-other \
@@ -26,6 +28,7 @@ python "$SCRIPT_DIR/../../../servers/test_qwen3_librispeech.py" \
   --scope "$SCOPE" \
   --tag "$TAG" \
   --results-root "$PAPER_RESULT_DIR/ASR" \
+  --port 8767 \
   --target-lang "" \
   --trailing-silence-ms 5500 \
   --chunk-size-ms 200 \

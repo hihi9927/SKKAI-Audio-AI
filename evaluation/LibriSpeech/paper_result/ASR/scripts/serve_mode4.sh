@@ -16,6 +16,8 @@ RUN_DIR="$PAPER_RESULT_DIR/ASR/mode4/$SCOPE/$TAG"
 python "$SCRIPT_DIR/../../../servers/streaming_websocket_server_fsl.py" \
   --model "Doo12/Qwen3-ASR-1.7B-ko-silence-v4c900-merged" \
   --disable-dot-commit \
+  --no-vad \
+  --port 8767 \
   --no-idle-shutdown \
   --log-file "$RUN_DIR/logs/server.log"
 # --disable-dot-commit: 이 모델명은 baseline 판정(_infer_dot_commit_default)에 걸리지 않아
