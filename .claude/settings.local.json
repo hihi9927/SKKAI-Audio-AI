@@ -191,7 +191,10 @@
       "Bash(mkdir -p evaluation/LibriSpeech/paper_result/ASR/scripts)",
       "Bash(mv evaluation/LibriSpeech/paper_result/ASR/serve_mode2.sh evaluation/LibriSpeech/paper_result/ASR/scripts/serve_mode2.sh)",
       "Bash(mv evaluation/LibriSpeech/paper_result/ASR/run_mode2.sh evaluation/LibriSpeech/paper_result/ASR/scripts/run_mode2.sh)",
-      "Bash(python -c \"import ast; ast.parse\\(open\\('evaluation/LibriSpeech/paper_result/check_server_config.py', encoding='utf-8'\\).read\\(\\)\\)\")"
+      "Bash(python -c \"import ast; ast.parse\\(open\\('evaluation/LibriSpeech/paper_result/check_server_config.py', encoding='utf-8'\\).read\\(\\)\\)\")",
+      "Bash(nvidia-smi)",
+      "Bash(git stash *)",
+      "Bash(git pull *)"
     ],
     "deny": [],
     "ask": [],
