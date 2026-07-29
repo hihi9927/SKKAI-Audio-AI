@@ -187,7 +187,10 @@
       "Bash(git -C /home/skkai/STiTy config --local --list)",
       "Bash(gh api *)",
       "Bash(git -C /home/skkai/STiTy status --short)",
-      "Bash(git -C /home/skkai/STiTy push --dry-run)"
+      "Bash(git -C /home/skkai/STiTy push --dry-run)",
+      "Bash(mkdir -p evaluation/LibriSpeech/paper_result/ASR/scripts)",
+      "Bash(mv evaluation/LibriSpeech/paper_result/ASR/serve_mode2.sh evaluation/LibriSpeech/paper_result/ASR/scripts/serve_mode2.sh)",
+      "Bash(mv evaluation/LibriSpeech/paper_result/ASR/run_mode2.sh evaluation/LibriSpeech/paper_result/ASR/scripts/run_mode2.sh)"
     ],
     "deny": [],
     "ask": [],
