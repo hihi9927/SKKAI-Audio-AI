@@ -41,6 +41,28 @@ evaluation/{Dataset}/results/{model}/{scope}/{tag}/
 | B | **DailyTalk** | 한국어 | CER, GPT 옵션 없음 |
 | C | **KtelSpeech** | 한국어 | CER, 전화 품질 음성 |
 | D | **AMI** | 영어 | WER, 다화자 회의, ami-dir/words-dir 별도 지정 |
+| E | **Paper mode (mode2/3/4)** | 영어 | LibriSpeech 고정, `paper_result/ASR/scripts/` 재현 스크립트 사용 |
+
+A를 선택한 경우, 이어서 물어봐줘:
+- **일반 실행** → 3번(실험 설정)부터 진행
+- **Paper mode 재현** → E와 동일하게 아래 "1-1. Paper mode" 절차로 이동
+
+### 1-1. Paper mode (mode2/3/4)
+
+번역/GPT 옵션 없이 커밋 정책만 다른 3가지 고정 설정을 재현하는 전용 스크립트.
+논문 벤치마크용이라 **3번(실험 설정) 전체를 건너뛰고** 아래만 물어봐줘.
+
+| 모드 | 설명 | 모델 | 커밋 정책 |
+|---|---|---|---|
+| mode2 | always-commit | baseline `Qwen/Qwen3-ASR-1.7B` | `--always-commit` (2초 고정 청킹) |
+| mode3 | rule-based / dot-commit | baseline `Qwen/Qwen3-ASR-1.7B` | `--enable-dot-commit` |
+| mode4 | seg-commit | finetuned ko `Doo12/Qwen3-ASR-1.7B-ko-silence-v4c900-merged` | 기본값 (SEG 토큰 기반) |
+
+물어볼 것: **모드(2/3/4)**, **scope**(기본 `sample`), **tag**(기본 `run01`), **limit**(선택).
+chunk-size는 스크립트에 `200ms` 고정, 번역은 항상 off(`--target-lang ""`)라 물어볼 필요 없음.
+
+이후 4번(서버 실행)·5번(테스트 실행)은 아래 "Paper mode 전용 절차"를 따르고,
+일반 실행 절차(수동 커맨드 조립)는 건너뛴다.
 
 ---
 
@@ -181,6 +203,15 @@ python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py \
 
 태그를 지정하지 않은 경우 `--log-file` 생략.
 
+**Paper mode 서버 명령 (1-1에서 E/paper mode 선택 시, 위 명령 대신 사용):**
+
+```bash
+bash evaluation/LibriSpeech/paper_result/ASR/scripts/serve_mode<N>.sh <scope> <tag>
+```
+
+`<N>`은 2/3/4. 모델·커밋 정책은 스크립트에 고정돼 있어 별도 인자 불필요.
+로그는 스크립트가 자체적으로 `paper_result/ASR/mode<N>/{scope}/{tag}/logs/server.log`에 저장하므로 `--log-file` 조립 불필요.
+
 **Step 4-1. 기존 tmux 세션 정리**
 ```bash
 ssh <host_alias> "tmux kill-session -t eval_server 2>/dev/null; true"
@@ -219,12 +250,11 @@ ssh <host_alias> "tmux kill-session -t eval_test 2>/dev/null; true"
 
 데이터셋별 명령을 tmux 세션으로 실행:
 
-테스트 완료 후 자동으로 git push → EC2 종료까지 체이닝해줘.
+테스트 완료 후 자동으로 git push까지 체이닝해줘 (물리 GPU 서버라 원격 종료는 하지 않음).
 tmux 명령 끝에 아래를 항상 추가:
 ```
-&& git add -A && git commit -m "eval: <model_label> <dataset> <scope> <tag> 결과 추가" && git push && sudo shutdown -h now
+&& git add -A && git commit -m "eval: <model_label> <dataset> <scope> <tag> 결과 추가" && git push
 ```
-실패해도 (`||`) shutdown은 실행되지 않도록 `&&` 체이닝으로 연결 (push 실패 시 shutdown 건너뜀).
 
 **LibriSpeech:**
 ```bash
@@ -240,10 +270,23 @@ ssh <host_alias> "cd <remote_dir> && tmux new-session -d -s eval_test \
   2>&1 | tee /tmp/eval_test.log \
   && git add -A \
   && git commit -m \"eval: <model_label> LibriSpeech <scope> <tag> 결과 추가\" \
-  && git push \
-  && sudo shutdown -h now' \
+  && git push' \
   && echo TEST_STARTED"
 ```
+
+**Paper mode (mode2/3/4):**
+```bash
+ssh <host_alias> "cd <remote_dir> && tmux new-session -d -s eval_test \
+  'source ~/miniconda3/etc/profile.d/conda.sh && conda activate qwen3-asr && \
+  bash evaluation/LibriSpeech/paper_result/ASR/scripts/run_mode<N>.sh <scope> <tag> [--limit <n>] \
+  2>&1 | tee /tmp/eval_test.log \
+  && git add -A \
+  && git commit -m \"eval: mode<N> LibriSpeech <scope> <tag> 결과 추가\" \
+  && git push' \
+  && echo TEST_STARTED"
+```
+`run_mode<N>.sh`가 시작 시 `check_server_config.py`로 서버 설정을 자체 검증하므로,
+서버가 Step 4에서 올린 `serve_mode<N>.sh`와 같은 `<N>`인지만 맞춰주면 됨 (불일치 시 스크립트가 즉시 실패).
 
 **DailyTalk:**
 ```bash
@@ -254,8 +297,7 @@ ssh <host_alias> "cd <remote_dir> && tmux new-session -d -s eval_test \
   2>&1 | tee /tmp/eval_test.log \
   && git add -A \
   && git commit -m \"eval: <model_label> DailyTalk 결과 추가\" \
-  && git push \
-  && sudo shutdown -h now' \
+  && git push' \
   && echo TEST_STARTED"
 ```
 
@@ -271,8 +313,7 @@ ssh <host_alias> "cd <remote_dir> && tmux new-session -d -s eval_test \
   2>&1 | tee /tmp/eval_test.log \
   && git add -A \
   && git commit -m \"eval: <model_label> KtelSpeech <scope> <tag> 결과 추가\" \
-  && git push \
-  && sudo shutdown -h now' \
+  && git push' \
   && echo TEST_STARTED"
 ```
 
@@ -288,12 +329,11 @@ ssh <host_alias> "cd <remote_dir> && tmux new-session -d -s eval_test \
   2>&1 | tee /tmp/eval_test.log \
   && git add -A \
   && git commit -m \"eval: <model_label> AMI <scope> <tag> 결과 추가\" \
-  && git push \
-  && sudo shutdown -h now' \
+  && git push' \
   && echo TEST_STARTED"
 ```
 
-테스트는 백그라운드(tmux)에서 실행. 완료되면 자동으로 git push 후 EC2 종료.
+테스트는 백그라운드(tmux)에서 실행. 완료되면 자동으로 git push (서버 종료는 하지 않음, 물리 머신이므로 그대로 유지).
 진행 상황 확인이 필요하면 다시 `/eval-run` → "진행 중인 테스트 확인" 선택.
 
 ---
@@ -310,6 +350,11 @@ ssh <host_alias> "ls -t <remote_dir>/evaluation/{Dataset}/results/{model_label}/
 **metric.json 읽기:**
 ```bash
 ssh <host_alias> "cat <remote_dir>/evaluation/{Dataset}/results/{model_label}/{scope}/{tag}/metric.json"
+```
+
+**Paper mode (mode2/3/4)는 결과 경로가 다름** — `--results-root`로 `paper_result/ASR`를 지정해서 실행되므로:
+```bash
+ssh <host_alias> "cat <remote_dir>/evaluation/LibriSpeech/paper_result/ASR/mode<N>/{scope}/{tag}/metric.json"
 ```
 
 **출력 지표:**
