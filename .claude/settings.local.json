@@ -194,7 +194,9 @@
       "Bash(python -c \"import ast; ast.parse\\(open\\('evaluation/LibriSpeech/paper_result/check_server_config.py', encoding='utf-8'\\).read\\(\\)\\)\")",
       "Bash(nvidia-smi)",
       "Bash(git stash *)",
-      "Bash(git pull *)"
+      "Bash(git pull *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ],
     "deny": [],
     "ask": [],
