@@ -68,52 +68,14 @@ chunk-size는 스크립트에 `200ms` 고정, 번역은 항상 off(`--target-lan
 
 ## 2. 원격 서버 선택
 
-먼저 AWS에서 현재 인스턴스 상태를 조회해줘:
-```bash
-aws ec2 describe-instances \
-  --instance-ids i-0adab4f1c94585f9d i-0ecb954ca6ebde868 i-08319fccc65145965 \
-  --query "Reservations[].Instances[].[InstanceId,PublicIpAddress,State.Name,Tags[?Key=='Name'].Value|[0]]" \
-  --output table
-```
+SSH 접속: 고정 alias `gpu` 사용 (`~/.ssh/config`에 정의되어 있어야 함, 매번 묻지 않음).
 
-조회 결과를 바탕으로 아래 표를 채워서 보여주고 선택받아줘:
-
-| 별칭 | IP | 이름 | 상태 |
-|---|---|---|---|
-| `aws_dev` | 13.209.202.8 | Dev Server | (조회 결과) |
-| `aws_app` | 15.165.227.114 | App Server | (조회 결과) |
-| `aws_test` | 54.116.64.206 | Test Server | (조회 결과) |
-| `super_com` | 115.145.230.36 | — | (SSH만 가능) |
-
-SSH 접속 정보는 ~/.ssh/config 에서 자동으로 읽어 사용.
-원격 STiTy 디렉토리도 물어봐줘 (기본값: `~/STiTy`).
-
-### EC2 기동 (stopped 상태인 경우)
-
-```bash
-# 상태 확인
-aws ec2 describe-instances --instance-ids <instance_id> \
-  --query 'Reservations[0].Instances[0].State.Name' --output text
-
-# stopped 이면 기동 및 대기
-aws ec2 start-instances --instance-ids <instance_id>
-aws ec2 wait instance-running --instance-ids <instance_id>
-```
-IP는 고정이므로 재조회 불필요. `super_com`은 이 단계 건너뜀.
-
-**에러 처리:** start-instances 실패 시 에러 출력 후 중단.
-
-### aws_app 전용: 자동 실행 서비스 중단
-
-`aws_app`은 EC2 기동 시 `qwen-asr` systemd 서비스가 자동으로 모델을 실행하고,
-클라이언트 연결이 1분간 없으면 EC2 자체가 자동 종료되는 구조.
-평가 서버를 올리기 전에 반드시 이 서비스를 먼저 종료해줘:
-
-```bash
-ssh aws_app "sudo systemctl stop qwen-asr"
-```
-
-기동 직후 바로 실행해서 자동 종료 타이머가 발동하기 전에 처리해야 해.
+| 항목 | 값 |
+|---|---|
+| 저장소 경로 | `/home/skkai/STiTy` |
+| conda env | `stity` (⚠ `qwen3-asr` 아님) |
+| GPU | 1장 (RTX 4090) |
+| 부팅 시 자동 기동 systemd 서비스 | 없음 — 서비스 중단 절차 불필요 |
 
 ---
 
@@ -259,7 +221,7 @@ tmux 명령 끝에 아래를 항상 추가:
 **LibriSpeech:**
 ```bash
 ssh <host_alias> "cd <remote_dir> && tmux new-session -d -s eval_test \
-  'source ~/miniconda3/etc/profile.d/conda.sh && conda activate qwen3-asr && \
+  'source ~/miniforge3/etc/profile.d/conda.sh && conda activate stity && \
   python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \
     --test-dir evaluation/LibriSpeech/LibriSpeech/test-other \
     --model \"<model_label>\" --scope <scope> [--tag <tag>] \
@@ -277,7 +239,7 @@ ssh <host_alias> "cd <remote_dir> && tmux new-session -d -s eval_test \
 **Paper mode (mode2/3/4):**
 ```bash
 ssh <host_alias> "cd <remote_dir> && tmux new-session -d -s eval_test \
-  'source ~/miniconda3/etc/profile.d/conda.sh && conda activate qwen3-asr && \
+  'source ~/miniforge3/etc/profile.d/conda.sh && conda activate stity && \
   bash evaluation/LibriSpeech/paper_result/ASR/scripts/run_mode<N>.sh <scope> <tag> [--limit <n>] \
   2>&1 | tee /tmp/eval_test.log \
   && git add -A \
@@ -291,7 +253,7 @@ ssh <host_alias> "cd <remote_dir> && tmux new-session -d -s eval_test \
 **DailyTalk:**
 ```bash
 ssh <host_alias> "cd <remote_dir> && tmux new-session -d -s eval_test \
-  'source ~/miniconda3/etc/profile.d/conda.sh && conda activate qwen3-asr && \
+  'source ~/miniforge3/etc/profile.d/conda.sh && conda activate stity && \
   python evaluation/DailyTalk/test_qwen3_dailytalk.py \
     --host localhost --port 8765 --chunk-size-ms <ms> [--limit <n>] \
   2>&1 | tee /tmp/eval_test.log \
@@ -304,7 +266,7 @@ ssh <host_alias> "cd <remote_dir> && tmux new-session -d -s eval_test \
 **KtelSpeech:**
 ```bash
 ssh <host_alias> "cd <remote_dir> && tmux new-session -d -s eval_test \
-  'source ~/miniconda3/etc/profile.d/conda.sh && conda activate qwen3-asr && \
+  'source ~/miniforge3/etc/profile.d/conda.sh && conda activate stity && \
   python evaluation/KtelSpeech/test_qwen3_ktelspeech.py \
     --data-dir evaluation/KtelSpeech \
     --model \"<model_label>\" --scope <scope> [--tag <tag>] \
@@ -320,7 +282,7 @@ ssh <host_alias> "cd <remote_dir> && tmux new-session -d -s eval_test \
 **AMI:**
 ```bash
 ssh <host_alias> "cd <remote_dir> && tmux new-session -d -s eval_test \
-  'source ~/miniconda3/etc/profile.d/conda.sh && conda activate qwen3-asr && \
+  'source ~/miniforge3/etc/profile.d/conda.sh && conda activate stity && \
   python evaluation/AMI/test_qwen3_ami.py \
     --ami-dir evaluation/AMI/AMI --words-dir evaluation/AMI/words \
     --model \"<model_label>\" --scope <scope> [--tag <tag>] \
