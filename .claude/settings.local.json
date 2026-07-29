@@ -196,7 +196,11 @@
       "Bash(git stash *)",
       "Bash(git pull *)",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Read(//c/Users/0147q/.ssh/**)",
+      "Bash(ssh -o BatchMode=yes -o ConnectTimeout=10 gpu \"hostname; nvidia-smi --query-gpu=name,memory.total --format=csv,noheader; echo '---'; ls ~/STiTy 2>/dev/null | head -5; echo '---'; conda env list 2>/dev/null; echo '---'; cat /etc/os-release | head -2\")",
+      "Bash(ssh -o BatchMode=yes -o ConnectTimeout=10 ec2relay \"echo relay_ok; hostname\")",
+      "Bash(ssh -o BatchMode=yes -o ConnectTimeout=10 ec2relay \"ss -tlnp 2>/dev/null | grep 2222 || netstat -tln 2>/dev/null | grep 2222 || echo NO_LISTENER\")"
     ],
     "deny": [],
     "ask": [],
