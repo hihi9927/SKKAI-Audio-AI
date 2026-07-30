@@ -11,10 +11,15 @@ TAG="${2:?tag 필요 (예: run01)}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PAPER_RESULT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+PROJECT_ROOT="$(cd "$PAPER_RESULT_DIR/../../.." && pwd)"
+MODEL_PATH="$PROJECT_ROOT/models/Qwen3-ASR-1.7B-ko-silence-v4c900-merged"
 RUN_DIR="$PAPER_RESULT_DIR/ASR/mode4/$SCOPE/$TAG"
 
+# HF 허브의 Doo12/Qwen3-ASR-1.7B-ko-silence-v4c900-merged가 401(Repository Not Found)로
+# 막혀서 로컬 사본을 직접 로드하도록 고정함. 원격 리포 접근 복구되어도 로컬 사본이
+# 동일 가중치라 실험 재현성엔 영향 없음.
 python "$SCRIPT_DIR/../../../servers/streaming_websocket_server_fsl.py" \
-  --model "Doo12/Qwen3-ASR-1.7B-ko-silence-v4c900-merged" \
+  --model "$MODEL_PATH" \
   --disable-dot-commit \
   --no-vad \
   --port 8767 \

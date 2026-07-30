@@ -52,6 +52,7 @@ from .utils import (
     split_audio_into_chunks,
     validate_language,
 )
+from .sentence_boundary import count_dot_commit_boundaries
 
 try:
     from qwen_asr.core.vllm_backend import Qwen3ASRForConditionalGeneration
@@ -754,7 +755,7 @@ class Qwen3ASRModel:
                 return ""
             end_idx -= 1
 
-    async def streaming_transcribe(self, pcm16k: np.ndarray, state: ASRStreamingState, lora_request=None, on_seg=None) -> ASRStreamingState:
+    async def streaming_transcribe(self, pcm16k: np.ndarray, state: ASRStreamingState, lora_request=None, on_seg=None, on_dot=None) -> ASRStreamingState:
         """
         Streaming ASR decode step.
 
@@ -844,6 +845,7 @@ class Qwen3ASRModel:
             request_id = str(uuid.uuid4())
             final = None
             prev_seg_count = 0
+            prev_dot_count = 0
             state._decode_start_perf = time.perf_counter()
             _hallucination_aborted = False
             async for out in self.model.generate(inp, sp, request_id=request_id, lora_request=lora_request):
@@ -866,6 +868,13 @@ class Qwen3ASRModel:
                             prev_seg_count += 1
                             state._seg_token_idx = len(out.outputs[0].token_ids)
                             await on_seg(state)
+                    if on_dot:
+                        # <SEG>와 동일한 방식 — 마침표/물음표/느낌표가 디코딩되는
+                        # 순간 바로 콜백. count는 단조증가라 델타만큼만 호출.
+                        dot_count = count_dot_commit_boundaries(txt_p)
+                        while dot_count > prev_dot_count:
+                            prev_dot_count += 1
+                            await on_dot(state)
 
             if _hallucination_aborted:
                 state.chunk_id += 1

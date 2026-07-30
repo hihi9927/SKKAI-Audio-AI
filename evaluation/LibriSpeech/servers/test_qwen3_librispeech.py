@@ -284,6 +284,8 @@ def normalize_commit_reason(raw_reason):
         return 'dot'
     if reason == 'finish':
         return 'finish'
+    if reason == 'always':
+        return 'always'
     return 'seg'
 
 
@@ -469,6 +471,10 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
                     break
                 await ws.send(chunk.tobytes())
 
+        # finish를 여기서 보내야 _recv()가 아직 듣고 있는 동안 finish-트리거 final을 받는다.
+        # (예전엔 process_batch가 이 함수 리턴 후에 보내서, dot/SEG/VAD 중 아무 것도 못 잡은
+        #  문장은 finish 커밋으로만 나오는데 그땐 이미 recv 루프가 끝나 유실됐다.)
+        await ws.send(json.dumps({'type': 'finish'}))
         send_done.set()
 
     async def _recv():
@@ -476,7 +482,10 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
 
         while True:
             try:
-                msg = await asyncio.wait_for(ws.recv(), timeout=15.0)
+                # finish 전송 후(send_done)엔 flush가 GPU 디코딩 없이 즉시 끝나므로 짧게만 대기.
+                # 아직 스트리밍 중이면 디코딩 지연을 감안해 넉넉히 기다린다.
+                recv_timeout = 3.0 if send_done.is_set() else 15.0
+                msg = await asyncio.wait_for(ws.recv(), timeout=recv_timeout)
             except asyncio.TimeoutError:
                 if send_done.is_set():
                     break
@@ -672,6 +681,9 @@ async def process_batch(
                 continue
 
         try:
+            # chapter 내 연결 유지 — finish로 서버 상태 초기화하되 히스토리는 보존.
+            # finish 전송은 process_single_file 내부(_send)에서 처리 — recv 루프가
+            # 아직 살아있는 동안 finish-트리거 final을 받기 위함.
             out = await process_single_file(
                 ws,
                 audio,
@@ -680,8 +692,6 @@ async def process_batch(
                 target_lang=target_lang,
                 trailing_silence_ms=trailing_silence_ms,
             )
-            # chapter 내 연결 유지 — finish로 서버 상태 초기화하되 히스토리는 보존
-            await ws.send(json.dumps({'type': 'finish'}))
         except Exception as e:
             logger.error('WebSocket processing failed for %s: %s', file_id, e)
             await _close_ws()
@@ -759,7 +769,7 @@ def build_summary_payload(results, policy):
         return values
 
     def _collect_commit_stats(rows):
-        counts = {'vad': 0, 'seg': 0, 'dot': 0, 'finish': 0}
+        counts = {'vad': 0, 'seg': 0, 'dot': 0, 'finish': 0, 'always': 0}
         for row in rows:
             for segment in row.get('segment_metrics') or []:
                 reason = segment.get('commit_reason', 'seg')

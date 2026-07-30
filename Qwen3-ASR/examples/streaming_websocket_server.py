@@ -46,6 +46,7 @@ except ImportError:
 
 from qwen_asr import Qwen3ASRModel
 from qwen_asr.inference.utils import warmup_streaming
+from qwen_asr.inference.sentence_boundary import DOT_COMMIT_BOUNDARY_RE, count_dot_commit_boundaries
 
 try:
     import sys as _sys
@@ -875,6 +876,11 @@ class Qwen3ASRStreamingHandler:
             # lock 밖에서 호출되므로 _process_slot_updates가 asr_lock 자유롭게 획득 가능
             await self._process_slot_updates(slot_key)
 
+        async def _on_dot(_):
+            # <SEG>와 동일하게 마침표 디코딩되는 순간 바로 커밋 시도 — 발화의
+            # 마지막 문장도 finish까지 안 기다리고 dot으로 즉시 커밋되게 함.
+            await self._process_slot_updates(slot_key)
+
         async with self.asr_lock:
             lora_request = self._get_lora_request(slot["state"])
 
@@ -882,7 +888,10 @@ class Qwen3ASRStreamingHandler:
         _accum_len_before = slot["state"].audio_accum.shape[0]
         self._in_generate_loop = True
         try:
-            await self.asr.streaming_transcribe(chunk, slot["state"], lora_request=lora_request, on_seg=_on_seg)
+            await self.asr.streaming_transcribe(
+                chunk, slot["state"], lora_request=lora_request, on_seg=_on_seg,
+                on_dot=_on_dot if self.enable_dot_commit else None,
+            )
         finally:
             self._in_generate_loop = False
             self._last_generate_end_time = time.perf_counter()
@@ -1184,17 +1193,13 @@ class Qwen3ASRStreamingHandler:
                 # 우선순위 1: <SEG>
                 # 우선순위 2: VAD (flush_uncommitted 에서 처리)
                 # 우선순위 3: dot (enable_dot_commit=True일 때만 활성화)
-                # dot 패턴: Mr./Mrs./Dr./St./Jr./Sr./vs./No. 등 약어 제외
+                # dot 패턴: Mr./Mrs./Dr./St./Jr./Sr./vs./No. 등 약어 제외.
+                # 문자열 끝 마침표도 경계로 인정 — <SEG>처럼 발화의 마지막 문장도
+                # 커밋 가능해야 함 (sentence_boundary.py). 예전엔 뒤에 단어가
+                # 더 와야만 매치되는 룩어헤드 때문에 마지막 문장이 항상 finish
+                # 커밋으로만 빠졌다.
                 if self.enable_dot_commit:
-                    match = re.search(
-                        r"(?:"
-                        r"(?<!Mr)(?<!Mrs)(?<!Dr)(?<!St)(?<!Jr)(?<!Sr)(?<!vs)(?<!No)\.\s+(?=\S)"
-                        r"|[?!]\s+(?=\S)"
-                        r"|[\u3002\uff1f\uff01](?=\S)"
-                        r"|<SEG>"
-                        r")",
-                        remaining,
-                    )
+                    match = DOT_COMMIT_BOUNDARY_RE.search(remaining)
                 else:
                     match = re.search(r"<SEG>", remaining)
                 if not match:
@@ -1922,7 +1927,7 @@ class Qwen3ASRStreamingServer:
             model=self.config.model_path,
             gpu_memory_utilization=self.config.gpu_memory_utilization,
             max_new_tokens=self.config.max_new_tokens,
-            max_model_len=8192,
+            max_model_len=3072,
             enable_lora=use_lora,
             max_lora_rank=self.config.max_lora_rank if use_lora else 16,
             enforce_eager=self.config.enforce_eager,

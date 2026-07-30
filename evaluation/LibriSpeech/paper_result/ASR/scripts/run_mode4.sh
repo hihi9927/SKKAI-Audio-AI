@@ -12,12 +12,14 @@ shift 2
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PAPER_RESULT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+PROJECT_ROOT="$(cd "$PAPER_RESULT_DIR/../../.." && pwd)"
+MODEL_PATH="$PROJECT_ROOT/models/Qwen3-ASR-1.7B-ko-silence-v4c900-merged"
 
 # 벤치마크 시작 전, 지금 떠 있는 서버가 진짜 모드4 설정인지 확인.
 # 실패하면 set -e 에 의해 여기서 바로 중단됨 (잘못된 설정으로 실험 도는 것 방지).
 python "$PAPER_RESULT_DIR/check_server_config.py" \
   --port 8767 \
-  --expect model=Doo12/Qwen3-ASR-1.7B-ko-silence-v4c900-merged \
+  --expect model="$MODEL_PATH" \
   --expect always_commit=false \
   --expect enable_dot_commit=false \
   --expect no_vad=true
@@ -32,7 +34,7 @@ python "$SCRIPT_DIR/../../../servers/test_qwen3_librispeech.py" \
   --target-lang "" \
   --trailing-silence-ms 5500 \
   --chunk-size-ms 200 \
-  --description "mode4 (seg-commit) / finetuning ko(Doo12/Qwen3-ASR-1.7B-ko-silence-v4c900-merged) / ASR only, translation off" \
+  --description "mode4 (seg-commit) / finetuning ko(local: Qwen3-ASR-1.7B-ko-silence-v4c900-merged) / ASR only, translation off" \
   "$@"
 # 번역 비활성화: targetLang을 빈 문자열로 보내면 서버가 Google Translate 호출을 건너뜀
 # (Qwen3-ASR/examples/streaming_websocket_server.py의 google_translate_async: `if not target_lang: return`)
