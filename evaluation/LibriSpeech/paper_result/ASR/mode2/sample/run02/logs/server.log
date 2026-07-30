@@ -1,0 +1,44 @@
+2026-07-30 13:59:08,226 - INFO - __main__ - Server log file: /home/skkai/STiTy/evaluation/LibriSpeech/paper_result/ASR/mode2/sample/run02/logs/server.log
+2026-07-30 13:59:08,226 - INFO - examples.streaming_websocket_server - VAD disabled via --no-vad flag
+2026-07-30 13:59:08,226 - INFO - examples.streaming_websocket_server - Loading model: Qwen/Qwen3-ASR-1.7B
+2026-07-30 13:59:43,457 - WARNING - examples.streaming_websocket_server - 이 vLLM 버전은 use_beam_search를 지원하지 않습니다. Greedy decoding으로 fallback합니다. (beam_size=2 무시)
+2026-07-30 13:59:43,457 - INFO - examples.streaming_websocket_server - Greedy decoding (no repetition_penalty)
+2026-07-30 13:59:43,457 - INFO - examples.streaming_websocket_server - Model loaded successfully
+2026-07-30 13:59:43,457 - INFO - examples.streaming_websocket_server - Starting WebSocket server on ws://0.0.0.0:8765
+2026-07-30 13:59:43,457 - INFO - examples.streaming_websocket_server - Warming up model...
+2026-07-30 13:59:50,309 - INFO - examples.streaming_websocket_server - Warmup complete
+2026-07-30 13:59:50,315 - INFO - websockets.server - server listening on 0.0.0.0:8765
+2026-07-30 13:59:50,315 - INFO - examples.streaming_websocket_server - Server listening on ws://0.0.0.0:8765
+2026-07-30 13:59:51,607 - ERROR - websockets.server - opening handshake failed
+Traceback (most recent call last):
+  File "/home/skkai/miniforge3/envs/stity/lib/python3.10/site-packages/websockets/http11.py", line 138, in parse
+    request_line = yield from parse_line(read_line)
+  File "/home/skkai/miniforge3/envs/stity/lib/python3.10/site-packages/websockets/http11.py", line 320, in parse_line
+    line = yield from read_line(MAX_LINE_LENGTH)
+  File "/home/skkai/miniforge3/envs/stity/lib/python3.10/site-packages/websockets/streams.py", line 46, in read_line
+    raise EOFError(f"stream ends after {p} bytes, before end of line")
+EOFError: stream ends after 0 bytes, before end of line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/skkai/miniforge3/envs/stity/lib/python3.10/site-packages/websockets/server.py", line 547, in parse
+    request = yield from Request.parse(
+  File "/home/skkai/miniforge3/envs/stity/lib/python3.10/site-packages/websockets/http11.py", line 140, in parse
+    raise EOFError("connection closed while reading HTTP request line") from exc
+EOFError: connection closed while reading HTTP request line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/skkai/miniforge3/envs/stity/lib/python3.10/site-packages/websockets/asyncio/server.py", line 356, in conn_handler
+    await connection.handshake(
+  File "/home/skkai/miniforge3/envs/stity/lib/python3.10/site-packages/websockets/asyncio/server.py", line 207, in handshake
+    raise self.protocol.handshake_exc
+websockets.exceptions.InvalidMessage: did not receive a valid HTTP request
+2026-07-30 14:01:03,325 - INFO - websockets.server - connection open
+2026-07-30 14:01:03,325 - INFO - __main__ - Client connected (1)
+2026-07-30 14:01:03,325 - WARNING - examples.streaming_websocket_server - [C-] silero-vad 패키지가 설치되지 않았습니다. VAD 없이 동작합니다. 설치: pip install silero-vad
+2026-07-30 14:01:03,325 - INFO - __main__ - New connection from ('127.0.0.1', 51958)
+2026-07-30 14:01:03,326 - INFO - __main__ - Connection closed
+2026-07-30 14:01:03,326 - INFO - __main__ - Client disconnected (0)
