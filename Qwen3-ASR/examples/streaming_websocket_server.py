@@ -166,6 +166,13 @@ class StreamingConfig:
     # Commit 방식 설정
     enable_dot_commit: bool = False  # True면 온점/느낌표/물음표(dot) 기반 seg commit 활성화
     always_commit: bool = False  # True면 SEG/dot 트리거 없이 매 청크 디코딩 결과를 그대로 커밋 (모드2)
+    # True면 dot을 감지 즉시 커밋하지 않고 "확정"된 뒤에만 커밋한다.
+    # 모델은 청크 버퍼가 끝나면 문장이 미완성이어도 마침표를 붙여 마무리짓는 습성이 있어,
+    # 프론티어 마침표는 정보량이 없다(P(마침표|버퍼 끝) ≈ 1). 확정 경로는 3개:
+    #   1) 문맥 확정 — 마침표 뒤 토큰이 unfixed_token_num보다 많으면 롤백 창 밖 → 즉시 커밋
+    #   2) 합의 확정 — 프론티어 마침표는 보류했다가 다음 청크에서도 동일하면 커밋
+    #   3) finish — 스트림 종료 시 flush (기존 경로)
+    dot_commit_confirm: bool = False
 
 
     # 언어 제한 설정
@@ -566,6 +573,7 @@ class Qwen3ASRStreamingHandler:
         # Commit 방식 설정
         self.enable_dot_commit: bool = config.enable_dot_commit
         self.always_commit: bool = config.always_commit
+        self.dot_commit_confirm: bool = config.dot_commit_confirm
 
         # VAD / stream alignment
         self.sample_cursor = 0
@@ -928,7 +936,7 @@ class Qwen3ASRStreamingHandler:
                 self.asr_processed_cursor = self.sample_cursor
             return
 
-        _committed_text_snapshot = await self._process_slot_updates(slot_key)
+        _committed_text_snapshot = await self._process_slot_updates(slot_key, chunk_end=True)
         _accum_size_pre_gpt = self._slot(slot_key)["state"].audio_accum.shape[0]
         if self._pending_gpt_tasks:
             self._gpt_flush_task = asyncio.create_task(self._flush_pending_gpt_tasks())
@@ -1073,6 +1081,9 @@ class Qwen3ASRStreamingHandler:
     async def flush_uncommitted(self, force=False, reason="flush", slot_key: Optional[str] = None):
         slot = self._slot(slot_key)
         slot_flush_lock = slot["flush_lock"]
+        # finish/VAD flush는 남은 구간을 통째로 커밋하므로 보류 중인 dot 후보는 무효
+        slot.pop("pending_dot_text", None)
+        slot.pop("pending_dot_accum", None)
 
         # 1단계: 텍스트 스냅샷만 lock 안에서 읽기
         async with slot_flush_lock:
@@ -1159,12 +1170,34 @@ class Qwen3ASRStreamingHandler:
             slot["committed_seg_count"] = current_text.count("<SEG>")
             slot["audio_anchor_sec"] = audio_end_sec
 
-    async def _process_slot_updates(self, slot_key: str, force_reason: Optional[str] = None) -> Optional[str]:
+    def _count_tokens(self, text: str) -> int:
+        """모델 토크나이저 기준 토큰 수. dot_commit_confirm의 롤백 창 판정에 사용."""
+        if not text or not text.strip():
+            return 0
+        try:
+            return len(self.asr.processor.tokenizer.encode(text))
+        except Exception:
+            # 토크나이저 접근 실패 시 단어 수로 근사 (게이트가 과도하게 커밋하지 않는 방향)
+            return len(text.split())
+
+    async def _process_slot_updates(self, slot_key: str, force_reason: Optional[str] = None,
+                                    chunk_end: bool = False) -> Optional[str]:
+        """
+        chunk_end:
+            True면 한 청크의 디코딩이 완전히 끝난 뒤 호출된 것.
+            dot_commit_confirm의 "합의 확정"(규칙 2)은 청크 간 가설 비교이므로
+            generate() 루프 중간(on_seg/on_dot 콜백)이 아니라 이 경로에서만 판정한다.
+        """
         slot = self._slot(slot_key)
         state = slot["state"]
         current_text = self._strip_asr_text((state.text or "").strip())
         current_lang = state.language or ""
-        if not current_text or current_text == slot["last_text"]:
+        # 보류 중인 dot 후보가 있으면 텍스트가 그대로여도 청크 종료 시점에 한 번 더 봐야 한다.
+        # (무음 청크처럼 가설이 안 바뀌는 경우가 바로 "합의 확정"이 성립하는 경우다)
+        _recheck_pending = (
+            chunk_end and self.dot_commit_confirm and bool(slot.get("pending_dot_text"))
+        )
+        if not current_text or (current_text == slot["last_text"] and not _recheck_pending):
             return None
 
         slot["last_text"] = current_text
@@ -1209,6 +1242,38 @@ class Qwen3ASRStreamingHandler:
                 after = remaining[match.end():]
                 # 커서 추적을 위해 raw sentence(<SEG> 포함) 사용
                 sentence = remaining[:match.end()].strip()
+
+                if trigger == "dot" and self.dot_commit_confirm:
+                    pending = slot.get("pending_dot_text")
+                    # 후보를 등록한 시점의 누적 오디오 길이. 합의 확정은 "새 오디오를 더 듣고
+                    # 재디코딩한 뒤에도 동일"이어야 하므로 같은 청크 안에서는 확정하지 않는다.
+                    _accum_now = int(state.audio_accum.shape[0]) if state.audio_accum is not None else 0
+                    _pending_accum = slot.get("pending_dot_accum", -1)
+                    tail_tokens = self._count_tokens(after)
+                    if tail_tokens > state.unfixed_token_num:
+                        # 규칙 1: 마침표가 롤백 창 밖 → 다음 청크에서 수정되지 않음
+                        slot.pop("pending_dot_text", None)
+                        slot.pop("pending_dot_accum", None)
+                        self.log.info(
+                            f"[DOT-CONFIRM] rule=context slot={slot_key} "
+                            f"tail_tokens={tail_tokens} text={sentence!r}"
+                        )
+                    elif (chunk_end and pending is not None and sentence == pending
+                          and _accum_now > _pending_accum):
+                        # 규칙 2: 직전 청크의 프론티어 마침표가 재디코딩 후에도 동일 → 확정
+                        slot.pop("pending_dot_text", None)
+                        slot.pop("pending_dot_accum", None)
+                        self.log.info(f"[DOT-CONFIRM] rule=stable slot={slot_key} text={sentence!r}")
+                    else:
+                        # 미확정 — 보류하고 이번 호출에서는 커밋하지 않는다.
+                        if pending != sentence:
+                            self.log.info(
+                                f"[DOT-PENDING] slot={slot_key} "
+                                f"{'revised' if pending else 'new'} text={sentence!r}"
+                            )
+                            slot["pending_dot_text"] = sentence
+                            slot["pending_dot_accum"] = _accum_now
+                        break
             sentence_display_check = sentence.replace("<SEG>", "").strip()
             if sentence_display_check:
                 if sentence_display_check == _last_extracted_display:
@@ -1234,6 +1299,8 @@ class Qwen3ASRStreamingHandler:
                             remaining = after
                             continue
                     sentences_to_commit.append((sentence, trigger))
+                    slot.pop("pending_dot_text", None)  # 커밋되면 보류 후보는 무효
+                    slot.pop("pending_dot_accum", None)
                     _last_extracted_display = sentence_display_check
             remaining = after
 
@@ -2150,6 +2217,12 @@ def parse_args():
         help="Disable dot-based commit even for baseline models",
     )
     parser.add_argument(
+        "--dot-commit-confirm", action="store_true",
+        help="dot을 감지 즉시 커밋하지 않고 확정된 뒤에만 커밋 "
+             "(문맥 확정: 마침표 뒤 토큰 > unfixed_token_num / 합의 확정: 다음 청크에서도 동일). "
+             "enable_dot_commit과 함께 사용",
+    )
+    parser.add_argument(
         "--always-commit", action="store_true",
         help="SEG/dot 트리거 없이 매 청크 디코딩 결과를 그대로 커밋 (모드2 테스트용, "
              "enable_dot_commit보다 우선)",
@@ -2231,6 +2304,7 @@ def main():
         enforce_eager=args.enforce_eager,
         no_vad=args.no_vad,
         enable_dot_commit=args.enable_dot_commit,
+        dot_commit_confirm=args.dot_commit_confirm,
         always_commit=args.always_commit,
         restrict_languages=not args.no_restrict_languages,
         enable_correction=args.correction,

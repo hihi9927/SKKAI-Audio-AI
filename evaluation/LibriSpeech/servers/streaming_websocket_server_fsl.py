@@ -181,7 +181,7 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         await super()._asr_finish_streaming(slot_key)
         self._slot_final_decode_sec[key] = self._slot_final_decode_sec.get(key, 0.0) + (time.perf_counter() - t0)
 
-    async def _process_slot_updates(self, slot_key=None, force_reason=None):
+    async def _process_slot_updates(self, slot_key=None, force_reason=None, chunk_end=False):
         key = slot_key if slot_key is not None else self.active_slot
         if key not in self._slot_seg_detected:
             # t0가 None이면 VAD/finish 경로 호출 (streaming_transcribe 밖) → 기록 금지
@@ -261,7 +261,7 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
                         "decode_start_elapsed_sec": None,
                     }
                     logger.info("[SEG-VAD] slot=%s audio_pos=%.3fs", key, audio_sec)
-        await super()._process_slot_updates(slot_key, force_reason=force_reason)
+        await super()._process_slot_updates(slot_key, force_reason=force_reason, chunk_end=chunk_end)
 
     async def _translate_with_metadata(
         self,
@@ -820,6 +820,7 @@ def main():
         enforce_eager=args.enforce_eager,
         no_vad=args.no_vad,
         enable_dot_commit=args.enable_dot_commit,
+        dot_commit_confirm=args.dot_commit_confirm,
         always_commit=args.always_commit,
         restrict_languages=not args.no_restrict_languages,
         enable_correction=args.correction,
