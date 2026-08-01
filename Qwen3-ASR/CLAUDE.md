@@ -1,6 +1,6 @@
-# Qwen3-ASR (Git Submodule)
+# Qwen3-ASR (vendored upstream)
 
-이 디렉토리는 git submodule이다 (upstream: QwenLM/Qwen3-ASR). 일반 사용법은 README.md를 참조하고, 이 파일은 STiTy 통합 관련 사항만 다룬다.
+이 디렉토리는 upstream(QwenLM/Qwen3-ASR)에서 가져온 코드를 STiTy 리포가 **직접 추적**하는 형태다. git submodule이 아니다 — `.gitmodules`도 없고 gitlink도 아니라서, 이 안의 파일 변경은 다른 파일과 똑같이 부모 리포 커밋에 포함된다. 일반 사용법은 README.md를 참조하고, 이 파일은 STiTy 통합 관련 사항만 다룬다.
 
 ## STiTy 통합 진입점
 
@@ -8,11 +8,11 @@
 - **평가 서버**: `evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py`가 이 파일을 래핑함
 - **파인튜닝 결과물**: `finetuning/Qwen3-ASR-1.7B-en-merged/` — 평가 스크립트의 `--model` 인자가 여기를 가리킴
 
-## 서브모듈 규칙
+## upstream 동기화 규칙
 
-- 서브모듈 수정이 목적이 아니라면 이 디렉토리 안에서 `git commit` 실행 금지
-- 업스트림 업데이트: 프로젝트 루트에서 `git submodule update --remote`
-- 업스트림 변경으로 프로덕션 서버가 깨지면 `.gitmodules`에서 특정 커밋으로 고정
+- 여기 있는 파일은 STiTy 쪽 수정이 섞여 있다(예: `examples/streaming_websocket_server.py`). upstream 코드를 덮어쓰면 그 수정이 날아간다.
+- upstream 업데이트는 자동 명령이 없다. 필요한 파일만 골라 가져오고, 로컬 수정과 수동으로 병합할 것.
+- 커밋은 프로젝트 루트에서 평소처럼 하면 된다 (`git add Qwen3-ASR/...`).
 
 ## 설치
 
