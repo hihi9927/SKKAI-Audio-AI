@@ -1922,7 +1922,7 @@ class Qwen3ASRStreamingServer:
             model=self.config.model_path,
             gpu_memory_utilization=self.config.gpu_memory_utilization,
             max_new_tokens=self.config.max_new_tokens,
-            max_model_len=8192,
+            max_model_len=4096,
             enable_lora=use_lora,
             max_lora_rank=self.config.max_lora_rank if use_lora else 16,
             enforce_eager=self.config.enforce_eager,
