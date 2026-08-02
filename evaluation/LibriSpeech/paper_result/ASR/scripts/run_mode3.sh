@@ -11,6 +11,23 @@ TAG="${2:?tag 필요 (예: run01)}"
 shift 2
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# --- env 가드: conda env 'stity'가 아니면 중단 (우회: STITY_SKIP_ENV_CHECK=1) ---
+STITY_ENV_NAME="${STITY_ENV_NAME:-stity}"
+if [[ "${STITY_SKIP_ENV_CHECK:-0}" != "1" ]]; then
+  if [[ "${CONDA_DEFAULT_ENV:-}" != "$STITY_ENV_NAME" ]]; then
+    echo "[env-guard] 중단: conda env '$STITY_ENV_NAME'에서 실행해야 합니다 (현재: ${CONDA_DEFAULT_ENV:-<없음>})" >&2
+    echo "  해결: source ~/miniforge3/etc/profile.d/conda.sh && conda activate $STITY_ENV_NAME" >&2
+    exit 1
+  fi
+  if [[ "$(command -v python || true)" != "${CONDA_PREFIX:-}/bin/python" ]]; then
+    echo "[env-guard] 중단: python이 env '$STITY_ENV_NAME' 것이 아닙니다" >&2
+    echo "  실제: $(command -v python || echo '<없음>') / 기대: ${CONDA_PREFIX:-<없음>}/bin/python" >&2
+    exit 1
+  fi
+  echo "[env-guard] OK — conda env '$CONDA_DEFAULT_ENV' ($(python -V 2>&1))" >&2
+fi
+# --- env 가드 끝 ---
+
 PAPER_RESULT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # 벤치마크 시작 전, 지금 떠 있는 서버가 진짜 모드3 설정인지 확인.
