@@ -670,6 +670,13 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
                             if msg_type == "stop":
                                 break
 
+                            # 평가 전용 ack. websocket 수신 루프가 순차라 여기 도달한 시점엔
+                            # 이 스트림의 오디오가 전부 디코딩되고 final도 모두 전송된 상태다.
+                            # 클라이언트가 "언제까지 기다려야 하나"를 추측하지 않게 해준다 —
+                            # 추측(유휴 타임아웃)에 의존하면 서버가 밀릴 때 final을 통째로
+                            # 놓친다(실측: GPU 경합 시 final이 33s에 도착해 3개 파일 유실).
+                            await self.send_message("finish_done")
+
                             self.init_streaming_state()
                             self.running = True
 

@@ -87,9 +87,13 @@ python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \
   [--tag <폴더명>] \
   [--description "테스트 설명"] \
   --target-lang ko \
-  --trailing-silence-ms 5500 \
+  --trailing-silence-ms 8000 \
   --chunk-size-ms 200
 ```
+
+> **`--trailing-silence-ms` 기본값이 5500 → 8000으로 바뀌었습니다.** dot-commit 확정은 누적 오디오가
+> `chunk_size_sec` 배수에 도달할 때만 판정되므로, 무음이 짧으면 마지막 문장이 확정되기 전에 스트림이
+> 끊겨 `finish` 커밋으로 빠집니다 (실측: 5500ms에서 0.11초 모자라 finish 발생, 8000ms에서 dot 확정).
 
 `--auto-server`를 사용할 때도 같은 규칙이 적용됩니다. baseline 계열 모델은 `dot commit`이 자동 활성화되고, 필요하면 `--server-args "--disable-dot-commit"` 또는 `--server-args "--enable-dot-commit"`으로 override할 수 있습니다.
 

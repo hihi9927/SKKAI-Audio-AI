@@ -742,6 +742,21 @@ class Qwen3ASRStreamingHandler:
                 (committed_display.rstrip(_punct),           text_no_seg,                        True,  None),
                 (_quote_colon.sub('', committed_display),    _quote_colon.sub('', text_no_seg),  False, _quote_colon),
             ]
+            # 대소문자만 다른 재디코딩(커밋 후 'Oh, Papa!' → 'Oh, papa!')에도 prefix가
+            # 붙도록 소문자 후보를 마지막에 덧붙인다. 이게 없으면 커서가 -1로 떨어지고
+            # committed_seg_count==0인 dot 커밋에서는 SEG fallback도 막혀 있어서
+            # 텍스트 전체가 미커밋으로 취급된다 — 같은 문장을 매 콜백마다 재검출하고
+            # finish flush가 이미 커밋한 구간까지 다시 내보낸다(실측: 1688-142285-0016).
+            # _walk가 원본 텍스트 기준 길이를 쓰므로 길이가 보존될 때만 사용한다.
+            _lower_extra = []
+            for committed_norm, text_norm, advance_punct, skip_re in candidates:
+                if (len(committed_norm.lower()) == len(committed_norm)
+                        and len(text_norm.lower()) == len(text_norm)):
+                    _lower_extra.append(
+                        (committed_norm.lower(), text_norm.lower(), advance_punct, skip_re)
+                    )
+            candidates.extend(_lower_extra)
+
             for committed_norm, text_norm, advance_punct, skip_re in candidates:
                 if not committed_norm:
                     continue
@@ -1197,8 +1212,20 @@ class Qwen3ASRStreamingHandler:
             return len(text.split())
 
     @staticmethod
-    def _extract_boundary_sentences(text: str) -> tuple:
-        """`text`에서 경계로 끝나는 문장들을 커밋 루프와 동일한 방식으로 잘라 반환.
+    def _boundary_key(sentence: str) -> str:
+        """합의 확정(규칙 2) 비교용 정규화 키 — 대소문자·구두점·공백 무시.
+
+        모델은 롤백 창 안에서 문구를 그대로 두고 구두점만 바꾸는 일이 잦다
+        (실측: 'house, mother.' ↔ 'house mother.'가 청크마다 번갈아 나와
+        문자열 완전 일치 비교로는 영원히 확정되지 않았다). 경계가 같은 자리에
+        살아남았는지만 보면 되므로 표기 변형은 무시한다. 커밋 자체는 최신
+        텍스트로 하고 비교에만 이 키를 쓴다.
+        """
+        return re.sub(r'[.,!?;:。？！、，\'"“”‘’\s]+', '', sentence.replace("<SEG>", "")).lower()
+
+    @classmethod
+    def _extract_boundary_keys(cls, text: str) -> tuple:
+        """`text`에서 경계로 끝나는 문장들을 커밋 루프와 동일하게 자른 뒤 정규화 키로 반환.
 
         합의 확정(규칙 2)의 비교 대상. 후보 하나(`pending_dot_text`)만 들고 있으면
         한 청크에 경계가 둘 이상 나올 때 뒤쪽 경계는 앞 경계가 커밋될 때까지 평가조차
@@ -1211,7 +1238,9 @@ class Qwen3ASRStreamingHandler:
             m = DOT_COMMIT_BOUNDARY_RE.search(remaining)
             if not m:
                 break
-            out.append(remaining[:m.end()].strip())
+            key = cls._boundary_key(remaining[:m.end()])
+            if key:
+                out.append(key)
             remaining = remaining[m.end():]
         return tuple(out)
 
@@ -1265,7 +1294,7 @@ class Qwen3ASRStreamingHandler:
             # (이 함수는 아래에서 여러 번 조기 리턴하므로 여기서 미리 갱신한다)
             _prev_sentences = slot.get("prev_boundary_sentences", ())
             _prev_accum = slot.get("prev_boundary_accum", -1)
-            slot["prev_boundary_sentences"] = self._extract_boundary_sentences(uncommitted)
+            slot["prev_boundary_sentences"] = self._extract_boundary_keys(uncommitted)
             slot["prev_boundary_accum"] = _accum_c
 
             if self.dot_commit_stall_chunks > 0:
@@ -1329,7 +1358,8 @@ class Qwen3ASRStreamingHandler:
                             f"[DOT-CONFIRM] rule=context slot={slot_key} "
                             f"tail_tokens={tail_tokens} text={sentence!r}"
                         )
-                    elif chunk_end and sentence in _prev_sentences and _accum_now > _prev_accum:
+                    elif (chunk_end and self._boundary_key(sentence) in _prev_sentences
+                          and _accum_now > _prev_accum):
                         # 규칙 2: 직전 청크 가설에도 있던 경계가 재디코딩 후에도 살아남음 → 확정.
                         # 한 청크에 경계가 여러 개면 각각 독립적으로 판정되므로,
                         # 발화 마지막 문장이 앞 문장 커밋을 기다리다 오디오가 떨어지는 일이 없다.
@@ -1399,8 +1429,11 @@ class Qwen3ASRStreamingHandler:
         # raw ASR 텍스트 기준으로 커서를 확정하므로 GPT 교정 결과와 무관하게 안전.
         committed_items = []  # list of (sentence_display, trigger_reason)
         latest_text: Optional[str] = None  # flush_lock 안에서 읽은 스냅샷, 호출자에게 반환
-        # ASR revision으로 trailing punct가 바뀌어도 (거고, → 거고) 같은 문장으로 취급
-        _asr_key = lambda s: ' '.join(s.split()).rstrip('.,!?;:。？！').strip()
+        # ASR revision으로 trailing punct가 바뀌어도 (거고, → 거고) 같은 문장으로 취급.
+        # 대소문자도 같은 범주의 재디코딩 변형이다 — 커밋 후 모델이 'Oh, Papa!'를
+        # 'Oh, papa!'로 고쳐 쓰면 대소문자 구분 키로는 dedup을 못 해 같은 문장이
+        # 두 번 커밋된다(실측: 1688-142285-0016, WER 0.00% → 18.18%).
+        _asr_key = lambda s: ' '.join(s.split()).rstrip('.,!?;:。？！').strip().lower()
 
         async with slot["flush_lock"]:
             async with self.asr_lock:
