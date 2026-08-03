@@ -1,0 +1,76 @@
+2026-07-30 21:02:02,341 - INFO - __main__ - Server log file: /home/skkai/STiTy/evaluation/LibriSpeech/paper_result/ASR/mode4/sample/single_1688-142285-0002/logs/server.log
+2026-07-30 21:02:02,341 - INFO - examples.streaming_websocket_server - VAD disabled via --no-vad flag
+2026-07-30 21:02:02,342 - INFO - examples.streaming_websocket_server - Loading model: /home/skkai/STiTy/models/Qwen3-ASR-1.7B-ko-silence-v4c900-merged
+2026-07-30 21:39:26,287 - INFO - __main__ - Server log file: /home/skkai/STiTy/evaluation/LibriSpeech/paper_result/ASR/mode4/sample/single_1688-142285-0002/logs/server.log
+2026-07-30 21:39:26,287 - INFO - examples.streaming_websocket_server - VAD disabled via --no-vad flag
+2026-07-30 21:39:26,287 - INFO - examples.streaming_websocket_server - Loading model: /home/skkai/STiTy/models/Qwen3-ASR-1.7B-ko-silence-v4c900-merged
+2026-07-30 21:39:55,290 - WARNING - examples.streaming_websocket_server - 이 vLLM 버전은 use_beam_search를 지원하지 않습니다. Greedy decoding으로 fallback합니다. (beam_size=2 무시)
+2026-07-30 21:39:55,291 - INFO - examples.streaming_websocket_server - Greedy decoding (no repetition_penalty)
+2026-07-30 21:39:55,291 - INFO - examples.streaming_websocket_server - Model loaded successfully
+2026-07-30 21:39:55,291 - INFO - examples.streaming_websocket_server - Starting WebSocket server on ws://0.0.0.0:8767
+2026-07-30 21:39:55,291 - INFO - examples.streaming_websocket_server - Warming up model...
+2026-07-30 21:39:57,118 - INFO - examples.streaming_websocket_server - Warmup complete
+2026-07-30 21:39:57,123 - INFO - websockets.server - server listening on 0.0.0.0:8767
+2026-07-30 21:39:57,123 - INFO - examples.streaming_websocket_server - Server listening on ws://0.0.0.0:8767
+2026-07-30 21:39:58,067 - ERROR - websockets.server - opening handshake failed
+Traceback (most recent call last):
+  File "/home/skkai/miniforge3/envs/stity/lib/python3.10/site-packages/websockets/http11.py", line 138, in parse
+    request_line = yield from parse_line(read_line)
+  File "/home/skkai/miniforge3/envs/stity/lib/python3.10/site-packages/websockets/http11.py", line 320, in parse_line
+    line = yield from read_line(MAX_LINE_LENGTH)
+  File "/home/skkai/miniforge3/envs/stity/lib/python3.10/site-packages/websockets/streams.py", line 46, in read_line
+    raise EOFError(f"stream ends after {p} bytes, before end of line")
+EOFError: stream ends after 0 bytes, before end of line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/skkai/miniforge3/envs/stity/lib/python3.10/site-packages/websockets/server.py", line 547, in parse
+    request = yield from Request.parse(
+  File "/home/skkai/miniforge3/envs/stity/lib/python3.10/site-packages/websockets/http11.py", line 140, in parse
+    raise EOFError("connection closed while reading HTTP request line") from exc
+EOFError: connection closed while reading HTTP request line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/skkai/miniforge3/envs/stity/lib/python3.10/site-packages/websockets/asyncio/server.py", line 356, in conn_handler
+    await connection.handshake(
+  File "/home/skkai/miniforge3/envs/stity/lib/python3.10/site-packages/websockets/asyncio/server.py", line 207, in handshake
+    raise self.protocol.handshake_exc
+websockets.exceptions.InvalidMessage: did not receive a valid HTTP request
+2026-07-30 21:40:11,549 - INFO - websockets.server - connection open
+2026-07-30 21:40:11,549 - INFO - __main__ - Client connected (1)
+2026-07-30 21:40:11,549 - WARNING - examples.streaming_websocket_server - [C-] silero-vad 패키지가 설치되지 않았습니다. VAD 없이 동작합니다. 설치: pip install silero-vad
+2026-07-30 21:40:11,549 - INFO - __main__ - New connection from ('127.0.0.1', 45512)
+2026-07-30 21:40:11,550 - INFO - __main__ - Connection closed
+2026-07-30 21:40:11,550 - INFO - __main__ - Client disconnected (0)
+2026-07-30 21:40:11,552 - INFO - websockets.server - connection open
+2026-07-30 21:40:11,552 - INFO - __main__ - Client connected (1)
+2026-07-30 21:40:11,552 - WARNING - examples.streaming_websocket_server - [C-] silero-vad 패키지가 설치되지 않았습니다. VAD 없이 동작합니다. 설치: pip install silero-vad
+2026-07-30 21:40:11,552 - INFO - __main__ - New connection from ('127.0.0.1', 45526)
+2026-07-30 21:40:11,552 - INFO - __main__ - Received start: lang=auto, targetLang=
+2026-07-30 21:40:11,552 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-07-30 21:40:13,638 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text="You don't mean that you thought me so silly."
+2026-07-30 21:40:13,638 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.002s ds=2.002s decode=0.084s
+2026-07-30 21:40:15,654 - INFO - __main__ - [SEG] slot=A elapsed=4.102s decode_start=4.037s audio_pos=4.035s
+2026-07-30 21:40:15,654 - INFO - __main__ - [ENCODE-EARLY] slot=A chunk=1 audio_pos=4.035s ts=4.037s ds=4.037s decode=0.065s
+2026-07-30 21:40:15,654 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text="You don't mean that. <SEG>"
+2026-07-30 21:40:15,690 - INFO - examples.streaming_websocket_server - [C-] [SEG-IN-TEXT] slot=A text="You don't mean that. <SEG> You thought me so silly. <SEG>"
+2026-07-30 21:40:15,695 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text="You don't mean that. <SEG> You thought me so silly. <SEG>"
+2026-07-30 21:40:15,696 - INFO - examples.streaming_websocket_server - [C-] [SEG-SLOT-RESET] slot=A audio_sec=4.0s
+2026-07-30 21:40:15,696 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG-ASYNC] slot=A lang=en original='You don't mean that.' translation=''
+2026-07-30 21:40:15,696 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG-ASYNC] slot=A lang=en original='You thought me so silly.' translation=''
+2026-07-30 21:40:15,790 - INFO - __main__ - [FLUSH-SEG] seg=1 no-token-info → audio_end=4.035s fsl=0.067s
+2026-07-30 21:40:15,790 - INFO - __main__ - [FINAL] seg=1 reason=seg audio=[0.000, 4.035] fsl=0.067s encode=4.037s decode=0.065s final_decode=0.000s trans=0.000s | text='You don't mean that.'
+2026-07-30 21:40:15,790 - INFO - __main__ - [FLUSH-SEG] seg=2 no-token-info → audio_end=4.035s fsl=0.000s
+2026-07-30 21:40:15,790 - INFO - __main__ - [FINAL] seg=2 reason=seg audio=[4.035, 4.035] fsl=0.000s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='You thought me so silly.'
+2026-07-30 21:40:17,605 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text=''
+2026-07-30 21:40:17,605 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=6.035s ts=6.038s ds=6.038s decode=0.015s
+2026-07-30 21:40:19,606 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text=''
+2026-07-30 21:40:19,606 - INFO - __main__ - [ENCODE] slot=A chunk=1 audio_pos=8.035s ts=8.037s ds=8.037s decode=0.016s
+2026-07-30 21:40:19,891 - INFO - __main__ - Received finish command
+2026-07-30 21:40:19,891 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-07-30 21:40:30,807 - INFO - __main__ - Received stop command
+2026-07-30 21:40:30,807 - INFO - __main__ - Connection closed
+2026-07-30 21:40:30,807 - INFO - __main__ - Client disconnected (0)

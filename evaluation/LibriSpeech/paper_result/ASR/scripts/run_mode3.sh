@@ -10,6 +10,10 @@
 #   순차 전용: --limit --random-sample --auto-server --correction --gpt-translation ...
 #   동시 전용: --max-chapters --dry-run
 #   공통:      --fresh-start --host --policy --chunk-size-ms --trailing-silence-ms ...
+#
+# trailing-silence는 8000ms를 쓴다(mode2/mode4는 5500 유지). 확정 게이트는 누적 오디오가
+# chunk_size 배수에 도달할 때만 판정하므로, 무음이 짧으면 마지막 문장이 확정되기 전에
+# 스트림이 끊겨 finish 커밋으로 빠진다(실측: 0.11초 모자라 finish 발생).
 set -e
 
 SCOPE="${1:?scope 필요 (예: sample, full)}"
@@ -92,7 +96,7 @@ PYTHONPATH= "$STITY_PYTHON" "$RUNNER" \
   --results-root "$PAPER_RESULT_DIR/ASR" \
   --port 8766 \
   --target-lang "" \
-  --trailing-silence-ms 5500 \
+  --trailing-silence-ms 8000 \
   --chunk-size-ms 200 \
   --description "mode3 (rule-based/dot-commit) / baseline(1.0.0) / ASR only, translation off${DESC_SUFFIX}" \
   "${MODE_ARGS[@]}" \

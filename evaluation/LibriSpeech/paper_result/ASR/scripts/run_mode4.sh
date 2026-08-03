@@ -39,6 +39,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PAPER_RESULT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 STITY_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
 
+# mode4 가중치. 기본은 HF 허브 리포지만, 접근이 401(Repository Not Found)로 막히는
+# 환경이 있어 로컬 사본으로 갈아끼울 수 있게 열어둔다. 동일 가중치라 재현성엔 영향 없음.
+#   예) MODE4_MODEL=/path/to/models/Qwen3-ASR-1.7B-ko-silence-v4c900-merged
+MODE4_MODEL="${MODE4_MODEL:-Doo12/Qwen3-ASR-1.7B-ko-silence-v4c900-merged}"
+
 # --- env 가드 ---------------------------------------------------------------
 # 평가 환경은 머신마다 다르다: 로컬은 venv($STITY_ROOT/.venv), 원격 GPU 서버는 conda env
 # 'stity'. 그래서 특정 도구를 요구하지 않고 "필요 패키지가 import되는 파이썬"만 확인한다.
@@ -70,7 +75,7 @@ fi
 # 실패하면 set -e 에 의해 여기서 바로 중단됨 (잘못된 설정으로 실험 도는 것 방지).
 PYTHONPATH= "$STITY_PYTHON" "$PAPER_RESULT_DIR/check_server_config.py" \
   --port 8767 \
-  --expect model=Doo12/Qwen3-ASR-1.7B-ko-silence-v4c900-merged \
+  --expect model="$MODE4_MODEL" \
   --expect always_commit=false \
   --expect enable_dot_commit=false \
   --expect no_vad=true
@@ -95,7 +100,7 @@ PYTHONPATH= "$STITY_PYTHON" "$RUNNER" \
   --target-lang "" \
   --trailing-silence-ms 5500 \
   --chunk-size-ms 200 \
-  --description "mode4 (seg-commit) / finetuning ko(Doo12/Qwen3-ASR-1.7B-ko-silence-v4c900-merged) / ASR only, translation off${DESC_SUFFIX}" \
+  --description "mode4 (seg-commit) / finetuning ko($MODE4_MODEL) / ASR only, translation off${DESC_SUFFIX}" \
   "${MODE_ARGS[@]}" \
   "${ARGS[@]}"
 # 번역 비활성화: targetLang을 빈 문자열로 보내면 서버가 Google Translate 호출을 건너뜀

@@ -412,12 +412,12 @@ def summarize_segment_metrics(segment_metrics):
     return summary
 
 
-async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_ms=200, target_lang='ko', trailing_silence_ms=5500):
+async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_ms=200, target_lang='ko', trailing_silence_ms=8000):
     processing_start = time.perf_counter()
 
     start_msg = {'type': 'start', 'lang': 'auto', 'targetLang': target_lang}
     await ws.send(json.dumps(start_msg))
-    await recv_type(ws, 'ready', timeout=25, ignore_types={'partial', 'final'})
+    await recv_type(ws, 'ready', timeout=25, ignore_types={'partial', 'final', 'finish_done'})
 
     audio_int16 = (np.clip(audio_data, -1.0, 1.0) * 32767.0).astype(np.int16)
     chunk_size = int((chunk_size_ms / 1000.0) * SAMPLING_RATE)
@@ -471,26 +471,64 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
                     break
                 await ws.send(chunk.tobytes())
 
+        # finish를 여기서 보내야 _recv()가 아직 듣고 있는 동안 finish-트리거 final을 받는다.
+        # (예전엔 process_batch가 이 함수 리턴 후에 보내서, dot/SEG/VAD 중 아무 것도 못 잡은
+        #  문장은 finish 커밋으로만 나오는데 그땐 이미 recv 루프가 끝나 유실됐다.)
+        await ws.send(json.dumps({'type': 'finish'}))
         send_done.set()
 
     async def _recv():
         nonlocal first_result_time, last_result_time
 
+        # 종료 조건: finish 전송 후 POST_FINISH_GRACE_SEC 동안 아무 메시지도 안 오면 종료.
+        #
+        # 예전엔 wait_for(timeout=3.0 if send_done else 15.0) 한 방으로 처리했는데,
+        # timeout 값은 wait 진입 시점에 확정되고 대기 중에는 재평가되지 않는다. 이 서버는
+        # ready 이후 첫 final까지 아무것도 보내지 않으므로 _recv는 15초짜리 wait 하나에
+        # 그대로 앉아 있고, 결과적으로 수신 창이 "실제 유휴 시간"이 아니라 오디오 길이의
+        # 계단 함수가 됐다:
+        #   dur+trailing < 15s  → 만료 시 send_done이 이미 True  → break        (창 15초)
+        #   dur+trailing >= 15s → 만료 시 send_done이 아직 False → continue     (창 30초)
+        # 서버가 밀려 final이 15초를 넘기면 그 파일의 final이 통째로 유실되고
+        # "Empty transcript" 경고 한 줄만 남는다(실측: 1688-142285-0057, final 16.18s).
+        # 짧게 폴링하며 send_done을 매 루프 재평가해 창을 실제 유휴 시간에 건다.
+        #
+        # 다만 유휴 기준만으로는 서버가 크게 밀릴 때 여전히 놓친다(실측: GPU 경합 시
+        # final이 send+11~17s에 도착해 3개 파일 유실). 그래서 평가 서버는 finish 처리를
+        # 마치면 'finish_done' ack를 보내고, 이 루프는 그걸 받으면 즉시 종료한다.
+        # 유휴 타임아웃은 ack를 안 보내는 서버용 fallback으로만 남는다.
+        #
+        # 그래서 grace를 짧게 잡으면 안 된다 — 밀린 서버는 finish를 처리하기 전에
+        # 큐에 쌓인 오디오를 먼저 디코딩하므로 ack 자체가 늦게 온다. 8s로 뒀을 때
+        # ack 도입 후에도 같은 3개 파일이 계속 유실됐다(final이 send+11~17s에 도착).
+        # 정상 경로는 ack이므로 이 값이 커져도 런타임에 영향이 없다.
+        POLL_SEC = 1.0
+        POST_FINISH_GRACE_SEC = 60.0
+        idle_since_finish = 0.0
+
         while True:
             try:
-                msg = await asyncio.wait_for(ws.recv(), timeout=15.0)
+                msg = await asyncio.wait_for(ws.recv(), timeout=POLL_SEC)
             except asyncio.TimeoutError:
                 if send_done.is_set():
-                    break
+                    idle_since_finish += POLL_SEC
+                    if idle_since_finish >= POST_FINISH_GRACE_SEC:
+                        break
                 continue
             except Exception:
                 break  # ConnectionClosed 등
+
+            idle_since_finish = 0.0
 
             if not isinstance(msg, str):
                 continue
 
             data = json.loads(msg)
             msg_type = data.get('type', '')
+
+            if msg_type == 'finish_done':
+                # 서버가 이 스트림 처리를 완전히 끝냈다는 확정 신호 — 더 올 final 없음
+                break
 
             if msg_type == 'vad_done':
                 if real_audio_done.is_set():
@@ -585,7 +623,7 @@ async def process_batch(
     show_commit_slash=True,
     resume=True,
     target_lang='ko',
-    trailing_silence_ms=5500,
+    trailing_silence_ms=8000,
 ):
     run_dir = Path(run_dir)
     if resume:
@@ -674,6 +712,9 @@ async def process_batch(
                 continue
 
         try:
+            # chapter 내 연결 유지 — finish로 서버 상태 초기화하되 히스토리는 보존.
+            # finish 전송은 process_single_file 내부(_send)에서 처리 — recv 루프가
+            # 아직 살아있는 동안 finish-트리거 final을 받기 위함.
             out = await process_single_file(
                 ws,
                 audio,
@@ -682,8 +723,6 @@ async def process_batch(
                 target_lang=target_lang,
                 trailing_silence_ms=trailing_silence_ms,
             )
-            # chapter 내 연결 유지 — finish로 서버 상태 초기화하되 히스토리는 보존
-            await ws.send(json.dumps({'type': 'finish'}))
         except Exception as e:
             logger.error('WebSocket processing failed for %s: %s', file_id, e)
             await _close_ws()
@@ -955,8 +994,11 @@ def main():
                         help='Show commit boundaries as \"seg1 / seg2 /\" in logs')
     parser.add_argument('--fresh-start', action='store_true', default=False,
                         help='Ignore existing results and process all files from scratch')
-    parser.add_argument('--trailing-silence-ms', type=int, default=5500,
-                        help='Silence (ms) appended after each audio file so VAD fires before finish (default: 1000)')
+    parser.add_argument('--trailing-silence-ms', type=int, default=8000,
+                        help='Silence (ms) appended after each audio file. 확정 기회는 누적 오디오 '
+                             'chunk_size 배수에서만 생기므로 이 값이 짧으면 마지막 문장이 dot으로 '
+                             '확정되기 전에 스트림이 끊긴다 (실측: 5500ms에서 0.11초 모자라 finish로 빠짐). '
+                             '(default: 8000)')
     parser.add_argument('--gpt-translation', action='store_true', default=False,
                         help='GPT 교정+번역 활성화 (서버에 --gpt-translation 전달, meta.json 기록용)')
     parser.add_argument('--translation-model', type=str, default='gpt-5.4-mini',

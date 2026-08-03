@@ -1,0 +1,149 @@
+{
+  "overall": {
+    "num_files": 1,
+    "wer": 0.0,
+    "first_token_latency": 4.238606265746057,
+    "model_runtime": 1.4036476988904178,
+    "avg_fsl_sec": 0.067,
+    "avg_fsl_normalized_sec": 0.067,
+    "avg_encode_sec": 4.036998861003667,
+    "avg_decode_sec": 0.0647,
+    "avg_final_decode_sec": 0.0,
+    "avg_trans_sec": 0.0,
+    "avg_output_tokens_per_commit": 4.5,
+    "commit_stats": {
+      "counts": {
+        "vad": 0,
+        "seg": 2,
+        "dot": 0,
+        "finish": 0,
+        "always": 0
+      },
+      "total": 2,
+      "ratios": {
+        "vad": 0.0,
+        "seg": 1.0,
+        "dot": 0.0,
+        "finish": 0.0,
+        "always": 0.0
+      }
+    }
+  },
+  "folders": {
+    "1688": {
+      "num_files": 1,
+      "wer": 0.0,
+      "first_token_latency": 4.238606265746057,
+      "model_runtime": 1.4036476988904178,
+      "avg_fsl_sec": 0.067,
+      "avg_fsl_normalized_sec": 0.067,
+      "avg_encode_sec": 4.036998861003667,
+      "avg_decode_sec": 0.0647,
+      "avg_final_decode_sec": 0.0,
+      "avg_trans_sec": 0.0,
+      "avg_output_tokens_per_commit": 4.5,
+      "commit_stats": {
+        "counts": {
+          "vad": 0,
+          "seg": 2,
+          "dot": 0,
+          "finish": 0,
+          "always": 0
+        },
+        "total": 2,
+        "ratios": {
+          "vad": 0.0,
+          "seg": 1.0,
+          "dot": 0.0,
+          "finish": 0.0,
+          "always": 0.0
+        }
+      }
+    }
+  },
+  "raw_results": [
+    {
+      "file_id": "1688-142285-0002",
+      "speaker_id": "1688",
+      "audio_path": "evaluation/LibriSpeech/LibriSpeech/test-other/1688/142285/1688-142285-0002.flac",
+      "reference": "YOU DON'T MEAN THAT YOU THOUGHT ME SO SILLY",
+      "hypothesis": "You don't mean that. You thought me so silly.",
+      "hyp_commit": "You don't mean that. <seg> You thought me so silly. <seg>",
+      "duration": 2.835,
+      "total_time": 4.238647698890418,
+      "first_token_latency": 4.238606265746057,
+      "model_runtime": 1.4036476988904178,
+      "target_lang": "",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "You don't mean that.",
+          "translation": "",
+          "commit_reason": "seg",
+          "output_token_count": 4,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 4.035000000000001,
+          "seg_audio_sec": 4.035,
+          "fsl_sec": 0.067,
+          "fsl_normalized_sec": 0.067,
+          "encode_sec": 4.036998861003667,
+          "decode_sec": 0.0647,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.0844,
+              "chunk_decode_sec": 0.0843,
+              "chunk_transcribe_start_elapsed": 2.0016,
+              "chunk_decode_start_elapsed": 2.0017
+            },
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.035,
+              "encode_sec": 0.065,
+              "chunk_decode_sec": 0.0649,
+              "chunk_transcribe_start_elapsed": 4.0369,
+              "chunk_decode_start_elapsed": 4.037
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.2386068110354245
+        },
+        {
+          "segment_id": 2,
+          "text": "You thought me so silly.",
+          "translation": "",
+          "commit_reason": "seg",
+          "output_token_count": 5,
+          "audio_start_sec": 4.035000000000001,
+          "audio_end_sec": 4.035000000000001,
+          "seg_audio_sec": null,
+          "fsl_sec": null,
+          "fsl_normalized_sec": null,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0,
+          "chunk_encode_log": null,
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.238647986669093
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 2,
+        "avg_fsl_sec": 0.067,
+        "avg_fsl_normalized_sec": 0.067,
+        "avg_encode_sec": 4.036998861003667,
+        "avg_decode_sec": 0.0647,
+        "avg_final_decode_sec": 0.0,
+        "avg_trans_sec": 0.0
+      }
+    }
+  ]
+}

@@ -14,6 +14,11 @@ PAPER_RESULT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 STITY_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
 RUN_DIR="$PAPER_RESULT_DIR/ASR/mode4/$SCOPE/$TAG"
 
+# mode4 가중치. 기본은 HF 허브 리포지만, 접근이 401(Repository Not Found)로 막히는
+# 환경이 있어 로컬 사본으로 갈아끼울 수 있게 열어둔다. 동일 가중치라 재현성엔 영향 없음.
+#   예) MODE4_MODEL=/path/to/models/Qwen3-ASR-1.7B-ko-silence-v4c900-merged
+MODE4_MODEL="${MODE4_MODEL:-Doo12/Qwen3-ASR-1.7B-ko-silence-v4c900-merged}"
+
 # --- env 가드 ---------------------------------------------------------------
 # 평가 환경은 머신마다 다르다: 로컬은 venv($STITY_ROOT/.venv), 원격 GPU 서버는 conda env
 # 'stity'. 그래서 특정 도구를 요구하지 않고 "vllm이 import되는 파이썬"만 확인한다.
@@ -42,7 +47,7 @@ fi
 # --- env 가드 끝 -------------------------------------------------------------
 
 PYTHONPATH= "$STITY_PYTHON" "$SCRIPT_DIR/../../../servers/streaming_websocket_server_fsl.py" \
-  --model "Doo12/Qwen3-ASR-1.7B-ko-silence-v4c900-merged" \
+  --model "$MODE4_MODEL" \
   --disable-dot-commit \
   --no-vad \
   --port 8767 \

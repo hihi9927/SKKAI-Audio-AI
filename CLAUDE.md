@@ -60,7 +60,7 @@ Core type definitions live in [core/types.py](core/types.py) — `AudioSegment �
 | `Qwen3-ASR/examples/streaming_websocket_server.py` | Main production WebSocket server |
 | `evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py` | Eval server with forced-alignment logging |
 
-The `Qwen3-ASR/` directory is a git submodule. Its `pyproject.toml` exposes CLI entry points: `qwen-asr-demo`, `qwen-asr-serve`, `qwen-asr-demo-streaming`.
+The `Qwen3-ASR/` directory is vendored upstream code (QwenLM/Qwen3-ASR), tracked directly by this repo — **not** a git submodule. Changes to it are committed like any other file. Its `pyproject.toml` exposes CLI entry points: `qwen-asr-demo`, `qwen-asr-serve`, `qwen-asr-demo-streaming`.
 
 ### Mobile App (`STiTy-Mobile/`)
 

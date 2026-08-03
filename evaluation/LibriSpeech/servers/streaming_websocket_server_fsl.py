@@ -181,7 +181,7 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         await super()._asr_finish_streaming(slot_key)
         self._slot_final_decode_sec[key] = self._slot_final_decode_sec.get(key, 0.0) + (time.perf_counter() - t0)
 
-    async def _process_slot_updates(self, slot_key=None, force_reason=None):
+    async def _process_slot_updates(self, slot_key=None, force_reason=None, chunk_end=False):
         key = slot_key if slot_key is not None else self.active_slot
         if key not in self._slot_seg_detected:
             # t0가 None이면 VAD/finish 경로 호출 (streaming_transcribe 밖) → 기록 금지
@@ -261,7 +261,7 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
                         "decode_start_elapsed_sec": None,
                     }
                     logger.info("[SEG-VAD] slot=%s audio_pos=%.3fs", key, audio_sec)
-        await super()._process_slot_updates(slot_key, force_reason=force_reason)
+        await super()._process_slot_updates(slot_key, force_reason=force_reason, chunk_end=chunk_end)
 
     async def _translate_with_metadata(
         self,
@@ -670,6 +670,13 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
                             if msg_type == "stop":
                                 break
 
+                            # 평가 전용 ack. websocket 수신 루프가 순차라 여기 도달한 시점엔
+                            # 이 스트림의 오디오가 전부 디코딩되고 final도 모두 전송된 상태다.
+                            # 클라이언트가 "언제까지 기다려야 하나"를 추측하지 않게 해준다 —
+                            # 추측(유휴 타임아웃)에 의존하면 서버가 밀릴 때 final을 통째로
+                            # 놓친다(실측: GPU 경합 시 final이 33s에 도착해 3개 파일 유실).
+                            await self.send_message("finish_done")
+
                             self.init_streaming_state()
                             self.running = True
 
@@ -820,6 +827,8 @@ def main():
         enforce_eager=args.enforce_eager,
         no_vad=args.no_vad,
         enable_dot_commit=args.enable_dot_commit,
+        dot_commit_confirm=args.dot_commit_confirm,
+        dot_commit_stall_chunks=args.dot_commit_stall_chunks,
         always_commit=args.always_commit,
         restrict_languages=not args.no_restrict_languages,
         enable_correction=args.correction,

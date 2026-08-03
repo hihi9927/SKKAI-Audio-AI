@@ -1,0 +1,188 @@
+{
+  "overall": {
+    "num_files": 1,
+    "wer": 1.8,
+    "first_token_latency": 4.238385838922113,
+    "model_runtime": 5.4034696691296995,
+    "avg_fsl_sec": 0.08623333333333333,
+    "avg_fsl_normalized_sec": 0.08623333333333333,
+    "avg_encode_sec": 6.037641471717507,
+    "avg_decode_sec": 0.08316666666666667,
+    "avg_final_decode_sec": 0.0,
+    "avg_trans_sec": 0.0,
+    "avg_output_tokens_per_commit": 7.666666666666667,
+    "commit_stats": {
+      "counts": {
+        "vad": 0,
+        "seg": 3,
+        "dot": 0,
+        "finish": 0,
+        "always": 0
+      },
+      "total": 3,
+      "ratios": {
+        "vad": 0.0,
+        "seg": 1.0,
+        "dot": 0.0,
+        "finish": 0.0,
+        "always": 0.0
+      }
+    }
+  },
+  "folders": {
+    "1688": {
+      "num_files": 1,
+      "wer": 1.8,
+      "first_token_latency": 4.238385838922113,
+      "model_runtime": 5.4034696691296995,
+      "avg_fsl_sec": 0.08623333333333333,
+      "avg_fsl_normalized_sec": 0.08623333333333333,
+      "avg_encode_sec": 6.037641471717507,
+      "avg_decode_sec": 0.08316666666666667,
+      "avg_final_decode_sec": 0.0,
+      "avg_trans_sec": 0.0,
+      "avg_output_tokens_per_commit": 7.666666666666667,
+      "commit_stats": {
+        "counts": {
+          "vad": 0,
+          "seg": 3,
+          "dot": 0,
+          "finish": 0,
+          "always": 0
+        },
+        "total": 3,
+        "ratios": {
+          "vad": 0.0,
+          "seg": 1.0,
+          "dot": 0.0,
+          "finish": 0.0,
+          "always": 0.0
+        }
+      }
+    }
+  },
+  "raw_results": [
+    {
+      "file_id": "1688-142285-0002",
+      "speaker_id": "1688",
+      "audio_path": "evaluation/LibriSpeech/LibriSpeech/test-other/1688/142285/1688-142285-0002.flac",
+      "reference": "YOU DON'T MEAN THAT YOU THOUGHT ME SO SILLY",
+      "hypothesis": "You don't mean that you thought me so silly? I'm sorry, but I can't help you. I'm sorry, but I can't help you.",
+      "hyp_commit": "You don't mean that you thought me so silly? <seg> I'm sorry, but I can't help you. <seg> I'm sorry, but I can't help you. <seg>",
+      "duration": 2.835,
+      "total_time": 8.2384696691297,
+      "first_token_latency": 4.238385838922113,
+      "model_runtime": 5.4034696691296995,
+      "target_lang": "",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "You don't mean that you thought me so silly?",
+          "translation": "",
+          "commit_reason": "seg",
+          "output_token_count": 9,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 4.035000000000001,
+          "seg_audio_sec": 4.035,
+          "fsl_sec": 0.091,
+          "fsl_normalized_sec": 0.091,
+          "encode_sec": 4.037605424411595,
+          "decode_sec": 0.088,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 0.0802,
+              "chunk_decode_sec": 0.0801,
+              "chunk_transcribe_start_elapsed": 2.0013,
+              "chunk_decode_start_elapsed": 2.0014
+            },
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.035,
+              "encode_sec": 0.0884,
+              "chunk_decode_sec": 0.0882,
+              "chunk_transcribe_start_elapsed": 4.0374,
+              "chunk_decode_start_elapsed": 4.0376
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 4.238386496901512
+        },
+        {
+          "segment_id": 2,
+          "text": "I'm sorry, but I can't help you.",
+          "translation": "",
+          "commit_reason": "seg",
+          "output_token_count": 7,
+          "audio_start_sec": 4.035000000000001,
+          "audio_end_sec": 6.035000000000003,
+          "seg_audio_sec": 6.035,
+          "fsl_sec": 0.0882,
+          "fsl_normalized_sec": 0.0882,
+          "encode_sec": 6.037750607356429,
+          "decode_sec": 0.0849,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 6.035,
+              "encode_sec": 0.0851,
+              "chunk_decode_sec": 0.085,
+              "chunk_transcribe_start_elapsed": 6.0376,
+              "chunk_decode_start_elapsed": 6.0378
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 6.238644023891538
+        },
+        {
+          "segment_id": 3,
+          "text": "I'm sorry, but I can't help you.",
+          "translation": "",
+          "commit_reason": "seg",
+          "output_token_count": 7,
+          "audio_start_sec": 6.035000000000003,
+          "audio_end_sec": 8.035000000000004,
+          "seg_audio_sec": 8.035,
+          "fsl_sec": 0.0795,
+          "fsl_normalized_sec": 0.0795,
+          "encode_sec": 8.037568383384496,
+          "decode_sec": 0.0766,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 8.035,
+              "encode_sec": 0.0768,
+              "chunk_decode_sec": 0.0768,
+              "chunk_transcribe_start_elapsed": 8.0375,
+              "chunk_decode_start_elapsed": 8.0376
+            }
+          ],
+          "slotAudioStartSec": null,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 8.238470294047147
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 3,
+        "avg_fsl_sec": 0.08623333333333333,
+        "avg_fsl_normalized_sec": 0.08623333333333333,
+        "avg_encode_sec": 6.037641471717507,
+        "avg_decode_sec": 0.08316666666666667,
+        "avg_final_decode_sec": 0.0,
+        "avg_trans_sec": 0.0
+      }
+    }
+  ]
+}
