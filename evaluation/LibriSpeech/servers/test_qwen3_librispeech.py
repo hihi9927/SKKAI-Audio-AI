@@ -527,8 +527,12 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
             msg_type = data.get('type', '')
 
             if msg_type == 'finish_done':
-                # 서버가 이 스트림 처리를 완전히 끝냈다는 확정 신호 — 더 올 final 없음
-                break
+                # 서버가 이 스트림 처리를 완전히 끝냈다는 확정 신호 — 더 올 final 없음.
+                # 단 이 파일의 finish를 아직 보내지 않았다면 이전 스트림의 잔여 ack이므로
+                # 무시한다(그걸로 종료하면 아직 오지 않은 final을 통째로 놓친다).
+                if send_done.is_set():
+                    break
+                continue
 
             if msg_type == 'vad_done':
                 if real_audio_done.is_set():

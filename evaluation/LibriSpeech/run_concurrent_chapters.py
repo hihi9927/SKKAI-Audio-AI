@@ -196,6 +196,12 @@ class ConcurrentRunner:
                     duration = len(audio) / base.SAMPLING_RATE
 
                     try:
+                        # finish는 process_single_file의 _send가 이미 보낸다
+                        # (recv 루프가 살아있는 동안 finish-트리거 final을 받기 위해).
+                        # 여기서 한 번 더 보내면 서버가 finish를 두 번 처리하고 finish_done
+                        # ack도 두 번 나간다. 서버가 밀리면 그 여분 ack가 다음 파일의 recv
+                        # 루프에 도착해 아직 final이 오기 전에 종료시킬 수 있다.
+                        # 중복 자체가 불필요하므로 제거한다.
                         out = await base.process_single_file(
                             ws, audio,
                             chunk_size_ms=args.chunk_size_ms,
@@ -203,9 +209,11 @@ class ConcurrentRunner:
                             target_lang=args.target_lang,
                             trailing_silence_ms=args.trailing_silence_ms,
                         )
-                        await ws.send(json.dumps({"type": "finish"}))
                     except Exception as e:
-                        logger.error("[w%02d] %s 처리 실패: %s", wid, file_id, e)
+                        # 예외 타입까지 남긴다 — asyncio.TimeoutError는 str()이 빈 문자열이라
+                        # 메시지만 찍으면 "처리 실패: "로 끝나 원인을 알 수 없다.
+                        logger.error("[w%02d] %s 처리 실패: %s: %s",
+                                     wid, file_id, type(e).__name__, e)
                         break  # 연결이 깨졌을 수 있음 — 이 챕터는 중단
 
                     if not out["transcript"]:
