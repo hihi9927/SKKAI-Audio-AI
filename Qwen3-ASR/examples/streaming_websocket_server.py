@@ -1209,7 +1209,12 @@ class Qwen3ASRStreamingHandler:
                 if sentence_display_check == _last_extracted_display:
                     self.log.info(f"[COMMIT-SKIP] reason=rep-dedup slot={slot_key} text={sentence_display_check!r}")
                 else:
-                    if "seg_reset_last_committed" in slot:
+                    # 모드2(always_commit)에서는 비활성화한다. 커밋 단위가 "문장"이 아니라
+                    # "이번 청크에서 새로 디코딩된 전부"라서 (after="") 경계 단어 하나가
+                    # 겹치면 정상 내용까지 청크째로 폐기된다. 실측상 억제 효과도 없었다
+                    # (경계 중복 141건 중 4건만 발동, 나머지는 그대로 출력에 남음).
+                    # 2초 강제 커밋의 경계 중복은 모드2의 측정 대상 그 자체이므로 그대로 노출한다.
+                    if "seg_reset_last_committed" in slot and not self.always_commit:
                         seg_reset_last = slot.pop("seg_reset_last_committed")
                         first_word = sentence_display_check.split()[0] if sentence_display_check.split() else ""
                         _strip_p = lambda w: re.sub(r'[.,!?;:。？！]+$', '', w)
