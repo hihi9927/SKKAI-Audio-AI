@@ -42,6 +42,10 @@ evaluation/{Dataset}/results/
 
 > `baseline` 계열 모델(`Qwen/Qwen3-ASR-1.7B`, `baseline`, `baseline(1.0.0)` 등)은 서버에서 `dot commit`이 기본 활성화됩니다.  
 > baseline에서도 끄고 싶으면 `--disable-dot-commit`, finetuned 등에서 강제로 켜고 싶으면 `--enable-dot-commit`을 사용합니다.
+>
+> **`dot commit`이 켜지면 확정 게이트(`--dot-commit-confirm`)도 자동으로 켜집니다.** 즉 모드3 실행에는 별도
+> 인자가 필요 없습니다. 게이트 없이 감지 즉시 커밋하던 예전 동작으로 돌리려면 `--no-dot-commit-confirm`을 씁니다.
+> 게이트 상세는 [08_03 확정게이트 알고리즘 명세](../notion_docs/08_03_dot_commit_확정게이트_알고리즘_명세.md) 참조.
 
 ---
 

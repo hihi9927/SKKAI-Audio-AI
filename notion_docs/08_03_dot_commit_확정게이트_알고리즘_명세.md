@@ -206,13 +206,31 @@ _asr_key = lambda s: ' '.join(s.split()).rstrip('.,!?;:。？！').strip().lower
 | 플래그 | 기본값 | 설명 |
 |---|---|---|
 | `--enable-dot-commit` | baseline 계열 자동 True | dot 기반 커밋 활성화 |
-| `--dot-commit-confirm` | **False** | 확정 게이트. 켜야 규칙 1·2·3 동작 |
+| `--dot-commit-confirm` | **`enable_dot_commit`를 따라감** | 확정 게이트. dot commit(모드3)이면 자동 활성화. `--no-dot-commit-confirm`으로 예전 동작(감지 즉시 커밋) 복원 |
 | `--dot-commit-stall-chunks` | 1 | 규칙 3 발동에 필요한 정체 청크 수. 0이면 비활성화 |
 | `chunk_size_sec` | 2.0 | 확정 기회는 누적 오디오가 이 배수에 도달할 때만 생긴다 |
 | `unfixed_token_num` | 5 | 롤백 창. 규칙 1 임계값 |
 | `MAX_AUDIO_ACCUM_SEC` | 90.0 | 강제 리셋 임계값 |
 
-> **`dot_commit_confirm` 기본값은 아직 False다.** 프로덕션 서버는 명시적으로 켜야 게이트가 걸린다. `streaming_websocket_server_dualbase.py`에는 미반영.
+해석 순서 (`parse_args`):
+```python
+if args.enable_dot_commit is None:
+    args.enable_dot_commit = _infer_dot_commit_default(args.model)   # baseline 계열이면 True
+if args.dot_commit_confirm is None:
+    args.dot_commit_confirm = bool(args.enable_dot_commit)           # 모드3이면 자동 True
+```
+
+| 실행 | `enable_dot_commit` | `dot_commit_confirm` |
+|---|---|---|
+| 인자 없음 (baseline) | True | **True** |
+| `--enable-dot-commit` (모드3) | True | **True** |
+| `--disable-dot-commit` (모드4 등) | False | False |
+| `--enable-dot-commit --no-dot-commit-confirm` | True | False |
+| finetuned 모델 경로 | False | False |
+
+`--always-commit`(모드2)는 `confirm`이 True로 해석되지만 무해하다 — `always_commit`은 커밋 루프 첫 분기에서 단락되어 dot 게이트에 도달하지 않는다.
+
+> **`StreamingConfig` 데이터클래스 기본값 자체는 여전히 `False`다.** 위 자동 활성화는 CLI(`parse_args`) 해석 단계에서 일어난다. `StreamingConfig`를 직접 구성하는 경로는 명시 전달이 필요하며, `streaming_websocket_server_dualbase.py`가 여기 해당한다(미반영).
 
 ---
 

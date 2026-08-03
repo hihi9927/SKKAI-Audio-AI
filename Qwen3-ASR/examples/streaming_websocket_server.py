@@ -2338,10 +2338,15 @@ def parse_args():
         help="Disable dot-based commit even for baseline models",
     )
     parser.add_argument(
-        "--dot-commit-confirm", action="store_true",
+        "--dot-commit-confirm", dest="dot_commit_confirm", action="store_true", default=None,
         help="dot을 감지 즉시 커밋하지 않고 확정된 뒤에만 커밋 "
-             "(문맥 확정: 마침표 뒤 토큰 > unfixed_token_num / 합의 확정: 다음 청크에서도 동일). "
-             "enable_dot_commit과 함께 사용",
+             "(문맥 확정: 마침표 뒤 토큰 > unfixed_token_num / 합의 확정: 직전 청크에도 있던 경계 / "
+             "정체 확정: 가설이 안 자람). 미지정 시 enable_dot_commit을 따라간다 "
+             "— 즉 dot commit(모드3)이면 자동으로 켜진다",
+    )
+    parser.add_argument(
+        "--no-dot-commit-confirm", dest="dot_commit_confirm", action="store_false",
+        help="dot commit이 켜져 있어도 확정 게이트는 끈다 (감지 즉시 커밋하던 예전 동작)",
     )
     parser.add_argument(
         "--dot-commit-stall-chunks", type=int, default=1,
@@ -2405,6 +2410,12 @@ def parse_args():
     args = parser.parse_args()
     if args.enable_dot_commit is None:
         args.enable_dot_commit = _infer_dot_commit_default(args.model)
+    if args.dot_commit_confirm is None:
+        # 확정 게이트는 dot commit 전용 로직이므로 dot commit(모드3)이면 기본으로 켠다.
+        # 게이트 없는 dot commit은 프론티어 마침표를 그대로 커밋해 매 청크 문장 조각이
+        # 나가는 동작이라, 이제 와서 그걸 기본값으로 둘 이유가 없다.
+        # --no-dot-commit-confirm으로 예전 동작 복원 가능.
+        args.dot_commit_confirm = bool(args.enable_dot_commit)
     return args
 
 
