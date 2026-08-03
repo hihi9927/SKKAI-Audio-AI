@@ -150,7 +150,21 @@ baseline(1.0.0) / full / chunk 1.0s / GPT translation ctx=5 / correction on
 
 ## 5. 서버 실행 (SSH/로컬 + tmux)
 
-(0번에서 **이미 GPU 서버 위**로 판단됐다면, 아래 모든 `ssh <host_alias> "..."` 블록은 SSH 없이 따옴표 안 명령만 로컬로 실행하고 `cd <remote_dir> &&`도 생략. `tmux`가 서버에 없으면 `conda activate stity && conda install -y -c conda-forge tmux`로 설치 — sudo 불필요.)
+(0번에서 **이미 GPU 서버 위**로 판단됐다면, 아래 모든 `ssh <host_alias> "..."` 블록은 SSH 없이 따옴표 안 명령만 로컬로 실행하고 `cd <remote_dir> &&`도 생략.)
+
+**환경 활성화 규칙 (머신마다 다름):** 파이썬 환경 이름을 가정하지 말 것.
+- `~/STiTy/.venv`가 있으면 → venv 머신 (예: `skkai`). `. ~/STiTy/.venv/bin/activate`
+- 없으면 → 원격 GPU 서버. `. ~/miniforge3/etc/profile.d/conda.sh && conda activate stity`
+
+아래 tmux 블록들은 이 분기를 인라인으로 넣어 두었으니 그대로 쓰면 된다.
+`conda activate stity`를 무조건 넣으면 venv 머신에서 `EnvironmentNameNotFound`로 `&&` 체인이 끊긴다.
+
+**tmux:** `skkai`에는 conda-forge tmux가 `~/miniforge3/envs/tools`에 설치돼 있고 `~/.local/bin/tmux`
+래퍼로 노출돼 있다 (`conda init`은 하지 않음 — base env가 PATH를 오염시키지 않게). 다른 머신에
+tmux가 없으면 `conda install -y -n tools -c conda-forge tmux`로 설치 — sudo 불필요.
+
+**참고:** `serve_mode*.sh` / `run_mode*.sh`는 자체 env 가드로 `.venv`를 자동 감지하고
+`PYTHONPATH=`를 비워서 파이썬을 호출하므로, paper mode는 활성화 없이 `bash` 호출만으로도 동작한다.
 
 **데이터셋과 관계없이 서버 스크립트는 공통:**
 `evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py`
@@ -242,7 +256,7 @@ tmux 명령 끝에 아래를 항상 추가:
 **LibriSpeech:**
 ```bash
 ssh <host_alias> "cd <remote_dir> && tmux new-session -d -s eval_test \
-  'source ~/miniforge3/etc/profile.d/conda.sh && conda activate stity && \
+  '{ [ -x ~/STiTy/.venv/bin/python ] && . ~/STiTy/.venv/bin/activate || { . ~/miniforge3/etc/profile.d/conda.sh && conda activate stity; }; } && \
   python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \
     --test-dir evaluation/LibriSpeech/LibriSpeech/test-other \
     --model \"<model_label>\" --scope <scope> [--tag <tag>] \
@@ -260,7 +274,7 @@ ssh <host_alias> "cd <remote_dir> && tmux new-session -d -s eval_test \
 **Paper mode (mode2/3/4):**
 ```bash
 ssh <host_alias> "cd <remote_dir> && tmux new-session -d -s eval_test \
-  'source ~/miniforge3/etc/profile.d/conda.sh && conda activate stity && \
+  '{ [ -x ~/STiTy/.venv/bin/python ] && . ~/STiTy/.venv/bin/activate || { . ~/miniforge3/etc/profile.d/conda.sh && conda activate stity; }; } && \
   bash evaluation/LibriSpeech/paper_result/ASR/scripts/run_mode<N>.sh <scope> <tag> [--limit <n>] \
   2>&1 | tee /tmp/eval_test.log \
   && git add -A \
@@ -274,7 +288,7 @@ ssh <host_alias> "cd <remote_dir> && tmux new-session -d -s eval_test \
 **DailyTalk:**
 ```bash
 ssh <host_alias> "cd <remote_dir> && tmux new-session -d -s eval_test \
-  'source ~/miniforge3/etc/profile.d/conda.sh && conda activate stity && \
+  '{ [ -x ~/STiTy/.venv/bin/python ] && . ~/STiTy/.venv/bin/activate || { . ~/miniforge3/etc/profile.d/conda.sh && conda activate stity; }; } && \
   python evaluation/DailyTalk/test_qwen3_dailytalk.py \
     --host localhost --port 8765 --chunk-size-ms <ms> [--limit <n>] \
   2>&1 | tee /tmp/eval_test.log \
@@ -287,7 +301,7 @@ ssh <host_alias> "cd <remote_dir> && tmux new-session -d -s eval_test \
 **KtelSpeech:**
 ```bash
 ssh <host_alias> "cd <remote_dir> && tmux new-session -d -s eval_test \
-  'source ~/miniforge3/etc/profile.d/conda.sh && conda activate stity && \
+  '{ [ -x ~/STiTy/.venv/bin/python ] && . ~/STiTy/.venv/bin/activate || { . ~/miniforge3/etc/profile.d/conda.sh && conda activate stity; }; } && \
   python evaluation/KtelSpeech/test_qwen3_ktelspeech.py \
     --data-dir evaluation/KtelSpeech \
     --model \"<model_label>\" --scope <scope> [--tag <tag>] \
@@ -303,7 +317,7 @@ ssh <host_alias> "cd <remote_dir> && tmux new-session -d -s eval_test \
 **AMI:**
 ```bash
 ssh <host_alias> "cd <remote_dir> && tmux new-session -d -s eval_test \
-  'source ~/miniforge3/etc/profile.d/conda.sh && conda activate stity && \
+  '{ [ -x ~/STiTy/.venv/bin/python ] && . ~/STiTy/.venv/bin/activate || { . ~/miniforge3/etc/profile.d/conda.sh && conda activate stity; }; } && \
   python evaluation/AMI/test_qwen3_ami.py \
     --ami-dir evaluation/AMI/AMI --words-dir evaluation/AMI/words \
     --model \"<model_label>\" --scope <scope> [--tag <tag>] \
