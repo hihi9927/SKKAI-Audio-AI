@@ -1,0 +1,67 @@
+log → research/cif/causal_results/h256_l2_focal_pw1/run_20260515_140418.log
+args: {'data': '/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/data/dailytalk_10000.jsonl', 'model': 'Qwen/Qwen3-ASR-1.7B', 'device': 'cuda:0', 'arch': 'gru', 'hidden': 256, 'n_layers': 2, 'loss': 'focal', 'epochs': 30, 'lr': 0.001, 'pos_window': 1, 'n_val': 50, 'n_test': 50, 'seed': 42, 'peak_thr': None, 'out_dir': 'research/cif/causal_results/h256_l2_focal_pw1', 'cache_dir': '/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/causal_results/pos1', 'no_cache': False, 'max_dialogs': None, 'load_model': None, 'resume': None, 'no_save': False, 'log_file': None}
+
+  loading cache: dailytalk_10000_pw1_causal.pkl …
+  1058 dialogs loaded
+
+  train=958  val=50  test=50
+  training causal-gru  hidden=256  n_layers=2  loss=focal  epochs=30  lr=0.001  patience=10
+    dialogs=958  pos=43413  neg=341084  ratio=1:7
+    epoch   1/30  tr=0.1013  val=0.0897  *
+    epoch   5/30  tr=0.0774  val=0.0849
+    epoch  10/30  tr=0.0615  val=0.1066  lr=5.00e-04
+    early stopping at epoch 14  best_val=0.0843
+  best weights restored  val_loss=0.0843
+
+Sweeping threshold on val set …
+  saved: research/cif/causal_results/h256_l2_focal_pw1/causal_thr_sweep.png
+  best thr=0.70  count_acc=0.320  pos_mae=3.27f
+
+Evaluating on test set …
+
+========================================================
+  [causal-gru]  pos_window=±1f  peak_thr=0.70
+────────────────────────────────────────────────────────
+  [Frame-level]
+    balanced_acc : 0.935
+    AUC          : 0.980
+    F1 @0.5      : 0.729
+    best F1      : 0.806  (thr=0.653  P=0.769  R=0.848)
+────────────────────────────────────────────────────────
+  [Streaming trigger  (run, thr=0.70)]
+    count_acc    : 0.340
+    count_mae    : 1.180
+    over_rate    : 0.460  (과검출)
+    under_rate   : 0.200  (미검출)
+    pos_mae      : 6.82 f  ≈ 524 ms
+    n_dialogs    : 50  n_segs_total : 774
+
+  [ n_segs별 count_acc / over / under ]
+    n_segs=7  n=   2  acc=0.000  over=0.500  under=0.500  mae=2.00
+    n_segs=8  n=   4  acc=0.250  over=0.500  under=0.250  mae=1.25
+    n_segs=9  n=   5  acc=0.600  over=0.400  under=0.000  mae=0.40
+    n_segs=10  n=   2  acc=0.000  over=1.000  under=0.000  mae=1.50
+    n_segs=11  n=   2  acc=0.500  over=0.500  under=0.000  mae=0.50
+    n_segs=12  n=   5  acc=0.400  over=0.400  under=0.200  mae=1.00
+    n_segs=13  n=   1  acc=0.000  over=1.000  under=0.000  mae=1.00
+    n_segs=14  n=   4  acc=0.500  over=0.250  under=0.250  mae=0.50
+    n_segs=15  n=   3  acc=0.000  over=0.333  under=0.667  mae=1.00
+    n_segs=16  n=   4  acc=0.500  over=0.250  under=0.250  mae=1.75
+    n_segs=17  n=   5  acc=0.600  over=0.200  under=0.200  mae=0.40
+    n_segs=18  n=   1  acc=1.000  over=0.000  under=0.000  mae=0.00
+    n_segs=19  n=   2  acc=0.000  over=0.500  under=0.500  mae=2.50
+    n_segs=21  n=   1  acc=0.000  over=1.000  under=0.000  mae=1.00
+    n_segs=22  n=   2  acc=0.000  over=0.500  under=0.500  mae=2.50
+    n_segs=26  n=   3  acc=0.333  over=0.667  under=0.000  mae=1.67
+    n_segs=27  n=   1  acc=0.000  over=1.000  under=0.000  mae=3.00
+    n_segs=28  n=   1  acc=1.000  over=0.000  under=0.000  mae=0.00
+    n_segs=32  n=   2  acc=0.000  over=1.000  under=0.000  mae=2.50
+========================================================
+
+Plotting …
+  saved: research/cif/causal_results/h256_l2_focal_pw1/causal_pr_curve.png
+    PR-AUC       : 0.876
+    ROC-AUC      : 0.980
+  saved: research/cif/causal_results/h256_l2_focal_pw1/causal_examples.png
+  model saved: research/cif/causal_results/h256_l2_focal_pw1/causal_gru.pkl
+Done.

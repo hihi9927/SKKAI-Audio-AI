@@ -1,0 +1,61 @@
+log → /home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/causal_results/curriculum/d30_pw1_epoch/run_20260519_130157.log
+args: {'data': '/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/dataset/data/dailytalk_10000.jsonl', 'model': 'Qwen/Qwen3-ASR-1.7B', 'device': 'cuda:0', 'arch': 'gru', 'hidden': 128, 'n_layers': 2, 'n_heads': 4, 'attn_window': None, 'loss': 'bce', 'loss_alpha': 0.5, 'label_type': 'hard', 'decay_frames': 30, 'features': 'projected', 'raw_layers': None, 'delta': False, 'epochs': 20, 'lr': 0.001, 'pos_window': 1, 'n_val': 50, 'n_test': 50, 'seed': 42, 'peak_thr': None, 'out_dir': '/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/causal_results/curriculum/d30_pw1_epoch', 'cache_dir': '/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/causal_results/prev/gru/pos1', 'no_cache': False, 'max_dialogs': None, 'load_model': '/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/causal_results/curriculum/d30_pw1_epoch/causal_gru.pkl', 'resume': None, 'no_save': False, 'curriculum': False, 'phase2_epochs': 10, 'phase2_lr': None, 'freeze_backbone': False, 'phase1_scheduler': 'plateau', 'phase2_scheduler': 'cosine', 'log_file': None}
+
+  loading cache: /home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/causal_results/prev/gru/pos1/dailytalk_10000_pw1_causal.pkl …
+  1058 dialogs loaded
+
+  train=958  val=50  test=50
+  model loaded: /home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/causal_results/curriculum/d30_pw1_epoch/causal_gru.pkl  arch=gru
+
+Sweeping threshold on val set …
+  saved: /home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/causal_results/curriculum/d30_pw1_epoch/causal_thr_sweep.png
+  best thr=0.90  count_acc=0.360  pos_mae=2.63f
+
+Evaluating on test set …
+
+========================================================
+  [causal-gru]  pos_window=±1f  peak_thr=0.90
+────────────────────────────────────────────────────────
+  [Frame-level]
+    balanced_acc : 0.936
+    AUC          : 0.981
+    F1 @0.5      : 0.748
+    best F1      : 0.812  (thr=0.884  P=0.812  R=0.813)
+────────────────────────────────────────────────────────
+  [Streaming trigger  (run, thr=0.90)]
+    count_acc    : 0.340
+    count_mae    : 1.080
+    over_rate    : 0.420  (과검출)
+    under_rate   : 0.240  (미검출)
+    pos_mae      : 2.55 f  ≈ 196 ms
+    n_dialogs    : 50  n_segs_total : 774
+
+  [ n_segs별 count_acc / over / under ]
+    n_segs=7  n=   2  acc=0.500  over=0.500  under=0.000  mae=1.50
+    n_segs=8  n=   4  acc=0.250  over=0.500  under=0.250  mae=1.25
+    n_segs=9  n=   5  acc=0.600  over=0.400  under=0.000  mae=0.40
+    n_segs=10  n=   2  acc=0.000  over=1.000  under=0.000  mae=1.50
+    n_segs=11  n=   2  acc=0.500  over=0.500  under=0.000  mae=0.50
+    n_segs=12  n=   5  acc=0.200  over=0.400  under=0.400  mae=1.00
+    n_segs=13  n=   1  acc=1.000  over=0.000  under=0.000  mae=0.00
+    n_segs=14  n=   4  acc=0.500  over=0.250  under=0.250  mae=0.50
+    n_segs=15  n=   3  acc=0.000  over=0.333  under=0.667  mae=1.00
+    n_segs=16  n=   4  acc=0.250  over=0.500  under=0.250  mae=1.50
+    n_segs=17  n=   5  acc=0.600  over=0.000  under=0.400  mae=0.40
+    n_segs=18  n=   1  acc=1.000  over=0.000  under=0.000  mae=0.00
+    n_segs=19  n=   2  acc=0.000  over=0.500  under=0.500  mae=1.50
+    n_segs=21  n=   1  acc=0.000  over=1.000  under=0.000  mae=2.00
+    n_segs=22  n=   2  acc=0.000  over=0.500  under=0.500  mae=2.50
+    n_segs=26  n=   3  acc=0.667  over=0.333  under=0.000  mae=1.33
+    n_segs=27  n=   1  acc=0.000  over=1.000  under=0.000  mae=4.00
+    n_segs=28  n=   1  acc=0.000  over=0.000  under=1.000  mae=1.00
+    n_segs=32  n=   2  acc=0.000  over=1.000  under=0.000  mae=1.50
+========================================================
+
+Plotting …
+  saved: /home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/causal_results/curriculum/d30_pw1_epoch/causal_pr_curve.png
+    PR-AUC       : 0.884
+    ROC-AUC      : 0.981
+  saved: /home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/causal_results/curriculum/d30_pw1_epoch/causal_examples.png
+  model saved: /home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/causal_results/curriculum/d30_pw1_epoch/causal_gru.pkl
+Done.

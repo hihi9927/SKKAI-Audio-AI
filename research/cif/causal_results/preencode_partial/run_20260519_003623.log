@@ -1,0 +1,86 @@
+log → /home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/causal_results/preencode_partial/run_20260519_003623.log
+args: {'data': '/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/dataset/data/dailytalk_10000.jsonl', 'model': 'Qwen/Qwen3-ASR-1.7B', 'device': 'cuda:0', 'arch': 'gru', 'hidden': 128, 'n_layers': 2, 'n_heads': 4, 'attn_window': None, 'loss': 'bce', 'loss_alpha': 0.5, 'label_type': 'hard', 'decay_frames': 30, 'features': 'raw', 'raw_layers': None, 'delta': False, 'epochs': 100, 'lr': 0.001, 'pos_window': 1, 'n_val': 50, 'n_test': 50, 'seed': 42, 'peak_thr': None, 'out_dir': '/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/causal_results/preencode_partial', 'cache_dir': None, 'no_cache': False, 'max_dialogs': None, 'load_model': None, 'resume': None, 'no_save': False, 'curriculum': True, 'phase2_epochs': 100, 'phase2_lr': None, 'freeze_backbone': False, 'phase1_scheduler': 'cosine', 'phase2_scheduler': 'cosine', 'log_file': None}
+
+  cache miss: /home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/causal_results/preencode_partial/cache/dailytalk_10000_pw1_causal_raw24L.pkl
+  10000 records → grouping by dialog …
+  Loading encoder …
+  cache saved: dailytalk_10000_pw1_causal_raw24L.pkl  (1061 dialogs)
+
+  train=961  val=50  test=50
+
+[curriculum] Phase 1: distance loss
+  training causal-gru  hidden=128  n_layers=2  loss=distance  epochs=100  lr=0.001  patience=10
+    dialogs=961  pos=43781  neg=343118  ratio=1:7
+    epoch   1/100  tr=0.0473  val=0.0427  *  lr=1.00e-03
+    epoch   5/100  tr=0.0408  val=0.0412  lr=9.94e-04
+    epoch  10/100  tr=0.0409  val=0.0532  lr=9.76e-04
+    epoch  15/100  tr=0.0393  val=0.0438  lr=9.46e-04
+    early stopping at epoch 17  best_val=0.0391
+  best weights restored  val_loss=0.0391
+
+[curriculum] Phase 2: BCE fine-tune
+  resuming from existing weights
+  training causal-gru  hidden=128  n_layers=2  loss=bce  epochs=100  lr=0.0002  patience=10
+    dialogs=961  pos=43781  neg=343118  ratio=1:7
+    epoch   1/100  tr=0.4138  val=0.4254  *  lr=2.00e-04
+    epoch   5/100  tr=0.4001  val=0.3993  lr=1.99e-04
+    epoch  10/100  tr=0.3910  val=0.3629  *  lr=1.95e-04
+    epoch  15/100  tr=0.3754  val=0.3740  lr=1.89e-04
+    epoch  20/100  tr=0.3539  val=0.3801  lr=1.81e-04
+    early stopping at epoch 20  best_val=0.3629
+  best weights restored  val_loss=0.3629
+
+Sweeping threshold on val set …
+  saved: /home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/causal_results/preencode_partial/causal_thr_sweep.png
+  best thr=0.90  count_acc=0.360  pos_mae=5.57f
+
+Evaluating on test set …
+
+========================================================
+  [causal-gru]  pos_window=±1f  peak_thr=0.90
+────────────────────────────────────────────────────────
+  [Frame-level]
+    balanced_acc : 0.929
+    AUC          : 0.964
+    F1 @0.5      : 0.714
+    best F1      : 0.788  (thr=0.836  P=0.761  R=0.817)
+────────────────────────────────────────────────────────
+  [Streaming trigger  (run, thr=0.90)]
+    count_acc    : 0.320
+    count_mae    : 1.200
+    over_rate    : 0.420  (과검출)
+    under_rate   : 0.260  (미검출)
+    pos_mae      : 5.39 f  ≈ 414 ms
+    n_dialogs    : 50  n_segs_total : 762
+
+  [ n_segs별 count_acc / over / under ]
+    n_segs=6  n=   2  acc=0.000  over=0.500  under=0.500  mae=1.00
+    n_segs=7  n=   1  acc=0.000  over=0.000  under=1.000  mae=2.00
+    n_segs=8  n=   1  acc=0.000  over=1.000  under=0.000  mae=2.00
+    n_segs=9  n=   5  acc=0.400  over=0.600  under=0.000  mae=1.00
+    n_segs=10  n=   6  acc=0.500  over=0.333  under=0.167  mae=0.67
+    n_segs=11  n=   5  acc=0.600  over=0.200  under=0.200  mae=0.60
+    n_segs=12  n=   2  acc=1.000  over=0.000  under=0.000  mae=0.00
+    n_segs=13  n=   1  acc=1.000  over=0.000  under=0.000  mae=0.00
+    n_segs=14  n=   7  acc=0.000  over=0.571  under=0.429  mae=2.14
+    n_segs=15  n=   1  acc=0.000  over=1.000  under=0.000  mae=1.00
+    n_segs=16  n=   2  acc=0.500  over=0.500  under=0.000  mae=0.50
+    n_segs=17  n=   3  acc=0.000  over=0.000  under=1.000  mae=2.00
+    n_segs=18  n=   2  acc=0.000  over=0.500  under=0.500  mae=1.00
+    n_segs=19  n=   2  acc=0.500  over=0.500  under=0.000  mae=0.50
+    n_segs=21  n=   3  acc=0.667  over=0.000  under=0.333  mae=0.33
+    n_segs=25  n=   1  acc=0.000  over=1.000  under=0.000  mae=4.00
+    n_segs=27  n=   2  acc=0.500  over=0.500  under=0.000  mae=1.50
+    n_segs=28  n=   1  acc=0.000  over=1.000  under=0.000  mae=4.00
+    n_segs=29  n=   1  acc=0.000  over=1.000  under=0.000  mae=1.00
+    n_segs=33  n=   1  acc=0.000  over=1.000  under=0.000  mae=2.00
+    n_segs=36  n=   1  acc=0.000  over=0.000  under=1.000  mae=1.00
+========================================================
+
+Plotting …
+  saved: /home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/causal_results/preencode_partial/causal_pr_curve.png
+    PR-AUC       : 0.837
+    ROC-AUC      : 0.964
+  saved: /home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/causal_results/preencode_partial/causal_examples.png
+  model saved: /home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/causal_results/preencode_partial/causal_gru.pkl
+Done.

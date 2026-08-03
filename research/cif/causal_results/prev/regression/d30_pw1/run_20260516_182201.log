@@ -1,0 +1,90 @@
+log → research/cif/causal_results/regression/d30_pw1/run_20260516_182201.log
+args: {'data': '/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/dataset/data/dailytalk_10000.jsonl', 'model': 'Qwen/Qwen3-ASR-1.7B', 'device': 'cuda:0', 'arch': 'gru', 'hidden': 128, 'n_layers': 2, 'n_heads': 4, 'attn_window': None, 'loss': 'bce', 'label_type': 'distance', 'decay_frames': 30, 'delta': False, 'epochs': 20, 'lr': 0.001, 'pos_window': 1, 'n_val': 50, 'n_test': 50, 'seed': 42, 'peak_thr': None, 'out_dir': 'research/cif/causal_results/regression/d30_pw1', 'cache_dir': 'research/cif/causal_results/gru/pos1', 'no_cache': False, 'max_dialogs': None, 'load_model': None, 'resume': None, 'no_save': False, 'log_file': None}
+
+  cache miss: /home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/causal_results/gru/pos1/dailytalk_10000_pw1_causal_distance_d30.pkl
+  loading cache: /home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/causal_results/gru/pos1/dailytalk_10000_pw1_causal.pkl …
+  1058 dialogs loaded
+  hard 캐시 재활용 → label을 distance으로 재계산 …
+  cache saved: dailytalk_10000_pw1_causal_distance_d30.pkl  (1058 dialogs)
+
+  train=958  val=50  test=50
+  training causal-gru  hidden=128  n_layers=2  loss=distance  epochs=20  lr=0.001  patience=10
+
+  loading cache: /home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/causal_results/gru/pos1/dailytalk_10000_pw1_causal.pkl …
+  1058 dialogs loaded
+
+  train=958  val=50  test=50
+/home/skkai/anaconda3/lib/python3.13/site-packages/torch/cuda/__init__.py:435: UserWarning: 
+    Found GPU0 NVIDIA GB10 which is of cuda capability 12.1.
+    Minimum and Maximum cuda capability supported by this version of PyTorch is
+    (8.0) - (12.0)
+    
+  queued_call()
+  model loaded: research/cif/causal_results/regression/d30_pw1/causal_gru.pkl  arch=gru
+
+Sweeping threshold on val set …
+/home/skkai/anaconda3/lib/python3.13/site-packages/torch/nn/modules/rnn.py:1415: UserWarning: RNN module weights are not part of single contiguous chunk of memory. This means they need to be compacted at every call, possibly greatly increasing memory usage. To compact weights again call flatten_parameters(). (Triggered internally at /pytorch/aten/src/ATen/native/cudnn/RNN.cpp:1480.)
+  result = _VF.gru(
+/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/train_causal.py:570: UserWarning: Glyph 51068 (\N{HANGUL SYLLABLE IL}) missing from font(s) DejaVu Sans.
+  plt.tight_layout()
+/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/train_causal.py:570: UserWarning: Glyph 52824 (\N{HANGUL SYLLABLE CI}) missing from font(s) DejaVu Sans.
+  plt.tight_layout()
+/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/train_causal.py:571: UserWarning: Glyph 51068 (\N{HANGUL SYLLABLE IL}) missing from font(s) DejaVu Sans.
+  plt.savefig(out_path, dpi=120, bbox_inches="tight"); plt.close()
+/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/train_causal.py:571: UserWarning: Glyph 52824 (\N{HANGUL SYLLABLE CI}) missing from font(s) DejaVu Sans.
+  plt.savefig(out_path, dpi=120, bbox_inches="tight"); plt.close()
+  saved: research/cif/causal_results/regression/d30_pw1/causal_thr_sweep.png
+  best thr=0.80  count_acc=0.320  pos_mae=5.75f
+
+Evaluating on test set …
+/home/skkai/anaconda3/lib/python3.13/site-packages/torch/nn/modules/rnn.py:1415: UserWarning: RNN module weights are not part of single contiguous chunk of memory. This means they need to be compacted at every call, possibly greatly increasing memory usage. To compact weights again call flatten_parameters(). (Triggered internally at /pytorch/aten/src/ATen/native/cudnn/RNN.cpp:1480.)
+  result = _VF.gru(
+
+========================================================
+  [causal-gru]  pos_window=±1f  peak_thr=0.80
+────────────────────────────────────────────────────────
+  [Frame-level]
+    balanced_acc : 0.606
+    AUC          : 0.709
+    F1 @0.5      : 0.249
+    best F1      : 0.408  (thr=0.884  P=0.422  R=0.394)
+────────────────────────────────────────────────────────
+  [Streaming trigger  (run, thr=0.80)]
+    count_acc    : 0.360
+    count_mae    : 1.160
+    over_rate    : 0.360  (과검출)
+    under_rate   : 0.280  (미검출)
+    pos_mae      : 7.25 f  ≈ 557 ms
+    n_dialogs    : 50  n_segs_total : 774
+
+  [ n_segs별 count_acc / over / under ]
+    n_segs=7  n=   2  acc=0.000  over=0.500  under=0.500  mae=1.50
+    n_segs=8  n=   4  acc=0.250  over=0.750  under=0.000  mae=1.50
+    n_segs=9  n=   5  acc=0.600  over=0.400  under=0.000  mae=0.60
+    n_segs=10  n=   2  acc=0.500  over=0.500  under=0.000  mae=1.00
+    n_segs=11  n=   2  acc=1.000  over=0.000  under=0.000  mae=0.00
+    n_segs=12  n=   5  acc=0.400  over=0.000  under=0.600  mae=1.20
+    n_segs=13  n=   1  acc=1.000  over=0.000  under=0.000  mae=0.00
+    n_segs=14  n=   4  acc=0.250  over=0.500  under=0.250  mae=1.00
+    n_segs=15  n=   3  acc=0.000  over=0.333  under=0.667  mae=1.00
+    n_segs=16  n=   4  acc=0.250  over=0.500  under=0.250  mae=1.50
+    n_segs=17  n=   5  acc=0.600  over=0.000  under=0.400  mae=0.40
+    n_segs=18  n=   1  acc=0.000  over=0.000  under=1.000  mae=1.00
+    n_segs=19  n=   2  acc=0.000  over=0.500  under=0.500  mae=3.00
+    n_segs=21  n=   1  acc=1.000  over=0.000  under=0.000  mae=0.00
+    n_segs=22  n=   2  acc=0.000  over=0.500  under=0.500  mae=2.00
+    n_segs=26  n=   3  acc=0.667  over=0.333  under=0.000  mae=1.00
+    n_segs=27  n=   1  acc=0.000  over=1.000  under=0.000  mae=1.00
+    n_segs=28  n=   1  acc=0.000  over=0.000  under=1.000  mae=2.00
+    n_segs=32  n=   2  acc=0.000  over=1.000  under=0.000  mae=3.00
+========================================================
+
+Plotting …
+  saved: research/cif/causal_results/regression/d30_pw1/causal_pr_curve.png
+    PR-AUC       : 0.387
+    ROC-AUC      : 0.709
+/home/skkai/anaconda3/lib/python3.13/site-packages/torch/nn/modules/rnn.py:1415: UserWarning: RNN module weights are not part of single contiguous chunk of memory. This means they need to be compacted at every call, possibly greatly increasing memory usage. To compact weights again call flatten_parameters(). (Triggered internally at /pytorch/aten/src/ATen/native/cudnn/RNN.cpp:1480.)
+  result = _VF.gru(
+  saved: research/cif/causal_results/regression/d30_pw1/causal_examples.png
+  model saved: research/cif/causal_results/regression/d30_pw1/causal_gru.pkl
+Done.

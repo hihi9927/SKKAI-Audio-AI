@@ -1,0 +1,78 @@
+log → research/cif/causal_results/curriculum/d30_pw1/run_20260516_193515.log
+args: {'data': '/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/dataset/data/dailytalk_10000.jsonl', 'model': 'Qwen/Qwen3-ASR-1.7B', 'device': 'cuda:0', 'arch': 'gru', 'hidden': 128, 'n_layers': 2, 'n_heads': 4, 'attn_window': None, 'loss': 'bce', 'loss_alpha': 0.5, 'label_type': 'distance', 'decay_frames': 30, 'delta': False, 'epochs': 15, 'lr': 0.001, 'pos_window': 1, 'n_val': 50, 'n_test': 50, 'seed': 42, 'peak_thr': None, 'out_dir': 'research/cif/causal_results/curriculum/d30_pw1', 'cache_dir': 'research/cif/causal_results/gru/pos1', 'no_cache': False, 'max_dialogs': None, 'load_model': None, 'resume': None, 'no_save': False, 'curriculum': True, 'phase2_epochs': 10, 'phase2_lr': None, 'log_file': None}
+
+  loading cache: /home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/causal_results/gru/pos1/dailytalk_10000_pw1_causal_distance_d30.pkl …
+  1058 dialogs loaded
+
+  train=958  val=50  test=50
+
+[curriculum] Phase 1: distance loss
+  training causal-gru  hidden=128  n_layers=2  loss=distance  epochs=15  lr=0.001  patience=10
+    dialogs=958  pos=326980  neg=57517  ratio=1:0
+    epoch   1/15  tr=0.0519  val=0.0461  *
+    epoch   5/15  tr=0.0411  val=0.0430  *
+    epoch  10/15  tr=0.0364  val=0.0444
+    epoch  15/15  tr=0.0286  val=0.0480
+  best weights restored  val_loss=0.0430
+
+[curriculum] Phase 2: BCE fine-tune
+  resuming from existing weights
+  training causal-gru  hidden=128  n_layers=2  loss=bce  epochs=10  lr=0.0002  patience=10
+    dialogs=958  pos=43413  neg=341084  ratio=1:7
+    epoch   1/10  tr=0.3709  val=0.3321  *
+    epoch   5/10  tr=0.2800  val=0.3137  *
+    epoch  10/10  tr=0.2567  val=0.3201
+  best weights restored  val_loss=0.3132
+
+Sweeping threshold on val set …
+  saved: research/cif/causal_results/curriculum/d30_pw1/causal_thr_sweep.png
+  best thr=0.90  count_acc=0.340  pos_mae=3.17f
+
+Evaluating on test set …
+
+========================================================
+  [causal-gru]  pos_window=±1f  peak_thr=0.90
+────────────────────────────────────────────────────────
+  [Frame-level]
+    balanced_acc : 0.936
+    AUC          : 0.981
+    F1 @0.5      : 0.751
+    best F1      : 0.815  (thr=0.861  P=0.797  R=0.833)
+────────────────────────────────────────────────────────
+  [Streaming trigger  (run, thr=0.90)]
+    count_acc    : 0.300
+    count_mae    : 1.140
+    over_rate    : 0.440  (과검출)
+    under_rate   : 0.260  (미검출)
+    pos_mae      : 2.41 f  ≈ 185 ms
+    n_dialogs    : 50  n_segs_total : 774
+
+  [ n_segs별 count_acc / over / under ]
+    n_segs=7  n=   2  acc=0.500  over=0.500  under=0.000  mae=1.50
+    n_segs=8  n=   4  acc=0.250  over=0.500  under=0.250  mae=1.25
+    n_segs=9  n=   5  acc=0.600  over=0.400  under=0.000  mae=0.40
+    n_segs=10  n=   2  acc=0.000  over=1.000  under=0.000  mae=1.50
+    n_segs=11  n=   2  acc=0.500  over=0.500  under=0.000  mae=0.50
+    n_segs=12  n=   5  acc=0.400  over=0.400  under=0.200  mae=0.80
+    n_segs=13  n=   1  acc=0.000  over=1.000  under=0.000  mae=1.00
+    n_segs=14  n=   4  acc=0.500  over=0.250  under=0.250  mae=0.50
+    n_segs=15  n=   3  acc=0.000  over=0.333  under=0.667  mae=1.00
+    n_segs=16  n=   4  acc=0.000  over=0.500  under=0.500  mae=2.00
+    n_segs=17  n=   5  acc=0.200  over=0.000  under=0.800  mae=0.80
+    n_segs=18  n=   1  acc=1.000  over=0.000  under=0.000  mae=0.00
+    n_segs=19  n=   2  acc=0.000  over=0.500  under=0.500  mae=1.50
+    n_segs=21  n=   1  acc=0.000  over=1.000  under=0.000  mae=2.00
+    n_segs=22  n=   2  acc=0.000  over=0.500  under=0.500  mae=2.00
+    n_segs=26  n=   3  acc=0.667  over=0.333  under=0.000  mae=1.00
+    n_segs=27  n=   1  acc=0.000  over=1.000  under=0.000  mae=4.00
+    n_segs=28  n=   1  acc=1.000  over=0.000  under=0.000  mae=0.00
+    n_segs=32  n=   2  acc=0.000  over=1.000  under=0.000  mae=2.50
+========================================================
+
+Plotting …
+  saved: research/cif/causal_results/curriculum/d30_pw1/causal_pr_curve.png
+    PR-AUC       : 0.883
+    ROC-AUC      : 0.981
+  saved: research/cif/causal_results/curriculum/d30_pw1/causal_examples.png
+  model saved: research/cif/causal_results/curriculum/d30_pw1/causal_gru.pkl
+Done.
