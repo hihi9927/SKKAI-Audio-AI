@@ -11,9 +11,14 @@
 #   동시 전용: --max-chapters --dry-run
 #   공통:      --fresh-start --host --policy --chunk-size-ms --trailing-silence-ms ...
 #
-# trailing-silence는 8000ms를 쓴다(mode2/mode4는 5500 유지). 확정 게이트는 누적 오디오가
-# chunk_size 배수에 도달할 때만 판정하므로, 무음이 짧으면 마지막 문장이 확정되기 전에
-# 스트림이 끊겨 finish 커밋으로 빠진다(실측: 0.11초 모자라 finish 발생).
+# trailing-silence는 mode2/3/4 모두 5500ms로 통일한다. 모드 간 비교가 목적이므로
+# 무음 길이가 모드마다 다르면 교란 변수가 된다.
+#
+# 주의: 확정 게이트는 누적 오디오가 chunk_size 배수에 도달할 때만 판정하므로, 5500ms에서는
+# 마지막 문장이 확정되기 전에 스트림이 끊겨 finish 커밋으로 빠진다(실측: 0.11초 모자람,
+# 8000ms면 dot 확정). 게다가 현재 벤치마크 하네스는 finish를 수신 루프 종료 후에 보내서
+# finish 커밋 결과를 기록하지 못한다 → 마지막 문장이 결과에서 유실된다.
+# mode3 측정 전에 하네스의 finish 전송 시점을 먼저 고칠 것.
 set -e
 
 SCOPE="${1:?scope 필요 (예: sample, full)}"
@@ -96,7 +101,7 @@ PYTHONPATH= "$STITY_PYTHON" "$RUNNER" \
   --results-root "$PAPER_RESULT_DIR/ASR" \
   --port 8766 \
   --target-lang "" \
-  --trailing-silence-ms 8000 \
+  --trailing-silence-ms 5500 \
   --chunk-size-ms 200 \
   --description "mode3 (rule-based/dot-commit) / baseline(1.0.0) / ASR only, translation off${DESC_SUFFIX}" \
   "${MODE_ARGS[@]}" \
