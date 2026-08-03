@@ -42,6 +42,10 @@ evaluation/{Dataset}/results/
 
 > `baseline` 계열 모델(`Qwen/Qwen3-ASR-1.7B`, `baseline`, `baseline(1.0.0)` 등)은 서버에서 `dot commit`이 기본 활성화됩니다.  
 > baseline에서도 끄고 싶으면 `--disable-dot-commit`, finetuned 등에서 강제로 켜고 싶으면 `--enable-dot-commit`을 사용합니다.
+>
+> **`dot commit`이 켜지면 확정 게이트(`--dot-commit-confirm`)도 자동으로 켜집니다.** 즉 모드3 실행에는 별도
+> 인자가 필요 없습니다. 게이트 없이 감지 즉시 커밋하던 예전 동작으로 돌리려면 `--no-dot-commit-confirm`을 씁니다.
+> 게이트 상세는 [08_03 확정게이트 알고리즘 명세](../notion_docs/08_03_dot_commit_확정게이트_알고리즘_명세.md) 참조.
 
 ---
 
@@ -87,9 +91,13 @@ python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \
   [--tag <폴더명>] \
   [--description "테스트 설명"] \
   --target-lang ko \
-  --trailing-silence-ms 5500 \
+  --trailing-silence-ms 8000 \
   --chunk-size-ms 200
 ```
+
+> **`--trailing-silence-ms` 기본값이 5500 → 8000으로 바뀌었습니다.** dot-commit 확정은 누적 오디오가
+> `chunk_size_sec` 배수에 도달할 때만 판정되므로, 무음이 짧으면 마지막 문장이 확정되기 전에 스트림이
+> 끊겨 `finish` 커밋으로 빠집니다 (실측: 5500ms에서 0.11초 모자라 finish 발생, 8000ms에서 dot 확정).
 
 `--auto-server`를 사용할 때도 같은 규칙이 적용됩니다. baseline 계열 모델은 `dot commit`이 자동 활성화되고, 필요하면 `--server-args "--disable-dot-commit"` 또는 `--server-args "--enable-dot-commit"`으로 override할 수 있습니다.
 
