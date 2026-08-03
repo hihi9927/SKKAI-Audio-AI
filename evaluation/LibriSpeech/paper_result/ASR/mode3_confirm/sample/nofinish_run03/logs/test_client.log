@@ -1,0 +1,106 @@
+INFO	server_model 자동 추론: --model mode3_confirm → Qwen/Qwen3-ASR-1.7B
+INFO	Results → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_run03
+INFO	Manual mode. Ensure server is running at ws://localhost:8766
+INFO	Processing 9 files (already done: 0)
+INFO	[1/9] 1688-142285-0000
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_run03
+INFO	  REF: THERE'S IRON THEY SAY IN ALL OUR BLOOD AND A GRAIN OR TWO PERHAPS IS GOOD BUT HIS HE MAKES ME HARSHLY FEEL HAS GOT A LITTLE TOO MUCH OF STEEL ANON
+INFO	  HYP: There's iron, they say, in all our blood, and a grain or two perhaps is good, but his—he makes me harshly feel—has got a little too much of steel. Anon.
+INFO	  FIRST_TOKEN_LATENCY: 23.912s
+INFO	  MODEL_RUNTIME(total-audio): 10.073s
+INFO	  FSL(avg): 7.533s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 0.00% (1 files)
+INFO	  HYP_COMMIT: There's iron, they say, in all our blood, and a grain or two perhaps is good, but his—he makes me harshly feel—has got a little too much of steel. <dot> Anon. <dot>
+INFO	[2/9] 1688-142285-0001
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_run03
+INFO	  REF: MARGARET SAID MISTER HALE AS HE RETURNED FROM SHOWING HIS GUEST DOWNSTAIRS I COULD NOT HELP WATCHING YOUR FACE WITH SOME ANXIETY WHEN MISTER THORNTON MADE HIS CONFESSION OF HAVING BEEN A SHOP BOY
+INFO	  HYP: Margaret said, "Mr. Hale, as he returned from showing his guests downstairs, I could not help watching your face with some anxiety when Mr. Thornton made his confession of having been a shop boy."
+INFO	  FIRST_TOKEN_LATENCY: 24.695s
+INFO	  MODEL_RUNTIME(total-audio): 12.070s
+INFO	  FSL(avg): 8.666s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 4.48% (2 files)
+INFO	  HYP_COMMIT: Margaret said, "Mr. Hale, as he returned from showing his guests downstairs, I could not help watching your face with some anxiety when Mr. Thornton made his confession of having been a shop boy." <dot>
+INFO	[3/9] 1688-142285-0057
+WARNING	Empty transcript: 1688-142285-0057
+INFO	[4/9] 1688-142285-0060
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_run03
+INFO	  REF: BUT SURELY SAID MARGARET FACING ROUND YOU BELIEVE IN WHAT I SAID THAT GOD GAVE HER LIFE AND ORDERED WHAT KIND OF LIFE IT WAS TO BE
+INFO	  HYP: But surely," said Margaret, facing round, "you believe in what I said—that God gave her life, and ordered what kind of life it was to be."
+INFO	  FIRST_TOKEN_LATENCY: 18.417s
+INFO	  MODEL_RUNTIME(total-audio): 8.637s
+INFO	  FSL(avg): 4.405s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 3.19% (3 files)
+INFO	  HYP_COMMIT: But surely," said Margaret, facing round, "you believe in what I said—that God gave her life, and ordered what kind of life it was to be." <dot>
+INFO	[5/9] 1688-142285-0067
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_run03
+INFO	  REF: DON'T THINK HARDLY ON HIM HE'S A GOOD MAN HE IS
+INFO	  HYP: Don't think hardly on him. He's a good man. He is.
+INFO	  FIRST_TOKEN_LATENCY: 7.525s
+INFO	  MODEL_RUNTIME(total-audio): 3.681s
+INFO	  FSL(avg): 1.477s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 2.80% (4 files)
+INFO	  HYP_COMMIT: Don't think hardly on him. <dot> He's a good man. <dot> He is. <dot>
+INFO	[6/9] 1688-142285-0070
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_run03
+INFO	  REF: BUT YOU WILL BE THERE FATHER YOU SHALL OH MY HEART
+INFO	  HYP: But you'll be there, father. You shall. Oh, my heart.
+INFO	  FIRST_TOKEN_LATENCY: 5.944s
+INFO	  MODEL_RUNTIME(total-audio): 5.935s
+INFO	  FSL(avg): 1.651s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.003s
+INFO	  SPEAKER_1688_RUNNING_WER: 3.39% (5 files)
+INFO	  HYP_COMMIT: But you'll be there, father. <dot> You shall. <dot> Oh, my heart. <dot>
+INFO	[7/9] 1688-142285-0074
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_run03
+INFO	  REF: I'LL GO TO BED IT'S BEST PLACE BUT CATCHING AT MARGARET'S GOWN YO'LL COME AGAIN I KNOW YO WILL BUT JUST SAY IT
+INFO	  HYP: I'll go to bed. It's best place, but catching at Margaret's gown. You'll come again, I know you will. But just say it.
+INFO	  FIRST_TOKEN_LATENCY: 5.813s
+INFO	  MODEL_RUNTIME(total-audio): 6.543s
+INFO	  FSL(avg): 2.630s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.000s
+INFO	  SPEAKER_1688_RUNNING_WER: 4.14% (6 files)
+INFO	  HYP_COMMIT: I'll go to bed. <dot> It's best place, but catching at Margaret's gown. <dot> You'll come again, I know you will. <dot> But just say it. <dot>
+INFO	[8/9] 1688-142285-0086
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_run03
+INFO	  REF: THE MOTHER OF WHOM HE SPOKE TO US SAID MARGARET
+INFO	  HYP: The mother of whom he spoke to us said, "Margaret."
+INFO	  FIRST_TOKEN_LATENCY: 7.897s
+INFO	  MODEL_RUNTIME(total-audio): 4.587s
+INFO	  FSL(avg): 1.784s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 3.87% (7 files)
+INFO	  HYP_COMMIT: The mother of whom he spoke to us said, "Margaret." <dot>
+INFO	[9/9] 1688-142285-0091
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_run03
+INFO	  REF: MY DEAR SAID MISTER HALE ALARMED PRAY DON'T GO OFF ON THAT IDEA
+INFO	  HYP: My dear," said Mister. Hell, alarmed. "Pray don't go off on that idea."
+INFO	  FIRST_TOKEN_LATENCY: 8.314s
+INFO	  MODEL_RUNTIME(total-audio): 7.394s
+INFO	  FSL(avg): 1.320s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.000s
+INFO	  SPEAKER_1688_RUNNING_WER: 4.14% (8 files)
+INFO	  HYP_COMMIT: My dear," said Mister. <dot> Hell, alarmed. <dot> "Pray don't go off on that idea." <dot>
+INFO	
+======================================================================
+INFO	RESULTS SUMMARY - BACKEND POLICY 3
+INFO	======================================================================
+INFO	Total files processed: 8
+INFO	Overall WER: 4.14%
+INFO	Average First Token Latency: 12.815s
+INFO	Average Model Runtime: 7.365s
+INFO	Number of speakers: 1
+INFO	======================================================================
+
+INFO	Completed. Results saved to evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_run03

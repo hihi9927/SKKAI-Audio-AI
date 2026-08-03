@@ -13,12 +13,18 @@ import re
 # 마침표 뒤에 abbreviation이 오면 문장 경계 아님 (Mr. Smith 같은 경우).
 _ABBREV_LOOKBEHIND = r"(?<!Mr)(?<!Mrs)(?<!Dr)(?<!St)(?<!Jr)(?<!Sr)(?<!vs)(?<!No)"
 
+# 종료 문장부호 뒤에 붙는 닫는 따옴표/괄호. 대화체 인용문은 마침표가 인용부호
+# 안쪽에 찍혀(`... a shop boy."`) 마침표 바로 뒤가 공백도 문자열 끝도 아니게 된다.
+# 이걸 흡수하지 않으면 인용문으로 끝나는 문장은 경계로 인정되지 않아 dot-commit이
+# 아예 발동하지 못하고 finish 커밋으로만 빠진다.
+_CLOSERS = r"[\"'”’»›\)\]\}]*"
+
 # 소수점(3.14)은 마침표 뒤에 공백이 없어 자연히 제외됨 — 별도 처리 불필요.
 DOT_COMMIT_BOUNDARY_RE = re.compile(
     r"(?:"
-    rf"{_ABBREV_LOOKBEHIND}\.(?:\s+|$)"
-    r"|[?!](?:\s+|$)"
-    r"|[。？！]"
+    rf"{_ABBREV_LOOKBEHIND}\.{_CLOSERS}(?:\s+|$)"
+    rf"|[?!]{_CLOSERS}(?:\s+|$)"
+    rf"|[。？！]{_CLOSERS}"
     r"|<SEG>"
     r")"
 )

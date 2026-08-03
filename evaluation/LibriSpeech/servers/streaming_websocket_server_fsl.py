@@ -821,6 +821,7 @@ def main():
         no_vad=args.no_vad,
         enable_dot_commit=args.enable_dot_commit,
         dot_commit_confirm=args.dot_commit_confirm,
+        dot_commit_stall_chunks=args.dot_commit_stall_chunks,
         always_commit=args.always_commit,
         restrict_languages=not args.no_restrict_languages,
         enable_correction=args.correction,

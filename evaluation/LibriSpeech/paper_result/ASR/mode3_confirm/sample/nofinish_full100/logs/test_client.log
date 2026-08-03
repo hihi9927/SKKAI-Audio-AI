@@ -1,0 +1,348 @@
+INFO	server_model 자동 추론: --model mode3_confirm → Qwen/Qwen3-ASR-1.7B
+INFO	Results → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Manual mode. Ensure server is running at ws://localhost:8766
+INFO	Processing 100 files (already done: 0)
+INFO	[1/100] 1688-142285-0000
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	  REF: THERE'S IRON THEY SAY IN ALL OUR BLOOD AND A GRAIN OR TWO PERHAPS IS GOOD BUT HIS HE MAKES ME HARSHLY FEEL HAS GOT A LITTLE TOO MUCH OF STEEL ANON
+INFO	  HYP: There's iron, they say, in all our blood, and a grain or two perhaps is good, but his—he makes me harshly feel—has got a little too much of steel. Anon.
+INFO	  FIRST_TOKEN_LATENCY: 23.700s
+INFO	  MODEL_RUNTIME(total-audio): 9.845s
+INFO	  FSL(avg): 7.312s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 0.00% (1 files)
+INFO	  HYP_COMMIT: There's iron, they say, in all our blood, and a grain or two perhaps is good, but his—he makes me harshly feel—has got a little too much of steel. <dot> Anon. <dot>
+INFO	[2/100] 1688-142285-0001
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	  REF: MARGARET SAID MISTER HALE AS HE RETURNED FROM SHOWING HIS GUEST DOWNSTAIRS I COULD NOT HELP WATCHING YOUR FACE WITH SOME ANXIETY WHEN MISTER THORNTON MADE HIS CONFESSION OF HAVING BEEN A SHOP BOY
+INFO	  HYP: Margaret said, "Mr. Hale, as he returned from showing his guests downstairs, I could not help watching your face with some anxiety when Mr. Thornton made his confession of having been a shop boy."
+INFO	  FIRST_TOKEN_LATENCY: 24.462s
+INFO	  MODEL_RUNTIME(total-audio): 11.837s
+INFO	  FSL(avg): 8.434s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 4.48% (2 files)
+INFO	  HYP_COMMIT: Margaret said, "Mr. Hale, as he returned from showing his guests downstairs, I could not help watching your face with some anxiety when Mr. Thornton made his confession of having been a shop boy." <dot>
+INFO	[3/100] 1688-142285-0002
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	  REF: YOU DON'T MEAN THAT YOU THOUGHT ME SO SILLY
+INFO	  HYP: You don't mean that you thought me so silly.
+INFO	  FIRST_TOKEN_LATENCY: 5.617s
+INFO	  MODEL_RUNTIME(total-audio): 2.782s
+INFO	  FSL(avg): 1.579s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 3.90% (3 files)
+INFO	  HYP_COMMIT: You don't mean that you thought me so silly. <dot>
+INFO	[4/100] 1688-142285-0003
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	  REF: I REALLY LIKED THAT ACCOUNT OF HIMSELF BETTER THAN ANYTHING ELSE HE SAID
+INFO	  HYP: I really liked that account of himself better than anything else he said.
+INFO	  FIRST_TOKEN_LATENCY: 9.847s
+INFO	  MODEL_RUNTIME(total-audio): 4.787s
+INFO	  FSL(avg): 1.780s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 3.33% (4 files)
+INFO	  HYP_COMMIT: I really liked that account of himself better than anything else he said. <dot>
+INFO	[5/100] 1688-142285-0004
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	  REF: HIS STATEMENT OF HAVING BEEN A SHOP BOY WAS THE THING I LIKED BEST OF ALL
+INFO	  HYP: His statement of having been a shop boy was the thing I liked best of all.
+INFO	  FIRST_TOKEN_LATENCY: 8.058s
+INFO	  MODEL_RUNTIME(total-audio): 3.583s
+INFO	  FSL(avg): 1.976s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.003s
+INFO	  SPEAKER_1688_RUNNING_WER: 2.83% (5 files)
+INFO	  HYP_COMMIT: His statement of having been a shop boy was the thing I liked best of all. <dot>
+INFO	[6/100] 1688-142285-0005
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	  REF: YOU WHO WERE ALWAYS ACCUSING PEOPLE OF BEING SHOPPY AT HELSTONE
+INFO	  HYP: You who were always accusing people of being shoppy at Helston.
+INFO	  FIRST_TOKEN_LATENCY: 7.867s
+INFO	  MODEL_RUNTIME(total-audio): 3.567s
+INFO	  FSL(avg): 1.764s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 3.42% (6 files)
+INFO	  HYP_COMMIT: You who were always accusing people of being shoppy at Helston. <dot>
+INFO	[7/100] 1688-142285-0006
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	  REF: I DON'T THINK MISTER HALE YOU HAVE DONE QUITE RIGHT IN INTRODUCING SUCH A PERSON TO US WITHOUT TELLING US WHAT HE HAD BEEN
+INFO	  HYP: I don't think, Mister Hale, you have done quite right in introducing such a person to us without telling us what he had been.
+INFO	  FIRST_TOKEN_LATENCY: 13.462s
+INFO	  MODEL_RUNTIME(total-audio): 5.322s
+INFO	  FSL(avg): 3.314s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 2.82% (7 files)
+INFO	  HYP_COMMIT: I don't think, Mister Hale, you have done quite right in introducing such a person to us without telling us what he had been. <dot>
+INFO	[8/100] 1688-142285-0007
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	  REF: I REALLY WAS VERY MUCH AFRAID OF SHOWING HIM HOW MUCH SHOCKED I WAS AT SOME PARTS OF WHAT HE SAID
+INFO	  HYP: I really was very much afraid of showing him how much shocked I was at some parts of what he said.
+INFO	  FIRST_TOKEN_LATENCY: 12.678s
+INFO	  MODEL_RUNTIME(total-audio): 5.618s
+INFO	  FSL(avg): 2.614s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 2.45% (8 files)
+INFO	  HYP_COMMIT: I really was very much afraid of showing him how much shocked I was at some parts of what he said. <dot>
+INFO	[9/100] 1688-142285-0008
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	  REF: HIS FATHER DYING IN MISERABLE CIRCUMSTANCES
+INFO	  HYP: His father dying in miserable circumstances.
+INFO	  FIRST_TOKEN_LATENCY: 7.521s
+INFO	  MODEL_RUNTIME(total-audio): 3.386s
+INFO	  FSL(avg): 1.383s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 2.37% (9 files)
+INFO	  HYP_COMMIT: His father dying in miserable circumstances. <dot>
+INFO	[10/100] 1688-142285-0009
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	  REF: WHY IT MIGHT HAVE BEEN IN THE WORKHOUSE
+INFO	  HYP: Why, it might have been in the workhouse.
+INFO	  FIRST_TOKEN_LATENCY: 7.723s
+INFO	  MODEL_RUNTIME(total-audio): 4.188s
+INFO	  FSL(avg): 1.585s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 2.26% (10 files)
+INFO	  HYP_COMMIT: Why, it might have been in the workhouse. <dot>
+INFO	[11/100] 1688-142285-0010
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	  REF: HIS FATHER SPECULATED WILDLY FAILED AND THEN KILLED HIMSELF BECAUSE HE COULD NOT BEAR THE DISGRACE
+INFO	  HYP: His father speculated wildly, failed, and then killed himself because he could not bear the disgrace.
+INFO	  FIRST_TOKEN_LATENCY: 12.304s
+INFO	  MODEL_RUNTIME(total-audio): 4.634s
+INFO	  FSL(avg): 2.227s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 2.07% (11 files)
+INFO	  HYP_COMMIT: His father speculated wildly, failed, and then killed himself because he could not bear the disgrace. <dot>
+INFO	[12/100] 1688-142285-0011
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	  REF: ALL HIS FORMER FRIENDS SHRUNK FROM THE DISCLOSURES THAT HAD TO BE MADE OF HIS DISHONEST GAMBLING WILD HOPELESS STRUGGLES MADE WITH OTHER PEOPLE'S MONEY TO REGAIN HIS OWN MODERATE PORTION OF WEALTH
+INFO	  HYP: All his former friends shrank from the disclosures that had to be made of his dishonest gambling, wild, hopeless struggles, made with other people's money, to regain his own moderate portion of wealth.
+INFO	  FIRST_TOKEN_LATENCY: 23.005s
+INFO	  MODEL_RUNTIME(total-audio): 8.955s
+INFO	  FSL(avg): 6.947s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.004s
+INFO	  SPEAKER_1688_RUNNING_WER: 2.20% (12 files)
+INFO	  HYP_COMMIT: All his former friends shrank from the disclosures that had to be made of his dishonest gambling, wild, hopeless struggles, made with other people's money, to regain his own moderate portion of wealth. <dot>
+INFO	[13/100] 1688-142285-0012
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	  REF: NO ONE CAME FORWARDS TO HELP THE MOTHER AND THIS BOY
+INFO	  HYP: No one came forwards to help the mother and this boy.
+INFO	  FIRST_TOKEN_LATENCY: 7.775s
+INFO	  MODEL_RUNTIME(total-audio): 4.455s
+INFO	  FSL(avg): 1.652s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 2.10% (13 files)
+INFO	  HYP_COMMIT: No one came forwards to help the mother and this boy. <dot>
+INFO	[14/100] 1688-142285-0013
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	  REF: AT LEAST NO FRIEND CAME FORWARDS IMMEDIATELY AND MISSUS THORNTON IS NOT ONE I FANCY TO WAIT TILL TARDY KINDNESS COMES TO FIND HER OUT
+INFO	  HYP: At least no friend came forwards immediately, and Mister Thornton is not one I fancy to wait till tardy kindness comes to find her out.
+INFO	  FIRST_TOKEN_LATENCY: 15.737s
+INFO	  MODEL_RUNTIME(total-audio): 5.557s
+INFO	  FSL(avg): 3.554s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 2.28% (14 files)
+INFO	  HYP_COMMIT: At least no friend came forwards immediately, and Mister Thornton is not one I fancy to wait till tardy kindness comes to find her out. <dot>
+INFO	[15/100] 1688-142285-0014
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	  REF: SO THEY LEFT MILTON
+INFO	  HYP: So they left Milton.
+INFO	  FIRST_TOKEN_LATENCY: 5.324s
+INFO	  MODEL_RUNTIME(total-audio): 3.254s
+INFO	  FSL(avg): 1.250s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 2.25% (15 files)
+INFO	  HYP_COMMIT: So they left Milton. <dot>
+INFO	[16/100] 1688-142285-0015
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	  REF: HOW TAINTED ASKED HER FATHER
+INFO	  HYP: How tainted?" asked her father.
+INFO	  FIRST_TOKEN_LATENCY: 9.500s
+INFO	  MODEL_RUNTIME(total-audio): 6.590s
+INFO	  FSL(avg): 1.386s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 2.21% (16 files)
+INFO	  HYP_COMMIT: How tainted?" <dot> asked her father. <dot>
+INFO	[17/100] 1688-142285-0016
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	  REF: OH PAPA BY THAT TESTING EVERYTHING BY THE STANDARD OF WEALTH
+INFO	  HYP: Oh, Papa! Oh, papa! By that testing everything by the standard of wealth.
+INFO	  FIRST_TOKEN_LATENCY: 5.848s
+INFO	  MODEL_RUNTIME(total-audio): 5.047s
+INFO	  FSL(avg): 1.785s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.000s
+INFO	  SPEAKER_1688_RUNNING_WER: 2.83% (17 files)
+INFO	  HYP_COMMIT: Oh, Papa! <dot> Oh, papa! <dot> By that testing everything by the standard of wealth. <dot>
+INFO	[18/100] 1688-142285-0017
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	  REF: WHEN HE SPOKE OF THE MECHANICAL POWERS HE EVIDENTLY LOOKED UPON THEM ONLY AS NEW WAYS OF EXTENDING TRADE AND MAKING MONEY
+INFO	  HYP: When he spoke of the mechanical powers, he evidently looked upon them only as new ways of extending trade and making money.
+INFO	  FIRST_TOKEN_LATENCY: 12.897s
+INFO	  MODEL_RUNTIME(total-audio): 4.517s
+INFO	  FSL(avg): 2.713s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 2.62% (18 files)
+INFO	  HYP_COMMIT: When he spoke of the mechanical powers, he evidently looked upon them only as new ways of extending trade and making money. <dot>
+INFO	[19/100] 1688-142285-0018
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	  REF: AND THE POOR MEN AROUND HIM THEY WERE POOR BECAUSE THEY WERE VICIOUS OUT OF THE PALE OF HIS SYMPATHIES BECAUSE THEY HAD NOT HIS IRON NATURE AND THE CAPABILITIES THAT IT GIVES HIM FOR BEING RICH
+INFO	  HYP: And the poor men around him, they were poor because they were vicious, out of the pale of his sympathies, because they had not his iron nature, and the capabilities that it gives him for being rich.
+INFO	  FIRST_TOKEN_LATENCY: 24.718s
+INFO	  MODEL_RUNTIME(total-audio): 11.928s
+INFO	  FSL(avg): 8.524s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.002s
+INFO	  SPEAKER_1688_RUNNING_WER: 2.34% (19 files)
+INFO	  HYP_COMMIT: And the poor men around him, they were poor because they were vicious, out of the pale of his sympathies, because they had not his iron nature, and the capabilities that it gives him for being rich. <dot>
+INFO	[20/100] 1688-142285-0019
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	  REF: NOT VICIOUS HE NEVER SAID THAT
+INFO	  HYP: Not vicious. He never said that.
+INFO	  FIRST_TOKEN_LATENCY: 5.595s
+INFO	  MODEL_RUNTIME(total-audio): 4.420s
+INFO	  FSL(avg): 2.076s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 2.30% (20 files)
+INFO	  HYP_COMMIT: Not vicious. <dot> He never said that. <dot>
+INFO	[21/100] 1688-142285-0020
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	  REF: IMPROVIDENT AND SELF INDULGENT WERE HIS WORDS
+INFO	  HYP: Improvident and self-indulgent were his words.
+INFO	  FIRST_TOKEN_LATENCY: 7.823s
+INFO	  MODEL_RUNTIME(total-audio): 4.253s
+INFO	  FSL(avg): 1.650s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 2.25% (21 files)
+INFO	  HYP_COMMIT: Improvident and self-indulgent were his words. <dot>
+INFO	[22/100] 1688-142285-0021
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	  REF: MARGARET WAS COLLECTING HER MOTHER'S WORKING MATERIALS AND PREPARING TO GO TO BED
+INFO	  HYP: Margaret was collecting her mother's working materials and preparing to go to bed.
+INFO	  FIRST_TOKEN_LATENCY: 9.915s
+INFO	  MODEL_RUNTIME(total-audio): 4.705s
+INFO	  FSL(avg): 1.902s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 2.17% (22 files)
+INFO	  HYP_COMMIT: Margaret was collecting her mother's working materials and preparing to go to bed. <dot>
+INFO	[23/100] 1688-142285-0022
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	  REF: JUST AS SHE WAS LEAVING THE ROOM SHE HESITATED SHE WAS INCLINED TO MAKE AN ACKNOWLEDGMENT WHICH SHE THOUGHT WOULD PLEASE HER FATHER BUT WHICH TO BE FULL AND TRUE MUST INCLUDE A LITTLE ANNOYANCE
+INFO	  HYP: Just as she was leaving the room, she hesitated. She was inclined to make an acknowledgment, which she thought would please her father, but which, to be full and true, must include a little annoyance.
+INFO	  FIRST_TOKEN_LATENCY: 9.925s
+INFO	  MODEL_RUNTIME(total-audio): 6.501s
+INFO	  FSL(avg): 4.298s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 1.98% (23 files)
+INFO	  HYP_COMMIT: Just as she was leaving the room, she hesitated. <dot> She was inclined to make an acknowledgment, which she thought would please her father, but which, to be full and true, must include a little annoyance. <dot>
+INFO	[24/100] 1688-142285-0023
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	  REF: HOWEVER OUT IT CAME
+INFO	  HYP: However, out it came.
+INFO	  FIRST_TOKEN_LATENCY: 5.470s
+INFO	  MODEL_RUNTIME(total-audio): 2.885s
+INFO	  FSL(avg): 1.282s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 1.96% (24 files)
+INFO	  HYP_COMMIT: However, out it came. <dot>
+INFO	[25/100] 1688-142285-0024
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	  REF: PAPA I DO THINK MISTER THORNTON A VERY REMARKABLE MAN BUT PERSONALLY I DON'T LIKE HIM AT ALL
+INFO	  HYP: Papa, I do think Mister Thornton a very remarkable man, but personally, I don't like him at all.
+INFO	  FIRST_TOKEN_LATENCY: 15.112s
+INFO	  MODEL_RUNTIME(total-audio): 6.097s
+INFO	  FSL(avg): 3.092s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 1.87% (25 files)
+INFO	  HYP_COMMIT: Papa, I do think Mister Thornton a very remarkable man, but personally, I don't like him at all. <dot>
+INFO	[26/100] 1688-142285-0025
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	  REF: AND I DO SAID HER FATHER LAUGHING
+INFO	  HYP: And I do," said her father, laughing.
+INFO	  FIRST_TOKEN_LATENCY: 7.569s
+INFO	  MODEL_RUNTIME(total-audio): 4.169s
+INFO	  FSL(avg): 1.566s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 1.84% (26 files)
+INFO	  HYP_COMMIT: And I do," said her father, laughing. <dot>
+INFO	[27/100] 1688-142285-0026
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	  REF: PERSONALLY AS YOU CALL IT AND ALL
+INFO	  HYP: Personally, as you call it, and all.
+INFO	  FIRST_TOKEN_LATENCY: 7.746s
+INFO	  MODEL_RUNTIME(total-audio): 4.161s
+INFO	  FSL(avg): 1.554s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 1.81% (27 files)
+INFO	  HYP_COMMIT: Personally, as you call it, and all. <dot>
+INFO	[28/100] 1688-142285-0027
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	  REF: I DON'T SET HIM UP FOR A HERO OR ANYTHING OF THAT KIND
+INFO	  HYP: I don't set him up for a hero or anything of that kind.
+INFO	  FIRST_TOKEN_LATENCY: 8.003s
+INFO	  MODEL_RUNTIME(total-audio): 3.843s
+INFO	  FSL(avg): 1.839s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 1.76% (28 files)
+INFO	  HYP_COMMIT: I don't set him up for a hero or anything of that kind. <dot>
+INFO	[29/100] 1688-142285-0028
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	  REF: BUT GOOD NIGHT CHILD
+INFO	  HYP: But good night, child.
+INFO	  FIRST_TOKEN_LATENCY: 5.436s
+INFO	  MODEL_RUNTIME(total-audio): 3.496s
+INFO	  FSL(avg): 1.293s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 1.74% (29 files)
+INFO	  HYP_COMMIT: But good night, child. <dot>
+INFO	[30/100] 1688-142285-0029
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	  REF: THERE WERE SEVERAL OTHER SIGNS OF SOMETHING WRONG ABOUT MISSUS HALE
+INFO	  HYP: There were several other signs of something wrong about Mrs. Hale.
+INFO	  FIRST_TOKEN_LATENCY: 7.877s
+INFO	  MODEL_RUNTIME(total-audio): 3.327s
+INFO	  FSL(avg): 1.724s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 1.91% (30 files)
+INFO	  HYP_COMMIT: There were several other signs of something wrong about Mrs. Hale. <dot>
+INFO	[31/100] 1688-142285-0030
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	  REF: SHE AND DIXON HELD MYSTERIOUS CONSULTATIONS IN HER BEDROOM FROM WHICH DIXON WOULD COME OUT CRYING AND CROSS AS WAS HER CUSTOM WHEN ANY DISTRESS OF HER MISTRESS CALLED UPON HER SYMPATHY
+INFO	  HYP: She and Dixon held mysterious consultations in a bedroom, from which Dixon would come out crying and cross, as was a custom when any distress of her mistress called upon her sympathy.
+INFO	  FIRST_TOKEN_LATENCY: 19.412s
+INFO	  MODEL_RUNTIME(total-audio): 7.112s
+INFO	  FSL(avg): 5.308s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 2.19% (31 files)
+INFO	  HYP_COMMIT: She and Dixon held mysterious consultations in a bedroom, from which Dixon would come out crying and cross, as was a custom when any distress of her mistress called upon her sympathy. <dot>
+INFO	[32/100] 1688-142285-0031
+WARNING	Empty transcript: 1688-142285-0031
+INFO	[33/100] 1688-142285-0032

@@ -11,11 +11,12 @@ import re
 
 # streaming_websocket_server가 쓰는 것과 동일 (sentence_boundary.py)
 _ABBREV_LOOKBEHIND = r"(?<!Mr)(?<!Mrs)(?<!Dr)(?<!St)(?<!Jr)(?<!Sr)(?<!vs)(?<!No)"
+_CLOSERS = r"[\"'”’»›\)\]\}]*"  # 인용문 종료(`... boy."`)를 마침표 경계로 인정
 DOT_COMMIT_BOUNDARY_RE = re.compile(
     r"(?:"
-    rf"{_ABBREV_LOOKBEHIND}\.(?:\s+|$)"
-    r"|[?!](?:\s+|$)"
-    r"|[。？！]"
+    rf"{_ABBREV_LOOKBEHIND}\.{_CLOSERS}(?:\s+|$)"
+    rf"|[?!]{_CLOSERS}(?:\s+|$)"
+    rf"|[。？！]{_CLOSERS}"
     r"|<SEG>"
     r")"
 )

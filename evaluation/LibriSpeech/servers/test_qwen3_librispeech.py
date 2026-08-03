@@ -480,18 +480,35 @@ async def process_single_file(ws, audio_data, chunk_size_ms=200, send_interval_m
     async def _recv():
         nonlocal first_result_time, last_result_time
 
+        # 종료 조건: finish 전송 후 POST_FINISH_GRACE_SEC 동안 아무 메시지도 안 오면 종료.
+        #
+        # 예전엔 wait_for(timeout=3.0 if send_done else 15.0) 한 방으로 처리했는데,
+        # timeout 값은 wait 진입 시점에 확정되고 대기 중에는 재평가되지 않는다. 이 서버는
+        # ready 이후 첫 final까지 아무것도 보내지 않으므로 _recv는 15초짜리 wait 하나에
+        # 그대로 앉아 있고, 결과적으로 수신 창이 "실제 유휴 시간"이 아니라 오디오 길이의
+        # 계단 함수가 됐다:
+        #   dur+trailing < 15s  → 만료 시 send_done이 이미 True  → break        (창 15초)
+        #   dur+trailing >= 15s → 만료 시 send_done이 아직 False → continue     (창 30초)
+        # 서버가 밀려 final이 15초를 넘기면 그 파일의 final이 통째로 유실되고
+        # "Empty transcript" 경고 한 줄만 남는다(실측: 1688-142285-0057, final 16.18s).
+        # 짧게 폴링하며 send_done을 매 루프 재평가해 창을 실제 유휴 시간에 건다.
+        POLL_SEC = 1.0
+        POST_FINISH_GRACE_SEC = 8.0
+        idle_since_finish = 0.0
+
         while True:
             try:
-                # finish 전송 후(send_done)엔 flush가 GPU 디코딩 없이 즉시 끝나므로 짧게만 대기.
-                # 아직 스트리밍 중이면 디코딩 지연을 감안해 넉넉히 기다린다.
-                recv_timeout = 3.0 if send_done.is_set() else 15.0
-                msg = await asyncio.wait_for(ws.recv(), timeout=recv_timeout)
+                msg = await asyncio.wait_for(ws.recv(), timeout=POLL_SEC)
             except asyncio.TimeoutError:
                 if send_done.is_set():
-                    break
+                    idle_since_finish += POLL_SEC
+                    if idle_since_finish >= POST_FINISH_GRACE_SEC:
+                        break
                 continue
             except Exception:
                 break  # ConnectionClosed 등
+
+            idle_since_finish = 0.0
 
             if not isinstance(msg, str):
                 continue

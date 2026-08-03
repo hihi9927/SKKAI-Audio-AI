@@ -1,0 +1,306 @@
+2026-08-03 12:48:26,888 - INFO - __main__ - Server log file: /home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_run01/logs/server.log
+2026-08-03 12:48:26,889 - INFO - examples.streaming_websocket_server - VAD disabled via --no-vad flag
+2026-08-03 12:48:26,889 - INFO - examples.streaming_websocket_server - Loading model: Qwen/Qwen3-ASR-1.7B
+2026-08-03 12:51:28,464 - WARNING - examples.streaming_websocket_server - 이 vLLM 버전은 use_beam_search를 지원하지 않습니다. Greedy decoding으로 fallback합니다. (beam_size=2 무시)
+2026-08-03 12:51:28,465 - INFO - examples.streaming_websocket_server - Greedy decoding (no repetition_penalty)
+2026-08-03 12:51:28,465 - INFO - examples.streaming_websocket_server - Model loaded successfully
+2026-08-03 12:51:28,466 - INFO - examples.streaming_websocket_server - Starting WebSocket server on ws://0.0.0.0:8766
+2026-08-03 12:51:28,466 - INFO - examples.streaming_websocket_server - Warming up model...
+2026-08-03 12:51:41,739 - INFO - examples.streaming_websocket_server - Warmup complete
+2026-08-03 12:51:42,269 - INFO - websockets.server - server listening on 0.0.0.0:8766
+2026-08-03 12:51:42,269 - INFO - examples.streaming_websocket_server - Server listening on ws://0.0.0.0:8766
+2026-08-03 12:51:46,986 - INFO - websockets.server - connection open
+2026-08-03 12:51:46,987 - INFO - __main__ - Client connected (1)
+2026-08-03 12:51:46,987 - INFO - __main__ - New connection from ('127.0.0.1', 55900)
+2026-08-03 12:51:46,988 - INFO - __main__ - Connection closed
+2026-08-03 12:51:46,988 - INFO - __main__ - Client disconnected (0)
+2026-08-03 12:51:47,000 - INFO - websockets.server - connection open
+2026-08-03 12:51:47,000 - INFO - __main__ - Client connected (1)
+2026-08-03 12:51:47,000 - INFO - __main__ - New connection from ('127.0.0.1', 55904)
+2026-08-03 12:51:47,001 - INFO - __main__ - Received start: lang=auto, targetLang=
+2026-08-03 12:51:47,001 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-08-03 12:51:50,277 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text="There's iron, they say."
+2026-08-03 12:51:50,278 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A new text="There's iron, they say."
+2026-08-03 12:51:50,278 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.006s ds=2.006s decode=1.270s
+2026-08-03 12:51:52,661 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text="There's iron, they say, in all our blood."
+2026-08-03 12:51:52,662 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text="There's iron, they say, in all our blood."
+2026-08-03 12:51:52,662 - INFO - __main__ - [ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.006s ds=4.006s decode=1.655s
+2026-08-03 12:51:55,300 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text="There's iron, they say, in all our blood, and a grain or two, perhaps, is good."
+2026-08-03 12:51:55,301 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text="There's iron, they say, in all our blood, and a grain or two, perhaps, is good."
+2026-08-03 12:51:55,301 - INFO - __main__ - [ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.005s ds=6.006s decode=2.294s
+2026-08-03 12:51:57,823 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text="There's iron, they say, in all our blood, and a grain or two perhaps is good, but his, he."
+2026-08-03 12:51:57,823 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text="There's iron, they say, in all our blood, and a grain or two perhaps is good, but his, he."
+2026-08-03 12:51:57,823 - INFO - __main__ - [ENCODE] slot=A chunk=3 audio_pos=8.000s ts=8.302s ds=8.303s decode=2.520s
+2026-08-03 12:52:00,611 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text="There's iron, they say, in all our blood, and a grain or two perhaps is good, but his—he makes me harshly feel."
+2026-08-03 12:52:00,613 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text="There's iron, they say, in all our blood, and a grain or two perhaps is good, but his—he makes me harshly feel."
+2026-08-03 12:52:00,613 - INFO - __main__ - [ENCODE] slot=A chunk=4 audio_pos=10.000s ts=10.825s ds=10.825s decode=2.787s
+2026-08-03 12:52:03,857 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text="There's iron, they say, in all our blood, and a grain or two perhaps is good, but his—he makes me harshly feel—has got a little too much."
+2026-08-03 12:52:03,858 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text="There's iron, they say, in all our blood, and a grain or two perhaps is good, but his—he makes me harshly feel—has got a little too much."
+2026-08-03 12:52:03,858 - INFO - __main__ - [ENCODE] slot=A chunk=5 audio_pos=12.000s ts=13.621s ds=13.622s decode=3.234s
+2026-08-03 12:52:07,289 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text="There's iron, they say, in all our blood, and a grain or two perhaps is good, but his—he makes me harshly feel—has got a little too much of steel."
+2026-08-03 12:52:07,290 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text="There's iron, they say, in all our blood, and a grain or two perhaps is good, but his—he makes me harshly feel—has got a little too much of steel."
+2026-08-03 12:52:07,290 - INFO - __main__ - [ENCODE] slot=A chunk=6 audio_pos=14.000s ts=16.862s ds=16.863s decode=3.426s
+2026-08-03 12:52:10,908 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text="There's iron, they say, in all our blood, and a grain or two perhaps is good, but his—he makes me harshly feel—has got a little too much of steel. Anon."
+2026-08-03 12:52:10,909 - INFO - examples.streaming_websocket_server - [C-] [DOT-CONFIRM] rule=stable slot=A text="There's iron, they say, in all our blood, and a grain or two perhaps is good, but his—he makes me harshly feel—has got a little too much of steel."
+2026-08-03 12:52:10,909 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A new text='Anon.'
+2026-08-03 12:52:10,909 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG] slot=A lang=en original='There's iron, they say, in all our blood, and a grain or two perhaps is good, but his—he makes me harshly feel—has got a little too much of steel.' translation=''
+2026-08-03 12:52:10,911 - INFO - examples.streaming_websocket_server - [C-] [DOT-SLOT-SWITCH] slot=A audio_sec=16.0s prev="There's iron, they say, in all our blood, and a grain or two perhaps is good, but his—he makes me harshly feel—has got a little too much of steel."
+2026-08-03 12:52:10,911 - INFO - __main__ - [FLUSH-SEG] seg=1 tok=44/46 ratio=0.957 audio_end=15.913s fsl=7.995s
+2026-08-03 12:52:10,911 - INFO - __main__ - [FINAL] seg=1 reason=dot audio=[0.000, 15.913] fsl=7.995s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='There's iron, they say, in all our blood, and a grain or two perhaps is good, but his—he makes me harshly feel—has got a little too much of steel.'
+2026-08-03 12:52:10,912 - INFO - __main__ - [ENCODE] slot=A chunk=7 audio_pos=16.000s ts=20.292s ds=20.292s decode=3.618s
+2026-08-03 12:52:12,065 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='Anon.'
+2026-08-03 12:52:12,066 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A new text='Anon.'
+2026-08-03 12:52:12,066 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=18.000s ts=23.911s ds=23.911s decode=1.153s
+2026-08-03 12:52:13,238 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='And on.'
+2026-08-03 12:52:13,238 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text='And on.'
+2026-08-03 12:52:13,238 - INFO - __main__ - [ENCODE] slot=A chunk=1 audio_pos=20.000s ts=25.066s ds=25.066s decode=1.171s
+2026-08-03 12:52:13,239 - INFO - __main__ - Received finish command
+2026-08-03 12:52:13,240 - INFO - examples.streaming_websocket_server - [C-] [TRANS-VAD] slot=A reason=finish lang=en original='And on.' translation=''
+2026-08-03 12:52:13,240 - INFO - __main__ - [FINAL] seg=2 reason=finish audio=[15.913, 20.500] fsl=0.000s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='And on.'
+2026-08-03 12:52:13,241 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-08-03 12:52:16,328 - INFO - __main__ - Received start: lang=auto, targetLang=
+2026-08-03 12:52:16,332 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-08-03 12:52:19,857 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='Margaret said, "Mr. How."'
+2026-08-03 12:52:19,858 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A new text='Margaret said, "Mr. How."'
+2026-08-03 12:52:19,858 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.007s ds=2.007s decode=1.519s
+2026-08-03 12:52:22,208 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='Margaret said, "Mr. Hale," as he returned from showing his.'
+2026-08-03 12:52:22,209 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text='Margaret said, "Mr. Hale," as he returned from showing his.'
+2026-08-03 12:52:22,209 - INFO - __main__ - [ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.007s ds=4.007s decode=1.870s
+2026-08-03 12:52:24,343 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='Margaret said, "Mr. Hale," as he returned from showing his guests downstairs.'
+2026-08-03 12:52:24,344 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text='Margaret said, "Mr. Hale," as he returned from showing his guests downstairs.'
+2026-08-03 12:52:24,344 - INFO - __main__ - [ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.007s ds=6.008s decode=2.005s
+2026-08-03 12:52:27,044 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='Margaret said, "Mr. Hale, as he returned from showing his guests downstairs, I could not help watching your face with some anxiety."'
+2026-08-03 12:52:27,045 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text='Margaret said, "Mr. Hale, as he returned from showing his guests downstairs, I could not help watching your face with some anxiety."'
+2026-08-03 12:52:27,045 - INFO - __main__ - [ENCODE] slot=A chunk=3 audio_pos=8.000s ts=8.015s ds=8.015s decode=2.698s
+2026-08-03 12:52:30,193 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='Margaret said, "Mr. Hale, as he returned from showing his guests downstairs, I could not help watching your face with some anxiety, when Mr. Thornton made his."'
+2026-08-03 12:52:30,196 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text='Margaret said, "Mr. Hale, as he returned from showing his guests downstairs, I could not help watching your face with some anxiety, when Mr. Thornton made his."'
+2026-08-03 12:52:30,196 - INFO - __main__ - [ENCODE] slot=A chunk=4 audio_pos=10.000s ts=10.716s ds=10.717s decode=3.148s
+2026-08-03 12:52:33,807 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='Margaret said, "Mr. Hale, as he returned from showing his guests downstairs, I could not help watching your face with some anxiety, when Mr. Thornton made his confession of having been a shop boy."'
+2026-08-03 12:52:33,808 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text='Margaret said, "Mr. Hale, as he returned from showing his guests downstairs, I could not help watching your face with some anxiety, when Mr. Thornton made his confession of having been a shop boy."'
+2026-08-03 12:52:33,808 - INFO - __main__ - [ENCODE] slot=A chunk=5 audio_pos=12.000s ts=13.884s ds=13.886s decode=3.590s
+2026-08-03 12:52:37,360 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='Margaret said, "Mr. Hale, as he returned from showing his guests downstairs, I could not help watching your face with some anxiety when Mr. Thornton made his confession of having been a shop boy."'
+2026-08-03 12:52:37,361 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text='Margaret said, "Mr. Hale, as he returned from showing his guests downstairs, I could not help watching your face with some anxiety when Mr. Thornton made his confession of having been a shop boy."'
+2026-08-03 12:52:37,361 - INFO - __main__ - [ENCODE] slot=A chunk=6 audio_pos=14.025s ts=17.482s ds=17.482s decode=3.547s
+2026-08-03 12:52:40,942 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='Margaret said, "Mr. Hale, as he returned from showing his guests downstairs, I could not help watching your face with some anxiety when Mr. Thornton made his confession of having been a shop boy."'
+2026-08-03 12:52:40,943 - INFO - examples.streaming_websocket_server - [C-] [DOT-CONFIRM] rule=stable slot=A text='Margaret said, "Mr. Hale, as he returned from showing his guests downstairs, I could not help watching your face with some anxiety when Mr. Thornton made his confession of having been a shop boy."'
+2026-08-03 12:52:40,943 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG] slot=A lang=en original='Margaret said, "Mr. Hale, as he returned from showing his guests downstairs, I could not help watching your face with some anxiety when Mr. Thornton made his confession of having been a shop boy."' translation=''
+2026-08-03 12:52:40,944 - INFO - examples.streaming_websocket_server - [C-] [SEG-SLOT-RESET] slot=A audio_sec=16.0s
+2026-08-03 12:52:40,944 - INFO - __main__ - [FLUSH-SEG] seg=1 tok=46/46 ratio=1.000 audio_end=16.025s fsl=8.586s
+2026-08-03 12:52:40,944 - INFO - __main__ - [FINAL] seg=1 reason=dot audio=[0.000, 16.025] fsl=8.586s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='Margaret said, "Mr. Hale, as he returned from showing his guests downstairs, I could not help watching your face with some anxiety when Mr. Thornton made his confession of having been a shop boy."'
+2026-08-03 12:52:40,944 - INFO - __main__ - [ENCODE] slot=A chunk=7 audio_pos=16.025s ts=21.034s ds=21.034s decode=3.578s
+2026-08-03 12:52:41,848 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text=''
+2026-08-03 12:52:41,848 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=18.025s ts=24.613s ds=24.613s decode=0.902s
+2026-08-03 12:52:41,848 - INFO - __main__ - Received finish command
+2026-08-03 12:52:41,849 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-08-03 12:52:43,965 - INFO - __main__ - Received start: lang=auto, targetLang=
+2026-08-03 12:52:43,965 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-08-03 12:52:47,223 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='Margaret bent over and said.'
+2026-08-03 12:52:47,226 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A new text='Margaret bent over and said.'
+2026-08-03 12:52:47,226 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.003s decode=1.258s
+2026-08-03 12:52:49,594 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='Margaret bent over and said, "Bessy."'
+2026-08-03 12:52:49,595 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text='Margaret bent over and said, "Bessy."'
+2026-08-03 12:52:49,595 - INFO - __main__ - [ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.003s ds=4.003s decode=1.626s
+2026-08-03 12:52:52,068 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='Margaret bent over and said, "Bessy, don\'t be impatient with your life."'
+2026-08-03 12:52:52,069 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text='Margaret bent over and said, "Bessy, don\'t be impatient with your life."'
+2026-08-03 12:52:52,070 - INFO - __main__ - [ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.003s ds=6.004s decode=2.100s
+2026-08-03 12:52:54,567 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='Margaret bent over and said, "Bessy, don\'t be impatient with your life, whatever it is, or."'
+2026-08-03 12:52:54,568 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text='Margaret bent over and said, "Bessy, don\'t be impatient with your life, whatever it is, or."'
+2026-08-03 12:52:54,568 - INFO - __main__ - [ENCODE] slot=A chunk=3 audio_pos=8.000s ts=8.107s ds=8.107s decode=2.495s
+2026-08-03 12:52:57,278 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='Margaret bent over and said, "Bessy, don\'t be impatient with your life, whatever it is, or may have been."'
+2026-08-03 12:52:57,279 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text='Margaret bent over and said, "Bessy, don\'t be impatient with your life, whatever it is, or may have been."'
+2026-08-03 12:52:57,280 - INFO - __main__ - [ENCODE] slot=A chunk=4 audio_pos=10.085s ts=10.605s ds=10.605s decode=2.709s
+2026-08-03 12:52:59,989 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='Margaret bent over and said, "Bessy, don\'t be impatient with your life, whatever it is, or may have been."'
+2026-08-03 12:52:59,990 - INFO - examples.streaming_websocket_server - [C-] [DOT-CONFIRM] rule=stable slot=A text='Margaret bent over and said, "Bessy, don\'t be impatient with your life, whatever it is, or may have been."'
+2026-08-03 12:52:59,990 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG] slot=A lang=en original='Margaret bent over and said, "Bessy, don't be impatient with your life, whatever it is, or may have been."' translation=''
+2026-08-03 12:52:59,990 - INFO - examples.streaming_websocket_server - [C-] [SEG-SLOT-RESET] slot=A audio_sec=12.0s
+2026-08-03 12:52:59,991 - INFO - __main__ - [FLUSH-SEG] seg=1 tok=33/33 ratio=1.000 audio_end=12.085s fsl=3.939s
+2026-08-03 12:52:59,991 - INFO - __main__ - [FINAL] seg=1 reason=dot audio=[0.000, 12.085] fsl=3.939s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='Margaret bent over and said, "Bessy, don't be impatient with your life, whatever it is, or may have been."'
+2026-08-03 12:52:59,991 - INFO - __main__ - [ENCODE] slot=A chunk=5 audio_pos=12.085s ts=13.317s ds=13.318s decode=2.708s
+2026-08-03 12:53:00,649 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text=''
+2026-08-03 12:53:00,650 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=14.085s ts=16.026s ds=16.026s decode=0.658s
+2026-08-03 12:53:00,652 - INFO - __main__ - Received finish command
+2026-08-03 12:53:00,655 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-08-03 12:53:00,656 - INFO - __main__ - Received start: lang=auto, targetLang=
+2026-08-03 12:53:00,658 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-08-03 12:53:03,867 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='But surely," said Margaret.'
+2026-08-03 12:53:03,869 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A new text='But surely," said Margaret.'
+2026-08-03 12:53:03,870 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.007s ds=2.007s decode=1.203s
+2026-08-03 12:53:06,352 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='But surely," said Margaret, facing round, "you believe."'
+2026-08-03 12:53:06,354 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text='But surely," said Margaret, facing round, "you believe."'
+2026-08-03 12:53:06,355 - INFO - __main__ - [ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.006s ds=4.007s decode=1.690s
+2026-08-03 12:53:08,751 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='But surely," said Margaret, facing round, "you believe in what I said—that God."'
+2026-08-03 12:53:08,752 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text='But surely," said Margaret, facing round, "you believe in what I said—that God."'
+2026-08-03 12:53:08,752 - INFO - __main__ - [ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.010s ds=6.012s decode=2.081s
+2026-08-03 12:53:11,253 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='But surely," said Margaret, facing round, "you believe in what I said—that God gave her life and ordered what kind."'
+2026-08-03 12:53:11,254 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text='But surely," said Margaret, facing round, "you believe in what I said—that God gave her life and ordered what kind."'
+2026-08-03 12:53:11,254 - INFO - __main__ - [ENCODE] slot=A chunk=3 audio_pos=8.000s ts=8.096s ds=8.096s decode=2.499s
+2026-08-03 12:53:14,184 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='But surely," said Margaret, facing round, "you believe in what I said—that God gave her life, and ordered what kind of life it was to be."'
+2026-08-03 12:53:14,186 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text='But surely," said Margaret, facing round, "you believe in what I said—that God gave her life, and ordered what kind of life it was to be."'
+2026-08-03 12:53:14,186 - INFO - __main__ - [ENCODE] slot=A chunk=4 audio_pos=10.180s ts=10.599s ds=10.599s decode=2.928s
+2026-08-03 12:53:17,179 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='But surely," said Margaret, facing round, "you believe in what I said—that God gave her life, and ordered what kind of life it was to be."'
+2026-08-03 12:53:17,179 - INFO - examples.streaming_websocket_server - [C-] [DOT-CONFIRM] rule=stable slot=A text='But surely," said Margaret, facing round, "you believe in what I said—that God gave her life, and ordered what kind of life it was to be."'
+2026-08-03 12:53:17,180 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG] slot=A lang=en original='But surely," said Margaret, facing round, "you believe in what I said—that God gave her life, and ordered what kind of life it was to be."' translation=''
+2026-08-03 12:53:17,180 - INFO - examples.streaming_websocket_server - [C-] [SEG-SLOT-RESET] slot=A audio_sec=12.0s
+2026-08-03 12:53:17,180 - INFO - __main__ - [FLUSH-SEG] seg=1 tok=37/37 ratio=1.000 audio_end=12.180s fsl=4.341s
+2026-08-03 12:53:17,180 - INFO - __main__ - [FINAL] seg=1 reason=dot audio=[0.000, 12.180] fsl=4.341s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='But surely," said Margaret, facing round, "you believe in what I said—that God gave her life, and ordered what kind of life it was to be."'
+2026-08-03 12:53:17,181 - INFO - __main__ - [ENCODE] slot=A chunk=5 audio_pos=12.180s ts=13.546s ds=13.548s decode=2.974s
+2026-08-03 12:53:17,836 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text=''
+2026-08-03 12:53:17,837 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=14.180s ts=16.523s ds=16.523s decode=0.655s
+2026-08-03 12:53:17,837 - INFO - __main__ - Received finish command
+2026-08-03 12:53:17,838 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-08-03 12:53:20,198 - INFO - __main__ - Received start: lang=auto, targetLang=
+2026-08-03 12:53:20,199 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-08-03 12:53:23,460 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text="Don't think hardly on him."
+2026-08-03 12:53:23,461 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A new text="Don't think hardly on him."
+2026-08-03 12:53:23,461 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.003s decode=1.259s
+2026-08-03 12:53:25,876 - INFO - examples.streaming_websocket_server - [C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=6 text="Don't think hardly on him."
+2026-08-03 12:53:26,107 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text="Don't think hardly on him. He's a good man. He is."
+2026-08-03 12:53:26,107 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A new text="He's a good man."
+2026-08-03 12:53:26,108 - INFO - examples.streaming_websocket_server - [C-] [DOT-SLOT-SWITCH] slot=A audio_sec=4.0s prev="Don't think hardly on him."
+2026-08-03 12:53:26,108 - INFO - __main__ - [ENCODE] slot=A chunk=1 audio_pos=4.045s ts=4.049s ds=4.049s decode=1.861s
+2026-08-03 12:53:26,109 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG-ASYNC] slot=A lang=en original='Don't think hardly on him.' translation=''
+2026-08-03 12:53:27,701 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text="He's a good man. He is."
+2026-08-03 12:53:27,701 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A new text="He's a good man."
+2026-08-03 12:53:27,702 - INFO - __main__ - [FLUSH-SEG] seg=1 no-token-info → audio_end=4.045s fsl=0.000s
+2026-08-03 12:53:27,702 - INFO - __main__ - [FINAL] seg=1 reason=dot audio=[0.000, 4.045] fsl=0.000s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='Don't think hardly on him.'
+2026-08-03 12:53:27,702 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=6.045s ts=6.049s ds=6.049s decode=1.454s
+2026-08-03 12:53:29,723 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text="He's a good man. He is."
+2026-08-03 12:53:29,724 - INFO - examples.streaming_websocket_server - [C-] [DOT-CONFIRM] rule=stable slot=A text="He's a good man."
+2026-08-03 12:53:29,724 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A new text='He is.'
+2026-08-03 12:53:29,724 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG] slot=A lang=en original='He's a good man.' translation=''
+2026-08-03 12:53:29,725 - INFO - examples.streaming_websocket_server - [C-] [COMMIT-PENDING] slot=A remaining='He is.'
+2026-08-03 12:53:29,725 - INFO - __main__ - [FLUSH-SEG] seg=2 tok=9/13 ratio=0.692 audio_end=7.430s fsl=2.096s
+2026-08-03 12:53:29,725 - INFO - __main__ - [FINAL] seg=2 reason=dot audio=[4.045, 7.430] fsl=2.096s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='He's a good man.'
+2026-08-03 12:53:29,725 - INFO - __main__ - [ENCODE] slot=A chunk=1 audio_pos=8.045s ts=8.049s ds=8.049s decode=1.478s
+2026-08-03 12:53:29,727 - INFO - __main__ - Received finish command
+2026-08-03 12:53:29,727 - INFO - examples.streaming_websocket_server - [C-] [TRANS-VAD] slot=A reason=finish lang=en original='He is.' translation=''
+2026-08-03 12:53:29,728 - INFO - __main__ - [FINAL] seg=3 reason=finish audio=[7.430, 9.345] fsl=0.000s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='He is.'
+2026-08-03 12:53:29,728 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-08-03 12:53:32,746 - INFO - __main__ - Received start: lang=auto, targetLang=
+2026-08-03 12:53:32,747 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-08-03 12:53:36,176 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text="But you'll be there, father. You."
+2026-08-03 12:53:36,176 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A new text="But you'll be there, father."
+2026-08-03 12:53:36,176 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.003s decode=1.427s
+2026-08-03 12:53:38,544 - INFO - examples.streaming_websocket_server - [C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=8 text="But you'll be there, father."
+2026-08-03 12:53:38,603 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text="But you'll be there, father. You shall, oh, my heart."
+2026-08-03 12:53:38,603 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A new text='You shall, oh, my heart.'
+2026-08-03 12:53:38,603 - INFO - examples.streaming_websocket_server - [C-] [COMMIT-PENDING] slot=A remaining='You shall, oh, my heart.'
+2026-08-03 12:53:38,603 - INFO - __main__ - [ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.003s ds=4.003s decode=1.853s
+2026-08-03 12:53:38,605 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG-ASYNC] slot=A lang=en original='But you'll be there, father.' translation=''
+2026-08-03 12:53:38,682 - INFO - __main__ - [FLUSH-SEG] seg=1 tok=10/20 ratio=0.500 audio_end=4.730s fsl=1.068s
+2026-08-03 12:53:38,682 - INFO - __main__ - [FINAL] seg=1 reason=dot audio=[0.000, 4.730] fsl=1.068s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='But you'll be there, father.'
+2026-08-03 12:53:40,758 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text="But you'll be there, father. You shall. Oh, my heart."
+2026-08-03 12:53:40,759 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text='You shall.'
+2026-08-03 12:53:40,759 - INFO - __main__ - [ENCODE] slot=A chunk=2 audio_pos=6.130s ts=6.134s ds=6.135s decode=1.877s
+2026-08-03 12:53:42,773 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text="But you'll be there, father. You shall. Oh, my heart."
+2026-08-03 12:53:42,773 - INFO - examples.streaming_websocket_server - [C-] [DOT-CONFIRM] rule=stable slot=A text='You shall.'
+2026-08-03 12:53:42,774 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A new text='Oh, my heart.'
+2026-08-03 12:53:42,774 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG] slot=A lang=en original='You shall.' translation=''
+2026-08-03 12:53:42,774 - INFO - examples.streaming_websocket_server - [C-] [COMMIT-PENDING] slot=A remaining='Oh, my heart.'
+2026-08-03 12:53:42,774 - INFO - __main__ - [FLUSH-SEG] seg=2 tok=14/20 ratio=0.700 audio_end=7.530s fsl=2.497s
+2026-08-03 12:53:42,774 - INFO - __main__ - [FINAL] seg=2 reason=dot audio=[4.730, 7.530] fsl=2.497s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='You shall.'
+2026-08-03 12:53:42,775 - INFO - __main__ - [ENCODE] slot=A chunk=3 audio_pos=8.130s ts=8.134s ds=8.135s decode=1.893s
+2026-08-03 12:53:42,776 - INFO - __main__ - Received finish command
+2026-08-03 12:53:42,777 - INFO - examples.streaming_websocket_server - [C-] [TRANS-VAD] slot=A reason=finish lang=en original='Oh, my heart.' translation=''
+2026-08-03 12:53:42,777 - INFO - __main__ - [FINAL] seg=3 reason=finish audio=[7.530, 9.630] fsl=0.000s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='Oh, my heart.'
+2026-08-03 12:53:42,777 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-08-03 12:53:45,797 - INFO - __main__ - Received start: lang=auto, targetLang=
+2026-08-03 12:53:45,798 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-08-03 12:53:49,014 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text="I'll go to bed."
+2026-08-03 12:53:49,015 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A new text="I'll go to bed."
+2026-08-03 12:53:49,015 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.003s decode=1.214s
+2026-08-03 12:53:51,432 - INFO - examples.streaming_websocket_server - [C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=7 text="I'll go to bed."
+2026-08-03 12:53:51,489 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text="I'll go to bed. It's best place, but."
+2026-08-03 12:53:51,490 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A new text="It's best place, but."
+2026-08-03 12:53:51,491 - INFO - examples.streaming_websocket_server - [C-] [DOT-SLOT-SWITCH] slot=A audio_sec=4.0s prev="I'll go to bed."
+2026-08-03 12:53:51,491 - INFO - __main__ - [ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.003s ds=4.003s decode=1.690s
+2026-08-03 12:53:51,491 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG-ASYNC] slot=A lang=en original='I'll go to bed.' translation=''
+2026-08-03 12:53:51,601 - INFO - __main__ - [FLUSH-SEG] seg=1 no-token-info → audio_end=4.000s fsl=0.000s
+2026-08-03 12:53:51,601 - INFO - __main__ - [FINAL] seg=1 reason=dot audio=[0.000, 4.000] fsl=0.000s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='I'll go to bed.'
+2026-08-03 12:53:53,435 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text="It's best place, but catching at Margaret's gown."
+2026-08-03 12:53:53,436 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A new text="It's best place, but catching at Margaret's gown."
+2026-08-03 12:53:53,436 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=6.000s ts=6.003s ds=6.003s decode=1.635s
+2026-08-03 12:53:55,737 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text="Best place, but catching at Margaret's gown, you'll come again. I."
+2026-08-03 12:53:55,738 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text="Best place, but catching at Margaret's gown, you'll come again."
+2026-08-03 12:53:55,738 - INFO - __main__ - [ENCODE] slot=A chunk=1 audio_pos=8.000s ts=8.004s ds=8.004s decode=1.937s
+2026-08-03 12:53:58,013 - INFO - examples.streaming_websocket_server - [C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=10 text="It's best place, but catching at Margaret's gown."
+2026-08-03 12:53:58,185 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text="It's best place, but catching at Margaret's gown. You'll come again, I know you will. But."
+2026-08-03 12:53:58,186 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A new text="You'll come again, I know you will."
+2026-08-03 12:53:58,186 - INFO - examples.streaming_websocket_server - [C-] [COMMIT-PENDING] slot=A remaining="You'll come again, I know you will. But."
+2026-08-03 12:53:58,186 - INFO - __main__ - [ENCODE] slot=A chunk=2 audio_pos=10.000s ts=10.005s ds=10.006s decode=2.383s
+2026-08-03 12:53:58,203 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG-ASYNC] slot=A lang=en original='It's best place, but catching at Margaret's gown.' translation=''
+2026-08-03 12:54:00,795 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text="It's best place, but catching at Margaret's gown. You'll come again, I know you will. But just say it."
+2026-08-03 12:54:00,796 - INFO - examples.streaming_websocket_server - [C-] [DOT-CONFIRM] rule=stable slot=A text="You'll come again, I know you will."
+2026-08-03 12:54:00,796 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A new text='But just say it.'
+2026-08-03 12:54:00,797 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG] slot=A lang=en original='You'll come again, I know you will.' translation=''
+2026-08-03 12:54:00,798 - INFO - examples.streaming_websocket_server - [C-] [COMMIT-PENDING] slot=A remaining='But just say it.'
+2026-08-03 12:54:00,798 - INFO - __main__ - [FLUSH-SEG] seg=2 tok=16/31 ratio=0.516 audio_end=11.162s fsl=1.053s
+2026-08-03 12:54:00,798 - INFO - __main__ - [FINAL] seg=2 reason=dot audio=[4.000, 11.162] fsl=1.053s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='It's best place, but catching at Margaret's gown.'
+2026-08-03 12:54:00,799 - INFO - __main__ - [FLUSH-SEG] seg=3 tok=25/31 ratio=0.806 audio_end=11.743s fsl=3.256s
+2026-08-03 12:54:00,799 - INFO - __main__ - [FINAL] seg=3 reason=dot audio=[11.162, 11.743] fsl=3.256s encode=0.000s decode=0.000s final_decode=0.000s trans=0.002s | text='You'll come again, I know you will.'
+2026-08-03 12:54:00,800 - INFO - __main__ - [ENCODE] slot=A chunk=3 audio_pos=12.130s ts=12.391s ds=12.392s decode=2.611s
+2026-08-03 12:54:03,437 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text="It's best place, but catching at Margaret's gown. You'll come again, I know you will. But just say it."
+2026-08-03 12:54:03,438 - INFO - examples.streaming_websocket_server - [C-] [DOT-CONFIRM] rule=stable slot=A text='But just say it.'
+2026-08-03 12:54:03,438 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG] slot=A lang=en original='But just say it.' translation=''
+2026-08-03 12:54:03,438 - INFO - examples.streaming_websocket_server - [C-] [SEG-SLOT-RESET] slot=A audio_sec=12.0s
+2026-08-03 12:54:03,438 - INFO - __main__ - [FLUSH-SEG] seg=4 tok=31/31 ratio=1.000 audio_end=14.130s fsl=3.510s
+2026-08-03 12:54:03,438 - INFO - __main__ - [FINAL] seg=4 reason=dot audio=[11.743, 14.130] fsl=3.510s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='But just say it.'
+2026-08-03 12:54:03,439 - INFO - __main__ - [ENCODE] slot=A chunk=4 audio_pos=14.130s ts=15.012s ds=15.013s decode=2.628s
+2026-08-03 12:54:04,094 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text=''
+2026-08-03 12:54:04,095 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=16.130s ts=17.642s ds=17.642s decode=0.655s
+2026-08-03 12:54:04,095 - INFO - __main__ - Received finish command
+2026-08-03 12:54:04,096 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-08-03 12:54:06,459 - INFO - __main__ - Received start: lang=auto, targetLang=
+2026-08-03 12:54:06,460 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-08-03 12:54:09,859 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='The mother of whom he spoke to us.'
+2026-08-03 12:54:09,860 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A new text='The mother of whom he spoke to us.'
+2026-08-03 12:54:09,860 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.003s decode=1.397s
+2026-08-03 12:54:12,318 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='The mother of whom he spoke to us said, "Margaret."'
+2026-08-03 12:54:12,319 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text='The mother of whom he spoke to us said, "Margaret."'
+2026-08-03 12:54:12,319 - INFO - __main__ - [ENCODE] slot=A chunk=1 audio_pos=4.110s ts=4.113s ds=4.113s decode=1.746s
+2026-08-03 12:54:14,330 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='The mother of whom he spoke to us said, "Margaret."'
+2026-08-03 12:54:14,331 - INFO - examples.streaming_websocket_server - [C-] [DOT-CONFIRM] rule=stable slot=A text='The mother of whom he spoke to us said, "Margaret."'
+2026-08-03 12:54:14,331 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG] slot=A lang=en original='The mother of whom he spoke to us said, "Margaret."' translation=''
+2026-08-03 12:54:14,331 - INFO - examples.streaming_websocket_server - [C-] [SEG-SLOT-RESET] slot=A audio_sec=6.0s
+2026-08-03 12:54:14,331 - INFO - __main__ - [FLUSH-SEG] seg=1 tok=18/18 ratio=1.000 audio_end=6.110s fsl=1.761s
+2026-08-03 12:54:14,331 - INFO - __main__ - [FINAL] seg=1 reason=dot audio=[0.000, 6.110] fsl=1.761s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='The mother of whom he spoke to us said, "Margaret."'
+2026-08-03 12:54:14,332 - INFO - __main__ - [ENCODE] slot=A chunk=2 audio_pos=6.110s ts=6.114s ds=6.114s decode=1.757s
+2026-08-03 12:54:15,177 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text=''
+2026-08-03 12:54:15,177 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=8.110s ts=8.114s ds=8.114s decode=0.603s
+2026-08-03 12:54:15,273 - INFO - __main__ - Received finish command
+2026-08-03 12:54:15,274 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-08-03 12:54:29,363 - INFO - __main__ - Received start: lang=auto, targetLang=
+2026-08-03 12:54:29,363 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-08-03 12:54:32,572 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='My dear," said Miss.'
+2026-08-03 12:54:32,572 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A new text='My dear," said Miss.'
+2026-08-03 12:54:32,572 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.004s ds=2.004s decode=1.205s
+2026-08-03 12:54:35,170 - INFO - examples.streaming_websocket_server - [C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=10 text='My dear," said Mister.'
+2026-08-03 12:54:35,171 - INFO - examples.streaming_websocket_server - [C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=6 text='Hell, alarmed.'
+2026-08-03 12:54:35,228 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='My dear," said Mister. Hell, alarmed. "Pray don\'t."'
+2026-08-03 12:54:35,229 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A new text='"Pray don\'t."'
+2026-08-03 12:54:35,229 - INFO - examples.streaming_websocket_server - [C-] [COMMIT-PENDING] slot=A remaining='"Pray don\'t."'
+2026-08-03 12:54:35,229 - INFO - __main__ - [ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.003s ds=4.003s decode=1.863s
+2026-08-03 12:54:35,232 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG-ASYNC] slot=A lang=en original='My dear," said Mister.' translation=''
+2026-08-03 12:54:35,232 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG-ASYNC] slot=A lang=en original='Hell, alarmed.' translation=''
+2026-08-03 12:54:37,689 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='My dear," said Mister. Hell, alarmed. "Pray, don\'t go off on that idea."'
+2026-08-03 12:54:37,690 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text='"Pray, don\'t go off on that idea."'
+2026-08-03 12:54:37,690 - INFO - __main__ - [FLUSH-SEG] seg=1 tok=18/26 ratio=0.692 audio_end=5.240s fsl=0.568s
+2026-08-03 12:54:37,690 - INFO - __main__ - [FINAL] seg=1 reason=dot audio=[0.000, 5.240] fsl=0.568s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='My dear," said Mister.'
+2026-08-03 12:54:37,690 - INFO - __main__ - [FLUSH-SEG] seg=2 tok=18/26 ratio=0.692 audio_end=5.240s fsl=0.568s
+2026-08-03 12:54:37,690 - INFO - __main__ - [FINAL] seg=2 reason=dot audio=[5.240, 5.240] fsl=0.568s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='Hell, alarmed.'
+2026-08-03 12:54:37,690 - INFO - __main__ - [ENCODE] slot=A chunk=2 audio_pos=6.055s ts=6.060s ds=6.062s decode=2.265s
+2026-08-03 12:54:39,908 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='My dear," said Mister. Hell, alarmed. "Pray don\'t go off on that idea."'
+2026-08-03 12:54:39,909 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text='"Pray don\'t go off on that idea."'
+2026-08-03 12:54:39,909 - INFO - __main__ - [ENCODE] slot=A chunk=3 audio_pos=8.055s ts=8.330s ds=8.330s decode=2.215s
+2026-08-03 12:54:42,163 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='My dear," said Mister. Hell, alarmed. "Pray don\'t go off on that idea."'
+2026-08-03 12:54:42,165 - INFO - examples.streaming_websocket_server - [C-] [DOT-CONFIRM] rule=stable slot=A text='"Pray don\'t go off on that idea."'
+2026-08-03 12:54:42,167 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG] slot=A lang=en original='"Pray don't go off on that idea."' translation=''
+2026-08-03 12:54:42,169 - INFO - examples.streaming_websocket_server - [C-] [SEG-SLOT-RESET] slot=A audio_sec=10.0s
+2026-08-03 12:54:42,170 - INFO - __main__ - [FLUSH-SEG] seg=3 tok=25/25 ratio=1.000 audio_end=10.055s fsl=2.748s
+2026-08-03 12:54:42,170 - INFO - __main__ - [FINAL] seg=3 reason=dot audio=[5.240, 10.055] fsl=2.748s encode=0.000s decode=0.000s final_decode=0.000s trans=0.003s | text='"Pray don't go off on that idea."'
+2026-08-03 12:54:42,172 - INFO - __main__ - [ENCODE] slot=A chunk=4 audio_pos=10.055s ts=10.548s ds=10.548s decode=2.260s
+2026-08-03 12:54:42,175 - INFO - __main__ - Received finish command
+2026-08-03 12:54:42,178 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-08-03 12:54:45,180 - INFO - __main__ - Received stop command
+2026-08-03 12:54:45,180 - INFO - __main__ - Connection closed
+2026-08-03 12:54:45,181 - INFO - __main__ - Client disconnected (0)

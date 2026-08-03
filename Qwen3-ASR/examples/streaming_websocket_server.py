@@ -171,8 +171,13 @@ class StreamingConfig:
     # 프론티어 마침표는 정보량이 없다(P(마침표|버퍼 끝) ≈ 1). 확정 경로는 3개:
     #   1) 문맥 확정 — 마침표 뒤 토큰이 unfixed_token_num보다 많으면 롤백 창 밖 → 즉시 커밋
     #   2) 합의 확정 — 프론티어 마침표는 보류했다가 다음 청크에서도 동일하면 커밋
-    #   3) finish — 스트림 종료 시 flush (기존 경로)
+    #   3) 정체 확정 — 오디오는 계속 들어오는데 미커밋 가설의 길이가 N청크 동안 그대로면
+    #      발화가 끝난 것으로 보고 커밋 (규칙 2가 문구 미세수정 때문에 못 잡는 경우 보완)
+    #   4) finish — 스트림 종료 시 flush (안전망. 위 3개가 동작하면 발생하지 않아야 함)
     dot_commit_confirm: bool = False
+    # 규칙 3(정체 확정)이 발동하기까지 필요한 "가설이 자라지 않은" 연속 청크 수.
+    # 0이면 규칙 3 비활성화. 오디오 에너지를 보지 않으므로 VAD 의존성은 없다.
+    dot_commit_stall_chunks: int = 1
 
 
     # 언어 제한 설정
@@ -574,6 +579,7 @@ class Qwen3ASRStreamingHandler:
         self.enable_dot_commit: bool = config.enable_dot_commit
         self.always_commit: bool = config.always_commit
         self.dot_commit_confirm: bool = config.dot_commit_confirm
+        self.dot_commit_stall_chunks: int = config.dot_commit_stall_chunks
 
         # VAD / stream alignment
         self.sample_cursor = 0
@@ -1002,6 +1008,11 @@ class Qwen3ASRStreamingHandler:
                     carry_audio = old_accum[-chunk_samples:] if old_accum.shape[0] >= chunk_samples else old_accum.copy()
                     carry_lang = _s.get("last_text_lang", "")
                     prev_committed = _s.get("committed_display", "")
+                    # 리셋은 슬롯 dict를 통째로 갈아끼우므로 dot 게이트 상태도 같이 날아간다.
+                    # 그러면 발화 마지막 문장이 리셋 직후 후보로 다시 등록되고, 확정에 필요한
+                    # 다음 청크가 오기 전에 오디오가 떨어져 finish로 빠진다. carry_audio는
+                    # 같은 단어로 재디코딩되므로 직전 청크의 경계 목록은 그대로 유효하다.
+                    carry_boundaries = _s.get("prev_boundary_sentences", ())
                     self._reset_stream_slot(slot_key)
                     new_slot = self._slot(slot_key)
                     new_slot["state"].audio_accum = carry_audio
@@ -1009,6 +1020,11 @@ class Qwen3ASRStreamingHandler:
                         new_slot["last_text_lang"] = carry_lang
                     if prev_committed:
                         new_slot["dot_switch_prev_committed"] = prev_committed
+                    if carry_boundaries:
+                        new_slot["prev_boundary_sentences"] = carry_boundaries
+                        # accum은 리셋으로 줄어드므로 스탬프는 재기준화(-1) — 이미 한 번
+                        # 재디코딩을 견딘 경계라 다음 청크에서 바로 확정돼도 안전하다.
+                        new_slot["prev_boundary_accum"] = -1
                     if slot_key == self.active_slot:
                         self.state = self.stream_slots[self.active_slot]["state"]
                     self.log.info(
@@ -1180,6 +1196,25 @@ class Qwen3ASRStreamingHandler:
             # 토크나이저 접근 실패 시 단어 수로 근사 (게이트가 과도하게 커밋하지 않는 방향)
             return len(text.split())
 
+    @staticmethod
+    def _extract_boundary_sentences(text: str) -> tuple:
+        """`text`에서 경계로 끝나는 문장들을 커밋 루프와 동일한 방식으로 잘라 반환.
+
+        합의 확정(규칙 2)의 비교 대상. 후보 하나(`pending_dot_text`)만 들고 있으면
+        한 청크에 경계가 둘 이상 나올 때 뒤쪽 경계는 앞 경계가 커밋될 때까지 평가조차
+        되지 않는다 — 발화 마지막 문장이 딱 그 경우라 오디오가 떨어질 때까지 밀린다.
+        청크의 경계 전체를 남겨 두면 "직전 청크에도 있던 경계"를 위치와 무관하게 확정할 수 있다.
+        """
+        out = []
+        remaining = text
+        while True:
+            m = DOT_COMMIT_BOUNDARY_RE.search(remaining)
+            if not m:
+                break
+            out.append(remaining[:m.end()].strip())
+            remaining = remaining[m.end():]
+        return tuple(out)
+
     async def _process_slot_updates(self, slot_key: str, force_reason: Optional[str] = None,
                                     chunk_end: bool = False) -> Optional[str]:
         """
@@ -1192,11 +1227,13 @@ class Qwen3ASRStreamingHandler:
         state = slot["state"]
         current_text = self._strip_asr_text((state.text or "").strip())
         current_lang = state.language or ""
-        # 보류 중인 dot 후보가 있으면 텍스트가 그대로여도 청크 종료 시점에 한 번 더 봐야 한다.
-        # (무음 청크처럼 가설이 안 바뀌는 경우가 바로 "합의 확정"이 성립하는 경우다)
-        _recheck_pending = (
-            chunk_end and self.dot_commit_confirm and bool(slot.get("pending_dot_text"))
-        )
+        # dot_commit_confirm에서는 텍스트가 그대로여도 청크 종료 시점엔 항상 게이트를 돌려야 한다.
+        #  - 무음 청크처럼 가설이 안 바뀌는 상황이 바로 "합의 확정"이 성립하는 경우고,
+        #  - 규칙 3(정체 확정) 카운터도 가설이 안 자란 청크에서 올라가야 하며,
+        #  - generate 루프 안의 on_dot 콜백이 이미 last_text를 갱신해버리기 때문에
+        #    "pending이 있을 때만" 통과시키면 pending을 등록할 기회 자체가 사라진다
+        #    (등록은 chunk_end에서만 하므로 조기 리턴 ↔ 미등록 교착).
+        _recheck_pending = chunk_end and self.dot_commit_confirm
         if not current_text or (current_text == slot["last_text"] and not _recheck_pending):
             return None
 
@@ -1213,6 +1250,40 @@ class Qwen3ASRStreamingHandler:
         sentences_to_commit = []
         remaining = uncommitted
         _last_extracted_display = None  # 한 번의 호출 내 연속 중복 억제용
+
+        # ── 규칙 3(정체 확정)용 카운터 ────────────────────────────────────
+        # 오디오는 계속 누적되는데 미커밋 가설의 토큰 수가 자라지 않으면 발화가 끝난 것.
+        # 문자열 동일이 아니라 "토큰 수 동일"로 보는 이유: 롤백 창 안에서 문구만
+        # 미세하게 바뀌는 경우(Anon. → And on.)에도 발화 종료로 인정해야 하기 때문.
+        _stall_hit = False
+        _prev_sentences: tuple = ()
+        _prev_accum = -1
+        if chunk_end and self.dot_commit_confirm:
+            _accum_c = int(state.audio_accum.shape[0]) if state.audio_accum is not None else 0
+
+            # 규칙 2 비교용 — 직전 청크의 경계 목록을 꺼내 두고 이번 청크 것으로 교체.
+            # (이 함수는 아래에서 여러 번 조기 리턴하므로 여기서 미리 갱신한다)
+            _prev_sentences = slot.get("prev_boundary_sentences", ())
+            _prev_accum = slot.get("prev_boundary_accum", -1)
+            slot["prev_boundary_sentences"] = self._extract_boundary_sentences(uncommitted)
+            slot["prev_boundary_accum"] = _accum_c
+
+            if self.dot_commit_stall_chunks > 0:
+                _unc_tokens = self._count_tokens(uncommitted)
+                # 직전 청크 이후 커밋이 일어났으면 uncommitted가 가리키는 구간 자체가 달라진다.
+                # 그 상태로 토큰 수만 비교하면 서로 다른 텍스트가 우연히 같은 길이일 때
+                # 정체로 오판한다(실측: 'My dear," said Miss.'와 '"Pray don't."'가 둘 다 6토큰).
+                _committed_len = len(slot["committed_display"])
+                _same_base = _committed_len == slot.get("stall_committed_len")
+                if (_same_base and _unc_tokens == slot.get("stall_tokens")
+                        and _accum_c > slot.get("stall_accum", -1)):
+                    slot["stall_count"] = slot.get("stall_count", 0) + 1
+                else:
+                    slot["stall_count"] = 0
+                    slot["stall_tokens"] = _unc_tokens
+                slot["stall_committed_len"] = _committed_len
+                slot["stall_accum"] = _accum_c
+                _stall_hit = slot["stall_count"] >= self.dot_commit_stall_chunks
 
         while True:
             if self.always_commit:
@@ -1258,15 +1329,32 @@ class Qwen3ASRStreamingHandler:
                             f"[DOT-CONFIRM] rule=context slot={slot_key} "
                             f"tail_tokens={tail_tokens} text={sentence!r}"
                         )
-                    elif (chunk_end and pending is not None and sentence == pending
-                          and _accum_now > _pending_accum):
-                        # 규칙 2: 직전 청크의 프론티어 마침표가 재디코딩 후에도 동일 → 확정
+                    elif chunk_end and sentence in _prev_sentences and _accum_now > _prev_accum:
+                        # 규칙 2: 직전 청크 가설에도 있던 경계가 재디코딩 후에도 살아남음 → 확정.
+                        # 한 청크에 경계가 여러 개면 각각 독립적으로 판정되므로,
+                        # 발화 마지막 문장이 앞 문장 커밋을 기다리다 오디오가 떨어지는 일이 없다.
                         slot.pop("pending_dot_text", None)
                         slot.pop("pending_dot_accum", None)
                         self.log.info(f"[DOT-CONFIRM] rule=stable slot={slot_key} text={sentence!r}")
+                    elif _stall_hit and not after.strip():
+                        # 규칙 3: 오디오는 더 들어왔는데 가설이 자라지 않음 → 발화 종료로 판정.
+                        # 규칙 2가 놓치는 "롤백 창 안 문구 수정" 케이스를 흡수한다.
+                        # "발화가 끝났다"는 판정이므로 마지막 경계(뒤에 아무것도 없음)에만 적용한다.
+                        # 중간 경계는 규칙 1/2가 담당.
+                        slot.pop("pending_dot_text", None)
+                        slot.pop("pending_dot_accum", None)
+                        slot["stall_count"] = 0
+                        self.log.info(
+                            f"[DOT-CONFIRM] rule=stall slot={slot_key} "
+                            f"chunks={self.dot_commit_stall_chunks} text={sentence!r}"
+                        )
                     else:
                         # 미확정 — 보류하고 이번 호출에서는 커밋하지 않는다.
-                        if pending != sentence:
+                        # 보류 후보는 "청크 종료 시점의 프론티어"여야 한다. generate 루프 안의
+                        # on_dot 콜백(chunk_end=False)이 중간 가설로 덮어쓰면, 청크 종료 호출은
+                        # 직전 청크가 아니라 같은 청크 중간값과 비교하게 되어 규칙 2가 영원히
+                        # 성립하지 않는다(실측: 매 청크 pending이 두 문장 사이를 왕복).
+                        if chunk_end and pending != sentence:
                             self.log.info(
                                 f"[DOT-PENDING] slot={slot_key} "
                                 f"{'revised' if pending else 'new'} text={sentence!r}"
@@ -2223,6 +2311,11 @@ def parse_args():
              "enable_dot_commit과 함께 사용",
     )
     parser.add_argument(
+        "--dot-commit-stall-chunks", type=int, default=1,
+        help="정체 확정(규칙 3): 오디오는 누적되는데 미커밋 가설 토큰 수가 이 청크 수만큼 "
+             "연속으로 그대로면 발화 종료로 보고 커밋. 0이면 비활성화 (기본 1)",
+    )
+    parser.add_argument(
         "--always-commit", action="store_true",
         help="SEG/dot 트리거 없이 매 청크 디코딩 결과를 그대로 커밋 (모드2 테스트용, "
              "enable_dot_commit보다 우선)",
@@ -2305,6 +2398,7 @@ def main():
         no_vad=args.no_vad,
         enable_dot_commit=args.enable_dot_commit,
         dot_commit_confirm=args.dot_commit_confirm,
+        dot_commit_stall_chunks=args.dot_commit_stall_chunks,
         always_commit=args.always_commit,
         restrict_languages=not args.no_restrict_languages,
         enable_correction=args.correction,

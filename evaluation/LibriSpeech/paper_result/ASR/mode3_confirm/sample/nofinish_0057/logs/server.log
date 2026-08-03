@@ -1,0 +1,36 @@
+2026-08-03 13:21:19,967 - INFO - __main__ - Server log file: /home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_0057/logs/server.log
+2026-08-03 13:21:19,967 - INFO - examples.streaming_websocket_server - VAD disabled via --no-vad flag
+2026-08-03 13:21:19,968 - INFO - examples.streaming_websocket_server - Loading model: Qwen/Qwen3-ASR-1.7B
+2026-08-03 13:24:02,444 - WARNING - examples.streaming_websocket_server - 이 vLLM 버전은 use_beam_search를 지원하지 않습니다. Greedy decoding으로 fallback합니다. (beam_size=2 무시)
+2026-08-03 13:24:02,444 - INFO - examples.streaming_websocket_server - Greedy decoding (no repetition_penalty)
+2026-08-03 13:24:02,444 - INFO - examples.streaming_websocket_server - Model loaded successfully
+2026-08-03 13:24:02,445 - INFO - examples.streaming_websocket_server - Starting WebSocket server on ws://0.0.0.0:8766
+2026-08-03 13:24:02,445 - INFO - examples.streaming_websocket_server - Warming up model...
+2026-08-03 13:24:15,194 - INFO - examples.streaming_websocket_server - Warmup complete
+2026-08-03 13:24:15,379 - INFO - websockets.server - server listening on 0.0.0.0:8766
+2026-08-03 13:24:15,379 - INFO - examples.streaming_websocket_server - Server listening on ws://0.0.0.0:8766
+2026-08-03 13:24:16,108 - INFO - websockets.server - connection open
+2026-08-03 13:24:16,109 - INFO - __main__ - Client connected (1)
+2026-08-03 13:24:16,109 - INFO - __main__ - New connection from ('127.0.0.1', 42106)
+2026-08-03 13:24:16,111 - INFO - __main__ - Connection closed
+2026-08-03 13:24:16,111 - INFO - __main__ - Client disconnected (0)
+2026-08-03 13:24:16,122 - INFO - websockets.server - connection open
+2026-08-03 13:24:16,122 - INFO - __main__ - Client connected (1)
+2026-08-03 13:24:16,122 - INFO - __main__ - New connection from ('127.0.0.1', 42122)
+2026-08-03 13:24:16,123 - INFO - __main__ - Received start: lang=auto, targetLang=
+2026-08-03 13:24:16,123 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-08-03 13:24:19,409 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='Margaret bent over and said.'
+2026-08-03 13:24:19,409 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A new text='Margaret bent over and said.'
+2026-08-03 13:24:19,410 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.005s ds=2.005s decode=1.281s
+2026-08-03 13:24:21,776 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='Margaret bent over and said, "Bessy."'
+2026-08-03 13:24:21,777 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text='Margaret bent over and said, "Bessy."'
+2026-08-03 13:24:21,777 - INFO - __main__ - [ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.005s ds=4.005s decode=1.648s
+2026-08-03 13:24:24,262 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='Margaret bent over and said, "Bessy, don\'t be impatient with your life."'
+2026-08-03 13:24:24,263 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text='Margaret bent over and said, "Bessy, don\'t be impatient with your life."'
+2026-08-03 13:24:24,263 - INFO - __main__ - [ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.005s ds=6.005s decode=2.134s
+2026-08-03 13:24:26,812 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='Margaret bent over and said, "Bessy, don\'t be impatient with your life, whatever it is, or."'
+2026-08-03 13:24:26,812 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text='Margaret bent over and said, "Bessy, don\'t be impatient with your life, whatever it is, or."'
+2026-08-03 13:24:26,812 - INFO - __main__ - [ENCODE] slot=A chunk=3 audio_pos=8.000s ts=8.142s ds=8.142s decode=2.547s
+2026-08-03 13:24:29,561 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='Margaret bent over and said, "Bessy, don\'t be impatient with your life, whatever it is, or may have been."'
+2026-08-03 13:24:29,561 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text='Margaret bent over and said, "Bessy, don\'t be impatient with your life, whatever it is, or may have been."'
+2026-08-03 13:24:29,562 - INFO - __main__ - [ENCODE] slot=A chunk=4 audio_pos=10.085s ts=10.691s ds=10.692s decode=2.747s
