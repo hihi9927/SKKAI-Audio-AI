@@ -1,587 +1,614 @@
 INFO	server_model 자동 추론: --model mode3_confirm → Qwen/Qwen3-ASR-1.7B
-INFO	Results → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	Manual mode. Ensure server is running at ws://localhost:8766
 INFO	Processing 100 files (already done: 0)
 INFO	[1/100] 1688-142285-0000
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: THERE'S IRON THEY SAY IN ALL OUR BLOOD AND A GRAIN OR TWO PERHAPS IS GOOD BUT HIS HE MAKES ME HARSHLY FEEL HAS GOT A LITTLE TOO MUCH OF STEEL ANON
 INFO	  HYP: There's iron, they say, in all our blood, and a grain or two perhaps is good, but his—he makes me harshly feel—has got a little too much of steel. Anon.
-INFO	  FIRST_TOKEN_LATENCY: 23.700s
-INFO	  MODEL_RUNTIME(total-audio): 9.845s
-INFO	  FSL(avg): 7.312s
+INFO	  FIRST_TOKEN_LATENCY: 23.682s
+INFO	  MODEL_RUNTIME(total-audio): 9.825s
+INFO	  FSL(avg): 7.293s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
-INFO	  TRANS(avg): 0.001s
+INFO	  TRANS(avg): 0.002s
 INFO	  SPEAKER_1688_RUNNING_WER: 0.00% (1 files)
 INFO	  HYP_COMMIT: There's iron, they say, in all our blood, and a grain or two perhaps is good, but his—he makes me harshly feel—has got a little too much of steel. <dot> Anon. <dot>
 INFO	[2/100] 1688-142285-0001
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: MARGARET SAID MISTER HALE AS HE RETURNED FROM SHOWING HIS GUEST DOWNSTAIRS I COULD NOT HELP WATCHING YOUR FACE WITH SOME ANXIETY WHEN MISTER THORNTON MADE HIS CONFESSION OF HAVING BEEN A SHOP BOY
 INFO	  HYP: Margaret said, "Mr. Hale, as he returned from showing his guests downstairs, I could not help watching your face with some anxiety when Mr. Thornton made his confession of having been a shop boy."
-INFO	  FIRST_TOKEN_LATENCY: 24.462s
-INFO	  MODEL_RUNTIME(total-audio): 11.837s
-INFO	  FSL(avg): 8.434s
+INFO	  FIRST_TOKEN_LATENCY: 24.430s
+INFO	  MODEL_RUNTIME(total-audio): 11.805s
+INFO	  FSL(avg): 8.402s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1688_RUNNING_WER: 4.48% (2 files)
 INFO	  HYP_COMMIT: Margaret said, "Mr. Hale, as he returned from showing his guests downstairs, I could not help watching your face with some anxiety when Mr. Thornton made his confession of having been a shop boy." <dot>
 INFO	[3/100] 1688-142285-0002
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: YOU DON'T MEAN THAT YOU THOUGHT ME SO SILLY
 INFO	  HYP: You don't mean that you thought me so silly.
-INFO	  FIRST_TOKEN_LATENCY: 5.617s
-INFO	  MODEL_RUNTIME(total-audio): 2.782s
-INFO	  FSL(avg): 1.579s
+INFO	  FIRST_TOKEN_LATENCY: 5.609s
+INFO	  MODEL_RUNTIME(total-audio): 2.774s
+INFO	  FSL(avg): 1.572s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1688_RUNNING_WER: 3.90% (3 files)
 INFO	  HYP_COMMIT: You don't mean that you thought me so silly. <dot>
 INFO	[4/100] 1688-142285-0003
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: I REALLY LIKED THAT ACCOUNT OF HIMSELF BETTER THAN ANYTHING ELSE HE SAID
 INFO	  HYP: I really liked that account of himself better than anything else he said.
-INFO	  FIRST_TOKEN_LATENCY: 9.847s
-INFO	  MODEL_RUNTIME(total-audio): 4.787s
+INFO	  FIRST_TOKEN_LATENCY: 9.842s
+INFO	  MODEL_RUNTIME(total-audio): 4.782s
 INFO	  FSL(avg): 1.780s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1688_RUNNING_WER: 3.33% (4 files)
 INFO	  HYP_COMMIT: I really liked that account of himself better than anything else he said. <dot>
 INFO	[5/100] 1688-142285-0004
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: HIS STATEMENT OF HAVING BEEN A SHOP BOY WAS THE THING I LIKED BEST OF ALL
 INFO	  HYP: His statement of having been a shop boy was the thing I liked best of all.
-INFO	  FIRST_TOKEN_LATENCY: 8.058s
-INFO	  MODEL_RUNTIME(total-audio): 3.583s
-INFO	  FSL(avg): 1.976s
+INFO	  FIRST_TOKEN_LATENCY: 8.038s
+INFO	  MODEL_RUNTIME(total-audio): 3.563s
+INFO	  FSL(avg): 1.960s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
-INFO	  TRANS(avg): 0.003s
+INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1688_RUNNING_WER: 2.83% (5 files)
 INFO	  HYP_COMMIT: His statement of having been a shop boy was the thing I liked best of all. <dot>
 INFO	[6/100] 1688-142285-0005
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: YOU WHO WERE ALWAYS ACCUSING PEOPLE OF BEING SHOPPY AT HELSTONE
 INFO	  HYP: You who were always accusing people of being shoppy at Helston.
-INFO	  FIRST_TOKEN_LATENCY: 7.867s
-INFO	  MODEL_RUNTIME(total-audio): 3.567s
-INFO	  FSL(avg): 1.764s
+INFO	  FIRST_TOKEN_LATENCY: 7.860s
+INFO	  MODEL_RUNTIME(total-audio): 3.560s
+INFO	  FSL(avg): 1.758s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1688_RUNNING_WER: 3.42% (6 files)
 INFO	  HYP_COMMIT: You who were always accusing people of being shoppy at Helston. <dot>
 INFO	[7/100] 1688-142285-0006
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: I DON'T THINK MISTER HALE YOU HAVE DONE QUITE RIGHT IN INTRODUCING SUCH A PERSON TO US WITHOUT TELLING US WHAT HE HAD BEEN
 INFO	  HYP: I don't think, Mister Hale, you have done quite right in introducing such a person to us without telling us what he had been.
-INFO	  FIRST_TOKEN_LATENCY: 13.462s
-INFO	  MODEL_RUNTIME(total-audio): 5.322s
-INFO	  FSL(avg): 3.314s
+INFO	  FIRST_TOKEN_LATENCY: 13.529s
+INFO	  MODEL_RUNTIME(total-audio): 5.389s
+INFO	  FSL(avg): 3.386s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1688_RUNNING_WER: 2.82% (7 files)
 INFO	  HYP_COMMIT: I don't think, Mister Hale, you have done quite right in introducing such a person to us without telling us what he had been. <dot>
 INFO	[8/100] 1688-142285-0007
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: I REALLY WAS VERY MUCH AFRAID OF SHOWING HIM HOW MUCH SHOCKED I WAS AT SOME PARTS OF WHAT HE SAID
 INFO	  HYP: I really was very much afraid of showing him how much shocked I was at some parts of what he said.
-INFO	  FIRST_TOKEN_LATENCY: 12.678s
-INFO	  MODEL_RUNTIME(total-audio): 5.618s
-INFO	  FSL(avg): 2.614s
+INFO	  FIRST_TOKEN_LATENCY: 12.700s
+INFO	  MODEL_RUNTIME(total-audio): 5.640s
+INFO	  FSL(avg): 2.637s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1688_RUNNING_WER: 2.45% (8 files)
 INFO	  HYP_COMMIT: I really was very much afraid of showing him how much shocked I was at some parts of what he said. <dot>
 INFO	[9/100] 1688-142285-0008
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: HIS FATHER DYING IN MISERABLE CIRCUMSTANCES
 INFO	  HYP: His father dying in miserable circumstances.
-INFO	  FIRST_TOKEN_LATENCY: 7.521s
-INFO	  MODEL_RUNTIME(total-audio): 3.386s
-INFO	  FSL(avg): 1.383s
+INFO	  FIRST_TOKEN_LATENCY: 7.498s
+INFO	  MODEL_RUNTIME(total-audio): 3.363s
+INFO	  FSL(avg): 1.360s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1688_RUNNING_WER: 2.37% (9 files)
 INFO	  HYP_COMMIT: His father dying in miserable circumstances. <dot>
 INFO	[10/100] 1688-142285-0009
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: WHY IT MIGHT HAVE BEEN IN THE WORKHOUSE
 INFO	  HYP: Why, it might have been in the workhouse.
-INFO	  FIRST_TOKEN_LATENCY: 7.723s
-INFO	  MODEL_RUNTIME(total-audio): 4.188s
-INFO	  FSL(avg): 1.585s
+INFO	  FIRST_TOKEN_LATENCY: 7.744s
+INFO	  MODEL_RUNTIME(total-audio): 4.209s
+INFO	  FSL(avg): 1.605s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1688_RUNNING_WER: 2.26% (10 files)
 INFO	  HYP_COMMIT: Why, it might have been in the workhouse. <dot>
 INFO	[11/100] 1688-142285-0010
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: HIS FATHER SPECULATED WILDLY FAILED AND THEN KILLED HIMSELF BECAUSE HE COULD NOT BEAR THE DISGRACE
 INFO	  HYP: His father speculated wildly, failed, and then killed himself because he could not bear the disgrace.
-INFO	  FIRST_TOKEN_LATENCY: 12.304s
-INFO	  MODEL_RUNTIME(total-audio): 4.634s
-INFO	  FSL(avg): 2.227s
+INFO	  FIRST_TOKEN_LATENCY: 12.300s
+INFO	  MODEL_RUNTIME(total-audio): 4.630s
+INFO	  FSL(avg): 2.228s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1688_RUNNING_WER: 2.07% (11 files)
 INFO	  HYP_COMMIT: His father speculated wildly, failed, and then killed himself because he could not bear the disgrace. <dot>
 INFO	[12/100] 1688-142285-0011
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: ALL HIS FORMER FRIENDS SHRUNK FROM THE DISCLOSURES THAT HAD TO BE MADE OF HIS DISHONEST GAMBLING WILD HOPELESS STRUGGLES MADE WITH OTHER PEOPLE'S MONEY TO REGAIN HIS OWN MODERATE PORTION OF WEALTH
 INFO	  HYP: All his former friends shrank from the disclosures that had to be made of his dishonest gambling, wild, hopeless struggles, made with other people's money, to regain his own moderate portion of wealth.
-INFO	  FIRST_TOKEN_LATENCY: 23.005s
-INFO	  MODEL_RUNTIME(total-audio): 8.955s
-INFO	  FSL(avg): 6.947s
+INFO	  FIRST_TOKEN_LATENCY: 22.970s
+INFO	  MODEL_RUNTIME(total-audio): 8.920s
+INFO	  FSL(avg): 6.913s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
-INFO	  TRANS(avg): 0.004s
+INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1688_RUNNING_WER: 2.20% (12 files)
 INFO	  HYP_COMMIT: All his former friends shrank from the disclosures that had to be made of his dishonest gambling, wild, hopeless struggles, made with other people's money, to regain his own moderate portion of wealth. <dot>
 INFO	[13/100] 1688-142285-0012
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: NO ONE CAME FORWARDS TO HELP THE MOTHER AND THIS BOY
 INFO	  HYP: No one came forwards to help the mother and this boy.
-INFO	  FIRST_TOKEN_LATENCY: 7.775s
-INFO	  MODEL_RUNTIME(total-audio): 4.455s
-INFO	  FSL(avg): 1.652s
+INFO	  FIRST_TOKEN_LATENCY: 7.771s
+INFO	  MODEL_RUNTIME(total-audio): 4.451s
+INFO	  FSL(avg): 1.649s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1688_RUNNING_WER: 2.10% (13 files)
 INFO	  HYP_COMMIT: No one came forwards to help the mother and this boy. <dot>
 INFO	[14/100] 1688-142285-0013
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: AT LEAST NO FRIEND CAME FORWARDS IMMEDIATELY AND MISSUS THORNTON IS NOT ONE I FANCY TO WAIT TILL TARDY KINDNESS COMES TO FIND HER OUT
 INFO	  HYP: At least no friend came forwards immediately, and Mister Thornton is not one I fancy to wait till tardy kindness comes to find her out.
-INFO	  FIRST_TOKEN_LATENCY: 15.737s
-INFO	  MODEL_RUNTIME(total-audio): 5.557s
-INFO	  FSL(avg): 3.554s
+INFO	  FIRST_TOKEN_LATENCY: 15.676s
+INFO	  MODEL_RUNTIME(total-audio): 5.496s
+INFO	  FSL(avg): 3.493s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1688_RUNNING_WER: 2.28% (14 files)
 INFO	  HYP_COMMIT: At least no friend came forwards immediately, and Mister Thornton is not one I fancy to wait till tardy kindness comes to find her out. <dot>
 INFO	[15/100] 1688-142285-0014
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: SO THEY LEFT MILTON
 INFO	  HYP: So they left Milton.
-INFO	  FIRST_TOKEN_LATENCY: 5.324s
-INFO	  MODEL_RUNTIME(total-audio): 3.254s
-INFO	  FSL(avg): 1.250s
+INFO	  FIRST_TOKEN_LATENCY: 5.293s
+INFO	  MODEL_RUNTIME(total-audio): 3.223s
+INFO	  FSL(avg): 1.220s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1688_RUNNING_WER: 2.25% (15 files)
 INFO	  HYP_COMMIT: So they left Milton. <dot>
 INFO	[16/100] 1688-142285-0015
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: HOW TAINTED ASKED HER FATHER
 INFO	  HYP: How tainted?" asked her father.
-INFO	  FIRST_TOKEN_LATENCY: 9.500s
-INFO	  MODEL_RUNTIME(total-audio): 6.590s
-INFO	  FSL(avg): 1.386s
+INFO	  FIRST_TOKEN_LATENCY: 9.479s
+INFO	  MODEL_RUNTIME(total-audio): 6.569s
+INFO	  FSL(avg): 1.366s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1688_RUNNING_WER: 2.21% (16 files)
 INFO	  HYP_COMMIT: How tainted?" <dot> asked her father. <dot>
 INFO	[17/100] 1688-142285-0016
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: OH PAPA BY THAT TESTING EVERYTHING BY THE STANDARD OF WEALTH
 INFO	  HYP: Oh, Papa! Oh, papa! By that testing everything by the standard of wealth.
 INFO	  FIRST_TOKEN_LATENCY: 5.848s
-INFO	  MODEL_RUNTIME(total-audio): 5.047s
-INFO	  FSL(avg): 1.785s
+INFO	  MODEL_RUNTIME(total-audio): 7.070s
+INFO	  FSL(avg): 0.875s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.000s
 INFO	  SPEAKER_1688_RUNNING_WER: 2.83% (17 files)
-INFO	  HYP_COMMIT: Oh, Papa! <dot> Oh, papa! <dot> By that testing everything by the standard of wealth. <dot>
+INFO	  HYP_COMMIT: Oh, Papa! <dot> Oh, papa! By that testing everything by the standard of wealth. <finish>
 INFO	[18/100] 1688-142285-0017
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: WHEN HE SPOKE OF THE MECHANICAL POWERS HE EVIDENTLY LOOKED UPON THEM ONLY AS NEW WAYS OF EXTENDING TRADE AND MAKING MONEY
 INFO	  HYP: When he spoke of the mechanical powers, he evidently looked upon them only as new ways of extending trade and making money.
-INFO	  FIRST_TOKEN_LATENCY: 12.897s
-INFO	  MODEL_RUNTIME(total-audio): 4.517s
-INFO	  FSL(avg): 2.713s
+INFO	  FIRST_TOKEN_LATENCY: 12.860s
+INFO	  MODEL_RUNTIME(total-audio): 4.480s
+INFO	  FSL(avg): 2.676s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1688_RUNNING_WER: 2.62% (18 files)
 INFO	  HYP_COMMIT: When he spoke of the mechanical powers, he evidently looked upon them only as new ways of extending trade and making money. <dot>
 INFO	[19/100] 1688-142285-0018
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: AND THE POOR MEN AROUND HIM THEY WERE POOR BECAUSE THEY WERE VICIOUS OUT OF THE PALE OF HIS SYMPATHIES BECAUSE THEY HAD NOT HIS IRON NATURE AND THE CAPABILITIES THAT IT GIVES HIM FOR BEING RICH
 INFO	  HYP: And the poor men around him, they were poor because they were vicious, out of the pale of his sympathies, because they had not his iron nature, and the capabilities that it gives him for being rich.
-INFO	  FIRST_TOKEN_LATENCY: 24.718s
-INFO	  MODEL_RUNTIME(total-audio): 11.928s
-INFO	  FSL(avg): 8.524s
+INFO	  FIRST_TOKEN_LATENCY: 24.628s
+INFO	  MODEL_RUNTIME(total-audio): 11.838s
+INFO	  FSL(avg): 8.435s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
-INFO	  TRANS(avg): 0.002s
+INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1688_RUNNING_WER: 2.34% (19 files)
 INFO	  HYP_COMMIT: And the poor men around him, they were poor because they were vicious, out of the pale of his sympathies, because they had not his iron nature, and the capabilities that it gives him for being rich. <dot>
 INFO	[20/100] 1688-142285-0019
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: NOT VICIOUS HE NEVER SAID THAT
 INFO	  HYP: Not vicious. He never said that.
-INFO	  FIRST_TOKEN_LATENCY: 5.595s
-INFO	  MODEL_RUNTIME(total-audio): 4.420s
-INFO	  FSL(avg): 2.076s
+INFO	  FIRST_TOKEN_LATENCY: 5.593s
+INFO	  MODEL_RUNTIME(total-audio): 4.416s
+INFO	  FSL(avg): 2.073s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1688_RUNNING_WER: 2.30% (20 files)
 INFO	  HYP_COMMIT: Not vicious. <dot> He never said that. <dot>
 INFO	[21/100] 1688-142285-0020
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: IMPROVIDENT AND SELF INDULGENT WERE HIS WORDS
 INFO	  HYP: Improvident and self-indulgent were his words.
-INFO	  FIRST_TOKEN_LATENCY: 7.823s
-INFO	  MODEL_RUNTIME(total-audio): 4.253s
-INFO	  FSL(avg): 1.650s
+INFO	  FIRST_TOKEN_LATENCY: 7.856s
+INFO	  MODEL_RUNTIME(total-audio): 4.286s
+INFO	  FSL(avg): 1.683s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1688_RUNNING_WER: 2.25% (21 files)
 INFO	  HYP_COMMIT: Improvident and self-indulgent were his words. <dot>
 INFO	[22/100] 1688-142285-0021
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: MARGARET WAS COLLECTING HER MOTHER'S WORKING MATERIALS AND PREPARING TO GO TO BED
 INFO	  HYP: Margaret was collecting her mother's working materials and preparing to go to bed.
-INFO	  FIRST_TOKEN_LATENCY: 9.915s
-INFO	  MODEL_RUNTIME(total-audio): 4.705s
-INFO	  FSL(avg): 1.902s
+INFO	  FIRST_TOKEN_LATENCY: 9.911s
+INFO	  MODEL_RUNTIME(total-audio): 4.701s
+INFO	  FSL(avg): 1.898s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1688_RUNNING_WER: 2.17% (22 files)
 INFO	  HYP_COMMIT: Margaret was collecting her mother's working materials and preparing to go to bed. <dot>
 INFO	[23/100] 1688-142285-0022
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: JUST AS SHE WAS LEAVING THE ROOM SHE HESITATED SHE WAS INCLINED TO MAKE AN ACKNOWLEDGMENT WHICH SHE THOUGHT WOULD PLEASE HER FATHER BUT WHICH TO BE FULL AND TRUE MUST INCLUDE A LITTLE ANNOYANCE
 INFO	  HYP: Just as she was leaving the room, she hesitated. She was inclined to make an acknowledgment, which she thought would please her father, but which, to be full and true, must include a little annoyance.
-INFO	  FIRST_TOKEN_LATENCY: 9.925s
-INFO	  MODEL_RUNTIME(total-audio): 6.501s
-INFO	  FSL(avg): 4.298s
+INFO	  FIRST_TOKEN_LATENCY: 9.898s
+INFO	  MODEL_RUNTIME(total-audio): 6.439s
+INFO	  FSL(avg): 4.235s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1688_RUNNING_WER: 1.98% (23 files)
 INFO	  HYP_COMMIT: Just as she was leaving the room, she hesitated. <dot> She was inclined to make an acknowledgment, which she thought would please her father, but which, to be full and true, must include a little annoyance. <dot>
 INFO	[24/100] 1688-142285-0023
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: HOWEVER OUT IT CAME
 INFO	  HYP: However, out it came.
-INFO	  FIRST_TOKEN_LATENCY: 5.470s
-INFO	  MODEL_RUNTIME(total-audio): 2.885s
-INFO	  FSL(avg): 1.282s
+INFO	  FIRST_TOKEN_LATENCY: 5.480s
+INFO	  MODEL_RUNTIME(total-audio): 2.895s
+INFO	  FSL(avg): 1.292s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1688_RUNNING_WER: 1.96% (24 files)
 INFO	  HYP_COMMIT: However, out it came. <dot>
 INFO	[25/100] 1688-142285-0024
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: PAPA I DO THINK MISTER THORNTON A VERY REMARKABLE MAN BUT PERSONALLY I DON'T LIKE HIM AT ALL
 INFO	  HYP: Papa, I do think Mister Thornton a very remarkable man, but personally, I don't like him at all.
-INFO	  FIRST_TOKEN_LATENCY: 15.112s
-INFO	  MODEL_RUNTIME(total-audio): 6.097s
-INFO	  FSL(avg): 3.092s
+INFO	  FIRST_TOKEN_LATENCY: 15.134s
+INFO	  MODEL_RUNTIME(total-audio): 6.119s
+INFO	  FSL(avg): 3.114s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1688_RUNNING_WER: 1.87% (25 files)
 INFO	  HYP_COMMIT: Papa, I do think Mister Thornton a very remarkable man, but personally, I don't like him at all. <dot>
 INFO	[26/100] 1688-142285-0025
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: AND I DO SAID HER FATHER LAUGHING
 INFO	  HYP: And I do," said her father, laughing.
-INFO	  FIRST_TOKEN_LATENCY: 7.569s
-INFO	  MODEL_RUNTIME(total-audio): 4.169s
-INFO	  FSL(avg): 1.566s
+INFO	  FIRST_TOKEN_LATENCY: 7.537s
+INFO	  MODEL_RUNTIME(total-audio): 4.137s
+INFO	  FSL(avg): 1.533s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1688_RUNNING_WER: 1.84% (26 files)
 INFO	  HYP_COMMIT: And I do," said her father, laughing. <dot>
 INFO	[27/100] 1688-142285-0026
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: PERSONALLY AS YOU CALL IT AND ALL
 INFO	  HYP: Personally, as you call it, and all.
-INFO	  FIRST_TOKEN_LATENCY: 7.746s
-INFO	  MODEL_RUNTIME(total-audio): 4.161s
-INFO	  FSL(avg): 1.554s
+INFO	  FIRST_TOKEN_LATENCY: 7.722s
+INFO	  MODEL_RUNTIME(total-audio): 4.137s
+INFO	  FSL(avg): 1.534s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1688_RUNNING_WER: 1.81% (27 files)
 INFO	  HYP_COMMIT: Personally, as you call it, and all. <dot>
 INFO	[28/100] 1688-142285-0027
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: I DON'T SET HIM UP FOR A HERO OR ANYTHING OF THAT KIND
 INFO	  HYP: I don't set him up for a hero or anything of that kind.
-INFO	  FIRST_TOKEN_LATENCY: 8.003s
-INFO	  MODEL_RUNTIME(total-audio): 3.843s
-INFO	  FSL(avg): 1.839s
+INFO	  FIRST_TOKEN_LATENCY: 7.984s
+INFO	  MODEL_RUNTIME(total-audio): 3.824s
+INFO	  FSL(avg): 1.822s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1688_RUNNING_WER: 1.76% (28 files)
 INFO	  HYP_COMMIT: I don't set him up for a hero or anything of that kind. <dot>
 INFO	[29/100] 1688-142285-0028
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: BUT GOOD NIGHT CHILD
 INFO	  HYP: But good night, child.
-INFO	  FIRST_TOKEN_LATENCY: 5.436s
-INFO	  MODEL_RUNTIME(total-audio): 3.496s
-INFO	  FSL(avg): 1.293s
+INFO	  FIRST_TOKEN_LATENCY: 5.430s
+INFO	  MODEL_RUNTIME(total-audio): 3.490s
+INFO	  FSL(avg): 1.287s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1688_RUNNING_WER: 1.74% (29 files)
 INFO	  HYP_COMMIT: But good night, child. <dot>
 INFO	[30/100] 1688-142285-0029
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: THERE WERE SEVERAL OTHER SIGNS OF SOMETHING WRONG ABOUT MISSUS HALE
 INFO	  HYP: There were several other signs of something wrong about Mrs. Hale.
-INFO	  FIRST_TOKEN_LATENCY: 7.877s
-INFO	  MODEL_RUNTIME(total-audio): 3.327s
-INFO	  FSL(avg): 1.724s
+INFO	  FIRST_TOKEN_LATENCY: 7.860s
+INFO	  MODEL_RUNTIME(total-audio): 3.310s
+INFO	  FSL(avg): 1.708s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1688_RUNNING_WER: 1.91% (30 files)
 INFO	  HYP_COMMIT: There were several other signs of something wrong about Mrs. Hale. <dot>
 INFO	[31/100] 1688-142285-0030
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: SHE AND DIXON HELD MYSTERIOUS CONSULTATIONS IN HER BEDROOM FROM WHICH DIXON WOULD COME OUT CRYING AND CROSS AS WAS HER CUSTOM WHEN ANY DISTRESS OF HER MISTRESS CALLED UPON HER SYMPATHY
 INFO	  HYP: She and Dixon held mysterious consultations in a bedroom, from which Dixon would come out crying and cross, as was a custom when any distress of her mistress called upon her sympathy.
-INFO	  FIRST_TOKEN_LATENCY: 19.412s
-INFO	  MODEL_RUNTIME(total-audio): 7.112s
-INFO	  FSL(avg): 5.308s
+INFO	  FIRST_TOKEN_LATENCY: 18.649s
+INFO	  MODEL_RUNTIME(total-audio): 6.349s
+INFO	  FSL(avg): 4.545s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1688_RUNNING_WER: 2.19% (31 files)
 INFO	  HYP_COMMIT: She and Dixon held mysterious consultations in a bedroom, from which Dixon would come out crying and cross, as was a custom when any distress of her mistress called upon her sympathy. <dot>
 INFO	[32/100] 1688-142285-0031
-WARNING	Empty transcript: 1688-142285-0031
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
+INFO	  REF: ONCE MARGARET HAD GONE INTO THE CHAMBER SOON AFTER DIXON LEFT IT AND FOUND HER MOTHER ON HER KNEES AND AS MARGARET STOLE OUT SHE CAUGHT A FEW WORDS WHICH WERE EVIDENTLY A PRAYER FOR STRENGTH AND PATIENCE TO ENDURE SEVERE BODILY SUFFERING
+INFO	  HYP: Once Margaret had gone into the chamber soon after Dixon left it, and found her mother on her knees, and as Margaret stole out, she caught a few words, which were evidently a prayer for strength and patience, to endure severe bodily suffering.
+INFO	  FIRST_TOKEN_LATENCY: 32.873s
+INFO	  MODEL_RUNTIME(total-audio): 16.073s
+INFO	  FSL(avg): 12.870s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 2.02% (32 files)
+INFO	  HYP_COMMIT: Once Margaret had gone into the chamber soon after Dixon left it, and found her mother on her knees, and as Margaret stole out, she caught a few words, which were evidently a prayer for strength and patience, to endure severe bodily suffering. <dot>
 INFO	[33/100] 1688-142285-0032
-WARNING	Empty transcript: 1688-142285-0032
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
+INFO	  REF: BUT THOUGH SHE RECEIVED CARESSES AND FOND WORDS BACK AGAIN IN SUCH PROFUSION AS WOULD HAVE GLADDENED HER FORMERLY YET SHE FELT THAT THERE WAS A SECRET WITHHELD FROM HER AND SHE BELIEVED IT BORE SERIOUS REFERENCE TO HER MOTHER'S HEALTH
+INFO	  HYP: But though she received caresses and fond words back again, in such profusion as would have gladdened her formerly, yet she felt that there was a secret withheld from her, and she believed it bore serious reference to her mother's health.
+INFO	  FIRST_TOKEN_LATENCY: 32.362s
+INFO	  MODEL_RUNTIME(total-audio): 15.512s
+INFO	  FSL(avg): 12.309s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 1.87% (33 files)
+INFO	  HYP_COMMIT: But though she received caresses and fond words back again, in such profusion as would have gladdened her formerly, yet she felt that there was a secret withheld from her, and she believed it bore serious reference to her mother's health. <dot>
 INFO	[34/100] 1688-142285-0033
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: SHE LAY AWAKE VERY LONG THIS NIGHT PLANNING HOW TO LESSEN THE EVIL INFLUENCE OF THEIR MILTON LIFE ON HER MOTHER
 INFO	  HYP: She lay awake very long this night, planning how to lessen the evil influence of their Milton life on her mother.
-INFO	  FIRST_TOKEN_LATENCY: 15.707s
-INFO	  MODEL_RUNTIME(total-audio): 7.022s
-INFO	  FSL(avg): 2.597s
+INFO	  FIRST_TOKEN_LATENCY: 12.663s
+INFO	  MODEL_RUNTIME(total-audio): 3.978s
+INFO	  FSL(avg): 2.574s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.10% (32 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 1.81% (34 files)
 INFO	  HYP_COMMIT: She lay awake very long this night, planning how to lessen the evil influence of their Milton life on her mother. <dot>
 INFO	[35/100] 1688-142285-0034
-WARNING	Empty transcript: 1688-142285-0034
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
+INFO	  REF: A SERVANT TO GIVE DIXON PERMANENT ASSISTANCE SHOULD BE GOT IF SHE GAVE UP HER WHOLE TIME TO THE SEARCH AND THEN AT ANY RATE HER MOTHER MIGHT HAVE ALL THE PERSONAL ATTENTION SHE REQUIRED AND HAD BEEN ACCUSTOMED TO HER WHOLE LIFE
+INFO	  HYP: A servant to give Dixon permanent assistance should be got, if she gave up the whole time to the search, and then, at any rate, her mother might have all the personal attention she required, and had been accustomed to her whole life.
+INFO	  FIRST_TOKEN_LATENCY: 29.064s
+INFO	  MODEL_RUNTIME(total-audio): 13.899s
+INFO	  FSL(avg): 10.896s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 1.84% (35 files)
+INFO	  HYP_COMMIT: A servant to give Dixon permanent assistance should be got, if she gave up the whole time to the search, and then, at any rate, her mother might have all the personal attention she required, and had been accustomed to her whole life. <dot>
 INFO	[36/100] 1688-142285-0035
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: VISITING REGISTER OFFICES SEEING ALL MANNER OF UNLIKELY PEOPLE AND VERY FEW IN THE LEAST LIKELY ABSORBED MARGARET'S TIME AND THOUGHTS FOR SEVERAL DAYS
 INFO	  HYP: Visiting register offices, seeing all manner of unlikely people, and very few in the least likely, absorbed Margaret's time and thoughts for several days.
-INFO	  FIRST_TOKEN_LATENCY: 20.675s
-INFO	  MODEL_RUNTIME(total-audio): 9.775s
-INFO	  FSL(avg): 4.658s
+INFO	  FIRST_TOKEN_LATENCY: 18.695s
+INFO	  MODEL_RUNTIME(total-audio): 7.795s
+INFO	  FSL(avg): 4.592s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
-INFO	  TRANS(avg): 0.002s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.01% (33 files)
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 1.78% (36 files)
 INFO	  HYP_COMMIT: Visiting register offices, seeing all manner of unlikely people, and very few in the least likely, absorbed Margaret's time and thoughts for several days. <dot>
 INFO	[37/100] 1688-142285-0036
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: ONE AFTERNOON SHE MET BESSY HIGGINS IN THE STREET AND STOPPED TO SPEAK TO HER
 INFO	  HYP: One afternoon, she met Bessy Higgins in the street and stopped to speak to her.
-INFO	  FIRST_TOKEN_LATENCY: 10.350s
-INFO	  MODEL_RUNTIME(total-audio): 5.185s
-INFO	  FSL(avg): 2.182s
+INFO	  FIRST_TOKEN_LATENCY: 10.367s
+INFO	  MODEL_RUNTIME(total-audio): 5.202s
+INFO	  FSL(avg): 2.198s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 1.95% (34 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 1.74% (37 files)
 INFO	  HYP_COMMIT: One afternoon, she met Bessy Higgins in the street and stopped to speak to her. <dot>
 INFO	[38/100] 1688-142285-0037
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: WELL BESSY HOW ARE YOU
 INFO	  HYP: Well, Bessy, how are you?
-INFO	  FIRST_TOKEN_LATENCY: 5.610s
-INFO	  MODEL_RUNTIME(total-audio): 3.535s
-INFO	  FSL(avg): 1.531s
+INFO	  FIRST_TOKEN_LATENCY: 5.600s
+INFO	  MODEL_RUNTIME(total-audio): 3.525s
+INFO	  FSL(avg): 1.522s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 1.94% (35 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 1.72% (38 files)
 INFO	  HYP_COMMIT: Well, Bessy, how are you? <dot>
 INFO	[39/100] 1688-142285-0038
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: BETTER AND NOT BETTER IF YO KNOW WHAT THAT MEANS
 INFO	  HYP: Better and not better, if you know what that means.
-INFO	  FIRST_TOKEN_LATENCY: 7.830s
-INFO	  MODEL_RUNTIME(total-audio): 3.660s
+INFO	  FIRST_TOKEN_LATENCY: 7.828s
+INFO	  MODEL_RUNTIME(total-audio): 3.658s
+INFO	  FSL(avg): 1.651s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 1.84% (39 files)
+INFO	  HYP_COMMIT: Better and not better, if you know what that means. <dot>
+INFO	[40/100] 1688-142285-0039
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
+INFO	  REF: NOT EXACTLY REPLIED MARGARET SMILING
+INFO	  HYP: Not exactly," replied Margaret, smiling.
+INFO	  FIRST_TOKEN_LATENCY: 7.567s
+INFO	  MODEL_RUNTIME(total-audio): 3.627s
+INFO	  FSL(avg): 1.421s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.002s
+INFO	  SPEAKER_1688_RUNNING_WER: 1.83% (40 files)
+INFO	  HYP_COMMIT: Not exactly," replied Margaret, smiling. <dot>
+INFO	[41/100] 1688-142285-0040
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
+INFO	  REF: I'M BETTER IN NOT BEING TORN TO PIECES BY COUGHING O'NIGHTS BUT I'M WEARY AND TIRED O MILTON AND LONGING TO GET AWAY TO THE LAND O BEULAH AND WHEN I THINK I'M FARTHER AND FARTHER OFF MY HEART SINKS AND I'M NO BETTER I'M WORSE
+INFO	  HYP: I'm better in not being torn to pieces, by coughing o nights, but I'm weary and tired o Milton, and longing to get away to the land of Bula. And when I think I'm farther and farther off, my heart sinks, and I'm no better. I'm worse.
+INFO	  FIRST_TOKEN_LATENCY: 22.771s
+INFO	  MODEL_RUNTIME(total-audio): 8.633s
+INFO	  FSL(avg): 7.181s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 1.97% (41 files)
+INFO	  HYP_COMMIT: I'm better in not being torn to pieces, by coughing o nights, but I'm weary and tired o Milton, and longing to get away to the land of Bula. <dot> And when I think I'm farther and farther off, my heart sinks, and I'm no better. <dot> I'm worse. <dot>
+INFO	[42/100] 1688-142285-0041
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
+INFO	  REF: MARGARET TURNED ROUND TO WALK ALONGSIDE OF THE GIRL IN HER FEEBLE PROGRESS HOMEWARD
+INFO	  HYP: Margaret turned round to walk alongside of the girl in her feeble progress homewards.
+INFO	  FIRST_TOKEN_LATENCY: 14.460s
+INFO	  MODEL_RUNTIME(total-audio): 7.520s
+INFO	  FSL(avg): 2.316s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 2.06% (42 files)
+INFO	  HYP_COMMIT: Margaret turned round to walk alongside of the girl in her feeble progress homewards. <dot>
+INFO	[43/100] 1688-142285-0042
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
+INFO	  REF: BUT FOR A MINUTE OR TWO SHE DID NOT SPEAK
+INFO	  HYP: But for a minute or two, she did not speak.
+INFO	  FIRST_TOKEN_LATENCY: 7.724s
+INFO	  MODEL_RUNTIME(total-audio): 4.464s
 INFO	  FSL(avg): 1.657s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.08% (36 files)
-INFO	  HYP_COMMIT: Better and not better, if you know what that means. <dot>
-INFO	[40/100] 1688-142285-0039
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
-INFO	  REF: NOT EXACTLY REPLIED MARGARET SMILING
-INFO	  HYP: Not exactly," replied Margaret, smiling.
-INFO	  FIRST_TOKEN_LATENCY: 7.565s
-INFO	  MODEL_RUNTIME(total-audio): 3.625s
-INFO	  FSL(avg): 1.418s
-INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
-INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.06% (37 files)
-INFO	  HYP_COMMIT: Not exactly," replied Margaret, smiling. <dot>
-INFO	[41/100] 1688-142285-0040
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
-INFO	  REF: I'M BETTER IN NOT BEING TORN TO PIECES BY COUGHING O'NIGHTS BUT I'M WEARY AND TIRED O MILTON AND LONGING TO GET AWAY TO THE LAND O BEULAH AND WHEN I THINK I'M FARTHER AND FARTHER OFF MY HEART SINKS AND I'M NO BETTER I'M WORSE
-INFO	  HYP: I'm better in not being torn to pieces, by coughing o nights, but I'm weary and tired o Milton, and longing to get away to the land of Bula. And when I think I'm farther and farther off, my heart sinks, and I'm no better. I'm worse.
-INFO	  FIRST_TOKEN_LATENCY: 22.737s
-INFO	  MODEL_RUNTIME(total-audio): 8.569s
-INFO	  FSL(avg): 7.123s
-INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
-INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.20% (38 files)
-INFO	  HYP_COMMIT: I'm better in not being torn to pieces, by coughing o nights, but I'm weary and tired o Milton, and longing to get away to the land of Bula. <dot> And when I think I'm farther and farther off, my heart sinks, and I'm no better. <dot> I'm worse. <dot>
-INFO	[42/100] 1688-142285-0041
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
-INFO	  REF: MARGARET TURNED ROUND TO WALK ALONGSIDE OF THE GIRL IN HER FEEBLE PROGRESS HOMEWARD
-INFO	  HYP: Margaret turned round to walk alongside of the girl in her feeble progress homewards.
-INFO	  FIRST_TOKEN_LATENCY: 14.468s
-INFO	  MODEL_RUNTIME(total-audio): 7.528s
-INFO	  FSL(avg): 2.325s
-INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
-INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.31% (39 files)
-INFO	  HYP_COMMIT: Margaret turned round to walk alongside of the girl in her feeble progress homewards. <dot>
-INFO	[43/100] 1688-142285-0042
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
-INFO	  REF: BUT FOR A MINUTE OR TWO SHE DID NOT SPEAK
-INFO	  HYP: But for a minute or two, she did not speak.
-INFO	  FIRST_TOKEN_LATENCY: 7.719s
-INFO	  MODEL_RUNTIME(total-audio): 4.459s
-INFO	  FSL(avg): 1.656s
-INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
-INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.28% (40 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.03% (43 files)
 INFO	  HYP_COMMIT: But for a minute or two, she did not speak. <dot>
 INFO	[44/100] 1688-142285-0043
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: AT LAST SHE SAID IN A LOW VOICE
 INFO	  HYP: At last, she said in a low voice.
-INFO	  FIRST_TOKEN_LATENCY: 7.951s
-INFO	  MODEL_RUNTIME(total-audio): 4.526s
-INFO	  FSL(avg): 1.923s
+INFO	  FIRST_TOKEN_LATENCY: 7.598s
+INFO	  MODEL_RUNTIME(total-audio): 4.173s
+INFO	  FSL(avg): 1.570s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.25% (41 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.01% (44 files)
 INFO	  HYP_COMMIT: At last, she said in a low voice. <dot>
 INFO	[45/100] 1688-142285-0044
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: BESSY DO YOU WISH TO DIE
 INFO	  HYP: Bessy, do you wish to die?
-INFO	  FIRST_TOKEN_LATENCY: 7.555s
-INFO	  MODEL_RUNTIME(total-audio): 4.150s
-INFO	  FSL(avg): 1.547s
+INFO	  FIRST_TOKEN_LATENCY: 7.534s
+INFO	  MODEL_RUNTIME(total-audio): 4.129s
+INFO	  FSL(avg): 1.522s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.23% (42 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.00% (45 files)
 INFO	  HYP_COMMIT: Bessy, do you wish to die? <dot>
 INFO	[46/100] 1688-142285-0045
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: BESSY WAS SILENT IN HER TURN FOR A MINUTE OR TWO THEN SHE REPLIED
 INFO	  HYP: Bessy was silent in her turn for a minute or two, then she replied.
-INFO	  FIRST_TOKEN_LATENCY: 10.087s
-INFO	  MODEL_RUNTIME(total-audio): 4.277s
-INFO	  FSL(avg): 2.073s
+INFO	  FIRST_TOKEN_LATENCY: 10.066s
+INFO	  MODEL_RUNTIME(total-audio): 4.256s
+INFO	  FSL(avg): 2.052s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.18% (43 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 1.96% (46 files)
 INFO	  HYP_COMMIT: Bessy was silent in her turn for a minute or two, then she replied. <dot>
 INFO	[47/100] 1688-142285-0046
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: NOUGHT WORSE THAN MANY OTHERS I RECKON
 INFO	  HYP: Not worse than many others, I reckon.
-INFO	  FIRST_TOKEN_LATENCY: 7.681s
-INFO	  MODEL_RUNTIME(total-audio): 4.886s
-INFO	  FSL(avg): 1.483s
+INFO	  FIRST_TOKEN_LATENCY: 7.668s
+INFO	  MODEL_RUNTIME(total-audio): 4.873s
+INFO	  FSL(avg): 1.470s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.31% (44 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.07% (47 files)
 INFO	  HYP_COMMIT: Not worse than many others, I reckon. <dot>
 INFO	[48/100] 1688-142285-0047
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: BUT WHAT WAS IT
 INFO	  HYP: But what was it?
-INFO	  FIRST_TOKEN_LATENCY: 5.392s
-INFO	  MODEL_RUNTIME(total-audio): 3.632s
-INFO	  FSL(avg): 1.230s
+INFO	  FIRST_TOKEN_LATENCY: 5.394s
+INFO	  MODEL_RUNTIME(total-audio): 3.634s
+INFO	  FSL(avg): 1.231s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.29% (45 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.06% (48 files)
 INFO	  HYP_COMMIT: But what was it? <dot>
 INFO	[49/100] 1688-142285-0048
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: YOU KNOW I'M A STRANGER HERE SO PERHAPS I'M NOT SO QUICK AT UNDERSTANDING WHAT YOU MEAN AS IF I'D LIVED ALL MY LIFE AT MILTON
 INFO	  HYP: You know, I'm a stranger here, so perhaps I'm not so quick at understanding what you mean as if I'd lived all my life in Milton.
-INFO	  FIRST_TOKEN_LATENCY: 17.082s
-INFO	  MODEL_RUNTIME(total-audio): 8.832s
-INFO	  FSL(avg): 5.029s
+INFO	  FIRST_TOKEN_LATENCY: 16.998s
+INFO	  MODEL_RUNTIME(total-audio): 8.748s
+INFO	  FSL(avg): 4.944s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.34% (46 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.11% (49 files)
 INFO	  HYP_COMMIT: You know, I'm a stranger here, so perhaps I'm not so quick at understanding what you mean as if I'd lived all my life in Milton. <dot>
 INFO	[50/100] 1688-142285-0049
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: I HAD FORGOTTEN WHAT I SAID FOR THE TIME CONTINUED MARGARET QUIETLY
 INFO	  HYP: I had forgotten what I said for the time. Continued Margaret quietly.
-INFO	  FIRST_TOKEN_LATENCY: 7.851s
-INFO	  MODEL_RUNTIME(total-audio): 4.786s
-INFO	  FSL(avg): 2.220s
+INFO	  FIRST_TOKEN_LATENCY: 7.847s
+INFO	  MODEL_RUNTIME(total-audio): 4.785s
+INFO	  FSL(avg): 2.218s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.30% (47 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.08% (50 files)
 INFO	  HYP_COMMIT: I had forgotten what I said for the time. <dot> Continued Margaret quietly. <dot>
 INFO	[51/100] 1688-142285-0050
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: I SHOULD HAVE THOUGHT OF IT AGAIN WHEN I WAS LESS BUSY MAY I GO WITH YOU NOW
 INFO	  HYP: I should have thought of it again when I was less busy. May I go with you now?
-INFO	  FIRST_TOKEN_LATENCY: 9.567s
-INFO	  MODEL_RUNTIME(total-audio): 4.117s
-INFO	  FSL(avg): 1.510s
+INFO	  FIRST_TOKEN_LATENCY: 9.548s
+INFO	  MODEL_RUNTIME(total-audio): 4.098s
+INFO	  FSL(avg): 1.495s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.000s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.25% (48 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.03% (51 files)
 INFO	  HYP_COMMIT: I should have thought of it again when I was less busy. <dot> May I go with you now? <dot>
 INFO	[52/100] 1688-142285-0051
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: THE SHARPNESS IN HER EYE TURNED TO A WISTFUL LONGING AS SHE MET MARGARET'S SOFT AND FRIENDLY GAZE
 INFO	  HYP: The sharpness in her eye turned to a wistful longing, as she met Margaret's soft and friendly gaze.
-INFO	  FIRST_TOKEN_LATENCY: 10.830s
-INFO	  MODEL_RUNTIME(total-audio): 4.205s
-INFO	  FSL(avg): 2.800s
+INFO	  FIRST_TOKEN_LATENCY: 10.744s
+INFO	  MODEL_RUNTIME(total-audio): 4.119s
+INFO	  FSL(avg): 2.716s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
-INFO	  TRANS(avg): 0.002s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.19% (49 files)
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 1.99% (52 files)
 INFO	  HYP_COMMIT: The sharpness in her eye turned to a wistful longing, as she met Margaret's soft and friendly gaze. <dot>
 INFO	[53/100] 1688-142285-0052
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: AS THEY TURNED UP INTO A SMALL COURT OPENING OUT OF A SQUALID STREET BESSY SAID
 INFO	  HYP: As they turned up into a small court, opening out into a squalid street, Bessy said.
-INFO	  FIRST_TOKEN_LATENCY: 12.784s
-INFO	  MODEL_RUNTIME(total-audio): 5.704s
-INFO	  FSL(avg): 2.701s
+INFO	  FIRST_TOKEN_LATENCY: 12.764s
+INFO	  MODEL_RUNTIME(total-audio): 5.684s
+INFO	  FSL(avg): 2.677s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.27% (50 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.07% (53 files)
 INFO	  HYP_COMMIT: As they turned up into a small court, opening out into a squalid street, Bessy said. <dot>
 INFO	[54/100] 1688-142285-0053
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: YO'LL NOT BE DAUNTED IF FATHER'S AT HOME AND SPEAKS A BIT GRUFFISH AT FIRST
 INFO	  HYP: You'll not be daunted if father's at home, and speaks a bit gruffish at first.
-INFO	  FIRST_TOKEN_LATENCY: 10.548s
-INFO	  MODEL_RUNTIME(total-audio): 4.738s
-INFO	  FSL(avg): 2.535s
+INFO	  FIRST_TOKEN_LATENCY: 10.537s
+INFO	  MODEL_RUNTIME(total-audio): 4.727s
+INFO	  FSL(avg): 2.524s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.35% (51 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.13% (54 files)
 INFO	  HYP_COMMIT: You'll not be daunted if father's at home, and speaks a bit gruffish at first. <dot>
 INFO	[55/100] 1688-142285-0054
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: BUT NICHOLAS WAS NOT AT HOME WHEN THEY ENTERED
 INFO	  HYP: But Nicholas was not at home when they entered.
-INFO	  FIRST_TOKEN_LATENCY: 7.685s
-INFO	  MODEL_RUNTIME(total-audio): 4.545s
-INFO	  FSL(avg): 1.541s
+INFO	  FIRST_TOKEN_LATENCY: 7.676s
+INFO	  MODEL_RUNTIME(total-audio): 4.536s
+INFO	  FSL(avg): 1.533s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.32% (52 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.11% (55 files)
 INFO	  HYP_COMMIT: But Nicholas was not at home when they entered. <dot>
 INFO	[56/100] 1688-142285-0055
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: GASPED BESSY AT LAST
 INFO	  HYP: Gasped Bessy at last.
 INFO	  FIRST_TOKEN_LATENCY: 7.898s
@@ -589,488 +616,488 @@ INFO	  MODEL_RUNTIME(total-audio): 5.508s
 INFO	  FSL(avg): 0.000s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.000s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.31% (53 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.11% (56 files)
 INFO	  HYP_COMMIT: Gasped Bessy at last. <finish>
 INFO	[57/100] 1688-142285-0056
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: BESSY TOOK A LONG AND FEVERISH DRAUGHT AND THEN FELL BACK AND SHUT HER EYES
 INFO	  HYP: Bessy took a long and feverish draught, and then fell back and shut her eyes.
-INFO	  FIRST_TOKEN_LATENCY: 10.398s
-INFO	  MODEL_RUNTIME(total-audio): 3.608s
-INFO	  FSL(avg): 2.205s
+INFO	  FIRST_TOKEN_LATENCY: 10.420s
+INFO	  MODEL_RUNTIME(total-audio): 3.630s
+INFO	  FSL(avg): 2.227s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.27% (54 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.07% (57 files)
 INFO	  HYP_COMMIT: Bessy took a long and feverish draught, and then fell back and shut her eyes. <dot>
 INFO	[58/100] 1688-142285-0057
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: MARGARET BENT OVER AND SAID BESSY DON'T BE IMPATIENT WITH YOUR LIFE WHATEVER IT IS OR MAY HAVE BEEN
 INFO	  HYP: Margaret bent over and said, "Bessy, don't be impatient with your life, whatever it is, or may have been."
-INFO	  FIRST_TOKEN_LATENCY: 16.156s
-INFO	  MODEL_RUNTIME(total-audio): 7.271s
-INFO	  FSL(avg): 4.066s
+INFO	  FIRST_TOKEN_LATENCY: 16.176s
+INFO	  MODEL_RUNTIME(total-audio): 7.291s
+INFO	  FSL(avg): 4.087s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.22% (55 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.03% (58 files)
 INFO	  HYP_COMMIT: Margaret bent over and said, "Bessy, don't be impatient with your life, whatever it is, or may have been." <dot>
 INFO	[59/100] 1688-142285-0058
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: REMEMBER WHO GAVE IT YOU AND MADE IT WHAT IT IS
 INFO	  HYP: Remember who gave it to you, and made it what it is.
-INFO	  FIRST_TOKEN_LATENCY: 7.877s
-INFO	  MODEL_RUNTIME(total-audio): 3.992s
-INFO	  FSL(avg): 1.790s
+INFO	  FIRST_TOKEN_LATENCY: 7.861s
+INFO	  MODEL_RUNTIME(total-audio): 3.976s
+INFO	  FSL(avg): 1.769s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.30% (56 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.11% (59 files)
 INFO	  HYP_COMMIT: Remember who gave it to you, and made it what it is. <dot>
 INFO	[60/100] 1688-142285-0059
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: NOW I'LL NOT HAVE MY WENCH PREACHED TO
 INFO	  HYP: Now, I'll not have my wench preached to.
-INFO	  FIRST_TOKEN_LATENCY: 7.835s
-INFO	  MODEL_RUNTIME(total-audio): 4.275s
-INFO	  FSL(avg): 1.670s
+INFO	  FIRST_TOKEN_LATENCY: 7.861s
+INFO	  MODEL_RUNTIME(total-audio): 4.301s
+INFO	  FSL(avg): 1.699s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
-INFO	  TRANS(avg): 0.002s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.28% (57 files)
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 2.09% (60 files)
 INFO	  HYP_COMMIT: Now, I'll not have my wench preached to. <dot>
 INFO	[61/100] 1688-142285-0060
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: BUT SURELY SAID MARGARET FACING ROUND YOU BELIEVE IN WHAT I SAID THAT GOD GAVE HER LIFE AND ORDERED WHAT KIND OF LIFE IT WAS TO BE
 INFO	  HYP: But surely," said Margaret, facing round, "you believe in what I said—that God gave her life, and ordered what kind of life it was to be."
-INFO	  FIRST_TOKEN_LATENCY: 16.541s
-INFO	  MODEL_RUNTIME(total-audio): 6.761s
-INFO	  FSL(avg): 4.358s
+INFO	  FIRST_TOKEN_LATENCY: 16.581s
+INFO	  MODEL_RUNTIME(total-audio): 6.801s
+INFO	  FSL(avg): 4.394s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.21% (58 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.03% (61 files)
 INFO	  HYP_COMMIT: But surely," said Margaret, facing round, "you believe in what I said—that God gave her life, and ordered what kind of life it was to be." <dot>
 INFO	[62/100] 1688-142285-0061
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: I BELIEVE WHAT I SEE AND NO MORE
 INFO	  HYP: I believe what I see, and no more.
-INFO	  FIRST_TOKEN_LATENCY: 7.680s
-INFO	  MODEL_RUNTIME(total-audio): 4.550s
-INFO	  FSL(avg): 1.543s
+INFO	  FIRST_TOKEN_LATENCY: 7.660s
+INFO	  MODEL_RUNTIME(total-audio): 4.530s
+INFO	  FSL(avg): 1.528s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.19% (59 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.02% (62 files)
 INFO	  HYP_COMMIT: I believe what I see, and no more. <dot>
 INFO	[63/100] 1688-142285-0062
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: THAT'S WHAT I BELIEVE YOUNG WOMAN
 INFO	  HYP: That's what I believe, young woman.
-INFO	  FIRST_TOKEN_LATENCY: 7.664s
-INFO	  MODEL_RUNTIME(total-audio): 4.889s
-INFO	  FSL(avg): 1.482s
+INFO	  FIRST_TOKEN_LATENCY: 7.661s
+INFO	  MODEL_RUNTIME(total-audio): 4.886s
+INFO	  FSL(avg): 1.480s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.18% (60 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.01% (63 files)
 INFO	  HYP_COMMIT: That's what I believe, young woman. <dot>
 INFO	[64/100] 1688-142285-0063
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: I DON'T BELIEVE ALL I HEAR NO NOT BY A BIG DEAL
 INFO	  HYP: I don't believe all I hear. No, not by a big deal.
-INFO	  FIRST_TOKEN_LATENCY: 5.862s
-INFO	  MODEL_RUNTIME(total-audio): 4.638s
-INFO	  FSL(avg): 1.430s
+INFO	  FIRST_TOKEN_LATENCY: 5.859s
+INFO	  MODEL_RUNTIME(total-audio): 4.618s
+INFO	  FSL(avg): 1.415s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.000s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.15% (61 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 1.98% (64 files)
 INFO	  HYP_COMMIT: I don't believe all I hear. <dot> No, not by a big deal. <dot>
 INFO	[65/100] 1688-142285-0064
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: BUT HOO'S COME AT LAST AND HOO'S WELCOME AS LONG AS HOO'LL KEEP FROM PREACHING ON WHAT HOO KNOWS NOUGHT ABOUT
 INFO	  HYP: But who's come at last, and who's welcome, as long as he'll keep from preaching on what who knows not about.
-INFO	  FIRST_TOKEN_LATENCY: 13.506s
-INFO	  MODEL_RUNTIME(total-audio): 5.776s
-INFO	  FSL(avg): 3.373s
+INFO	  FIRST_TOKEN_LATENCY: 13.472s
+INFO	  MODEL_RUNTIME(total-audio): 5.742s
+INFO	  FSL(avg): 3.335s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.62% (62 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.40% (65 files)
 INFO	  HYP_COMMIT: But who's come at last, and who's welcome, as long as he'll keep from preaching on what who knows not about. <dot>
 INFO	[66/100] 1688-142285-0065
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: IT'S SIMPLE AND NOT FAR TO FETCH NOR HARD TO WORK
 INFO	  HYP: It's simple and not far to fetch, nor hard to work.
-INFO	  FIRST_TOKEN_LATENCY: 9.952s
-INFO	  MODEL_RUNTIME(total-audio): 5.782s
-INFO	  FSL(avg): 1.779s
+INFO	  FIRST_TOKEN_LATENCY: 9.967s
+INFO	  MODEL_RUNTIME(total-audio): 5.797s
+INFO	  FSL(avg): 1.794s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.58% (63 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.37% (66 files)
 INFO	  HYP_COMMIT: It's simple and not far to fetch, nor hard to work. <dot>
 INFO	[67/100] 1688-142285-0066
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: BUT THE GIRL ONLY PLEADED THE MORE WITH MARGARET
 INFO	  HYP: But the girl only pleaded the more with Margaret.
-INFO	  FIRST_TOKEN_LATENCY: 7.680s
-INFO	  MODEL_RUNTIME(total-audio): 4.545s
+INFO	  FIRST_TOKEN_LATENCY: 7.678s
+INFO	  MODEL_RUNTIME(total-audio): 4.543s
 INFO	  FSL(avg): 1.540s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.56% (64 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.35% (67 files)
 INFO	  HYP_COMMIT: But the girl only pleaded the more with Margaret. <dot>
 INFO	[68/100] 1688-142285-0067
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: DON'T THINK HARDLY ON HIM HE'S A GOOD MAN HE IS
 INFO	  HYP: Don't think hardly on him. He's a good man. He is.
-INFO	  FIRST_TOKEN_LATENCY: 7.514s
-INFO	  MODEL_RUNTIME(total-audio): 3.669s
-INFO	  FSL(avg): 1.466s
+INFO	  FIRST_TOKEN_LATENCY: 7.512s
+INFO	  MODEL_RUNTIME(total-audio): 3.667s
+INFO	  FSL(avg): 1.462s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.53% (65 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.33% (68 files)
 INFO	  HYP_COMMIT: Don't think hardly on him. <dot> He's a good man. <dot> He is. <dot>
 INFO	[69/100] 1688-142285-0068
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: I SOMETIMES THINK I SHALL BE MOPED WI SORROW EVEN IN THE CITY OF GOD IF FATHER IS NOT THERE
 INFO	  HYP: I sometimes think I shall be moped with sorrow, even in the city of God, if Arthur is not there.
-INFO	  FIRST_TOKEN_LATENCY: 13.145s
-INFO	  MODEL_RUNTIME(total-audio): 6.445s
-INFO	  FSL(avg): 3.042s
+INFO	  FIRST_TOKEN_LATENCY: 13.129s
+INFO	  MODEL_RUNTIME(total-audio): 6.429s
+INFO	  FSL(avg): 3.023s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.67% (66 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.46% (69 files)
 INFO	  HYP_COMMIT: I sometimes think I shall be moped with sorrow, even in the city of God, if Arthur is not there. <dot>
 INFO	[70/100] 1688-142285-0069
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: THE FEVERISH COLOUR CAME INTO HER CHEEK AND THE FEVERISH FLAME INTO HER EYE
 INFO	  HYP: The feverish color came into her cheeks, and the feverish flame into her eye.
-INFO	  FIRST_TOKEN_LATENCY: 10.176s
-INFO	  MODEL_RUNTIME(total-audio): 4.921s
-INFO	  FSL(avg): 2.117s
+INFO	  FIRST_TOKEN_LATENCY: 10.118s
+INFO	  MODEL_RUNTIME(total-audio): 4.863s
+INFO	  FSL(avg): 2.059s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.83% (67 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.60% (70 files)
 INFO	  HYP_COMMIT: The feverish color came into her cheeks, and the feverish flame into her eye. <dot>
 INFO	[71/100] 1688-142285-0070
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: BUT YOU WILL BE THERE FATHER YOU SHALL OH MY HEART
 INFO	  HYP: But you'll be there, father. You shall. Oh, my heart.
 INFO	  FIRST_TOKEN_LATENCY: 5.940s
-INFO	  MODEL_RUNTIME(total-audio): 5.914s
-INFO	  FSL(avg): 1.636s
+INFO	  MODEL_RUNTIME(total-audio): 5.905s
+INFO	  FSL(avg): 1.629s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.90% (68 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.67% (71 files)
 INFO	  HYP_COMMIT: But you'll be there, father. <dot> You shall. <dot> Oh, my heart. <dot>
 INFO	[72/100] 1688-142285-0071
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: SHE PUT HER HAND TO IT AND BECAME GHASTLY PALE
 INFO	  HYP: She put her hand to it, and became ghastly pale.
-INFO	  FIRST_TOKEN_LATENCY: 7.851s
-INFO	  MODEL_RUNTIME(total-audio): 3.986s
-INFO	  FSL(avg): 1.782s
+INFO	  FIRST_TOKEN_LATENCY: 7.835s
+INFO	  MODEL_RUNTIME(total-audio): 3.970s
+INFO	  FSL(avg): 1.767s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.87% (69 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.64% (72 files)
 INFO	  HYP_COMMIT: She put her hand to it, and became ghastly pale. <dot>
 INFO	[73/100] 1688-142285-0072
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: MARGARET HELD HER IN HER ARMS AND PUT THE WEARY HEAD TO REST UPON HER BOSOM
 INFO	  HYP: Margaret held her in her arms, and put the weary head to rest upon her bosom.
-INFO	  FIRST_TOKEN_LATENCY: 10.356s
-INFO	  MODEL_RUNTIME(total-audio): 4.506s
-INFO	  FSL(avg): 2.303s
+INFO	  FIRST_TOKEN_LATENCY: 10.343s
+INFO	  MODEL_RUNTIME(total-audio): 4.493s
+INFO	  FSL(avg): 2.290s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.83% (70 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.61% (73 files)
 INFO	  HYP_COMMIT: Margaret held her in her arms, and put the weary head to rest upon her bosom. <dot>
 INFO	[74/100] 1688-142285-0073
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: PRESENTLY THE SPASM THAT FORESHADOWED DEATH HAD PASSED AWAY AND BESSY ROUSED HERSELF AND SAID
 INFO	  HYP: Presently, the spasm that foreshadowed death had passed away, and Bessy roused herself and said.
-INFO	  FIRST_TOKEN_LATENCY: 13.382s
-INFO	  MODEL_RUNTIME(total-audio): 5.922s
-INFO	  FSL(avg): 3.318s
+INFO	  FIRST_TOKEN_LATENCY: 13.371s
+INFO	  MODEL_RUNTIME(total-audio): 5.911s
+INFO	  FSL(avg): 3.309s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.79% (71 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.57% (74 files)
 INFO	  HYP_COMMIT: Presently, the spasm that foreshadowed death had passed away, and Bessy roused herself and said. <dot>
 INFO	[75/100] 1688-142285-0074
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: I'LL GO TO BED IT'S BEST PLACE BUT CATCHING AT MARGARET'S GOWN YO'LL COME AGAIN I KNOW YO WILL BUT JUST SAY IT
 INFO	  HYP: I'll go to bed. It's best place, but catching at Margaret's gown. You'll come again, I know you will. But just say it.
-INFO	  FIRST_TOKEN_LATENCY: 5.811s
-INFO	  MODEL_RUNTIME(total-audio): 6.488s
-INFO	  FSL(avg): 2.584s
+INFO	  FIRST_TOKEN_LATENCY: 5.817s
+INFO	  MODEL_RUNTIME(total-audio): 6.495s
+INFO	  FSL(avg): 2.588s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
-INFO	  TRANS(avg): 0.000s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.90% (72 files)
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 2.68% (75 files)
 INFO	  HYP_COMMIT: I'll go to bed. <dot> It's best place, but catching at Margaret's gown. <dot> You'll come again, I know you will. <dot> But just say it. <dot>
 INFO	[76/100] 1688-142285-0075
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: I WILL COME TO MORROW SAID MARGARET
 INFO	  HYP: I will come tomorrow," said Margaret.
-INFO	  FIRST_TOKEN_LATENCY: 7.522s
-INFO	  MODEL_RUNTIME(total-audio): 4.632s
-INFO	  FSL(avg): 1.428s
+INFO	  FIRST_TOKEN_LATENCY: 7.518s
+INFO	  MODEL_RUNTIME(total-audio): 4.628s
+INFO	  FSL(avg): 1.421s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 3.06% (73 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.83% (76 files)
 INFO	  HYP_COMMIT: I will come tomorrow," said Margaret. <dot>
 INFO	[77/100] 1688-142285-0076
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: MARGARET WENT AWAY VERY SAD AND THOUGHTFUL
 INFO	  HYP: Margaret went away very sad and thoughtful.
-INFO	  FIRST_TOKEN_LATENCY: 7.527s
-INFO	  MODEL_RUNTIME(total-audio): 3.687s
-INFO	  FSL(avg): 1.482s
+INFO	  FIRST_TOKEN_LATENCY: 7.538s
+INFO	  MODEL_RUNTIME(total-audio): 3.698s
+INFO	  FSL(avg): 1.495s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
-INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 3.04% (74 files)
+INFO	  TRANS(avg): 0.002s
+INFO	  SPEAKER_1688_RUNNING_WER: 2.81% (77 files)
 INFO	  HYP_COMMIT: Margaret went away very sad and thoughtful. <dot>
 INFO	[78/100] 1688-142285-0077
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: SHE WAS LATE FOR TEA AT HOME
 INFO	  HYP: She was late for tea at home.
-INFO	  FIRST_TOKEN_LATENCY: 5.414s
-INFO	  MODEL_RUNTIME(total-audio): 2.814s
-INFO	  FSL(avg): 1.411s
+INFO	  FIRST_TOKEN_LATENCY: 5.415s
+INFO	  MODEL_RUNTIME(total-audio): 2.815s
+INFO	  FSL(avg): 1.410s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 3.02% (75 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.80% (78 files)
 INFO	  HYP_COMMIT: She was late for tea at home. <dot>
 INFO	[79/100] 1688-142285-0078
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: HAVE YOU MET WITH A SERVANT DEAR
 INFO	  HYP: Have you met with a servant, dear?
-INFO	  FIRST_TOKEN_LATENCY: 7.611s
-INFO	  MODEL_RUNTIME(total-audio): 4.921s
-INFO	  FSL(avg): 1.514s
+INFO	  FIRST_TOKEN_LATENCY: 7.584s
+INFO	  MODEL_RUNTIME(total-audio): 4.894s
+INFO	  FSL(avg): 1.488s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 3.01% (76 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.78% (79 files)
 INFO	  HYP_COMMIT: Have you met with a servant, dear? <dot>
 INFO	[80/100] 1688-142285-0079
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: NO MAMMA THAT ANNE BUCKLEY WOULD NEVER HAVE DONE
 INFO	  HYP: No, mamma, that Anne Buckley would never have done.
-INFO	  FIRST_TOKEN_LATENCY: 7.714s
-INFO	  MODEL_RUNTIME(total-audio): 3.884s
-INFO	  FSL(avg): 1.678s
+INFO	  FIRST_TOKEN_LATENCY: 7.687s
+INFO	  MODEL_RUNTIME(total-audio): 3.857s
+INFO	  FSL(avg): 1.654s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.98% (77 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.76% (80 files)
 INFO	  HYP_COMMIT: No, mamma, that Anne Buckley would never have done. <dot>
 INFO	[81/100] 1688-142285-0080
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: SUPPOSE I TRY SAID MISTER HALE
 INFO	  HYP: Suppose I try," said Mister Hale.
-INFO	  FIRST_TOKEN_LATENCY: 7.594s
-INFO	  MODEL_RUNTIME(total-audio): 4.114s
-INFO	  FSL(avg): 1.511s
+INFO	  FIRST_TOKEN_LATENCY: 7.552s
+INFO	  MODEL_RUNTIME(total-audio): 4.072s
+INFO	  FSL(avg): 1.470s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.97% (78 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.75% (81 files)
 INFO	  HYP_COMMIT: Suppose I try," said Mister Hale. <dot>
 INFO	[82/100] 1688-142285-0081
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: EVERYBODY ELSE HAS HAD THEIR TURN AT THIS GREAT DIFFICULTY NOW LET ME TRY
 INFO	  HYP: Everybody else has had their turn at this great difficulty. Now let me try.
-INFO	  FIRST_TOKEN_LATENCY: 8.015s
-INFO	  MODEL_RUNTIME(total-audio): 3.450s
-INFO	  FSL(avg): 1.829s
+INFO	  FIRST_TOKEN_LATENCY: 7.990s
+INFO	  MODEL_RUNTIME(total-audio): 3.443s
+INFO	  FSL(avg): 1.812s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.93% (79 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.72% (82 files)
 INFO	  HYP_COMMIT: Everybody else has had their turn at this great difficulty. <dot> Now let me try. <dot>
 INFO	[83/100] 1688-142285-0082
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: I MAY BE THE CINDERELLA TO PUT ON THE SLIPPER AFTER ALL
 INFO	  HYP: I may be the Cinderella to put on the slipper after all.
-INFO	  FIRST_TOKEN_LATENCY: 7.924s
-INFO	  MODEL_RUNTIME(total-audio): 4.454s
-INFO	  FSL(avg): 1.850s
+INFO	  FIRST_TOKEN_LATENCY: 7.910s
+INFO	  MODEL_RUNTIME(total-audio): 4.440s
+INFO	  FSL(avg): 1.833s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.90% (80 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.69% (83 files)
 INFO	  HYP_COMMIT: I may be the Cinderella to put on the slipper after all. <dot>
 INFO	[84/100] 1688-142285-0083
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: WHAT WOULD YOU DO PAPA HOW WOULD YOU SET ABOUT IT
 INFO	  HYP: What would you do, Papa? How would you set about it?
-INFO	  FIRST_TOKEN_LATENCY: 5.821s
-INFO	  MODEL_RUNTIME(total-audio): 3.174s
-INFO	  FSL(avg): 1.371s
+INFO	  FIRST_TOKEN_LATENCY: 5.822s
+INFO	  MODEL_RUNTIME(total-audio): 3.168s
+INFO	  FSL(avg): 1.361s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.000s
-INFO	  SPEAKER_1688_RUNNING_WER: 2.87% (81 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.67% (84 files)
 INFO	  HYP_COMMIT: What would you do, Papa? <dot> How would you set about it? <dot>
 INFO	[85/100] 1688-142285-0084
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: WHY I WOULD APPLY TO SOME GOOD HOUSE MOTHER TO RECOMMEND ME ONE KNOWN TO HERSELF OR HER SERVANTS
 INFO	  HYP: Well, I, I would apply to some good housemother to recommend me one known to herself or her servants.
-INFO	  FIRST_TOKEN_LATENCY: 12.966s
-INFO	  MODEL_RUNTIME(total-audio): 5.256s
-INFO	  FSL(avg): 2.853s
+INFO	  FIRST_TOKEN_LATENCY: 12.861s
+INFO	  MODEL_RUNTIME(total-audio): 5.151s
+INFO	  FSL(avg): 2.747s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 3.16% (82 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.93% (85 files)
 INFO	  HYP_COMMIT: Well, I, I would apply to some good housemother to recommend me one known to herself or her servants. <dot>
 INFO	[86/100] 1688-142285-0085
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: VERY GOOD BUT WE MUST FIRST CATCH OUR HOUSE MOTHER
 INFO	  HYP: Very good, but we must first catch our house, mother.
-INFO	  FIRST_TOKEN_LATENCY: 10.012s
-INFO	  MODEL_RUNTIME(total-audio): 6.032s
+INFO	  FIRST_TOKEN_LATENCY: 9.924s
+INFO	  MODEL_RUNTIME(total-audio): 5.944s
 INFO	  FSL(avg): 0.000s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.000s
-INFO	  SPEAKER_1688_RUNNING_WER: 3.14% (83 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.91% (86 files)
 INFO	  HYP_COMMIT: Very good, but we must first catch our house, mother. <finish>
 INFO	[87/100] 1688-142285-0086
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: THE MOTHER OF WHOM HE SPOKE TO US SAID MARGARET
 INFO	  HYP: The mother of whom he spoke to us said, "Margaret."
-INFO	  FIRST_TOKEN_LATENCY: 7.914s
-INFO	  MODEL_RUNTIME(total-audio): 4.604s
-INFO	  FSL(avg): 1.801s
+INFO	  FIRST_TOKEN_LATENCY: 7.895s
+INFO	  MODEL_RUNTIME(total-audio): 4.585s
+INFO	  FSL(avg): 1.779s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 3.11% (84 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.89% (87 files)
 INFO	  HYP_COMMIT: The mother of whom he spoke to us said, "Margaret." <dot>
 INFO	[88/100] 1688-142285-0087
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: MISSUS THORNTON THE ONLY MOTHER HE HAS I BELIEVE SAID MISTER HALE QUIETLY
 INFO	  HYP: Mr. Thornton, the only mother he has, I believe," said Mr. Hale quietly.
-INFO	  FIRST_TOKEN_LATENCY: 12.301s
-INFO	  MODEL_RUNTIME(total-audio): 5.481s
-INFO	  FSL(avg): 2.277s
+INFO	  FIRST_TOKEN_LATENCY: 12.264s
+INFO	  MODEL_RUNTIME(total-audio): 5.444s
+INFO	  FSL(avg): 2.237s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 3.24% (85 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 3.01% (88 files)
 INFO	  HYP_COMMIT: Mr. Thornton, the only mother he has, I believe," said Mr. Hale quietly. <dot>
 INFO	[89/100] 1688-142285-0088
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: I SHALL LIKE TO SEE HER SHE MUST BE AN UNCOMMON PERSON HER MOTHER ADDED
 INFO	  HYP: I shall like to see her. She must be an uncommon person," her mother added.
-INFO	  FIRST_TOKEN_LATENCY: 5.809s
-INFO	  MODEL_RUNTIME(total-audio): 3.407s
-INFO	  FSL(avg): 1.603s
+INFO	  FIRST_TOKEN_LATENCY: 5.810s
+INFO	  MODEL_RUNTIME(total-audio): 3.405s
+INFO	  FSL(avg): 1.597s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
-INFO	  TRANS(avg): 0.000s
-INFO	  SPEAKER_1688_RUNNING_WER: 3.20% (86 files)
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 2.98% (89 files)
 INFO	  HYP_COMMIT: I shall like to see her. <dot> She must be an uncommon person," her mother added. <dot>
 INFO	[90/100] 1688-142285-0089
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: PERHAPS SHE MAY HAVE A RELATION WHO MIGHT SUIT US AND BE GLAD OF OUR PLACE
 INFO	  HYP: Perhaps, she may have a relation who might suit us and be glad of our place.
-INFO	  FIRST_TOKEN_LATENCY: 10.152s
-INFO	  MODEL_RUNTIME(total-audio): 4.672s
-INFO	  FSL(avg): 2.069s
+INFO	  FIRST_TOKEN_LATENCY: 10.149s
+INFO	  MODEL_RUNTIME(total-audio): 4.669s
+INFO	  FSL(avg): 2.066s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 3.16% (87 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.94% (90 files)
 INFO	  HYP_COMMIT: Perhaps, she may have a relation who might suit us and be glad of our place. <dot>
 INFO	[91/100] 1688-142285-0090
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: SHE SOUNDED TO BE SUCH A CAREFUL ECONOMICAL PERSON THAT I SHOULD LIKE ANY ONE OUT OF THE SAME FAMILY
 INFO	  HYP: She sounded to be such a careful, economical person that I should like any one out of the same family.
-INFO	  FIRST_TOKEN_LATENCY: 12.736s
-INFO	  MODEL_RUNTIME(total-audio): 4.776s
-INFO	  FSL(avg): 2.568s
+INFO	  FIRST_TOKEN_LATENCY: 12.742s
+INFO	  MODEL_RUNTIME(total-audio): 4.782s
+INFO	  FSL(avg): 2.576s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 3.11% (88 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.90% (91 files)
 INFO	  HYP_COMMIT: She sounded to be such a careful, economical person that I should like any one out of the same family. <dot>
 INFO	[92/100] 1688-142285-0091
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: MY DEAR SAID MISTER HALE ALARMED PRAY DON'T GO OFF ON THAT IDEA
 INFO	  HYP: My dear," said Mister. Hell, alarmed. "Pray don't go off on that idea."
-INFO	  FIRST_TOKEN_LATENCY: 8.304s
-INFO	  MODEL_RUNTIME(total-audio): 7.363s
-INFO	  FSL(avg): 1.304s
+INFO	  FIRST_TOKEN_LATENCY: 8.296s
+INFO	  MODEL_RUNTIME(total-audio): 7.344s
+INFO	  FSL(avg): 1.297s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.000s
-INFO	  SPEAKER_1688_RUNNING_WER: 3.15% (89 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.94% (92 files)
 INFO	  HYP_COMMIT: My dear," said Mister. <dot> Hell, alarmed. <dot> "Pray don't go off on that idea." <dot>
 INFO	[93/100] 1688-142285-0092
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: I AM SURE AT ANY RATE SHE WOULD NOT LIKE STRANGERS TO KNOW ANYTHING ABOUT IT
 INFO	  HYP: I am sure, at any rate, she would not like strangers to know anything about it.
-INFO	  FIRST_TOKEN_LATENCY: 10.298s
-INFO	  MODEL_RUNTIME(total-audio): 5.628s
-INFO	  FSL(avg): 2.220s
+INFO	  FIRST_TOKEN_LATENCY: 10.310s
+INFO	  MODEL_RUNTIME(total-audio): 5.640s
+INFO	  FSL(avg): 2.228s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
-INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 3.12% (90 files)
+INFO	  TRANS(avg): 0.004s
+INFO	  SPEAKER_1688_RUNNING_WER: 2.91% (93 files)
 INFO	  HYP_COMMIT: I am sure, at any rate, she would not like strangers to know anything about it. <dot>
 INFO	[94/100] 1688-142285-0093
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: TAKE NOTICE THAT IS NOT MY KIND OF HAUGHTINESS PAPA IF I HAVE ANY AT ALL WHICH I DON'T AGREE TO THOUGH YOU'RE ALWAYS ACCUSING ME OF IT
 INFO	  HYP: Take notice that this is not my kind of haughtiness, Papa, if I have any at all, which I don't agree to. Though you're always accusing me of it.
-INFO	  FIRST_TOKEN_LATENCY: 17.746s
-INFO	  MODEL_RUNTIME(total-audio): 8.066s
-INFO	  FSL(avg): 4.277s
+INFO	  FIRST_TOKEN_LATENCY: 17.732s
+INFO	  MODEL_RUNTIME(total-audio): 8.054s
+INFO	  FSL(avg): 4.260s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
-INFO	  TRANS(avg): 0.000s
-INFO	  SPEAKER_1688_RUNNING_WER: 3.12% (91 files)
+INFO	  TRANS(avg): 0.002s
+INFO	  SPEAKER_1688_RUNNING_WER: 2.92% (94 files)
 INFO	  HYP_COMMIT: Take notice that this is not my kind of haughtiness, Papa, if I have any at all, which I don't agree to. <dot> Though you're always accusing me of it. <dot>
 INFO	[95/100] 1688-142285-0094
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: I DON'T KNOW POSITIVELY THAT IT IS HERS EITHER BUT FROM LITTLE THINGS I HAVE GATHERED FROM HIM I FANCY SO
 INFO	  HYP: I don't know positively that it is hers either, but from little things I have gathered from him, I fancy so.
-INFO	  FIRST_TOKEN_LATENCY: 13.289s
-INFO	  MODEL_RUNTIME(total-audio): 5.909s
-INFO	  FSL(avg): 3.103s
+INFO	  FIRST_TOKEN_LATENCY: 13.204s
+INFO	  MODEL_RUNTIME(total-audio): 5.824s
+INFO	  FSL(avg): 3.021s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 3.07% (92 files)
+INFO	  SPEAKER_1688_RUNNING_WER: 2.87% (95 files)
 INFO	  HYP_COMMIT: I don't know positively that it is hers either, but from little things I have gathered from him, I fancy so. <dot>
 INFO	[96/100] 1688-142285-0095
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: THEY CARED TOO LITTLE TO ASK IN WHAT MANNER HER SON HAD SPOKEN ABOUT HER
 INFO	  HYP: They cared too little to ask, in what manner her son had spoken about her.
-INFO	  FIRST_TOKEN_LATENCY: 10.047s
-INFO	  MODEL_RUNTIME(total-audio): 4.817s
-INFO	  FSL(avg): 2.010s
+INFO	  FIRST_TOKEN_LATENCY: 10.010s
+INFO	  MODEL_RUNTIME(total-audio): 4.780s
+INFO	  FSL(avg): 1.973s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
-INFO	  TRANS(avg): 0.001s
-INFO	  SPEAKER_1688_RUNNING_WER: 3.04% (93 files)
+INFO	  TRANS(avg): 0.004s
+INFO	  SPEAKER_1688_RUNNING_WER: 2.85% (96 files)
 INFO	  HYP_COMMIT: They cared too little to ask, in what manner her son had spoken about her. <dot>
 INFO	[97/100] 1998-15444-0000
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: IF CALLED TO A CASE SUPPOSED OR SUSPECTED TO BE ONE OF POISONING THE MEDICAL MAN HAS TWO DUTIES TO PERFORM TO SAVE THE PATIENT'S LIFE AND TO PLACE HIMSELF IN A POSITION TO GIVE EVIDENCE IF CALLED ON TO DO SO
 INFO	  HYP: If called to a case supposed or suspected to be one of poisoning, the medical man has two duties to perform: to save the patient's life and to place himself in a position to give evidence if called on to do so.
-INFO	  FIRST_TOKEN_LATENCY: 25.213s
-INFO	  MODEL_RUNTIME(total-audio): 11.898s
-INFO	  FSL(avg): 9.095s
+INFO	  FIRST_TOKEN_LATENCY: 23.064s
+INFO	  MODEL_RUNTIME(total-audio): 9.749s
+INFO	  FSL(avg): 6.945s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
-INFO	  TRANS(avg): 0.001s
+INFO	  TRANS(avg): 0.002s
 INFO	  SPEAKER_1998_RUNNING_WER: 0.00% (1 files)
 INFO	  HYP_COMMIT: If called to a case supposed or suspected to be one of poisoning, the medical man has two duties to perform: to save the patient's life and to place himself in a position to give evidence if called on to do so. <dot>
 INFO	[98/100] 1998-15444-0001
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: HE SHOULD MAKE INQUIRIES AS TO SYMPTOMS AND TIME AT WHICH FOOD OR MEDICINE WAS LAST TAKEN
 INFO	  HYP: He should make inquiries as to symptoms and time at which food or medicine was last taken.
-INFO	  FIRST_TOKEN_LATENCY: 10.104s
-INFO	  MODEL_RUNTIME(total-audio): 4.079s
-INFO	  FSL(avg): 2.076s
+INFO	  FIRST_TOKEN_LATENCY: 10.054s
+INFO	  MODEL_RUNTIME(total-audio): 4.029s
+INFO	  FSL(avg): 2.021s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1998_RUNNING_WER: 0.00% (2 files)
 INFO	  HYP_COMMIT: He should make inquiries as to symptoms and time at which food or medicine was last taken. <dot>
 INFO	[99/100] 1998-15444-0002
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: HE SHOULD NOTICE THE POSITION AND TEMPERATURE OF THE BODY THE CONDITION OF RIGOR MORTIS MARKS OF VIOLENCE APPEARANCE OF LIPS AND MOUTH
 INFO	  HYP: He should notice the position and temperature of the body, the condition of rigor mortis, marks of violence, appearance of lips and mouth.
-INFO	  FIRST_TOKEN_LATENCY: 15.917s
-INFO	  MODEL_RUNTIME(total-audio): 6.807s
-INFO	  FSL(avg): 3.804s
+INFO	  FIRST_TOKEN_LATENCY: 15.875s
+INFO	  MODEL_RUNTIME(total-audio): 6.765s
+INFO	  FSL(avg): 3.758s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1998_RUNNING_WER: 0.00% (3 files)
 INFO	  HYP_COMMIT: He should notice the position and temperature of the body, the condition of rigor mortis, marks of violence, appearance of lips and mouth. <dot>
 INFO	[100/100] 1998-15444-0003
-INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4
 INFO	  REF: IN MAKING A POST MORTEM EXAMINATION THE ALIMENTARY CANAL SHOULD BE REMOVED AND PRESERVED FOR FURTHER INVESTIGATION
 INFO	  HYP: In making a post-mortem examination, the alimentary canal should be removed and preserved for further investigation.
-INFO	  FIRST_TOKEN_LATENCY: 10.472s
-INFO	  MODEL_RUNTIME(total-audio): 3.222s
-INFO	  FSL(avg): 2.419s
+INFO	  FIRST_TOKEN_LATENCY: 10.407s
+INFO	  MODEL_RUNTIME(total-audio): 3.157s
+INFO	  FSL(avg): 2.354s
 INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
 INFO	  TRANS(avg): 0.001s
 INFO	  SPEAKER_1998_RUNNING_WER: 0.00% (4 files)
@@ -1079,11 +1106,11 @@ INFO
 ======================================================================
 INFO	RESULTS SUMMARY - BACKEND POLICY 3
 INFO	======================================================================
-INFO	Total files processed: 97
-INFO	Overall WER: 2.83%
-INFO	Average First Token Latency: 10.590s
-INFO	Average Model Runtime: 5.229s
+INFO	Total files processed: 100
+INFO	Overall WER: 2.67%
+INFO	Average First Token Latency: 11.119s
+INFO	Average Model Runtime: 5.450s
 INFO	Number of speakers: 2
 INFO	======================================================================
 
-INFO	Completed. Results saved to evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100
+INFO	Completed. Results saved to evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v4

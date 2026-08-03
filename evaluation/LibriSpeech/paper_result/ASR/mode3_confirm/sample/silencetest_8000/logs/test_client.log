@@ -1,0 +1,38 @@
+INFO	server_model 자동 추론: --model mode3_confirm → Qwen/Qwen3-ASR-1.7B
+INFO	Results → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/silencetest_8000
+INFO	Manual mode. Ensure server is running at ws://localhost:8767
+INFO	Processing 2 files (already done: 0)
+INFO	[1/2] 1688-142285-0055
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/silencetest_8000
+INFO	  REF: GASPED BESSY AT LAST
+INFO	  HYP: Gasped Bessy at last.
+INFO	  FIRST_TOKEN_LATENCY: 9.642s
+INFO	  MODEL_RUNTIME(total-audio): 7.252s
+INFO	  FSL(avg): 1.448s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.001s
+INFO	  SPEAKER_1688_RUNNING_WER: 0.00% (1 files)
+INFO	  HYP_COMMIT: Gasped Bessy at last. <dot>
+INFO	[2/2] 1688-142285-0085
+INFO	Results saved → evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/silencetest_8000
+INFO	  REF: VERY GOOD BUT WE MUST FIRST CATCH OUR HOUSE MOTHER
+INFO	  HYP: Very good, but we must first catch our house mother.
+INFO	  FIRST_TOKEN_LATENCY: 11.992s
+INFO	  MODEL_RUNTIME(total-audio): 8.012s
+INFO	  FSL(avg): 0.000s
+INFO	  ENCODE(avg): N/A  DECODE(avg): N/A  FINAL_DECODE(avg): 0.000s
+INFO	  TRANS(avg): 0.000s
+INFO	  SPEAKER_1688_RUNNING_WER: 0.00% (2 files)
+INFO	  HYP_COMMIT: Very good, but we must first catch our house mother. <finish>
+INFO	
+======================================================================
+INFO	RESULTS SUMMARY - BACKEND POLICY 3
+INFO	======================================================================
+INFO	Total files processed: 2
+INFO	Overall WER: 0.00%
+INFO	Average First Token Latency: 10.817s
+INFO	Average Model Runtime: 7.632s
+INFO	Number of speakers: 1
+INFO	======================================================================
+
+INFO	Completed. Results saved to evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/silencetest_8000

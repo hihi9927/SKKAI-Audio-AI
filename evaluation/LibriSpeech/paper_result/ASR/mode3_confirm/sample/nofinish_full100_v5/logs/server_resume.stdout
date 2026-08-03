@@ -1,0 +1,774 @@
+/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/torch/cuda/__init__.py:283: UserWarning: 
+    Found GPU0 NVIDIA GB10 which is of cuda capability 12.1.
+    Minimum and Maximum cuda capability supported by this version of PyTorch is
+    (8.0) - (12.0)
+    
+  warnings.warn(
+Server log file: /home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/nofinish_full100_v5/logs/server_resume.log
+VAD disabled via --no-vad flag
+Loading model: Qwen/Qwen3-ASR-1.7B
+INFO 08-03 21:36:23 [model.py:530] Resolved architecture: Qwen3ASRForConditionalGeneration
+Parse safetensors files:   0%|          | 0/2 [00:00<?, ?it/s]Parse safetensors files:  50%|█████     | 1/2 [00:01<00:01,  1.23s/it]Parse safetensors files: 100%|██████████| 2/2 [00:01<00:00,  1.63it/s]
+INFO 08-03 21:36:25 [model.py:1545] Using max model len 3072
+INFO 08-03 21:36:26 [scheduler.py:229] Chunked prefill is enabled with max_num_batched_tokens=2048.
+INFO 08-03 21:36:26 [vllm.py:630] Asynchronous scheduling is enabled.
+INFO 08-03 21:36:26 [vllm.py:637] Disabling NCCL for DP synchronization when using async scheduling.
+The following generation flags are not valid and may be ignored: ['temperature']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
+WARNING 08-03 21:36:28 [system_utils.py:136] We must use the `spawn` multiprocessing start method. Overriding VLLM_WORKER_MULTIPROC_METHOD to 'spawn'. See https://docs.vllm.ai/en/latest/usage/troubleshooting.html#python-multiprocessing for more information. Reasons: CUDA is initialized
+/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/torch/cuda/__init__.py:283: UserWarning: 
+    Found GPU0 NVIDIA GB10 which is of cuda capability 12.1.
+    Minimum and Maximum cuda capability supported by this version of PyTorch is
+    (8.0) - (12.0)
+    
+  warnings.warn(
+[0;36m(EngineCore_DP0 pid=1998649)[0;0m INFO 08-03 21:36:45 [core.py:97] Initializing a V1 LLM engine (v0.14.0) with config: model='Qwen/Qwen3-ASR-1.7B', speculative_config=None, tokenizer='Qwen/Qwen3-ASR-1.7B', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.bfloat16, max_seq_len=3072, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, enable_return_routed_experts=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False, enable_mfu_metrics=False, enable_mm_processor_stats=False, enable_logging_iteration_details=False), seed=0, served_model_name=Qwen/Qwen3-ASR-1.7B, enable_prefix_caching=True, enable_chunked_prefill=True, pooler_config=None, compilation_config={'level': None, 'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'splitting_ops': ['vllm::unified_attention', 'vllm::unified_attention_with_output', 'vllm::unified_mla_attention', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::linear_attention', 'vllm::plamo2_mamba_mixer', 'vllm::gdn_attention_core', 'vllm::kda_attention', 'vllm::sparse_attn_indexer'], 'compile_mm_encoder': False, 'compile_sizes': [], 'compile_ranges_split_points': [2048], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': False, 'fuse_attn_quant': False, 'eliminate_noops': True, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 256, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': True}, 'local_cache_dir': None}
+[0;36m(EngineCore_DP0 pid=1998649)[0;0m INFO 08-03 21:36:48 [parallel_state.py:1214] world_size=1 rank=0 local_rank=0 distributed_init_method=tcp://115.145.230.36:56665 backend=nccl
+[0;36m(EngineCore_DP0 pid=1998649)[0;0m INFO 08-03 21:36:49 [parallel_state.py:1425] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank N/A
+[0;36m(EngineCore_DP0 pid=1998649)[0;0m INFO 08-03 21:37:03 [gpu_model_runner.py:3808] Starting to load model Qwen/Qwen3-ASR-1.7B...
+[0;36m(EngineCore_DP0 pid=1998649)[0;0m INFO 08-03 21:37:04 [mm_encoder_attention.py:86] Using AttentionBackendEnum.FLASH_ATTN for MMEncoderAttention.
+[0;36m(EngineCore_DP0 pid=1998649)[0;0m INFO 08-03 21:37:04 [vllm.py:630] Asynchronous scheduling is enabled.
+[0;36m(EngineCore_DP0 pid=1998649)[0;0m INFO 08-03 21:37:05 [cuda.py:351] Using FLASH_ATTN attention backend out of potential backends: ('FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION')
+[0;36m(EngineCore_DP0 pid=1998649)[0;0m Loading safetensors checkpoint shards:   0% Completed | 0/2 [00:00<?, ?it/s]
+[0;36m(EngineCore_DP0 pid=1998649)[0;0m Loading safetensors checkpoint shards:  50% Completed | 1/2 [00:03<00:03,  3.27s/it]
+[0;36m(EngineCore_DP0 pid=1998649)[0;0m Loading safetensors checkpoint shards: 100% Completed | 2/2 [00:48<00:00, 28.04s/it]
+[0;36m(EngineCore_DP0 pid=1998649)[0;0m Loading safetensors checkpoint shards: 100% Completed | 2/2 [00:48<00:00, 24.32s/it]
+[0;36m(EngineCore_DP0 pid=1998649)[0;0m 
+[0;36m(EngineCore_DP0 pid=1998649)[0;0m INFO 08-03 21:37:57 [default_loader.py:291] Loading weights took 49.72 seconds
+[0;36m(EngineCore_DP0 pid=1998649)[0;0m INFO 08-03 21:37:58 [gpu_model_runner.py:3905] Model loading took 3.87 GiB memory and 52.827099 seconds
+[0;36m(EngineCore_DP0 pid=1998649)[0;0m INFO 08-03 21:37:59 [gpu_model_runner.py:4715] Encoder cache will be initialized with a budget of 2048 tokens, and profiled with 5 audio items of the maximum feature size.
+[0;36m(EngineCore_DP0 pid=1998649)[0;0m INFO 08-03 21:38:11 [backends.py:644] Using cache directory: /home/skkai/.cache/vllm/torch_compile_cache/503f73d045/rank_0_0/backbone for vLLM's torch.compile
+[0;36m(EngineCore_DP0 pid=1998649)[0;0m INFO 08-03 21:38:11 [backends.py:704] Dynamo bytecode transform time: 9.19 s
+[0;36m(EngineCore_DP0 pid=1998649)[0;0m INFO 08-03 21:38:30 [backends.py:226] Directly load the compiled graph(s) for compile range (1, 2048) from the cache, took 4.550 s
+[0;36m(EngineCore_DP0 pid=1998649)[0;0m INFO 08-03 21:38:30 [monitor.py:34] torch.compile takes 13.74 s in total
+[0;36m(EngineCore_DP0 pid=1998649)[0;0m INFO 08-03 21:38:33 [gpu_worker.py:358] Available KV cache memory: 12.31 GiB
+[0;36m(EngineCore_DP0 pid=1998649)[0;0m INFO 08-03 21:38:34 [kv_cache_utils.py:1305] GPU KV cache size: 115,248 tokens
+[0;36m(EngineCore_DP0 pid=1998649)[0;0m INFO 08-03 21:38:34 [kv_cache_utils.py:1310] Maximum concurrency for 3,072 tokens per request: 37.52x
+[0;36m(EngineCore_DP0 pid=1998649)[0;0m 2026-08-03 21:38:36,402 - INFO - autotuner.py:256 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+[0;36m(EngineCore_DP0 pid=1998649)[0;0m 2026-08-03 21:38:36,454 - INFO - autotuner.py:262 - flashinfer.jit: [Autotuner]: Autotuning process ends
+[0;36m(EngineCore_DP0 pid=1998649)[0;0m Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   0%|          | 0/35 [00:00<?, ?it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   3%|▎         | 1/35 [00:03<02:03,  3.64s/it]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   6%|▌         | 2/35 [00:04<01:02,  1.90s/it]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   9%|▊         | 3/35 [00:05<00:43,  1.35s/it]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  11%|█▏        | 4/35 [00:05<00:33,  1.09s/it]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  14%|█▍        | 5/35 [00:06<00:28,  1.06it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  17%|█▋        | 6/35 [00:07<00:24,  1.16it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  20%|██        | 7/35 [00:07<00:22,  1.25it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  23%|██▎       | 8/35 [00:08<00:20,  1.31it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  26%|██▌       | 9/35 [00:09<00:18,  1.39it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  29%|██▊       | 10/35 [00:09<00:17,  1.46it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  31%|███▏      | 11/35 [00:10<00:15,  1.52it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  34%|███▍      | 12/35 [00:10<00:14,  1.56it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  37%|███▋      | 13/35 [00:11<00:13,  1.59it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  40%|████      | 14/35 [00:12<00:12,  1.62it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  43%|████▎     | 15/35 [00:12<00:12,  1.64it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  46%|████▌     | 16/35 [00:13<00:11,  1.65it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  49%|████▊     | 17/35 [00:13<00:10,  1.66it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  51%|█████▏    | 18/35 [00:14<00:10,  1.69it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  54%|█████▍    | 19/35 [00:14<00:09,  1.71it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  57%|█████▋    | 20/35 [00:15<00:08,  1.73it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  60%|██████    | 21/35 [00:16<00:08,  1.74it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  63%|██████▎   | 22/35 [00:16<00:07,  1.75it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  66%|██████▌   | 23/35 [00:17<00:06,  1.76it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  69%|██████▊   | 24/35 [00:17<00:06,  1.77it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  71%|███████▏  | 25/35 [00:18<00:05,  1.82it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  74%|███████▍  | 26/35 [00:18<00:04,  1.87it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  77%|███████▋  | 27/35 [00:19<00:04,  1.91it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  80%|████████  | 28/35 [00:19<00:03,  1.95it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  83%|████████▎ | 29/35 [00:20<00:03,  1.97it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  86%|████████▌ | 30/35 [00:20<00:02,  2.00it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  89%|████████▊ | 31/35 [00:21<00:01,  2.02it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  91%|█████████▏| 32/35 [00:21<00:01,  2.03it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  94%|█████████▍| 33/35 [00:22<00:00,  2.05it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  97%|█████████▋| 34/35 [00:22<00:00,  2.06it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE): 100%|██████████| 35/35 [00:22<00:00,  2.56it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE): 100%|██████████| 35/35 [00:22<00:00,  1.53it/s]
+[0;36m(EngineCore_DP0 pid=1998649)[0;0m Capturing CUDA graphs (decode, FULL):   0%|          | 0/19 [00:00<?, ?it/s]Capturing CUDA graphs (decode, FULL):   5%|▌         | 1/19 [00:00<00:16,  1.09it/s]Capturing CUDA graphs (decode, FULL):  11%|█         | 2/19 [00:01<00:11,  1.43it/s]Capturing CUDA graphs (decode, FULL):  16%|█▌        | 3/19 [00:02<00:10,  1.58it/s]Capturing CUDA graphs (decode, FULL):  21%|██        | 4/19 [00:02<00:09,  1.67it/s]Capturing CUDA graphs (decode, FULL):  26%|██▋       | 5/19 [00:03<00:08,  1.72it/s]Capturing CUDA graphs (decode, FULL):  32%|███▏      | 6/19 [00:03<00:07,  1.76it/s]Capturing CUDA graphs (decode, FULL):  37%|███▋      | 7/19 [00:04<00:06,  1.79it/s]Capturing CUDA graphs (decode, FULL):  42%|████▏     | 8/19 [00:04<00:06,  1.82it/s]Capturing CUDA graphs (decode, FULL):  47%|████▋     | 9/19 [00:05<00:05,  1.88it/s]Capturing CUDA graphs (decode, FULL):  53%|█████▎    | 10/19 [00:05<00:04,  1.95it/s]Capturing CUDA graphs (decode, FULL):  58%|█████▊    | 11/19 [00:06<00:03,  2.01it/s]Capturing CUDA graphs (decode, FULL):  63%|██████▎   | 12/19 [00:06<00:03,  2.05it/s]Capturing CUDA graphs (decode, FULL):  68%|██████▊   | 13/19 [00:07<00:02,  2.09it/s]Capturing CUDA graphs (decode, FULL):  74%|███████▎  | 14/19 [00:07<00:02,  2.11it/s]Capturing CUDA graphs (decode, FULL):  79%|███████▉  | 15/19 [00:07<00:01,  2.14it/s]Capturing CUDA graphs (decode, FULL):  84%|████████▍ | 16/19 [00:08<00:01,  2.16it/s]Capturing CUDA graphs (decode, FULL):  89%|████████▉ | 17/19 [00:08<00:00,  2.19it/s]Capturing CUDA graphs (decode, FULL):  95%|█████████▍| 18/19 [00:09<00:00,  2.21it/s]Capturing CUDA graphs (decode, FULL): 100%|██████████| 19/19 [00:09<00:00,  2.02it/s]
+[0;36m(EngineCore_DP0 pid=1998649)[0;0m INFO 08-03 21:39:10 [gpu_model_runner.py:4856] Graph capturing finished in 34 secs, took 0.29 GiB
+[0;36m(EngineCore_DP0 pid=1998649)[0;0m INFO 08-03 21:39:10 [core.py:273] init engine (profile, create kv cache, warmup model) took 71.95 seconds
+이 vLLM 버전은 use_beam_search를 지원하지 않습니다. Greedy decoding으로 fallback합니다. (beam_size=2 무시)
+Greedy decoding (no repetition_penalty)
+Model loaded successfully
+Starting WebSocket server on ws://0.0.0.0:8766
+Warming up model...
+Warmup complete
+server listening on 0.0.0.0:8766
+Server listening on ws://0.0.0.0:8766
+connection open
+Client connected (1)
+New connection from ('127.0.0.1', 56346)
+Connection closed
+Client disconnected (0)
+connection open
+Client connected (1)
+New connection from ('127.0.0.1', 56362)
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='She put her hand to it.'
+[C-] [DOT-PENDING] slot=A new text='She put her hand to it.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.005s ds=2.005s decode=1.304s
+[C-] [TRANSCRIBE-DECODING] slot=A text='She put her hand to it, and became ghastly pale.'
+[C-] [DOT-PENDING] slot=A revised text='She put her hand to it, and became ghastly pale.'
+[ENCODE] slot=A chunk=1 audio_pos=4.065s ts=4.069s ds=4.069s decode=1.764s
+[C-] [TRANSCRIBE-DECODING] slot=A text='She put her hand to it, and became ghastly pale.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='She put her hand to it, and became ghastly pale.'
+[C-] [TRANS-SEG] slot=A lang=en original='She put her hand to it, and became ghastly pale.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=6.0s
+[FLUSH-SEG] seg=1 tok=18/18 ratio=1.000 audio_end=6.065s fsl=1.852s
+[FINAL] seg=1 reason=dot audio=[0.000, 6.065] fsl=1.852s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='She put her hand to it, and became ghastly pale.'
+[ENCODE] slot=A chunk=2 audio_pos=6.065s ts=6.072s ds=6.074s decode=1.845s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=8.065s ts=8.072s ds=8.072s decode=0.928s
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='Margaret held her in her arms.'
+[C-] [DOT-PENDING] slot=A new text='Margaret held her in her arms.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.010s ds=2.010s decode=1.402s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Margaret held her in her arms, and put the weary head to.'
+[C-] [DOT-PENDING] slot=A revised text='Margaret held her in her arms, and put the weary head to.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.005s ds=4.006s decode=1.842s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Margaret held her in her arms, and put the weary head to rest upon her bosom.'
+[C-] [DOT-PENDING] slot=A revised text='Margaret held her in her arms, and put the weary head to rest upon her bosom.'
+[ENCODE] slot=A chunk=2 audio_pos=6.050s ts=6.057s ds=6.058s decode=2.141s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Margaret held her in her arms, and put the weary head to rest upon her bosom.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='Margaret held her in her arms, and put the weary head to rest upon her bosom.'
+[C-] [TRANS-SEG] slot=A lang=en original='Margaret held her in her arms, and put the weary head to rest upon her bosom.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=8.0s
+[FLUSH-SEG] seg=1 tok=24/24 ratio=1.000 audio_end=8.050s fsl=2.353s
+[FINAL] seg=1 reason=dot audio=[0.000, 8.050] fsl=2.353s encode=0.000s decode=0.000s final_decode=0.000s trans=0.004s | text='Margaret held her in her arms, and put the weary head to rest upon her bosom.'
+[ENCODE] slot=A chunk=3 audio_pos=8.050s ts=8.201s ds=8.201s decode=2.207s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=10.050s ts=10.413s ds=10.413s decode=0.662s
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='Presently, the spasm that.'
+[C-] [DOT-PENDING] slot=A new text='Presently, the spasm that.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.009s ds=2.009s decode=1.392s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Presently, the spasm that foreshadowed death had passed away.'
+[C-] [DOT-PENDING] slot=A revised text='Presently, the spasm that foreshadowed death had passed away.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.005s ds=4.005s decode=1.906s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Presently, the spasm that foreshadowed death had passed away, and Bessy roused.'
+[C-] [DOT-PENDING] slot=A revised text='Presently, the spasm that foreshadowed death had passed away, and Bessy roused.'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.008s ds=6.009s decode=2.330s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Presently, the spasm that foreshadowed death had passed away, and Bessy roused herself and said.'
+[C-] [DOT-PENDING] slot=A revised text='Presently, the spasm that foreshadowed death had passed away, and Bessy roused herself and said.'
+[ENCODE] slot=A chunk=3 audio_pos=8.060s ts=8.341s ds=8.341s decode=2.563s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Presently, the spasm that foreshadowed death had passed away, and Bessy roused herself and said.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='Presently, the spasm that foreshadowed death had passed away, and Bessy roused herself and said.'
+[C-] [TRANS-SEG] slot=A lang=en original='Presently, the spasm that foreshadowed death had passed away, and Bessy roused herself and said.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=10.0s
+[FLUSH-SEG] seg=1 tok=30/30 ratio=1.000 audio_end=10.060s fsl=3.443s
+[FINAL] seg=1 reason=dot audio=[0.000, 10.060] fsl=3.443s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='Presently, the spasm that foreshadowed death had passed away, and Bessy roused herself and said.'
+[ENCODE] slot=A chunk=4 audio_pos=10.060s ts=10.907s ds=10.907s decode=2.598s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=12.060s ts=13.505s ds=13.505s decode=0.668s
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text="I'll go to bed."
+[C-] [DOT-PENDING] slot=A new text="I'll go to bed."
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.007s ds=2.007s decode=1.254s
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=7 text="I'll go to bed."
+[C-] [TRANSCRIBE-DECODING] slot=A text="I'll go to bed. It's best place, but."
+[C-] [DOT-PENDING] slot=A new text="It's best place, but."
+[C-] [DOT-SLOT-SWITCH] slot=A audio_sec=4.0s prev="I'll go to bed."
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.006s ds=4.006s decode=1.743s
+[C-] [TRANS-SEG-ASYNC] slot=A lang=en original='I'll go to bed.' translation=''
+[FLUSH-SEG] seg=1 no-token-info → audio_end=4.000s fsl=0.000s
+[FINAL] seg=1 reason=dot audio=[0.000, 4.000] fsl=0.000s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='I'll go to bed.'
+[C-] [TRANSCRIBE-DECODING] slot=A text="It's best place, but catching at Margaret's gown."
+[C-] [DOT-PENDING] slot=A new text="It's best place, but catching at Margaret's gown."
+[ENCODE] slot=A chunk=0 audio_pos=6.000s ts=6.004s ds=6.005s decode=1.745s
+[C-] [TRANSCRIBE-DECODING] slot=A text="Best place, but catching at Margaret's gown, you'll come again. I."
+[C-] [DOT-PENDING] slot=A revised text="Best place, but catching at Margaret's gown, you'll come again."
+[ENCODE] slot=A chunk=1 audio_pos=8.000s ts=8.005s ds=8.006s decode=1.962s
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=10 text="It's best place, but catching at Margaret's gown."
+[C-] [TRANSCRIBE-DECODING] slot=A text="It's best place, but catching at Margaret's gown. You'll come again, I know you will. But."
+[C-] [DOT-PENDING] slot=A new text="You'll come again, I know you will."
+[C-] [COMMIT-PENDING] slot=A remaining="You'll come again, I know you will. But."
+[ENCODE] slot=A chunk=2 audio_pos=10.000s ts=10.006s ds=10.008s decode=2.408s
+[C-] [TRANS-SEG-ASYNC] slot=A lang=en original='It's best place, but catching at Margaret's gown.' translation=''
+[C-] [TRANSCRIBE-DECODING] slot=A text="It's best place, but catching at Margaret's gown. You'll come again, I know you will. But just say it."
+[C-] [DOT-CONFIRM] rule=stable slot=A text="You'll come again, I know you will."
+[C-] [DOT-PENDING] slot=A new text='But just say it.'
+[C-] [TRANS-SEG] slot=A lang=en original='You'll come again, I know you will.' translation=''
+[C-] [COMMIT-PENDING] slot=A remaining='But just say it.'
+[FLUSH-SEG] seg=2 tok=16/31 ratio=0.516 audio_end=11.162s fsl=1.076s
+[FINAL] seg=2 reason=dot audio=[4.000, 11.162] fsl=1.076s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='It's best place, but catching at Margaret's gown.'
+[FLUSH-SEG] seg=3 tok=25/31 ratio=0.806 audio_end=11.743s fsl=3.299s
+[FINAL] seg=3 reason=dot audio=[11.162, 11.743] fsl=3.299s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='You'll come again, I know you will.'
+[ENCODE] slot=A chunk=3 audio_pos=12.130s ts=12.419s ds=12.419s decode=2.624s
+[C-] [TRANSCRIBE-DECODING] slot=A text="It's best place, but catching at Margaret's gown. You'll come again, I know you will. But just say it."
+[C-] [DOT-CONFIRM] rule=stable slot=A text='But just say it.'
+[C-] [TRANS-SEG] slot=A lang=en original='But just say it.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=12.0s
+[FLUSH-SEG] seg=4 tok=31/31 ratio=1.000 audio_end=14.130s fsl=3.573s
+[FINAL] seg=4 reason=dot audio=[11.743, 14.130] fsl=3.573s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='But just say it.'
+[ENCODE] slot=A chunk=4 audio_pos=14.130s ts=15.046s ds=15.046s decode=2.657s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=16.130s ts=17.704s ds=17.704s decode=0.667s
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='I will come tomorrow," said.'
+[C-] [DOT-PENDING] slot=A new text='I will come tomorrow," said.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.003s decode=1.312s
+[C-] [TRANSCRIBE-DECODING] slot=A text='I will come tomorrow," said Margaret.'
+[C-] [DOT-PENDING] slot=A revised text='I will come tomorrow," said Margaret.'
+[ENCODE] slot=A chunk=1 audio_pos=4.090s ts=4.093s ds=4.093s decode=1.426s
+[C-] [TRANSCRIBE-DECODING] slot=A text='I will come tomorrow," said Margaret.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='I will come tomorrow," said Margaret.'
+[C-] [TRANS-SEG] slot=A lang=en original='I will come tomorrow," said Margaret.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=6.0s
+[FLUSH-SEG] seg=1 tok=12/12 ratio=1.000 audio_end=6.090s fsl=1.434s
+[FINAL] seg=1 reason=dot audio=[0.000, 6.090] fsl=1.434s encode=0.000s decode=0.000s final_decode=0.000s trans=0.003s | text='I will come tomorrow," said Margaret.'
+[ENCODE] slot=A chunk=2 audio_pos=6.090s ts=6.094s ds=6.095s decode=1.435s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=8.090s ts=8.094s ds=8.094s decode=0.615s
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='Margaret went away very sad.'
+[C-] [DOT-PENDING] slot=A new text='Margaret went away very sad.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.004s ds=2.005s decode=1.268s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Margaret went away very sad and thoughtful.'
+[C-] [DOT-PENDING] slot=A revised text='Margaret went away very sad and thoughtful.'
+[ENCODE] slot=A chunk=1 audio_pos=4.040s ts=4.044s ds=4.045s decode=1.456s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Margaret went away very sad and thoughtful.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='Margaret went away very sad and thoughtful.'
+[C-] [TRANS-SEG] slot=A lang=en original='Margaret went away very sad and thoughtful.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=6.0s
+[FLUSH-SEG] seg=1 tok=13/13 ratio=1.000 audio_end=6.040s fsl=1.479s
+[FINAL] seg=1 reason=dot audio=[0.000, 6.040] fsl=1.479s encode=0.000s decode=0.000s final_decode=0.000s trans=0.002s | text='Margaret went away very sad and thoughtful.'
+[ENCODE] slot=A chunk=2 audio_pos=6.040s ts=6.044s ds=6.045s decode=1.478s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=8.040s ts=8.045s ds=8.045s decode=0.612s
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='She was late for tea at home.'
+[C-] [DOT-PENDING] slot=A new text='She was late for tea at home.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.005s ds=2.005s decode=1.329s
+[C-] [TRANSCRIBE-DECODING] slot=A text='She was late for tea at home.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='She was late for tea at home.'
+[C-] [TRANS-SEG] slot=A lang=en original='She was late for tea at home.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=4.0s
+[FLUSH-SEG] seg=1 tok=12/12 ratio=1.000 audio_end=4.000s fsl=1.411s
+[FINAL] seg=1 reason=dot audio=[0.000, 4.000] fsl=1.411s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='She was late for tea at home.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.005s ds=4.005s decode=1.407s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=6.000s ts=6.005s ds=6.006s decode=0.614s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=8.000s ts=8.006s ds=8.006s decode=0.939s
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='Have you met with a servant?'
+[C-] [DOT-PENDING] slot=A new text='Have you met with a servant?'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.005s ds=2.005s decode=1.276s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Have you met with a servant, dear?'
+[C-] [DOT-PENDING] slot=A revised text='Have you met with a servant, dear?'
+[ENCODE] slot=A chunk=1 audio_pos=4.090s ts=4.096s ds=4.096s decode=1.464s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Have you met with a servant, dear?'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='Have you met with a servant, dear?'
+[C-] [TRANS-SEG] slot=A lang=en original='Have you met with a servant, dear?' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=6.0s
+[FLUSH-SEG] seg=1 tok=13/13 ratio=1.000 audio_end=6.090s fsl=1.481s
+[FINAL] seg=1 reason=dot audio=[0.000, 6.090] fsl=1.481s encode=0.000s decode=0.000s final_decode=0.000s trans=0.002s | text='Have you met with a servant, dear?'
+[ENCODE] slot=A chunk=2 audio_pos=6.090s ts=6.095s ds=6.096s decode=1.479s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=8.090s ts=8.095s ds=8.095s decode=0.611s
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='No, mamma, that Anne.'
+[C-] [DOT-PENDING] slot=A new text='No, mamma, that Anne.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.005s ds=2.005s decode=1.294s
+[C-] [TRANSCRIBE-DECODING] slot=A text='No, mamma, that Anne Buckley would never have done.'
+[C-] [DOT-PENDING] slot=A revised text='No, mamma, that Anne Buckley would never have done.'
+[ENCODE] slot=A chunk=1 audio_pos=4.030s ts=4.034s ds=4.034s decode=1.644s
+[C-] [TRANSCRIBE-DECODING] slot=A text='No, mamma, that Anne Buckley would never have done.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='No, mamma, that Anne Buckley would never have done.'
+[C-] [TRANS-SEG] slot=A lang=en original='No, mamma, that Anne Buckley would never have done.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=6.0s
+[FLUSH-SEG] seg=1 tok=16/16 ratio=1.000 audio_end=6.030s fsl=1.654s
+[FINAL] seg=1 reason=dot audio=[0.000, 6.030] fsl=1.654s encode=0.000s decode=0.000s final_decode=0.000s trans=0.004s | text='No, mamma, that Anne Buckley would never have done.'
+[ENCODE] slot=A chunk=2 audio_pos=6.030s ts=6.033s ds=6.034s decode=1.656s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=8.030s ts=8.033s ds=8.033s decode=0.611s
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='Suppose I try.'
+[C-] [DOT-PENDING] slot=A new text='Suppose I try.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.002s ds=2.003s decode=1.155s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Suppose I try," said Mister Hale.'
+[C-] [DOT-PENDING] slot=A revised text='Suppose I try," said Mister Hale.'
+[ENCODE] slot=A chunk=1 audio_pos=4.080s ts=4.085s ds=4.085s decode=1.461s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Suppose I try," said Mister Hale.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='Suppose I try," said Mister Hale.'
+[C-] [TRANS-SEG] slot=A lang=en original='Suppose I try," said Mister Hale.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=6.0s
+[FLUSH-SEG] seg=1 tok=13/13 ratio=1.000 audio_end=6.080s fsl=1.478s
+[FINAL] seg=1 reason=dot audio=[0.000, 6.080] fsl=1.478s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='Suppose I try," said Mister Hale.'
+[ENCODE] slot=A chunk=2 audio_pos=6.080s ts=6.085s ds=6.085s decode=1.474s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=8.080s ts=8.084s ds=8.084s decode=0.613s
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='Everybody else has had.'
+[C-] [DOT-PENDING] slot=A new text='Everybody else has had.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.005s ds=2.005s decode=1.154s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Everybody else has had their turn at this great difficulty.'
+[C-] [DOT-PENDING] slot=A revised text='Everybody else has had their turn at this great difficulty.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.008s ds=4.009s decode=1.608s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Everybody else has had their turn at this great difficulty. Now let me try.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='Everybody else has had their turn at this great difficulty.'
+[C-] [DOT-PENDING] slot=A new text='Now let me try.'
+[C-] [TRANS-SEG] slot=A lang=en original='Everybody else has had their turn at this great difficulty.' translation=''
+[C-] [DOT-SLOT-SWITCH] slot=A audio_sec=6.0s prev='Everybody else has had their turn at this great difficulty.'
+[FLUSH-SEG] seg=1 tok=15/20 ratio=0.750 audio_end=5.600s fsl=2.400s
+[FINAL] seg=1 reason=dot audio=[0.000, 5.600] fsl=2.400s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='Everybody else has had their turn at this great difficulty.'
+[ENCODE] slot=A chunk=2 audio_pos=6.100s ts=6.106s ds=6.106s decode=1.895s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Now let me try.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='Now let me try.'
+[C-] [TRANS-SEG] slot=A lang=en original='Now let me try.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=4.0s
+[FLUSH-SEG] seg=2 tok=9/9 ratio=1.000 audio_end=8.100s fsl=1.239s
+[FINAL] seg=2 reason=dot audio=[5.600, 8.100] fsl=1.239s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='Now let me try.'
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=10.100s ts=10.106s ds=10.107s decode=0.613s
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='I may be the Cinderella to put on the.'
+[C-] [DOT-PENDING] slot=A new text='I may be the Cinderella to put on the.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.005s ds=2.005s decode=1.516s
+[C-] [TRANSCRIBE-DECODING] slot=A text='I may be the Cinderella to put on the slipper after all.'
+[C-] [DOT-PENDING] slot=A revised text='I may be the Cinderella to put on the slipper after all.'
+[ENCODE] slot=A chunk=1 audio_pos=4.070s ts=4.076s ds=4.077s decode=1.818s
+[C-] [TRANSCRIBE-DECODING] slot=A text='I may be the Cinderella to put on the slipper after all.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='I may be the Cinderella to put on the slipper after all.'
+[C-] [TRANS-SEG] slot=A lang=en original='I may be the Cinderella to put on the slipper after all.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=6.0s
+[FLUSH-SEG] seg=1 tok=19/19 ratio=1.000 audio_end=6.070s fsl=1.836s
+[FINAL] seg=1 reason=dot audio=[0.000, 6.070] fsl=1.836s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='I may be the Cinderella to put on the slipper after all.'
+[ENCODE] slot=A chunk=2 audio_pos=6.070s ts=6.074s ds=6.075s decode=1.832s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=8.070s ts=8.075s ds=8.075s decode=0.613s
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='What would you do, Papa?'
+[C-] [DOT-PENDING] slot=A new text='What would you do, Papa?'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.003s decode=1.269s
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=7 text='What would you do, Papa?'
+[C-] [TRANSCRIBE-DECODING] slot=A text='What would you do, Papa? How would you set about it?'
+[C-] [DOT-PENDING] slot=A new text='How would you set about it?'
+[C-] [DOT-SLOT-SWITCH] slot=A audio_sec=4.0s prev='What would you do, Papa?'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.006s ds=4.006s decode=1.763s
+[C-] [TRANS-SEG-ASYNC] slot=A lang=en original='What would you do, Papa?' translation=''
+[FLUSH-SEG] seg=1 no-token-info → audio_end=4.000s fsl=0.000s
+[FINAL] seg=1 reason=dot audio=[0.000, 4.000] fsl=0.000s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='What would you do, Papa?'
+[C-] [TRANSCRIBE-DECODING] slot=A text='How would you set about it?'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='How would you set about it?'
+[C-] [TRANS-SEG] slot=A lang=en original='How would you set about it?' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=4.0s
+[FLUSH-SEG] seg=2 tok=11/11 ratio=1.000 audio_end=6.010s fsl=1.349s
+[FINAL] seg=2 reason=dot audio=[4.000, 6.010] fsl=1.349s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='How would you set about it?'
+[ENCODE] slot=A chunk=0 audio_pos=6.010s ts=6.015s ds=6.015s decode=1.345s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=8.010s ts=8.015s ds=8.015s decode=0.613s
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='Well, I.'
+[C-] [DOT-PENDING] slot=A new text='Well, I.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.003s decode=1.095s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Well, I, I would apply it to some good housemaster.'
+[C-] [DOT-PENDING] slot=A revised text='Well, I, I would apply it to some good housemaster.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.003s ds=4.004s decode=1.759s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Well, I, I would apply to some good housemother to recommend me one known to us.'
+[C-] [DOT-PENDING] slot=A revised text='Well, I, I would apply to some good housemother to recommend me one known to us.'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.003s ds=6.004s decode=2.122s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Well, I, I would apply to some good housemother to recommend me one known to herself or her servants.'
+[C-] [DOT-PENDING] slot=A revised text='Well, I, I would apply to some good housemother to recommend me one known to herself or her servants.'
+[ENCODE] slot=A chunk=3 audio_pos=8.110s ts=8.129s ds=8.129s decode=2.353s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Well, I, I would apply to some good housemother to recommend me one known to herself or her servants.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='Well, I, I would apply to some good housemother to recommend me one known to herself or her servants.'
+[C-] [TRANS-SEG] slot=A lang=en original='Well, I, I would apply to some good housemother to recommend me one known to herself or her servants.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=10.0s
+[FLUSH-SEG] seg=1 tok=27/27 ratio=1.000 audio_end=10.110s fsl=2.782s
+[FINAL] seg=1 reason=dot audio=[0.000, 10.110] fsl=2.782s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='Well, I, I would apply to some good housemother to recommend me one known to herself or her servants.'
+[ENCODE] slot=A chunk=4 audio_pos=10.110s ts=10.485s ds=10.485s decode=2.408s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=12.110s ts=12.894s ds=12.894s decode=0.665s
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='Very good, but.'
+[C-] [DOT-PENDING] slot=A new text='Very good, but.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.003s decode=1.194s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Very good, but we must first catch our house, mother.'
+[C-] [DOT-PENDING] slot=A revised text='Very good, but we must first catch our house, mother.'
+[ENCODE] slot=A chunk=1 audio_pos=4.180s ts=4.184s ds=4.184s decode=1.700s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Very good, but we must first catch our house mother.'
+[C-] [DOT-PENDING] slot=A revised text='Very good, but we must first catch our house mother.'
+[ENCODE] slot=A chunk=2 audio_pos=6.180s ts=6.184s ds=6.184s decode=1.661s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Very good, but we must first catch our house, mother.'
+[C-] [DOT-PENDING] slot=A revised text='Very good, but we must first catch our house, mother.'
+[ENCODE] slot=A chunk=3 audio_pos=8.180s ts=8.184s ds=8.184s decode=1.734s
+Received finish command
+[C-] [TRANS-VAD] slot=A reason=finish lang=en original='Very good, but we must first catch our house, mother.' translation=''
+[FINAL] seg=1 reason=finish audio=[0.000, 9.480] fsl=0.000s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='Very good, but we must first catch our house, mother.'
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='The mother of whom he spoke to us.'
+[C-] [DOT-PENDING] slot=A new text='The mother of whom he spoke to us.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.002s ds=2.003s decode=1.405s
+[C-] [TRANSCRIBE-DECODING] slot=A text='The mother of whom he spoke to us said, "Margaret."'
+[C-] [DOT-PENDING] slot=A revised text='The mother of whom he spoke to us said, "Margaret."'
+[ENCODE] slot=A chunk=1 audio_pos=4.110s ts=4.112s ds=4.113s decode=1.757s
+[C-] [TRANSCRIBE-DECODING] slot=A text='The mother of whom he spoke to us said, "Margaret."'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='The mother of whom he spoke to us said, "Margaret."'
+[C-] [TRANS-SEG] slot=A lang=en original='The mother of whom he spoke to us said, "Margaret."' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=6.0s
+[FLUSH-SEG] seg=1 tok=18/18 ratio=1.000 audio_end=6.110s fsl=1.772s
+[FINAL] seg=1 reason=dot audio=[0.000, 6.110] fsl=1.772s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='The mother of whom he spoke to us said, "Margaret."'
+[ENCODE] slot=A chunk=2 audio_pos=6.110s ts=6.112s ds=6.113s decode=1.770s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=8.110s ts=8.113s ds=8.113s decode=0.615s
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='Mr. Thornton.'
+[C-] [DOT-PENDING] slot=A new text='Mr. Thornton.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.003s decode=1.098s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Mr. Thornton, the only mother he has, I believe.'
+[C-] [DOT-PENDING] slot=A revised text='Mr. Thornton, the only mother he has, I believe.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.003s ds=4.003s decode=1.698s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Mr. Thornton, the only mother he has, I believe," said Mr. Hale.'
+[C-] [DOT-PENDING] slot=A revised text='Mr. Thornton, the only mother he has, I believe," said Mr. Hale.'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.003s ds=6.003s decode=2.006s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Mr. Thornton, the only mother he has, I believe," said Mr. Hale quietly.'
+[C-] [DOT-PENDING] slot=A revised text='Mr. Thornton, the only mother he has, I believe," said Mr. Hale quietly.'
+[ENCODE] slot=A chunk=3 audio_pos=8.020s ts=8.024s ds=8.025s decode=2.100s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Mr. Thornton, the only mother he has, I believe," said Mr. Hale quietly.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='Mr. Thornton, the only mother he has, I believe," said Mr. Hale quietly.'
+[C-] [TRANS-SEG] slot=A lang=en original='Mr. Thornton, the only mother he has, I believe," said Mr. Hale quietly.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=10.0s
+[FLUSH-SEG] seg=1 tok=23/23 ratio=1.000 audio_end=10.020s fsl=2.255s
+[FINAL] seg=1 reason=dot audio=[0.000, 10.020] fsl=2.255s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='Mr. Thornton, the only mother he has, I believe," said Mr. Hale quietly.'
+[ENCODE] slot=A chunk=4 audio_pos=10.020s ts=10.127s ds=10.128s decode=2.149s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=12.020s ts=12.278s ds=12.278s decode=0.664s
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='I shall like to see her.'
+[C-] [DOT-PENDING] slot=A new text='I shall like to see her.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.003s decode=1.267s
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=7 text='I shall like to see her.'
+[C-] [TRANSCRIBE-DECODING] slot=A text='I shall like to see her. She must be an uncommon person.'
+[C-] [DOT-PENDING] slot=A new text='She must be an uncommon person.'
+[C-] [DOT-SLOT-SWITCH] slot=A audio_sec=4.0s prev='I shall like to see her.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.003s ds=4.003s decode=1.757s
+[C-] [TRANS-SEG-ASYNC] slot=A lang=en original='I shall like to see her.' translation=''
+[FLUSH-SEG] seg=1 no-token-info → audio_end=4.000s fsl=0.000s
+[FINAL] seg=1 reason=dot audio=[0.000, 4.000] fsl=0.000s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='I shall like to see her.'
+[C-] [TRANSCRIBE-DECODING] slot=A text='She must be an uncommon person," her mother added.'
+[C-] [DOT-PENDING] slot=A new text='She must be an uncommon person," her mother added.'
+[ENCODE] slot=A chunk=0 audio_pos=6.000s ts=6.002s ds=6.002s decode=1.592s
+[C-] [TRANSCRIBE-DECODING] slot=A text='She must be an uncommon person," her mother added.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='She must be an uncommon person," her mother added.'
+[C-] [TRANS-SEG] slot=A lang=en original='She must be an uncommon person," her mother added.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=6.0s
+[FLUSH-SEG] seg=2 tok=15/15 ratio=1.000 audio_end=8.120s fsl=1.599s
+[FINAL] seg=2 reason=dot audio=[4.000, 8.120] fsl=1.599s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='She must be an uncommon person," her mother added.'
+[ENCODE] slot=A chunk=1 audio_pos=8.120s ts=8.124s ds=8.124s decode=1.595s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=10.120s ts=10.124s ds=10.124s decode=0.614s
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='Perhaps, she may have a.'
+[C-] [DOT-PENDING] slot=A new text='Perhaps, she may have a.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.004s ds=2.004s decode=1.292s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Perhaps, she may have a relation who might suit us, and be.'
+[C-] [DOT-PENDING] slot=A revised text='Perhaps, she may have a relation who might suit us, and be.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.003s ds=4.003s decode=1.831s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Perhaps, she may have a relation who might suit us and be glad of our place.'
+[C-] [DOT-PENDING] slot=A revised text='Perhaps, she may have a relation who might suit us and be glad of our place.'
+[ENCODE] slot=A chunk=2 audio_pos=6.080s ts=6.084s ds=6.085s decode=2.016s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Perhaps, she may have a relation who might suit us and be glad of our place.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='Perhaps, she may have a relation who might suit us and be glad of our place.'
+[C-] [TRANS-SEG] slot=A lang=en original='Perhaps, she may have a relation who might suit us and be glad of our place.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=8.0s
+[FLUSH-SEG] seg=1 tok=22/22 ratio=1.000 audio_end=8.080s fsl=2.100s
+[FINAL] seg=1 reason=dot audio=[0.000, 8.080] fsl=2.100s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='Perhaps, she may have a relation who might suit us and be glad of our place.'
+[ENCODE] slot=A chunk=3 audio_pos=8.080s ts=8.104s ds=8.105s decode=2.077s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=10.080s ts=10.182s ds=10.182s decode=0.673s
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='She sounded to be such.'
+[C-] [DOT-PENDING] slot=A new text='She sounded to be such.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.003s decode=1.219s
+[C-] [TRANSCRIBE-DECODING] slot=A text='She sounded to be such a careful, economical person.'
+[C-] [DOT-PENDING] slot=A revised text='She sounded to be such a careful, economical person.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.003s ds=4.003s decode=1.595s
+[C-] [TRANSCRIBE-DECODING] slot=A text='She sounded to be such a careful, economical person, that I should like anyone.'
+[C-] [DOT-PENDING] slot=A revised text='She sounded to be such a careful, economical person, that I should like anyone.'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.003s ds=6.003s decode=1.947s
+[C-] [TRANSCRIBE-DECODING] slot=A text='She sounded to be such a careful, economical person that I should like any one out of the same family.'
+[C-] [DOT-PENDING] slot=A revised text='She sounded to be such a careful, economical person that I should like any one out of the same family.'
+[ENCODE] slot=A chunk=3 audio_pos=8.160s ts=8.164s ds=8.164s decode=2.264s
+[C-] [TRANSCRIBE-DECODING] slot=A text='She sounded to be such a careful, economical person that I should like any one out of the same family.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='She sounded to be such a careful, economical person that I should like any one out of the same family.'
+[C-] [TRANS-SEG] slot=A lang=en original='She sounded to be such a careful, economical person that I should like any one out of the same family.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=10.0s
+[FLUSH-SEG] seg=1 tok=26/26 ratio=1.000 audio_end=10.160s fsl=2.613s
+[FINAL] seg=1 reason=dot audio=[0.000, 10.160] fsl=2.613s encode=0.000s decode=0.000s final_decode=0.000s trans=0.002s | text='She sounded to be such a careful, economical person that I should like any one out of the same family.'
+[ENCODE] slot=A chunk=4 audio_pos=10.160s ts=10.431s ds=10.432s decode=2.342s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=12.160s ts=12.775s ds=12.775s decode=0.664s
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='My dear," said Miss.'
+[C-] [DOT-PENDING] slot=A new text='My dear," said Miss.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.004s ds=2.005s decode=1.228s
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=10 text='My dear," said Mister.'
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=6 text='Hell, alarmed.'
+[C-] [TRANSCRIBE-DECODING] slot=A text='My dear," said Mister. Hell, alarmed. "Pray don\'t."'
+[C-] [DOT-PENDING] slot=A new text='"Pray don\'t."'
+[C-] [COMMIT-PENDING] slot=A remaining='"Pray don\'t."'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.005s ds=4.005s decode=1.884s
+[C-] [TRANS-SEG-ASYNC] slot=A lang=en original='My dear," said Mister.' translation=''
+[C-] [TRANS-SEG-ASYNC] slot=A lang=en original='Hell, alarmed.' translation=''
+[C-] [TRANSCRIBE-DECODING] slot=A text='My dear," said Mister. Hell, alarmed. "Pray, don\'t go off on that idea."'
+[C-] [DOT-PENDING] slot=A revised text='"Pray, don\'t go off on that idea."'
+[FLUSH-SEG] seg=1 tok=18/26 ratio=0.692 audio_end=5.240s fsl=0.590s
+[FINAL] seg=1 reason=dot audio=[0.000, 5.240] fsl=0.590s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='My dear," said Mister.'
+[FLUSH-SEG] seg=2 tok=18/26 ratio=0.692 audio_end=5.240s fsl=0.590s
+[FINAL] seg=2 reason=dot audio=[5.240, 5.240] fsl=0.590s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='Hell, alarmed.'
+[ENCODE] slot=A chunk=2 audio_pos=6.055s ts=6.062s ds=6.063s decode=2.299s
+[C-] [TRANSCRIBE-DECODING] slot=A text='My dear," said Mister. Hell, alarmed. "Pray don\'t go off on that idea."'
+[C-] [DOT-PENDING] slot=A revised text='"Pray don\'t go off on that idea."'
+[ENCODE] slot=A chunk=3 audio_pos=8.055s ts=8.366s ds=8.366s decode=2.248s
+[C-] [TRANSCRIBE-DECODING] slot=A text='My dear," said Mister. Hell, alarmed. "Pray don\'t go off on that idea."'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='"Pray don\'t go off on that idea."'
+[C-] [TRANS-SEG] slot=A lang=en original='"Pray don't go off on that idea."' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=10.0s
+[FLUSH-SEG] seg=3 tok=25/25 ratio=1.000 audio_end=10.055s fsl=2.849s
+[FINAL] seg=3 reason=dot audio=[5.240, 10.055] fsl=2.849s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='"Pray don't go off on that idea."'
+[ENCODE] slot=A chunk=4 audio_pos=10.055s ts=10.617s ds=10.618s decode=2.288s
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text="I'm sure. At any rate."
+[C-] [DOT-PENDING] slot=A new text="I'm sure."
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.002s ds=2.002s decode=1.337s
+[C-] [TRANSCRIBE-DECODING] slot=A text='I am sure, at any rate, she would not like strangers to know anything about.'
+[C-] [DOT-PENDING] slot=A revised text='I am sure, at any rate, she would not like strangers to know anything about.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.003s ds=4.003s decode=1.991s
+[C-] [TRANSCRIBE-DECODING] slot=A text='I am sure, at any rate, she would not like strangers to know anything about it.'
+[C-] [DOT-PENDING] slot=A revised text='I am sure, at any rate, she would not like strangers to know anything about it.'
+[ENCODE] slot=A chunk=2 audio_pos=6.070s ts=6.075s ds=6.076s decode=2.069s
+[C-] [TRANSCRIBE-DECODING] slot=A text='I am sure, at any rate, she would not like strangers to know anything about it.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='I am sure, at any rate, she would not like strangers to know anything about it.'
+[C-] [TRANS-SEG] slot=A lang=en original='I am sure, at any rate, she would not like strangers to know anything about it.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=8.0s
+[FLUSH-SEG] seg=1 tok=23/23 ratio=1.000 audio_end=8.070s fsl=2.212s
+[FINAL] seg=1 reason=dot audio=[0.000, 8.070] fsl=2.212s encode=0.000s decode=0.000s final_decode=0.000s trans=0.004s | text='I am sure, at any rate, she would not like strangers to know anything about it.'
+[ENCODE] slot=A chunk=3 audio_pos=8.070s ts=8.148s ds=8.149s decode=2.139s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=10.070s ts=10.291s ds=10.292s decode=0.654s
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='Take notice that this is not.'
+[C-] [DOT-PENDING] slot=A new text='Take notice that this is not.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.004s ds=2.004s decode=1.274s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Take notice that this is not my kind of haughtiness, Papa.'
+[C-] [DOT-PENDING] slot=A revised text='Take notice that this is not my kind of haughtiness, Papa.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.003s ds=4.003s decode=1.824s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Take notice that this is not my kind of haughtiness, Papa, if I have any at all.'
+[C-] [DOT-PENDING] slot=A revised text='Take notice that this is not my kind of haughtiness, Papa, if I have any at all.'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.006s ds=6.007s decode=2.252s
+[C-] [TRANSCRIBE-DECODING] slot=A text="Take notice that this is not my kind of haughtiness, Papa, if I have any at all, which I don't agree to. Though you all."
+[C-] [DOT-PENDING] slot=A revised text="Take notice that this is not my kind of haughtiness, Papa, if I have any at all, which I don't agree to."
+[ENCODE] slot=A chunk=3 audio_pos=8.000s ts=8.262s ds=8.262s decode=2.944s
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=9 text="Take notice that this is not my kind of haughtiness, Papa, if I have any at all, which I don't agree to."
+[C-] [TRANSCRIBE-DECODING] slot=A text="Take notice that this is not my kind of haughtiness, Papa, if I have any at all, which I don't agree to. Though you're always accusing me of it."
+[C-] [DOT-PENDING] slot=A new text="Though you're always accusing me of it."
+[C-] [COMMIT-PENDING] slot=A remaining="Though you're always accusing me of it."
+[ENCODE] slot=A chunk=4 audio_pos=10.080s ts=11.210s ds=11.210s decode=3.262s
+[C-] [TRANS-SEG-ASYNC] slot=A lang=en original='Take notice that this is not my kind of haughtiness, Papa, if I have any at all, which I don't agree to.' translation=''
+[C-] [TRANSCRIBE-DECODING] slot=A text="Take notice that this is not my kind of haughtiness, Papa, if I have any at all, which I don't agree to. Though you're always accusing me of it."
+[C-] [DOT-CONFIRM] rule=stable slot=A text="Though you're always accusing me of it."
+[C-] [TRANS-SEG] slot=A lang=en original='Though you're always accusing me of it.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=12.0s
+[FLUSH-SEG] seg=1 tok=30/42 ratio=0.714 audio_end=11.509s fsl=2.906s
+[FINAL] seg=1 reason=dot audio=[0.000, 11.509] fsl=2.906s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='Take notice that this is not my kind of haughtiness, Papa, if I have any at all, which I don't agree to.'
+[FLUSH-SEG] seg=2 tok=42/42 ratio=1.000 audio_end=12.080s fsl=5.099s
+[FINAL] seg=2 reason=dot audio=[11.509, 12.080] fsl=5.099s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='Though you're always accusing me of it.'
+[ENCODE] slot=A chunk=5 audio_pos=12.080s ts=14.474s ds=14.475s decode=2.706s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=14.080s ts=17.182s ds=17.182s decode=0.416s
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text="I don't know positively that."
+[C-] [DOT-PENDING] slot=A new text="I don't know positively that."
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.003s decode=1.283s
+[C-] [TRANSCRIBE-DECODING] slot=A text="I don't know positively that it is hers either, but from."
+[C-] [DOT-PENDING] slot=A revised text="I don't know positively that it is hers either, but from."
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.003s ds=4.003s decode=1.761s
+[C-] [TRANSCRIBE-DECODING] slot=A text="I don't know positively that it is hers either, but from little things I have gathered from him."
+[C-] [DOT-PENDING] slot=A revised text="I don't know positively that it is hers either, but from little things I have gathered from him."
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.003s ds=6.004s decode=2.192s
+[C-] [TRANSCRIBE-DECODING] slot=A text="I don't know positively that it is hers either, but from little things I have gathered from him, I fancy so."
+[C-] [DOT-PENDING] slot=A revised text="I don't know positively that it is hers either, but from little things I have gathered from him, I fancy so."
+[ENCODE] slot=A chunk=3 audio_pos=8.180s ts=8.215s ds=8.217s decode=2.484s
+[C-] [TRANSCRIBE-DECODING] slot=A text="I don't know positively that it is hers either, but from little things I have gathered from him, I fancy so."
+[C-] [DOT-CONFIRM] rule=stable slot=A text="I don't know positively that it is hers either, but from little things I have gathered from him, I fancy so."
+[C-] [TRANS-SEG] slot=A lang=en original='I don't know positively that it is hers either, but from little things I have gathered from him, I fancy so.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=10.0s
+[FLUSH-SEG] seg=1 tok=29/29 ratio=1.000 audio_end=10.180s fsl=3.045s
+[FINAL] seg=1 reason=dot audio=[0.000, 10.180] fsl=3.045s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='I don't know positively that it is hers either, but from little things I have gathered from him, I fancy so.'
+[ENCODE] slot=A chunk=4 audio_pos=10.180s ts=10.705s ds=10.705s decode=2.521s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=12.180s ts=13.227s ds=13.227s decode=0.662s
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='They cared too little to ask.'
+[C-] [DOT-PENDING] slot=A new text='They cared too little to ask.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.004s decode=1.282s
+[C-] [TRANSCRIBE-DECODING] slot=A text='They cared too little to ask, in what manner her son had.'
+[C-] [DOT-PENDING] slot=A revised text='They cared too little to ask, in what manner her son had.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.003s ds=4.003s decode=1.771s
+[C-] [TRANSCRIBE-DECODING] slot=A text='They cared too little to ask, in what manner her son had spoken about her.'
+[C-] [DOT-PENDING] slot=A revised text='They cared too little to ask, in what manner her son had spoken about her.'
+[ENCODE] slot=A chunk=2 audio_pos=6.030s ts=6.036s ds=6.037s decode=1.956s
+[C-] [TRANSCRIBE-DECODING] slot=A text='They cared too little to ask, in what manner her son had spoken about her.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='They cared too little to ask, in what manner her son had spoken about her.'
+[C-] [TRANS-SEG] slot=A lang=en original='They cared too little to ask, in what manner her son had spoken about her.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=8.0s
+[FLUSH-SEG] seg=1 tok=21/21 ratio=1.000 audio_end=8.030s fsl=1.969s
+[FINAL] seg=1 reason=dot audio=[0.000, 8.030] fsl=1.969s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='They cared too little to ask, in what manner her son had spoken about her.'
+[ENCODE] slot=A chunk=3 audio_pos=8.030s ts=8.036s ds=8.037s decode=1.964s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=10.030s ts=10.036s ds=10.036s decode=0.626s
+Received finish command
+[C-] Streaming state initialized
+Received stop command
+Connection closed
+Client disconnected (0)
+connection open
+Client connected (1)
+New connection from ('127.0.0.1', 53870)
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='If called to a case, suppose.'
+[C-] [DOT-PENDING] slot=A new text='If called to a case, suppose.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.006s ds=2.006s decode=1.344s
+[C-] [TRANSCRIBE-DECODING] slot=A text='If called to a case supposed or suspected to be one of poisoning.'
+[C-] [DOT-PENDING] slot=A revised text='If called to a case supposed or suspected to be one of poisoning.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.006s ds=4.006s decode=1.764s
+[C-] [TRANSCRIBE-DECODING] slot=A text='If called to a case supposed or suspected to be one of poisoning, the medical man has two duties.'
+[C-] [DOT-PENDING] slot=A revised text='If called to a case supposed or suspected to be one of poisoning, the medical man has two duties.'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.005s ds=6.006s decode=2.181s
+[C-] [TRANSCRIBE-DECODING] slot=A text='If called to a case supposed or suspected to be one of poisoning, the medical man has two duties to perform: to save the.'
+[C-] [DOT-PENDING] slot=A revised text='If called to a case supposed or suspected to be one of poisoning, the medical man has two duties to perform: to save the.'
+[ENCODE] slot=A chunk=3 audio_pos=8.000s ts=8.190s ds=8.190s decode=2.592s
+[C-] [TRANSCRIBE-DECODING] slot=A text="If called to a case supposed or suspected to be one of poisoning, the medical man has two duties to perform: to save the patient's life and to place himself."
+[C-] [DOT-PENDING] slot=A revised text="If called to a case supposed or suspected to be one of poisoning, the medical man has two duties to perform: to save the patient's life and to place himself."
+[ENCODE] slot=A chunk=4 audio_pos=10.000s ts=10.785s ds=10.785s decode=3.027s
+[C-] [TRANSCRIBE-DECODING] slot=A text="If called to a case supposed or suspected to be one of poisoning, the medical man has two duties to perform: to save the patient's life and to place himself in a position to give evidence of."
+[C-] [DOT-PENDING] slot=A revised text="If called to a case supposed or suspected to be one of poisoning, the medical man has two duties to perform: to save the patient's life and to place himself in a position to give evidence of."
+[ENCODE] slot=A chunk=5 audio_pos=12.000s ts=13.815s ds=13.816s decode=3.444s
+[C-] [TRANSCRIBE-DECODING] slot=A text="If called to a case supposed or suspected to be one of poisoning, the medical man has two duties to perform: to save the patient's life and to place himself in a position to give evidence if called on to do so."
+[C-] [DOT-PENDING] slot=A revised text="If called to a case supposed or suspected to be one of poisoning, the medical man has two duties to perform: to save the patient's life and to place himself in a position to give evidence if called on to do so."
+[ENCODE] slot=A chunk=6 audio_pos=14.115s ts=17.265s ds=17.265s decode=3.820s
+[C-] [TRANSCRIBE-DECODING] slot=A text="If called to a case supposed or suspected to be one of poisoning, the medical man has two duties to perform: to save the patient's life and to place himself in a position to give evidence if called on to do so."
+[C-] [DOT-CONFIRM] rule=stable slot=A text="If called to a case supposed or suspected to be one of poisoning, the medical man has two duties to perform: to save the patient's life and to place himself in a position to give evidence if called on to do so."
+[C-] [TRANS-SEG] slot=A lang=en original='If called to a case supposed or suspected to be one of poisoning, the medical man has two duties to perform: to save the patient's life and to place himself in a position to give evidence if called on to do so.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=16.0s
+[FLUSH-SEG] seg=1 tok=50/50 ratio=1.000 audio_end=16.115s fsl=8.817s
+[FINAL] seg=1 reason=dot audio=[0.000, 16.115] fsl=8.817s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='If called to a case supposed or suspected to be one of poisoning, the medical man has two duties to perform: to save the patient's life and to place himself in a position to give evidence if called on to do so.'
+[ENCODE] slot=A chunk=7 audio_pos=16.115s ts=21.089s ds=21.089s decode=3.844s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=18.115s ts=24.934s ds=24.935s decode=0.661s
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='He should make inquiries as to.'
+[C-] [DOT-PENDING] slot=A new text='He should make inquiries as to.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.006s ds=2.006s decode=1.270s
+[C-] [TRANSCRIBE-DECODING] slot=A text='He should make inquiries as to symptoms and time at which.'
+[C-] [DOT-PENDING] slot=A revised text='He should make inquiries as to symptoms and time at which.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.006s ds=4.007s decode=1.637s
+[C-] [TRANSCRIBE-DECODING] slot=A text='He should make inquiries as to symptoms and time at which food or medicine was last taken.'
+[C-] [DOT-PENDING] slot=A revised text='He should make inquiries as to symptoms and time at which food or medicine was last taken.'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.006s ds=6.006s decode=2.003s
+[C-] [TRANSCRIBE-DECODING] slot=A text='He should make inquiries as to symptoms and time at which food or medicine was last taken.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='He should make inquiries as to symptoms and time at which food or medicine was last taken.'
+[C-] [TRANS-SEG] slot=A lang=en original='He should make inquiries as to symptoms and time at which food or medicine was last taken.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=8.0s
+[FLUSH-SEG] seg=1 tok=22/22 ratio=1.000 audio_end=8.025s fsl=2.041s
+[FINAL] seg=1 reason=dot audio=[0.000, 8.025] fsl=2.041s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='He should make inquiries as to symptoms and time at which food or medicine was last taken.'
+[ENCODE] slot=A chunk=3 audio_pos=8.025s ts=8.030s ds=8.030s decode=2.037s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=10.025s ts=10.068s ds=10.068s decode=0.663s
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='He should notice the position and.'
+[C-] [DOT-PENDING] slot=A new text='He should notice the position and.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.004s ds=2.004s decode=1.269s
+[C-] [TRANSCRIBE-DECODING] slot=A text='He should notice the position and temperature of the body, the condition.'
+[C-] [DOT-PENDING] slot=A revised text='He should notice the position and temperature of the body, the condition.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.004s ds=4.004s decode=1.760s
+[C-] [TRANSCRIBE-DECODING] slot=A text='He should notice the position and temperature of the body, the condition of rigor mortis.'
+[C-] [DOT-PENDING] slot=A revised text='He should notice the position and temperature of the body, the condition of rigor mortis.'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.004s ds=6.005s decode=2.001s
+[C-] [TRANSCRIBE-DECODING] slot=A text='He should notice the position and temperature of the body, the condition of rigor mortis, marks of violence, appearance of lips.'
+[C-] [DOT-PENDING] slot=A revised text='He should notice the position and temperature of the body, the condition of rigor mortis, marks of violence, appearance of lips.'
+[ENCODE] slot=A chunk=3 audio_pos=8.000s ts=8.008s ds=8.008s decode=2.518s
+[C-] [TRANSCRIBE-DECODING] slot=A text='He should notice the position and temperature of the body, the condition of rigor mortis, marks of violence, appearance of lips and mouth.'
+[C-] [DOT-PENDING] slot=A revised text='He should notice the position and temperature of the body, the condition of rigor mortis, marks of violence, appearance of lips and mouth.'
+[ENCODE] slot=A chunk=4 audio_pos=10.110s ts=10.529s ds=10.530s decode=2.674s
+[C-] [TRANSCRIBE-DECODING] slot=A text='He should notice the position and temperature of the body, the condition of rigor mortis, marks of violence, appearance of lips and mouth.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='He should notice the position and temperature of the body, the condition of rigor mortis, marks of violence, appearance of lips and mouth.'
+[C-] [TRANS-SEG] slot=A lang=en original='He should notice the position and temperature of the body, the condition of rigor mortis, marks of violence, appearance of lips and mouth.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=12.0s
+[FLUSH-SEG] seg=1 tok=32/32 ratio=1.000 audio_end=12.110s fsl=3.770s
+[FINAL] seg=1 reason=dot audio=[0.000, 12.110] fsl=3.770s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='He should notice the position and temperature of the body, the condition of rigor mortis, marks of violence, appearance of lips and mouth.'
+[ENCODE] slot=A chunk=5 audio_pos=12.110s ts=13.207s ds=13.207s decode=2.675s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=14.110s ts=15.882s ds=15.882s decode=0.667s
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='In making a postmodern examination.'
+[C-] [DOT-PENDING] slot=A new text='In making a postmodern examination.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.005s ds=2.005s decode=1.277s
+[C-] [TRANSCRIBE-DECODING] slot=A text='In making a post-mortem examination, the alimentary canal.'
+[C-] [DOT-PENDING] slot=A revised text='In making a post-mortem examination, the alimentary canal.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.005s ds=4.005s decode=1.702s
+[C-] [TRANSCRIBE-DECODING] slot=A text='In making a post mortem examination, the alimentary canal should be removed and preserved for further investigation.'
+[C-] [DOT-PENDING] slot=A revised text='In making a post mortem examination, the alimentary canal should be removed and preserved for further investigation.'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.005s ds=6.005s decode=2.180s
+[C-] [TRANSCRIBE-DECODING] slot=A text='In making a post-mortem examination, the alimentary canal should be removed and preserved for further investigation.'
+[C-] [DOT-CONFIRM] rule=stall slot=A chunks=1 text='In making a post-mortem examination, the alimentary canal should be removed and preserved for further investigation.'
+[C-] [TRANS-SEG] slot=A lang=en original='In making a post-mortem examination, the alimentary canal should be removed and preserved for further investigation.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=8.0s
+[FLUSH-SEG] seg=1 tok=25/25 ratio=1.000 audio_end=8.050s fsl=2.370s
+[FINAL] seg=1 reason=dot audio=[0.000, 8.050] fsl=2.370s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='In making a post-mortem examination, the alimentary canal should be removed and preserved for further investigation.'
+[ENCODE] slot=A chunk=3 audio_pos=8.050s ts=8.188s ds=8.189s decode=2.233s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=10.050s ts=10.423s ds=10.423s decode=0.664s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=12.050s ts=12.057s ds=12.057s decode=0.610s
+Received finish command
+[C-] Streaming state initialized
+Received stop command
+Connection closed
+Client disconnected (0)
+[rank0]:[W803 21:45:29.066977755 ProcessGroupNCCL.cpp:1524] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())

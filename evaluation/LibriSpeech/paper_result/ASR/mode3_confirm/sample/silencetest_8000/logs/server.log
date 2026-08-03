@@ -1,0 +1,65 @@
+2026-08-03 15:43:28,564 - INFO - __main__ - Server log file: /home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/evaluation/LibriSpeech/paper_result/ASR/mode3_confirm/sample/silencetest_8000/logs/server.log
+2026-08-03 15:43:28,565 - INFO - examples.streaming_websocket_server - VAD disabled via --no-vad flag
+2026-08-03 15:43:28,565 - INFO - examples.streaming_websocket_server - Loading model: Qwen/Qwen3-ASR-1.7B
+2026-08-03 15:46:09,677 - WARNING - examples.streaming_websocket_server - 이 vLLM 버전은 use_beam_search를 지원하지 않습니다. Greedy decoding으로 fallback합니다. (beam_size=2 무시)
+2026-08-03 15:46:09,677 - INFO - examples.streaming_websocket_server - Greedy decoding (no repetition_penalty)
+2026-08-03 15:46:09,677 - INFO - examples.streaming_websocket_server - Model loaded successfully
+2026-08-03 15:46:09,678 - INFO - examples.streaming_websocket_server - Starting WebSocket server on ws://0.0.0.0:8767
+2026-08-03 15:46:09,678 - INFO - examples.streaming_websocket_server - Warming up model...
+2026-08-03 15:46:22,390 - INFO - examples.streaming_websocket_server - Warmup complete
+2026-08-03 15:46:22,619 - INFO - websockets.server - server listening on 0.0.0.0:8767
+2026-08-03 15:46:22,619 - INFO - examples.streaming_websocket_server - Server listening on ws://0.0.0.0:8767
+2026-08-03 15:46:24,910 - INFO - websockets.server - connection open
+2026-08-03 15:46:24,911 - INFO - __main__ - Client connected (1)
+2026-08-03 15:46:24,911 - INFO - __main__ - New connection from ('127.0.0.1', 39014)
+2026-08-03 15:46:24,916 - INFO - __main__ - Connection closed
+2026-08-03 15:46:24,916 - INFO - __main__ - Client disconnected (0)
+2026-08-03 15:46:24,923 - INFO - websockets.server - connection open
+2026-08-03 15:46:24,924 - INFO - __main__ - Client connected (1)
+2026-08-03 15:46:24,924 - INFO - __main__ - New connection from ('127.0.0.1', 39016)
+2026-08-03 15:46:24,925 - INFO - __main__ - Received start: lang=auto, targetLang=
+2026-08-03 15:46:24,925 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-08-03 15:46:28,145 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='Gasped she at last.'
+2026-08-03 15:46:28,145 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A new text='Gasped she at last.'
+2026-08-03 15:46:28,145 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.004s decode=1.216s
+2026-08-03 15:46:30,645 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='Gasped, Bessy, at last.'
+2026-08-03 15:46:30,645 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text='Gasped, Bessy, at last.'
+2026-08-03 15:46:30,645 - INFO - __main__ - [ENCODE] slot=A chunk=1 audio_pos=4.190s ts=4.196s ds=4.196s decode=1.524s
+2026-08-03 15:46:32,545 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='Gasped Bessy at last.'
+2026-08-03 15:46:32,546 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text='Gasped Bessy at last.'
+2026-08-03 15:46:32,546 - INFO - __main__ - [ENCODE] slot=A chunk=2 audio_pos=6.190s ts=6.197s ds=6.198s decode=1.423s
+2026-08-03 15:46:34,563 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='Gasped Bessy at last.'
+2026-08-03 15:46:34,564 - INFO - examples.streaming_websocket_server - [C-] [DOT-CONFIRM] rule=stable slot=A text='Gasped Bessy at last.'
+2026-08-03 15:46:34,564 - INFO - examples.streaming_websocket_server - [C-] [TRANS-SEG] slot=A lang=en original='Gasped Bessy at last.' translation=''
+2026-08-03 15:46:34,565 - INFO - examples.streaming_websocket_server - [C-] [SEG-SLOT-RESET] slot=A audio_sec=8.0s
+2026-08-03 15:46:34,565 - INFO - __main__ - [FLUSH-SEG] seg=1 tok=12/12 ratio=1.000 audio_end=8.190s fsl=1.448s
+2026-08-03 15:46:34,565 - INFO - __main__ - [FINAL] seg=1 reason=dot audio=[0.000, 8.190] fsl=1.448s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='Gasped Bessy at last.'
+2026-08-03 15:46:34,565 - INFO - __main__ - [ENCODE] slot=A chunk=3 audio_pos=8.190s ts=8.195s ds=8.196s decode=1.444s
+2026-08-03 15:46:35,989 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text=''
+2026-08-03 15:46:35,989 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=10.190s ts=10.196s ds=10.196s decode=0.868s
+2026-08-03 15:46:35,990 - INFO - __main__ - Received finish command
+2026-08-03 15:46:35,992 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-08-03 15:46:36,103 - INFO - __main__ - Received start: lang=auto, targetLang=
+2026-08-03 15:46:36,107 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-08-03 15:46:39,271 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='Very good, but.'
+2026-08-03 15:46:39,273 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A new text='Very good, but.'
+2026-08-03 15:46:39,274 - INFO - __main__ - [ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.006s ds=2.006s decode=1.161s
+2026-08-03 15:46:42,018 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='Very good, but we must first catch our house, mother.'
+2026-08-03 15:46:42,021 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text='Very good, but we must first catch our house, mother.'
+2026-08-03 15:46:42,022 - INFO - __main__ - [ENCODE] slot=A chunk=1 audio_pos=4.180s ts=4.186s ds=4.186s decode=1.729s
+2026-08-03 15:46:43,962 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='Very good, but we must first catch our house mother.'
+2026-08-03 15:46:43,963 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text='Very good, but we must first catch our house mother.'
+2026-08-03 15:46:43,963 - INFO - __main__ - [ENCODE] slot=A chunk=2 audio_pos=6.180s ts=6.187s ds=6.187s decode=1.668s
+2026-08-03 15:46:46,035 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='Very good, but we must first catch our house, mother.'
+2026-08-03 15:46:46,036 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text='Very good, but we must first catch our house, mother.'
+2026-08-03 15:46:46,036 - INFO - __main__ - [ENCODE] slot=A chunk=3 audio_pos=8.180s ts=8.185s ds=8.186s decode=1.743s
+2026-08-03 15:46:48,036 - INFO - examples.streaming_websocket_server - [C-] [TRANSCRIBE-DECODING] slot=A text='Very good, but we must first catch our house mother.'
+2026-08-03 15:46:48,038 - INFO - examples.streaming_websocket_server - [C-] [DOT-PENDING] slot=A revised text='Very good, but we must first catch our house mother.'
+2026-08-03 15:46:48,039 - INFO - __main__ - [ENCODE] slot=A chunk=4 audio_pos=10.180s ts=10.185s ds=10.186s decode=1.746s
+2026-08-03 15:46:48,093 - INFO - __main__ - Received finish command
+2026-08-03 15:46:48,093 - INFO - examples.streaming_websocket_server - [C-] [TRANS-VAD] slot=A reason=finish lang=en original='Very good, but we must first catch our house mother.' translation=''
+2026-08-03 15:46:48,093 - INFO - __main__ - [FINAL] seg=1 reason=finish audio=[0.000, 11.980] fsl=0.000s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='Very good, but we must first catch our house mother.'
+2026-08-03 15:46:48,094 - INFO - examples.streaming_websocket_server - [C-] Streaming state initialized
+2026-08-03 15:46:48,096 - INFO - __main__ - Received stop command
+2026-08-03 15:46:48,097 - INFO - __main__ - Connection closed
+2026-08-03 15:46:48,097 - INFO - __main__ - Client disconnected (0)

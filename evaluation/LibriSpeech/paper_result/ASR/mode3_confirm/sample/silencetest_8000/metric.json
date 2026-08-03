@@ -1,0 +1,222 @@
+{
+  "overall": {
+    "num_files": 2,
+    "wer": 0.0,
+    "first_token_latency": 10.817055537598208,
+    "model_runtime": 7.6320558575075115,
+    "avg_fsl_sec": 0.7242,
+    "avg_fsl_normalized_sec": 0.7242,
+    "avg_encode_sec": null,
+    "avg_decode_sec": null,
+    "avg_final_decode_sec": 0.0,
+    "avg_trans_sec": 0.0004,
+    "avg_output_tokens_per_commit": 7,
+    "commit_stats": {
+      "counts": {
+        "vad": 0,
+        "seg": 0,
+        "dot": 1,
+        "finish": 1,
+        "always": 0
+      },
+      "total": 2,
+      "ratios": {
+        "vad": 0.0,
+        "seg": 0.0,
+        "dot": 0.5,
+        "finish": 0.5,
+        "always": 0.0
+      }
+    }
+  },
+  "folders": {
+    "1688": {
+      "num_files": 2,
+      "wer": 0.0,
+      "first_token_latency": 10.817055537598208,
+      "model_runtime": 7.6320558575075115,
+      "avg_fsl_sec": 0.7242,
+      "avg_fsl_normalized_sec": 0.7242,
+      "avg_encode_sec": null,
+      "avg_decode_sec": null,
+      "avg_final_decode_sec": 0.0,
+      "avg_trans_sec": 0.0004,
+      "avg_output_tokens_per_commit": 7,
+      "commit_stats": {
+        "counts": {
+          "vad": 0,
+          "seg": 0,
+          "dot": 1,
+          "finish": 1,
+          "always": 0
+        },
+        "total": 2,
+        "ratios": {
+          "vad": 0.0,
+          "seg": 0.0,
+          "dot": 0.5,
+          "finish": 0.5,
+          "always": 0.0
+        }
+      }
+    }
+  },
+  "raw_results": [
+    {
+      "file_id": "1688-142285-0055",
+      "speaker_id": "1688",
+      "audio_path": "evaluation/LibriSpeech/LibriSpeech/test-other/1688/142285/1688-142285-0055.flac",
+      "reference": "GASPED BESSY AT LAST",
+      "hypothesis": "Gasped Bessy at last.",
+      "hyp_commit": "Gasped Bessy at last. <dot>",
+      "duration": 2.39,
+      "total_time": 9.641671334858984,
+      "first_token_latency": 9.641670966986567,
+      "model_runtime": 7.251671334858983,
+      "target_lang": "",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "Gasped Bessy at last.",
+          "translation": "",
+          "commit_reason": "dot",
+          "output_token_count": 4,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 8.19,
+          "seg_audio_sec": null,
+          "fsl_sec": 1.4484,
+          "fsl_normalized_sec": 1.4484,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0008,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 1.2162,
+              "chunk_decode_sec": 1.2161,
+              "chunk_transcribe_start_elapsed": 2.0035,
+              "chunk_decode_start_elapsed": 2.0036
+            },
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.19,
+              "encode_sec": 1.5241,
+              "chunk_decode_sec": 1.5238,
+              "chunk_transcribe_start_elapsed": 4.1959,
+              "chunk_decode_start_elapsed": 4.1962
+            },
+            {
+              "chunk_id": 2,
+              "audio_pos_sec": 6.19,
+              "encode_sec": 1.4233,
+              "chunk_decode_sec": 1.4226,
+              "chunk_transcribe_start_elapsed": 6.1971,
+              "chunk_decode_start_elapsed": 6.1977
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 9.641672838944942
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 1,
+        "avg_fsl_sec": 1.4484,
+        "avg_fsl_normalized_sec": 1.4484,
+        "avg_encode_sec": null,
+        "avg_decode_sec": null,
+        "avg_final_decode_sec": 0.0,
+        "avg_trans_sec": 0.0008
+      }
+    },
+    {
+      "file_id": "1688-142285-0085",
+      "speaker_id": "1688",
+      "audio_path": "evaluation/LibriSpeech/LibriSpeech/test-other/1688/142285/1688-142285-0085.flac",
+      "reference": "VERY GOOD BUT WE MUST FIRST CATCH OUR HOUSE MOTHER",
+      "hypothesis": "Very good, but we must first catch our house mother.",
+      "hyp_commit": "Very good, but we must first catch our house mother. <finish>",
+      "duration": 3.98,
+      "total_time": 11.99244038015604,
+      "first_token_latency": 11.992440108209848,
+      "model_runtime": 8.01244038015604,
+      "target_lang": "",
+      "segment_metrics": [
+        {
+          "segment_id": 1,
+          "text": "Very good, but we must first catch our house mother.",
+          "translation": "",
+          "commit_reason": "finish",
+          "output_token_count": 10,
+          "audio_start_sec": 0.0,
+          "audio_end_sec": 11.979999999999992,
+          "seg_audio_sec": null,
+          "fsl_sec": 0.0,
+          "fsl_normalized_sec": 0.0,
+          "encode_sec": null,
+          "decode_sec": null,
+          "final_decode_sec": 0.0,
+          "trans_sec": 0.0,
+          "chunk_encode_log": [
+            {
+              "chunk_id": 0,
+              "audio_pos_sec": 2.0,
+              "encode_sec": 1.1607,
+              "chunk_decode_sec": 1.1606,
+              "chunk_transcribe_start_elapsed": 2.0061,
+              "chunk_decode_start_elapsed": 2.0063
+            },
+            {
+              "chunk_id": 1,
+              "audio_pos_sec": 4.18,
+              "encode_sec": 1.7291,
+              "chunk_decode_sec": 1.7288,
+              "chunk_transcribe_start_elapsed": 4.1855,
+              "chunk_decode_start_elapsed": 4.1858
+            },
+            {
+              "chunk_id": 2,
+              "audio_pos_sec": 6.18,
+              "encode_sec": 1.6689,
+              "chunk_decode_sec": 1.6683,
+              "chunk_transcribe_start_elapsed": 6.1868,
+              "chunk_decode_start_elapsed": 6.1874
+            },
+            {
+              "chunk_id": 3,
+              "audio_pos_sec": 8.18,
+              "encode_sec": 1.744,
+              "chunk_decode_sec": 1.7434,
+              "chunk_transcribe_start_elapsed": 8.1852,
+              "chunk_decode_start_elapsed": 8.1858
+            },
+            {
+              "chunk_id": 4,
+              "audio_pos_sec": 10.18,
+              "encode_sec": 1.7464,
+              "chunk_decode_sec": 1.7458,
+              "chunk_transcribe_start_elapsed": 10.1852,
+              "chunk_decode_start_elapsed": 10.1858
+            }
+          ],
+          "slotAudioStartSec": 0.0,
+          "vad_trigger_sec": null,
+          "prevSlotSpeechEndSec": null,
+          "client_final_received_elapsed_sec": 11.992442508228123
+        }
+      ],
+      "segment_metrics_summary": {
+        "num_segments": 1,
+        "avg_fsl_sec": 0.0,
+        "avg_fsl_normalized_sec": 0.0,
+        "avg_encode_sec": null,
+        "avg_decode_sec": null,
+        "avg_final_decode_sec": 0.0,
+        "avg_trans_sec": 0.0
+      }
+    }
+  ]
+}
