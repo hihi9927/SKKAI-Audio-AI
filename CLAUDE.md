@@ -122,7 +122,9 @@ Language color scheme: Purple `#8B5CF6` (Korean), Blue `#3B82F6` (English/Tibeta
   "commitReason": "seg"
 }
 ```
-`commitReason` values: `"seg"` (model SEG token), `"vad"` (silence detected), `"finish"` (stream ended), `"dot"` (sentence-ending punctuation, optional).
+`commitReason` values: `"seg"` (model SEG token), `"vad"` (silence detected), `"finish"` (stream ended), `"dot"` (sentence-ending punctuation, optional), `"always"` (chunk committed as-is, no trigger — emitted only under `--always-commit` / mode2).
+
+The `--always-commit` server flag (config field `always_commit`) bypasses SEG/dot triggers and commits each newly decoded chunk directly; the eval server exposes it in `hello.serverConfig` alongside `enable_dot_commit`.
 
 The evaluation server (`streaming_websocket_server_fsl.py`) extends `final` with timing fields (`segmentId`, `audioStartSec`, `audioEndSec`, `fsl_sec`, `asr_inference_sec`, etc.) — these are for benchmarking only and not consumed by the mobile app.
 
