@@ -150,7 +150,7 @@ def merge_client_results(client_metric_jsons: list[Path], result_dir: Path) -> N
 
     # 전체 통계 계산
     fsl_vals, asr_vals, tl_vals, tok_vals = [], [], [], []
-    commit_counts: dict[str, int] = {"vad": 0, "seg": 0, "dot": 0, "finish": 0}
+    commit_counts: dict[str, int] = {"vad": 0, "seg": 0, "dot": 0, "finish": 0, "always": 0}
 
     for r in all_raw:
         for seg in r.get("segment_metrics", []):

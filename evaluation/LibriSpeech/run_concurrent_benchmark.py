@@ -150,7 +150,7 @@ def merge_results(client_jsons: list[Path], merged_path: Path) -> None:
 
     # segment_metrics에서 지표 추출
     fsl_vals, asr_vals, tl_vals, tok_vals = [], [], [], []
-    commit_counts: dict[str, int] = {"vad": 0, "seg": 0, "dot": 0, "finish": 0}
+    commit_counts: dict[str, int] = {"vad": 0, "seg": 0, "dot": 0, "finish": 0, "always": 0}
 
     for r in all_raw:
         for seg in r.get("segment_metrics", []):

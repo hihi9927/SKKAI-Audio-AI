@@ -284,6 +284,8 @@ def normalize_commit_reason(raw_reason):
         return 'dot'
     if reason == 'finish':
         return 'finish'
+    if reason == 'always':
+        return 'always'
     return 'seg'
 
 
@@ -759,7 +761,7 @@ def build_summary_payload(results, policy):
         return values
 
     def _collect_commit_stats(rows):
-        counts = {'vad': 0, 'seg': 0, 'dot': 0, 'finish': 0}
+        counts = {'vad': 0, 'seg': 0, 'dot': 0, 'finish': 0, 'always': 0}
         for row in rows:
             for segment in row.get('segment_metrics') or []:
                 reason = segment.get('commit_reason', 'seg')

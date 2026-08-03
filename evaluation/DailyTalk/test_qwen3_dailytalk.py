@@ -319,7 +319,11 @@ def load_processed_files(output_file, policy):
 
 def normalize_commit_reason(raw_reason):
     reason = str(raw_reason or '').lower()
-    return 'vad' if reason.startswith('vad') else 'SEG'
+    if reason.startswith('vad'):
+        return 'vad'
+    if reason == 'always':
+        return 'always'
+    return 'SEG'
 
 
 def parse_hms_timestamp(value):
