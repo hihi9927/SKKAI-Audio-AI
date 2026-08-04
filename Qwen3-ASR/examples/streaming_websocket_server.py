@@ -685,6 +685,7 @@ class Qwen3ASRStreamingHandler:
             "committed_seg_count": 0,
             "audio_anchor_sec": self.current_time,
             "committed_asr_set": set(),  # 세그먼트 내 커밋된 문장 전체 (공백 정규화 후)
+            "committed_fuzzy_keys": [],  # 위와 같은 문장의 유사도 비교용 키 (_fuzzy_key)
         }
 
     def _reset_stream_slot(self, slot_key: str, seed_text: str = "", context: str = ""):
@@ -1132,6 +1133,12 @@ class Qwen3ASRStreamingHandler:
             # 미커밋 누적분은 스트리밍 커밋 경로의 rep-dedup/cross-dedup을 거치지 않고
             # 여기서 통째로 나간다. 반복 루프가 그대로 실리지 않도록 flush 직전에 접는다.
             uncommitted_display = self._collapse_repetition(uncommitted_display)
+            # 이미 커밋된 문장의 재방출도 여기서 걸러야 한다. flush는 committed_asr_set을
+            # 보지 않으므로, dot으로 확정·커밋된 문장을 모델이 철자만 바꿔 다시 내놓으면
+            # finish flush가 그대로 또 커밋한다 (실측: 3538-142836-0017, 7105-2340-0005 등
+            # dot→finish로 같은 문장이 두 번). _process_slot_updates의 cross-dedup과
+            # 같은 판정을 문장 단위로 적용한다.
+            uncommitted_display = self._drop_already_committed(slot, uncommitted_display, slot_key)
             if not uncommitted_display:
                 return
             if not force and len(uncommitted_display) < 2:
@@ -1246,6 +1253,70 @@ class Qwen3ASRStreamingHandler:
                 out.append(key)
             remaining = remaining[m.end():]
         return tuple(out)
+
+    # 유사도 dedup 파라미터. 실측 튜닝값 (mode3 full 2939파일):
+    #   minw=6/thr=0.85가 WER 5.81 → 4.25%로 최적. thr을 0.95로 올리면 철자 변형을
+    #   놓쳐 4.50%, minw를 10으로 올리면 짧은 재방출을 놓쳐 4.39%.
+    _FUZZY_DEDUP_MIN_WORDS = 6
+    _FUZZY_DEDUP_RATIO = 0.85
+
+    @staticmethod
+    def _fuzzy_key(text: str) -> str:
+        """유사도 비교용 키 — 대소문자·구두점을 전부 버리고 단어 시퀀스만 남긴다."""
+        return ' '.join(re.sub(r"[^a-z' ]", ' ', text.lower()).split())
+
+    def _cross_dup_match(self, slot: dict, sentence_display: str) -> Optional[str]:
+        """이미 커밋된 문장의 재방출이면 매칭된 기존 문장을, 아니면 None을 반환.
+
+        기존 cross-dedup은 정규화 후 완전 일치만 봤다. 그런데 dot commit이 문장을
+        확정·커밋한 뒤 모델이 재디코딩하면서 **고유명사 철자만 바꿔** 같은 문장을 다시
+        내놓는 일이 잦다 (실측: 'Alfred Fichencourt' → 'Fychencote' → 'Pichenot',
+        'Beresheba Fristoe' → 'Bertha' → 'Brusheba'). 경계 키가 달라져 완전 일치로는
+        못 걸러내고 새 문장으로 또 커밋된다 — mode3 삽입 1224단어 중 911단어(74%)가
+        이 재방출이었고, WER로 1.56%p였다.
+
+        짧은 문장은 완전 일치만 본다. 'He said yes.'와 'He said no.'처럼 실제로 다른
+        짧은 문장이 유사도만으로는 구분되지 않기 때문.
+        """
+        key = self._fuzzy_key(sentence_display)
+        if not key:
+            return None
+        if len(key.split()) < self._FUZZY_DEDUP_MIN_WORDS:
+            return None
+        for prev in slot.get("committed_fuzzy_keys", ()):
+            if difflib.SequenceMatcher(None, key, prev).ratio() >= self._FUZZY_DEDUP_RATIO:
+                return prev
+        return None
+
+    def _drop_already_committed(self, slot: dict, text: str, slot_key=None) -> str:
+        """`text`에서 이미 커밋된 문장을 제거한다. flush 경로 전용.
+
+        커밋 루프(_process_slot_updates)와 달리 flush는 미커밋 누적분을 통째로 내보내므로
+        cross-dedup 판정을 거치지 않는다. 여기서 문장 단위로 같은 판정을 적용한다.
+        `always_commit`(모드2)은 커밋 단위가 문장이 아니라 청크라 적용하지 않는다.
+        """
+        if self.always_commit or not text:
+            return text
+        committed = slot.get("committed_asr_set", set())
+        _asr_key = lambda s: ' '.join(s.split()).rstrip('.,!?;:。？！').strip().lower()
+        kept = []
+        for sent in re.findall(r'[^.!?。！？]*[.!?。！？]+\s*|[^.!?。！？]+$', text):
+            disp = sent.strip()
+            if not disp:
+                continue
+            prev = None
+            if _asr_key(disp) in committed:
+                prev = _asr_key(disp)
+            else:
+                prev = self._cross_dup_match(slot, disp)
+            if prev is not None:
+                self.log.info(
+                    f"[COMMIT-SKIP] reason=flush-cross-dedup slot={slot_key} "
+                    f"text={disp!r} prev={prev!r}"
+                )
+                continue
+            kept.append(sent)
+        return "".join(kept).strip()
 
     @classmethod
     def _collapse_repetition(cls, text: str, max_repeats: int = 2) -> str:
@@ -1525,6 +1596,14 @@ class Qwen3ASRStreamingHandler:
                             f"[COMMIT-SKIP] reason=cross-dedup slot={slot_key} span={_audio_span:.2f}s text={sentence_display!r}"
                         )
                         continue
+                    _fuzzy_prev = (None if self.always_commit
+                                   else self._cross_dup_match(slot, sentence_display))
+                    if _fuzzy_prev is not None:
+                        self.log.info(
+                            f"[COMMIT-SKIP] reason=cross-dedup-fuzzy slot={slot_key} "
+                            f"span={_audio_span:.2f}s text={sentence_display!r} prev={_fuzzy_prev!r}"
+                        )
+                        continue
                     sent_core = sentence_display.rstrip(_PUNCT)
                     tail_ns = latest_ns[pos:].lstrip()
                     lead = len(latest_ns[pos:]) - len(tail_ns)
@@ -1542,6 +1621,8 @@ class Qwen3ASRStreamingHandler:
                     slot["committed_len"] = len(latest_text)
                     slot["audio_anchor_sec"] = self.current_time
                     slot["committed_asr_set"].update(_asr_key(t) for t, _ in committed_items)
+                    slot["committed_fuzzy_keys"].extend(
+                        k for k in (self._fuzzy_key(t) for t, _ in committed_items) if k)
             else:
                 cursor = self._committed_cursor(
                     latest_text,
@@ -1567,6 +1648,14 @@ class Qwen3ASRStreamingHandler:
                             f"[COMMIT-SKIP] reason=cross-dedup slot={slot_key} span={_audio_span:.2f}s text={sentence_display!r}"
                         )
                         continue
+                    _fuzzy_prev = (None if self.always_commit
+                                   else self._cross_dup_match(slot, sentence_display))
+                    if _fuzzy_prev is not None:
+                        self.log.info(
+                            f"[COMMIT-SKIP] reason=cross-dedup-fuzzy slot={slot_key} "
+                            f"span={_audio_span:.2f}s text={sentence_display!r} prev={_fuzzy_prev!r}"
+                        )
+                        continue
                     stripped_tail = tail.lstrip()
                     leading_ws = len(tail) - len(stripped_tail)
                     # <SEG> 토큰이 문장 사이에 있을 때 건너뜀
@@ -1587,6 +1676,8 @@ class Qwen3ASRStreamingHandler:
                     slot["committed_seg_count"] += sum(1 for _, tr in committed_items if tr == "seg")
                     slot["audio_anchor_sec"] = self.current_time
                     slot["committed_asr_set"].update(_asr_key(t) for t, _ in committed_items)
+                    slot["committed_fuzzy_keys"].extend(
+                        k for k in (self._fuzzy_key(t) for t, _ in committed_items) if k)
 
         if not committed_items:
             return None
