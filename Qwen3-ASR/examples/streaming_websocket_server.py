@@ -178,6 +178,12 @@ class StreamingConfig:
     # 규칙 3(정체 확정)이 발동하기까지 필요한 "가설이 자라지 않은" 연속 청크 수.
     # 0이면 규칙 3 비활성화. 오디오 에너지를 보지 않으므로 VAD 의존성은 없다.
     dot_commit_stall_chunks: int = 1
+    # 한 번의 추출에서 같은 문장이 연속으로 나올 때 뒤엣것을 버린다. 모델이 반복 루프에
+    # 빠지는 경우(ko-silence 파인튜닝 실측 8,047회)를 막는 방어라 프로덕션에선 켜 둔다.
+    # 다만 루프가 없는 모델에선 정상 발화를 깎는다 — baseline 27건 전부 오탐이었고
+    # ('Ha!' 25 / 'Yes.' 1 / 'I hate him.' 1) 낭독체의 실제 반복이었다. 게다가 스킵이
+    # 커서 갭을 만들어 뒤 문장이 finish로 밀리는 부작용까지 있었다. 평가에선 끌 수 있게 둔다.
+    rep_dedup: bool = True
 
 
     # 언어 제한 설정
@@ -580,6 +586,7 @@ class Qwen3ASRStreamingHandler:
         self.always_commit: bool = config.always_commit
         self.dot_commit_confirm: bool = config.dot_commit_confirm
         self.dot_commit_stall_chunks: int = config.dot_commit_stall_chunks
+        self.rep_dedup: bool = config.rep_dedup
 
         # VAD / stream alignment
         self.sample_cursor = 0
@@ -1171,9 +1178,47 @@ class Qwen3ASRStreamingHandler:
 
         # 2단계: lock 해제 후 I/O (교정 + 번역) 수행 → 다른 슬롯 flush 비차단
         audio_end_sec = self._get_flush_audio_end_sec()
-        uncommitted_display, translation, effective_detected, extra = await self._correct_and_translate(
-            uncommitted_display, current_lang, audio_end_sec
-        )
+
+        # 누적분에 문장이 여러 개면 문장 단위로 쪼개 커밋한다. 원래는 통째로 한 커밋에
+        # 담아서 21초 발화가 한 덩어리로 나갔다. dot 확정 게이트(규칙 4)로 상당수는
+        # 풀렸지만, 약어(Mr./St./S. J.) 때문에 DOT_COMMIT_BOUNDARY_RE가 경계를 못 잡는
+        # 문장은 여전히 통째로 여기 온다. 커밋 사유는 finish로 남되 덩어리만 나눈다.
+        # 번역도 문장 단위로 돌아 품질에 유리하다.
+        # 모드2는 커밋 단위가 문장이 아니라 청크라 제외한다.
+        # 분할은 반드시 DOT_COMMIT_BOUNDARY_RE로 한다. 순진하게 [.!?]로 자르면 약어에서
+        # 깨진다(실측: 'returned Mr.' + 'Lilburn.'). 이 정규식은 Mr./Mrs./Dr./St./Jr./Sr./
+        # vs./No.를 경계에서 제외하므로 dot 커밋 경로와 같은 기준이 유지된다.
+        _parts = [uncommitted_display]
+        if not self.always_commit:
+            _split, _rem = [], uncommitted_display
+            while True:
+                _m = DOT_COMMIT_BOUNDARY_RE.search(_rem)
+                if not _m:
+                    break
+                _s = _rem[:_m.end()].strip()
+                if _s:
+                    _split.append(_s)
+                _rem = _rem[_m.end():]
+            if _rem.strip():
+                _split.append(_rem.strip())
+            if len(_split) > 1:
+                _parts = _split
+                self.log.info(
+                    f"[FLUSH-SPLIT] slot={slot_key} {len(_parts)}문장으로 분할 "
+                    f"text={uncommitted_display[:80]!r}"
+                )
+
+        _emits = []
+        for _part in _parts:
+            _text, _tr, _lang, _extra = await self._correct_and_translate(
+                _part, current_lang, audio_end_sec
+            )
+            if _text:
+                _emits.append((_text, _tr, _lang, _extra))
+        if not _emits:
+            return
+        # 커서/로그는 기존 코드가 단일 값을 쓰므로 대표값을 유지한다.
+        uncommitted_display, translation, effective_detected, extra = _emits[-1]
         final_lang = effective_detected
         if reason.startswith("vad"):
             commit_reason = "vad"
@@ -1192,19 +1237,20 @@ class Qwen3ASRStreamingHandler:
                     f"committed_len {snapshot_committed_len}→{slot['committed_len']}"
                 )
                 return
-            self.log.info(
-                f"[TRANS-VAD] slot={slot_key or self.active_slot} reason={commit_reason} lang={final_lang} "
-                f"original='{uncommitted_display}' translation='{translation}'"
-            )
-            await self._emit_final_payload(
-                slot_key=slot_key or self.active_slot,
-                original=uncommitted_display,
-                translation=translation,
-                language=final_lang,
-                reason=commit_reason,
-                audio_end_sec=audio_end_sec,
-                extra=extra,
-            )
+            for _text, _tr, _lang, _extra in _emits:
+                self.log.info(
+                    f"[TRANS-VAD] slot={slot_key or self.active_slot} reason={commit_reason} lang={_lang} "
+                    f"original='{_text}' translation='{_tr}'"
+                )
+                await self._emit_final_payload(
+                    slot_key=slot_key or self.active_slot,
+                    original=_text,
+                    translation=_tr,
+                    language=_lang,
+                    reason=commit_reason,
+                    audio_end_sec=audio_end_sec,
+                    extra=_extra,
+                )
             slot["committed_len"] = len(current_text)
             slot["committed_prefix"] = current_text
             slot["committed_display"] = re.sub(r'\s+', ' ', current_text.replace("<SEG>", "")).strip()
@@ -1257,6 +1303,9 @@ class Qwen3ASRStreamingHandler:
     # 유사도 dedup 파라미터. 실측 튜닝값 (mode3 full 2939파일):
     #   minw=6/thr=0.85가 WER 5.81 → 4.25%로 최적. thr을 0.95로 올리면 철자 변형을
     #   놓쳐 4.50%, minw를 10으로 올리면 짧은 재방출을 놓쳐 4.39%.
+    # 연속 반복 허용 상한. _collapse_repetition의 max_repeats와 같은 값·같은 근거
+    # (실제 발화에도 같은 문장 2회 반복이 있다).
+    _REP_DEDUP_MAX_REPEATS = 2
     _FUZZY_DEDUP_MIN_WORDS = 6
     _FUZZY_DEDUP_RATIO = 0.85
 
@@ -1264,6 +1313,32 @@ class Qwen3ASRStreamingHandler:
     def _fuzzy_key(text: str) -> str:
         """유사도 비교용 키 — 대소문자·구두점을 전부 버리고 단어 시퀀스만 남긴다."""
         return ' '.join(re.sub(r"[^a-z' ]", ' ', text.lower()).split())
+
+    def _strip_committed_prefix(self, slot: dict, sentence_display: str) -> str:
+        """이미 커밋된 문장을 접두사로 포함하면 그 부분만 잘라낸다.
+
+        재디코딩이 앞 문장은 그대로 두고 뒤를 이어붙여 다시 내놓는 경우가 있다.
+        실측 6432-63722-0035:
+            커밋됨 : 'Before the big wind in Ireland, ... his Irish compatriot.'
+            재방출 : 'Before the big wind in Ireland, ... his Irish compatriot,
+                      slightly laughed the Colonel.'
+        길이가 달라 _cross_dup_match(유사도)를 빠져나가고, 그렇다고 통째로 버리면
+        뒤의 새 내용('slightly laughed the Colonel')까지 잃는다. 겹치는 앞부분만 잘라
+        뒤만 커밋한다. 규칙 4로 유예가 풀리면서 이 케이스가 늘어 도입했다.
+        """
+        if self.always_commit or not sentence_display:
+            return sentence_display
+        words = sentence_display.split()
+        norm = [re.sub(r"[^a-z']", '', w.lower()) for w in words]
+        for prev in slot.get("committed_fuzzy_keys", ()):
+            pn = prev.split()
+            # 남는 게 없으면 접두사가 아니라 완전 중복 — 기존 dedup이 처리한다
+            if not pn or len(norm) <= len(pn):
+                continue
+            head = ' '.join(norm[:len(pn)])
+            if difflib.SequenceMatcher(None, head, prev).ratio() >= self._FUZZY_DEDUP_RATIO:
+                return ' '.join(words[len(pn):]).lstrip(' ,.;:!?')
+        return sentence_display
 
     def _cross_dup_match(self, slot: dict, sentence_display: str) -> Optional[str]:
         """이미 커밋된 문장의 재방출이면 매칭된 기존 문장을, 아니면 None을 반환.
@@ -1328,7 +1403,8 @@ class Qwen3ASRStreamingHandler:
 
     def _commit_skip_reason(self, slot: dict, sentence_display: str, *, stage: str,
                             trigger: Optional[str] = None,
-                            batch_last: Optional[str] = None) -> Optional[str]:
+                            batch_last: Optional[str] = None,
+                            batch_repeat: int = 0) -> Optional[str]:
         """`sentence_display`를 커밋하면 안 되는 이유를 반환. 커밋해도 되면 None.
 
         가드를 새로 추가할 때는 여기에만 넣고 `_GUARD_STAGES`에 적용 시점을 적는다.
@@ -1345,7 +1421,12 @@ class Qwen3ASRStreamingHandler:
             return None
 
         # 한 번의 추출/flush 안에서 같은 문장이 연달아 나온 경우
-        if _applies("rep-dedup") and batch_last is not None and sentence_display == batch_last:
+        # 상한형: 연속 반복을 _REP_DEDUP_MAX_REPEATS회까지는 통과시킨다.
+        # 예전엔 두 번째부터 전부 버렸는데 낭독체의 실제 반복까지 깎였다
+        # (baseline 27건 전부 오탐 — 'Ha!' 25 / 'Yes.' 1 / 'I hate him.' 1).
+        if (_applies("rep-dedup") and self.rep_dedup
+                and batch_last is not None and sentence_display == batch_last
+                and batch_repeat >= self._REP_DEDUP_MAX_REPEATS):
             return "rep-dedup"
 
         # SEG 리셋 직후: 직전 커밋의 끝 단어가 새 문장 첫 단어로 다시 나옴.
@@ -1403,6 +1484,16 @@ class Qwen3ASRStreamingHandler:
             if reason:
                 self.log.info(f"[COMMIT-SKIP] reason={reason} stage=flush slot={slot_key} text={disp!r}")
                 continue
+            _trimmed = self._strip_committed_prefix(slot, disp)
+            if not _trimmed:
+                continue
+            if _trimmed != disp:
+                self.log.info(
+                    f"[COMMIT-TRIM] reason=committed-prefix stage=flush slot={slot_key} "
+                    f"kept={_trimmed!r}"
+                )
+                sent = _trimmed + " "
+                disp = _trimmed
             kept.append(sent)
             batch_last = disp
         return "".join(kept).strip()
@@ -1472,7 +1563,8 @@ class Qwen3ASRStreamingHandler:
         return result.strip()
 
     async def _process_slot_updates(self, slot_key: str, force_reason: Optional[str] = None,
-                                    chunk_end: bool = False) -> Optional[str]:
+                                    chunk_end: bool = False,
+                                    final: bool = False) -> Optional[str]:
         """
         chunk_end:
             True면 한 청크의 디코딩이 완전히 끝난 뒤 호출된 것.
@@ -1506,6 +1598,7 @@ class Qwen3ASRStreamingHandler:
         sentences_to_commit = []
         remaining = uncommitted
         _last_extracted_display = None  # 한 번의 호출 내 연속 중복 억제용
+        _last_extracted_repeat = 0      # 위 문장이 연속으로 몇 번 커밋됐는지
 
         # ── 규칙 3(정체 확정)용 카운터 ────────────────────────────────────
         # 오디오는 계속 누적되는데 미커밋 가설의 토큰 수가 자라지 않으면 발화가 끝난 것.
@@ -1563,6 +1656,35 @@ class Qwen3ASRStreamingHandler:
                 else:
                     match = re.search(r"<SEG>", remaining)
                 if not match:
+                    if not (final and remaining.strip()):
+                        break
+                    # 스트림 종료인데 경계를 못 찾은 잔여. 약어(No./S. J.)나 구두점 없는
+                    # 짧은 발화('si')가 여기 온다. 오디오가 더 오지 않으므로 이 잔여는
+                    # 그 자체로 완결된 단위다 — 경계가 없다고 flush로 흘려보낼 이유가 없다.
+                    trigger = "dot"
+                    after = ""
+                    sentence = remaining.strip()
+                    self.log.info(f"[DOT-CONFIRM] rule=final-residual slot={slot_key} text={sentence!r}")
+                    sentence_display_check = sentence.replace("<SEG>", "").strip()
+                    if sentence_display_check:
+                        _skip = self._commit_skip_reason(
+                            slot, sentence_display_check, stage="extract",
+                            trigger=trigger, batch_last=_last_extracted_display,
+                            batch_repeat=_last_extracted_repeat,
+                        )
+                        if _skip:
+                            self.log.info(
+                                f"[COMMIT-SKIP] reason={_skip} stage=extract slot={slot_key} "
+                                f"text={sentence_display_check!r}"
+                            )
+                        else:
+                            sentences_to_commit.append((sentence, trigger))
+                            slot.pop("pending_dot_text", None)
+                            slot.pop("pending_dot_accum", None)
+                            _last_extracted_repeat = (
+                                _last_extracted_repeat + 1
+                                if sentence_display_check == _last_extracted_display else 1)
+                            _last_extracted_display = sentence_display_check
                     break
                 matched_text = match.group()
                 trigger = "seg" if "<SEG>" in matched_text else "dot"
@@ -1593,6 +1715,24 @@ class Qwen3ASRStreamingHandler:
                         slot.pop("pending_dot_text", None)
                         slot.pop("pending_dot_accum", None)
                         self.log.info(f"[DOT-CONFIRM] rule=stable slot={slot_key} text={sentence!r}")
+                    elif final:
+                        # 규칙 4: 스트림 종료 — 오디오가 더 오지 않는다는 건 발화가 끝났다는
+                        # 가장 강한 증거이므로 더 유예할 이유가 없다.
+                        # 규칙 2/3은 "새 오디오를 더 듣고 재디코딩했는데도 같더라"를 조건으로 거는데
+                        # (_accum_now > _prev_accum / _accum_c > stall_accum), finish 시점엔 오디오가
+                        # 늘지 않으므로 원천적으로 불성립한다. 그래서 마지막 문장이 확정되지 못한 채
+                        # flush로 빠져 발화 전체가 finish 한 덩어리로 나갔다(실측: 21초 발화가 26.8초에
+                        # 통째로).
+                        #
+                        # 규칙 3과 달리 마지막 경계로 한정하지 않고 **보류된 모든 경계**를 확정한다.
+                        # 커밋 루프는 앞 경계가 미확정이면 거기서 break라 뒤 경계까지 가지 못한다.
+                        # 실측: "What's that there? said Dicky."에서 '?'가 롤백 창 안이라 규칙 1이
+                        # 불발하고, 뒤에 'said Dicky.'가 있어 마지막 경계도 아니라 규칙 4에서도
+                        # 걸러졌다 → 발화 전체가 finish. 스트림이 끝난 뒤엔 어떤 경계도 더 수정될
+                        # 일이 없으므로 롤백 창 개념 자체가 무의미하다.
+                        slot.pop("pending_dot_text", None)
+                        slot.pop("pending_dot_accum", None)
+                        self.log.info(f"[DOT-CONFIRM] rule=final slot={slot_key} text={sentence!r}")
                     elif _stall_hit and not after.strip():
                         # 규칙 3: 오디오는 더 들어왔는데 가설이 자라지 않음 → 발화 종료로 판정.
                         # 규칙 2가 놓치는 "롤백 창 안 문구 수정" 케이스를 흡수한다.
@@ -1626,6 +1766,7 @@ class Qwen3ASRStreamingHandler:
                 _skip = self._commit_skip_reason(
                     slot, sentence_display_check, stage="extract",
                     trigger=trigger, batch_last=_last_extracted_display,
+                    batch_repeat=_last_extracted_repeat,
                 )
                 if _skip:
                     self.log.info(
@@ -1636,6 +1777,9 @@ class Qwen3ASRStreamingHandler:
                     sentences_to_commit.append((sentence, trigger))
                     slot.pop("pending_dot_text", None)  # 커밋되면 보류 후보는 무효
                     slot.pop("pending_dot_accum", None)
+                    _last_extracted_repeat = (
+                        _last_extracted_repeat + 1
+                        if sentence_display_check == _last_extracted_display else 1)
                     _last_extracted_display = sentence_display_check
             remaining = after
 
@@ -1684,6 +1828,10 @@ class Qwen3ASRStreamingHandler:
                     while end < len(tail_ns) and tail_ns[end] in _PUNCT:
                         end += 1
                     pos += lead + end
+                    # 커서(pos)는 원문 기준으로 이미 전진시켰으므로 여기서 잘라도 안전하다
+                    sentence_display = self._strip_committed_prefix(slot, sentence_display)
+                    if not sentence_display:
+                        continue
                     committed_items.append((sentence_display, trigger_reason))
                 if committed_items:
                     slot["committed_display"] = latest_ns[:pos].strip()
@@ -1719,6 +1867,22 @@ class Qwen3ASRStreamingHandler:
                             f"[COMMIT-SKIP] reason={_skip} stage=commit slot={slot_key} "
                             f"span={_audio_span:.2f}s text={sentence_display!r}"
                         )
+                        # 스킵은 "안 내보낸다"이지 "원문에서 소비 안 했다"가 아니다.
+                        # 커서를 그대로 두면 다음 문장의 startswith 검사가 실패해 break로
+                        # 빠지고, 뒤 문장 전부가 미커밋으로 남아 finish flush로 흘러간다
+                        # (실측 1998-29455-0019: 중복 1건이 뒤의 'You are.' 2문장을 인질로
+                        # 잡아 finish행). 스킵한 문장만큼 커서를 전진시킨다.
+                        _st = tail.lstrip()
+                        _lw = len(tail) - len(_st)
+                        while _st.startswith("<SEG>"):
+                            _st = _st[len("<SEG>"):].lstrip()
+                            _lw = len(tail) - len(_st)
+                        if _st.startswith(sentence_raw):
+                            cursor += _lw + len(sentence_raw)
+                            tail = latest_text[cursor:]
+                        continue
+                    sentence_display = self._strip_committed_prefix(slot, sentence_display)
+                    if not sentence_display:
                         continue
                     stripped_tail = tail.lstrip()
                     leading_ws = len(tail) - len(stripped_tail)
@@ -1727,6 +1891,10 @@ class Qwen3ASRStreamingHandler:
                         stripped_tail = stripped_tail[len("<SEG>"):].lstrip()
                         leading_ws = len(tail) - len(stripped_tail)
                     if not stripped_tail.startswith(sentence_raw):
+                        # 커서가 어긋나면 포기한다. tail.find()로 재동기화도 해봤으나,
+                        # 같은 문구가 반복되면('Ha!' 3연속) 엉뚱한 occurrence로 점프해
+                        # 커밋 순서가 뒤집혔다. 커서 갭의 주원인이던 rep-dedup을 상한형으로
+                        # 바꾼 뒤로는 재동기화가 한 번도 발동하지 않아(실측 0회) 제거했다.
                         break
                     cursor += leading_ws + len(sentence_raw)
                     tail = latest_text[cursor:]
@@ -1927,9 +2095,25 @@ class Qwen3ASRStreamingHandler:
         # 스트림 종료(finish/stop) 시 VAD가 커밋하지 않은 남은 텍스트를 마저 커밋한다.
         # 짧은 발화 등으로 VAD speech_start가 안 잡히면 디코드된 텍스트가 커밋 없이 버려지는데,
         # finish 시점에 flush해 복구한다(정상 클립은 이미 커밋돼 uncommitted가 없어 no-op).
+        #
+        # flush로 가기 전에 dot 확정 판정을 한 번 더 태운다(규칙 4). flush는 남은 걸 통째로
+        # 한 커밋에 담지만, 확정 게이트를 태우면 문장 단위로 쪼개져 나간다. 커밋 시점은
+        # 어차피 같은 순간이라 지연 손해는 없고, 클라이언트/번역이 문장 단위로 받는다.
+        if self.enable_dot_commit and self.dot_commit_confirm:
+            await self._process_slot_updates(self.active_slot, chunk_end=True, final=True)
+            # 규칙 4로 만들어진 커밋을 여기서 반드시 배출해야 한다. dot 커밋을 지연 전송하는
+            # 서브클래스(평가 서버)는 generate 완료 시점에 큐를 비우는데, 규칙 4는 finish
+            # 시점에 커밋하므로 뒤따르는 generate가 없어 비울 사람이 없다. 그대로 두면
+            # 확정·번역까지 다 해놓고 final 메시지를 안 보내 전사가 통째로 빈다
+            # (실측: 6128-63241-0006 등 6건이 빈 전사).
+            await self._drain_deferred_commits()
         await self.flush_uncommitted(force=True, reason="finish", slot_key=self.active_slot)
 
     # ── 서브클래스 훅 ──────────────────────────────────────────────────────────
+
+    async def _drain_deferred_commits(self):
+        """지연 전송 큐가 있으면 비운다. base는 dot 커밋을 즉시 보내므로 no-op."""
+        return
 
     async def _translate(
         self, text: str, target_lang: str, audio_end_sec: Optional[float] = None  # noqa: ARG002
@@ -2576,6 +2760,12 @@ def parse_args():
         help="dot commit이 켜져 있어도 확정 게이트는 끈다 (감지 즉시 커밋하던 예전 동작)",
     )
     parser.add_argument(
+        "--no-rep-dedup", dest="rep_dedup", action="store_false", default=True,
+        help="같은 문장 연속 반복 억제(rep-dedup)를 끈다. 반복 루프에 빠지는 모델에는 "
+             "필요하지만, 루프가 없는 모델에선 낭독체의 실제 반복('Ha! Ha! Ha!')을 깎는다. "
+             "(기본: 켜짐)",
+    )
+    parser.add_argument(
         "--dot-commit-stall-chunks", type=int, default=1,
         help="정체 확정(규칙 3): 오디오는 누적되는데 미커밋 가설 토큰 수가 이 청크 수만큼 "
              "연속으로 그대로면 발화 종료로 보고 커밋. 0이면 비활성화 (기본 1)",
@@ -2670,6 +2860,7 @@ def main():
         enable_dot_commit=args.enable_dot_commit,
         dot_commit_confirm=args.dot_commit_confirm,
         dot_commit_stall_chunks=args.dot_commit_stall_chunks,
+        rep_dedup=args.rep_dedup,
         always_commit=args.always_commit,
         restrict_languages=not args.no_restrict_languages,
         enable_correction=args.correction,

@@ -181,7 +181,8 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         await super()._asr_finish_streaming(slot_key)
         self._slot_final_decode_sec[key] = self._slot_final_decode_sec.get(key, 0.0) + (time.perf_counter() - t0)
 
-    async def _process_slot_updates(self, slot_key=None, force_reason=None, chunk_end=False):
+    async def _process_slot_updates(self, slot_key=None, force_reason=None, chunk_end=False,
+                                    final=False):
         key = slot_key if slot_key is not None else self.active_slot
         if key not in self._slot_seg_detected:
             # t0가 None이면 VAD/finish 경로 호출 (streaming_transcribe 밖) → 기록 금지
@@ -261,7 +262,8 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
                         "decode_start_elapsed_sec": None,
                     }
                     logger.info("[SEG-VAD] slot=%s audio_pos=%.3fs", key, audio_sec)
-        await super()._process_slot_updates(slot_key, force_reason=force_reason, chunk_end=chunk_end)
+        await super()._process_slot_updates(slot_key, force_reason=force_reason, chunk_end=chunk_end,
+                                            final=final)
 
     async def _translate_with_metadata(
         self,
@@ -601,10 +603,15 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
             )
             await self.send_message("final", **{k: v for k, v in payload.items() if k != "type"})
 
-    async def finish_streaming(self):
-        # 미전송 SEG deferred emit을 토큰 정보 없이 best-effort로 먼저 전송
+    async def _drain_deferred_commits(self):
+        # base의 규칙 4(finish 시점 dot 확정)가 만든 deferred emit을 배출한다.
+        # 이 시점엔 뒤따르는 generate가 없어 토큰 정보를 못 얻으므로 best-effort(0).
         if self._deferred_seg_emits:
             await self._flush_deferred_seg_emits(0)
+
+    async def finish_streaming(self):
+        # 미전송 SEG deferred emit을 토큰 정보 없이 best-effort로 먼저 전송
+        await self._drain_deferred_commits()
         self.pending_audio_end_sec = self.current_time
         await super().finish_streaming()
 
@@ -621,6 +628,7 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
                     "enforce_eager": self.config.enforce_eager,
                     "enable_dot_commit": self.config.enable_dot_commit,
                     "always_commit": self.config.always_commit,
+                    "rep_dedup": self.config.rep_dedup,
                     "no_vad": self.config.no_vad,
                     "enable_gpt_translation": self.config.enable_gpt_translation,
                     "translation_model": self.config.translation_model,
@@ -829,6 +837,7 @@ def main():
         enable_dot_commit=args.enable_dot_commit,
         dot_commit_confirm=args.dot_commit_confirm,
         dot_commit_stall_chunks=args.dot_commit_stall_chunks,
+        rep_dedup=args.rep_dedup,
         always_commit=args.always_commit,
         restrict_languages=not args.no_restrict_languages,
         enable_correction=args.correction,
