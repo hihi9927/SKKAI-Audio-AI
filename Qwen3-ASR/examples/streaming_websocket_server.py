@@ -1138,7 +1138,7 @@ class Qwen3ASRStreamingHandler:
             # finish flush가 그대로 또 커밋한다 (실측: 3538-142836-0017, 7105-2340-0005 등
             # dot→finish로 같은 문장이 두 번). _process_slot_updates의 cross-dedup과
             # 같은 판정을 문장 단위로 적용한다.
-            uncommitted_display = self._drop_already_committed(slot, uncommitted_display, slot_key)
+            uncommitted_display = self._apply_commit_guards(slot, uncommitted_display, slot_key)
             if not uncommitted_display:
                 return
             if not force and len(uncommitted_display) < 2:
@@ -1288,34 +1288,123 @@ class Qwen3ASRStreamingHandler:
                 return prev
         return None
 
-    def _drop_already_committed(self, slot: dict, text: str, slot_key=None) -> str:
-        """`text`에서 이미 커밋된 문장을 제거한다. flush 경로 전용.
+    # ── 커밋 가드 파이프라인 ────────────────────────────────────────────────
+    # 문장이 최종 출력으로 나가는 경로가 둘이다:
+    #   A) _process_slot_updates — 청크마다 SEG/dot 트리거로 문장 하나씩
+    #   B) flush_uncommitted     — vad/finish/timeout에 미커밋 누적분을 통째로
+    # 원래 가드가 A에만 몰려 있었고, A에서 스킵된 텍스트는 커밋만 안 될 뿐
+    # state.text에 남아 있다가 B로 그대로 새어나갔다. 실측 3건이 전부 이 패턴:
+    # 반복 루프 덤프(545토큰), 커밋된 문장 재방출, dot 미확정분 일괄 커밋.
+    # 그래서 판정을 여기 한 곳에 모으고 두 경로가 같은 파이프라인을 태운다.
+    #
+    # A는 판정 시점이 둘로 나뉜다 — 문장을 뽑는 시점(extract)과 커서를 확정하는
+    # 시점(commit). 커서 확정은 flush_lock 안에서 일어나므로 합칠 수 없다.
+    # stage로 어느 가드가 도는지만 구분하고, 가드 자체는 한 벌만 둔다.
+    #   extract: 같은 청크 안에서 뽑힌 문장에 대한 판정
+    #   commit : 이미 커밋된 이력과의 대조
+    #   flush  : B는 두 시점이 하나라 전부 돈다
+    #
+    # 아래 표가 "어떤 가드가 어느 경로에서 도는가"의 단일 출처다. 빈칸(=flush에 없는
+    # 가드)은 사고가 아니라 아래 근거로 내린 판단이며, 새 가드를 추가할 때도 여기서
+    # 적용 시점을 명시적으로 정해야 한다. 예전엔 이 정보가 코드 여기저기 흩어져 있어
+    # flush에 가드가 없다는 사실 자체가 보이지 않았다.
+    _GUARD_STAGES = {
+        # 한 번의 추출 안에서 같은 문장이 연속으로 나온 경우.
+        # flush에서는 돌리지 않는다 — 같은 관심사를 _collapse_repetition이 이미 처리하고,
+        # 그쪽은 정상 발화의 2회 반복을 일부러 보존한다(3005-163389-0001의 정답이
+        # "TEAR DOWN THE FENCE TEAR DOWN THE FENCE"). 여기서 1회로 깎으면 그게 깨진다.
+        "rep-dedup": ("extract",),
+        # 경계 단어 하나가 겹쳤다고 문장 전체를 버리는 공격적인 가드.
+        # flush는 누적분이라 한 문장이 길고, 잘못 발동하면 손실이 크므로 제외.
+        "seg-boundary-dedup": ("extract",),
+        # flush에는 누적분 앞머리를 잘라내는 자체 prefix-strip 블록이 따로 있다
+        # (dot_switch_prev_committed 소비). 문장 단위 접미사 비교와 대상이 달라 중복 적용하지 않는다.
+        "dot-suffix-dedup": ("extract",),
+        # 이미 커밋된 문장과의 대조. 두 경로 모두 필요 — flush에 없어서 dot으로 커밋된
+        # 문장이 finish로 재방출됐다(3538-142836-0017 등).
+        "cross-dedup": ("commit", "flush"),
+        "cross-dedup-fuzzy": ("commit", "flush"),
+    }
 
-        커밋 루프(_process_slot_updates)와 달리 flush는 미커밋 누적분을 통째로 내보내므로
-        cross-dedup 판정을 거치지 않는다. 여기서 문장 단위로 같은 판정을 적용한다.
+    def _commit_skip_reason(self, slot: dict, sentence_display: str, *, stage: str,
+                            trigger: Optional[str] = None,
+                            batch_last: Optional[str] = None) -> Optional[str]:
+        """`sentence_display`를 커밋하면 안 되는 이유를 반환. 커밋해도 되면 None.
+
+        가드를 새로 추가할 때는 여기에만 넣고 `_GUARD_STAGES`에 적용 시점을 적는다.
+        경로별로 따로 넣으면 한쪽에만 들어가 같은 누수가 재발한다.
+
+        주의: `seg_reset_last_committed` / `dot_switch_prev_committed`는 "직전 커밋의
+        흔적" 마커라 판정 성공 여부와 무관하게 한 번 보면 소비한다(pop). 원래 코드의
+        부수효과를 그대로 유지한 것.
+        """
+        def _applies(name):
+            return stage in self._GUARD_STAGES[name]
+
+        if not sentence_display:
+            return None
+
+        # 한 번의 추출/flush 안에서 같은 문장이 연달아 나온 경우
+        if _applies("rep-dedup") and batch_last is not None and sentence_display == batch_last:
+            return "rep-dedup"
+
+        # SEG 리셋 직후: 직전 커밋의 끝 단어가 새 문장 첫 단어로 다시 나옴.
+        # 모드2는 커밋 단위가 문장이 아니라 청크라 경계 단어 하나로 청크째 폐기된다 —
+        # 실측상 억제 효과도 없었고(141건 중 4건), 2초 강제 커밋의 경계 중복은
+        # 모드2의 측정 대상 그 자체라 그대로 노출한다.
+        if _applies("seg-boundary-dedup") and "seg_reset_last_committed" in slot and not self.always_commit:
+            seg_reset_last = slot.pop("seg_reset_last_committed")
+            _strip_p = lambda w: re.sub(r'[.,!?;:。？！]+$', '', w)
+            words = sentence_display.split()
+            first_word = _strip_p(words[0]) if words else ""
+            last_word = _strip_p(seg_reset_last.split()[-1]) if seg_reset_last.split() else ""
+            if first_word and last_word and (first_word == last_word or last_word.endswith(first_word)):
+                return "seg-boundary-dedup"
+
+        # DOT-SLOT-SWITCH 직후: 이전 슬롯 커밋의 접미사가 통째로 다시 나옴
+        if _applies("dot-suffix-dedup"):
+            prev_committed = slot.get("dot_switch_prev_committed", "")
+            if prev_committed and (trigger == "dot" or stage == "flush"):
+                slot.pop("dot_switch_prev_committed", None)
+                _norm = lambda s: re.sub(r'[.,!?;:。？！\s]+', '', s)
+                if _norm(prev_committed).endswith(_norm(sentence_display)):
+                    return "dot-suffix-dedup"
+
+        # 이 발화에서 이미 커밋된 문장 (완전 일치)
+        if _applies("cross-dedup"):
+            _asr_key = ' '.join(sentence_display.split()).rstrip('.,!?;:。？！').strip().lower()
+            if _asr_key in slot.get("committed_asr_set", set()):
+                return "cross-dedup"
+
+        # 같은 문장인데 재디코딩으로 철자만 바뀐 경우.
+        # 모드2는 seg-boundary-dedup과 같은 이유로 제외 (커밋 단위가 청크).
+        if (_applies("cross-dedup-fuzzy") and not self.always_commit
+                and self._cross_dup_match(slot, sentence_display) is not None):
+            return "cross-dedup-fuzzy"
+
+        return None
+
+    def _apply_commit_guards(self, slot: dict, text: str, slot_key=None) -> str:
+        """flush 경로(B): 미커밋 누적분을 문장 단위로 쪼개 커밋 가드를 태운다.
+
+        A는 문장을 하나씩 뽑아 가드에 태우는데, B는 누적분을 통째로 내보내던 탓에
+        가드를 하나도 거치지 않았다. 여기서 같은 파이프라인(`_commit_skip_reason`)을
+        문장 단위로 적용해 두 경로의 판정을 일치시킨다.
         `always_commit`(모드2)은 커밋 단위가 문장이 아니라 청크라 적용하지 않는다.
         """
         if self.always_commit or not text:
             return text
-        committed = slot.get("committed_asr_set", set())
-        _asr_key = lambda s: ' '.join(s.split()).rstrip('.,!?;:。？！').strip().lower()
-        kept = []
+        kept, batch_last = [], None
         for sent in re.findall(r'[^.!?。！？]*[.!?。！？]+\s*|[^.!?。！？]+$', text):
             disp = sent.strip()
             if not disp:
                 continue
-            prev = None
-            if _asr_key(disp) in committed:
-                prev = _asr_key(disp)
-            else:
-                prev = self._cross_dup_match(slot, disp)
-            if prev is not None:
-                self.log.info(
-                    f"[COMMIT-SKIP] reason=flush-cross-dedup slot={slot_key} "
-                    f"text={disp!r} prev={prev!r}"
-                )
+            reason = self._commit_skip_reason(slot, disp, stage="flush", batch_last=batch_last)
+            if reason:
+                self.log.info(f"[COMMIT-SKIP] reason={reason} stage=flush slot={slot_key} text={disp!r}")
                 continue
             kept.append(sent)
+            batch_last = disp
         return "".join(kept).strip()
 
     @classmethod
@@ -1532,33 +1621,18 @@ class Qwen3ASRStreamingHandler:
                         break
             sentence_display_check = sentence.replace("<SEG>", "").strip()
             if sentence_display_check:
-                if sentence_display_check == _last_extracted_display:
-                    self.log.info(f"[COMMIT-SKIP] reason=rep-dedup slot={slot_key} text={sentence_display_check!r}")
+                # 세 가드 모두 스킵 시 아래 `remaining = after`로 흘러 다음 경계를 보므로
+                # 제어 흐름은 하나로 합쳐도 동일하다. 판정은 _commit_skip_reason 한 곳.
+                _skip = self._commit_skip_reason(
+                    slot, sentence_display_check, stage="extract",
+                    trigger=trigger, batch_last=_last_extracted_display,
+                )
+                if _skip:
+                    self.log.info(
+                        f"[COMMIT-SKIP] reason={_skip} stage=extract slot={slot_key} "
+                        f"text={sentence_display_check!r}"
+                    )
                 else:
-                    # 모드2(always_commit)에서는 비활성화한다. 커밋 단위가 "문장"이 아니라
-                    # "이번 청크에서 새로 디코딩된 전부"라서 (after="") 경계 단어 하나가
-                    # 겹치면 정상 내용까지 청크째로 폐기된다. 실측상 억제 효과도 없었다
-                    # (경계 중복 141건 중 4건만 발동, 나머지는 그대로 출력에 남음).
-                    # 2초 강제 커밋의 경계 중복은 모드2의 측정 대상 그 자체이므로 그대로 노출한다.
-                    if "seg_reset_last_committed" in slot and not self.always_commit:
-                        seg_reset_last = slot.pop("seg_reset_last_committed")
-                        first_word = sentence_display_check.split()[0] if sentence_display_check.split() else ""
-                        _strip_p = lambda w: re.sub(r'[.,!?;:。？！]+$', '', w)
-                        last_word = _strip_p(seg_reset_last.split()[-1]) if seg_reset_last.split() else ""
-                        first_word = _strip_p(first_word)
-                        if first_word and last_word and (first_word == last_word or last_word.endswith(first_word)):
-                            self.log.info(f"[COMMIT-SKIP] reason=seg-boundary-dedup slot={slot_key} text={sentence_display_check!r}")
-                            remaining = after
-                            continue
-                    prev_committed = slot.get("dot_switch_prev_committed", "")
-                    if trigger == "dot" and prev_committed:
-                        slot.pop("dot_switch_prev_committed", None)
-                        _norm_c = re.sub(r'[.,!?;:。？！\s]+', '', prev_committed)
-                        _norm_s = re.sub(r'[.,!?;:。？！\s]+', '', sentence_display_check)
-                        if _norm_c.endswith(_norm_s):
-                            self.log.info(f"[COMMIT-SKIP] reason=dot-suffix-dedup slot={slot_key} text={sentence_display_check!r}")
-                            remaining = after
-                            continue
                     sentences_to_commit.append((sentence, trigger))
                     slot.pop("pending_dot_text", None)  # 커밋되면 보류 후보는 무효
                     slot.pop("pending_dot_accum", None)
@@ -1591,17 +1665,12 @@ class Qwen3ASRStreamingHandler:
                 for sentence_raw, trigger_reason in sentences_to_commit:
                     sentence_display = sentence_raw.replace("<SEG>", "").strip()
                     _audio_span = self.current_time - slot.get("audio_anchor_sec", 0.0)
-                    if _asr_key(sentence_display) in slot.get("committed_asr_set", set()):
+                    _skip = self._commit_skip_reason(
+                        slot, sentence_display, stage="commit", trigger=trigger_reason)
+                    if _skip:
                         self.log.info(
-                            f"[COMMIT-SKIP] reason=cross-dedup slot={slot_key} span={_audio_span:.2f}s text={sentence_display!r}"
-                        )
-                        continue
-                    _fuzzy_prev = (None if self.always_commit
-                                   else self._cross_dup_match(slot, sentence_display))
-                    if _fuzzy_prev is not None:
-                        self.log.info(
-                            f"[COMMIT-SKIP] reason=cross-dedup-fuzzy slot={slot_key} "
-                            f"span={_audio_span:.2f}s text={sentence_display!r} prev={_fuzzy_prev!r}"
+                            f"[COMMIT-SKIP] reason={_skip} stage=commit slot={slot_key} "
+                            f"span={_audio_span:.2f}s text={sentence_display!r}"
                         )
                         continue
                     sent_core = sentence_display.rstrip(_PUNCT)
@@ -1643,17 +1712,12 @@ class Qwen3ASRStreamingHandler:
                 for sentence_raw, trigger_reason in sentences_to_commit:
                     sentence_display = sentence_raw.replace("<SEG>", "").strip()
                     _audio_span = self.current_time - slot.get("audio_anchor_sec", 0.0)
-                    if _asr_key(sentence_display) in slot.get("committed_asr_set", set()):
+                    _skip = self._commit_skip_reason(
+                        slot, sentence_display, stage="commit", trigger=trigger_reason)
+                    if _skip:
                         self.log.info(
-                            f"[COMMIT-SKIP] reason=cross-dedup slot={slot_key} span={_audio_span:.2f}s text={sentence_display!r}"
-                        )
-                        continue
-                    _fuzzy_prev = (None if self.always_commit
-                                   else self._cross_dup_match(slot, sentence_display))
-                    if _fuzzy_prev is not None:
-                        self.log.info(
-                            f"[COMMIT-SKIP] reason=cross-dedup-fuzzy slot={slot_key} "
-                            f"span={_audio_span:.2f}s text={sentence_display!r} prev={_fuzzy_prev!r}"
+                            f"[COMMIT-SKIP] reason={_skip} stage=commit slot={slot_key} "
+                            f"span={_audio_span:.2f}s text={sentence_display!r}"
                         )
                         continue
                     stripped_tail = tail.lstrip()
