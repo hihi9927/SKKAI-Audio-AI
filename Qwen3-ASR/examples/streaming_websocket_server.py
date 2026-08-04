@@ -1129,6 +1129,9 @@ class Qwen3ASRStreamingHandler:
                 current_text, snapshot_committed_display, snapshot_committed_seg_count
             )
             uncommitted_display = re.sub(r'\s+', ' ', uncommitted_raw.replace("<SEG>", "")).strip() if uncommitted_raw is not None else ""
+            # 미커밋 누적분은 스트리밍 커밋 경로의 rep-dedup/cross-dedup을 거치지 않고
+            # 여기서 통째로 나간다. 반복 루프가 그대로 실리지 않도록 flush 직전에 접는다.
+            uncommitted_display = self._collapse_repetition(uncommitted_display)
             if not uncommitted_display:
                 return
             if not force and len(uncommitted_display) < 2:
@@ -1243,6 +1246,70 @@ class Qwen3ASRStreamingHandler:
                 out.append(key)
             remaining = remaining[m.end():]
         return tuple(out)
+
+    @classmethod
+    def _collapse_repetition(cls, text: str, max_repeats: int = 2) -> str:
+        """연속 반복을 `max_repeats`회까지만 남기고 접는다.
+
+        모델이 반복 루프에 빠지면 같은 문장이 수십 번 이어진다. 스트리밍 커밋 경로는
+        rep-dedup/cross-dedup으로 이걸 걸러내지만, 걸러진 텍스트는 커밋되지 않은 채
+        state.text에 그대로 남는다. 그 상태로 스트림이 끝나면 flush_uncommitted가
+        누적분을 통째로 내보내 반복이 그대로 최종 출력에 실린다
+        (실측: 08/04 mode4 ko 실행에서 참조 31단어 발화가 556단어로 커밋, finish
+        세그먼트 하나에 545토큰). 그래서 flush 직전에 한 번 더 접는다.
+
+        `max_repeats=2`인 이유: 실제 발화에도 같은 문장을 두 번 잇는 경우가 있다
+        (LibriSpeech 3005-163389-0001의 정답이 "TEAR DOWN THE FENCE TEAR DOWN THE
+        FENCE"). 2회까지 보존하면 정상 반복은 건드리지 않고 루프만 잘라낸다.
+
+        루프가 항상 한 문장 주기인 것도 아니다 — 실측 9건 중 4건이 "A. B. A. B. ..."처럼
+        두 문장을 한 묶음으로 돌았다. 그래서 단일 단위가 아니라 주기 n의 반복을 찾는다.
+        """
+        if not text:
+            return text
+
+        def _collapse(units, keys, max_period):
+            """keys가 주기 n으로 max_repeats회를 넘겨 반복되면 앞 max_repeats주기만 남긴다.
+
+            긴 주기부터 시도해야 "A B A B"를 A와 B 각각의 1주기 반복으로 잘못 보지 않는다.
+            """
+            out, dropped, i = [], 0, 0
+            while i < len(units):
+                for n in range(min(max_period, (len(units) - i) // (max_repeats + 1)), 0, -1):
+                    base = keys[i:i + n]
+                    if not any(base):
+                        continue
+                    j = i + n
+                    while keys[j:j + n] == base:
+                        j += n
+                    if (j - i) // n > max_repeats:
+                        out.extend(units[i:i + n * max_repeats])
+                        dropped += (j - i) // n - max_repeats
+                        i = j
+                        break
+                else:
+                    out.append(units[i])
+                    i += 1
+            return out, dropped
+
+        # 1) 문장 단위 — 관측된 반복 루프는 전부 구두점으로 끝나는 문장의 반복이었다.
+        sentences = re.findall(r'[^.!?。！？]*[.!?。！？]+\s*|[^.!?。！？]+$', text)
+        kept, dropped = _collapse(sentences, [cls._boundary_key(s) for s in sentences],
+                                  max_period=4)
+        result = "".join(kept)
+
+        # 2) 단어 단위 — 구두점 없이 도는 루프까지 덮는다.
+        words = result.split()
+        kept_w, d2 = _collapse(words, [re.sub(r'[^\w]+', '', w).lower() for w in words],
+                               max_period=8)
+        if d2:
+            dropped += d2
+            result = " ".join(kept_w)
+
+        if dropped:
+            logger.info("[FLUSH-DEDUP] 반복 %d주기 제거 (%d자 → %d자)",
+                        dropped, len(text), len(result))
+        return result.strip()
 
     async def _process_slot_updates(self, slot_key: str, force_reason: Optional[str] = None,
                                     chunk_end: bool = False) -> Optional[str]:
