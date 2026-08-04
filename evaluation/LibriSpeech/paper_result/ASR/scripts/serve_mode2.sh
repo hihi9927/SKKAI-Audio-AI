@@ -1,16 +1,17 @@
 #!/bin/bash
 # 모드2(always-commit) 평가 서버 실행 (baseline(1.0.0) 고정)
-# 사용법: bash serve_mode2.sh <scope> <tag>
-#   예:   bash serve_mode2.sh sample run01
+# 사용법: bash serve_mode2.sh <split> <scope> <tag>
+#   예:   bash serve_mode2.sh test-other full c16_run01   → mode2/full/testother_c16_run01
+# run_mode2.sh에 같은 3인자를 넘겨야 서버 로그와 결과가 같은 폴더에 모인다.
+# 종료는 `bash stop_server.sh 8765`로 할 것 — kill/pkill은 vLLM EngineCore를 남긴다.
 set -e
 
-SCOPE="${1:?scope 필요 (예: sample, full)}"
-TAG="${2:?tag 필요 (예: run01)}"
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/_split.sh" "$@"   # SPLIT / SCOPE / TAG / FULL_TAG / TEST_DIR
+
 PAPER_RESULT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 STITY_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-RUN_DIR="$PAPER_RESULT_DIR/ASR/mode2/$SCOPE/$TAG"
+RUN_DIR="$PAPER_RESULT_DIR/ASR/mode2/$SCOPE/$FULL_TAG"
 
 # --- env 가드 ---------------------------------------------------------------
 # 평가 환경은 머신마다 다르다: 로컬은 venv($STITY_ROOT/.venv), 원격 GPU 서버는 conda env

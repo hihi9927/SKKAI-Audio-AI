@@ -4,17 +4,18 @@
 # LibriSpeech는 영어 데이터셋이므로 en-silence 가중치가 짝이다. ko-silence로 돌리면
 # 반복 루프가 터져 finish 커밋에 수백 토큰이 덤프된다(08/04 mode4 full 실행 참고).
 # always-commit/dot-commit 모두 끄고 SEG 토큰 기반 커밋만 사용.
-# 사용법: bash serve_mode4.sh <scope> <tag>
-#   예:   bash serve_mode4.sh sample run01
+# 사용법: bash serve_mode4.sh <split> <scope> <tag>
+#   예:   bash serve_mode4.sh test-other full c16_run01   → mode4/full/testother_c16_run01
+# run_mode4.sh에 같은 3인자를 넘겨야 서버 로그와 결과가 같은 폴더에 모인다.
+# 종료는 `bash stop_server.sh 8767`로 할 것 — kill/pkill은 vLLM EngineCore를 남긴다.
 set -e
 
-SCOPE="${1:?scope 필요 (예: sample, full)}"
-TAG="${2:?tag 필요 (예: run01)}"
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/_split.sh" "$@"   # SPLIT / SCOPE / TAG / FULL_TAG / TEST_DIR
+
 PAPER_RESULT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 STITY_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-RUN_DIR="$PAPER_RESULT_DIR/ASR/mode4/$SCOPE/$TAG"
+RUN_DIR="$PAPER_RESULT_DIR/ASR/mode4/$SCOPE/$FULL_TAG"
 
 # mode4 가중치. 기본은 HF 허브 리포지만, 접근이 401(Repository Not Found)로 막히는
 # 환경이 있어 로컬 사본으로 갈아끼울 수 있게 열어둔다. 동일 가중치라 재현성엔 영향 없음.

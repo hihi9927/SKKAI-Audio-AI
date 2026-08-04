@@ -1,10 +1,15 @@
 #!/bin/bash
 # 모드2(always-commit) 벤치마크 클라이언트 실행 (baseline(1.0.0) 고정)
 # serve_mode2.sh로 서버를 먼저 띄운 뒤, 같은 scope/tag로 실행할 것
-# 사용법: bash run_mode2.sh <scope> <tag> [--clients N] [추가 옵션...]
-#   순차: bash run_mode2.sh sample run01
-#   순차: bash run_mode2.sh full run01 --limit 50
-#   동시: bash run_mode2.sh full concurrent16_run01 --clients 16
+# 사용법: bash run_mode2.sh <split> <scope> <tag> [--clients N] [추가 옵션...]
+#   split: test-clean | test-other | dev-clean | dev-other
+#   순차: bash run_mode2.sh test-other sample run01
+#   순차: bash run_mode2.sh test-other full run01 --limit 50
+#   동시: bash run_mode2.sh dev-clean full c16_run01 --clients 16
+#
+# tag에는 split이 자동으로 박힌다 (dev-clean + c16_run01 → devclean_c16_run01).
+# 결과 경로에 split 차원이 없어서, 같은 tag를 다른 split에 쓰면 덮어쓰기가 아니라
+# resume으로 합쳐지기 때문이다. serve_mode2.sh에 같은 3인자를 넘길 것.
 #
 # --clients 유무로 러너가 갈리므로 쓸 수 있는 추가 옵션도 달라진다.
 #   순차 전용: --limit --random-sample --auto-server --correction --gpt-translation ...
@@ -12,9 +17,9 @@
 #   공통:      --fresh-start --host --policy --chunk-size-ms --trailing-silence-ms ...
 set -e
 
-SCOPE="${1:?scope 필요 (예: sample, full)}"
-TAG="${2:?tag 필요 (예: run01, concurrent16_run01)}"
-shift 2
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/_split.sh" "$@"   # SPLIT / SCOPE / TAG / FULL_TAG / TEST_DIR
+shift 3
 
 # --- 실행 모드 선택 -----------------------------------------------------------
 # --clients N 을 주면 동시 접속 부하 벤치마크(챕터 큐 + 워커 N개)로 돌고,
@@ -34,7 +39,6 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PAPER_RESULT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 STITY_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
 
@@ -72,6 +76,7 @@ PYTHONPATH= "$STITY_PYTHON" "$PAPER_RESULT_DIR/check_server_config.py" \
   --expect model=Qwen/Qwen3-ASR-1.7B \
   --expect always_commit=true \
   --expect enable_dot_commit=false \
+  --expect rep_dedup=true \
   --expect no_vad=true
 
 if [[ -n "$NUM_CLIENTS" ]]; then
@@ -85,16 +90,16 @@ else
 fi
 
 PYTHONPATH= "$STITY_PYTHON" "$RUNNER" \
-  --test-dir "$STITY_ROOT/evaluation/LibriSpeech/LibriSpeech/test-other" \
+  --test-dir "$TEST_DIR" \
   --model mode2 \
   --scope "$SCOPE" \
-  --tag "$TAG" \
+  --tag "$FULL_TAG" \
   --results-root "$PAPER_RESULT_DIR/ASR" \
   --port 8765 \
   --target-lang "" \
   --trailing-silence-ms 5500 \
   --chunk-size-ms 200 \
-  --description "mode2 (always-commit) / baseline(1.0.0) / ASR only, translation off${DESC_SUFFIX}" \
+  --description "mode2 (always-commit) / baseline(1.0.0) / $SPLIT / ASR only, translation off${DESC_SUFFIX}" \
   "${MODE_ARGS[@]}" \
   "${ARGS[@]}"
 # 번역 비활성화: targetLang을 빈 문자열로 보내면 서버가 Google Translate 호출을 건너뜀

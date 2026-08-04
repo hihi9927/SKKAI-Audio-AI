@@ -1,17 +1,18 @@
 #!/bin/bash
 # 모드3(rule-based/dot-commit) 평가 서버 실행 (baseline(1.0.0) 고정)
 # mode2에서 always-commit(2초 고정 청킹/커밋)만 빼고 dot 기반 rule-based commit을 켠 버전
-# 사용법: bash serve_mode3.sh <scope> <tag>
-#   예:   bash serve_mode3.sh sample run01
+# 사용법: bash serve_mode3.sh <split> <scope> <tag>
+#   예:   bash serve_mode3.sh test-other full c16_run01   → mode3/full/testother_c16_run01
+# run_mode3.sh에 같은 3인자를 넘겨야 서버 로그와 결과가 같은 폴더에 모인다.
+# 종료는 `bash stop_server.sh 8766`로 할 것 — kill/pkill은 vLLM EngineCore를 남긴다.
 set -e
 
-SCOPE="${1:?scope 필요 (예: sample, full)}"
-TAG="${2:?tag 필요 (예: run01)}"
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/_split.sh" "$@"   # SPLIT / SCOPE / TAG / FULL_TAG / TEST_DIR
+
 PAPER_RESULT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 STITY_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-RUN_DIR="$PAPER_RESULT_DIR/ASR/mode3/$SCOPE/$TAG"
+RUN_DIR="$PAPER_RESULT_DIR/ASR/mode3/$SCOPE/$FULL_TAG"
 
 # --- env 가드 ---------------------------------------------------------------
 # 평가 환경은 머신마다 다르다: 로컬은 venv($STITY_ROOT/.venv), 원격 GPU 서버는 conda env
@@ -44,6 +45,12 @@ PYTHONPATH= "$STITY_PYTHON" "$SCRIPT_DIR/../../../servers/streaming_websocket_se
   --model "Qwen/Qwen3-ASR-1.7B" \
   --enable-dot-commit \
   --no-vad \
+  --no-rep-dedup \
   --port 8766 \
   --no-idle-shutdown \
   --log-file "$RUN_DIR/logs/server.log"
+# --no-rep-dedup: 연속 반복 억제를 끈다. baseline 모델은 반복 루프에 빠지지 않아
+# (full 2939파일에서 27회 발동, 전부 오탐 — 'Ha!' 25 / 'Yes.' 1 / 'I hate him.' 1)
+# 낭독체의 실제 반복만 깎였다. 게다가 스킵이 커서 갭을 만들어 뒤 문장이 finish로
+# 밀리는 부작용이 있었다. 실측(문제파일 59건): WER 8.69 → 8.63%, 삭제 1.15 → 1.08%.
+# 반복 루프에 빠지는 모델(ko-silence 계열은 8,047회)로 바꾼다면 이 인자를 빼야 한다.
