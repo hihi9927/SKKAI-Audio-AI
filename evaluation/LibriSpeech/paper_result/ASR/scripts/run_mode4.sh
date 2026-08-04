@@ -1,5 +1,5 @@
 #!/bin/bash
-# 모드4(finetuning ko 모델 / seg-commit) 벤치마크 클라이언트 실행
+# 모드4(finetuning en 모델 / seg-commit) 벤치마크 클라이언트 실행
 # serve_mode4.sh로 서버를 먼저 띄운 뒤, 같은 scope/tag로 실행할 것
 # 사용법: bash run_mode4.sh <scope> <tag> [--clients N] [추가 옵션...]
 #   순차: bash run_mode4.sh sample run01
@@ -41,8 +41,8 @@ STITY_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
 
 # mode4 가중치. 기본은 HF 허브 리포지만, 접근이 401(Repository Not Found)로 막히는
 # 환경이 있어 로컬 사본으로 갈아끼울 수 있게 열어둔다. 동일 가중치라 재현성엔 영향 없음.
-#   예) MODE4_MODEL=/path/to/models/Qwen3-ASR-1.7B-ko-silence-v4c900-merged
-MODE4_MODEL="${MODE4_MODEL:-Doo12/Qwen3-ASR-1.7B-ko-silence-v4c900-merged}"
+#   예) MODE4_MODEL=/path/to/models/Qwen3-ASR-1.7B-en-silence-c80-merged
+MODE4_MODEL="${MODE4_MODEL:-Doo12/Qwen3-ASR-1.7B-en-silence-c80-merged}"
 
 # --- env 가드 ---------------------------------------------------------------
 # 평가 환경은 머신마다 다르다: 로컬은 venv($STITY_ROOT/.venv), 원격 GPU 서버는 conda env
@@ -100,7 +100,7 @@ PYTHONPATH= "$STITY_PYTHON" "$RUNNER" \
   --target-lang "" \
   --trailing-silence-ms 5500 \
   --chunk-size-ms 200 \
-  --description "mode4 (seg-commit) / finetuning ko($MODE4_MODEL) / ASR only, translation off${DESC_SUFFIX}" \
+  --description "mode4 (seg-commit) / finetuning en($MODE4_MODEL) / ASR only, translation off${DESC_SUFFIX}" \
   "${MODE_ARGS[@]}" \
   "${ARGS[@]}"
 # 번역 비활성화: targetLang을 빈 문자열로 보내면 서버가 Google Translate 호출을 건너뜀

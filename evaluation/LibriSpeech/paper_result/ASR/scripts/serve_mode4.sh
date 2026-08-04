@@ -1,6 +1,8 @@
 #!/bin/bash
-# 모드4(finetuning ko 모델 / seg-commit) 평가 서버 실행
-# baseline 대신 ko finetuning 가중치(Doo12/Qwen3-ASR-1.7B-ko-silence-v4c900-merged)를 --model로 직접 로드.
+# 모드4(finetuning en 모델 / seg-commit) 평가 서버 실행
+# baseline 대신 en finetuning 가중치(Doo12/Qwen3-ASR-1.7B-en-silence-c80-merged)를 --model로 직접 로드.
+# LibriSpeech는 영어 데이터셋이므로 en-silence 가중치가 짝이다. ko-silence로 돌리면
+# 반복 루프가 터져 finish 커밋에 수백 토큰이 덤프된다(08/04 mode4 full 실행 참고).
 # always-commit/dot-commit 모두 끄고 SEG 토큰 기반 커밋만 사용.
 # 사용법: bash serve_mode4.sh <scope> <tag>
 #   예:   bash serve_mode4.sh sample run01
@@ -16,8 +18,8 @@ RUN_DIR="$PAPER_RESULT_DIR/ASR/mode4/$SCOPE/$TAG"
 
 # mode4 가중치. 기본은 HF 허브 리포지만, 접근이 401(Repository Not Found)로 막히는
 # 환경이 있어 로컬 사본으로 갈아끼울 수 있게 열어둔다. 동일 가중치라 재현성엔 영향 없음.
-#   예) MODE4_MODEL=/path/to/models/Qwen3-ASR-1.7B-ko-silence-v4c900-merged
-MODE4_MODEL="${MODE4_MODEL:-Doo12/Qwen3-ASR-1.7B-ko-silence-v4c900-merged}"
+#   예) MODE4_MODEL=/path/to/models/Qwen3-ASR-1.7B-en-silence-c80-merged
+MODE4_MODEL="${MODE4_MODEL:-Doo12/Qwen3-ASR-1.7B-en-silence-c80-merged}"
 
 # --- env 가드 ---------------------------------------------------------------
 # 평가 환경은 머신마다 다르다: 로컬은 venv($STITY_ROOT/.venv), 원격 GPU 서버는 conda env

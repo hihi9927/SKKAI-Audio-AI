@@ -71,7 +71,7 @@ A를 선택한 경우, 이어서 물어봐줘:
 |---|---|---|---|
 | mode2 | always-commit | baseline `Qwen/Qwen3-ASR-1.7B` | `--always-commit` (2초 고정 청킹) |
 | mode3 | rule-based / dot-commit | baseline `Qwen/Qwen3-ASR-1.7B` | `--enable-dot-commit` |
-| mode4 | seg-commit | finetuned ko `Doo12/Qwen3-ASR-1.7B-ko-silence-v4c900-merged` | 기본값 (SEG 토큰 기반) |
+| mode4 | seg-commit | finetuned en `Doo12/Qwen3-ASR-1.7B-en-silence-c80-merged` | 기본값 (SEG 토큰 기반) |
 
 물어볼 것: **모드(2/3/4)**, **scope**(기본 `sample`), **tag**(기본 `run01`), **limit**(선택).
 chunk-size는 스크립트에 `200ms` 고정, 번역은 항상 off(`--target-lang ""`)라 물어볼 필요 없음.
