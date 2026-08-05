@@ -1,0 +1,37 @@
+{
+  "timestamp": "2026-08-05T01:28:02.866795",
+  "cli_args": {
+    "num_clients": 16,
+    "test_dir": "/home/mobility/STiTy/evaluation/LibriSpeech/LibriSpeech/test-clean",
+    "host": "localhost",
+    "port": 8765,
+    "model": "mode2",
+    "scope": "full",
+    "tag": "testclean_c16_run01",
+    "description": "mode2 (always-commit) / baseline(1.0.0) / test-clean / ASR only, translation off / 동시 클라이언트 16명, 챕터 큐",
+    "results_root": "/home/mobility/STiTy/evaluation/LibriSpeech/paper_result/ASR",
+    "policy": 3,
+    "max_chapters": null,
+    "chunk_size_ms": 200,
+    "send_interval_ms": 200,
+    "trailing_silence_ms": 5500,
+    "target_lang": "",
+    "fresh_start": false,
+    "dry_run": false
+  },
+  "server_config": {
+    "model": "Qwen/Qwen3-ASR-1.7B",
+    "chunk_size_sec": 2.0,
+    "enforce_eager": false,
+    "enable_dot_commit": false,
+    "always_commit": true,
+    "rep_dedup": true,
+    "no_vad": true,
+    "enable_gpt_translation": false,
+    "translation_model": "gpt-5.4-mini",
+    "context_window": 5,
+    "enable_correction": false,
+    "correction_model": "gpt-5.4-mini"
+  },
+  "runner": "run_concurrent_chapters.py"
+}
