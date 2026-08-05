@@ -103,29 +103,18 @@ chunk_decoding.txt
 ec2_logs/
 models/
 
-# Evaluation datasets
-# Evaluation datasets
-evaluation/AMI/AMI
-evaluation/AMI/words
-evaluation/AMI/__pycache__
-
-evaluation/(es)CIEMPIESS/CIEMPIESS
-evaluation/(es)CIEMPIESS/label
-
-evaluation/KokoroSpeech/KokoroSpeech
-
-evaluation/ReazonSpeech/ReazonSpeech
-evaluation/ReazonSpeech/label
-
-evaluation/KtelSpeech/KtelSpeech
-evaluation/KtelSpeech/label
-evaluation/KtelSpeech/__pycache__
-
-evaluation/AliMeeting/AliMeeting
-evaluation/AliMeeting/label
-
-evaluation/(zh)RAMC/RAMC
-evaluation/(zh)RAMC/label
+# Evaluation datasets — 2026-08-05에 히스토리에서 완전히 제거했다 (git filter-repo).
+# 오디오가 WAV라 압축이 안 돼 .git 1,266MB 중 573MB를 이 7종이 차지했고, 그중 AMI만
+# 557MB였다. 파일은 로컬 디스크에 그대로 있으니 해당 벤치마크는 계속 돌릴 수 있다.
+# 다시 추적하려면 오디오를 뺀 코드/레이블만 골라 넣을 것 — 통째로 add하면 원상복귀다.
+evaluation/AMI/
+evaluation/AliMeeting/
+evaluation/KokoroSpeech/
+evaluation/KtelSpeech/
+evaluation/ReazonSpeech/
+evaluation/(es)CIEMPIESS/
+evaluation/(zh)RAMC/
+evaluation/magichub/
 
 
 core/cif/checkpoints/
