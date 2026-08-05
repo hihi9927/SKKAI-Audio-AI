@@ -103,10 +103,17 @@ chunk_decoding.txt
 ec2_logs/
 models/
 
-# Evaluation datasets — 2026-08-05에 히스토리에서 완전히 제거했다 (git filter-repo).
-# 오디오가 WAV라 압축이 안 돼 .git 1,266MB 중 573MB를 이 7종이 차지했고, 그중 AMI만
-# 557MB였다. 파일은 로컬 디스크에 그대로 있으니 해당 벤치마크는 계속 돌릴 수 있다.
-# 다시 추적하려면 오디오를 뺀 코드/레이블만 골라 넣을 것 — 통째로 add하면 원상복귀다.
+# Evaluation datasets — 2026-08-05에 히스토리에서 제거했다 (git filter-repo).
+# .git 1,266MB 중 573MB가 이 7종이었고 그중 AMI만 557MB였다. 정체는 gitignore 규칙이
+# 생기기 전에 커밋됐던 옛 WAV로, 지운 뒤에도 히스토리에 남아 용량을 차지하고 있었다.
+#
+# 아래 규칙은 디렉토리를 통째로 막지만, 평가 코드·레이블(28개, 2.5MB)은 `git add -f`로
+# 추적 중이다 — 다른 머신에서 클론만으로 이 벤치마크들을 돌릴 수 있어야 하기 때문.
+# 추적 중인 파일에는 ignore 규칙이 적용되지 않으므로 그대로 유지되고, 새로 생기는
+# 오디오·결과는 자동으로 막힌다. 디렉토리가 제외돼 있어 `!` 예외는 동작하지 않는다
+# (git이 제외된 디렉토리로 들어가지 않는다). 코드를 추가로 넣으려면 add -f를 쓸 것.
+#
+# 오디오와 과거 벤치마크 결과는 git에 없다. 로컬 디스크에만 있다.
 evaluation/AMI/
 evaluation/AliMeeting/
 evaluation/KokoroSpeech/
