@@ -178,23 +178,22 @@ python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py \
   --no-idle-shutdown \
   --log-file "evaluation/{Dataset}/results/{model_label}/{scope}/{tag}/logs/server.log"
 
-# finetuned-merged
+# finetuned-merged (영어는 en-silence, 한국어는 ko-silence 가중치를 쓸 것)
 python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py \
-  --model ~/STiTy/Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged \
+  --model ~/STiTy/models/Qwen3-ASR-1.7B-en-silence-c80-merged \
   --chunk-size <n> \
   --enforce-eager \
   --no-idle-shutdown \
   --log-file "evaluation/{Dataset}/results/{model_label}/{scope}/{tag}/logs/server.log"
 
-# finetuned-lora
-python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py \
-  --model ~/STiTy/Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-lora-ready \
-  --lora \
-  --chunk-size <n> \
-  --enforce-eager \
-  --no-idle-shutdown \
-  --log-file "evaluation/{Dataset}/results/{model_label}/{scope}/{tag}/logs/server.log"
+# finetuned-lora — 병합 전 어댑터 경로를 --model에 주고 --lora 추가.
+# 현재 저장소에는 어댑터가 없으므로 사용 전 경로부터 확인할 것.
 ```
+
+> **가중치 경로:** 저장소에 실제로 있는 병합 가중치는 `models/Qwen3-ASR-1.7B-en-silence-c80-merged`와
+> `models/Qwen3-ASR-1.7B-ko-silence-v4c900-merged` 두 개뿐이다.
+> 테스트 스크립트의 `finetuned` / `finetuned(1.0.1)` 별칭은 존재하지 않는 예전 경로
+> (`Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged`)를 가리키므로, 서버에는 항상 실제 경로를 직접 넘긴다.
 
 태그를 지정하지 않은 경우 `--log-file` 생략.
 

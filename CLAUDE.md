@@ -1,36 +1,28 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for Claude Code (claude.ai/code) when working in this repository.
 
 ## Project Overview
 
-**STiTy** is a real-time multilingual speech translation system developed by SKKU SKKAI Audio AI lab. It pipelines ASR (Qwen3-ASR) → LLM correction → translation → mobile client via WebSocket.
+**STiTy** — real-time multilingual speech translation (SKKU SKKAI Audio AI lab). Pipelines streaming ASR (Qwen3-ASR) → translation (optionally LLM-corrected) → mobile client over WebSocket.
 
 ## Commands
 
-### Mobile App (`STiTy-Mobile/`)
 ```bash
-npm install          # Install dependencies
-npm start            # Expo dev server
-npm run android      # Run on Android
-npm run ios          # Run on iOS
-```
+# Backend install
+pip install -e ./Qwen3-ASR              # transformers backend
+pip install -e "./Qwen3-ASR[vllm]"      # with vLLM
 
-### Python / Backend
-```bash
-# Install Qwen3-ASR
-pip install -e ./Qwen3-ASR                  # transformers backend
-pip install -e "./Qwen3-ASR[vllm]"          # with vLLM support
-
-# Run the main WebSocket ASR server
+# Production WebSocket server
 python Qwen3-ASR/examples/streaming_websocket_server.py
 
-# Run evaluation servers
-python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py
+# Evaluation server + benchmark client (see evaluation/TESTING_MANUAL.md)
+python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py --no-idle-shutdown
+python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \
+  --test-dir evaluation/LibriSpeech/LibriSpeech/test-other --model "baseline(1.0.0)" --scope sample
 
-# Run benchmark evaluations
-python evaluation/LibriSpeech/test_qwen3_librispeech.py
-python evaluation/LibriSpeech/run_qwen_pipeline.py
+# Mobile app (STiTy-Mobile/)
+npm install && npm start                # or: npm run android / npm run ios
 ```
 
 ## Architecture
@@ -38,96 +30,87 @@ python evaluation/LibriSpeech/run_qwen_pipeline.py
 ### Pipeline
 
 ```
-Audio Input
-  → [A] ConversationManager (VAD / audio segmentation)
-  → [ASR] Qwen3-ASR model (streaming, 52+ languages)
-  → [B] CommitPolicy (decides when partial text becomes a committed sentence)
-  → [C] GPTCorrector (LLM post-correction of ASR errors)
-  → [Translation] Google Translate API
-  → [Client] Mobile app via WebSocket
+Audio in → ConversationManager (VAD / segmentation)
+         → Qwen3-ASR (streaming)
+         → commit trigger (SEG token / VAD / dot / always)
+         → translation:  Google Translate (default)
+                      or GPTTranslator — correction + translation in one call (--gpt-translation)
+         → mobile client via WebSocket
 ```
 
-Core type definitions live in [core/types.py](core/types.py) — `AudioSegment → RecognizedToken → CommittedSentence → ValidatedSentence → TranslationResult`. Abstract module interfaces are in [core/modules.py](core/modules.py).
+Translation is **Google Translate by default** (`translate.googleapis.com` gtx endpoint, called inline in the server). LLM paths are opt-in flags and silently fall back to Google Translate when `OPENAI_API_KEY` is missing:
+
+| Flag | Effect |
+|---|---|
+| `--gpt-translation` | `core/correct_and_trans.py` `GPTTranslator` — correction + translation in one call, `--context-window` sentences of history (default 5) |
+| `--correction` | `core/llm_corrector/gpt_corrector.py` `GPTCorrector` — correction only, translation still Google |
+| `--google-context` | Keeps Google Translate but feeds it prior sentences as context |
+
+Pipeline dataclasses: [core/types.py](core/types.py) (`AudioSegment → RecognizedToken → CommittedSentence → ValidatedSentence → TranslationResult`). Abstract interfaces: [core/modules.py](core/modules.py) — signatures only, no implementations.
 
 ### Backend Key Files
 
 | File | Role |
 |---|---|
-| `core/types.py` | Dataclass definitions for every pipeline stage |
-| `core/modules.py` | Abstract base classes for pipeline modules |
-| `core/llm_corrector/gpt_corrector.py` | Async OpenAI GPT corrector with retry/backoff |
-| `core/meaning_segmentator/` | Sentence boundary detection utilities |
-| `Qwen3-ASR/examples/streaming_websocket_server.py` | Main production WebSocket server |
-| `evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py` | Eval server with forced-alignment logging |
+| `core/correct_and_trans.py` | `GPTTranslator` — correction + translation in one call (`--gpt-translation`) |
+| `core/llm_corrector/gpt_corrector.py` | `GPTCorrector` — correction only, async with retry/backoff (`--correction`) |
+| `core/types.py` / `core/modules.py` | Dataclasses / abstract base classes |
+| `core/meaning_segmentator/utils/` | Research scripts: GPT `<SEG>` marking, context translation, COMET eval |
+| `core/research/` | CIF & context-scoring experiments (not on the runtime path) |
+| `Qwen3-ASR/examples/streaming_websocket_server.py` | Production WebSocket server |
+| `evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py` | Eval server (wraps the above, adds FSL timing) |
 
-The `Qwen3-ASR/` directory is vendored upstream code (QwenLM/Qwen3-ASR), tracked directly by this repo — **not** a git submodule. Changes to it are committed like any other file. Its `pyproject.toml` exposes CLI entry points: `qwen-asr-demo`, `qwen-asr-serve`, `qwen-asr-demo-streaming`.
+`Qwen3-ASR/` is vendored upstream code (QwenLM/Qwen3-ASR) tracked directly — **not** a submodule. See [Qwen3-ASR/CLAUDE.md](Qwen3-ASR/CLAUDE.md).
 
 ### Mobile App (`STiTy-Mobile/`)
 
-React Native + Expo (managed), TypeScript strict mode. Path alias `@/*` → `src/*`.
+React Native 0.81 + Expo 54 (managed), TypeScript strict. Path alias `@/*` → `src/*`.
 
-**Screens:** `HomeScreen` (language/mode selection) → `LoadingScreen` (server handshake) → `ConversationScreen` (live translation feed).
-
-**Key hook:** `src/hooks/useWebSocket.ts` — manages WebSocket lifecycle, audio streaming, and message parsing. The server URL is currently hardcoded here (ngrok or LAN IP).
-
-**Audio pipeline:** `react-native-live-audio-stream` → WebSocket binary frames → server → JSON translation results back.
-
-Language color scheme: Purple `#8B5CF6` (Korean), Blue `#3B82F6` (English/Tibetan), Cyan `#06B6D4` (Indonesian). Design tokens are in `src/constants/theme.ts`.
+- **Screens:** `HomeScreen` (language/mode select) → `ConversationScreen` (live feed). Connection state is handled in-place, not by a separate loading screen.
+- **`src/context/WebSocketContext.tsx`** holds the shared WS session; **`src/hooks/useWebSocket.ts`** owns the socket lifecycle and message parsing. `SERVER_URL` is hardcoded at the top of that hook — update it when changing environments.
+- **Audio:** `react-native-live-audio-stream` → binary PCM frames → server → JSON `final` messages back. `useAudioRecording.web.ts` / `tts.web.ts` are web variants.
+- **Languages** (`src/constants/languages.ts`): ko, ja, zh, es, en. Conversation modes `mode-1` (speaker), `mode-2` (one earphone), `mode-3` (both) — unrelated to the eval mode2/3/4 below.
+- **Colors** (`src/constants/theme.ts`): gradient Purple `#8B5CF6` → Blue `#3B82F6` → Cyan `#06B6D4`; language labels reuse the same three.
 
 ## Key Configuration
 
-- **Python deps:** `transformers==4.57.6`, `openai>=1.0.0`, `websockets>=12.0`, optional `vllm==0.14.0`
-- **LLM corrector model:** configurable, default `gpt-5.4-mini` (check `gpt_corrector.py`)
-- **Mobile target SDK:** configured in `app.json` and `eas.json`
-- **Server connection:** hardcoded in `STiTy-Mobile/src/hooks/useWebSocket.ts` — update this when changing environments
+- **Backend deps** (`Qwen3-ASR/pyproject.toml`): `transformers==4.57.6`, `accelerate`, `librosa`, `gradio`, `flask`; optional `vllm==0.14.0`. Eval extras in `evaluation/LibriSpeech/requirements.txt` (`websockets`, `jiwer`, …); `openai` is imported by `core/` but not pinned there.
+- **LLM model:** default `gpt-5.4-mini` in both `correct_and_trans.py` and `gpt_corrector.py`.
+- **Finetuned weights:** `models/Qwen3-ASR-1.7B-{en,ko}-silence-*-merged/` (eval scripts still reference the older `Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged` path, which is not present).
 
 ## WebSocket Message Protocol
 
-**Handshake sequence:** client connects → server sends `hello` → client sends `start` → server sends `ready` → audio streaming begins.
+**Handshake:** connect → server `hello` → client `start` → server `ready` → audio streams.
+**Binary frames (client → server):** raw PCM, s16le, 16 kHz, mono, no wrapper.
 
-**Binary frames (Client → Server):** raw PCM audio, s16le, 16 kHz, mono. No wrapper.
-
-### Client → Server (JSON)
+### Client → Server
 
 | `type` | Key fields | Purpose |
 |---|---|---|
-| `start` | `lang`, `targetLang`, `displayMode` | Begin streaming (`lang`: language code or `"auto"`) |
-| `stop` | — | End stream and close connection |
-| `finish` | — | Flush final segment but keep connection open |
+| `start` | `lang`, `targetLang`, `displayMode` | Begin streaming (`lang` = code or `"auto"`) |
+| `stop` / `finish` | — | End and close / flush final segment but stay open |
 | `pair_host` | `roomId`, `myLang`, `targetLang`, `mode` | Create pairing room |
-| `pair_join` | `roomId`, `myLang` | Join pairing room as guest |
-| `pair_leave` | — | Exit pairing session |
+| `pair_join` | `roomId`, `myLang` | Join as guest |
+| `pair_leave` | — | Exit pairing |
+| `log` / `tts_log` | — | Client-side telemetry appended to server logs |
 
-### Server → Client (JSON)
+### Server → Client
 
 | `type` | Key fields | Purpose |
 |---|---|---|
-| `hello` | `message` | Connection established |
+| `hello` | `message` (eval server adds `serverConfig`) | Connected |
 | `ready` | `message` | Streaming initialized |
 | `final` | `start`, `end`, `original`, `translation`, `language`, `commitReason` | Committed segment |
-| `pair_hosted` | `roomId` | Host room created |
-| `pair_connected` | `roomId`, `role`, `myLang`, `targetLang` | Pairing established (sent to both sides) |
-| `pair_peer_left` | `roomId` | Peer disconnected |
-| `pair_error` | `roomId`, `message` | Pairing failed |
+| `pair_hosted` / `pair_connected` / `pair_peer_left` / `pair_error` | `roomId`, … | Pairing lifecycle |
 
-**`final` message detail:**
-```json
-{
-  "type": "final",
-  "start": "0:00:02.50",
-  "end": "0:00:05.75",
-  "original": "Hello world",
-  "translation": "안녕하세요 세계",
-  "language": "en",
-  "commitReason": "seg"
-}
-```
-`commitReason` values: `"seg"` (model SEG token), `"vad"` (silence detected), `"finish"` (stream ended), `"dot"` (sentence-ending punctuation, optional), `"always"` (chunk committed as-is, no trigger — emitted only under `--always-commit` / mode2).
+`commitReason`: `seg` (SEG token), `vad` (silence), `dot` (sentence-ending punctuation, needs `--enable-dot-commit`), `always` (every chunk, under `--always-commit`), `timeout`, `finish` (stream ended).
 
-The `--always-commit` server flag (config field `always_commit`) bypasses SEG/dot triggers and commits each newly decoded chunk directly; the eval server exposes it in `hello.serverConfig` alongside `enable_dot_commit`.
+The eval server adds timing fields to `final` (`segmentId`, `audioStartSec`, `audioEndSec`, `fsl_sec`, `asr_inference_sec`, …) — benchmarking only, ignored by the app.
 
-The evaluation server (`streaming_websocket_server_fsl.py`) extends `final` with timing fields (`segmentId`, `audioStartSec`, `audioEndSec`, `fsl_sec`, `asr_inference_sec`, etc.) — these are for benchmarking only and not consumed by the mobile app.
+## Evaluation
 
-## Evaluation Datasets
+Datasets under `evaluation/`: LibriSpeech, AMI (en); DailyTalk, KsponSpeech, KtelSpeech (ko); KokoroSpeech, ReazonSpeech (ja); AliMeeting, (zh)RAMC (zh); (es)CIEMPIESS (es); plus the standalone `smartturn/` VAD track.
 
-LibriSpeech, DailyTalk, KsponSpeech, CommonVoice. COMET (`unbabel-comet>=2.2.0`) is used for MT quality scoring. SmartTurn VAD is integrated for voice activity detection benchmarks.
+Commit-policy modes compared in `evaluation/LibriSpeech/paper_result/ASR/`: **mode2** = always-commit, **mode3** = dot-commit with confirm gate, **mode4** = en-finetuned weights with SEG-only commit.
+
+Full CLI reference: [evaluation/TESTING_MANUAL.md](evaluation/TESTING_MANUAL.md).

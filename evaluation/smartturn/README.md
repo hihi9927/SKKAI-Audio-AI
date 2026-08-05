@@ -10,7 +10,8 @@ This folder is an isolated experiment path for SmartTurn-v3 integration under
 
 ## Purpose
 
-- Keep baseline (`run_qwen_pipeline.py`, `verify_architecture_vad.py`) unchanged.
+- Keep the baseline VAD path (`evaluation/LibriSpeech/utils/verify_architecture_vad.py` and the
+  shared eval server) unchanged.
 - Enable SmartTurn parameter tuning and endpoint validation in a separate track.
 
 ## Quick start
@@ -40,7 +41,7 @@ Offline trace:
 ```bash
 python evaluation/smartturn/verify_architecture_smartturn.py \
   --audio path/to/audio.wav \
-  --output-json evaluation/smartturn/results/architecture_smartturn_trace.json
+  --output-json evaluation/smartturn/results_json/architecture_smartturn_trace.json
 ```
 
 ## Important note

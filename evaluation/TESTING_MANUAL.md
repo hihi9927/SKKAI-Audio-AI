@@ -25,7 +25,7 @@ evaluation/{Dataset}/results/
 
 | 인자 | 기본값 | 설명 |
 |---|---|---|
-| `--model` | `finetuned(1.0.1)` | 대분류: 모델 종류 (예: `baseline(1.0.0)`, `finetuned(1.0.1)`) |
+| `--model` | `finetuned` | 대분류: 모델 종류 (예: `baseline(1.0.0)`, `finetuned(1.0.1)`) |
 | `--scope` | `sample` | 소분류: `full`(전체 데이터셋) 또는 `sample`(일부) |
 | `--tag` | 자동 생성 | 결과 폴더명. 지정 시 해당 폴더에 이어서 저장 |
 | `--description` | — | 테스트 설명. `description.txt`에 저장 |
@@ -34,11 +34,11 @@ evaluation/{Dataset}/results/
 | `--limit` | — | 처리할 최대 파일 수 (미지정 시 전체) |
 | `--chunk-size-ms` | `200` | 오디오 청크 크기 (ms) |
 | `--send-interval-ms` | `200` | 청크 전송 간격 (ms, 실시간 페이싱) |
-| `--trailing-silence-ms` | 스크립트별 상이 | 오디오 끝에 추가할 묵음 길이 (VAD 트리거용) |
+| `--trailing-silence-ms` | 스크립트별 상이 (LibriSpeech `8000`) | 오디오 끝에 추가할 묵음 길이 (VAD 트리거용) |
 | `--target-lang` | `ko` | 번역 대상 언어 |
 | `--fresh-start` | — | 기존 결과 무시하고 처음부터 재실행 |
 | `--auto-server` | — | ASR 서버 자동 시작/종료 |
-| `--server-model` | `Qwen/Qwen3-ASR-1.7B` | 자동 시작 시 사용할 모델 |
+| `--server-model` | 미지정 시 `--model` 별칭이 가리키는 경로 | 자동 시작 시 사용할 모델 |
 
 > `baseline` 계열 모델(`Qwen/Qwen3-ASR-1.7B`, `baseline`, `baseline(1.0.0)` 등)은 서버에서 `dot commit`이 기본 활성화됩니다.  
 > baseline에서도 끄고 싶으면 `--disable-dot-commit`, finetuned 등에서 강제로 켜고 싶으면 `--enable-dot-commit`을 사용합니다.
@@ -69,11 +69,16 @@ python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py \
 
 # Finetuned 모델
 python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py \
-  --model /home/ubuntu/STiTy/Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged \
+  --model models/Qwen3-ASR-1.7B-en-silence-c80-merged \
   --no-idle-shutdown \
   --enforce-eager \
   --log-file "evaluation/LibriSpeech/results/finetuned(1.0.1)/sample/run_01/logs/server.log"
 ```
+
+> **파인튜닝 가중치 경로:** 현재 저장소의 가중치는 `models/Qwen3-ASR-1.7B-en-silence-c80-merged`(영어)와
+> `models/Qwen3-ASR-1.7B-ko-silence-v4c900-merged`(한국어)입니다.
+> 테스트 스크립트의 `--model "finetuned(1.0.1)"` 별칭은 아직 존재하지 않는 예전 경로
+> (`Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged`)로 매핑되어 있으므로, 서버에는 위처럼 실제 경로를 직접 넘기세요.
 
 > **`--log-file` 경로 규칙:** `evaluation/{Dataset}/results/{model}/{scope}/{tag}/logs/server.log`  
 > 서버를 먼저 시작하고, 테스트 스크립트에서 동일한 `--model`, `--scope`, `--tag` 조합을 사용하면 같은 폴더에 결과가 모입니다.  
@@ -143,7 +148,7 @@ python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \
 ```bash
 # 1) 서버 시작 (별도 터미널)
 python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py \
-  --model /home/ubuntu/STiTy/Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged \
+  --model models/Qwen3-ASR-1.7B-ko-silence-v4c900-merged \
   --no-idle-shutdown \
   --enforce-eager \
   --log-file "evaluation/KtelSpeech/results/finetuned(1.0.1)/sample/run_01/logs/server.log"
@@ -164,7 +169,7 @@ python evaluation/KtelSpeech/test_qwen3_ktelspeech.py \
 
 ---
 
-### 3.3.1 KsponSpeech (자유발화, Korean)
+### 3.4 KsponSpeech (자유발화, Korean)
 
 KsponSpeech eval_clean 클립으로 구성됩니다.  
 오디오: raw PCM (s16le, 16 kHz, mono). 클립마다 새 WebSocket 연결을 맺어 컨텍스트 오염을 방지합니다. 평가 지표: **CER** (문자 오류율).
@@ -196,7 +201,7 @@ python evaluation/KsponSpeech/test_qwen3_kspon.py \
 
 ---
 
-### 3.4 AMI
+### 3.5 AMI
 
 서버를 먼저 시작할 때 `--tag`를 미리 고정하고 `--log-file`을 맞춰줍니다.
 
@@ -224,7 +229,7 @@ python evaluation/AMI/test_qwen3_ami.py \
 
 ---
 
-### 3.5 RAMC (단문 발화, Chinese)
+### 3.6 RAMC (단문 발화, Chinese)
 
 서버를 먼저 시작할 때 `--tag`를 미리 고정하고 `--log-file`을 맞춰줍니다.
 
@@ -256,7 +261,7 @@ python "evaluation/(zh)RAMC/test_qwen3_ramc.py" \
 
 ---
 
-### 3.6 AliMeeting (다화자 회의, Chinese)
+### 3.7 AliMeeting (다화자 회의, Chinese)
 
 서버를 먼저 시작할 때 `--tag`를 미리 고정하고 `--log-file`을 맞춰줍니다.
 
@@ -287,7 +292,7 @@ python evaluation/AliMeeting/test_qwen3_alimeeting.py \
 
 ---
 
-### 3.6 KokoroSpeech (단문 클립, Japanese)
+### 3.8 KokoroSpeech (단문 클립, Japanese)
 
 Kokoro Speech Dataset은 일본어 낭독 단문 클립으로 구성됩니다.  
 tiny 기준 308개 클립(평균 4.7초). 클립마다 새 WebSocket 연결을 맺어 컨텍스트 오염을 방지합니다. 평가 지표: **CER** (문자 오류율).
@@ -323,7 +328,7 @@ python evaluation/KokoroSpeech/test_qwen3_kokoro.py \
 
 ---
 
-### 3.7 ReazonSpeech (단문 클립, Japanese)
+### 3.9 ReazonSpeech (단문 클립, Japanese)
 
 ReazonSpeech는 독립적인 단문 일본어 클립(평균 5초 내외) 350개로 구성됩니다.  
 클립마다 새 WebSocket 연결을 맺어 컨텍스트 오염을 방지합니다. 평가 지표: **CER** (문자 오류율).
@@ -353,7 +358,7 @@ python evaluation/ReazonSpeech/test_qwen3_reazonspeech.py \
 
 ---
 
-### 3.7 (es)CIEMPIESS (단문 발화, Spanish)
+### 3.10 (es)CIEMPIESS (단문 발화, Spanish)
 
 CIEMPIESS는 1,000개의 스페인어 단문 음성 클립으로 구성됩니다.  
 서브셋: `train` (700개, 25개 라디오 세션), `description` (200개), `read` (83개, 낭독 음성), `fm` (17개, FM 라디오).  
@@ -397,21 +402,22 @@ python "evaluation/(es)CIEMPIESS/test_qwen3_ciempiess.py" \
 
 ---
 
-## 5. 동시 접속 벤치마크 (multi_speaker_test)
+## 5. 동시 접속 벤치마크
 
-N명이 동시 접속할 때 WER / FSL 변화를 측정하는 전용 벤치마크입니다.  
-관련 코드와 결과는 `evaluation/LibriSpeech/multi_speaker_test/` 안에 자체 격리되어 있습니다.  
-자세한 내용은 [multi_speaker_test/README.md](LibriSpeech/multi_speaker_test/README.md)를 참조하세요.
+N명이 동시 접속할 때 WER / FSL이 어떻게 변하는지 측정합니다. 스크립트는 `evaluation/LibriSpeech/` 바로 아래에 있습니다.
+
+| 스크립트 | 용도 |
+|---|---|
+| `run_concurrent_chapters.py` | 챕터를 N개 클라이언트로 나눠 동시 실행 (**현재 주 경로**, CLI 인자 지원) |
+| `run_concurrent_benchmark.py` | 동시 1~10명 스윕 (인자 없음, 상단 상수 편집) |
+| `run_multi_speaker_full.py` | full 스코프 다화자 실행 (인자 없음, 상단 상수 편집) |
 
 ```bash
-# 기본 (full 모드, 1~10명, finetuned 모델)
-python evaluation/LibriSpeech/multi_speaker_test/run_benchmark.py
-
-# 특정 범위 / 모드 지정
-python evaluation/LibriSpeech/multi_speaker_test/run_benchmark.py --mode split --start-n 3 --end-n 5
+python evaluation/LibriSpeech/run_concurrent_chapters.py \
+  --num-clients 16 --model mode2 --scope full --tag c16_run01
 ```
 
-결과 위치: `evaluation/LibriSpeech/multi_speaker_test/results/{model}/run_{N:02d}/`
+> **주의:** `run_concurrent_benchmark.py`와 `run_multi_speaker_full.py`는 `PROJECT_ROOT = Path("/home/ubuntu/STiTy")`가 하드코딩되어 있습니다. 다른 머신에서는 파일 상단 상수를 고쳐야 합니다.
 
 ---
 

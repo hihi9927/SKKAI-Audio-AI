@@ -7,6 +7,8 @@
 오디오는 `evaluation/AMI/AMI/`에, 단어 수준 XML 전사는 `evaluation/AMI/words/`에 있다.  
 `--ami-dir evaluation/AMI`만 넘기면 "No audio files found" 오류 발생. 반드시 두 경로 모두 지정.
 
+`evaluation/AMI/`는 `.gitignore`로 제외되어 있고 스크립트와 `words/` XML만 force-add로 추적된다. 오디오(`AMI/`)는 별도로 내려받아야 한다.
+
 ## 빠른 시작
 
 ```bash
