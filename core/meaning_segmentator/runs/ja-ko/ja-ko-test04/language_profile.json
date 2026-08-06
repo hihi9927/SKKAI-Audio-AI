@@ -1,0 +1,44 @@
+{
+  "source_language": "Japanese",
+  "source_code": "ja",
+  "uses_spaces_between_words": false,
+  "word_order": "SOV — verbs consistently appear clause-final, e.g. 'ごんは...ぬかるみみちを歩いていきました' (subject-object-verb).",
+  "head_final": true,
+  "punctuation_present": "always — 。、「」are used throughout to mark sentence and quotation boundaries",
+  "register": "read-aloud narrative prose (children's literary story, third-person narration with embedded dialogue)",
+  "fillers_and_hesitations": [],
+  "discourse_markers": [
+    "すると",
+    "そこで",
+    "そして",
+    "が",
+    "けれども",
+    "ので",
+    "さて",
+    "それから"
+  ],
+  "clause_boundary_signals": [
+    "。 (sentence-final period)",
+    "、 (comma, often marking clause break after -te form or topic phrase)",
+    "「」 (quotation marks opening/closing reported speech)",
+    "verb + た。 / だ。 / ます。 (finite past/polite sentence endings)",
+    "-て form followed by comma or new clause (e.g. 歩いていきました、のぞいてみました)",
+    "ので / から (causal clause boundary)",
+    "と (quotation-closing particle before verbs like 言いました, 思いました)"
+  ],
+  "non_boundary_traps": [
+    "の (genitive/nominalizer, not a topic or clause marker, e.g. '山の霊', '国中で一番高い山')",
+    "て-form mid-sentence (連用形) which chains clauses without ending them, e.g. '歩いていきました' is one clause not two",
+    "が used as subject marker vs. conjunction 'but' — same character different function",
+    "、 inside quoted speech that does not end the sentence",
+    "だ / です before another clause continuation (e.g. '～だとみえて')"
+  ],
+  "target_language_risks": [
+    "Japanese frequently omits subjects/pronouns; Korean also allows omission but referent tracking must be preserved across segments or ambiguity arises",
+    "Honorific and speech-level nuances (敬語) in dialogue must be mapped to appropriate Korean speech levels (해요체/합니다체) consistently",
+    "Nested quotations with 「」 can be split incorrectly, breaking the reported-speech frame if segmented mid-quote",
+    "-te form chains (e.g. 歩いていきました) may be split prematurely, losing the single continuous action reading in Korean's equally chained -고/-며 structure",
+    "Sentence-final auxiliary verbs (ました, でした) carry tense/aspect that must stay attached to the main verb; premature segmentation can strand tense information"
+  ],
+  "notes_for_prompt_writer": "Treat 。and closing 」as the strongest boundary signals; treat 、 as a weak, context-dependent boundary that often follows -te forms or topic markers and should not trigger a split unless a full clause (with its own verb) precedes it. Keep quoted speech blocks intact when possible, since translating a fragment of dialogue without its closing quote or attribution verb (言いました, 思いました) breaks meaning in Korean. Because Japanese is head-final and consistently SOV like Korean, structural reordering is minimal, but subject/topic ellipsis requires carrying context forward across segments."
+}

@@ -4,3 +4,8 @@ unbabel-comet>=2.2.0   # COMET MT 평가 지표 (comet_eval.py)
 
 # GPT 분절
 openai>=1.0.0          # gpt_seg.py
+
+# 프롬프트 자동 생성 루프 (autoseg/)
+httpx>=0.27.0          # Letsur AI Gateway 호출. 이 외 추가 의존성 없음
+# unbabel-comet 이 설치되어 있으면 autoseg 의 품질 백엔드를 comet 으로 바꿀 수 있다.
+# 없으면 게이트웨이 임베딩 코사인 유사도(기본)와 chrF(내장 구현)를 쓴다.

@@ -182,3 +182,7 @@ Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-ko-silence-v4c900-merged/
 
 # KSponSpeech 데이터 백업본 (원본 .jsonl 이미 무시됨)
 Qwen3-ASR/finetuning/data/KSponSpeech/*.jsonl.bak
+
+# autoseg 루프 산출물 (프롬프트/리포트만 추적, 캐시·중간 rows 제외)
+core/meaning_segmentator/runs/**/cache/
+core/meaning_segmentator/runs/**/*_rows.json
