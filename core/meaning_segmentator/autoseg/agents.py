@@ -157,6 +157,27 @@ Two failure directions matter equally:
 Also flag reference_suspect when the reference (whole-sentence) translation is itself wrong, so
 the loop does not chase a bad reference.
 
+MEASURED PLACEMENT EVIDENCE. Some cases carry "boundary_diagnostics". This is a real
+experiment, not inference: the sentence was re-split at many alternative positions, every
+alternative was kept AT LEAST AS FAST as the current one (same piece count, and no worse on the
+latency proxy), then re-translated and re-scored.
+
+  free_quality_headroom = best_alt_quality - current_quality
+
+Because every alternative is at least as fast, this headroom is quality you could have had for
+FREE — with no latency cost at all.
+
+- headroom LARGE (verdict "placement"): compare current_segmentation with
+  best_alt_segmentation and state what the better placement did differently. Say explicitly
+  that fixing it costs no latency.
+- headroom SMALL (verdict "not placement"): no equally-fast split does better. The damage is
+  inherent to splitting that sentence that many times. Only here may you suggest splitting such
+  sentences less.
+
+Never propose banning a connective ending outright. The same ending is safe in most sentences;
+a blanket ban trades a large latency loss for a small quality gain. Your rule must state the
+CONDITION that separates the safe uses from the harmful ones.
+
 Return ONLY JSON:
 {
   "cases": [
@@ -213,9 +234,19 @@ def summarize_critique(cases: list[dict], metrics: dict, summary: str | None,
         t = c.get("error_type", "unknown")
         counts[t] = counts.get(t, 0) + 1
 
+    # **목적함수와 같은 기준을 써야 한다.** 목적함수는 LCB(평균의 하한)로 거부하는데
+    # 여기서 평균만 보면 판정이 어긋난다 — 실측에서 Qs 0.8846 > floor 0.8821 이라
+    # "품질 통과"로 보고 `segment more aggressively` 를 냈지만, 목적함수는 같은
+    # 이터레이션을 LCB 0.8647 < floor 로 거부했다. 병목이 품질인데 PE 에게 더 자르라고
+    # 지시하는 셈이라 이터레이션이 통째로 낭비된다.
+    qs = metrics.get("quality_segmented", 1.0)
+    n_seg = metrics.get("n_segmented", 0) or 0
+    sd = metrics.get("quality_segmented_std", 0.0) or 0.0
+    lcb = qs - sd / (n_seg ** 0.5) if n_seg > 1 else qs
+
     if metrics.get("valid_rate", 1.0) < 1.0:
         direction = "fix output format"
-    elif metrics.get("quality_segmented", 1.0) < q_floor:
+    elif lcb < q_floor:
         direction = "fix boundary placement"
     elif metrics.get("segmented_rate", 0.0) < 0.6 or metrics.get("mean_segments", 1.0) < 2.0:
         direction = "segment more aggressively"
@@ -291,6 +322,12 @@ Hard constraints — violating any of these makes your output unusable:
                                   procedure. Do NOT add new segmentation restrictions.
    - "fix boundary placement"   → the splits being made are damaging the translation. Make
                                   [Never Segment] more precise about WHERE, not more sweeping.
+                                  The critic may carry measured boundary evidence: each blamed
+                                  boundary was actually deleted and re-scored. Target ONLY the
+                                  conditions it identifies. Do NOT ban a connective ending
+                                  outright — the same ending is safe in most sentences, and a
+                                  blanket ban trades a large latency loss for a small quality
+                                  gain. State the condition, not the form.
    - "segment more aggressively" → too few splits. Remove or narrow over-broad prohibitions
                                   and add concrete permissive rules. Do NOT add restrictions.
 

@@ -1,0 +1,10 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Never Segment]"
+  ],
+  "changelog": [
+    "[When to Segment]: Added a new bullet clarifying that connective-based (그런데/근데/그래서/그러니까) and coordinate -고/-며 split points must be taken independently each time they occur, regardless of sentence length or how many other clauses remain unresolved in the same long utterance — a long sentence with only one qualifying boundary should still be split there rather than left whole, and a sentence with several qualifying boundaries should be split at every one of them, not just the first.",
+    "[Never Segment]: Narrowed the 'mid-clause, before the verb/predicate has appeared' prohibition by adding an explicit exemption: this prohibition does not apply when the candidate boundary coincides with an existing terminal punctuation mark ('.', '?', '!') in the transcript, since such punctuation already marks a speaker/transcriber-intended completed unit and overrides the predicate-completeness check."
+  ]
+}

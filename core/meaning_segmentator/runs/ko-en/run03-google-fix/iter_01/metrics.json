@@ -1,0 +1,44 @@
+{
+  "train": {
+    "n": 30,
+    "valid_rate": 1.0,
+    "first_pass_valid_rate": 1.0,
+    "quality": 0.9728,
+    "quality_segmented": 0.9455,
+    "quality_segmented_std": 0.0705,
+    "n_segmented": 15,
+    "quality_chrf": 0.9517,
+    "latency": 0.8591,
+    "latency_gain": 0.1409,
+    "mean_segments": 1.7333,
+    "segmented_rate": 0.5,
+    "quality_min": 0.8015,
+    "quality_p10": 0.8646
+  },
+  "dev": {
+    "n": 60,
+    "valid_rate": 1.0,
+    "first_pass_valid_rate": 0.9833,
+    "quality": 0.9452,
+    "quality_segmented": 0.9033,
+    "quality_segmented_std": 0.0864,
+    "n_segmented": 34,
+    "quality_chrf": 0.9055,
+    "latency": 0.8409,
+    "latency_gain": 0.1591,
+    "mean_segments": 1.8,
+    "segmented_rate": 0.5667,
+    "quality_min": 0.6869,
+    "quality_p10": 0.8134
+  },
+  "objective_train": 0.1409,
+  "objective_dev": 0.1591,
+  "adopted": true,
+  "usage": {
+    "calls": 186,
+    "prompt_tokens": 665768,
+    "completion_tokens": 95196,
+    "cached_tokens": 0,
+    "cost": 2.280652
+  }
+}

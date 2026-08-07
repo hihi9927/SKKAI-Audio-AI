@@ -1,0 +1,73 @@
+{
+  "source_language": "Korean",
+  "source_code": "ko",
+  "uses_spaces_between_words": true,
+  "word_order": "SOV",
+  "head_final": true,
+  "punctuation_present": "sometimes — several utterances end with . or ? but many trail off unmarked (e.g. lines 1, 3, 11, 15, 20)",
+  "trailing_punctuation": [
+    ".",
+    "?",
+    "!",
+    ",",
+    "”",
+    "’",
+    ")"
+  ],
+  "register": "spontaneous conversational speech (casual dialogue/interview transcript with disfluencies, self-corrections, and trailing-off utterances)",
+  "fillers_and_hesitations": [
+    "어",
+    "음",
+    "에",
+    "그",
+    "막",
+    "뭐",
+    "이제",
+    "그니까",
+    "저",
+    "좀"
+  ],
+  "discourse_markers": [
+    "그래서",
+    "근데",
+    "그러니까",
+    "그니까",
+    "그리고",
+    "아니",
+    "아니 근데",
+    "그래도",
+    "그래가지고",
+    "그런데",
+    "물론"
+  ],
+  "clause_boundary_signals": [
+    "-거든(요)",
+    "-잖아(요)",
+    "-는데",
+    "-니까",
+    "-아서/어서",
+    "-다가",
+    "-고 (sentence-final listing/pause)",
+    "-지",
+    "-거야",
+    "다./요.",
+    "?"
+  ],
+  "non_boundary_traps": [
+    "-는데 (often continues into next clause, not a full stop)",
+    "-고 (can be a mid-clause connective, not a boundary)",
+    "-아/어서 (subordinate clause connector, keep attached to following clause)",
+    "그 (filler/demonstrative, not a discourse marker when used alone)",
+    "이제 (temporal filler, frequently not a real 'now' but a discourse filler)",
+    "막 (intensifier filler, not a verb or boundary)"
+  ],
+  "target_language_risks": [
+    "Pro-drop: subjects/objects are frequently omitted, so a segment alone may lack an explicit agent for English translation",
+    "Verb-final structure means the main predicate (and thus sentence meaning/polarity/tense) often appears only at the very end, making early segmentation risky",
+    "Honorific and speech-level endings (e.g. -요, -잖아) carry pragmatic tone that is lost if clause is cut before the ending",
+    "Long chains of connective endings (-아서, -는데, -니까) can stack multiple clauses; premature splitting breaks causal/temporal relations",
+    "Self-corrections and repeated words (e.g. '지가 지가', '자기도') require lookahead to resolve which token is the final intended one",
+    "Sentence-final particles like -거든, -잖아 add nuance (justification, shared knowledge) not directly translatable without the whole clause"
+  ],
+  "notes_for_prompt_writer": "This is unscripted spoken Korean, so segmentation should prioritize clause-final endings (-어/아, -거든, -잖아, -는데 when clearly terminal, sentence punctuation) rather than raw punctuation, since punctuation is often absent. Treat fillers (어, 음, 이제, 그, 막) as attachable noise that can be skipped or merged into the following segment rather than treated as boundaries. Because Korean is strictly verb-final and highly pro-drop, avoid splitting before the main verb/predicate is visible, and be cautious with connective endings (-아서, -고, -니까, -는데) which usually signal continuation rather than a true clause break."
+}

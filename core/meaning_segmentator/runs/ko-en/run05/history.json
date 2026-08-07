@@ -1,0 +1,210 @@
+[
+  {
+    "version": 0,
+    "adopted": true,
+    "train": {
+      "n": 30,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9336,
+      "quality_segmented": 0.8671,
+      "quality_segmented_std": 0.1011,
+      "n_segmented": 15,
+      "quality_chrf": 0.8852,
+      "latency": 0.8654,
+      "latency_gain": 0.1346,
+      "mean_segments": 1.8667,
+      "segmented_rate": 0.5,
+      "quality_min": 0.6194,
+      "quality_p10": 0.8015
+    },
+    "dev": {
+      "n": 60,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9215,
+      "quality_segmented": 0.8692,
+      "quality_segmented_std": 0.1007,
+      "n_segmented": 36,
+      "quality_chrf": 0.8504,
+      "latency": 0.8546,
+      "latency_gain": 0.1454,
+      "mean_segments": 1.9167,
+      "segmented_rate": 0.6,
+      "quality_min": 0.6396,
+      "quality_p10": 0.8015
+    },
+    "objective_train": -1.0411,
+    "objective_dev": -1.0297,
+    "changelog": null,
+    "next_changelog": [
+      "[When to Segment]: added permissive rules to split at internal sentence-final punctuation (?/./!) that closes a complete clause, after quoted/embedded questions ending in '?' before their reporting clause, and after -거든/-는데 when the following clause introduces its own new subject/topic as an independent elaboration — fixes measured under-segmentation cases.",
+      "[Never Segment]: replaced sweeping caution with precise, condition-based bans — do not split a causal/result connective when the following span is a fragment lacking a finite verb, do not split inside a clause containing 3+ filler/self-correction repetitions (since no boundary there helps), and do not multiply splits across a short sequential-action chain (under ~15 words) joined by repeated -고 connectives — targets the measured over-segmentation and wrong-boundary cases without banning any connective ending outright."
+    ]
+  },
+  {
+    "version": 1,
+    "adopted": true,
+    "train": {
+      "n": 30,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.973,
+      "quality_segmented": 0.9264,
+      "quality_segmented_std": 0.0724,
+      "n_segmented": 11,
+      "quality_chrf": 0.9531,
+      "latency": 0.9,
+      "latency_gain": 0.1,
+      "mean_segments": 1.5667,
+      "segmented_rate": 0.3667,
+      "quality_min": 0.8015,
+      "quality_p10": 0.8713
+    },
+    "dev": {
+      "n": 60,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9477,
+      "quality_segmented": 0.8988,
+      "quality_segmented_std": 0.0883,
+      "n_segmented": 31,
+      "quality_chrf": 0.9063,
+      "latency": 0.8808,
+      "latency_gain": 0.1192,
+      "mean_segments": 1.75,
+      "segmented_rate": 0.5167,
+      "quality_min": 0.6869,
+      "quality_p10": 0.8216
+    },
+    "objective_train": 0.1,
+    "objective_dev": 0.1192,
+    "changelog": [
+      "[When to Segment]: added permissive rules to split at internal sentence-final punctuation (?/./!) that closes a complete clause, after quoted/embedded questions ending in '?' before their reporting clause, and after -거든/-는데 when the following clause introduces its own new subject/topic as an independent elaboration — fixes measured under-segmentation cases.",
+      "[Never Segment]: replaced sweeping caution with precise, condition-based bans — do not split a causal/result connective when the following span is a fragment lacking a finite verb, do not split inside a clause containing 3+ filler/self-correction repetitions (since no boundary there helps), and do not multiply splits across a short sequential-action chain (under ~15 words) joined by repeated -고 connectives — targets the measured over-segmentation and wrong-boundary cases without banning any connective ending outright."
+    ],
+    "next_changelog": [
+      "[When to Segment]: added explicit permissive rules to split before a discourse marker (그런데, 근데, 그래서, 그러니까) that begins a new clause even when the preceding clause ends in a causal/result connective or the discourse-marker clause trails off without a finished predicate, and reinforced that internal sentence-final punctuation (?/./!) is always a safe split point regardless of whether following material still elaborates the same referent — recovers the measured under-segmentation cases (그런데/그래서/? left unsplit) at no quality cost.",
+      "[Never Segment]: narrowed the causal/result-connective-fragment ban so it no longer blocks splits when the trailing span is itself introduced by a discourse marker (그래서/그러니까/근데/그런데), and removed the overly broad 'trailing ? on bare NP' prohibition since it was suppressing safe, measured latency gains at real punctuation boundaries — direction says segment more aggressively, so over-broad prohibitions are narrowed/removed rather than adding new restrictions."
+    ]
+  },
+  {
+    "version": 2,
+    "adopted": false,
+    "train": {
+      "n": 30,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9636,
+      "quality_segmented": 0.9393,
+      "quality_segmented_std": 0.071,
+      "n_segmented": 18,
+      "quality_chrf": 0.9432,
+      "latency": 0.8531,
+      "latency_gain": 0.1469,
+      "mean_segments": 1.8333,
+      "segmented_rate": 0.6,
+      "quality_min": 0.8015,
+      "quality_p10": 0.8617
+    },
+    "dev": {
+      "n": 60,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9536,
+      "quality_segmented": 0.9005,
+      "quality_segmented_std": 0.0937,
+      "n_segmented": 28,
+      "quality_chrf": 0.9176,
+      "latency": 0.8919,
+      "latency_gain": 0.1081,
+      "mean_segments": 1.6667,
+      "segmented_rate": 0.4667,
+      "quality_min": 0.6869,
+      "quality_p10": 0.803
+    },
+    "objective_train": 0.1469,
+    "objective_dev": 0.1081,
+    "changelog": [
+      "[When to Segment]: added explicit permissive rules to split before a discourse marker (그런데, 근데, 그래서, 그러니까) that begins a new clause even when the preceding clause ends in a causal/result connective or the discourse-marker clause trails off without a finished predicate, and reinforced that internal sentence-final punctuation (?/./!) is always a safe split point regardless of whether following material still elaborates the same referent — recovers the measured under-segmentation cases (그런데/그래서/? left unsplit) at no quality cost.",
+      "[Never Segment]: narrowed the causal/result-connective-fragment ban so it no longer blocks splits when the trailing span is itself introduced by a discourse marker (그래서/그러니까/근데/그런데), and removed the overly broad 'trailing ? on bare NP' prohibition since it was suppressing safe, measured latency gains at real punctuation boundaries — direction says segment more aggressively, so over-broad prohibitions are narrowed/removed rather than adding new restrictions."
+    ],
+    "next_changelog": [
+      "[Core Principles]: Added an explicit statement that because measured quality sits far above the floor, the default action at any completed clause-final connective/ender is to split; withholding a split now requires a concrete, nameable piece of information that would be lost, not generic caution about disfluency, density, or list structure — this pushes latency gain up without adding any new prohibition.",
+      "[Decision Procedure]: Reworded steps 5-6 so that only a specific, nameable loss of information (a word, referent, tense, or polarity that cannot be recovered) blocks a split; vague unease about a sentence being 'dense', 'disfluent', or part of a 'list/chain' no longer counts as sufficient grounds to withhold a <SEG> — this narrows how conservatively the existing checklist is applied, directly increasing segmentation frequency as the critic's 'segment more aggressively' direction requires, without touching [When to Segment] or [Never Segment], which were changed (and reverted) in the immediately preceding iteration."
+    ]
+  },
+  {
+    "version": 3,
+    "adopted": false,
+    "train": {
+      "n": 30,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9711,
+      "quality_segmented": 0.9332,
+      "quality_segmented_std": 0.0768,
+      "n_segmented": 13,
+      "quality_chrf": 0.948,
+      "latency": 0.8835,
+      "latency_gain": 0.1165,
+      "mean_segments": 1.7,
+      "segmented_rate": 0.4333,
+      "quality_min": 0.8015,
+      "quality_p10": 0.8484
+    },
+    "dev": {
+      "n": 60,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9413,
+      "quality_segmented": 0.8899,
+      "quality_segmented_std": 0.0942,
+      "n_segmented": 32,
+      "quality_chrf": 0.8901,
+      "latency": 0.877,
+      "latency_gain": 0.123,
+      "mean_segments": 1.7667,
+      "segmented_rate": 0.5333,
+      "quality_min": 0.6869,
+      "quality_p10": 0.8015
+    },
+    "objective_train": 0.1165,
+    "objective_dev": -1.0088,
+    "changelog": [
+      "[Core Principles]: Added an explicit statement that because measured quality sits far above the floor, the default action at any completed clause-final connective/ender is to split; withholding a split now requires a concrete, nameable piece of information that would be lost, not generic caution about disfluency, density, or list structure — this pushes latency gain up without adding any new prohibition.",
+      "[Decision Procedure]: Reworded steps 5-6 so that only a specific, nameable loss of information (a word, referent, tense, or polarity that cannot be recovered) blocks a split; vague unease about a sentence being 'dense', 'disfluent', or part of a 'list/chain' no longer counts as sufficient grounds to withhold a <SEG> — this narrows how conservatively the existing checklist is applied, directly increasing segmentation frequency as the critic's 'segment more aggressively' direction requires, without touching [When to Segment] or [Never Segment], which were changed (and reverted) in the immediately preceding iteration."
+    ],
+    "next_changelog": [
+      "[When to Segment]: Clarified the internal-punctuation split rule to explicitly cover short rhetorical noun-phrase questions (e.g. bare NP + '?') followed by a clause that introduces its own new subject/predicate — this recovers measured under-segmentation cases where a '?' boundary was skipped, while staying consistent with (not contradicting) the existing Never-Segment condition that still blocks splitting when the following words merely keep specifying the same NP.",
+      "[Examples — Segment]: Added a worked example showing the bare-NP + '?' + new-clause split now explicitly licensed by the clarified rule, and removed the '그니까...그러니까' example (redundant with two other -거든/-니까 examples already present) to stay within the 12-example cap while keeping the set non-redundant."
+    ]
+  },
+  {
+    "version": 4,
+    "adopted": false,
+    "train": {
+      "n": 30,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.973,
+      "quality_segmented": 0.9264,
+      "quality_segmented_std": 0.0724,
+      "n_segmented": 11,
+      "quality_chrf": 0.9531,
+      "latency": 0.9,
+      "latency_gain": 0.1,
+      "mean_segments": 1.5667,
+      "segmented_rate": 0.3667,
+      "quality_min": 0.8015,
+      "quality_p10": 0.8713
+    },
+    "dev": null,
+    "objective_train": 0.1,
+    "objective_dev": null,
+    "changelog": [
+      "[When to Segment]: Clarified the internal-punctuation split rule to explicitly cover short rhetorical noun-phrase questions (e.g. bare NP + '?') followed by a clause that introduces its own new subject/predicate — this recovers measured under-segmentation cases where a '?' boundary was skipped, while staying consistent with (not contradicting) the existing Never-Segment condition that still blocks splitting when the following words merely keep specifying the same NP.",
+      "[Examples — Segment]: Added a worked example showing the bare-NP + '?' + new-clause split now explicitly licensed by the clarified rule, and removed the '그니까...그러니까' example (redundant with two other -거든/-니까 examples already present) to stay within the 12-example cap while keeping the set non-redundant."
+    ]
+  }
+]

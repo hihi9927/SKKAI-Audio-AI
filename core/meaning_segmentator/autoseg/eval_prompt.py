@@ -23,7 +23,7 @@ from pathlib import Path
 from . import data, metrics
 from .gateway import Gateway
 from .loop import evaluate
-from .pipeline import JsonCache, Translator
+from .pipeline import GoogleTranslator, JsonCache, Translator
 
 _HERE = Path(__file__).resolve().parent
 
@@ -39,6 +39,10 @@ def main() -> int:
     p.add_argument("--translator-model", default="claude-sonnet-5")
     p.add_argument("--budget", type=float, default=5.0)
     p.add_argument("--workers", type=int, default=8)
+    p.add_argument("--quality-backend", default=None,
+                   help="미지정 시 기준 런의 baseline.json 이 쓴 백엔드를 그대로 따른다")
+    p.add_argument("--comet-model", default=None)
+    p.add_argument("--comet-batch-size", type=int, default=16)
     args = p.parse_args()
 
     run_dir = _HERE.parent / "runs" / args.run_id
@@ -60,18 +64,42 @@ def main() -> int:
     gw = Gateway(model=args.model, budget=args.budget)
     seg_cache = JsonCache(run_dir / "cache" / "segment.json")
     tr_cache = JsonCache(run_dir / "cache" / "translate.json")
-    translator = Translator(gw=gw, src_name=cfg["src_lang"], tgt_name=cfg["tgt_lang"],
-                            model=args.translator_model, cache=tr_cache, workers=args.workers)
+
+    # 번역기도 백엔드와 같이 기준 런에서 상속한다. 앵커가 번역기에 의존하므로
+    # (LLM 은 비결정론적이라 상한 < 1.0, gtx 는 결정론적이라 상한 = 1.0)
+    # 다른 번역기로 재면서 기준 런의 Q_floor 를 쓰면 비교가 무의미해진다.
+    tr_id = cal.get("translator") or f"llm:{args.translator_model}"
+    if tr_id.startswith("google:"):
+        _, code, ctx = tr_id.split(":", 2)
+        translator = GoogleTranslator(tgt_code=code, cache=tr_cache,
+                                      workers=min(args.workers, 4),
+                                      use_context=ctx.endswith("True"))
+    else:
+        translator = Translator(gw=gw, src_name=cfg["src_lang"], tgt_name=cfg["tgt_lang"],
+                                model=tr_id.split(":", 1)[-1], cache=tr_cache,
+                                workers=args.workers)
+
+    # 비교 대상 프롬프트들은 반드시 같은 자로 재야 한다 — 기준 런의 Q_floor 를
+    # 쓰면서 백엔드만 다르면 그 비교는 무의미하다.
+    backend_name = args.quality_backend or cal.get("backend") or "embed"
+    comet_kw = {"batch_size": args.comet_batch_size}
+    if args.comet_model:
+        comet_kw["model_name"] = args.comet_model
+    scorer = metrics.make_backend(
+        backend_name, gw=gw,
+        **(comet_kw if backend_name in metrics.COMET_CHECKPOINTS else {}))
 
     try:
         rows, m, viol = evaluate(gw, translator, prompt, sentences, spaced,
-                                 seg_cache, args.workers, trailing_punct)
+                                 seg_cache, args.workers, scorer, trailing_punct)
         obj = metrics.objective(m, q_floor)
         out_dir = run_dir / "prompt_eval"
         out_dir.mkdir(parents=True, exist_ok=True)
         (out_dir / f"{label}_{args.split}.json").write_text(json.dumps({
             "prompt_file": str(args.prompt),
             "split": args.split,
+            "quality_backend": backend_name,
+            "translator": tr_id,
             "q_floor": q_floor,
             "metrics": m.to_dict(),
             "objective": round(obj, 4),
@@ -80,10 +108,11 @@ def main() -> int:
             "usage": gw.usage.snapshot(),
         }, ensure_ascii=False, indent=2), encoding="utf-8")
 
-        print(f"[{label} / {args.split}] n={m.n}")
+        print(f"[{label} / {args.split}] n={m.n} backend={backend_name} 번역기={tr_id}")
         print(f"  V  {m.valid_rate:.4f} (1차 {m.first_pass_valid_rate:.4f})")
-        print(f"  Q  {m.quality:.4f} (floor {q_floor}, chrF {m.quality_chrf:.4f}, "
-              f"p10 {m.quality_p10:.4f})")
+        print(f"  Qs {m.quality_segmented:.4f} (n={m.n_segmented}, floor {q_floor}, "
+              f"LCB {metrics.quality_lcb(m):.4f})")
+        print(f"  Q  {m.quality:.4f} (chrF {m.quality_chrf:.4f}, p10 {m.quality_p10:.4f})")
         print(f"  L  {m.latency:.4f}  gain {m.latency_gain:.4f}")
         print(f"  k  {m.mean_segments:.2f}  분절률 {m.segmented_rate:.4f}")
         print(f"  objective {obj:.4f}")
@@ -92,6 +121,8 @@ def main() -> int:
     finally:
         seg_cache.flush()
         tr_cache.flush()
+        if isinstance(translator, GoogleTranslator):
+            translator.close()
         gw.close()
 
 

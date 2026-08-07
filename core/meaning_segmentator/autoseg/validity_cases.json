@@ -1,0 +1,89 @@
+[
+  {
+    "id": "ja-ko-01",
+    "note": "HANDOFF §4.1 의 기준문을 그대로 재현. benign_minimal 이 §4.1 의 '무해한 표기 차이'다.",
+    "src_lang": "Japanese",
+    "tgt_lang": "Korean",
+    "src": "ごんはうなぎを盗みませんでした。兵十がそれを川へ返しました。",
+    "ref": "곤은 뱀장어를 훔치지 않았습니다. 병십이 그것을 강에 돌려보냈습니다.",
+    "variants": {
+      "identical": "곤은 뱀장어를 훔치지 않았습니다. 병십이 그것을 강에 돌려보냈습니다.",
+      "benign_minimal": "곤은 장어를 훔치지 않았습니다. 헤이주가 그것을 강에 돌려보냈습니다.",
+      "benign_paraphrase": "곤이 뱀장어를 훔친 것은 아니었고, 그것을 강으로 돌려보낸 사람은 병십이었습니다.",
+      "negation_flip": "곤은 뱀장어를 훔쳤습니다. 병십이 그것을 강에 돌려보냈습니다.",
+      "role_swap": "병십은 뱀장어를 훔치지 않았습니다. 곤이 그것을 강에 돌려보냈습니다.",
+      "clause_omission": "곤은 뱀장어를 훔치지 않았습니다.",
+      "referent_loss": "곤은 뱀장어를 훔치지 않았습니다. 병십이 강에 돌려보냈습니다.",
+      "unrelated": "오늘 날씨가 좋아서 공원에 산책하러 갔습니다."
+    }
+  },
+  {
+    "id": "ko-en-01",
+    "note": "KsponSpeech eval_clean_1000 실제 발화. 참여자가 둘이라 role_swap 이 성립한다.",
+    "src_lang": "Korean",
+    "tgt_lang": "English",
+    "src": "내가 딱 들어갔을 때 학생회 형들이 진짜 엄청 착하고 다 좋으셨어 그래가지구 그 형들이 우리한테 엄청 잘해주고",
+    "ref": "When I first joined, the student council seniors were really nice and all great, so those seniors treated us really well.",
+    "variants": {
+      "identical": "When I first joined, the student council seniors were really nice and all great, so those seniors treated us really well.",
+      "benign_minimal": "When I first joined, the student council seniors were really kind and all great, so those seniors treated us very well.",
+      "benign_paraphrase": "When I first came in, the seniors on the student council were super kind and all wonderful, so they were really good to us.",
+      "negation_flip": "When I first joined, the student council seniors were not nice at all, so those seniors did not treat us well.",
+      "role_swap": "When I first joined, the student council seniors were really nice and all great, so we treated those seniors really well.",
+      "clause_omission": "When I first joined, the student council seniors were really nice and all great.",
+      "referent_loss": "When I first joined, the student council seniors were really nice and all great, so they treated them really well.",
+      "unrelated": "I need to stop by the bank before it closes tomorrow afternoon."
+    }
+  },
+  {
+    "id": "ko-en-02",
+    "note": "KsponSpeech 실제 발화. 뒷절이 통째로 사라지는 경우와 지시대상만 흐려지는 경우를 구분한다.",
+    "src_lang": "Korean",
+    "tgt_lang": "English",
+    "src": "그 해부학 할 때가 제일 재밌긴 했는데 그때 밀려 썼던 그 기억이 아직도 잊혀지지가 않네.",
+    "ref": "Anatomy was the most fun, but I still can't forget the memory of filling in the answers off by one back then.",
+    "variants": {
+      "identical": "Anatomy was the most fun, but I still can't forget the memory of filling in the answers off by one back then.",
+      "benign_minimal": "Anatomy was the most enjoyable, but I still can't forget the memory of filling in the answers off by one back then.",
+      "benign_paraphrase": "The anatomy part was the most fun, but that memory of marking my answers one row off still hasn't left me.",
+      "negation_flip": "Anatomy was the most fun, and I've already forgotten the memory of filling in the answers off by one back then.",
+      "clause_omission": "Anatomy was the most fun.",
+      "referent_loss": "Anatomy was the most fun, but I still can't forget that memory.",
+      "unrelated": "The bus was late again this morning so everyone was standing outside."
+    }
+  },
+  {
+    "id": "ko-en-03",
+    "note": "KsponSpeech 실제 발화. benign_minimal 은 고유명사 음역 차이 — §4.1 의 헤이주/병십 과 같은 종류다.",
+    "src_lang": "Korean",
+    "tgt_lang": "English",
+    "src": "아니 그니까 같이 사는 거 생각 없어? 딴 딴 데 유성이나 이쪽에.",
+    "ref": "No, I mean, do you not want to live together? Somewhere else, like Yuseong or around here.",
+    "variants": {
+      "identical": "No, I mean, do you not want to live together? Somewhere else, like Yuseong or around here.",
+      "benign_minimal": "No, I mean, do you not want to live together? Somewhere else, like Yooseong or around here.",
+      "benign_paraphrase": "No, so, you're not thinking of living together? Some other place, like Yuseong or this area.",
+      "negation_flip": "No, I mean, do you want to live together? Somewhere else, like Yuseong or around here.",
+      "clause_omission": "No, I mean, do you not want to live together?",
+      "referent_loss": "No, I mean, do you not want to live together? Somewhere else, like over there.",
+      "unrelated": "She said the report has to be submitted by Friday at the latest."
+    }
+  },
+  {
+    "id": "ko-en-04",
+    "note": "KsponSpeech 실제 발화. 짧은 맞장구 발화 — 분절 대상 중 가장 흔한 길이대다.",
+    "src_lang": "Korean",
+    "tgt_lang": "English",
+    "src": "아. 우린 또 그런 거 안 하잖아. 어. 그치.",
+    "ref": "Ah. We don't do that kind of thing, you know. Yeah. Right.",
+    "variants": {
+      "identical": "Ah. We don't do that kind of thing, you know. Yeah. Right.",
+      "benign_minimal": "Ah. We don't do that sort of thing, you know. Yeah. Right.",
+      "benign_paraphrase": "Ah, we don't really do stuff like that, right? Yeah. Exactly.",
+      "negation_flip": "Ah. We do that kind of thing, you know. Yeah. Right.",
+      "clause_omission": "Ah. We don't do that kind of thing, you know.",
+      "referent_loss": "Ah. We don't do it, you know. Yeah. Right.",
+      "unrelated": "The package should arrive sometime next week according to the tracking page."
+    }
+  }
+]

@@ -8,10 +8,12 @@
 ## 실행
 
 ```bash
+# 의존성: pip install -r core/meaning_segmentator/requirements.txt
 # .env 에 CLAUDE_API_KEY (Letsur AI Gateway) 필요
 PYTHONPATH=. python -m core.meaning_segmentator.autoseg.loop \
-    --dataset kokoro --src-lang Japanese --tgt-lang Korean \
-    --iterations 4 --train 20 --dev 30 --test 50 --budget 6.0
+    --dataset kspon --src-lang Korean --tgt-lang English \
+    --pair-id ko-en --run-id run01 \
+    --iterations 6 --train 30 --dev 60 --test 100 --min-chars 25 --budget 20
 ```
 
 주요 옵션:
@@ -36,9 +38,10 @@ PYTHONPATH=. python -m core.meaning_segmentator.autoseg.loop \
 | `gateway.py` | Letsur AI Gateway 클라이언트, 재시도, 비용 집계, 예산 가드 | — |
 | `data.py` | A0 Data Preparer — 정규화 + 층화 train/dev/test 분할 | — |
 | `pipeline.py` | A2 Segmenter / A3 Format Validator / A4 번역 툴 2종 + 디스크 캐시 | 분절·번역만 |
-| `metrics.py` | A5 Scorer — Q(임베딩 코사인·chrF), L(지연 프록시), 목적함수 | — |
+| `metrics.py` | A5 Scorer — Q 백엔드(COMET·임베딩·chrF), L(지연 프록시), 목적함수 | — |
 | `agents.py` | A1 Profiler / A6 Critic / A7 Prompt Engineer | ● |
 | `loop.py` | A8 Loop Controller — 채택·롤백·중단·리포트 | — |
+| `validity_check.py` | 백엔드 타당도 게이트 — 오류 주입 후 순위 확인 | — |
 
 LLM 판단이 들어가는 곳은 `agents.py` 세 곳뿐이다. 포맷 검증, 점수, 채택 판정, 재시도는 전부
 결정론적 코드다.
@@ -81,8 +84,32 @@ LOADERS = {
 }
 ```
 
-## 품질 백엔드 교체
+## 품질 백엔드
 
-기본은 게이트웨이 임베딩 코사인 유사도다 (로컬 ML 의존성 없음). `unbabel-comet` 이 설치되어
-있으면 `metrics.py` 에 COMET 백엔드를 연결해 운영 기준 지표로 바꿀 수 있다. `Q_floor` 는
-캘리브레이션으로 자동 재산출되므로 백엔드를 바꿔도 상수를 손댈 필요는 없다.
+`--quality-backend` 로 고른다. `Q_floor` 는 캘리브레이션으로 자동 재산출되므로 백엔드를
+바꿔도 상수를 손댈 필요는 없다.
+
+| 값 | 체크포인트 | 비고 |
+|---|---|---|
+| `comet` (기본) | `Unbabel/wmt22-comet-da` | 운영 기준. `unbabel-comet` + GPU 필요 |
+| `xcomet` | `Unbabel/XCOMET-XL` | 35억. HF 라이선스 동의 필요 |
+| `embed` | 게이트웨이 `text-embedding-3-large` | 로컬 ML 의존성 없음 |
+| `chrf` | 내장 구현 | 보조 지표로 항상 함께 리포트 |
+
+**백엔드를 바꾸면 캘리브레이션을 다시 해야 한다.** `--fresh` 없이 같은 `--run-id` 로
+다른 백엔드를 돌리면 루프가 경고를 찍는다 — 축이 다른 `Q_floor` 를 그대로 쓰면 판정이
+무의미해지기 때문이다.
+
+## 타당도 검사 — 루프보다 먼저
+
+앵커 캘리브레이션은 **스케일만** 맞춘다. 순위가 맞는지는 보증하지 않는다. 실제로 임베딩
+코사인은 의미가 정반대인 번역을 무해한 표기 차이보다 높게 매겼다 (HANDOFF §4.1).
+그래서 백엔드를 바꿀 때마다 오류 주입 검사를 먼저 통과시킨다.
+
+```bash
+PYTHONPATH=. python -m core.meaning_segmentator.autoseg.validity_check \
+    --backends comet embed chrf
+```
+
+오류는 `validity_cases.json` 에 고정되어 있어 매 실행 결과가 같다 (LLM 생성 아님).
+결과는 `runs/validity/validity_report.md`.

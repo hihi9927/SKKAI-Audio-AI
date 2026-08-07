@@ -11,15 +11,26 @@ import hashlib
 import json
 import re
 import threading
+import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from pathlib import Path
+
+import httpx
 
 from .gateway import Gateway
 
 SEG = "<SEG>"
 TAG_RE = re.compile(re.escape(SEG))
 CONSECUTIVE = re.compile(re.escape(SEG) + r"\s*" + re.escape(SEG))
+
+# 분절 호출의 출력 예산. **thinking 모델에서는 사고 토큰이 여기 같이 잡힌다.**
+# 1024 로 두면 긴 문장에서 사고가 예산을 전부 먹고 content 가 빈 문자열로 돌아온다
+# (finish_reason='length', completion_tokens=1024, content=''). 그러면 검증기가
+# text_modified 로 잡고, 복구 재시도도 같은 한도라 똑같이 실패해 V 가 1.0 에
+# 영원히 도달하지 못한다. 실측: 103자 문장이 사고에만 918~1464 토큰을 썼다.
+# 프롬프트로는 절대 고칠 수 없는 문제이므로 예산을 넉넉히 준다.
+SEG_MAX_TOKENS = 8192
 
 # 어느 문자가 "앞 텍스트에 붙는" 구두점인지는 언어마다 다르다. 목록을 코드에
 # 박으면 검증기가 언어 종속이 되므로, 기본값은 언어 프로파일이 제공한다
@@ -109,7 +120,7 @@ def segment_batch(
             if hit is not None:
                 return hit[0], hit[1]
 
-        out = gw.chat(system=prompt, user=t, max_tokens=1024)
+        out = gw.chat(system=prompt, user=t, max_tokens=SEG_MAX_TOKENS)
         first_ok = True
         if validate_fn is not None:
             vs = validate_fn(t, out)
@@ -125,7 +136,7 @@ def segment_batch(
                         f"[Re-emit the ORIGINAL text above, character for character, with only "
                         f"<SEG> tags inserted. Do not shorten, rewrite, or add anything.]"
                     ),
-                    max_tokens=1024,
+                    max_tokens=SEG_MAX_TOKENS,
                 )
         if cache is not None:
             cache.put(k, [out, first_ok])
@@ -346,3 +357,149 @@ class Translator:
         joined = [r[0] for r in results]
         pieces = [r[1] for r in results]
         return joined, pieces
+
+
+# ── Google Translate 번역기 ──────────────────────────────────────────────
+
+# 운영 서버(`streaming_websocket_server.py`)의 기본 번역 경로가 이것이다. LLM 번역기로
+# 잰 점수가 운영에 옮겨 붙는지 확인하려면 같은 번역기로 재야 한다.
+#
+# LLM 번역기와 두 가지가 근본적으로 다르다.
+#   1. 시스템 프롬프트가 없다. "조각을 완성하지 말 것", "앞 번역은 확정" 같은 지시를
+#      줄 방법이 자체가 없으므로 _NORMS 를 적용할 수 없다. 실측상 gtx 는 애초에
+#      조각을 완성하지 않으므로 그 지시가 필요 없기도 하다.
+#   2. 결정론적이다. 같은 문장 3회 번역이 5/5 문장에서 완전히 일치했다. 따라서
+#      상한 앵커(무분절 재번역)가 정확히 1.0 이 되고, Q 에서 번역기 잡음이 사라진다.
+
+GOOGLE_URL = "https://translate.googleapis.com/translate_a/single"
+GOOGLE_HEADERS = {"User-Agent": "Mozilla/5.0"}
+
+# tgt_name 은 사람이 읽는 언어명("English")이라 gtx 의 tl 코드로 바꿔야 한다.
+LANG_CODES = {
+    "english": "en", "korean": "ko", "japanese": "ja",
+    "chinese": "zh-CN", "spanish": "es", "french": "fr", "german": "de",
+}
+
+
+def to_lang_code(name: str) -> str:
+    key = name.strip().lower()
+    if key in LANG_CODES:
+        return LANG_CODES[key]
+    if len(key) <= 5 and "-" in key or len(key) == 2:
+        return name.strip()      # 이미 코드로 넘어온 경우
+    raise ValueError(f"Google 번역 대상 언어 코드를 알 수 없습니다: {name!r}. "
+                     f"--tgt-code 로 직접 지정하세요.")
+
+
+@dataclass
+class GoogleTranslator:
+    """운영 서버의 Google Translate 경로를 그대로 재현한다.
+
+    `use_context` 는 서버의 `--google-context` 플래그에 대응한다.
+      False — 조각을 각각 독립 번역 (서버 기본값)
+      True  — 앞 조각 원문들을 개행으로 붙여 통째 번역하고 **마지막 줄만** 취함
+              (`google_translate_with_context_async` 와 동일)
+
+    두 경우 모두 미래 문맥은 보지 않으므로 스트리밍 조건은 지켜진다.
+    """
+
+    tgt_code: str
+    cache: JsonCache | None = None
+    workers: int = 4          # 비공식 무료 엔드포인트다. 동시성을 낮게 잡는다
+    use_context: bool = True
+    timeout: float = 30.0
+    max_retries: int = 5
+    calls: int = 0
+    _client: httpx.Client = field(init=False, repr=False, default=None)
+    _lock: threading.Lock = field(init=False, repr=False, default_factory=threading.Lock)
+
+    def __post_init__(self):
+        self._client = httpx.Client(
+            timeout=self.timeout,
+            limits=httpx.Limits(max_connections=self.workers,
+                                max_keepalive_connections=self.workers),
+        )
+
+    def close(self) -> None:
+        if self._client is not None:
+            self._client.close()
+
+    # ── 저수준 ───────────────────────────────────────────────────────────
+    def _raw(self, text: str) -> str:
+        if not text.strip():
+            return ""
+        params = {"client": "gtx", "sl": "auto", "tl": self.tgt_code, "dt": "t", "q": text}
+        last: Exception | None = None
+        for attempt in range(self.max_retries):
+            try:
+                r = self._client.get(GOOGLE_URL, params=params, headers=GOOGLE_HEADERS)
+                if r.status_code in (429, 500, 502, 503, 504):
+                    time.sleep(min(2 ** attempt, 30))
+                    last = RuntimeError(f"HTTP {r.status_code}")
+                    continue
+                r.raise_for_status()
+                data = r.json()
+                with self._lock:
+                    self.calls += 1
+                return "".join(item[0] for item in data[0] if item and item[0])
+            except (httpx.HTTPError, ValueError, IndexError, TypeError) as e:
+                last = e
+                time.sleep(min(2 ** attempt, 30))
+        raise RuntimeError(f"Google 번역 실패({self.max_retries}회 재시도): {last}")
+
+    def _call(self, text: str) -> str:
+        k = JsonCache.key("gtx", self.tgt_code, text)
+        if self.cache is not None:
+            hit = self.cache.get(k)
+            if hit is not None:
+                return hit
+        out = self._raw(text)
+        if self.cache is not None:
+            self.cache.put(k, out)
+        return out
+
+    # ── Translator 와 동일한 인터페이스 ──────────────────────────────────
+    def full(self, texts: list[str]) -> list[str]:
+        with ThreadPoolExecutor(max_workers=self.workers) as ex:
+            out = list(ex.map(self._call, texts))
+        if self.cache is not None:
+            self.cache.flush()
+        return out
+
+    def full_uncached(self, texts: list[str]) -> list[str]:
+        """상한 앵커용 독립 재번역.
+
+        gtx 는 결정론적이라 이 값이 `full()` 과 일치하고 상한이 1.0 이 된다.
+        그것 자체가 측정 결과다 — 특수 처리하지 않고 그대로 재서 리포트한다."""
+        with ThreadPoolExecutor(max_workers=self.workers) as ex:
+            return list(ex.map(self._raw, texts))
+
+    def streaming_segments(self, segments: list[str]) -> list[str]:
+        if not self.use_context:
+            return [self._call(s) for s in segments]
+        done: list[str] = []
+        for i, seg in enumerate(segments):
+            if i == 0:
+                done.append(self._call(seg))
+                continue
+            # 서버와 동일: 앞 **원문**들을 개행으로 붙여 통째 번역 후 마지막 줄만
+            combined = "\n".join(segments[: i + 1])
+            whole = self._call(combined)
+            lines = [l.strip() for l in whole.split("\n") if l.strip()]
+            done.append(lines[-1] if lines else whole)
+        return done
+
+    def seg_batch(self, seg_texts: list[str], full_fallback: list[str]) -> tuple[list[str], list[list[str]]]:
+        def one(pair):
+            seg_text, fb = pair
+            parts = split_segments(seg_text)
+            if len(parts) <= 1:
+                return fb, [fb]
+            pieces = self.streaming_segments(parts)
+            return " ".join(p for p in pieces if p), pieces
+
+        with ThreadPoolExecutor(max_workers=self.workers) as ex:
+            results = list(ex.map(one, zip(seg_texts, full_fallback)))
+        if self.cache is not None:
+            self.cache.flush()
+        return [r[0] for r in results], [r[1] for r in results]

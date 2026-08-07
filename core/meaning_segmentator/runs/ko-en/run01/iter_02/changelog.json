@@ -1,0 +1,11 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Never Segment]"
+  ],
+  "changelog": [
+    "[When to Segment]: added an explicit permissive rule allowing splits at continuation markers (-는데, -고, -아서/어서, -니까) even without a following discourse marker, whenever both the preceding and following material already form independent subject+predicate clauses — targets the critic's under-segmentation cases (contrastive/causal/desire-then-reason sentences left as single unsplit blocks).",
+    "[When to Segment]: added a rule permitting a split after a '-고' clause when the following clause itself carries a conditional/result marker (-면/-으면), covering the 'action -고 ... -면 result' pattern flagged as under-segmented.",
+    "[Never Segment]: narrowed each continuation-marker ban (-는데/-고/-아서/니까) to apply only when the material on either side is NOT yet an independently complete clause, adding an explicit carve-out pointing to the new [When to Segment] permission — removes the over-broad blanket prohibition that was suppressing safe, latency-saving splits, without introducing any new restriction."
+  ]
+}

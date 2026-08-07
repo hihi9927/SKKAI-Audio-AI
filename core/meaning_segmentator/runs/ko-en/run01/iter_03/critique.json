@@ -1,0 +1,137 @@
+{
+  "cases": [
+    {
+      "id": "KsponSpeech_E00725",
+      "error_type": "wrong_boundary",
+      "span": "몇 번 탔냐? 했더니",
+      "evidence": "seg loses quotative frame: 'How many times did I ride' presented as literal question instead of embedded reported speech; '자기' rendered as 'they' not 'she'",
+      "cause": "split placed inside a quote+quotative-verb unit (X 했더니), severing the quote from the verb that frames it as reported speech",
+      "proposed_rule": "Never split between a quoted/reported clause and its quotative verb (했더니, 그랬더니, 라고 하다 등); keep the whole reported-speech unit together.",
+      "example_pair": {
+        "input": "내가 몇 번 탔냐? 했더니 자기도 3번밖에 안 탔대",
+        "output": "내가 몇 번 탔냐? 했더니 <SEG> 자기도 3번밖에 안 탔대"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00813",
+      "error_type": "over_segmentation",
+      "span": "털도 돼.",
+      "evidence": "seg drops the predicate meaning ('is fine') producing 'Fur too.' instead of 'Fur's fine too.'; final clause modality shifts from 'wouldn't it be okay' to 'maybe it'd work'",
+      "cause": "short elliptical predicate-final clause isolated from context needed to resolve the dropped subject/verb sense",
+      "proposed_rule": "Do not split off very short clauses (under ~4 words) whose predicate is elliptical or context-dependent; merge them with an adjacent clause.",
+      "example_pair": {
+        "input": "아 진짜? 털도 돼. 겨울이니까 되지 않을까?",
+        "output": "아 진짜? 털도 돼. <SEG> 겨울이니까 되지 않을까?"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00241",
+      "error_type": "wrong_boundary",
+      "span": "이런 약간 그런 느낌에",
+      "evidence": "reference attaches this dangling modifier to the prior clause ('Kind of that feeling'); seg turns it into an independent fragment 'With this kind of feeling'",
+      "cause": "trailing verbless modifier phrase split off from the clause it describes, changing its syntactic attachment",
+      "proposed_rule": "Do not split a trailing noun/adjective phrase that lacks its own finite verb away from the clause it modifies.",
+      "example_pair": {
+        "input": "나는 안 젖는다. 이런 약간 그런 느낌에",
+        "output": "나는 안 젖는다 이런 약간 그런 느낌에"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00621",
+      "error_type": "wrong_boundary",
+      "span": "이제 우리학기는 이제 한 학기밖에 쉴 수 있으니까",
+      "evidence": "reference ties 'break for one semester' explicitly back to the leave-of-absence topic; seg's second segment ('one semester off') loses the topic link, reading as a bare restatement",
+      "cause": "split placed before a reason clause whose topic noun phrase depends on the antecedent established earlier",
+      "proposed_rule": "When splitting before a '-으니까/-니까' reason clause, keep the topic noun phrase's antecedent in the same or immediately linked segment.",
+      "example_pair": {
+        "input": "나도 휴학 생각하고 있거든 한 학기밖에 쉴 수 있으니까",
+        "output": "나도 휴학 생각하고 있거든 <SEG> 한 학기밖에 쉴 수 있으니까"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00164",
+      "error_type": "wrong_boundary",
+      "span": "그것도 이해를 못 해가지고",
+      "evidence": "seg's first piece renders subject as 'I' ('I couldn't understand') instead of 'she/they', because the pronoun-bearing clause '지가' comes only in a later segment",
+      "cause": "split placed before the clause that first introduces the subject pronoun, leaving the earlier segment without the correct subject",
+      "proposed_rule": "Do not split a clause off before the point where its subject (pronoun or noun) is first introduced later in the sentence; keep subject-establishing clauses attached to what they govern.",
+      "example_pair": {
+        "input": "그것도 이해를 못 해가지고 근데 지가 신청했는지도 기억을 못하는 거야",
+        "output": "그것도 이해를 못 해가지고 근데 지가 신청했는지도 기억을 못하는 거야 <SEG> 지가 교직신청을 했는지 안 했는지."
+      }
+    },
+    {
+      "id": "KsponSpeech_E00521",
+      "error_type": "under_segmentation",
+      "span": "잘하고 그랬는데 이제 그런 것도 없고",
+      "evidence": "quality=1.0 with n_segments=1 despite a long multi-clause sentence with a clear contrastive connective boundary",
+      "cause": "no split attempted; the contrastive '-는데' clause boundary is a safe latency-saving point that was ignored",
+      "proposed_rule": "For long sentences, split at contrastive connectives (-는데, -지만) when both sides contain a complete subject+predicate.",
+      "example_pair": {
+        "input": "옛날이면 자신있게 잘하고 그랬는데 이제 그런 것도 없고 그냥 반만 가는 챔피언",
+        "output": "옛날이면 자신있게 잘하고 그랬는데 <SEG> 이제 그런 것도 없고 그냥 반만 가는 챔피언"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00414",
+      "error_type": "under_segmentation",
+      "span": "호텔카지노? 그런쪽으로 가는 목적이 있어가지고",
+      "evidence": "quality=1.0, n_segments=1; sentence has a natural question-mark boundary before the closing purpose clause that was left unsplit",
+      "cause": "no split attempted at an existing punctuation boundary that separates an alternative-listing clause from the purpose clause",
+      "proposed_rule": "Treat sentence-internal question marks or listed alternatives as candidate split points when followed by a self-contained closing clause.",
+      "example_pair": {
+        "input": "승무원쪽 가거나 아니면 호텔카지노? 그런쪽으로 가는 목적이 있어가지고",
+        "output": "승무원쪽 가거나 아니면 호텔카지노? <SEG> 그런쪽으로 가는 목적이 있어가지고"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00691",
+      "error_type": "under_segmentation",
+      "span": "마시고 진짜 조용히만 들어가면",
+      "evidence": "quality=1.0, n_segments=1; sentence has a conditional clause ('들어가면') that could stand as its own translation unit",
+      "cause": "no split attempted at the conjunctive '-고' boundary separating the drinking action from the conditional consequence",
+      "proposed_rule": "Split at '-고' connectives joining two full-clause actions when the second clause contains its own conditional or result marker (-면, -으면).",
+      "example_pair": {
+        "input": "술 한번 풀어주는 날 마시고 진짜 조용히만 들어가면 상관이 없어",
+        "output": "술 한번 풀어주는 날 마시고 <SEG> 진짜 조용히만 들어가면 상관이 없어"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00509",
+      "error_type": "under_segmentation",
+      "span": "도움을 받아서 또 일어나라하기 좀 그래",
+      "evidence": "quality=1.0, n_segments=1; causal '-아서' clause could be split from its resulting feeling-clause",
+      "cause": "no split attempted at the causal connective even though the result clause is self-contained",
+      "proposed_rule": "Split at causal connectives (-아서/-해서/-니까) when the following clause expresses a complete independent feeling/result statement.",
+      "example_pair": {
+        "input": "너무 많은 도움을 받아서 또 일어나라하기 좀 그래",
+        "output": "너무 많은 도움을 받아서 <SEG> 또 일어나라하기 좀 그래"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00656",
+      "error_type": "under_segmentation",
+      "span": "가 보고 싶긴 했는데 어쨌든 기회가 안 돼서 못 갔지만",
+      "evidence": "quality=1.0, n_segments=1; contrastive '-는데' boundary between desire and reason-for-not-going was left unsplit",
+      "cause": "no split attempted at an available contrastive connective in a long sentence",
+      "proposed_rule": "For sentences with a desire/intention clause followed by a contrastive '-는데' reason clause, insert a split at the connective.",
+      "example_pair": {
+        "input": "신로마는 가 보고 싶긴 했는데 어쨌든 기회가 안 돼서 못 갔지만",
+        "output": "신로마는 가 보고 싶긴 했는데 <SEG> 어쨌든 기회가 안 돼서 못 갔지만"
+      }
+    }
+  ],
+  "summary": "The prompt over-splits inside quotative/reported-speech units, elliptical short predicates, and before clauses that introduce a needed subject or modifier antecedent, breaking pronoun and attachment resolution. Simultaneously, roughly half of long multi-clause sentences receive zero splits despite clear connective boundaries (-는데, -아서, -고+면), causing under-segmentation and lost latency gain. The system needs better recognition of clause-internal dependencies (quotes, pronouns, ellipsis) as no-split zones, paired with more aggressive splitting at independent-clause connectives.",
+  "aggregate": {
+    "dominant_error": "under_segmentation",
+    "error_counts": {
+      "wrong_boundary": 4,
+      "over_segmentation": 1,
+      "under_segmentation": 5
+    },
+    "over_seg_count": 5,
+    "under_seg_count": 5,
+    "direction": "segment more aggressively",
+    "summary": "The prompt over-splits inside quotative/reported-speech units, elliptical short predicates, and before clauses that introduce a needed subject or modifier antecedent, breaking pronoun and attachment resolution. Simultaneously, roughly half of long multi-clause sentences receive zero splits despite clear connective boundaries (-는데, -아서, -고+면), causing under-segmentation and lost latency gain. The system needs better recognition of clause-internal dependencies (quotes, pronouns, ellipsis) as no-split zones, paired with more aggressive splitting at independent-clause connectives."
+  }
+}

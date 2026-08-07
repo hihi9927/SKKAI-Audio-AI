@@ -1,0 +1,113 @@
+{
+  "cases": [
+    {
+      "id": "KsponSpeech_E00353",
+      "error_type": "wrong_boundary",
+      "span": "맞벌이를 하시다보니까 <SEG> 이제 아침에",
+      "evidence": "Split turns causal setup into standalone claim and leaves 'the kids' as a dangling object with no verb.",
+      "cause": "Boundary placed right after a result-connective ('다보니까') whose following clause is an incomplete trailing utterance typical of spontaneous speech.",
+      "proposed_rule": "Do not split at a causal connective if the clause that follows is a fragment (no finite verb) rather than a full clause; keep them merged.",
+      "example_pair": {
+        "input": "두 두 분이 맞벌이를 하시다보니까 이제 아침에 이제 애들을",
+        "output": "두 두 분이 맞벌이를 하시다보니까 이제 아침에 이제 애들을"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00451",
+      "error_type": "over_segmentation",
+      "span": "그쪽이 안된다면 <SEG> 또 제가 저 역사학을",
+      "evidence": "Diagnostics show best equally-fast alternative gains only 0.006; no split fixes the loss.",
+      "cause": "Heavy false-starts/fillers ('그 그쪽', '좋 좋아하다') make any 2-way split lose discourse continuity regardless of exact boundary.",
+      "proposed_rule": "When a clause contains repeated self-corrections/fillers, prefer leaving it unsplit rather than searching for a better boundary, since damage is inherent not positional.",
+      "example_pair": {
+        "input": "또 이제 그 그쪽이 안된다면 또 제가 저 역사학을 원해 좋 좋아하다 보니까",
+        "output": "또 이제 그 그쪽이 안된다면 또 제가 저 역사학을 원해 좋 좋아하다 보니까"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00521",
+      "error_type": "over_segmentation",
+      "span": "잘하고 그랬는데 <SEG> 이제 그런 것도 없고",
+      "evidence": "Best alternative split gains only 0.021 quality at same speed; damage persists across boundaries.",
+      "cause": "Dense filler repetition ('에 에 에 이제') and contrastive clause chaining make splitting lossy independent of exact point.",
+      "proposed_rule": "For utterances with 3+ filler repetitions before the main clause, avoid adding a split; treat as one low-latency-benefit unit.",
+      "example_pair": {
+        "input": "에 에 에 이제 옛날이면 자신있게 자기 막 잘하고 그랬는데 이제 그런 것도 없고 그냥 무조건 그냥 반만 가는 챔피언 버스 타는 챔피언",
+        "output": "에 에 에 이제 옛날이면 자신있게 자기 막 잘하고 그랬는데 이제 그런 것도 없고 그냥 무조건 그냥 반만 가는 챔피언 버스 타는 챔피언"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00716",
+      "error_type": "over_segmentation",
+      "span": "친구들이랑 고기를 먹고 <SEG> 헤어졌는데",
+      "evidence": "3-way split drops connective meaning; best equally-fast alt only raises quality 0.038, still short of reference.",
+      "cause": "Splitting a short 3-clause narrative into 3 pieces removes sequential/causal glue between eating and parting.",
+      "proposed_rule": "Cap short multi-clause narrative sentences (under ~15 words) to at most one split, not one per clause.",
+      "example_pair": {
+        "input": "밤에 나중에 알바 끝나고 나서 친구들이랑 고기를 먹고 헤어졌는데",
+        "output": "밤에 나중에 알바 끝나고 나서 친구들이랑 고기를 먹고 <SEG> 헤어졌는데"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00348",
+      "error_type": "over_segmentation",
+      "span": "시험이 다 공대다 보니까 <SEG> 주관식이야. <SEG> 객관식이",
+      "evidence": "Alternative re-split scored worse (-0.023 headroom), showing 5-way splitting is already near-optimal but still far below reference.",
+      "cause": "Excessive fragmentation (5 pieces) of a multi-sentence causal chain breaks 'since...therefore...' logic across pieces.",
+      "proposed_rule": "When a source has multiple sentence-final punctuation marks, split only at those, not additionally inside clauses joined by '보니까/그리고'.",
+      "example_pair": {
+        "input": "그래서 1학기 때 그 시험이 있었는데 중간고사하고 기말고사가 있을 거 아냐? 우리는 그리고 시험이 다 공대다 보니까 주관식이야. 객관식이 하나도 없어.",
+        "output": "그래서 1학기 때 그 시험이 있었는데 중간고사하고 기말고사가 있을 거 아냐? <SEG> 우리는 그리고 시험이 다 공대다 보니까 주관식이야. 객관식이 하나도 없어."
+      }
+    },
+    {
+      "id": "KsponSpeech_E00414",
+      "error_type": "under_segmentation",
+      "span": "호텔카지노? 그런쪽으로 가는 목적이",
+      "evidence": "Perfect score with zero tags despite an internal question mark that already marks a clean clause boundary.",
+      "cause": "Model left a sentence whole even though a self-contained question clause could be finalized before the trailing clause is seen.",
+      "proposed_rule": "Whenever the source contains an internal sentence-final punctuation mark (?/./!), split there before continuing.",
+      "example_pair": {
+        "input": "나는 다른학교 편입으로 승무원쪽 가거나 아니면 호텔카지노? 그런쪽으로 가는 목적이 있어가지고",
+        "output": "나는 다른학교 편입으로 승무원쪽 가거나 아니면 호텔카지노? <SEG> 그런쪽으로 가는 목적이 있어가지고"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00621",
+      "error_type": "under_segmentation",
+      "span": "생각하고 있거든 이제 우리학기는",
+      "evidence": "No split despite a complete main clause ('생각하고 있거든') followed by an independent reason clause.",
+      "cause": "Missed a safe boundary at a clause-final ending ('거든') that stands alone semantically.",
+      "proposed_rule": "Split after clause-final endings like '~거든/~는데' when the following clause is a separate reason/elaboration with its own subject.",
+      "example_pair": {
+        "input": "지금 나도 휴학 생각하고 있거든 이제 우리학기는 이제 한 학기밖에 쉴 수 있으니까",
+        "output": "지금 나도 휴학 생각하고 있거든 <SEG> 이제 우리학기는 이제 한 학기밖에 쉴 수 있으니까"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00725",
+      "error_type": "under_segmentation",
+      "span": "몇 번 탔냐? 했더니 자기도",
+      "evidence": "Internal question mark signals a complete reported-question clause, yet sentence stayed unsplit.",
+      "cause": "Quoted question and the follow-up reporting clause are independent units but were kept as one segment.",
+      "proposed_rule": "Split immediately after a quoted/embedded question ending in '?' before the reporting clause that follows it.",
+      "example_pair": {
+        "input": "어 근 걔 그러니까 내가 어 몇 번 탔냐? 했더니 자기도 3번밖에 안 탔다는 거야",
+        "output": "어 근 걔 그러니까 내가 어 몇 번 탔냐? <SEG> 했더니 자기도 3번밖에 안 탔다는 거야"
+      }
+    }
+  ],
+  "summary": "The prompt over-splits disfluent, filler-heavy utterances where no boundary placement helps (inherent damage), and under-splits longer sentences that already contain clean punctuation or clause-final endings marking safe boundaries. Segmentation should track clause completeness and filler density rather than sentence length alone.",
+  "aggregate": {
+    "dominant_error": "over_segmentation",
+    "error_counts": {
+      "wrong_boundary": 1,
+      "over_segmentation": 4,
+      "under_segmentation": 3
+    },
+    "over_seg_count": 5,
+    "under_seg_count": 3,
+    "direction": "fix boundary placement",
+    "summary": "The prompt over-splits disfluent, filler-heavy utterances where no boundary placement helps (inherent damage), and under-splits longer sentences that already contain clean punctuation or clause-final endings marking safe boundaries. Segmentation should track clause completeness and filler density rather than sentence length alone."
+  }
+}

@@ -8,9 +8,13 @@
   V : 포맷 검증 통과율. 1.0 미만이면 그 프롬프트는 탈락.
 
 품질 백엔드는 교체 가능:
-  embed (기본) — 게이트웨이 임베딩 코사인 유사도. 로컬 ML 의존성 불필요.
+  comet (기본) — 운영 기준 지표. unbabel-comet + GPU 필요. 원문(src)도 본다.
+  embed        — 게이트웨이 임베딩 코사인 유사도. 로컬 ML 의존성 불필요.
   chrf         — 문자 n-gram F-score. 보조 지표로 항상 함께 리포트.
-  comet        — 미구현. unbabel-comet 설치 시 여기에 연결 (운영 기준 지표).
+
+**백엔드를 바꾸면 반드시 타당도를 다시 측정한다.** 임베딩 코사인은 부정이 뒤집힌
+번역(0.9278)을 무해한 표기 차이(0.8401)보다 높게 매겨 순위가 뒤집혀 있었다 —
+캘리브레이션은 스케일만 맞출 뿐 타당도를 보증하지 않는다. `validity_check.py` 참조.
 """
 
 from __future__ import annotations
@@ -83,15 +87,146 @@ def embed_similarity(gw: Gateway, hyps: list[str], refs: list[str]) -> list[floa
     return scores
 
 
+# ── 품질 백엔드 ──────────────────────────────────────────────────────────
+
+def _identity_shortcut(hyps: list[str], refs: list[str]) -> tuple[list[float], list[int]]:
+    """동일 문자열은 1.0, 빈 문자열은 0.0 으로 고정하고 나머지 인덱스를 돌려준다.
+
+    무분절 문장은 seg 번역 = full 번역이라 항상 여기서 걸린다. Q 정의상 1.0 이고
+    (제약은 분절된 문장에만 걸리므로 목적함수에 영향이 없다) 모델 호출도 아낀다.
+    모든 백엔드가 같은 규약을 쓰게 해야 백엔드 간 수치가 비교 가능하다."""
+    scores = [1.0] * len(hyps)
+    pending: list[int] = []
+    for i, (h, r) in enumerate(zip(hyps, refs)):
+        if not h or not r:
+            scores[i] = 0.0
+        elif h != r:
+            pending.append(i)
+    return scores, pending
+
+
+class QualityBackend:
+    """Q 계산 백엔드.
+
+    `src` 를 받는 이유는 COMET 이 원문을 입력으로 쓰기 때문이다. embed·chrF 는 무시한다.
+    반환은 문장별 점수 리스트로 통일한다."""
+
+    name = "base"
+
+    def score(self, srcs: list[str], hyps: list[str], refs: list[str]) -> list[float]:
+        raise NotImplementedError
+
+
+class EmbedBackend(QualityBackend):
+    name = "embed"
+
+    def __init__(self, gw: Gateway):
+        self.gw = gw
+
+    def score(self, srcs, hyps, refs):
+        return embed_similarity(self.gw, hyps, refs)
+
+
+class ChrfBackend(QualityBackend):
+    name = "chrf"
+
+    def score(self, srcs, hyps, refs):
+        scores, pending = _identity_shortcut(hyps, refs)
+        for i in pending:
+            scores[i] = chrf(hyps[i], refs[i])
+        return scores
+
+
+class CometBackend(QualityBackend):
+    """운영 기준 지표.
+
+    모델 로드는 **프로세스당 1회**다. 이터레이션마다 로드하면 런 시간이 배로 든다
+    (기존 `utils/comet_eval.py` 가 그렇게 돼 있으니 그쪽 코드를 가져다 쓰지 말 것)."""
+
+    def __init__(self, model_name: str = "Unbabel/wmt22-comet-da",
+                 batch_size: int = 16, gpus: int = 1, name: str = "comet"):
+        self.model_name = model_name
+        self.batch_size = batch_size
+        self.gpus = gpus
+        self.name = name
+        self._model = None
+
+    def load(self):
+        if self._model is None:
+            import logging
+            from comet import download_model, load_from_checkpoint
+            logging.getLogger("pytorch_lightning").setLevel(logging.ERROR)
+            self._model = load_from_checkpoint(download_model(self.model_name))
+            self._model.eval()
+        return self._model
+
+    def unload(self) -> None:
+        """GPU 메모리를 돌려준다. 여러 체크포인트를 한 프로세스에서 비교할 때만 필요하다
+        (XCOMET-XL 은 14GB 를 잡아 두 개가 동시에 안 올라간다). 루프에서는 부르지 않는다."""
+        if self._model is None:
+            return
+        self._model = None
+        import gc
+        import torch
+        gc.collect()
+        torch.cuda.empty_cache()
+
+    def score(self, srcs, hyps, refs):
+        scores, pending = _identity_shortcut(hyps, refs)
+        if not pending:
+            return scores
+        model = self.load()
+        batch = [{"src": srcs[i], "mt": hyps[i], "ref": refs[i]} for i in pending]
+        out = model.predict(batch, batch_size=self.batch_size, gpus=self.gpus,
+                            progress_bar=False)
+        for i, s in zip(pending, out.scores):
+            scores[i] = float(s)
+        return scores
+
+
+# COMET 계열은 체크포인트만 다르고 인터페이스가 같다. 이름을 나눠 두는 이유는
+# baseline.json 에 어느 체크포인트로 캘리브레이션했는지가 남아야 하기 때문이다 —
+# 축이 다른 두 백엔드의 Q_floor 를 섞어 쓰면 비교가 무의미해진다.
+COMET_CHECKPOINTS = {
+    "comet": "Unbabel/wmt22-comet-da",   # XLM-R large 기반. 빠르고 공개 접근 가능
+    "xcomet": "Unbabel/XCOMET-XL",       # 오류 구간 탐지형. HF 라이선스 동의 필요
+}
+
+
+def make_backend(name: str, gw: Gateway | None = None, **kw) -> QualityBackend:
+    if name == "embed":
+        if gw is None:
+            raise ValueError("embed 백엔드에는 Gateway 가 필요합니다")
+        return EmbedBackend(gw)
+    if name == "chrf":
+        return ChrfBackend()
+    if name in COMET_CHECKPOINTS:
+        kw.setdefault("model_name", COMET_CHECKPOINTS[name])
+        return CometBackend(name=name, **kw)
+    raise ValueError(f"알 수 없는 품질 백엔드: {name}")
+
+
 # ── 지연 프록시 ──────────────────────────────────────────────────────────
 
 def latency_proxy(seg_text: str, spaced: bool) -> float:
-    """세그먼트 i가 나가기까지 통과해야 하는 문장 비율의 평균.
+    """**정보 1단위가 평균적으로 기다린 시간.**
 
-      조각 길이 c_1..c_k, N = Σc_i
-      L = Σ_i (c_1+...+c_i) / (k · N)
+      조각 길이 c_1..c_k, N = Σc_i, 누적_i = c_1+...+c_i
+      L = Σ_i (c_i / N) · (누적_i / N)
 
-    k=1 → 1.0 (무분절). k→∞ → 0.5. 낮을수록 먼저 내보낼 수 있다.
+    각 조각의 대기시간을 **그 조각이 담은 정보량 비중으로 가중**한다.
+
+    이전 정의는 조각 수로 평균했다 (`Σ 누적_i / (k·N)`). 그러면 1글자 조각과
+    30어절 조각이 같은 무게라, **무의미한 조각을 앞에 만들수록 점수가 좋아진다.**
+    실측에서 탐색이 즉시 그 허점을 찾아냈다 — '그 <SEG> 다음에 이거 벤치...' 가
+    의미 기반 분절(gain 0.2059)을 제치고 gain 0.4853 으로 1위였다. 사용자가 얻는
+    정보는 0인데 지표만 좋아진 것이다. 정보 가중을 하면 같은 분절이 0.0285 로
+    무분절과 동등하게 평가된다.
+
+    등분할에서는 두 정의가 정확히 같은 값을 준다 (k=2 → 0.75, k=3 → 0.667, ...).
+    갈리는 것은 불균등한 분절뿐이다.
+
+    k=1 → 1.0 (무분절). k→∞(등분할) → 0.5. 낮을수록 정보가 빨리 도착한다.
     """
     parts = split_segments(seg_text)
     if not parts:
@@ -100,11 +235,11 @@ def latency_proxy(seg_text: str, spaced: bool) -> float:
     total = sum(lens)
     if total == 0 or len(lens) == 1:
         return 1.0
-    cum, acc = 0, 0
+    cum, acc = 0, 0.0
     for c in lens:
         cum += c
-        acc += cum
-    return acc / (len(lens) * total)
+        acc += (c / total) * (cum / total)
+    return acc
 
 
 # ── 집계 ─────────────────────────────────────────────────────────────────

@@ -1,11 +1,15 @@
 # 평가
 deep-translator>=1.9.0 # Google 번역 (comet_eval.py)
-unbabel-comet>=2.2.0   # COMET MT 평가 지표 (comet_eval.py)
+unbabel-comet>=2.2.0   # COMET MT 평가 지표 (comet_eval.py, autoseg 기본 품질 백엔드)
 
 # GPT 분절
 openai>=1.0.0          # gpt_seg.py
 
 # 프롬프트 자동 생성 루프 (autoseg/)
-httpx>=0.27.0          # Letsur AI Gateway 호출. 이 외 추가 의존성 없음
-# unbabel-comet 이 설치되어 있으면 autoseg 의 품질 백엔드를 comet 으로 바꿀 수 있다.
-# 없으면 게이트웨이 임베딩 코사인 유사도(기본)와 chrF(내장 구현)를 쓴다.
+httpx>=0.27.0          # Letsur AI Gateway 호출
+setuptools<81          # torchmetrics 0.10.x 가 pkg_resources 를 import 한다 (81+ 에서 제거됨)
+# 품질 백엔드 기본값은 comet 이고 GPU 가 필요하다. GPU 없이 돌리려면
+# --quality-backend embed (게이트웨이 임베딩) 또는 chrf 를 쓴다 — 단 둘 다
+# 타당도 검사에서 comet 보다 나쁘다. validity_check.py 참조.
+# torch 는 환경에 맞는 빌드를 따로 설치할 것:
+#   pip install torch --index-url https://download.pytorch.org/whl/cu124

@@ -19,7 +19,8 @@ from pathlib import Path
 
 from . import agents, data, metrics
 from .gateway import BudgetExceeded, Gateway
-from .pipeline import JsonCache, Translator, segment_batch, split_segments, validate
+from .pipeline import (GoogleTranslator, JsonCache, Translator, segment_batch,
+                       split_segments, to_lang_code, validate)
 
 _HERE = Path(__file__).resolve().parent
 
@@ -34,6 +35,7 @@ def evaluate(
     spaced: bool,
     seg_cache: JsonCache,
     workers: int,
+    scorer: metrics.QualityBackend,
     trailing_punct: str | None = None,
     skip_translation_below: float = 0.95,
 ) -> tuple[list[dict], metrics.Metrics, list[dict]]:
@@ -68,7 +70,8 @@ def evaluate(
     full = translator.full(texts)
     seg_joined, seg_pieces = translator.seg_batch(seg_texts, full)
 
-    q = metrics.embed_similarity(gw, seg_joined, full)
+    # COMET 은 원문을 입력으로 쓰므로 srcs 를 함께 넘긴다 (embed·chrF 는 무시).
+    q = scorer.score(texts, seg_joined, full)
     c = [metrics.chrf(h, r) for h, r in zip(seg_joined, full)]
 
     rows = [
@@ -83,6 +86,126 @@ def evaluate(
     return rows, m, violations
 
 
+# ── 경계 단위 진단 ───────────────────────────────────────────────────────
+
+def _alt_placements(words: list[str], k: int, max_variants: int) -> list[tuple[int, ...]]:
+    """조각 수 k 를 유지한 채 경계를 놓을 수 있는 다른 자리들.
+
+    경계는 어절 사이에만 놓는다(원문 문자를 건드리지 않으므로 검증기와 호환).
+    k=2 는 모든 자리를 다 보고, k>=3 은 조합이 폭발하므로 균등 간격을 기준으로
+    각 경계를 앞뒤로 밀어 본 변형만 본다.
+    """
+    n = len(words)
+    if n < k:
+        return []
+    cuts = list(range(1, n))                      # 경계를 놓을 수 있는 어절 인덱스
+    if k == 2:
+        return [(c,) for c in cuts][:max_variants]
+    base = [round(i * n / k) for i in range(1, k)]
+    base = [min(max(1, b), n - 1) for b in base]
+    out: set[tuple[int, ...]] = set()
+    for shift in range(-3, 4):
+        cand = tuple(sorted({min(max(1, b + shift), n - 1) for b in base}))
+        if len(cand) == k - 1:
+            out.add(cand)
+    # 각 경계를 개별적으로 밀어 본 변형도 추가
+    for i in range(len(base)):
+        for shift in (-2, -1, 1, 2):
+            c = list(base)
+            c[i] = min(max(1, c[i] + shift), n - 1)
+            cand = tuple(sorted(set(c)))
+            if len(cand) == k - 1:
+                out.add(cand)
+    return sorted(out)[:max_variants]
+
+
+def diagnose_boundaries(
+    translator,
+    scorer: metrics.QualityBackend,
+    rows: list[dict],
+    spaced: bool = True,
+    max_rows: int = 6,
+    max_variants: int = 12,
+) -> dict[str, dict]:
+    """**같은 조각 수를 유지한 채** 경계를 옮겨 보고, 위치 문제인지 개수 문제인지 가른다.
+
+    처음에는 경계를 하나 지우는 leave-one-out 으로 구현했는데 **k=2 에서 퇴화한다** —
+    유일한 경계를 지우면 무분절이 되고, 무분절은 정의상 Q=1.0 이라 결과가 항상
+    `1.0 - Q` 로 고정된다. 실측에서 분절 문장의 68%가 k=2 였으므로 진단 대부분이
+    Q 외에 아무 정보도 주지 못했다.
+
+    조각 수를 고정하면 그 퇴화가 사라진다. 비교 대상이 무분절이 아니라 **같은 지연
+    이득을 갖는 다른 분절**이므로, 차이는 순수하게 위치에서 온다.
+
+      best_same_k >> current  ->  위치 문제. gain 을 잃지 않고 고칠 수 있다.
+      best_same_k ~= current  ->  개수 문제. 이 문장은 k 조각으로 안전하게 못 자른다.
+
+    Critic 이 어미 자체를 금지하는 뭉툭한 규칙을 쓰지 않게 하는 것이 목적이다.
+    """
+    targets = [r for r in rows if r.get("n_segments", 1) > 1 and r.get("full_trans")]
+    targets = sorted(targets, key=lambda r: r["quality"])[:max_rows]
+    if not targets:
+        return {}
+
+    jobs: list[tuple[str, str]] = []               # (row_id, 변형 seg_text)
+    by_id = {r["id"]: r for r in targets}
+    for r in targets:
+        words = r["text"].split()
+        k = r["n_segments"]
+        cur_L = metrics.latency_proxy(r["seg_text"], spaced)
+        for cuts in _alt_placements(words, k, max_variants):
+            pieces, prev = [], 0
+            for c in cuts:
+                pieces.append(" ".join(words[prev:c]))
+                prev = c
+            pieces.append(" ".join(words[prev:]))
+            variant = " <SEG> ".join(pieces)
+            if variant.strip() == r["seg_text"].strip():
+                continue
+            # **조각 수 고정만으로는 부족하다.** 실측에서 탐색이 '그 <SEG> 다음에...'
+            # 처럼 첫 어절 하나만 떼는 변형으로 도망쳤다 — 조각 수는 같지만 조각
+            # 길이가 극단적으로 불균등해 L 이 거의 1.0(무분절과 동등)이라 Q 만 높다.
+            # 현재보다 **느리지 않은** 변형으로 제한해야 "지연을 잃지 않고 품질을
+            # 올릴 수 있는가"라는 원래 질문에 답한다.
+            if metrics.latency_proxy(variant, spaced) > cur_L + 1e-9:
+                continue
+            jobs.append((r["id"], variant))
+    if not jobs:
+        return {}
+
+    seg_texts = [j[1] for j in jobs]
+    fallbacks = [by_id[j[0]]["full_trans"] for j in jobs]
+    joined, _ = translator.seg_batch(seg_texts, fallbacks)
+    qs = scorer.score([by_id[j[0]]["text"] for j in jobs], joined,
+                      [by_id[j[0]]["full_trans"] for j in jobs])
+
+    best: dict[str, tuple[float, str]] = {}
+    for (rid, variant), q in zip(jobs, qs):
+        if rid not in best or q > best[rid][0]:
+            best[rid] = (q, variant)
+
+    out: dict[str, dict] = {}
+    for rid, (bq, bvar) in best.items():
+        r = by_id[rid]
+        headroom = bq - r["quality"]
+        out[rid] = {
+            "n_segments": r["n_segments"],
+            "current_segmentation": r["seg_text"],
+            "current_quality": round(r["quality"], 4),
+            "current_latency": round(metrics.latency_proxy(r["seg_text"], spaced), 4),
+            "best_alt_segmentation": bvar,
+            "best_alt_quality": round(bq, 4),
+            "best_alt_latency": round(metrics.latency_proxy(bvar, spaced), 4),
+            # 지연을 전혀 잃지 않고 얻을 수 있었던 품질
+            "free_quality_headroom": round(headroom, 4),
+            "verdict": ("placement — a split that is just as fast scores clearly higher"
+                        if headroom > 0.05 else
+                        "not placement — no equally-fast split does better; the damage is "
+                        "inherent to splitting this sentence this many times"),
+        }
+    return out
+
+
 # ── Q_floor 캘리브레이션 ─────────────────────────────────────────────────
 
 def calibrate_q_floor(
@@ -91,7 +214,10 @@ def calibrate_q_floor(
     sentences: list[data.Sentence],
     spaced: bool,
     ratio: float,
+    scorer: metrics.QualityBackend,
+    alt_scorers: list[metrics.QualityBackend] | None = None,
     every: int = 8,
+    translator_id: str = "llm",
 ) -> dict:
     """Q_floor 를 하한·상한 앵커 두 개 사이에서 잡는다.
 
@@ -117,32 +243,33 @@ def calibrate_q_floor(
     full2 = translator.full_uncached(texts)
 
     n = len(texts)
-    q_bad = sum(metrics.embed_similarity(gw, joined, full)) / n
-    q_ceiling = sum(metrics.embed_similarity(gw, full2, full)) / n
+
+    def anchors(sc: metrics.QualityBackend) -> dict:
+        bad_q = sum(sc.score(texts, joined, full)) / n
+        ceil_q = sum(sc.score(texts, full2, full)) / n
+        return {
+            "q_mechanical_split": round(bad_q, 4),
+            "q_ceiling_retranslate": round(ceil_q, 4),
+            "anchor_gap": round(ceil_q - bad_q, 4),
+            "q_floor": round(bad_q + ratio * (ceil_q - bad_q), 4),
+        }
+
+    primary = anchors(scorer)
 
     # 백엔드 선택은 논증이 아니라 측정으로 한다. 두 앵커 사이가 넓은 백엔드일수록
-    # 분절 품질을 잘 분해한다. 번역은 이미 끝났으므로 추가 API 호출은 없다.
-    chrf_bad = sum(metrics.chrf(h, r) for h, r in zip(joined, full)) / n
-    chrf_ceiling = sum(metrics.chrf(h, r) for h, r in zip(full2, full)) / n
+    # 분절 품질을 잘 분해한다. 번역은 이미 끝났으므로 추가 번역 호출은 없다.
+    alt = {sc.name: anchors(sc) for sc in (alt_scorers or []) if sc.name != scorer.name}
 
-    floor = q_bad + ratio * (q_ceiling - q_bad)
     return {
-        "backend": "embed",
-        "q_mechanical_split": round(q_bad, 4),
-        "q_ceiling_retranslate": round(q_ceiling, 4),
-        "anchor_gap": round(q_ceiling - q_bad, 4),
+        "backend": scorer.name,
+        # 앵커는 번역기에도 의존한다. LLM 번역기는 비결정론적이라 상한이 1.0 미만이지만
+        # Google gtx 는 결정론적이라 상한이 1.0 이 된다 — 축이 다르므로 섞어 쓰면 안 된다.
+        "translator": translator_id,
+        **primary,
         "mechanical_every_chars": every,
         "ratio": ratio,
-        "q_floor": round(floor, 4),
         # 참고용 — 백엔드를 바꿀 때 어느 쪽이 분해능이 좋은지 판단하는 근거
-        "alt_backends": {
-            "chrf": {
-                "q_mechanical_split": round(chrf_bad, 4),
-                "q_ceiling_retranslate": round(chrf_ceiling, 4),
-                "anchor_gap": round(chrf_ceiling - chrf_bad, 4),
-                "q_floor": round(chrf_bad + ratio * (chrf_ceiling - chrf_bad), 4),
-            }
-        },
+        "alt_backends": alt,
     }
 
 
@@ -158,11 +285,22 @@ def main() -> int:
                    help="런 디렉토리 이름. 미지정 시 언어명에서 생성 (표시용일 뿐, 로직에 쓰지 않음)")
     p.add_argument("--model", default="claude-sonnet-5")
     p.add_argument("--translator-model", default="claude-sonnet-5")
+    p.add_argument("--translator", default="llm", choices=["llm", "google"],
+                   help="번역기. google 은 운영 서버와 동일한 gtx 엔드포인트를 쓴다")
+    p.add_argument("--tgt-code", default=None,
+                   help="Google 번역 대상 언어 코드 (미지정 시 --tgt-lang 에서 추론)")
+    p.add_argument("--no-google-context", action="store_true",
+                   help="조각을 각각 독립 번역 (서버 기본값). 미지정 시 --google-context 동작")
     p.add_argument("--iterations", type=int, default=4)
     p.add_argument("--train", type=int, default=20)
     p.add_argument("--dev", type=int, default=30)
     p.add_argument("--test", type=int, default=50)
     p.add_argument("--min-chars", type=int, default=20)
+    p.add_argument("--quality-backend", default="comet",
+                   choices=["comet", "xcomet", "embed", "chrf"],
+                   help="Q 백엔드. comet 계열은 unbabel-comet + GPU 필요")
+    p.add_argument("--comet-model", default=None, help="체크포인트 직접 지정 (미지정 시 백엔드 기본값)")
+    p.add_argument("--comet-batch-size", type=int, default=16)
     p.add_argument("--q-floor", type=float, default=None, help="미지정 시 캘리브레이션으로 산출")
     p.add_argument("--q-floor-ratio", type=float, default=0.7)
     p.add_argument("--patience", type=int, default=3)
@@ -183,6 +321,17 @@ def main() -> int:
     gw = Gateway(model=args.model, budget=args.budget)
     seg_cache = JsonCache(run_dir / "cache" / "segment.json")
     tr_cache = JsonCache(run_dir / "cache" / "translate.json")
+    translator = None
+
+    # 캘리브레이션과 평가는 **같은 백엔드**를 써야 한다. 축이 다르면 Q_floor 가
+    # 아무 의미도 갖지 못한다.
+    comet_kw = {"batch_size": args.comet_batch_size}
+    if args.comet_model:
+        comet_kw["model_name"] = args.comet_model
+    scorer = metrics.make_backend(
+        args.quality_backend, gw=gw,
+        **(comet_kw if args.quality_backend in metrics.COMET_CHECKPOINTS else {}))
+    alt_scorers = [metrics.ChrfBackend(), metrics.EmbedBackend(gw)]
 
     def log(msg: str) -> None:
         print(msg, flush=True)
@@ -212,8 +361,19 @@ def main() -> int:
         log(f"[profiler] {profile.get('source_language')} / 어순 {profile.get('word_order')} / "
             f"띄어쓰기 {spaced} / 문체 {profile.get('register')}")
 
-        translator = Translator(gw=gw, src_name=args.src_lang, tgt_name=args.tgt_lang,
-                                model=args.translator_model, cache=tr_cache, workers=args.workers)
+        if args.translator == "google":
+            translator = GoogleTranslator(
+                tgt_code=args.tgt_code or to_lang_code(args.tgt_lang),
+                cache=tr_cache, workers=min(args.workers, 4),
+                use_context=not args.no_google_context)
+            translator_id = f"google:{translator.tgt_code}:ctx={translator.use_context}"
+            log(f"[translator] google gtx tl={translator.tgt_code} "
+                f"context={translator.use_context}")
+        else:
+            translator = Translator(gw=gw, src_name=args.src_lang, tgt_name=args.tgt_lang,
+                                    model=args.translator_model, cache=tr_cache,
+                                    workers=args.workers)
+            translator_id = f"llm:{args.translator_model}"
 
         prompt_path = run_dir / "iter_00" / "prompt.txt"
         if prompt_path.exists():
@@ -235,10 +395,19 @@ def main() -> int:
         elif cal_path.exists():
             cal = json.loads(cal_path.read_text(encoding="utf-8"))
         else:
-            cal = calibrate_q_floor(gw, translator, splits["train"], spaced, args.q_floor_ratio)
+            cal = calibrate_q_floor(gw, translator, splits["train"], spaced, args.q_floor_ratio,
+                                    scorer, alt_scorers, translator_id=translator_id)
             cal_path.write_text(json.dumps(cal, ensure_ascii=False, indent=2), encoding="utf-8")
+        if cal.get("backend") not in (None, "manual", scorer.name) and args.q_floor is None:
+            log(f"[baseline] 경고: 기존 캘리브레이션 백엔드 {cal['backend']} != 현재 {scorer.name}. "
+                f"--fresh 로 다시 캘리브레이션할 것")
+        if cal.get("translator") not in (None, "manual", translator_id) and args.q_floor is None:
+            log(f"[baseline] 경고: 기존 캘리브레이션 번역기 {cal['translator']} != 현재 "
+                f"{translator_id}. 앵커가 번역기에 의존하므로 --fresh 로 다시 캘리브레이션할 것")
         q_floor = cal["q_floor"]
-        log(f"[baseline] 기계분절 Q={cal.get('q_mechanical_split')} -> Q_floor={q_floor}")
+        log(f"[baseline] backend={cal.get('backend')} 기계분절 Q={cal.get('q_mechanical_split')} "
+            f"상한 {cal.get('q_ceiling_retranslate')} 간격 {cal.get('anchor_gap')} "
+            f"-> Q_floor={q_floor}")
 
         # ── 루프 ────────────────────────────────────────────────────────
         critic = agents.Critic(gw)
@@ -256,7 +425,7 @@ def main() -> int:
             (it_dir / "prompt.txt").write_text(prompt, encoding="utf-8")
 
             rows, m, viol = evaluate(gw, translator, prompt, splits["train"], spaced,
-                                     seg_cache, args.workers, trailing_punct)
+                                     seg_cache, args.workers, scorer, trailing_punct)
             obj = metrics.objective(m, q_floor)
             (it_dir / "train_rows.json").write_text(
                 json.dumps(rows, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -272,7 +441,8 @@ def main() -> int:
             dev_obj = None
             if best["train_obj"] is None or obj > best["train_obj"]:
                 dev_rows, dev_m, dev_viol = evaluate(gw, translator, prompt, splits["dev"],
-                                                     spaced, seg_cache, args.workers, trailing_punct)
+                                                     spaced, seg_cache, args.workers, scorer,
+                                                     trailing_punct)
                 dev_obj = metrics.objective(dev_m, q_floor)
                 (it_dir / "dev_rows.json").write_text(
                     json.dumps(dev_rows, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -331,6 +501,13 @@ def main() -> int:
             if best_critique is None:
                 ctx = best_ctx or {"rows": rows, "metrics": m.to_dict(), "violations": viol}
                 cases = agents.select_cases(ctx["rows"])
+                # 경계 단위 진단을 붙여 Critic 이 "어느 경계가 범인인지" 알게 한다
+                diag = diagnose_boundaries(translator, scorer, cases, spaced)
+                if diag:
+                    cases = [{**c, "boundary_diagnostics": diag[c["id"]]}
+                             if c["id"] in diag else c for c in cases]
+                    (it_dir / "boundary_diagnostics.json").write_text(
+                        json.dumps(diag, ensure_ascii=False, indent=2), encoding="utf-8")
                 best_critique = critic.review(cases, ctx["metrics"], ctx["violations"],
                                               q_floor)
             critique = best_critique
@@ -359,7 +536,8 @@ def main() -> int:
         # ── 최종 test 평가 ───────────────────────────────────────────────
         log("[final] test 평가 (루프가 한 번도 보지 않은 데이터)")
         test_rows, test_m, test_viol = evaluate(gw, translator, best["prompt"], splits["test"],
-                                                spaced, seg_cache, args.workers, trailing_punct)
+                                                spaced, seg_cache, args.workers, scorer,
+                                                trailing_punct)
         test_obj = metrics.objective(test_m, q_floor)
         (run_dir / "test_rows.json").write_text(
             json.dumps(test_rows, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -377,6 +555,8 @@ def main() -> int:
     finally:
         seg_cache.flush()
         tr_cache.flush()
+        if isinstance(translator, GoogleTranslator):
+            translator.close()
         gw.close()
 
 
@@ -386,9 +566,12 @@ def build_report(args, run_dir, profile, cal, history, best, test_m, test_obj,
         f"# 자동 분절 프롬프트 루프 결과 — {args.src_lang} → {args.tgt_lang}",
         "",
         f"- 데이터셋: `{args.dataset}` (train {args.train} / dev {args.dev} / test {args.test})",
-        f"- 분절 모델: `{args.model}` / 번역 모델: `{args.translator_model}`",
+        f"- 분절 모델: `{args.model}` / 번역기: `{cal.get('translator', args.translator_model)}`",
         f"- 언어 프로파일: {profile.get('source_language')}, 어순 {profile.get('word_order')}, "
         f"띄어쓰기 {profile.get('uses_spaces_between_words')}, 문체 {profile.get('register')}",
+        f"- 품질 백엔드: **{cal.get('backend')}**"
+        + (f" (`{args.comet_model or metrics.COMET_CHECKPOINTS.get(cal.get('backend'), '')}`)"
+           if cal.get("backend") in metrics.COMET_CHECKPOINTS else ""),
         f"- Q_floor: **{cal.get('q_floor')}** = 하한 {cal.get('q_mechanical_split')} + "
         f"{cal.get('ratio')} x (상한 {cal.get('q_ceiling_retranslate')} - 하한), "
         f"앵커 간격 {cal.get('anchor_gap')}",
@@ -436,7 +619,9 @@ def build_report(args, run_dir, profile, cal, history, best, test_m, test_obj,
         "| 기준 | Q | L | gain | 비고 |",
         "|---|---|---|---|---|",
         f"| 상한: 무분절 + 동일 문장 재번역 | {cal.get('q_ceiling_retranslate')} | 1.0000 | 0.0000 | "
-        f"지표 잡음 바닥. 1.0 이 아닌 이유는 번역기가 결정론적이지 않기 때문 |",
+        + ("번역기가 결정론적이라 잡음이 0 |"
+           if (cal.get("q_ceiling_retranslate") or 0) >= 1.0
+           else "지표 잡음 바닥. 1.0 이 아닌 이유는 번역기가 결정론적이지 않기 때문 |"),
         f"| 하한: 기계분절 ({cal.get('mechanical_every_chars')}자마다) | "
         f"{cal.get('q_mechanical_split')} | — | — | 의미 무시 |",
         f"| 자동 생성 프롬프트 | {test_m.quality_segmented:.4f} | {test_m.latency:.4f} | "
