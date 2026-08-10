@@ -1,44 +1,49 @@
 {
   "train": {
     "n": 30,
-    "valid_rate": 1.0,
-    "first_pass_valid_rate": 0.9667,
-    "quality": 0.9148,
-    "quality_segmented": 0.8297,
-    "quality_segmented_std": 0.0396,
-    "n_segmented": 15,
-    "quality_chrf": 0.8205,
-    "latency": 0.8835,
-    "latency_gain": 0.1165,
-    "mean_segments": 1.6333,
-    "segmented_rate": 0.5,
-    "quality_min": 0.7383,
-    "quality_p10": 0.796
+    "format_pass_rate": 0.9667,
+    "format_pass_rate_no_retry": 0.9333,
+    "by_T": {
+      "3": {
+        "target_chunk_words": 3,
+        "n": 30,
+        "adequacy": 0.7807,
+        "adequacy_min": 0.6481,
+        "adequacy_p10": 0.6758,
+        "consistency": 0.8375,
+        "consistency_chrf": 0.7021,
+        "laal_words": 3.5779,
+        "chunks_per_sentence": 2.9333,
+        "split_ratio": 0.9333,
+        "truncation_shortfall": 1.3667,
+        "premature_rate": null
+      },
+      "6": {
+        "target_chunk_words": 6,
+        "n": 30,
+        "adequacy": 0.7857,
+        "adequacy_min": 0.6481,
+        "adequacy_p10": 0.6795,
+        "consistency": 0.873,
+        "consistency_chrf": 0.7611,
+        "laal_words": 4.0962,
+        "chunks_per_sentence": 2.2667,
+        "split_ratio": 0.9333,
+        "truncation_shortfall": 0.0667,
+        "premature_rate": 0.25
+      }
+    },
+    "score": -9.0333
   },
-  "dev": {
-    "n": 60,
-    "valid_rate": 1.0,
-    "first_pass_valid_rate": 1.0,
-    "quality": 0.9382,
-    "quality_segmented": 0.8389,
-    "quality_segmented_std": 0.0595,
-    "n_segmented": 23,
-    "quality_chrf": 0.8667,
-    "latency": 0.8968,
-    "latency_gain": 0.1032,
-    "mean_segments": 1.5333,
-    "segmented_rate": 0.3833,
-    "quality_min": 0.7141,
-    "quality_p10": 0.7933
-  },
-  "objective_train": 0.1165,
-  "objective_dev": 0.1032,
-  "adopted": true,
+  "dev": null,
+  "score_train": -9.0333,
+  "score_dev": null,
+  "adopted": false,
   "usage": {
-    "calls": 615,
-    "prompt_tokens": 857015,
-    "completion_tokens": 100561,
+    "calls": 196,
+    "prompt_tokens": 721025,
+    "completion_tokens": 238027,
     "cached_tokens": 0,
-    "cost": 2.712985
+    "cost": 3.82232
   }
 }

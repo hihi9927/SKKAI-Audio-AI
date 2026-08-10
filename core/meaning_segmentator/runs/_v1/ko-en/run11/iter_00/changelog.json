@@ -1,0 +1,8 @@
+{
+  "sections_changed": [
+    "[Never Segment]"
+  ],
+  "changelog": [
+    "Added six new conditions to [Never Segment] targeting the wrong_boundary failure modes identified by the critic: trailing fragments lacking their own predicate (bare object/topic phrases, 혹시/만약 conditionals), coordinate clauses sharing one elided verb, ambiguous terms split away from their resolving clause, rhetorical question words (왜/어떻게/뭐) whose scope extends into the next clause, short disfluent repetition tails, and connectives that should stay attached to the segment they close rather than opening the next one. These are stated as general structural conditions, not tied to specific sentences, per the 'reduce segmentation' direction."
+  ]
+}

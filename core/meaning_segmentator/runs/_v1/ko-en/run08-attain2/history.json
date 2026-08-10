@@ -1,0 +1,223 @@
+[
+  {
+    "version": 0,
+    "adopted": true,
+    "train": {
+      "n": 30,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9251,
+      "quality_segmented": 0.8978,
+      "quality_segmented_std": 0.1121,
+      "n_segmented": 22,
+      "quality_chrf": 0.8886,
+      "latency": 0.8208,
+      "latency_gain": 0.1792,
+      "mean_segments": 2.0667,
+      "mean_k_eff": 1.8214,
+      "segmented_rate": 0.7333,
+      "quality_min": 0.6194,
+      "quality_p10": 0.7655,
+      "attainment": 0.6759,
+      "gain_star": 0.1374
+    },
+    "dev": {
+      "n": 60,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9107,
+      "quality_segmented": 0.8809,
+      "quality_segmented_std": 0.089,
+      "n_segmented": 45,
+      "quality_chrf": 0.8242,
+      "latency": 0.8299,
+      "latency_gain": 0.1701,
+      "mean_segments": 2.1,
+      "mean_k_eff": 1.7417,
+      "segmented_rate": 0.75,
+      "quality_min": 0.6763,
+      "quality_p10": 0.7919,
+      "attainment": 0.6215,
+      "gain_star": 0.1041
+    },
+    "objective_train": -1.0082,
+    "objective_dev": -1.0144,
+    "changelog": null,
+    "next_changelog": [
+      "[When to Segment]: added five precise, generalizable conditions for low-risk boundaries that were being missed (sentence-initial connective/discourse marker + full clause; embedded question mark + resuming clause; ~때 clause + filler + new clause, splitting after the filler; quotative -다고/-라고 clause + matrix clause; short response connective closing a brief acknowledgment attaches to the PRECEDING segment rather than starting the next).",
+      "[Never Segment]: added four precise conditions blocking damaging splits identified by evidence — inside a 왜(why)-triggered rhetorical-question scope, immediately after a conditional connective (-면/-다면) before its consequence, immediately after a -고 converb that a later conditional depends on, and multiple splits within a single filler/false-start-dominated run."
+    ]
+  },
+  {
+    "version": 1,
+    "adopted": true,
+    "train": {
+      "n": 30,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9359,
+      "quality_segmented": 0.9126,
+      "quality_segmented_std": 0.0973,
+      "n_segmented": 22,
+      "quality_chrf": 0.8951,
+      "latency": 0.8227,
+      "latency_gain": 0.1773,
+      "mean_segments": 2.0,
+      "mean_k_eff": 1.7927,
+      "segmented_rate": 0.7333,
+      "quality_min": 0.6194,
+      "quality_p10": 0.8034,
+      "attainment": 0.717,
+      "gain_star": 0.1374
+    },
+    "dev": {
+      "n": 60,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9338,
+      "quality_segmented": 0.8981,
+      "quality_segmented_std": 0.0851,
+      "n_segmented": 39,
+      "quality_chrf": 0.8701,
+      "latency": 0.8529,
+      "latency_gain": 0.1471,
+      "mean_segments": 1.95,
+      "mean_k_eff": 1.6467,
+      "segmented_rate": 0.65,
+      "quality_min": 0.6869,
+      "quality_p10": 0.8077,
+      "attainment": 0.6174,
+      "gain_star": 0.1041
+    },
+    "objective_train": 0.717,
+    "objective_dev": 0.6174,
+    "changelog": [
+      "[When to Segment]: added five precise, generalizable conditions for low-risk boundaries that were being missed (sentence-initial connective/discourse marker + full clause; embedded question mark + resuming clause; ~때 clause + filler + new clause, splitting after the filler; quotative -다고/-라고 clause + matrix clause; short response connective closing a brief acknowledgment attaches to the PRECEDING segment rather than starting the next).",
+      "[Never Segment]: added four precise conditions blocking damaging splits identified by evidence — inside a 왜(why)-triggered rhetorical-question scope, immediately after a conditional connective (-면/-다면) before its consequence, immediately after a -고 converb that a later conditional depends on, and multiple splits within a single filler/false-start-dominated run."
+    ],
+    "next_changelog": [
+      "[When to Segment]: fixed the quotative rule — evidence showed splitting between a -다고/-라고 quote and its reporting verb loses the quoted content; the rule now keeps quote+reporting verb together and only permits a split after the reporting verb if a genuinely separate matrix clause follows.",
+      "[When to Segment]: added eight concrete permissive rules targeting measured under-segmentation (coordinating -고 with two independently complete clauses; causal -아서/-어서/-니까 with an independent result; conditional -면/-다면 with an independent apodosis; comparative -보다는; chained sequential temporal clauses; leading discourse adverbs like 어쨌든/아무튼; short unambiguous subject pronouns before a long clause; repeated/restated subject before its predicate) — these give free latency gain per the reference splits without harming quality.",
+      "[Never Segment]: narrowed the conditional-connective (-면/-다면) prohibition so it only blocks splits when the consequence clause lacks its own subject/verb and borrows the protasis's argument; when the consequence is a genuinely independent clause, splitting is now explicitly allowed, resolving the conflict with the new permissive conditional rule."
+    ]
+  },
+  {
+    "version": 2,
+    "adopted": false,
+    "train": {
+      "n": 30,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9186,
+      "quality_segmented": 0.8983,
+      "quality_segmented_std": 0.0806,
+      "n_segmented": 24,
+      "quality_chrf": 0.8726,
+      "latency": 0.8078,
+      "latency_gain": 0.1922,
+      "mean_segments": 2.3333,
+      "mean_k_eff": 1.9564,
+      "segmented_rate": 0.8,
+      "quality_min": 0.7655,
+      "quality_p10": 0.7909,
+      "attainment": 0.7208,
+      "gain_star": 0.1374
+    },
+    "dev": null,
+    "objective_train": -1.0003,
+    "objective_dev": null,
+    "changelog": [
+      "[When to Segment]: fixed the quotative rule — evidence showed splitting between a -다고/-라고 quote and its reporting verb loses the quoted content; the rule now keeps quote+reporting verb together and only permits a split after the reporting verb if a genuinely separate matrix clause follows.",
+      "[When to Segment]: added eight concrete permissive rules targeting measured under-segmentation (coordinating -고 with two independently complete clauses; causal -아서/-어서/-니까 with an independent result; conditional -면/-다면 with an independent apodosis; comparative -보다는; chained sequential temporal clauses; leading discourse adverbs like 어쨌든/아무튼; short unambiguous subject pronouns before a long clause; repeated/restated subject before its predicate) — these give free latency gain per the reference splits without harming quality.",
+      "[Never Segment]: narrowed the conditional-connective (-면/-다면) prohibition so it only blocks splits when the consequence clause lacks its own subject/verb and borrows the protasis's argument; when the consequence is a genuinely independent clause, splitting is now explicitly allowed, resolving the conflict with the new permissive conditional rule."
+    ],
+    "next_changelog": [
+      "[When to Segment]: corrected the quotative rule — evidence (E00140) showed cutting between a -다고/-라고 quote and its reporting verb drops the quoted content; the rule now keeps quote+reporting verb in one segment and only permits a cut after the whole reported-speech unit when a distinct matrix clause with its own subject+verb follows.",
+      "[When to Segment]: added eight narrow, generalizable permissive rules for measured under-segmentation — coordinating -고 with two independently-complete clauses; causal -아서/-어서/-니까 with an independent result clause; conditional -면/-다면 with an independent consequence clause; comparative -보다는 between two self-standing clauses; chained sequential temporal markers (나중에, 끝나고 나서, etc.) each closing its own time clause; a leading discourse adverb (어쨌든/아무튼/결국) before a full independent clause; an unambiguous short subject pronoun before a long self-contained predicate; a repeated/restated subject immediately before its own predicate. Each rule requires the resulting pieces to be independently complete, to avoid the quality-floor failures seen when broader versions of these rules were tried without that requirement.",
+      "[When to Segment]: narrowed the sentence-initial discourse-marker rule to short single-word connectives (그래서, 그런데, 근데, 아니, 그냥, 그니까) — longer multi-word lead-ins (e.g. 'X를 들어서' type phrases) are excluded from standalone segmentation since isolating them produced verb-less fragments in evidence."
+    ]
+  },
+  {
+    "version": 3,
+    "adopted": false,
+    "train": {
+      "n": 30,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9301,
+      "quality_segmented": 0.9126,
+      "quality_segmented_std": 0.0862,
+      "n_segmented": 24,
+      "quality_chrf": 0.8951,
+      "latency": 0.8169,
+      "latency_gain": 0.1831,
+      "mean_segments": 2.1,
+      "mean_k_eff": 1.8113,
+      "segmented_rate": 0.8,
+      "quality_min": 0.6194,
+      "quality_p10": 0.8484,
+      "attainment": 0.7605,
+      "gain_star": 0.1374
+    },
+    "dev": {
+      "n": 60,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.927,
+      "quality_segmented": 0.8877,
+      "quality_segmented_std": 0.1006,
+      "n_segmented": 39,
+      "quality_chrf": 0.864,
+      "latency": 0.8486,
+      "latency_gain": 0.1514,
+      "mean_segments": 2.0,
+      "mean_k_eff": 1.685,
+      "segmented_rate": 0.65,
+      "quality_min": 0.6396,
+      "quality_p10": 0.7993,
+      "attainment": 0.5856,
+      "gain_star": 0.1041
+    },
+    "objective_train": 0.7605,
+    "objective_dev": -1.0105,
+    "changelog": [
+      "[When to Segment]: corrected the quotative rule — evidence (E00140) showed cutting between a -다고/-라고 quote and its reporting verb drops the quoted content; the rule now keeps quote+reporting verb in one segment and only permits a cut after the whole reported-speech unit when a distinct matrix clause with its own subject+verb follows.",
+      "[When to Segment]: added eight narrow, generalizable permissive rules for measured under-segmentation — coordinating -고 with two independently-complete clauses; causal -아서/-어서/-니까 with an independent result clause; conditional -면/-다면 with an independent consequence clause; comparative -보다는 between two self-standing clauses; chained sequential temporal markers (나중에, 끝나고 나서, etc.) each closing its own time clause; a leading discourse adverb (어쨌든/아무튼/결국) before a full independent clause; an unambiguous short subject pronoun before a long self-contained predicate; a repeated/restated subject immediately before its own predicate. Each rule requires the resulting pieces to be independently complete, to avoid the quality-floor failures seen when broader versions of these rules were tried without that requirement.",
+      "[When to Segment]: narrowed the sentence-initial discourse-marker rule to short single-word connectives (그래서, 그런데, 근데, 아니, 그냥, 그니까) — longer multi-word lead-ins (e.g. 'X를 들어서' type phrases) are excluded from standalone segmentation since isolating them produced verb-less fragments in evidence."
+    ],
+    "next_changelog": [
+      "[When to Segment]: added eight concrete, evidence-backed permissive rules for measured under-segmentation — coordinating -고 joining two independently complete clauses; causal -아서/-어서/-니까 followed by a self-contained result clause; conditional -면/-다면 followed by a self-contained consequence; comparative -보다는 between two independently complete clauses; chained sequential temporal setup clauses (나중에, 끝나고 나서, etc.), each split after its own clause; a leading discourse adverb (어쨌든/아무튼/결국/아무래도) split off before a full independent clause; a short subject pronoun split off before a long self-contained predicate; a repeated/restated subject split from its own predicate. Each rule requires the resulting pieces to be independently interpretable, targeting free latency gain the critic confirmed at zero quality cost (E00691, E00509, E00451, E00018, E00716, E00831, E00171, E00951).",
+      "[Never Segment]: narrowed the over-broad conditional-connective (-면/-다면) prohibition so it only blocks a split when the consequence clause has no subject/verb of its own and must borrow an argument from the protasis; when the consequence clause is genuinely independent, splitting right after the connective is now explicitly permitted, resolving the conflict with the new conditional permissive rule and removing an over-broad restriction that was suppressing safe latency gains."
+    ]
+  },
+  {
+    "version": 4,
+    "adopted": false,
+    "train": {
+      "n": 30,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.8855,
+      "quality_segmented": 0.8679,
+      "quality_segmented_std": 0.0926,
+      "n_segmented": 26,
+      "quality_chrf": 0.8112,
+      "latency": 0.787,
+      "latency_gain": 0.213,
+      "mean_segments": 2.2667,
+      "mean_k_eff": 1.9985,
+      "segmented_rate": 0.8667,
+      "quality_min": 0.6194,
+      "quality_p10": 0.7655,
+      "attainment": 0.5354,
+      "gain_star": 0.1374
+    },
+    "dev": null,
+    "objective_train": -1.0323,
+    "objective_dev": null,
+    "changelog": [
+      "[When to Segment]: added eight concrete, evidence-backed permissive rules for measured under-segmentation — coordinating -고 joining two independently complete clauses; causal -아서/-어서/-니까 followed by a self-contained result clause; conditional -면/-다면 followed by a self-contained consequence; comparative -보다는 between two independently complete clauses; chained sequential temporal setup clauses (나중에, 끝나고 나서, etc.), each split after its own clause; a leading discourse adverb (어쨌든/아무튼/결국/아무래도) split off before a full independent clause; a short subject pronoun split off before a long self-contained predicate; a repeated/restated subject split from its own predicate. Each rule requires the resulting pieces to be independently interpretable, targeting free latency gain the critic confirmed at zero quality cost (E00691, E00509, E00451, E00018, E00716, E00831, E00171, E00951).",
+      "[Never Segment]: narrowed the over-broad conditional-connective (-면/-다면) prohibition so it only blocks a split when the consequence clause has no subject/verb of its own and must borrow an argument from the protasis; when the consequence clause is genuinely independent, splitting right after the connective is now explicitly permitted, resolving the conflict with the new conditional permissive rule and removing an over-broad restriction that was suppressing safe latency gains."
+    ]
+  }
+]

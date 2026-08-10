@@ -2,65 +2,64 @@
   "source_language": "Korean",
   "source_code": "ko",
   "uses_spaces_between_words": true,
-  "word_order": "SOV — verbs and predicates consistently appear at clause end (e.g. '가는 목적이 있어가지고', '3번밖에 안 탔다는 거야')",
+  "word_order": "SOV — verbs/predicates consistently appear clause-finally, e.g. '식당 밥 먹다 보면은', '적성에 맞는지 안 맞는지부터 판단을 한 후에', with objects/complements preceding the verb throughout.",
   "head_final": true,
-  "punctuation_present": "sometimes — some sentences end with '.', '?' while many transcribed utterances trail off with no mark or end mid-connector",
+  "punctuation_present": "sometimes — periods and question marks appear in some sentences (e.g. 4, 5, 13, 17) but many utterances end without any final punctuation (e.g. 1, 2, 3, 6, 9)",
   "trailing_punctuation": [
+    "。",
     ".",
     "?",
     "!",
-    "…"
+    "…",
+    ","
   ],
-  "register": "spontaneous informal spoken conversation (casual dialogue/interview transcript with hesitations and self-correction)",
+  "register": "spontaneous conversational speech (transcribed casual dialogue/monologue, informal register with false starts and fillers)",
   "fillers_and_hesitations": [
-    "어",
-    "에",
-    "음",
+    "뭐",
     "그",
     "이제",
-    "막",
     "그니까",
-    "뭐",
-    "좀",
-    "저"
+    "어",
+    "아",
+    "그래서"
   ],
   "discourse_markers": [
-    "그래서",
     "근데",
-    "그러니까",
-    "그리고",
-    "아니",
-    "그래도",
-    "또",
+    "그래서",
+    "그러다가",
     "그런데",
-    "아 그리고"
+    "그리고",
+    "그래도",
+    "그니까"
   ],
   "clause_boundary_signals": [
-    "-거든(?)",
-    "-잖아",
     "-는데",
     "-고",
-    "-어서/아서",
+    "-서",
     "-니까",
-    "-다는 거야",
+    "-거든",
+    "-다가",
+    "-면은",
+    "-한 후에",
+    "-잖아",
+    "-것 같아/같애",
     "-거야",
-    "final '.', '?'",
-    "sentence-final verb endings like -어, -지, -네, -더라"
+    "period/comma",
+    "sentence-final endings like -습니다, -어요, -았다"
   ],
   "non_boundary_traps": [
-    "-는데 (contrastive/continuative, often mid-sentence not final)",
-    "-고 (coordinating, chains clauses)",
-    "-아서/어서 (causal linking, sentence continues)",
-    "-니까 (reason clause, expects continuation)",
-    "trailing '-가지고' or '-다 보니까' (incomplete, speaker will continue)",
-    "fillers like '이제', '그', '막' that resemble discourse openers but carry no boundary"
+    "뭐 (filler, not 'what' as a question word here)",
+    "그 (demonstrative filler, not a full noun phrase)",
+    "이제 (discourse filler 'now/then', not always temporal)",
+    "거 같애/같은데 (evidential hedge fused to prior clause, not a new sentence)",
+    "repeated words like '이거 이거 이거' (repetition/hesitation, not enumeration)"
   ],
   "target_language_risks": [
-    "Pro-drop: subjects/objects often omitted, so a segment alone may lack a clear English subject",
-    "Verb-final structure means core meaning (verb, negation, tense, mood) only resolves at clause end — early segmentation risks mistranslating clause type (statement vs question vs quote)",
-    "Sentence-final particles (거든, 잖아, 는데) encode nuance/mood not directly translatable without following context",
-    "Unfinished/trailing utterances (ending in -아서/어서, -가지고) leave semantic completion pending, risking fragment translations that read as complete false sentences",
-    "Frequent self-repair and repeated fillers can be mistaken for content words if not filtered"
+    "Korean is pro-drop and topic-marked, so segments without prior context lose subject/object identity when rendered in English, which requires explicit subjects",
+    "Verb-final structure means the core meaning (verb, negation, tense, mood) is revealed only at clause end, so early segmentation risks mistranslating polarity or aspect",
+    "Sentence-final particles like -거든, -잖아, -같애 carry evidential/attitudinal nuance that has no single English equivalent and can be lost if segmented before the ending is seen",
+    "Fillers and false starts (뭐, 그, 이제) if segmented as separate units may be mistranslated as content words",
+    "Honorific/informal register markers affect tone in English (e.g. formal '-습니다' vs casual '-어/-야') and must be preserved consistently across segments"
   ],
-  "notes_for_prompt_writer": "Segment primarily at sentence-final punctuation or clear sentence-final verb endings (-어, -네, -더라, -거야) rather than at every connective suffix, since -는데/-고/-어서/-니까 usually continue rather than end a clause. Treat fillers (어, 음, 이제, 그, 막) as non-boundary noise to be skipped, not segment starters. Because Korean is SOV and pro-drop, delay commitment on subject/object identity until the verb is seen, and be cautious with clauses trailing off (ending in -아서/어서/가지고) as they signal continuation into the next utterance."
+  "notes_for_prompt_writer": "This is unscripted spoken Korean with frequent self-repair, fillers, and clause-chaining via connective endings (-는데, -고, -서, -니까) rather than explicit conjunctions; treat these endings as the primary segmentation cues since the verb (and thus polarity/tense) always comes last. Do not split on commas or fillers like 뭐/그/이제 alone, as these are hesitation markers, not clause boundaries. Because subjects and objects are frequently omitted (pro-drop) and topic particles are the main structural device, downstream segments longer than one clause may be needed to preserve referential clarity in the English output."
 }

@@ -1,0 +1,52 @@
+{
+  "train": {
+    "n": 60,
+    "valid_rate": 1.0,
+    "first_pass_valid_rate": 1.0,
+    "quality": 0.9663,
+    "quality_segmented": 0.9326,
+    "quality_segmented_std": 0.074,
+    "n_segmented": 30,
+    "quality_chrf": 0.9458,
+    "latency": 0.8795,
+    "latency_gain": 0.1205,
+    "mean_segments": 1.7,
+    "mean_k_eff": 1.5264,
+    "segmented_rate": 0.5,
+    "quality_min": 0.7976,
+    "quality_p10": 0.8487,
+    "attainment": 0.5828,
+    "speed_attainment": 0.9889,
+    "gain_star": 0.1219
+  },
+  "dev": {
+    "n": 60,
+    "valid_rate": 1.0,
+    "first_pass_valid_rate": 1.0,
+    "quality": 0.9304,
+    "quality_segmented": 0.884,
+    "quality_segmented_std": 0.095,
+    "n_segmented": 36,
+    "quality_chrf": 0.8761,
+    "latency": 0.8591,
+    "latency_gain": 0.1409,
+    "mean_segments": 1.85,
+    "mean_k_eff": 1.6186,
+    "segmented_rate": 0.6,
+    "quality_min": 0.6316,
+    "quality_p10": 0.8062,
+    "attainment": 0.5084,
+    "speed_attainment": 1.2019,
+    "gain_star": 0.1172
+  },
+  "objective_train": 0.5828,
+  "objective_dev": -1.014,
+  "adopted": true,
+  "usage": {
+    "calls": 273,
+    "prompt_tokens": 607302,
+    "completion_tokens": 169776,
+    "cached_tokens": 0,
+    "cost": 2.912364
+  }
+}

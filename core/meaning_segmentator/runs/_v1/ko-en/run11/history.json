@@ -1,0 +1,220 @@
+[
+  {
+    "version": 0,
+    "adopted": true,
+    "train": {
+      "n": 60,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.8966,
+      "quality_segmented": 0.8651,
+      "quality_segmented_std": 0.0955,
+      "n_segmented": 46,
+      "quality_chrf": 0.7975,
+      "latency": 0.8178,
+      "latency_gain": 0.1822,
+      "mean_segments": 2.0667,
+      "mean_k_eff": 1.8012,
+      "segmented_rate": 0.7667,
+      "quality_min": 0.6194,
+      "quality_p10": 0.7743,
+      "attainment": 0.6017,
+      "speed_attainment": 1.6576,
+      "gain_star": 0.1099,
+      "misplaced_gain": 3.4033,
+      "oversplit_gain": 3.5593
+    },
+    "dev": {
+      "n": 60,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9325,
+      "quality_segmented": 0.8875,
+      "quality_segmented_std": 0.0952,
+      "n_segmented": 36,
+      "quality_chrf": 0.8794,
+      "latency": 0.8503,
+      "latency_gain": 0.1497,
+      "mean_segments": 1.8667,
+      "mean_k_eff": 1.6437,
+      "segmented_rate": 0.6,
+      "quality_min": 0.5479,
+      "quality_p10": 0.8183,
+      "attainment": 0.5292,
+      "speed_attainment": 1.4697,
+      "gain_star": 0.1018,
+      "misplaced_gain": 3.2413,
+      "oversplit_gain": 2.5048
+    },
+    "objective_train": -1.0311,
+    "objective_dev": -1.0104,
+    "changelog": null,
+    "next_changelog": [
+      "Added six new conditions to [Never Segment] targeting the wrong_boundary failure modes identified by the critic: trailing fragments lacking their own predicate (bare object/topic phrases, 혹시/만약 conditionals), coordinate clauses sharing one elided verb, ambiguous terms split away from their resolving clause, rhetorical question words (왜/어떻게/뭐) whose scope extends into the next clause, short disfluent repetition tails, and connectives that should stay attached to the segment they close rather than opening the next one. These are stated as general structural conditions, not tied to specific sentences, per the 'reduce segmentation' direction."
+    ]
+  },
+  {
+    "version": 1,
+    "adopted": true,
+    "train": {
+      "n": 60,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9582,
+      "quality_segmented": 0.9216,
+      "quality_segmented_std": 0.08,
+      "n_segmented": 32,
+      "quality_chrf": 0.9171,
+      "latency": 0.8703,
+      "latency_gain": 0.1297,
+      "mean_segments": 1.8,
+      "mean_k_eff": 1.6194,
+      "segmented_rate": 0.5333,
+      "quality_min": 0.7755,
+      "quality_p10": 0.8216,
+      "attainment": 0.5542,
+      "speed_attainment": 1.083,
+      "gain_star": 0.1198,
+      "misplaced_gain": 2.7182,
+      "oversplit_gain": 1.0824
+    },
+    "dev": {
+      "n": 60,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9518,
+      "quality_segmented": 0.9035,
+      "quality_segmented_std": 0.0801,
+      "n_segmented": 30,
+      "quality_chrf": 0.9111,
+      "latency": 0.8767,
+      "latency_gain": 0.1233,
+      "mean_segments": 1.7167,
+      "mean_k_eff": 1.53,
+      "segmented_rate": 0.5,
+      "quality_min": 0.6921,
+      "quality_p10": 0.834,
+      "attainment": 0.5279,
+      "speed_attainment": 1.2108,
+      "gain_star": 0.1018,
+      "misplaced_gain": 2.7012,
+      "oversplit_gain": 1.471
+    },
+    "objective_train": 0.5542,
+    "objective_dev": 0.5279,
+    "changelog": [
+      "Added six new conditions to [Never Segment] targeting the wrong_boundary failure modes identified by the critic: trailing fragments lacking their own predicate (bare object/topic phrases, 혹시/만약 conditionals), coordinate clauses sharing one elided verb, ambiguous terms split away from their resolving clause, rhetorical question words (왜/어떻게/뭐) whose scope extends into the next clause, short disfluent repetition tails, and connectives that should stay attached to the segment they close rather than opening the next one. These are stated as general structural conditions, not tied to specific sentences, per the 'reduce segmentation' direction."
+    ],
+    "next_changelog": [
+      "Added concrete positional rules to [When to Segment] for boundary types the critic showed are safe but missing: leading standalone discourse connectives (그니까/그래서/근데/아니), trailing self-contained rhetorical tag-questions, embedded question marks followed by a summarizing clause, coordinated self-contained -고 clauses, internal temporal connectives (그러고 나서/그 다음에), leading filler-interjection clusters, and placing the boundary after the main verb phrase in filler-laden run-ons rather than leaving them whole.",
+      "Extended [Decision Procedure] with two repositioning checks: (a) if clause B's subject is only introduced right after a candidate boundary, shift the boundary to fall after that subject phrase instead of before it, and (b) for a single cause-then-result chain (e.g. -아서/-가지고 reason clause immediately followed by its result), use one boundary around the whole chain rather than multiple internal cuts, so the causal/result link is not severed. These reposition existing boundaries per the 'move boundaries, keep the count' direction and do not add new prohibitions or reduce split frequency."
+    ]
+  },
+  {
+    "version": 2,
+    "adopted": false,
+    "train": {
+      "n": 60,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9479,
+      "quality_segmented": 0.8957,
+      "quality_segmented_std": 0.087,
+      "n_segmented": 30,
+      "quality_chrf": 0.9008,
+      "latency": 0.8802,
+      "latency_gain": 0.1198,
+      "mean_segments": 1.75,
+      "mean_k_eff": 1.5672,
+      "segmented_rate": 0.5,
+      "quality_min": 0.6739,
+      "quality_p10": 0.8131,
+      "attainment": 0.4323,
+      "speed_attainment": 1.0692,
+      "gain_star": 0.112,
+      "misplaced_gain": 2.756,
+      "oversplit_gain": 1.5245
+    },
+    "dev": null,
+    "objective_train": -1.0023,
+    "objective_dev": null,
+    "changelog": [
+      "Added concrete positional rules to [When to Segment] for boundary types the critic showed are safe but missing: leading standalone discourse connectives (그니까/그래서/근데/아니), trailing self-contained rhetorical tag-questions, embedded question marks followed by a summarizing clause, coordinated self-contained -고 clauses, internal temporal connectives (그러고 나서/그 다음에), leading filler-interjection clusters, and placing the boundary after the main verb phrase in filler-laden run-ons rather than leaving them whole.",
+      "Extended [Decision Procedure] with two repositioning checks: (a) if clause B's subject is only introduced right after a candidate boundary, shift the boundary to fall after that subject phrase instead of before it, and (b) for a single cause-then-result chain (e.g. -아서/-가지고 reason clause immediately followed by its result), use one boundary around the whole chain rather than multiple internal cuts, so the causal/result link is not severed. These reposition existing boundaries per the 'move boundaries, keep the count' direction and do not add new prohibitions or reduce split frequency."
+    ],
+    "next_changelog": [
+      "Added three narrowly-scoped, low-risk positional rules to [When to Segment] that were shown safe by the critic's reference evidence: (1) segment right after a leading standalone discourse connective (그니까/그래서/근데/아니/그런데) when a full subject+predicate clause follows it, (2) explicitly extend the existing terminal-punctuation rule to embedded mid-sentence '?' followed by a summarizing clause, not just sentence-final '?', (3) segment immediately before an internal temporal connective (그러고 나서, 그 다음에) that introduces a second, distinct describable time span. These reposition/add boundaries without touching the -고 coordination wording, tag-question splitting, or filler-cluster splitting that were part of the previously rejected revision and likely caused its quality collapse.",
+      "Added a preliminary check to [Decision Procedure] step 1 requiring the three new [When to Segment] patterns (leading connective, embedded '?', internal temporal connective) to be tested explicitly before a long filler-laden sentence is left completely unsegmented, so latency is not left on the table on sentences with no other visible boundary — while leaving all existing rejection criteria (steps 2-7) unchanged."
+    ]
+  },
+  {
+    "version": 3,
+    "adopted": false,
+    "train": {
+      "n": 60,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9361,
+      "quality_segmented": 0.8873,
+      "quality_segmented_std": 0.0971,
+      "n_segmented": 34,
+      "quality_chrf": 0.8801,
+      "latency": 0.8634,
+      "latency_gain": 0.1366,
+      "mean_segments": 1.8,
+      "mean_k_eff": 1.61,
+      "segmented_rate": 0.5667,
+      "quality_min": 0.6396,
+      "quality_p10": 0.8131,
+      "attainment": 0.4807,
+      "speed_attainment": 1.0258,
+      "gain_star": 0.1332,
+      "misplaced_gain": 3.4852,
+      "oversplit_gain": 0.8703
+    },
+    "dev": null,
+    "objective_train": -1.0115,
+    "objective_dev": null,
+    "changelog": [
+      "Added three narrowly-scoped, low-risk positional rules to [When to Segment] that were shown safe by the critic's reference evidence: (1) segment right after a leading standalone discourse connective (그니까/그래서/근데/아니/그런데) when a full subject+predicate clause follows it, (2) explicitly extend the existing terminal-punctuation rule to embedded mid-sentence '?' followed by a summarizing clause, not just sentence-final '?', (3) segment immediately before an internal temporal connective (그러고 나서, 그 다음에) that introduces a second, distinct describable time span. These reposition/add boundaries without touching the -고 coordination wording, tag-question splitting, or filler-cluster splitting that were part of the previously rejected revision and likely caused its quality collapse.",
+      "Added a preliminary check to [Decision Procedure] step 1 requiring the three new [When to Segment] patterns (leading connective, embedded '?', internal temporal connective) to be tested explicitly before a long filler-laden sentence is left completely unsegmented, so latency is not left on the table on sentences with no other visible boundary — while leaving all existing rejection criteria (steps 2-7) unchanged."
+    ],
+    "next_changelog": [
+      "Narrowed two over-broad [Never Segment] conditions (blanket discourse-marker restriction and trailing-connective restriction) that were blocking safe, evidence-backed splits: leading connectives (그니까/그래서/근데/etc.) followed by a full subject+predicate clause are now explicitly allowed as segment points right after the marker, and trailing result-connectives (그래서/그러니까) followed by additional clause content may now open a new segment, while bare/contentless trailing connectives remain merged. This follows the critic's 'segment more aggressively' direction by removing prohibitions rather than adding new ones, and targets the dominant under-segmentation failure (leading connectives, trailing short connective clauses) without touching the previously-tried and rejected [When to Segment]/[Decision Procedure] rule additions.",
+      "Refreshed [Examples — Segment] to replace two examples that were redundant with the existing terminal-punctuation rule with two new examples illustrating the newly-narrowed rules: splitting after a leading standalone discourse connective when a full clause follows, and splitting before a trailing result-connective clause that carries further content."
+    ]
+  },
+  {
+    "version": 4,
+    "adopted": false,
+    "train": {
+      "n": 60,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9414,
+      "quality_segmented": 0.8828,
+      "quality_segmented_std": 0.1047,
+      "n_segmented": 30,
+      "quality_chrf": 0.8956,
+      "latency": 0.8833,
+      "latency_gain": 0.1167,
+      "mean_segments": 1.6667,
+      "mean_k_eff": 1.4991,
+      "segmented_rate": 0.5,
+      "quality_min": 0.6396,
+      "quality_p10": 0.803,
+      "attainment": 0.5215,
+      "speed_attainment": 1.028,
+      "gain_star": 0.1135,
+      "misplaced_gain": 1.9902,
+      "oversplit_gain": 1.4599
+    },
+    "dev": null,
+    "objective_train": -1.0185,
+    "objective_dev": null,
+    "changelog": [
+      "Narrowed two over-broad [Never Segment] conditions (blanket discourse-marker restriction and trailing-connective restriction) that were blocking safe, evidence-backed splits: leading connectives (그니까/그래서/근데/etc.) followed by a full subject+predicate clause are now explicitly allowed as segment points right after the marker, and trailing result-connectives (그래서/그러니까) followed by additional clause content may now open a new segment, while bare/contentless trailing connectives remain merged. This follows the critic's 'segment more aggressively' direction by removing prohibitions rather than adding new ones, and targets the dominant under-segmentation failure (leading connectives, trailing short connective clauses) without touching the previously-tried and rejected [When to Segment]/[Decision Procedure] rule additions.",
+      "Refreshed [Examples — Segment] to replace two examples that were redundant with the existing terminal-punctuation rule with two new examples illustrating the newly-narrowed rules: splitting after a leading standalone discourse connective when a full clause follows, and splitting before a trailing result-connective clause that carries further content."
+    ]
+  }
+]

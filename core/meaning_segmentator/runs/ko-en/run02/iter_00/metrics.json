@@ -1,0 +1,98 @@
+{
+  "train": {
+    "n": 30,
+    "format_pass_rate": 1.0,
+    "format_pass_rate_no_retry": 0.9667,
+    "by_T": {
+      "3": {
+        "target_chunk_words": 3,
+        "n": 30,
+        "n_scored": 30,
+        "effective": 0.7728,
+        "adequacy": 0.7835,
+        "contradiction": 0.0158,
+        "effective_min": 0.6146,
+        "effective_p10": 0.6571,
+        "consistency": 0.8175,
+        "consistency_chrf": 0.6765,
+        "laal_words": 3.2931,
+        "chunks_per_sentence": 3.1333,
+        "split_ratio": 0.9333,
+        "truncation_shortfall": 1.2,
+        "premature_rate": null
+      },
+      "6": {
+        "target_chunk_words": 6,
+        "n": 30,
+        "n_scored": 30,
+        "effective": 0.7665,
+        "adequacy": 0.7752,
+        "contradiction": 0.0128,
+        "effective_min": 0.6329,
+        "effective_p10": 0.6583,
+        "consistency": 0.849,
+        "consistency_chrf": 0.7646,
+        "laal_words": 3.674,
+        "chunks_per_sentence": 2.3,
+        "split_ratio": 0.9333,
+        "truncation_shortfall": 0.0667,
+        "premature_rate": 0.3333
+      }
+    },
+    "score": 0.7697
+  },
+  "dev": {
+    "n": 60,
+    "format_pass_rate": 1.0,
+    "format_pass_rate_no_retry": 1.0,
+    "by_T": {
+      "3": {
+        "target_chunk_words": 3,
+        "n": 60,
+        "n_scored": 60,
+        "effective": 0.7416,
+        "adequacy": 0.7748,
+        "contradiction": 0.0429,
+        "effective_min": 0.2089,
+        "effective_p10": 0.6502,
+        "consistency": 0.7787,
+        "consistency_chrf": 0.6447,
+        "laal_words": 3.1256,
+        "chunks_per_sentence": 3.25,
+        "split_ratio": 0.9667,
+        "truncation_shortfall": 1.0333,
+        "premature_rate": null
+      },
+      "6": {
+        "target_chunk_words": 6,
+        "n": 60,
+        "n_scored": 60,
+        "effective": 0.7483,
+        "adequacy": 0.7693,
+        "contradiction": 0.0275,
+        "effective_min": 0.4254,
+        "effective_p10": 0.6351,
+        "consistency": 0.8242,
+        "consistency_chrf": 0.7066,
+        "laal_words": 3.7189,
+        "chunks_per_sentence": 2.3,
+        "split_ratio": 0.9667,
+        "truncation_shortfall": 0.0333,
+        "premature_rate": null
+      }
+    },
+    "score": 0.7449
+  },
+  "score_train": 0.7697,
+  "score_dev": 0.7449,
+  "paired_train": null,
+  "paired_dev": null,
+  "adopted": true,
+  "usage": {
+    "calls": 105,
+    "prompt_tokens": 358391,
+    "completion_tokens": 138899,
+    "cached_tokens": 0,
+    "cost": 2.105772
+  }
+}

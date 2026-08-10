@@ -1,0 +1,78 @@
+{
+  "ours": {
+    "3": {
+      "target_chunk_words": 3,
+      "n": 8,
+      "n_scored": 8,
+      "final_score": 0.6538,
+      "adequacy": 0.7854,
+      "contradiction": 0.1615,
+      "final_score_min": 0.1168,
+      "final_score_p10": 0.1168,
+      "consistency": 0.7208,
+      "consistency_chrf": 0.5834,
+      "laal_words": 2.1153,
+      "chunks_per_sentence": 4.375,
+      "split_ratio": 1.0,
+      "missing_boundaries": 0.0,
+      "premature_rate": null
+    },
+    "6": {
+      "target_chunk_words": 6,
+      "n": 8,
+      "n_scored": 8,
+      "final_score": 0.6996,
+      "adequacy": 0.7477,
+      "contradiction": 0.0593,
+      "final_score_min": 0.3141,
+      "final_score_p10": 0.3141,
+      "consistency": 0.8274,
+      "consistency_chrf": 0.7821,
+      "laal_words": 3.5823,
+      "chunks_per_sentence": 2.25,
+      "split_ratio": 1.0,
+      "missing_boundaries": 0.0,
+      "premature_rate": 0.5
+    }
+  },
+  "baselines": {
+    "unsegmented": {
+      "target_chunk_words": 0,
+      "n": 8,
+      "n_scored": 8,
+      "final_score": 0.7562,
+      "adequacy": 0.7562,
+      "contradiction": 0.0,
+      "final_score_min": 0.5506,
+      "final_score_p10": 0.5506,
+      "consistency": 1.0,
+      "consistency_chrf": 1.0,
+      "laal_words": 13.0,
+      "chunks_per_sentence": 1.0,
+      "split_ratio": 0.0,
+      "missing_boundaries": 0.0,
+      "premature_rate": null
+    },
+    "mechanical_8": {
+      "target_chunk_words": 0,
+      "n": 8,
+      "n_scored": 8,
+      "final_score": 0.4534,
+      "adequacy": 0.7025,
+      "contradiction": 0.3628,
+      "final_score_min": 0.0777,
+      "final_score_p10": 0.0777,
+      "consistency": 0.6025,
+      "consistency_chrf": 0.4172,
+      "laal_words": 2.2602,
+      "chunks_per_sentence": 6.0,
+      "split_ratio": 1.0,
+      "missing_boundaries": 0.0,
+      "premature_rate": null
+    }
+  },
+  "axes": {
+    "x": "laal_words (source words, lower = faster)",
+    "y": "adequacy (reference-free QE)"
+  }
+}

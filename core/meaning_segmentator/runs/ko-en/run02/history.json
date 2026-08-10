@@ -1,0 +1,430 @@
+[
+  {
+    "version": 0,
+    "adopted": true,
+    "train": {
+      "n": 30,
+      "format_pass_rate": 1.0,
+      "format_pass_rate_no_retry": 0.9667,
+      "by_T": {
+        "3": {
+          "target_chunk_words": 3,
+          "n": 30,
+          "n_scored": 30,
+          "effective": 0.7728,
+          "adequacy": 0.7835,
+          "contradiction": 0.0158,
+          "effective_min": 0.6146,
+          "effective_p10": 0.6571,
+          "consistency": 0.8175,
+          "consistency_chrf": 0.6765,
+          "laal_words": 3.2931,
+          "chunks_per_sentence": 3.1333,
+          "split_ratio": 0.9333,
+          "truncation_shortfall": 1.2,
+          "premature_rate": null
+        },
+        "6": {
+          "target_chunk_words": 6,
+          "n": 30,
+          "n_scored": 30,
+          "effective": 0.7665,
+          "adequacy": 0.7752,
+          "contradiction": 0.0128,
+          "effective_min": 0.6329,
+          "effective_p10": 0.6583,
+          "consistency": 0.849,
+          "consistency_chrf": 0.7646,
+          "laal_words": 3.674,
+          "chunks_per_sentence": 2.3,
+          "split_ratio": 0.9333,
+          "truncation_shortfall": 0.0667,
+          "premature_rate": 0.3333
+        }
+      },
+      "score": 0.7697
+    },
+    "dev": {
+      "n": 60,
+      "format_pass_rate": 1.0,
+      "format_pass_rate_no_retry": 1.0,
+      "by_T": {
+        "3": {
+          "target_chunk_words": 3,
+          "n": 60,
+          "n_scored": 60,
+          "effective": 0.7416,
+          "adequacy": 0.7748,
+          "contradiction": 0.0429,
+          "effective_min": 0.2089,
+          "effective_p10": 0.6502,
+          "consistency": 0.7787,
+          "consistency_chrf": 0.6447,
+          "laal_words": 3.1256,
+          "chunks_per_sentence": 3.25,
+          "split_ratio": 0.9667,
+          "truncation_shortfall": 1.0333,
+          "premature_rate": null
+        },
+        "6": {
+          "target_chunk_words": 6,
+          "n": 60,
+          "n_scored": 60,
+          "effective": 0.7483,
+          "adequacy": 0.7693,
+          "contradiction": 0.0275,
+          "effective_min": 0.4254,
+          "effective_p10": 0.6351,
+          "consistency": 0.8242,
+          "consistency_chrf": 0.7066,
+          "laal_words": 3.7189,
+          "chunks_per_sentence": 2.3,
+          "split_ratio": 0.9667,
+          "truncation_shortfall": 0.0333,
+          "premature_rate": null
+        }
+      },
+      "score": 0.7449
+    },
+    "score_train": 0.7697,
+    "score_dev": 0.7449,
+    "paired_dev": null,
+    "changelog": null,
+    "next_changelog": [
+      "[When to Segment]: Added two permissive rules so boundaries before a not-yet-arrived reporting/opinion verb, governing verb, postposed subject, or disambiguating continuation of an idiomatic phrase are still marked as candidates instead of being withheld — increases coverage per critic focus.",
+      "[Priority Rules]: Added a new lowest tier (8) that explicitly demotes boundaries preceding a pending reporting/opinion verb, governing verb, postposed subject, or idiomatic-phrase disambiguation, addressing the placement cases by ranking them last rather than deleting them as candidates."
+    ]
+  },
+  {
+    "version": 1,
+    "adopted": false,
+    "train": {
+      "n": 30,
+      "format_pass_rate": 1.0,
+      "format_pass_rate_no_retry": 0.9667,
+      "by_T": {
+        "3": {
+          "target_chunk_words": 3,
+          "n": 30,
+          "n_scored": 30,
+          "effective": 0.7655,
+          "adequacy": 0.787,
+          "contradiction": 0.0284,
+          "effective_min": 0.3986,
+          "effective_p10": 0.6329,
+          "consistency": 0.8142,
+          "consistency_chrf": 0.667,
+          "laal_words": 3.2545,
+          "chunks_per_sentence": 3.3,
+          "split_ratio": 0.9333,
+          "truncation_shortfall": 1.0333,
+          "premature_rate": null
+        },
+        "6": {
+          "target_chunk_words": 6,
+          "n": 30,
+          "n_scored": 30,
+          "effective": 0.7691,
+          "adequacy": 0.7782,
+          "contradiction": 0.013,
+          "effective_min": 0.6083,
+          "effective_p10": 0.6583,
+          "consistency": 0.8508,
+          "consistency_chrf": 0.7482,
+          "laal_words": 3.7643,
+          "chunks_per_sentence": 2.3,
+          "split_ratio": 0.9333,
+          "truncation_shortfall": 0.0667,
+          "premature_rate": 0.2
+        }
+      },
+      "score": 0.7673
+    },
+    "dev": null,
+    "score_train": 0.7673,
+    "score_dev": null,
+    "paired_dev": null,
+    "changelog": [
+      "[When to Segment]: Added two permissive rules so boundaries before a not-yet-arrived reporting/opinion verb, governing verb, postposed subject, or disambiguating continuation of an idiomatic phrase are still marked as candidates instead of being withheld — increases coverage per critic focus.",
+      "[Priority Rules]: Added a new lowest tier (8) that explicitly demotes boundaries preceding a pending reporting/opinion verb, governing verb, postposed subject, or idiomatic-phrase disambiguation, addressing the placement cases by ranking them last rather than deleting them as candidates."
+    ],
+    "next_changelog": [
+      "[Never Segment]: Removed the over-broad prohibition against segmenting after a bare noun/fragment with no verb, particle, or connective attached — this rule was blocking legitimate low-risk candidates (e.g. after NP+particle stretches awaiting a later verb) and suppressing coverage. Narrowed the filler prohibition so it only blocks positions where literally nothing but filler words has been produced, not positions after filler-plus-some-content.",
+      "[Decision Procedure]: Added explicit instruction in Step 1 that candidacy scanning must include positions after any noun phrase, particle-marked argument, or connective ending even when the governing predicate, reporting verb, or postposed subject has not yet appeared — these are still valid low-confidence candidates to be ranked (not discarded) in Step 2, directly increasing the number of marked boundaries available to the budget-trimming step."
+    ]
+  },
+  {
+    "version": 2,
+    "adopted": false,
+    "train": {
+      "n": 30,
+      "format_pass_rate": 1.0,
+      "format_pass_rate_no_retry": 1.0,
+      "by_T": {
+        "3": {
+          "target_chunk_words": 3,
+          "n": 30,
+          "n_scored": 30,
+          "effective": 0.7485,
+          "adequacy": 0.778,
+          "contradiction": 0.0381,
+          "effective_min": 0.3786,
+          "effective_p10": 0.6599,
+          "consistency": 0.7771,
+          "consistency_chrf": 0.6043,
+          "laal_words": 2.7439,
+          "chunks_per_sentence": 3.5667,
+          "split_ratio": 1.0,
+          "truncation_shortfall": 0.7667,
+          "premature_rate": null
+        },
+        "6": {
+          "target_chunk_words": 6,
+          "n": 30,
+          "n_scored": 30,
+          "effective": 0.7589,
+          "adequacy": 0.7657,
+          "contradiction": 0.0096,
+          "effective_min": 0.4794,
+          "effective_p10": 0.6594,
+          "consistency": 0.8236,
+          "consistency_chrf": 0.7102,
+          "laal_words": 3.635,
+          "chunks_per_sentence": 2.3667,
+          "split_ratio": 1.0,
+          "truncation_shortfall": 0.0,
+          "premature_rate": 0.2222
+        }
+      },
+      "score": 0.7537
+    },
+    "dev": null,
+    "score_train": 0.7537,
+    "score_dev": null,
+    "paired_dev": null,
+    "changelog": [
+      "[Never Segment]: Removed the over-broad prohibition against segmenting after a bare noun/fragment with no verb, particle, or connective attached — this rule was blocking legitimate low-risk candidates (e.g. after NP+particle stretches awaiting a later verb) and suppressing coverage. Narrowed the filler prohibition so it only blocks positions where literally nothing but filler words has been produced, not positions after filler-plus-some-content.",
+      "[Decision Procedure]: Added explicit instruction in Step 1 that candidacy scanning must include positions after any noun phrase, particle-marked argument, or connective ending even when the governing predicate, reporting verb, or postposed subject has not yet appeared — these are still valid low-confidence candidates to be ranked (not discarded) in Step 2, directly increasing the number of marked boundaries available to the budget-trimming step."
+    ],
+    "next_changelog": [
+      "[When to Segment]: Narrowed the noun-phrase+particle permissive rule so it only licenses a boundary when the eventual predicate is a plain matrix verb — explicitly excluding cases where the pending predicate is a reporting/opinion verb (-다고, -것 같다), a governing verb that assigns role/meaning to the phrase, or a postposed subject/topic marker not yet seen. Also excluded mid-repetition of an idiomatic/connective phrase whose sense is only fixed by the following clause, cross-referencing the new [Never Segment] rule. This targets the four placement failures where a boundary was cut before the element that determines the clause's true meaning had arrived.",
+      "[Never Segment]: Added one general rule prohibiting a boundary at the end of a clause that is grammatically dependent on a later reporting/opinion verb, an unarrived governing verb, an unarrived postposed subject/topic marker, or a repeated/idiomatic phrase disambiguated only by its following clause — these are wrong at any budget because the emitted piece asserts something the rest of the sentence later contradicts."
+    ]
+  },
+  {
+    "version": 3,
+    "adopted": true,
+    "train": {
+      "n": 30,
+      "format_pass_rate": 1.0,
+      "format_pass_rate_no_retry": 1.0,
+      "by_T": {
+        "3": {
+          "target_chunk_words": 3,
+          "n": 30,
+          "n_scored": 30,
+          "effective": 0.7684,
+          "adequacy": 0.7895,
+          "contradiction": 0.0283,
+          "effective_min": 0.3986,
+          "effective_p10": 0.6329,
+          "consistency": 0.8179,
+          "consistency_chrf": 0.6822,
+          "laal_words": 3.3646,
+          "chunks_per_sentence": 3.1333,
+          "split_ratio": 0.9333,
+          "truncation_shortfall": 1.2,
+          "premature_rate": null
+        },
+        "6": {
+          "target_chunk_words": 6,
+          "n": 30,
+          "n_scored": 30,
+          "effective": 0.7768,
+          "adequacy": 0.786,
+          "contradiction": 0.0134,
+          "effective_min": 0.6329,
+          "effective_p10": 0.6583,
+          "consistency": 0.8472,
+          "consistency_chrf": 0.7489,
+          "laal_words": 3.821,
+          "chunks_per_sentence": 2.3,
+          "split_ratio": 0.9333,
+          "truncation_shortfall": 0.0667,
+          "premature_rate": 0.1818
+        }
+      },
+      "score": 0.7726
+    },
+    "dev": {
+      "n": 60,
+      "format_pass_rate": 1.0,
+      "format_pass_rate_no_retry": 1.0,
+      "by_T": {
+        "3": {
+          "target_chunk_words": 3,
+          "n": 60,
+          "n_scored": 60,
+          "effective": 0.7485,
+          "adequacy": 0.7767,
+          "contradiction": 0.036,
+          "effective_min": 0.3483,
+          "effective_p10": 0.6204,
+          "consistency": 0.7969,
+          "consistency_chrf": 0.6667,
+          "laal_words": 3.2876,
+          "chunks_per_sentence": 3.1333,
+          "split_ratio": 0.95,
+          "truncation_shortfall": 1.15,
+          "premature_rate": null
+        },
+        "6": {
+          "target_chunk_words": 6,
+          "n": 60,
+          "n_scored": 60,
+          "effective": 0.7513,
+          "adequacy": 0.7748,
+          "contradiction": 0.03,
+          "effective_min": 0.3483,
+          "effective_p10": 0.6535,
+          "consistency": 0.8417,
+          "consistency_chrf": 0.7281,
+          "laal_words": 3.8346,
+          "chunks_per_sentence": 2.2667,
+          "split_ratio": 0.95,
+          "truncation_shortfall": 0.0667,
+          "premature_rate": null
+        }
+      },
+      "score": 0.7499
+    },
+    "score_train": 0.7726,
+    "score_dev": 0.7499,
+    "paired_dev": {
+      "mean_delta": 0.00499,
+      "se_delta": 0.00664,
+      "n_pairs": 60,
+      "n_changed": 19
+    },
+    "changelog": [
+      "[When to Segment]: Narrowed the noun-phrase+particle permissive rule so it only licenses a boundary when the eventual predicate is a plain matrix verb — explicitly excluding cases where the pending predicate is a reporting/opinion verb (-다고, -것 같다), a governing verb that assigns role/meaning to the phrase, or a postposed subject/topic marker not yet seen. Also excluded mid-repetition of an idiomatic/connective phrase whose sense is only fixed by the following clause, cross-referencing the new [Never Segment] rule. This targets the four placement failures where a boundary was cut before the element that determines the clause's true meaning had arrived.",
+      "[Never Segment]: Added one general rule prohibiting a boundary at the end of a clause that is grammatically dependent on a later reporting/opinion verb, an unarrived governing verb, an unarrived postposed subject/topic marker, or a repeated/idiomatic phrase disambiguated only by its following clause — these are wrong at any budget because the emitted piece asserts something the rest of the sentence later contradicts."
+    ],
+    "next_changelog": [
+      "[When to Segment]: Loosened the noun-phrase+particle rule to license a boundary even when a plain matrix verb, instruction/decision verb, or postposed subject/topic marker is still pending — withholding candidacy now applies only when the pending predicate is a reporting/opinion verb. Added two new permissive rules: (1) mark a candidate after every item in a coordinated/listed set of alternatives even before the shared governing verb appears, and (2) mark a candidate after an adverbial converb clause (-아서/어서, -다가, -고) even before the main verb that fixes its sense appears. These directly increase the number of marked boundaries available to the budget-trimming step, addressing the critic's coverage focus.",
+      "[Never Segment]: Narrowed the over-broad prohibition that blocked any boundary dependent on 'a governing verb not yet appeared' or 'a postposed subject/topic marker not yet appeared' — this was suppressing coverage on nearly every SOV clause. The prohibition now applies only to clauses whose meaning is directly reversed/reinterpreted by a later reporting/opinion verb, or to mid-repetition of an idiomatic connective phrase; plain matrix/instruction verbs and postposed subjects no longer block candidacy, they simply rank low."
+    ]
+  },
+  {
+    "version": 4,
+    "adopted": false,
+    "train": {
+      "n": 30,
+      "format_pass_rate": 1.0,
+      "format_pass_rate_no_retry": 1.0,
+      "by_T": {
+        "3": {
+          "target_chunk_words": 3,
+          "n": 30,
+          "n_scored": 30,
+          "effective": 0.7677,
+          "adequacy": 0.7844,
+          "contradiction": 0.0218,
+          "effective_min": 0.3786,
+          "effective_p10": 0.6787,
+          "consistency": 0.8148,
+          "consistency_chrf": 0.66,
+          "laal_words": 3.3024,
+          "chunks_per_sentence": 3.1667,
+          "split_ratio": 0.9333,
+          "truncation_shortfall": 1.1667,
+          "premature_rate": null
+        },
+        "6": {
+          "target_chunk_words": 6,
+          "n": 30,
+          "n_scored": 30,
+          "effective": 0.7707,
+          "adequacy": 0.7779,
+          "contradiction": 0.0098,
+          "effective_min": 0.4794,
+          "effective_p10": 0.6787,
+          "consistency": 0.8424,
+          "consistency_chrf": 0.7295,
+          "laal_words": 3.8195,
+          "chunks_per_sentence": 2.3,
+          "split_ratio": 0.9333,
+          "truncation_shortfall": 0.0667,
+          "premature_rate": 0.4167
+        }
+      },
+      "score": 0.7692
+    },
+    "dev": null,
+    "score_train": 0.7692,
+    "score_dev": null,
+    "paired_dev": null,
+    "changelog": [
+      "[When to Segment]: Loosened the noun-phrase+particle rule to license a boundary even when a plain matrix verb, instruction/decision verb, or postposed subject/topic marker is still pending — withholding candidacy now applies only when the pending predicate is a reporting/opinion verb. Added two new permissive rules: (1) mark a candidate after every item in a coordinated/listed set of alternatives even before the shared governing verb appears, and (2) mark a candidate after an adverbial converb clause (-아서/어서, -다가, -고) even before the main verb that fixes its sense appears. These directly increase the number of marked boundaries available to the budget-trimming step, addressing the critic's coverage focus.",
+      "[Never Segment]: Narrowed the over-broad prohibition that blocked any boundary dependent on 'a governing verb not yet appeared' or 'a postposed subject/topic marker not yet appeared' — this was suppressing coverage on nearly every SOV clause. The prohibition now applies only to clauses whose meaning is directly reversed/reinterpreted by a later reporting/opinion verb, or to mid-repetition of an idiomatic connective phrase; plain matrix/instruction verbs and postposed subjects no longer block candidacy, they simply rank low."
+    ],
+    "next_changelog": [
+      "[When to Segment]: Added two explicit permissive rules — (1) mark a candidate after each item in a coordinated/listed set of alternatives (X, Y, 아니면은 Z) even before the shared governing verb has appeared, and after an adverbial converb clause (-아서/어서, -다가, -고, -면서) even before its disambiguating main verb has appeared; (2) mark a candidate after a context-dependent frequency/quantifier adverb (e.g. 거의) even before later content confirms its sense. These increase the number of marked boundary candidates per the coverage focus, without touching [Never Segment].",
+      "[Priority Rules]: Added a new lowest tier (8) that explicitly ranks the three newly-licensed candidate types — coordinated-alternatives-before-shared-verb, converb-before-disambiguating-verb, and frequency/quantifier-adverb-before-context — below all existing tiers. This lets them be marked (satisfying coverage) while ensuring they are the first trimmed under a tight budget, directly addressing the priority evidence (거의 ranked too high) and reducing the risk of the placement-type contradictions without withholding candidacy."
+    ]
+  },
+  {
+    "version": 5,
+    "adopted": false,
+    "train": {
+      "n": 30,
+      "format_pass_rate": 1.0,
+      "format_pass_rate_no_retry": 0.9667,
+      "by_T": {
+        "3": {
+          "target_chunk_words": 3,
+          "n": 30,
+          "n_scored": 30,
+          "effective": 0.768,
+          "adequacy": 0.7847,
+          "contradiction": 0.0231,
+          "effective_min": 0.5976,
+          "effective_p10": 0.6329,
+          "consistency": 0.8018,
+          "consistency_chrf": 0.6669,
+          "laal_words": 3.3159,
+          "chunks_per_sentence": 3.3333,
+          "split_ratio": 0.9333,
+          "truncation_shortfall": 1.0,
+          "premature_rate": null
+        },
+        "6": {
+          "target_chunk_words": 6,
+          "n": 30,
+          "n_scored": 30,
+          "effective": 0.773,
+          "adequacy": 0.7823,
+          "contradiction": 0.0136,
+          "effective_min": 0.6329,
+          "effective_p10": 0.6583,
+          "consistency": 0.8463,
+          "consistency_chrf": 0.7536,
+          "laal_words": 3.9249,
+          "chunks_per_sentence": 2.3,
+          "split_ratio": 0.9333,
+          "truncation_shortfall": 0.0667,
+          "premature_rate": 0.1
+        }
+      },
+      "score": 0.7705
+    },
+    "dev": null,
+    "score_train": 0.7705,
+    "score_dev": null,
+    "paired_dev": null,
+    "changelog": [
+      "[When to Segment]: Added two explicit permissive rules — (1) mark a candidate after each item in a coordinated/listed set of alternatives (X, Y, 아니면은 Z) even before the shared governing verb has appeared, and after an adverbial converb clause (-아서/어서, -다가, -고, -면서) even before its disambiguating main verb has appeared; (2) mark a candidate after a context-dependent frequency/quantifier adverb (e.g. 거의) even before later content confirms its sense. These increase the number of marked boundary candidates per the coverage focus, without touching [Never Segment].",
+      "[Priority Rules]: Added a new lowest tier (8) that explicitly ranks the three newly-licensed candidate types — coordinated-alternatives-before-shared-verb, converb-before-disambiguating-verb, and frequency/quantifier-adverb-before-context — below all existing tiers. This lets them be marked (satisfying coverage) while ensuring they are the first trimmed under a tight budget, directly addressing the priority evidence (거의 ranked too high) and reducing the risk of the placement-type contradictions without withholding candidacy."
+    ]
+  }
+]

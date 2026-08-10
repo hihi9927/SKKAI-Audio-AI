@@ -1,0 +1,14 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Decision Procedure]"
+  ],
+  "changelog": [
+    "[When to Segment]: extended the causal-chain rule to include '-가지고' explicitly and require the boundary to land after the stated effect/consequence clause rather than right after the connective, since separating cause from effect flips connective meaning (e.g. causal read as adversative).",
+    "[When to Segment]: added a rule that a bare trailing adverb depending on an omitted verb must stay fused with its causal/connective clause — move the boundary past the adverb to include the verb it modifies, or keep the whole span together if no verb follows.",
+    "[When to Segment]: added a rule that a short agreement/interjection token (맞어/네/어) immediately followed by a '그래서'-type reason clause must not be isolated — the boundary should move to after that reason clause instead of splitting right after the token.",
+    "[When to Segment]: added a rule that a conditional clause (-면/-으면) containing a pronoun/referent needed by its consequence clause should have the boundary moved past the consequence clause instead of cutting between condition and consequence.",
+    "[When to Segment]: added permissive rules recovering free latency gains identified by reference evidence: splitting after a leading interjection/discourse-marker cluster with no forward dependency, after a short sentence-initial topic phrase marked by 은/는, between two parallel chunks sharing a repeated relative/nominal marker (e.g. repeated '중에'), after a consecutively repeated/stuttered content word that carries no forward dependency, immediately before a short final predicate/particle detachable from a long preceding chain, before a quotative/reporting tail following an alternatives list, after a filler-laden clause-initial preamble and before the main predicate, and before a self-contained matrix 'think/feel' clause following a conditional lead-in.",
+    "[Decision Procedure]: expanded step 1's dependency checklist to also test for (e) a trailing adverb depending on an omitted verb, (f) a short agreement token whose antecedent role is needed by a following reason clause, and (g) a conditional clause whose pronoun referent is required by its consequence — in each case the boundary is moved further into B past the resolution point rather than rejected, consistent with the added guidance in [When to Segment]."
+  ]
+}

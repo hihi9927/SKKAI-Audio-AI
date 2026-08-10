@@ -1,0 +1,805 @@
+<!doctype html><html><head><meta charset='utf-8'></head><body><title>autoseg run03 — 지연·품질 곡선 (ko→en)</title>
+<style>
+  :root {
+    --paper:   #F3F4F1;
+    --card:    #FFFFFF;
+    --ink:     #191C1F;
+    --ink-2:   #4A5158;
+    --ink-3:   #7B838B;
+    --rule:    #D9DCD6;
+    --rule-2:  #EAECE7;
+    --ours:    #B4441E;
+    --ours-fill: rgba(180, 68, 30, 0.10);
+    --base:    #56606B;
+    --mech:    #8A6D3B;
+    --risk:    #9E2B25;
+    --good:    #2F6B5F;
+    --shadow:  0 1px 2px rgba(25, 28, 31, .06), 0 8px 24px -16px rgba(25, 28, 31, .28);
+
+    --serif: ui-serif, Georgia, "Nanum Myeongjo", "Apple SD Gothic Neo", serif;
+    --sans: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #14171A;
+      --card:  #1C2024;
+      --ink:   #E8EAE6;
+      --ink-2: #A8B0B6;
+      --ink-3: #79828A;
+      --rule:  #2C3238;
+      --rule-2:#232930;
+      --ours:  #E4764A;
+      --ours-fill: rgba(228, 118, 74, 0.14);
+      --base:  #8A949E;
+      --mech:  #C4A46A;
+      --risk:  #D96A5E;
+      --good:  #5CA694;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14171A;
+    --card:  #1C2024;
+    --ink:   #E8EAE6;
+    --ink-2: #A8B0B6;
+    --ink-3: #79828A;
+    --rule:  #2C3238;
+    --rule-2:#232930;
+    --ours:  #E4764A;
+    --ours-fill: rgba(228, 118, 74, 0.14);
+    --base:  #8A949E;
+    --mech:  #C4A46A;
+    --risk:  #D96A5E;
+    --good:  #5CA694;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0 20px 96px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 860px; margin: 0 auto; }
+
+  /* ── 머리말 ── */
+  .masthead {
+    display: flex; flex-direction: column; gap: 18px;
+    padding: 56px 0 30px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ink-3);
+    display: flex; flex-wrap: wrap; gap: 6px 16px;
+  }
+  h1 {
+    font-family: var(--serif);
+    font-size: clamp(30px, 5.2vw, 46px);
+    line-height: 1.14; font-weight: 500; letter-spacing: -.015em;
+    text-wrap: balance; margin: 0;
+  }
+  .thesis {
+    font-size: 18px; color: var(--ink-2); max-width: 62ch; margin: 0;
+    text-wrap: pretty;
+  }
+  .thesis b { color: var(--ink); font-weight: 600; }
+
+  /* ── 섹션 ── */
+  section { padding-top: 52px; }
+  h2 {
+    font-family: var(--serif);
+    font-size: 25px; font-weight: 500; letter-spacing: -.01em;
+    margin: 0 0 6px; text-wrap: balance;
+  }
+  .kicker {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .13em;
+    text-transform: uppercase; color: var(--ours);
+    margin: 0 0 10px;
+  }
+  .lede { color: var(--ink-2); margin: 0 0 24px; max-width: 66ch; text-wrap: pretty; }
+  p { max-width: 66ch; text-wrap: pretty; }
+
+  /* ── 카드 ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    box-shadow: var(--shadow);
+    padding: 22px;
+  }
+  .card + .card { margin-top: 16px; }
+
+  figcaption {
+    font-size: 13.5px; color: var(--ink-3); margin-top: 14px;
+    padding-top: 12px; border-top: 1px solid var(--rule-2);
+    max-width: 68ch;
+  }
+  figure { margin: 0; }
+
+  /* ── 차트 ── */
+  .chart-shell { overflow-x: auto; }
+  svg { display: block; max-width: 100%; height: auto; }
+  svg text { font-family: var(--mono); fill: var(--ink-3); }
+
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 8px 20px;
+    font-family: var(--mono); font-size: 11.5px;
+    color: var(--ink-2); margin-bottom: 16px;
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .swatch { width: 11px; height: 11px; border-radius: 50%; flex: none; }
+  .swatch.hollow { border: 2px solid currentColor; background: none; }
+
+  /* ── 표 ── */
+  .table-shell { overflow-x: auto; }
+  table {
+    width: 100%; border-collapse: collapse;
+    font-size: 14px; font-variant-numeric: tabular-nums;
+  }
+  th, td { padding: 9px 12px; text-align: right; white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; }
+  thead th {
+    font-family: var(--mono); font-size: 10.5px; font-weight: 500;
+    letter-spacing: .1em; text-transform: uppercase;
+    color: var(--ink-3); border-bottom: 1px solid var(--ink);
+    padding-bottom: 7px;
+  }
+  tbody tr { border-bottom: 1px solid var(--rule-2); }
+  tbody tr:last-child { border-bottom: none; }
+  td.num { font-family: var(--mono); }
+  tr.ours td:first-child { color: var(--ours); font-weight: 600; }
+  tr.dim td { color: var(--ink-3); }
+  .win { color: var(--good); font-weight: 600; }
+  .bad { color: var(--risk); font-weight: 600; }
+
+  /* ── 지표 카드 ── */
+  .stats {
+    display: grid; gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(158px, 1fr));
+  }
+  .stat {
+    background: var(--card); border: 1px solid var(--rule);
+    border-radius: 3px; padding: 15px 16px;
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .stat .label {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink-3);
+  }
+  .stat .value {
+    font-family: var(--mono); font-size: 27px; line-height: 1.15;
+    font-variant-numeric: tabular-nums; letter-spacing: -.02em;
+  }
+  .stat .note { font-size: 12.5px; color: var(--ink-3); line-height: 1.4; }
+  .stat.accent .value { color: var(--ours); }
+  .stat.risk   .value { color: var(--risk); }
+  .stat.good   .value { color: var(--good); }
+
+  /* ── 주석 블록 ── */
+  .callout {
+    border-left: 3px solid var(--ours);
+    background: var(--ours-fill);
+    padding: 14px 18px; border-radius: 0 3px 3px 0;
+    margin: 22px 0 0;
+  }
+  .callout p { margin: 0; max-width: 64ch; }
+  .callout p + p { margin-top: 8px; }
+
+  code {
+    font-family: var(--mono); font-size: .89em;
+    background: var(--rule-2); padding: .12em .38em; border-radius: 2px;
+  }
+
+  .pair {
+    display: grid; gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+
+  footer {
+    margin-top: 64px; padding-top: 22px;
+    border-top: 1px solid var(--rule);
+    font-size: 13px; color: var(--ink-3);
+  }
+  footer dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 18px; margin: 0; }
+  footer dt { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+  footer dd { margin: 0; max-width: 62ch; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .draw { stroke-dasharray: 1400; stroke-dashoffset: 1400; animation: draw 1.1s .15s ease-out forwards; }
+    .fade { opacity: 0; animation: fade .5s ease-out forwards; }
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+    @keyframes fade { to { opacity: 1; } }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">
+      <span>autoseg / run03</span><span>ko → en</span><span>KsponSpeech</span>
+      <span>test n=100</span><span>2026-08-10</span>
+    </div>
+    <h1>같은 지연에서 더 정확하고, 같은 정확도를 5.8배 빠르게</h1>
+    <p class="thesis">
+      의미 분절 프롬프트를 에이전트 루프가 자동 생성한다. 노브 <b>T</b>(목표 조각 어절 수)가
+      지연을 정하고, 프롬프트는 <b>경계의 위치와 순위</b>만 정한다. 아래는 루프가 한 번도 보지 않은
+      100문장에서의 최종 곡선이다.
+    </p>
+  </header>
+
+  <section>
+    <p class="kicker">주 결과</p>
+    <h2>지연–품질 곡선</h2>
+    <p class="lede">
+      가로축 <code>laal_words</code>는 방출 지연(소스 어절, 낮을수록 빠름), 세로축
+      <code>adequacy</code>는 참조 없는 번역 품질(CometKiwi)이다.
+      참조를 쓰지 않기 때문에 <b>분절이 무분절보다 높은 점수를 받는 것이 가능하다</b> —
+      참조 기반 지표에서는 무분절이 정의상 상한이라 나올 수 없는 결과다.
+    </p>
+
+    <figure class="card">
+      <div class="legend">
+        <span><i class="swatch" style="background: var(--ours)"></i>autoseg (T = 2·3·4·6)</span>
+        <span><i class="swatch" style="background: var(--base)"></i>무분절</span>
+        <span><i class="swatch" style="background: var(--mech)"></i>기계 8자 분절</span>
+      </div>
+      <div class="chart-shell"><svg id="curve" viewBox="0 0 780 420" role="img"
+        aria-label="지연 대비 품질 산점도. autoseg 네 점이 무분절과 거의 같은 품질을 훨씬 낮은 지연에서 달성한다."></svg></div>
+      <figcaption>
+        세로축은 0.705–0.785 구간만 확대했다. 네 개의 autoseg 점은 <code>adequacy</code>
+        0.7696–0.7767 사이에 거의 평평하게 놓이는데, 그동안 지연은 3.35에서 2.03 어절로 내려간다.
+        가로축은 로그 척도 — 무분절(13.44)이 멀리 떨어져 있기 때문이다.
+      </figcaption>
+    </figure>
+
+    <div class="stats" style="margin-top: 16px">
+      <div class="stat accent">
+        <span class="label">T=3 지연</span>
+        <span class="value">2.31</span>
+        <span class="note">무분절 13.44 어절 대비 <b>5.8배</b></span>
+      </div>
+      <div class="stat good">
+        <span class="label">T=3 adequacy</span>
+        <span class="value">0.7767</span>
+        <span class="note">무분절 0.7721 — 낮아지지 않았다</span>
+      </div>
+      <div class="stat">
+        <span class="label">경계 준수</span>
+        <span class="value">0.00</span>
+        <span class="note">T=3·4·6 부족 경계 0개. 노브가 k를 통제한다</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">동일 지연 대조</p>
+    <h2>기계 분절과 같은 속도에서</h2>
+    <p class="lede">
+      비교가 성립하려면 지연이 같아야 한다. <code>T=2</code>(2.03 어절)와 기계 8자 분절(2.10 어절)은
+      사실상 같은 작동점이다. 여기서 두 축이 동시에 갈린다.
+    </p>
+
+    <div class="card">
+      <div class="chart-shell"><svg id="matched" viewBox="0 0 780 250" role="img"
+        aria-label="동일 지연에서 autoseg와 기계 분절의 adequacy 및 contradiction 비교 막대."></svg></div>
+    </div>
+
+    <div class="stats" style="margin-top: 16px">
+      <div class="stat good">
+        <span class="label">adequacy 차</span>
+        <span class="value">+0.055</span>
+        <span class="note">0.7708 대 0.7158</span>
+      </div>
+      <div class="stat good">
+        <span class="label">contradiction 차</span>
+        <span class="value">−0.058</span>
+        <span class="note">0.1277 대 0.1859 — 조기 방출이 <b>31% 적다</b></span>
+      </div>
+      <div class="stat">
+        <span class="label">지연 차</span>
+        <span class="value">−0.07</span>
+        <span class="note">2.03 대 2.10 어절. 오히려 근소하게 빠르다</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">조기 방출</p>
+    <h2>경계를 늘리면 위험도 늘어난다</h2>
+    <p class="lede">
+      <code>contradiction</code>은 NLI가 재는 값이다 — 오라클(전체 문장 번역)이
+      <b>그 시점까지 사용자가 본 누적 번역</b>을 반박할 확률. 불완전한 것은 죄가 아니고,
+      뒤가 뒤집을 때만 걸린다.
+    </p>
+
+    <div class="pair">
+      <figure class="card">
+        <div class="chart-shell"><svg id="contra" viewBox="0 0 380 250" role="img"
+          aria-label="T 값별 문장 단위 contradiction 막대 그래프."></svg></div>
+        <figcaption>문장 단위 (조각 길이 가중 평균). 조각 수 k가 늘면 함께 오른다.</figcaption>
+      </figure>
+      <figure class="card">
+        <div class="chart-shell"><svg id="perb" viewBox="0 0 380 250" role="img"
+          aria-label="T 값별 경계 단위 고위험 비율 막대 그래프. 세 값이 거의 같다."></svg></div>
+        <figcaption>경계 단위 — 개별 경계가 0.5를 넘는 비율. T와 거의 무관하게 <b>0.14</b>다.</figcaption>
+      </figure>
+    </div>
+
+    <div class="callout">
+      <p>
+        두 그림이 같은 사실의 앞뒷면이다. <b>경계 하나당 위험은 T와 무관하게 일정</b>하고(0.140 / 0.145 / 0.146),
+        문장 단위 값이 오르는 것은 단지 경계를 더 많이 노출하기 때문이다.
+      </p>
+      <p>
+        그래서 <code>effective = adequacy × (1 − contradiction)</code>은
+        <b>같은 k에서만 비교할 수 있다.</b> 무분절은 경계가 없어 반박당할 기회 자체가 없으므로
+        구조적으로 1위가 된다. 논문 곡선의 세로축을 <code>adequacy</code>로 잡은 이유다.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">전체 수치</p>
+    <h2>최종 test 곡선</h2>
+    <div class="card table-shell">
+      <table>
+        <thead>
+          <tr>
+            <th>구성</th><th>laal ↓</th><th>adequacy ↑</th><th>contradiction ↓</th>
+            <th>effective</th><th>consistency</th><th>k</th><th>부족 경계</th>
+          </tr>
+        </thead>
+        <tbody id="curve-table"></tbody>
+      </table>
+    </div>
+    <p style="font-size: 13.5px; color: var(--ink-3); margin-top: 14px">
+      <code>consistency</code>는 조각 번역 합본과 전체 번역의 COMET(참조 기반)이다. 보고용이며
+      목적함수에 들어가지 않는다 — k에 단조라 최적화하면 “자르지 마라”로 퇴화한다.
+    </p>
+  </section>
+
+  <section>
+    <p class="kicker">한계</p>
+    <h2>루프는 v0를 넘지 못했다</h2>
+    <p class="lede">
+      곡선은 <b>프로파일러가 처음 쓴 프롬프트</b>가 만든 것이다. 이후 세 번의 개정은 모두 dev에서
+      떨어져 기각됐고, patience 3으로 조기 종료했다.
+    </p>
+
+    <figure class="card">
+      <div class="chart-shell"><svg id="iters" viewBox="0 0 780 260" role="img"
+        aria-label="이터레이션별 train 점수와 dev 점수 추이. train은 오르지만 dev는 계속 내려간다."></svg></div>
+      <figcaption>
+        iter 2는 train이 떨어져 dev 평가를 건너뛰었다(저비용 게이트).
+        train Δ와 dev Δ의 <b>부호가 매번 반대</b>다 — iter 1은 train +0.00266 / dev −0.01307,
+        iter 3은 train +0.00993 / dev −0.00427. train 30문장에 과적합했다는 신호다.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <p class="kicker">발견된 결함</p>
+    <h2>커버리지 요건 격자 불일치</h2>
+    <p class="lede">
+      커버리지 요건(최소 경계 수)은 <code>min(격자)</code>에서 나온다. 그런데 루프는 격자
+      <code>3 6</code>으로 돌고 최종 평가는 <code>2 3 4 6</code>으로 돈다. 프롬프트가
+      <b>T=3 요건으로 학습한 뒤 T=2 요건으로 심판받았다.</b>
+    </p>
+
+    <div class="card table-shell">
+      <table>
+        <thead><tr><th>분할</th><th>커버리지 기준 T</th><th>포맷 1차 통과율</th><th>T=2 부족 경계</th></tr></thead>
+        <tbody>
+          <tr><td>train (n=30)</td><td class="num">3</td><td class="num">0.87 – 0.97</td><td class="num">—</td></tr>
+          <tr><td>dev (n=60)</td><td class="num">3</td><td class="num">0.63 – 0.98</td><td class="num">—</td></tr>
+          <tr><td>test (n=100)</td><td class="num">2</td><td class="num bad">0.34</td><td class="num bad">0.13</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <p>
+        14어절 문장 기준 요구 경계가 <b>4개에서 6개로</b> 뛴다. test에서만 1차 통과율이 무너진 것이
+        정확히 이 때문이고, 재시도가 비용을 밀어올렸다.
+      </p>
+      <p>
+        수정: <code>coverage_t = min(final_grid)</code> 하나를 검증기·프롬프트 문면·config가
+        공유하도록 묶었다. 다음 런은 처음부터 가장 조인 점을 만족하도록 학습한다.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">지표 선택 근거</p>
+    <h2>참조 기반 COMET으로 통일할 수 없는 이유</h2>
+    <p class="lede">
+      k가 고정되면 “무분절이 이긴다”는 퇴화는 일어나지 않는다. 그래도 참조 기반 COMET은
+      <b>같은 k에서 위치를 잘못 순위매긴다.</b> 사람이 작성한 고정 케이스에서 쌍 7개를 비교했다.
+    </p>
+
+    <div class="card table-shell">
+      <table>
+        <thead><tr><th>케이스 / 변이</th><th>기대</th><th>ref COMET</th><th>NLI 모순</th></tr></thead>
+        <tbody id="fixture"></tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <p>
+        <b>ko-en-p04가 결정적이다.</b> ref COMET이 조기 방출 변이에 최고점(0.8828)을 주고,
+        충실하지만 <b>재배열된</b> 변이에 최저점(0.7436)을 줬다. 조각이 미래를 앞질러 완성하면
+        합본이 단일 번역과 더 닮기 때문이다. 우리 컨트리뷰션이 바로 그 재배열이다.
+      </p>
+      <p>
+        순위 위반 — <b>ref COMET 3건 / NLI 0건</b>.
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    <dl>
+      <dt>구성</dt>
+      <dd>KsponSpeech ko→en · train 30 / dev 60 / test 100 · 분절 <code>claude-sonnet-5</code> ·
+          번역 Google Translate(문맥 포함) · adequacy <code>wmt22-cometkiwi-da</code> ·
+          모순 <code>deberta-large-mnli</code> · consistency <code>wmt22-comet-da</code></dd>
+      <dt>비용</dt>
+      <dd>게이트웨이 호출 584회, $22.57. 예산이 아니라 patience로 종료</dd>
+      <dt>주의</dt>
+      <dd>test n=100은 단일 데이터셋·단일 언어쌍이다. 판정자 <code>premature_rate</code>는
+          모순 상위로 선별된 22개 경계 위에서 계산되므로 전 경계 비율과 직접 비교할 수 없다</dd>
+    </dl>
+  </footer>
+</div>
+
+<script>
+const CURVE = {
+  ours: [
+    { T: 2, laal: 2.0317, adequacy: 0.7708, contradiction: 0.1277, effective: 0.6733, consistency: 0.6642, k: 6.5455, missing: 0.1313, perBoundary: 0.1403 },
+    { T: 3, laal: 2.3130, adequacy: 0.7767, contradiction: 0.0892, effective: 0.7085, consistency: 0.7345, k: 4.4747, missing: 0.0000, perBoundary: 0.1453 },
+    { T: 4, laal: 2.7345, adequacy: 0.7755, contradiction: 0.0616, effective: 0.7288, consistency: 0.7893, k: 3.3333, missing: 0.0000, perBoundary: null },
+    { T: 6, laal: 3.3515, adequacy: 0.7696, contradiction: 0.0397, effective: 0.7398, consistency: 0.8254, k: 2.4545, missing: 0.0000, perBoundary: 0.1458 }
+  ],
+  base: [
+    { name: '무분절',       laal: 13.44, adequacy: 0.7721, contradiction: 0.0000, effective: 0.7721, consistency: 1.0000, k: 1.00, color: 'var(--base)' },
+    { name: '기계 8자 분절', laal:  2.10, adequacy: 0.7158, contradiction: 0.1859, effective: 0.5843, consistency: 0.5970, k: 6.20, color: 'var(--mech)' }
+  ]
+};
+
+const ITERS = [
+  { it: 0, train: 0.7431, dev: 0.7346, adopted: true  },
+  { it: 1, train: 0.7458, dev: 0.7322, adopted: false },
+  { it: 2, train: 0.7285, dev: null,   adopted: false },
+  { it: 3, train: 0.7531, dev: 0.7288, adopted: false }
+];
+
+const FIXTURE = [
+  { id: 'ko-en-p01', variant: 'premature_negation', expect: 'premature', ref: 0.6555, nli: 0.9971 },
+  { id: 'ko-en-p01', variant: 'safe_boundary',      expect: 'safe',      ref: 0.9340, nli: 0.0221 },
+  { id: 'ko-en-p02', variant: 'premature_role',     expect: 'premature', ref: 0.7984, nli: 0.9958, flag: true },
+  { id: 'ko-en-p02', variant: 'benign_incomplete',  expect: 'safe',      ref: 0.7894, nli: 0.1565 },
+  { id: 'ko-en-p03', variant: 'premature_scope',    expect: 'premature', ref: 0.6019, nli: 0.0410 },
+  { id: 'ko-en-p03', variant: 'benign_incomplete',  expect: 'safe',      ref: 0.8920, nli: 0.0049 },
+  { id: 'ko-en-p04', variant: 'premature_head',     expect: 'premature', ref: 0.8828, nli: 0.5227, flag: true },
+  { id: 'ko-en-p04', variant: 'benign_incomplete',  expect: 'safe',      ref: 0.8076, nli: 0.0011 },
+  { id: 'ko-en-p04', variant: 'benign_reordered',   expect: 'safe',      ref: 0.7436, nli: 0.0008 },
+  { id: 'ko-en-p06', variant: 'benign_incomplete',  expect: 'safe',      ref: 0.9305, nli: 0.0283 },
+  { id: 'ko-en-p06', variant: 'premature_modal',    expect: 'premature', ref: 0.8063, nli: 0.9921 },
+  { id: 'ja-ko-p05', variant: 'premature_negation', expect: 'premature', ref: 0.8685, nli: 0.2098 },
+  { id: 'ja-ko-p05', variant: 'benign_incomplete',  expect: 'safe',      ref: 1.0000, nli: 0.0089 }
+];
+
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs = {}, text) => {
+  const n = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+  if (text !== undefined) n.textContent = text;
+  return n;
+};
+const fmt = (v, d = 4) => v.toFixed(d);
+
+/* ── 1. 지연–품질 산점도 ── */
+(function curveChart() {
+  const svg = document.getElementById('curve');
+  const W = 780, H = 420, M = { t: 24, r: 26, b: 56, l: 66 };
+  const iw = W - M.l - M.r, ih = H - M.t - M.b;
+
+  const xTicks = [2, 3, 4, 6, 9, 13.44];
+  const xMin = Math.log(1.85), xMax = Math.log(15.4);
+  const yMin = 0.705, yMax = 0.785;
+  const X = v => M.l + (Math.log(v) - xMin) / (xMax - xMin) * iw;
+  const Y = v => M.t + (yMax - v) / (yMax - yMin) * ih;
+
+  // 가로 격자 + y축 눈금
+  for (let v = 0.71; v <= 0.7801; v += 0.01) {
+    const y = Y(v);
+    svg.appendChild(el('line', { x1: M.l, x2: M.l + iw, y1: y, y2: y,
+      stroke: 'var(--rule-2)', 'stroke-width': 1 }));
+    svg.appendChild(el('text', { x: M.l - 12, y: y + 4, 'text-anchor': 'end',
+      'font-size': 11 }, v.toFixed(2)));
+  }
+  // 축
+  svg.appendChild(el('line', { x1: M.l, x2: M.l, y1: M.t, y2: M.t + ih,
+    stroke: 'var(--ink)', 'stroke-width': 1.5 }));
+  svg.appendChild(el('line', { x1: M.l, x2: M.l + iw, y1: M.t + ih, y2: M.t + ih,
+    stroke: 'var(--ink)', 'stroke-width': 1.5 }));
+
+  xTicks.forEach(v => {
+    const x = X(v);
+    svg.appendChild(el('line', { x1: x, x2: x, y1: M.t + ih, y2: M.t + ih + 6,
+      stroke: 'var(--ink-3)', 'stroke-width': 1 }));
+    svg.appendChild(el('text', { x, y: M.t + ih + 21, 'text-anchor': 'middle',
+      'font-size': 11 }, v === 13.44 ? '13.4' : String(v)));
+  });
+
+  // 축 이름
+  svg.appendChild(el('text', { x: M.l + iw / 2, y: H - 12, 'text-anchor': 'middle',
+    'font-size': 11.5, 'letter-spacing': '.1em', fill: 'var(--ink-2)' },
+    'LAAL_WORDS  (소스 어절, 로그 척도 — 왼쪽이 빠르다)'));
+  svg.appendChild(el('text', { x: 17, y: M.t + ih / 2, 'text-anchor': 'middle',
+    'font-size': 11.5, 'letter-spacing': '.1em', fill: 'var(--ink-2)',
+    transform: `rotate(-90 17 ${M.t + ih / 2})` }, 'ADEQUACY'));
+
+  // 무분절 기준선
+  const ub = CURVE.base[0];
+  svg.appendChild(el('line', { x1: M.l, x2: M.l + iw, y1: Y(ub.adequacy), y2: Y(ub.adequacy),
+    stroke: 'var(--base)', 'stroke-width': 1.5, 'stroke-dasharray': '5 5', opacity: .75 }));
+  // 라벨은 비어 있는 가운데 구간에 — 왼쪽 끝은 T=2 점과 y축 눈금이 이미 쓰고 있다
+  svg.appendChild(el('text', { x: X(5.4), y: Y(ub.adequacy) - 10, 'text-anchor': 'middle',
+    'font-size': 11, fill: 'var(--base)' }, '무분절 품질 수준 0.7721'));
+
+  // autoseg 연결선
+  const pts = CURVE.ours.map(d => `${X(d.laal)},${Y(d.adequacy)}`).join(' ');
+  svg.appendChild(el('polyline', { points: pts, fill: 'none', stroke: 'var(--ours)',
+    'stroke-width': 2.5, 'stroke-linejoin': 'round', 'stroke-linecap': 'round',
+    class: 'draw' }));
+
+  // autoseg 점
+  CURVE.ours.forEach((d, i) => {
+    const g = el('g', { class: 'fade', style: `animation-delay:${.5 + i * .09}s` });
+    g.appendChild(el('circle', { cx: X(d.laal), cy: Y(d.adequacy), r: 6.5,
+      fill: 'var(--card)', stroke: 'var(--ours)', 'stroke-width': 2.5 }));
+    g.appendChild(el('text', { x: X(d.laal), y: Y(d.adequacy) - 15, 'text-anchor': 'middle',
+      'font-size': 11.5, 'font-weight': 600, fill: 'var(--ours)' }, `T=${d.T}`));
+    svg.appendChild(g);
+  });
+
+  // 비교군
+  CURVE.base.forEach((b, i) => {
+    const g = el('g', { class: 'fade', style: `animation-delay:${.85 + i * .1}s` });
+    g.appendChild(el('circle', { cx: X(b.laal), cy: Y(b.adequacy), r: 6.5,
+      fill: b.color, stroke: 'var(--card)', 'stroke-width': 1.5 }));
+    const left = b.laal > 8;
+    g.appendChild(el('text', {
+      x: X(b.laal) + (left ? -13 : 13), y: Y(b.adequacy) + 4,
+      'text-anchor': left ? 'end' : 'start', 'font-size': 11.5,
+      'font-weight': 600, fill: b.color }, b.name));
+    svg.appendChild(g);
+  });
+
+  // 지연 구간 계측 표시 — 두 작동점 사이의 거리가 이 그림의 요점이다
+  const a = CURVE.ours[1];
+  const gy = Y(0.7365);
+  const g = el('g', { class: 'fade', style: 'animation-delay:1.1s' });
+  g.appendChild(el('line', { x1: X(a.laal), x2: X(ub.laal), y1: gy, y2: gy,
+    stroke: 'var(--ink-3)', 'stroke-width': 1.2 }));
+  [[X(a.laal), 1], [X(ub.laal), -1]].forEach(([x, dir]) => {
+    g.appendChild(el('path', { d: `M ${x} ${gy} l ${6 * dir} -4 M ${x} ${gy} l ${6 * dir} 4`,
+      stroke: 'var(--ink-3)', 'stroke-width': 1.2, fill: 'none', 'stroke-linecap': 'round' }));
+    g.appendChild(el('line', { x1: x, x2: x, y1: gy - 6, y2: gy + 6,
+      stroke: 'var(--ink-3)', 'stroke-width': 1.2 }));
+  });
+  const mid = (X(a.laal) + X(ub.laal)) / 2;
+  g.appendChild(el('rect', { x: mid - 84, y: gy - 10, width: 168, height: 20,
+    fill: 'var(--card)' }));
+  g.appendChild(el('text', { x: mid, y: gy + 4, 'text-anchor': 'middle',
+    'font-size': 11.5, fill: 'var(--ink-2)' }, '지연 5.8배 감소 · 품질 유지'));
+  svg.appendChild(g);
+})();
+
+/* ── 2. 동일 지연 대조 막대 ── */
+(function matchedChart() {
+  const svg = document.getElementById('matched');
+  // 오른쪽 여백은 차이(Δ) 전용 열이다. 막대 값 라벨과 겹치지 않도록 분리해 둔다.
+  const W = 780, H = 250, M = { t: 30, r: 116, b: 44, l: 128 };
+  const iw = W - M.l - M.r;
+
+  const groups = [
+    { label: 'adequacy ↑', better: 'high', rows: [
+      { name: 'autoseg T=2', v: 0.7708, color: 'var(--ours)' },
+      { name: '기계 8자',     v: 0.7158, color: 'var(--mech)' } ] },
+    { label: 'contradiction ↓', better: 'low', rows: [
+      { name: 'autoseg T=2', v: 0.1277, color: 'var(--ours)' },
+      { name: '기계 8자',     v: 0.1859, color: 'var(--mech)' } ] }
+  ];
+
+  let y = M.t;
+  groups.forEach((g, gi) => {
+    // 원점은 0이고 축을 자르지 않는다. 상한만 값 범위에 맞춰 잡아 라벨 자리를 남긴다.
+    const max = g.better === 'high' ? 0.95 : 0.26;
+    svg.appendChild(el('text', { x: M.l, y: y - 9, 'font-size': 11,
+      'letter-spacing': '.1em', fill: 'var(--ink-2)' }, g.label.toUpperCase()));
+    g.rows.forEach((r, ri) => {
+      const by = y + ri * 32;
+      svg.appendChild(el('text', { x: M.l - 14, y: by + 15, 'text-anchor': 'end',
+        'font-size': 12, fill: 'var(--ink-2)' }, r.name));
+      svg.appendChild(el('rect', { x: M.l, y: by, width: iw, height: 21,
+        fill: 'var(--rule-2)', rx: 2 }));
+      const w = Math.max(2, r.v / max * iw);
+      svg.appendChild(el('rect', { x: M.l, y: by, width: w, height: 21, fill: r.color, rx: 2 }));
+      // 값은 항상 막대 바깥에 — 안쪽 흰 글자는 ochre 위에서 대비가 모자란다
+      svg.appendChild(el('text', { x: M.l + w + 10, y: by + 15, 'font-size': 12,
+        'font-weight': 600, fill: r.color }, fmt(r.v)));
+    });
+    // 차이 — 두 막대 사이 높이에 오른쪽 전용 열로
+    const d = g.rows[0].v - g.rows[1].v;
+    const good = (g.better === 'high') === (d > 0);
+    const cy = y + 32 * g.rows.length / 2 + 4;
+    svg.appendChild(el('text', { x: W - 14, y: cy, 'text-anchor': 'end',
+      'font-size': 15, 'font-weight': 600,
+      fill: good ? 'var(--good)' : 'var(--risk)' },
+      `${d > 0 ? '+' : '−'}${Math.abs(d).toFixed(4)}`));
+    svg.appendChild(el('text', { x: W - 14, y: cy + 15, 'text-anchor': 'end',
+      'font-size': 10, 'letter-spacing': '.08em', fill: 'var(--ink-3)' },
+      good ? 'AUTOSEG 우위' : 'AUTOSEG 열위'));
+    y += 32 * g.rows.length + 46;
+  });
+
+  svg.appendChild(el('text', { x: M.l, y: H - 10, 'font-size': 11, fill: 'var(--ink-3)' },
+    '지연: autoseg 2.03 어절 · 기계 8자 2.10 어절'));
+})();
+
+/* ── 3. contradiction — 문장 단위 / 경계 단위 ── */
+function barPanel(id, rows, max, title, fmtFn) {
+  const svg = document.getElementById(id);
+  const W = 380, H = 250, M = { t: 34, r: 18, b: 30, l: 52 };
+  const iw = W - M.l - M.r, ih = H - M.t - M.b;
+  const bw = iw / rows.length;
+
+  svg.appendChild(el('text', { x: M.l - 40, y: 16, 'font-size': 11,
+    'letter-spacing': '.1em', fill: 'var(--ink-2)' }, title));
+
+  svg.appendChild(el('line', { x1: M.l, x2: M.l + iw, y1: M.t + ih, y2: M.t + ih,
+    stroke: 'var(--ink)', 'stroke-width': 1.5 }));
+
+  rows.forEach((r, i) => {
+    const h = Math.max(2, r.v / max * ih);
+    const x = M.l + i * bw + bw * 0.22;
+    const w = bw * 0.56;
+    svg.appendChild(el('rect', { x, y: M.t + ih - h, width: w, height: h,
+      fill: r.color, rx: 2 }));
+    svg.appendChild(el('text', { x: x + w / 2, y: M.t + ih - h - 8, 'text-anchor': 'middle',
+      'font-size': 11.5, 'font-weight': 600, fill: r.color }, fmtFn(r.v)));
+    svg.appendChild(el('text', { x: x + w / 2, y: M.t + ih + 18, 'text-anchor': 'middle',
+      'font-size': 11 }, r.label));
+  });
+  return svg;
+}
+
+barPanel('contra',
+  [ ...CURVE.ours.map(d => ({ label: `T=${d.T}`, v: d.contradiction, color: 'var(--ours)' })),
+    { label: '기계', v: CURVE.base[1].contradiction, color: 'var(--mech)' } ],
+  0.20, '문장 단위 CONTRADICTION', v => v.toFixed(3));
+
+barPanel('perb',
+  [ { label: 'T=2', v: 0.1403, color: 'var(--risk)' },
+    { label: 'T=3', v: 0.1453, color: 'var(--risk)' },
+    { label: 'T=6', v: 0.1458, color: 'var(--risk)' } ],
+  0.20, '경계 단위 — 0.5 초과 비율', v => v.toFixed(3));
+
+/* ── 4. 이터레이션 추이 ── */
+(function iterChart() {
+  const svg = document.getElementById('iters');
+  const W = 780, H = 260, M = { t: 28, r: 96, b: 46, l: 66 };
+  const iw = W - M.l - M.r, ih = H - M.t - M.b;
+  const yMin = 0.726, yMax = 0.756;
+  const X = i => M.l + i / (ITERS.length - 1) * iw;
+  const Y = v => M.t + (yMax - v) / (yMax - yMin) * ih;
+
+  for (let v = 0.73; v <= 0.7551; v += 0.01) {
+    const y = Y(v);
+    svg.appendChild(el('line', { x1: M.l, x2: M.l + iw, y1: y, y2: y,
+      stroke: 'var(--rule-2)', 'stroke-width': 1 }));
+    svg.appendChild(el('text', { x: M.l - 12, y: y + 4, 'text-anchor': 'end',
+      'font-size': 11 }, v.toFixed(2)));
+  }
+  svg.appendChild(el('line', { x1: M.l, x2: M.l, y1: M.t, y2: M.t + ih,
+    stroke: 'var(--ink)', 'stroke-width': 1.5 }));
+  svg.appendChild(el('line', { x1: M.l, x2: M.l + iw, y1: M.t + ih, y2: M.t + ih,
+    stroke: 'var(--ink)', 'stroke-width': 1.5 }));
+
+  ITERS.forEach((d, i) => {
+    svg.appendChild(el('text', { x: X(i), y: M.t + ih + 20, 'text-anchor': 'middle',
+      'font-size': 11 }, `iter ${d.it}`));
+  });
+  svg.appendChild(el('text', { x: M.l + iw / 2, y: H - 10, 'text-anchor': 'middle',
+    'font-size': 11.5, 'letter-spacing': '.1em', fill: 'var(--ink-2)' },
+    'SCORE = T 격자 평균 EFFECTIVE'));
+
+  const line = (key, color, dash) => {
+    const seg = [];
+    let run = [];
+    ITERS.forEach((d, i) => {
+      if (d[key] == null) { if (run.length) seg.push(run); run = []; }
+      else run.push(`${X(i)},${Y(d[key])}`);
+    });
+    if (run.length) seg.push(run);
+    seg.forEach(s => {
+      if (s.length < 2) return;
+      svg.appendChild(el('polyline', { points: s.join(' '), fill: 'none', stroke: color,
+        'stroke-width': 2.5, 'stroke-linecap': 'round',
+        ...(dash ? { 'stroke-dasharray': dash } : {}) }));
+    });
+    ITERS.forEach((d, i) => {
+      if (d[key] == null) return;
+      svg.appendChild(el('circle', { cx: X(i), cy: Y(d[key]), r: 5,
+        fill: key === 'dev' ? color : 'var(--card)', stroke: color, 'stroke-width': 2.5 }));
+    });
+    const last = [...ITERS].reverse().find(d => d[key] != null);
+    svg.appendChild(el('text', { x: M.l + iw + 12, y: Y(last[key]) + 4, 'font-size': 12,
+      'font-weight': 600, fill: color }, key === 'dev' ? 'dev (기준)' : 'train'));
+  };
+  line('train', 'var(--ink-3)', '5 4');
+  line('dev', 'var(--ours)');
+
+  // 채택 표시
+  svg.appendChild(el('circle', { cx: X(0), cy: Y(ITERS[0].dev), r: 11,
+    fill: 'none', stroke: 'var(--good)', 'stroke-width': 2 }));
+  svg.appendChild(el('text', { x: X(0), y: Y(ITERS[0].dev) - 20, 'text-anchor': 'middle',
+    'font-size': 11, 'font-weight': 600, fill: 'var(--good)' }, '유일한 채택'));
+
+  // iter2 결측
+  svg.appendChild(el('text', { x: X(2), y: M.t + ih - 12, 'text-anchor': 'middle',
+    'font-size': 10.5, fill: 'var(--ink-3)' }, 'dev 미평가'));
+})();
+
+/* ── 5. 표 ── */
+(function tables() {
+  const tb = document.getElementById('curve-table');
+  const row = (name, d, cls) => {
+    const tr = document.createElement('tr');
+    if (cls) tr.className = cls;
+    const cells = [name, d.laal.toFixed(2), fmt(d.adequacy), fmt(d.contradiction),
+                   fmt(d.effective), fmt(d.consistency), d.k.toFixed(2),
+                   d.missing == null ? '—' : d.missing.toFixed(2)];
+    cells.forEach((c, i) => {
+      const td = document.createElement('td');
+      td.textContent = c;
+      if (i > 0) td.className = 'num';
+      tr.appendChild(td);
+    });
+    tb.appendChild(tr);
+  };
+  CURVE.ours.forEach(d => row(`autoseg  T=${d.T}`, d, 'ours'));
+  CURVE.base.forEach(b => row(b.name, { ...b, missing: null }, 'dim'));
+
+  const fx = document.getElementById('fixture');
+  FIXTURE.forEach(f => {
+    const tr = document.createElement('tr');
+    const cells = [
+      { t: `${f.id} · ${f.variant}` },
+      { t: f.expect === 'premature' ? '조기 방출' : '안전' },
+      { t: fmt(f.ref), cls: f.flag ? 'num bad' : 'num' },
+      { t: fmt(f.nli), cls: 'num' }
+    ];
+    cells.forEach((c, i) => {
+      const td = document.createElement('td');
+      td.textContent = c.t;
+      td.className = c.cls || (i > 0 ? 'num' : '');
+      tr.appendChild(td);
+    });
+    if (f.expect === 'premature') tr.style.fontWeight = '600';
+    fx.appendChild(tr);
+  });
+})();
+</script>
+</body></html>

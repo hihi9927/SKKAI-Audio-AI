@@ -1,0 +1,60 @@
+{
+  "source_language": "Korean",
+  "source_code": "ko",
+  "uses_spaces_between_words": true,
+  "word_order": "SOV",
+  "head_final": true,
+  "punctuation_present": "sometimes — periods and question marks appear in some sentences (e.g. 3, 7, 8) but many utterances end without any mark (e.g. 1, 5, 6)",
+  "trailing_punctuation": [
+    "?",
+    ".",
+    "!"
+  ],
+  "register": "spontaneous conversational speech (casual spoken narrative/interview transcript with self-corrections and hesitations)",
+  "fillers_and_hesitations": [
+    "아",
+    "어",
+    "이제",
+    "좀",
+    "진짜",
+    "두 두 (repetition)",
+    "그",
+    "그러니까"
+  ],
+  "discourse_markers": [
+    "근데",
+    "그래도",
+    "그런데",
+    "어쨲든",
+    "아니",
+    "그래서",
+    "왜냐면"
+  ],
+  "clause_boundary_signals": [
+    "-는데",
+    "-니까",
+    "-고",
+    "-아서/어서",
+    "-지만",
+    "-거든",
+    "sentence-final -어/아/야",
+    "sentence-final -지",
+    "question intonation marked by ?",
+    "period ."
+  ],
+  "non_boundary_traps": [
+    "-는데 (often continues rather than ends clause)",
+    "-고 (frequently chains actions, not a full stop)",
+    "근데 at clause-medial position (resumptive, not always a new turn)",
+    "-아서/어서 (cause/sequence linker, looks final but isn't)",
+    "trailing 그런데/그래도 fragments that attach forward"
+  ],
+  "target_language_risks": [
+    "Korean drops subjects/objects freely; a fragment translated alone in English will need an inferred pronoun or subject that may be wrong without later context",
+    "Sentence-final particles and honorifics (e.g. -시-, -어요) carry politeness/aspect info that is lost if segmented too early",
+    "Left-branching relative clauses and topic markers (은/는) mean the topic established early governs a verb far later, so premature segmentation forces English word order guesses",
+    "Self-repairs and repeated words (e.g. '두 두') can be mistranslated as meaningful repetition if segmented mid-repair",
+    "Head-final verb endings determine tense/aspect/modality; cutting before the verb loses this and produces incomplete English clauses"
+  ],
+  "notes_for_prompt_writer": "This is unedited spoken Korean with frequent self-repair, trailing connectives (-는데, -고, -어서), and optional punctuation, so segmentation must rely on morphological clause-final endings rather than punctuation alone. Treat connective endings as strong signals to hold the segment open until the following clause resolves, and never split right after a filler or a repeated stutter token. Because Korean is strictly head-final and pro-drop, delay emission until the main verb/ending of a clause is visible to avoid mistranslating dangling arguments in English."
+}

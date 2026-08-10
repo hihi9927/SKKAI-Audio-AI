@@ -1,0 +1,10 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Never Segment]"
+  ],
+  "changelog": [
+    "[When to Segment]: added eight concrete, evidence-backed permissive rules for measured under-segmentation — coordinating -고 joining two independently complete clauses; causal -아서/-어서/-니까 followed by a self-contained result clause; conditional -면/-다면 followed by a self-contained consequence; comparative -보다는 between two independently complete clauses; chained sequential temporal setup clauses (나중에, 끝나고 나서, etc.), each split after its own clause; a leading discourse adverb (어쨌든/아무튼/결국/아무래도) split off before a full independent clause; a short subject pronoun split off before a long self-contained predicate; a repeated/restated subject split from its own predicate. Each rule requires the resulting pieces to be independently interpretable, targeting free latency gain the critic confirmed at zero quality cost (E00691, E00509, E00451, E00018, E00716, E00831, E00171, E00951).",
+    "[Never Segment]: narrowed the over-broad conditional-connective (-면/-다면) prohibition so it only blocks a split when the consequence clause has no subject/verb of its own and must borrow an argument from the protasis; when the consequence clause is genuinely independent, splitting right after the connective is now explicitly permitted, resolving the conflict with the new conditional permissive rule and removing an over-broad restriction that was suppressing safe latency gains."
+  ]
+}

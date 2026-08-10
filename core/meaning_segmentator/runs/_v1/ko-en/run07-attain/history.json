@@ -1,0 +1,273 @@
+[
+  {
+    "version": 0,
+    "adopted": true,
+    "train": {
+      "n": 30,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9251,
+      "quality_segmented": 0.8978,
+      "quality_segmented_std": 0.1121,
+      "n_segmented": 22,
+      "quality_chrf": 0.8886,
+      "latency": 0.8208,
+      "latency_gain": 0.1792,
+      "mean_segments": 2.0667,
+      "mean_k_eff": 1.8214,
+      "segmented_rate": 0.7333,
+      "quality_min": 0.6194,
+      "quality_p10": 0.7655,
+      "attainment": 0.5774,
+      "gain_star": 0.1608
+    },
+    "dev": {
+      "n": 60,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9107,
+      "quality_segmented": 0.8809,
+      "quality_segmented_std": 0.089,
+      "n_segmented": 45,
+      "quality_chrf": 0.8242,
+      "latency": 0.8299,
+      "latency_gain": 0.1701,
+      "mean_segments": 2.1,
+      "mean_k_eff": 1.7417,
+      "segmented_rate": 0.75,
+      "quality_min": 0.6763,
+      "quality_p10": 0.7919,
+      "attainment": 0.5132,
+      "gain_star": 0.1477
+    },
+    "objective_train": -1.0082,
+    "objective_dev": -1.0144,
+    "changelog": null,
+    "next_changelog": [
+      "[When to Segment]: added four precise permissive cues that are safe, low-risk boundaries identified by the critic as missed splits — leading discourse-marker/filler+connective combos before an independent clause, past-conditional -았/었으면(은) before a self-contained result clause, reported-speech -다고/-라고 before an independent statement, and a sentence-medial '?' before an unrelated purpose/reason clause — to recover forfeited latency gains without adding new restrictions.",
+      "[Never Segment]: replaced sweeping caution with two precise scope-based conditions — do not cut a reason/conditional connective (-아서/-니까/-면/-다면) whose scope is only resolved by a later clause (e.g. an earlier 왜 or an unresolved condition), and do not cut immediately before a trailing bare object/noun fragment lacking its own predicate — targeting the exact damaging boundaries the critic measured, rather than banning the connective endings outright."
+    ]
+  },
+  {
+    "version": 1,
+    "adopted": true,
+    "train": {
+      "n": 30,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9684,
+      "quality_segmented": 0.9271,
+      "quality_segmented_std": 0.0712,
+      "n_segmented": 13,
+      "quality_chrf": 0.9445,
+      "latency": 0.8825,
+      "latency_gain": 0.1175,
+      "mean_segments": 1.7,
+      "mean_k_eff": 1.5797,
+      "segmented_rate": 0.4333,
+      "quality_min": 0.8126,
+      "quality_p10": 0.8585,
+      "attainment": 0.3508,
+      "gain_star": 0.1608
+    },
+    "dev": {
+      "n": 60,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.954,
+      "quality_segmented": 0.9079,
+      "quality_segmented_std": 0.0891,
+      "n_segmented": 30,
+      "quality_chrf": 0.9158,
+      "latency": 0.8886,
+      "latency_gain": 0.1114,
+      "mean_segments": 1.7167,
+      "mean_k_eff": 1.4779,
+      "segmented_rate": 0.5,
+      "quality_min": 0.6869,
+      "quality_p10": 0.816,
+      "attainment": 0.4624,
+      "gain_star": 0.1477
+    },
+    "objective_train": 0.3508,
+    "objective_dev": 0.4624,
+    "changelog": [
+      "[When to Segment]: added four precise permissive cues that are safe, low-risk boundaries identified by the critic as missed splits — leading discourse-marker/filler+connective combos before an independent clause, past-conditional -았/었으면(은) before a self-contained result clause, reported-speech -다고/-라고 before an independent statement, and a sentence-medial '?' before an unrelated purpose/reason clause — to recover forfeited latency gains without adding new restrictions.",
+      "[Never Segment]: replaced sweeping caution with two precise scope-based conditions — do not cut a reason/conditional connective (-아서/-니까/-면/-다면) whose scope is only resolved by a later clause (e.g. an earlier 왜 or an unresolved condition), and do not cut immediately before a trailing bare object/noun fragment lacking its own predicate — targeting the exact damaging boundaries the critic measured, rather than banning the connective endings outright."
+    ],
+    "next_changelog": [
+      "[When to Segment]: added five new permissive cues targeting the critic's measured under-segmentation cases — terminal punctuation followed by a trailing NP/list, fronted temporal/locational adverbials before subordinate or main clauses, plain (non-past) completed conditionals '-으면/-으면은', leading disfluency/filler chains before the first substantive clause, and long temporal setups ending in a discourse marker like '이제' before the final main clause — to recover the large missed latency gains the critic identified without adding new restrictions.",
+      "[Never Segment]: narrowed the trailing-bare-NP prohibition so it only blocks a split when the missing predicate must be inferred from the clause being cut; if the preceding piece already ends in terminal punctuation or a closed clause, splitting before a trailing NP/list elaboration is explicitly allowed, resolving the conflict that was suppressing valid question/list boundaries."
+    ]
+  },
+  {
+    "version": 2,
+    "adopted": false,
+    "train": {
+      "n": 30,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9263,
+      "quality_segmented": 0.8948,
+      "quality_segmented_std": 0.0802,
+      "n_segmented": 21,
+      "quality_chrf": 0.8837,
+      "latency": 0.8225,
+      "latency_gain": 0.1775,
+      "mean_segments": 2.0667,
+      "mean_k_eff": 1.8593,
+      "segmented_rate": 0.7,
+      "quality_min": 0.682,
+      "quality_p10": 0.8287,
+      "attainment": 0.4752,
+      "gain_star": 0.1608
+    },
+    "dev": null,
+    "objective_train": -1.0048,
+    "objective_dev": null,
+    "changelog": [
+      "[When to Segment]: added five new permissive cues targeting the critic's measured under-segmentation cases — terminal punctuation followed by a trailing NP/list, fronted temporal/locational adverbials before subordinate or main clauses, plain (non-past) completed conditionals '-으면/-으면은', leading disfluency/filler chains before the first substantive clause, and long temporal setups ending in a discourse marker like '이제' before the final main clause — to recover the large missed latency gains the critic identified without adding new restrictions.",
+      "[Never Segment]: narrowed the trailing-bare-NP prohibition so it only blocks a split when the missing predicate must be inferred from the clause being cut; if the preceding piece already ends in terminal punctuation or a closed clause, splitting before a trailing NP/list elaboration is explicitly allowed, resolving the conflict that was suppressing valid question/list boundaries."
+    ],
+    "next_changelog": [
+      "[When to Segment]: broadened the conditional-ending rule to cover non-past '-으면/-으면은' in addition to past '-았/었으면(은)'; broadened the '?'-boundary rule so it also permits segmenting before a trailing noun-phrase/list elaboration (not only purpose/reason clauses); broadened the leading-filler rule to explicitly cover chains of two or more repeated discourse markers/fillers; and added two new generalizable cues — a fronted temporal/locational adverbial or long temporal setup ending in a discourse marker like '이제' before a subordinate/main clause, and a completed '-고 나서' sequential clause before its main clause — targeting the critic's measured under-segmentation cases (question+list, conditional+result, adverbial+subordinate, filler chains) without touching [Never Segment], since this iteration's rejected predecessor changed both sections at once and over-corrected.",
+      "[Examples — Segment]: added four new illustrative example pairs (question+trailing NP, conditional+result clause, fronted temporal adverbial+subordinate clause chain, leading disfluency chain) to demonstrate the newly broadened/added rules, keeping the section at the 12-example cap."
+    ]
+  },
+  {
+    "version": 3,
+    "adopted": false,
+    "train": {
+      "n": 30,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.937,
+      "quality_segmented": 0.895,
+      "quality_segmented_std": 0.0762,
+      "n_segmented": 18,
+      "quality_chrf": 0.897,
+      "latency": 0.8422,
+      "latency_gain": 0.1578,
+      "mean_segments": 1.9,
+      "mean_k_eff": 1.7405,
+      "segmented_rate": 0.6,
+      "quality_min": 0.732,
+      "quality_p10": 0.8159,
+      "attainment": 0.4578,
+      "gain_star": 0.1608
+    },
+    "dev": null,
+    "objective_train": -1.005,
+    "objective_dev": null,
+    "changelog": [
+      "[When to Segment]: broadened the conditional-ending rule to cover non-past '-으면/-으면은' in addition to past '-았/었으면(은)'; broadened the '?'-boundary rule so it also permits segmenting before a trailing noun-phrase/list elaboration (not only purpose/reason clauses); broadened the leading-filler rule to explicitly cover chains of two or more repeated discourse markers/fillers; and added two new generalizable cues — a fronted temporal/locational adverbial or long temporal setup ending in a discourse marker like '이제' before a subordinate/main clause, and a completed '-고 나서' sequential clause before its main clause — targeting the critic's measured under-segmentation cases (question+list, conditional+result, adverbial+subordinate, filler chains) without touching [Never Segment], since this iteration's rejected predecessor changed both sections at once and over-corrected.",
+      "[Examples — Segment]: added four new illustrative example pairs (question+trailing NP, conditional+result clause, fronted temporal adverbial+subordinate clause chain, leading disfluency chain) to demonstrate the newly broadened/added rules, keeping the section at the 12-example cap."
+    ],
+    "next_changelog": [
+      "[When to Segment]: broadened the existing '?'-boundary rule to also permit segmenting after a complete question when followed by a trailing noun-phrase/list elaboration (not just a purpose/reason clause), recovering free latency gains the critic measured on question+list sentences without adding a new rule category.",
+      "[When to Segment]: broadened the existing sentence-initial discourse-marker/filler+connective rule to explicitly cover chains of two or more repeated discourse markers/fillers before the first substantive independent clause, since these chains are still a free, low-risk boundary and were being left unsplit.",
+      "[Examples — Segment]: added two new illustrative example pairs (question + trailing list, filler-chain + substantive clause) demonstrating the broadened rules; kept the section under the 12-example cap without removing existing examples."
+    ]
+  },
+  {
+    "version": 4,
+    "adopted": true,
+    "train": {
+      "n": 30,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9603,
+      "quality_segmented": 0.9256,
+      "quality_segmented_std": 0.0696,
+      "n_segmented": 16,
+      "quality_chrf": 0.9263,
+      "latency": 0.8628,
+      "latency_gain": 0.1372,
+      "mean_segments": 1.7333,
+      "mean_k_eff": 1.63,
+      "segmented_rate": 0.5333,
+      "quality_min": 0.8015,
+      "quality_p10": 0.8585,
+      "attainment": 0.4905,
+      "gain_star": 0.1608
+    },
+    "dev": {
+      "n": 60,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 0.9833,
+      "quality": 0.9451,
+      "quality_segmented": 0.9058,
+      "quality_segmented_std": 0.0868,
+      "n_segmented": 35,
+      "quality_chrf": 0.9012,
+      "latency": 0.8678,
+      "latency_gain": 0.1322,
+      "mean_segments": 1.8167,
+      "mean_k_eff": 1.5631,
+      "segmented_rate": 0.5833,
+      "quality_min": 0.6869,
+      "quality_p10": 0.8134,
+      "attainment": 0.6065,
+      "gain_star": 0.1477
+    },
+    "objective_train": 0.4905,
+    "objective_dev": 0.6065,
+    "changelog": [
+      "[When to Segment]: broadened the existing '?'-boundary rule to also permit segmenting after a complete question when followed by a trailing noun-phrase/list elaboration (not just a purpose/reason clause), recovering free latency gains the critic measured on question+list sentences without adding a new rule category.",
+      "[When to Segment]: broadened the existing sentence-initial discourse-marker/filler+connective rule to explicitly cover chains of two or more repeated discourse markers/fillers before the first substantive independent clause, since these chains are still a free, low-risk boundary and were being left unsplit.",
+      "[Examples — Segment]: added two new illustrative example pairs (question + trailing list, filler-chain + substantive clause) demonstrating the broadened rules; kept the section under the 12-example cap without removing existing examples."
+    ],
+    "next_changelog": [
+      "[When to Segment]: added five new permissive, generalizable cues directly targeting the critic's measured free-latency under-segmentation cases — (1) a standalone sentence-initial discourse adverb (e.g. '어쨌든','아무튼','일단','사실') before a main clause, split right after it; (2) a statement followed by a rhetorical tag-question (e.g. '...거 알지?','...잖아?') that merely checks agreement, split right before the tag question; (3) chains of two or more sequential time/action clauses joined by '-고 나서'/'나중에'/'끝나고' where each clause already has its own resolved subject/verb, split after each connective; (4) a topic-establishing setup clause followed by a distinct concluding/resultative statement marked off by a discourse marker like '이제' or '그래서', split right before the conclusion; (5) explicitly extended the existing '?' rule to cover enumerated self-questioned alternatives ending in '?' before an unrelated concluding clause. These add concrete permissive rules without introducing new restrictions, per the 'segment more aggressively' direction.",
+      "[Never Segment]: narrowed the blanket '이제-is-always-filler' prohibition with an explicit, generalizable exception — splitting immediately before '이제' is allowed when it marks the transition from a completed topic-establishing/setup clause to a distinct concluding statement (per the new [When to Segment] rule), rather than banning any cut near '이제' outright."
+    ]
+  },
+  {
+    "version": 5,
+    "adopted": false,
+    "train": {
+      "n": 30,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9535,
+      "quality_segmented": 0.918,
+      "quality_segmented_std": 0.0664,
+      "n_segmented": 17,
+      "quality_chrf": 0.9189,
+      "latency": 0.8588,
+      "latency_gain": 0.1412,
+      "mean_segments": 1.7667,
+      "mean_k_eff": 1.6415,
+      "segmented_rate": 0.5667,
+      "quality_min": 0.8015,
+      "quality_p10": 0.8585,
+      "attainment": 0.4918,
+      "gain_star": 0.1608
+    },
+    "dev": {
+      "n": 60,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9478,
+      "quality_segmented": 0.9022,
+      "quality_segmented_std": 0.0853,
+      "n_segmented": 32,
+      "quality_chrf": 0.9034,
+      "latency": 0.882,
+      "latency_gain": 0.118,
+      "mean_segments": 1.7833,
+      "mean_k_eff": 1.5233,
+      "segmented_rate": 0.5333,
+      "quality_min": 0.6869,
+      "quality_p10": 0.8134,
+      "attainment": 0.4823,
+      "gain_star": 0.1477
+    },
+    "objective_train": 0.4918,
+    "objective_dev": 0.4823,
+    "changelog": [
+      "[When to Segment]: added five new permissive, generalizable cues directly targeting the critic's measured free-latency under-segmentation cases — (1) a standalone sentence-initial discourse adverb (e.g. '어쨌든','아무튼','일단','사실') before a main clause, split right after it; (2) a statement followed by a rhetorical tag-question (e.g. '...거 알지?','...잖아?') that merely checks agreement, split right before the tag question; (3) chains of two or more sequential time/action clauses joined by '-고 나서'/'나중에'/'끝나고' where each clause already has its own resolved subject/verb, split after each connective; (4) a topic-establishing setup clause followed by a distinct concluding/resultative statement marked off by a discourse marker like '이제' or '그래서', split right before the conclusion; (5) explicitly extended the existing '?' rule to cover enumerated self-questioned alternatives ending in '?' before an unrelated concluding clause. These add concrete permissive rules without introducing new restrictions, per the 'segment more aggressively' direction.",
+      "[Never Segment]: narrowed the blanket '이제-is-always-filler' prohibition with an explicit, generalizable exception — splitting immediately before '이제' is allowed when it marks the transition from a completed topic-establishing/setup clause to a distinct concluding statement (per the new [When to Segment] rule), rather than banning any cut near '이제' outright."
+    ]
+  }
+]

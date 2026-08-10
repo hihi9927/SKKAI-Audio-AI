@@ -1,0 +1,10 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Never Segment]"
+  ],
+  "changelog": [
+    "[When to Segment]: added four precise permissive cues that are safe, low-risk boundaries identified by the critic as missed splits — leading discourse-marker/filler+connective combos before an independent clause, past-conditional -았/었으면(은) before a self-contained result clause, reported-speech -다고/-라고 before an independent statement, and a sentence-medial '?' before an unrelated purpose/reason clause — to recover forfeited latency gains without adding new restrictions.",
+    "[Never Segment]: replaced sweeping caution with two precise scope-based conditions — do not cut a reason/conditional connective (-아서/-니까/-면/-다면) whose scope is only resolved by a later clause (e.g. an earlier 왜 or an unresolved condition), and do not cut immediately before a trailing bare object/noun fragment lacking its own predicate — targeting the exact damaging boundaries the critic measured, rather than banning the connective endings outright."
+  ]
+}

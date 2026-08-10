@@ -1,12 +1,10 @@
 {
   "sections_changed": [
     "[When to Segment]",
-    "[Never Segment]"
+    "[Examples — Segment]"
   ],
   "changelog": [
-    "Added explicit permission to split at -는데/-고/-아서/어서/니까 junctions in long multi-clause utterances when both sides already form independent, resolvable clauses — targets under-segmentation of rambling sentences flagged by critic.",
-    "Added rule to treat mid-utterance sentence-final punctuation (e.g. embedded '?') as a valid split candidate, not just end-of-text punctuation.",
-    "Added rule to split after a closing quotation / quoted clause-final question before a reporting verb (했더니, 그러더라, etc.), since the quoted clause is self-contained.",
-    "Narrowed [Never Segment] bans on -는데/-고/-아서/니까 to only apply when the following material is not yet an independently complete clause, explicitly carving out the exception where both sides already stand alone — removes over-broad prohibition that was suppressing safe splits."
+    "[When to Segment]: Added two generalized permissive rules — marking candidate boundaries after topic/subject/object/locative-marked noun phrases even before their governing predicate appears, and after short adverbial/temporal/quantity phrases — to increase the pool of defensible fine-grained boundaries so small-T budgets (e.g. T=3) are not starved of candidates (addresses coverage/truncation_shortfall).",
+    "[Examples — Segment]: Replaced one redundant -고-connective example with a new example illustrating a boundary after a topic-marked noun phrase preceding its predicate, to demonstrate the new permissive rule without exceeding the 12-example cap."
   ]
 }

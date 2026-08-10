@@ -1,0 +1,185 @@
+[
+  {
+    "version": 0,
+    "adopted": true,
+    "train": {
+      "n": 30,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9251,
+      "quality_segmented": 0.8978,
+      "quality_segmented_std": 0.1121,
+      "n_segmented": 22,
+      "quality_chrf": 0.8886,
+      "latency": 0.8208,
+      "latency_gain": 0.1792,
+      "mean_segments": 2.0667,
+      "mean_k_eff": 1.8214,
+      "segmented_rate": 0.7333,
+      "quality_min": 0.6194,
+      "quality_p10": 0.7655
+    },
+    "dev": {
+      "n": 60,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9107,
+      "quality_segmented": 0.8809,
+      "quality_segmented_std": 0.089,
+      "n_segmented": 45,
+      "quality_chrf": 0.8242,
+      "latency": 0.8299,
+      "latency_gain": 0.1701,
+      "mean_segments": 2.1,
+      "mean_k_eff": 1.7417,
+      "segmented_rate": 0.75,
+      "quality_min": 0.6763,
+      "quality_p10": 0.7919
+    },
+    "objective_train": -1.0082,
+    "objective_dev": -1.0144,
+    "changelog": null,
+    "next_changelog": [
+      "[Never Segment]: Added precise conditions for filler-laden false-start spans, chained repeated-adverb constructions, chained conditional/purpose constructions, trailing verbless fragments, and filler+appositive-dense sentences — targeting the exact boundary-placement failures the critic identified, without banning any connective ending outright.",
+      "[When to Segment]: Added two concrete permissive rules for safe, cost-free splits that were being missed — internal punctuation followed by a clause with an explicit NP referent, and sequential -고 time/action clauses that are each independently interpretable before the main verb."
+    ]
+  },
+  {
+    "version": 1,
+    "adopted": true,
+    "train": {
+      "n": 30,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9699,
+      "quality_segmented": 0.918,
+      "quality_segmented_std": 0.0828,
+      "n_segmented": 11,
+      "quality_chrf": 0.955,
+      "latency": 0.9021,
+      "latency_gain": 0.0979,
+      "mean_segments": 1.5667,
+      "mean_k_eff": 1.4801,
+      "segmented_rate": 0.3667,
+      "quality_min": 0.7794,
+      "quality_p10": 0.8484
+    },
+    "dev": {
+      "n": 60,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9493,
+      "quality_segmented": 0.8951,
+      "quality_segmented_std": 0.1087,
+      "n_segmented": 29,
+      "quality_chrf": 0.9067,
+      "latency": 0.8842,
+      "latency_gain": 0.1158,
+      "mean_segments": 1.7333,
+      "mean_k_eff": 1.5346,
+      "segmented_rate": 0.4833,
+      "quality_min": 0.6396,
+      "quality_p10": 0.803
+    },
+    "objective_train": 0.1089,
+    "objective_dev": -1.0072,
+    "changelog": [
+      "[Never Segment]: Added precise conditions for filler-laden false-start spans, chained repeated-adverb constructions, chained conditional/purpose constructions, trailing verbless fragments, and filler+appositive-dense sentences — targeting the exact boundary-placement failures the critic identified, without banning any connective ending outright.",
+      "[When to Segment]: Added two concrete permissive rules for safe, cost-free splits that were being missed — internal punctuation followed by a clause with an explicit NP referent, and sequential -고 time/action clauses that are each independently interpretable before the main verb."
+    ],
+    "next_changelog": [
+      "[When to Segment]: Added four concrete permissive rules based on measured under-segmentation cases — split after a causal '-아서'/'니까'/그래서 clause even in short sentences when the next clause is an independent judgment/result; split BEFORE a full condition+result '-면' unit when the preceding material is already a complete clause (not between the condition and its own result); treat internal '?' as a mandatory split candidate; split at a contrastive '그런데'/'하지만' joining two independently complete clauses. These directly target the five under-segmentation failures the critic identified without touching restrictive rules.",
+      "[Never Segment]: Narrowed two over-broad prohibitions that were blocking safe splits. The conditional/purpose-then-result ban now only blocks splitting BETWEEN a '-면' clause and its own result (not before the whole unit). The filler-dense/appositive-list cap now only applies when no clean causal/contrastive/punctuation boundary exists elsewhere in the sentence; if one does, split there (capped at two total) instead of defaulting to zero extra splits — this removes the mechanism that was driving mean_k_eff down while still protecting the specific dense-filler case the critic flagged as unrecoverable."
+    ]
+  },
+  {
+    "version": 2,
+    "adopted": false,
+    "train": {
+      "n": 30,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9393,
+      "quality_segmented": 0.87,
+      "quality_segmented_std": 0.0882,
+      "n_segmented": 14,
+      "quality_chrf": 0.9048,
+      "latency": 0.8778,
+      "latency_gain": 0.1222,
+      "mean_segments": 1.7,
+      "mean_k_eff": 1.6111,
+      "segmented_rate": 0.4667,
+      "quality_min": 0.6999,
+      "quality_p10": 0.7991
+    },
+    "dev": null,
+    "objective_train": -1.0357,
+    "objective_dev": null,
+    "changelog": [
+      "[When to Segment]: Added four concrete permissive rules based on measured under-segmentation cases — split after a causal '-아서'/'니까'/그래서 clause even in short sentences when the next clause is an independent judgment/result; split BEFORE a full condition+result '-면' unit when the preceding material is already a complete clause (not between the condition and its own result); treat internal '?' as a mandatory split candidate; split at a contrastive '그런데'/'하지만' joining two independently complete clauses. These directly target the five under-segmentation failures the critic identified without touching restrictive rules.",
+      "[Never Segment]: Narrowed two over-broad prohibitions that were blocking safe splits. The conditional/purpose-then-result ban now only blocks splitting BETWEEN a '-면' clause and its own result (not before the whole unit). The filler-dense/appositive-list cap now only applies when no clean causal/contrastive/punctuation boundary exists elsewhere in the sentence; if one does, split there (capped at two total) instead of defaulting to zero extra splits — this removes the mechanism that was driving mean_k_eff down while still protecting the specific dense-filler case the critic flagged as unrecoverable."
+    ],
+    "next_changelog": [
+      "[Decision Procedure]: Added an explicit pre-scan step requiring the model to enumerate ALL candidate split points across the whole sentence (every connective ending/particle/punctuation cue from [When to Segment]) before evaluating any one of them, and revised step 7 to require re-applying steps 1–6 to remaining pieces (especially the longest/dominant one) after each accepted split instead of stopping at the first cut. This targets the critic's mean_k_eff diagnosis: sentences were getting one split while leaving a long dominant clause internally un-split, so latency was left on the table even where quality was safe.",
+      "[Examples — Segment]: Added two new generalizable example pairs (a mid-sentence '?' split and a causal -아서/그래서 split leading to an independent judgment clause) to reinforce, via demonstration rather than new rule text, that internal question marks and causal connectives followed by an independently interpretable clause are valid cut points — the exact permissive behaviors the critic's under-segmentation cases were missing. No examples removed since the section stayed under the 12-example cap."
+    ]
+  },
+  {
+    "version": 3,
+    "adopted": false,
+    "train": {
+      "n": 30,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9639,
+      "quality_segmented": 0.9017,
+      "quality_segmented_std": 0.0826,
+      "n_segmented": 11,
+      "quality_chrf": 0.9415,
+      "latency": 0.9044,
+      "latency_gain": 0.0956,
+      "mean_segments": 1.5667,
+      "mean_k_eff": 1.469,
+      "segmented_rate": 0.3667,
+      "quality_min": 0.7794,
+      "quality_p10": 0.8221
+    },
+    "dev": null,
+    "objective_train": -1.0053,
+    "objective_dev": null,
+    "changelog": [
+      "[Decision Procedure]: Added an explicit pre-scan step requiring the model to enumerate ALL candidate split points across the whole sentence (every connective ending/particle/punctuation cue from [When to Segment]) before evaluating any one of them, and revised step 7 to require re-applying steps 1–6 to remaining pieces (especially the longest/dominant one) after each accepted split instead of stopping at the first cut. This targets the critic's mean_k_eff diagnosis: sentences were getting one split while leaving a long dominant clause internally un-split, so latency was left on the table even where quality was safe.",
+      "[Examples — Segment]: Added two new generalizable example pairs (a mid-sentence '?' split and a causal -아서/그래서 split leading to an independent judgment clause) to reinforce, via demonstration rather than new rule text, that internal question marks and causal connectives followed by an independently interpretable clause are valid cut points — the exact permissive behaviors the critic's under-segmentation cases were missing. No examples removed since the section stayed under the 12-example cap."
+    ],
+    "next_changelog": [
+      "[When to Segment]: Added four narrowly-conditioned permissive rules targeting the five measured under-segmentation cases without touching any [Never Segment] restriction: (1) internal/mid-sentence '?' is now explicitly treated the same as terminal punctuation — always a valid, mandatory split point, not just when it ends the sentence; (2) a causal connective (-아서/-니까/-거든/-그래서) is now a valid split point even in short sentences whenever the following clause is an independent judgment/result that doesn't need the earlier clause's verb; (3) a contrastive connective (그런데/하지만) joining two already-complete clauses (each with its own resolved subject+predicate) is now a valid split point; (4) splitting immediately BEFORE a full condition+result '-면' unit is now explicit when the preceding material is already a complete, independently interpretable clause — this is compatible with the existing [Never Segment] ban, which only blocks splitting BETWEEN a condition and its own result, not before the whole unit. These are pure additions (no restrictions added, no existing rule narrowed), isolated to one section this iteration to cleanly measure their effect after the previous combined change (When to Segment + Never Segment) was rejected for dropping quality below the floor."
+    ]
+  },
+  {
+    "version": 4,
+    "adopted": false,
+    "train": {
+      "n": 30,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9539,
+      "quality_segmented": 0.9013,
+      "quality_segmented_std": 0.0983,
+      "n_segmented": 14,
+      "quality_chrf": 0.9222,
+      "latency": 0.8816,
+      "latency_gain": 0.1184,
+      "mean_segments": 1.6667,
+      "mean_k_eff": 1.5535,
+      "segmented_rate": 0.4667,
+      "quality_min": 0.6999,
+      "quality_p10": 0.8015
+    },
+    "dev": null,
+    "objective_train": -1.0071,
+    "objective_dev": null,
+    "changelog": [
+      "[When to Segment]: Added four narrowly-conditioned permissive rules targeting the five measured under-segmentation cases without touching any [Never Segment] restriction: (1) internal/mid-sentence '?' is now explicitly treated the same as terminal punctuation — always a valid, mandatory split point, not just when it ends the sentence; (2) a causal connective (-아서/-니까/-거든/-그래서) is now a valid split point even in short sentences whenever the following clause is an independent judgment/result that doesn't need the earlier clause's verb; (3) a contrastive connective (그런데/하지만) joining two already-complete clauses (each with its own resolved subject+predicate) is now a valid split point; (4) splitting immediately BEFORE a full condition+result '-면' unit is now explicit when the preceding material is already a complete, independently interpretable clause — this is compatible with the existing [Never Segment] ban, which only blocks splitting BETWEEN a condition and its own result, not before the whole unit. These are pure additions (no restrictions added, no existing rule narrowed), isolated to one section this iteration to cleanly measure their effect after the previous combined change (When to Segment + Never Segment) was rejected for dropping quality below the floor."
+    ]
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Priority Rules]"
+  ],
+  "changelog": [
+    "[When to Segment]: Added two explicit permissive rules — (1) mark a candidate after each item in a coordinated/listed set of alternatives (X, Y, 아니면은 Z) even before the shared governing verb has appeared, and after an adverbial converb clause (-아서/어서, -다가, -고, -면서) even before its disambiguating main verb has appeared; (2) mark a candidate after a context-dependent frequency/quantifier adverb (e.g. 거의) even before later content confirms its sense. These increase the number of marked boundary candidates per the coverage focus, without touching [Never Segment].",
+    "[Priority Rules]: Added a new lowest tier (8) that explicitly ranks the three newly-licensed candidate types — coordinated-alternatives-before-shared-verb, converb-before-disambiguating-verb, and frequency/quantifier-adverb-before-context — below all existing tiers. This lets them be marked (satisfying coverage) while ensuring they are the first trimmed under a tight budget, directly addressing the priority evidence (거의 ranked too high) and reducing the risk of the placement-type contradictions without withholding candidacy."
+  ]
+}
