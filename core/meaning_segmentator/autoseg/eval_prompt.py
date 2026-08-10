@@ -22,7 +22,7 @@ from pathlib import Path
 
 from . import data, metrics
 from .gateway import Gateway
-from .loop import evaluate, target_is_spaced
+from .loop import _cell, evaluate, target_is_spaced
 from .pipeline import GoogleTranslator, JsonCache, Translator
 
 _HERE = Path(__file__).resolve().parent
@@ -44,6 +44,9 @@ def main() -> int:
                    help="순위 태그를 요구하지 않는다. 사람이 쓴 비교군 프롬프트용")
     p.add_argument("--adequacy-backend", default=None, help="미지정 시 기준 런에서 상속")
     p.add_argument("--consistency-backend", default=None, help="미지정 시 기준 런에서 상속")
+    p.add_argument("--no-contradiction", action="store_true",
+                   help="NLI 조기 방출 검출을 끈다. 기본은 기준 런 설정 상속 — "
+                        "루프와 다른 자로 재면 비교가 무의미하다")
     p.add_argument("--comet-batch-size", type=int, default=16)
     args = p.parse_args()
 
@@ -91,16 +94,28 @@ def main() -> int:
         args.adequacy_backend or cfg.get("adequacy_backend", "cometkiwi"),
         batch_size=args.comet_batch_size)
     cons_name = args.consistency_backend or cfg.get("consistency_backend", "comet")
-    consistency = metrics.make_backend(
-        cons_name, gw=gw,
-        **({"batch_size": args.comet_batch_size}
-           if cons_name in metrics.COMET_CHECKPOINTS else {}))
+    nli_key = cfg.get("contradiction_backend", "deberta-mnli")
+    if cons_name == "nli":
+        consistency = metrics.make_backend(
+            "nli", model_name=metrics.NLI_MODELS[nli_key],
+            batch_size=args.comet_batch_size)
+    else:
+        consistency = metrics.make_backend(
+            cons_name, gw=gw,
+            **({"batch_size": args.comet_batch_size}
+               if cons_name in metrics.COMET_CHECKPOINTS else {}))
+
+    # 조기 방출 NLI 도 기준 런에서 상속한다 — 루프의 effective 와 같은 자로 재야
+    # 비교군 표에 나란히 놓을 수 있다.
+    contradiction = (None if (args.no_contradiction or cfg.get("no_contradiction"))
+                     else metrics.make_contradiction_backend(nli_key))
 
     try:
         rows, m, viol = evaluate(gw, translator, prompt, sentences, spaced, seg_cache,
                                  args.workers, adequacy, consistency, t_grid,
                                  trailing_punct, tgt_spaced=tgt_spaced,
-                                 require_priority=not args.no_priority)
+                                 require_priority=not args.no_priority,
+                                 contradiction=contradiction)
         out_dir = run_dir / "prompt_eval"
         out_dir.mkdir(parents=True, exist_ok=True)
         (out_dir / f"{label}_{args.split}.json").write_text(json.dumps({
@@ -110,6 +125,7 @@ def main() -> int:
             "require_priority": not args.no_priority,
             "adequacy_backend": adequacy.name,
             "consistency_backend": cons_name,
+            "contradiction_backend": (None if contradiction is None else contradiction.name),
             "translator": tr_id,
             "metrics": m.to_dict(),
             "violations": viol,
@@ -122,7 +138,8 @@ def main() -> int:
               f"{m.format_pass_rate_no_retry:.4f}), 위반 {len(viol)}건")
         for k in sorted(m.by_T, key=int):
             s = m.by_T[k]
-            print(f"  T={k:<3} laal {s.laal_words:6.2f}  adequacy {s.adequacy:.4f}  "
+            print(f"  T={k:<3} laal {s.laal_words:6.2f}  effective {_cell(s.effective, '.4f')}  "
+                  f"adequacy {s.adequacy:.4f}  contradiction {_cell(s.contradiction, '.4f')}  "
                   f"consistency {s.consistency:.4f}  k {s.chunks_per_sentence:.2f}  "
                   f"부족경계 {s.missing_boundaries:.2f}")
         print(f"  score {metrics.score(m):.4f}  비용 {gw.usage.snapshot()['cost']:.4f}")

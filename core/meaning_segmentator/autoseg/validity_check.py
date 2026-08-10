@@ -41,6 +41,12 @@ BENIGN = "benign_minimal"
 BENIGN_SOFT = "benign_paraphrase"
 ORDER = ["identical", BENIGN, BENIGN_SOFT] + SEVERE + ["unrelated"]
 
+# 양방향 NLI consistency 백엔드 (v2 기본). 케이스에 타깃 언어가 섞여 있으므로
+# (ja-ko-01 은 타깃이 한국어) 다국어 모델을 기본 관문으로 두고, 영어 전용
+# deberta 는 en 타깃 케이스 참고용으로 같이 돌린다 — ja-ko-01 행의 deberta 값은
+# 모델 언어 밖이라 무의미하니 읽지 말 것.
+NLI_VALIDITY = {"nli-mdeberta": "mdeberta-xnli", "nli-deberta": "deberta-mnli"}
+
 
 def evaluate_backend(scorer: metrics.QualityBackend, cases: list[dict]) -> dict:
     """케이스별 변이 점수를 낸다. 같은 백엔드 인스턴스를 재사용해 모델을 1회만 로드한다."""
@@ -174,7 +180,8 @@ def main() -> int:
     p = argparse.ArgumentParser(description="품질 백엔드 타당도 검사")
     # xcomet 은 기본에서 뺀다 — HF 게이트 모델이라 라이선스 미수락 계정에서 403 으로 죽는다.
     # 쓰려면 명시적으로 지정할 것: --backends xcomet comet embed chrf
-    p.add_argument("--backends", nargs="+", default=["comet", "embed", "chrf"])
+    p.add_argument("--backends", nargs="+",
+                   default=["nli-mdeberta", "nli-deberta", "comet", "embed", "chrf"])
     p.add_argument("--cases", default=str(_HERE / "validity_cases.json"))
     p.add_argument("--comet-model", default=None)
     p.add_argument("--comet-batch-size", type=int, default=8)
@@ -194,7 +201,11 @@ def main() -> int:
                 kw["batch_size"] = args.comet_batch_size
                 if args.comet_model:
                     kw["model_name"] = args.comet_model
-            scorer = metrics.make_backend(name, gw=gw, **kw)
+            if name in NLI_VALIDITY:
+                scorer = metrics.BidirectionalNliBackend(
+                    model_name=metrics.NLI_MODELS[NLI_VALIDITY[name]], name=name)
+            else:
+                scorer = metrics.make_backend(name, gw=gw, **kw)
             print(f"[{name}] 채점 중...", flush=True)
             results.append(evaluate_backend(scorer, cases))
             # 다음 백엔드가 GPU 를 쓸 수 있게 비워 준다 (XCOMET-XL 은 14GB 를 잡는다)

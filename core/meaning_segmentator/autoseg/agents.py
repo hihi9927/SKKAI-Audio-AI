@@ -139,9 +139,9 @@ Concretely, when you write the prompt:
 - Do NOT require that the emitted translation survive unchanged once the rest arrives. That
   test is far too strict for a head-final source language and would leave almost every sentence
   unsegmented. It belongs in [Priority Rules] as a ranking signal, never as an admission test.
-- A spontaneous-speech sentence of N words should typically receive on the order of N/3 marked
-  boundaries. If your rules would leave a 20-word utterance with one or two tags, they are too
-  restrictive — loosen them.
+- A spontaneous-speech sentence of N words should typically receive on the order of N/{min_t}
+  marked boundaries. If your rules would leave a 20-word utterance with one or two tags, they
+  are too restrictive — loosen them.
 
 Hard requirements:
 - The prompt MUST contain these section headers verbatim, in this order:
@@ -183,12 +183,20 @@ class Profiler:
 
     def initial_prompt(self, profile: dict, target_language: str, spaced: bool,
                        min_t: int = 3) -> str:
+        # 밀도 지침(N/{min_t})은 검증기의 커버리지 요건과 **같은 값**이어야 한다.
+        # run03 에서 지침 N/3 vs 요건 N/2 불일치가 1차 통과율을 깎았다 (재시도로 복구되나
+        # 프롬프트 품질 신호인 1차 통과율이 오염된다). 시스템 프롬프트에 JSON 중괄호가
+        # 많아 .format 은 못 쓰고 표적 치환만 한다.
+        sys_p = PROMPT_WRITER_SYSTEM.replace("N/{min_t}", f"N/{min_t}")
         user = (
             f"Language profile:\n{json.dumps(profile, ensure_ascii=False, indent=2)}\n\n"
             f"Target language: {target_language}\n\n"
             f"Copy this [Output Rules] section verbatim into the prompt:\n\n{output_rules(spaced, min_t)}"
         )
-        return self.gw.chat(PROMPT_WRITER_SYSTEM, user, max_tokens=6000)
+        # thinking 모델은 사고 토큰이 max_tokens 에 같이 잡힌다 (SEG_MAX_TOKENS 와 같은
+        # 문제). 6000 에서는 사고가 예산을 먹고 프롬프트 꼬리 섹션이 잘렸다 — run04 에서
+        # 재시도까지 연속으로 [Examples — Do NOT Segment] 가 누락된 채 통과할 뻔했다.
+        return self.gw.chat(sys_p, user, max_tokens=16000)
 
 
 # ── A6 Critic ────────────────────────────────────────────────────────────
@@ -320,14 +328,25 @@ def _interleave(a: list[dict], b: list[dict]):
             yield b[i]
 
 
-def judge_rows(judge: Judge, rows: list[dict], T: int, max_rows: int = 8) -> list[dict]:
-    """실패 후보 N문장의 모든 경계를 판정한다. 마지막 경계는 대상이 아니다 — 뒤에
-    미래가 없으므로 반박당할 수 없다."""
+def judge_rows(judge: Judge, rows: list[dict], T: int, max_rows: int = 8,
+               sample: str = "failure", seed: int = 20260810) -> list[dict]:
+    """N문장의 모든 경계를 판정한다. 마지막 경계는 대상이 아니다 — 뒤에
+    미래가 없으므로 반박당할 수 없다.
+
+    `sample="failure"` — 실패 의심 문장 조준 (`rank_by_failure`). 루프 중 Critic 입력용.
+    `sample="random"`  — 시드 고정 무작위. **보고용 `premature_rate` 는 이쪽으로 재야
+    한다** — 실패 조준 표본으로 재면 조건부 상향 추정치가 된다 (run03 test 0.2727 이
+    그 값이다).
+    """
+    import random as _random
     out: list[dict] = []
     targets = [r for r in rows
                if r.get("by_T", {}).get(str(T), {}).get("pieces_tgt")
                and len(r["by_T"][str(T)]["pieces_tgt"]) > 1]
-    targets = rank_by_failure(targets, T, max_rows)
+    if sample == "random":
+        targets = _random.Random(seed).sample(targets, min(max_rows, len(targets)))
+    else:
+        targets = rank_by_failure(targets, T, max_rows)
     for r in targets:
         d = r["by_T"][str(T)]
         for b in range(len(d["pieces_tgt"]) - 1):
@@ -351,6 +370,19 @@ def premature_rate(judgements: list[dict]) -> float | None:
     if not scored:
         return None
     return sum(1 for j in scored if j["verdict"] == "premature") / len(scored)
+
+
+def reference_suspect_rate(judgements: list[dict]) -> float | None:
+    """판정자가 "오라클(full 번역) 자체가 틀렸다"고 본 경계의 비율.
+
+    contradiction·consistency 는 full 번역을 정답지로 쓴다 — 정답지가 틀리면 옳은
+    조각이 벌받고, 그 오염은 지표 숫자에서 안 보인다. 이 비율이 높으면 지표가 아니라
+    번역기(오라클)를 의심해야 한다는 신호다."""
+    judged = [j for j in judgements
+              if j.get("verdict") in SCORED_VERDICTS + ("reference_suspect",)]
+    if not judged:
+        return None
+    return sum(1 for j in judged if j["verdict"] == "reference_suspect") / len(judged)
 
 
 def unsafe_rate(judgements: list[dict]) -> float | None:

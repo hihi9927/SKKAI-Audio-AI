@@ -605,6 +605,10 @@ class GoogleTranslator:
     timeout: float = 30.0
     max_retries: int = 5
     calls: int = 0
+    # 컨텍스트 번역은 앞 조각들을 개행으로 붙여 보내고 마지막 줄만 취한다. gtx 가
+    # 줄을 합치면 마지막 줄이 엉뚱한 것이 되어 조각 번역이 조용히 오염된다 —
+    # 발생 건수를 세서 런 끝에 경고한다.
+    context_line_mismatches: int = 0
     _client: httpx.Client = field(init=False, repr=False, default=None)
     _lock: threading.Lock = field(init=False, repr=False, default_factory=threading.Lock)
 
@@ -681,6 +685,9 @@ class GoogleTranslator:
             combined = "\n".join(segments[: i + 1])
             whole = self._call(combined)
             lines = [l.strip() for l in whole.split("\n") if l.strip()]
+            if len(lines) != i + 1:
+                with self._lock:
+                    self.context_line_mismatches += 1
             done.append(lines[-1] if lines else whole)
         return done
 

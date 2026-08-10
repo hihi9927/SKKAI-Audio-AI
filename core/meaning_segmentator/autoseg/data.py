@@ -133,11 +133,23 @@ def load_kspon(path: Path | None = None) -> list[Sentence]:
     return load_json_entries(path, text_field="text", id_field="file")
 
 
+def load_kspon_train(path: Path | None = None) -> list[Sentence]:
+    """KsponSpeech train.json — 대용량 풀 (10000발화, 25자 이상 4884).
+
+    `kspon`(eval_clean_1000)은 25자 필터 후 337문장뿐이라 train-pool·dev·test 를
+    키우면 바닥난다 (run04 에서 420 요청 > 337 로 실패). 같은 코퍼스의 학습 분할
+    전사이고 id·텍스트 모두 유니크 실측 확인. autoseg 는 ASR 을 평가하지 않으므로
+    학습 분할 사용이 오염을 만들지 않는다."""
+    path = path or (_REPO_ROOT / "evaluation" / "KsponSpeech" / "transcribe" / "train.json")
+    return load_json_entries(path, text_field="text", id_field="file")
+
+
 # 로더는 데이터셋별로 다를 수밖에 없다 (파일 포맷·전처리가 데이터셋 고유이므로).
 # 언어 무관이어야 하는 것은 에이전트와 지표이지 로더가 아니다.
 LOADERS = {
     "kokoro": load_kokoro,
     "kspon": load_kspon,
+    "kspon-train": load_kspon_train,
 }
 
 

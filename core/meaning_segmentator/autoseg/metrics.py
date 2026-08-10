@@ -9,14 +9,23 @@
 지연은 목적함수에 들어가지 않는다. 노브(`target_chunk_words`)가 고정하기 때문이다.
 따라서 목적함수는 단일축이고 가중치도 임계값도 없다:
 
-  effective = adequacy × (1 − contradiction)   조기 방출로 뒤집힌 만큼을 뺀다
-  score        = T 격자에서의 effective 평균
+  contradiction(문장) = 경계 (k−1)개 모순 확률의 평균     # 마지막 조각은 대상 아님
+  effective(문장)     = adequacy(문장) × (1 − contradiction(문장))
+  score               = T 격자에서의 effective 평균
+
+**집계는 경계 평균이다 — 조각 가중 평균이 아니다.** 조각 가중 평균은 마지막 조각의
+구조적 0 을 평균에 넣어 k 가 클수록 contradiction 이 기계적으로 오르고(잡음 기대값
+ε 에서 문장 값 ≈ ε·(1 − w_last/W)), 무분절이 "경계가 없어서" 0 점 만점을 받는다 —
+게임을 안 뛰면 오류율 0 인 구조. 경계 평균은 iid 잡음 기대값이 k 무관이라 노출이
+정규화되고, **무분절(k=1)은 0 이 아니라 정의되지 않음(None)** 이 된다. effective 도
+같이 None 이 되어 평균에서 빠진다 (`n_effective` 로 집계 대상 수를 남긴다).
 
 v1 의 `Q`(= seg 합본 vs full 번역)는 `consistency` 로 이름을 바꿔 **보고 지표로만**
-남는다. 가설("나누어 번역해 합쳐도 의미가 크게 달라지지 않는 지점")의 직접 측정값이라
-버리지 않지만, 참조가 자기 시스템의 offline 출력이라 어순 편향이 있다 — 자체 실측에서
-의미를 보존한 재서술(0.8414)이 부정 뒤집힘(0.8843)보다 낮게 나온다. 그래서 주지표는
-참조 없는 `adequacy` 다.
+남는다. 가설("나누어 번역해 합쳐도 의미가 크게 달라지지 않는 지점")의 직접 측정값이다.
+기본 백엔드는 **양방향 NLI**(`nli`) 다 — COMET 은 참조가 자기 시스템의 offline 출력이라
+어순 편향이 있다(자체 실측: 의미를 보존한 재서술 0.8414 < 부정 뒤집힘 0.8843). NLI 는
+명제만 보므로 어순을 단조화한 좋은 분절이 감점되지 않고, ent(full⇒합본)이 환각을,
+ent(합본⇒full)이 누락을 각각 잡는다. COMET 계열은 옵션으로 남긴다.
 
 폐기된 것: `L`/`gain`(= Average Proportion. 문헌은 AP 를 쓰지 않는다), `k_eff`,
 `Q_floor`/`LCB`/`q_weight`/앵커 캘리브레이션, 달성률.
@@ -30,7 +39,7 @@ from collections import Counter
 from dataclasses import dataclass, asdict, field
 
 from .gateway import Gateway
-from .pipeline import split_segments, unit_count
+from .pipeline import TAG_RE, split_segments, unit_count
 
 _WS = re.compile(r"\s+")
 
@@ -204,6 +213,10 @@ def make_backend(name: str, gw: Gateway | None = None, **kw) -> QualityBackend:
         return EmbedBackend(gw)
     if name == "chrf":
         return ChrfBackend()
+    if name == "nli":
+        kw.setdefault("model_name", NLI_MODELS["deberta-mnli"])
+        kw.setdefault("name", name)
+        return BidirectionalNliBackend(**kw)
     if name in COMET_CHECKPOINTS:
         kw.setdefault("model_name", COMET_CHECKPOINTS[name])
         return CometBackend(name=name, **kw)
@@ -282,7 +295,42 @@ NLI_MODELS = {
 }
 
 
-class ContradictionBackend:
+class _NliBase:
+    """NLI pipeline 공통 로더.
+
+    pipeline 은 **(모델, 디바이스)별 프로세스 전역 싱글턴**이다 — contradiction 과
+    consistency(nli)가 같은 체크포인트를 쓰는 것이 기본 구성인데, 인스턴스별로
+    로드하면 같은 모델이 GPU 에 두 번 올라간다 (deberta-large ≈ 1.6GB 중복).
+    run04 에서 다른 실험과 GPU 를 나눠 쓰다 OOM 난 뒤 공유로 바꿨다."""
+
+    _PIPES: dict = {}
+
+    def __init__(self, model_name: str = "microsoft/deberta-large-mnli",
+                 batch_size: int = 16, device: int = 0, name: str = ""):
+        self.model_name = model_name
+        self.batch_size = batch_size
+        self.device = device
+        self.name = name
+        self._pipe = None
+
+    def load(self):
+        if self._pipe is None:
+            key = (self.model_name, self.device)
+            if key not in _NliBase._PIPES:
+                from transformers import pipeline
+                _NliBase._PIPES[key] = pipeline(
+                    "text-classification", model=self.model_name,
+                    device=self.device, top_k=None)
+            self._pipe = _NliBase._PIPES[key]
+        return self._pipe
+
+    @staticmethod
+    def _prob(scores: list[dict], prefix: str) -> float:
+        return next((s["score"] for s in scores
+                     if s["label"].lower().startswith(prefix)), 0.0)
+
+
+class ContradictionBackend(_NliBase):
     """`NLI(premise = full 번역, hypothesis = 그 시점까지 방출된 누적 번역)`.
 
     premise·hypothesis 가 둘 다 **타깃 언어**라 단일 언어 NLI 로 충분하다 —
@@ -293,18 +341,7 @@ class ContradictionBackend:
 
     def __init__(self, model_name: str = "microsoft/deberta-large-mnli",
                  batch_size: int = 16, device: int = 0, name: str = "deberta-mnli"):
-        self.model_name = model_name
-        self.batch_size = batch_size
-        self.device = device
-        self.name = name
-        self._pipe = None
-
-    def load(self):
-        if self._pipe is None:
-            from transformers import pipeline
-            self._pipe = pipeline("text-classification", model=self.model_name,
-                                  device=self.device, top_k=None)
-        return self._pipe
+        super().__init__(model_name, batch_size, device, name)
 
     def score(self, premises: list[str], hypotheses: list[str]) -> list[float]:
         out = [0.0] * len(premises)
@@ -315,9 +352,44 @@ class ContradictionBackend:
         res = self.load()([{"text": premises[i], "text_pair": hypotheses[i]}
                            for i in pending], batch_size=self.batch_size)
         for i, scores in zip(pending, res):
-            out[i] = next((s["score"] for s in scores
-                           if s["label"].lower().startswith("contr")), 0.0)
+            out[i] = self._prob(scores, "contr")
         return out
+
+
+class BidirectionalNliBackend(_NliBase, QualityBackend):
+    """`consistency` 기본 백엔드 — 합본 vs full 번역의 **양방향 entailment**.
+
+        ent(full ⇒ 합본)   합본에 full 이 지지하지 않는 명제가 있는가 (환각·왜곡)
+        ent(합본 ⇒ full)   합본이 정보를 빠뜨렸는가 (누락)
+        score = min(둘)
+
+    함의는 비대칭이라 한 방향만 재면 반쪽만 본다 — full⇒합본은 누락을 통과시키고
+    (약한 명제는 함의되므로), 합본⇒full 은 환각을 통과시킨다. min 이라 어느 쪽
+    실패든 잡히고, 두 방향을 따로 보면 실패 유형이 분리된다.
+
+    COMET consistency 를 대체하는 이유: 참조가 offline 출력이라 어순을 단조화한
+    좋은 분절이 감점된다 (benign_paraphrase 0.8414 < negation_flip 0.8843). NLI 는
+    명제만 보므로 표면 어순·문장 수가 달라도 감점이 없고, 부정 뒤집힘은 양방향
+    모두에서 contradiction 으로 잡힌다. 두 입력이 모두 타깃 언어라 소스 언어별
+    자원도 필요 없다. 타깃이 영어가 아니면 `mdeberta-xnli` 를 쓸 것."""
+
+    def __init__(self, model_name: str = "microsoft/deberta-large-mnli",
+                 batch_size: int = 16, device: int = 0, name: str = "nli"):
+        super().__init__(model_name, batch_size, device, name)
+
+    def score(self, srcs, hyps, refs):
+        scores, pending = _identity_shortcut(hyps, refs)
+        if not pending:
+            return scores
+        items = []
+        for i in pending:
+            items.append({"text": refs[i], "text_pair": hyps[i]})   # full ⇒ 합본
+            items.append({"text": hyps[i], "text_pair": refs[i]})   # 합본 ⇒ full
+        res = self.load()(items, batch_size=self.batch_size)
+        for j, i in enumerate(pending):
+            scores[i] = min(self._prob(res[2 * j], "entail"),
+                            self._prob(res[2 * j + 1], "entail"))
+        return scores
 
 
 def make_contradiction_backend(name: str, **kw) -> ContradictionBackend:
@@ -328,14 +400,18 @@ def make_contradiction_backend(name: str, **kw) -> ContradictionBackend:
 
 
 def effective_of(adequacy: float, contradiction: float) -> float:
-    """조기 방출한 조각은 점수를 못 번다.
+    """조기 방출로 반박당한 만큼 점수를 깎는다. **문장 단위**로 적용한다.
 
-        effective = adequacy × (1 − contradiction)
+        effective(문장) = adequacy(문장) × (1 − mean(경계 contradiction))
 
     곱셈이라 **새 상수가 없다** — 가중치도 임계값도 도입하지 않는다. 모순이 없으면
     (contradiction≈0) 그대로 통과하고, 확실히 반박당하면(≈1) 0 이 된다. 의미도 그대로다:
-    사용자가 틀린 것을 본 조각은 지연 이득을 벌지 않는다.
-    """
+    사용자가 틀린 것을 본 방출은 지연 이득을 벌지 않는다.
+
+    contradiction 은 **경계 (k−1)개의 평균**이다. 마지막 조각(미래 없음, 구조적 0)을
+    평균에 넣던 이전 집계는 k 가 클수록 문장 값이 기계적으로 올라 무분절이 자동
+    만점을 받았다. 경계 평균은 노출이 정규화되고, 무분절은 경계가 없어 contradiction
+    자체가 정의되지 않는다 — 호출자가 None 으로 처리한다."""
     return adequacy * (1.0 - contradiction)
 
 
@@ -390,16 +466,22 @@ class SplitMetrics:
     """노브 값 `T` 하나에서의 지표.
 
     `effective = adequacy × (1 − contradiction)` 가 목적함수가 보는 값이다.
-    `adequacy` 와 `contradiction` 은 각각 따로도 보고해 어느 쪽이 움직였는지 분리한다."""
+    `adequacy` 와 `contradiction` 은 각각 따로도 보고해 어느 쪽이 움직였는지 분리한다.
+
+    `effective`·`contradiction` 은 **경계가 있는 문장(k≥2)에서만 정의**된다. 무분절
+    문장은 모순을 낼 노출 자체가 없어 0 이 아니라 None 이고 평균에서 빠진다 —
+    빠진 규모는 `n_effective` 로 드러난다. 전 문장이 무분절이면(무분절 비교군) 둘 다
+    None 이다."""
 
     target_chunk_words: int
     n: int
     n_scored: int              # 포맷 위반을 제외하고 실제로 채점된 문장 수
-    effective: float
+    n_effective: int           # 경계가 있어 effective 가 정의된 문장 수 (k≥2)
+    effective: float | None
     adequacy: float
-    contradiction: float
-    effective_min: float
-    effective_p10: float
+    contradiction: float | None
+    effective_min: float | None
+    effective_p10: float | None
     consistency: float
     consistency_chrf: float
     laal_words: float
@@ -407,6 +489,8 @@ class SplitMetrics:
     split_ratio: float
     missing_boundaries: float
     premature_rate: float | None = None
+    reference_suspect_rate: float | None = None    # 판정자가 오라클을 의심한 경계 비율
+    rank_contra_spearman: float | None = None      # 순위 vs 실측 contra 정렬도. 양수=정렬
 
     def to_dict(self) -> dict:
         return {k: (round(v, 4) if isinstance(v, float) else v)
@@ -435,9 +519,9 @@ class Metrics:
 
 def aggregate_split(
     target_chunk_words: int,
-    effective_scores: list[float],
+    effective_scores: list[float | None],
     adequacy_scores: list[float],
-    contradiction_scores: list[float],
+    contradiction_scores: list[float | None],
     consistency_scores: list[float],
     chrf_scores: list[float],
     laals: list[float],
@@ -450,10 +534,16 @@ def aggregate_split(
     포맷 위반 문장의 분절은 규칙을 어긴 것이라 그 adequacy 에 의미가 없다. 반대로
     위반 1건으로 프롬프트 전체를 폐기하면(v1 의 `-10 + fmt`) 3% 표본 사건이 0.003 규모의
     신호를 압도한다. 위반은 `format_pass_rate` 로 따로 잰다.
+
+    `effective_scores`·`contradiction_scores` 는 무분절 문장(k=1)에서 None 을 담는다 —
+    경계가 없어 모순 노출 자체가 없으므로 0(무죄)이 아니라 미정의다. None 은 평균에서
+    빠지고 그 규모가 `n_effective` 로 남는다.
     """
     n_scored = len(effective_scores)
-    e_sorted = sorted(effective_scores) if effective_scores else [0.0]
-    p10 = e_sorted[max(0, int(0.10 * (len(e_sorted) - 1)))]
+    eff_vals = [e for e in effective_scores if e is not None]
+    con_vals = [c for c in contradiction_scores if c is not None]
+    e_sorted = sorted(eff_vals)
+    p10 = (e_sorted[max(0, int(0.10 * (len(e_sorted) - 1)))] if e_sorted else None)
 
     def mean(xs, default=0.0):
         return sum(xs) / len(xs) if xs else default
@@ -462,10 +552,11 @@ def aggregate_split(
         target_chunk_words=target_chunk_words,
         n=n_total if n_total is not None else n_scored,
         n_scored=n_scored,
-        effective=mean(effective_scores),
+        n_effective=len(eff_vals),
+        effective=(mean(eff_vals) if eff_vals else None),
         adequacy=mean(adequacy_scores),
-        contradiction=mean(contradiction_scores),
-        effective_min=e_sorted[0],
+        contradiction=(mean(con_vals) if con_vals else None),
+        effective_min=(e_sorted[0] if e_sorted else None),
         effective_p10=p10,
         consistency=mean(consistency_scores, 1.0),
         consistency_chrf=mean(chrf_scores),
@@ -501,9 +592,67 @@ def score(m: Metrics) -> float:
     `pipeline.normalize_tags` 가 결정론적으로 고치고, 남은 위반 문장은 채점에서
     제외되며(`n_scored`), `format_pass_rate` 는 별도로 보고된다. 번역 비용 방어는
     `skip_translation_below` 가 계속 담당한다.
+
+    `effective` 가 None 인 T(전 문장 무분절 — 비교군에서만 발생)는 평균에서 뺀다.
     """
-    vals = [s.effective for s in m.by_T.values()]
+    vals = [s.effective for s in m.by_T.values() if s.effective is not None]
     return sum(vals) / len(vals) if vals else 0.0
+
+
+def _spearman(xs: list[float], ys: list[float]) -> float | None:
+    """동순위 평균 처리한 Spearman. 분산 0 이면 None."""
+    def rankify(v):
+        order = sorted(range(len(v)), key=lambda i: v[i])
+        rr = [0.0] * len(v)
+        i = 0
+        while i < len(order):
+            j = i
+            while j + 1 < len(order) and v[order[j + 1]] == v[order[i]]:
+                j += 1
+            avg = (i + j) / 2 + 1
+            for k in range(i, j + 1):
+                rr[order[k]] = avg
+            i = j + 1
+        return rr
+    rx, ry = rankify(xs), rankify(ys)
+    mx, my = sum(rx) / len(rx), sum(ry) / len(ry)
+    num = sum((a - mx) * (b - my) for a, b in zip(rx, ry))
+    dx = sum((a - mx) ** 2 for a in rx) ** 0.5
+    dy = sum((b - my) ** 2 for b in ry) ** 0.5
+    return num / (dx * dy) if dx and dy else None
+
+
+def rank_contra_spearman(rows: list[dict], T: int, min_boundaries: int = 3) -> tuple[float | None, int]:
+    """모델이 단 순위(<SEG:n>) vs 실측 경계 contradiction 의 문장 내 Spearman 평균.
+
+    **양수 = 정렬됨** (순위 숫자가 클수록 = 확신 낮을수록 실측 위험이 큼).
+    0 근처 = 순위가 위험과 무상관, 음수 = 거꾸로 — 절단이 위험을 줄이지 못하고
+    `[Priority Rules]` 조향(`focus=priority`)이 근거 없는 축이 된다는 뜻이다.
+
+    **주의 — 이 값은 원시(raw) contradiction 기준이라 길이 교란이 섞여 있다.**
+    NLI 잡음 바닥은 hypothesis 가 짧을수록 크고(run03 실측: 1-2어절 0.113, 10어절+
+    0.003), 상위 순위 경계는 문장 앞쪽(짧은 hypothesis)에 몰린다. run03 test 에서
+    raw −0.25 가 바닥 보정 후 **+0.14 로 뒤집혔다** — 역전처럼 보인 것의 대부분이
+    위치 교란이었다. 이 값이 음수로 나오면 결론 내리기 전에
+    `noise_floor.py --recheck-t` 로 보정값을 확인할 것.
+
+    가장 작은 T(경계 최다 생존)에서 재야 표본이 산다. 반환 (평균, 문장 수).
+    """
+    key = str(T)
+    cors: list[float] = []
+    for r in rows:
+        d = (r.get("by_T") or {}).get(key)
+        if not d:
+            continue
+        ranks = [int(m.group(1)) for m in TAG_RE.finditer(d.get("seg_text") or "")
+                 if m.group(1)]
+        contras = (d.get("pieces_contra") or [])[:-1]
+        if len(ranks) != len(contras) or len(ranks) < min_boundaries:
+            continue
+        c = _spearman([float(x) for x in ranks], [float(x) for x in contras])
+        if c is not None:
+            cors.append(c)
+    return (sum(cors) / len(cors) if cors else None), len(cors)
 
 
 def paired_delta(new_rows: list[dict], best_rows: list[dict],
@@ -530,6 +679,10 @@ def paired_delta(new_rows: list[dict], best_rows: list[dict],
             a = (r.get("by_T") or {}).get(str(T))
             c = (b.get("by_T") or {}).get(str(T))
             if not a or not c:
+                continue
+            # 무분절 문장은 effective 가 미정의(None)다. 어느 한쪽이라도 None 이면
+            # 그 T 는 쌍체 비교에서 뺀다 — 0 으로 치면 "분절 안 함"이 이득이 된다.
+            if a.get("effective") is None or c.get("effective") is None:
                 continue
             d += a["effective"] - c["effective"]
             seen += 1

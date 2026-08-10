@@ -1,0 +1,80 @@
+[
+  {
+    "id": "ko-en-a01",
+    "note": "validity_cases ko-en-01 의 실제 KsponSpeech 발화에서 딴 조각. 시간 부사절 단독 조각 — 분절기가 실제로 만드는 가장 흔한 형태. [주의] 변이 문안은 Claude 작성 — 관문으로 확정하기 전에 사람 검토 필요.",
+    "src_lang": "Korean",
+    "tgt_lang": "English",
+    "src": "내가 딱 들어갔을 때",
+    "variants": {
+      "correct": "when I first joined",
+      "benign_minimal": "right when I came in",
+      "meaning_error": "right after I quit",
+      "unrelated": "the weather was nice that day"
+    }
+  },
+  {
+    "id": "ko-en-a02",
+    "note": "ko-en-01 조각 2. 술어가 있는 절 조각. negation_flip 이 핵심 — v1 에서 embed 백엔드가 이걸 최고점 준 전례.",
+    "src_lang": "Korean",
+    "tgt_lang": "English",
+    "src": "학생회 형들이 진짜 엄청 착하고",
+    "variants": {
+      "correct": "the student council seniors were really super nice and",
+      "benign_minimal": "the student council guys were really kind and",
+      "negation_flip": "the student council seniors were really mean and",
+      "meaning_error": "the student council seniors were really busy and"
+    }
+  },
+  {
+    "id": "ko-en-a03",
+    "note": "ko-en-02 조각 1. -는데 연결어미로 끝나는 조각 — 미완결이 정상인 형태. correct 가 미완결이라고 감점되면 안 된다.",
+    "src_lang": "Korean",
+    "tgt_lang": "English",
+    "src": "그 해부학 할 때가 제일 재밌긴 했는데",
+    "variants": {
+      "correct": "anatomy was the most fun, though",
+      "benign_minimal": "that anatomy class was the most fun, but",
+      "negation_flip": "anatomy was the most boring, though",
+      "meaning_error": "chemistry was the most fun, though"
+    }
+  },
+  {
+    "id": "ko-en-a04",
+    "note": "ko-en-02 조각 2. 주어 명사구 조각 + source_echo(원문 그대로 반환) — 번역기 실패 모드가 낮은 점수를 받는지.",
+    "src_lang": "Korean",
+    "tgt_lang": "English",
+    "src": "그때 밀려 썼던 그 기억이",
+    "variants": {
+      "correct": "the memory of filling them in off by one back then",
+      "benign_minimal": "that memory of writing the answers shifted by one",
+      "meaning_error": "the memory of acing the exam back then",
+      "source_echo": "그때 밀려 썼던 그 기억이"
+    }
+  },
+  {
+    "id": "ko-en-a05",
+    "note": "ko-en-03 조각. 의문문 조각.",
+    "src_lang": "Korean",
+    "tgt_lang": "English",
+    "src": "같이 사는 거 생각 없어?",
+    "variants": {
+      "correct": "do you not want to live together?",
+      "benign_minimal": "aren't you thinking about living together?",
+      "meaning_error": "do you want to buy a house together?",
+      "unrelated": "what time does the store close?"
+    }
+  },
+  {
+    "id": "ko-en-a06",
+    "note": "ko-en-04 조각. 부정문 조각 — negation_flip 판별의 최소 케이스.",
+    "src_lang": "Korean",
+    "tgt_lang": "English",
+    "src": "우린 또 그런 거 안 하잖아",
+    "variants": {
+      "correct": "we don't do that kind of thing, you know",
+      "benign_minimal": "you know we don't do stuff like that",
+      "negation_flip": "we always do that kind of thing, you know",
+      "unrelated": "I had lunch early today"
+    }
+  }
+]

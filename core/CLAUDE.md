@@ -21,6 +21,6 @@
 - 학습/실험 코드는 `research/` 아래에만. 런타임 파일 옆에 두지 말 것.
 - 런타임 경로(`types.py`, `modules.py`, `correct_and_trans.py`, `llm_corrector/`) 의존성은 stdlib, `numpy`, `openai`만. 연구 스크립트는 각자 `requirements.txt`를 갖는다 (예: `meaning_segmentator/requirements.txt`).
 - `autoseg/`는 Letsur AI Gateway(`.env`의 `CLAUDE_API_KEY`)를 쓴다. 에이전트 호출은 `httpx`만 있으면 되지만, 지표 백엔드(COMET/CometKiwi)는 `unbabel-comet` + GPU가 필요하다. CometKiwi는 HF 게이트 모델이라 라이선스 동의 + `hf auth login` 선행 (구버전은 `huggingface-cli login`).
-- **관문 두 개를 먼저 통과시킨다.** consistency 백엔드를 바꾸면 `validity_check.py`, 판정자 모델이나 `JUDGE_SYSTEM`을 바꾸면 `judge_check.py`. 지표는 틀리면 숫자로 드러나지만 판정자는 조용히 루프를 발산시킨다.
+- **관문을 먼저 통과시킨다.** consistency 백엔드를 바꾸면 `validity_check.py`, adequacy 백엔드를 바꾸면 `adequacy_check.py`, 판정자 모델이나 `JUDGE_SYSTEM`을 바꾸면 `judge_check.py`. 지표는 틀리면 숫자로 드러나지만 판정자는 조용히 루프를 발산시킨다. NLI contradiction 의 잡음 바닥·순위 정렬 재검은 `noise_floor.py`.
 - 언어별 자원(형태소 분석기·의존 파서)을 `autoseg/`에 넣지 말 것. 언어 지식은 `measured_profile.json`(측정)과 `language_profile.json`(LLM)으로만 들어간다.
 - `types.py`의 단계를 추가·변경하면 `modules.py` 시그니처와 `Qwen3-ASR/examples/streaming_websocket_server.py` 핸들러도 같이 고칠 것.

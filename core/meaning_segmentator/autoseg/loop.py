@@ -39,14 +39,17 @@ def target_is_spaced(name: str) -> bool:
 
 @dataclass
 class ScoredSplit:
-    """분절된 텍스트 한 벌을 채점한 결과. 전부 문장 단위 리스트다 (`pieces_*` 만 중첩)."""
+    """분절된 텍스트 한 벌을 채점한 결과. 전부 문장 단위 리스트다 (`pieces_*` 만 중첩).
+
+    `contradiction`·`effective` 는 무분절 문장(k=1)에서 None 이다 — 경계가 없어
+    모순 노출 자체가 없으므로 0(무죄)이 아니라 미정의."""
     joined: list[str]                    # 조각 번역 합본
     pieces_src: list[list[str]]          # 조각 원문
     pieces_tgt: list[list[str]]          # 조각 번역
     pieces_contra: list[list[float]]     # 경계별 모순 확률. 마지막 원소는 항상 0.0
-    effective: list[float]
+    effective: list[float | None]
     adequacy: list[float]
-    contradiction: list[float]
+    contradiction: list[float | None]
     consistency: list[float]
     chrf: list[float]
     laal_words: list[float]
@@ -109,8 +112,6 @@ def score_split(seg_texts: list[str], texts: list[str], full: list[str],
     for i, v in zip(owner, contra):
         contra_rows[i].append(round(v, 4))
 
-    effective_pair = [metrics.effective_of(q, c) for q, c in zip(qe, contra)]
-
     def weighted(vals):
         num = [0.0] * len(texts)
         den = [0.0] * len(texts)
@@ -120,14 +121,31 @@ def score_split(seg_texts: list[str], texts: list[str], full: list[str],
             den[i] += w
         return [n / d if d else 0.0 for n, d in zip(num, den)]
 
+    # 문장 contradiction = **경계 (k−1)개의 평균.** 마지막 조각 자리(구조적 0)를
+    # 평균에 넣으면 k 가 클수록 문장 값이 기계적으로 올라 무분절이 "노출이 없어서"
+    # 자동 만점을 받는다. 경계 평균은 iid 잡음 기대값이 k 무관이라 노출이 정규화되고,
+    # 무분절은 0 이 아니라 미정의(None)가 되어 집계에서 빠진다.
+    adequacy_rows = weighted(qe)
+    contradiction_rows: list[float | None] = []
+    effective_rows: list[float | None] = []
+    for adq, cr in zip(adequacy_rows, contra_rows):
+        bounds = cr[:-1]
+        if bounds:
+            c_mean = sum(bounds) / len(bounds)
+            contradiction_rows.append(c_mean)
+            effective_rows.append(metrics.effective_of(adq, c_mean))
+        else:
+            contradiction_rows.append(None)
+            effective_rows.append(None)
+
     return ScoredSplit(
         joined=list(joined),
         pieces_src=chunk_lists,
         pieces_tgt=[list(p) for p in pieces],
         pieces_contra=contra_rows,
-        effective=weighted(effective_pair),
-        adequacy=weighted(qe),
-        contradiction=weighted(contra),
+        effective=effective_rows,
+        adequacy=adequacy_rows,
+        contradiction=contradiction_rows,
         consistency=consistency.score(texts, joined, full),
         chrf=[metrics.chrf(h, r) for h, r in zip(joined, full)],
         laal_words=[metrics.laal_words(st, ps, f, spaced, tgt_spaced)
@@ -221,8 +239,11 @@ def evaluate(
                 "seg_text": cut_texts[i], "k": sp.k[i], "missing_boundaries": missings[i],
                 "pieces_src": sp.pieces_src[i], "pieces_tgt": sp.pieces_tgt[i],
                 "pieces_contra": sp.pieces_contra[i], "seg_trans": sp.joined[i],
-                "effective": round(sp.effective[i], 4), "adequacy": round(sp.adequacy[i], 4),
-                "contradiction": round(sp.contradiction[i], 4),
+                "effective": (round(sp.effective[i], 4)
+                              if sp.effective[i] is not None else None),
+                "adequacy": round(sp.adequacy[i], 4),
+                "contradiction": (round(sp.contradiction[i], 4)
+                                  if sp.contradiction[i] is not None else None),
                 "consistency": round(sp.consistency[i], 4),
                 "chrf": round(sp.chrf[i], 4), "laal_words": round(sp.laal_words[i], 4),
             }
@@ -238,12 +259,17 @@ def evaluate(
     return rows, metrics.aggregate(len(rows), valid_flags, first_pass, by_T), violations
 
 
+def _cell(v, spec: str, dash: str = "—") -> str:
+    """무분절엔 effective/contradiction 이 미정의(None)다. 0 으로 찍으면 오독된다."""
+    return format(v, spec) if v is not None else dash
+
+
 def fmt_metrics(m: metrics.Metrics, tag: str) -> str:
     parts = [f"{tag} fmt={m.format_pass_rate:.2f}(1st {m.format_pass_rate_no_retry:.2f})"]
     for k in sorted(m.by_T, key=int):
         s = m.by_T[k]
-        parts.append(f"T{k}: eff={s.effective:.4f} adq={s.adequacy:.4f} "
-                     f"contra={s.contradiction:.3f} laal={s.laal_words:.2f} "
+        parts.append(f"T{k}: eff={_cell(s.effective, '.4f')} adq={s.adequacy:.4f} "
+                     f"contra={_cell(s.contradiction, '.3f')} laal={s.laal_words:.2f} "
                      f"k={s.chunks_per_sentence:.2f} miss={s.missing_boundaries:.2f}")
     parts.append(f"score={metrics.score(m):.4f}")
     return "  ".join(parts)
@@ -289,9 +315,11 @@ def main() -> int:
     p.add_argument("--adequacy-backend", default="cometkiwi",
                    choices=sorted(metrics.QE_CHECKPOINTS),
                    help="참조 없는 QE. y축 주지표")
-    p.add_argument("--consistency-backend", default="comet",
-                   choices=["comet", "xcomet", "embed", "chrf"],
-                   help="참조 기반. 보고용")
+    p.add_argument("--consistency-backend", default="nli",
+                   choices=["nli", "comet", "xcomet", "embed", "chrf"],
+                   help="가설 검증값(보고용). 기본 nli = 합본 vs full 의 양방향 entailment — "
+                        "어순 무관. 모델은 --contradiction-backend 를 따른다. "
+                        "comet 계열은 참조 기반이라 어순 편향이 있다")
     p.add_argument("--contradiction-backend", default="deberta-mnli",
                    choices=sorted(metrics.NLI_MODELS),
                    help="조기 방출 검출 NLI. 타깃이 영어가 아니면 mdeberta-xnli")
@@ -300,6 +328,9 @@ def main() -> int:
     p.add_argument("--no-contradiction", action="store_true",
                    help="NLI 를 끈다. effective = adequacy 가 되어 조기 방출이 벌받지 않는다")
     p.add_argument("--comet-batch-size", type=int, default=16)
+    p.add_argument("--adopt-se-mult", type=float, default=1.0,
+                   help="채택 요건: dev 쌍체 Δ > (이 값)·se. run03 실측에서 점추정 비교는 "
+                        "오차막대 안 잡음까지 채택 후보로 만들었다. 0 이면 이전 방식(점 비교)")
     p.add_argument("--patience", type=int, default=3)
     p.add_argument("--budget", type=float, default=5.0)
     p.add_argument("--workers", type=int, default=8)
@@ -329,13 +360,21 @@ def main() -> int:
     seg_cache = JsonCache(run_dir / "cache" / "segment.json")
     tr_cache = JsonCache(run_dir / "cache" / "translate.json")
     translator = None
+    judge_gw = None
 
     adequacy = metrics.make_adequacy_backend(
         args.adequacy_backend, batch_size=args.comet_batch_size)
-    consistency = metrics.make_backend(
-        args.consistency_backend, gw=gw,
-        **({"batch_size": args.comet_batch_size}
-           if args.consistency_backend in metrics.COMET_CHECKPOINTS else {}))
+    # consistency 의 nli 모델은 contradiction 백엔드를 따른다 — 둘 다 (합본, full)
+    # 타깃 언어 쌍을 재므로 언어 선택 기준이 같다 (타깃이 영어가 아니면 mdeberta-xnli).
+    if args.consistency_backend == "nli":
+        consistency = metrics.make_backend(
+            "nli", model_name=metrics.NLI_MODELS[args.contradiction_backend],
+            batch_size=args.comet_batch_size)
+    else:
+        consistency = metrics.make_backend(
+            args.consistency_backend, gw=gw,
+            **({"batch_size": args.comet_batch_size}
+               if args.consistency_backend in metrics.COMET_CHECKPOINTS else {}))
     contradiction = (None if args.no_contradiction else
                      metrics.make_contradiction_backend(args.contradiction_backend))
 
@@ -396,6 +435,8 @@ def main() -> int:
             **vars(args), "t_grid": t_grid, "final_t_grid": final_grid, "main_t": main_t,
             "translator_id": translator_id, "tgt_spaced": tgt_spaced,
             "adequacy_model": metrics.QE_CHECKPOINTS[args.adequacy_backend],
+            "consistency_model": getattr(consistency, "model_name",
+                                         args.consistency_backend),
             "judge_prompt_hash": JsonCache.key(agents.JUDGE_SYSTEM),
             "judge_model": args.judge_model or args.model,
             "min_boundaries_per": coverage_t,    # [Output Rules] 에 박히는 값 = 검증기 요건
@@ -405,12 +446,25 @@ def main() -> int:
         prompt_path = run_dir / "iter_00" / "prompt.txt"
         if prompt_path.exists():
             prompt = prompt_path.read_text(encoding="utf-8")
-        else:
-            prompt = profiler.initial_prompt(profile, args.tgt_lang, spaced, coverage_t)
             missing = agents.check_skeleton(prompt)
             if missing:
-                log(f"[profiler] 골격 누락 {missing} — 재시도")
+                log(f"[stop] 재개한 prompt_v0 골격 누락 {missing} — --fresh 로 다시 만들 것")
+                return 2
+        else:
+            # 재시도본을 재검사하지 않으면 잘린 프롬프트가 그대로 통과한다 — run04 에서
+            # 1차·재시도 연속 잘림(꼬리 섹션 누락)이 실제로 났다. 결함 prompt_v0 로
+            # 돌면 PE 개정본이 골격 검사에 계속 걸려 개정이 전부 거부되므로,
+            # 복구 불가면 예산을 태우기 전에 죽는 것이 맞다.
+            prompt = ""
+            for attempt in range(3):
                 prompt = profiler.initial_prompt(profile, args.tgt_lang, spaced, coverage_t)
+                missing = agents.check_skeleton(prompt)
+                if not missing:
+                    break
+                log(f"[profiler] 골격 누락 {missing} — 재시도 {attempt + 1}/3")
+            else:
+                log(f"[stop] prompt_v0 가 3회 연속 골격 미달 — 모델/max_tokens 확인")
+                return 2
             prompt_path.parent.mkdir(parents=True, exist_ok=True)
             prompt_path.write_text(prompt, encoding="utf-8")
         prompt_v0_len = len(prompt)
@@ -420,9 +474,19 @@ def main() -> int:
         critic = agents.Critic(gw)
         engineer = agents.PromptEngineer(gw)
         compressor = agents.Compressor(gw)
-        judge = None if args.no_judge else agents.Judge(
-            Gateway(model=args.judge_model or args.model, budget=args.budget)
-            if args.judge_model else gw)
+        # 판정자를 다른 모델로 쓰면 별도 Gateway 가 생긴다. 그 사용량이 비용 보고와
+        # 예산 가드에서 빠지면 안 되므로 참조를 들고 합산한다.
+        if not args.no_judge and args.judge_model:
+            judge_gw = Gateway(model=args.judge_model, budget=args.budget)
+        judge = None if args.no_judge else agents.Judge(judge_gw or gw)
+
+        def usage_total() -> dict:
+            u = dict(gw.usage.snapshot())
+            if judge_gw is not None:
+                for k, v in judge_gw.usage.snapshot().items():
+                    if isinstance(v, (int, float)):
+                        u[k] = u.get(k, 0) + v
+            return u
 
         history: list[dict] = []
         best = {"version": 0, "prompt": prompt, "train_score": None, "dev_score": None}
@@ -456,8 +520,21 @@ def main() -> int:
                 pr = agents.premature_rate(judgements)
                 if pr is not None and str(main_t) in m.by_T:
                     m.by_T[str(main_t)].premature_rate = round(pr, 4)
+                rs = agents.reference_suspect_rate(judgements)
+                if rs is not None and str(main_t) in m.by_T:
+                    m.by_T[str(main_t)].reference_suspect_rate = round(rs, 4)
                 (it_dir / "judgements.json").write_text(
                     json.dumps(judgements, ensure_ascii=False, indent=2), encoding="utf-8")
+
+            # 순위 정렬도 — 모델이 단 순위가 실측 위험(경계 contradiction)과 맞는가.
+            # 음수면 절단이 위험을 줄이지 못하고 focus=priority 조향이 근거를 잃는다.
+            # 경계가 가장 많이 살아남는 최소 T 에서 잰다.
+            if m.by_T:
+                low_t = min(t_grid)
+                sp_corr, sp_n = metrics.rank_contra_spearman(rows, low_t)
+                if sp_corr is not None and str(low_t) in m.by_T:
+                    m.by_T[str(low_t)].rank_contra_spearman = round(sp_corr, 4)
+                    log(f"[iter {it}] 순위정렬 Spearman(T={low_t})={sp_corr:+.3f} (n={sp_n})")
 
             (it_dir / "train_rows.json").write_text(
                 json.dumps(rows, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -468,12 +545,12 @@ def main() -> int:
                    if m.by_T.get(str(main_t)) and m.by_T[str(main_t)].premature_rate is not None
                    else ""))
 
-            # 쌍체 차이는 **진단으로만** 기록한다. dev 가 고정 집합이라
-            # `mean(new) − mean(old) = mean(new − old)` 가 항등이고, 따라서 점추정도
-            # 채택 결정도 절대값 비교와 동일하다. 얻는 것은 **오차막대와 유효 표본**이다:
+            # 쌍체 차이. dev 가 고정 집합이라 `mean(new) − mean(old) = mean(new − old)` 가
+            # 항등이고 점추정은 절대값 비교와 동일하다. 얻는 것은 **오차막대와 유효 표본**:
             # 분절이 안 바뀐 문장은 차이가 정확히 0 이라 분산에 기여하지 않으므로
             # se 가 훨씬 작게 나오고, `n_changed` 가 실제로 판정에 참여한 문장 수를 알려준다.
-            # 잡음 채택을 막는 임계값(`Δ > k·se`)은 이 분포를 실측한 뒤에 정한다.
+            # 채택 판정이 이 오차막대를 쓴다 (`Δ > adopt_se_mult·se`) — run01~03 실측에서
+            # 점 비교는 오차막대 안 잡음(예: −0.013±0.014)까지 채택 후보로 만들었다.
             train_delta = (metrics.paired_delta(rows, best_ctx["rows"], t_grid)
                            if best_ctx else None)
             if train_delta and train_delta["mean_delta"] is not None:
@@ -501,9 +578,19 @@ def main() -> int:
                        f"(변경 {dev_delta['n_changed']}/{dev_delta['n_pairs']})"
                        if dev_delta and dev_delta["mean_delta"] is not None else ""))
 
+            # ── 채택 판정 — 첫 후보는 무조건, 이후는 쌍체 Δ 가 오차막대를 넘을 때만.
+            # 점추정 비교(> 만)는 노이즈로 오른 개정을 채택한다. 쌍체 se 가 있으면
+            # Δ > adopt_se_mult·se 를 요구하고, 없을 때만 점 비교로 후퇴한다.
             adopted = False
-            if dev_score is not None and (best["dev_score"] is None
-                                          or dev_score > best["dev_score"]):
+            if dev_score is not None:
+                if best["dev_score"] is None:
+                    adopted = True
+                elif dev_delta and dev_delta.get("mean_delta") is not None:
+                    adopted = (dev_delta["mean_delta"]
+                               > args.adopt_se_mult * (dev_delta.get("se_delta") or 0.0))
+                else:
+                    adopted = dev_score > best["dev_score"]
+            if adopted:
                 best = {"version": it, "prompt": prompt,
                         "train_score": sc, "dev_score": dev_score}
                 (run_dir / "best_prompt.txt").write_text(prompt, encoding="utf-8")
@@ -522,7 +609,7 @@ def main() -> int:
                 "score_dev": round(dev_score, 4) if dev_score is not None else None,
                 "paired_train": train_delta, "paired_dev": dev_delta,
                 "adopted": adopted,
-                "usage": gw.usage.snapshot(),
+                "usage": usage_total(),
             }, ensure_ascii=False, indent=2), encoding="utf-8")
 
             history.append({
@@ -536,7 +623,7 @@ def main() -> int:
             (run_dir / "history.json").write_text(
                 json.dumps(history, ensure_ascii=False, indent=2), encoding="utf-8")
 
-            u = gw.usage.snapshot()
+            u = usage_total()
             log(f"[iter {it}] adopted={adopted} stale={stale} "
                 f"calls={u['calls']} cost={u['cost']:.4f}")
 
@@ -607,12 +694,25 @@ def main() -> int:
         log(f"[final] test 평가 — 격자 {final_grid} (루프가 한 번도 보지 않은 데이터)")
         test_rows, test_m, test_viol = run_eval(best["prompt"], splits["test"], final_grid)
         if judge is not None and test_m.by_T:
-            tj = agents.judge_rows(judge, test_rows, main_t, args.judge_rows * 2)
+            # 보고용 test 판정은 **무작위 표본**이다. 루프 중에는 실패 조준 표본
+            # (Critic 입력용)이 맞지만, 그 표본으로 잰 premature_rate 는 조건부 상향
+            # 추정치라 리포트 수치로 못 쓴다 (run03 의 0.2727 이 그 값).
+            tj = agents.judge_rows(judge, test_rows, main_t, args.judge_rows * 2,
+                                   sample="random")
             pr = agents.premature_rate(tj)
             if pr is not None and str(main_t) in test_m.by_T:
                 test_m.by_T[str(main_t)].premature_rate = round(pr, 4)
+            rs = agents.reference_suspect_rate(tj)
+            if rs is not None and str(main_t) in test_m.by_T:
+                test_m.by_T[str(main_t)].reference_suspect_rate = round(rs, 4)
             (run_dir / "test_judgements.json").write_text(
                 json.dumps(tj, ensure_ascii=False, indent=2), encoding="utf-8")
+        if test_m.by_T:
+            low_t = min(final_grid)
+            sp_corr, sp_n = metrics.rank_contra_spearman(test_rows, low_t)
+            if sp_corr is not None and str(low_t) in test_m.by_T:
+                test_m.by_T[str(low_t)].rank_contra_spearman = round(sp_corr, 4)
+                log(f"[final] 순위정렬 Spearman(T={low_t})={sp_corr:+.3f} (n={sp_n})")
         (run_dir / "test_rows.json").write_text(
             json.dumps(test_rows, ensure_ascii=False, indent=2), encoding="utf-8")
 
@@ -623,13 +723,19 @@ def main() -> int:
             "ours": {k: v.to_dict() for k, v in test_m.by_T.items()},
             "baselines": baselines,
             "axes": {"x": "laal_words (source words, lower = faster)",
-                     "y": "adequacy (reference-free QE)"},
+                     "y": "consistency (bidirectional NLI vs offline translation; "
+                          "unsegmented = 1.0 is the axis' own reference point)",
+                     "aux": "adequacy / contradiction (2-panel), effective (loop objective)"},
         }
         (run_dir / "curve.json").write_text(
             json.dumps(curve, ensure_ascii=False, indent=2), encoding="utf-8")
 
+        if isinstance(translator, GoogleTranslator) and translator.context_line_mismatches:
+            log(f"[경고] gtx 컨텍스트 번역에서 줄 수 불일치 {translator.context_line_mismatches}건 — "
+                f"해당 조각 번역이 오염됐을 수 있다 (마지막 줄 추출 실패)")
+
         report = build_report(args, run_dir, profile, measured, history, best, test_m,
-                              test_viol, gw.usage.snapshot(), baselines, t_grid,
+                              test_viol, usage_total(), baselines, t_grid,
                               final_grid, main_t, translator_id)
         (run_dir / "final_report.md").write_text(report, encoding="utf-8")
         log(f"\n{report}")
@@ -644,6 +750,8 @@ def main() -> int:
         tr_cache.flush()
         if isinstance(translator, GoogleTranslator):
             translator.close()
+        if judge_gw is not None:
+            judge_gw.close()
         gw.close()
 
 
@@ -677,7 +785,9 @@ def build_report(args, run_dir, profile, measured, history, best, test_m, test_v
         f"번역기 `{translator_id}`",
         f"- adequacy 백엔드: **{args.adequacy_backend}** "
         f"(`{metrics.QE_CHECKPOINTS[args.adequacy_backend]}`, 참조 없음)",
-        f"- consistency 백엔드: {args.consistency_backend} (보고용)",
+        f"- consistency 백엔드: {args.consistency_backend} (보고용"
+        + (", 양방향 entailment 의 min — 어순 무관" if args.consistency_backend == "nli" else "")
+        + ")",
         f"- 노브: 목표 조각 크기 T. 루프 격자 {t_grid}, 최종 격자 {final_grid}, 주 작동점 T={main_t}",
         f"- 언어 프로파일: {profile.get('source_language')}, 어순 {profile.get('word_order')} / "
         f"측정: 공백비율 {measured['space_ratio']}, 문말 부호 {measured['trailing_punctuation']}",
@@ -712,25 +822,38 @@ def build_report(args, run_dir, profile, measured, history, best, test_m, test_v
     ]
     for k in sorted(test_m.by_T, key=int):
         s = test_m.by_T[k]
-        lines.append(f"| {k} | {s.laal_words:.2f} | **{s.effective:.4f}** | {s.adequacy:.4f} | "
-                     f"{s.contradiction:.4f} | {s.consistency:.4f} | "
+        lines.append(f"| {k} | {s.laal_words:.2f} | **{_cell(s.effective, '.4f')}** | "
+                     f"{s.adequacy:.4f} | {_cell(s.contradiction, '.4f')} | "
+                     f"{s.consistency:.4f} | "
                      f"{s.chunks_per_sentence:.2f} | {s.missing_boundaries:.2f} |")
     for name, b in baselines.items():
-        lines.append(f"| {name} (노브 없음) | {b['laal_words']:.2f} | **{b['effective']:.4f}** | "
-                     f"{b['adequacy']:.4f} | {b['contradiction']:.4f} | "
+        lines.append(f"| {name} (노브 없음) | {b['laal_words']:.2f} | "
+                     f"**{_cell(b['effective'], '.4f')}** | "
+                     f"{b['adequacy']:.4f} | {_cell(b['contradiction'], '.4f')} | "
                      f"{b['consistency']:.4f} | {b['chunks_per_sentence']:.2f} | — |")
 
-    pr = (test_m.by_T.get(str(main_t)).premature_rate
-          if test_m.by_T.get(str(main_t)) else None)
+    main_s = test_m.by_T.get(str(main_t))
+    pr = main_s.premature_rate if main_s else None
+    rs = main_s.reference_suspect_rate if main_s else None
+    low_s = test_m.by_T.get(str(min(final_grid)))
+    sp = low_s.rank_contra_spearman if low_s else None
     lines += [
         "",
         f"- 포맷 통과율 {test_m.format_pass_rate:.4f} (재시도 없이 "
         f"{test_m.format_pass_rate_no_retry:.4f}), 위반 {len(test_viol)}건",
-        f"- premature_rate (T={main_t}, 부록 지표): "
+        f"- premature_rate (T={main_t}, 부록 지표, **무작위 표본**): "
         + (f"**{pr:.4f}**" if pr is not None else "미측정"),
+        f"- reference_suspect_rate (T={main_t}): "
+        + (f"{rs:.4f}" if rs is not None else "미측정")
+        + " — 높으면 오라클(full 번역)을 의심할 것. contradiction·consistency 가 오염된다",
+        f"- 순위정렬 Spearman (T={min(final_grid)}): "
+        + (f"{sp:+.4f}" if sp is not None else "미측정")
+        + " — 양수 = 모델 순위가 실측 위험과 정렬. 음수면 절단이 위험을 줄이지 못한다",
         "",
         "`laal_words` 는 **소스 어절** 단위다 (논문의 ms 와 직접 비교 불가). "
-        "`adequacy` 는 참조가 없으므로 offline 번역과 어순이 달라도 감점되지 않는다.",
+        "`adequacy` 는 참조가 없으므로 offline 번역과 어순이 달라도 감점되지 않는다. "
+        "`contradiction` 은 경계 (k−1)개의 평균이라 **무분절에는 정의되지 않는다**(—) — "
+        "무분절은 곡선의 점이 아니라 offline 기준선으로 읽을 것.",
         "",
         "## 비용",
         "",
