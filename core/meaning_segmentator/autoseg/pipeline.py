@@ -20,9 +20,36 @@ import httpx
 
 from .gateway import Gateway
 
+# 태그는 **순위를 달고 나온다** — `<SEG:1>` 이 가장 확실한 경계다.
+# 순위가 있어야 사후 절단(Truncator)으로 지연 노브를 돌릴 수 있다: 경계를 빼기만
+# 하므로 조각 수가 반드시 줄고, LLM 의 지시 준수에 의존하지 않는다.
+#
+# 순위 없는 `<SEG>` 도 파싱만은 받아준다. 사람이 쓴 비교군 프롬프트(human_prompts/)와
+# 기계분절 앵커가 그 형태이기 때문이다. 다만 순위가 없으면 절단이 불가능하므로
+# 그런 분절은 곡선 위의 **점 하나**로만 평가된다 (설계 v2 §11.1).
 SEG = "<SEG>"
-TAG_RE = re.compile(re.escape(SEG))
-CONSECUTIVE = re.compile(re.escape(SEG) + r"\s*" + re.escape(SEG))
+TAG_RE = re.compile(r"<SEG(?::(\d+))?>")
+CONSECUTIVE = re.compile(r"<SEG(?::\d+)?>\s*<SEG(?::\d+)?>")
+
+
+def tag(priority: int | None = None) -> str:
+    return SEG if priority is None else f"<SEG:{priority}>"
+
+
+def priorities(seg_text: str) -> list[int | None]:
+    """등장 순서대로의 순위 목록. 순위 없는 태그는 None."""
+    return [int(m.group(1)) if m.group(1) else None
+            for m in TAG_RE.finditer(seg_text)]
+
+
+def strip_tags(seg_text: str, spaced: bool = True) -> str:
+    s = TAG_RE.sub(" ", seg_text)
+    return re.sub(r"\s+", " ", s).strip() if spaced else re.sub(r"\s+", "", s)
+
+
+def unit_count(text: str, spaced: bool) -> int:
+    """T(목표 조각 크기)의 단위. 띄어쓰기 언어는 어절, 아니면 문자."""
+    return len(text.split()) if spaced else len(re.sub(r"\s+", "", text))
 
 # 분절 호출의 출력 예산. **thinking 모델에서는 사고 토큰이 여기 같이 잡힌다.**
 # 1024 로 두면 긴 문장에서 사고가 예산을 전부 먹고 content 가 빈 문자열로 돌아온다
@@ -102,25 +129,34 @@ def segment_batch(
     cache: JsonCache | None = None,
     workers: int = 8,
     validate_fn=None,
+    normalize_fn=None,
 ) -> tuple[list[str], list[bool]]:
     """프롬프트 주입형 분절. 동일 (프롬프트, 문장) 조합은 캐시 재사용.
 
-    포맷 위반 시 위반 내용을 되돌려 1회 복구를 시도한다. 이는 분절 판단이 아니라
-    결정론적 툴 정책이므로 에이전트가 아니다. 다만 복구가 프롬프트 품질을 가리면
-    안 되므로 **1차 통과 여부를 따로 반환**해 지표로 함께 보고한다.
+    복구는 두 단계다.
+      1. `normalize_fn` — 표기 오류를 결정론적으로 고친다 (번호·태그 위치·공백).
+         LLM 호출이 없고 경계 위치를 안 바꾸므로 무료이고 안전하다.
+      2. LLM 복구 재시도 1회 — 정규화로 못 고치는 것(`text_modified`)만 남는다.
+
+    복구가 프롬프트 품질을 가리면 안 되므로 **1차 통과 여부를 따로 반환**한다.
+    다만 1차 판정은 정규화 **이후**에 한다 — 표기 흔들림은 프롬프트 품질이 아니다.
 
     반환: (분절 결과, 1차 시도에서 포맷을 지켰는지 여부)
     """
     prompt_hash = JsonCache.key(prompt)
 
     def one(t: str) -> tuple[str, bool]:
-        k = JsonCache.key("seg2", prompt_hash, t)
+        # 캐시 키의 "seg3" 는 정규화 도입 시점 표시다. 이전 캐시는 정규화 전 문자열이라
+        # 그대로 쓰면 새 코드와 옛 결과가 섞인다.
+        k = JsonCache.key("seg3", prompt_hash, t)
         if cache is not None:
             hit = cache.get(k)
             if hit is not None:
                 return hit[0], hit[1]
 
         out = gw.chat(system=prompt, user=t, max_tokens=SEG_MAX_TOKENS)
+        if normalize_fn is not None:
+            out = normalize_fn(out)
         first_ok = True
         if validate_fn is not None:
             vs = validate_fn(t, out)
@@ -134,10 +170,16 @@ def segment_batch(
                         f"[Your previous answer violated the output rules: {detail}]\n"
                         f"[Previous answer: {out}]\n"
                         f"[Re-emit the ORIGINAL text above, character for character, with only "
-                        f"<SEG> tags inserted. Do not shorten, rewrite, or add anything.]"
+                        f"<SEG:n> tags inserted, numbered 1..N by confidence with no gaps or "
+                        f"duplicates. Do not shorten, rewrite, or add anything. If the "
+                        f"violation says too few tags, add boundaries at the next-safest "
+                        f"positions and rank them last — marking one is free, withholding "
+                        f"it is not.]"
                     ),
                     max_tokens=SEG_MAX_TOKENS,
                 )
+                if normalize_fn is not None:
+                    out = normalize_fn(out)
         if cache is not None:
             cache.put(k, [out, first_ok])
         return out, first_ok
@@ -159,36 +201,100 @@ class Violation:
 
 
 def _canon(s: str, spaced: bool) -> str:
-    s = TAG_RE.sub(" ", s)
-    if spaced:
-        return re.sub(r"\s+", " ", s).strip()
-    return re.sub(r"\s+", "", s)
+    return strip_tags(s, spaced)
+
+
+def normalize_tags(seg_text: str, spaced: bool, trailing_punct: str | None = None) -> str:
+    """표기 오류만 결정론적으로 고친다. **경계 위치는 절대 건드리지 않는다.**
+
+    포맷 위반은 프롬프트의 성질이 아니라 분절 모델의 표본 사건이다. run01 에서 30문장 중
+    1건의 위반(`priority_gap [2,3,4]`)이 프롬프트 전체를 `score −9.03` 으로 폐기시켰다 —
+    실제 프롬프트 차이가 0.003 인데 잡음이 −9.8 을 만들어 신호가 완전히 묻혔다.
+
+    잔여 위반 2건이 모두 여기서 처리되는 유형이었다. 남는 것은 `text_modified` 뿐이고,
+    그건 모델이 원문을 고쳐 쓴 것이라 결정론적으로 복구할 수 없다 (LLM 재시도 몫).
+
+    고치는 것: 번호 재부여(순서 보존), 맨 앞/뒤 태그 삭제, 연속 태그 축약,
+    태그 직후 구두점 재배치, 태그 좌우 공백.
+    """
+    punct = trailing_punct if trailing_punct is not None else default_trailing_punct(seg_text)
+    parts = TAG_RE.split(seg_text.strip())
+    pieces = [p.strip() for p in parts[::2]]
+    keep: list[bool] = [True] * len(parts[1::2])
+
+    # 태그 직후 구두점 -> 앞 조각 끝으로 옮긴다 (원문 문자는 보존)
+    for i in range(len(keep)):
+        nxt = pieces[i + 1]
+        moved = ""
+        while nxt and punct and nxt[0] in punct:
+            moved += nxt[0]
+            nxt = nxt[1:].lstrip()
+        if moved:
+            pieces[i] = pieces[i] + moved
+            pieces[i + 1] = nxt
+
+    # 좌->우 한 번에 조립한다. 태그는 **양쪽에 실제 내용이 있을 때만** 살린다.
+    # 미리 keep 배열을 만들면 연속 태그 `A <SEG:1> <SEG:2> B` 에서 가운데 빈 조각을
+    # 양쪽 태그가 각각 보고 둘 다 탈락시킨다. 순차 조립은 앞 태그만 버리고 뒤를 살린다.
+    # 맨 앞/뒤 태그도 같은 규칙에서 자동으로 떨어진다.
+    joiner = " " if spaced else ""
+    out = pieces[0].strip()
+    n = 0
+    for nxt in pieces[1:]:
+        nxt = nxt.strip()
+        if out and nxt:
+            n += 1
+            out = f"{out} {tag(n)} {nxt}"              # 순서 보존 재번호 -> 1..N 연속
+        else:
+            out = (out + joiner + nxt).strip() if (out and nxt) else (out + nxt)
+    return out.strip()
+
+
+# 위반 중 **채점을 무의미하게 만드는 것**만 행을 제외한다. 나머지는 `format_pass_rate`
+# 로 보고되고 Critic 조향에 쓰이되 점수는 그대로 낸다.
+#
+# 특히 `too_few_tags` 를 제외 대상으로 두면 안 된다 — 마킹이 부족한 문장(=긴 문장)이
+# 통째로 빠져 **짧은 문장만으로 채점되는 우회로**가 열린다. 덜 찍을수록 점수가 오르는
+# 구조를 막으려고 만든 규칙이 정반대로 작동하게 된다.
+SCORING_BLOCKERS = {"text_modified"}
+
+
+def blocks_scoring(violations: list["Violation"]) -> bool:
+    return any(v.rule in SCORING_BLOCKERS for v in violations)
 
 
 def validate(sent_id: str, original: str, seg_text: str, spaced: bool,
-             trailing_punct: str | None = None) -> list[Violation]:
+             trailing_punct: str | None = None,
+             require_priority: bool = True,
+             min_tags: int | None = None) -> list[Violation]:
     """번역 호출 전에 도는 하드 게이트. LLM 없이 순수 문자열 검사.
 
     trailing_punct 는 언어 프로파일에서 온다 — 검증 규칙 자체는 언어 무관이고,
-    언어 지식은 데이터로 주입된다."""
+    언어 지식은 데이터로 주입된다. 출처는 LLM 추정이 아니라 코퍼스 실측이다
+    (`data.measure_profile`) — ja 런에서 LLM 이 이 필드를 통째로 빠뜨린 적이 있다.
+
+    require_priority=False 는 순위 없는 `<SEG>` 를 허용한다. 비교군(사람 프롬프트,
+    기계분절)을 같은 검증기로 통과시키기 위한 것이며 루프에서는 쓰지 않는다.
+    """
     v: list[Violation] = []
     s = seg_text.strip()
     punct = trailing_punct if trailing_punct is not None else default_trailing_punct(original)
+    tags = list(TAG_RE.finditer(s))
 
     if _canon(s, spaced) != _canon(original, spaced):
         v.append(Violation(sent_id, "text_modified",
                            "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)"))
-    if s.startswith(SEG):
+    if tags and tags[0].start() == 0:
         v.append(Violation(sent_id, "leading_tag", "맨 앞에 태그"))
-    if s.endswith(SEG):
+    if tags and tags[-1].end() == len(s):
         v.append(Violation(sent_id, "trailing_tag", "맨 뒤에 태그"))
     if CONSECUTIVE.search(s):
         v.append(Violation(sent_id, "consecutive_tags", "연속 태그"))
     if punct:
-        m = re.search(re.escape(SEG) + r"\s*([" + re.escape(punct) + r"])", s)
+        m = re.search(r"<SEG(?::\d+)?>\s*([" + re.escape(punct) + r"])", s)
         if m:
             v.append(Violation(sent_id, "punct_after_tag", f"태그 직후 구두점: {m.group(1)!r}"))
-    for m in re.finditer(re.escape(SEG), s):
+    for m in tags:
         before, after = s[: m.start()], s[m.end():]
         if before and not before.endswith(" "):
             v.append(Violation(sent_id, "missing_space", "태그 앞 공백 없음"))
@@ -196,11 +302,100 @@ def validate(sent_id: str, original: str, seg_text: str, spaced: bool,
         if after and not after.startswith(" "):
             v.append(Violation(sent_id, "missing_space", "태그 뒤 공백 없음"))
             break
+
+    # ── 순위 규칙 (v2) ──────────────────────────────────────────────────
+    # 순위가 깨지면 Truncator 가 "상위 k−1개"를 정의할 수 없어 노브 자체가 죽는다.
+    if require_priority and tags:
+        prios = [int(m.group(1)) if m.group(1) else None for m in tags]
+        if any(p is None for p in prios):
+            v.append(Violation(sent_id, "bad_priority_format",
+                               "순위 없는 태그. 모든 태그는 <SEG:n> 형태여야 함"))
+        else:
+            if len(set(prios)) != len(prios):
+                v.append(Violation(sent_id, "duplicate_priority",
+                                   f"순위 중복: {sorted(prios)}"))
+            if sorted(prios) != list(range(1, len(prios) + 1)):
+                v.append(Violation(sent_id, "priority_gap",
+                                   f"순위가 1..{len(prios)} 연속이 아님: {sorted(prios)}"))
+
+    # ── 커버리지 요건 (v2, C 방식) ──────────────────────────────────────
+    # 노브는 경계를 **빼기만** 하므로 프롬프트가 안 찍은 경계는 만들어낼 수 없다.
+    # 마킹이 부족하면 T 를 조여도 k 가 안 오르고, 노브가 지연을 통제한다는 설계 전제가
+    # 깨진다. run02 실측: 20어절 이상 문장의 충족률 62%, T=2 에서 missing 3.18 —
+    # T=2 와 T=3 이 같은 분절로 수렴해 곡선 왼쪽이 뭉갰다.
+    #
+    # 이걸 지표(목적함수와 싸우는 축)가 아니라 **입력 요건**으로 올린다. 포맷과 같은 층에
+    # 두면 복구 재시도가 개수를 명시해 다시 시킬 수 있고, "덜 찍어서 점수 얻기"가
+    # 애초에 성립하지 않는다.
+    if min_tags and len(tags) < min_tags:
+        v.append(Violation(sent_id, "too_few_tags",
+                           f"경계 {len(tags)}개 — 최소 {min_tags}개 필요"))
     return v
 
 
 def split_segments(seg_text: str) -> list[str]:
-    return [p.strip() for p in seg_text.split(SEG) if p.strip()]
+    return [p.strip() for p in TAG_RE.split(seg_text)[::2] if p and p.strip()]
+
+
+# ── A9 Truncator — 지연 노브, 결정론적 ───────────────────────────────────
+
+def chunk_budget(text: str, target_chunk_words: int, spaced: bool) -> int:
+    """이 문장을 몇 조각으로 낼 것인가.
+
+    노브는 조각 **수**가 아니라 조각 **크기** `T` 다. 수를 고정하면 6어절 문장은
+    무의미한 1.5어절 조각이 되고 30어절 문장은 7.5어절 조각으로 여전히 느리다.
+    또 짧은 문장이 큰 k 를 못 만들어 도달률이 무너진다 (실측: 최소 3어절 가정에서
+    k=4 도달률 0.52). 크기를 고정하면 모든 문장이 자기 길이에 맞는 k 를 받는다.
+    """
+    return max(2, round(unit_count(text, spaced) / target_chunk_words))
+
+
+def truncate(seg_text: str, target_chunk_words: int,
+             spaced: bool = True) -> tuple[str, int]:
+    """순위 상위 `k−1` 개 경계만 남긴다. 반환 `(절단된 seg_text, missing_boundaries)`.
+
+    `missing_boundaries` 는 예산이 요구한 경계 중 프롬프트가 못 준 개수다. 프롬프트가 충분히 공격적으로 자르지
+    않았다는 신호이며, Critic 의 `focus = "coverage"` 판정에 쓰인다.
+
+    경계를 **빼기만** 하므로 조각 수가 반드시 줄고 `laal_words` 가 반드시 오른다 —
+    단조성이 구조적으로 보장된다. 순위가 없으면(비교군) 절단하지 않고 그대로 둔다.
+    """
+    tags = list(TAG_RE.finditer(seg_text))
+    if not tags:
+        return seg_text, max(0, chunk_budget(seg_text, target_chunk_words, spaced) - 1)
+
+    prios = [int(m.group(1)) if m.group(1) else None for m in tags]
+    body = strip_tags(seg_text, spaced)
+    want = max(0, chunk_budget(body, target_chunk_words, spaced) - 1)
+    if any(p is None for p in prios):
+        return seg_text, max(0, want - len(tags))      # 순위 없음 — 절단 불가
+
+    order = sorted(range(len(prios)), key=lambda i: prios[i])
+    keep = set(order[:want])
+    return _rebuild(seg_text, keep, spaced), max(0, want - len(tags))
+
+
+def _rebuild(seg_text: str, keep: set[int], spaced: bool) -> str:
+    """버릴 태그를 지우고 공백을 원래 표기로 되돌린다.
+
+    태그는 좌우 공백 하나씩을 달고 나온다 (`OUTPUT_RULES_*` 가 두 표기 체계 모두에서
+    이를 요구한다). 그냥 지우면 공백이 둘 남으므로, 띄어쓰기 언어는 하나로 접고
+    아닌 언어는 둘 다 없앤다 — 안 그러면 되돌린 문장이 원문과 달라져
+    `text_modified` 로 잡힌다."""
+    parts = TAG_RE.split(seg_text)
+    pieces = [p.strip() for p in parts[::2]]
+    prios = parts[1::2]
+    joiner = " " if spaced else ""
+    out = pieces[0]
+    for i, p in enumerate(prios):
+        nxt = pieces[i + 1]
+        if i in keep:
+            out = f"{out} {tag(int(p) if p else None)} {nxt}".strip()
+        elif out and nxt:
+            out = out + joiner + nxt
+        else:
+            out = out + nxt
+    return out.strip()
 
 
 def looks_untranslated(source: str, output: str, n: int = 8) -> bool:

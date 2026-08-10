@@ -186,3 +186,6 @@ Qwen3-ASR/finetuning/data/KSponSpeech/*.jsonl.bak
 # autoseg 루프 산출물 (프롬프트/리포트만 추적, 캐시·중간 rows 제외)
 core/meaning_segmentator/runs/**/cache/
 core/meaning_segmentator/runs/**/*_rows.json
+# 경계별 판정 원본. 리포트(final_report.md)와 curve.json 만 추적한다
+core/meaning_segmentator/runs/**/judgements.json
+core/meaning_segmentator/runs/**/test_judgements.json

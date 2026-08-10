@@ -86,7 +86,7 @@ class Gateway:
         model: str = "claude-sonnet-5",
         embed_model: str = "text-embedding-3-large",
         budget: float | None = None,
-        timeout: float = 180.0,
+        timeout: float = 420.0,   # thinking 모델 + max_tokens 12000 인 PE 호출이 180s 를 넘겼다
         max_retries: int = 5,
     ):
         self.api_key = api_key or load_api_key()

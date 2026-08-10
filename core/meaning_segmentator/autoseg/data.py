@@ -141,6 +141,91 @@ LOADERS = {
 }
 
 
+# ── 측정 프로파일 ────────────────────────────────────────────────────────
+
+# **결정론적 코드를 움직이는 필드는 측정으로 채운다.** v1 은 이 값들을 Language
+# Profiler(LLM)가 추측하게 뒀는데, 실제로 틀렸다:
+#   - runs/ja-ko/ja-ko-test04 는 `trailing_punctuation` 이 통째로 null 이었다
+#     (같은 데이터의 test06 은 6종을 냈다). 유니코드 폴백이 받아줘서 우연히 무사했다.
+#   - ko 런들은 `['.','?']`(실측 일치), `['.','?','!','…']`(잉여),
+#     `['.','?',',',…]`(코퍼스에 실제로 있는 `,` 를 포함 — 동작이 갈림)로 제각각이었다.
+# 지표는 틀리면 숫자로 드러나지만 검증기 규칙은 조용히 틀린다.
+#
+# **language_profile.json 은 고치지 않는다.** JSON 을 바꾸면 그게 prompt_v0 writer 와
+# Prompt Engineer 컨텍스트로 들어가 프롬프트가 달라지고 기존 런과 비교가 깨진다.
+# 덮어쓰기는 소비 지점(loop.py)에서만 한다.
+
+_PO_SENTENCE_OPENERS = "¿¡"
+
+
+def measure_profile(texts: list[str], min_count: int = 2, attach_ratio: float = 0.9) -> dict:
+    """코퍼스에서 직접 재는 언어 표기 특성. LLM 을 쓰지 않는다.
+
+    `trailing_punctuation` 의 정의는 **"앞 텍스트에 붙는 구두점"** 이다. 그래서
+    문말 등장만 세면 안 된다 — 일본어 `、` 는 절 구분자라 문말에 안 나오지만 태그
+    직후에 오면 안 되는 문자다. 대신 **거의 항상 비공백 문자 뒤에 붙어 나오는가**로
+    판정한다. 이 규칙은 언어 무관이고, 여는 부호(`「`, 스페인어 `¿¡`)는 자동으로
+    빠진다 — 그것들은 공백이나 문장 시작 뒤에 오기 때문이다.
+    """
+    total_chars = sum(len(t) for t in texts) or 1
+    space_ratio = sum(t.count(" ") for t in texts) / total_chars
+
+    attached: dict[str, int] = {}
+    seen: dict[str, int] = {}
+    finals: dict[str, int] = {}
+    n_punct_final = 0
+    for t in texts:
+        s = t.strip()
+        if not s:
+            continue
+        for i, ch in enumerate(s):
+            if not unicodedata.category(ch).startswith("P"):
+                continue
+            seen[ch] = seen.get(ch, 0) + 1
+            if i > 0 and not s[i - 1].isspace():
+                attached[ch] = attached.get(ch, 0) + 1
+        if unicodedata.category(s[-1]).startswith("P"):
+            finals[s[-1]] = finals.get(s[-1], 0) + 1
+            n_punct_final += 1
+
+    trailing = sorted(
+        c for c, n in seen.items()
+        if n >= min_count and c not in _PO_SENTENCE_OPENERS
+        and unicodedata.category(c) != "Ps"
+        and attached.get(c, 0) / n >= attach_ratio
+    )
+
+    return {
+        "n": len(texts),
+        "space_ratio": round(space_ratio, 4),
+        "uses_spaces_between_words": space_ratio > 0.02,
+        "trailing_punctuation": trailing,
+        "punctuation_counts": dict(sorted(seen.items(), key=lambda x: -x[1])),
+        "final_punctuation_counts": dict(sorted(finals.items(), key=lambda x: -x[1])),
+        "punctuation_final_rate": round(n_punct_final / len(texts), 4) if texts else 0.0,
+    }
+
+
+def reconcile_profile(measured: dict, profile: dict) -> tuple[bool, str | None, list[str]]:
+    """측정값과 LLM 프로파일을 대조한다. 반환 `(spaced, trailing_punct, 경고들)`.
+
+    **측정값이 이긴다.** 불일치는 경고로 남겨 프로파일러 품질 진단에 쓴다."""
+    warn: list[str] = []
+    spaced = bool(measured["uses_spaces_between_words"])
+    if profile.get("uses_spaces_between_words") not in (None, spaced):
+        warn.append(f"uses_spaces_between_words: LLM={profile.get('uses_spaces_between_words')} "
+                    f"측정={spaced} (공백비율 {measured['space_ratio']}) — 측정값 채택")
+
+    llm_punct = set(profile.get("trailing_punctuation") or [])
+    measured_punct = set(measured["trailing_punctuation"])
+    if not llm_punct:
+        warn.append(f"trailing_punctuation: LLM 이 비었음 — 측정값 {sorted(measured_punct)} 채택")
+    elif llm_punct != measured_punct:
+        warn.append(f"trailing_punctuation: LLM={sorted(llm_punct)} "
+                    f"측정={sorted(measured_punct)} — 측정값 채택")
+    return spaced, ("".join(sorted(measured_punct)) or None), warn
+
+
 # ── 분할 ─────────────────────────────────────────────────────────────────
 
 def _stratum(s: Sentence) -> tuple[int, bool]:
@@ -190,10 +275,14 @@ def split_data(
         if not progressed:
             break
 
+    # **test -> dev -> train 순으로 배분한다.** train 을 앞에서 떼면 train 크기를 바꿀
+    # 때마다 test/dev 가 통째로 밀려 런 간 비교가 깨진다 (실측: train 30 -> 60 에서
+    # test 겹침 70/100, pool 120 에서 10/100). 평가 분할을 고정해야 train 크기를
+    # 실험 변수로 쓸 수 있다.
     return {
-        "train": order[:n_train],
-        "dev": order[n_train : n_train + n_dev],
-        "test": order[n_train + n_dev : n_train + n_dev + n_test],
+        "test": order[:n_test],
+        "dev": order[n_test : n_test + n_dev],
+        "train": order[n_test + n_dev : n_test + n_dev + n_train],
     }
 
 
