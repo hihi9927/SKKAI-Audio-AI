@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import os
 import re
+import sys
 import json
 import time
 import threading
@@ -48,6 +49,7 @@ class Usage:
     completion_tokens: int = 0
     cached_tokens: int = 0
     cost: float = 0.0
+    truncated: int = 0
     _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
 
     def add(self, payload: dict) -> None:
@@ -58,6 +60,8 @@ class Usage:
             self.prompt_tokens += u.get("prompt_tokens", 0)
             self.completion_tokens += u.get("completion_tokens", 0)
             self.cached_tokens += (u.get("prompt_tokens_details") or {}).get("cached_tokens", 0)
+            if (payload.get("choices") or [{}])[0].get("finish_reason") == "length":
+                self.truncated += 1
             try:
                 self.cost += float(c.get("amount", 0) or 0)
             except (TypeError, ValueError):
@@ -70,6 +74,7 @@ class Usage:
                 "prompt_tokens": self.prompt_tokens,
                 "completion_tokens": self.completion_tokens,
                 "cached_tokens": self.cached_tokens,
+                "truncated": self.truncated,
                 "cost": round(self.cost, 6),
             }
 
@@ -150,7 +155,16 @@ class Gateway:
             ],
         }
         payload = self._post("/chat/completions", body)
-        return (payload["choices"][0]["message"].get("content") or "").strip()
+        choice = payload["choices"][0]
+        out = (choice["message"].get("content") or "").strip()
+        # thinking 모델은 사고 토큰도 max_tokens 에 함께 잡힌다. 예산을 사고에 다 쓰면
+        # finish_reason=length 인 채 content 가 비어서 돌아오는데, 그대로 "" 를 반환하면
+        # 하위에서 "모델이 텍스트를 고쳐 씀"(text_modified) 으로 오진된다 — run04 iter0 에서
+        # 긴 문장 6/60 이 이 경로로 빈 출력이 났고, 원인이 로그에 전혀 남지 않았다.
+        if not out and choice.get("finish_reason") == "length":
+            print(f"[gateway] 경고: max_tokens={max_tokens} 안에서 출력이 끊겼다 "
+                  f"(사고 토큰이 전부 소진). 입력 {len(user)}자", file=sys.stderr)
+        return out
 
     def chat_json(self, system: str, user: str, **kw) -> dict:
         """JSON 응답을 기대하는 호출.
