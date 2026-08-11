@@ -46,7 +46,11 @@ except ImportError:
 
 from qwen_asr import Qwen3ASRModel
 from qwen_asr.inference.utils import warmup_streaming
-from qwen_asr.inference.sentence_boundary import DOT_COMMIT_BOUNDARY_RE, count_dot_commit_boundaries
+from qwen_asr.inference.sentence_boundary import (
+    DOT_COMMIT_BOUNDARY_RE,
+    count_dot_commit_boundaries,
+    split_sentences,
+)
 
 try:
     import sys as _sys
@@ -1476,7 +1480,7 @@ class Qwen3ASRStreamingHandler:
         if self.always_commit or not text:
             return text
         kept, batch_last = [], None
-        for sent in re.findall(r'[^.!?。！？]*[.!?。！？]+\s*|[^.!?。！？]+$', text):
+        for sent in split_sentences(text):
             disp = sent.strip()
             if not disp:
                 continue
@@ -1544,7 +1548,7 @@ class Qwen3ASRStreamingHandler:
             return out, dropped
 
         # 1) 문장 단위 — 관측된 반복 루프는 전부 구두점으로 끝나는 문장의 반복이었다.
-        sentences = re.findall(r'[^.!?。！？]*[.!?。！？]+\s*|[^.!?。！？]+$', text)
+        sentences = split_sentences(text)
         kept, dropped = _collapse(sentences, [cls._boundary_key(s) for s in sentences],
                                   max_period=4)
         result = "".join(kept)
