@@ -1,0 +1,6 @@
+# manifest 는 리포 밖 데이터셋의 절대경로를 담으므로 커밋하지 않는다
+manifests/*.jsonl
+
+# 실행 결과. metric.json 이 발화당 세그먼트를 다 담아 실행당 17~25MB 이고,
+# _runlogs 의 서버 로그는 실행당 20MB 다. 요약은 RESULTS.md 에 남긴다.
+results/
