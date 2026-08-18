@@ -1,0 +1,62 @@
+[data] kspon-train: 전체 10000, train 120 / dev 150 / test 150
+[profile] 경고: trailing_punctuation: LLM=['!', ')', '.', '?', '’', '”', '…', '。'] 측정=[',', '.', '?'] — 측정값 채택
+[profile] Korean / 어순 SOV — verbs/predicates consistently appear clause-finally, e.g. '수연이가 뭘 좋아하는지 모르는데' (object before verb '모르는데'). / 띄어쓰기 True(측정) / 타깃 띄어쓰기 True
+[translator] google:en:ctx=True
+[profiler] prompt_v0 작성 완료 (8391자)
+[iter 0] train fmt=0.93(1st 0.68)  score=0.0000
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/torchmetrics/utilities/imports.py:23: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
+Encoder model frozen.
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/core/saving.py:197: Found keys that are not in the model state dict but in the checkpoint: ['encoder.model.embeddings.position_ids']
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Some weights of the model checkpoint at microsoft/deberta-large-mnli were not used when initializing DebertaForSequenceClassification: ['config']
+- This IS expected if you are initializing DebertaForSequenceClassification from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing DebertaForSequenceClassification from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+Device set to use cuda:0
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+[iter 0] dev   fmt=0.97(1st 0.62)  T3: eff=0.6438 adq=0.7559 contra=0.149 laal=2.48 k=4.52 miss=0.00  T6: eff=0.6373 adq=0.7530 contra=0.153 laal=4.31 k=2.43 miss=0.00  score=0.6406
+[iter 0] adopted=True stale=0 calls=0 cost=0.0000
+HTTP Request: POST https://gw.letsur.ai/v1/chat/completions "HTTP/1.1 200 OK"
+[iter 0] 에이전트 실패 — 루프 중단하고 최종 평가로 넘어간다: list index out of range
+[final] test 평가 — 격자 [2, 3, 4, 6] (루프가 한 번도 보지 않은 데이터)
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+[경고] gtx 컨텍스트 번역에서 줄 수 불일치 3건 — 해당 조각 번역이 오염됐을 수 있다 (마지막 줄 추출 실패)
+
+# 자동 분절 프롬프트 루프 결과 (v2) — Korean → English
+
+- 데이터셋: `kspon-train` (train 60 / dev 150 / test 150)
+- 분절 모델 `claude-sonnet-5` / 판정자 `claude-sonnet-5` / 번역기 `google:en:ctx=True`
+- adequacy 백엔드: **cometkiwi** (`Unbabel/wmt22-cometkiwi-da`, 참조 없음)
+- consistency 백엔드: nli (보고용, 양방향 entailment 의 min — 어순 무관)
+- 노브: 목표 조각 크기 T. 루프 격자 [3, 6], 최종 격자 [2, 3, 4, 6], 주 작동점 T=6
+- 언어 프로파일: Korean, 어순 SOV — verbs/predicates consistently appear clause-finally, e.g. '수연이가 뭘 좋아하는지 모르는데' (object before verb '모르는데'). / 측정: 공백비율 0.2745, 문말 부호 [',', '.', '?']
+- score = T 격자 평균 **effective** = `adequacy × (1 − contradiction)` (가중치·임계값 없음). 채택 판정은 **쌍체 비교**
+- contradiction 백엔드: **deberta-mnli** (`microsoft/deberta-large-mnli`)
+- 채택된 프롬프트: iter_00
+
+## 이터레이션 이력
+
+| iter | fmt | train score | dev score | dev Δ (쌍체) | 변경 문장 | 채택 |
+|---|---|---|---|---|---|---|
+| 0 | 0.93 | 0.0000 | 0.6406 | — | — | O |
+
+## 최종 test 곡선
+
+| T (목표 조각 어절) | laal_words ↓ | **effective** ↑ | adequacy | contradiction ↓ | consistency | k | 부족 경계 |
+|---|---|---|---|---|---|---|---|
+| unsegmented (노브 없음) | 14.41 | **—** | 0.7497 | — | 1.0000 | 1.00 | — |
+| mechanical_8 (노브 없음) | 1.99 | **0.5565** | 0.7032 | 0.2078 | 0.3034 | 6.61 | — |
+
+- 포맷 통과율 0.9467 (재시도 없이 0.6400), 위반 15건
+- premature_rate (T=6, 부록 지표, **무작위 표본**): 미측정
+- reference_suspect_rate (T=6): 미측정 — 높으면 오라클(full 번역)을 의심할 것. contradiction·consistency 가 오염된다
+- 순위정렬 Spearman (T=2): 미측정 — 양수 = 모델 순위가 실측 위험과 정렬. 음수면 절단이 위험을 줄이지 못한다
+
+`laal_words` 는 **소스 어절** 단위다 (논문의 ms 와 직접 비교 불가). `adequacy` 는 참조가 없으므로 offline 번역과 어순이 달라도 감점되지 않는다. `contradiction` 은 경계 (k−1)개의 평균이라 **무분절에는 정의되지 않는다**(—) — 무분절은 곡선의 점이 아니라 offline 기준선으로 읽을 것.
+
+## 비용
+
+- 호출 1회, 입력 토큰 5,383 (캐시 0), 출력 토큰 1,748
+- 게이트웨이 추정 비용 0.0282
+[done] /home/mobility/STiTy/core/meaning_segmentator/runs/ko-en/run04

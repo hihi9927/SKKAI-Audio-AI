@@ -1,0 +1,294 @@
+[
+  {
+    "version": 0,
+    "adopted": true,
+    "train": {
+      "n": 40,
+      "format_pass_rate": 1.0,
+      "format_pass_rate_no_retry": 0.975,
+      "by_T": {
+        "6": {
+          "target_chunk_words": 6,
+          "n": 40,
+          "n_scored": 40,
+          "n_effective": 40,
+          "effective": 0.7805,
+          "adequacy": 0.8181,
+          "contradiction": 0.047,
+          "effective_min": 0.537,
+          "effective_p10": 0.6581,
+          "consistency": 0.7691,
+          "consistency_chrf": 0.7989,
+          "laal_words": 4.5111,
+          "chunks_per_sentence": 3.75,
+          "split_ratio": 1.0,
+          "missing_boundaries": 0.0,
+          "premature_rate": 0.1304,
+          "reference_suspect_rate": 0.0,
+          "rank_contra_spearman": -0.1307,
+          "rank_contra_gap": -0.0255
+        },
+        "12": {
+          "target_chunk_words": 12,
+          "n": 40,
+          "n_scored": 40,
+          "n_effective": 40,
+          "effective": 0.8045,
+          "adequacy": 0.8412,
+          "contradiction": 0.0448,
+          "effective_min": 0.3049,
+          "effective_p10": 0.7577,
+          "consistency": 0.8263,
+          "consistency_chrf": 0.8906,
+          "laal_words": 6.6649,
+          "chunks_per_sentence": 2.125,
+          "split_ratio": 1.0,
+          "missing_boundaries": 0.0,
+          "premature_rate": null,
+          "reference_suspect_rate": null,
+          "rank_contra_spearman": null,
+          "rank_contra_gap": null
+        }
+      },
+      "score": 0.7925
+    },
+    "dev": {
+      "n": 60,
+      "format_pass_rate": 1.0,
+      "format_pass_rate_no_retry": 0.9833,
+      "by_T": {
+        "6": {
+          "target_chunk_words": 6,
+          "n": 60,
+          "n_scored": 60,
+          "n_effective": 60,
+          "effective": 0.7627,
+          "adequacy": 0.816,
+          "contradiction": 0.0649,
+          "effective_min": 0.2758,
+          "effective_p10": 0.644,
+          "consistency": 0.8155,
+          "consistency_chrf": 0.7867,
+          "laal_words": 4.4917,
+          "chunks_per_sentence": 3.4167,
+          "split_ratio": 1.0,
+          "missing_boundaries": 0.0,
+          "premature_rate": null,
+          "reference_suspect_rate": null,
+          "rank_contra_spearman": null,
+          "rank_contra_gap": null
+        },
+        "12": {
+          "target_chunk_words": 12,
+          "n": 60,
+          "n_scored": 60,
+          "n_effective": 60,
+          "effective": 0.7944,
+          "adequacy": 0.8317,
+          "contradiction": 0.0445,
+          "effective_min": 0.2245,
+          "effective_p10": 0.7487,
+          "consistency": 0.8328,
+          "consistency_chrf": 0.8476,
+          "laal_words": 5.9945,
+          "chunks_per_sentence": 2.15,
+          "split_ratio": 1.0,
+          "missing_boundaries": 0.0,
+          "premature_rate": null,
+          "reference_suspect_rate": null,
+          "rank_contra_spearman": null,
+          "rank_contra_gap": null
+        }
+      },
+      "score": 0.7785
+    },
+    "score_train": 0.7925,
+    "score_dev": 0.7785,
+    "paired_dev": null,
+    "changelog": null,
+    "next_changelog": [
+      "Edited [Priority Rules] to reorder and explicitly demote boundaries that risk premature commitment: splits that separate evaluative/conditional cues (still, seems, not, unless, if, etc.), separate a pronoun/possessive from its eventual antecedent/head noun, separate subject and its finite verb (risking agreement), cut off a noun phrase before a possible head noun interrupted by parenthesis/apposition, and separate auxiliaries/modals from their complements are now ranked lower. This reduces 'placement' errors by ensuring those positions are considered less confident.",
+      "Left all other sections unchanged to preserve existing candidacy coverage and the frozen [Output Rules]."
+    ]
+  },
+  {
+    "version": 1,
+    "adopted": false,
+    "train": {
+      "n": 40,
+      "format_pass_rate": 1.0,
+      "format_pass_rate_no_retry": 0.975,
+      "by_T": {
+        "6": {
+          "target_chunk_words": 6,
+          "n": 40,
+          "n_scored": 40,
+          "n_effective": 40,
+          "effective": 0.7721,
+          "adequacy": 0.8136,
+          "contradiction": 0.0513,
+          "effective_min": 0.5514,
+          "effective_p10": 0.6584,
+          "consistency": 0.864,
+          "consistency_chrf": 0.7945,
+          "laal_words": 4.6969,
+          "chunks_per_sentence": 3.95,
+          "split_ratio": 1.0,
+          "missing_boundaries": 0.0,
+          "premature_rate": 0.0,
+          "reference_suspect_rate": 0.0,
+          "rank_contra_spearman": -0.161,
+          "rank_contra_gap": -0.01
+        },
+        "12": {
+          "target_chunk_words": 12,
+          "n": 40,
+          "n_scored": 40,
+          "n_effective": 40,
+          "effective": 0.7967,
+          "adequacy": 0.8393,
+          "contradiction": 0.0507,
+          "effective_min": 0.387,
+          "effective_p10": 0.6553,
+          "consistency": 0.8843,
+          "consistency_chrf": 0.903,
+          "laal_words": 6.875,
+          "chunks_per_sentence": 2.15,
+          "split_ratio": 1.0,
+          "missing_boundaries": 0.0,
+          "premature_rate": null,
+          "reference_suspect_rate": null,
+          "rank_contra_spearman": null,
+          "rank_contra_gap": null
+        }
+      },
+      "score": 0.7844
+    },
+    "dev": null,
+    "score_train": 0.7844,
+    "score_dev": null,
+    "paired_dev": null,
+    "changelog": [
+      "Edited [Priority Rules] to reorder and explicitly demote boundaries that risk premature commitment: splits that separate evaluative/conditional cues (still, seems, not, unless, if, etc.), separate a pronoun/possessive from its eventual antecedent/head noun, separate subject and its finite verb (risking agreement), cut off a noun phrase before a possible head noun interrupted by parenthesis/apposition, and separate auxiliaries/modals from their complements are now ranked lower. This reduces 'placement' errors by ensuring those positions are considered less confident.",
+      "Left all other sections unchanged to preserve existing candidacy coverage and the frozen [Output Rules]."
+    ],
+    "next_changelog": [
+      "Rewrote [Priority Rules] to reorder and clarify confidence groups so that boundaries which can prematurely fix polarity, subject/antecedent identity, verb agreement, or a forthcoming head noun are placed near the bottom of the ranking. This addresses critic 'priority' feedback by explicitly demoting those risky positions while keeping them as candidates."
+    ]
+  },
+  {
+    "version": 2,
+    "adopted": false,
+    "train": {
+      "n": 40,
+      "format_pass_rate": 1.0,
+      "format_pass_rate_no_retry": 0.95,
+      "by_T": {
+        "6": {
+          "target_chunk_words": 6,
+          "n": 40,
+          "n_scored": 40,
+          "n_effective": 40,
+          "effective": 0.7713,
+          "adequacy": 0.8151,
+          "contradiction": 0.0538,
+          "effective_min": 0.5686,
+          "effective_p10": 0.6697,
+          "consistency": 0.8706,
+          "consistency_chrf": 0.7909,
+          "laal_words": 4.7152,
+          "chunks_per_sentence": 3.925,
+          "split_ratio": 1.0,
+          "missing_boundaries": 0.0,
+          "premature_rate": 0.1515,
+          "reference_suspect_rate": 0.0,
+          "rank_contra_spearman": 0.0577,
+          "rank_contra_gap": 0.0172
+        },
+        "12": {
+          "target_chunk_words": 12,
+          "n": 40,
+          "n_scored": 40,
+          "n_effective": 40,
+          "effective": 0.8184,
+          "adequacy": 0.8466,
+          "contradiction": 0.0334,
+          "effective_min": 0.5158,
+          "effective_p10": 0.7478,
+          "consistency": 0.9131,
+          "consistency_chrf": 0.8716,
+          "laal_words": 6.7796,
+          "chunks_per_sentence": 2.175,
+          "split_ratio": 1.0,
+          "missing_boundaries": 0.0,
+          "premature_rate": null,
+          "reference_suspect_rate": null,
+          "rank_contra_spearman": null,
+          "rank_contra_gap": null
+        }
+      },
+      "score": 0.7949
+    },
+    "dev": {
+      "n": 60,
+      "format_pass_rate": 1.0,
+      "format_pass_rate_no_retry": 0.9833,
+      "by_T": {
+        "6": {
+          "target_chunk_words": 6,
+          "n": 60,
+          "n_scored": 60,
+          "n_effective": 60,
+          "effective": 0.7515,
+          "adequacy": 0.8077,
+          "contradiction": 0.0712,
+          "effective_min": 0.2321,
+          "effective_p10": 0.5731,
+          "consistency": 0.7958,
+          "consistency_chrf": 0.7684,
+          "laal_words": 4.6362,
+          "chunks_per_sentence": 3.4167,
+          "split_ratio": 1.0,
+          "missing_boundaries": 0.0,
+          "premature_rate": null,
+          "reference_suspect_rate": null,
+          "rank_contra_spearman": null,
+          "rank_contra_gap": null
+        },
+        "12": {
+          "target_chunk_words": 12,
+          "n": 60,
+          "n_scored": 60,
+          "n_effective": 60,
+          "effective": 0.7914,
+          "adequacy": 0.8272,
+          "contradiction": 0.0437,
+          "effective_min": 0.2222,
+          "effective_p10": 0.7244,
+          "consistency": 0.8066,
+          "consistency_chrf": 0.8394,
+          "laal_words": 6.1138,
+          "chunks_per_sentence": 2.15,
+          "split_ratio": 1.0,
+          "missing_boundaries": 0.0,
+          "premature_rate": null,
+          "reference_suspect_rate": null,
+          "rank_contra_spearman": null,
+          "rank_contra_gap": null
+        }
+      },
+      "score": 0.7714
+    },
+    "score_train": 0.7949,
+    "score_dev": 0.7714,
+    "paired_dev": {
+      "mean_delta": -0.0071,
+      "se_delta": 0.00893,
+      "n_pairs": 60,
+      "n_changed": 37
+    },
+    "changelog": [
+      "Rewrote [Priority Rules] to reorder and clarify confidence groups so that boundaries which can prematurely fix polarity, subject/antecedent identity, verb agreement, or a forthcoming head noun are placed near the bottom of the ranking. This addresses critic 'priority' feedback by explicitly demoting those risky positions while keeping them as candidates."
+    ]
+  }
+]

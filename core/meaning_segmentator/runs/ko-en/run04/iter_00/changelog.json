@@ -1,0 +1,10 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Never Segment]"
+  ],
+  "changelog": [
+    "[When to Segment]: narrowed the 'full predicate has just appeared' rule so it no longer licenses a boundary when the predicate/word is immediately followed by a bare degree/quantifier or an unresolved proper noun — these need their head or role-fixing element before they are renderable.",
+    "[Never Segment]: added two general prohibitions — no boundary directly after a bare degree/quantifier word (정도, 만큼, etc.) before its head noun/verb arrives, and no boundary directly after a bare proper noun/name before a particle or verb fixes whether it is a vocative or subject — generalizing the placement failures where such fragments were cut off before disambiguation."
+  ]
+}

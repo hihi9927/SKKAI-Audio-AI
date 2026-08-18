@@ -1,0 +1,9 @@
+{
+  "sections_changed": [
+    "[Priority Rules]"
+  ],
+  "changelog": [
+    "Edited [Priority Rules] to reorder and explicitly demote boundaries that risk premature commitment: splits that separate evaluative/conditional cues (still, seems, not, unless, if, etc.), separate a pronoun/possessive from its eventual antecedent/head noun, separate subject and its finite verb (risking agreement), cut off a noun phrase before a possible head noun interrupted by parenthesis/apposition, and separate auxiliaries/modals from their complements are now ranked lower. This reduces 'placement' errors by ensuring those positions are considered less confident.",
+    "Left all other sections unchanged to preserve existing candidacy coverage and the frozen [Output Rules]."
+  ]
+}

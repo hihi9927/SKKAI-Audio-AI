@@ -1,0 +1,8 @@
+{
+  "sections_changed": [
+    "[Decision Procedure]"
+  ],
+  "changelog": [
+    "Updated [Decision Procedure]: added a format-alignment validation and repair pass that detects candidates which would split orthographic or morphological units, shifts such offending cuts to the nearest safe preceding boundary (or removes them if no safe boundary exists), and requires a final simulation that removing tags reproduces the original input exactly — this prevents tag-inside-word format errors while preserving generous candidate marking."
+  ]
+}

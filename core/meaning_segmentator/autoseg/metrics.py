@@ -491,6 +491,13 @@ class SplitMetrics:
     premature_rate: float | None = None
     reference_suspect_rate: float | None = None    # 판정자가 오라클을 의심한 경계 비율
     rank_contra_spearman: float | None = None      # 순위 vs 실측 contra 정렬도. 양수=정렬
+    # 순위 하위 절반 − 상위 절반의 경계 contradiction 차. 양수=정렬, 0 이하=순위 무정보.
+    # focus="priority" 판정이 쓰는 값 (`rank_contra_gap`).
+    # **se 를 함께 싣는다.** 점추정을 0 과 비교하면 heavy-tail 잡음(관측 범위 −0.03~+0.03)
+    # 때문에 조향 방향이 동전 던지기가 된다 — en-de run01/run02 에서 실제로 그랬다.
+    rank_contra_gap: float | None = None
+    rank_contra_gap_se: float | None = None
+    rank_contra_gap_n: int | None = None
 
     def to_dict(self) -> dict:
         return {k: (round(v, 4) if isinstance(v, float) else v)
@@ -653,6 +660,148 @@ def rank_contra_spearman(rows: list[dict], T: int, min_boundaries: int = 3) -> t
         if c is not None:
             cors.append(c)
     return (sum(cors) / len(cors) if cors else None), len(cors)
+
+
+def _floor_corrected(d: dict, contras: list[float], floor_fn,
+                     tgt_spaced: bool = True) -> list[float]:
+    """경계별 contradiction 에서 길이 잡음 바닥 c0(hypothesis 길이)를 뺀다.
+
+    경계 j 의 hypothesis 는 조각 번역 1..j+1 을 이어붙인 것이므로 길이가 j 와 함께
+    자란다. 바닥은 짧을수록 크므로(run03: 1-2어절 0.113 vs 10어절+ 0.003) 보정 없이는
+    **문장 앞쪽 경계가 구조적으로 불리**하다.
+
+    길이는 **타깃 표기 체계**로 센다 (`unit_count`). 어절로 고정하면 무공백 타깃(ja/zh)
+    에서 조각을 공백으로 이어붙인 문자열의 `split()` 이 **조각 수**를 세게 되어, 실제
+    문자 수와 무관하게 전부 최단 버킷으로 떨어진다 — 바닥이 통째로 엉뚱해진다.
+    """
+    if floor_fn is None:
+        return contras
+    pieces_tgt = d.get("pieces_tgt") or []
+    out = []
+    for j, c in enumerate(contras):
+        hyp = " ".join(p for p in pieces_tgt[: j + 1] if p)
+        out.append(max(0.0, c - floor_fn(max(1, unit_count(hyp, tgt_spaced)))))
+    return out
+
+
+def rank_contra_gap(rows: list[dict], T: int, min_boundaries: int = 2,
+                    floor_fn=None, tgt_spaced: bool = True) -> tuple[float | None, int]:
+    """순위 **하위 절반 − 상위 절반**의 경계 contradiction 평균 차. 문장 평균.
+
+    `rank_contra_spearman` 과 같은 축을 다른 통계량으로 잰다. Spearman 은 순위 상관만
+    보므로 "정렬은 됐는데 격차가 없다"를 못 가르지만, 이 값은 **크기**를 재므로
+    절단이 실제로 위험을 얼마나 덜어내는지가 나온다. focus 판정이 쓰는 쪽은 이것이다.
+
+    **양수 = 정렬됨** — 확신 낮다고 매긴 경계가 실제로 더 반박당함. 상위만 남기는
+    절단이 위험을 덜어낸다는 뜻.
+    **0 이하 = 순위가 정보를 안 준다** — 상위 경계가 하위와 같거나 더 위험하다.
+    이 경우 노브를 조여도 품질이 안 오르고, 고칠 곳은 위치가 아니라 `[Priority Rules]`
+    다 (`focus="priority"`).
+
+    임계값이 **0** 인 것이 이 지표를 쓰는 이유다. 종전의 T 대비
+    (`adequacy(작은 T) − adequacy(큰 T) > PRIORITY_MARGIN`)는 두 문제가 있었다.
+      1. 두 집합이 **중첩**이라(`keep(큰 T) ⊆ keep(작은 T)`) "하위가 상위보다 나은가"가
+         아니라 "상위에 하위를 얹으면 나아지는가"를 쟀다.
+      2. 조각 수가 함께 바뀌어 QE 길이 편향이 섞였다 — run04 실측에서 작은 T 가
+         일관되게 +0.003~0.005 높았고, 그 부호가 진단과 같아 신호와 편향이 분리되지
+         않았다. `PRIORITY_MARGIN = 0.03` 은 그 편향을 덮으려는 잠정 상수였다.
+    여기서는 상위/하위가 **배타적이고 동수**라 두 교란이 모두 상쇄되고, "순위에 정보가
+    없다"의 기준점이 임의 상수가 아니라 0 이 된다.
+
+    홀수 개일 때 가운데 순위는 버린다 — 어느 쪽에도 속하지 않는 값을 한쪽에 넣으면
+    대비가 흐려진다.
+
+    `floor_fn(hyp_words) -> c0` 를 주면 길이 잡음 바닥을 뺀 뒤 계산한다. 안 주면 raw 라
+    앞쪽(상위 순위) 경계가 불리해져 **음수 쪽으로 편향**된다 (run03 test: raw −0.25 →
+    보정 후 +0.14). 루프는 `loop.load_contra_floor` 로 런당 1회 측정해 넘긴다.
+
+    가장 작은 T(경계 최다 생존)에서 재야 표본이 산다. 반환 (평균, 문장 수).
+    **오차막대가 필요하면 `rank_contra_gaps` 로 문장별 값을 받을 것** — dev 150문장에서
+    se ≈ 0.018 이라 +0.03 수준의 격차는 2·se 를 못 넘는다. 점추정만 보고 "정렬됐다"고
+    읽으면 안 된다.
+    """
+    gaps = rank_contra_gaps(rows, T, min_boundaries, floor_fn, tgt_spaced)
+    return (sum(gaps) / len(gaps) if gaps else None), len(gaps)
+
+
+def rank_contra_gaps(rows: list[dict], T: int, min_boundaries: int = 2,
+                     floor_fn=None, tgt_spaced: bool = True) -> list[float]:
+    """`rank_contra_gap` 의 **문장별** 값. 평균 내기 전 분포가 필요할 때 쓴다."""
+    key = str(T)
+    gaps: list[float] = []
+    for r in rows:
+        d = (r.get("by_T") or {}).get(key)
+        if not d:
+            continue
+        ranks = [int(m.group(1)) for m in TAG_RE.finditer(d.get("seg_text") or "")
+                 if m.group(1)]
+        contras = (d.get("pieces_contra") or [])[:-1]
+        if len(ranks) != len(contras) or len(ranks) < min_boundaries:
+            continue
+        vals = _floor_corrected(d, [float(x) for x in contras], floor_fn, tgt_spaced)
+        order = sorted(range(len(ranks)), key=lambda i: ranks[i])   # 순위 오름차순
+        half = len(order) // 2
+        top = [vals[i] for i in order[:half]]                 # 확신 높음 (번호 작음)
+        bottom = [vals[i] for i in order[len(order) - half:]]  # 확신 낮음
+        gaps.append(sum(bottom) / len(bottom) - sum(top) / len(top))
+    return gaps
+
+
+def priority_audit(rows: list[dict], T: int, floor_fn=None, tgt_spaced: bool = True,
+                   min_n: int = 8) -> list[dict]:
+    """모델 순위가 **무엇을 과신하는가** 를 특징별로 대조한다.
+
+    `rank_contra_gap` 은 "순위가 정보를 주는가"만 답한다. 0 이하라는 사실만으로는 PE 가
+    `[Priority Rules]` 의 **어느 줄**을 고쳐야 하는지 알 수 없어, 눈감고 재작성하다
+    실패한다 (en-de run02 iter1~2, 수동 시도 2회 모두 동일).
+
+    여기서는 경계를 표면 특징으로 묶어 **모델이 매긴 순위 백분위**와 **실측 contradiction**
+    을 나란히 낸다. 백분위가 낮은데(=확신 높음) contra 가 높으면 그 특징이 과신 대상이다.
+    en-de 실측에서 이 대조가 "쉼표 경계: 백분위 0.35 / contra 0.108 vs 그 외 0.64 / 0.062"
+    를 뽑아냈고, 그걸 프롬프트에 반영한 것이 순위를 유의하게 개선한 **유일한** 개입이었다
+    (gap −0.005 → +0.032, 순열 p=0.005).
+
+    **언어 자원을 쓰지 않는다** — 특징은 구두점(측정 프로파일에서 온다)과 상대 위치뿐이다.
+    반환은 `over_trust` 내림차순. 각 항목의 `over_trust` 는
+    `(중앙 백분위 − 이 특징 백분위) × contra 비` 로, 양수가 클수록 과신이다.
+    """
+    key = str(T)
+    recs: list[tuple[str, float, float]] = []      # (특징, 순위 백분위, contra)
+    for r in rows:
+        d = (r.get("by_T") or {}).get(key)
+        if not d:
+            continue
+        ranks = [int(m.group(1)) for m in TAG_RE.finditer(d.get("seg_text") or "")
+                 if m.group(1)]
+        contras = (d.get("pieces_contra") or [])[:-1]
+        src = d.get("pieces_src") or []
+        if len(ranks) != len(contras) or len(ranks) < 3 or len(src) - 1 != len(contras):
+            continue
+        vals = _floor_corrected(d, [float(x) for x in contras], floor_fn, tgt_spaced)
+        n = len(ranks)
+        order = sorted(range(n), key=lambda i: ranks[i])
+        pct = {i: (k + 1) / n for k, i in enumerate(order)}
+        for j, c in enumerate(vals):
+            tail = (src[j] or "").rstrip()[-1:]
+            feat = f"뒤 구두점 {tail!r}" if tail and not tail.isalnum() else "구두점 없음"
+            recs.append((feat, pct[j], c))
+            recs.append((f"상대위치 {int(j / max(1, n) * 3)}/3", pct[j], c))
+    if not recs:
+        return []
+    base_pct = sum(r[1] for r in recs) / len(recs)
+    base_con = sum(r[2] for r in recs) / len(recs) or 1e-9
+    out = []
+    for feat in sorted({r[0] for r in recs}):
+        g = [r for r in recs if r[0] == feat]
+        if len(g) < min_n:
+            continue
+        p = sum(x[1] for x in g) / len(g)
+        c = sum(x[2] for x in g) / len(g)
+        out.append({"feature": feat, "n": len(g),
+                    "rank_percentile": round(p, 3),
+                    "contradiction": round(c, 4),
+                    "over_trust": round((base_pct - p) * (c / base_con), 4)})
+    return sorted(out, key=lambda d: -d["over_trust"])
 
 
 def paired_delta(new_rows: list[dict], best_rows: list[dict],

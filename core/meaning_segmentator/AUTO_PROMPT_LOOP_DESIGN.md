@@ -333,19 +333,27 @@ Y*  = full 번역 (gold 참조가 없으므로)
 
 ### 5.7 진단 지표
 
-목적함수에 안 들어가고, 최종 리포트에는 부록 한 줄로 남는다.
+목적함수에 안 들어간다. `rank_contra_gap` 만 예외적으로 **조향에 쓰인다** (§9.4의
+`focus="priority"` 판정) — 나머지는 최종 리포트에 부록 한 줄로 남는다.
 
 | 이름 | 정의 | 읽는 법 |
 |---|---|---|
 | `premature_rate` | `premature` 판정 경계 / 판정 대상 경계 | **test 는 무작위 표본으로 재야 한다** — 루프 중 표본은 실패 조준이라 조건부 상향 추정치다 (run03 test 0.2727 이 그 값) |
 | `reference_suspect_rate` | 판정자가 오라클(full 번역) 자체를 의심한 비율 | 높으면 지표가 아니라 번역기를 의심할 것. `contradiction`·`consistency` 가 같이 오염된다 |
 | `unsafe_rate` | `premature` + `mistranslated` | 라벨이 두 값 사이에서 흔들려도 안정적이다 (관문 실측: 같은 경계가 3회 중 1/2 로 갈렸는데 `cause`·`conflict` 는 3회 동일) |
-| `rank_contra_spearman` | 문장 내 `<SEG:n>` 순위 vs 실측 경계 contra 의 Spearman 평균 | 양수 = 순위가 위험과 정렬(번호가 클수록 위험). 음수면 절단이 위험을 줄이지 못하고 `focus=priority` 조향이 근거를 잃는다 |
+| **`rank_contra_gap`** | 순위 **하위 절반 − 상위 절반**의 경계 contra 평균 차, 문장 평균. 잡음 바닥 보정 후 | 양수 = 절단이 실제로 위험을 덜어냄. **0 이하 = 순위 무정보** → `focus="priority"`. 기준점 0 은 순위에 정보가 없을 때의 기대값이라 임의 상수가 아니다 |
+| `rank_contra_spearman` | 문장 내 `<SEG:n>` 순위 vs 실측 경계 contra 의 Spearman 평균 | 같은 축의 **방향만** 보는 보조값. 순위 상관만 보므로 "정렬은 됐는데 격차가 없다"를 못 가른다. raw 라 아래 교란 포함 |
 
-`rank_contra_spearman` 은 **경계가 가장 많이 살아남는 최소 T 에서** 재고, **raw 값에는
-길이 교란이 섞여 있다** — NLI 잡음 바닥은 hypothesis 가 짧을수록 크고 상위 순위 경계는
-문장 앞쪽에 몰린다. run03 test 에서 raw −0.25 가 바닥 보정 후 **+0.14 로 뒤집혔다.**
-음수가 나오면 결론 내리기 전에 `noise_floor.py --recheck-t` 로 보정값을 확인할 것.
+둘 다 **경계가 가장 많이 살아남는 최소 T 에서** 재고, **raw 값에는 길이 교란이 섞여
+있다** — NLI 잡음 바닥은 hypothesis 가 짧을수록 크고(run03: 1-2어절 0.113, 10어절+ 0.003)
+상위 순위 경계는 문장 앞쪽에 몰린다. 그래서 보정 없이는 **상위 순위가 구조적으로 불리**해
+값이 음수 쪽으로 편향된다. run03 test 에서 Spearman raw −0.25 가 보정 후 **+0.14 로
+뒤집혔고**, run04 dev 에서 gap raw −0.0012 가 보정 후 **+0.0249** 였다.
+
+`rank_contra_gap` 은 조향에 쓰이므로 루프가 `loop.load_contra_floor` 로 바닥을 재서
+**항상 보정한 값**을 쓴다 (런당 1회, 번역 호출 0, `contra_floor.json` 캐시).
+`rank_contra_spearman` 은 raw 로 남으므로, 음수가 나오면 결론 내리기 전에
+`noise_floor.py --recheck-t` 로 보정값을 확인할 것.
 
 ---
 
@@ -871,19 +879,49 @@ hypothesis = 조각 1..i 번역의 누적       ← 그 시점까지 사용자�
 ```python
 MISSING_BOUNDARIES_LIMIT = 0.5      # 문장당 평균 부족 경계
 PREMATURE_LIMIT          = 0.15     # 판정 대상 경계 중 조기 방출 비율
-PRIORITY_MARGIN          = 0.03     # 작은 T 와 큰 T 의 adequacy 격차
+RANK_GAP_MIN             = 0.0      # 순위 무정보의 기준점 (임의 상수 아님)
+PRIORITY_MARGIN          = 0.03     # 폴백 전용 — 작은 T 와 큰 T 의 adequacy 격차
 
 format_pass_rate < 1.0                                  → focus = "format"
 max missing_boundaries > 0.5                            → focus = "coverage"
-adequacy(작은 T) − adequacy(큰 T) > 0.03                → focus = "priority"
+rank_contra_gap ≤ 0                                     → focus = "priority"
+  (gap 미측정 시 폴백) adequacy(작은 T) − adequacy(큰 T) > 0.03  → focus = "priority"
 max premature_rate > 0.15                               → focus = "placement"
 그 외                                                    → focus = "placement"
 ```
 
-세 번째가 **순위 태그로 새로 생긴 진단**이다. 큰 T 는 최상위 경계 한둘만 남긴다. 거기서만
-품질이 무너지면 경계 위치는 맞는데 **어느 게 가장 확실한지를 틀리게 매긴 것**이므로, 고칠
-곳이 `[When to Segment]` 가 아니라 `[Priority Rules]` 다. `rank_contra_spearman` (§5.7)이
-이 축의 근거를 독립적으로 확인해 준다.
+세 번째가 **순위 태그로 새로 생긴 진단**이다. 경계 위치는 맞는데 **어느 게 가장 확실한지를
+틀리게 매긴 것**이면 고칠 곳이 `[When to Segment]` 가 아니라 `[Priority Rules]` 다.
+
+**이 축은 경계 단위로 잰다** (`metrics.rank_contra_gap`): 순위 하위 절반과 상위 절반의
+경계 contradiction 평균 차, 문장 평균. 양수면 확신 낮다고 매긴 경계가 실제로 더 반박당한다는
+뜻이고, 상위만 남기는 절단이 위험을 덜어낸다. **0 이하면 순위가 정보를 주지 않는다.**
+
+종전에는 T 대비(`adequacy(작은 T) − adequacy(큰 T) > 0.03`)로 잤는데 두 결함이 있었다.
+
+1. **중첩 집합 비교.** `keep(큰 T) ⊆ keep(작은 T)` 이므로 이 차이는 "하위가 상위보다
+   나은가"가 아니라 "상위에 하위를 얹으면 나아지는가"다. 하위 경계의 기여가 상위와
+   섞인 채로 나온다.
+2. **QE 길이 편향 유입.** 조각 수가 함께 바뀐다. run04 실측에서 작은 T 의 adequacy 가
+   순위 품질과 무관하게 일관되게 +0.003~0.005 높았고(T3 0.7565 vs T6 0.7532 등 4/4),
+   그 부호가 진단과 같아 신호와 편향이 분리되지 않았다. `PRIORITY_MARGIN = 0.03` 은
+   그 편향을 덮으려는 잠정 상수였지 측정된 문턱이 아니었다.
+
+`rank_contra_gap` 은 상위/하위가 **배타적이고 동수**라 두 교란이 상쇄되고, 기준점이
+임의 상수가 아니라 **0**(순위 무정보 시의 기대값)이 된다. 홀수 개일 때 가운데 순위는 버린다.
+
+**잡음 바닥 보정이 필수다.** NLI 는 무해한 미완성에도 0 이 아닌 모순 확률을 주고 그 값이
+hypothesis 가 짧을수록 크다(run03: 1-2어절 0.113, 10어절+ 0.003). 상위 순위 경계는 문장
+앞쪽 = 짧은 hypothesis 에 몰리므로 보정 없이는 **상위가 구조적으로 불리**해 gap 이 음수로
+편향된다. `loop.load_contra_floor` 가 full 번역의 어절 prefix(정의상 무해한 미완성)로
+바닥을 재서 뺀다 — 런당 1회, 번역 호출 0, `contra_floor.json` 에 캐시. 바닥은 (코퍼스,
+번역기, NLI 백엔드)의 성질이라 프롬프트가 바뀌어도 불변이다.
+
+run04 dev 재계산이 그 크기를 보여준다: **raw −0.0012 → 보정 후 +0.0249** (T=3, n=140).
+보정 없이 조향했으면 순위에 문제가 없는데 `focus="priority"` 로 갔을 값이다.
+
+`rank_contra_spearman` (§5.7)은 같은 축의 방향만 보는 보조값으로 남는다 — 순위 상관만
+보므로 "정렬은 됐는데 격차가 없다"를 못 가른다.
 
 **고착 방지**: dev 무개선이 2회 이상이면 이전 `focus` 를 피하도록 반전시킨다. 캐시된 비평이
 이 장치를 우회하지 않도록 집계만 다시 계산한다 (LLM 호출 없음).

@@ -173,7 +173,11 @@ def build_report(results: list[dict], model: str, repeats: int,
 
 def main() -> int:
     p = argparse.ArgumentParser(description="판정자 타당도 관문")
-    p.add_argument("--model", default="claude-sonnet-5")
+    p.add_argument("--model", default="gpt-5-mini")
+    # 관문은 루프가 실제로 쓰는 설정으로 돌아야 한다. 루프의 판정자는
+    # --agent-reasoning-effort(기본 medium)로 도므로 여기 기본값도 같게 둔다.
+    p.add_argument("--reasoning-effort", default="medium",
+                   choices=["minimal", "low", "medium", "high", "none"])
     p.add_argument("--repeats", type=int, default=3, help="안정성 확인용 반복 횟수")
     p.add_argument("--budget", type=float, default=1.0)
     p.add_argument("--cases", default=str(CASES_PATH))
@@ -186,7 +190,9 @@ def main() -> int:
     args = p.parse_args()
 
     cases = json.loads(Path(args.cases).read_text(encoding="utf-8"))["cases"]
-    gw = Gateway(model=args.model, budget=args.budget)
+    gw = Gateway(model=args.model, budget=args.budget,
+                 reasoning_effort=(None if args.reasoning_effort == "none"
+                                   else args.reasoning_effort))
     judge = agents.Judge(gw)
 
     results: list[dict] = []

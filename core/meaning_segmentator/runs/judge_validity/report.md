@@ -1,8 +1,8 @@
 # 판정자 타당도 검사
 
-- 판정자 모델: `claude-sonnet-5`
+- 판정자 모델: `gpt-5-mini`
 - `JUDGE_SYSTEM` 해시: `2681c69704bafe3c66d86a1a7afb29f4`
-- 케이스 0건 × 변이 0종 × 3회 반복
+- 케이스 6건 × 변이 13종 × 3회 반복
 
 ## 통과 조건
 
@@ -22,8 +22,21 @@ Critic 에 넘긴다. 채택 게이트도 `unsafe_rate` 를 쓴다. 세부 라�
 
 | 케이스 | 변이 | expect | 판정 | 반복 | 정확 | 안정 | 라벨정확 | 라벨고정 |
 |---|---|---|---|---|---|---|---|---|
+| ko-en-p01 | premature_negation | premature | premature | {'premature': 3} | O | O | O | O |
+| ko-en-p01 | safe_boundary | safe | safe | {'safe': 3} | O | O | O | O |
+| ko-en-p02 | premature_role | premature | mistranslated | {'mistranslated': 2, 'premature': 1} | O | O | - | - |
+| ko-en-p02 | benign_incomplete | safe | safe | {'safe': 3} | O | O | O | O |
+| ko-en-p03 | premature_scope | premature | mistranslated | {'premature': 1, 'mistranslated': 2} | O | O | - | - |
+| ko-en-p03 | benign_incomplete | safe | safe | {'safe': 3} | O | O | O | O |
+| ko-en-p04 | premature_head | premature | mistranslated | {'mistranslated': 2, 'premature': 1} | O | O | - | - |
+| ko-en-p04 | benign_incomplete | safe | safe | {'safe': 3} | O | O | O | O |
+| ko-en-p04 | benign_reordered | safe | safe | {'safe': 3} | O | O | O | O |
+| ko-en-p06 | benign_incomplete | safe | safe | {'safe': 3} | O | O | O | O |
+| ko-en-p06 | premature_modal | premature | premature | {'premature': 3} | O | O | O | O |
+| ja-ko-p05 | premature_negation | premature | premature | {'premature': 3} | O | O | O | O |
+| ja-ko-p05 | benign_incomplete | safe | safe | {'safe': 3} | O | O | O | O |
 
-오분류 0건 / 불안정 0건 → **통과**
+오분류 0건 / 불안정 0건 → **통과**  (세부 라벨: 불일치 3건 / 흔들림 3건 — 판정에 반영 안 함)
 
 ---
 

@@ -35,7 +35,28 @@ def main() -> int:
                    help="기준 런 경로 (runs/ 이하). 데이터 분할·프로파일·캐시·백엔드를 재사용한다")
     p.add_argument("--split", default="test", choices=["train", "dev", "test"])
     p.add_argument("--label", default=None, help="결과 파일 이름에 쓸 라벨")
-    p.add_argument("--model", default="claude-sonnet-5")
+    p.add_argument("--model", default="gpt-5-mini")
+    # 비교군도 루프와 같은 사고량으로 재야 표에 나란히 놓을 수 있다 (기준 런 config 의
+    # seg_reasoning_effort 를 상속하고, 없으면 루프 기본값 low).
+    # 후보 풀 하한을 곡선 격자와 **분리**한다. 검증기는 `round(어절/candidate_t)−1` 개를
+    # 요구하므로 이 값이 작을수록 모델이 더 많이 찍어야 한다. 순위 절단이 실제로 고를 수
+    # 있으려면 후보가 채택 수보다 충분히 많아야 하는데, 기본값(=min(final_t_grid))에서는
+    # 후보 7.2개 / 채택 6.2개로 폐기가 1개뿐이라 순위가 무력했다
+    # (docs/RANK_METRIC_DIAGNOSIS.md §6). **프롬프트 문면의 숫자와 반드시 일치시킬 것** —
+    # 어긋나면 전 문장이 too_few_tags 로 재시도돼 비용이 두 배가 된다.
+    # 절단이 실제로 소비하는 순위 깊이만 요구한다. 나머지는 무번호 <SEG> 로 받아
+    # 사고 토큰을 아낀다 (docs/RANK_METRIC_DIAGNOSIS.md 부록).
+    # 한 콜에 넣는 문장 수. 분절 사고 토큰이 비용의 90% 라 가장 큰 레버다
+    # (실측 24문장: b=1 5,237 → b=3 2,994 → b=6 1,680 사고/문장).
+    p.add_argument("--batch-size", type=int, default=1,
+                   help="한 분절 호출에 넣을 문장 수. 1 = 종전 동작")
+    p.add_argument("--priority-depth", type=int, default=None,
+                   help="상위 N 개만 번호 요구. 미지정 시 전체 순위")
+    p.add_argument("--candidate-t", type=int, default=None,
+                   help="후보 마킹 하한 기준 T. 미지정 시 min(t_grid)")
+    p.add_argument("--seg-reasoning-effort", default=None,
+                   choices=["minimal", "low", "medium", "high", "none"],
+                   help="미지정 시 기준 런에서 상속")
     p.add_argument("--budget", type=float, default=5.0)
     p.add_argument("--workers", type=int, default=8)
     p.add_argument("--t-grid", type=int, nargs="+", default=None,
@@ -110,18 +131,29 @@ def main() -> int:
     contradiction = (None if (args.no_contradiction or cfg.get("no_contradiction"))
                      else metrics.make_contradiction_backend(nli_key))
 
+    seg_effort = args.seg_reasoning_effort or cfg.get("seg_reasoning_effort", "low")
+    if seg_effort == "none":
+        seg_effort = None
+
     try:
         rows, m, viol = evaluate(gw, translator, prompt, sentences, spaced, seg_cache,
                                  args.workers, adequacy, consistency, t_grid,
                                  trailing_punct, tgt_spaced=tgt_spaced,
                                  require_priority=not args.no_priority,
-                                 contradiction=contradiction)
+                                 contradiction=contradiction,
+                                 reasoning_effort=seg_effort,
+                                 coverage_t=args.candidate_t or min(t_grid),
+                                 priority_depth=args.priority_depth,
+                                 batch_size=args.batch_size)
         out_dir = run_dir / "prompt_eval"
         out_dir.mkdir(parents=True, exist_ok=True)
         (out_dir / f"{label}_{args.split}.json").write_text(json.dumps({
             "prompt_file": str(args.prompt),
             "split": args.split,
             "t_grid": t_grid,
+            "candidate_t": args.candidate_t or min(t_grid),
+            "priority_depth": args.priority_depth,
+            "batch_size": args.batch_size,
             "require_priority": not args.no_priority,
             "adequacy_backend": adequacy.name,
             "consistency_backend": cons_name,

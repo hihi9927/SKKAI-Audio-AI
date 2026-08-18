@@ -1,0 +1,77 @@
+{
+  "cases": [
+    {
+      "id": "en_us_1834_18284781",
+      "error_type": "placement",
+      "span": "of Our Lady of Fatima (Shrine),",
+      "evidence": "emitted a wrong noun sense before the appositive finished",
+      "cause": "head noun sense not settled",
+      "proposed_rule": "Keep a fixed noun phrase together until nearby modifiers settle its sense.",
+      "example_pair": {
+        "input": "Also to the north visit the great Sanctuary of Our Lady of Fatima (Shrine), a place of worldwide famous Marian apparitions.",
+        "output": "Also <SEG:6> to the north <SEG:5> visit the great Sanctuary of Our Lady of Fatima (Shrine), <SEG:1> a place of worldwide famous Marian apparitions."
+      }
+    },
+    {
+      "id": "en_us_1774_37932129",
+      "error_type": "placement",
+      "span": "may be taken;",
+      "evidence": "verb sense was fixed too early and read as the wrong domain",
+      "cause": "polysemous verb not yet disambiguated",
+      "proposed_rule": "Delay a polysemous verb until later context fixes the intended sense.",
+      "example_pair": {
+        "input": "On the outlying islands credit cards will probably not be accepted, although British and United States currency may be taken; check with the owners in advance to determine what is an acceptable payment method.",
+        "output": "On the outlying islands credit cards will probably not be accepted, although British and United States currency may be taken; check with the owners in advance to determine what is an acceptable payment method. <SEG:3>"
+      }
+    },
+    {
+      "id": "en_us_1809_15738179",
+      "error_type": "placement",
+      "span": "it was realised",
+      "evidence": "a mental/reporting verb was emitted before its clause fixed the right sense",
+      "cause": "lemma sense not settled",
+      "proposed_rule": "Keep reporting or cognition verbs with their clause when the complement determines meaning.",
+      "example_pair": {
+        "input": "Crossties were introduced fairly early to hold the tracks in place. Gradually, however, it was realised that tracks would be more efficient if they had a stip of iron on the top.",
+        "output": "Crossties <SEG:11> were introduced <SEG:5> fairly <SEG:9> early <SEG:8> to hold the tracks <SEG:7> in place. <SEG:1> Gradually, <SEG:10> however, <SEG:2> it was realised that tracks would be more efficient if they had a stip of iron on the top. <SEG:3>"
+      }
+    },
+    {
+      "id": "en_us_2009_17695442",
+      "error_type": "placement",
+      "span": "in leaves and legumes,",
+      "evidence": "the split broke a shared noun phrase and made the first chunk too final",
+      "cause": "coordinated NP cut too early",
+      "proposed_rule": "Do not segment before a conjunction that completes the same noun phrase.",
+      "example_pair": {
+        "input": "The most readily accessible plant resources would have been the proteins accessible in leaves and legumes, but these are hard for primates like us to digest unless they are cooked.",
+        "output": "The most <SEG:12> readily <SEG:11> accessible <SEG:9> plant <SEG:7> resources <SEG:5> would have been <SEG:8> the proteins <SEG:6> accessible in leaves and legumes, <SEG:4> but these are hard <SEG:3> for primates like us to digest <SEG:2> unless they are cooked."
+      }
+    },
+    {
+      "id": "en_us_1964_17158526",
+      "error_type": "reference_suspect",
+      "span": "The 25 Dunlap broadsides",
+      "evidence": "oracle mistranslates the source term",
+      "cause": "bad reference",
+      "proposed_rule": "Mark a case suspect when the whole-sentence reference mistranslates the source.",
+      "example_pair": {
+        "input": "The 25 Dunlap broadsides still known to exist are the oldest surviving copies of the document. The original handwritten copy has not survived.",
+        "output": "The 25 Dunlap broadsides <SEG:6> still known to exist <SEG:5> are the oldest <SEG:7> surviving <SEG:8> copies <SEG:4> of the document. <SEG:1> The original <SEG:3> handwritten copy <SEG:2> has not survived."
+      }
+    }
+  ],
+  "summary": "The prompt is splitting before disambiguating context, especially with polysemous verbs and fixed noun phrases. It also sometimes cuts coordinated noun phrases too early, making a chunk sound complete before the continuation arrives. One reference translation is itself suspect, so that case should not guide prompt changes.",
+  "aggregate": {
+    "dominant_error": "placement",
+    "error_counts": {
+      "placement": 4,
+      "reference_suspect": 1
+    },
+    "focus": "placement",
+    "max_missing_boundaries": 0.0,
+    "max_premature_rate": 0.0,
+    "rank_contra_gap": 0.0039,
+    "summary": "The prompt is splitting before disambiguating context, especially with polysemous verbs and fixed noun phrases. It also sometimes cuts coordinated noun phrases too early, making a chunk sound complete before the continuation arrives. One reference translation is itself suspect, so that case should not guide prompt changes."
+  }
+}

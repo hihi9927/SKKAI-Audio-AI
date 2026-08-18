@@ -144,12 +144,68 @@ def load_kspon_train(path: Path | None = None) -> list[Sentence]:
     return load_json_entries(path, text_field="text", id_field="file")
 
 
+def load_ast_manifest(path: Path, text_field: str = "src_text",
+                      id_field: str = "utt_id") -> list[Sentence]:
+    """`evaluation/ast/manifests/*.jsonl` — AST 평가 트랙의 공용 매니페스트.
+
+    한 줄이 한 발화이고 오디오 경로·정답 번역까지 들고 있으나, autoseg 는 **소스
+    텍스트만** 쓴다. 정답 번역(`tgt_text`)은 일부러 안 읽는다 — 목적함수가 참조 없는
+    QE(`adequacy`)와 실제 번역기 출력 기반 NLI(`contradiction`)이므로, 참조를 끌어오면
+    루프가 재는 것과 다른 자가 섞인다.
+    """
+    out = []
+    with path.open(encoding="utf-8") as f:
+        for i, line in enumerate(f):
+            line = line.strip()
+            if not line:
+                continue
+            e = json.loads(line)
+            t = (e.get(text_field) or "").strip()
+            if t:
+                out.append(Sentence(id=str(e.get(id_field, i)), text=t))
+    return out
+
+
+def load_fleurs_en_de(path: Path | None = None) -> list[Sentence]:
+    """FLEURS en-de test (346발화). 소스는 영어 낭독체.
+
+    KsponSpeech(자발 발화, 구두점 없음)와 성격이 정반대다 — 문어체에 구두점이 완비돼
+    있어 `measured_profile` 의 `trailing_punctuation` 이 실제로 잡히고, 문장이 길다
+    (어절 중앙값 21). **전량이 min_chars=25 를 통과하지만 총 346개뿐이라**
+    `train_pool + dev + test <= 346` 을 지켜야 `split_data` 가 죽지 않는다.
+    """
+    path = path or (_REPO_ROOT / "evaluation" / "ast" / "manifests"
+                    / "fleurs_en-de_test.jsonl")
+    return load_ast_manifest(path)
+
+
+def load_fleurs_en_ko(path: Path | None = None) -> list[Sentence]:
+    """FLEURS en-ko test (270발화). 소스 영어는 `fleurs-en-de` 와 같은 낭독체다.
+
+    FLEURS 는 n-way 병렬이라 소스 문장은 공유되지만, ko_kr 전사가 있는 문장이 더
+    적어 en-de(346)의 부분집합에 가깝다 (교집합 268, ko 전용 2). 즉 **en-de 와
+    en-ko 는 사실상 같은 영어 문장을 타깃만 바꿔 돌리는 대조군**이다 — autoseg 는
+    `tgt_text` 를 읽지 않으므로 두 런의 차이는 번역기 타깃 언어와 지표뿐이다.
+
+    전량이 `min_chars=25` 를 통과하지만 총 270개뿐이라
+    `train_pool + dev + test <= 270` 을 지켜야 `split_data` 가 죽지 않는다.
+
+    타깃이 비영어이므로 `--contradiction-backend mdeberta-xnli` 가 필요하다
+    (기본 `deberta-mnli` 는 영어 전용).
+    """
+    path = path or (_REPO_ROOT / "evaluation" / "ast" / "manifests"
+                    / "fleurs_en-ko_test.jsonl")
+    return load_ast_manifest(path)
+
+
 # 로더는 데이터셋별로 다를 수밖에 없다 (파일 포맷·전처리가 데이터셋 고유이므로).
 # 언어 무관이어야 하는 것은 에이전트와 지표이지 로더가 아니다.
 LOADERS = {
     "kokoro": load_kokoro,
     "kspon": load_kspon,
     "kspon-train": load_kspon_train,
+    "fleurs-en-de": load_fleurs_en_de,
+    "fleurs-en-ko": load_fleurs_en_ko,
 }
 
 

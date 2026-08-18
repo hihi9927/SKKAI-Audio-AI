@@ -1,0 +1,71 @@
+{
+  "train": {
+    "n": 60,
+    "format_pass_rate": 0.95,
+    "format_pass_rate_no_retry": 0.95,
+    "by_T": {
+      "3": {
+        "target_chunk_words": 3,
+        "n": 60,
+        "n_scored": 57,
+        "n_effective": 57,
+        "effective": 0.6614,
+        "adequacy": 0.7419,
+        "contradiction": 0.1114,
+        "effective_min": 0.0021,
+        "effective_p10": 0.4597,
+        "consistency": 0.5249,
+        "consistency_chrf": 0.586,
+        "laal_words": 2.7178,
+        "chunks_per_sentence": 4.193,
+        "split_ratio": 1.0,
+        "missing_boundaries": 0.0,
+        "premature_rate": null,
+        "reference_suspect_rate": null,
+        "rank_contra_spearman": 0.0479,
+        "rank_contra_gap": 0.0101
+      },
+      "6": {
+        "target_chunk_words": 6,
+        "n": 60,
+        "n_scored": 57,
+        "n_effective": 57,
+        "effective": 0.7109,
+        "adequacy": 0.748,
+        "contradiction": 0.0498,
+        "effective_min": 0.0015,
+        "effective_p10": 0.5581,
+        "consistency": 0.7353,
+        "consistency_chrf": 0.754,
+        "laal_words": 3.8863,
+        "chunks_per_sentence": 2.3158,
+        "split_ratio": 1.0,
+        "missing_boundaries": 0.0,
+        "premature_rate": 0.4167,
+        "reference_suspect_rate": 0.0,
+        "rank_contra_spearman": null,
+        "rank_contra_gap": null
+      }
+    },
+    "score": 0.6861
+  },
+  "dev": null,
+  "score_train": 0.6861,
+  "score_dev": null,
+  "paired_train": {
+    "mean_delta": 0.00649,
+    "se_delta": 0.00865,
+    "n_pairs": 28,
+    "n_changed": 21
+  },
+  "paired_dev": null,
+  "adopted": false,
+  "usage": {
+    "calls": 309,
+    "prompt_tokens": 756901,
+    "completion_tokens": 1151243,
+    "cached_tokens": 664704,
+    "truncated": 0,
+    "cost": 2.342153
+  }
+}

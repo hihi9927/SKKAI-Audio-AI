@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -27,48 +28,76 @@ from . import metrics
 
 _HERE = Path(__file__).resolve().parent
 
-# 길이 버킷 상한 (어절). 마지막 버킷은 무한대.
+# 길이 버킷 상한. 마지막 버킷은 무한대.
+#
+# **단위는 타깃 언어의 표기 체계를 따른다** — 띄어쓰기 타깃은 어절, 아니면 문자다.
+# 어절로 고정하면 ja/zh 에서 `full.split()` 이 문장 전체를 토큰 1개로 세어
+# `len < 2` 로 전량 탈락한다 (실측: 150문장 중 ja 12개·zh 25개 prefix 만 살아남았고
+# 버킷 대부분이 n=0~2 였다). 바닥이 사실상 미측정인 채로 보정이 돌면 순위 진단이
+# 통째로 무의미해진다.
+#
+# 바닥은 **타깃 안에서만** 쓰이므로 타깃마다 단위가 달라도 문제가 없다. 무공백 타깃의
+# 상한은 한자·가나 기준 어절당 대략 3자로 잡아 어절 버킷을 스케일한다.
 BUCKETS = [2, 4, 6, 9, 14]
+_UNSPACED_SCALE = 3
 
 
-def bucket_of(n: int) -> str:
+def buckets_for(tgt_spaced: bool = True) -> list[int]:
+    return BUCKETS if tgt_spaced else [b * _UNSPACED_SCALE for b in BUCKETS]
+
+
+def bucket_of(n: int, tgt_spaced: bool = True) -> str:
+    bs = buckets_for(tgt_spaced)
     lo = 1
-    for hi in BUCKETS:
+    for hi in bs:
         if n <= hi:
             return f"{lo}-{hi}"
         lo = hi + 1
-    return f"{BUCKETS[-1] + 1}+"
+    return f"{bs[-1] + 1}+"
 
 
-def bucket_labels() -> list[str]:
+def bucket_labels(tgt_spaced: bool = True) -> list[str]:
+    bs = buckets_for(tgt_spaced)
     labels, lo = [], 1
-    for hi in BUCKETS:
+    for hi in bs:
         labels.append(f"{lo}-{hi}")
         lo = hi + 1
-    return labels + [f"{BUCKETS[-1] + 1}+"]
+    return labels + [f"{bs[-1] + 1}+"]
 
 
-def measure_floor(fulls: list[str], backend, max_prefixes_per_sentence: int = 20) -> dict:
-    """full 번역의 어절 prefix 를 hypothesis 로 넣은 contradiction 확률 분포.
+def split_units(text: str, tgt_spaced: bool = True) -> list[str]:
+    """타깃 표기 체계에 맞는 토큰. 띄어쓰기 언어는 어절, 아니면 문자."""
+    if tgt_spaced:
+        return (text or "").split()
+    return list(re.sub(r"\s+", "", text or ""))
 
-    prefix 는 1..(n−1) 어절 전부다 (마지막 = 문장 전체는 identity 라 제외).
-    반환: 버킷별 {n, mean, p50, p90} + 전체 통계.
+
+def measure_floor(fulls: list[str], backend, max_prefixes_per_sentence: int = 20,
+                  tgt_spaced: bool = True) -> dict:
+    """full 번역의 prefix 를 hypothesis 로 넣은 contradiction 확률 분포.
+
+    prefix 는 1..(n−1) 토큰 전부다 (마지막 = 문장 전체는 identity 라 제외). 토큰 단위는
+    **타깃 표기 체계**를 따른다 (`tgt_spaced`) — 어절로 고정하면 ja/zh 가 통째로 탈락한다.
+
+    반환: 버킷별 {n, mean, p50, p90} + 전체 통계 + 쓰인 단위(`tgt_spaced`).
+    `floor_lookup` 이 그 단위를 읽어 같은 버킷 체계로 조회한다.
     """
+    joiner = " " if tgt_spaced else ""
     prems, hyps, lens = [], [], []
     for full in fulls:
-        words = (full or "").split()
-        if len(words) < 2:
+        units = split_units(full, tgt_spaced)
+        if len(units) < 2:
             continue
-        cut = min(len(words) - 1, max_prefixes_per_sentence)
+        cut = min(len(units) - 1, max_prefixes_per_sentence)
         for i in range(1, cut + 1):
             prems.append(full)
-            hyps.append(" ".join(words[:i]))
+            hyps.append(joiner.join(units[:i]))
             lens.append(i)
     scores = backend.score(prems, hyps)
 
-    by_bucket: dict[str, list[float]] = {b: [] for b in bucket_labels()}
+    by_bucket: dict[str, list[float]] = {b: [] for b in bucket_labels(tgt_spaced)}
     for n, s in zip(lens, scores):
-        by_bucket[bucket_of(n)].append(s)
+        by_bucket[bucket_of(n, tgt_spaced)].append(s)
 
     def stats(vals: list[float]) -> dict:
         if not vals:
@@ -81,6 +110,8 @@ def measure_floor(fulls: list[str], backend, max_prefixes_per_sentence: int = 20
 
     return {
         "backend": backend.name,
+        "tgt_spaced": tgt_spaced,
+        "unit": "words" if tgt_spaced else "characters",
         "n_sentences": len(fulls),
         "n_prefixes": len(scores),
         "overall": stats(scores),
@@ -88,9 +119,14 @@ def measure_floor(fulls: list[str], backend, max_prefixes_per_sentence: int = 20
     }
 
 
-def floor_lookup(floor: dict, hyp_words: int) -> float:
-    """길이별 바닥값 c0(len). 버킷 mean, 비면 전체 mean."""
-    b = floor["by_length_bucket"].get(bucket_of(hyp_words)) or {}
+def floor_lookup(floor: dict, hyp_units: int) -> float:
+    """길이별 바닥값 c0(len). 버킷 mean, 비면 전체 mean.
+
+    `hyp_units` 는 **바닥을 잰 것과 같은 단위**여야 한다 — `floor["tgt_spaced"]` 가
+    그 단위를 알려주므로 호출부는 그것을 보고 세면 된다. 옛 파일에는 이 키가 없으므로
+    어절로 간주한다 (그때는 어절 전용이었다)."""
+    b = floor["by_length_bucket"].get(
+        bucket_of(hyp_units, floor.get("tgt_spaced", True))) or {}
     if b.get("mean") is not None:
         return b["mean"]
     return floor["overall"]["mean"] or 0.0
@@ -99,11 +135,12 @@ def floor_lookup(floor: dict, hyp_words: int) -> float:
 def recheck_ranks(rows: list[dict], T: int, floor: dict) -> dict:
     """바닥 보정 후 순위 정렬도 재계산.
 
-    경계 j 의 hypothesis 길이 = 조각 번역 1..j+1 을 이어붙인 어절 수.
+    경계 j 의 hypothesis 길이 = 조각 번역 1..j+1 을 이어붙인 토큰 수 — 단위는 바닥을
+    잰 것과 같아야 하므로 `floor["tgt_spaced"]` 를 따른다.
     보정: c' = max(0, c − c0(길이)). 보정 전/후 Spearman 과 순위별 평균을 함께 낸다.
     """
-    import re
     tag_re = re.compile(r"<SEG:(\d+)>")
+    tgt_spaced = floor.get("tgt_spaced", True)
     key = str(T)
     raw_pairs, cor_pairs = [], []
     by_rank_raw: dict[int, list[float]] = {}
@@ -120,7 +157,8 @@ def recheck_ranks(rows: list[dict], T: int, floor: dict) -> dict:
             continue
         sent_raw, sent_cor = [], []
         for j, (rk, c) in enumerate(zip(ranks, contras)):
-            hyp_len = len(" ".join(p for p in pieces_tgt[: j + 1] if p).split())
+            hyp = " ".join(p for p in pieces_tgt[: j + 1] if p)
+            hyp_len = len(split_units(hyp, tgt_spaced))
             cc = max(0.0, c - floor_lookup(floor, max(1, hyp_len)))
             sent_raw.append((rk, c))
             sent_cor.append((rk, cc))
@@ -184,12 +222,13 @@ def main() -> int:
     fulls = [r.get("full_trans") or "" for r in rows if r.get("full_trans")]
     print(f"[floor] {len(fulls)}문장, 백엔드 {backend_name}", flush=True)
 
-    floor = measure_floor(fulls, backend, args.max_prefixes)
+    floor = measure_floor(fulls, backend, args.max_prefixes,
+                          tgt_spaced=bool(cfg.get("tgt_spaced", True)))
     out_path = run_dir / f"noise_floor_{args.split}.json"
 
     print(f"\n전체: n={floor['n_prefixes']} mean={floor['overall']['mean']} "
           f"p50={floor['overall']['p50']} p90={floor['overall']['p90']}")
-    print("\n길이(어절)  n     mean    p50     p90")
+    print(f"\n길이({floor['unit']})  n     mean    p50     p90")
     for b, s in floor["by_length_bucket"].items():
         if s["n"]:
             print(f"{b:>9} {s['n']:>5} {s['mean']:>7} {s['p50']:>7} {s['p90']:>7}")

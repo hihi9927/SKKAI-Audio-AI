@@ -3,36 +3,3 @@
 [profile] Korean / 어순 SOV — verbs/predicates consistently appear clause-finally, e.g. '수연이가 뭘 좋아하는지 모르는데' (object before verb '모르는데'). / 띄어쓰기 True(측정) / 타깃 띄어쓰기 True
 [translator] google:en:ctx=True
 [profiler] prompt_v0 작성 완료 (8391자)
-[iter 0] train fmt=0.90(1st 0.68)  score=0.0000
-Traceback (most recent call last):
-  File "/usr/lib/python3.10/runpy.py", line 196, in _run_module_as_main
-    return _run_code(code, main_globals, None,
-  File "/usr/lib/python3.10/runpy.py", line 86, in _run_code
-    exec(code, run_globals)
-  File "/home/mobility/STiTy/core/meaning_segmentator/autoseg/loop.py", line 868, in <module>
-    sys.exit(main())
-  File "/home/mobility/STiTy/core/meaning_segmentator/autoseg/loop.py", line 567, in main
-    dev_rows, dev_m, dev_viol = run_eval(prompt, splits["dev"], t_grid)
-  File "/home/mobility/STiTy/core/meaning_segmentator/autoseg/loop.py", line 499, in run_eval
-    return evaluate(gw, translator, prompt_, split_sentences, spaced, seg_cache,
-  File "/home/mobility/STiTy/core/meaning_segmentator/autoseg/loop.py", line 195, in evaluate
-    seg_texts, first_pass = segment_batch(
-  File "/home/mobility/STiTy/core/meaning_segmentator/autoseg/pipeline.py", line 188, in segment_batch
-    results = list(ex.map(one, texts))
-  File "/usr/lib/python3.10/concurrent/futures/_base.py", line 621, in result_iterator
-    yield _result_or_cancel(fs.pop())
-  File "/usr/lib/python3.10/concurrent/futures/_base.py", line 319, in _result_or_cancel
-    return fut.result(timeout)
-  File "/usr/lib/python3.10/concurrent/futures/_base.py", line 458, in result
-    return self.__get_result()
-  File "/usr/lib/python3.10/concurrent/futures/_base.py", line 403, in __get_result
-    raise self._exception
-  File "/usr/lib/python3.10/concurrent/futures/thread.py", line 58, in run
-    result = self.fn(*self.args, **self.kwargs)
-  File "/home/mobility/STiTy/core/meaning_segmentator/autoseg/pipeline.py", line 166, in one
-    out = gw.chat(
-  File "/home/mobility/STiTy/core/meaning_segmentator/autoseg/gateway.py", line 152, in chat
-    payload = self._post("/chat/completions", body)
-  File "/home/mobility/STiTy/core/meaning_segmentator/autoseg/gateway.py", line 132, in _post
-    raise RuntimeError(f"게이트웨이 호출 실패({self.max_retries}회 재시도): {last_err}")
-RuntimeError: 게이트웨이 호출 실패(5회 재시도): HTTP 429: {"type":"usage_limit_exceeded","title":"Usage Limit Exceeded","status":429,"detail":"COST limit exceeded","error_ref":"err_28ebb6c1f5d5"}

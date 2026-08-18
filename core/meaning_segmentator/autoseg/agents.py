@@ -11,6 +11,25 @@ from dataclasses import dataclass
 
 from .gateway import Gateway
 
+# ── 출력 토큰 예산 ───────────────────────────────────────────────────────
+# **추론 모델은 사고 토큰이 max_tokens 에 함께 잡힌다.** 예산이 모자라면 사고가 그걸
+# 다 먹고 content 가 빈 문자열로 돌아오는데(finish_reason='length'), 상위에서는 그게
+# "모델이 답을 못 냈다"가 아니라 "이상한 답을 냈다"로 보인다 — 판정자에서는
+# verdict='error' 로, 분절기에서는 text_modified 로 오진된다.
+#
+# **max_tokens 는 상한이지 과금 단위가 아니다** — 짧은 응답은 여기 닿지 않으므로
+# 넉넉히 줘도 비용이 늘지 않는다. 반대로 부족하면 예산을 전부 쓰고 결과가 0 이다.
+# 그러므로 여유는 크게 잡는 것이 정답이다.
+#
+# 실측 근거 (gpt-5-mini, `premature_cases.json` 6케이스): 판정자 사고량은 989~1300
+# 토큰이었다. 종전 예산 1500 은 여유가 15% 뿐이라, temperature 를 0 으로 고정할 수 없는
+# 추론 모델에서 사고 길이가 흔들리면 그대로 절단됐다 — 관문에서 ko-en-p02 가 3회 모두
+# verdict='error' 를 냈는데도 safe/not-safe 이진 판정에 error 가 안 잡혀 **통과로
+# 찍혔다.** 모델을 바꿀 때 이 값들을 먼저 확인할 것.
+JUDGE_MAX_TOKENS = 16000        # 산출물은 작은 JSON 하나. 사실상 전부 사고 몫
+PROFILER_MAX_TOKENS = 16000     # 언어 프로파일 JSON
+PROMPT_MAX_TOKENS = 32000       # prompt_v0 생성·Critic·PE·Compressor — 출력 자체가 길다
+
 # ── 프롬프트 골격 ────────────────────────────────────────────────────────
 # 골격은 고정한다. Prompt Engineer는 섹션 '내용'만 바꾼다 — 구조를 흔들면 루프가
 # 발산하고, 점수 변화를 어떤 변경에 귀속시킬 수 없게 된다.
@@ -179,7 +198,8 @@ class Profiler:
             f"Source sentences ({len(samples)} samples):\n"
             + "\n".join(f"{i+1}. {s}" for i, s in enumerate(samples))
         )
-        return self.gw.chat_json(PROFILER_SYSTEM, user, max_tokens=3000)
+        return self.gw.chat_json(PROFILER_SYSTEM, user, max_tokens=PROFILER_MAX_TOKENS,
+                                 purpose="profiler")
 
     def initial_prompt(self, profile: dict, target_language: str, spaced: bool,
                        min_t: int = 3) -> str:
@@ -196,7 +216,8 @@ class Profiler:
         # thinking 모델은 사고 토큰이 max_tokens 에 같이 잡힌다 (SEG_MAX_TOKENS 와 같은
         # 문제). 6000 에서는 사고가 예산을 먹고 프롬프트 꼬리 섹션이 잘렸다 — run04 에서
         # 재시도까지 연속으로 [Examples — Do NOT Segment] 가 누락된 채 통과할 뻔했다.
-        return self.gw.chat(sys_p, user, max_tokens=16000)
+        return self.gw.chat(sys_p, user, max_tokens=PROMPT_MAX_TOKENS,
+                            purpose="prompt_v0")
 
 
 # ── A6 Critic ────────────────────────────────────────────────────────────
@@ -283,7 +304,8 @@ class Judge:
             f"The piece just added: {pieces_src[boundary]}  ->  {pieces_tgt[boundary]}\n"
             f"Source still unseen: {' '.join(pieces_src[upto:])}"
         )
-        return self.gw.chat_json(JUDGE_SYSTEM, user, max_tokens=1500)
+        return self.gw.chat_json(JUDGE_SYSTEM, user, max_tokens=JUDGE_MAX_TOKENS,
+                                 purpose="judge")
 
 
 def max_contra(row: dict, T: int) -> float | None:
@@ -486,7 +508,8 @@ class Critic:
     gw: Gateway
 
     def review(self, cases: list[dict], metrics: dict, violations: list[dict],
-               avoid: str | None = None) -> dict:
+               avoid: str | None = None,
+               priority_audit: list[dict] | None = None) -> dict:
         user = (
             f"Current metrics: {json.dumps(metrics, ensure_ascii=False)}\n"
             f"(adequacy = quality of each piece against ITS OWN source, with no reference "
@@ -502,9 +525,21 @@ class Critic:
             f"{json.dumps(violations[:10], ensure_ascii=False, indent=2)}\n\n"
             f"Cases to diagnose:\n{json.dumps(cases, ensure_ascii=False, indent=2)}"
         )
-        out = self.gw.chat_json(CRITIC_SYSTEM, user, max_tokens=12000)
+        # 순위 감사 — 모델이 **어떤 종류의 위치를 과신하는지**. gap 이 음수라는 사실만으로는
+        # [Priority Rules] 의 어느 줄이 틀렸는지 알 수 없다 (metrics.priority_audit).
+        if priority_audit:
+            user += (
+                "\n\nRanking audit — for each surface feature: the AVERAGE CONFIDENCE RANK "
+                "the prompt assigned (0 = ranked most confident, 1 = ranked least) versus the "
+                "MEASURED contradiction at those boundaries. A feature with a LOW rank "
+                "percentile but a HIGH contradiction is one the prompt over-trusts: it tells "
+                "the model these positions are safe when the measurement says they are not. "
+                "Cite the feature by name when you propose a priority rule.\n"
+                + json.dumps(priority_audit, ensure_ascii=False, indent=2))
+        out = self.gw.chat_json(CRITIC_SYSTEM, user, max_tokens=PROMPT_MAX_TOKENS,
+                                purpose="critic")
         out["aggregate"] = summarize_critique(out.get("cases") or [], metrics,
-                                              out.get("summary"), avoid)
+                                              out.get("summary"), avoid, priority_audit)
         return out
 
 
@@ -512,11 +547,24 @@ class Critic:
 # 상수가 하나 더 생긴다. 첫 런들의 분포를 보고 고정할 것.
 MISSING_BOUNDARIES_LIMIT = 0.5       # 문장당 평균 부족 경계 수
 PREMATURE_LIMIT = 0.15      # 판정 대상 경계 중 조기 방출 비율
+
+# 순위 진단의 기준점. **이것만 임의 상수가 아니다** — `rank_contra_gap` 은 하위 순위와
+# 상위 순위의 위험 차이라, 순위에 정보가 없으면 기대값이 정확히 0 이다. 0 이하면
+# "상위 경계가 하위와 같거나 더 위험" 이므로 절단이 위험을 못 덜어낸다.
+RANK_GAP_MIN = 0.0
+# `gap + k·se <= 0` 을 요구한다. k=0 이면 종전(점추정) 동작.
+RANK_GAP_SE_MULT = 1.0
+
+# 폴백 전용 잠정 상수. `rank_contra_gap` 을 못 쓸 때(--no-contradiction, 경계 부족,
+# 구버전 런)만 쓰인다. 이 축은 중첩 집합 비교라 QE 길이 편향이 섞여 있다 — run04 실측에서
+# 작은 T 가 순위와 무관하게 +0.003~0.005 높았고 그 부호가 진단과 같다. 0.03 은 그 편향을
+# 덮는 크기이지 측정된 문턱이 아니다.
 PRIORITY_MARGIN = 0.03      # 큰 T(상위 순위만) 와 작은 T 의 adequacy 격차
 
 
 def summarize_critique(cases: list[dict], metrics: dict, summary: str | None,
-                       avoid: str | None = None) -> dict:
+                       avoid: str | None = None,
+                       priority_audit: list[dict] | None = None) -> dict:
     """집계는 세는 일이지 판단이 아니다 — LLM 에 맡기면 누락되거나 틀린다.
 
     `focus` 는 **측정된 지표**에서 도출한다. 사례 카운트로 정하면 안 된다: Critic
@@ -525,41 +573,86 @@ def summarize_critique(cases: list[dict], metrics: dict, summary: str | None,
 
     v1 의 "더/덜 잘라라" 방향이 사라진 자리가 크다. 조각 수는 노브가 정하므로
     과소분절·과분절이라는 실패 자체가 없다. 남는 것은 위치와 순위뿐이다.
+
+    **순위 축은 경계 단위로 잰다** (`rank_contra_gap`). 종전의 T 대비는 중첩 집합
+    비교(`keep(큰 T) ⊆ keep(작은 T)`)라 하위 경계의 기여가 분리되지 않았고, 조각 수가
+    함께 바뀌어 QE 길이 편향이 섞였다. 설계 §9.4 참조.
     """
     counts: dict[str, int] = {}
     for c in cases:
         counts[c.get("error_type", "unknown")] = counts.get(c.get("error_type", "unknown"), 0) + 1
 
     by_T = metrics.get("by_T") or {}
+    # by_T 는 **비어 있을 수 있다** — 포맷이 무너져 저비용 게이트가 번역을 건너뛰면
+    # (`evaluate` 의 `skip_translation_below`) 지표가 하나도 안 만들어진다. 그 경우
+    # keys[0] 이 IndexError 를 내고 Critic 호출 전체가 실패해 루프가 최종 평가로
+    # 튕겨나간다 — run04 iter0 이 실제로 그렇게 죽었다 (train fmt=0.93, by_T={}).
+    # 정작 그 상황의 판정은 첫 분기(format)라 by_T 가 필요 없다.
     keys = sorted(by_T, key=lambda k: int(k))
-    tight, loose = (by_T.get(keys[0]) or {}), (by_T.get(keys[-1]) or {})   # 많은 조각 / 적은 조각
+    tight = (by_T.get(keys[0]) or {}) if keys else {}      # 조각 많음 (작은 T)
+    loose = (by_T.get(keys[-1]) or {}) if keys else {}     # 조각 적음 (큰 T)
     missing = max((v.get("missing_boundaries") or 0.0) for v in by_T.values()) if by_T else 0.0
     prem = max((v.get("premature_rate") or 0.0) for v in by_T.values()) if by_T else 0.0
 
+    # 순위 진단은 **경계 단위**로 잰다. 하위 순위 경계가 상위보다 실제로 위험해야
+    # 절단이 의미가 있다 (`metrics.rank_contra_gap`). 한 T 에서만 계산되므로 스캔한다.
+    gaps = [v["rank_contra_gap"] for v in by_T.values()
+            if v.get("rank_contra_gap") is not None]
+    rank_gap = min(gaps) if gaps else None
+    # **오차막대를 함께 본다.** 점추정을 0 과 비교하면 heavy-tail 잡음에 조향이 끌려간다
+    # (en-de 관측 범위 −0.026~+0.032, se 0.01~0.02). 가장 나쁜 T 의 se 를 쓴다.
+    rank_gap_se = None
+    for v in by_T.values():
+        if v.get("rank_contra_gap") == rank_gap and v.get("rank_contra_gap_se") is not None:
+            rank_gap_se = v["rank_contra_gap_se"]
+            break
+
+    focus_reason = ""
     if metrics.get("format_pass_rate", 1.0) < 1.0:
         focus = "format"
+        focus_reason = f"format_pass_rate {metrics.get('format_pass_rate'):.4f} < 1.0"
     # 예산이 요구한 경계를 프롬프트가 못 내놓으면 순위도 위치도 논할 수 없다.
     elif missing > MISSING_BOUNDARIES_LIMIT:
         focus = "coverage"
-    # 적은 조각(상위 순위만 남김)에서 더 나쁘면 1순위 경계 자체가 나쁘다 = 순위 문제.
-    elif (loose.get("adequacy") is not None and tight.get("adequacy") is not None
+        focus_reason = f"missing_boundaries {missing:.3f} > {MISSING_BOUNDARIES_LIMIT}"
+    # 상위 순위 경계가 하위와 같거나 더 위험하면 순위가 정보를 안 준다 = 순위 문제.
+    # **유의하게** 음수일 때만 순위 문제로 본다 — `gap + k·se < 0`.
+    # 종전에는 점추정 <= 0 이라, 0 근처에서 흔들리는 값이 조향을 좌우했다.
+    elif (rank_gap is not None
+          and rank_gap + RANK_GAP_SE_MULT * (rank_gap_se or 0.0) <= RANK_GAP_MIN):
+        focus = "priority"
+        focus_reason = (f"rank_contra_gap {rank_gap:+.4f} ± {rank_gap_se or 0:.4f} "
+                        f"— 0 보다 유의하게 낮음")
+    # 폴백 — 경계 단위 값이 없을 때만 종전의 T 대비를 쓴다 (중첩 집합 비교라 부정확).
+    elif (rank_gap is None
+          and loose.get("adequacy") is not None and tight.get("adequacy") is not None
           and tight["adequacy"] - loose["adequacy"] > PRIORITY_MARGIN):
         focus = "priority"
+    # 종전에는 이 두 갈래가 **같은 값을 넣어** PREMATURE_LIMIT 이 죽은 코드였다.
+    # 결론은 어차피 placement 지만 **근거가 다르다** — 측정된 조기방출이냐, 아무 지표도
+    # 안 걸린 기본값이냐. PE 가 그 차이를 알아야 확신 없는 개정을 덜 한다.
     elif prem > PREMATURE_LIMIT:
         focus = "placement"
+        focus_reason = f"premature_rate {prem:.4f} > {PREMATURE_LIMIT}"
     else:
         focus = "placement"
+        focus_reason = ("측정 지표가 아무것도 안 걸림 — 기본값. "
+                        "확실한 근거가 없으니 작은 수정만 할 것")
 
     # **고착 방지.** 같은 방향이 반복되는데 dev 가 나아지지 않으면 탐색이 죽는다.
     if avoid and focus == avoid:
         focus = "priority" if focus == "placement" else "placement"
+        focus_reason = f"고착 방지 — 직전 {avoid} 가 채택 실패해 방향 전환"
 
     return {
         "dominant_error": max(counts, key=counts.get) if counts else None,
         "error_counts": counts,
         "focus": focus,
+        "focus_reason": focus_reason,
+        "priority_audit": (priority_audit or [])[:6],
         "max_missing_boundaries": round(missing, 4),
         "max_premature_rate": round(prem, 4),
+        "rank_contra_gap": round(rank_gap, 4) if rank_gap is not None else None,
         "summary": summary,
     }
 
@@ -663,7 +756,8 @@ class Compressor:
         sys_p = COMPRESSOR_SYSTEM.format(
             protected=", ".join(protected) if protected else "(none)",
             budget=budget, current=len(prompt))
-        return self.gw.chat(sys_p, prompt, max_tokens=12000)
+        return self.gw.chat(sys_p, prompt, max_tokens=PROMPT_MAX_TOKENS,
+                            purpose="compressor")
 
 
 # ── A7 Prompt Engineer ───────────────────────────────────────────────────
@@ -699,6 +793,13 @@ Hard constraints — violating any of these makes your output unusable:
    - "priority"  → the positions are defensible but ranked wrong: a risky boundary was given
                    rank 1, so it survives even under the tightest budget. Edit [Priority Rules]
                    ONLY. Do not move or remove any boundary — reorder the confidence criteria.
+                   Use "priority_audit": each row pairs a surface feature with the average
+                   confidence rank the current prompt gives it (0 = most confident) and the
+                   MEASURED contradiction there. Demote features whose rank percentile is low
+                   while contradiction is high — those are the rules that are actively wrong.
+                   Do NOT rewrite the whole section; move the specific offending criteria.
+   Also read "focus_reason". If it says the focus is a DEFAULT with no metric triggered,
+   make a small, low-risk edit — there is no measured defect to chase.
 
 MEASURED EVIDENCE IN THE CRITIQUE.
 
@@ -772,4 +873,5 @@ class PromptEngineer:
             f"Critic feedback on the current prompt:\n{json.dumps(critique, ensure_ascii=False, indent=2)}\n\n"
             f"=== CURRENT PROMPT ===\n{current_prompt}"
         )
-        return self.gw.chat_json(ENGINEER_SYSTEM, user, max_tokens=12000)
+        return self.gw.chat_json(ENGINEER_SYSTEM, user, max_tokens=PROMPT_MAX_TOKENS,
+                                 purpose="prompt_engineer")

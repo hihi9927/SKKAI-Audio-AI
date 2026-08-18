@@ -1,0 +1,58 @@
+{
+  "source_language": "Korean",
+  "source_code": "ko",
+  "uses_spaces_between_words": true,
+  "word_order": "SOV | verbs/auxiliaries and predicates consistently appear at the end of clauses in the sample (e.g. '못 먹어.', '싫대.', '가기로 했는데').",
+  "head_final": true,
+  "punctuation_present": "sometimes — as observed in the sample",
+  "trailing_punctuation": [
+    ".",
+    "?",
+    ","
+  ],
+  "register": "spontaneous conversational speech (informal, colloquial)",
+  "fillers_and_hesitations": [
+    "어",
+    "아",
+    "그",
+    "뭐",
+    "이제",
+    "근데",
+    "그럼"
+  ],
+  "discourse_markers": [
+    "그래서",
+    "근데",
+    "그리고",
+    "또",
+    "그럼"
+  ],
+  "clause_boundary_signals": [
+    "다",
+    "요",
+    "어",
+    "아",
+    "는데",
+    "니까",
+    "고",
+    "잖아요",
+    "했는데",
+    "했어",
+    "죠",
+    ".",
+    "?"
+  ],
+  "non_boundary_traps": [
+    "그 (single '그' used as filler)",
+    "어 / 아 (short interjections)",
+    "뭐 (filler)",
+    "이제 (discourse 'now')"
+  ],
+  "target_language_risks": [
+    "Splitting before clause-final verbs/adjectives (head-final) yields fragments missing predicates—English translations become ungrammatical or underspecified.",
+    "Pro-drop and omitted subjects: isolated fragments often lack explicit subjects, causing wrong or ambiguous referent assignment in English.",
+    "Korean clause-connectives (고, 니까, 는데, etc.) anticipate continuation; translating a segment that ends with them produces incomplete or misleading English ('and', 'because', 'but' without what follows).",
+    "Politeness/mood encoded in sentence endings (요/다/잖아요) affects register and pragmatic force; isolated translation can misrepresent speaker stance."
+  ],
+  "notes_for_prompt_writer": "Prefer to emit a segment only after a clause-final morphology or sentence punctuation (verb/adjective endings like -다/-요/-어/-아, or explicit '.', '?'). Do NOT split immediately after short fillers (그, 어, 아, 뭐) or after connective suffixes that indicate continuation (고, 니까, 는데). Allow discourse markers (그래서, 근데, 그리고, 또, 그럼) to start a new segment when they follow a closed clause, but avoid treating them as a boundary if they occur alone as a filler."
+}

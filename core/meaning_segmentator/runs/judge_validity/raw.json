@@ -1,1 +1,525 @@
-[]
+[
+  {
+    "id": "ko-en-p01",
+    "variant": "premature_negation",
+    "expect": "premature",
+    "verdict": "premature",
+    "counts": {
+      "premature": 3
+    },
+    "accurate": true,
+    "label_accurate": true,
+    "stable": true,
+    "label_stable": true,
+    "runs": [
+      {
+        "verdict": "premature",
+        "conflict": "it's a problem",
+        "cause": "polarity not yet settled",
+        "shift": {
+          "units": 1,
+          "to_after": "안"
+        },
+        "generalized_rule": "Do not assert positive polarity before seeing negation particles (e.g. 안, 못) or the verbal head."
+      },
+      {
+        "verdict": "premature",
+        "conflict": "it is a problem",
+        "cause": "polarity not yet settled",
+        "shift": {
+          "units": 2,
+          "to_after": "안 될"
+        },
+        "generalized_rule": "Delay asserting positive/negative polarity until following negation or modal auxiliaries are seen"
+      },
+      {
+        "verdict": "premature",
+        "conflict": "asserts it'll be a problem",
+        "cause": "polarity not yet settled",
+        "shift": {
+          "units": 2,
+          "to_after": "안 될"
+        },
+        "generalized_rule": "Don't commit polarity for predicates before negation or the main verb appears"
+      }
+    ]
+  },
+  {
+    "id": "ko-en-p01",
+    "variant": "safe_boundary",
+    "expect": "safe",
+    "verdict": "safe",
+    "counts": {
+      "safe": 3
+    },
+    "accurate": true,
+    "label_accurate": true,
+    "stable": true,
+    "label_stable": true,
+    "runs": [
+      {
+        "verdict": "safe",
+        "conflict": null,
+        "cause": null,
+        "shift": null,
+        "generalized_rule": null
+      },
+      {
+        "verdict": "safe",
+        "conflict": null,
+        "cause": null,
+        "shift": null,
+        "generalized_rule": null
+      },
+      {
+        "verdict": "safe",
+        "conflict": null,
+        "cause": null,
+        "shift": null,
+        "generalized_rule": null
+      }
+    ]
+  },
+  {
+    "id": "ko-en-p02",
+    "variant": "premature_role",
+    "expect": "premature",
+    "verdict": "mistranslated",
+    "counts": {
+      "mistranslated": 3
+    },
+    "accurate": true,
+    "label_accurate": false,
+    "stable": true,
+    "label_stable": true,
+    "runs": [
+      {
+        "verdict": "mistranslated",
+        "conflict": "Manager Park gave it to Kim",
+        "cause": "wrong participant",
+        "shift": {
+          "units": 2,
+          "to_after": "보고서를 넘겼다고"
+        },
+        "generalized_rule": "Don't finalize giver/recipient roles until the verb/head (action) arrives"
+      },
+      {
+        "verdict": "mistranslated",
+        "conflict": "Park was the giver to Kim",
+        "cause": "wrong participant",
+        "shift": {
+          "units": 1,
+          "to_after": "보고서를"
+        },
+        "generalized_rule": "Do not assign agent/recipient roles prematurely; wait for case markers or the object/verb before asserting who gave what to whom."
+      },
+      {
+        "verdict": "mistranslated",
+        "conflict": "Park gave it to Kim",
+        "cause": "wrong participant",
+        "shift": {
+          "units": 1,
+          "to_after": "보고서를"
+        },
+        "generalized_rule": "Use case particles to assign giver/recipient; don't swap participant roles before emitting"
+      }
+    ]
+  },
+  {
+    "id": "ko-en-p02",
+    "variant": "benign_incomplete",
+    "expect": "safe",
+    "verdict": "safe",
+    "counts": {
+      "safe": 3
+    },
+    "accurate": true,
+    "label_accurate": true,
+    "stable": true,
+    "label_stable": true,
+    "runs": [
+      {
+        "verdict": "safe",
+        "conflict": null,
+        "cause": null,
+        "shift": null,
+        "generalized_rule": null
+      },
+      {
+        "verdict": "safe",
+        "conflict": null,
+        "cause": null,
+        "shift": null,
+        "generalized_rule": null
+      },
+      {
+        "verdict": "safe",
+        "conflict": null,
+        "cause": null,
+        "shift": null,
+        "generalized_rule": null
+      }
+    ]
+  },
+  {
+    "id": "ko-en-p03",
+    "variant": "premature_scope",
+    "expect": "premature",
+    "verdict": "mistranslated",
+    "counts": {
+      "mistranslated": 3
+    },
+    "accurate": true,
+    "label_accurate": false,
+    "stable": true,
+    "label_stable": true,
+    "runs": [
+      {
+        "verdict": "mistranslated",
+        "conflict": "asserts it broke yesterday",
+        "cause": "modifier scope",
+        "shift": {
+          "units": 1,
+          "to_after": "어제 산 노트북이"
+        },
+        "generalized_rule": "Don't commit a modifier's temporal/agentive meaning until the head noun/verb arrives."
+      },
+      {
+        "verdict": "mistranslated",
+        "conflict": "It broke yesterday",
+        "cause": "modifier scope",
+        "shift": {
+          "units": 1,
+          "to_after": "어제 산 노트북이"
+        },
+        "generalized_rule": "Do not translate pre-nominal modifiers (time/place/etc.) before the head noun arrives."
+      },
+      {
+        "verdict": "mistranslated",
+        "conflict": "it broke yesterday",
+        "cause": "other",
+        "shift": {
+          "units": 1,
+          "to_after": "노트북이"
+        },
+        "generalized_rule": "Wait for the head noun before rendering adjectival modifiers as events"
+      }
+    ]
+  },
+  {
+    "id": "ko-en-p03",
+    "variant": "benign_incomplete",
+    "expect": "safe",
+    "verdict": "safe",
+    "counts": {
+      "safe": 3
+    },
+    "accurate": true,
+    "label_accurate": true,
+    "stable": true,
+    "label_stable": true,
+    "runs": [
+      {
+        "verdict": "safe",
+        "conflict": null,
+        "cause": null,
+        "shift": null,
+        "generalized_rule": null
+      },
+      {
+        "verdict": "safe",
+        "conflict": null,
+        "cause": null,
+        "shift": null,
+        "generalized_rule": null
+      },
+      {
+        "verdict": "safe",
+        "conflict": null,
+        "cause": null,
+        "shift": null,
+        "generalized_rule": null
+      }
+    ]
+  },
+  {
+    "id": "ko-en-p04",
+    "variant": "premature_head",
+    "expect": "premature",
+    "verdict": "premature",
+    "counts": {
+      "mistranslated": 1,
+      "premature": 2
+    },
+    "accurate": true,
+    "label_accurate": true,
+    "stable": true,
+    "label_stable": false,
+    "runs": [
+      {
+        "verdict": "mistranslated",
+        "conflict": "They finished the meeting materials",
+        "cause": "head not yet arrived",
+        "shift": {
+          "units": 2,
+          "to_after": "보내달라고 하셨는데"
+        },
+        "generalized_rule": "Don't invent verbs or actors before the main verb arrives; render noun/time fragments neutrally."
+      },
+      {
+        "verdict": "premature",
+        "conflict": "they finished the meeting materials",
+        "cause": "head not yet arrived",
+        "shift": {
+          "units": 2,
+          "to_after": "보내달라고 하셨는데"
+        },
+        "generalized_rule": "Do not assert the action or agent until the main verb/request phrase has arrived."
+      },
+      {
+        "verdict": "premature",
+        "conflict": "They finished the meeting materials by today",
+        "cause": "head not yet arrived",
+        "shift": {
+          "units": 2,
+          "to_after": "보내달라고 하셨는데"
+        },
+        "generalized_rule": "Wait for the clause's main verb before asserting who did what"
+      }
+    ]
+  },
+  {
+    "id": "ko-en-p04",
+    "variant": "benign_incomplete",
+    "expect": "safe",
+    "verdict": "safe",
+    "counts": {
+      "safe": 3
+    },
+    "accurate": true,
+    "label_accurate": true,
+    "stable": true,
+    "label_stable": true,
+    "runs": [
+      {
+        "verdict": "safe",
+        "conflict": null,
+        "cause": null,
+        "shift": null,
+        "generalized_rule": null
+      },
+      {
+        "verdict": "safe",
+        "conflict": null,
+        "cause": null,
+        "shift": null,
+        "generalized_rule": null
+      },
+      {
+        "verdict": "safe",
+        "conflict": null,
+        "cause": null,
+        "shift": null,
+        "generalized_rule": null
+      }
+    ]
+  },
+  {
+    "id": "ko-en-p04",
+    "variant": "benign_reordered",
+    "expect": "safe",
+    "verdict": "safe",
+    "counts": {
+      "safe": 3
+    },
+    "accurate": true,
+    "label_accurate": true,
+    "stable": true,
+    "label_stable": true,
+    "runs": [
+      {
+        "verdict": "safe",
+        "conflict": null,
+        "cause": null,
+        "shift": null,
+        "generalized_rule": null
+      },
+      {
+        "verdict": "safe",
+        "conflict": null,
+        "cause": null,
+        "shift": null,
+        "generalized_rule": null
+      },
+      {
+        "verdict": "safe",
+        "conflict": null,
+        "cause": null,
+        "shift": null,
+        "generalized_rule": null
+      }
+    ]
+  },
+  {
+    "id": "ko-en-p06",
+    "variant": "benign_incomplete",
+    "expect": "safe",
+    "verdict": "safe",
+    "counts": {
+      "safe": 3
+    },
+    "accurate": true,
+    "label_accurate": true,
+    "stable": true,
+    "label_stable": true,
+    "runs": [
+      {
+        "verdict": "safe",
+        "conflict": null,
+        "cause": null,
+        "shift": null,
+        "generalized_rule": null
+      },
+      {
+        "verdict": "safe",
+        "conflict": null,
+        "cause": null,
+        "shift": null,
+        "generalized_rule": null
+      },
+      {
+        "verdict": "safe",
+        "conflict": null,
+        "cause": null,
+        "shift": null,
+        "generalized_rule": null
+      }
+    ]
+  },
+  {
+    "id": "ko-en-p06",
+    "variant": "premature_modal",
+    "expect": "premature",
+    "verdict": "premature",
+    "counts": {
+      "premature": 3
+    },
+    "accurate": true,
+    "label_accurate": true,
+    "stable": true,
+    "label_stable": true,
+    "runs": [
+      {
+        "verdict": "premature",
+        "conflict": "meeting schedule is fixed",
+        "cause": "polarity not yet settled",
+        "shift": {
+          "units": 3,
+          "to_after": "바뀔 수도 있대요"
+        },
+        "generalized_rule": "Don't assert final polarity or factual status before the verbal head and modal/negation arrive."
+      },
+      {
+        "verdict": "premature",
+        "conflict": "schedule is fixed",
+        "cause": "polarity not yet settled",
+        "shift": {
+          "units": 3,
+          "to_after": "바뀔 수도 있대요"
+        },
+        "generalized_rule": "Don't assert the sentence-level polarity before the verb and modality arrive"
+      },
+      {
+        "verdict": "premature",
+        "conflict": "schedule is fixed",
+        "cause": "polarity not yet settled",
+        "shift": {
+          "units": 3,
+          "to_after": "바뀔 수도 있대요"
+        },
+        "generalized_rule": "Wait for the main verb/modal (change/might) before asserting occurrence or certainty."
+      }
+    ]
+  },
+  {
+    "id": "ja-ko-p05",
+    "variant": "premature_negation",
+    "expect": "premature",
+    "verdict": "premature",
+    "counts": {
+      "premature": 3
+    },
+    "accurate": true,
+    "label_accurate": true,
+    "stable": true,
+    "label_stable": true,
+    "runs": [
+      {
+        "verdict": "premature",
+        "conflict": "Gon stole the eel",
+        "cause": "polarity not yet settled",
+        "shift": {
+          "units": 1,
+          "to_after": "盗みませんでした"
+        },
+        "generalized_rule": "Delay asserting polarity until the verb/negation (sentence-final auxiliary) is received"
+      },
+      {
+        "verdict": "premature",
+        "conflict": "Gon stole the eel",
+        "cause": "polarity not yet settled",
+        "shift": {
+          "units": 1,
+          "to_after": "盗みませんでした"
+        },
+        "generalized_rule": "Don't assert polarity (affirmative/negative) before the verb/negation is seen"
+      },
+      {
+        "verdict": "premature",
+        "conflict": "asserts Gon stole the eel",
+        "cause": "polarity not yet settled",
+        "shift": {
+          "units": 1,
+          "to_after": "盗みませんでした"
+        },
+        "generalized_rule": "Wait for the verb and any negation/auxiliary before asserting an action's polarity."
+      }
+    ]
+  },
+  {
+    "id": "ja-ko-p05",
+    "variant": "benign_incomplete",
+    "expect": "safe",
+    "verdict": "safe",
+    "counts": {
+      "safe": 3
+    },
+    "accurate": true,
+    "label_accurate": true,
+    "stable": true,
+    "label_stable": true,
+    "runs": [
+      {
+        "verdict": "safe",
+        "conflict": null,
+        "cause": null,
+        "shift": null,
+        "generalized_rule": null
+      },
+      {
+        "verdict": "safe",
+        "conflict": null,
+        "cause": null,
+        "shift": null,
+        "generalized_rule": null
+      },
+      {
+        "verdict": "safe",
+        "conflict": null,
+        "cause": null,
+        "shift": null,
+        "generalized_rule": null
+      }
+    ]
+  }
+]

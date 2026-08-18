@@ -1,0 +1,127 @@
+{
+  "cases": [
+    {
+      "id": "en_us_1962_15038927",
+      "error_type": "placement",
+      "span": "Hydrogen (the H in pH)",
+      "evidence": "Piece translated 'Hydrogen' missing 'ions' (wrong meaning).",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Never finalize a modifier phrase before its head noun; wait for the noun head (e.g., 'ions') to arrive before committing translation of the modifier.",
+      "example_pair": {
+        "input": "The pH level is indicated by the amount of Hydrogen (the H in pH) ions in the tested chemical.",
+        "output": "The pH level is indicated by the amount of Hydrogen (the H in pH) ions <SEG:1> in the tested chemical."
+      }
+    },
+    {
+      "id": "en_us_1825_99995285",
+      "error_type": "placement",
+      "span": "have to get in",
+      "evidence": "Boundary before 'in' caused 'get' to be translated as 'obtain' instead of 'enter'.",
+      "cause": "verb particle/particle not yet arrived (phrasal verb)",
+      "proposed_rule": "Delay finalizing verbs that form phrasal verbs or take disambiguating particles/prepositions until the particle/preposition (e.g., 'in') and nearby adverb ('early') are available.",
+      "example_pair": {
+        "input": "If you want to be close to the action you're going to have to get in early to get a camping site close to the music.",
+        "output": "If you want to be close to the action <SEG:1> you're going to have to get in early <SEG:2> to get a camping site close to the music."
+      }
+    },
+    {
+      "id": "en_us_1940_13388880",
+      "error_type": "placement",
+      "span": "if our own ancestors solved their",
+      "evidence": "Boundary inside conditional led to wrong tense/mood (should be conditional perfect).",
+      "cause": "tense/aspect not yet settled (clause-final auxiliaries/temporal adverb missing)",
+      "proposed_rule": "Hold off committing tense/aspect for subordinate conditional/manner clauses until clause-final auxiliaries, main clause verbs, or trailing temporal adverbs arrive.",
+      "example_pair": {
+        "input": "All things considered, we should not be surprised if our own ancestors solved their \"protein problem\" in somewhat the same way that chimps on the savanna do today.",
+        "output": "All things considered, <SEG:1> we should not be surprised <SEG:2> if our own ancestors solved their \"protein problem\" in somewhat the same way that chimps on the savanna do today <SEG:3>."
+      }
+    },
+    {
+      "id": "en_us_1798_12183555",
+      "error_type": "placement",
+      "span": "In its early days,",
+      "evidence": "Translated possessor/gender wrong because 'its' was rendered before 'the show' identified referent.",
+      "cause": "referent not yet available for possessive pronoun",
+      "proposed_rule": "Do not finalize possessive pronouns/determiners when the pronoun's referent may be outside the current piece; wait for the possessor noun to appear.",
+      "example_pair": {
+        "input": "In its early days, the show was featured solely at the long-running internet radio site TogiNet Radio, a site focused on talk radio.",
+        "output": "In its early days, the show <SEG:1> was featured solely at the long-running internet radio site TogiNet Radio, <SEG:2> a site focused on talk radio."
+      }
+    },
+    {
+      "id": "en_us_2009_17695442",
+      "error_type": "priority",
+      "span": "The most readily accessible plant resources",
+      "evidence": "When only top-ranked boundaries survive, the initial NP was emitted too early and contradicted later modality/auxiliaries.",
+      "cause": "initial NP boundary was ranked too high relative to nearby auxiliaries/modal sequence",
+      "proposed_rule": "Lower priority for boundaries at sentence-start NPs (feature: '상대위치 0/3') when a modal/auxiliary (within ~3 tokens) that sets tense/aspect follows; prefer keeping the auxiliary with the NP.",
+      "example_pair": {
+        "input": "The most readily accessible plant resources would have been the proteins accessible in leaves and legumes, but these are hard for primates like us to digest unless they are cooked.",
+        "output": "The most readily accessible plant resources would have been the proteins accessible in leaves and legumes, <SEG:1> but these are hard for primates like us to digest unless they are cooked."
+      }
+    },
+    {
+      "id": "en_us_1743_17837018",
+      "error_type": "priority",
+      "span": "that are inherent, rather",
+      "evidence": "A comma-adjacent boundary was ranked high and when kept under tight budget it produced contradiction vs. the rest of the sentence.",
+      "cause": "comma boundary placed before a contrastive continuation was over-trusted",
+      "proposed_rule": "Deprioritize boundaries that end at a comma when that comma precedes a contrastive phrase (feature: '뒤 구두점 ',''); keep contrastive continuations with the preceding clause when possible.",
+      "example_pair": {
+        "input": "Most interpretations of technological determinism share two general ideas: that the development of technology itself follows a path largely beyond cultural or political influence, and that technology in turn has \"effects\" on societies that are inherent, rather than socially conditioned.",
+        "output": "Most interpretations of technological determinism share two general ideas: <SEG:1> that the development of technology itself follows a path largely beyond cultural or political influence, <SEG:2> and that technology in turn has \"effects\" on societies that are inherent, rather than socially conditioned <SEG:3>."
+      }
+    }
+  ],
+  "summary": "The prompt often finalizes pieces before critical disambiguators arrive (noun heads, verb particles, clause-final auxiliaries, possessors), causing mistranslations. It also over-trusts certain surface positions (sentence-initial NPs and commas before contrastive continuations) so risky boundaries become top-ranked under tight budgets; lower those features' priority when they precede modality/contrast markers.",
+  "aggregate": {
+    "dominant_error": "placement",
+    "error_counts": {
+      "placement": 4,
+      "priority": 2
+    },
+    "focus": "placement",
+    "focus_reason": "측정 지표가 아무것도 안 걸림 — 기본값. 확실한 근거가 없으니 작은 수정만 할 것",
+    "priority_audit": [
+      {
+        "feature": "뒤 구두점 ','",
+        "n": 22,
+        "rank_percentile": 0.463,
+        "contradiction": 0.0596,
+        "over_trust": 0.3612
+      },
+      {
+        "feature": "상대위치 0/3",
+        "n": 30,
+        "rank_percentile": 0.581,
+        "contradiction": 0.0479,
+        "over_trust": 0.0919
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 21,
+        "rank_percentile": 0.614,
+        "contradiction": 0.0239,
+        "over_trust": 0.0175
+      },
+      {
+        "feature": "상대위치 1/3",
+        "n": 23,
+        "rank_percentile": 0.725,
+        "contradiction": 0.0072,
+        "over_trust": -0.0229
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 44,
+        "rank_percentile": 0.77,
+        "contradiction": 0.018,
+        "over_trust": -0.0852
+      }
+    ],
+    "max_missing_boundaries": 0.0,
+    "max_premature_rate": 0.0,
+    "rank_contra_gap": -0.0097,
+    "summary": "The prompt often finalizes pieces before critical disambiguators arrive (noun heads, verb particles, clause-final auxiliaries, possessors), causing mistranslations. It also over-trusts certain surface positions (sentence-initial NPs and commas before contrastive continuations) so risky boundaries become top-ranked under tight budgets; lower those features' priority when they precede modality/contrast markers."
+  }
+}

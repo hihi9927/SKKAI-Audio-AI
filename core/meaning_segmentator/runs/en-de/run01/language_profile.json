@@ -1,0 +1,59 @@
+{
+  "source_language": "English",
+  "source_code": "en",
+  "uses_spaces_between_words": true,
+  "word_order": "SVO: the sample is dominated by subject-first clauses like \"Travellers are advised\" and \"driver behavior cannot be predicted\", with fronted subordinates like \"Since..., Paraguay has...\" and \"After..., Gibson was...\".",
+  "head_final": false,
+  "punctuation_present": "always",
+  "trailing_punctuation": [
+    ".",
+    ",",
+    ";",
+    ":",
+    ")",
+    "\""
+  ],
+  "register": "formal written informational prose (encyclopedic/news-like)",
+  "fillers_and_hesitations": [
+    "uh",
+    "um",
+    "er"
+  ],
+  "discourse_markers": [
+    "however",
+    "since",
+    "while",
+    "after",
+    "because",
+    "if",
+    "as",
+    "but",
+    "all things considered"
+  ],
+  "clause_boundary_signals": [
+    "however",
+    "since",
+    "while",
+    "after",
+    "because",
+    "if",
+    "as",
+    "but",
+    ";",
+    ":"
+  ],
+  "non_boundary_traps": [
+    "and",
+    "that",
+    "of",
+    "with",
+    "to",
+    "in"
+  ],
+  "target_language_risks": [
+    "German verb-final subordinate clauses need later context, so splitting too early can strand verbs and auxiliaries.",
+    "Relative clauses and long noun-phrase attachments can change German case, article, and adjective endings across the fragment boundary.",
+    "Sentence-internal connectors like 'however', 'since', 'while', and 'that' may require reanalysis before choosing the right German clause structure."
+  ],
+  "notes_for_prompt_writer": "Treat punctuation and clause-introducing subordinators as strong segmentation cues, but avoid splitting inside noun phrases or before a clause is syntactically complete. Keep relative clauses, complement clauses, and their heads together whenever possible. Do not let commas alone force a split unless they clearly separate complete clauses. Preserve closing punctuation with the left segment."
+}

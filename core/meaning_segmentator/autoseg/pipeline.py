@@ -57,7 +57,33 @@ def unit_count(text: str, spaced: bool) -> int:
 # text_modified 로 잡고, 복구 재시도도 같은 한도라 똑같이 실패해 V 가 1.0 에
 # 영원히 도달하지 못한다. 실측: 103자 문장이 사고에만 918~1464 토큰을 썼다.
 # 프롬프트로는 절대 고칠 수 없는 문제이므로 예산을 넉넉히 준다.
-SEG_MAX_TOKENS = 8192
+#
+# 8192 도 부족했다 — run04(kspon-train) iter0 에서 60행 중 6행이 같은 증상으로 빈
+# 출력이 났고, gateway 경고로 finish_reason='length' 를 직접 확인했다 (입력 86·125·140자).
+# 사고량은 글자수에 비례하지 않는다: 위 103자=~1.4k 를 외삽하면 193자라도 ~2.7k 여야
+# 하는데 실제로는 8192 를 넘겼다. 경계 수가 많고 순위까지 매겨야 하는 문장에서
+# 사고가 초선형으로 늘기 때문으로 보인다. kspon(eval_clean_1000) 은 p99 가 28어절이라
+# 안 드러났고, 풀을 kspon-train(p99 54어절)으로 바꾸면서 드러났다.
+#
+# max_tokens 는 상한이지 과금 단위가 아니다 — 짧은 문장은 여기 닿지 않으므로 올려도
+# 비용이 늘지 않는다. 반대로 부족하면 8192 토큰을 전부 쓰고 결과가 0 이다.
+SEG_MAX_TOKENS = 32768
+
+# 배치 호출에만 덧붙인다. 인덱스 접두사로 되돌려 붙일 수 있어야 하고, 순위는 문장마다
+# 1 부터 다시 시작해야 절단 규약이 문장 단위로 유지된다.
+BATCH_PROTOCOL = """
+
+[Batch Protocol]
+You will receive SEVERAL independent sentences, each on its own line prefixed with an index
+like [1], [2], .... Treat every sentence completely independently — never let one sentence
+influence the boundaries or ranking of another.
+Output ONE line per input sentence, in the same order, with the SAME [n] prefix, followed by
+a single space and then that sentence with <SEG:k> tags inserted.
+Restart the confidence ranking at <SEG:1> inside EVERY sentence.
+Output nothing else — no blank lines, no commentary.
+"""
+
+_BATCH_LINE = re.compile(r"^\s*\[(\d+)\]\s*(.*)$")
 
 # 어느 문자가 "앞 텍스트에 붙는" 구두점인지는 언어마다 다르다. 목록을 코드에
 # 박으면 검증기가 언어 종속이 되므로, 기본값은 언어 프로파일이 제공한다
@@ -130,6 +156,8 @@ def segment_batch(
     workers: int = 8,
     validate_fn=None,
     normalize_fn=None,
+    reasoning_effort: str | None = None,
+    batch_size: int = 1,
 ) -> tuple[list[str], list[bool]]:
     """프롬프트 주입형 분절. 동일 (프롬프트, 문장) 조합은 캐시 재사용.
 
@@ -143,18 +171,35 @@ def segment_batch(
 
     반환: (분절 결과, 1차 시도에서 포맷을 지켰는지 여부)
     """
+    # **배치.** 한 콜에 여러 문장을 넣으면 문장당 사고 토큰이 크게 준다 (실측 24문장:
+    # b=1 5,237 → b=3 2,994 → b=6 1,680). 비용의 90% 가 분절 사고이므로 가장 큰 레버다.
+    # 재시도는 **단건으로 떨어뜨린다** — 배치 하나가 실패했다고 성공한 형제까지 다시
+    # 부르면 절감이 사라지고, 복구 프롬프트도 단문 전제로 쓰여 있다.
+    batch_prompt = prompt if batch_size <= 1 else prompt + BATCH_PROTOCOL
     prompt_hash = JsonCache.key(prompt)
 
-    def one(t: str) -> tuple[str, bool]:
+    def one(t: str, pre: str | None = None) -> tuple[str, bool]:
         # 캐시 키의 "seg3" 는 정규화 도입 시점 표시다. 이전 캐시는 정규화 전 문자열이라
         # 그대로 쓰면 새 코드와 옛 결과가 섞인다.
-        k = JsonCache.key("seg3", prompt_hash, t)
+        # 사고량이 바뀌면 분절도 바뀌므로 캐시 키에 넣는다. 안 넣으면 effort=low 런이
+        # medium 으로 만든 옛 결과를 그대로 돌려받아 비교가 조용히 깨진다.
+        # **모델도 같은 이유로 키에 들어간다.** 없으면 모델을 바꿔 돌린 평가가 이전 모델의
+        # 캐시를 그대로 맞아 호출 0 회로 "동일한 결과"를 내놓는다 — 두 모델을 비교하려던
+        # 실험이 조용히 같은 분절을 두 번 채점하는 것으로 바뀐다.
+        k = JsonCache.key("seg3", prompt_hash, gw.model, reasoning_effort or "-",
+                          str(batch_size), t)
         if cache is not None:
             hit = cache.get(k)
-            if hit is not None:
+            # 빈 출력은 **실패한 호출**이지 결과가 아니다. 예전 캐시에 남아 있는 빈 값을
+            # 그대로 돌려주면 호출 없이(calls=0) 포맷 통과율이 떨어져, 원인이 캐시라는
+            # 사실이 로그 어디에도 안 남는다 — run04 에서 실제로 이것 때문에 score 가 0 이
+            # 되고 judge 가 빈 리스트를 인덱싱해 루프 전체가 중단됐다. 미스로 처리해 재호출한다.
+            if hit is not None and (hit[0] or "").strip():
                 return hit[0], hit[1]
 
-        out = gw.chat(system=prompt, user=t, max_tokens=SEG_MAX_TOKENS)
+        out = pre if pre is not None else gw.chat(
+            system=prompt, user=t, max_tokens=SEG_MAX_TOKENS,
+            reasoning_effort=reasoning_effort, purpose="segment")
         if normalize_fn is not None:
             out = normalize_fn(out)
         first_ok = True
@@ -177,15 +222,50 @@ def segment_batch(
                         f"it is not.]"
                     ),
                     max_tokens=SEG_MAX_TOKENS,
+                    reasoning_effort=reasoning_effort,
+                    purpose="segment_retry",
                 )
                 if normalize_fn is not None:
                     out = normalize_fn(out)
-        if cache is not None:
+        # 실패(빈 출력)는 캐싱하지 않는다. 캐싱하면 다음 런이 재시도조차 못 하고
+        # 같은 실패를 영구히 재생한다.
+        if cache is not None and (out or "").strip():
             cache.put(k, [out, first_ok])
         return out, first_ok
 
-    with ThreadPoolExecutor(max_workers=workers) as ex:
-        results = list(ex.map(one, texts))
+    if batch_size <= 1:
+        with ThreadPoolExecutor(max_workers=workers) as ex:
+            results = list(ex.map(one, texts))
+    else:
+        # 캐시에 있는 것은 배치에서 뺀다 — 캐시 적중분까지 다시 부르면 배치의 의미가 없다.
+        todo = [t for t in texts if cache is None
+                or not (cache.get(JsonCache.key("seg3", prompt_hash, gw.model,
+                                                reasoning_effort or "-", str(batch_size), t))
+                        or [""])[0].strip()]
+        groups = [todo[i:i + batch_size] for i in range(0, len(todo), batch_size)]
+
+        def call_group(g: list[str]) -> dict[str, str]:
+            user = "\n".join(f"[{i + 1}] {t}" for i, t in enumerate(g))
+            raw = gw.chat(system=batch_prompt, user=user, max_tokens=SEG_MAX_TOKENS,
+                          reasoning_effort=reasoning_effort, purpose="segment")
+            got: dict[str, str] = {}
+            for line in raw.splitlines():
+                m = _BATCH_LINE.match(line.strip())
+                if not m:
+                    continue
+                idx = int(m.group(1))
+                if 1 <= idx <= len(g):
+                    got[g[idx - 1]] = m.group(2).strip()
+            return got
+
+        pre_map: dict[str, str] = {}
+        if groups:
+            with ThreadPoolExecutor(max_workers=workers) as ex:
+                for d in ex.map(call_group, groups):
+                    pre_map.update(d)
+        # 파싱이 안 된 문장은 pre=None 이라 one() 이 단건으로 다시 부른다 — 조용한 누락 방지.
+        with ThreadPoolExecutor(max_workers=workers) as ex:
+            results = list(ex.map(lambda t: one(t, pre_map.get(t)), texts))
     if cache is not None:
         cache.flush()
     return [r[0] for r in results], [r[1] for r in results]
@@ -214,16 +294,28 @@ def normalize_tags(seg_text: str, spaced: bool, trailing_punct: str | None = Non
     잔여 위반 2건이 모두 여기서 처리되는 유형이었다. 남는 것은 `text_modified` 뿐이고,
     그건 모델이 원문을 고쳐 쓴 것이라 결정론적으로 복구할 수 없다 (LLM 재시도 몫).
 
-    고치는 것: 번호 재부여(순서 보존), 맨 앞/뒤 태그 삭제, 연속 태그 축약,
+    고치는 것: 번호 조밀화(**확신 순위 보존**), 맨 앞/뒤 태그 삭제, 연속 태그 축약,
     태그 직후 구두점 재배치, 태그 좌우 공백.
+
+    **번호는 등장 순서가 아니라 모델이 매긴 순위 관계로 다시 붙인다.** 예전에는
+    좌->우로 1..N 을 붙였는데, 그러면 `<SEG:n>` 이 확신도가 아니라 위치를 뜻하게 되고
+    `truncate()` 가 언제나 **가장 앞쪽** 경계만 남긴다. 설계 §6.1 의 순위 절단이
+    통째로 무효가 되는 경로였다 (실측: gpt-5-mini 8문장 전부 모델은 위치와 다른 순열을
+    냈는데 정규화 후 8/8 이 위치 순서가 됐고, T=6 절단 결과가 7/8 에서 달라졌다.
+    한국어 자연발화는 문장 앞쪽에 군말이 몰려 있어 하필 최악의 경계가 선택된다 —
+    프롬프트가 최하위로 매기라고 명시한 부류다).
+
+    순위 없는 `<SEG>` 는 **번호를 붙이지 않고 그대로 둔다.** 비교군(사람 프롬프트,
+    기계분절)이 그 형태이고, `truncate()` 는 순위가 없으면 절단하지 않기로 되어 있다
+    (설계 §9.2). 예전처럼 번호를 붙이면 비교군이 절단 대상이 되어 규약이 깨진다.
     """
     punct = trailing_punct if trailing_punct is not None else default_trailing_punct(seg_text)
     parts = TAG_RE.split(seg_text.strip())
     pieces = [p.strip() for p in parts[::2]]
-    keep: list[bool] = [True] * len(parts[1::2])
+    raw_prios: list[int | None] = [int(p) if p else None for p in parts[1::2]]
 
     # 태그 직후 구두점 -> 앞 조각 끝으로 옮긴다 (원문 문자는 보존)
-    for i in range(len(keep)):
+    for i in range(len(raw_prios)):
         nxt = pieces[i + 1]
         moved = ""
         while nxt and punct and nxt[0] in punct:
@@ -233,20 +325,37 @@ def normalize_tags(seg_text: str, spaced: bool, trailing_punct: str | None = Non
             pieces[i] = pieces[i] + moved
             pieces[i + 1] = nxt
 
-    # 좌->우 한 번에 조립한다. 태그는 **양쪽에 실제 내용이 있을 때만** 살린다.
-    # 미리 keep 배열을 만들면 연속 태그 `A <SEG:1> <SEG:2> B` 에서 가운데 빈 조각을
-    # 양쪽 태그가 각각 보고 둘 다 탈락시킨다. 순차 조립은 앞 태그만 버리고 뒤를 살린다.
-    # 맨 앞/뒤 태그도 같은 규칙에서 자동으로 떨어진다.
+    # 1) 어느 태그가 살아남는지 먼저 정한다. 태그는 **양쪽에 실제 내용이 있을 때만** 산다.
+    #    미리 keep 배열을 만들면 연속 태그 `A <SEG:1> <SEG:2> B` 에서 가운데 빈 조각을
+    #    양쪽 태그가 각각 보고 둘 다 탈락시킨다. 순차 조립은 앞 태그만 버리고 뒤를 살린다.
+    #    맨 앞/뒤 태그도 같은 규칙에서 자동으로 떨어진다.
     joiner = " " if spaced else ""
-    out = pieces[0].strip()
-    n = 0
-    for nxt in pieces[1:]:
+    chunks: list[str] = [pieces[0].strip()]
+    survivors: list[int] = []                 # 살아남은 태그의 원래 인덱스
+    for i, nxt in enumerate(pieces[1:]):
         nxt = nxt.strip()
-        if out and nxt:
-            n += 1
-            out = f"{out} {tag(n)} {nxt}"              # 순서 보존 재번호 -> 1..N 연속
+        if chunks[-1] and nxt:
+            survivors.append(i)
+            chunks.append(nxt)
         else:
-            out = (out + joiner + nxt).strip() if (out and nxt) else (out + nxt)
+            chunks[-1] = ((chunks[-1] + joiner + nxt).strip()
+                          if (chunks[-1] and nxt) else (chunks[-1] + nxt))
+
+    # 2) 살아남은 태그에만 번호를 다시 매긴다 — 원래 번호의 **순위 관계**를 보존한 채
+    #    1..N 으로 조밀화한다. 중복·결번은 등장 순서로 깨고, 번호 없는 태그는 뒤로 민다.
+    vals = [raw_prios[i] for i in survivors]
+    if all(v is None for v in vals):
+        labels: list[int | None] = [None] * len(vals)          # 비교군 — 그대로 둔다
+    else:
+        order = sorted(range(len(vals)),
+                       key=lambda j: (vals[j] is None, vals[j] if vals[j] is not None else 0, j))
+        labels = [0] * len(vals)
+        for rank, j in enumerate(order, 1):
+            labels[j] = rank
+
+    out = chunks[0]
+    for label, nxt in zip(labels, chunks[1:]):
+        out = f"{out} {tag(label)} {nxt}"
     return out.strip()
 
 
@@ -266,7 +375,8 @@ def blocks_scoring(violations: list["Violation"]) -> bool:
 def validate(sent_id: str, original: str, seg_text: str, spaced: bool,
              trailing_punct: str | None = None,
              require_priority: bool = True,
-             min_tags: int | None = None) -> list[Violation]:
+             min_tags: int | None = None,
+             priority_depth: int | None = None) -> list[Violation]:
     """번역 호출 전에 도는 하드 게이트. LLM 없이 순수 문자열 검사.
 
     trailing_punct 는 언어 프로파일에서 온다 — 검증 규칙 자체는 언어 무관이고,
@@ -307,7 +417,28 @@ def validate(sent_id: str, original: str, seg_text: str, spaced: bool,
     # 순위가 깨지면 Truncator 가 "상위 k−1개"를 정의할 수 없어 노브 자체가 죽는다.
     if require_priority and tags:
         prios = [int(m.group(1)) if m.group(1) else None for m in tags]
-        if any(p is None for p in prios):
+        numbered = [p for p in prios if p is not None]
+        # `priority_depth` — **부분 순위**. 절단은 상위 k−1 개만 소비하므로 그보다 깊은
+        # 순위는 계산해도 아무도 안 본다 (en-de 대풀 실측: 마킹 10.8 개 중 소비 2.7 개,
+        # 순위 계산의 75~90% 가 폐기). 상위 N 개만 번호를 요구하고 나머지는 무번호
+        # `<SEG>` 로 받으면 그 사고량을 안 쓴다. 무번호 태그는 `normalize_tags` 가
+        # 번호 붙은 것들 **뒤로** 밀어 정렬하므로 절단 규약은 그대로다.
+        if priority_depth is not None:
+            if not numbered:
+                v.append(Violation(sent_id, "bad_priority_format",
+                                   "번호 붙은 태그가 하나도 없음"))
+            else:
+                need_n = min(priority_depth, len(tags))
+                if len(numbered) < need_n:
+                    v.append(Violation(sent_id, "too_few_ranked",
+                                       f"번호 {len(numbered)}개 — 상위 {need_n}개 필요"))
+                if len(set(numbered)) != len(numbered):
+                    v.append(Violation(sent_id, "duplicate_priority",
+                                       f"순위 중복: {sorted(numbered)}"))
+                elif sorted(numbered) != list(range(1, len(numbered) + 1)):
+                    v.append(Violation(sent_id, "priority_gap",
+                                       f"순위가 1..{len(numbered)} 연속이 아님: {sorted(numbered)}"))
+        elif any(p is None for p in prios):
             v.append(Violation(sent_id, "bad_priority_format",
                                "순위 없는 태그. 모든 태그는 <SEG:n> 형태여야 함"))
         else:
@@ -483,7 +614,8 @@ class Translator:
             hit = self.cache.get(k)
             if hit is not None:
                 return hit
-        out = self.gw.chat(system=system, user=user, model=self.model, max_tokens=2048)
+        out = self.gw.chat(system=system, user=user, model=self.model, max_tokens=2048,
+                           purpose="translate")
         # 번역기가 원문을 그대로 되돌리는 실패가 실제로 관측된다. 그대로 두면
         # 분절 탓이 아닌 손실이 Q에 섞여 루프가 엉뚱한 방향으로 간다.
         if source and looks_untranslated(source, out):
@@ -491,6 +623,7 @@ class Translator:
                 system=system + "\n- CRITICAL: never echo the source text. Output must be "
                                 f"written entirely in {self.tgt_name}.",
                 user=user, model=self.model, max_tokens=2048,
+                purpose="translate_retry",
             )
         if self.cache is not None:
             self.cache.put(k, out)
@@ -513,7 +646,7 @@ class Translator:
         with ThreadPoolExecutor(max_workers=self.workers) as ex:
             return list(ex.map(
                 lambda t: self.gw.chat(system=sys_p, user=t, model=self.model,
-                                       max_tokens=2048),
+                                       max_tokens=2048, purpose="translate_uncached"),
                 texts))
 
     def streaming_segments(self, segments: list[str]) -> list[str]:

@@ -1,8 +1,19 @@
-"""Letsur AI Gateway 클라이언트.
+"""LLM 게이트웨이 클라이언트 — Letsur AI Gateway / OpenAI 양쪽.
 
-OpenAI 호환 엔드포인트(https://gw.letsur.ai/v1)를 httpx로 직접 호출한다.
-SDK를 쓰지 않는 이유: 게이트웨이가 응답에 실어 보내는 estimated_cost 필드를
-그대로 읽어 런 전체 비용을 집계하기 위함.
+OpenAI 호환 엔드포인트를 httpx로 직접 호출한다. SDK를 쓰지 않는 이유: Letsur가
+응답에 실어 보내는 estimated_cost 필드를 그대로 읽어 런 전체 비용을 집계하기 위함.
+
+**OpenAI는 estimated_cost를 주지 않는다.** 그쪽으로 붙을 때는 _PRICES 표로 직접
+계산한다 — 이게 없으면 `usage.cost`가 0에 고정되고 `--budget` 예산 가드가 영영
+발동하지 않는다(설계상 유일한 비용 상한이다).
+
+두 백엔드의 실측 차이 (2026-08, gpt-5.4-mini):
+
+    max_tokens             → HTTP 400. gpt-5 계열은 max_completion_tokens 만 받는다
+    temperature=0.0        → 정상
+    cache_control 마커     → 무해하게 무시된다(200). OpenAI는 1024토큰 이상 자동 캐싱이라
+                             마커 없이도 prompt_tokens_details.cached_tokens 가 잡힌다
+    estimated_cost         → 없음 (위 참조)
 """
 
 from __future__ import annotations
@@ -18,26 +29,121 @@ from pathlib import Path
 
 import httpx
 
-DEFAULT_BASE_URL = "https://gw.letsur.ai/v1"
+from . import tracing
+
+LETSUR_BASE_URL = "https://gw.letsur.ai/v1"
+OPENAI_BASE_URL = "https://api.openai.com/v1"
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 
+# `chat(reasoning_effort=...)` 의 기본값. `None` 은 "파라미터를 아예 빼라"(=모델 기본
+# 사고량)라는 **명시적 지시**이므로, "지정 안 함"과 구분할 센티널이 따로 필요하다.
+_INHERIT = object()
 
-def load_api_key(env_path: Path | None = None) -> str:
-    """.env 에서 CLAUDE_API_KEY 를 읽는다. 환경변수가 있으면 그쪽이 우선."""
-    key = os.environ.get("LETSUR_API_KEY") or os.environ.get("CLAUDE_API_KEY")
-    if key:
-        return key
+_KEY_NAMES = ("LETSUR_API_KEY", "OPENAI_API_KEY", "CLAUDE_API_KEY")
+
+
+def load_api_key_with_source(env_path: Path | None = None) -> tuple[str, str]:
+    """API 키와 **그 키가 온 환경변수 이름**을 함께 돌려준다. 환경변수 > .env.
+
+    이름을 같이 넘기는 이유는 엔드포인트 선택 때문이다 (`_default_base_url`).
+    종전에는 키 접두사(`sk-`)로 골랐는데, **Letsur 키도 `sk-` 로 시작하는 것이
+    있어서** 그 휴리스틱이 조용히 틀린다 — Letsur 키를 OpenAI 로 보내 401 이 나고,
+    오류 메시지로는 키가 틀린 건지 상대가 틀린 건지 구분이 안 된다.
+    """
+    for name in _KEY_NAMES:
+        if os.environ.get(name):
+            return os.environ[name], name
     env_path = env_path or (_REPO_ROOT / ".env")
     if not env_path.exists():
-        raise RuntimeError(f"API 키를 찾을 수 없습니다. {env_path} 또는 CLAUDE_API_KEY 환경변수 필요.")
+        raise RuntimeError(f"API 키를 찾을 수 없습니다. {env_path} 또는 {'/'.join(_KEY_NAMES)} 환경변수 필요.")
+    found: dict[str, str] = {}
     for line in env_path.read_text(encoding="utf-8").splitlines():
         line = line.strip()
         if line.startswith("#") or "=" not in line:
             continue
         k, v = line.split("=", 1)
-        if k.strip() in ("CLAUDE_API_KEY", "LETSUR_API_KEY"):
-            return v.strip().strip('"').strip("'")
-    raise RuntimeError(f"{env_path} 에 CLAUDE_API_KEY 가 없습니다.")
+        if k.strip() in _KEY_NAMES:
+            found[k.strip()] = v.strip().strip('"').strip("'")
+    for name in _KEY_NAMES:
+        if found.get(name):
+            return found[name], name
+    raise RuntimeError(f"{env_path} 에 {'/'.join(_KEY_NAMES)} 가 없습니다.")
+
+
+def load_api_key(env_path: Path | None = None) -> str:
+    return load_api_key_with_source(env_path)[0]
+
+
+# 어느 환경변수에서 온 키인가로 엔드포인트를 고른다. **접두사보다 이게 확실하다** —
+# 이 레포의 `CLAUDE_API_KEY` 는 이력상의 이름이고 Letsur 게이트웨이 키를 담는 자리다
+# (Anthropic 키가 아니다). Letsur 키도 `sk-` 로 시작할 수 있어 접두사는 못 믿는다.
+_BASE_URL_BY_KEY_NAME = {
+    "LETSUR_API_KEY": LETSUR_BASE_URL,
+    "CLAUDE_API_KEY": LETSUR_BASE_URL,
+    "OPENAI_API_KEY": OPENAI_BASE_URL,
+}
+
+
+def _default_base_url(api_key: str, key_name: str | None = None) -> str:
+    """`AUTOSEG_BASE_URL` > 키가 온 환경변수 이름 > 접두사 휴리스틱 순."""
+    override = os.environ.get("AUTOSEG_BASE_URL")
+    if override:
+        return override
+    if key_name and key_name in _BASE_URL_BY_KEY_NAME:
+        return _BASE_URL_BY_KEY_NAME[key_name]
+    return OPENAI_BASE_URL if api_key.startswith("sk-") else LETSUR_BASE_URL
+
+
+# OpenAI 단가 (USD / 1M 토큰, 2026-08 developers.openai.com/api/docs/pricing).
+# (입력, 캐시된 입력, 출력). 접두사 일치라 날짜 붙은 변종도 잡힌다.
+#
+# **이 표가 예산 가드의 유일한 근거다.** Letsur 는 estimated_cost 를 응답에 실어 주지만
+# OpenAI 는 안 준다 — 표에 없는 모델을 쓰면 cost 가 0 으로 고정되어 `--budget` 이
+# 무력화되므로, 미등록 모델은 생성 시점에 경고한다.
+_PRICES: dict[str, tuple[float, float, float]] = {
+    "gpt-5.4-mini": (0.75, 0.075, 4.50),
+    "gpt-5.4-nano": (0.20, 0.02, 1.25),
+    "gpt-5.4": (2.50, 0.25, 15.00),
+    "gpt-5-mini": (0.25, 0.025, 2.00),
+    "gpt-5-nano": (0.05, 0.005, 0.40),
+    "gpt-4o-mini": (0.15, 0.075, 0.60),
+    "o4-mini": (1.10, 0.275, 4.40),
+    "o3-mini": (1.10, 0.55, 4.40),
+}
+
+
+def _price_of(model: str) -> tuple[float, float, float] | None:
+    best: tuple[str, tuple[float, float, float]] | None = None
+    for name, p in _PRICES.items():
+        if model.startswith(name) and (best is None or len(name) > len(best[0])):
+            best = (name, p)
+    return best[1] if best else None
+
+
+# 프롬프트 캐싱 최소 길이. Anthropic 계열은 일정 토큰 미만이면 캐시 블록을 만들지 않는다
+# (sonnet 기준 1024 토큰). 짧은 판정자·비평가 시스템 프롬프트에까지 마커를 붙여도
+# 캐시가 안 잡히므로, 반복 호출로 이득이 나는 긴 프롬프트에만 붙인다.
+# 한글은 토큰당 글자수가 적어 보수적으로 잡았다 — 분절 프롬프트는 8391자 = 3914토큰이었다.
+_CACHE_MIN_CHARS = 3000
+
+
+def _cacheable(system: str):
+    """긴 시스템 프롬프트에 `cache_control` 을 붙여 반복 호출의 입력 과금을 없앤다.
+
+    Letsur(Anthropic 계열)에서 캐싱은 **명시적 opt-in** 이다 — 마커가 없으면 아무리 같은
+    프롬프트를 반복해도 `cached_tokens` 는 0 이다. 실측(분절 프롬프트 8391자, 같은 문장
+    8건): 신규 입력 31,818 → 506 토큰. **다만 총비용은 10.9% 감소에 그쳤다** — 사고 토큰이
+    문장당 ~2,900 이라 출력 쪽이 비용을 지배하기 때문이다. 캐싱은 부수적 절감이지
+    이 루프의 비용 구조를 바꾸지는 않는다.
+
+    **OpenAI 에서는 이 마커가 필요 없다** — 1024토큰 이상 프리픽스를 자동 캐싱한다.
+    실측에서 마커를 붙이든(D) 안 붙이든(E) 동일하게 cached=1280 이 잡혔고, 붙여도
+    거부되지 않는다. 그래서 분기 없이 그대로 둔다 — Letsur 로 되돌아갈 때 필요하다.
+    """
+    if len(system) < _CACHE_MIN_CHARS:
+        return system
+    return [{"type": "text", "text": system,
+             "cache_control": {"type": "ephemeral"}}]
 
 
 @dataclass
@@ -50,22 +156,49 @@ class Usage:
     cached_tokens: int = 0
     cost: float = 0.0
     truncated: int = 0
+    # OpenAI 처럼 estimated_cost 를 안 주는 백엔드에서 쓰는 단가 (입력, 캐시입력, 출력).
+    price: tuple[float, float, float] | None = None
+    # 용도별 집계 — "어디에 썼는가". 합계만으로는 병목이 안 보인다 (tracing.py 참조).
+    by_purpose: dict = field(default_factory=dict)
     _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
 
-    def add(self, payload: dict) -> None:
+    def add(self, payload: dict, purpose: str = "other") -> None:
         u = payload.get("usage") or {}
         c = payload.get("estimated_cost") or {}
+        prompt = u.get("prompt_tokens", 0) or 0
+        completion = u.get("completion_tokens", 0) or 0
+        cached = (u.get("prompt_tokens_details") or {}).get("cached_tokens", 0) or 0
+        reasoning = ((u.get("completion_tokens_details") or {})
+                     .get("reasoning_tokens", 0) or 0)
         with self._lock:
+            before_cost = self.cost
             self.calls += 1
-            self.prompt_tokens += u.get("prompt_tokens", 0)
-            self.completion_tokens += u.get("completion_tokens", 0)
-            self.cached_tokens += (u.get("prompt_tokens_details") or {}).get("cached_tokens", 0)
+            self.prompt_tokens += prompt
+            self.completion_tokens += completion
+            self.cached_tokens += cached
             if (payload.get("choices") or [{}])[0].get("finish_reason") == "length":
                 self.truncated += 1
             try:
-                self.cost += float(c.get("amount", 0) or 0)
+                amount = float(c.get("amount", 0) or 0)
             except (TypeError, ValueError):
-                pass
+                amount = 0.0
+            if amount:
+                self.cost += amount
+            elif self.price is not None and "choices" in payload:
+                # 임베딩 응답은 단가가 다르므로 제외한다 ("choices" 가 없다).
+                p_in, p_cached, p_out = self.price
+                self.cost += ((prompt - cached) * p_in + cached * p_cached
+                              + completion * p_out) / 1_000_000
+            delta_cost = self.cost - before_cost
+            b = self.by_purpose.setdefault(
+                purpose, {"calls": 0, "prompt_tokens": 0, "completion_tokens": 0,
+                          "reasoning_tokens": 0, "cached_tokens": 0, "cost": 0.0})
+            b["calls"] += 1
+            b["prompt_tokens"] += prompt
+            b["completion_tokens"] += completion
+            b["reasoning_tokens"] += reasoning
+            b["cached_tokens"] += cached
+            b["cost"] += delta_cost
 
     def snapshot(self) -> dict:
         with self._lock:
@@ -76,6 +209,9 @@ class Usage:
                 "cached_tokens": self.cached_tokens,
                 "truncated": self.truncated,
                 "cost": round(self.cost, 6),
+                "by_purpose": {k: {**v, "cost": round(v["cost"], 6)}
+                               for k, v in sorted(self.by_purpose.items(),
+                                                  key=lambda kv: -kv[1]["cost"])},
             }
 
 
@@ -87,20 +223,41 @@ class Gateway:
     def __init__(
         self,
         api_key: str | None = None,
-        base_url: str = DEFAULT_BASE_URL,
-        model: str = "claude-sonnet-5",
+        base_url: str | None = None,
+        model: str = "gpt-5-mini",
         embed_model: str = "text-embedding-3-large",
         budget: float | None = None,
-        timeout: float = 420.0,   # thinking 모델 + max_tokens 12000 인 PE 호출이 180s 를 넘겼다
+        # 에이전트(Profiler/Judge/Critic/PE) 호출의 기본 사고량. gpt-5.4-mini 는
+        # 명시하지 않으면 사고를 **아예 안 한다** — gpt-5-mini 의 기본(medium)에서
+        # 모델만 갈아끼우면 에이전트 품질이 조용히 떨어진다. 분절 호출은 호출부에서
+        # 따로 낮춰 잡는다(`--seg-reasoning-effort`).
+        reasoning_effort: str | None = None,
+        # thinking 모델 + max_tokens 12000 인 PE 호출이 180s 를 넘겼다. 분절 예산을
+        # 32768 로 올린 뒤로는 사고가 길어진 호출이 420s 도 넘길 수 있어 함께 올렸다.
+        timeout: float = 900.0,
         max_retries: int = 5,
     ):
-        self.api_key = api_key or load_api_key()
-        self.base_url = base_url.rstrip("/")
+        key_name = None
+        if api_key is None:
+            api_key, key_name = load_api_key_with_source()
+        self.api_key = api_key
+        self.base_url = (base_url or _default_base_url(self.api_key, key_name)).rstrip("/")
         self.model = model
         self.embed_model = embed_model
         self.budget = budget
         self.max_retries = max_retries
-        self.usage = Usage()
+        self.reasoning_effort = reasoning_effort
+        self.is_openai = self.base_url.startswith(OPENAI_BASE_URL)
+        self._warned_temperature = False
+        self._warned_reasoning = False
+        self.omit_temperature = False    # 이 모델이 temperature 를 거부한다고 확인되면 True
+        self.omit_reasoning_effort = False   # 이 모델이 reasoning_effort 를 거부하면 True
+        self.omit_json_mode = False          # 이 모델이 response_format 을 거부하면 True
+        price = _price_of(model) if self.is_openai else None
+        if self.is_openai and price is None:
+            print(f"[gateway] 경고: '{model}' 이 _PRICES 에 없다. 비용이 0 으로 집계되어 "
+                  f"--budget 예산 가드가 작동하지 않는다.", file=sys.stderr)
+        self.usage = Usage(price=price)
         self._client = httpx.Client(
             timeout=timeout,
             headers={
@@ -114,7 +271,7 @@ class Gateway:
         self._client.close()
 
     # ── 저수준 ───────────────────────────────────────────────────────────
-    def _post(self, path: str, body: dict) -> dict:
+    def _post(self, path: str, body: dict, purpose: str = "other") -> dict:
         if self.budget is not None and self.usage.cost >= self.budget:
             raise BudgetExceeded(f"예산 초과: {self.usage.cost:.4f} >= {self.budget}")
 
@@ -122,6 +279,43 @@ class Gateway:
         for attempt in range(self.max_retries):
             try:
                 r = self._client.post(f"{self.base_url}{path}", json=body)
+                # 추론 계열(o4-mini, gpt-5-mini …)은 temperature 를 기본값 1 로만 받는다.
+                # **이 모델들은 분절기를 비결정론적으로 만든다** — 루프가 검출하려는
+                # 프롬프트 차이가 0.003 규모라 표집 잡음이 신호를 덮을 수 있다
+                # (설계 §8.6-5: 모델이 흔들리면 점수 변화의 귀속이 불가능).
+                # 죽이지는 않되, 무엇이 바뀌었는지 반드시 로그에 남긴다.
+                if r.status_code == 400 and "temperature" in body:
+                    err = (r.json().get("error") or {})
+                    if err.get("param") == "temperature":
+                        body = {k: v for k, v in body.items() if k != "temperature"}
+                        # **플래그로 기억한다.** 호출마다 다시 붙이면 매 호출이 400 을 한 번씩
+                        # 먹고 재시도 예산도 하나씩 깎는다 (run05 초반 로그에서 실제로 그랬다).
+                        self.omit_temperature = True
+                        if not self._warned_temperature:
+                            self._warned_temperature = True
+                            print(f"[gateway] 경고: '{body.get('model')}' 는 temperature 를 "
+                                  f"지원하지 않아 기본값(1)으로 돈다 — 분절이 비결정론적이 된다.",
+                                  file=sys.stderr)
+                        continue
+                # `reasoning_effort` 미지원 모델도 같은 형태로 400 을 준다. 사고량 조절은
+                # 비용 최적화지 정확성 요건이 아니므로, 거부하면 떼고 계속 간다.
+                if r.status_code == 400 and "reasoning_effort" in body:
+                    err = (r.json().get("error") or {})
+                    if err.get("param") == "reasoning_effort":
+                        body = {k: v for k, v in body.items() if k != "reasoning_effort"}
+                        self.omit_reasoning_effort = True
+                        if not self._warned_reasoning:
+                            self._warned_reasoning = True
+                            print(f"[gateway] 경고: '{body.get('model')}' 는 reasoning_effort "
+                                  f"를 지원하지 않는다 — 모델 기본 사고량으로 돈다.",
+                                  file=sys.stderr)
+                        continue
+                if r.status_code == 400 and "response_format" in body:
+                    err = (r.json().get("error") or {})
+                    if err.get("param") in ("response_format", "response_format.type"):
+                        body = {k: v for k, v in body.items() if k != "response_format"}
+                        self.omit_json_mode = True
+                        continue
                 if r.status_code in (429, 500, 502, 503, 504, 529):
                     wait = min(2 ** attempt, 30)
                     time.sleep(wait)
@@ -129,7 +323,7 @@ class Gateway:
                     continue
                 r.raise_for_status()
                 payload = r.json()
-                self.usage.add(payload)
+                self.usage.add(payload, purpose)
                 return payload
             except httpx.HTTPError as e:
                 last_err = e
@@ -144,17 +338,55 @@ class Gateway:
         model: str | None = None,
         temperature: float = 0.0,
         max_tokens: int = 4096,
+        reasoning_effort=_INHERIT,
+        purpose: str = "other",
+        json_mode: bool = False,
     ) -> str:
+        """`reasoning_effort` 는 **비용의 유일한 실질 손잡이**다.
+
+        run05 실측: 총비용의 98% 가 출력 토큰이고(입력은 캐시 적중 90% 라 무시 가능),
+        분절 1콜의 출력 3,700 토큰 중 본문은 76 토큰뿐 — 나머지가 전부 사고 토큰이다.
+        같은 4문장 기준 gpt-5-mini 는 medium(기본) 14,332 → low 5,240 토큰으로 2.7배
+        싸지는데 태그 수와 원문 보존이 오히려 같거나 낫다. `minimal` 은 원문 보존이
+        4/4 → 2/4 로 무너져 쓸 수 없다.
+
+        gpt-5.4-mini 는 **기본이 사고 없음**이라 그대로 두면 태그를 필요량의 1/3 밖에
+        안 찍어 `too_few_tags` 로 전량 재시도된다 — 반드시 명시해야 한다. 단 사고를
+        켜면 `temperature=0` 이 거부되므로(사고 끈 상태에서만 허용) 결정론은 포기해야
+        한다. 결정론이 요건이면 모델을 Letsur `claude-sonnet-5` 로 바꿀 것.
+        """
+        # gpt-5 계열은 max_tokens 를 400 으로 거부한다 (param='max_tokens',
+        # "Use 'max_completion_tokens' instead"). Letsur 는 반대로 max_tokens 만 받는다.
+        effort = (self.reasoning_effort if reasoning_effort is _INHERIT
+                  else reasoning_effort)
+        budget_key = "max_completion_tokens" if self.is_openai else "max_tokens"
         body = {
             "model": model or self.model,
-            "max_tokens": max_tokens,
-            "temperature": temperature,
+            budget_key: max_tokens,
+            **({} if self.omit_temperature else {"temperature": temperature}),
+            **({"reasoning_effort": effort}
+               if (effort and self.is_openai and not self.omit_reasoning_effort)
+               else {}),
+            # 구문상 유효한 JSON 을 서버가 보장한다. temperature 를 0 으로 못 박는
+            # 모델에서는 이게 유일한 방어다 — en-de run01 에서 Profiler 가 깨진 JSON 을
+            # 냈고 **복구 호출까지 같은 실패**를 반복해 런이 죽었다.
+            **({"response_format": {"type": "json_object"}}
+               if (json_mode and self.is_openai and not self.omit_json_mode) else {}),
             "messages": [
-                {"role": "system", "content": system},
+                {"role": "system", "content": _cacheable(system)},
                 {"role": "user", "content": user},
             ],
         }
-        payload = self._post("/chat/completions", body)
+        # 추적은 실패해도 런을 죽이지 않는다 (tracing.py 참조).
+        run = tracing.start_llm_run(purpose, body["model"], system, user,
+                                    metadata={"max_tokens": max_tokens,
+                                              "reasoning_effort": effort})
+        try:
+            payload = self._post("/chat/completions", body, purpose)
+        except Exception as e:
+            run.finish(error=str(e))
+            raise
+        run.finish(payload)
         choice = payload["choices"][0]
         out = (choice["message"].get("content") or "").strip()
         # thinking 모델은 사고 토큰도 max_tokens 에 함께 잡힌다. 예산을 사고에 다 쓰면
@@ -172,7 +404,7 @@ class Gateway:
         에이전트 출력에는 원문(따옴표·인용부호 포함)이 그대로 들어가므로 이스케이프가
         깨지는 경우가 실제로 발생한다. 파싱 실패 시 깨진 출력을 모델에 되돌려
         한 번 복구시킨다."""
-        raw = self.chat(system, user, **kw)
+        raw = self.chat(system, user, **{**kw, "json_mode": True})
         try:
             return parse_json_loose(raw)
         except (ValueError, json.JSONDecodeError) as e:
@@ -181,7 +413,8 @@ class Gateway:
                 "Preserve all content; fix only syntax (unescaped quotes, missing commas, "
                 "trailing commas, unterminated strings).",
                 f"Parse error: {e}\n\n=== MALFORMED JSON ===\n{raw}",
-                **{**kw, "max_tokens": kw.get("max_tokens", 8000)},
+                **{**kw, "max_tokens": kw.get("max_tokens", 8000), "json_mode": True,
+                   "purpose": f"{kw.get('purpose', 'other')}:json_repair"},
             )
             return parse_json_loose(repaired)
 
@@ -192,7 +425,8 @@ class Gateway:
         out: list[list[float]] = []
         for i in range(0, len(texts), 64):
             chunk = texts[i : i + 64]
-            payload = self._post("/embeddings", {"model": self.embed_model, "input": chunk})
+            payload = self._post("/embeddings",
+                                 {"model": self.embed_model, "input": chunk}, "embed")
             out.extend(d["embedding"] for d in sorted(payload["data"], key=lambda d: d["index"]))
         return out
 

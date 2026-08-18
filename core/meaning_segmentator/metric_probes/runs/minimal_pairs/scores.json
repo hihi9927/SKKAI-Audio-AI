@@ -1,0 +1,276 @@
+{
+  "backends": [
+    "cos:e5-inst",
+    "cos:gte-base",
+    "entail:deberta-mnli"
+  ],
+  "scores": {
+    "cos:e5-inst": {
+      "polarity-en": {
+        "identical": 1.0,
+        "paraphrase": 0.9747,
+        "negation_flip": 0.8706,
+        "negation_flip2": 0.8643,
+        "antonym": 0.8169,
+        "unrelated": 0.6855
+      },
+      "participant-en": {
+        "identical": 1.0,
+        "paraphrase": 0.9921,
+        "negation_flip": 0.9089,
+        "role_swap": 0.9959,
+        "unrelated": 0.6605
+      },
+      "quantifier-en": {
+        "identical": 1.0,
+        "paraphrase": 0.9901,
+        "negation_flip": 0.8611,
+        "scope_change": 0.9254,
+        "unrelated": 0.7006
+      },
+      "modality-en": {
+        "identical": 1.0,
+        "paraphrase": 0.9822,
+        "negation_flip": 0.9096,
+        "modal_change": 0.9595,
+        "unrelated": 0.7217
+      },
+      "number-en": {
+        "identical": 1.0,
+        "paraphrase": 0.9711,
+        "negation_flip": 0.9079,
+        "number_change": 0.9451,
+        "unrelated": 0.6886
+      },
+      "participant-ko": {
+        "identical": 1.0,
+        "paraphrase": 0.9936,
+        "negation_flip": 0.9592,
+        "role_swap": 0.9796,
+        "unrelated": 0.7595
+      }
+    },
+    "cos:gte-base": {
+      "polarity-en": {
+        "identical": 1.0,
+        "paraphrase": 0.9578,
+        "negation_flip": 0.7295,
+        "negation_flip2": 0.7561,
+        "antonym": 0.617,
+        "unrelated": 0.4646
+      },
+      "participant-en": {
+        "identical": 1.0,
+        "paraphrase": 0.994,
+        "negation_flip": 0.7581,
+        "role_swap": 0.9948,
+        "unrelated": 0.4493
+      },
+      "quantifier-en": {
+        "identical": 1.0,
+        "paraphrase": 0.9683,
+        "negation_flip": 0.6873,
+        "scope_change": 0.8532,
+        "unrelated": 0.4714
+      },
+      "modality-en": {
+        "identical": 1.0,
+        "paraphrase": 0.9795,
+        "negation_flip": 0.6916,
+        "modal_change": 0.9318,
+        "unrelated": 0.4611
+      },
+      "number-en": {
+        "identical": 1.0,
+        "paraphrase": 0.944,
+        "negation_flip": 0.788,
+        "number_change": 0.8576,
+        "unrelated": 0.4468
+      },
+      "participant-ko": {
+        "identical": 1.0,
+        "paraphrase": 0.9916,
+        "negation_flip": 0.9103,
+        "role_swap": 0.9073,
+        "unrelated": 0.3736
+      }
+    },
+    "entail:deberta-mnli": {
+      "polarity-en": {
+        "identical": 0.9788,
+        "paraphrase": 0.9889,
+        "negation_flip": 0.0003,
+        "negation_flip2": 0.0004,
+        "antonym": 0.0002,
+        "unrelated": 0.0069
+      },
+      "participant-en": {
+        "identical": 0.9961,
+        "paraphrase": 0.9969,
+        "negation_flip": 0.0004,
+        "role_swap": 0.0012,
+        "unrelated": 0.0563
+      },
+      "quantifier-en": {
+        "identical": 0.9965,
+        "paraphrase": 0.9963,
+        "negation_flip": 0.0002,
+        "scope_change": 0.0267,
+        "unrelated": 0.0348
+      },
+      "modality-en": {
+        "identical": 0.9961,
+        "paraphrase": 0.9977,
+        "negation_flip": 0.0003,
+        "modal_change": 0.0963,
+        "unrelated": 0.009
+      },
+      "number-en": {
+        "identical": 0.9971,
+        "paraphrase": 0.9983,
+        "negation_flip": 0.0005,
+        "number_change": 0.0002,
+        "unrelated": 0.1316
+      },
+      "participant-ko": {
+        "identical": 0.9821,
+        "paraphrase": 0.07,
+        "negation_flip": 0.2517,
+        "role_swap": 0.9777,
+        "unrelated": 0.0426
+      }
+    }
+  },
+  "verdict": [
+    "`cos:e5-inst` — 부정 맹점 0세트, 참여자 맹점 1세트 ['participant-en']",
+    "`cos:gte-base` — 부정 맹점 0세트, 참여자 맹점 1세트 ['participant-en']",
+    "`entail:deberta-mnli` — 부정 맹점 1세트 ['participant-ko'], 참여자 맹점 1세트 ['participant-ko']"
+  ],
+  "fragment_check": {
+    "n": 6,
+    "rows": [
+      {
+        "full": "I don't think that will be a problem.",
+        "aligned": "I don't think that",
+        "flipped": "I do think that"
+      },
+      {
+        "full": "She didn't finish the report on time.",
+        "aligned": "She didn't finish the report",
+        "flipped": "She did finish the report"
+      },
+      {
+        "full": "The meeting will not be held tomorrow.",
+        "aligned": "The meeting won't be held",
+        "flipped": "The meeting will be held"
+      },
+      {
+        "full": "He never agreed to the terms.",
+        "aligned": "He never agreed",
+        "flipped": "He fully agreed"
+      },
+      {
+        "full": "We can't accept this proposal.",
+        "aligned": "We can't accept this",
+        "flipped": "We can accept this"
+      },
+      {
+        "full": "They have not left the building.",
+        "aligned": "They have not left",
+        "flipped": "They have now left"
+      }
+    ],
+    "backends": {
+      "cos:e5-inst": {
+        "correct": 6,
+        "mean_gap": 0.1016,
+        "pairs": [
+          [
+            0.8513,
+            0.8135
+          ],
+          [
+            0.9631,
+            0.8969
+          ],
+          [
+            0.9436,
+            0.8468
+          ],
+          [
+            0.9534,
+            0.795
+          ],
+          [
+            0.9135,
+            0.7788
+          ],
+          [
+            0.9098,
+            0.7942
+          ]
+        ]
+      },
+      "cos:gte-base": {
+        "correct": 6,
+        "mean_gap": 0.2109,
+        "pairs": [
+          [
+            0.7029,
+            0.6104
+          ],
+          [
+            0.9483,
+            0.7932
+          ],
+          [
+            0.9312,
+            0.6906
+          ],
+          [
+            0.8806,
+            0.5322
+          ],
+          [
+            0.7964,
+            0.5872
+          ],
+          [
+            0.8374,
+            0.6177
+          ]
+        ]
+      },
+      "contra:deberta-mnli": {
+        "correct": 6,
+        "mean_gap": 0.9684,
+        "pairs": [
+          [
+            0.001,
+            0.833
+          ],
+          [
+            0.0014,
+            0.9932
+          ],
+          [
+            0.0007,
+            0.9952
+          ],
+          [
+            0.0006,
+            0.9997
+          ],
+          [
+            0.002,
+            0.9984
+          ],
+          [
+            0.0007,
+            0.9973
+          ]
+        ]
+      }
+    }
+  }
+}
