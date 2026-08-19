@@ -93,6 +93,73 @@ def output_rules(spaced: bool, min_t: int = 3) -> str:
     return base.replace("- If no segmentation is needed,", cov + "- If no segmentation is needed,")
 
 
+def split_sections(prompt: str) -> dict[str, str]:
+    """`[Section]` 헤더로 프롬프트를 가른다. 헤더 자체는 값에 넣지 않는다."""
+    out: dict[str, str] = {}
+    cur = None
+    buf: list[str] = []
+    for line in prompt.splitlines():
+        if line.strip().startswith("[") and line.strip().endswith("]"):
+            if cur is not None:
+                out[cur] = "\n".join(buf).strip()
+            cur = line.strip()
+            buf = []
+        elif cur is not None:
+            buf.append(line)
+    if cur is not None:
+        out[cur] = "\n".join(buf).strip()
+    return out
+
+
+# focus 별로 손대도 되는 섹션. `priority` 만 엄격하다 — 지시문이 "[Priority Rules] ONLY"
+# 라고 못박는데 run03 iter1 에서 focus=placement 인 채로 [Priority Rules] 를 고쳤다.
+_FOCUS_SECTIONS = {
+    "priority": {"[Priority Rules]"},
+    "coverage": {"[When to Segment]", "[Never Segment]", "[Decision Procedure]",
+                 "[Priority Rules]"},
+    "placement": {"[When to Segment]", "[Never Segment]", "[Decision Procedure]",
+                  "[Examples — Segment]", "[Examples — Do NOT Segment]"},
+    "format": {"[Decision Procedure]", "[Core Principles]", "[Role]",
+               "[Examples — Segment]", "[Examples — Do NOT Segment]"},
+}
+
+MAX_SECTIONS_CHANGED = 2
+MAX_SECTION_GROWTH = 1.25
+
+
+def check_revision(old: str, new: str, focus: str | None = None) -> list[str]:
+    """개정본이 **국소적인지** 검사하는 하드 게이트. 위반 사유 목록을 돌려준다.
+
+    종전에는 "AT MOST TWO sections", "focus 를 따르라" 가 전부 지시문상의 권고였고,
+    실측에서 지켜지지 않았다 (en-de run01~03):
+      - run03 iter1: `focus=placement` 인데 `[Priority Rules]` 를 고쳤다
+      - run03 iter1: 한 섹션 개정에 프롬프트가 +29%(10,392 -> 13,401자) 부풀었다
+      - dev 분절이 62~95% 바뀌어 쌍체 비교의 이점(안 바뀐 문장은 분산 기여 0)이 사라졌고
+        se 가 0.007~0.009 로 커졌다
+    그 결과 dev 까지 간 개정 3건이 **전부 음수**(t = −0.8 ~ −3.2)로 기각됐다. 채택 문턱이
+    아니라 개정 품질이 원인이므로, 범위를 코드로 강제한다.
+    """
+    problems: list[str] = []
+    a, b = split_sections(old), split_sections(new)
+    changed = [k for k in b if k in a and a[k] != b[k]]
+    added = [k for k in b if k not in a]
+    removed = [k for k in a if k not in b]
+    if added or removed:
+        problems.append(f"섹션 추가/삭제: +{added} -{removed}")
+    if len(changed) > MAX_SECTIONS_CHANGED:
+        problems.append(f"{len(changed)}개 섹션 변경 — 최대 {MAX_SECTIONS_CHANGED}개 ({changed})")
+    for k in changed:
+        if len(a[k]) >= 200 and len(b[k]) > len(a[k]) * MAX_SECTION_GROWTH:
+            problems.append(f"{k} 가 {len(a[k])} -> {len(b[k])}자 "
+                            f"({len(b[k])/len(a[k]):.2f}배 > {MAX_SECTION_GROWTH})")
+    allowed = _FOCUS_SECTIONS.get(focus or "")
+    if allowed:
+        stray = [k for k in changed if k not in allowed]
+        if stray and focus == "priority":
+            problems.append(f"focus=priority 인데 {stray} 를 고침 — [Priority Rules] 만 허용")
+    return problems
+
+
 def check_skeleton(prompt: str) -> list[str]:
     return [s for s in REQUIRED_SECTIONS if s not in prompt]
 
@@ -772,12 +839,22 @@ Hard constraints — violating any of these makes your output unusable:
    validator depends on it.
 3. Change AT MOST TWO sections this iteration. Leave the rest byte-identical. A full rewrite
    makes it impossible to attribute the score change to anything.
+   **A changed section may not grow beyond 1.25x its current length.** These two limits are
+   enforced by a deterministic gate after you answer — a revision that breaks either is
+   DISCARDED and the iteration is wasted. Edit the specific lines that are wrong; do not
+   rewrite a section wholesale to express one new idea.
+   Aim for the smallest edit that could plausibly move the metric. Measured failure: revisions
+   that rewrote a section wholesale changed 62-95% of all segmentations, which destroyed the
+   paired comparison's power (it only has signal on sentences whose segmentation changed) and
+   were rejected 3 times out of 3.
 4. At most 12 examples per example section. If you add one, remove a weaker one. The prompt
    must stay a set of rules, not a memorised dataset.
 5. Consult the attempt history. Every entry with "adopted": false is a revision that was
    MEASURED AND REJECTED — its scores are shown. Do not repeat it or any minor variant of it.
-   If your last attempt was rejected, change a DIFFERENT section this time, or move in the
-   opposite direction. Repeating a reverted change makes the loop oscillate forever.
+   If your last attempt was rejected, move in the OPPOSITE direction within the section the
+   focus points at, or edit a different rule inside it. **Rule 7 (focus) outranks this one** —
+   never leave the focus's section just because your last attempt there failed. When focus is
+   "priority" a gate rejects any edit outside [Priority Rules].
 6. Rules must generalise. Never write a rule that names a specific sentence from the data.
 7. Obey the critic's "focus" field. It is computed from measurements, not opinion:
    - "format"    → touch the sections governing adherence and the decision procedure,
@@ -790,6 +867,31 @@ Hard constraints — violating any of these makes your output unusable:
                    [Never Segment] and [Decision Procedure] to describe better positions.
                    Use the judgement "cause" and "shift" evidence to say where the boundary
                    should have gone instead.
+                   **Do not fix placement by forbidding more positions.** [Output Rules]
+                   demands a minimum number of tags per sentence and that minimum does not
+                   move; every prohibition you add makes it harder to reach, and output below
+                   it is REJECTED and re-generated. A risky-but-defensible position belongs at
+                   the BOTTOM of [Priority Rules], never in [Never Segment] — the truncator
+                   drops it for free, whereas withholding it costs a retry and removes an
+                   option the ranking could have used. [Never Segment] is only for positions
+                   that are wrong at ANY latency budget.
+                   Prefer rewriting a prohibition as a ranking signal. If your edit would
+                   plausibly reduce how many boundaries the model marks, it is the wrong edit.
+                   A prohibition leaks in through THREE sections, not one — guard all three:
+                     * [Never Segment] — the obvious one.
+                     * [When to Segment] — do NOT add negative admission conditions here
+                       ("do not mark if the left side ends in a determiner / an auxiliary /
+                       an unheaded modifier ..."). Phrased as an admission test they remove the
+                       candidate entirely; the same linguistic fact belongs in [Priority Rules]
+                       as a demotion, where it costs nothing.
+                     * [Decision Procedure] step 1 — this step marks GENEROUSLY and must not
+                       consult risk at all. Risk is step 2's job. Never move a coherence or
+                       safety check into step 1, and never make step 1 "enforce" a rule from
+                       another section.
+                   Measured failure this guard exists for: a placement revision rewrote
+                   [When to Segment] with coherence pre-checks and wired them into step 1;
+                   first-pass `too_few_tags` went 5/40 -> 19/40 and retries went 25 -> 44 calls
+                   (en-de run03 iter1), and the revision was rejected anyway.
    - "priority"  → the positions are defensible but ranked wrong: a risky boundary was given
                    rank 1, so it survives even under the tightest budget. Edit [Priority Rules]
                    ONLY. Do not move or remove any boundary — reorder the confidence criteria.
@@ -862,7 +964,15 @@ class PromptEngineer:
         history: list[dict],
         profile: dict,
         t_grid: list[int],
+        only_rule: str | None = None,
     ) -> dict:
+        """`only_rule` 이 있으면 **그 규칙 하나만** 반영하게 한다.
+
+        Critic 은 케이스마다 `proposed_rule` 을 낸다. 그걸 한 번에 다 넣으면 섹션이
+        배로 부풀고(run03 iter1: +29%) 어느 규칙이 도움됐는지 영영 알 수 없다 —
+        점수는 하나인데 규칙은 여럿이라 신용 배분이 안 된다. 규칙 하나짜리 개정을
+        여러 개 만들어 **probe 로 고르면** 그 둘이 동시에 풀린다.
+        """
         hist = json.dumps(history[-8:], ensure_ascii=False, indent=2)
         user = (
             f"Language profile (fixed):\n{json.dumps(profile, ensure_ascii=False, indent=2)}\n\n"
@@ -873,5 +983,14 @@ class PromptEngineer:
             f"Critic feedback on the current prompt:\n{json.dumps(critique, ensure_ascii=False, indent=2)}\n\n"
             f"=== CURRENT PROMPT ===\n{current_prompt}"
         )
+        if only_rule:
+            user += (
+                "\n\n=== THIS REVISION'S SINGLE TARGET ===\n"
+                "Implement EXACTLY ONE change, expressing this idea and nothing else:\n"
+                f"  {only_rule}\n"
+                "Ignore every other proposal in the critique for now — they are being tried "
+                "separately and the results are compared. Adding more than this one idea makes "
+                "the comparison meaningless. Touch ONE section if you can."
+            )
         return self.gw.chat_json(ENGINEER_SYSTEM, user, max_tokens=PROMPT_MAX_TOKENS,
                                  purpose="prompt_engineer")

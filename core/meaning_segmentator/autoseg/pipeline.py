@@ -158,6 +158,7 @@ def segment_batch(
     normalize_fn=None,
     reasoning_effort: str | None = None,
     batch_size: int = 1,
+    first_pass_sink: list | None = None,
 ) -> tuple[list[str], list[bool]]:
     """프롬프트 주입형 분절. 동일 (프롬프트, 문장) 조합은 캐시 재사용.
 
@@ -170,6 +171,11 @@ def segment_batch(
     다만 1차 판정은 정규화 **이후**에 한다 — 표기 흔들림은 프롬프트 품질이 아니다.
 
     반환: (분절 결과, 1차 시도에서 포맷을 지켰는지 여부)
+
+    `first_pass_sink` 를 주면 **재시도 전** 위반을 그대로 담는다. `violations.json` 은
+    복구 뒤 최종 상태라, 1차 통과율이 떨어져도 무엇이 깨졌는지 산출물에 남지 않는다 —
+    run03 iter1 에서 1차 0.97 → 0.53 의 원인을 재현 실험으로 다시 부르고서야 알았다
+    (`too_few_tags` 5 → 19, 개정본이 마킹을 줄임).
     """
     # **배치.** 한 콜에 여러 문장을 넣으면 문장당 사고 토큰이 크게 준다 (실측 24문장:
     # b=1 5,237 → b=3 2,994 → b=6 1,680). 비용의 90% 가 분절 사고이므로 가장 큰 레버다.
@@ -207,6 +213,10 @@ def segment_batch(
             vs = validate_fn(t, out)
             if vs:
                 first_ok = False
+                if first_pass_sink is not None:
+                    first_pass_sink.extend(
+                        {"rule": v.rule, "detail": v.detail, "text": t, "seg_text": out}
+                        for v in vs)
                 detail = "; ".join(f"{v.rule}: {v.detail}" for v in vs)
                 out = gw.chat(
                     system=prompt,
@@ -482,7 +492,7 @@ def chunk_budget(text: str, target_chunk_words: int, spaced: bool) -> int:
 
 
 def truncate(seg_text: str, target_chunk_words: int,
-             spaced: bool = True) -> tuple[str, int]:
+             spaced: bool = True, min_gap: int = 0) -> tuple[str, int]:
     """순위 상위 `k−1` 개 경계만 남긴다. 반환 `(절단된 seg_text, missing_boundaries)`.
 
     `missing_boundaries` 는 예산이 요구한 경계 중 프롬프트가 못 준 개수다. 프롬프트가 충분히 공격적으로 자르지
@@ -490,6 +500,20 @@ def truncate(seg_text: str, target_chunk_words: int,
 
     경계를 **빼기만** 하므로 조각 수가 반드시 줄고 `laal_words` 가 반드시 오른다 —
     단조성이 구조적으로 보장된다. 순위가 없으면(비교군) 절단하지 않고 그대로 둔다.
+
+    `min_gap` — 이미 고른 경계(및 문장 양끝)와 이 어절 수 미만이면 건너뛴다.
+    **T 는 조각 크기의 평균이지 하한이 아니다.** T=6 인데 문장의 절반(47/100)이 2어절
+    이하 조각을 하나 이상 갖고 있었고, 그런 문장은 effective 가 0.728 로 최단 조각이
+    4어절 이상인 문장(0.784)보다 크게 낮았다. 순위만 보고 고르면 1·2위가 붙어 있을 때
+    1어절 조각이 나온다 — 절단기가 **간격을 안 보기** 때문이다.
+
+    en-de test 100문장 오프라인 시뮬 (min_gap 0/2/3/4):
+        T=6   eff 0.7533 / 0.7543 / **0.7635** / 0.7511,  laal 4.50 -> 4.17
+        T=8   eff 0.7743 / 0.7785 / **0.7814** / 0.7729,  laal 5.45 -> 5.22
+    3 이 두 T 모두에서 최적이고 **지연도 함께 준다**. 4 는 과해서 좋은 자리를 너무
+    배제한다. 이득은 contradiction 에서 나온다(0.0724 -> 0.0526) — 다만 조각이 길어지면
+    NLI 잡음 바닥도 함께 내려가므로, 실제 조기방출 감소인지 바닥 효과인지는 미분리다.
+    제약으로 `want` 를 못 채우면 순위 순으로 마저 채운다 (실측 미달 0건).
     """
     tags = list(TAG_RE.finditer(seg_text))
     if not tags:
@@ -502,7 +526,32 @@ def truncate(seg_text: str, target_chunk_words: int,
         return seg_text, max(0, want - len(tags))      # 순위 없음 — 절단 불가
 
     order = sorted(range(len(prios)), key=lambda i: prios[i])
-    keep = set(order[:want])
+    if min_gap <= 0:
+        keep = set(order[:want])
+    else:
+        # 태그 i 의 어절 위치 = 그 앞까지의 누적 어절 수
+        parts = TAG_RE.split(seg_text.strip())
+        pieces = [q.strip() for q in parts[::2]]
+        wc = [unit_count(q, spaced) for q in pieces]
+        pos, acc = [], 0
+        for w in wc[:-1]:
+            acc += w
+            pos.append(acc)
+        total = acc + wc[-1]
+        chosen: list[int] = []
+        for i in order:
+            if len(chosen) >= want:
+                break
+            edges = [0, total] + [pos[j] for j in chosen]
+            if min(abs(pos[i] - e) for e in edges) < min_gap:
+                continue
+            chosen.append(i)
+        for i in order:                      # 제약으로 못 채우면 순위 순으로 보충
+            if len(chosen) >= want:
+                break
+            if i not in chosen:
+                chosen.append(i)
+        keep = set(chosen)
     return _rebuild(seg_text, keep, spaced), max(0, want - len(tags))
 
 
@@ -529,16 +578,33 @@ def _rebuild(seg_text: str, keep: set[int], spaced: bool) -> str:
     return out.strip()
 
 
-def looks_untranslated(source: str, output: str, n: int = 8) -> bool:
-    """출력이 원문 조각을 그대로 담고 있으면 번역 실패로 본다.
+def looks_untranslated(source: str, output: str, n: int = 8,
+                       min_coverage: float = 0.7) -> bool:
+    """출력이 원문을 그대로 되돌린 것으로 보이면 참.
 
-    원문의 n-gram(공백 제거) 중 하나라도 출력에 그대로 나타나면 참.
-    언어 무관 휴리스틱 — 스크립트를 가정하지 않는다."""
+    **판정 기준은 "n-gram 하나라도 겹치는가"가 아니라 "출력의 몇 %가 원문으로 덮이는가"다.**
+    종전(any n-gram)은 어휘·고유명사를 공유하는 언어쌍에서 무너졌다 — en→de 실측에서
+    정상 번역의 16.8% 를 에코로 오판했다(`Eine Suche im Internet`, `und civitas, ...`).
+    LLM 번역기 경로에서는 그만큼 헛재시도가 나간다.
+
+    커버리지로 바꾸면 갈린다 (en-de test 355조각 실측):
+        정상 번역   평균 0.066, 중앙 0.000, p90 0.276
+        실제 에코   평균 0.977
+        임계 0.7    오탐 2.0%, 미탐 2.3%
+
+    남은 오탐 2% 는 숫자·고유명사만으로 이뤄진 짧은 조각이라 원리적으로 못 가른다.
+    언어 무관 휴리스틱이라는 성질은 그대로다 — 스크립트를 가정하지 않는다.
+    """
     src = re.sub(r"\s+", "", source)
     out = re.sub(r"\s+", "", output)
-    if len(src) < n or not out:
+    if len(src) < n or len(out) < n:
         return False
-    return any(src[i : i + n] in out for i in range(len(src) - n + 1))
+    covered = [False] * len(out)
+    for i in range(len(out) - n + 1):
+        if out[i : i + n] in src:
+            for j in range(i, i + n):
+                covered[j] = True
+    return sum(covered) / len(out) >= min_coverage
 
 
 # ── A4 Translation Tools ─────────────────────────────────────────────────

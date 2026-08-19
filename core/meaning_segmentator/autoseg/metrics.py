@@ -291,7 +291,12 @@ def make_adequacy_backend(name: str, **kw) -> AdequacyBackend:
 NLI_MODELS = {
     "deberta-mnli": "microsoft/deberta-large-mnli",              # en 타깃. 분리가 가장 깨끗
     "deberta-anli": "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli",
-    "mdeberta-xnli": "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7",  # 다국어
+    "mdeberta-xnli": "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7",  # 다국어(base)
+    # **다국어 large.** base 급 `mdeberta-xnli` 는 ko/zh/ja 타깃에서 consistency 곡선이
+    # 뒤집힌다 (T 를 키울수록 offline 번역에서 멀어진다고 나온다 — 물리적으로 불가능).
+    # 같은 데이터에서 comet·chrf 는 5/5 정상 방향이라 NLI 쪽 결함이다.
+    "xlmr-xnli": "joeddav/xlm-roberta-large-xnli",
+    "xlmr-anli": "vicgalle/xlm-roberta-large-xnli-anli",
 }
 
 
