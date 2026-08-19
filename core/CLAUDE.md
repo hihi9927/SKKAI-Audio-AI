@@ -12,7 +12,7 @@
 | `meaning_segmentator/autoseg/` | 분절 프롬프트 자동 생성 에이전트 루프 (v2). 설계 @meaning_segmentator/AUTO_PROMPT_LOOP_DESIGN.md, 사용법 @meaning_segmentator/autoseg/README.md |
 | `meaning_segmentator/metric_probes/` | `contradiction`(NLI) 지표 백엔드 대체 탐침. **루프 경로 아님** — 기존 런을 읽어 재활용. 결론 @meaning_segmentator/NLI_ALTERNATIVES.md |
 | `meaning_segmentator/docs/` | 진단 기록. `<SEG:n>` 순위 무정보 원인·1차 처방 @meaning_segmentator/docs/RANK_METRIC_DIAGNOSIS.md |
-| ⤷ 근거·이력 | 문헌 대조 @meaning_segmentator/SEGMENTATION_CRITERIA_RELATED_WORK.md, 폐기된 v1 설계·지표 `meaning_segmentator/docs_v1/` |
+| ⤷ 근거·이력 | 문헌 대조 @meaning_segmentator/SEGMENTATION_CRITERIA_RELATED_WORK.md |
 | `research/cif`, `research/context_scoring` | CIF·컨텍스트 스코어링 실험. 런타임 경로 아님 |
 
 두 GPT 모듈 모두 기본 모델은 `gpt-5.4-mini` (런타임 경로. `autoseg/`의 모델과 무관하다). 두 플래그 모두 꺼져 있으면 서버는 Google Translate로 번역하므로 `core/`의 GPT 경로를 아예 타지 않는다.
