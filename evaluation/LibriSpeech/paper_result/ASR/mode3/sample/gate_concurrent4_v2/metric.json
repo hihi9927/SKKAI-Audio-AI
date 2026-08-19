@@ -1,0 +1,62 @@
+{
+  "overall": {
+    "num_files": 0,
+    "wer": null,
+    "first_token_latency": null,
+    "model_runtime": null,
+    "avg_fsl_sec": null,
+    "avg_fsl_normalized_sec": null,
+    "avg_encode_sec": null,
+    "avg_decode_sec": null,
+    "avg_final_decode_sec": null,
+    "avg_trans_sec": null,
+    "avg_output_tokens_per_commit": null,
+    "commit_stats": {
+      "counts": {
+        "vad": 0,
+        "seg": 0,
+        "dot": 0,
+        "finish": 0,
+        "always": 0
+      },
+      "total": 0,
+      "ratios": {
+        "vad": 0.0,
+        "seg": 0.0,
+        "dot": 0.0,
+        "finish": 0.0,
+        "always": 0.0
+      }
+    }
+  },
+  "concurrency": {
+    "num_clients": 4,
+    "num_chapters": 2,
+    "makespan_sec": 120.14,
+    "queue_balance_prediction": {
+      "total_work_sec": 2745.0799374999997,
+      "ideal_makespan_sec": 686.2699843749999,
+      "predicted_makespan_sec": 1387.4849999999997,
+      "predicted_efficiency": 0.4946143449298552
+    },
+    "worker_idle_sec": {
+      "per_worker": [
+        0.0,
+        3.01,
+        120.14,
+        120.14
+      ],
+      "total": 243.29,
+      "max": 120.14,
+      "mean": 60.82
+    },
+    "fsl_sec_percentiles": {
+      "count": 0,
+      "p50": null,
+      "p95": null,
+      "p99": null
+    }
+  },
+  "folders": {},
+  "raw_results": []
+}

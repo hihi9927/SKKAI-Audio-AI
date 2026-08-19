@@ -1,0 +1,1478 @@
+/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/torch/cuda/__init__.py:283: UserWarning: 
+    Found GPU0 NVIDIA GB10 which is of cuda capability 12.1.
+    Minimum and Maximum cuda capability supported by this version of PyTorch is
+    (8.0) - (12.0)
+    
+  warnings.warn(
+Server log file: /home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/evaluation/LibriSpeech/paper_result/ASR/mode3/sample/gate_concurrent4/logs/server.log
+VAD disabled via --no-vad flag
+Loading model: Qwen/Qwen3-ASR-1.7B
+INFO 08-03 22:53:12 [model.py:530] Resolved architecture: Qwen3ASRForConditionalGeneration
+Parse safetensors files:   0%|          | 0/2 [00:00<?, ?it/s]Parse safetensors files:  50%|█████     | 1/2 [00:01<00:01,  1.25s/it]Parse safetensors files: 100%|██████████| 2/2 [00:01<00:00,  1.60it/s]
+INFO 08-03 22:53:14 [model.py:1545] Using max model len 4096
+INFO 08-03 22:53:14 [scheduler.py:229] Chunked prefill is enabled with max_num_batched_tokens=2048.
+INFO 08-03 22:53:14 [vllm.py:630] Asynchronous scheduling is enabled.
+INFO 08-03 22:53:14 [vllm.py:637] Disabling NCCL for DP synchronization when using async scheduling.
+The following generation flags are not valid and may be ignored: ['temperature']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
+WARNING 08-03 22:53:16 [system_utils.py:136] We must use the `spawn` multiprocessing start method. Overriding VLLM_WORKER_MULTIPROC_METHOD to 'spawn'. See https://docs.vllm.ai/en/latest/usage/troubleshooting.html#python-multiprocessing for more information. Reasons: CUDA is initialized
+/home/skkai/anaconda3/envs/speech_ai/lib/python3.12/site-packages/torch/cuda/__init__.py:283: UserWarning: 
+    Found GPU0 NVIDIA GB10 which is of cuda capability 12.1.
+    Minimum and Maximum cuda capability supported by this version of PyTorch is
+    (8.0) - (12.0)
+    
+  warnings.warn(
+[0;36m(EngineCore_DP0 pid=2035607)[0;0m INFO 08-03 22:53:31 [core.py:97] Initializing a V1 LLM engine (v0.14.0) with config: model='Qwen/Qwen3-ASR-1.7B', speculative_config=None, tokenizer='Qwen/Qwen3-ASR-1.7B', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.bfloat16, max_seq_len=4096, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, enable_return_routed_experts=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False, enable_mfu_metrics=False, enable_mm_processor_stats=False, enable_logging_iteration_details=False), seed=0, served_model_name=Qwen/Qwen3-ASR-1.7B, enable_prefix_caching=True, enable_chunked_prefill=True, pooler_config=None, compilation_config={'level': None, 'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'splitting_ops': ['vllm::unified_attention', 'vllm::unified_attention_with_output', 'vllm::unified_mla_attention', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::linear_attention', 'vllm::plamo2_mamba_mixer', 'vllm::gdn_attention_core', 'vllm::kda_attention', 'vllm::sparse_attn_indexer'], 'compile_mm_encoder': False, 'compile_sizes': [], 'compile_ranges_split_points': [2048], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': False, 'fuse_attn_quant': False, 'eliminate_noops': True, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 256, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': True}, 'local_cache_dir': None}
+[0;36m(EngineCore_DP0 pid=2035607)[0;0m INFO 08-03 22:53:33 [parallel_state.py:1214] world_size=1 rank=0 local_rank=0 distributed_init_method=tcp://115.145.230.36:33051 backend=nccl
+[0;36m(EngineCore_DP0 pid=2035607)[0;0m INFO 08-03 22:53:33 [parallel_state.py:1425] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank N/A
+[0;36m(EngineCore_DP0 pid=2035607)[0;0m INFO 08-03 22:53:46 [gpu_model_runner.py:3808] Starting to load model Qwen/Qwen3-ASR-1.7B...
+[0;36m(EngineCore_DP0 pid=2035607)[0;0m INFO 08-03 22:53:47 [mm_encoder_attention.py:86] Using AttentionBackendEnum.FLASH_ATTN for MMEncoderAttention.
+[0;36m(EngineCore_DP0 pid=2035607)[0;0m INFO 08-03 22:53:47 [vllm.py:630] Asynchronous scheduling is enabled.
+[0;36m(EngineCore_DP0 pid=2035607)[0;0m INFO 08-03 22:53:48 [cuda.py:351] Using FLASH_ATTN attention backend out of potential backends: ('FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION')
+[0;36m(EngineCore_DP0 pid=2035607)[0;0m Loading safetensors checkpoint shards:   0% Completed | 0/2 [00:00<?, ?it/s]
+[0;36m(EngineCore_DP0 pid=2035607)[0;0m Loading safetensors checkpoint shards:  50% Completed | 1/2 [00:03<00:03,  3.11s/it]
+[0;36m(EngineCore_DP0 pid=2035607)[0;0m Loading safetensors checkpoint shards: 100% Completed | 2/2 [00:48<00:00, 27.83s/it]
+[0;36m(EngineCore_DP0 pid=2035607)[0;0m Loading safetensors checkpoint shards: 100% Completed | 2/2 [00:48<00:00, 24.12s/it]
+[0;36m(EngineCore_DP0 pid=2035607)[0;0m 
+[0;36m(EngineCore_DP0 pid=2035607)[0;0m INFO 08-03 22:54:39 [default_loader.py:291] Loading weights took 49.13 seconds
+[0;36m(EngineCore_DP0 pid=2035607)[0;0m INFO 08-03 22:54:40 [gpu_model_runner.py:3905] Model loading took 3.87 GiB memory and 52.073195 seconds
+[0;36m(EngineCore_DP0 pid=2035607)[0;0m INFO 08-03 22:54:41 [gpu_model_runner.py:4715] Encoder cache will be initialized with a budget of 2048 tokens, and profiled with 5 audio items of the maximum feature size.
+[0;36m(EngineCore_DP0 pid=2035607)[0;0m INFO 08-03 22:54:52 [backends.py:644] Using cache directory: /home/skkai/.cache/vllm/torch_compile_cache/9e5435e873/rank_0_0/backbone for vLLM's torch.compile
+[0;36m(EngineCore_DP0 pid=2035607)[0;0m INFO 08-03 22:54:52 [backends.py:704] Dynamo bytecode transform time: 8.35 s
+[0;36m(EngineCore_DP0 pid=2035607)[0;0m INFO 08-03 22:55:06 [backends.py:261] Cache the graph of compile range (1, 2048) for later use
+[0;36m(EngineCore_DP0 pid=2035607)[0;0m INFO 08-03 22:55:11 [backends.py:278] Compiling a graph for compile range (1, 2048) takes 5.39 s
+[0;36m(EngineCore_DP0 pid=2035607)[0;0m INFO 08-03 22:55:11 [monitor.py:34] torch.compile takes 13.74 s in total
+[0;36m(EngineCore_DP0 pid=2035607)[0;0m INFO 08-03 22:55:13 [gpu_worker.py:358] Available KV cache memory: 12.19 GiB
+[0;36m(EngineCore_DP0 pid=2035607)[0;0m INFO 08-03 22:55:14 [kv_cache_utils.py:1305] GPU KV cache size: 114,096 tokens
+[0;36m(EngineCore_DP0 pid=2035607)[0;0m INFO 08-03 22:55:14 [kv_cache_utils.py:1310] Maximum concurrency for 4,096 tokens per request: 27.86x
+[0;36m(EngineCore_DP0 pid=2035607)[0;0m 2026-08-03 22:55:15,427 - INFO - autotuner.py:256 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+[0;36m(EngineCore_DP0 pid=2035607)[0;0m 2026-08-03 22:55:15,478 - INFO - autotuner.py:262 - flashinfer.jit: [Autotuner]: Autotuning process ends
+[0;36m(EngineCore_DP0 pid=2035607)[0;0m Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   0%|          | 0/35 [00:00<?, ?it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   3%|▎         | 1/35 [00:03<02:07,  3.74s/it]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   6%|▌         | 2/35 [00:04<01:04,  1.94s/it]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   9%|▊         | 3/35 [00:05<00:43,  1.37s/it]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  11%|█▏        | 4/35 [00:05<00:33,  1.10s/it]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  14%|█▍        | 5/35 [00:06<00:28,  1.06it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  17%|█▋        | 6/35 [00:07<00:24,  1.17it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  20%|██        | 7/35 [00:07<00:22,  1.25it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  23%|██▎       | 8/35 [00:08<00:20,  1.32it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  26%|██▌       | 9/35 [00:09<00:18,  1.40it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  29%|██▊       | 10/35 [00:09<00:16,  1.48it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  31%|███▏      | 11/35 [00:10<00:15,  1.54it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  34%|███▍      | 12/35 [00:10<00:14,  1.59it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  37%|███▋      | 13/35 [00:11<00:13,  1.61it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  40%|████      | 14/35 [00:12<00:12,  1.63it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  43%|████▎     | 15/35 [00:12<00:12,  1.65it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  46%|████▌     | 16/35 [00:13<00:11,  1.67it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  49%|████▊     | 17/35 [00:13<00:10,  1.68it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  51%|█████▏    | 18/35 [00:14<00:09,  1.71it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  54%|█████▍    | 19/35 [00:14<00:09,  1.73it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  57%|█████▋    | 20/35 [00:15<00:08,  1.75it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  60%|██████    | 21/35 [00:16<00:07,  1.76it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  63%|██████▎   | 22/35 [00:16<00:07,  1.77it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  66%|██████▌   | 23/35 [00:17<00:06,  1.78it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  69%|██████▊   | 24/35 [00:17<00:06,  1.79it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  71%|███████▏  | 25/35 [00:18<00:05,  1.84it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  74%|███████▍  | 26/35 [00:18<00:04,  1.90it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  77%|███████▋  | 27/35 [00:19<00:04,  1.94it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  80%|████████  | 28/35 [00:19<00:03,  1.98it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  83%|████████▎ | 29/35 [00:20<00:02,  2.01it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  86%|████████▌ | 30/35 [00:20<00:02,  2.02it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  89%|████████▊ | 31/35 [00:21<00:01,  2.04it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  91%|█████████▏| 32/35 [00:21<00:01,  2.06it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  94%|█████████▍| 33/35 [00:22<00:00,  2.08it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  97%|█████████▋| 34/35 [00:22<00:00,  2.09it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE): 100%|██████████| 35/35 [00:22<00:00,  2.61it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE): 100%|██████████| 35/35 [00:22<00:00,  1.54it/s]
+[0;36m(EngineCore_DP0 pid=2035607)[0;0m Capturing CUDA graphs (decode, FULL):   0%|          | 0/19 [00:00<?, ?it/s]Capturing CUDA graphs (decode, FULL):   5%|▌         | 1/19 [00:00<00:15,  1.14it/s]Capturing CUDA graphs (decode, FULL):  11%|█         | 2/19 [00:01<00:11,  1.47it/s]Capturing CUDA graphs (decode, FULL):  16%|█▌        | 3/19 [00:01<00:09,  1.63it/s]Capturing CUDA graphs (decode, FULL):  21%|██        | 4/19 [00:02<00:08,  1.70it/s]Capturing CUDA graphs (decode, FULL):  26%|██▋       | 5/19 [00:03<00:07,  1.76it/s]Capturing CUDA graphs (decode, FULL):  32%|███▏      | 6/19 [00:03<00:07,  1.79it/s]Capturing CUDA graphs (decode, FULL):  37%|███▋      | 7/19 [00:04<00:06,  1.83it/s]Capturing CUDA graphs (decode, FULL):  42%|████▏     | 8/19 [00:04<00:05,  1.85it/s]Capturing CUDA graphs (decode, FULL):  47%|████▋     | 9/19 [00:05<00:05,  1.91it/s]Capturing CUDA graphs (decode, FULL):  53%|█████▎    | 10/19 [00:05<00:04,  1.99it/s]Capturing CUDA graphs (decode, FULL):  58%|█████▊    | 11/19 [00:06<00:03,  2.05it/s]Capturing CUDA graphs (decode, FULL):  63%|██████▎   | 12/19 [00:06<00:03,  2.09it/s]Capturing CUDA graphs (decode, FULL):  68%|██████▊   | 13/19 [00:06<00:02,  2.13it/s]Capturing CUDA graphs (decode, FULL):  74%|███████▎  | 14/19 [00:07<00:02,  2.16it/s]Capturing CUDA graphs (decode, FULL):  79%|███████▉  | 15/19 [00:07<00:01,  2.18it/s]Capturing CUDA graphs (decode, FULL):  84%|████████▍ | 16/19 [00:08<00:01,  2.21it/s]Capturing CUDA graphs (decode, FULL):  89%|████████▉ | 17/19 [00:08<00:00,  2.23it/s]Capturing CUDA graphs (decode, FULL):  95%|█████████▍| 18/19 [00:09<00:00,  2.25it/s]Capturing CUDA graphs (decode, FULL): 100%|██████████| 19/19 [00:09<00:00,  2.06it/s]
+[0;36m(EngineCore_DP0 pid=2035607)[0;0m INFO 08-03 22:55:48 [gpu_model_runner.py:4856] Graph capturing finished in 33 secs, took 0.23 GiB
+[0;36m(EngineCore_DP0 pid=2035607)[0;0m INFO 08-03 22:55:48 [core.py:273] init engine (profile, create kv cache, warmup model) took 68.29 seconds
+이 vLLM 버전은 use_beam_search를 지원하지 않습니다. Greedy decoding으로 fallback합니다. (beam_size=2 무시)
+Greedy decoding (no repetition_penalty)
+Model loaded successfully
+Starting WebSocket server on ws://0.0.0.0:8766
+Warming up model...
+Warmup complete
+server listening on 0.0.0.0:8766
+Server listening on ws://0.0.0.0:8766
+connection open
+Client connected (1)
+New connection from ('127.0.0.1', 40396)
+Connection closed
+Client disconnected (0)
+connection open
+Client connected (1)
+New connection from ('127.0.0.1', 40412)
+Connection closed
+Client disconnected (0)
+connection open
+Client connected (1)
+New connection from ('127.0.0.1', 40420)
+connection open
+Client connected (2)
+New connection from ('127.0.0.1', 40436)
+connection open
+Client connected (3)
+New connection from ('127.0.0.1', 40452)
+connection open
+Client connected (4)
+New connection from ('127.0.0.1', 40456)
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='The prioress returned and seated herself.'
+[C-] [DOT-PENDING] slot=A new text='The prioress returned and seated herself.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.006s ds=2.006s decode=5.864s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Afterward, it was supposed.'
+[C-] [DOT-PENDING] slot=A new text='Afterward, it was supposed.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.062s ds=2.063s decode=5.825s
+[C-] [TRANSCRIBE-DECODING] slot=A text="There's iron, they say."
+[C-] [DOT-PENDING] slot=A new text="There's iron, they say."
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.089s ds=2.089s decode=5.853s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Old Mister Dinsmore had accepted.'
+[C-] [DOT-PENDING] slot=A new text='Old Mister Dinsmore had accepted.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.035s ds=2.035s decode=6.266s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Afterward, it was supposed that he was satisfied.'
+[C-] [DOT-PENDING] slot=A revised text='Afterward, it was supposed that he was satisfied.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=7.902s ds=7.902s decode=7.777s
+[C-] [TRANSCRIBE-DECODING] slot=A text="There's iron, they say, in all our blood."
+[C-] [DOT-PENDING] slot=A revised text="There's iron, they say, in all our blood."
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=7.955s ds=7.956s decode=8.157s
+[C-] [TRANSCRIBE-DECODING] slot=A text='The prioress returned and seated herself once more on her chair.'
+[C-] [DOT-PENDING] slot=A revised text='The prioress returned and seated herself once more on her chair.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=7.873s ds=7.873s decode=8.945s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Old Mister Dinsmore had accepted a pressing invitation from his granddaughter.'
+[C-] [DOT-PENDING] slot=A revised text='Old Mister Dinsmore had accepted a pressing invitation from his granddaughter.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=8.305s ds=8.305s decode=10.057s
+[C-] [TRANSCRIBE-DECODING] slot=A text='The prioress returned and seated herself once more on her chair.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='The prioress returned and seated herself once more on her chair.'
+[C-] [TRANS-SEG] slot=A lang=en original='The prioress returned and seated herself once more on her chair.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=6.0s
+[FLUSH-SEG] seg=1 tok=17/17 ratio=1.000 audio_end=6.050s fsl=20.119s
+[FINAL] seg=1 reason=dot audio=[0.000, 6.050] fsl=20.119s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='The prioress returned and seated herself once more on her chair.'
+[ENCODE] slot=A chunk=2 audio_pos=6.050s ts=16.823s ds=16.823s decode=9.348s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Afterward, it was supposed that he was satisfied with the blood of oxen.'
+[C-] [DOT-PENDING] slot=A revised text='Afterward, it was supposed that he was satisfied with the blood of oxen.'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=15.685s ds=15.686s decode=11.592s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=8.050s ts=26.172s ds=26.172s decode=3.229s
+[C-] [TRANSCRIBE-DECODING] slot=A text="There's iron, they say, in all our blood, and a grain or two, perhaps, is good."
+[C-] [DOT-PENDING] slot=A revised text="There's iron, they say, in all our blood, and a grain or two, perhaps, is good."
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=16.119s ds=16.120s decode=14.893s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Old Mister Dinsmore had accepted a pressing invitation from his granddaughter and her husband to join the party.'
+[C-] [DOT-PENDING] slot=A revised text='Old Mister Dinsmore had accepted a pressing invitation from his granddaughter and her husband to join the party.'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=18.367s ds=18.368s decode=13.089s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=10.050s ts=29.401s ds=29.401s decode=3.566s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=2 audio_pos=12.050s ts=32.968s ds=32.968s decode=3.055s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='Afterward, it was supposed that he was satisfied with the blood of oxen, lambs, and doves.'
+[C-] [DOT-PENDING] slot=A revised text='Afterward, it was supposed that he was satisfied with the blood of oxen, lambs, and doves.'
+[ENCODE] slot=A chunk=3 audio_pos=8.000s ts=27.280s ds=27.280s decode=15.092s
+[C-] [TRANSCRIBE-DECODING] slot=A text='We will present a stenographic report.'
+[C-] [DOT-PENDING] slot=A new text='We will present a stenographic report.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.002s ds=2.002s decode=6.905s
+[C-] [TRANSCRIBE-DECODING] slot=A text="There's iron, they say, in all our blood, and a grain or two perhaps is good, but his, he."
+[C-] [DOT-PENDING] slot=A revised text="There's iron, they say, in all our blood, and a grain or two perhaps is good, but his, he."
+[ENCODE] slot=A chunk=3 audio_pos=8.000s ts=31.016s ds=31.016s decode=15.988s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Old Mr. Dinsmore had accepted a pressing invitation from his granddaughter and her husband to join the party, and with the addition of servants.'
+[C-] [DOT-PENDING] slot=A revised text='Old Mr. Dinsmore had accepted a pressing invitation from his granddaughter and her husband to join the party, and with the addition of servants.'
+[ENCODE] slot=A chunk=3 audio_pos=8.000s ts=31.459s ds=31.460s decode=17.678s
+[C-] [TRANSCRIBE-DECODING] slot=A text='We will present a stenographic report of the dialogue which then ensued.'
+[C-] [DOT-PENDING] slot=A revised text='We will present a stenographic report of the dialogue which then ensued.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=8.909s ds=8.909s decode=10.244s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Afterward, it was supposed that he was satisfied with the blood of oxen, lambs, and doves, and that in exchange for.'
+[C-] [DOT-PENDING] slot=A revised text='Afterward, it was supposed that he was satisfied with the blood of oxen, lambs, and doves, and that in exchange for.'
+[ENCODE] slot=A chunk=4 audio_pos=10.000s ts=42.375s ds=42.375s decode=17.506s
+[C-] [TRANSCRIBE-DECODING] slot=A text="There's iron, they say, in all our blood, and a grain or two perhaps is good, but his—he makes me harshly feel."
+[C-] [DOT-PENDING] slot=A revised text="There's iron, they say, in all our blood, and a grain or two perhaps is good, but his—he makes me harshly feel."
+[ENCODE] slot=A chunk=4 audio_pos=10.000s ts=47.006s ds=47.006s decode=17.178s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Old Mr. Dinsmore had accepted a pressing invitation from his granddaughter and her husband to join the party, and with the addition of servants, it was a large one.'
+[C-] [DOT-PENDING] slot=A revised text='Old Mr. Dinsmore had accepted a pressing invitation from his granddaughter and her husband to join the party, and with the addition of servants, it was a large one.'
+[ENCODE] slot=A chunk=4 audio_pos=10.150s ts=49.141s ds=49.142s decode=19.386s
+[C-] [TRANSCRIBE-DECODING] slot=A text='We will present a stenographic report of the dialogue which then ensued, to the best of our ability.'
+[C-] [DOT-PENDING] slot=A revised text='We will present a stenographic report of the dialogue which then ensued, to the best of our ability.'
+[ENCODE] slot=A chunk=2 audio_pos=6.140s ts=19.157s ds=19.158s decode=13.442s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Afterward, it was supposed that he was satisfied with the blood of oxen, lambs, and doves, and that in exchange for or in account of these sacrifices.'
+[C-] [DOT-PENDING] slot=A revised text='Afterward, it was supposed that he was satisfied with the blood of oxen, lambs, and doves, and that in exchange for or in account of these sacrifices.'
+[ENCODE] slot=A chunk=5 audio_pos=12.000s ts=59.884s ds=59.884s decode=19.756s
+[C-] [TRANSCRIBE-DECODING] slot=A text='We will present a stenographic report of the dialogue which then ensued, to the best of our ability.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='We will present a stenographic report of the dialogue which then ensued, to the best of our ability.'
+[C-] [TRANS-SEG] slot=A lang=en original='We will present a stenographic report of the dialogue which then ensued, to the best of our ability.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=8.0s
+[FLUSH-SEG] seg=1 tok=26/26 ratio=1.000 audio_end=8.140s fsl=37.107s
+[FINAL] seg=1 reason=dot audio=[0.000, 8.140] fsl=37.107s encode=0.000s decode=0.000s final_decode=0.000s trans=0.004s | text='We will present a stenographic report of the dialogue which then ensued, to the best of our ability.'
+[ENCODE] slot=A chunk=3 audio_pos=8.140s ts=32.619s ds=32.620s decode=12.633s
+[C-] [TRANSCRIBE-DECODING] slot=A text="There's iron, they say, in all our blood, and a grain or two perhaps is good, but his—he makes me harshly feel—has got a little too much."
+[C-] [DOT-PENDING] slot=A revised text="There's iron, they say, in all our blood, and a grain or two perhaps is good, but his—he makes me harshly feel—has got a little too much."
+[ENCODE] slot=A chunk=5 audio_pos=12.000s ts=64.188s ds=64.188s decode=18.765s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=10.140s ts=45.257s ds=45.257s decode=1.692s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=12.140s ts=46.950s ds=46.950s decode=2.777s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='Old Mr. Dinsmore had accepted a pressing invitation from his granddaughter and her husband to join the party, and with the addition of servants, it was a large one.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='Old Mr. Dinsmore had accepted a pressing invitation from his granddaughter and her husband to join the party, and with the addition of servants, it was a large one.'
+[C-] [TRANS-SEG] slot=A lang=en original='Old Mr. Dinsmore had accepted a pressing invitation from his granddaughter and her husband to join the party, and with the addition of servants, it was a large one.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=12.0s
+[FLUSH-SEG] seg=1 tok=39/39 ratio=1.000 audio_end=12.150s fsl=74.042s
+[FINAL] seg=1 reason=dot audio=[0.000, 12.150] fsl=74.042s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='Old Mr. Dinsmore had accepted a pressing invitation from his granddaughter and her husband to join the party, and with the addition of servants, it was a large one.'
+[ENCODE] slot=A chunk=5 audio_pos=12.150s ts=68.552s ds=68.554s decode=17.640s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=14.150s ts=86.194s ds=86.194s decode=2.843s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=16.150s ts=89.037s ds=89.037s decode=2.599s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='Father Fauvent.'
+[C-] [DOT-PENDING] slot=A new text='Father Fauvent.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.003s decode=4.734s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Father Fauvent.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='Father Fauvent.'
+[C-] [TRANS-SEG] slot=A lang=en original='Father Fauvent.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=4.0s
+[FLUSH-SEG] seg=1 tok=9/9 ratio=1.000 audio_end=4.045s fsl=8.020s
+[FINAL] seg=1 reason=dot audio=[0.000, 4.045] fsl=8.020s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='Father Fauvent.'
+[ENCODE] slot=A chunk=1 audio_pos=4.045s ts=6.738s ds=6.738s decode=5.328s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Afterward, it was supposed that he was satisfied with the blood of oxen, lambs, and doves, and that in exchange for or in account of these sacrifices, this god gave.'
+[C-] [DOT-PENDING] slot=A revised text='Afterward, it was supposed that he was satisfied with the blood of oxen, lambs, and doves, and that in exchange for or in account of these sacrifices, this god gave.'
+[ENCODE] slot=A chunk=6 audio_pos=14.000s ts=79.644s ds=79.644s decode=19.919s
+[C-] [TRANSCRIBE-DECODING] slot=A text='As they were in no haste.'
+[C-] [DOT-PENDING] slot=A new text='As they were in no haste.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.002s ds=2.002s decode=5.931s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=6.045s ts=12.068s ds=12.068s decode=2.979s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=8.045s ts=15.047s ds=15.048s decode=2.842s
+[C-] [TRANSCRIBE-DECODING] slot=A text="There's iron, they say, in all our blood, and a grain or two perhaps is good, but his—he makes me harshly feel—has got a little too much of steel."
+[C-] [DOT-PENDING] slot=A revised text="There's iron, they say, in all our blood, and a grain or two perhaps is good, but his—he makes me harshly feel—has got a little too much of steel."
+[ENCODE] slot=A chunk=6 audio_pos=14.000s ts=82.956s ds=82.957s decode=21.124s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=2 audio_pos=10.045s ts=17.890s ds=17.891s decode=3.103s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='As they were in no haste, and the confinement of a railroad car.'
+[C-] [DOT-PENDING] slot=A revised text='As they were in no haste, and the confinement of a railroad car.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=7.935s ds=7.936s decode=10.469s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Reverend Mother.'
+[C-] [DOT-PENDING] slot=A new text='Reverend Mother.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.002s ds=2.003s decode=5.073s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Reverend Mother, do you know the chapel?'
+[C-] [DOT-PENDING] slot=A revised text='Reverend Mother, do you know the chapel?'
+[ENCODE] slot=A chunk=1 audio_pos=4.115s ts=7.078s ds=7.078s decode=7.693s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Afterward, it was supposed that he was satisfied with the blood of oxen, lambs, and doves, and that in exchange for or in account of these sacrifices, this god gave rain, sunshine.'
+[C-] [DOT-PENDING] slot=A revised text='Afterward, it was supposed that he was satisfied with the blood of oxen, lambs, and doves, and that in exchange for or in account of these sacrifices, this god gave rain, sunshine.'
+[ENCODE] slot=A chunk=7 audio_pos=16.000s ts=99.584s ds=99.585s decode=23.580s
+[C-] [TRANSCRIBE-DECODING] slot=A text='As they were in no haste, and the confinement of a railroad car would be very irksome to the younger children.'
+[C-] [DOT-PENDING] slot=A revised text='As they were in no haste, and the confinement of a railroad car would be very irksome to the younger children.'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=18.438s ds=18.439s decode=14.968s
+[C-] [TRANSCRIBE-DECODING] slot=A text="There's iron, they say, in all our blood, and a grain or two perhaps is good, but his—he makes me harshly feel—has got a little too much of steel. Anon."
+[C-] [DOT-CONFIRM] rule=stable slot=A text="There's iron, they say, in all our blood, and a grain or two perhaps is good, but his—he makes me harshly feel—has got a little too much of steel."
+[C-] [DOT-PENDING] slot=A new text='Anon.'
+[C-] [TRANS-SEG] slot=A lang=en original='There's iron, they say, in all our blood, and a grain or two perhaps is good, but his—he makes me harshly feel—has got a little too much of steel.' translation=''
+[C-] [DOT-SLOT-SWITCH] slot=A audio_sec=16.0s prev="There's iron, they say, in all our blood, and a grain or two perhaps is good, but his—he makes me harshly feel—has got a little too much of steel."
+[FLUSH-SEG] seg=1 tok=44/46 ratio=0.957 audio_end=15.913s fsl=111.669s
+[FINAL] seg=1 reason=dot audio=[0.000, 15.913] fsl=111.669s encode=0.000s decode=0.000s final_decode=0.000s trans=0.002s | text='There's iron, they say, in all our blood, and a grain or two perhaps is good, but his—he makes me harshly feel—has got a little too much of steel.'
+[ENCODE] slot=A chunk=7 audio_pos=16.000s ts=104.084s ds=104.085s decode=23.500s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Reverend Mother, do you know the chapel?'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='Reverend Mother, do you know the chapel?'
+[C-] [TRANS-SEG] slot=A lang=en original='Reverend Mother, do you know the chapel?' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=6.0s
+[FLUSH-SEG] seg=1 tok=15/15 ratio=1.000 audio_end=6.115s fsl=17.641s
+[FINAL] seg=1 reason=dot audio=[0.000, 6.115] fsl=17.641s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='Reverend Mother, do you know the chapel?'
+[ENCODE] slot=A chunk=2 audio_pos=6.115s ts=14.774s ds=14.774s decode=8.983s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Anon.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='Anon.'
+[C-] [TRANS-SEG] slot=A lang=en original='Anon.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=4.0s
+[FLUSH-SEG] seg=2 tok=7/7 ratio=1.000 audio_end=18.000s fsl=113.816s
+[FINAL] seg=2 reason=dot audio=[15.913, 18.000] fsl=113.816s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='Anon.'
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=8.115s ts=23.758s ds=23.758s decode=2.612s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=20.000s ts=131.817s ds=131.817s decode=2.609s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=10.115s ts=26.371s ds=26.371s decode=2.607s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=22.000s ts=134.427s ds=134.427s decode=2.604s
+Received finish command
+[C-] Failed to send message: no close frame received or sent
+[C-] Streaming state initialized
+Received finish command
+[C-] Failed to send message: no close frame received or sent
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] Failed to send message: no close frame received or sent
+Connection closed by client
+Connection closed
+Client disconnected (3)
+[C-] [TRANSCRIBE-DECODING] slot=A text='As they were in no haste, and the confinement of a railroad car would be very irksome to the younger children, it had been decided to make the.'
+[C-] [DOT-PENDING] slot=A revised text='As they were in no haste, and the confinement of a railroad car would be very irksome to the younger children, it had been decided to make the.'
+[ENCODE] slot=A chunk=3 audio_pos=8.000s ts=33.410s ds=33.410s decode=17.877s
+[C-] [TRANSCRIBE-DECODING] slot=A text='And you have been in the choir.'
+[C-] [DOT-PENDING] slot=A new text='And you have been in the choir.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.002s ds=2.002s decode=6.307s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Afterward, it was supposed that he was satisfied with the blood of oxen, lambs, and doves, and that in exchange for or in account of these sacrifices, this god gave rain, sunshine, and harvest.'
+[C-] [DOT-PENDING] slot=A revised text='Afterward, it was supposed that he was satisfied with the blood of oxen, lambs, and doves, and that in exchange for or in account of these sacrifices, this god gave rain, sunshine, and harvest.'
+[ENCODE] slot=A chunk=8 audio_pos=18.060s ts=123.169s ds=123.170s decode=24.781s
+[C-] [TRANSCRIBE-DECODING] slot=A text='And you have been in the choir in pursuance of your duties.'
+[C-] [DOT-PENDING] slot=A revised text='And you have been in the choir in pursuance of your duties.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=8.315s ds=8.315s decode=10.139s
+[C-] [TRANSCRIBE-DECODING] slot=A text='As they were in no haste, and the confinement of a railroad car would be very irksome to the younger children, it had been decided to make the journey by water.'
+[C-] [DOT-PENDING] slot=A revised text='As they were in no haste, and the confinement of a railroad car would be very irksome to the younger children, it had been decided to make the journey by water.'
+[ENCODE] slot=A chunk=4 audio_pos=10.000s ts=51.294s ds=51.295s decode=19.841s
+[C-] [TRANSCRIBE-DECODING] slot=A text='And you have been in the choir in pursuance of your duties, two or three times.'
+[C-] [DOT-PENDING] slot=A revised text='And you have been in the choir in pursuance of your duties, two or three times.'
+[ENCODE] slot=A chunk=2 audio_pos=6.070s ts=18.459s ds=18.459s decode=11.992s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Afterward, it was supposed that he was satisfied with the blood of oxen, lambs, and doves, and that in exchange for or in account of these sacrifices, this god gave rain, sunshine, and harvest.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='Afterward, it was supposed that he was satisfied with the blood of oxen, lambs, and doves, and that in exchange for or in account of these sacrifices, this god gave rain, sunshine, and harvest.'
+[C-] [TRANS-SEG] slot=A lang=en original='Afterward, it was supposed that he was satisfied with the blood of oxen, lambs, and doves, and that in exchange for or in account of these sacrifices, this god gave rain, sunshine, and harvest.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=20.0s
+[FLUSH-SEG] seg=1 tok=50/50 ratio=1.000 audio_end=20.060s fsl=152.136s
+[FINAL] seg=1 reason=dot audio=[0.000, 20.060] fsl=152.136s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='Afterward, it was supposed that he was satisfied with the blood of oxen, lambs, and doves, and that in exchange for or in account of these sacrifices, this god gave rain, sunshine, and harvest.'
+[ENCODE] slot=A chunk=9 audio_pos=20.060s ts=147.956s ds=147.957s decode=24.241s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=22.060s ts=172.198s ds=172.198s decode=2.600s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=24.060s ts=174.801s ds=174.802s decode=2.592s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Failed to send message: no close frame received or sent
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] Failed to send message: no close frame received or sent
+Connection closed by client
+Connection closed
+Client disconnected (2)
+[C-] [TRANSCRIBE-DECODING] slot=A text='And you have been in the choir in pursuance of your duties, two or three times.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='And you have been in the choir in pursuance of your duties, two or three times.'
+[C-] [TRANS-SEG] slot=A lang=en original='And you have been in the choir in pursuance of your duties, two or three times.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=8.0s
+[FLUSH-SEG] seg=1 tok=24/24 ratio=1.000 audio_end=8.070s fsl=34.016s
+[FINAL] seg=1 reason=dot audio=[0.000, 8.070] fsl=34.016s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='And you have been in the choir in pursuance of your duties, two or three times.'
+[ENCODE] slot=A chunk=3 audio_pos=8.070s ts=30.458s ds=30.459s decode=11.628s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=10.070s ts=42.087s ds=42.087s decode=2.220s
+[C-] [TRANSCRIBE-DECODING] slot=A text='As they were in no haste, and the confinement of a railroad car would be very irksome to the younger children, it had been decided to make the journey by water.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='As they were in no haste, and the confinement of a railroad car would be very irksome to the younger children, it had been decided to make the journey by water.'
+[C-] [TRANS-SEG] slot=A lang=en original='As they were in no haste, and the confinement of a railroad car would be very irksome to the younger children, it had been decided to make the journey by water.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=12.0s
+[FLUSH-SEG] seg=1 tok=40/40 ratio=1.000 audio_end=12.000s fsl=77.351s
+[FINAL] seg=1 reason=dot audio=[0.000, 12.000] fsl=77.351s encode=0.000s decode=0.000s final_decode=0.000s trans=0.004s | text='As they were in no haste, and the confinement of a railroad car would be very irksome to the younger children, it had been decided to make the journey by water.'
+[ENCODE] slot=A chunk=5 audio_pos=12.000s ts=71.140s ds=71.141s decode=18.216s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=12.070s ts=44.308s ds=44.308s decode=1.857s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=14.000s ts=89.361s ds=89.361s decode=1.465s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=16.000s ts=90.826s ds=90.827s decode=0.656s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='There is a stone to be raised.'
+[C-] [DOT-PENDING] slot=A new text='There is a stone to be raised.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.003s decode=1.565s
+[C-] [TRANSCRIBE-DECODING] slot=A text='There were no sad leave takings.'
+[C-] [DOT-PENDING] slot=A new text='There were no sad leave takings.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.002s ds=2.002s decode=4.746s
+[C-] [TRANSCRIBE-DECODING] slot=A text='There is a stone to be raised, heavy.'
+[C-] [DOT-PENDING] slot=A revised text='There is a stone to be raised, heavy.'
+[ENCODE] slot=A chunk=1 audio_pos=4.075s ts=4.079s ds=4.079s decode=6.412s
+[C-] [TRANSCRIBE-DECODING] slot=A text='There is a stone to be raised, heavy.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='There is a stone to be raised, heavy.'
+[C-] [TRANS-SEG] slot=A lang=en original='There is a stone to be raised, heavy.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=6.0s
+[FLUSH-SEG] seg=1 tok=14/14 ratio=1.000 audio_end=6.075s fsl=11.261s
+[FINAL] seg=1 reason=dot audio=[0.000, 6.075] fsl=11.261s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='There is a stone to be raised, heavy.'
+[ENCODE] slot=A chunk=2 audio_pos=6.075s ts=10.494s ds=10.494s decode=6.843s
+[C-] [TRANSCRIBE-DECODING] slot=A text='There were no sad leave-takings to mar their pleasure. The children were.'
+[C-] [DOT-PENDING] slot=A revised text='There were no sad leave-takings to mar their pleasure.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=6.750s ds=6.751s decode=9.811s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=8.075s ts=17.338s ds=17.338s decode=2.533s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=10.075s ts=19.872s ds=19.872s decode=2.213s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=11 text='There were no sad leave-takings to mar their pleasure.'
+[C-] [TRANSCRIBE-DECODING] slot=A text='There were no sad leave-takings to mar their pleasure. The children were in wild spirits, and all seemed.'
+[C-] [DOT-PENDING] slot=A new text='The children were in wild spirits, and all seemed.'
+[C-] [COMMIT-PENDING] slot=A remaining='The children were in wild spirits, and all seemed.'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=16.567s ds=16.568s decode=5.782s
+[C-] [TRANS-SEG-ASYNC] slot=A lang=en original='There were no sad leave-takings to mar their pleasure.' translation=''
+[C-] [TRANSCRIBE-DECODING] slot=A text='The slab of the pavement, which is.'
+[C-] [DOT-PENDING] slot=A new text='The slab of the pavement, which is.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.003s decode=6.178s
+[C-] [TRANSCRIBE-DECODING] slot=A text='There were no sad leave-takings to mar their pleasure. The children were in wild spirits, and all seemed cheerful and happy as they sat or.'
+[C-] [DOT-PENDING] slot=A revised text='The children were in wild spirits, and all seemed cheerful and happy as they sat or.'
+[FLUSH-SEG] seg=1 tok=18/35 ratio=0.514 audio_end=7.029s fsl=15.261s
+[FINAL] seg=1 reason=dot audio=[0.000, 7.029] fsl=15.261s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='There were no sad leave-takings to mar their pleasure.'
+[ENCODE] slot=A chunk=3 audio_pos=8.000s ts=22.358s ds=22.359s decode=15.285s
+[C-] [TRANSCRIBE-DECODING] slot=A text='The slab of the pavement, which is at the side of the altar.'
+[C-] [DOT-PENDING] slot=A revised text='The slab of the pavement, which is at the side of the altar.'
+[ENCODE] slot=A chunk=1 audio_pos=4.075s ts=8.183s ds=8.183s decode=8.987s
+[C-] [TRANSCRIBE-DECODING] slot=A text='The slab of the pavement, which is at the side of the altar.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='The slab of the pavement, which is at the side of the altar.'
+[C-] [TRANS-SEG] slot=A lang=en original='The slab of the pavement, which is at the side of the altar.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=6.0s
+[FLUSH-SEG] seg=1 tok=19/19 ratio=1.000 audio_end=6.075s fsl=20.474s
+[FINAL] seg=1 reason=dot audio=[0.000, 6.075] fsl=20.474s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='The slab of the pavement, which is at the side of the altar.'
+[ENCODE] slot=A chunk=2 audio_pos=6.075s ts=17.174s ds=17.174s decode=9.375s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=8.075s ts=26.550s ds=26.550s decode=2.224s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=10.075s ts=28.774s ds=28.775s decode=2.212s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=25 text='There were no sad leave takings to mar their pleasure.'
+[C-] [TRANSCRIBE-DECODING] slot=A text='There were no sad leave takings to mar their pleasure. The children were in wild spirits, and all seemed cheerful and happy as they sat or stood upon the deck, watching the.'
+[C-] [DOT-PENDING] slot=A new text='The children were in wild spirits, and all seemed cheerful and happy as they sat or stood upon the deck, watching the.'
+[C-] [COMMIT-PENDING] slot=A remaining='The children were in wild spirits, and all seemed cheerful and happy as they sat or stood upon the deck, watching the.'
+[ENCODE] slot=A chunk=4 audio_pos=10.000s ts=37.665s ds=37.667s decode=15.115s
+[C-] [TRANS-SEG-ASYNC] slot=A lang=en original='There were no sad leave takings to mar their pleasure.' translation=''
+[C-] [TRANSCRIBE-DECODING] slot=A text='The slab which closes the vault.'
+[C-] [DOT-PENDING] slot=A new text='The slab which closes the vault.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.006s ds=2.006s decode=5.091s
+[C-] [TRANSCRIBE-DECODING] slot=A text='The slab which closes the vault, yes.'
+[C-] [DOT-PENDING] slot=A revised text='The slab which closes the vault, yes.'
+[ENCODE] slot=A chunk=1 audio_pos=4.080s ts=7.101s ds=7.101s decode=6.427s
+[C-] [TRANSCRIBE-DECODING] slot=A text='The slab which closes the vault, yes.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='The slab which closes the vault, yes.'
+[C-] [TRANS-SEG] slot=A lang=en original='The slab which closes the vault, yes.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=6.0s
+[FLUSH-SEG] seg=1 tok=13/13 ratio=1.000 audio_end=6.080s fsl=13.882s
+[FINAL] seg=1 reason=dot audio=[0.000, 6.080] fsl=13.882s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='The slab which closes the vault, yes.'
+[ENCODE] slot=A chunk=2 audio_pos=6.080s ts=13.549s ds=13.550s decode=6.412s
+[C-] [TRANSCRIBE-DECODING] slot=A text='There were no sad leave takings to mar their pleasure. The children were in wild spirits, and all seemed cheerful and happy as they sat or stood upon the deck, watching the receding shore as the vessel steamed away.'
+[C-] [DOT-PENDING] slot=A revised text='The children were in wild spirits, and all seemed cheerful and happy as they sat or stood upon the deck, watching the receding shore as the vessel steamed away.'
+[FLUSH-SEG] seg=2 tok=15/50 ratio=0.300 audio_end=10.600s fsl=42.124s
+[FINAL] seg=2 reason=dot audio=[7.029, 10.600] fsl=42.124s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='There were no sad leave takings to mar their pleasure.'
+[ENCODE] slot=A chunk=5 audio_pos=12.000s ts=52.785s ds=52.786s decode=19.575s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=8.080s ts=19.963s ds=19.963s decode=2.349s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=10.080s ts=22.314s ds=22.314s decode=2.220s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=37 text='There were no sad leave-takings to mar their pleasure.'
+[C-] [COMMIT-SKIP] reason=cross-dedup slot=A span=4.05s text='There were no sad leave-takings to mar their pleasure.'
+[C-] [TRANSCRIBE-DECODING] slot=A text='It would be a good thing to have two men.'
+[C-] [DOT-PENDING] slot=A new text='It would be a good thing to have two men.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.002s ds=2.002s decode=6.836s
+[C-] [TRANSCRIBE-DECODING] slot=A text='There were no sad leave-takings to mar their pleasure. The children were in wild spirits, and all seemed cheerful and happy as they sat or stood upon the deck, watching the receding shore as the vessel steamed out of the harbor.'
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=37 text='There were no sad leave-takings to mar their pleasure.'
+[C-] [DOT-PENDING] slot=A new text='The children were in wild spirits, and all seemed cheerful and happy as they sat or stood upon the deck, watching the receding shore as the vessel steamed out of the harbor.'
+[C-] [COMMIT-SKIP] reason=cross-dedup slot=A span=4.05s text='There were no sad leave-takings to mar their pleasure.'
+[ENCODE] slot=A chunk=6 audio_pos=14.050s ts=72.389s ds=72.391s decode=13.317s
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=37 text='There were no sad leave-takings to mar their pleasure.'
+[C-] [DOT-PENDING] slot=A new text='The children were in wild spirits, and all seemed cheerful and happy as they sat or stood upon the deck, watching the receding shore as the vessel steamed out of the harbor.'
+[C-] [COMMIT-SKIP] reason=cross-dedup slot=A span=4.25s text='There were no sad leave-takings to mar their pleasure.'
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=37 text='There were no sad leave-takings to mar their pleasure.'
+[C-] [DOT-PENDING] slot=A new text='The children were in wild spirits, and all seemed cheerful and happy as they sat or stood upon the deck, watching the receding shore as the vessel steamed out of the harbor.'
+[C-] [COMMIT-SKIP] reason=cross-dedup slot=A span=4.45s text='There were no sad leave-takings to mar their pleasure.'
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=37 text='There were no sad leave-takings to mar their pleasure.'
+[C-] [DOT-PENDING] slot=A new text='The children were in wild spirits, and all seemed cheerful and happy as they sat or stood upon the deck, watching the receding shore as the vessel steamed out of the harbor.'
+[C-] [COMMIT-SKIP] reason=cross-dedup slot=A span=4.65s text='There were no sad leave-takings to mar their pleasure.'
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=37 text='There were no sad leave-takings to mar their pleasure.'
+[C-] [DOT-PENDING] slot=A new text='The children were in wild spirits, and all seemed cheerful and happy as they sat or stood upon the deck, watching the receding shore as the vessel steamed out of the harbor.'
+[C-] [COMMIT-SKIP] reason=cross-dedup slot=A span=4.85s text='There were no sad leave-takings to mar their pleasure.'
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=37 text='There were no sad leave-takings to mar their pleasure.'
+[C-] [DOT-PENDING] slot=A new text='The children were in wild spirits, and all seemed cheerful and happy as they sat or stood upon the deck, watching the receding shore as the vessel steamed out of the harbor.'
+[C-] [COMMIT-SKIP] reason=cross-dedup slot=A span=5.05s text='There were no sad leave-takings to mar their pleasure.'
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=37 text='There were no sad leave-takings to mar their pleasure.'
+[C-] [DOT-PENDING] slot=A new text='The children were in wild spirits, and all seemed cheerful and happy as they sat or stood upon the deck, watching the receding shore as the vessel steamed out of the harbor.'
+[C-] [COMMIT-SKIP] reason=cross-dedup slot=A span=5.25s text='There were no sad leave-takings to mar their pleasure.'
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=37 text='There were no sad leave-takings to mar their pleasure.'
+[C-] [DOT-PENDING] slot=A new text='The children were in wild spirits, and all seemed cheerful and happy as they sat or stood upon the deck, watching the receding shore as the vessel steamed out of the harbor.'
+[C-] [COMMIT-SKIP] reason=cross-dedup slot=A span=5.45s text='There were no sad leave-takings to mar their pleasure.'
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=37 text='There were no sad leave-takings to mar their pleasure.'
+[C-] [DOT-PENDING] slot=A new text='The children were in wild spirits, and all seemed cheerful and happy as they sat or stood upon the deck, watching the receding shore as the vessel steamed out of the harbor.'
+[C-] [COMMIT-SKIP] reason=cross-dedup slot=A span=5.65s text='There were no sad leave-takings to mar their pleasure.'
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=37 text='There were no sad leave-takings to mar their pleasure.'
+[C-] [DOT-PENDING] slot=A new text='The children were in wild spirits, and all seemed cheerful and happy as they sat or stood upon the deck, watching the receding shore as the vessel steamed out of the harbor.'
+[C-] [COMMIT-SKIP] reason=cross-dedup slot=A span=5.85s text='There were no sad leave-takings to mar their pleasure.'
+[C-] [TRANSCRIBE-DECODING] slot=A text='It would be a good thing to have two men for it.'
+[C-] [DOT-PENDING] slot=A revised text='It would be a good thing to have two men for it.'
+[ENCODE] slot=A chunk=1 audio_pos=4.100s ts=8.853s ds=8.854s decode=8.644s
+[C-] [TRANSCRIBE-DECODING] slot=A text='It would be a good thing to have two men for it.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='It would be a good thing to have two men for it.'
+[C-] [TRANS-SEG] slot=A lang=en original='It would be a good thing to have two men for it.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=6.0s
+[FLUSH-SEG] seg=1 tok=17/17 ratio=1.000 audio_end=6.100s fsl=19.570s
+[FINAL] seg=1 reason=dot audio=[0.000, 6.100] fsl=19.570s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='It would be a good thing to have two men for it.'
+[ENCODE] slot=A chunk=2 audio_pos=6.100s ts=17.501s ds=17.502s decode=8.169s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=8.100s ts=25.672s ds=25.672s decode=2.225s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=10.100s ts=27.898s ds=27.898s decode=2.225s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='There were no sad leave takings to mar their pleasure. The children were in wild spirits, and all seemed cheerful and happy as they sat or stood upon the deck, watching the receding shore as the vessel steamed out of the harbor.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='The children were in wild spirits, and all seemed cheerful and happy as they sat or stood upon the deck, watching the receding shore as the vessel steamed out of the harbor.'
+[C-] [TRANS-SEG] slot=A lang=en original='The children were in wild spirits, and all seemed cheerful and happy as they sat or stood upon the deck, watching the receding shore as the vessel steamed out of the harbor.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=16.0s
+[FLUSH-SEG] seg=3 tok=53/53 ratio=1.000 audio_end=16.050s fsl=91.246s
+[FINAL] seg=3 reason=dot audio=[10.600, 16.050] fsl=91.246s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='The children were in wild spirits, and all seemed cheerful and happy as they sat or stood upon the deck, watching the receding shore as the vessel steamed out of the harbor.'
+[ENCODE] slot=A chunk=7 audio_pos=16.050s ts=85.720s ds=85.721s decode=21.577s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=18.050s ts=107.298s ds=107.298s decode=0.662s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=20.050s ts=107.962s ds=107.962s decode=0.659s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='A woman is never a man.'
+[C-] [DOT-PENDING] slot=A new text='A woman is never a man.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.002s ds=2.002s decode=1.352s
+[C-] [TRANSCRIBE-DECODING] slot=A text='At length, the land had quite.'
+[C-] [DOT-PENDING] slot=A new text='At length, the land had quite.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.005s ds=2.005s decode=5.765s
+[C-] [TRANSCRIBE-DECODING] slot=A text='A woman is never a man.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='A woman is never a man.'
+[C-] [TRANS-SEG] slot=A lang=en original='A woman is never a man.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=4.0s
+[FLUSH-SEG] seg=1 tok=11/11 ratio=1.000 audio_end=4.120s fsl=5.732s
+[FINAL] seg=1 reason=dot audio=[0.000, 4.120] fsl=5.732s encode=0.000s decode=0.000s final_decode=0.000s trans=0.002s | text='A woman is never a man.'
+[ENCODE] slot=A chunk=1 audio_pos=4.120s ts=4.123s ds=4.123s decode=5.733s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=6.120s ts=9.859s ds=9.859s decode=2.466s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=8.120s ts=12.326s ds=12.326s decode=2.225s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=2 audio_pos=10.120s ts=14.552s ds=14.552s decode=2.475s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='At length, the land had quite disappeared. Nothing could be seen.'
+[C-] [DOT-PENDING] slot=A revised text='At length, the land had quite disappeared.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=7.773s ds=7.773s decode=7.688s
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=12 text='At length, the land had quite disappeared.'
+[C-] [TRANSCRIBE-DECODING] slot=A text='At length, the land had quite disappeared. Nothing could be seen but the sky overhead and a vast.'
+[C-] [DOT-PENDING] slot=A new text='Nothing could be seen but the sky overhead and a vast.'
+[C-] [COMMIT-PENDING] slot=A remaining='Nothing could be seen but the sky overhead and a vast.'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=15.468s ds=15.468s decode=6.201s
+[C-] [TRANS-SEG-ASYNC] slot=A lang=en original='At length, the land had quite disappeared.' translation=''
+[C-] [TRANSCRIBE-DECODING] slot=A text='Because Dom Marboulan.'
+[C-] [DOT-PENDING] slot=A new text='Because Dom Marboulan.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.005s ds=2.005s decode=5.113s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Because Dom Maublanc gives four hundred and seventeen epistles of.'
+[C-] [DOT-PENDING] slot=A revised text='Because Dom Maublanc gives four hundred and seventeen epistles of.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=7.121s ds=7.121s decode=9.359s
+[C-] [TRANSCRIBE-DECODING] slot=A text='At length, the land had quite disappeared. Nothing could be seen but the sky overhead and a vast expanse of water all round.'
+[C-] [DOT-PENDING] slot=A revised text='Nothing could be seen but the sky overhead and a vast expanse of water all round.'
+[FLUSH-SEG] seg=1 tok=13/31 ratio=0.419 audio_end=6.839s fsl=14.399s
+[FINAL] seg=1 reason=dot audio=[0.000, 6.839] fsl=14.399s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='At length, the land had quite disappeared.'
+[ENCODE] slot=A chunk=3 audio_pos=8.000s ts=21.671s ds=21.672s decode=14.506s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Because Dom Maublanc gives four hundred and seventeen epistles of Saint Bernard, while Murlonis.'
+[C-] [DOT-PENDING] slot=A revised text='Because Dom Maublanc gives four hundred and seventeen epistles of Saint Bernard, while Murlonis.'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=16.485s ds=16.485s decode=12.078s
+[C-] [TRANSCRIBE-DECODING] slot=A text='At length, the land had quite disappeared. Nothing could be seen but the sky overhead and a vast expanse of water all round, and the passengers found.'
+[C-] [DOT-PENDING] slot=A revised text='Nothing could be seen but the sky overhead and a vast expanse of water all round, and the passengers found.'
+[ENCODE] slot=A chunk=4 audio_pos=10.000s ts=36.181s ds=36.181s decode=16.408s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Because Dom Maublanc gives four hundred and seventeen epistles of Saint Bernard, while Murlonus Horsus only gives three hundred and sixteen.'
+[C-] [DOT-PENDING] slot=A revised text='Because Dom Maublanc gives four hundred and seventeen epistles of Saint Bernard, while Murlonus Horsus only gives three hundred and sixteen.'
+[ENCODE] slot=A chunk=3 audio_pos=8.000s ts=28.567s ds=28.567s decode=16.714s
+[C-] [TRANSCRIBE-DECODING] slot=A text='At length, the land had quite disappeared. Nothing could be seen but the sky overhead and a vast expanse of water all round, and the passengers found leisure to turn their attention upon each other.'
+[C-] [DOT-PENDING] slot=A revised text='Nothing could be seen but the sky overhead and a vast expanse of water all round, and the passengers found leisure to turn their attention upon each other.'
+[ENCODE] slot=A chunk=5 audio_pos=12.000s ts=52.593s ds=52.593s decode=20.872s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Because Dom Maubelan gives four hundred and seventeen epistles of Saint Bernard, while Murlonus Horsus only gives three hundred and sixty-seven, I do not despise.'
+[C-] [DOT-PENDING] slot=A revised text='Because Dom Maubelan gives four hundred and seventeen epistles of Saint Bernard, while Murlonus Horsus only gives three hundred and sixty-seven, I do not despise.'
+[ENCODE] slot=A chunk=4 audio_pos=10.000s ts=45.285s ds=45.285s decode=18.946s
+[C-] [TRANSCRIBE-DECODING] slot=A text='At length, the land had quite disappeared. Nothing could be seen but the sky overhead and a vast expanse of water all round, and the passengers found leisure to turn their attention upon each other.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='Nothing could be seen but the sky overhead and a vast expanse of water all round, and the passengers found leisure to turn their attention upon each other.'
+[C-] [TRANS-SEG] slot=A lang=en original='Nothing could be seen but the sky overhead and a vast expanse of water all round, and the passengers found leisure to turn their attention upon each other.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=14.0s
+[FLUSH-SEG] seg=2 tok=44/44 ratio=1.000 audio_end=14.180s fsl=79.100s
+[FINAL] seg=2 reason=dot audio=[6.839, 14.180] fsl=79.100s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='Nothing could be seen but the sky overhead and a vast expanse of water all round, and the passengers found leisure to turn their attention upon each other.'
+[ENCODE] slot=A chunk=6 audio_pos=14.180s ts=73.469s ds=73.470s decode=19.811s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=16.180s ts=93.283s ds=93.283s decode=1.430s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=18.180s ts=94.714s ds=94.714s decode=1.437s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Because Dom Maublanc gives four hundred and seventeen epistles of Saint Bernard, while Merlones Horsus only gives three hundred and sixty-seven, I do not despise Merlones Horsus.'
+[C-] [DOT-PENDING] slot=A revised text='Because Dom Maublanc gives four hundred and seventeen epistles of Saint Bernard, while Merlones Horsus only gives three hundred and sixty-seven, I do not despise Merlones Horsus.'
+[ENCODE] slot=A chunk=5 audio_pos=12.000s ts=64.235s ds=64.235s decode=18.701s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=2 audio_pos=20.180s ts=96.152s ds=96.152s decode=2.191s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='There are some nice-looking people.'
+[C-] [DOT-PENDING] slot=A new text='There are some nice-looking people.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.003s decode=5.095s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Because Dom Maublanc gives four hundred and seventeen epistles of Saint Bernard, while Merlones Horsus only gives three hundred and sixty-seven, I do not despise Merlones Horsus. Neither do I.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='Because Dom Maublanc gives four hundred and seventeen epistles of Saint Bernard, while Merlones Horsus only gives three hundred and sixty-seven, I do not despise Merlones Horsus.'
+[C-] [DOT-PENDING] slot=A new text='Neither do I.'
+[C-] [TRANS-SEG] slot=A lang=en original='Because Dom Maublanc gives four hundred and seventeen epistles of Saint Bernard, while Merlones Horsus only gives three hundred and sixty-seven, I do not despise Merlones Horsus.' translation=''
+[C-] [DOT-SLOT-SWITCH] slot=A audio_sec=14.0s prev='Because Dom Maublanc gives four hundred and seventeen epistles of Saint Bernard, while Merlones Horsus only gives three hundred and sixty-seven, I do not despise Merlones Horsus.'
+[FLUSH-SEG] seg=1 tok=48/52 ratio=0.923 audio_end=13.976s fsl=85.049s
+[FINAL] seg=1 reason=dot audio=[0.000, 13.976] fsl=85.049s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='Because Dom Maublanc gives four hundred and seventeen epistles of Saint Bernard, while Merlones Horsus only gives three hundred and sixty-seven, I do not despise Merlones Horsus.'
+[ENCODE] slot=A chunk=6 audio_pos=14.130s ts=82.940s ds=82.940s decode=16.086s
+[C-] [TRANSCRIBE-DECODING] slot=A text='There are some nice-looking people on board," remarked Mister Travilla.'
+[C-] [DOT-PENDING] slot=A revised text='There are some nice-looking people on board," remarked Mister Travilla.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=7.100s ds=7.101s decode=8.559s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Neither do I.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='Neither do I.'
+[C-] [TRANS-SEG] slot=A lang=en original='Neither do I.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=4.0s
+[FLUSH-SEG] seg=2 tok=8/8 ratio=1.000 audio_end=16.130s fsl=87.145s
+[FINAL] seg=2 reason=dot audio=[13.976, 16.130] fsl=87.145s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='Neither do I.'
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=18.130s ts=103.277s ds=103.277s decode=2.212s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=20.130s ts=105.489s ds=105.489s decode=2.209s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Failed to send message: received 1000 (OK); then sent 1000 (OK)
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] Failed to send message: received 1000 (OK); then sent 1000 (OK)
+Received stop command
+Connection closed
+Client disconnected (1)
+[C-] [TRANSCRIBE-DECODING] slot=A text='There are some nice-looking people on board," remarked Mister Travilla in an undertone to his wife.'
+[C-] [DOT-PENDING] slot=A revised text='There are some nice-looking people on board," remarked Mister Travilla in an undertone to his wife.'
+[ENCODE] slot=A chunk=2 audio_pos=6.070s ts=15.670s ds=15.671s decode=9.314s
+[C-] [TRANSCRIBE-DECODING] slot=A text='There are some nice-looking people on board," remarked Mister Travilla in an undertone to his wife.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='There are some nice-looking people on board," remarked Mister Travilla in an undertone to his wife.'
+[C-] [TRANS-SEG] slot=A lang=en original='There are some nice-looking people on board," remarked Mister Travilla in an undertone to his wife.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=8.0s
+[FLUSH-SEG] seg=1 tok=25/25 ratio=1.000 audio_end=8.070s fsl=19.130s
+[FINAL] seg=1 reason=dot audio=[0.000, 8.070] fsl=19.130s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='There are some nice-looking people on board," remarked Mister Travilla in an undertone to his wife.'
+[ENCODE] slot=A chunk=3 audio_pos=8.070s ts=24.988s ds=24.989s decode=2.212s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=10.070s ts=27.202s ds=27.202s decode=0.657s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=12.070s ts=27.860s ds=27.860s decode=0.653s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='Besides ourselves," added.'
+[C-] [DOT-PENDING] slot=A new text='Besides ourselves," added.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.003s decode=1.150s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Besides ourselves," added Cousin Ronald, laughing.'
+[C-] [DOT-PENDING] slot=A revised text='Besides ourselves," added Cousin Ronald, laughing.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.003s ds=4.004s decode=1.511s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Besides ourselves," added Cousin Ronald, laughing.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='Besides ourselves," added Cousin Ronald, laughing.'
+[C-] [TRANS-SEG] slot=A lang=en original='Besides ourselves," added Cousin Ronald, laughing.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=6.0s
+[FLUSH-SEG] seg=1 tok=14/14 ratio=1.000 audio_end=6.000s fsl=1.568s
+[FINAL] seg=1 reason=dot audio=[0.000, 6.000] fsl=1.568s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='Besides ourselves," added Cousin Ronald, laughing.'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.004s ds=6.005s decode=1.564s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=8.000s ts=8.004s ds=8.004s decode=0.608s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=10.000s ts=10.003s ds=10.003s decode=0.605s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='Yes, she answered.'
+[C-] [DOT-PENDING] slot=A new text='Yes, she answered.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.002s ds=2.002s decode=1.147s
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=9 text='Yes, she answered.'
+[C-] [TRANSCRIBE-DECODING] slot=A text='Yes, she answered. That little group yonder—a young minister.'
+[C-] [DOT-PENDING] slot=A new text='That little group yonder—a young minister.'
+[C-] [DOT-SLOT-SWITCH] slot=A audio_sec=4.0s prev='Yes, she answered.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.004s ds=4.004s decode=1.774s
+[C-] [TRANS-SEG-ASYNC] slot=A lang=en original='Yes, she answered.' translation=''
+[FLUSH-SEG] seg=1 no-token-info → audio_end=4.000s fsl=0.000s
+[FINAL] seg=1 reason=dot audio=[0.000, 4.000] fsl=0.000s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='Yes, she answered.'
+[C-] [TRANSCRIBE-DECODING] slot=A text='That little group yonder—a young minister and his wife and child, I suppose.'
+[C-] [DOT-PENDING] slot=A new text='That little group yonder—a young minister and his wife and child, I suppose.'
+[ENCODE] slot=A chunk=0 audio_pos=6.000s ts=6.002s ds=6.002s decode=1.918s
+[C-] [TRANSCRIBE-DECODING] slot=A text='That little group yonder—a young minister and his wife and child, I suppose.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='That little group yonder—a young minister and his wife and child, I suppose.'
+[C-] [TRANS-SEG] slot=A lang=en original='That little group yonder—a young minister and his wife and child, I suppose.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=6.0s
+[FLUSH-SEG] seg=2 tok=21/21 ratio=1.000 audio_end=8.165s fsl=1.936s
+[FINAL] seg=2 reason=dot audio=[4.000, 8.165] fsl=1.936s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='That little group yonder—a young minister and his wife and child, I suppose.'
+[ENCODE] slot=A chunk=1 audio_pos=8.165s ts=8.168s ds=8.169s decode=1.933s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=10.165s ts=10.168s ds=10.169s decode=0.613s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=12.165s ts=12.168s ds=12.168s decode=0.605s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=2 audio_pos=14.165s ts=14.168s ds=14.169s decode=0.609s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='And what a dear little fellow he is!'
+[C-] [DOT-PENDING] slot=A new text='And what a dear little fellow he is!'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.003s decode=1.373s
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=8 text='And what a dear little fellow he is!'
+[C-] [TRANSCRIBE-DECODING] slot=A text='And what a dear little fellow he is! Just about the age of our Harold.'
+[C-] [DOT-PENDING] slot=A new text='Just about the age of our Harold.'
+[C-] [DOT-SLOT-SWITCH] slot=A audio_sec=4.0s prev='And what a dear little fellow he is!'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.003s ds=4.003s decode=1.924s
+[C-] [TRANS-SEG-ASYNC] slot=A lang=en original='And what a dear little fellow he is!' translation=''
+[C-] [TRANSCRIBE-DECODING] slot=A text='Just about the age of our herald, I should judge.'
+[C-] [DOT-PENDING] slot=A new text='Just about the age of our herald, I should judge.'
+[FLUSH-SEG] seg=1 no-token-info → audio_end=4.000s fsl=0.000s
+[FINAL] seg=1 reason=dot audio=[0.000, 4.000] fsl=0.000s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='And what a dear little fellow he is!'
+[ENCODE] slot=A chunk=0 audio_pos=6.080s ts=6.086s ds=6.086s decode=1.623s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Just about the age of our herald, I should judge.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='Just about the age of our herald, I should judge.'
+[C-] [TRANS-SEG] slot=A lang=en original='Just about the age of our herald, I should judge.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=6.0s
+[FLUSH-SEG] seg=2 tok=16/16 ratio=1.000 audio_end=8.080s fsl=1.685s
+[FINAL] seg=2 reason=dot audio=[4.000, 8.080] fsl=1.685s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='Just about the age of our herald, I should judge.'
+[ENCODE] slot=A chunk=1 audio_pos=8.080s ts=8.086s ds=8.087s decode=1.679s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=10.080s ts=10.084s ds=10.084s decode=0.610s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=12.080s ts=12.085s ds=12.085s decode=0.605s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='Do you, son? Was the smart.'
+[C-] [DOT-PENDING] slot=A new text='Do you, son?'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.003s decode=1.384s
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=6 text='Do you, son?'
+[C-] [TRANSCRIBE-DECODING] slot=A text='Do you, son? Was the smiling rejoinder.'
+[C-] [DOT-PENDING] slot=A new text='Was the smiling rejoinder.'
+[C-] [COMMIT-PENDING] slot=A remaining='Was the smiling rejoinder.'
+[ENCODE] slot=A chunk=1 audio_pos=4.185s ts=4.188s ds=4.188s decode=1.574s
+[C-] [TRANS-SEG-ASYNC] slot=A lang=en original='Do you, son?' translation=''
+[FLUSH-SEG] seg=1 tok=4/15 ratio=0.267 audio_end=4.118s fsl=1.588s
+[FINAL] seg=1 reason=dot audio=[0.000, 4.118] fsl=1.588s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='Do you, son?'
+[C-] [TRANSCRIBE-DECODING] slot=A text='Do you, son? Was the smiling rejoinder.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='Was the smiling rejoinder.'
+[C-] [TRANS-SEG] slot=A lang=en original='Was the smiling rejoinder.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=6.0s
+[FLUSH-SEG] seg=2 tok=15/15 ratio=1.000 audio_end=6.185s fsl=1.588s
+[FINAL] seg=2 reason=dot audio=[4.118, 6.185] fsl=1.588s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='Was the smiling rejoinder.'
+[ENCODE] slot=A chunk=2 audio_pos=6.185s ts=6.188s ds=6.189s decode=1.586s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=8.185s ts=8.188s ds=8.188s decode=0.610s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=10.185s ts=10.187s ds=10.188s decode=0.605s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='He certainly looks like a very nice.'
+[C-] [DOT-PENDING] slot=A new text='He certainly looks like a very nice.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.004s ds=2.004s decode=1.325s
+[C-] [TRANSCRIBE-DECODING] slot=A text='He certainly looks like a very nice little boy.'
+[C-] [DOT-PENDING] slot=A revised text='He certainly looks like a very nice little boy.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.006s ds=4.007s decode=1.521s
+[C-] [TRANSCRIBE-DECODING] slot=A text='He certainly looks like a very nice little boy.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='He certainly looks like a very nice little boy.'
+[C-] [TRANS-SEG] slot=A lang=en original='He certainly looks like a very nice little boy.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=6.0s
+[FLUSH-SEG] seg=1 tok=14/14 ratio=1.000 audio_end=6.000s fsl=1.538s
+[FINAL] seg=1 reason=dot audio=[0.000, 6.000] fsl=1.538s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='He certainly looks like a very nice little boy.'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.007s ds=6.007s decode=1.532s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=8.000s ts=8.005s ds=8.005s decode=0.609s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=10.000s ts=10.005s ds=10.005s decode=0.608s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='Suppose you and he shake hands.'
+[C-] [DOT-PENDING] slot=A new text='Suppose you and he shake hands.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.003s decode=1.343s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Suppose you and he shake hands, Frank.'
+[C-] [DOT-PENDING] slot=A revised text='Suppose you and he shake hands, Frank.'
+[ENCODE] slot=A chunk=1 audio_pos=4.135s ts=4.139s ds=4.139s decode=1.537s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Suppose you and he shake hands, Frank.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='Suppose you and he shake hands, Frank.'
+[C-] [TRANS-SEG] slot=A lang=en original='Suppose you and he shake hands, Frank.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=6.0s
+[FLUSH-SEG] seg=1 tok=14/14 ratio=1.000 audio_end=6.135s fsl=1.548s
+[FINAL] seg=1 reason=dot audio=[0.000, 6.135] fsl=1.548s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='Suppose you and he shake hands, Frank.'
+[ENCODE] slot=A chunk=2 audio_pos=6.135s ts=6.139s ds=6.140s decode=1.544s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=8.135s ts=8.139s ds=8.139s decode=0.610s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=10.135s ts=10.139s ds=10.140s decode=0.607s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='I do indeed.'
+[C-] [DOT-PENDING] slot=A new text='I do indeed.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.003s decode=1.132s
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=6 text='I do indeed.'
+[C-] [TRANSCRIBE-DECODING] slot=A text='I do indeed. The probably comparatively few are.'
+[C-] [DOT-PENDING] slot=A new text='The probably comparatively few are.'
+[C-] [DOT-SLOT-SWITCH] slot=A audio_sec=4.0s prev='I do indeed.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.003s ds=4.003s decode=1.536s
+[C-] [TRANS-SEG-ASYNC] slot=A lang=en original='I do indeed.' translation=''
+[FLUSH-SEG] seg=1 no-token-info → audio_end=4.000s fsl=0.000s
+[FINAL] seg=1 reason=dot audio=[0.000, 4.000] fsl=0.000s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='I do indeed.'
+[C-] [TRANSCRIBE-DECODING] slot=A text='Probably, comparatively few are aware that tobacco is the cause of their ailments.'
+[C-] [DOT-PENDING] slot=A new text='Probably, comparatively few are aware that tobacco is the cause of their ailments.'
+[ENCODE] slot=A chunk=0 audio_pos=6.000s ts=6.003s ds=6.004s decode=1.829s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Probably, comparatively few are aware that tobacco is the cause of their ailments.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='Probably, comparatively few are aware that tobacco is the cause of their ailments.'
+[C-] [TRANS-SEG] slot=A lang=en original='Probably, comparatively few are aware that tobacco is the cause of their ailments.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=6.0s
+[FLUSH-SEG] seg=2 tok=19/19 ratio=1.000 audio_end=8.195s fsl=1.836s
+[FINAL] seg=2 reason=dot audio=[4.000, 8.195] fsl=1.836s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='Probably, comparatively few are aware that tobacco is the cause of their ailments.'
+[ENCODE] slot=A chunk=1 audio_pos=8.195s ts=8.200s ds=8.200s decode=1.832s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=10.195s ts=10.202s ds=10.202s decode=0.612s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=12.195s ts=12.200s ds=12.201s decode=0.609s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=2 audio_pos=14.195s ts=14.200s ds=14.200s decode=0.612s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='Doubtless, that is the case.'
+[C-] [DOT-PENDING] slot=A new text='Doubtless, that is the case.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.002s ds=2.002s decode=1.456s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Doubtless that is the case," remarked Mr. Dinsmore.'
+[C-] [DOT-PENDING] slot=A revised text='Doubtless that is the case," remarked Mr. Dinsmore.'
+[ENCODE] slot=A chunk=1 audio_pos=4.030s ts=4.035s ds=4.035s decode=1.881s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Doubtless, that is the case," remarked Mr. Dinsmore.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='Doubtless, that is the case," remarked Mr. Dinsmore.'
+[C-] [TRANS-SEG] slot=A lang=en original='Doubtless, that is the case," remarked Mr. Dinsmore.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=6.0s
+[FLUSH-SEG] seg=1 tok=21/21 ratio=1.000 audio_end=6.030s fsl=2.014s
+[FINAL] seg=1 reason=dot audio=[0.000, 6.030] fsl=2.014s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='Doubtless, that is the case," remarked Mr. Dinsmore.'
+[ENCODE] slot=A chunk=2 audio_pos=6.030s ts=6.039s ds=6.041s decode=2.005s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=8.030s ts=8.046s ds=8.046s decode=0.669s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=10.030s ts=10.035s ds=10.035s decode=0.607s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='With all my heart, if you will stay.'
+[C-] [DOT-PENDING] slot=A new text='With all my heart, if you will stay.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.004s ds=2.004s decode=1.471s
+[C-] [TRANSCRIBE-DECODING] slot=A text="With all my heart, if you will step into the gentleman's cabin, where there's a light."
+[C-] [DOT-PENDING] slot=A revised text="With all my heart, if you will step into the gentleman's cabin, where there's a light."
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.002s ds=4.003s decode=2.170s
+[C-] [TRANSCRIBE-DECODING] slot=A text="With all my heart, if you will step into the gentleman's cabin, where there's a light."
+[C-] [DOT-CONFIRM] rule=stable slot=A text="With all my heart, if you will step into the gentleman's cabin, where there's a light."
+[C-] [TRANS-SEG] slot=A lang=en original='With all my heart, if you will step into the gentleman's cabin, where there's a light.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=6.0s
+[FLUSH-SEG] seg=1 tok=25/25 ratio=1.000 audio_end=6.000s fsl=2.387s
+[FINAL] seg=1 reason=dot audio=[0.000, 6.000] fsl=2.387s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='With all my heart, if you will step into the gentleman's cabin, where there's a light.'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.176s ds=6.176s decode=2.212s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=8.000s ts=8.389s ds=8.389s decode=0.662s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=10.000s ts=10.004s ds=10.005s decode=0.609s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=2 audio_pos=12.000s ts=12.005s ds=12.006s decode=0.615s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='He led the way. The others all.'
+[C-] [DOT-PENDING] slot=A new text='He led the way.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.003s decode=1.403s
+[C-] [TRANSCRIBE-DECODING] slot=A text='He led the way; the others all following, and taking out a slip.'
+[C-] [DOT-PENDING] slot=A revised text='He led the way; the others all following, and taking out a slip.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.003s ds=4.003s decode=1.869s
+[C-] [TRANSCRIBE-DECODING] slot=A text='He led the way; the others all following, and taking out a slip of paper, read from it in a distinct tone.'
+[C-] [DOT-PENDING] slot=A revised text='He led the way; the others all following, and taking out a slip of paper, read from it in a distinct tone.'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.003s ds=6.003s decode=2.468s
+[C-] [TRANSCRIBE-DECODING] slot=A text='He led the way; the others all following, and taking out a slip of paper, read from it in a distinct tone, loud enough to be heard by.'
+[C-] [DOT-PENDING] slot=A revised text='He led the way; the others all following, and taking out a slip of paper, read from it in a distinct tone, loud enough to be heard by.'
+[ENCODE] slot=A chunk=3 audio_pos=8.000s ts=8.475s ds=8.475s decode=2.935s
+[C-] [TRANSCRIBE-DECODING] slot=A text='He led the way; the others all following, and taking out a slip of paper, read from it in a distinct tone, loud enough to be heard by those all about him, without disturbing.'
+[C-] [DOT-PENDING] slot=A revised text='He led the way; the others all following, and taking out a slip of paper, read from it in a distinct tone, loud enough to be heard by those all about him, without disturbing.'
+[ENCODE] slot=A chunk=4 audio_pos=10.000s ts=11.414s ds=11.414s decode=3.364s
+[C-] [TRANSCRIBE-DECODING] slot=A text='He led the way; the others all following, and taking out a slip of paper, read from it in a distinct tone, loud enough to be heard by those all about him, without disturbing the other passengers.'
+[C-] [DOT-PENDING] slot=A revised text='He led the way; the others all following, and taking out a slip of paper, read from it in a distinct tone, loud enough to be heard by those all about him, without disturbing the other passengers.'
+[ENCODE] slot=A chunk=5 audio_pos=12.030s ts=14.784s ds=14.784s decode=3.550s
+[C-] [TRANSCRIBE-DECODING] slot=A text='He led the way; the others all following, and taking out a slip of paper, read from it in a distinct tone, loud enough to be heard by those all about him, without disturbing the other passengers.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='He led the way; the others all following, and taking out a slip of paper, read from it in a distinct tone, loud enough to be heard by those all about him, without disturbing the other passengers.'
+[C-] [TRANS-SEG] slot=A lang=en original='He led the way; the others all following, and taking out a slip of paper, read from it in a distinct tone, loud enough to be heard by those all about him, without disturbing the other passengers.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=14.0s
+[FLUSH-SEG] seg=1 tok=47/47 ratio=1.000 audio_end=14.030s fsl=7.953s
+[FINAL] seg=1 reason=dot audio=[0.000, 14.030] fsl=7.953s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='He led the way; the others all following, and taking out a slip of paper, read from it in a distinct tone, loud enough to be heard by those all about him, without disturbing the other passengers.'
+[ENCODE] slot=A chunk=6 audio_pos=14.030s ts=18.339s ds=18.340s decode=3.644s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=16.030s ts=21.985s ds=21.985s decode=0.664s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=18.030s ts=22.650s ds=22.650s decode=0.659s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='One drop of nicotine.'
+[C-] [DOT-PENDING] slot=A new text='One drop of nicotine.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.003s decode=1.154s
+[C-] [TRANSCRIBE-DECODING] slot=A text='One drop of nicotine extract of tobacco, placed on.'
+[C-] [DOT-PENDING] slot=A revised text='One drop of nicotine extract of tobacco, placed on.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.003s ds=4.003s decode=1.580s
+[C-] [TRANSCRIBE-DECODING] slot=A text='One drop of nicotine, extract of tobacco, placed on the tongue of a dog, will kill him in a minute.'
+[C-] [DOT-PENDING] slot=A revised text='One drop of nicotine, extract of tobacco, placed on the tongue of a dog, will kill him in a minute.'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.003s ds=6.004s decode=2.349s
+[C-] [TRANSCRIBE-DECODING] slot=A text='One drop of nicotine, extract of tobacco, placed on the tongue of a dog, will kill him in a minute.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='One drop of nicotine, extract of tobacco, placed on the tongue of a dog, will kill him in a minute.'
+[C-] [TRANS-SEG] slot=A lang=en original='One drop of nicotine, extract of tobacco, placed on the tongue of a dog, will kill him in a minute.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=8.0s
+[FLUSH-SEG] seg=1 tok=28/28 ratio=1.000 audio_end=8.000s fsl=2.758s
+[FINAL] seg=1 reason=dot audio=[0.000, 8.000] fsl=2.758s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='One drop of nicotine, extract of tobacco, placed on the tongue of a dog, will kill him in a minute.'
+[ENCODE] slot=A chunk=3 audio_pos=8.000s ts=8.356s ds=8.357s decode=2.403s
+[C-] [TRANSCRIBE-DECODING] slot=A text='hundredth part of a grain pricked under.'
+[C-] [DOT-PENDING] slot=A new text='hundredth part of a grain pricked under.'
+[ENCODE] slot=A chunk=0 audio_pos=10.000s ts=10.760s ds=10.760s decode=1.552s
+[C-] [TRANSCRIBE-DECODING] slot=A text="hundredth part of a grain pricked under the skin of a man's arm will produce."
+[C-] [DOT-PENDING] slot=A revised text="hundredth part of a grain pricked under the skin of a man's arm will produce."
+[ENCODE] slot=A chunk=1 audio_pos=12.000s ts=12.315s ds=12.315s decode=2.154s
+[C-] [TRANSCRIBE-DECODING] slot=A text="A hundredth part of a grain pricked under the skin of a man's arm will produce nausea and fainting."
+[C-] [DOT-PENDING] slot=A revised text="A hundredth part of a grain pricked under the skin of a man's arm will produce nausea and fainting."
+[ENCODE] slot=A chunk=2 audio_pos=14.125s ts=14.472s ds=14.473s decode=2.388s
+[C-] [TRANSCRIBE-DECODING] slot=A text="A hundredth part of a grain pricked under the skin of a man's arm will produce nausea and fainting."
+[C-] [DOT-CONFIRM] rule=stable slot=A text="A hundredth part of a grain pricked under the skin of a man's arm will produce nausea and fainting."
+[C-] [TRANS-SEG] slot=A lang=en original='A hundredth part of a grain pricked under the skin of a man's arm will produce nausea and fainting.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=8.0s
+[FLUSH-SEG] seg=2 tok=28/28 ratio=1.000 audio_end=16.125s fsl=3.147s
+[FINAL] seg=2 reason=dot audio=[8.000, 16.125] fsl=3.147s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='A hundredth part of a grain pricked under the skin of a man's arm will produce nausea and fainting.'
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=18.125s ts=19.273s ds=19.273s decode=0.663s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=20.125s ts=20.130s ds=20.131s decode=0.608s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='The half dozen cigars which most.'
+[C-] [DOT-PENDING] slot=A new text='The half dozen cigars which most.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.005s ds=2.005s decode=1.270s
+[C-] [TRANSCRIBE-DECODING] slot=A text='The half dozen cigars which most smokers use a day.'
+[C-] [DOT-PENDING] slot=A revised text='The half dozen cigars which most smokers use a day.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.005s ds=4.006s decode=1.601s
+[C-] [TRANSCRIBE-DECODING] slot=A text='The half dozen cigars which most smokers use a day contain six or seven grains.'
+[C-] [DOT-PENDING] slot=A revised text='The half dozen cigars which most smokers use a day contain six or seven grains.'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.003s ds=6.004s decode=1.887s
+[C-] [TRANSCRIBE-DECODING] slot=A text='The half dozen cigars which most smokers use a day, contain six or seven grains. Enough if concentrated and.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='The half dozen cigars which most smokers use a day, contain six or seven grains.'
+[C-] [DOT-PENDING] slot=A new text='Enough if concentrated and.'
+[C-] [TRANS-SEG] slot=A lang=en original='The half dozen cigars which most smokers use a day, contain six or seven grains.' translation=''
+[C-] [COMMIT-PENDING] slot=A remaining='Enough if concentrated and.'
+[FLUSH-SEG] seg=1 tok=19/26 ratio=0.731 audio_end=7.462s fsl=2.798s
+[FINAL] seg=1 reason=dot audio=[0.000, 7.462] fsl=2.798s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='The half dozen cigars which most smokers use a day, contain six or seven grains.'
+[ENCODE] slot=A chunk=3 audio_pos=8.000s ts=8.004s ds=8.004s decode=2.256s
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=12 text='The half dozen cigars which most smokers use a day contain six or seven grains.'
+[C-] [TRANSCRIBE-DECODING] slot=A text='The half dozen cigars which most smokers use a day contain six or seven grains. Enough, if concentrated and absorbed, to kill three men.'
+[C-] [DOT-PENDING] slot=A new text='Enough, if concentrated and absorbed, to kill three men.'
+[C-] [COMMIT-PENDING] slot=A remaining='Enough, if concentrated and absorbed, to kill three men.'
+[ENCODE] slot=A chunk=4 audio_pos=10.000s ts=10.264s ds=10.264s decode=2.679s
+[C-] [TRANS-SEG-ASYNC] slot=A lang=en original='The half dozen cigars which most smokers use a day contain six or seven grains.' translation=''
+[C-] [TRANSCRIBE-DECODING] slot=A text='The half dozen cigars which most smokers use a day contain six or seven grains, enough if concentrated and absorbed to kill three men, and a pound of tobacco, according to'
+[FLUSH-SEG] seg=2 tok=22/38 ratio=0.579 audio_end=11.158s fsl=1.722s
+[FINAL] seg=2 reason=dot audio=[7.462, 11.158] fsl=1.722s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='The half dozen cigars which most smokers use a day contain six or seven grains.'
+[ENCODE] slot=A chunk=5 audio_pos=12.000s ts=12.947s ds=12.947s decode=3.042s
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=15 text='enough if concentrated and absorbed to kill three men.'
+[C-] [TRANSCRIBE-DECODING] slot=A text='The half dozen cigars which most smokers use a day contain six or seven grains, enough if concentrated and absorbed to kill three men. And a pound of tobacco, according to its quality, contains from one.'
+[C-] [DOT-PENDING] slot=A new text='And a pound of tobacco, according to its quality, contains from one.'
+[C-] [COMMIT-PENDING] slot=A remaining='And a pound of tobacco, according to its quality, contains from one.'
+[ENCODE] slot=A chunk=6 audio_pos=14.000s ts=15.992s ds=15.993s decode=3.548s
+[C-] [TRANS-SEG-ASYNC] slot=A lang=en original='enough if concentrated and absorbed to kill three men.' translation=''
+[FLUSH-SEG] seg=3 tok=29/45 ratio=0.644 audio_end=14.689s fsl=4.790s
+[FINAL] seg=3 reason=dot audio=[11.158, 14.689] fsl=4.790s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='enough if concentrated and absorbed to kill three men.'
+[C-] [TRANSCRIBE-DECODING] slot=A text='The half dozen cigars which most smokers use a day contain six or seven grains, enough if concentrated and absorbed to kill three men. And a pound of tobacco, according to its quality, contains from one quarter to one and a quarter ounces.'
+[C-] [DOT-PENDING] slot=A revised text='And a pound of tobacco, according to its quality, contains from one quarter to one and a quarter ounces.'
+[ENCODE] slot=A chunk=7 audio_pos=16.000s ts=19.546s ds=19.547s decode=2.721s
+[C-] [TRANSCRIBE-DECODING] slot=A text='The half dozen cigars which most smokers use a day contain six or seven grains, enough if concentrated and absorbed to kill three men. And a pound of tobacco, according to its quality, contains from one quarter to one and a quarter ounces.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='And a pound of tobacco, according to its quality, contains from one quarter to one and a quarter ounces.'
+[C-] [TRANS-SEG] slot=A lang=en original='And a pound of tobacco, according to its quality, contains from one quarter to one and a quarter ounces.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=18.0s
+[FLUSH-SEG] seg=4 tok=52/52 ratio=1.000 audio_end=18.140s fsl=7.865s
+[FINAL] seg=4 reason=dot audio=[14.689, 18.140] fsl=7.865s encode=0.000s decode=0.000s final_decode=0.000s trans=0.002s | text='And a pound of tobacco, according to its quality, contains from one quarter to one and a quarter ounces.'
+[ENCODE] slot=A chunk=8 audio_pos=18.140s ts=22.274s ds=22.275s decode=3.732s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=20.140s ts=26.011s ds=26.011s decode=0.655s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=22.140s ts=26.667s ds=26.667s decode=0.658s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=2 audio_pos=24.140s ts=27.326s ds=27.326s decode=0.909s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='Is it strange then that smoke?'
+[C-] [DOT-PENDING] slot=A new text='Is it strange then that smoke?'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.003s decode=1.269s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Is it strange then that smokers and chewers have a thousand ailments?'
+[C-] [DOT-PENDING] slot=A revised text='Is it strange then that smokers and chewers have a thousand ailments?'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.003s ds=4.004s decode=1.746s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Is it strange then that smokers and chewers have a thousand ailments?'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='Is it strange then that smokers and chewers have a thousand ailments?'
+[C-] [TRANS-SEG] slot=A lang=en original='Is it strange then that smokers and chewers have a thousand ailments?' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=6.0s
+[FLUSH-SEG] seg=1 tok=18/18 ratio=1.000 audio_end=6.110s fsl=1.794s
+[FINAL] seg=1 reason=dot audio=[0.000, 6.110] fsl=1.794s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='Is it strange then that smokers and chewers have a thousand ailments?'
+[ENCODE] slot=A chunk=2 audio_pos=6.110s ts=6.114s ds=6.115s decode=1.789s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=8.110s ts=8.115s ds=8.115s decode=0.611s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=10.110s ts=10.115s ds=10.115s decode=0.608s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=2 audio_pos=12.110s ts=12.115s ds=12.115s decode=0.613s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='That the French Polytechnic at.'
+[C-] [DOT-PENDING] slot=A new text='That the French Polytechnic at.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.004s decode=1.339s
+[C-] [TRANSCRIBE-DECODING] slot=A text='That the French Polytechnic Institute had to prohibit its.'
+[C-] [DOT-PENDING] slot=A revised text='That the French Polytechnic Institute had to prohibit its.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.004s ds=4.004s decode=1.626s
+[C-] [TRANSCRIBE-DECODING] slot=A text='That the French Polytechnic Institute had to prohibit its use on account of its.'
+[C-] [DOT-PENDING] slot=A revised text='That the French Polytechnic Institute had to prohibit its use on account of its.'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.003s ds=6.004s decode=1.933s
+[C-] [TRANSCRIBE-DECODING] slot=A text='That the French Polytechnic Institute had to prohibit its use on account of its effects upon the mind.'
+[C-] [DOT-PENDING] slot=A revised text='That the French Polytechnic Institute had to prohibit its use on account of its effects upon the mind.'
+[ENCODE] slot=A chunk=3 audio_pos=8.120s ts=8.125s ds=8.127s decode=2.222s
+[C-] [TRANSCRIBE-DECODING] slot=A text='That the French Polytechnic Institute had to prohibit its use on account of its effects upon the mind.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='That the French Polytechnic Institute had to prohibit its use on account of its effects upon the mind.'
+[C-] [TRANS-SEG] slot=A lang=en original='That the French Polytechnic Institute had to prohibit its use on account of its effects upon the mind.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=10.0s
+[FLUSH-SEG] seg=1 tok=25/25 ratio=1.000 audio_end=10.120s fsl=2.485s
+[FINAL] seg=1 reason=dot audio=[0.000, 10.120] fsl=2.485s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='That the French Polytechnic Institute had to prohibit its use on account of its effects upon the mind.'
+[ENCODE] slot=A chunk=4 audio_pos=10.120s ts=10.352s ds=10.353s decode=2.254s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=12.120s ts=12.607s ds=12.607s decode=0.661s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=14.120s ts=14.124s ds=14.125s decode=0.609s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='Notice the multitude of sudden deaths.'
+[C-] [DOT-PENDING] slot=A new text='Notice the multitude of sudden deaths.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.002s ds=2.002s decode=1.261s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Notice the multitude of sudden deaths, and see how many are smokeless.'
+[C-] [DOT-PENDING] slot=A revised text='Notice the multitude of sudden deaths, and see how many are smokeless.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.003s ds=4.004s decode=1.805s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Notice the multitude of sudden deaths, and see how many are smokers and chewers.'
+[C-] [DOT-PENDING] slot=A revised text='Notice the multitude of sudden deaths, and see how many are smokers and chewers.'
+[ENCODE] slot=A chunk=2 audio_pos=6.120s ts=6.124s ds=6.125s decode=1.933s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Notice the multitude of sudden deaths, and see how many are smokers and chewers.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='Notice the multitude of sudden deaths, and see how many are smokers and chewers.'
+[C-] [TRANS-SEG] slot=A lang=en original='Notice the multitude of sudden deaths, and see how many are smokers and chewers.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=8.0s
+[FLUSH-SEG] seg=1 tok=21/21 ratio=1.000 audio_end=8.120s fsl=1.964s
+[FINAL] seg=1 reason=dot audio=[0.000, 8.120] fsl=1.964s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='Notice the multitude of sudden deaths, and see how many are smokers and chewers.'
+[ENCODE] slot=A chunk=3 audio_pos=8.120s ts=8.124s ds=8.124s decode=1.960s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=10.120s ts=10.125s ds=10.125s decode=0.619s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=12.120s ts=12.124s ds=12.125s decode=0.604s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='In a small country town, seven.'
+[C-] [DOT-PENDING] slot=A new text='In a small country town, seven.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.007s ds=2.008s decode=1.349s
+[C-] [TRANSCRIBE-DECODING] slot=A text='In a small country town, seven of these mysterious providences.'
+[C-] [DOT-PENDING] slot=A revised text='In a small country town, seven of these mysterious providences.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.003s ds=4.004s decode=1.691s
+[C-] [TRANSCRIBE-DECODING] slot=A text='In a small country town, seven of these mysterious providences occurred within the circuit of a mile.'
+[C-] [DOT-PENDING] slot=A revised text='In a small country town, seven of these mysterious providences occurred within the circuit of a mile.'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.007s ds=6.009s decode=2.133s
+[C-] [TRANSCRIBE-DECODING] slot=A text='In a small country town, seven of these mysterious providences occurred within the circuit of a mile, all directly traceable to.'
+[C-] [DOT-PENDING] slot=A revised text='In a small country town, seven of these mysterious providences occurred within the circuit of a mile, all directly traceable to.'
+[ENCODE] slot=A chunk=3 audio_pos=8.000s ts=8.146s ds=8.147s decode=2.509s
+[C-] [TRANSCRIBE-DECODING] slot=A text='In a small country town, seven of these mysterious providences occurred within the circuit of a mile, all directly traceable to tobacco, and any physician.'
+[C-] [DOT-PENDING] slot=A revised text='In a small country town, seven of these mysterious providences occurred within the circuit of a mile, all directly traceable to tobacco, and any physician.'
+[ENCODE] slot=A chunk=4 audio_pos=10.000s ts=10.659s ds=10.659s decode=2.839s
+[C-] [TRANSCRIBE-DECODING] slot=A text="In a small country town, seven of these mysterious providences occurred within the circuit of a mile, all directly traceable to tobacco, and any physician, on a few moments' reflection, can."
+[C-] [DOT-PENDING] slot=A revised text="In a small country town, seven of these mysterious providences occurred within the circuit of a mile, all directly traceable to tobacco, and any physician, on a few moments' reflection, can."
+[ENCODE] slot=A chunk=5 audio_pos=12.000s ts=13.520s ds=13.522s decode=3.396s
+[C-] [TRANSCRIBE-DECODING] slot=A text="In a small country town, seven of these mysterious providences occurred within the circuit of a mile, all directly traceable to tobacco, and any physician, on a few moments' reflection, can match this fact by his own observation."
+[C-] [DOT-PENDING] slot=A revised text="In a small country town, seven of these mysterious providences occurred within the circuit of a mile, all directly traceable to tobacco, and any physician, on a few moments' reflection, can match this fact by his own observation."
+[ENCODE] slot=A chunk=6 audio_pos=14.000s ts=16.925s ds=16.926s decode=3.879s
+[C-] [TRANSCRIBE-DECODING] slot=A text="In a small country town, seven of these mysterious providences occurred within the circuit of a mile, all directly traceable to tobacco, and any physician, on a few moments' reflection, can match this fact by his own observation."
+[C-] [DOT-CONFIRM] rule=stable slot=A text="In a small country town, seven of these mysterious providences occurred within the circuit of a mile, all directly traceable to tobacco, and any physician, on a few moments' reflection, can match this fact by his own observation."
+[C-] [TRANS-SEG] slot=A lang=en original='In a small country town, seven of these mysterious providences occurred within the circuit of a mile, all directly traceable to tobacco, and any physician, on a few moments' reflection, can match this fact by his own observation.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=16.0s
+[FLUSH-SEG] seg=1 tok=51/51 ratio=1.000 audio_end=16.110s fsl=8.586s
+[FINAL] seg=1 reason=dot audio=[0.000, 16.110] fsl=8.586s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='In a small country town, seven of these mysterious providences occurred within the circuit of a mile, all directly traceable to tobacco, and any physician, on a few moments' reflection, can match this fact by his own observation.'
+[ENCODE] slot=A chunk=7 audio_pos=16.110s ts=20.811s ds=20.811s decode=3.886s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=18.110s ts=24.698s ds=24.698s decode=0.661s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=20.110s ts=25.360s ds=25.360s decode=0.659s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=2 audio_pos=22.110s ts=26.020s ds=26.020s decode=0.664s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='And then such powerful acids.'
+[C-] [DOT-PENDING] slot=A new text='And then such powerful acids.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.003s decode=1.209s
+[C-] [TRANSCRIBE-DECODING] slot=A text='And then, such powerful acids produce intense irritation and.'
+[C-] [DOT-PENDING] slot=A revised text='And then, such powerful acids produce intense irritation and.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.004s ds=4.004s decode=1.572s
+[C-] [TRANSCRIBE-DECODING] slot=A text='And then, such powerful acids produce intense irritation and thirst, thirst which water.'
+[C-] [DOT-PENDING] slot=A revised text='And then, such powerful acids produce intense irritation and thirst, thirst which water.'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.004s ds=6.005s decode=1.877s
+[C-] [TRANSCRIBE-DECODING] slot=A text='And then, such powerful acids produce intense irritation and thirst, thirst which water does not quench.'
+[C-] [DOT-PENDING] slot=A revised text='And then, such powerful acids produce intense irritation and thirst, thirst which water does not quench.'
+[ENCODE] slot=A chunk=3 audio_pos=8.025s ts=8.029s ds=8.030s decode=2.120s
+[C-] [TRANSCRIBE-DECODING] slot=A text='And then, such powerful acids produce intense irritation and thirst, thirst which water does not quench.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='And then, such powerful acids produce intense irritation and thirst, thirst which water does not quench.'
+[C-] [TRANS-SEG] slot=A lang=en original='And then, such powerful acids produce intense irritation and thirst, thirst which water does not quench.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=10.0s
+[FLUSH-SEG] seg=1 tok=24/24 ratio=1.000 audio_end=10.025s fsl=2.323s
+[FINAL] seg=1 reason=dot audio=[0.000, 10.025] fsl=2.323s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='And then, such powerful acids produce intense irritation and thirst, thirst which water does not quench.'
+[ENCODE] slot=A chunk=4 audio_pos=10.025s ts=10.153s ds=10.153s decode=2.196s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=12.025s ts=12.350s ds=12.350s decode=0.664s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=14.025s ts=14.028s ds=14.028s decode=0.603s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='Hence, a resort to cider and.'
+[C-] [DOT-PENDING] slot=A new text='Hence, a resort to cider and.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.002s ds=2.002s decode=1.386s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Hence, a resort to cider and beer.'
+[C-] [DOT-PENDING] slot=A revised text='Hence, a resort to cider and beer.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.005s ds=4.006s decode=1.549s
+[C-] [TRANSCRIBE-DECODING] slot=A text='Hence, a resort to cider and beer.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='Hence, a resort to cider and beer.'
+[C-] [TRANS-SEG] slot=A lang=en original='Hence, a resort to cider and beer.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=6.0s
+[FLUSH-SEG] seg=1 tok=14/14 ratio=1.000 audio_end=6.000s fsl=1.540s
+[FINAL] seg=1 reason=dot audio=[0.000, 6.000] fsl=1.540s encode=0.000s decode=0.000s final_decode=0.000s trans=0.003s | text='Hence, a resort to cider and beer.'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.003s ds=6.003s decode=1.542s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=8.000s ts=8.004s ds=8.004s decode=0.611s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=10.000s ts=10.003s ds=10.003s decode=0.609s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='No, sir. What?'
+[C-] [DOT-PENDING] slot=A new text='No, sir.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.004s decode=1.209s
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=10 text='No, sir.'
+[C-] [TRANSCRIBE-DECODING] slot=A text='No, sir. What know ye not that your body is the?'
+[C-] [DOT-PENDING] slot=A new text='What know ye not that your body is the?'
+[C-] [COMMIT-PENDING] slot=A remaining='What know ye not that your body is the?'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.003s ds=4.003s decode=1.755s
+[C-] [TRANS-SEG-ASYNC] slot=A lang=en original='No, sir.' translation=''
+[FLUSH-SEG] seg=1 tok=3/18 ratio=0.167 audio_end=3.933s fsl=1.766s
+[FINAL] seg=1 reason=dot audio=[0.000, 3.933] fsl=1.766s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='No, sir.'
+[C-] [TRANSCRIBE-DECODING] slot=A text='No, sir. What know ye not that your body is the temple of the Holy Ghost, which is in you?'
+[C-] [DOT-PENDING] slot=A revised text='What know ye not that your body is the temple of the Holy Ghost, which is in you?'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.004s ds=6.005s decode=2.341s
+[C-] [TRANSCRIBE-DECODING] slot=A text='No, sir. What know ye not that your body is the temple of the Holy Ghost, which is in you, which ye have of God?'
+[C-] [DOT-PENDING] slot=A revised text='What know ye not that your body is the temple of the Holy Ghost, which is in you, which ye have of God?'
+[ENCODE] slot=A chunk=3 audio_pos=8.000s ts=8.348s ds=8.349s decode=2.754s
+[C-] [TRANSCRIBE-DECODING] slot=A text='No, sir. What know ye not that your body is the temple of the Holy Ghost, which is in you, which ye have of God, and ye are not your own.'
+[C-] [DOT-PENDING] slot=A revised text='What know ye not that your body is the temple of the Holy Ghost, which is in you, which ye have of God, and ye are not your own.'
+[ENCODE] slot=A chunk=4 audio_pos=10.055s ts=11.126s ds=11.128s decode=3.199s
+[C-] [TRANSCRIBE-DECODING] slot=A text='No, sir. What know ye not that your body is the temple of the Holy Ghost, which is in you, which ye have of God, and ye are not your own.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='What know ye not that your body is the temple of the Holy Ghost, which is in you, which ye have of God, and ye are not your own.'
+[C-] [TRANS-SEG] slot=A lang=en original='What know ye not that your body is the temple of the Holy Ghost, which is in you, which ye have of God, and ye are not your own.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=12.0s
+[FLUSH-SEG] seg=2 tok=41/41 ratio=1.000 audio_end=12.055s fsl=5.475s
+[FINAL] seg=2 reason=dot audio=[3.933, 12.055] fsl=5.475s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='What know ye not that your body is the temple of the Holy Ghost, which is in you, which ye have of God, and ye are not your own.'
+[ENCODE] slot=A chunk=5 audio_pos=12.055s ts=14.331s ds=14.331s decode=3.200s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=14.055s ts=17.533s ds=17.533s decode=0.662s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=16.055s ts=18.195s ds=18.195s decode=0.655s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='For ye are bought with a price.'
+[C-] [DOT-PENDING] slot=A new text='For ye are bought with a price.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.003s decode=1.328s
+[C-] [TRANSCRIBE-DECODING] slot=A text='For ye are bought with a price; therefore, glorify God in your body.'
+[C-] [DOT-PENDING] slot=A revised text='For ye are bought with a price; therefore, glorify God in your body.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.007s ds=4.008s decode=1.963s
+[C-] [TRANSCRIBE-DECODING] slot=A text="For ye are bought with a price; therefore, glorify God in your body and in your spirit, which are God's."
+[C-] [DOT-PENDING] slot=A revised text="For ye are bought with a price; therefore, glorify God in your body and in your spirit, which are God's."
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.002s ds=6.003s decode=2.470s
+[C-] [TRANSCRIBE-DECODING] slot=A text="For ye are bought with a price; therefore, glorify God in your body and in your spirit, which are God's."
+[C-] [DOT-CONFIRM] rule=stable slot=A text="For ye are bought with a price; therefore, glorify God in your body and in your spirit, which are God's."
+[C-] [TRANS-SEG] slot=A lang=en original='For ye are bought with a price; therefore, glorify God in your body and in your spirit, which are God's.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=8.0s
+[FLUSH-SEG] seg=1 tok=30/30 ratio=1.000 audio_end=8.155s fsl=2.853s
+[FINAL] seg=1 reason=dot audio=[0.000, 8.155] fsl=2.853s encode=0.000s decode=0.000s final_decode=0.000s trans=0.011s | text='For ye are bought with a price; therefore, glorify God in your body and in your spirit, which are God's.'
+[ENCODE] slot=A chunk=3 audio_pos=8.155s ts=8.477s ds=8.477s decode=2.531s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=10.155s ts=11.010s ds=11.010s decode=0.651s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=12.155s ts=12.159s ds=12.160s decode=0.612s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=2 audio_pos=14.155s ts=14.159s ds=14.159s decode=0.613s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='We certainly have no right to.'
+[C-] [DOT-PENDING] slot=A new text='We certainly have no right to.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.002s ds=2.002s decode=1.267s
+[C-] [TRANSCRIBE-DECODING] slot=A text='We certainly have no right to injure our bodies either by.'
+[C-] [DOT-PENDING] slot=A revised text='We certainly have no right to injure our bodies either by.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.002s ds=4.002s decode=1.700s
+[C-] [TRANSCRIBE-DECODING] slot=A text='We certainly have no right to injure our bodies either by neglect or self-indulgence.'
+[C-] [DOT-PENDING] slot=A revised text='We certainly have no right to injure our bodies either by neglect or self-indulgence.'
+[ENCODE] slot=A chunk=2 audio_pos=6.025s ts=6.028s ds=6.029s decode=2.060s
+[C-] [TRANSCRIBE-DECODING] slot=A text='We certainly have no right to injure our bodies either by neglect or self-indulgence.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='We certainly have no right to injure our bodies either by neglect or self-indulgence.'
+[C-] [TRANS-SEG] slot=A lang=en original='We certainly have no right to injure our bodies either by neglect or self-indulgence.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=8.0s
+[FLUSH-SEG] seg=1 tok=23/23 ratio=1.000 audio_end=8.025s fsl=2.185s
+[FINAL] seg=1 reason=dot audio=[0.000, 8.025] fsl=2.185s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='We certainly have no right to injure our bodies either by neglect or self-indulgence.'
+[ENCODE] slot=A chunk=3 audio_pos=8.025s ts=8.091s ds=8.091s decode=2.121s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=10.025s ts=10.212s ds=10.213s decode=0.661s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=12.025s ts=12.028s ds=12.028s decode=0.611s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='And again, I beseech you.'
+[C-] [DOT-PENDING] slot=A new text='And again, I beseech you.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.003s decode=1.405s
+[C-] [TRANSCRIBE-DECODING] slot=A text='And again, I beseech you, therefore, brethren, by the mercies of God.'
+[C-] [DOT-PENDING] slot=A revised text='And again, I beseech you, therefore, brethren, by the mercies of God.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.003s ds=4.003s decode=2.119s
+[C-] [TRANSCRIBE-DECODING] slot=A text='And again, I beseech you, therefore, brethren, by the mercies of God, that ye present your bodies a'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.124s ds=6.125s decode=2.525s
+[C-] [TRANSCRIBE-DECODING] slot=A text='And again, I beseech you, therefore, brethren, by the mercies of God, that ye present your bodies a living sacrifice, holy, except.'
+[C-] [DOT-PENDING] slot=A revised text='And again, I beseech you, therefore, brethren, by the mercies of God, that ye present your bodies a living sacrifice, holy, except.'
+[ENCODE] slot=A chunk=3 audio_pos=8.000s ts=8.652s ds=8.652s decode=2.946s
+[C-] [TRANSCRIBE-DECODING] slot=A text='And again, I beseech you, therefore, brethren, by the mercies of God, that ye present your bodies a living sacrifice, holy, acceptable unto God, which is your reasonable.'
+[C-] [DOT-PENDING] slot=A revised text='And again, I beseech you, therefore, brethren, by the mercies of God, that ye present your bodies a living sacrifice, holy, acceptable unto God, which is your reasonable.'
+[ENCODE] slot=A chunk=4 audio_pos=10.000s ts=11.602s ds=11.602s decode=3.385s
+[C-] [TRANSCRIBE-DECODING] slot=A text='And again, I beseech you, therefore, brethren, by the mercies of God, that ye present your bodies a living sacrifice, holy, acceptable unto God, which is your reasonable service.'
+[C-] [DOT-PENDING] slot=A revised text='And again, I beseech you, therefore, brethren, by the mercies of God, that ye present your bodies a living sacrifice, holy, acceptable unto God, which is your reasonable service.'
+[ENCODE] slot=A chunk=5 audio_pos=12.140s ts=14.992s ds=14.993s decode=3.450s
+[C-] [TRANSCRIBE-DECODING] slot=A text='And again, I beseech you, therefore, brethren, by the mercies of God, that ye present your bodies a living sacrifice, holy, acceptable unto God, which is your reasonable service.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='And again, I beseech you, therefore, brethren, by the mercies of God, that ye present your bodies a living sacrifice, holy, acceptable unto God, which is your reasonable service.'
+[C-] [TRANS-SEG] slot=A lang=en original='And again, I beseech you, therefore, brethren, by the mercies of God, that ye present your bodies a living sacrifice, holy, acceptable unto God, which is your reasonable service.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=14.0s
+[FLUSH-SEG] seg=1 tok=45/45 ratio=1.000 audio_end=14.140s fsl=7.895s
+[FINAL] seg=1 reason=dot audio=[0.000, 14.140] fsl=7.895s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='And again, I beseech you, therefore, brethren, by the mercies of God, that ye present your bodies a living sacrifice, holy, acceptable unto God, which is your reasonable service.'
+[ENCODE] slot=A chunk=6 audio_pos=14.140s ts=18.466s ds=18.469s decode=3.567s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=16.140s ts=22.036s ds=22.037s decode=0.658s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=18.140s ts=22.695s ds=22.695s decode=0.656s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='It must require a good deal.'
+[C-] [DOT-PENDING] slot=A new text='It must require a good deal.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.003s decode=1.266s
+[C-] [TRANSCRIBE-DECODING] slot=A text='It must require a good deal of resolution for one who has become fond.'
+[C-] [DOT-PENDING] slot=A revised text='It must require a good deal of resolution for one who has become fond.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.003s ds=4.003s decode=1.808s
+[C-] [TRANSCRIBE-DECODING] slot=A text='It must require a good deal of resolution for one who has become fond of the indulgence to give it up.'
+[C-] [DOT-PENDING] slot=A revised text='It must require a good deal of resolution for one who has become fond of the indulgence to give it up.'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.003s ds=6.003s decode=2.299s
+[C-] [TRANSCRIBE-DECODING] slot=A text='It must require a good deal of resolution for one who has become fond of the indulgence to give it up," remarked Mr. Daly.'
+[C-] [DOT-PENDING] slot=A revised text='It must require a good deal of resolution for one who has become fond of the indulgence to give it up," remarked Mr. Daly.'
+[ENCODE] slot=A chunk=3 audio_pos=8.130s ts=8.324s ds=8.325s decode=2.635s
+[C-] [TRANSCRIBE-DECODING] slot=A text='It must require a good deal of resolution for one who has become fond of the indulgence to give it up," remarked Mr. Daly.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='It must require a good deal of resolution for one who has become fond of the indulgence to give it up," remarked Mr. Daly.'
+[C-] [TRANS-SEG] slot=A lang=en original='It must require a good deal of resolution for one who has become fond of the indulgence to give it up," remarked Mr. Daly.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=10.0s
+[FLUSH-SEG] seg=1 tok=32/32 ratio=1.000 audio_end=10.130s fsl=3.500s
+[FINAL] seg=1 reason=dot audio=[0.000, 10.130] fsl=3.500s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='It must require a good deal of resolution for one who has become fond of the indulgence to give it up," remarked Mr. Daly.'
+[ENCODE] slot=A chunk=4 audio_pos=10.130s ts=10.964s ds=10.964s decode=2.667s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=12.130s ts=13.632s ds=13.632s decode=0.664s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=14.130s ts=14.297s ds=14.297s decode=0.659s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='No doubt. No doubt.'
+[C-] [DOT-PENDING] slot=A new text='No doubt.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.003s ds=2.003s decode=1.211s
+[C-] [TRANSCRIBE-DECODING] slot=A text='No doubt, no doubt, returned Mister Lilburn, but.'
+[C-] [DOT-PENDING] slot=A revised text='No doubt, no doubt, returned Mister Lilburn, but.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.003s ds=4.003s decode=1.698s
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=6 text='No doubt, no doubt.'
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=14 text='Returned, Mister Lilburn.'
+[C-] [TRANSCRIBE-DECODING] slot=A text='No doubt, no doubt. Returned, Mister Lilburn. But, if thy right eye offend thee, pluck it out.'
+[C-] [DOT-PENDING] slot=A new text='But, if thy right eye offend thee, pluck it out.'
+[C-] [COMMIT-PENDING] slot=A remaining='But, if thy right eye offend thee, pluck it out.'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.003s ds=6.003s decode=2.487s
+[C-] [TRANS-SEG-ASYNC] slot=A lang=en original='No doubt, no doubt.' translation=''
+[C-] [TRANS-SEG-ASYNC] slot=A lang=en original='Returned, Mister Lilburn.' translation=''
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=23 text='No doubt, no doubt, returned Mister Lilburn.'
+[C-] [TRANSCRIBE-DECODING] slot=A text='No doubt, no doubt, returned Mister Lilburn. But, if thy right eye offend thee, pluck it out and cast it from thee, for it is.'
+[C-] [DOT-PENDING] slot=A new text='But, if thy right eye offend thee, pluck it out and cast it from thee, for it is.'
+[C-] [COMMIT-PENDING] slot=A remaining='But, if thy right eye offend thee, pluck it out and cast it from thee, for it is.'
+[FLUSH-SEG] seg=1 tok=18/38 ratio=0.474 audio_end=6.947s fsl=0.669s
+[FINAL] seg=1 reason=dot audio=[0.000, 6.947] fsl=0.669s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='No doubt, no doubt.'
+[FLUSH-SEG] seg=2 tok=18/38 ratio=0.474 audio_end=6.947s fsl=1.482s
+[FINAL] seg=2 reason=dot audio=[6.947, 6.947] fsl=1.482s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='Returned, Mister Lilburn.'
+[ENCODE] slot=A chunk=3 audio_pos=8.000s ts=8.493s ds=8.493s decode=2.983s
+[C-] [TRANS-SEG-ASYNC] slot=A lang=en original='No doubt, no doubt, returned Mister Lilburn.' translation=''
+[C-] [TRANSCRIBE-DECODING] slot=A text='No doubt, no doubt, returned Mister Lilburn. But, if thy right eye offend thee, pluck it out and cast it from thee, for it is profitable for thee that one of thy members.'
+[C-] [DOT-PENDING] slot=A revised text='But, if thy right eye offend thee, pluck it out and cast it from thee, for it is profitable for thee that one of thy members.'
+[FLUSH-SEG] seg=3 tok=16/46 ratio=0.348 audio_end=8.696s fsl=2.722s
+[FINAL] seg=3 reason=dot audio=[6.947, 8.696] fsl=2.722s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='No doubt, no doubt, returned Mister Lilburn.'
+[ENCODE] slot=A chunk=4 audio_pos=10.000s ts=11.480s ds=11.480s decode=3.488s
+[C-] [TRANSCRIBE-DECODING] slot=A text='No doubt, no doubt, returned Mister Lilburn. But, if thy right eye offend thee, pluck it out and cast it from thee, for it is profitable for thee that one of thy members should perish, and not that thy whole body.'
+[C-] [DOT-PENDING] slot=A revised text='But, if thy right eye offend thee, pluck it out and cast it from thee, for it is profitable for thee that one of thy members should perish, and not that thy whole body.'
+[ENCODE] slot=A chunk=5 audio_pos=12.000s ts=14.977s ds=14.978s decode=4.014s
+[C-] [DOT-CONFIRM] rule=context slot=A tail_tokens=45 text='No doubt, no doubt, returned Mr. Lilburn.'
+[C-] [TRANSCRIBE-DECODING] slot=A text='No doubt, no doubt, returned Mr. Lilburn. But, if thy right eye offend thee, pluck it out and cast it from thee, for it is profitable for thee that one of thy members should perish, and not that thy whole body should be cast into hell.'
+[C-] [DOT-PENDING] slot=A new text='But, if thy right eye offend thee, pluck it out and cast it from thee, for it is profitable for thee that one of thy members should perish, and not that thy whole body should be cast into hell.'
+[C-] [COMMIT-PENDING] slot=A remaining='But, if thy right eye offend thee, pluck it out and cast it from thee, for it is profitable for thee that one of thy members should perish, and not that thy whole body should be cast into hell.'
+[ENCODE] slot=A chunk=6 audio_pos=14.010s ts=18.998s ds=18.999s decode=4.463s
+[C-] [TRANS-SEG-ASYNC] slot=A lang=en original='No doubt, no doubt, returned Mr. Lilburn.' translation=''
+[C-] [TRANSCRIBE-DECODING] slot=A text='No doubt, no doubt, returned Mr. Lilburn. But, if thy right eye offend thee, pluck it out and cast it from thee, for it is profitable for thee that one of thy members should perish, and not that thy whole body should be cast into hell.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='But, if thy right eye offend thee, pluck it out and cast it from thee, for it is profitable for thee that one of thy members should perish, and not that thy whole body should be cast into hell.'
+[C-] [TRANS-SEG] slot=A lang=en original='But, if thy right eye offend thee, pluck it out and cast it from thee, for it is profitable for thee that one of thy members should perish, and not that thy whole body should be cast into hell.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=16.0s
+[FLUSH-SEG] seg=4 tok=10/61 ratio=0.164 audio_end=14.338s fsl=9.064s
+[FINAL] seg=4 reason=dot audio=[8.696, 14.338] fsl=9.064s encode=0.000s decode=0.000s final_decode=0.000s trans=0.000s | text='No doubt, no doubt, returned Mr. Lilburn.'
+[FLUSH-SEG] seg=5 tok=61/61 ratio=1.000 audio_end=16.010s fsl=11.954s
+[FINAL] seg=5 reason=dot audio=[14.338, 16.010] fsl=11.954s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='But, if thy right eye offend thee, pluck it out and cast it from thee, for it is profitable for thee that one of thy members should perish, and not that thy whole body should be cast into hell.'
+[ENCODE] slot=A chunk=7 audio_pos=16.010s ts=23.468s ds=23.468s decode=4.497s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=18.010s ts=27.966s ds=27.966s decode=0.659s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=20.010s ts=28.628s ds=28.628s decode=0.667s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text='There was a pause. Broken.'
+[C-] [DOT-PENDING] slot=A new text='There was a pause.'
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.005s ds=2.005s decode=0.874s
+[C-] [TRANSCRIBE-DECODING] slot=A text='There was a pause, broken by young Horace, who had been watching a group.'
+[C-] [DOT-PENDING] slot=A revised text='There was a pause, broken by young Horace, who had been watching a group.'
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.004s ds=4.005s decode=1.986s
+[C-] [TRANSCRIBE-DECODING] slot=A text='There was a pause, broken by young Horace, who had been watching a group of men gathered about a table at the front.'
+[C-] [DOT-PENDING] slot=A revised text='There was a pause, broken by young Horace, who had been watching a group of men gathered about a table at the front.'
+[ENCODE] slot=A chunk=2 audio_pos=6.000s ts=6.004s ds=6.004s decode=2.547s
+[C-] [TRANSCRIBE-DECODING] slot=A text='There was a pause, broken by young Horace, who had been watching a group of men gathered about a table at the further end of the room.'
+[C-] [DOT-PENDING] slot=A revised text='There was a pause, broken by young Horace, who had been watching a group of men gathered about a table at the further end of the room.'
+[ENCODE] slot=A chunk=3 audio_pos=8.100s ts=8.555s ds=8.555s decode=2.816s
+[C-] [TRANSCRIBE-DECODING] slot=A text='There was a pause, broken by young Horace, who had been watching a group of men gathered about a table at the further end of the room.'
+[C-] [DOT-CONFIRM] rule=stable slot=A text='There was a pause, broken by young Horace, who had been watching a group of men gathered about a table at the further end of the room.'
+[C-] [TRANS-SEG] slot=A lang=en original='There was a pause, broken by young Horace, who had been watching a group of men gathered about a table at the further end of the room.' translation=''
+[C-] [SEG-SLOT-RESET] slot=A audio_sec=10.0s
+[FLUSH-SEG] seg=1 tok=35/35 ratio=1.000 audio_end=10.100s fsl=4.112s
+[FINAL] seg=1 reason=dot audio=[0.000, 10.100] fsl=4.112s encode=0.000s decode=0.000s final_decode=0.000s trans=0.001s | text='There was a pause, broken by young Horace, who had been watching a group of men gathered about a table at the further end of the room.'
+[ENCODE] slot=A chunk=4 audio_pos=10.100s ts=11.375s ds=11.376s decode=2.838s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=0 audio_pos=12.100s ts=14.214s ds=14.214s decode=0.660s
+[C-] [TRANSCRIBE-DECODING] slot=A text=''
+[ENCODE] slot=A chunk=1 audio_pos=14.100s ts=14.875s ds=14.875s decode=0.657s
+Received finish command
+[C-] Streaming state initialized
+Received finish command
+[C-] Streaming state initialized
+Received start: lang=auto, targetLang=
+[C-] Streaming state initialized
+[C-] [TRANSCRIBE-DECODING] slot=A text="They're gambling yonder."
+[C-] [DOT-PENDING] slot=A new text="They're gambling yonder."
+[ENCODE] slot=A chunk=0 audio_pos=2.000s ts=2.004s ds=2.004s decode=1.213s
+[C-] [TRANSCRIBE-DECODING] slot=A text="They're gambling yonder, and I'm afraid that young fellow is being badly."
+[C-] [DOT-PENDING] slot=A revised text="They're gambling yonder, and I'm afraid that young fellow is being badly."
+[ENCODE] slot=A chunk=1 audio_pos=4.000s ts=4.003s ds=4.004s decode=1.935s
+[rank0]:[W803 23:10:09.963135651 ProcessGroupNCCL.cpp:1524] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
