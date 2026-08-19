@@ -11,6 +11,7 @@ LLM 판단은 없다. 실행 순서, 채택/롤백, 예산, 중단 조건만 관
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import random
 import statistics
@@ -56,6 +57,151 @@ class ScoredSplit:
     chrf: list[float]
     laal_words: list[float]
     k: list[int]
+
+
+# ── 다언어 목적함수 ──────────────────────────────────────────────────────
+#
+# **분절은 타깃과 무관하다** — 문장당 1회이고 캐시가 타깃을 안 탄다. 그래서 타깃을 N개로
+# 늘려도 비용의 90% 를 차지하는 분절 호출은 **그대로**이고, 번역(gtx 무료)과 채점(GPU)만
+# N배가 된다. API 비용 증가는 사실상 0 이다.
+#
+# 얻는 것이 둘이다.
+#   1. 타깃 편향 제거. 프롬프트 문면에서 타깃을 막아도(check_target_agnostic) 목적함수가
+#      한 언어면 최적화가 그쪽으로 끌려간다. 여러 타깃에서 동시에 좋은 경계라야 통과한다.
+#   2. **검출력**. test 100문장 실측에서 문장별 effective 의 타깃 간 Spearman 이
+#      +0.50~+0.63 이라 오차가 부분적으로 독립이다. 평균의 se 가
+#      1개 0.0170 → 2개 0.0132 → 3개 0.0116 → 5개 0.0102 (−40%) 로 줄었다.
+#      루프가 검출하려는 프롬프트 차이가 0.006, dev se 가 0.008 이었으므로 이 감소가
+#      "효과 크기와 잡음이 같은 자릿수" 라는 벽을 넘게 해준다.
+#
+# **타깃별 z-정규화 후 평균**을 쓴다. 원값 평균은 분산이 큰 타깃이 지배한다 (실측 문장별
+# sd: zh 0.147 ~ ko 0.196). z 는 같은 분할 안에서만 계산하므로 런 간 비교에는 쓰지 않고,
+# 절대값 보고는 타깃별 곡선으로 따로 낸다.
+
+DEFAULT_TARGET_POOL = ["English", "Korean", "Japanese", "Chinese", "Spanish", "German"]
+
+
+def resolve_targets(pool: list[str], src_lang: str) -> list[str]:
+    """검증 풀에서 소스 언어를 뺀다. 자기 자신으로 번역하는 점수는 의미가 없다."""
+    s = (src_lang or "").strip().lower()
+    return [t for t in pool if t.strip().lower() != s]
+
+
+def _zmix(per_target: dict[str, list[float | None]]) -> list[float | None]:
+    """타깃별 문장 점수를 z-정규화해 평균. 어느 타깃에서도 값이 없으면 None."""
+    zs: dict[str, list[float | None]] = {}
+    for tgt, vals in per_target.items():
+        ok = [v for v in vals if v is not None]
+        if len(ok) < 2:
+            zs[tgt] = [None] * len(vals)
+            continue
+        m = sum(ok) / len(ok)
+        sd = (sum((v - m) ** 2 for v in ok) / (len(ok) - 1)) ** 0.5 or 1.0
+        zs[tgt] = [None if v is None else (v - m) / sd for v in vals]
+    n = len(next(iter(per_target.values()))) if per_target else 0
+    out: list[float | None] = []
+    for i in range(n):
+        got = [zs[t][i] for t in zs if zs[t][i] is not None]
+        out.append(sum(got) / len(got) if got else None)
+    return out
+
+
+def judge_distributed(judge, per_rows: dict[str, list[dict]], T: int,
+                      total_rows: int, sample: str = "failure", seed: int = 20260810):
+    """판정 예산을 **타깃에 나눈다.** 총 호출 수는 그대로다.
+
+    한 타깃에만 판정자를 돌리면 목적함수에서 뺀 타깃 편향이 조향(`premature_rate`,
+    Critic 케이스 선정)으로 되돌아온다. 행 수를 나누면 비용은 그대로면서 편향이 없고,
+    타깃마다 다른 실패(어떤 언어에서만 깨지는 경계)가 드러나는 이득이 붙는다.
+    타깃당 표본이 얇아지지만 이 값은 조향 신호이지 목적함수가 아니다.
+    """
+    tgts = list(per_rows)
+    if not tgts:
+        return []
+    per = max(1, total_rows // len(tgts))
+    out: list[dict] = []
+    for k, t in enumerate(tgts):
+        js = agents.judge_rows(judge, per_rows[t], T, per, sample=sample, seed=seed + k)
+        for j in js:
+            j["target"] = t
+        out.extend(js)
+    return out
+
+
+def evaluate_multi(targets: list[str], make_ctx, prompt, sentences, t_grid, **kw):
+    """타깃마다 `evaluate` 를 돌리고 **z-평균 effective** 로 합친다.
+
+    `make_ctx(tgt) -> (translator, adequacy, consistency, contradiction, tgt_spaced)`.
+    분절은 첫 타깃에서 한 번 호출되고 나머지는 전부 캐시 히트다 — 캐시 키에 타깃이 없다.
+
+    반환 `(merged_rows, Metrics, violations, per_target_metrics, per_target_rows)`.
+    `merged_rows[i]["by_T"][T]` 에는 대표 타깃(첫 번째)의 조각 정보가 남고,
+    `effective` 만 z-평균으로 덮어쓴다. `by_tgt` 에 타깃별 원값을 함께 싣는다.
+    """
+    per_rows: dict[str, list[dict]] = {}
+    per_m: dict[str, "metrics.Metrics"] = {}
+    viol: list[dict] = []
+    for k, tgt in enumerate(targets):
+        tr, adq, cons, contra, tsp = make_ctx(tgt)
+        r, m, v = evaluate(gw=kw["gw"], translator=tr, prompt=prompt, sentences=sentences,
+                           spaced=kw["spaced"], seg_cache=kw["seg_cache"],
+                           workers=kw["workers"], adequacy=adq, consistency=cons,
+                           t_grid=t_grid, trailing_punct=kw["trailing_punct"],
+                           tgt_spaced=tsp, contradiction=contra,
+                           require_coverage=kw["require_coverage"],
+                           coverage_t=kw["coverage_t"],
+                           reasoning_effort=kw["reasoning_effort"],
+                           batch_size=kw["batch_size"], min_gap=kw["min_gap"],
+                           skip_translation_below=kw["skip_translation_below"])
+        per_rows[tgt] = r
+        per_m[tgt] = m
+        if k == 0:                      # 위반은 분절의 성질이라 타깃과 무관 — 한 번만
+            viol = v
+    base = per_rows[targets[0]]
+    merged = [dict(r) for r in base]
+    by_T_keys = sorted({T for r in base for T in (r.get("by_T") or {})}, key=int)
+    split_m: dict[str, "metrics.SplitMetrics"] = {}
+    for T in by_T_keys:
+        per_target = {t: [((r.get("by_T") or {}).get(T) or {}).get("effective")
+                          for r in per_rows[t]] for t in targets}
+        mixed_z = _zmix(per_target)
+        rep = per_m[targets[0]].by_T.get(T)
+        if rep is None:
+            continue
+        # 대표 타깃의 조각·지연 정보는 그대로 두고 점수만 다언어 값으로 바꾼다.
+        #   effective   = 타깃별 **원값** 평균 — 보고·곡선용, 해석 가능
+        #   effective_z = 타깃별 z 평균        — 쌍체 Δ·채택 판정용, 검출력
+        mixed_raw: list[float | None] = []
+        for i, r in enumerate(merged):
+            vals = [per_target[t][i] for t in targets if per_target[t][i] is not None]
+            raw = sum(vals) / len(vals) if vals else None
+            mixed_raw.append(raw)
+            d = (r.get("by_T") or {}).get(T)
+            if not d:
+                continue
+            d = dict(d)
+            d["by_tgt"] = {t: per_target[t][i] for t in targets}
+            d["effective_single"] = d.get("effective")
+            d["effective"] = raw
+            d["effective_z"] = mixed_z[i]
+            r.setdefault("by_T", {})[T] = d
+        sm = copy.copy(rep)
+        ok = [x for x in mixed_raw if x is not None]
+        okz = [x for x in mixed_z if x is not None]
+        sm.effective = round(sum(ok) / len(ok), 4) if ok else 0.0
+        sm.effective_z = round(sum(okz) / len(okz), 4) if okz else None
+        sm.n_effective = len(ok)
+        sm.n_targets = len(targets)
+        e_sorted = sorted(ok)
+        sm.effective_min = round(min(ok), 4) if ok else None
+        sm.effective_p10 = (round(e_sorted[max(0, int(0.10 * (len(e_sorted) - 1)))], 4)
+                            if e_sorted else None)
+        split_m[T] = sm
+    m0 = per_m[targets[0]]
+    merged_m = metrics.Metrics(n=m0.n, format_pass_rate=m0.format_pass_rate,
+                               format_pass_rate_no_retry=m0.format_pass_rate_no_retry,
+                               by_T=split_m)
+    return merged, merged_m, viol, per_m, per_rows
 
 
 def score_split(seg_texts: list[str], texts: list[str], full: list[str],
@@ -195,14 +341,15 @@ def evaluate(
     # T=3 요건으로 최적화된 프롬프트가 T=2 요건으로 심판받아 test 1차 통과율이
     # 0.34 까지 떨어졌다 (train/dev 는 0.63~0.98).
     min_t = coverage_t or (min(t_grid) if t_grid else 3)
-    need = lambda txt: (max(0, chunk_budget(txt, min_t, spaced) - 1)
+    need = lambda txt: (coverage_need(txt, min_t, spaced, min_gap)
                         if require_coverage else None)
 
     first_pass_viol: list[dict] = []
     seg_texts, first_pass = segment_batch(
         gw, prompt, texts, cache=seg_cache, workers=workers,
         validate_fn=lambda t, out: validate("", t, out, spaced, trailing_punct,
-                                            require_priority, need(t), priority_depth),
+                                            require_priority, need(t), priority_depth,
+                                            min_gap),
         normalize_fn=lambda out: normalize_tags(out, spaced, trailing_punct),
         reasoning_effort=reasoning_effort,
         batch_size=batch_size,
@@ -214,7 +361,7 @@ def evaluate(
     scored_flags: list[bool] = []
     for s, seg in zip(sentences, seg_texts):
         vs = validate(s.id, s.text, seg, spaced, trailing_punct, require_priority,
-                      need(s.text), priority_depth)
+                      need(s.text), priority_depth, min_gap)
         valid_flags.append(not vs)
         scored_flags.append(not blocks_scoring(vs))
         violations.extend({"id": v.id, "rule": v.rule, "detail": v.detail,
@@ -338,6 +485,46 @@ def fmt_metrics(m: metrics.Metrics, tag: str) -> str:
 
 # ── 메인 ─────────────────────────────────────────────────────────────────
 
+def coverage_need(text: str, min_t: int, spaced: bool, min_gap: int) -> int:
+    """검증기가 요구할 최소 태그 수. **간격 용량을 넘지 않게 깎는다.**
+
+    개수 요건과 간격 요건은 서로 모른 채 각각 하한/상한을 건다. 짧은 문장에서는
+    `chunk_budget` 의 하한 2 가 태그 1개를 요구하는데 `min_gap` 을 만족하는 자리가
+    0개라, 둘을 그대로 두면 **만족 불가능한 요건**이 되어 그 문장이 영원히 재시도를
+    돈다 (kspon 150문장 중 min_gap=3 에서 1건, =4 에서 7건).
+
+    용량으로 깎으면 그런 문장은 태그 0개가 허용되고 그대로 **무분절**로 나간다 —
+    절단기에서 무분절이 나오는 경로와 같은 결론이고, 짧은 발화가 통째로 나가야 하는
+    바로 그 경우다.
+    """
+    need = max(0, chunk_budget(text, min_t, spaced) - 1)
+    if min_gap > 0:
+        need = min(need, max(0, unit_count(text, spaced) // min_gap - 1))
+    return need
+
+
+# ── T 격자 유도 ──────────────────────────────────────────────────────────
+
+# `min_gap` 은 조각 길이의 하한이므로 **T 의 하한도 함께 정한다.** 그보다 작은 T 를
+# 요청하면 절단기가 그만큼 자르지 못하고(보충 안 함) min_gap 바닥에서 포화한다 —
+# 곡선에 같은 점이 두 번 찍히고, `T=2` 라는 라벨이 실제 분절을 설명하지 못하게 된다.
+#
+# 실측 바닥(도달 가능한 최소 평균 조각 크기)은 min_gap 의 **1.21~1.33배**로, 소스 언어에
+# 둔감하다 (ko kspon / en fleurs, 각각 min_gap 2·3·4):
+#     min_gap=2  ko 2.41  en 2.62      min_gap=3  ko 3.66  en 3.83
+#     min_gap=4  ko 4.91  en 5.30
+# 그래서 격자 최소 T 를 `ceil(1.3 · min_gap)` 으로 잡으면 6개 실측 바닥을 모두 넘는다.
+# 배수 (1, 1.5, 2, 3) 은 기존 기본 격자 [2,3,4,6] 의 비율 그대로다 — `min_gap=0` 이면
+# 예전 기본값 ([2,3,4,6] / [3,6])이 정확히 재현되므로 기존 런과의 연속성이 유지된다.
+def derive_t_grids(min_gap: int) -> tuple[list[int], list[int]]:
+    """(t_grid, final_t_grid). min_gap 아래로는 어차피 못 내려가므로 요청도 안 한다."""
+    b = max(2, -(-13 * max(0, min_gap) // 10))        # ceil(1.3 * min_gap)
+    r = lambda x: int(x + 0.5)
+    final = sorted({r(b * m) for m in (1, 1.5, 2, 3)})
+    loop = sorted({r(b * 1.5), r(b * 3)})
+    return loop, final
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description="의미 분절 프롬프트 자동 생성 루프 (v2)")
     p.add_argument("--dataset", default="kspon", choices=sorted(data.LOADERS))
@@ -376,9 +563,32 @@ def main() -> int:
     # Δ −0.019(t=−2.0)로 유일하게 유의하게 나빠졌다. 6 을 넘기지 말 것.
     # 절단기 최소 간격. T 는 평균이지 하한이 아니라 1~2어절 조각이 섞여 나온다
     # (T=6 에서 47/100 문장). en-de 오프라인 시뮬 최적값 3 (pipeline.truncate 참조).
-    # 언어쌍별로 다시 잴 것 — en 소스에서만 검증했다.
-    p.add_argument("--min-gap", type=int, default=0,
-                   help="절단 시 경계 간 최소 어절 간격. 0=끔. en-de 실측 최적 3")
+    #
+    # 기본값을 0 -> 3 으로 올렸다. **지표는 이 값을 지지하지 않는다. 그럼에도 켜 둔다.**
+    #
+    # 7언어쌍 스윕 실측 (같은 마킹을 min_gap 만 바꿔 재절단·재채점, mg=0 대비 같은 지연에서.
+    # ko->{en,de,es,ja,zh} + en->de + en->ko, xlmr-anli):
+    #     effective    mg2 -0.0032  mg3 -0.0029  mg4 -0.0361
+    #     consistency  mg2 +0.0162  mg3 -0.0116  mg4 -0.0234
+    # mg=3 은 7쌍 x 2지표 = 14번의 비교에서 한 번도 1위를 못 했다. 언어로 일반화되는
+    # 최적값도 없다 — 소스가 같은 en-de(mg4 최고)와 en-ko(mg4 최악)가 정반대다.
+    #
+    # 그런데 **두 지표 모두 이 값이 막으려는 실패를 볼 수 없다.** adequacy 는
+    # (조각 원문, 조각 번역) 쌍만 보므로 'What' -> 'What' 을 충실한 번역으로 채점하고,
+    # consistency 는 합본만 보므로 어디서 잘랐든 값이 같다. 실제로 관측된 출력:
+    #     What <SEG:1> are <SEG:2> you <SEG:3> working <SEG:4> on?
+    #   min_gap=0 -> "What / are you working on?"      한 단어를 방출한다
+    #   min_gap=3 -> "What are you working on?"        무분절 (옳다)
+    # 청자에게 무의미한 한 단어 방출은 지표가 아니라 사용 요건으로 막는다.
+    #
+    # 부수 효과가 본 기능이기도 하다: 짧은 문장은 min_gap 을 만족하는 자리가 없어
+    # 경계 0개 = **무분절**로 나온다. chunk_budget 하한이 2 라 T 로는 절대 못 만드는
+    # 상태이고 (pipeline.truncate 참조), 이 경로가 유일하다.
+    #
+    # 이 값은 T 에 비례하지 않는 **절대 하한**이라, T 를 줄여도 과분절이 안 따라
+    # 내려간다 — 저지연 작동점에서 유일하게 듣는 제약이다.
+    p.add_argument("--min-gap", type=int, default=3,
+                   help="절단 시 경계 간 최소 어절 간격. 0=끔. T 는 이 값의 1.5배 이상일 것")
     p.add_argument("--batch-size", type=int, default=1,
                    help="한 분절 호출에 넣을 문장 수. 실측 최적 6, 12 이상은 역효과")
     p.add_argument("--candidate-t", type=int, default=None,
@@ -393,6 +603,10 @@ def main() -> int:
                    help="분절 호출 사고량. none = 모델 기본값. 에이전트 호출에는 영향 없음")
     p.add_argument("--translator", default="google", choices=["llm", "google"])
     p.add_argument("--tgt-code", default=None)
+    # **목적함수를 다언어로.** 분절은 타깃 무관이라 비용의 90% 가 그대로다 (loop 상단 주석).
+    # 소스 언어는 자동 제외한다.
+    p.add_argument("--tgt-langs", nargs="+", default=None,
+                   help=f"검증 타깃 풀. 기본 {' '.join(DEFAULT_TARGET_POOL)} (소스는 자동 제외)")
     p.add_argument("--no-google-context", action="store_true")
     p.add_argument("--tgt-spaced", default=None, choices=["yes", "no"],
                    help="타깃 언어가 띄어쓰기를 쓰는가. 미지정 시 --tgt-lang 에서 추론 (LAAL 단위)")
@@ -404,10 +618,10 @@ def main() -> int:
     p.add_argument("--test", type=int, default=100)
     p.add_argument("--min-chars", type=int, default=25)
     # 노브. 루프에서는 부분집합만 쓴다 — 조각 번역이 격자 크기에 비례해 늘기 때문이다.
-    p.add_argument("--t-grid", type=int, nargs="+", default=[3, 6],
+    p.add_argument("--t-grid", type=int, nargs="+", default=None,
                    help="루프가 쓰는 목표 조각 크기. score 는 이 격자에서의 adequacy 평균이라 "
                         "다른 격자로 잰 score 와 비교할 수 없다")
-    p.add_argument("--final-t-grid", type=int, nargs="+", default=[2, 3, 4, 6],
+    p.add_argument("--final-t-grid", type=int, nargs="+", default=None,
                    help="최종 test 곡선용 격자")
     p.add_argument("--main-t", type=int, default=None,
                    help="판정자가 도는 주 작동점. 미지정 시 --t-grid 의 중앙값")
@@ -430,7 +644,8 @@ def main() -> int:
     # 채택 문턱이 `Δ > adopt_se_mult·se` 라 그만큼 보수화되므로 기본 배수를 함께 낮춘다.
     p.add_argument("--contradiction-backend", default="xlmr-anli",
                    choices=sorted(metrics.NLI_MODELS),
-                   help="조기 방출 검출 NLI. 다국어. 영어 전용이면 deberta-mnli 도 가능")
+                   help="조기 방출 검출 NLI. 기본값이 다국어라 타깃별 지정 불필요. "
+                        "영어 전용 데이터면 deberta-mnli 가 분리는 더 깨끗하다")
     p.add_argument("--no-coverage-rule", action="store_true",
                    help="최소 경계 수 요건을 끈다. 노브가 k 를 통제하지 못하게 된다")
     p.add_argument("--no-contradiction", action="store_true",
@@ -454,8 +669,48 @@ def main() -> int:
         if getattr(args, _f) == "none":
             setattr(args, _f, None)           # 모델 기본값에 맡긴다
 
+    # 격자를 안 주면 min_gap 에서 유도한다. min_gap 이 조각 길이 하한이므로 T 하한도
+    # 거기서 나온다 — 상수로 박아 두면 min_gap 을 바꿀 때마다 포화점이 생긴다.
+    _dl, _df = derive_t_grids(args.min_gap)
+    derived = args.t_grid is None or args.final_t_grid is None
+    if args.t_grid is None:
+        args.t_grid = _dl
+    if args.final_t_grid is None:
+        args.final_t_grid = _df
     t_grid = sorted(set(args.t_grid))
     final_grid = sorted(set(args.final_t_grid) | set(t_grid))
+    if derived:
+        print(f"[grid] min_gap={args.min_gap} 에서 유도: --t-grid {t_grid} "
+              f"--final-t-grid {final_grid}  (도달 가능한 최소 조각 ≈ {1.3 * args.min_gap:.1f}단위, "
+              f"그 아래 T 는 포화한다)", flush=True)       # log() 는 아직 정의 전이다
+
+    # T 는 조각 크기의 **평균**이고 min_gap 은 **최소**다. 절단기가 보충을 안 하므로
+    # (pipeline.truncate) T 를 min_gap 아래로 내려도 조각이 더 잘게 쪼개지지 않는다 —
+    # 곡선의 그 점이 min_gap 바닥에 눌려 이웃과 겹친다.
+    #
+    # 실측(min_gap=3, 평균 조각수. 두 코퍼스가 같은 자리에서 갈린다):
+    #   ko-en/run05  T=2 3.93  T=3 3.93  T=4 3.49  T=5 2.97  T=6 2.60
+    #   en-de/run04  T=2 5.68  T=3 5.68  T=4 5.20  T=5 4.31  T=6 3.69
+    # `T <= min_gap` 은 **완전히 같은 점**이고(2 와 3 이 소수점까지 동일), 그 위로
+    # 1.5배까지는 부분적으로 눌린다(T=4 는 움직이긴 하나 간격이 좁다).
+    #
+    # 틀린 값이 아니라 **중복이거나 압축된 점**이므로 막지 않고 경고만 한다 — 격자는
+    # 실험 정의라 조용히 바꾸면 안 된다.
+    # 하한은 격자 유도와 **같은 식**을 쓴다 (derive_t_grids 의 b). 예전엔 1.5배를 썼는데
+    # 그건 "보충 발동률이 낮아지는 지점"을 눈대중한 값이었고, 실측한 도달 가능 바닥은
+    # min_gap 의 1.21~1.33배다. 상수가 둘이면 유도 격자가 자기 경고에 걸린다.
+    t_floor = derive_t_grids(args.min_gap)[1][0]  # 유도 격자의 최소 T = ceil(1.3·min_gap)
+    if args.min_gap > 0:
+        dup = [t for t in final_grid if t <= args.min_gap]
+        tight = [t for t in final_grid if args.min_gap < t < t_floor]
+        if dup:
+            print(f"[warn] T={dup} <= min_gap={args.min_gap} — 절단기가 min_gap 아래로는 "
+                  f"더 자르지 않으므로 이 점들은 서로 **완전히 같은 분절**이 된다. "
+                  f"곡선에 정보를 더하지 않으니 격자에서 빼거나 --min-gap 을 낮출 것",
+                  flush=True)          # log() 는 아직 정의 전이다
+        if tight:
+            print(f"[note] T={tight} 는 min_gap={args.min_gap} 바로 위라 이웃 점과 간격이 "
+                  f"좁다. T >= {t_floor} 에서 깨끗하게 벌어진다", flush=True)
     # 커버리지 요건은 **곡선에 그릴 가장 조인 점**에서 온다. 루프 격자가 아니다 —
     # 배포할 프롬프트는 최종 곡선의 모든 점을 지탱해야 하고, 루프가 그보다 느슨한
     # 요건으로 학습하면 마지막 평가에서만 무너진다 (run03: test 1차 통과율 0.34).
@@ -467,7 +722,21 @@ def main() -> int:
     # +0.013 로 **오늘까지 확인된 유일한 품질 레버**다 (docs/RANK_METRIC_DIAGNOSIS.md §8.1).
     # 문면(`initial_prompt`)과 검증기(`need`)가 **같은 값**을 써야 한다 — 어긋나면 전 문장이
     # too_few_tags 로 재시도돼 비용이 두 배가 되고 1차 통과율 신호가 오염된다.
-    candidate_t = args.candidate_t or coverage_t
+    #
+    # **격자를 따라 올라가면 안 된다.** `coverage_t` 는 곡선을 따라가지만 `candidate_t` 는
+    # 마킹 밀도 노브라 성격이 다르다. min_gap 에서 격자를 유도하면서 coverage_t 가 2 -> 4 로
+    # 오르는데, 그대로 물려 두면 문면이 "2어절당 하나" -> "4어절당 하나"가 되어 밀도 요건이
+    # 절반이 된다 — §8.1 의 레버를 거꾸로 당기는 셈이다.
+    #
+    # min_gap 이 원하는 방향은 정반대다: 간격 제약이 붙어 있는 자리를 **버리므로**, 필터가
+    # 고를 대안이 남으려면 후보가 더 많아야 한다. 그래서 격자와 분리해 2 로 고정한다
+    # (기존 기본 격자에서의 값과 같아 min_gap=0 이면 동작이 완전히 같다).
+    # min_gap 이 켜져 있으면 **간격을 지킬 수 있는 값**이어야 한다. `candidate_t = min_gap`
+    # 은 round() 때문에 요구 개수가 용량을 살짝 넘는다 (ko-en 실측 하한 3.8 > 용량 3.5)
+    # — 그러면 만족 불가능한 요건이 되어 전 문장이 재시도로 돈다. +1 이 처음으로
+    # 용량 안에 들어오고(하한 2.6 < 용량 3.5), 유도 격자의 최소 T 와도 같은 값이다.
+    candidate_t = args.candidate_t or (args.min_gap + 1 if args.min_gap > 0
+                                       else min(2, coverage_t))
     main_t = args.main_t or t_grid[len(t_grid) // 2]
     if main_t not in t_grid:
         print(f"--main-t {main_t} 가 --t-grid {t_grid} 에 없습니다", file=sys.stderr)
@@ -483,14 +752,13 @@ def main() -> int:
     gw = Gateway(model=args.model, budget=args.budget,
                  reasoning_effort=args.agent_reasoning_effort)
     seg_cache = JsonCache(run_dir / "cache" / "segment.json")
-    tr_cache = JsonCache(run_dir / "cache" / "translate.json")
     translator = None
     judge_gw = None
 
     adequacy = metrics.make_adequacy_backend(
         args.adequacy_backend, batch_size=args.comet_batch_size)
     # consistency 의 nli 모델은 contradiction 백엔드를 따른다 — 둘 다 (합본, full)
-    # 타깃 언어 쌍을 재므로 언어 선택 기준이 같다 (타깃이 영어가 아니면 mdeberta-xnli).
+    # 타깃 언어 쌍을 재므로 언어 선택 기준이 같다 — 기본 xlmr-anli 는 다국어라 공통이다.
     if args.consistency_backend == "nli":
         consistency = metrics.make_backend(
             "nli", model_name=metrics.NLI_MODELS[args.contradiction_backend],
@@ -529,7 +797,7 @@ def main() -> int:
             profile = json.loads(profile_path.read_text(encoding="utf-8"))
         else:
             samples = [s.text for s in splits["train"][:20]]
-            profile = profiler.profile(samples, args.tgt_lang)
+            profile = profiler.profile(samples)
             profile_path.write_text(json.dumps(profile, ensure_ascii=False, indent=2),
                                     encoding="utf-8")
 
@@ -543,18 +811,28 @@ def main() -> int:
         log(f"[profile] {profile.get('source_language')} / 어순 {profile.get('word_order')} / "
             f"띄어쓰기 {spaced}(측정) / 타깃 띄어쓰기 {tgt_spaced}")
 
+        targets = resolve_targets(args.tgt_langs or DEFAULT_TARGET_POOL, args.src_lang)
+        if not targets:
+            log("[stop] 검증 타깃이 없다 — --tgt-langs 확인")
+            return 2
+        # 비교군(무분절·기계분절)과 곡선 대표값이 쓰는 번역기. **첫 타깃**을 대표로 쓰고
+        # 캐시 파일도 타깃별로 나눈다 — 하나로 합치면 gtx 결과가 언어별로 섞인다.
+        rep_tgt = targets[0]
+        rep_code = args.tgt_code or to_lang_code(rep_tgt)
+        tr_cache = JsonCache(run_dir / "cache" / f"translate_{rep_code}.json")
         if args.translator == "google":
             translator = GoogleTranslator(
-                tgt_code=args.tgt_code or to_lang_code(args.tgt_lang),
-                cache=tr_cache, workers=min(args.workers, 4),
+                tgt_code=rep_code, cache=tr_cache, workers=min(args.workers, 4),
                 use_context=not args.no_google_context)
             translator_id = f"google:{translator.tgt_code}:ctx={translator.use_context}"
         else:
-            translator = Translator(gw=gw, src_name=args.src_lang, tgt_name=args.tgt_lang,
+            translator = Translator(gw=gw, src_name=args.src_lang, tgt_name=rep_tgt,
                                     model=args.translator_model, cache=tr_cache,
                                     workers=args.workers)
             translator_id = f"llm:{args.translator_model}"
-        log(f"[translator] {translator_id}")
+        log(f"[translator] {translator_id} (대표 타깃 {rep_tgt})")
+        log(f"[targets] {len(targets)}개: {', '.join(targets)}  "
+            f"(목적함수 = 타깃별 z-정규화 effective 의 평균)")
 
         (run_dir / "config.json").write_text(json.dumps({
             **vars(args), "t_grid": t_grid, "final_t_grid": final_grid, "main_t": main_t,
@@ -568,18 +846,39 @@ def main() -> int:
             "candidate_t": candidate_t,
             "curve_min_t": coverage_t,
             "coverage_required": not args.no_coverage_rule,
+            "t_floor": t_floor,                  # ceil(1.5 * min_gap). 아래 T 는 포화한다
+            "t_grid_derived": derived,           # 격자를 min_gap 에서 유도했는가
         }, ensure_ascii=False, indent=2), encoding="utf-8")
 
+        # 타깃별 컨텍스트. 번역기·바닥·띄어쓰기가 타깃마다 다르고, adequacy/NLI 백엔드는
+        # 다국어라 공유한다. 캐시는 타깃별 파일로 분리해야 gtx 결과가 안 섞인다.
+        _tr_cache: dict = {rep_code: translator} if args.translator == "google" else {}
+
+        def make_ctx(tgt: str):
+            code = args.tgt_code if len(targets) == 1 else None
+            code = code or to_lang_code(tgt)
+            if code not in _tr_cache:
+                _tr_cache[code] = GoogleTranslator(
+                    tgt_code=code,
+                    cache=JsonCache(run_dir / "cache" / f"translate_{code}.json"),
+                    workers=args.workers,
+                    use_context=not args.no_google_context)
+            return (_tr_cache[code], adequacy, consistency, contradiction,
+                    target_is_spaced(tgt))
+
+        _kw = dict(gw=gw, spaced=spaced, seg_cache=seg_cache, workers=args.workers,
+                   trailing_punct=trailing_punct,
+                   require_coverage=not args.no_coverage_rule, coverage_t=candidate_t,
+                   reasoning_effort=args.seg_reasoning_effort,
+                   batch_size=args.batch_size, min_gap=args.min_gap,
+                   skip_translation_below=args.skip_translation_below)
+
         def run_eval(prompt_: str, split_sentences, grid):
-            return evaluate(gw, translator, prompt_, split_sentences, spaced, seg_cache,
-                            args.workers, adequacy, consistency, grid, trailing_punct,
-                            tgt_spaced=tgt_spaced, contradiction=contradiction,
-                            require_coverage=not args.no_coverage_rule,
-                            coverage_t=candidate_t,
-                            reasoning_effort=args.seg_reasoning_effort,
-                            skip_translation_below=args.skip_translation_below,
-                            batch_size=args.batch_size,
-                            min_gap=args.min_gap)
+            rows_, m_, viol_, per_, per_rows_ = evaluate_multi(
+                targets, make_ctx, prompt_, split_sentences, grid, **_kw)
+            run_eval.last_per_target = per_
+            run_eval.last_per_rows = per_rows_
+            return rows_, m_, viol_
 
         def prewarm(prompts: list[str], sentences) -> None:
             """여러 프롬프트의 분절을 **한 풀에** 미리 돌려 캐시에 넣는다.
@@ -598,12 +897,12 @@ def main() -> int:
                 # 프롬프트 **안**의 병렬(=콜 수)만으로는 워커를 못 채운다. 프롬프트
                 # **사이**에도 병렬을 걸어야 동시 폭이 후보 수만큼 곱해진다.
                 min_t = candidate_t
-                need = (lambda t: max(0, chunk_budget(t, min_t, spaced) - 1)
+                need = (lambda t: coverage_need(t, min_t, spaced, args.min_gap)
                         ) if not args.no_coverage_rule else (lambda t: None)
                 segment_batch(
                     gw, pr, texts, cache=seg_cache, workers=args.workers,
                     validate_fn=lambda t, out: validate("", t, out, spaced, trailing_punct,
-                                                        True, need(t)),
+                                                        True, need(t), None, args.min_gap),
                     normalize_fn=lambda o: normalize_tags(o, spaced, trailing_punct),
                     reasoning_effort=args.seg_reasoning_effort,
                     batch_size=args.batch_size)
@@ -689,10 +988,17 @@ def main() -> int:
             for attempt in range(3 * max(1, args.v0_candidates)):
                 if len(candidates) >= args.v0_candidates:
                     break
-                cand = profiler.initial_prompt(profile, args.tgt_lang, spaced, candidate_t)
+                cand = profiler.initial_prompt(profile, None, spaced, candidate_t,
+                                               args.min_gap)
                 missing = agents.check_skeleton(cand)
                 if missing:
                     log(f"[profiler] 골격 누락 {missing} — 재시도 {attempt + 1}")
+                    continue
+                # 분절은 소스 쪽 문제다 — 프롬프트가 타깃 언어에 기대면 다른 타깃에
+                # 재사용할 수 없고, 측정되지 않은 언어 지식이 섞인다.
+                tl = agents.check_target_agnostic(cand, args.src_lang)
+                if tl:
+                    log(f"[profiler] 타깃 종속 — 재시도 {attempt + 1}: {'; '.join(tl)}")
                     continue
                 candidates.append(cand)
             if not candidates:
@@ -780,7 +1086,9 @@ def main() -> int:
             # ── A6′ Judge — 주 작동점에서만 (비용) ────────────────────────
             judgements: list[dict] = []
             if judge is not None and m.by_T:
-                judgements = agents.judge_rows(judge, rows, main_t, args.judge_rows)
+                judgements = judge_distributed(
+                    judge, getattr(run_eval, 'last_per_rows', {'_': rows}),
+                    main_t, args.judge_rows)
                 pr = agents.premature_rate(judgements)
                 if pr is not None and str(main_t) in m.by_T:
                     m.by_T[str(main_t)].premature_rate = round(pr, 4)
@@ -858,7 +1166,11 @@ def main() -> int:
             # se 가 훨씬 작게 나오고, `n_changed` 가 실제로 판정에 참여한 문장 수를 알려준다.
             # 채택 판정이 이 오차막대를 쓴다 (`Δ > adopt_se_mult·se`) — run01~03 실측에서
             # 점 비교는 오차막대 안 잡음(예: −0.013±0.014)까지 채택 후보로 만들었다.
-            train_delta = (metrics.paired_delta(rows, best_ctx["rows"], t_grid)
+            # **채택 판정은 z 축으로 한다.** 타깃별 분산이 달라(문장별 sd zh 0.147 ~
+            # ko 0.196) 원값 평균의 차이는 분산 큰 타깃이 지배한다. z 는 그 지배를 없애고
+            # 실측에서 se 를 40% 줄였다. 보고값(`effective`)은 원값 평균 그대로다.
+            delta_key = "effective_z" if len(targets) > 1 else "effective"
+            train_delta = (metrics.paired_delta(rows, best_ctx["rows"], t_grid, delta_key)
                            if best_ctx else None)
             if train_delta and train_delta["mean_delta"] is not None:
                 log(f"[iter {it}] train Δ={train_delta['mean_delta']:+.5f} "
@@ -884,7 +1196,8 @@ def main() -> int:
             if run_dev:
                 dev_rows, dev_m, dev_viol = run_eval(prompt, splits["dev"], t_grid)
                 dev_score = metrics.score(dev_m)
-                dev_delta = (metrics.paired_delta(dev_rows, best_ctx["dev_rows"], t_grid)
+                dev_delta = (metrics.paired_delta(dev_rows, best_ctx["dev_rows"],
+                                                  t_grid, delta_key)
                              if best_ctx.get("dev_rows") else None)
                 (it_dir / "dev_rows.json").write_text(
                     json.dumps(dev_rows, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -1018,6 +1331,10 @@ def main() -> int:
                     pr = rv.get("prompt", "")
                     if not pr or agents.check_skeleton(pr): continue
                     if agents.check_revision(best["prompt"], pr, last_focus): continue
+                    tl = agents.check_target_agnostic(pr, args.src_lang)
+                    if tl:
+                        log(f"[iter {it}] 개정 후보 타깃 종속 — 거부: {'; '.join(tl)}")
+                        continue
                     cands.append((pr, rv))
                 if len(cands) > 1:
                     pick = select_prompt([c[0] for c in cands], args.v0_probe, f"iter {it} 개정")
@@ -1077,8 +1394,9 @@ def main() -> int:
             # 보고용 test 판정은 **무작위 표본**이다. 루프 중에는 실패 조준 표본
             # (Critic 입력용)이 맞지만, 그 표본으로 잰 premature_rate 는 조건부 상향
             # 추정치라 리포트 수치로 못 쓴다 (run03 의 0.2727 이 그 값).
-            tj = agents.judge_rows(judge, test_rows, main_t, args.judge_rows * 2,
-                                   sample="random")
+            tj = judge_distributed(
+                judge, getattr(run_eval, "last_per_rows", {"_": test_rows}),
+                main_t, args.judge_rows * 2, sample="random")
             pr = agents.premature_rate(tj)
             if pr is not None and str(main_t) in test_m.by_T:
                 test_m.by_T[str(main_t)].premature_rate = round(pr, 4)
@@ -1125,7 +1443,9 @@ def main() -> int:
 
         report = build_report(args, run_dir, profile, measured, history, best, test_m,
                               test_viol, usage_total(), baselines, t_grid,
-                              final_grid, main_t, translator_id)
+                              final_grid, main_t, translator_id,
+                              per_target=getattr(run_eval, "last_per_target", None),
+                              targets=targets)
         (run_dir / "final_report.md").write_text(report, encoding="utf-8")
         log(f"\n{report}")
         log(f"[done] {run_dir}")
@@ -1172,9 +1492,11 @@ def split_first_pass(viol: list[dict]) -> tuple[list[dict], list[dict]]:
 
 
 def build_report(args, run_dir, profile, measured, history, best, test_m, test_viol,
-                 usage, baselines, t_grid, final_grid, main_t, translator_id) -> str:
+                 usage, baselines, t_grid, final_grid, main_t, translator_id,
+                 per_target=None, targets=None) -> str:
     lines = [
-        f"# 자동 분절 프롬프트 루프 결과 (v2) — {args.src_lang} → {args.tgt_lang}",
+        f"# 자동 분절 프롬프트 루프 결과 (v2) — {args.src_lang} → "
+        + (", ".join(targets) if targets and len(targets) > 1 else args.tgt_lang),
         "",
         f"- 데이터셋: `{args.dataset}` (train {args.train} / dev {args.dev} / test {args.test})",
         f"- 분절 모델 `{args.model}` / 판정자 `{args.judge_model or args.model}` / "
@@ -1227,6 +1549,23 @@ def build_report(args, run_dir, profile, measured, history, best, test_m, test_v
                      f"**{_cell(b['effective'], '.4f')}** | "
                      f"{b['adequacy']:.4f} | {_cell(b['contradiction'], '.4f')} | "
                      f"{b['consistency']:.4f} | {b['chunks_per_sentence']:.2f} | — |")
+
+    # 타깃별 곡선. 평균만으로는 어느 언어에서 무너지는지 안 보인다 — mdeberta-xnli 가
+    # ko/zh/ja 에서만 곡선을 뒤집었던 것처럼 백엔드 결함이 언어별로 나타난다.
+    if per_target and len(per_target) > 1:
+        lines += ["", "### 타깃별 곡선 (effective)", "",
+                  "| 타깃 | " + " | ".join(f"T={k}" for k in sorted(test_m.by_T, key=int)) + " |",
+                  "|---" * (len(test_m.by_T) + 1) + "|"]
+        for tgt, tm in per_target.items():
+            cells = [f"{_cell(tm.by_T[k].effective, '.4f')}" if k in tm.by_T else "—"
+                     for k in sorted(test_m.by_T, key=int)]
+            lines.append(f"| {tgt} | " + " | ".join(cells) + " |")
+        lines += ["",
+                  "위 본표의 `effective` 는 이 타깃들의 **원값 평균**이다. 채택 판정은 "
+                  "타깃별 z-정규화 후 평균(`effective_z`)으로 하는데, 타깃별 분산이 달라 "
+                  "(문장별 sd 실측 0.147~0.196) 원값 차이는 분산 큰 타깃이 지배하기 "
+                  "때문이다. **언어 간 절대값 비교는 하지 말 것** — 지표 스케일이 다르다. "
+                  "같은 언어 안에서 T 방향만 읽는다."]
 
     main_s = test_m.by_T.get(str(main_t))
     pr = main_s.premature_rate if main_s else None

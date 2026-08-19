@@ -190,8 +190,7 @@ def load_fleurs_en_ko(path: Path | None = None) -> list[Sentence]:
     전량이 `min_chars=25` 를 통과하지만 총 270개뿐이라
     `train_pool + dev + test <= 270` 을 지켜야 `split_data` 가 죽지 않는다.
 
-    타깃이 비영어이므로 `--contradiction-backend mdeberta-xnli` 가 필요하다
-    (기본 `deberta-mnli` 는 영어 전용).
+    기본 `--contradiction-backend xlmr-anli` 가 다국어라 타깃별 지정이 필요 없다.
     """
     path = path or (_REPO_ROOT / "evaluation" / "ast" / "manifests"
                     / "fleurs_en-ko_test.jsonl")

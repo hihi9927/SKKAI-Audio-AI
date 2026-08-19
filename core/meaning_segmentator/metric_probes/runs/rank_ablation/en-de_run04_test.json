@@ -1,0 +1,790 @@
+{
+  "run_id": "en-de/run04",
+  "split": "test",
+  "rows": 100,
+  "t_grid": [
+    6,
+    12
+  ],
+  "shuffles": 20,
+  "seed": 0,
+  "min_gap": 3,
+  "translator": "google:de:ctx=True",
+  "adequacy_backend": "cometkiwi",
+  "contradiction_backend": "xlmr-anli",
+  "consistency_backend": null,
+  "by_T": {
+    "6": {
+      "arms": {
+        "real": {
+          "effective": 0.74761,
+          "adequacy": 0.80422,
+          "contradiction": 0.07065,
+          "laal_words": 4.1978,
+          "k": 3.69,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": -0.02307,
+          "rank_contra_gap_n": 81
+        },
+        "even": {
+          "effective": 0.69568,
+          "adequacy": 0.76426,
+          "contradiction": 0.09037,
+          "laal_words": 3.7998,
+          "k": 3.69,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": 0.00909,
+          "rank_contra_gap_n": 81
+        },
+        "shuf00": {
+          "effective": 0.71316,
+          "adequacy": 0.77237,
+          "contradiction": 0.07961,
+          "laal_words": 4.1608,
+          "k": 3.69,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": 0.02971,
+          "rank_contra_gap_n": 81
+        },
+        "shuf01": {
+          "effective": 0.68575,
+          "adequacy": 0.76699,
+          "contradiction": 0.10721,
+          "laal_words": 3.9912,
+          "k": 3.69,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": -0.03138,
+          "rank_contra_gap_n": 81
+        },
+        "shuf02": {
+          "effective": 0.68717,
+          "adequacy": 0.76746,
+          "contradiction": 0.10406,
+          "laal_words": 4.2863,
+          "k": 3.69,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": -0.03027,
+          "rank_contra_gap_n": 81
+        },
+        "shuf03": {
+          "effective": 0.69677,
+          "adequacy": 0.77058,
+          "contradiction": 0.09859,
+          "laal_words": 4.1506,
+          "k": 3.69,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": 0.01686,
+          "rank_contra_gap_n": 81
+        },
+        "shuf04": {
+          "effective": 0.71819,
+          "adequacy": 0.77065,
+          "contradiction": 0.06864,
+          "laal_words": 4.1633,
+          "k": 3.69,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": 0.00301,
+          "rank_contra_gap_n": 81
+        },
+        "shuf05": {
+          "effective": 0.68721,
+          "adequacy": 0.76967,
+          "contradiction": 0.10778,
+          "laal_words": 4.128,
+          "k": 3.69,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": -0.01951,
+          "rank_contra_gap_n": 81
+        },
+        "shuf06": {
+          "effective": 0.69351,
+          "adequacy": 0.77102,
+          "contradiction": 0.10009,
+          "laal_words": 4.1353,
+          "k": 3.69,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": -0.00518,
+          "rank_contra_gap_n": 81
+        },
+        "shuf07": {
+          "effective": 0.70146,
+          "adequacy": 0.76646,
+          "contradiction": 0.08523,
+          "laal_words": 4.2615,
+          "k": 3.69,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": -0.03591,
+          "rank_contra_gap_n": 81
+        },
+        "shuf08": {
+          "effective": 0.68841,
+          "adequacy": 0.7602,
+          "contradiction": 0.09524,
+          "laal_words": 4.1405,
+          "k": 3.69,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": 0.02761,
+          "rank_contra_gap_n": 81
+        },
+        "shuf09": {
+          "effective": 0.69007,
+          "adequacy": 0.7687,
+          "contradiction": 0.10278,
+          "laal_words": 4.1197,
+          "k": 3.69,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": -0.04016,
+          "rank_contra_gap_n": 81
+        },
+        "shuf10": {
+          "effective": 0.6949,
+          "adequacy": 0.76457,
+          "contradiction": 0.09216,
+          "laal_words": 4.1956,
+          "k": 3.69,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": 0.0119,
+          "rank_contra_gap_n": 81
+        },
+        "shuf11": {
+          "effective": 0.69139,
+          "adequacy": 0.76611,
+          "contradiction": 0.10097,
+          "laal_words": 4.124,
+          "k": 3.69,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": 0.01641,
+          "rank_contra_gap_n": 81
+        },
+        "shuf12": {
+          "effective": 0.71507,
+          "adequacy": 0.7692,
+          "contradiction": 0.07164,
+          "laal_words": 4.1627,
+          "k": 3.69,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": -0.07484,
+          "rank_contra_gap_n": 81
+        },
+        "shuf13": {
+          "effective": 0.70867,
+          "adequacy": 0.76849,
+          "contradiction": 0.08004,
+          "laal_words": 4.2069,
+          "k": 3.69,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": 0.0268,
+          "rank_contra_gap_n": 81
+        },
+        "shuf14": {
+          "effective": 0.7132,
+          "adequacy": 0.77096,
+          "contradiction": 0.0763,
+          "laal_words": 4.139,
+          "k": 3.68,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": 0.01789,
+          "rank_contra_gap_n": 81
+        },
+        "shuf15": {
+          "effective": 0.717,
+          "adequacy": 0.77377,
+          "contradiction": 0.07442,
+          "laal_words": 4.0682,
+          "k": 3.69,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": -0.03307,
+          "rank_contra_gap_n": 81
+        },
+        "shuf16": {
+          "effective": 0.6969,
+          "adequacy": 0.76841,
+          "contradiction": 0.09389,
+          "laal_words": 4.3586,
+          "k": 3.69,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": 0.06564,
+          "rank_contra_gap_n": 81
+        },
+        "shuf17": {
+          "effective": 0.69813,
+          "adequacy": 0.76955,
+          "contradiction": 0.09299,
+          "laal_words": 4.0948,
+          "k": 3.69,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": -0.02519,
+          "rank_contra_gap_n": 81
+        },
+        "shuf18": {
+          "effective": 0.65538,
+          "adequacy": 0.76459,
+          "contradiction": 0.14262,
+          "laal_words": 4.119,
+          "k": 3.69,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": 0.00353,
+          "rank_contra_gap_n": 81
+        },
+        "shuf19": {
+          "effective": 0.70706,
+          "adequacy": 0.76662,
+          "contradiction": 0.08042,
+          "laal_words": 4.1126,
+          "k": 3.69,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": 0.02126,
+          "rank_contra_gap_n": 81
+        }
+      },
+      "paired_vs_real": {
+        "even": {
+          "n": 100,
+          "delta": 0.05194,
+          "se": 0.01696,
+          "t": 3.06
+        },
+        "shuf00": {
+          "n": 100,
+          "delta": 0.03445,
+          "se": 0.01902,
+          "t": 1.81
+        },
+        "shuf01": {
+          "n": 100,
+          "delta": 0.06186,
+          "se": 0.01946,
+          "t": 3.18
+        },
+        "shuf02": {
+          "n": 100,
+          "delta": 0.06044,
+          "se": 0.01517,
+          "t": 3.98
+        },
+        "shuf03": {
+          "n": 100,
+          "delta": 0.05084,
+          "se": 0.01951,
+          "t": 2.61
+        },
+        "shuf04": {
+          "n": 100,
+          "delta": 0.02942,
+          "se": 0.01795,
+          "t": 1.64
+        },
+        "shuf05": {
+          "n": 100,
+          "delta": 0.0604,
+          "se": 0.02001,
+          "t": 3.02
+        },
+        "shuf06": {
+          "n": 100,
+          "delta": 0.0541,
+          "se": 0.01676,
+          "t": 3.23
+        },
+        "shuf07": {
+          "n": 100,
+          "delta": 0.04615,
+          "se": 0.01855,
+          "t": 2.49
+        },
+        "shuf08": {
+          "n": 100,
+          "delta": 0.0592,
+          "se": 0.01966,
+          "t": 3.01
+        },
+        "shuf09": {
+          "n": 100,
+          "delta": 0.05754,
+          "se": 0.01679,
+          "t": 3.43
+        },
+        "shuf10": {
+          "n": 100,
+          "delta": 0.05271,
+          "se": 0.02061,
+          "t": 2.56
+        },
+        "shuf11": {
+          "n": 100,
+          "delta": 0.05622,
+          "se": 0.01785,
+          "t": 3.15
+        },
+        "shuf12": {
+          "n": 100,
+          "delta": 0.03254,
+          "se": 0.01603,
+          "t": 2.03
+        },
+        "shuf13": {
+          "n": 100,
+          "delta": 0.03894,
+          "se": 0.01982,
+          "t": 1.96
+        },
+        "shuf14": {
+          "n": 100,
+          "delta": 0.03441,
+          "se": 0.01733,
+          "t": 1.99
+        },
+        "shuf15": {
+          "n": 100,
+          "delta": 0.03061,
+          "se": 0.01734,
+          "t": 1.77
+        },
+        "shuf16": {
+          "n": 100,
+          "delta": 0.05072,
+          "se": 0.01997,
+          "t": 2.54
+        },
+        "shuf17": {
+          "n": 100,
+          "delta": 0.04948,
+          "se": 0.01932,
+          "t": 2.56
+        },
+        "shuf18": {
+          "n": 100,
+          "delta": 0.09224,
+          "se": 0.02151,
+          "t": 4.29
+        },
+        "shuf19": {
+          "n": 100,
+          "delta": 0.04056,
+          "se": 0.01913,
+          "t": 2.12
+        }
+      },
+      "real_vs_mean_shuffle": {
+        "n": 100,
+        "delta": 0.04964,
+        "se": 0.01455,
+        "t": 3.41
+      },
+      "shuffle_mean": 0.69797,
+      "shuffle_sd": 0.0148,
+      "shuffle_gap_mean": -0.00274,
+      "shuffle_gap_sd": 0.03289,
+      "perm_p_one_sided": 0.0476,
+      "seconds": 619.9
+    },
+    "12": {
+      "arms": {
+        "real": {
+          "effective": 0.79834,
+          "adequacy": 0.83522,
+          "contradiction": 0.04521,
+          "laal_words": 6.4479,
+          "k": 2.14,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": -0.09117,
+          "rank_contra_gap_n": 13
+        },
+        "even": {
+          "effective": 0.71108,
+          "adequacy": 0.80651,
+          "contradiction": 0.12097,
+          "laal_words": 5.9491,
+          "k": 2.14,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": -0.07102,
+          "rank_contra_gap_n": 13
+        },
+        "shuf00": {
+          "effective": 0.74967,
+          "adequacy": 0.80737,
+          "contradiction": 0.0718,
+          "laal_words": 6.7128,
+          "k": 2.14,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": 0.00089,
+          "rank_contra_gap_n": 13
+        },
+        "shuf01": {
+          "effective": 0.73095,
+          "adequacy": 0.80762,
+          "contradiction": 0.0962,
+          "laal_words": 6.4047,
+          "k": 2.14,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": -0.04262,
+          "rank_contra_gap_n": 13
+        },
+        "shuf02": {
+          "effective": 0.71809,
+          "adequacy": 0.80528,
+          "contradiction": 0.11092,
+          "laal_words": 6.3351,
+          "k": 2.14,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": -0.11668,
+          "rank_contra_gap_n": 13
+        },
+        "shuf03": {
+          "effective": 0.75038,
+          "adequacy": 0.80424,
+          "contradiction": 0.06948,
+          "laal_words": 6.6316,
+          "k": 2.14,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": 0.01108,
+          "rank_contra_gap_n": 13
+        },
+        "shuf04": {
+          "effective": 0.72125,
+          "adequacy": 0.8049,
+          "contradiction": 0.10459,
+          "laal_words": 6.2968,
+          "k": 2.14,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": 0.04239,
+          "rank_contra_gap_n": 13
+        },
+        "shuf05": {
+          "effective": 0.73967,
+          "adequacy": 0.80758,
+          "contradiction": 0.08307,
+          "laal_words": 6.323,
+          "k": 2.14,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": -0.06261,
+          "rank_contra_gap_n": 13
+        },
+        "shuf06": {
+          "effective": 0.7214,
+          "adequacy": 0.80624,
+          "contradiction": 0.10562,
+          "laal_words": 6.2719,
+          "k": 2.14,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": 0.10417,
+          "rank_contra_gap_n": 13
+        },
+        "shuf07": {
+          "effective": 0.76005,
+          "adequacy": 0.8039,
+          "contradiction": 0.05652,
+          "laal_words": 6.3715,
+          "k": 2.14,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": -0.17853,
+          "rank_contra_gap_n": 13
+        },
+        "shuf08": {
+          "effective": 0.74743,
+          "adequacy": 0.80846,
+          "contradiction": 0.0755,
+          "laal_words": 6.8256,
+          "k": 2.14,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": 0.11092,
+          "rank_contra_gap_n": 13
+        },
+        "shuf09": {
+          "effective": 0.74532,
+          "adequacy": 0.80234,
+          "contradiction": 0.07346,
+          "laal_words": 6.5222,
+          "k": 2.14,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": 0.0,
+          "rank_contra_gap_n": 13
+        },
+        "shuf10": {
+          "effective": 0.74054,
+          "adequacy": 0.80131,
+          "contradiction": 0.07872,
+          "laal_words": 6.3359,
+          "k": 2.14,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": 0.0059,
+          "rank_contra_gap_n": 13
+        },
+        "shuf11": {
+          "effective": 0.75067,
+          "adequacy": 0.81207,
+          "contradiction": 0.07573,
+          "laal_words": 6.536,
+          "k": 2.14,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": 0.03172,
+          "rank_contra_gap_n": 13
+        },
+        "shuf12": {
+          "effective": 0.7256,
+          "adequacy": 0.80509,
+          "contradiction": 0.10021,
+          "laal_words": 6.4085,
+          "k": 2.14,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": 0.05042,
+          "rank_contra_gap_n": 13
+        },
+        "shuf13": {
+          "effective": 0.72837,
+          "adequacy": 0.80328,
+          "contradiction": 0.09663,
+          "laal_words": 6.534,
+          "k": 2.14,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": -0.0592,
+          "rank_contra_gap_n": 13
+        },
+        "shuf14": {
+          "effective": 0.72574,
+          "adequacy": 0.80807,
+          "contradiction": 0.10274,
+          "laal_words": 6.6759,
+          "k": 2.14,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": 0.1041,
+          "rank_contra_gap_n": 13
+        },
+        "shuf15": {
+          "effective": 0.73915,
+          "adequacy": 0.80881,
+          "contradiction": 0.08613,
+          "laal_words": 6.458,
+          "k": 2.14,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": -0.00899,
+          "rank_contra_gap_n": 13
+        },
+        "shuf16": {
+          "effective": 0.75824,
+          "adequacy": 0.80653,
+          "contradiction": 0.06021,
+          "laal_words": 6.5753,
+          "k": 2.14,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": 0.0732,
+          "rank_contra_gap_n": 13
+        },
+        "shuf17": {
+          "effective": 0.72487,
+          "adequacy": 0.80778,
+          "contradiction": 0.10526,
+          "laal_words": 6.2658,
+          "k": 2.14,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": -0.10241,
+          "rank_contra_gap_n": 13
+        },
+        "shuf18": {
+          "effective": 0.78271,
+          "adequacy": 0.81031,
+          "contradiction": 0.03459,
+          "laal_words": 6.0593,
+          "k": 2.14,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": -0.04856,
+          "rank_contra_gap_n": 13
+        },
+        "shuf19": {
+          "effective": 0.68198,
+          "adequacy": 0.7989,
+          "contradiction": 0.15159,
+          "laal_words": 6.367,
+          "k": 2.14,
+          "missing_boundaries": 0.0,
+          "n_effective": 100,
+          "rank_contra_gap": -0.01202,
+          "rank_contra_gap_n": 13
+        }
+      },
+      "paired_vs_real": {
+        "even": {
+          "n": 100,
+          "delta": 0.08727,
+          "se": 0.02237,
+          "t": 3.9
+        },
+        "shuf00": {
+          "n": 100,
+          "delta": 0.04868,
+          "se": 0.01996,
+          "t": 2.44
+        },
+        "shuf01": {
+          "n": 100,
+          "delta": 0.06739,
+          "se": 0.01913,
+          "t": 3.52
+        },
+        "shuf02": {
+          "n": 100,
+          "delta": 0.08025,
+          "se": 0.02474,
+          "t": 3.24
+        },
+        "shuf03": {
+          "n": 100,
+          "delta": 0.04797,
+          "se": 0.01988,
+          "t": 2.41
+        },
+        "shuf04": {
+          "n": 100,
+          "delta": 0.0771,
+          "se": 0.02215,
+          "t": 3.48
+        },
+        "shuf05": {
+          "n": 100,
+          "delta": 0.05867,
+          "se": 0.02241,
+          "t": 2.62
+        },
+        "shuf06": {
+          "n": 100,
+          "delta": 0.07694,
+          "se": 0.02432,
+          "t": 3.16
+        },
+        "shuf07": {
+          "n": 100,
+          "delta": 0.0383,
+          "se": 0.01566,
+          "t": 2.45
+        },
+        "shuf08": {
+          "n": 100,
+          "delta": 0.05091,
+          "se": 0.01951,
+          "t": 2.61
+        },
+        "shuf09": {
+          "n": 100,
+          "delta": 0.05302,
+          "se": 0.01804,
+          "t": 2.94
+        },
+        "shuf10": {
+          "n": 100,
+          "delta": 0.0578,
+          "se": 0.02057,
+          "t": 2.81
+        },
+        "shuf11": {
+          "n": 100,
+          "delta": 0.04768,
+          "se": 0.02173,
+          "t": 2.19
+        },
+        "shuf12": {
+          "n": 100,
+          "delta": 0.07275,
+          "se": 0.02388,
+          "t": 3.05
+        },
+        "shuf13": {
+          "n": 100,
+          "delta": 0.06998,
+          "se": 0.02154,
+          "t": 3.25
+        },
+        "shuf14": {
+          "n": 100,
+          "delta": 0.0726,
+          "se": 0.02051,
+          "t": 3.54
+        },
+        "shuf15": {
+          "n": 100,
+          "delta": 0.05919,
+          "se": 0.01758,
+          "t": 3.37
+        },
+        "shuf16": {
+          "n": 100,
+          "delta": 0.0401,
+          "se": 0.01607,
+          "t": 2.5
+        },
+        "shuf17": {
+          "n": 100,
+          "delta": 0.07347,
+          "se": 0.02388,
+          "t": 3.08
+        },
+        "shuf18": {
+          "n": 100,
+          "delta": 0.01563,
+          "se": 0.01239,
+          "t": 1.26
+        },
+        "shuf19": {
+          "n": 100,
+          "delta": 0.11636,
+          "se": 0.02688,
+          "t": 4.33
+        }
+      },
+      "real_vs_mean_shuffle": {
+        "n": 100,
+        "delta": 0.06124,
+        "se": 0.01254,
+        "t": 4.88
+      },
+      "shuffle_mean": 0.7371,
+      "shuffle_sd": 0.02076,
+      "shuffle_gap_mean": -0.00484,
+      "shuffle_gap_sd": 0.07684,
+      "perm_p_one_sided": 0.0476,
+      "seconds": 224.3
+    }
+  }
+}

@@ -386,7 +386,8 @@ def validate(sent_id: str, original: str, seg_text: str, spaced: bool,
              trailing_punct: str | None = None,
              require_priority: bool = True,
              min_tags: int | None = None,
-             priority_depth: int | None = None) -> list[Violation]:
+             priority_depth: int | None = None,
+             min_gap: int = 0) -> list[Violation]:
     """번역 호출 전에 도는 하드 게이트. LLM 없이 순수 문자열 검사.
 
     trailing_punct 는 언어 프로파일에서 온다 — 검증 규칙 자체는 언어 무관이고,
@@ -471,6 +472,29 @@ def validate(sent_id: str, original: str, seg_text: str, spaced: bool,
     if min_tags and len(tags) < min_tags:
         v.append(Violation(sent_id, "too_few_tags",
                            f"경계 {len(tags)}개 — 최소 {min_tags}개 필요"))
+
+    # ── 간격 요건 ────────────────────────────────────────────────────
+    # `truncate` 의 min_gap 과 **같은 규칙을 마킹 시점에** 건다. 사후에만 걸면 절단기가
+    # 간격 위반인 상위 순위를 건너뛰고 아래 순위를 집게 되어(실측 남긴 경계 평균 순위
+    # 1.92 -> 2.98), 정보가 없다고 측정된 순위축(rank_contra_gap ≈ 0)에 선택이 통째로
+    # 실린다. 마킹이 이미 간격을 지키면 절단기 필터는 항등이 되고, 순위는 "쓸 수 있는
+    # 자리들 사이"에서만 작동한다.
+    #
+    # 문면만으로는 안 움직인다 — 개수 요건과 같은 이유로 검증기가 강제해야 한다
+    # (docs/RANK_METRIC_DIAGNOSIS.md §8.1: 문면으로만 시킨 dense 는 밀도 불변).
+    if min_gap > 0 and tags:
+        pieces = [q.strip() for q in TAG_RE.split(s)[::2]]
+        wc = [unit_count(q, spaced) for q in pieces]
+        edges, acc = [], 0
+        for w in wc[:-1]:
+            acc += w
+            edges.append(acc)
+        total = acc + wc[-1]
+        for a, b in zip([0] + edges, edges + [total]):
+            if b - a < min_gap:
+                v.append(Violation(sent_id, "gap_too_small",
+                                   f"조각 {b - a}단위 — 최소 간격 {min_gap} 미만"))
+                break
     return v
 
 
@@ -513,7 +537,29 @@ def truncate(seg_text: str, target_chunk_words: int,
     3 이 두 T 모두에서 최적이고 **지연도 함께 준다**. 4 는 과해서 좋은 자리를 너무
     배제한다. 이득은 contradiction 에서 나온다(0.0724 -> 0.0526) — 다만 조각이 길어지면
     NLI 잡음 바닥도 함께 내려가므로, 실제 조기방출 감소인지 바닥 효과인지는 미분리다.
-    제약으로 `want` 를 못 채우면 순위 순으로 마저 채운다 (실측 미달 0건).
+
+    **제약을 못 채우면 덜 자른다 — 순위 순 보충을 하지 않는다.** 예전에는 보충했고
+    "실측 미달 0건" 이라 무해해 보였는데, 그 실측이 en-de 였다. ko-en/run05 를 오프라인
+    재절단하면 min_gap=3 에서 보충이 T=2 150/150, T=3 107/150, T=4 11/150, T=6 1/150
+    으로 **거의 항상** 발동한다. 보충이 있으면 min_gap 이 선언만 하고 강제를 못 해
+    1어절 조각이 51% -> 43% 로 밖에 안 준다. 빼면 하한이 진짜 하한이 된다 — 전 T 에서
+    1어절 조각 0%, 최단 조각 = min_gap 정확히.
+
+    **부수 효과가 본 기능이다: 무분절이 여기서 자연 발생한다.** `chunk_budget` 하한이 2 라
+    T 를 아무리 키워도 경계 1개는 요구되는데(4~5어절 문장, T=12 에서도 요구 1개),
+    min_gap 을 만족하는 자리가 0개인 문장이 있다. 보충을 빼면 그런 문장은 경계 0개 =
+    무분절로 나온다 (run05 실측 min_gap=3 에서 1/150, =4 에서 7/150). T 를 키워도 이
+    잔여만 상수로 남는다 — 즉 **T 의 함수가 아니라 문장 고유 성질**이고, 짧은 발화가
+    통째로 나가야 하는 바로 그 경우다.
+
+    **T 는 min_gap 의 1.5배 이상이어야 한다.** T 는 조각 크기의 평균이고 min_gap 은
+    최소라, 둘이 같으면 정의상 절반이 위반한다 (T=3·min_gap=3 에서 107/150). 그 아래
+    T 는 틀리지는 않고 min_gap 바닥에서 포화한다 — min_gap=3 이면 T=2 와 T=3 의 결과가
+    완전히 같다(평균 조각수 둘 다 3.93). loop.py 가 격자에 그런 값이 있으면 경고한다.
+
+    반환하는 `missing_boundaries` 는 **마킹한 태그 수**로만 계산한다 (`want - len(tags)`).
+    min_gap 때문에 못 놓은 몫은 빼고 센다 — 그건 프롬프트가 태그를 더 찍어서 고칠 수 있는
+    문제가 아니므로, Critic 의 `focus="coverage"` 조향에 섞으면 잘못된 압력이 된다.
     """
     tags = list(TAG_RE.finditer(seg_text))
     if not tags:
@@ -546,12 +592,7 @@ def truncate(seg_text: str, target_chunk_words: int,
             if min(abs(pos[i] - e) for e in edges) < min_gap:
                 continue
             chosen.append(i)
-        for i in order:                      # 제약으로 못 채우면 순위 순으로 보충
-            if len(chosen) >= want:
-                break
-            if i not in chosen:
-                chosen.append(i)
-        keep = set(chosen)
+        keep = set(chosen)                   # 못 채우면 덜 자른다 — 보충하지 않는다
     return _rebuild(seg_text, keep, spaced), max(0, want - len(tags))
 
 

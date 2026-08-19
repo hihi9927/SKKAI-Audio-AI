@@ -240,9 +240,12 @@ argmax 라벨이 `neutral` 로 어긋나도 **확률 순위는 유지**되므로
 실전 검증 (run02 test): 기계 8자분절의 `contradiction` 이 0.1849 로 우리(0.032~0.048)의
 4~6배다. `adequacy` 만으로는 격차가 0.063 인데 `effective` 로는 0.157 — 분리력이 2.5배.
 
-백엔드는 `--contradiction-backend` (`deberta-mnli` 기본 / `deberta-anli` / `mdeberta-xnli`).
-premise·hypothesis 가 둘 다 타깃 언어라 **소스 언어별 자원이 필요 없다.** 타깃이 영어가
-아니면 `mdeberta-xnli`.
+백엔드는 `--contradiction-backend` (**`xlmr-anli` 기본** / `deberta-mnli` / `deberta-anli` /
+`mdeberta-xnli` / `xlmr-xnli`). premise·hypothesis 가 둘 다 타깃 언어라 **소스 언어별 자원이
+필요 없다.** 기본값이 다국어라 **타깃에 따라 바꿀 필요도 없다** — 예전 처방이던
+`mdeberta-xnli` 는 잡음 바닥 0.102 가 실측 신호 0.075 를 넘어 무정보이고 ko·zh·ja 타깃에서
+곡선이 역전했다(5개 중 2개만 정상). `xlmr-anli` 는 5/5, 관문 최소 여유 0.0994 (mdeberta 0.0027).
+대가로 dev 쌍체 se 가 0.0065 → 0.0144 로 배증하므로 `--adopt-se-mult` 를 1.0 → 0.5 로 낮췄다.
 
 **문장 집계는 경계 평균이다 — 조각 가중 평균이 아니다.** 마지막 조각(미래 없음, 구조적 0)을
 평균에 넣으면 경계당 잡음 기대값이 ε 일 때 문장 값이 ≈ ε·(1 − w_last/W) 로 **k 에 단조

@@ -249,7 +249,7 @@ def main() -> int:
                    default=["English", "German", "Spanish", "Japanese", "Chinese"])
     p.add_argument("--t-grid", type=int, nargs="+", default=None,
                    help="미지정 시 기준 런의 final_t_grid")
-    p.add_argument("--nli", default="mdeberta-xnli", choices=sorted(metrics.NLI_MODELS),
+    p.add_argument("--nli", default="xlmr-anli", choices=sorted(metrics.NLI_MODELS),
                    help="**전 타깃 통일.** 타깃마다 다른 모델을 쓰면 모델 차이가 "
                         "언어 차이로 오독된다")
     p.add_argument("--adequacy-backend", default=None, help="미지정 시 기준 런에서 상속")

@@ -115,7 +115,7 @@ def main() -> int:
         args.adequacy_backend or cfg.get("adequacy_backend", "cometkiwi"),
         batch_size=args.comet_batch_size)
     cons_name = args.consistency_backend or cfg.get("consistency_backend", "comet")
-    nli_key = cfg.get("contradiction_backend", "deberta-mnli")
+    nli_key = cfg.get("contradiction_backend", "xlmr-anli")
     if cons_name == "nli":
         consistency = metrics.make_backend(
             "nli", model_name=metrics.NLI_MODELS[nli_key],

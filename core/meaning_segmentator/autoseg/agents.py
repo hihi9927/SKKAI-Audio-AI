@@ -79,18 +79,64 @@ OUTPUT_RULES_UNSPACED = """[Output Rules]
 _COVERAGE_RULE = (
     "- Mark AT LEAST one boundary per {min_t} {unit} of input (a {example_len}-{unit} sentence\n"
     "  needs at least {example_n}). A deterministic step later keeps only the top-ranked ones,\n"
-    "  so extra boundaries cost nothing — but a boundary you never marked can never be used.\n"
+    "  so a boundary you never marked can never be used.\n"
     "  If you cannot find enough safe positions, mark the least-risky remaining ones and rank\n"
     "  them last. Output with too few boundaries is rejected.\n"
 )
 
+# 간격 규칙. 예전 문면은 "extra boundaries cost nothing" 이라고 했지만 그건 절단기가
+# 간격을 안 볼 때 얘기다. 붙어 있는 경계는 절단기가 어차피 버리므로 찍어봐야 순위만
+# 흐리고, 버려진 자리가 상위 순위면 절단이 아래 순위를 집게 된다 (실측 남긴 경계 평균
+# 순위 1.92 -> 2.98). 그래서 **간격을 마킹 시점에 지키게** 한다.
+#
+# 문면만으로는 안 움직인다 — 밀도를 문면으로 시킨 `dense` 변종이 0.354 로 사실상
+# 불변이었다 (docs/RANK_METRIC_DIAGNOSIS.md §8.1). `validate(min_gap=)` 가 함께 강제한다.
+_GAP_RULE = (
+    "- Leave AT LEAST {gap} {unit} between any two tags, and the same distance between a tag\n"
+    "  and either end of the text. A piece shorter than that cannot be translated on its own,\n"
+    "  so such a boundary is unusable no matter how confident you are about it. If two good\n"
+    "  positions are closer than {gap} {unit}, mark only the better one. Output that places\n"
+    "  tags closer than this is rejected.\n"
+)
 
-def output_rules(spaced: bool, min_t: int = 3) -> str:
+
+def output_rules(spaced: bool, min_t: int = 3, min_gap: int = 0) -> str:
     unit = "words" if spaced else "characters"
     base = OUTPUT_RULES_SPACED if spaced else OUTPUT_RULES_UNSPACED
-    cov = _COVERAGE_RULE.format(min_t=min_t, unit=unit, example_len=min_t * 6,
-                                example_n=5)
-    return base.replace("- If no segmentation is needed,", cov + "- If no segmentation is needed,")
+    rules = _COVERAGE_RULE.format(min_t=min_t, unit=unit, example_len=min_t * 6,
+                                  example_n=5)
+    if min_gap > 0:
+        rules += _GAP_RULE.format(gap=min_gap, unit=unit)
+    return base.replace("- If no segmentation is needed,", rules + "- If no segmentation is needed,")
+
+
+# 타깃 언어명·문법 근거 검출. 프롬프트는 소스에만 종속돼야 한다 — 지시만으로는 안 지켜졌다
+# (run04 산출물에 독일어 언급 8곳, 순위 규칙 8~11 이 그 위에 세워졌다).
+_TARGET_LANG_WORDS = (
+    "german", "korean", "japanese", "chinese", "spanish", "french", "italian",
+    "portuguese", "russian", "arabic", "hindi", "vietnamese", "thai", "dutch",
+    "polish", "turkish", "deutsch",
+)
+_TARGET_GRAMMAR_WORDS = ("case/gender", "case assignment", "grammatical gender",
+                         "case marking", "verb-final")
+
+
+def check_target_agnostic(prompt: str, src_lang: str | None = None) -> list[str]:
+    """프롬프트가 특정 타깃 언어에 기대고 있으면 사유를 돌려준다.
+
+    소스 언어명은 허용한다 — 프롬프트는 소스에 종속돼야 하므로 "English source text" 는
+    정상이다. 걸러야 하는 것은 **타깃** 언어명과 그 문법 근거다.
+    """
+    low = prompt.lower()
+    src = (src_lang or "").strip().lower()
+    hits = [w for w in _TARGET_LANG_WORDS if w != src and w in low]
+    gram = [w for w in _TARGET_GRAMMAR_WORDS if w in low]
+    out = []
+    if hits:
+        out.append(f"타깃 언어명 언급: {sorted(set(hits))}")
+    if gram:
+        out.append(f"타깃 문법 근거: {sorted(set(gram))}")
+    return out
 
 
 def split_sections(prompt: str) -> dict[str, str]:
@@ -192,12 +238,20 @@ Return ONLY a JSON object with exactly these keys:
   "discourse_markers": ["tokens that open or link clauses"],
   "clause_boundary_signals": ["concrete surface forms that mark a clause boundary in THIS language"],
   "non_boundary_traps": ["surface forms that LOOK like boundaries but are not"],
-  "target_language_risks": ["what breaks when a fragment of this language is translated into the target without following context"],
+  "unstable_prefix_signals": ["surface forms in THIS language after which a prefix's reading is\n                              still likely to be overturned by what follows — stated WITHOUT naming\n                              or assuming any particular target language"],
   "notes_for_prompt_writer": "2-4 sentences of practical guidance"
 }
 No prose outside the JSON."""
 
 PROMPT_WRITER_SYSTEM = """You write system prompts for a meaning-based segmentation model.
+
+HARD CONSTRAINT — the prompt must be TARGET-LANGUAGE-AGNOSTIC.
+The same prompt is reused for every target language, so it may not name a target language
+and may not justify any rule with a target language's grammar (case, gender, articles,
+verb-final order, agreement). Segmentation is decided on the SOURCE text alone.
+Express risk the target-neutral way instead: "the following words can still overturn what
+was already emitted". That statement is true for every target; "German case assignment"
+is not.
 
 Given a language profile, write the initial segmentation system prompt.
 
@@ -259,17 +313,26 @@ Return ONLY the prompt text. No commentary, no code fences."""
 class Profiler:
     gw: Gateway
 
-    def profile(self, samples: list[str], target_language: str) -> dict:
+    def profile(self, samples: list[str], target_language: str | None = None) -> dict:
+        """소스 언어만 프로파일한다. `target_language` 는 호환용이며 **쓰지 않는다**.
+
+        분절은 소스 쪽 문제라는 것이 설계 전제인데, 타깃 언어명을 넘기면 LLM 이 측정되지
+        않은 타깃 문법 지식을 프롬프트에 써넣는다 — run04 산출물에 독일어 격·성 근거가
+        8곳 들어갔고 순위 규칙 8~11(Medium/Lower 구간 전체)이 그 위에 세워졌다.
+        `core/CLAUDE.md` 의 "언어 지식은 측정으로만" 원칙과 어긋난다.
+        """
         user = (
-            f"Target language for translation: {target_language}\n\n"
+            "The segmentation prompt you are profiling for must work for ANY target "
+            "language. Describe only properties of the SOURCE text.\n\n"
             f"Source sentences ({len(samples)} samples):\n"
             + "\n".join(f"{i+1}. {s}" for i, s in enumerate(samples))
         )
         return self.gw.chat_json(PROFILER_SYSTEM, user, max_tokens=PROFILER_MAX_TOKENS,
                                  purpose="profiler")
 
-    def initial_prompt(self, profile: dict, target_language: str, spaced: bool,
-                       min_t: int = 3) -> str:
+    def initial_prompt(self, profile: dict, target_language: str | None, spaced: bool,
+                       min_t: int = 3, min_gap: int = 0) -> str:
+        """`target_language` 는 **의도적으로 쓰지 않는다** (Profiler.profile 참조)."""
         # 밀도 지침(N/{min_t})은 검증기의 커버리지 요건과 **같은 값**이어야 한다.
         # run03 에서 지침 N/3 vs 요건 N/2 불일치가 1차 통과율을 깎았다 (재시도로 복구되나
         # 프롬프트 품질 신호인 1차 통과율이 오염된다). 시스템 프롬프트에 JSON 중괄호가
@@ -277,8 +340,11 @@ class Profiler:
         sys_p = PROMPT_WRITER_SYSTEM.replace("N/{min_t}", f"N/{min_t}")
         user = (
             f"Language profile:\n{json.dumps(profile, ensure_ascii=False, indent=2)}\n\n"
-            f"Target language: {target_language}\n\n"
-            f"Copy this [Output Rules] section verbatim into the prompt:\n\n{output_rules(spaced, min_t)}"
+            "The prompt must be TARGET-LANGUAGE-AGNOSTIC. It will be reused for many "
+            "different target languages without modification, so it may not name one, "
+            "nor lean on one's grammar (no case, gender, article, or word-order arguments "
+            "that belong to a specific target).\n\n"
+            f"Copy this [Output Rules] section verbatim into the prompt:\n\n{output_rules(spaced, min_t, min_gap)}"
         )
         # thinking 모델은 사고 토큰이 max_tokens 에 같이 잡힌다 (SEG_MAX_TOKENS 와 같은
         # 문제). 6000 에서는 사고가 예산을 먹고 프롬프트 꼬리 섹션이 잘렸다 — run04 에서
@@ -856,6 +922,10 @@ Hard constraints — violating any of these makes your output unusable:
    never leave the focus's section just because your last attempt there failed. When focus is
    "priority" a gate rejects any edit outside [Priority Rules].
 6. Rules must generalise. Never write a rule that names a specific sentence from the data.
+   **Never name a target language or justify a rule with its grammar** (case, gender,
+   articles, verb-final order, agreement). The prompt is reused for every target language;
+   a deterministic gate rejects revisions that mention one. Say "the following words can
+   still overturn what was emitted" instead — that holds for every target.
 7. Obey the critic's "focus" field. It is computed from measurements, not opinion:
    - "format"    → touch the sections governing adherence and the decision procedure,
                    including how tags are numbered. Do NOT add new segmentation restrictions.

@@ -214,7 +214,9 @@ def make_backend(name: str, gw: Gateway | None = None, **kw) -> QualityBackend:
     if name == "chrf":
         return ChrfBackend()
     if name == "nli":
-        kw.setdefault("model_name", NLI_MODELS["deberta-mnli"])
+        # **다국어 기본.** 예전엔 deberta-mnli(영어 전용)로 조용히 대체돼서,
+        # model_name 을 안 넘긴 호출자가 비영어 타깃에서 무음으로 틀린 값을 받았다.
+        kw.setdefault("model_name", NLI_MODELS["xlmr-anli"])
         kw.setdefault("name", name)
         return BidirectionalNliBackend(**kw)
     if name in COMET_CHECKPOINTS:
@@ -310,7 +312,7 @@ class _NliBase:
 
     _PIPES: dict = {}
 
-    def __init__(self, model_name: str = "microsoft/deberta-large-mnli",
+    def __init__(self, model_name: str = NLI_MODELS["xlmr-anli"],
                  batch_size: int = 16, device: int = 0, name: str = ""):
         self.model_name = model_name
         self.batch_size = batch_size
@@ -344,8 +346,8 @@ class ContradictionBackend(_NliBase):
     argmax 라벨이 아니라 **contradiction 확률**을 쓴다. 라벨이 `neutral` 로 어긋나도
     확률 순위는 유지되므로(실측) 임계값 없이 연속 점수로 쓸 수 있다."""
 
-    def __init__(self, model_name: str = "microsoft/deberta-large-mnli",
-                 batch_size: int = 16, device: int = 0, name: str = "deberta-mnli"):
+    def __init__(self, model_name: str = NLI_MODELS["xlmr-anli"],
+                 batch_size: int = 16, device: int = 0, name: str = "xlmr-anli"):
         super().__init__(model_name, batch_size, device, name)
 
     def score(self, premises: list[str], hypotheses: list[str]) -> list[float]:
@@ -376,9 +378,10 @@ class BidirectionalNliBackend(_NliBase, QualityBackend):
     좋은 분절이 감점된다 (benign_paraphrase 0.8414 < negation_flip 0.8843). NLI 는
     명제만 보므로 표면 어순·문장 수가 달라도 감점이 없고, 부정 뒤집힘은 양방향
     모두에서 contradiction 으로 잡힌다. 두 입력이 모두 타깃 언어라 소스 언어별
-    자원도 필요 없다. 타깃이 영어가 아니면 `mdeberta-xnli` 를 쓸 것."""
+    자원도 필요 없다. 기본 `xlmr-anli` 는 다국어라 **타깃에 따라 바꿀 필요가 없다** —
+    예전 처방이던 `mdeberta-xnli` 는 ko/zh/ja 에서 곡선이 뒤집힌다 (NLI_MODELS 주석)."""
 
-    def __init__(self, model_name: str = "microsoft/deberta-large-mnli",
+    def __init__(self, model_name: str = NLI_MODELS["xlmr-anli"],
                  batch_size: int = 16, device: int = 0, name: str = "nli"):
         super().__init__(model_name, batch_size, device, name)
 
@@ -503,6 +506,12 @@ class SplitMetrics:
     rank_contra_gap: float | None = None
     rank_contra_gap_se: float | None = None
     rank_contra_gap_n: int | None = None
+    # 다언어 목적함수에서만 채워진다. `effective` 는 **타깃별 원값의 평균**이라 해석·비교가
+    # 되고, `effective_z` 는 타깃별 z-정규화 후 평균이라 0 중심이지만 검출력이 높다
+    # (실측 se −40%). **보고는 effective, 채택 판정은 effective_z** 로 축을 나눈다 —
+    # z 는 그 분할 안에서만 정의되므로 런 간·분할 간 비교에 쓰면 안 된다.
+    effective_z: float | None = None
+    n_targets: int | None = None
 
     def to_dict(self) -> dict:
         return {k: (round(v, 4) if isinstance(v, float) else v)
@@ -810,7 +819,7 @@ def priority_audit(rows: list[dict], T: int, floor_fn=None, tgt_spaced: bool = T
 
 
 def paired_delta(new_rows: list[dict], best_rows: list[dict],
-                 t_grid: list[int]) -> dict:
+                 t_grid: list[int], key: str = "effective") -> dict:
     """이전 best 대비 **문장별** effective 차이. 채택 판정이 이걸로 이뤄진다.
 
     절대 평균 비교는 문장 난이도 분산에 묻힌다 — run01 dev 실측에서 문장별 sd 0.0496,
@@ -836,9 +845,9 @@ def paired_delta(new_rows: list[dict], best_rows: list[dict],
                 continue
             # 무분절 문장은 effective 가 미정의(None)다. 어느 한쪽이라도 None 이면
             # 그 T 는 쌍체 비교에서 뺀다 — 0 으로 치면 "분절 안 함"이 이득이 된다.
-            if a.get("effective") is None or c.get("effective") is None:
+            if a.get(key) is None or c.get(key) is None:
                 continue
-            d += a["effective"] - c["effective"]
+            d += a[key] - c[key]
             seen += 1
             if a["seg_text"] != c["seg_text"]:
                 diff = True

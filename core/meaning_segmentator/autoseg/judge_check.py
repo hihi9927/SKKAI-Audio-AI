@@ -182,7 +182,7 @@ def main() -> int:
     p.add_argument("--budget", type=float, default=1.0)
     p.add_argument("--cases", default=str(CASES_PATH))
     p.add_argument("--out", default=None, help="리포트 경로 (기본 runs/judge_validity/report.md)")
-    p.add_argument("--nli-backend", default="deberta-mnli",
+    p.add_argument("--nli-backend", default="xlmr-anli",
                    help="함께 검사할 NLI 백엔드 (metrics.NLI_MODELS 의 키)")
     p.add_argument("--skip-judge", action="store_true",
                    help="LLM 판정자 검사를 건너뛰고 NLI 만 검사 (API 호출 0)")

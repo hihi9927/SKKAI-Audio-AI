@@ -1,0 +1,97 @@
+{
+  "run_id": "en-de/run04",
+  "split": "test",
+  "rows": 5,
+  "t_grid": [
+    6
+  ],
+  "shuffles": 2,
+  "seed": 0,
+  "min_gap": 3,
+  "translator": "google:de:ctx=True",
+  "adequacy_backend": "cometkiwi",
+  "contradiction_backend": "xlmr-anli",
+  "consistency_backend": null,
+  "by_T": {
+    "6": {
+      "arms": {
+        "real": {
+          "effective": 0.62165,
+          "adequacy": 0.83074,
+          "contradiction": 0.25506,
+          "laal_words": 4.6926,
+          "k": 3.2,
+          "missing_boundaries": 0.0,
+          "n_effective": 5,
+          "rank_contra_gap": -0.41742,
+          "rank_contra_gap_n": 3
+        },
+        "even": {
+          "effective": 0.60626,
+          "adequacy": 0.78197,
+          "contradiction": 0.228,
+          "laal_words": 4.1774,
+          "k": 3.2,
+          "missing_boundaries": 0.0,
+          "n_effective": 5,
+          "rank_contra_gap": 0.3009,
+          "rank_contra_gap_n": 3
+        },
+        "shuf00": {
+          "effective": 0.78472,
+          "adequacy": 0.79825,
+          "contradiction": 0.01706,
+          "laal_words": 4.2293,
+          "k": 3.2,
+          "missing_boundaries": 0.0,
+          "n_effective": 5,
+          "rank_contra_gap": -0.00088,
+          "rank_contra_gap_n": 3
+        },
+        "shuf01": {
+          "effective": 0.67097,
+          "adequacy": 0.78771,
+          "contradiction": 0.1638,
+          "laal_words": 4.4331,
+          "k": 3.2,
+          "missing_boundaries": 0.0,
+          "n_effective": 5,
+          "rank_contra_gap": 0.39345,
+          "rank_contra_gap_n": 3
+        }
+      },
+      "paired_vs_real": {
+        "even": {
+          "n": 5,
+          "delta": 0.01539,
+          "se": 0.03151,
+          "t": 0.49
+        },
+        "shuf00": {
+          "n": 5,
+          "delta": -0.16307,
+          "se": 0.09759,
+          "t": -1.67
+        },
+        "shuf01": {
+          "n": 5,
+          "delta": -0.04932,
+          "se": 0.1041,
+          "t": -0.47
+        }
+      },
+      "real_vs_mean_shuffle": {
+        "n": 5,
+        "delta": -0.1062,
+        "se": 0.09031,
+        "t": -1.18
+      },
+      "shuffle_mean": 0.72784,
+      "shuffle_sd": 0.08043,
+      "shuffle_gap_mean": 0.19629,
+      "shuffle_gap_sd": 0.27883,
+      "perm_p_one_sided": 1.0,
+      "seconds": 33.6
+    }
+  }
+}

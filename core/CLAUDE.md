@@ -11,7 +11,7 @@
 | `meaning_segmentator/utils/` | 의미 분절 연구 스크립트 (GPT `<SEG>` 마킹, 점진적 컨텍스트 번역, COMET 평가) |
 | `meaning_segmentator/autoseg/` | 분절 프롬프트 자동 생성 에이전트 루프 (v2). 설계 @meaning_segmentator/AUTO_PROMPT_LOOP_DESIGN.md, 사용법 @meaning_segmentator/autoseg/README.md |
 | `meaning_segmentator/metric_probes/` | `contradiction`(NLI) 지표 백엔드 대체 탐침. **루프 경로 아님** — 기존 런을 읽어 재활용. 결론 @meaning_segmentator/NLI_ALTERNATIVES.md |
-| `meaning_segmentator/docs/` | 진단 기록. `<SEG:n>` 순위 무정보 원인·1차 처방 @meaning_segmentator/docs/RANK_METRIC_DIAGNOSIS.md |
+| `meaning_segmentator/docs/` | 진단 기록. 순위 축·비용 구조·루프 채택 실패 원인과 처방 @meaning_segmentator/docs/RANK_METRIC_DIAGNOSIS.md |
 | ⤷ 근거·이력 | 문헌 대조 @meaning_segmentator/SEGMENTATION_CRITERIA_RELATED_WORK.md |
 | `research/cif`, `research/context_scoring` | CIF·컨텍스트 스코어링 실험. 런타임 경로 아님 |
 

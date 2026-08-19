@@ -215,7 +215,7 @@ def main() -> int:
 
     cfg = json.loads((run_dir / "config.json").read_text(encoding="utf-8"))
     backend_name = (args.contradiction_backend
-                    or cfg.get("contradiction_backend", "deberta-mnli"))
+                    or cfg.get("contradiction_backend", "xlmr-anli"))
     backend = metrics.make_contradiction_backend(backend_name)
 
     rows = json.loads(rows_path.read_text(encoding="utf-8"))

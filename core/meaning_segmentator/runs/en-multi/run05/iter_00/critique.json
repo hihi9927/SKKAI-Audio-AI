@@ -1,0 +1,151 @@
+{
+  "cases": [
+    {
+      "id": "en_us_1749_13727467",
+      "error_type": "format_violation",
+      "span": "the \"Vichy\" French.",
+      "evidence": "Numbered tags placed closer than allowed minimum (gap<3).",
+      "cause": "boundaries generated with insufficient token spacing",
+      "proposed_rule": "Enforce a minimum source-token gap (e.g. ≥3 tokens) between numbered boundaries; prefer clause- or sentence-level splits when spacing would be violated.",
+      "example_pair": {
+        "input": "It was ruled by the \"Vichy\" French. These were French people who had made peace with the Germans in 1940 and worked with the invaders instead of fighting them.",
+        "output": "It was ruled by the \"Vichy\" French. <SEG:1> These were French people who had made peace with the Germans in 1940 and worked with the invaders instead of fighting them."
+      }
+    },
+    {
+      "id": "en_us_1940_13388880",
+      "error_type": "placement",
+      "span": "we should not be surprised",
+      "evidence": "Piece committed to an agent/possessor ('we') before subordinate clause head; later context assigns agent to 'our ancestors'.",
+      "cause": "subject/possessive role not yet settled (clause head absent)",
+      "proposed_rule": "Do not finalize subject/possessive choices or translate pronouns until the clause head and any possessive attachments appear; avoid boundaries that close a subject-verb relation prematurely.",
+      "example_pair": {
+        "input": "All things considered, we should not be surprised if our own ancestors solved their \"protein problem\" in somewhat the same way that chimps on the savanna do today.",
+        "output": "All things considered, <SEG:1> we should not be surprised if our own ancestors solved their \"protein problem\" in somewhat the same way that chimps on the savanna do today."
+      }
+    },
+    {
+      "id": "en_us_1693_15739600",
+      "error_type": "placement",
+      "span": "captain's wicket",
+      "evidence": "Domain noun 'wicket' was mistranslated (rendered as unrelated sense) because immediate context that disambiguates it was split away.",
+      "cause": "domain-specific head noun disambiguation needs adjacent context",
+      "proposed_rule": "Delay translating domain-specific nouns or technical terms until their head and immediate local context (adjacent verbs, numbers, or prepositional phrases) are visible.",
+      "example_pair": {
+        "input": "But, after losing the captain's wicket India only made 36 runs loosing 7 wickets to end the innings.",
+        "output": "But, after losing the captain's wicket <SEG:1> India only made 36 runs losing 7 wickets to end the innings."
+      }
+    },
+    {
+      "id": "en_us_1831_81483219",
+      "error_type": "placement",
+      "span": "Plitvice Lakes national",
+      "evidence": "Modifiers ('national') were translated before the head noun ('park'), producing 'team'/'national team' errors.",
+      "cause": "head noun not yet arrived; modifier prematurely attached",
+      "proposed_rule": "Wait for the head noun before translating modifiers or adjectives that attach to it; avoid boundaries that end a piece inside adjective+head noun sequences.",
+      "example_pair": {
+        "input": "The Plitvice Lakes national park is heavily forested, mainly with beech, spruce, and fir trees, and features a mixture of Alpine and Mediterranean vegetation.",
+        "output": "The Plitvice Lakes national park <SEG:1> is heavily forested, mainly with beech, spruce, and fir trees, and features a mixture of Alpine and Mediterranean vegetation."
+      }
+    },
+    {
+      "id": "en_us_1798_12183555",
+      "error_type": "placement",
+      "span": "long-running internet radio site",
+      "evidence": "Modifier 'long-running' attached to wrong noun because the noun-head ('site'/'radio') was split across pieces; produced 'long-duration Internet site'.",
+      "cause": "modifier attached before its head noun arrived",
+      "proposed_rule": "Do not finalize modifier attachment when the head noun is not yet visible; prefer boundaries after the head noun for adjective+head or compound-noun sequences.",
+      "example_pair": {
+        "input": "In its early days, the show was featured solely at the long-running internet radio site TogiNet Radio, a site focused on talk radio.",
+        "output": "In its early days, <SEG:1> the show was featured solely at the long-running internet radio site TogiNet Radio, a site focused on talk radio."
+      }
+    },
+    {
+      "id": "en_us_1838_15622589",
+      "error_type": "placement",
+      "span": "The Great Pyramid at Giza",
+      "evidence": "Partial NP was rendered as a completed claim before its complement ('of the seven wonders') arrived, producing an awkward or premature assertion.",
+      "cause": "NP/complement not complete when boundary closed",
+      "proposed_rule": "Avoid boundaries that finalize classification/uniqueness claims until complement phrases (e.g., 'of the ...', relative clauses) that qualify them are present.",
+      "example_pair": {
+        "input": "The Great Pyramid at Giza is the only one of the seven wonders that is still standing today.",
+        "output": "The Great Pyramid at Giza is the only one of the seven wonders that is still standing today. <SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_1997_72373076",
+      "error_type": "placement",
+      "span": "6,000 of the total 330,000",
+      "evidence": "Numeric quantifier got separated from its clause context; earlier piece produced a predicate about 'percentage' that the later numeric phrase altered, causing contradiction risk.",
+      "cause": "statistical/quantified noun phrase split from its clause context",
+      "proposed_rule": "Do not finalize statistical or quantitative claims until the quantified noun phrase and its clause context (e.g., 'of the total ...', attached prepositional phrases) are present.",
+      "example_pair": {
+        "input": "However, the percentage of XDR-TB in the entire group of people with tuberculosis still seems to be low; 6,000 of the total 330,000 people infected at any particular moment in South Africa.",
+        "output": "However, the percentage of XDR-TB in the entire group of people with tuberculosis still seems to be low; <SEG:1> 6,000 of the total 330,000 people infected at any particular moment in South Africa."
+      }
+    },
+    {
+      "id": "en_us_1881_97204279",
+      "error_type": "placement",
+      "span": "reflect a on a trip",
+      "evidence": "Phrasal verb/preposition 'reflect on' was broken by a boundary, producing 'reflect a' and causing mistranslation.",
+      "cause": "phrasal verb or verb+preposition split across boundary",
+      "proposed_rule": "Keep phrasal verbs and verb+preposition/object sequences intact; do not end a piece between a verb and its required preposition or immediate object.",
+      "example_pair": {
+        "input": "Sharing a field trip virtually is also a great way to reflect on a trip and share experiences with future classes.",
+        "output": "Sharing a field trip virtually is also a great way to reflect on a trip and share experiences with future classes. <SEG:1>"
+      }
+    }
+  ],
+  "summary": "The prompt systematically places high-confidence boundaries inside noun phrases, modifier+head sequences, phrasal verbs, and before numeric or possessive attachments — i.e., it closes pieces before heads/required dependents arrive. It also allows tags that are too close together (format violations). Fixes: forbid boundaries that end a piece before a head noun/verb or required preposition/object, and enforce a minimal token gap between tags.",
+  "aggregate": {
+    "dominant_error": "placement",
+    "error_counts": {
+      "format_violation": 1,
+      "placement": 7
+    },
+    "focus": "format",
+    "focus_reason": "format_pass_rate 0.9750 < 1.0",
+    "priority_audit": [
+      {
+        "feature": "상대위치 0/3",
+        "n": 30,
+        "rank_percentile": 0.563,
+        "contradiction": 0.0326,
+        "over_trust": 0.0489
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 21,
+        "rank_percentile": 0.584,
+        "contradiction": 0.0458,
+        "over_trust": 0.0488
+      },
+      {
+        "feature": "뒤 구두점 ','",
+        "n": 16,
+        "rank_percentile": 0.368,
+        "contradiction": 0.0,
+        "over_trust": 0.0
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 50,
+        "rank_percentile": 0.765,
+        "contradiction": 0.0527,
+        "over_trust": -0.1429
+      },
+      {
+        "feature": "상대위치 1/3",
+        "n": 23,
+        "rank_percentile": 0.775,
+        "contradiction": 0.0697,
+        "over_trust": -0.2041
+      }
+    ],
+    "max_missing_boundaries": 0.0,
+    "max_premature_rate": 0.0714,
+    "rank_contra_gap": 0.017,
+    "summary": "The prompt systematically places high-confidence boundaries inside noun phrases, modifier+head sequences, phrasal verbs, and before numeric or possessive attachments — i.e., it closes pieces before heads/required dependents arrive. It also allows tags that are too close together (format violations). Fixes: forbid boundaries that end a piece before a head noun/verb or required preposition/object, and enforce a minimal token gap between tags."
+  }
+}
