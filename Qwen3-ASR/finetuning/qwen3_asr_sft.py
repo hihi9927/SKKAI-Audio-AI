@@ -88,6 +88,17 @@ def find_latest_checkpoint(output_dir: str) -> Optional[str]:
     return best_path
 
 
+def resolve_audio(path: str, base_dir: str) -> str:
+    """상대 audio 경로를 매니페스트(jsonl) 위치 기준으로 절대경로화한다.
+
+    매니페스트에 절대경로를 박으면 머신이 바뀔 때마다 전부 재작성해야 한다. 상대경로로
+    두되 **CWD 가 아니라 jsonl 자신의 위치** 를 기준으로 푸는 이유는, 같은 매니페스트를
+    학습(`finetuning/` 에서 실행)과 평가(리포 루트에서 실행)가 함께 읽기 때문이다.
+    이미 절대경로인 값은 손대지 않아 기존 매니페스트와 호환된다.
+    """
+    return path if os.path.isabs(path) else os.path.normpath(os.path.join(base_dir, path))
+
+
 def load_audio(path: str, sr: int = 16000):
     wav, _ = librosa.load(path, sr=sr, mono=True)
     return wav
@@ -515,6 +526,15 @@ def main():
             **({"validation": args_cli.eval_file} if args_cli.eval_file else {}),
         },
     )
+    # audio 가 상대경로면 그 jsonl 이 놓인 디렉터리 기준으로 푼다. 절대경로는 그대로 둬
+    # 기존 매니페스트(KSponSpeech 등)와 무음 데이터셋이 영향받지 않는다.
+    for _split, _src in (("train", args_cli.train_file), ("validation", args_cli.eval_file)):
+        if _split in raw_ds and _src:
+            _base = os.path.dirname(os.path.abspath(_src))
+            raw_ds[_split] = raw_ds[_split].map(
+                lambda ex, b=_base: {"audio": resolve_audio(ex["audio"], b)}
+            )
+
     ds = raw_ds.map(
         make_preprocess_fn_with_features(processor, sampling_rate=args_cli.sr),
         remove_columns=raw_ds["train"].column_names,
