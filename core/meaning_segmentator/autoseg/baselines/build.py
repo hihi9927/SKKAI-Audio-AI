@@ -28,21 +28,32 @@ from core.meaning_segmentator.autoseg.baselines import (  # noqa: E402
 SPACED = {"de": True, "es": True, "ja": False, "zh": False, "ko": True}
 
 
-def load_rows(run_dir: Path, label: str, split: str) -> list[dict]:
-    ev = json.loads((run_dir / "prompt_eval" / f"{label}_{split}.json"
-                     ).read_text(encoding="utf-8"))
-    return [{"id": r["id"], "text": r["text"]} for r in ev["rows"]]
+def load_rows(run_dir: Path, label: str, split: str,
+              dataset: str = "fleurs", tag: str = "", tgt: str = "de") -> list[dict]:
+    """평가 문장 목록.
+
+    `prompt_eval/<label>_<split>.json`(제안 정책 산출)이 있으면 **그 순서를 그대로** 따른다 —
+    조건들이 같은 인덱스를 공유해야 `bleu_eval` 이 쌍체 비교를 할 수 있다.
+
+    없으면 매니페스트에서 직접 읽는다. 비교군은 제안 라벨과 무관하므로, 라벨링을 다른
+    환경에서 하는 동안에도 비교군을 먼저 만들어 둘 수 있다.
+    """
+    ev_path = run_dir / "prompt_eval" / f"{label}_{split}.json"
+    if ev_path.exists():
+        ev = json.loads(ev_path.read_text(encoding="utf-8"))
+        return [{"id": r["id"], "text": r["text"]} for r in ev["rows"]]
+
+    from core.meaning_segmentator.autoseg.baselines import datasets as _ds
+
+    print(f"  ({ev_path.name} 없음 — 매니페스트에서 문장을 읽는다)")
+    return [{"id": k, "text": e.src}
+            for k, e in _ds.get(dataset).entries(tag, tgt).items()]
 
 
-def load_refs(tag: str, tgt: str) -> dict[str, str]:
-    path = (_REPO_ROOT / "evaluation" / "ast" / "manifests"
-            / f"fleurs_nway_en-{tgt}_{tag}.jsonl")
-    out = {}
-    with path.open(encoding="utf-8") as f:
-        for line in f:
-            e = json.loads(line)
-            out[e["utt_id"]] = e["tgt_text"]
-    return out
+def load_refs(tag: str, tgt: str, dataset: str = "fleurs") -> dict[str, str]:
+    from core.meaning_segmentator.autoseg.baselines import datasets as _ds
+
+    return {k: e.ref for k, e in _ds.get(dataset).entries(tag, tgt).items()}
 
 
 def run_policy(policy: str, rows: list[dict], tgt: str, args) -> list[dict]:
@@ -54,7 +65,7 @@ def run_policy(policy: str, rows: list[dict], tgt: str, args) -> list[dict]:
             out.append({**r, "pieces": punct.segment(r["text"])})
 
     elif policy == "causal_align":
-        refs = load_refs(args.manifest_tag, tgt)
+        refs = load_refs(args.manifest_tag, tgt, args.dataset)
         aligner = causal_align.CausalAligner(device=args.device)
         skipped = 0
         for i, r in enumerate(rows):
@@ -118,6 +129,7 @@ def main() -> int:
     p.add_argument("--label", default="auto_best")
     p.add_argument("--split", default="test")
     p.add_argument("--manifest-tag", default="clean500")
+    p.add_argument("--dataset", default="fleurs", choices=["fleurs", "covost2"])
     p.add_argument("--device", default="cuda")
     p.add_argument("--n-cands", type=int, default=10, help="Zhang 2020 beam 후보 수")
     p.add_argument("--f", type=int, default=2, help="AlignAtt 노브 — 최근 f 어절")
@@ -127,7 +139,8 @@ def main() -> int:
     args = p.parse_args()
 
     run_dir = _HERE.parents[1] / "runs" / args.run_id
-    rows = load_rows(run_dir, args.label, args.split)
+    rows = load_rows(run_dir, args.label, args.split,
+                     args.dataset, args.manifest_tag, args.targets[0])
     if args.limit:
         rows = rows[: args.limit]
     out_dir = run_dir / "baselines"

@@ -37,13 +37,17 @@ _ap = argparse.ArgumentParser(description="품질–지연 곡선")
 _ap.add_argument("--metric", default="bleu", choices=["bleu", "comet"],
                  help="y축 품질 지표. comet 은 `comet_score.py` 를 먼저 돌려야 한다")
 _ap.add_argument("--out", default=None, help="출력 파일 stem (기본: tradeoff[_comet])")
+_ap.add_argument("--run-id", default="en-multi/clean500")
+_ap.add_argument("--targets", nargs="+", default=["de", "ja"])
+_ap.add_argument("--title", default="unseen FLEURS 500")
 ARGS = _ap.parse_args()
 M = ARGS.metric
 STEM = ARGS.out or ("tradeoff" if M == "bleu" else f"tradeoff_{M}")
 
-d = Path("core/meaning_segmentator/runs/en-multi/clean500/bleu")
+d = Path("core/meaning_segmentator/runs") / ARGS.run_id / "bleu"
+TARGETS = ARGS.targets
 blobs = {t: json.loads((d / f"{t}.json").read_text(encoding="utf-8"))
-         for t in ("de", "ja")}
+         for t in TARGETS}
 missing = [t for t, b in blobs.items()
            if any(M not in c for c in b["conditions"].values())]
 if missing:
@@ -55,9 +59,9 @@ plt.rcParams.update({
     "text.color": INK, "axes.labelcolor": INK2, "axes.edgecolor": GRID,
     "xtick.color": INK2, "ytick.color": INK2, "axes.linewidth": 0.8,
 })
-fig = plt.figure(figsize=(10.6, 6.0))
+fig = plt.figure(figsize=(5.5 * len(TARGETS) if len(TARGETS) > 1 else 6.4, 6.0))
 # COMET 은 눈금 라벨이 넓고(0.850) 부제가 한 줄 길어 여백을 더 준다.
-gs = GridSpec(2, 2, figure=fig, height_ratios=[7, 1], hspace=0.10, wspace=0.22,
+gs = GridSpec(2, len(TARGETS), figure=fig, height_ratios=[7, 1], hspace=0.10, wspace=0.22,
               left=0.095 if M == "comet" else 0.075, right=0.985,
               top=0.815 if M == "comet" else 0.845, bottom=0.20)
 
@@ -69,7 +73,7 @@ def curve(C, prefix):
     return sorted(pts)
 
 
-for col, tgt in enumerate(("de", "ja")):
+for col, tgt in enumerate(TARGETS):
     C = blobs[tgt]["conditions"]
     hi = fig.add_subplot(gs[0, col])       # 관심 구간
     lo = fig.add_subplot(gs[1, col], sharex=hi)   # 하한만
@@ -145,7 +149,7 @@ h2, l2 = fig.axes[1].get_legend_handles_labels()
 fig.legend(h + h2, l + l2, loc="lower center", ncol=3, frameon=False, fontsize=8,
            handletextpad=0.5, columnspacing=1.8, bbox_to_anchor=(0.5, 0.012))
 fig.text(0.008, 0.985, f"{'BLEU' if M == 'bleu' else 'COMET'}–latency trade-off on "
-         "unseen FLEURS 500 (same translator, gtx; T = 4/6/8/12 per curve)",
+         f"{ARGS.title} (same translator, gtx; T = 4/6/8/12 per curve)",
          ha="left", va="top", fontsize=12.5, fontweight="bold")
 fig.text(0.008, 0.945,
          "Upper-left is better. LAAL is forced-aligned (Qwen3-ForcedAligner; wav2vec2 CTC "
@@ -154,7 +158,10 @@ fig.text(0.008, 0.945,
          + ("BLEU is NOT comparable across panels (de 13a, ja ja-mecab)."
             if M == "bleu" else
             "COMET uses one multilingual encoder, so panels are far more comparable "
-            "than under BLEU — but it stays reference-based."),
+            "than under BLEU — but it stays reference-based.")
+         if len(TARGETS) > 1 else
+         ("BLEU tokenisation: " + blobs[TARGETS[0]]["tokenize"] if M == "bleu"
+          else "COMET: wmt22-comet-da (reference-based)."),
          ha="left", va="top", fontsize=7.5, color=INK2, linespacing=1.6)
 fig.savefig(d / f"{STEM}.png", dpi=200, facecolor=SURFACE)
 fig.savefig(d / f"{STEM}.pdf", facecolor=SURFACE)

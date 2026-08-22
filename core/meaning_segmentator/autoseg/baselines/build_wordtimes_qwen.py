@@ -25,6 +25,8 @@ _HERE = Path(__file__).resolve().parent
 _REPO_ROOT = _HERE.parents[3]
 sys.path.insert(0, str(_REPO_ROOT))
 
+from core.meaning_segmentator.autoseg.baselines import datasets as _ds  # noqa: E402
+
 ALIGNER = "Qwen/Qwen3-ForcedAligner-0.6B"
 _WS = re.compile(r"\s+")
 
@@ -81,6 +83,8 @@ def to_word_ends(items, text: str, dur_s: float) -> list[float]:
 def main() -> int:
     p = argparse.ArgumentParser(description="Qwen 강제정렬 어절 타임스탬프")
     p.add_argument("--tag", default="clean500")
+    p.add_argument("--dataset", default="fleurs", choices=["fleurs", "covost2"])
+    p.add_argument("--ref-tgt", default="de", help="매니페스트를 고르기 위한 타깃")
     p.add_argument("--lang-dir", default="en_us")
     p.add_argument("--batch", type=int, default=8)
     p.add_argument("--limit", type=int, default=0)
@@ -88,29 +92,9 @@ def main() -> int:
 
     from qwen_asr.inference.qwen3_forced_aligner import Qwen3ForcedAligner
 
-    base = Path.home() / "datasets" / "fleurs" / "data" / args.lang_dir
-    man_dir = _REPO_ROOT / "evaluation" / "ast" / "manifests"
-    entries = []
-    with (man_dir / f"fleurs_nway_en-de_{args.tag}.jsonl").open(encoding="utf-8") as f:
-        for line in f:
-            e = json.loads(line)
-            entries.append((str(e["talk_id"]), e["src_text"], e["fleurs_split"]))
-    if args.limit:
-        entries = entries[: args.limit]
-
-    tsv = {s: load_tsv(base, s) for s in ("train", "dev", "test")}
+    jobs = _ds.alignment_jobs(args.dataset, args.tag, args.ref_tgt, args.limit)
     al = Qwen3ForcedAligner.from_pretrained(ALIGNER, device_map="cuda:0",
                                             dtype=torch.bfloat16)
-
-    jobs = []
-    for tid, text, split in entries:
-        recs = sorted(tsv.get(split, {}).get(tid, []), key=lambda r: r[1])
-        if not recs:
-            continue
-        wav, n = recs[len(recs) // 2]
-        path = base / "audio" / split / wav
-        if path.exists():
-            jobs.append((tid, text, split, wav, n, str(path)))
 
     out: dict[str, dict] = {}
     fails: list[str] = []
@@ -118,21 +102,20 @@ def main() -> int:
     for i in range(0, len(jobs), args.batch):
         chunk = jobs[i: i + args.batch]
         try:
-            res = al.align(audio=[c[5] for c in chunk],
+            res = al.align(audio=[str(c[2]) for c in chunk],
                            text=[c[1] for c in chunk],
                            language=["English"] * len(chunk))
         except Exception as exc:                       # noqa: BLE001
             fails += [f"{c[0]}:{type(exc).__name__}" for c in chunk]
             continue
         for c, r in zip(chunk, res):
-            tid, text, split, wav, n, _ = c
-            dur_s = n / 16000
+            key, text, wav, dur_ms = c
             try:
-                ends = to_word_ends(list(r), text, dur_s)
+                ends = to_word_ends(list(r), text, dur_ms / 1000)
             except Exception as exc:                   # noqa: BLE001
-                fails.append(f"{tid}:{type(exc).__name__}")
+                fails.append(f"{key}:{type(exc).__name__}")
                 continue
-            out[tid] = {"wav": wav, "split": split, "dur_ms": dur_s * 1000,
+            out[key] = {"wav": wav.name, "dur_ms": dur_ms,
                         "word_end_ms": [round(e * 1000, 1) for e in ends]}
         done = i + len(chunk)
         if done % 80 == 0 or done >= len(jobs):
@@ -140,7 +123,7 @@ def main() -> int:
             print(f"  {done}/{len(jobs)}  {el:.0f}s  "
                   f"ETA {el / done * (len(jobs) - done) / 60:.1f}m", flush=True)
 
-    dest = man_dir / f"fleurs_nway_en_{args.tag}_wordtimes_qwen.json"
+    dest = _ds.get(args.dataset).wordtimes_path(args.tag, "qwen")
     dest.write_text(json.dumps(out, ensure_ascii=False), encoding="utf-8")
     print(f"정렬 성공 {len(out)}/{len(jobs)}, 실패 {len(fails)}")
     if fails:

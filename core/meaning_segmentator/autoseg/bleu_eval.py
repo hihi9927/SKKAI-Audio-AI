@@ -30,6 +30,7 @@ import sacrebleu
 
 from . import data, metrics
 from .baselines import coarsen
+from .baselines import datasets as _ds
 from .pipeline import GoogleTranslator, JsonCache, split_segments, to_lang_code
 
 _HERE = Path(__file__).resolve().parent
@@ -43,44 +44,13 @@ TGT_NAME = {"de": "German", "ja": "Japanese", "zh": "Chinese", "ko": "Korean", "
 SPACED = {"de": True, "es": True, "ja": False, "zh": False, "ko": True}
 
 
-def load_refs(tag: str, tgt: str) -> dict[str, str]:
-    return {k: v[0] for k, v in load_manifest(tag, tgt).items()}
+def load_refs(tag: str, tgt: str, dataset: str = "fleurs") -> dict[str, str]:
+    return {k: e.ref for k, e in _ds.get(dataset).entries(tag, tgt).items()}
 
 
-def load_manifest(tag: str, tgt: str) -> dict[str, tuple[str, str]]:
-    """utt_id → (참조 번역, talk_id). talk_id 로 FLEURS TSV 의 발화 길이를 찾는다."""
-    path = (_REPO_ROOT / "evaluation" / "ast" / "manifests"
-            / f"fleurs_nway_en-{tgt}_{tag}.jsonl")
-    out = {}
-    with path.open(encoding="utf-8") as f:
-        for line in f:
-            e = json.loads(line)
-            out[e["utt_id"]] = (e["tgt_text"], str(e.get("talk_id", "")))
-    return out
-
-
-def load_durations(src_lang_dir: str = "en_us") -> dict[str, float]:
-    """FLEURS TSV 6번 열(샘플 수) → 발화 길이 ms. 오디오 파일은 필요 없다.
-
-    한 문장 id 에 화자별 녹음이 여러 개라 **중앙값**을 쓴다. 16kHz 고정.
-    """
-    base = Path.home() / "datasets" / "fleurs" / "data" / src_lang_dir
-    by_id: dict[str, list[float]] = {}
-    for split in ("train", "dev", "test"):
-        f = base / f"{split}.tsv"
-        if not f.exists():
-            continue
-        with f.open(encoding="utf-8") as fh:
-            for line in fh:
-                c = line.rstrip("\n").split("\t")
-                if len(c) < 6 or not c[5].isdigit():
-                    continue
-                by_id.setdefault(c[0], []).append(int(c[5]) / 16000.0 * 1000.0)
-    return {k: statistics.median(v) for k, v in by_id.items()}
-
-
-def load_wordtimes(tag: str, source: str) -> dict[str, list[float]]:
-    """talk_id → 어절 종료 시각(ms). 강제정렬 산출물.
+def load_wordtimes(tag: str, source: str,
+                   dataset: str = "fleurs") -> dict[str, list[float]]:
+    """조회 키 → 어절 종료 시각(ms). 강제정렬 산출물.
 
     `interp` 는 타임스탬프 없이 발화 내 균일 발화속도로 보간하던 옛 방식이다 —
     실측 대비 도입부 묵음을 통째로 놓친다(17어절 7.4초 문장에서 첫 어절 실측 1.80s
@@ -88,9 +58,7 @@ def load_wordtimes(tag: str, source: str) -> dict[str, list[float]]:
     """
     if source == "interp":
         return {}
-    suffix = "" if source == "ctc" else f"_{source}"
-    path = (_REPO_ROOT / "evaluation" / "ast" / "manifests"
-            / f"fleurs_nway_en_{tag}_wordtimes{suffix}.json")
+    path = _ds.get(dataset).wordtimes_path(tag, source)
     blob = json.loads(path.read_text(encoding="utf-8"))
     return {k: v["word_end_ms"] for k, v in blob.items()}
 
@@ -168,18 +136,20 @@ def paired_bootstrap(hyp_a: list[str], hyp_b: list[str], refs: list[str],
 
 
 def build_conditions(rows: list[dict], t_grid: list[int], spaced: bool,
-                     mech_every: int) -> dict[str, list[dict]]:
+                     mech_every: int, has_auto: bool = True) -> dict[str, list[dict]]:
     """조건 이름 → 문장별 {seg_text, pieces}. pieces 가 1개면 무분절과 같다."""
     out: dict[str, list[dict]] = {}
     out["unsegmented"] = [{"seg_text": r["text"], "pieces": [r["text"]]} for r in rows]
-    for T in t_grid:
-        key = str(T)
-        cond = []
-        for r in rows:
-            cell = r["by_T"][key]
-            cond.append({"seg_text": cell["seg_text"], "pieces": cell["pieces_src"]})
-        out[f"auto_T{T}"] = cond
-    for T in t_grid:
+    if has_auto:
+        for T in t_grid:
+            key = str(T)
+            cond = []
+            for r in rows:
+                cell = r["by_T"][key]
+                cond.append({"seg_text": cell["seg_text"],
+                             "pieces": cell["pieces_src"]})
+            out[f"auto_T{T}"] = cond
+    for T in (t_grid if has_auto else []):
         cond = []
         for r in rows:
             all_pieces = split_segments(r["seg_text"]) or [r["text"]]
@@ -235,6 +205,10 @@ def main() -> int:
     p.add_argument("--split", default="test")
     p.add_argument("--targets", nargs="+", default=["de", "ja", "zh"])
     p.add_argument("--manifest-tag", default="clean500")
+    p.add_argument("--dataset", default="fleurs", choices=["fleurs", "covost2"],
+                   help="매니페스트·발화 길이·오디오를 어디서 읽을지")
+    p.add_argument("--src-spaced", type=int, default=1,
+                   help="measured_profile.json 이 없을 때 쓸 소스 띄어쓰기 여부")
     p.add_argument("--t-grid", type=int, nargs="+", default=[4, 6, 8, 12])
     p.add_argument("--mech-every", type=int, default=8)
     p.add_argument("--workers", type=int, default=4, help="gtx 는 비공식 엔드포인트 — 낮게 둔다")
@@ -250,16 +224,26 @@ def main() -> int:
     args = p.parse_args()
 
     run_dir = _HERE.parent / "runs" / args.run_id
-    cfg = json.loads((run_dir / "config.json").read_text(encoding="utf-8"))
-    spaced = bool(json.loads((run_dir / "measured_profile.json").read_text(
-        encoding="utf-8"))["uses_spaces_between_words"])
+    cfg_path = run_dir / "config.json"
+    cfg = json.loads(cfg_path.read_text(encoding="utf-8")) if cfg_path.exists() else {}
+    prof = run_dir / "measured_profile.json"
+    spaced = (bool(json.loads(prof.read_text(encoding="utf-8"))
+                   ["uses_spaces_between_words"]) if prof.exists() else args.src_spaced)
 
-    ev = json.loads((run_dir / "prompt_eval" / f"{args.label}_{args.split}.json"
-                     ).read_text(encoding="utf-8"))
-    rows = ev["rows"]
-    print(f"분절 출처: {args.label}_{args.split}.json ({len(rows)}문장), 소스 띄어쓰기 {spaced}")
+    # 제안 라벨이 없어도 비교군만으로 돌 수 있어야 한다 — 라벨링을 다른 환경에서 하는
+    # 동안 나머지 파이프라인을 검증하고 번역 캐시를 미리 채워 두기 위한 것이다.
+    ev_path = run_dir / "prompt_eval" / f"{args.label}_{args.split}.json"
+    has_auto = ev_path.exists()
+    if has_auto:
+        rows = json.loads(ev_path.read_text(encoding="utf-8"))["rows"]
+        print(f"분절 출처: {ev_path.name} ({len(rows)}문장), 소스 띄어쓰기 {spaced}")
+    else:
+        ents = _ds.get(args.dataset).entries(args.manifest_tag, args.targets[0])
+        rows = [{"id": k, "text": e.src} for k, e in ents.items()]
+        print(f"⚠ {ev_path.name} 없음 — 비교군만 평가한다 "
+              f"({len(rows)}문장, 소스 띄어쓰기 {spaced})")
 
-    conds = build_conditions(rows, args.t_grid, spaced, args.mech_every)
+    conds = build_conditions(rows, args.t_grid, spaced, args.mech_every, has_auto)
 
     out_dir = run_dir / "bleu"
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -269,10 +253,9 @@ def main() -> int:
         code = to_lang_code(TGT_NAME[tgt])
         tgt_spaced = SPACED[tgt]
         tokenize = M.resolve_tokenize(tgt)
-        man = load_manifest(args.manifest_tag, tgt)
-        refs_map = {k: v[0] for k, v in man.items()}
-        durs = load_durations()
-        wtimes = load_wordtimes(args.manifest_tag, args.wordtimes)
+        man = _ds.get(args.dataset).entries(args.manifest_tag, tgt)
+        refs_map = {k: e.ref for k, e in man.items()}
+        wtimes = load_wordtimes(args.manifest_tag, args.wordtimes, args.dataset)
         tgt_unit = "word" if tgt_spaced else "char"
         ids = [r["id"] for r in rows]
         missing = [i for i in ids if i not in refs_map]
@@ -313,10 +296,10 @@ def main() -> int:
                         for j, i in enumerate(keep)]
                 laal_ms_vals = []
                 for j, i in enumerate(keep):
-                    d = durs.get(man[ids[i]][1])
+                    d = man[ids[i]].dur_ms
                     v = laal_ms(pieces_all[j], per_piece[j], d or 0.0,
                                 refs[j], spaced, tgt_unit,
-                                wtimes.get(man[ids[i]][1]))
+                                wtimes.get(man[ids[i]].key))
                     if v is not None:
                         laal_ms_vals.append(v)
                 bleu, sig = M.corpus_bleu_score(hyps, refs, tokenize)

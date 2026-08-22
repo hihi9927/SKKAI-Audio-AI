@@ -25,7 +25,7 @@ _REPO_ROOT = _HERE.parents[3]
 sys.path.insert(0, str(_REPO_ROOT))
 
 from core.meaning_segmentator.autoseg import metrics  # noqa: E402
-from core.meaning_segmentator.autoseg.bleu_eval import load_refs  # noqa: E402
+from core.meaning_segmentator.autoseg.baselines import datasets as _ds  # noqa: E402
 
 
 def main() -> int:
@@ -35,15 +35,23 @@ def main() -> int:
     p.add_argument("--label", default="auto_best")
     p.add_argument("--split", default="test")
     p.add_argument("--manifest-tag", default="clean500")
+    p.add_argument("--dataset", default="fleurs", choices=["fleurs", "covost2"])
     p.add_argument("--model", default="Unbabel/wmt22-comet-da")
     p.add_argument("--batch-size", type=int, default=64)
     args = p.parse_args()
 
     run_dir = _HERE.parents[1] / "runs" / args.run_id
-    ev = json.loads((run_dir / "prompt_eval" / f"{args.label}_{args.split}.json"
-                     ).read_text(encoding="utf-8"))
-    ids = [r["id"] for r in ev["rows"]]
-    srcs_by_id = {r["id"]: r["text"] for r in ev["rows"]}
+    ev_path = run_dir / "prompt_eval" / f"{args.label}_{args.split}.json"
+    if ev_path.exists():
+        ev = json.loads(ev_path.read_text(encoding="utf-8"))
+        ids = [r["id"] for r in ev["rows"]]
+        srcs_by_id = {r["id"]: r["text"] for r in ev["rows"]}
+    else:
+        # 제안 라벨이 아직 없으면 매니페스트 순서를 따른다 — `bleu_eval` 과 같은 규칙이라
+        # 조건별 `hyps` 의 인덱스가 어긋나지 않는다.
+        ents = _ds.get(args.dataset).entries(args.manifest_tag, args.targets[0])
+        ids = list(ents)
+        srcs_by_id = {k: e.src for k, e in ents.items()}
 
     backend = metrics.CometBackend(model_name=args.model, batch_size=args.batch_size)
     out_dir = run_dir / "bleu"
@@ -51,7 +59,8 @@ def main() -> int:
     for tgt in args.targets:
         path = out_dir / f"{tgt}.json"
         blob = json.loads(path.read_text(encoding="utf-8"))
-        refs_map = load_refs(args.manifest_tag, tgt)
+        refs_map = {k: e.ref for k, e
+                    in _ds.get(args.dataset).entries(args.manifest_tag, tgt).items()}
         keep = [i for i in ids if i in refs_map]
         srcs = [srcs_by_id[i] for i in keep]
         refs = [refs_map[i] for i in keep]
