@@ -325,9 +325,14 @@ class _NliBase:
             key = (self.model_name, self.device)
             if key not in _NliBase._PIPES:
                 from transformers import pipeline
+                # **truncation 을 반드시 켠다.** xlm-roberta 의 위치 임베딩은 514 라
+                # 긴 문장(어절 40+)에서 premise+hypothesis 가 그 한계를 넘으면
+                # 조용한 오차가 아니라 RuntimeError 로 런이 죽는다 (clean500 실측:
+                # 875 토큰). 잘린 뒤쪽은 어차피 모델이 못 보던 구간이다.
                 _NliBase._PIPES[key] = pipeline(
                     "text-classification", model=self.model_name,
-                    device=self.device, top_k=None)
+                    device=self.device, top_k=None,
+                    truncation=True, max_length=512)
             self._pipe = _NliBase._PIPES[key]
         return self._pipe
 
@@ -507,9 +512,20 @@ class SplitMetrics:
     rank_contra_gap_se: float | None = None
     rank_contra_gap_n: int | None = None
     # 다언어 목적함수에서만 채워진다. `effective` 는 **타깃별 원값의 평균**이라 해석·비교가
-    # 되고, `effective_z` 는 타깃별 z-정규화 후 평균이라 0 중심이지만 검출력이 높다
-    # (실측 se −40%). **보고는 effective, 채택 판정은 effective_z** 로 축을 나눈다 —
-    # z 는 그 분할 안에서만 정의되므로 런 간·분할 간 비교에 쓰면 안 된다.
+    # 되고, `effective_z` 는 **분할별로 고정된 기준선**으로 타깃별 z-정규화한 뒤 평균한
+    # 값이다 (`loop._zmix`). **보고는 effective, 채택 판정은 effective_z** 로 축을 나눈다.
+    #
+    # 기준선을 평가마다 다시 잡으면 안 된다 — z 평균이 항상 0 이 되어 쌍체 Δ 가 항등적
+    # 으로 0 이 되거나(세트 일치), 서로 다른 문장 추출이 만든 오프셋이 Δ 로 새어 나온다
+    # (세트 불일치). run05 에서 둘 다 실제로 일어났다: dev Δ = +0.00000 ±0.06408,
+    # train Δ = +0.14897 (기준선 고정 시 +0.08867). `loop._zmix` 참고.
+    #
+    # 이득은 **타깃 분산 동등 가중**이지 무조건적인 se 감소가 아니다. run05 test 실측
+    # 타깃별 raw se: ko 0.0105 / ja 0.0160 / zh 0.0177 / es 0.0174 / de 0.0179.
+    # 5타깃 raw 평균의 se 는 0.0120 — 평균적 타깃 대비 −25% 지만 **가장 조용한 타깃
+    # (ko) 단독보다는 14% 나쁘다.** 오프라인 예측 −40% 는 평균 타깃 기준이었다.
+    #
+    # 기준선이 분할마다 다르므로 **런 간·분할 간 절대값 비교에 쓰면 안 된다.**
     effective_z: float | None = None
     n_targets: int | None = None
 
@@ -524,6 +540,24 @@ class Metrics:
     format_pass_rate: float
     format_pass_rate_no_retry: float
     by_T: dict[str, SplitMetrics] = field(default_factory=dict)
+    # ── 순위 축 진단 (`rank_lift`) ────────────────────────────────────────
+    # **순위를 무작위로 섞었을 때 effective 가 얼마나 떨어지는가.** 절단기가 순위를 쓰는
+    # 곳은 keep-vs-discard 한 군데뿐이므로, 그 결정만 망가뜨려 값을 재는 것이 순위축의
+    # 직접 측정이다. 폐기된 경계는 렌더링이 없어 contra 값 자체가 없으므로
+    # `rank_contra_gap`(생존 경계끼리의 순서)으로는 원리적으로 못 보는 양이다.
+    #
+    # 실측 (metric_probes/runs/rank_ablation/, en-de run04 + ko-en run05, 셔플 20회):
+    #   폐기율 64% → lift +0.024,  82% → +0.050,  85% → +0.056,  93% → +0.061
+    #   real 이 20/20 셔플을 이겼고(순열 p=0.048), 같은 조건에서 `rank_contra_gap` 은
+    #   en-de 에서 오히려 무작위보다 낮게(z −0.6, −1.1) 나왔다 — 부호가 언어쌍마다 뒤집힌다.
+    #
+    # **가장 큰 T 에서 잰다.** 순위의 값은 폐기율과 함께 커지므로 거기가 가장 민감하다.
+    # 셔플 1회면 충분하다 — 최대 T 에서 오작동 0/40 (작은 T 에서는 4/20 로 무너진다).
+    rank_lift: float | None = None
+    rank_lift_se: float | None = None
+    rank_lift_t: float | None = None
+    rank_lift_n: int | None = None
+    rank_lift_T: int | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -532,6 +566,11 @@ class Metrics:
             "format_pass_rate_no_retry": round(self.format_pass_rate_no_retry, 4),
             "by_T": {k: v.to_dict() for k, v in self.by_T.items()},
             "score": round(score(self), 4),
+            "rank_lift": self.rank_lift,
+            "rank_lift_se": self.rank_lift_se,
+            "rank_lift_t": self.rank_lift_t,
+            "rank_lift_n": self.rank_lift_n,
+            "rank_lift_T": self.rank_lift_T,
         }
 
     def at(self, T: int) -> SplitMetrics | None:
@@ -864,6 +903,27 @@ def paired_delta(new_rows: list[dict], best_rows: list[dict],
         se = 0.0
     return {"mean_delta": round(mean_d, 5), "se_delta": round(se, 5),
             "n_pairs": len(deltas), "n_changed": changed}
+
+
+def rank_lift(real: list[float | None], shuffled: list[float | None]) -> dict:
+    """순위를 무작위로 섞었을 때 잃는 `effective` — 문장별 쌍체.
+
+    `paired_delta` 와 같은 계산이지만 입력이 **행이 아니라 문장별 값 두 벌**이다.
+    비교 대상이 다른 프롬프트가 아니라 **같은 프롬프트의 순위를 망가뜨린 대조군**이라
+    id 매칭이 필요 없고, 같은 문장·같은 조각 수·같은 후보 집합이므로 쌍체가 정확하다.
+
+    **se 는 실제 산포를 15~25% 과소평가한다** — 어느 순열을 뽑았는지의 무작위성이 이
+    공식에 안 잡히기 때문이다 (실측: 자체 se 0.0168 vs 셔플 190쌍의 산포 0.0210).
+    `t` 를 절대적으로 읽지 말 것. 문턱은 실측 발화율로 잡았다 (agents.RANK_LIFT_T_MIN).
+    """
+    d = [a - b for a, b in zip(real, shuffled) if a is not None and b is not None]
+    if len(d) < 2:
+        return {"lift": None, "se": None, "t": None, "n": len(d)}
+    mean_d = sum(d) / len(d)
+    var = sum((x - mean_d) ** 2 for x in d) / len(d)
+    se = (var / len(d)) ** 0.5
+    return {"lift": round(mean_d, 5), "se": round(se, 5),
+            "t": round(mean_d / se, 2) if se else None, "n": len(d)}
 
 
 def mechanical_split(text: str, every: int, spaced: bool) -> str:

@@ -1,0 +1,24 @@
+분절 출처: auto_best_test.json (20문장), 소스 띄어쓰기 True
+[de] unsegmented      BLEU  41.58  chrF2  67.33  k  1.00  laal 17.20
+[de] auto_T4          BLEU  23.07  chrF2  57.91  k  4.40  laal  2.91
+[de] auto_T6          BLEU  26.64  chrF2  60.15  k  3.20  laal  3.96
+[de] auto_T8          BLEU  33.37  chrF2  62.27  k  2.55  laal  4.79
+[de] auto_T12         BLEU  36.05  chrF2  64.58  k  2.10  laal  5.54
+[de] mechanical_8     BLEU   4.82  chrF2  35.40  k 12.75  laal  1.58
+[de] gtx 컨텍스트 줄수 불일치 0건 → /home/mobility/STiTy/core/meaning_segmentator/runs/en-multi/clean_smoke/bleu/de.json
+[ja] unsegmented      BLEU  42.53  chrF2  48.96  k  1.00  laal 17.20
+[ja] auto_T4          BLEU  19.86  chrF2  30.13  k  4.40  laal  6.58
+[ja] auto_T6          BLEU  26.55  chrF2  36.34  k  3.20  laal  7.36
+[ja] auto_T8          BLEU  31.12  chrF2  40.39  k  2.55  laal  8.07
+[ja] auto_T12         BLEU  33.89  chrF2  42.88  k  2.10  laal  8.42
+[ja] mechanical_8     BLEU   1.91  chrF2  12.65  k 12.75  laal  6.62
+[ja] gtx 컨텍스트 줄수 불일치 0건 → /home/mobility/STiTy/core/meaning_segmentator/runs/en-multi/clean_smoke/bleu/ja.json
+[zh] unsegmented      BLEU  50.74  chrF2  46.47  k  1.00  laal 17.20
+[zh] auto_T4          BLEU  31.58  chrF2  28.87  k  4.40  laal  5.48
+[zh] auto_T6          BLEU  37.33  chrF2  34.05  k  3.20  laal  6.35
+[zh] auto_T8          BLEU  41.80  chrF2  37.76  k  2.55  laal  7.09
+[zh] auto_T12         BLEU  43.85  chrF2  39.85  k  2.10  laal  7.55
+[zh] mechanical_8     BLEU   6.50  chrF2  10.74  k 12.75  laal  3.89
+[zh] gtx 컨텍스트 줄수 불일치 0건 → /home/mobility/STiTy/core/meaning_segmentator/runs/en-multi/clean_smoke/bleu/zh.json
+
+/home/mobility/STiTy/core/meaning_segmentator/runs/en-multi/clean_smoke/bleu/report.md

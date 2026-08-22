@@ -169,11 +169,21 @@ _FOCUS_SECTIONS = {
                "[Examples — Segment]", "[Examples — Do NOT Segment]"},
 }
 
+# **신뢰 영역의 하한**이다 (수렴 상태에서의 허용 폭). 상한은 `TRUST_*`.
 MAX_SECTIONS_CHANGED = 2
 MAX_SECTION_GROWTH = 1.25
 
+# 아직 아무 개정도 채택되지 않은 상태의 허용 폭. 걸음이 통하면 넓히고 나쁘면 좁힌다
+# (`loop.py` 의 trust region). 고정 임계값 하나로는 **부트스트랩**(v0 가 구조적으로 틀려
+# 큰 수리가 필요)과 **수렴**(진동을 막아야 함)을 구별할 수 없다 — de/zh/ja 실측에서
+# 세 언어 모두 개정이 거부됐고 둘은 1.25 를 0.01~0.06 초과한 것이었다.
+TRUST_SECTIONS_MAX = 4
+TRUST_GROWTH_MAX = 2.5
 
-def check_revision(old: str, new: str, focus: str | None = None) -> list[str]:
+
+def check_revision(old: str, new: str, focus: str | None = None,
+                   max_sections: int | None = None,
+                   max_growth: float | None = None) -> list[str]:
     """개정본이 **국소적인지** 검사하는 하드 게이트. 위반 사유 목록을 돌려준다.
 
     종전에는 "AT MOST TWO sections", "focus 를 따르라" 가 전부 지시문상의 권고였고,
@@ -184,7 +194,21 @@ def check_revision(old: str, new: str, focus: str | None = None) -> list[str]:
         se 가 0.007~0.009 로 커졌다
     그 결과 dev 까지 간 개정 3건이 **전부 음수**(t = −0.8 ~ −3.2)로 기각됐다. 채택 문턱이
     아니라 개정 품질이 원인이므로, 범위를 코드로 강제한다.
+
+    **다만 고정 임계값은 두 상황을 구별하지 못한다.** 위 사례는 *이미 수렴한 상태에서의
+    대규모 재작성*이고, 새 소스 언어의 v0 는 반대로 *구조적으로 틀린 출발점*이라 큰 수리가
+    필요하다 (zh 실측: `[Never Segment]` 43줄 vs en 7줄). 실제로 de·zh·ja 세 언어에서
+    개정이 전부 거부됐고 그중 둘은 1.25 를 **0.01~0.06** 초과한 것이었다 — 세 언어 모두
+    채택이 v0 하나뿐이라 **루프의 최적화 단계가 한 번도 실행되지 않았다.**
+
+    그래서 `max_sections`/`max_growth` 를 인자로 받는다. 호출자(`loop.py`)가 신뢰 영역으로
+    조절한다 — 개정이 dev 에서 채택되면 넓히고 기각되면 좁힌다. 상한 2.5 에서 기각 1회면
+    2.5/2 = 1.25 로 **곧장 하한**이라, 큰 걸음은 한 번 측정될 기회를 얻고 나쁘면 즉시
+    종전 동작으로 돌아간다. 측정 한 번을 지불하고 배우는 구조이지, 시도를 영구히 막는
+    구조가 아니다 (en run03 의 나쁜 개정도 이 경로로 한 번 재어진 뒤 반경이 닫힌다).
     """
+    max_sections = MAX_SECTIONS_CHANGED if max_sections is None else max_sections
+    max_growth = MAX_SECTION_GROWTH if max_growth is None else max_growth
     problems: list[str] = []
     a, b = split_sections(old), split_sections(new)
     changed = [k for k in b if k in a and a[k] != b[k]]
@@ -192,12 +216,12 @@ def check_revision(old: str, new: str, focus: str | None = None) -> list[str]:
     removed = [k for k in a if k not in b]
     if added or removed:
         problems.append(f"섹션 추가/삭제: +{added} -{removed}")
-    if len(changed) > MAX_SECTIONS_CHANGED:
-        problems.append(f"{len(changed)}개 섹션 변경 — 최대 {MAX_SECTIONS_CHANGED}개 ({changed})")
+    if len(changed) > max_sections:
+        problems.append(f"{len(changed)}개 섹션 변경 — 최대 {max_sections}개 ({changed})")
     for k in changed:
-        if len(a[k]) >= 200 and len(b[k]) > len(a[k]) * MAX_SECTION_GROWTH:
+        if len(a[k]) >= 200 and len(b[k]) > len(a[k]) * max_growth:
             problems.append(f"{k} 가 {len(a[k])} -> {len(b[k])}자 "
-                            f"({len(b[k])/len(a[k]):.2f}배 > {MAX_SECTION_GROWTH})")
+                            f"({len(b[k])/len(a[k]):.2f}배 > {max_growth:.2f})")
     allowed = _FOCUS_SECTIONS.get(focus or "")
     if allowed:
         stray = [k for k in changed if k not in allowed]
@@ -681,18 +705,18 @@ class Critic:
 MISSING_BOUNDARIES_LIMIT = 0.5       # 문장당 평균 부족 경계 수
 PREMATURE_LIMIT = 0.15      # 판정 대상 경계 중 조기 방출 비율
 
-# 순위 진단의 기준점. **이것만 임의 상수가 아니다** — `rank_contra_gap` 은 하위 순위와
-# 상위 순위의 위험 차이라, 순위에 정보가 없으면 기대값이 정확히 0 이다. 0 이하면
-# "상위 경계가 하위와 같거나 더 위험" 이므로 절단이 위험을 못 덜어낸다.
-RANK_GAP_MIN = 0.0
-# `gap + k·se <= 0` 을 요구한다. k=0 이면 종전(점추정) 동작.
-RANK_GAP_SE_MULT = 1.0
-
-# 폴백 전용 잠정 상수. `rank_contra_gap` 을 못 쓸 때(--no-contradiction, 경계 부족,
-# 구버전 런)만 쓰인다. 이 축은 중첩 집합 비교라 QE 길이 편향이 섞여 있다 — run04 실측에서
-# 작은 T 가 순위와 무관하게 +0.003~0.005 높았고 그 부호가 진단과 같다. 0.03 은 그 편향을
-# 덮는 크기이지 측정된 문턱이 아니다.
-PRIORITY_MARGIN = 0.03      # 큰 T(상위 순위만) 와 작은 T 의 adequacy 격차
+# 순위축 조향 문턱. `rank_lift` 가 **오차 한 칸도 못 넘으면** 순위가 값을 못 하는 것으로
+# 본다 (`lift < 1·se`, 즉 t < 1).
+#
+# **부등호 방향이 종전과 반대다.** 예전 게이트는 `gap + 1·se <= 0`, 즉 사실상 `t <= −1`
+# 이라 "순위가 **해롭다**는 증거"를 요구했다. 그런데 잡고 싶은 상태는 "이득이 없다"이지
+# "해롭다"가 아니다 — 그래서 순위가 정말 무가치할 때조차 다섯 번에 한 번밖에 안 울렸다.
+#
+# 문턱은 실측 발화율로 잡았다 (metric_probes/runs/rank_ablation/, 두 언어쌍 × 최대 T):
+#   순위가 값을 하는 상태(real vs 셔플)에서 오작동  0/40
+#   순위가 무가치한 상태(셔플 vs 셔플, 참값 0)에서 검출  156/190, 164/190 (82~86%)
+# 상수 1.0 은 종전 `RANK_GAP_SE_MULT` 를 그대로 옮긴 것이라 새로 생긴 임의 상수가 아니다.
+RANK_LIFT_T_MIN = 1.0
 
 
 def summarize_critique(cases: list[dict], metrics: dict, summary: str | None,
@@ -707,9 +731,13 @@ def summarize_critique(cases: list[dict], metrics: dict, summary: str | None,
     v1 의 "더/덜 잘라라" 방향이 사라진 자리가 크다. 조각 수는 노브가 정하므로
     과소분절·과분절이라는 실패 자체가 없다. 남는 것은 위치와 순위뿐이다.
 
-    **순위 축은 경계 단위로 잰다** (`rank_contra_gap`). 종전의 T 대비는 중첩 집합
-    비교(`keep(큰 T) ⊆ keep(작은 T)`)라 하위 경계의 기여가 분리되지 않았고, 조각 수가
-    함께 바뀌어 QE 길이 편향이 섞였다. 설계 §9.4 참조.
+    **순위 축은 순위를 망가뜨려 잰다** (`rank_lift`). 종전에 쓰던 `rank_contra_gap` 은
+    **절단 후 살아남은 경계들끼리의 순서**만 보는데, 순위가 실제로 하는 일은 keep-vs-discard
+    다 — 폐기된 경계는 렌더링이 없어 contra 값 자체가 없으므로 원리적으로 안 보인다
+    (en-de run04 T=6 실측: 후보 15.4개 중 생존 2.7개, **결정의 82% 가 지표 밖**).
+    실측에서 두 값은 어긋났다: 순위를 섞으면 effective 가 0.024~0.061 떨어지는데
+    (20/20 셔플 완승, 순열 p=0.048) `rank_contra_gap` 은 en-de 에서 오히려 무작위보다
+    낮게 나왔다. 근거: `../metric_probes/runs/rank_ablation/`, `docs/RANK_METRIC_DIAGNOSIS.md`.
     """
     counts: dict[str, int] = {}
     for c in cases:
@@ -717,28 +745,18 @@ def summarize_critique(cases: list[dict], metrics: dict, summary: str | None,
 
     by_T = metrics.get("by_T") or {}
     # by_T 는 **비어 있을 수 있다** — 포맷이 무너져 저비용 게이트가 번역을 건너뛰면
-    # (`evaluate` 의 `skip_translation_below`) 지표가 하나도 안 만들어진다. 그 경우
-    # keys[0] 이 IndexError 를 내고 Critic 호출 전체가 실패해 루프가 최종 평가로
-    # 튕겨나간다 — run04 iter0 이 실제로 그렇게 죽었다 (train fmt=0.93, by_T={}).
-    # 정작 그 상황의 판정은 첫 분기(format)라 by_T 가 필요 없다.
-    keys = sorted(by_T, key=lambda k: int(k))
-    tight = (by_T.get(keys[0]) or {}) if keys else {}      # 조각 많음 (작은 T)
-    loose = (by_T.get(keys[-1]) or {}) if keys else {}     # 조각 적음 (큰 T)
+    # (`evaluate` 의 `skip_translation_below`) 지표가 하나도 안 만들어진다. 예전에 여기서
+    # 빈 dict 를 인덱싱해 Critic 호출 전체가 실패하고 루프가 최종 평가로 튕겨나간 적이
+    # 있다 — run04 iter0 (train fmt=0.93, by_T={}). 정작 그 상황의 판정은 첫 분기(format)
+    # 라 by_T 가 필요 없으므로, 아래는 전부 빈 dict 에서도 도는 형태로만 쓴다.
     missing = max((v.get("missing_boundaries") or 0.0) for v in by_T.values()) if by_T else 0.0
     prem = max((v.get("premature_rate") or 0.0) for v in by_T.values()) if by_T else 0.0
 
-    # 순위 진단은 **경계 단위**로 잰다. 하위 순위 경계가 상위보다 실제로 위험해야
-    # 절단이 의미가 있다 (`metrics.rank_contra_gap`). 한 T 에서만 계산되므로 스캔한다.
-    gaps = [v["rank_contra_gap"] for v in by_T.values()
-            if v.get("rank_contra_gap") is not None]
-    rank_gap = min(gaps) if gaps else None
-    # **오차막대를 함께 본다.** 점추정을 0 과 비교하면 heavy-tail 잡음에 조향이 끌려간다
-    # (en-de 관측 범위 −0.026~+0.032, se 0.01~0.02). 가장 나쁜 T 의 se 를 쓴다.
-    rank_gap_se = None
-    for v in by_T.values():
-        if v.get("rank_contra_gap") == rank_gap and v.get("rank_contra_gap_se") is not None:
-            rank_gap_se = v["rank_contra_gap_se"]
-            break
+    # 순위 진단은 **순위를 망가뜨려 본다** (`metrics.rank_lift`). 절단기가 순위를 쓰는
+    # 곳은 keep-vs-discard 한 군데뿐이므로, 그 결정만 무작위로 바꿔 손실을 재는 것이
+    # 순위축의 직접 측정이다. `loop.evaluate` 가 최대 T 에서 한 번 계산해 싣는다.
+    lift = metrics.get("rank_lift")
+    lift_t = metrics.get("rank_lift_t")
 
     focus_reason = ""
     if metrics.get("format_pass_rate", 1.0) < 1.0:
@@ -748,19 +766,15 @@ def summarize_critique(cases: list[dict], metrics: dict, summary: str | None,
     elif missing > MISSING_BOUNDARIES_LIMIT:
         focus = "coverage"
         focus_reason = f"missing_boundaries {missing:.3f} > {MISSING_BOUNDARIES_LIMIT}"
-    # 상위 순위 경계가 하위와 같거나 더 위험하면 순위가 정보를 안 준다 = 순위 문제.
-    # **유의하게** 음수일 때만 순위 문제로 본다 — `gap + k·se < 0`.
-    # 종전에는 점추정 <= 0 이라, 0 근처에서 흔들리는 값이 조향을 좌우했다.
-    elif (rank_gap is not None
-          and rank_gap + RANK_GAP_SE_MULT * (rank_gap_se or 0.0) <= RANK_GAP_MIN):
+    # 순위를 무작위로 섞어도 품질이 안 떨어지면 순위가 값을 못 하는 것 = 순위 문제.
+    # **폴백은 두지 않는다.** 종전의 T 대비(`adequacy(작은 T) − adequacy(큰 T)`)는 중첩
+    # 집합 비교인 데다 QE 길이 편향이 섞여 있어, 근거 없는 조향을 만드는 경로였다.
+    # 값이 없으면(--no-contradiction, 순위 없는 프롬프트) 순위축은 판단하지 않는다.
+    elif lift_t is not None and lift_t < RANK_LIFT_T_MIN:
         focus = "priority"
-        focus_reason = (f"rank_contra_gap {rank_gap:+.4f} ± {rank_gap_se or 0:.4f} "
-                        f"— 0 보다 유의하게 낮음")
-    # 폴백 — 경계 단위 값이 없을 때만 종전의 T 대비를 쓴다 (중첩 집합 비교라 부정확).
-    elif (rank_gap is None
-          and loose.get("adequacy") is not None and tight.get("adequacy") is not None
-          and tight["adequacy"] - loose["adequacy"] > PRIORITY_MARGIN):
-        focus = "priority"
+        focus_reason = (f"rank_lift {lift:+.4f} (t {lift_t:+.2f}) — 순위를 무작위로 "
+                        + ("섞으면 품질이 오히려 오름" if (lift or 0.0) < 0 else
+                           "섞어도 품질이 안 떨어짐"))
     # 종전에는 이 두 갈래가 **같은 값을 넣어** PREMATURE_LIMIT 이 죽은 코드였다.
     # 결론은 어차피 placement 지만 **근거가 다르다** — 측정된 조기방출이냐, 아무 지표도
     # 안 걸린 기본값이냐. PE 가 그 차이를 알아야 확신 없는 개정을 덜 한다.
@@ -773,9 +787,20 @@ def summarize_critique(cases: list[dict], metrics: dict, summary: str | None,
                         "확실한 근거가 없으니 작은 수정만 할 것")
 
     # **고착 방지.** 같은 방향이 반복되는데 dev 가 나아지지 않으면 탐색이 죽는다.
+    #
+    # 단 **없는 근거를 만들어내지는 않는다.** 종전에는 placement 가 막히면 지표를 아예
+    # 안 보고 priority 로 뒤집었는데, 순위가 이미 값을 하고 있는 상태에서 그쪽을 고치라고
+    # 보내는 것은 잘 돌아가는 섹션을 건드리게 하는 것이다 — 실측상 순위는 effective
+    # +0.024~0.061 을 벌고 있다 (metric_probes/runs/rank_ablation/).
+    # priority 로 갈 근거가 있었으면 위 분기에서 이미 그렇게 됐으므로, 여기서 남은 경우는
+    # "근거가 없다"뿐이다. 그때는 축을 바꾸는 대신 **직전 실패를 PE 에게 알린다.**
     if avoid and focus == avoid:
-        focus = "priority" if focus == "placement" else "placement"
-        focus_reason = f"고착 방지 — 직전 {avoid} 가 채택 실패해 방향 전환"
+        if focus == "priority":
+            focus = "placement"
+            focus_reason = f"고착 방지 — 직전 {avoid} 가 채택 실패해 방향 전환"
+        else:
+            focus_reason += (" | 고착 — 직전 개정이 채택 실패했다. 순위축으로 옮길 근거는 "
+                             "없으니 같은 축에서 **다른 각도**로 볼 것")
 
     return {
         "dominant_error": max(counts, key=counts.get) if counts else None,
@@ -785,7 +810,8 @@ def summarize_critique(cases: list[dict], metrics: dict, summary: str | None,
         "priority_audit": (priority_audit or [])[:6],
         "max_missing_boundaries": round(missing, 4),
         "max_premature_rate": round(prem, 4),
-        "rank_contra_gap": round(rank_gap, 4) if rank_gap is not None else None,
+        "rank_lift": lift,
+        "rank_lift_t": lift_t,
         "summary": summary,
     }
 
@@ -1035,6 +1061,8 @@ class PromptEngineer:
         profile: dict,
         t_grid: list[int],
         only_rule: str | None = None,
+        max_sections: int | None = None,
+        max_growth: float | None = None,
     ) -> dict:
         """`only_rule` 이 있으면 **그 규칙 하나만** 반영하게 한다.
 
@@ -1062,5 +1090,15 @@ class PromptEngineer:
                 "separately and the results are compared. Adding more than this one idea makes "
                 "the comparison meaningless. Touch ONE section if you can."
             )
-        return self.gw.chat_json(ENGINEER_SYSTEM, user, max_tokens=PROMPT_MAX_TOKENS,
+        # **지시문과 게이트가 같은 숫자를 말해야 한다.** 실측상 PE 는 이 값에 비례해
+        # 반응하지 않지만(1.25/2.5/4.0 지시 → 1.39/1.36/1.79 산출), 게이트가 2.5 인데
+        # 지시문이 1.25 라고 말하는 상태는 유지보수를 망가뜨린다.
+        sys_p = ENGINEER_SYSTEM
+        if max_sections is not None:
+            sys_p = sys_p.replace("Change AT MOST TWO sections",
+                                  f"Change AT MOST {max_sections} sections")
+        if max_growth is not None:
+            sys_p = sys_p.replace("may not grow beyond 1.25x its current length",
+                                  f"may not grow beyond {max_growth:.2f}x its current length")
+        return self.gw.chat_json(sys_p, user, max_tokens=PROMPT_MAX_TOKENS,
                                  purpose="prompt_engineer")

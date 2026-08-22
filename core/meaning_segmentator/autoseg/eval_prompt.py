@@ -23,7 +23,7 @@ from pathlib import Path
 from . import data, metrics
 from .gateway import Gateway
 from .loop import _cell, evaluate, target_is_spaced
-from .pipeline import GoogleTranslator, JsonCache, Translator
+from .pipeline import GoogleTranslator, JsonCache, Translator, to_lang_code
 
 _HERE = Path(__file__).resolve().parent
 
@@ -35,6 +35,11 @@ def main() -> int:
                    help="기준 런 경로 (runs/ 이하). 데이터 분할·프로파일·캐시·백엔드를 재사용한다")
     p.add_argument("--split", default="test", choices=["train", "dev", "test"])
     p.add_argument("--label", default=None, help="결과 파일 이름에 쓸 라벨")
+    p.add_argument("--tgt-lang", default=None,
+                   help="타깃 언어를 기준 런과 다르게 잡는다 (다언어 런의 타깃별 표를 "
+                        "뽑을 때). 캐시는 loop 과 같은 translate_{code}.json 을 쓰므로 "
+                        "그 런이 이미 번역했다면 gtx 재호출이 없다")
+    p.add_argument("--min-gap", type=int, default=None, help="미지정 시 기준 런에서 상속")
     p.add_argument("--model", default="gpt-5-mini")
     # 비교군도 루프와 같은 사고량으로 재야 표에 나란히 놓을 수 있다 (기준 런 config 의
     # seg_reasoning_effort 를 상속하고, 없으면 루프 기본값 low).
@@ -88,7 +93,9 @@ def main() -> int:
         spaced = bool(profile.get("uses_spaces_between_words", True))
         trailing_punct = "".join(profile.get("trailing_punctuation") or []) or None
 
-    tgt_spaced = bool(cfg.get("tgt_spaced", target_is_spaced(cfg.get("tgt_lang", "English"))))
+    tgt_name = args.tgt_lang or cfg.get("tgt_lang", "English")
+    tgt_spaced = (target_is_spaced(tgt_name) if args.tgt_lang
+                  else bool(cfg.get("tgt_spaced", target_is_spaced(tgt_name))))
     t_grid = sorted(set(args.t_grid or cfg.get("final_t_grid") or cfg.get("t_grid") or [3, 6]))
 
     sentences = data.read_split(run_dir / "data" / f"{args.split}.json")
@@ -97,17 +104,25 @@ def main() -> int:
 
     gw = Gateway(model=args.model, budget=args.budget)
     seg_cache = JsonCache(run_dir / "cache" / "segment.json")
-    tr_cache = JsonCache(run_dir / "cache" / "translate.json")
 
     # **번역기와 백엔드는 기준 런에서 상속한다.** 다른 조합으로 재면 같은 축이 아니다.
     tr_id = cfg.get("translator_id") or f"llm:{cfg.get('translator_model')}"
     if tr_id.startswith("google:"):
         _, code, ctx = tr_id.split(":", 2)
+        if args.tgt_lang:
+            code = to_lang_code(tgt_name)
+            tr_id = f"google:{code}:{ctx}"
+        # 다언어 런은 타깃별 캐시 파일을 쓴다. 옛 런의 단일 translate.json 도 계속 읽는다.
+        cf = run_dir / "cache" / f"translate_{code}.json"
+        if not cf.exists() and (run_dir / "cache" / "translate.json").exists():
+            cf = run_dir / "cache" / "translate.json"
+        tr_cache = JsonCache(cf)
         translator = GoogleTranslator(tgt_code=code, cache=tr_cache,
                                       workers=min(args.workers, 4),
                                       use_context=ctx.endswith("True"))
     else:
-        translator = Translator(gw=gw, src_name=cfg["src_lang"], tgt_name=cfg["tgt_lang"],
+        tr_cache = JsonCache(run_dir / "cache" / "translate.json")
+        translator = Translator(gw=gw, src_name=cfg["src_lang"], tgt_name=tgt_name,
                                 model=tr_id.split(":", 1)[-1], cache=tr_cache,
                                 workers=args.workers)
 
@@ -142,16 +157,24 @@ def main() -> int:
                                  require_priority=not args.no_priority,
                                  contradiction=contradiction,
                                  reasoning_effort=seg_effort,
-                                 coverage_t=args.candidate_t or min(t_grid),
+                                 coverage_t=(args.candidate_t or cfg.get("candidate_t")
+                                             or min(t_grid)),
                                  priority_depth=args.priority_depth,
-                                 batch_size=args.batch_size)
+                                 batch_size=args.batch_size,
+                                 min_gap=(args.min_gap if args.min_gap is not None
+                                          else int(cfg.get("min_gap", 0))),
+                                 skip_translation_below=float(
+                                     cfg.get("skip_translation_below", 0.95)))
         out_dir = run_dir / "prompt_eval"
         out_dir.mkdir(parents=True, exist_ok=True)
         (out_dir / f"{label}_{args.split}.json").write_text(json.dumps({
             "prompt_file": str(args.prompt),
             "split": args.split,
             "t_grid": t_grid,
-            "candidate_t": args.candidate_t or min(t_grid),
+            "tgt_lang": tgt_name,
+            "min_gap": (args.min_gap if args.min_gap is not None
+                        else int(cfg.get("min_gap", 0))),
+            "candidate_t": args.candidate_t or cfg.get("candidate_t") or min(t_grid),
             "priority_depth": args.priority_depth,
             "batch_size": args.batch_size,
             "require_priority": not args.no_priority,
@@ -165,7 +188,8 @@ def main() -> int:
             "usage": gw.usage.snapshot(),
         }, ensure_ascii=False, indent=2), encoding="utf-8")
 
-        print(f"[{label} / {args.split}] n={m.n} adequacy={adequacy.name} 번역기={tr_id}")
+        print(f"[{label} / {args.split}] n={m.n} 타깃={tgt_name} "
+          f"adequacy={adequacy.name} 번역기={tr_id}")
         print(f"  포맷 통과율 {m.format_pass_rate:.4f} (재시도 없이 "
               f"{m.format_pass_rate_no_retry:.4f}), 위반 {len(viol)}건")
         for k in sorted(m.by_T, key=int):

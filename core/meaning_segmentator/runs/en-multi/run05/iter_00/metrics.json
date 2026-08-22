@@ -20,7 +20,7 @@
         "chunks_per_sentence": 3.75,
         "split_ratio": 1.0,
         "missing_boundaries": 0.0,
-        "premature_rate": 0.0714,
+        "premature_rate": 0.0,
         "reference_suspect_rate": 0.0,
         "rank_contra_spearman": 0.1828,
         "rank_contra_gap": 0.017,
@@ -121,52 +121,20 @@
   "paired_dev": null,
   "adopted": true,
   "usage": {
-    "calls": 114,
-    "prompt_tokens": 296579,
-    "completion_tokens": 842627,
-    "cached_tokens": 210944,
+    "calls": 14,
+    "prompt_tokens": 10684,
+    "completion_tokens": 17614,
+    "cached_tokens": 0,
     "truncated": 0,
-    "cost": 1.711936,
+    "cost": 0.037899,
     "by_purpose": {
-      "segment": {
-        "calls": 36,
-        "prompt_tokens": 106380,
-        "completion_tokens": 444723,
-        "reasoning_tokens": 433536,
-        "cached_tokens": 73216,
-        "cost": 0.899567
-      },
-      "segment_retry": {
-        "calls": 60,
-        "prompt_tokens": 172347,
-        "completion_tokens": 344629,
-        "reasoning_tokens": 340416,
-        "cached_tokens": 132864,
-        "cost": 0.70245
-      },
-      "prompt_v0": {
-        "calls": 3,
-        "prompt_tokens": 6021,
-        "completion_tokens": 30711,
-        "reasoning_tokens": 22720,
-        "cached_tokens": 3840,
-        "cost": 0.062063
-      },
       "judge": {
         "calls": 14,
         "prompt_tokens": 10684,
-        "completion_tokens": 19391,
-        "reasoning_tokens": 18368,
+        "completion_tokens": 17614,
+        "reasoning_tokens": 16640,
         "cached_tokens": 0,
-        "cost": 0.041453
-      },
-      "profiler": {
-        "calls": 1,
-        "prompt_tokens": 1147,
-        "completion_tokens": 3173,
-        "reasoning_tokens": 2624,
-        "cached_tokens": 1024,
-        "cost": 0.006402
+        "cost": 0.037899
       }
     }
   }

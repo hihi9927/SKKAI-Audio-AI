@@ -1,0 +1,79 @@
+[
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Die Endergebnisse der Präsidenten- und Parlamentswahlen in Namibia haben angedeutet, dass der amtierende Präsident Hifikepunye Pohamba mit großem Abstand wiedergewählt wurde.",
+    "seg_text": "Die Endergebnisse der Präsidenten- und Parlamentswahlen <SEG:2> in Namibia haben angedeutet, <SEG:1> dass der amtierende Präsident Hifikepunye Pohamba <SEG:3> mit großem Abstand wiedergewählt wurde.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "Der Gesetzesvorschlag sieht vor, dass im Bundesstaat Kalifornien verkaufte Videospiele mit einem Aufkleber mit der Zahl „18“ versehen werden und der Verkauf an Minderjährige mit einer Geldbuße von 1000 $ bestraft wird.",
+    "seg_text": "Der Gesetzesvorschlag sieht vor, <SEG:1> dass im Bundesstaat Kalifornien <SEG:2> verkaufte Videospiele mit einem Aufkleber mit der Zahl „18“ <SEG:3> versehen werden <SEG:4> und der Verkauf an Minderjährige <SEG:5> mit einer Geldbuße <SEG:6> von 1000 $ bestraft wird.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 2단위 — 최소 간격 3 미만",
+    "text": "Der Gesetzesvorschlag sieht vor, dass im Bundesstaat Kalifornien verkaufte Videospiele mit einem Aufkleber mit der Zahl „18“ versehen werden und der Verkauf an Minderjährige mit einer Geldbuße von 1000 $ bestraft wird.",
+    "seg_text": "Der Gesetzesvorschlag sieht vor, <SEG:1> dass im Bundesstaat Kalifornien <SEG:2> verkaufte Videospiele mit einem Aufkleber mit der Zahl „18“ <SEG:3> versehen werden <SEG:4> und der Verkauf an Minderjährige <SEG:5> mit einer Geldbuße <SEG:6> von 1000 $ bestraft wird.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "Zuvor meldete die chinesische Nachrichtenagentur Xinhua die geplante Entführung eines Flugzeugs.",
+    "seg_text": "Zuvor meldete die chinesische Nachrichtenagentur Xinhua <SEG:1> die geplante Entführung eines Flugzeugs.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Danius sagte: „Im Moment unternehmen wir nichts. Ich habe seinen engsten Mitarbeiter angerufen und ihm E-Mails geschickt und sehr freundliche Antworten erhalten. Das ist vorläufig genug.“",
+    "seg_text": "Danius sagte: „Im Moment unternehmen wir nichts. <SEG:2> Ich habe seinen engsten Mitarbeiter angerufen <SEG:3> und ihm E-Mails geschickt <SEG:4> und sehr freundliche Antworten erhalten. <SEG:1> Das ist vorläufig genug.“",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "Zu Beginn des Krieges bewegten sie sich meist an der Meeresoberfläche, aber als sich das Radar weiterentwickelte und immer genauer wurde, waren die U-Boote zum Abtauchen gezwungen, um nicht gesehen zu werden.",
+    "seg_text": "Zu Beginn des Krieges <SEG:5> bewegten sie sich meist <SEG:4> an der Meeresoberfläche, <SEG:1> aber als sich das Radar weiterentwickelte <SEG:3> und immer genauer wurde, <SEG:2> waren die U-Boote zum Abtauchen <SEG:6> gezwungen, um nicht gesehen zu werden.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 7개 필요",
+    "text": "Die naheliegende Methode, in First oder Business-Class zu fliegen, ist es, einen dicken Batzen Geld für das Privileg hinzublättern (oder, noch besser, die eigene Firma dazu zu bringen, die Kosten zu übernehmen).",
+    "seg_text": "Die naheliegende Methode, <SEG:2> in First oder Business-Class zu fliegen, <SEG:1> ist es, einen dicken Batzen Geld für das Privileg hinzublättern <SEG:3> (oder, noch besser, die eigene Firma dazu zu bringen, die Kosten zu übernehmen).",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Die Behörden spekulieren, dass dies darauf hindeutet, dass Behälter mit Uran-Kraftstoff am Standort gerissen sein könnten und eventuell undicht sind.",
+    "seg_text": "Die Behörden spekulieren, <SEG:2> dass dies darauf hindeutet, <SEG:1> dass Behälter mit Uran-Kraftstoff am Standort gerissen sein könnten <SEG:3> und eventuell undicht sind.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "\"Heutzutage gibt es allerdings etablierte Graffiti-Künstler, Graffiti-Veranstaltungen und „legale\"\" Wände. In diesem Kontext gleichen Graffiti-Gemälde häufiger Kunstwerken als unlesbaren Kritzeleien. \"",
+    "seg_text": "\"Heutzutage gibt es allerdings etablierte Graffiti-Künstler, <SEG:3> Graffiti-Veranstaltungen und „legale\"\" Wände. <SEG:1> In diesem Kontext gleichen Graffiti-Gemälde häufiger Kunstwerken <SEG:2> als unlesbaren Kritzeleien. \"",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "Obwohl sich sein Aggregatzustand ändern kann, bleibt der chemische Zustand derselbe.",
+    "seg_text": "Obwohl sich sein Aggregatzustand ändern kann, <SEG:1> bleibt der chemische Zustand derselbe.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Als die Kämpfe nach dem Transport der Verwundeten ins Krankenhaus aufhörten, blieben etwa 40 der übrigen Insassen auf dem Hof ​​und weigerten sich, in ihre Zellen zurückzukehren.",
+    "seg_text": "Als die Kämpfe <SEG:7> nach dem Transport der Verwundeten <SEG:5> ins Krankenhaus aufhörten, <SEG:1> blieben etwa 40 <SEG:4> der übrigen Insassen <SEG:2> auf dem Hof <SEG:3> und weigerten sich, <SEG:6> in ihre Zellen zurückzukehren.",
+    "first_pass": true
+  }
+]

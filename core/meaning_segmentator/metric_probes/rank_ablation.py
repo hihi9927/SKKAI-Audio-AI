@@ -117,9 +117,108 @@ def even_prios(seg_text: str, T: int, spaced: bool) -> list[int]:
     return prios
 
 
+# ── 결정론적 재순위 ──────────────────────────────────────────────────────
+#
+# **왜 어블레이션으로만 검증하는가.** 표면 특징 → contra 대응을 문장 안 Spearman 으로
+# 미리 재 보면 부정적이다 (교차런에서 구두점 표의 부호가 뒤집힌다: ko-en 자기런 +0.226,
+# en-de 표로 코딩 −0.226). 그러나 그 자는 **생존 경계끼리만** 보는 것이라
+# `docs/RANK_METRIC_DIAGNOSIS.md` §8.2 에서 이미 신뢰 못 한다고 결론 난 계기이고,
+# 유효 표본도 문장×T 78개 중 19개뿐이다. keep-vs-discard 를 직접 재는 것은 이 파일의
+# 어블레이션뿐이므로, 판정은 여기서 한다.
+
+CONTRAST_WORDS = {"but", "however", "although", "though", "yet", "while", "whereas",
+                  "instead", "rather", "despite", "nevertheless", "nonetheless",
+                  "unless", "except", "still"}
+
+# 위험 배수 — 전역 평균 contra 대비. 기본값은 en-multi/run06 test 실측 (바닥 보정 후).
+# **다른 런에 쓰면 교차 검증, 같은 런에 쓰면 자기적합**이다. `--risk-table` 로 갈아낀다.
+RISK_DEFAULT = {
+    "punct": {"문말": 0.56, "쉼표": 0.88, "쉼표+역접": 0.33, "세미콜론/콜론": 0.90,
+              "구두점 없음": 1.04, "기타구두점": 0.90},
+    "pos": {"0/3": 0.77, "1/3": 1.30, "2/3": 1.13},
+    "len": {"1-3": 1.08, "4-7": 0.75, "8+": 1.29},
+}
+
+
+def boundary_feats(pieces: list[str], j: int, n: int, spaced: bool) -> dict:
+    """경계 j 의 표면 특징. **번역을 안 본다** — 절단 시점에 알 수 있는 것만."""
+    prev = (pieces[j] or "").rstrip()
+    nxt = (pieces[j + 1] if j + 1 < len(pieces) else "") or ""
+    w = nxt.strip().split()[:1]
+    w = w[0].strip(",.;:!?\"'()").lower() if w else ""
+    ch = prev[-1:] if prev else ""
+    if ch in ".?!\u2026\u3002\uff1f\uff01":
+        punct = "문말"
+    elif ch in ",\uff0c\u3001":
+        punct = "쉼표+역접" if w in CONTRAST_WORDS else "쉼표"
+    elif ch in ";:\uff1b\uff1a":
+        punct = "세미콜론/콜론"
+    elif ch and not ch.isalnum():
+        punct = "기타구두점"
+    else:
+        punct = "구두점 없음"
+    L = unit_count(prev, spaced)
+    return {"punct": punct,
+            "pos": f"{int(j / max(1, n) * 3)}/3",
+            "len": "1-3" if L <= 3 else ("4-7" if L <= 7 else "8+")}
+
+
+def risk_scores(seg_text: str, spaced: bool, table: dict) -> list[float]:
+    """경계별 위험 점수 (작을수록 안전 = 높은 순위). 배수의 곱."""
+    parts = TAG_RE.split(seg_text.strip())
+    pieces = [p.strip() for p in parts[::2]]
+    n = len(pieces) - 1
+    out = []
+    for j in range(n):
+        f = boundary_feats(pieces, j, n, spaced)
+        r = 1.0
+        for ax, key in (("punct", f["punct"]), ("pos", f["pos"]), ("len", f["len"])):
+            r *= float(table.get(ax, {}).get(key, 1.0))
+        out.append(r)
+    return out
+
+
+def _ranks_from_scores(scores: list[float]) -> list[int]:
+    """점수 오름차순으로 1..N. 동점은 등장 순서."""
+    order = sorted(range(len(scores)), key=lambda i: (scores[i], i))
+    prios = [0] * len(scores)
+    for k, i in enumerate(order):
+        prios[i] = k + 1
+    return prios
+
+
+def rerank_prios(seg_text: str, spaced: bool, table: dict) -> list[int]:
+    return _ranks_from_scores(risk_scores(seg_text, spaced, table))
+
+
+def blend_prios(seg_text: str, spaced: bool, table: dict, lam: float) -> list[int]:
+    """LLM 순위 백분위와 위험 백분위를 섞는다. lam=0 이면 real, 1 이면 rerank.
+
+    **백분위로 섞는 이유**: 위험 점수는 배수라 스케일이 문장마다 다르고, 순위는 정수다.
+    둘 다 문장 안 백분위로 바꿔야 λ 가 의미를 갖는다.
+    """
+    llm = [int(m.group(1)) for m in TAG_RE.finditer(seg_text) if m.group(1)]
+    risk = risk_scores(seg_text, spaced, table)
+    n = len(risk)
+    if len(llm) != n or n < 2:
+        return llm or list(range(1, n + 1))
+
+    def pct(vals: list) -> list[float]:
+        order = sorted(range(n), key=lambda i: (vals[i], i))
+        out = [0.0] * n
+        for k, i in enumerate(order):
+            out[i] = k / (n - 1)
+        return out
+
+    lp, rp = pct(llm), pct(risk)
+    return _ranks_from_scores([(1 - lam) * lp[i] + lam * rp[i] for i in range(n)])
+
+
 def arm_seg_texts(rows: list[dict], T: int, spaced: bool, min_gap: int,
-                  mode: str, rng: random.Random) -> tuple[list[str], list[int]]:
+                  mode: str, rng: random.Random, table: dict | None = None,
+                  lam: float = 0.5) -> tuple[list[str], list[int]]:
     """한 대조군의 절단 결과. 반환 `(절단된 seg_text 목록, missing_boundaries 목록)`."""
+    table = table or RISK_DEFAULT
     cut_texts, missings = [], []
     for r in rows:
         seg = r["seg_text"]
@@ -128,6 +227,10 @@ def arm_seg_texts(rows: list[dict], T: int, spaced: bool, min_gap: int,
             src = seg
         elif mode == "even":
             src = retag(seg, even_prios(seg, T, spaced)) if n else seg
+        elif mode == "rerank":
+            src = retag(seg, rerank_prios(seg, spaced, table)) if n else seg
+        elif mode == "blend":
+            src = retag(seg, blend_prios(seg, spaced, table, lam)) if n else seg
         else:                                   # shuffle
             p = list(range(1, n + 1))
             rng.shuffle(p)
@@ -179,6 +282,13 @@ def main() -> int:
     p.add_argument("--comet-batch-size", type=int, default=16)
     p.add_argument("--consistency", action="store_true",
                    help="보고 지표 consistency 도 잰다 (기본은 끔 — effective 에 안 들어간다)")
+    p.add_argument("--rerank", action="store_true",
+                   help="결정론적 재순위 대조군을 추가한다 (표면 특징 기반)")
+    p.add_argument("--risk-table", default=None,
+                   help="위험 배수표 JSON. 없으면 내장 기본값(en-multi/run06 실측). "
+                        "**평가 대상과 다른 런의 표를 줘야 교차 검증**이다")
+    p.add_argument("--blend-lambda", type=float, nargs="*", default=[0.3, 0.5],
+                   help="blend 대조군의 λ. 0=real, 1=rerank")
     p.add_argument("--label", default=None)
     args = p.parse_args()
 
@@ -262,13 +372,21 @@ def main() -> int:
         floor = json.loads(floor_fp.read_text(encoding="utf-8"))
         floor_fn = lambda n: noise_floor.floor_lookup(floor, n)
 
-    arms = ["real", "even"] + [f"shuf{i:02d}" for i in range(args.shuffles)]
+    risk_table = (json.loads(Path(args.risk_table).read_text(encoding="utf-8"))
+                  if args.risk_table else RISK_DEFAULT)
+    rr_arms = []
+    if args.rerank:
+        rr_arms = ["rerank"] + [f"blend{lam:g}" for lam in args.blend_lambda]
+    arms = ["real", "even"] + rr_arms + [f"shuf{i:02d}" for i in range(args.shuffles)]
     out: dict = {
         "run_id": args.run_id, "split": args.split, "rows": len(rows),
         "t_grid": args.t, "shuffles": args.shuffles, "seed": args.seed,
         "min_gap": min_gap, "translator": tr_id,
         "adequacy_backend": adequacy.name, "contradiction_backend": contradiction.name,
         "consistency_backend": (cfg.get("consistency_backend") if args.consistency else None),
+        "rerank": bool(args.rerank),
+        "risk_table": (risk_table if args.rerank else None),
+        "risk_table_src": (args.risk_table or "built-in(en-multi/run06)") if args.rerank else None,
         "by_T": {},
     }
 
@@ -279,8 +397,15 @@ def main() -> int:
             rng = random.Random(args.seed + T)
             t0 = time.time()
             for a_i, arm in enumerate(arms):
-                mode = "real" if arm == "real" else ("even" if arm == "even" else "shuffle")
-                cut_texts, missings = arm_seg_texts(rows, T, spaced, min_gap, mode, rng)
+                lam = 0.0
+                if arm in ("real", "even", "rerank"):
+                    mode = arm
+                elif arm.startswith("blend"):
+                    mode, lam = "blend", float(arm[5:])
+                else:
+                    mode = "shuffle"
+                cut_texts, missings = arm_seg_texts(rows, T, spaced, min_gap, mode, rng,
+                                                    table=risk_table, lam=lam)
                 sp = score_split(cut_texts, texts, full, translator, adequacy,
                                  consistency, spaced, tgt_spaced, contradiction)
 
@@ -328,12 +453,18 @@ def main() -> int:
             real_mean = per_arm["real"]["effective"]
             ge = sum(1 for m in shuf_means if m >= real_mean)
             perm_p = (ge + 1) / (len(shuf_means) + 1) if shuf_means else None
+            if not shuf:                        # --shuffles 0 (재순위만 볼 때)
+                vs_shuffle = {"n": 0, "delta": None, "se": None, "t": None}
 
             # 셔플 대조군의 `rank_contra_gap` 분포 — 지표가 순위를 재고 있는지의 직접 검사
             shuf_gaps = [per_arm[a]["rank_contra_gap"] for a in shuf
                          if per_arm[a]["rank_contra_gap"] is not None]
 
             out["by_T"][str(T)] = {
+                # **문장별 값을 남긴다.** 집계만 남기면 나중에 다른 통계를 물을 때마다
+                # 채점을 다시 해야 한다 — 특히 셔플끼리의 쌍체 비교(참값 0 인 귀무 상태)는
+                # 문장별 값 없이는 재계산이 불가능하다.
+                "per_sentence": {"ids": [r.get("id") for r in rows], **eff_by_arm},
                 "arms": per_arm,
                 "paired_vs_real": deltas,
                 "real_vs_mean_shuffle": vs_shuffle,
@@ -371,6 +502,8 @@ def main() -> int:
 
             line("real", a["real"], None)
             line("even", a["even"], d["paired_vs_real"].get("even"))
+            for nm in rr_arms:
+                line(nm, a[nm], d["paired_vs_real"].get(nm))
             line("shuffle(평균)", {"effective": d["shuffle_mean"],
                                   "laal_words": mean_of([a[s]["laal_words"] for s in
                                                          a if s.startswith("shuf")]),

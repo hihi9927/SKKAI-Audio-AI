@@ -1,0 +1,107 @@
+[
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 8개 — 최소 9개 필요",
+    "text": "Some cruises feature Berlin, Germany in the brochures. As you can see from the map above Berlin is no where near the sea and a visit to the city is not included in the price of the cruise.",
+    "seg_text": "Some cruises feature <SEG:6> Berlin, Germany in the brochures. <SEG:1> As you can see <SEG:5> from the map above <SEG:3> Berlin is no where near the sea <SEG:2> and a visit to the city <SEG:4> is not included <SEG:8> in the price <SEG:7> of the cruise.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 2단위 — 최소 간격 3 미만",
+    "text": "This sediment was necessary for creating sandbars and beaches, which served as wildlife habitats.",
+    "seg_text": "This sediment was <SEG:3> necessary for <SEG:2> creating sandbars and beaches, <SEG:1> which served as wildlife habitats.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 2단위 — 최소 간격 3 미만",
+    "text": "As with all South African National Parks, there are daily conservation and entry fees for the park.",
+    "seg_text": "As with all <SEG:4> South African National Parks, <SEG:1> there are daily <SEG:2> conservation and <SEG:3> entry fees for the park.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 2단위 — 최소 간격 3 미만",
+    "text": "Entertainment news website TMZ understands the photographer stopped his vehicle on the other side of Sepulveda Boulevard and attempted to take pictures of the police stop before crossing the road and continuing, prompting the California Highway Patrol police officer conducting the traffic stop to order him back across, twice.",
+    "seg_text": "Entertainment news website TMZ <SEG:14> understands the photographer <SEG:15> stopped his <SEG:4> vehicle on the <SEG:5> other side of Sepulveda Boulevard <SEG:2> and attempted <SEG:6> to take pictures <SEG:7> of the <SEG:8> police stop <SEG:3> before crossing <SEG:9> the road and <SEG:11> continuing, <SEG:1> prompting the <SEG:13> California Highway Patrol <SEG:10> police <SEG:12> officer <SEG:16> conducting the traffic stop to order him back across, twice.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 2단위 — 최소 간격 3 미만",
+    "text": "When all available resources are effectively used across the functional departments of an organization, creativity and ingenuity can transpire.",
+    "seg_text": "When all available resources <SEG:2> are effectively used <SEG:1> across the functional <SEG:3> departments of an <SEG:4> organization, creativity <SEG:5> and ingenuity can transpire.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 2단위 — 최소 간격 3 미만",
+    "text": "The smaller the Rossby number, the less active the star with respect to magnetic reversals.",
+    "seg_text": "The smaller the <SEG:4> Rossby number, the <SEG:3> less active the <SEG:2> star with <SEG:1> respect to magnetic reversals.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 2단위 — 최소 간격 3 미만",
+    "text": "Remember that even though music on the main stages may have finished, there may be sections of the festival that will keep playing music until late into the night.",
+    "seg_text": "Remember that even <SEG:6> though music on <SEG:5> the main stages <SEG:2> may have finished, <SEG:1> there may be sections <SEG:8> of the festival <SEG:4> that will <SEG:7> keep playing music <SEG:3> until late into the night.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 2단위 — 최소 간격 3 미만",
+    "text": "Finland is a great boating destination. The \"Land of a thousand lakes\" has thousands of islands too, in the lakes and in the coastal archipelagos.",
+    "seg_text": "Finland is a <SEG:3> great boating destination. <SEG:1> The \"Land of <SEG:4> a thousand lakes\" <SEG:2> has thousands of <SEG:5> islands too, <SEG:6> in the lakes <SEG:7> and in the coastal archipelagos.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "While no one knows for certain who wrote it, it is known that early in its life, the large parchment document (it measures 29¾ inches by 24½ inches) was rolled up for storage.",
+    "seg_text": "While no one <SEG:9> knows for certain <SEG:5> who wrote it, <SEG:2> it is known <SEG:4> that early in <SEG:6> its life, <SEG:7> the large parchment document <SEG:3> (it measures 29¾ <SEG:8> inches) <SEG:1> was rolled up for storage.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 2단위 — 최소 간격 3 미만",
+    "text": "While no one knows for certain who wrote it, it is known that early in its life, the large parchment document (it measures 29¾ inches by 24½ inches) was rolled up for storage.",
+    "seg_text": "While no one <SEG:9> knows for certain <SEG:5> who wrote it, <SEG:2> it is known <SEG:4> that early in <SEG:6> its life, <SEG:7> the large parchment document <SEG:3> (it measures 29¾ <SEG:8> inches) <SEG:1> was rolled up for storage.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 1단위 — 최소 간격 3 미만",
+    "text": "There are of course Christian theological explanations for this tradition, but it may well be a pre-Christian Spring and Fertility ritual.",
+    "seg_text": "There are of <SEG:5> course Christian theological <SEG:2> explanations for this <SEG:4> tradition, <SEG:3> but it may <SEG:6> well be a pre-Christian Spring <SEG:1> and Fertility ritual.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 2단위 — 최소 간격 3 미만",
+    "text": "The Haitian Institute for Justice and Democracy has referenced independent studies that suggest the Nepalese UN peacekeeping battalion unknowingly brought the disease to Haiti.",
+    "seg_text": "The Haitian Institute <SEG:4> for Justice and Democracy <SEG:1> has referenced <SEG:3> independent studies that <SEG:5> suggest the Nepalese <SEG:6> UN peacekeeping battalion <SEG:2> unknowingly brought the disease to Haiti.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 2단위 — 최소 간격 3 미만",
+    "text": "By 1976, thirty percent of Machu Picchu had been restored and restoration continues till today.",
+    "seg_text": "By 1976, thirty <SEG:3> percent of Machu Picchu had been restored <SEG:1> and restoration <SEG:2> continues till today.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 2단위 — 최소 간격 3 미만",
+    "text": "The presence of a true “invisible team” (Larson and LaFasto, 1989, p109) is also a unique component of a virtual team.",
+    "seg_text": "The presence of <SEG:4> a true “invisible team” <SEG:2> (Larson and LaFasto, 1989, p109) <SEG:1> is also <SEG:3> a unique component of <SEG:5> a virtual team.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 2단위 — 최소 간격 3 미만",
+    "text": "Elements like calcium and potassium are considered metals. Of course, there are also metals like silver and gold.",
+    "seg_text": "Elements like calcium <SEG:4> and potassium are considered metals. <SEG:1> Of course, <SEG:2> there are also metals <SEG:3> like silver and gold.",
+    "first_pass": true
+  }
+]

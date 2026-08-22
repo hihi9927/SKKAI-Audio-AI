@@ -199,12 +199,35 @@ def load_fleurs_en_ko(path: Path | None = None) -> list[Sentence]:
 
 # 로더는 데이터셋별로 다를 수밖에 없다 (파일 포맷·전처리가 데이터셋 고유이므로).
 # 언어 무관이어야 하는 것은 에이전트와 지표이지 로더가 아니다.
+def _load_multi2en(src: str, path: Path | None = None) -> list[Sentence]:
+    """FLEURS {de,ja,zh}→en 루프용 240문장. 소스 언어만 다르고 **문장은 셋이 동일**하다.
+
+    en 기준 층화 정렬(`fleurs_nway_en_clean500_order.json`)의 500~739 구간이라
+    `en-multi/run06`(프롬프트 생성)·`clean500`(en→X 평가) 어느 쪽과도 겹치지 않는다.
+    같은 정렬의 740~1239 구간이 최종 평가용 `multi2en_eval500` 이다.
+
+    **`--min-chars` 를 0 으로 주고 돌릴 것.** 길이 하한은 en 피벗에서 이미 걸렸고
+    (25자), 같은 문장의 zh 판은 밀도가 높아 240 중 34개가 25자 미만이다. 기본값
+    그대로 두면 언어마다 다른 문장이 빠져 **세 트랙이 같은 문장을 쓴다는 전제가 깨진다.**
+
+    소스 단위 중앙값이 언어마다 다르므로 (`pipeline.unit_count`: de 어절 20,
+    ja 문자 52, zh 문자 38) **`--t-grid`·`--min-gap` 을 그대로 쓰면 안 된다** —
+    환산은 `../MULTI2EN_DATASET.md` 참조.
+    """
+    path = path or (_REPO_ROOT / "evaluation" / "ast" / "manifests"
+                    / f"fleurs_nway_{src}-en_multi2en_loop240.jsonl")
+    return load_ast_manifest(path)
+
+
 LOADERS = {
     "kokoro": load_kokoro,
     "kspon": load_kspon,
     "kspon-train": load_kspon_train,
     "fleurs-en-de": load_fleurs_en_de,
     "fleurs-en-ko": load_fleurs_en_ko,
+    "fleurs-de-en": lambda: _load_multi2en("de"),
+    "fleurs-ja-en": lambda: _load_multi2en("ja"),
+    "fleurs-zh-en": lambda: _load_multi2en("zh"),
 }
 
 
@@ -236,6 +259,17 @@ def measure_profile(texts: list[str], min_count: int = 2, attach_ratio: float = 
     """
     total_chars = sum(len(t) for t in texts) or 1
     space_ratio = sum(t.count(" ") for t in texts) / total_chars
+    # **판정은 코퍼스 집계가 아니라 문장별 중앙값으로 한다.** 중국어 FLEURS 는 삽입된 라틴
+    # 고유명사·숫자(`CafeNet El Sol`, `30 美元`) 때문에 소수 문장이 공백을 갖는데, 그것만으로
+    # 집계 비율이 0.0213 이 되어 임계값 0.02 를 아슬하게 넘는다 (240문장 중 공백 보유는 62개,
+    # 중앙값은 0). 그대로 두면 zh 가 spaced 로 잡혀 `unit_count` 가 문자 대신 어절을 세고
+    # (중앙 1), 조각 예산과 `min_gap` 이 통째로 무의미해진다. 중앙값이면 de 0.135 / en 0.159
+    # vs ja 0.000 / zh 0.000 으로 양쪽 여유가 6배 이상이다. 규칙은 여전히 언어 무관이다.
+    per_sentence = sorted(t.count(" ") / len(t) for t in texts if t)
+    space_ratio_median = (per_sentence[len(per_sentence) // 2]
+                          if per_sentence else 0.0)
+    space_sentence_ratio = (sum(1 for t in texts if " " in t) / len(texts)
+                            if texts else 0.0)
 
     attached: dict[str, int] = {}
     seen: dict[str, int] = {}
@@ -265,7 +299,9 @@ def measure_profile(texts: list[str], min_count: int = 2, attach_ratio: float = 
     return {
         "n": len(texts),
         "space_ratio": round(space_ratio, 4),
-        "uses_spaces_between_words": space_ratio > 0.02,
+        "space_ratio_median": round(space_ratio_median, 4),
+        "space_sentence_ratio": round(space_sentence_ratio, 4),
+        "uses_spaces_between_words": space_ratio_median > 0.02,
         "trailing_punctuation": trailing,
         "punctuation_counts": dict(sorted(seen.items(), key=lambda x: -x[1])),
         "final_punctuation_counts": dict(sorted(finals.items(), key=lambda x: -x[1])),

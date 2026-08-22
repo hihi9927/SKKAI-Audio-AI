@@ -1,0 +1,140 @@
+{
+  "cases": [
+    {
+      "id": "ja_jp_1510",
+      "error_type": "format_violation",
+      "span": "地球温暖化の影響を被っている国々",
+      "evidence": "Tags split inside a verb/particle sequence; removing tags changed the original text ordering.",
+      "cause": "tag inserted inside a continuous grammatical unit (verb+object), and tag numbers are non-monotonic left→right.",
+      "proposed_rule": "Never place tags inside an inflected verb, particle sequence, or inside a multi-word grammatical unit; always insert tags at morpheme/punctuation boundaries and number them left-to-right.",
+      "example_pair": {
+        "input": "また、国連では、地球温暖化の影響を被っている国々がその影響に対処できるように支援するための基金について最終決定したいと考えています。",
+        "output": "また、国連では、 <SEG:1> 地球温暖化の影響を被っている国々がその影響に対処できるように支援するための基金について <SEG:2> 最終決定したいと考えています。 <SEG:3>"
+      }
+    },
+    {
+      "id": "ja_jp_654",
+      "error_type": "placement",
+      "span": "を自称しています",
+      "evidence": "The main predicate ended up in a later piece; the isolated final piece was rendered as 'I call myself' with no subject/context.",
+      "cause": "boundary placed before the clause's main verb/predicate (head had not arrived).",
+      "proposed_rule": "Avoid ranking high any boundary that would leave the clause's main predicate (copula/verb) as a later piece; prefer boundaries after the clause verb unless the remaining piece still contains the verb.",
+      "example_pair": {
+        "input": "グリーンランドの先住民は、カナダではイヌイット、グリーンランドではグリーンランド人のカラアレク（複数形カラアリット）を自称しています。",
+        "output": "グリーンランドの先住民は、 <SEG:1> カナダではイヌイット、グリーンランドではグリーンランド人のカラアレク（複数形カラアリット）を自称しています。 <SEG:2>"
+      }
+    },
+    {
+      "id": "ja_jp_1655",
+      "error_type": "format_violation",
+      "span": "示唆されています(James",
+      "evidence": "A tag was inserted inside the inflected verb '示唆されています', producing garbled text when tags were removed.",
+      "cause": "boundary split an inflected verb/auxiliary combination.",
+      "proposed_rule": "Never split verb stems from their auxiliaries/inflection; only place boundaries at clause ends, punctuation, or clear morpheme breaks.",
+      "example_pair": {
+        "input": "例えば、インターネット利用の重要な動機として「学習」や「社会化」が示唆されています(James et al., 1995)。",
+        "output": "例えば、インターネット利用の重要な動機として「学習」や「社会化」が示唆されています(James et al., 1995)。 <SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_264",
+      "error_type": "format_violation",
+      "span": "まだ合意に至っていないものの、2020年",
+      "evidence": "Tags sliced a multi-word expression and a date, producing fragments that alter the original when tags are removed.",
+      "cause": "boundary inserted inside fixed expressions / date token and tag ordering fractured the phrase.",
+      "proposed_rule": "Do not insert boundaries inside fixed multi-word expressions (e.g., '合意に至っていない') or inside date tokens; place tags at phrase or punctuation boundaries and keep numbering monotonic.",
+      "example_pair": {
+        "input": "長官は、「原産地規則や関税についてはまだ合意に至っていないものの、2020年7月1日に取引を始めるための枠組みは十分に整っている」と述べました。",
+        "output": "長官は、 <SEG:1> 「原産地規則や関税についてはまだ合意に至っていないものの、2020年7月1日に取引を始めるための枠組みは十分に整っている」と述べました。 <SEG:2>"
+      }
+    },
+    {
+      "id": "ja_jp_1273",
+      "error_type": "placement",
+      "span": "回収したと報じました",
+      "evidence": "The first emitted piece asserted the wrong action (implied 'released' vs. later 'recovered'); the main verb (head) arrived later.",
+      "cause": "boundary placed before the sentence's main verb/head (head not yet arrived).",
+      "proposed_rule": "Do not place high-ranked boundaries immediately before noun phrases whose governing verb/predicate is still to come; keep the predicate with its subject/objects so the emitted text does not commit prematurely.",
+      "example_pair": {
+        "input": "新華社は、政府の調査員が水曜日に「ブラックボックス」のフライトレコーダー2台を回収したと報じました。",
+        "output": "新華社は、政府の調査員が水曜日に「ブラックボックス」のフライトレコーダー2台を回収したと報じました。 <SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_265",
+      "error_type": "placement",
+      "span": "ジャイロスコープを失ったにもかかわらず",
+      "evidence": "Boundary separated object and its verb so the first piece misstates the event without the corrective clause that follows.",
+      "cause": "main predicate or corrective clause (which changes the interpretation) appeared after the boundary.",
+      "proposed_rule": "Avoid high-ranked boundaries that separate an object or temporal clause from its main verb when the later predicate carries contrast/polarity (e.g., 'にもかかわらず'); keep contrastive predicates with the clause they qualify.",
+      "example_pair": {
+        "input": "国際宇宙ステーションは、その任務を果たす前にジャイロスコープを失ったにもかかわらず、宇宙遊泳が終わるまで姿勢を維持していました。",
+        "output": "国際宇宙ステーションは、その任務を果たす前にジャイロスコープを失ったにもかかわらず、 <SEG:1> 宇宙遊泳が終わるまで姿勢を維持していました。 <SEG:2>"
+      }
+    },
+    {
+      "id": "ja_jp_1098",
+      "error_type": "placement",
+      "span": "ラベルを貼ることを義務付け、1回の違反",
+      "evidence": "A mid-sentence boundary left the consequence/predicate in a later piece; the isolated middle piece asserted 'Mandatory' without the consequence, producing a contradiction score spike.",
+      "cause": "boundary split predicate/modal/consequence from the noun phrase it governs; main assertion arrived later.",
+      "proposed_rule": "Prefer keeping verbs, modals, and their immediately governed consequences (fines, penalties, outcomes) together; demote boundaries that would separate a verb's core predication from its consequence.",
+      "example_pair": {
+        "input": "法案では、カリフォルニア州で販売する暴力的なビデオゲームに「18歳」というラベルを貼ることを義務付け、1回の違反（未成年者への販売）につき1000ドルの罰金が科されます。",
+        "output": "法案では、カリフォルニア州で販売する暴力的なビデオゲームに「18歳」というラベルを貼ることを義務付け、1回の違反（未成年者への販売）につき1000ドルの罰金が科されます。 <SEG:1>"
+      }
+    }
+  ],
+  "summary": "Two systematic problems: (1) the prompt is inserting tags inside words or inflected sequences, producing text-modification format failures — fix by forbidding splits inside verbs, particles, dates, and by numbering tags left-to-right. (2) The prompt ranks boundaries that separate clauses from their governing predicates (verbs/modal consequences) too highly; demote boundaries that would leave the main verb, polarity, or consequence for a later piece (also treat comma '、' boundaries with caution when they precede the clause head).",
+  "aggregate": {
+    "dominant_error": "placement",
+    "error_counts": {
+      "format_violation": 3,
+      "placement": 4
+    },
+    "focus": "format",
+    "focus_reason": "format_pass_rate 0.8667 < 1.0",
+    "priority_audit": [
+      {
+        "feature": "뒤 구두점 '、'",
+        "n": 19,
+        "rank_percentile": 0.527,
+        "contradiction": 0.1499,
+        "over_trust": 0.089
+      },
+      {
+        "feature": "상대위치 1/3",
+        "n": 16,
+        "rank_percentile": 0.558,
+        "contradiction": 0.1945,
+        "over_trust": 0.0833
+      },
+      {
+        "feature": "상대위치 0/3",
+        "n": 23,
+        "rank_percentile": 0.67,
+        "contradiction": 0.048,
+        "over_trust": -0.008
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 15,
+        "rank_percentile": 0.677,
+        "contradiction": 0.396,
+        "over_trust": -0.0796
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 29,
+        "rank_percentile": 0.781,
+        "contradiction": 0.2155,
+        "over_trust": -0.1629
+      }
+    ],
+    "max_missing_boundaries": 0.0,
+    "max_premature_rate": 0.1111,
+    "rank_lift": null,
+    "rank_lift_t": null,
+    "summary": "Two systematic problems: (1) the prompt is inserting tags inside words or inflected sequences, producing text-modification format failures — fix by forbidding splits inside verbs, particles, dates, and by numbering tags left-to-right. (2) The prompt ranks boundaries that separate clauses from their governing predicates (verbs/modal consequences) too highly; demote boundaries that would leave the main verb, polarity, or consequence for a later piece (also treat comma '、' boundaries with caution when they precede the clause head)."
+  }
+}

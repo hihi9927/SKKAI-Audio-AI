@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import random
 import re
 import threading
 import time
@@ -594,6 +595,25 @@ def truncate(seg_text: str, target_chunk_words: int,
             chosen.append(i)
         keep = set(chosen)                   # 못 채우면 덜 자른다 — 보충하지 않는다
     return _rebuild(seg_text, keep, spaced), max(0, want - len(tags))
+
+
+def shuffle_priorities(seg_text: str, rng: random.Random) -> str:
+    """후보 위치는 그대로 두고 **순위 번호만 무작위로 치환한다.**
+
+    `rank_lift` 의 대조군을 만드는 용도다. 같은 후보 집합·같은 `want`·같은 `min_gap` 을
+    통과하므로 `truncate` 가 고르는 **keep 집합만** 달라진다 — 순위가 하는 일(버릴 것과
+    남길 것을 가르기)만 분리해서 잴 수 있다.
+
+    순위가 없는 태그가 하나라도 있으면 그대로 돌려준다 (비교군 프롬프트는 절단 자체가
+    없으므로 대조군도 성립하지 않는다).
+    """
+    prios = priorities(seg_text)
+    if not prios or any(p is None for p in prios):
+        return seg_text
+    perm = list(range(1, len(prios) + 1))
+    rng.shuffle(perm)
+    it = iter(perm)
+    return TAG_RE.sub(lambda _m: tag(next(it)), seg_text)
 
 
 def _rebuild(seg_text: str, keep: set[int], spaced: bool) -> str:

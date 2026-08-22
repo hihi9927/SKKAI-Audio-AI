@@ -28,6 +28,7 @@ d를 무엇으로 두느냐에 따라 두 가지를 모두 보고한다:
 
 from __future__ import annotations
 
+from functools import lru_cache
 import re
 from typing import Iterable, Optional, Sequence
 
@@ -156,6 +157,24 @@ def resolve_tokenize(target_lang: str) -> str:
     return DEFAULT_TOKENIZE.get((target_lang or "").lower(), "13a")
 
 
+@lru_cache(maxsize=None)
+def _bleu_metric(tokenize: str, effective_order: bool):
+    """BLEU 객체를 (토크나이저, effective_order) 별로 **재사용**한다.
+
+    호출마다 새로 만들면 `ja-mecab`/`ko-mecab` 에서 MeCab Tagger 가 매번 생겨
+    ipadic 사전 4개(`sys.dic`·`unk.dic`·`matrix.bin`·`char.bin`)를 mmap 하고
+    해제하지 않는다. 문장 단위 BLEU 는 문장마다 부르므로 매핑이 선형으로 쌓여
+    `vm.max_map_count`(기본 65530)를 넘고, 그 뒤 스레드 스택 mmap 이 실패해
+    `RuntimeError: can't allocate lock` → ThreadPoolExecutor 워커 사망 →
+    future 미완료 → 무한 대기로 이어진다 (실측: Tagger 16,276개 = 매핑 65,104개).
+
+    sacrebleu 의 BLEU 는 호출 간 상태를 남기지 않으므로 재사용이 안전하다.
+    """
+    import sacrebleu
+
+    return sacrebleu.metrics.BLEU(tokenize=tokenize, effective_order=effective_order)
+
+
 def corpus_bleu_score(
     hypotheses: Sequence[str], references: Sequence[str], tokenize: str = "13a"
 ) -> tuple[Optional[float], Optional[str]]:
@@ -168,11 +187,11 @@ def corpus_bleu_score(
         return None, "empty-hypotheses"
 
     try:
-        metric = sacrebleu.metrics.BLEU(tokenize=tokenize)
+        metric = _bleu_metric(tokenize, False)
         score = metric.corpus_score(list(hypotheses), [list(references)])
     except Exception as exc:  # ja-mecab / ko-mecab 미설치 등
         if tokenize in ("ja-mecab", "ko-mecab"):
-            metric = sacrebleu.metrics.BLEU(tokenize="char")
+            metric = _bleu_metric("char", False)
             score = metric.corpus_score(list(hypotheses), [list(references)])
             return score.score, str(metric.get_signature()) + " [fallback:char]"
         return None, f"sacrebleu-error: {exc}"
@@ -191,7 +210,7 @@ def sentence_bleu_score(
     if not hypothesis or not reference:
         return None
     try:
-        metric = sacrebleu.metrics.BLEU(tokenize=tokenize, effective_order=True)
+        metric = _bleu_metric(tokenize, True)
         return metric.sentence_score(hypothesis, [reference]).score
     except Exception:
         return None

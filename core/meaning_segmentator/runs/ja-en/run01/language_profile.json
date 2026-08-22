@@ -1,0 +1,63 @@
+{
+  "source_language": "Japanese",
+  "source_code": "ja",
+  "uses_spaces_between_words": false,
+  "word_order": "SOV | verbs and predicates appear at the end of clauses/sentences in the sample (e.g. 「報じました」「必要があります」「行われました」).",
+  "head_final": true,
+  "punctuation_present": "sometimes — sentence-final and clause punctuation (。、) and brackets/quotes appear in many but not every short unit.",
+  "trailing_punctuation": [
+    "。",
+    "、",
+    "」",
+    "）",
+    ")"
+  ],
+  "register": "formal written news/encyclopedic prose (newswire and informational sentences).",
+  "fillers_and_hesitations": [
+    "えーと",
+    "えっと",
+    "あの",
+    "まあ",
+    "その",
+    "あのー"
+  ],
+  "discourse_markers": [
+    "しかし",
+    "また",
+    "例えば",
+    "そして",
+    "さらに",
+    "一方で",
+    "そのため"
+  ],
+  "clause_boundary_signals": [
+    "。",
+    "、",
+    "）",
+    ")",
+    "」"
+  ],
+  "non_boundary_traps": [
+    "/",
+    "・",
+    ".",
+    ",",
+    "（...）",
+    "et al.,",
+    "3,850 (comma as digit group)",
+    "A1GP (alphanumeric tokens and abbreviations)"
+  ],
+  "unstable_prefix_signals": [
+    "が",
+    "けど",
+    "けれど",
+    "しかし",
+    "でも",
+    "ただし",
+    "ところが",
+    "例えば",
+    "また",
+    "そして"
+  ],
+  "notes_for_prompt_writer": "Prefer to wait for predicate (verb/adjective) to appear before finalizing a segment because Japanese is head-final. Treat full-width sentence punctuation (。、) and closing brackets/quotes (」, ）) as attached to the preceding segment. Avoid splitting on slashes, interpuncts, parentheses or inside Latin/parenthetical citations (e.g. \"(James et al., 1995)\") or numeric groupings. If a segment ends with contrastive/continuation tokens like が／けど／しかし, keep them with the following text rather than closing the segment."
+}

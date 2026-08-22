@@ -1,0 +1,69 @@
+{
+  "source_language": "Japanese",
+  "source_code": "ja",
+  "uses_spaces_between_words": false,
+  "word_order": "SOV — verbs and auxiliaries regularly appear at the end of clauses (e.g., 文末に述べました、できません、語った).",
+  "head_final": true,
+  "punctuation_present": "always — sentence-final and clause punctuation (。 、 「 」 （ ） etc.) appear in every sample",
+  "trailing_punctuation": [
+    "。",
+    "、",
+    "」",
+    "』",
+    "）",
+    "］",
+    "】",
+    "》"
+  ],
+  "register": "newswire / formal written prose (journalistic or encyclopedia-style sentences)",
+  "fillers_and_hesitations": [
+    "あの",
+    "えーと",
+    "えー",
+    "まあ",
+    "その"
+  ],
+  "discourse_markers": [
+    "しかし",
+    "また",
+    "そして",
+    "ところで",
+    "だから",
+    "しかしながら"
+  ],
+  "clause_boundary_signals": [
+    "。",
+    "、",
+    "」",
+    "』",
+    "と（引用の終わりに出る）",
+    "から",
+    "ので",
+    "て（接続形）",
+    "た（過去形語尾）",
+    "ます/ました/ません（敬体語尾）",
+    "が（逆説的接続）"
+  ],
+  "non_boundary_traps": [
+    "、",
+    "・",
+    "（",
+    "）",
+    ".",
+    "..",
+    "の",
+    "が",
+    "や"
+  ],
+  "unstable_prefix_signals": [
+    "が",
+    "て",
+    "と",
+    "から",
+    "ので",
+    "の",
+    "は",
+    "も"
+  ],
+  "notes_for_prompt_writer": "Segment only where the source shows clause-final morphology or clear closing punctuation; prefer splitting after sentence-final verbs/auxiliaries (ます/た/ない/etc.) or after full stops/closing quotes. Do not rely on spaces (there are none); treat particles like が/の/と/て/から as unstable — avoid splitting immediately after them unless following token confirms a clause end. Always attach closing punctuation and closing quotation/parenthesis marks to the preceding segment."
+}

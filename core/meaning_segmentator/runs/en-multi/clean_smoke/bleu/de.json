@@ -1,0 +1,131 @@
+{
+  "tokenize": "13a",
+  "n": 20,
+  "translator": "google:de:ctx=True",
+  "context_line_mismatches": 0,
+  "conditions": {
+    "unsegmented": {
+      "bleu": 41.576,
+      "bleu_signature": "nrefs:1|case:mixed|eff:no|tok:13a|smooth:exp|version:2.6.0",
+      "chrf2": 67.335,
+      "mean_sentence_bleu": 39.571,
+      "k": 1,
+      "laal_words": 17.2,
+      "n": 20,
+      "hyps": [
+        "Während der Auswahl 1976 beriet er Carter in Fragen der Außenpolitik und fungierte dann von 1977 bis 1981 als Nationaler Sicherheitsberater (NSA) als Nachfolger von Henry Kissinger.",
+        "Niemand befand sich in der Wohnung.",
+        "Gier und Egoismus werden uns immer begleiten, und es liegt in der Natur der Zusammenarbeit, dass wir durch egoistisches Handeln kurzfristig immer mehr gewinnen können, wenn die Mehrheit davon profitiert",
+        "Die Videoüberwachung wäre sicherlich ein starkes Signal an die Menschen, die mit Tieren arbeiten, dass ihr Wohlergehen höchste Priorität hat.",
+        "Er dokumentierte sich 1998 in einem Buch.",
+        "Die Aussprache ist im Italienischen relativ einfach, da die meisten Wörter genau so ausgesprochen werden, wie sie geschrieben sind",
+        "Es gibt viele Dinge, die Sie vor und nach einer Reise beachten müssen.",
+        "Er starb am Dienstag in Osaka.",
+        "Einige Patienten könnten sich im Krankenhaus mit dem Virus infiziert haben, glaubt Dr. Moll, und mindestens zwei waren im Krankenhaus tätig.",
+        "Er habe eine WiFi-Türklingel gebaut, sagte er.",
+        "Die Bereitschaft ausländischer Regierungen, diese Dokumente anzuerkennen, ist ebenso sehr unterschiedlich.",
+        "Zayat blieb bei dem Unfall unverletzt.",
+        "In der Nacht des 9. August war das Auge von Morakot etwa siebzig Kilometer von der chinesischen Provinz Fujian entfernt.",
+        "Leider werden beim Erstellen einer DVD höchstwahrscheinlich auch die Ränder abgeschnitten, und wenn die Untertitel des Videos zu weit unten waren, werden diese nicht vollständig angezeigt.",
+        "John Grant von WNED Buffalo (dem Heimatsender von Reading Rainbow) sagte: „Reading Rainbow lehrte Kinder, warum man liest, ... die Liebe zum Lesen – [die Show] ermutigte Kinder, ein Buch in die Hand zu nehmen und zu lesen.“",
+        "Kunsthandwerkliche Produkte können als Antiquitäten definiert werden, obwohl sie jünger sind als ähnliche Massenprodukte.",
+        "Die Medienunternehmen lügen regelmäßig über den Zweck und behaupten, es handele sich um die „Verhinderung von Piraterie“.",
+        "In den 1960er Jahren kehrte er in das gerade unabhängige Algerien zurück, um Filmregie zu unterrichten.",
+        "Als die Autos vor Alonso unter dem Safety-Car tanken mussten, rückte er an der Spitze vor und holte sich den Sieg.",
+        "Chinas BIP könnte innerhalb von zwei Jahrzehnten größer sein als das der Vereinigten Staaten."
+      ],
+      "retention_bleu": 1.0,
+      "retention_chrf2": 1.0
+    },
+    "auto_T6": {
+      "bleu": 26.645,
+      "bleu_signature": "nrefs:1|case:mixed|eff:no|tok:13a|smooth:exp|version:2.6.0",
+      "chrf2": 60.152,
+      "mean_sentence_bleu": 23.976,
+      "k": 3.2,
+      "laal_words": 3.96,
+      "n": 20,
+      "hyps": [
+        "Während der Auswahl 1976 beriet er Carter in Fragen der Außenpolitik, diente dann als Nationaler Sicherheitsberater (NSA) von 1977 bis 1981, Nachfolger von Henry Kissinger.",
+        "Niemand war in der Wohnung.",
+        "Gier und Egoismus werden immer bei uns sein und es liegt in der Natur der Zusammenarbeit dass es immer einen Vorteil geben wird, wenn die Mehrheit davon profitiert mehr zu gewinnen kurzfristig durch egoistisches Handeln",
+        "Die Videoüberwachung würde sicherlich ein starkes Signal senden an diese Leute mit Tieren arbeiten dass ihr Wohl oberste Priorität hat.",
+        "Er hat sich selbst dokumentiert in einem Buch von 1998.",
+        "Die Aussprache ist im Italienischen relativ einfach da die meisten Wörter werden genau so ausgesprochen, wie sie geschrieben werden",
+        "Es gibt viele Dinge das muss man berücksichtigen bevor und wenn Sie irgendwohin reisen.",
+        "Er starb in Osaka am Dienstag.",
+        "Einige Patienten könnten sich mit dem Virus infiziert haben im Krankenhaus, Dr. Moll meint: und mindestens zwei waren Gesundheitspersonal in Krankenhäusern.",
+        "Er baute eine WiFi-Tür Glocke, sagte er.",
+        "Bereitschaft ausländischer Regierungen Die Würdigung dieser Dokumente ist ebenso sehr unterschiedlich.",
+        "Zayat blieb unverletzt bei dem Unfall.",
+        "Ab der Nacht vom 9. August Das Auge von Morakot war etwa siebzig Kilometer entfernt aus der chinesischen Provinz Fujian.",
+        "Wenn Sie eine DVD erstellen, Es sind Grenzen höchstwahrscheinlich auch geschnitten werden, und wenn das Video auch Untertitel hätte ganz unten, sie werden nicht vollständig angezeigt.",
+        "John Grant von WNED Buffalo (Heimatsender von Reading Rainbow) sagte: „Das Lesen wurde von Rainbow gelehrt.“ Kinder, warum lesen,... die Liebe des Lesens – [die Show] ermutigt Kinder, ein Buch in die Hand zu nehmen und zu lesen.“",
+        "Kunsthandwerkliche Produkte können als Antiquitäten definiert werden, obwohl sie jünger sind ähnliche Massenware.",
+        "Die Medienunternehmen regelmäßig über den Zweck davon lügen, mit der Behauptung, es handele sich um die „Verhinderung von Piraterie“.",
+        "In den 1960er Jahren kehrte er in das gerade unabhängige Algerien zurück Filmregie zu unterrichten.",
+        "Als die Autos vor Alonso Kraftstoff holten unter dem Safety Car, er ist aufgestiegen das Rudel, um den Sieg zu erringen.",
+        "Chinas BIP könnte größer sein als das der Vereinigten Staaten innerhalb von zwei Jahrzehnten."
+      ],
+      "retention_bleu": 0.6409,
+      "retention_chrf2": 0.8933,
+      "paired_vs_unseg": {
+        "delta": -15.246,
+        "ci95": [
+          -24.086,
+          -8.097
+        ],
+        "p_sign_flip": 0.0
+      },
+      "paired_vs_mech": {
+        "delta": 21.81,
+        "ci95": [
+          17.511,
+          25.633
+        ],
+        "p_sign_flip": 0.0
+      }
+    },
+    "mechanical_8": {
+      "bleu": 4.823,
+      "bleu_signature": "nrefs:1|case:mixed|eff:no|tok:13a|smooth:exp|version:2.6.0",
+      "chrf2": 35.397,
+      "mean_sentence_bleu": 5.421,
+      "k": 12.75,
+      "laal_words": 1.58,
+      "n": 20,
+      "hyps": [
+        "Während t er 1976 Auswahl ns er ad Vised Ca rter an fremd Politik, dann Ser ved als N ational Sicherheit Berater (NSA) f ab 1977 bis 1981 , Erfolg ding Hen Ry Kissi Finger.",
+        "Niemand w wie innen e die ap artment.",
+        "Gier und d selfis hness wi Ich werde es immer tun sei witzig h uns und es ist t er Natur e von coo Betrieb das w de die m Mehrheit Vorteil da wi Ich werde es immer tun Es wird mehr sein e zu Gai n in der kurzes T ähm von a cting se Fischig",
+        "Die Videoüberwachung würde c Sicherlich senden Sie eine starkes s signalisieren diese p Leute wo rking wi Die Anima ls das ihr Wir lfare ist des am höchsten Priorität .",
+        "Er dokumentiert Hallo Ich bin dabei ein 1998 Buch.",
+        "Aussprechen ation ist relativ ganz einfach auf Italienisch ian sinc e meisten w Ords sind Pronomen ced exac Genau wie Sie sind geschrieben",
+        "Es gibt e viele t Alles klar Du hast t o nimm mich nto Nachteile ideratio n vorher und whe n du tr avel som irgendwo.",
+        "Er ist gestorben in Osaka am Dienstag Tag.",
+        "Etwas klopfen ients mi Ich werde es haben Vertrag ted die Fehler in t er hospi tal, Dr. Moll th Tinten, ein d at lea st zwei w hier hosp ital. hea lte Arbeit ers.",
+        "Er hat gebaut ein WLAN Türklingel lch, er sa id.",
+        "Willingn ess von f ausländisch g Obermänner ts to ho nähre die se dokum ents ist genauso weit v ariable.",
+        "Zayat wa Es ist unverletzt im Unfall .",
+        "Stand e Nacht von August t 9, die Auge von Morakot war ungefähr t siebzig y Kilometer tres awa y von t er Chinesisch se provi Geburtsort von F ujian.",
+        "Unglücklich ately, w hen du mach ein D VD, das ist es Grenzen werde mo st likel Du wirst beschnitten auch, ein d wenn die Video h Ad Subti auch Tles schließen t o der Bo ttom, th Das werden sie nicht voll sein y gezeigt.",
+        "John Gr nt, von WNED Bu ffalo (R liest R ainbow's Home St ation) s Hilfe „Rea Ding Rai nbow tau kämpferische Kinder warum lesen,... die Liebe e von rea ding — [ die Show ] ermutigen betagtes Kind s zum Bild k up a b ook und zu lesen. \"",
+        "Handicra ft produ cts mich Das ist definitiv nicht der Fall ined als Antiquitäten , allerdings sie sind e Jünger r als s ähnlich m Ass-Prod uced goo ds.",
+        "Die medi ein Unternehmen ies Router nur li e ungefähr der purp ose von t sein, cla iming th dabei ist es zu „vor Entlüftungspir acy\".",
+        "Im 1 960er Jahre er Überschrift b zurück zu n ewly-ind abhängig Algerien lehren h film d Regie .",
+        "Da die c Ars ahea d von Alo nso ging für Kraftstoff und ähm die s Sicherheit ca r, er mo ved up t er packt nehmen Sieg.",
+        "Chinas BIP könnte Wäre groß größer als die Uni ted Stat es miti n zwei de Cades."
+      ],
+      "retention_bleu": 0.116,
+      "retention_chrf2": 0.5257,
+      "paired_vs_unseg": {
+        "delta": -37.056,
+        "ci95": [
+          -45.053,
+          -29.796
+        ],
+        "p_sign_flip": 0.0
+      }
+    }
+  }
+}

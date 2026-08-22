@@ -1,0 +1,61 @@
+{
+  "source_language": "Chinese (Mandarin, Simplified)",
+  "source_code": "zh",
+  "uses_spaces_between_words": false,
+  "word_order": "SVO | Most sample sentences place the subject before the verb and the object after the verb (e.g. “皮特曼认为天气情况要到下周才能改善”).",
+  "head_final": false,
+  "punctuation_present": "always — as observed in the sample",
+  "trailing_punctuation": [
+    "。",
+    "，",
+    "）",
+    "”"
+  ],
+  "register": "formal written informational text (news/encyclopedic prose)",
+  "fillers_and_hesitations": [
+    "嗯",
+    "啊",
+    "呃",
+    "那个",
+    "就是"
+  ],
+  "discourse_markers": [
+    "虽然",
+    "而且",
+    "或者",
+    "因此",
+    "对于",
+    "还",
+    "最终",
+    "但是"
+  ],
+  "clause_boundary_signals": [
+    "，",
+    "。",
+    "虽然",
+    "而且",
+    "但是",
+    "或者"
+  ],
+  "non_boundary_traps": [
+    "的",
+    "了",
+    "、",
+    "和",
+    "与",
+    "年"
+  ],
+  "unstable_prefix_signals": [
+    "在",
+    "对于",
+    "如果",
+    "虽然",
+    "因为",
+    "但",
+    "但是",
+    "和",
+    "与",
+    "或者"
+  ],
+  "notes_for_prompt_writer": "Do not rely on spaces to find words; use punctuation and conjunctions as primary segmentation cues. Treat sentence-final punctuation (。 and closing quotes/parentheses) as hard segment boundaries. Avoid splitting inside pre-nominal modifier strings (relative clauses and long noun modifiers precede the noun) and wait after prepositions/conjunctions (e.g. 在/对于/如果/虽然/和) because the dependent phrase is likely to continue."
+}

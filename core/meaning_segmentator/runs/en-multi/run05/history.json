@@ -23,7 +23,7 @@
           "chunks_per_sentence": 3.75,
           "split_ratio": 1.0,
           "missing_boundaries": 0.0,
-          "premature_rate": 0.0714,
+          "premature_rate": 0.0,
           "reference_suspect_rate": 0.0,
           "rank_contra_spearman": 0.1828,
           "rank_contra_gap": 0.017,
@@ -121,6 +121,212 @@
     "score_train": 0.7651,
     "score_dev": 0.7514,
     "paired_dev": null,
-    "changelog": null
+    "changelog": null,
+    "next_changelog": [
+      "Edited [Priority Rules] item 5 to demote boundaries that finalize a clause's subject or modality before the clause head (main verb or explicit negation) appears; such positions are ranked low and boundaries after the verb/negation or its complement are preferred."
+    ]
+  },
+  {
+    "version": 1,
+    "adopted": false,
+    "train": {
+      "n": 40,
+      "format_pass_rate": 0.975,
+      "format_pass_rate_no_retry": 0.7,
+      "by_T": {
+        "6": {
+          "target_chunk_words": 6,
+          "n": 40,
+          "n_scored": 40,
+          "n_effective": 40,
+          "effective": 0.7397,
+          "adequacy": 0.8287,
+          "contradiction": 0.077,
+          "effective_min": 0.3533,
+          "effective_p10": 0.5627,
+          "consistency": 0.7388,
+          "consistency_chrf": 0.5113,
+          "laal_words": 4.5496,
+          "chunks_per_sentence": 3.95,
+          "split_ratio": 1.0,
+          "missing_boundaries": 0.0,
+          "premature_rate": 0.2,
+          "reference_suspect_rate": 0.0,
+          "rank_contra_spearman": 0.0218,
+          "rank_contra_gap": -0.0021,
+          "rank_contra_gap_se": 0.0159,
+          "rank_contra_gap_n": 33,
+          "effective_z": 0.0,
+          "n_targets": 5
+        },
+        "12": {
+          "target_chunk_words": 12,
+          "n": 40,
+          "n_scored": 40,
+          "n_effective": 40,
+          "effective": 0.797,
+          "adequacy": 0.8615,
+          "contradiction": 0.0409,
+          "effective_min": 0.5118,
+          "effective_p10": 0.5767,
+          "consistency": 0.7929,
+          "consistency_chrf": 0.7121,
+          "laal_words": 6.7947,
+          "chunks_per_sentence": 2.15,
+          "split_ratio": 1.0,
+          "missing_boundaries": 0.0,
+          "premature_rate": null,
+          "reference_suspect_rate": null,
+          "rank_contra_spearman": null,
+          "rank_contra_gap": null,
+          "rank_contra_gap_se": null,
+          "rank_contra_gap_n": null,
+          "effective_z": 0.0,
+          "n_targets": 5
+        }
+      },
+      "score": 0.7684
+    },
+    "dev": null,
+    "score_train": 0.7684,
+    "score_dev": null,
+    "paired_dev": null,
+    "changelog": [
+      "Edited [Priority Rules] item 5 to demote boundaries that finalize a clause's subject or modality before the clause head (main verb or explicit negation) appears; such positions are ranked low and boundaries after the verb/negation or its complement are preferred."
+    ],
+    "next_changelog": [
+      "Edited [Priority Rules] item 5 to also demote candidate boundaries that separate ambiguous domain-specific nouns from nearby disambiguating collocates (numeric counts, object nouns, measurement units, or domain markers like 'runs'/'wickets'), because those collocates commonly resolve the noun's sense and early cutting is risky."
+    ]
+  },
+  {
+    "version": 2,
+    "adopted": false,
+    "train": {
+      "n": 40,
+      "format_pass_rate": 0.95,
+      "format_pass_rate_no_retry": 0.625,
+      "by_T": {
+        "6": {
+          "target_chunk_words": 6,
+          "n": 40,
+          "n_scored": 40,
+          "n_effective": 40,
+          "effective": 0.737,
+          "adequacy": 0.822,
+          "contradiction": 0.0634,
+          "effective_min": 0.45,
+          "effective_p10": 0.5743,
+          "consistency": 0.7908,
+          "consistency_chrf": 0.5521,
+          "laal_words": 4.5992,
+          "chunks_per_sentence": 3.925,
+          "split_ratio": 1.0,
+          "missing_boundaries": 0.0,
+          "premature_rate": 0.3333,
+          "reference_suspect_rate": 0.0,
+          "rank_contra_spearman": 0.3272,
+          "rank_contra_gap": -0.0105,
+          "rank_contra_gap_se": 0.0222,
+          "rank_contra_gap_n": 33,
+          "effective_z": 0.0,
+          "n_targets": 5
+        },
+        "12": {
+          "target_chunk_words": 12,
+          "n": 40,
+          "n_scored": 40,
+          "n_effective": 40,
+          "effective": 0.7824,
+          "adequacy": 0.8494,
+          "contradiction": 0.0855,
+          "effective_min": 0.45,
+          "effective_p10": 0.5902,
+          "consistency": 0.8091,
+          "consistency_chrf": 0.7044,
+          "laal_words": 6.8671,
+          "chunks_per_sentence": 2.175,
+          "split_ratio": 1.0,
+          "missing_boundaries": 0.0,
+          "premature_rate": null,
+          "reference_suspect_rate": null,
+          "rank_contra_spearman": null,
+          "rank_contra_gap": null,
+          "rank_contra_gap_se": null,
+          "rank_contra_gap_n": null,
+          "effective_z": -0.0,
+          "n_targets": 5
+        }
+      },
+      "score": 0.7597
+    },
+    "dev": {
+      "n": 60,
+      "format_pass_rate": 0.9833,
+      "format_pass_rate_no_retry": 0.75,
+      "by_T": {
+        "6": {
+          "target_chunk_words": 6,
+          "n": 60,
+          "n_scored": 60,
+          "n_effective": 60,
+          "effective": 0.7272,
+          "adequacy": 0.8264,
+          "contradiction": 0.1053,
+          "effective_min": 0.2361,
+          "effective_p10": 0.586,
+          "consistency": 0.7599,
+          "consistency_chrf": 0.5109,
+          "laal_words": 4.8728,
+          "chunks_per_sentence": 3.4167,
+          "split_ratio": 1.0,
+          "missing_boundaries": 0.0,
+          "premature_rate": null,
+          "reference_suspect_rate": null,
+          "rank_contra_spearman": null,
+          "rank_contra_gap": null,
+          "rank_contra_gap_se": null,
+          "rank_contra_gap_n": null,
+          "effective_z": 0.0,
+          "n_targets": 5
+        },
+        "12": {
+          "target_chunk_words": 12,
+          "n": 60,
+          "n_scored": 60,
+          "n_effective": 60,
+          "effective": 0.7731,
+          "adequacy": 0.843,
+          "contradiction": 0.0619,
+          "effective_min": 0.0277,
+          "effective_p10": 0.6381,
+          "consistency": 0.8011,
+          "consistency_chrf": 0.6218,
+          "laal_words": 6.728,
+          "chunks_per_sentence": 2.15,
+          "split_ratio": 1.0,
+          "missing_boundaries": 0.0,
+          "premature_rate": null,
+          "reference_suspect_rate": null,
+          "rank_contra_spearman": null,
+          "rank_contra_gap": null,
+          "rank_contra_gap_se": null,
+          "rank_contra_gap_n": null,
+          "effective_z": 0.0,
+          "n_targets": 5
+        }
+      },
+      "score": 0.7501
+    },
+    "score_train": 0.7597,
+    "score_dev": 0.7501,
+    "paired_dev": {
+      "mean_delta": 0.0,
+      "se_delta": 0.06408,
+      "n_pairs": 60,
+      "n_changed": 36
+    },
+    "changelog": [
+      "Edited [Priority Rules] item 5 to also demote candidate boundaries that separate ambiguous domain-specific nouns from nearby disambiguating collocates (numeric counts, object nouns, measurement units, or domain markers like 'runs'/'wickets'), because those collocates commonly resolve the noun's sense and early cutting is risky."
+    ]
   }
 ]
