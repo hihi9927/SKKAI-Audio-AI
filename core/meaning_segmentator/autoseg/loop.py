@@ -585,10 +585,10 @@ def fmt_metrics(m: metrics.Metrics, tag: str) -> str:
 def coverage_need(text: str, min_t: int, spaced: bool, min_gap: int) -> int:
     """검증기가 요구할 최소 태그 수. **간격 용량을 넘지 않게 깎는다.**
 
-    개수 요건과 간격 요건은 서로 모른 채 각각 하한/상한을 건다. 짧은 문장에서는
-    `chunk_budget` 의 하한 2 가 태그 1개를 요구하는데 `min_gap` 을 만족하는 자리가
-    0개라, 둘을 그대로 두면 **만족 불가능한 요건**이 되어 그 문장이 영원히 재시도를
-    돈다 (kspon 150문장 중 min_gap=3 에서 1건, =4 에서 7건).
+    개수 요건과 간격 요건은 서로 모른 채 각각 하한/상한을 건다. 짧은 문장에서
+    개수 요건이 태그를 요구하는데 `min_gap` 을 만족하는 자리가 0개면, 둘을 그대로 두면
+    **만족 불가능한 요건**이 되어 그 문장이 영원히 재시도를 돈다 (kspon 150문장 중
+    min_gap=3 에서 1건, =4 에서 7건).
 
     용량으로 깎으면 그런 문장은 태그 0개가 허용되고 그대로 **무분절**로 나간다 —
     절단기에서 무분절이 나오는 경로와 같은 결론이고, 짧은 발화가 통째로 나가야 하는
@@ -697,7 +697,7 @@ def main() -> int:
     # 청자에게 무의미한 한 단어 방출은 지표가 아니라 사용 요건으로 막는다.
     #
     # 부수 효과가 본 기능이기도 하다: 짧은 문장은 min_gap 을 만족하는 자리가 없어
-    # 경계 0개 = **무분절**로 나온다. chunk_budget 하한이 2 라 T 로는 절대 못 만드는
+    # 경계 0개 = **무분절**로 나온다. T 가 요청하는 경로와는 별개로, min_gap 이 만드는
     # 상태이고 (pipeline.truncate 참조), 이 경로가 유일하다.
     #
     # 이 값은 T 에 비례하지 않는 **절대 하한**이라, T 를 줄여도 과분절이 안 따라
@@ -707,7 +707,7 @@ def main() -> int:
                         "미지정 시 **코퍼스에서 유도**한다 (중앙 단위수 × 0.15). 0=끔")
     p.add_argument("--batch-size", type=int, default=6,
                    help="한 분절 호출에 넣을 문장 수. 실측 최적 6, 12 이상은 역효과")
-    p.add_argument("--candidate-t", type=int, default=None,
+    p.add_argument("--density", type=int, default=None,
                    help="후보 마킹 하한 기준 T. 작을수록 많이 찍는다. 미지정 시 min(--final-t-grid)")
     p.add_argument("--no-trust-region", action="store_true",
                    help="개정 범위를 고정 임계값(섹션 2, 1.25배)으로 되돌린다. 과거 런 재현용")
@@ -734,7 +734,6 @@ def main() -> int:
     p.add_argument("--max-prompt-growth", type=float, default=1.3)
     p.add_argument("--dev", type=int, default=60)
     p.add_argument("--test", type=int, default=100)
-    p.add_argument("--min-chars", type=int, default=25)
     # 노브. 루프에서는 부분집합만 쓴다 — 조각 번역이 격자 크기에 비례해 늘기 때문이다.
     p.add_argument("--t-grid", type=int, nargs="+", default=None,
                    help="루프가 쓰는 목표 조각 크기. score 는 이 격자에서의 adequacy 평균이라 "
@@ -788,7 +787,7 @@ def main() -> int:
             setattr(args, _f, None)           # 모델 기본값에 맡긴다
 
     # **`min_gap` 을 안 주면 코퍼스에서 유도한다.** 이게 있어야 언어별 숫자가 커맨드에서
-    # 사라진다 — 격자·`candidate_t` 는 이미 `min_gap` 에서 나오므로 이 하나가 마지막 고리다.
+    # 사라진다 — 격자·`density` 는 이미 `min_gap` 에서 나오므로 이 하나가 마지막 고리다.
     # 격자 결정보다 먼저여야 해서 데이터셋을 여기서 한 번 읽는다 (jsonl 읽기, 무시 가능).
     if args.min_gap is None:
         _texts = [x.text for x in data.LOADERS[args.dataset]()]
@@ -856,7 +855,7 @@ def main() -> int:
     # 문면(`initial_prompt`)과 검증기(`need`)가 **같은 값**을 써야 한다 — 어긋나면 전 문장이
     # too_few_tags 로 재시도돼 비용이 두 배가 되고 1차 통과율 신호가 오염된다.
     #
-    # **격자를 따라 올라가면 안 된다.** `coverage_t` 는 곡선을 따라가지만 `candidate_t` 는
+    # **격자를 따라 올라가면 안 된다.** `coverage_t` 는 곡선을 따라가지만 `density` 는
     # 마킹 밀도 노브라 성격이 다르다. min_gap 에서 격자를 유도하면서 coverage_t 가 2 -> 4 로
     # 오르는데, 그대로 물려 두면 문면이 "2어절당 하나" -> "4어절당 하나"가 되어 밀도 요건이
     # 절반이 된다 — §8.1 의 레버를 거꾸로 당기는 셈이다.
@@ -864,18 +863,18 @@ def main() -> int:
     # min_gap 이 원하는 방향은 정반대다: 간격 제약이 붙어 있는 자리를 **버리므로**, 필터가
     # 고를 대안이 남으려면 후보가 더 많아야 한다. 그래서 격자와 분리해 2 로 고정한다
     # (기존 기본 격자에서의 값과 같아 min_gap=0 이면 동작이 완전히 같다).
-    # min_gap 이 켜져 있으면 **간격을 지킬 수 있는 값**이어야 한다. `candidate_t = min_gap`
+    # min_gap 이 켜져 있으면 **간격을 지킬 수 있는 값**이어야 한다. `density = min_gap`
     # 은 round() 때문에 요구 개수가 용량을 살짝 넘는다 (ko-en 실측 하한 3.8 > 용량 3.5)
     # — 그러면 만족 불가능한 요건이 되어 전 문장이 재시도로 돈다.
     #
-    # **여유를 정하는 것은 오프셋이 아니라 비율 `min_gap / candidate_t` 다.** 예전 `min_gap + 1`
+    # **여유를 정하는 것은 오프셋이 아니라 비율 `min_gap / density` 다.** 예전 `min_gap + 1`
     # 은 상수라 min_gap 이 커질수록 비율이 1 로 붙어 여유가 사라진다 (3/4=0.75 → 6/7=0.857 →
     # 8/9=0.889). zh(min_gap 6)·ja(min_gap 8) 실측에서 **요구 경계가 물리적 수용량 이상인
     # 문장이 48% / 64%** 나왔다 — 모델이 min_gap 격자에 정확히 맞춰야만 통과하는 요건이라
     # too_few_tags·gap_too_small 로 전량 재시도된다 (en 기준선 6%, de 8%).
     # 비율을 보존하면 zh 12% / ja 6% 로 내려온다. **min_gap 2·3·4 에서는 +1 과 값이 같아
     # 과거 런과 완전히 호환된다** (3→4, 4→5 동일).
-    candidate_t = args.candidate_t or (round(args.min_gap * 4 / 3) if args.min_gap > 0
+    density = args.density or (round(args.min_gap * 4 / 3) if args.min_gap > 0
                                        else min(2, coverage_t))
     main_t = args.main_t or t_grid[len(t_grid) // 2]
     if main_t not in t_grid:
@@ -918,8 +917,7 @@ def main() -> int:
         # ── A0 데이터 ────────────────────────────────────────────────────
         sentences = data.LOADERS[args.dataset]()
         pool_n = max(args.train, args.train_pool or args.train)
-        splits = data.split_data(sentences, pool_n, args.dev, args.test,
-                                 min_chars=args.min_chars)
+        splits = data.split_data(sentences, pool_n, args.dev, args.test)
         data.write_splits(splits, run_dir / "data")
         log(f"[data] {args.dataset}: 전체 {len(sentences)}, "
             f"train {len(splits['train'])} / dev {len(splits['dev'])} / test {len(splits['test'])}")
@@ -986,8 +984,8 @@ def main() -> int:
                                          args.consistency_backend),
             "judge_prompt_hash": JsonCache.key(agents.JUDGE_SYSTEM),
             "judge_model": args.judge_model or args.model,
-            "min_boundaries_per": candidate_t,   # [Output Rules] 에 박히는 값 = 검증기 요건
-            "candidate_t": candidate_t,
+            "min_boundaries_per": density,   # [Output Rules] 에 박히는 값 = 검증기 요건
+            "density": density,
             "curve_min_t": coverage_t,
             "coverage_required": not args.no_coverage_rule,
             "t_floor": t_floor,                  # ceil(1.5 * min_gap). 아래 T 는 포화한다
@@ -1012,7 +1010,7 @@ def main() -> int:
 
         _kw = dict(gw=gw, spaced=spaced, seg_cache=seg_cache, workers=args.workers,
                    trailing_punct=trailing_punct,
-                   require_coverage=not args.no_coverage_rule, coverage_t=candidate_t,
+                   require_coverage=not args.no_coverage_rule, coverage_t=density,
                    reasoning_effort=args.seg_reasoning_effort,
                    batch_size=args.batch_size, min_gap=args.min_gap,
                    skip_translation_below=args.skip_translation_below)
@@ -1066,7 +1064,7 @@ def main() -> int:
             def one(pr: str):
                 # 프롬프트 **안**의 병렬(=콜 수)만으로는 워커를 못 채운다. 프롬프트
                 # **사이**에도 병렬을 걸어야 동시 폭이 후보 수만큼 곱해진다.
-                min_t = candidate_t
+                min_t = density
                 need = (lambda t: coverage_need(t, min_t, spaced, args.min_gap)
                         ) if not args.no_coverage_rule else (lambda t: None)
                 segment_batch(
@@ -1158,7 +1156,7 @@ def main() -> int:
             for attempt in range(3 * max(1, args.v0_candidates)):
                 if len(candidates) >= args.v0_candidates:
                     break
-                cand = profiler.initial_prompt(profile, None, spaced, candidate_t,
+                cand = profiler.initial_prompt(profile, None, spaced, density,
                                                args.min_gap)
                 missing = agents.check_skeleton(cand)
                 if missing:

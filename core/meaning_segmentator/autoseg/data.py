@@ -171,8 +171,8 @@ def load_fleurs_en_de(path: Path | None = None) -> list[Sentence]:
 
     KsponSpeech(자발 발화, 구두점 없음)와 성격이 정반대다 — 문어체에 구두점이 완비돼
     있어 `measured_profile` 의 `trailing_punctuation` 이 실제로 잡히고, 문장이 길다
-    (어절 중앙값 21). **전량이 min_chars=25 를 통과하지만 총 346개뿐이라**
-    `train_pool + dev + test <= 346` 을 지켜야 `split_data` 가 죽지 않는다.
+    (어절 중앙값 21). **총 346개뿐이라** `train_pool + dev + test <= 346` 을 지켜야
+    `split_data` 가 죽지 않는다.
     """
     path = path or (_REPO_ROOT / "evaluation" / "ast" / "manifests"
                     / "fleurs_en-de_test.jsonl")
@@ -187,8 +187,8 @@ def load_fleurs_en_ko(path: Path | None = None) -> list[Sentence]:
     en-ko 는 사실상 같은 영어 문장을 타깃만 바꿔 돌리는 대조군**이다 — autoseg 는
     `tgt_text` 를 읽지 않으므로 두 런의 차이는 번역기 타깃 언어와 지표뿐이다.
 
-    전량이 `min_chars=25` 를 통과하지만 총 270개뿐이라
-    `train_pool + dev + test <= 270` 을 지켜야 `split_data` 가 죽지 않는다.
+    총 270개뿐이라 `train_pool + dev + test <= 270` 을 지켜야 `split_data` 가
+    죽지 않는다.
 
     기본 `--contradiction-backend xlmr-anli` 가 다국어라 타깃별 지정이 필요 없다.
     """
@@ -206,9 +206,9 @@ def _load_multi2en(src: str, path: Path | None = None) -> list[Sentence]:
     `en-multi/run06`(프롬프트 생성)·`clean500`(en→X 평가) 어느 쪽과도 겹치지 않는다.
     같은 정렬의 740~1239 구간이 최종 평가용 `multi2en_eval500` 이다.
 
-    **`--min-chars` 를 0 으로 주고 돌릴 것.** 길이 하한은 en 피벗에서 이미 걸렸고
-    (25자), 같은 문장의 zh 판은 밀도가 높아 240 중 34개가 25자 미만이다. 기본값
-    그대로 두면 언어마다 다른 문장이 빠져 **세 트랙이 같은 문장을 쓴다는 전제가 깨진다.**
+    **길이 하한 필터는 없앴다** (`split_data` 참조). 예전에는 `--min-chars 0` 을 손으로
+    줘야 했다 — 기본 25자로 두면 밀도가 높은 zh 판만 240 중 34개가 빠져 세 트랙이 같은
+    문장을 쓴다는 전제가 깨졌기 때문이다. 이제 그 우회가 필요 없다.
 
     소스 단위 중앙값이 언어마다 다르므로 (`pipeline.unit_count`: de 어절 20,
     ja 문자 52, zh 문자 38) **`--t-grid`·`--min-gap` 을 그대로 쓰면 안 된다** —
@@ -353,15 +353,26 @@ def split_data(
     n_train: int,
     n_dev: int,
     n_test: int,
-    min_chars: int = 20,
     seed: int = 20260806,
 ) -> dict[str, list[Sentence]]:
-    """층화 후 라운드로빈으로 train/dev/test 를 겹치지 않게 뽑는다."""
-    pool = [s for s in sentences if len(s.text) >= min_chars]
+    """층화 후 라운드로빈으로 train/dev/test 를 겹치지 않게 뽑는다.
+
+    **길이 하한 필터(`min_chars`)는 없앴다.** 짧은 문장을 거르는 선은 이미
+    `min_gap` 이 갖고 있다 — `truncate` 는 양끝에서 각각 `min_gap` 이상 떨어진 자리에만
+    경계를 놓으므로 `unit_count < 2*min_gap` 인 문장은 **구조적으로 무분절**이다.
+    `min_chars` 는 그 선을 문자 수로 근사한 두 번째 절단선이었고, 단위가 달라
+    언어마다 어긋났다 (en/ko 는 25자 ≈ 2*min_gap 으로 우연히 일치, zh 는 무분절 경계가
+    12자인데 25자에서 잘려 240 중 34 문장이 과다 탈락 — 그래서 multi2en 트랙이
+    `--min-chars 0` 을 손으로 꺼야 했다).
+
+    거를 이유도 사라졌다. 구조적 무분절 문장은 `coverage_need == 0` 이라 분절 호출을
+    건너뛸 수 있고(결과가 호출 전에 확정), `effective` 가 프롬프트 불변 상수라 채택
+    판정의 쌍체 차이에 **정확히 0** 을 기여한다.
+    """
+    pool = list(sentences)
     if len(pool) < n_train + n_dev + n_test:
         raise ValueError(
-            f"문장 부족: 사용 가능 {len(pool)}개 < 요청 {n_train + n_dev + n_test}개 "
-            f"(min_chars={min_chars})"
+            f"문장 부족: 사용 가능 {len(pool)}개 < 요청 {n_train + n_dev + n_test}개"
         )
 
     rng = random.Random(seed)

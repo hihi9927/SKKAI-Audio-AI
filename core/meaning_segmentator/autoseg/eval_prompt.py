@@ -43,7 +43,7 @@ def main() -> int:
     p.add_argument("--model", default="gpt-5-mini")
     # 비교군도 루프와 같은 사고량으로 재야 표에 나란히 놓을 수 있다 (기준 런 config 의
     # seg_reasoning_effort 를 상속하고, 없으면 루프 기본값 low).
-    # 후보 풀 하한을 곡선 격자와 **분리**한다. 검증기는 `round(어절/candidate_t)−1` 개를
+    # 후보 풀 하한을 곡선 격자와 **분리**한다. 검증기는 `round(어절/density)−1` 개를
     # 요구하므로 이 값이 작을수록 모델이 더 많이 찍어야 한다. 순위 절단이 실제로 고를 수
     # 있으려면 후보가 채택 수보다 충분히 많아야 하는데, 기본값(=min(final_t_grid))에서는
     # 후보 7.2개 / 채택 6.2개로 폐기가 1개뿐이라 순위가 무력했다
@@ -57,7 +57,7 @@ def main() -> int:
                    help="한 분절 호출에 넣을 문장 수. 1 = 종전 동작")
     p.add_argument("--priority-depth", type=int, default=None,
                    help="상위 N 개만 번호 요구. 미지정 시 전체 순위")
-    p.add_argument("--candidate-t", type=int, default=None,
+    p.add_argument("--density", type=int, default=None,
                    help="후보 마킹 하한 기준 T. 미지정 시 min(t_grid)")
     p.add_argument("--seg-reasoning-effort", default=None,
                    choices=["minimal", "low", "medium", "high", "none"],
@@ -157,7 +157,7 @@ def main() -> int:
                                  require_priority=not args.no_priority,
                                  contradiction=contradiction,
                                  reasoning_effort=seg_effort,
-                                 coverage_t=(args.candidate_t or cfg.get("candidate_t")
+                                 coverage_t=(args.density or cfg.get("density") or cfg.get("candidate_t")
                                              or min(t_grid)),
                                  priority_depth=args.priority_depth,
                                  batch_size=args.batch_size,
@@ -174,7 +174,8 @@ def main() -> int:
             "tgt_lang": tgt_name,
             "min_gap": (args.min_gap if args.min_gap is not None
                         else int(cfg.get("min_gap", 0))),
-            "candidate_t": args.candidate_t or cfg.get("candidate_t") or min(t_grid),
+            "density": (args.density or cfg.get("density")
+                        or cfg.get("candidate_t") or min(t_grid)),
             "priority_depth": args.priority_depth,
             "batch_size": args.batch_size,
             "require_priority": not args.no_priority,

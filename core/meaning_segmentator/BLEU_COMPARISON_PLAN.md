@@ -37,7 +37,7 @@
 `fleurs-en-de` 를 `test=100 / dev=60 / train_pool=80 / min_chars=25` 로 돌린 런이 `en-de/run01~04`,
 `en-multi/run05`, `run06` **6개**다. `split_data` 는 test 를 가장 먼저 떼고 시드가 고정이라
 여섯 런의 test 100 이 **문자 그대로 같은 집합**이다(저장본과 재현 일치 확인). 그 사이 설계 결정
-(백엔드 xlmr-anli 교체, `min_gap`, `candidate_t`, 순위 진단 도입)이 그 수치를 본 뒤에 내려졌다.
+(백엔드 xlmr-anli 교체, `min_gap`, `density`, 순위 진단 도입)이 그 수치를 본 뒤에 내려졌다.
 홀드아웃으로서 마모됐으므로 헤드라인 숫자로 쓰지 않는다. 다만 캐시가 살아 있어 공짜이므로 **참고로 병기**한다 —
 새 셋과 붙으면 마모 걱정이 기우였다는 증거, 벌어지면 옛 수치가 낙관적이었다는 증거다.
 
@@ -182,7 +182,7 @@ python -m core.meaning_segmentator.autoseg.eval_prompt \
     --workers 8 --budget 8
 ```
 
-번역기·백엔드·`min_gap`·`candidate_t` 가 run06 config 에서 상속되므로 루프와 같은 자로 측정된다.
+번역기·백엔드·`min_gap`·`density` 가 run06 config 에서 상속되므로 루프와 같은 자로 측정된다.
 덤으로 adequacy/contradiction/laal 도 같은 자로 남아 BLEU 와 나란히 볼 수 있다.
 
 ### 단계 2 — BLEU 스크립트 신규 작성
