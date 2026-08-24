@@ -1,0 +1,10 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Decision Procedure]"
+  ],
+  "changelog": [
+    "[When to Segment]: Clarified how predicate/auxiliary/modality and subject-disambiguating cues affect the renderability judgment; listed concrete surface forms that typically indicate continuation and must be treated as marginally renderable (still candidates but lower confidence). This reduces premature commits before main verbs, auxiliaries, or disambiguating particles.",
+    "[Decision Procedure]: Added a mandatory re-ranking pass that demotes candidates whose preceding stretch ends in connective/continuation suffixes or lacks clause-final verb/auxiliary/modal markers, and that demotes cuts which would leave an immediately-following multiword named-entity or list fragment unresolved. This enforces lower priority for risky placements without forbidding them."
+  ]
+}

@@ -1,0 +1,173 @@
+{
+  "cases": [
+    {
+      "id": "KsponSpeech_E00182",
+      "error_type": "wrong_boundary",
+      "span": "못 다닐 것 같아 가지고.",
+      "evidence": "seg_trans adds hallucinated 'so I took it' not present in reference",
+      "cause": "clause ends in a dependent connective (-가지고) that needs the prior clause's cause; isolating it made the translator invent a filler action",
+      "proposed_rule": "Do not place a boundary immediately before a clause whose only verb ending is a dependent connective (e.g. -가지고, -아서) that encodes cause/result tied to the previous clause; keep it attached or move the tag earlier.",
+      "example_pair": {
+        "input": "같이할 생각을 생각을 해 봤는데 못 다닐 것 같아 가지고.",
+        "output": "같이할 생각을 생각을 해 봤는데 못 다닐 것 같아 가지고."
+      }
+    },
+    {
+      "id": "KsponSpeech_E00521",
+      "error_type": "wrong_boundary",
+      "span": "이제 그런 것도 없고 그냥 무조건",
+      "evidence": "reference keeps 'I'm just a champion...' with subject; seg_trans drops the subject and reads as a bare description",
+      "cause": "the subject pronoun implicit in the first clause was not carried into the second segment, so the second piece lost its referent",
+      "proposed_rule": "Before splitting a pro-drop clause, check whether the subject was only established in the preceding clause; if so, keep the clauses together or repeat the subject rather than split.",
+      "example_pair": {
+        "input": "에 에 에 이제 옛날이면 자신있게 자기 막 잘하고 그랬는데 이제 그런 것도 없고 그냥 무조건 그냥 반만 가는 챔피언 버스 타는 챔피언",
+        "output": "에 에 에 이제 옛날이면 자신있게 자기 막 잘하고 그랬는데 이제 그런 것도 없고 그냥 무조건 그냥 반만 가는 챔피언 버스 타는 챔피언"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00022",
+      "error_type": "over_segmentation",
+      "span": "너무 먹고 싶어서 어쩔 수 없었다고 그래가지고",
+      "evidence": "reference keeps one continuous causal chain 'we had no choice...and ate it'; seg_trans splits into 3 disjoint sentences with subject drifting from 'we' to 'I'",
+      "cause": "three-way split fragmented a single reported-speech causal chain, breaking subject and tense consistency across pieces",
+      "proposed_rule": "When a sentence is one continuous cause-then-result chain reported in indirect speech, limit to at most one split and avoid separating the reason clause from the result clause it attaches to.",
+      "example_pair": {
+        "input": "아니 근데 우리도 부담되는데 너무 먹고 싶어서 어쩔 수 없었다고 그래가지고 먹고 맛있게 먹었어.",
+        "output": "아니 근데 우리도 부담되는데 <SEG> 너무 먹고 싶어서 어쩔 수 없었다고 그래가지고 먹고 맛있게 먹었어."
+      }
+    },
+    {
+      "id": "KsponSpeech_E00131",
+      "error_type": "wrong_boundary",
+      "span": "메고 다니는 이제 그 각각의 그 보직이 있기 때문에",
+      "evidence": "reference: 'the things I carry now have their own position'; seg_trans: 'each thing being carried has its own position' (passive, subject lost)",
+      "cause": "the subject '저는' appears only in the second segment, so the first segment was translated without knowing who performs the action, causing a passive misread",
+      "proposed_rule": "If the subject of a clause is stated only after the proposed boundary, move the boundary after the subject introduction instead of before it.",
+      "example_pair": {
+        "input": "메고 다니는 이제 그 각각의 그 보직이 있기 때문에 저는 이제",
+        "output": "메고 다니는 이제 그 각각의 그 보직이 있기 때문에 저는 이제"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00195",
+      "error_type": "over_segmentation",
+      "span": "자타공인 최고긴 한데 / 이분들 작품을 너무 많이 봤고 / 볼 때마다",
+      "evidence": "reference reads as one contrastive-then-listing sentence; seg_trans renders three disconnected statements, losing the 'but...and' link",
+      "cause": "splitting a contrastive '-한데' clause and the following listed clauses into separate sentences removed the connective relations between them",
+      "proposed_rule": "Do not insert more than one boundary inside a contrast+listing structure (X-한데 Y-고 Z); keep the listed clauses that share one connective chain together.",
+      "example_pair": {
+        "input": "하여튼 솔직히 말하면 자타공인 최고긴 한데 이분들 작품을 너무 많이 봤고 볼 때마다 늘 달라져있고 그리고",
+        "output": "하여튼 솔직히 말하면 자타공인 최고긴 한데 <SEG> 이분들 작품을 너무 많이 봤고 볼 때마다 늘 달라져있고 그리고"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00929",
+      "error_type": "under_segmentation",
+      "span": "그니까",
+      "evidence": "missed_gain 0.0507; reference splits right after the leading discourse marker 그니까",
+      "cause": "no tag was placed at all even though the leading filler/connective can be safely detached with no quality cost",
+      "proposed_rule": "When a sentence opens with a standalone discourse connective (그니까, 그래서, 근데, etc.), place a boundary right after it.",
+      "example_pair": {
+        "input": "그니까 술 같은 경우는 이제 같이 가는 사람이 이렇게 같이 즐기면 먹을 수 있는데 막상 여행지에 가서도",
+        "output": "그니까 <SEG> 술 같은 경우는 이제 같이 가는 사람이 이렇게 같이 즐기면 먹을 수 있는데 막상 여행지에 가서도"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00283",
+      "error_type": "under_segmentation",
+      "span": "이제 편입을 준비하게 되었는데",
+      "evidence": "missed_gain 0.2332; reference inserts a boundary inside the long filler-laden clause before the sentence stayed fully whole",
+      "cause": "a long run-on with repeated fillers ('이제'...'이제') was left as a single piece though a safe internal boundary existed at no quality cost",
+      "proposed_rule": "In long sentences with repeated filler markers before a main verb, insert a boundary near the verb phrase rather than leaving the whole run-on unsplit.",
+      "example_pair": {
+        "input": "그리고 이제 작년에 이제 3개월 이제 노력을 해서 이제 편입을 준비하게 되었는데 혹시 군대 전역하고",
+        "output": "그리고 이제 작년에 이제 3개월 이제 노력을 해서 이제 편입을 <SEG> 준비하게 되었는데 혹시 군대 전역하고"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00170",
+      "error_type": "under_segmentation",
+      "span": "그래서 좀 더",
+      "evidence": "sentence left as one piece though it ends with a fresh connective clause '그래서 좀 더' that could stand as its own segment",
+      "cause": "no tag was placed before the trailing '그래서' connective clause, leaving the whole long sentence as one latency-costly piece",
+      "proposed_rule": "In long sentences, place a boundary before a trailing clause introduced by a result connective (그래서, 그러니까) even if that clause is short.",
+      "example_pair": {
+        "input": "예를 들어서 요즘 카페 창업이든 음식점 창업이던 좀 남을 따라하려는 경향이 좀 많아서 그래서 좀 더",
+        "output": "예를 들어서 요즘 카페 창업이든 음식점 창업이던 좀 남을 따라하려는 경향이 좀 많아서 <SEG> 그래서 좀 더"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00414",
+      "error_type": "under_segmentation",
+      "span": "호텔카지노? 그런쪽으로 가는 목적이 있어가지고",
+      "evidence": "missed_gain 0.2304; reference splits right after the rhetorical question mark before the summarizing clause",
+      "cause": "an embedded question followed by a concluding clause was left fused, though the question mark is a natural, safe boundary",
+      "proposed_rule": "When a sentence contains an embedded question ending in '?' followed by a summarizing clause, place a boundary right after the question mark.",
+      "example_pair": {
+        "input": "나는 다른학교 편입으로 승무원쪽 가거나 아니면 호텔카지노? 그런쪽으로 가는 목적이 있어가지고",
+        "output": "나는 다른학교 편입으로 승무원쪽 가거나 아니면 호텔카지노? <SEG> 그런쪽으로 가는 목적이 있어가지고"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00643",
+      "error_type": "under_segmentation",
+      "span": "그러고 나서",
+      "evidence": "sentence left whole though it contains an internal 'and then' connective that separates two parallel time spans",
+      "cause": "no boundary was placed before the internal temporal connective '그러고 나서', leaving one long piece with two describable time spans",
+      "proposed_rule": "When a sentence contains an internal temporal connective (그러고 나서, 그 다음에) joining two describable spans, place a boundary right before it.",
+      "example_pair": {
+        "input": "오월드 알바를 하면서 이제 그러고 나서 계속 오월드 알바를 한 5월 6월동안 계속 했는데",
+        "output": "오월드 알바를 하면서 이제 <SEG> 그러고 나서 계속 오월드 알바를 한 5월 6월동안 계속 했는데"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00749",
+      "error_type": "under_segmentation",
+      "span": "그래서 / 되게 중요한 것 같지 않아?",
+      "evidence": "missed_gain 0.29; reference splits off the leading connective '그래서' and separates the trailing tag question",
+      "cause": "the sentence has a detachable leading connective and a self-contained trailing rhetorical question, both left fused with no tags",
+      "proposed_rule": "Split off a leading standalone connective, and split before a trailing rhetorical tag-question that could stand on its own.",
+      "example_pair": {
+        "input": "그래서 꿈을 미리 잡아 놓는데 되게 중요한 것 같지 않아?",
+        "output": "그래서 <SEG> 꿈을 미리 잡아 놓는데 <SEG> 되게 중요한 것 같지 않아?"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00635",
+      "error_type": "under_segmentation",
+      "span": "서울에 가깝고",
+      "evidence": "missed_gain 0.2289; reference splits at the coordinating '-고' between two adjective clauses",
+      "cause": "two coordinated adjective clauses joined by -고 were left fused though each can be translated independently",
+      "proposed_rule": "When two coordinated descriptive clauses are joined by -고 and each is self-contained, place a boundary at that -고.",
+      "example_pair": {
+        "input": "아 약간 거기가 확실히 서울에 가깝고 좀 추운데가 아니니까",
+        "output": "아 약간 거기가 확실히 서울에 가깝고 <SEG> 좀 추운데가 아니니까"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00474",
+      "error_type": "under_segmentation",
+      "span": "아 어 근데",
+      "evidence": "missed_gain 0.1695; reference adds a further split isolating the filler interjections '아 어 근데' from the substantive clause",
+      "cause": "a cluster of filler interjections was left attached to the main clause instead of being split off as its own fast segment",
+      "proposed_rule": "When a segment begins with a cluster of filler interjections (아, 어, 근데) before the real clause, split them into their own piece.",
+      "example_pair": {
+        "input": "왜? 아 어 근데 그거 안 먹으면 그 안 나와.",
+        "output": "왜? <SEG> 아 어 근데 <SEG> 그거 안 먹으면 그 안 나와."
+      }
+    }
+  ],
+  "summary": "The main failure mode is under-segmentation: long or filler-laden sentences are frequently left as one piece even though leading connectives (그니까/그래서), trailing tag-questions, embedded question marks, and coordinating -고 clauses offer free, no-latency-cost boundaries. The secondary failure mode is wrong-boundary/over-segmentation where splits are placed right before a clause that still depends on the prior clause for its subject or causal connective, causing dropped subjects or hallucinated continuations.",
+  "aggregate": {
+    "dominant_error": "under_segmentation",
+    "error_counts": {
+      "wrong_boundary": 3,
+      "over_segmentation": 2,
+      "under_segmentation": 8
+    },
+    "over_seg_count": 5,
+    "under_seg_count": 8,
+    "direction": "segment more aggressively",
+    "summary": "The main failure mode is under-segmentation: long or filler-laden sentences are frequently left as one piece even though leading connectives (그니까/그래서), trailing tag-questions, embedded question marks, and coordinating -고 clauses offer free, no-latency-cost boundaries. The secondary failure mode is wrong-boundary/over-segmentation where splits are placed right before a clause that still depends on the prior clause for its subject or causal connective, causing dropped subjects or hallucinated continuations."
+  }
+}

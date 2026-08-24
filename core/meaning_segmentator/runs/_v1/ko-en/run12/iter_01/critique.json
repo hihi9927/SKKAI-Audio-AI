@@ -1,0 +1,137 @@
+{
+  "cases": [
+    {
+      "id": "KsponSpeech_E00097",
+      "error_type": "over_segmentation",
+      "span": "그래갖고 그것도 되게 막 바르고",
+      "evidence": "verb '바르고' lost its object '사라다 고로케' which only appears in the next segment; hyp invented 'I applied it' instead of describing the croquette",
+      "cause": "verb-object dependency spans the boundary, so the isolated segment has no referent for the verb",
+      "proposed_rule": "Do not place a boundary between a verb ending in -고 and the object/complement noun phrase it governs when that noun phrase appears in a later clause; keep the chain in one segment.",
+      "example_pair": {
+        "input": "바르더라고. 그래갖고 그것도 되게 막 바르고 사라다 고로케라는 것도 있는데",
+        "output": "바르더라고. <SEG> 그래갖고 그것도 되게 막 바르고 사라다 고로케라는 것도 있는데"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00816",
+      "error_type": "wrong_boundary",
+      "span": "탔는데",
+      "evidence": "hyp translated '탔는데' as a standalone statement ('I rode it on another ride') and the following rhetorical question lost its referent, becoming 'why doesn't this amusement park work'",
+      "cause": "a -는데 concessive clause was cut off from the rhetorical question it introduces, so the question can no longer be resolved against it",
+      "proposed_rule": "Do not split immediately after a clause ending in -는데 when the following clause is a rhetorical or quoted question that depends on it for meaning.",
+      "example_pair": {
+        "input": "뭐 다른 놀이기구에서는 탔는데 왜 이 놀이기군 안 되냐 라고 말씀하시는 경우도 되게 많구 되게 진상이 되게 많아.",
+        "output": "뭐 다른 놀이기구에서는 탔는데 왜 이 놀이기군 안 되냐 라고 말씀하시는 경우도 되게 많구 <SEG> 되게 진상이 되게 많아."
+      }
+    },
+    {
+      "id": "KsponSpeech_E00505",
+      "error_type": "over_segmentation",
+      "span": "벗어났으니까 ... 잡혀서",
+      "evidence": "the causal chain 'escaped free housing -> deemed to own land -> tax rose' was split into three disconnected sentences, losing the cause-effect link entirely",
+      "cause": "sequential causal connectors (-니까, -어서) forming one reasoning chain were cut apart, breaking the causal relation",
+      "proposed_rule": "Keep chained causal connectors (-니까, -어서, -므로) in one segment; split only at the final connector right before the resulting outcome clause.",
+      "example_pair": {
+        "input": "그거 하면서 무상거주에서 벗어났으니까 그 토지가 있는 걸로 잡혀서 세금이 오른 거야.",
+        "output": "그거 하면서 무상거주에서 벗어났으니까 그 토지가 있는 걸로 잡혀서 <SEG> 세금이 오른 거야."
+      }
+    },
+    {
+      "id": "KsponSpeech_E00371",
+      "error_type": "wrong_boundary",
+      "span": "그렇게 재밌었는데",
+      "evidence": "reference keeps the contrast ('but Extreme Job...'), hyp drops 'but' entirely once the -는데 clause was isolated",
+      "cause": "contrastive -는데 connective was severed from the clause it contrasts with, so the contrast marker is lost in translation",
+      "proposed_rule": "Do not split right after a contrastive -는데 clause when the next clause explicitly contrasts with it; merge them into one segment.",
+      "example_pair": {
+        "input": "맞어 그래서 완벽한 타인은 그렇게 재밌었는데 극한 직업은 니가 말한 것처럼 좀 억지로 웃기려는 그런 게 많아가지고 나는 좀 재미없었어 진짜 B급 영화?",
+        "output": "맞어 <SEG> 그래서 완벽한 타인은 그렇게 재밌었는데 극한 직업은 니가 말한 것처럼 좀 억지로 웃기려는 그런 게 많아가지고 나는 좀 재미없었어 <SEG> 진짜 B급 영화?"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00666",
+      "error_type": "wrong_boundary",
+      "span": "더 낫지 않을까",
+      "evidence": "hyp turns the rhetorical question into an isolated fragment 'Wouldn't it be better to study', separated from the confirming '네' that answers it; missed_gain only 0.0105 so no equally-fast placement does much better",
+      "cause": "boundary placed between a rhetorical question and the short confirmation particle that responds to it, weakening the link",
+      "proposed_rule": "Do not split between a rhetorical question and an immediately following short confirmation token (e.g. 네, 어) that answers it.",
+      "example_pair": {
+        "input": "공부하는 게 더 낫지 않을까 네 해서 이렇게 한 번 일본 유학의 꿈을 키우게 됐습니다. 네.",
+        "output": "공부하는 게 더 낫지 않을까 네 해서 이렇게 한 번 일본 유학의 꿈을 키우게 됐습니다. <SEG> 네."
+      }
+    },
+    {
+      "id": "KsponSpeech_E00570",
+      "error_type": "under_segmentation",
+      "span": "근데 이번에는",
+      "evidence": "quality already 1.0 with zero tags; reference segmentation splits after '이번에는' for a free 0.1473 latency gain",
+      "cause": "topic/time adverbial marked with -는 was left fused to a fully independent following clause, missing a safe free split",
+      "proposed_rule": "Split immediately after a sentence-initial topic/time adverbial marked with -는(는) when the remainder is a complete independent clause.",
+      "example_pair": {
+        "input": "근데 이번에는 우리 캠핑 가는 것도 좀 생각해서 사는 게 나을 것 같애.",
+        "output": "근데 이번에는 <SEG> 우리 캠핑 가는 것도 좀 생각해서 사는 게 나을 것 같애."
+      }
+    },
+    {
+      "id": "KsponSpeech_E00078",
+      "error_type": "under_segmentation",
+      "span": "그러면",
+      "evidence": "quality already 1.0 with zero tags; reference splits after '그러면' for a free 0.0784 gain",
+      "cause": "sentence-initial discourse connective left attached to a self-contained clause, missing a safe free split",
+      "proposed_rule": "Split immediately after a sentence-initial discourse connective (그러면, 그래서, 근데 etc.) when the rest of the sentence is a complete independent clause.",
+      "example_pair": {
+        "input": "그러면 정상적으로 일을 할 수 있는 게 정확히 5월로 보는 거야?",
+        "output": "그러면 <SEG> 정상적으로 일을 할 수 있는 게 정확히 5월로 보는 거야?"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00400",
+      "error_type": "under_segmentation",
+      "span": "쓰고 있는 거 같애",
+      "evidence": "quality already 1.0 with zero tags; reference splits before '거 같애' for a free 0.1286 gain",
+      "cause": "the sentence-final nominalizer/opinion tail '-는 거 같애' was left fused to an already-complete preceding clause, missing a safe free split",
+      "proposed_rule": "Split before a trailing opinion/nominalizer tail (e.g. -는 거 같애, -는 것 같다) when the clause before it is already semantically complete.",
+      "example_pair": {
+        "input": "지금 내 왓챠 아이디를 한 6명 쯤 같이 쓰고 있는 거 같애.",
+        "output": "지금 내 왓챠 아이디를 한 6명 쯤 같이 쓰고 있는 <SEG> 거 같애."
+      }
+    },
+    {
+      "id": "KsponSpeech_E00219",
+      "error_type": "under_segmentation",
+      "span": "하고",
+      "evidence": "quality already 1.0 with zero tags; reference splits after '하고' for a free 0.24 gain, the largest missed_gain among these cases",
+      "cause": "the connective -고 joined two fully independent clauses that were left unsplit, missing a large free speed gain",
+      "proposed_rule": "Split after a -고 connective when both the preceding and following clauses are independently complete and understandable on their own.",
+      "example_pair": {
+        "input": "또 새로운 공부를 하고 이제껏 내가 해왔던 게 아니잖아.",
+        "output": "또 새로운 공부를 하고 <SEG> 이제껏 내가 해왔던 게 아니잖아."
+      }
+    },
+    {
+      "id": "KsponSpeech_E00402",
+      "error_type": "under_segmentation",
+      "span": "그럼 이제",
+      "evidence": "quality already 1.0 with one tag; reference adds an earlier split after '그럼 이제' for an extra free 0.0796 gain (0.3151 vs 0.2354 current gain)",
+      "cause": "an additional safe boundary after the leading discourse marker was not used even though the sentence was already being segmented",
+      "proposed_rule": "When a sentence already contains a leading discourse marker (그럼 이제, 자 이제 etc.) followed by an independent question or clause, add a split right after the marker in addition to any later boundary.",
+      "example_pair": {
+        "input": "그럼 이제 주제 좀 넘어가 볼까? 어 영화 얘기해볼까?",
+        "output": "그럼 이제 <SEG> 주제 좀 넘어가 볼까? <SEG> 어 영화 얘기해볼까?"
+      }
+    }
+  ],
+  "summary": "The prompt over-splits at dependency-carrying connectives (-는데, -니까/-어서, -고) that link a verb to its later object, a cause to its effect, or a clause to its contrast, producing disconnected or referent-less sentences; this damage is inherent and not fixable by re-placement. At the same time it systematically under-splits short-to-medium sentences that already have a safe discourse-marker, topic-adverbial, or connective boundary, leaving free latency gains (attainment 0.52 vs speed_attainment 1.43) on the table. The fix is to keep dependent clauses joined while adding boundaries right after resolved connectives/markers when the remainder stands alone.",
+  "aggregate": {
+    "dominant_error": "under_segmentation",
+    "error_counts": {
+      "over_segmentation": 2,
+      "wrong_boundary": 3,
+      "under_segmentation": 5
+    },
+    "over_seg_count": 5,
+    "under_seg_count": 5,
+    "direction": "move boundaries, keep the count",
+    "summary": "The prompt over-splits at dependency-carrying connectives (-는데, -니까/-어서, -고) that link a verb to its later object, a cause to its effect, or a clause to its contrast, producing disconnected or referent-less sentences; this damage is inherent and not fixable by re-placement. At the same time it systematically under-splits short-to-medium sentences that already have a safe discourse-marker, topic-adverbial, or connective boundary, leaving free latency gains (attainment 0.52 vs speed_attainment 1.43) on the table. The fix is to keep dependent clauses joined while adding boundaries right after resolved connectives/markers when the remainder stands alone."
+  }
+}

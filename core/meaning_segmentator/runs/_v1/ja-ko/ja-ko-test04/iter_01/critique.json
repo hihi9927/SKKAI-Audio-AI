@@ -1,0 +1,89 @@
+{
+  "cases": [
+    {
+      "id": "caucasus-no-hagetaka-by-yoshio-toyoshima-s0003",
+      "error_type": "wrong_boundary",
+      "span": "いよいよとなると、",
+      "evidence": "full: '닥치고 보니' (idiomatic 'when push came to shove') vs seg: '때가 되니까' (literal 'when the time came')",
+      "cause": "idiom's sense depends on the resolving clause after it; splitting there stripped the context needed to disambiguate",
+      "proposed_rule": "Do not split immediately after an idiomatic or ambiguous temporal/conditional phrase whose meaning is only resolved by the clause that follows.",
+      "example_pair": {
+        "input": "ところがいよいよとなると、どれが国中で一番高い山か、さらに見当がつきませんでした。",
+        "output": "ところがいよいよとなると、どれが国中で一番高い山か、さらに見当がつきませんでした。"
+      }
+    },
+    {
+      "id": "gongitsune-by-nankichi-niimi-s0067",
+      "error_type": "wrong_boundary",
+      "span": "」 <SEG> ごんは、",
+      "evidence": "full reorders narration before quote ('곤은...달려갔습니다' then quote); seg keeps source order, causing structural mismatch",
+      "cause": "quote+reaction-clause pairs are naturally reordered in Korean; segmenting locks in source order and blocks that reordering",
+      "proposed_rule": "Keep a direct quotation and the immediately following clause describing the speaker's/listener's reaction in one segment so natural reordering is possible.",
+      "example_pair": {
+        "input": "「いわしのやすうりだアい。いきのいいいわしだアい」ごんは、その、いせいのいい声のする方へ走っていきました。",
+        "output": "「いわしのやすうりだアい。いきのいいいわしだアい」ごんは、その、いせいのいい声のする方へ走っていきました。"
+      }
+    },
+    {
+      "id": "gongitsune-by-nankichi-niimi-s0116",
+      "error_type": "wrong_boundary",
+      "span": "」 <SEG> ごんは、",
+      "evidence": "full puts quote and reaction as separate sentences with natural Korean order; seg forces same source order, producing awkward juxtaposition",
+      "cause": "splitting quote from its immediately following reaction clause prevents the target-language reordering the whole-sentence model applies",
+      "proposed_rule": "Do not split between a closing quotation mark and a short clause describing the addressee's immediate reaction; treat them as one translation unit.",
+      "example_pair": {
+        "input": "「ごん、おまいだったのか。いつも栗をくれたのは」ごんは、ぐったりと目をつぶったまま、うなずきました。",
+        "output": "「ごん、おまいだったのか。いつも栗をくれたのは」ごんは、ぐったりと目をつぶったまま、うなずきました。"
+      }
+    },
+    {
+      "id": "gongitsune-by-nankichi-niimi-s0090",
+      "error_type": "over_segmentation",
+      "span": "それなり、",
+      "evidence": "full: '그 후로' (temporal sequence) vs seg: '그렇게' (manner), connective's referent shifted meaning",
+      "cause": "splitting before 'それなり' removed the preceding dialogue context needed to interpret it as a sequence marker rather than a manner marker",
+      "proposed_rule": "Keep a sentence-final connective (それなり, そうして, etc.) in the same segment as the material it refers back to, so its referent is not lost.",
+      "example_pair": {
+        "input": "「ほんとかい？」「ほんとだとも。うそと思うなら、あした見にこいよ。」それなり、二人はだまって歩いていきました。",
+        "output": "「ほんとかい？」 <SEG> 「ほんとだとも。うそと思うなら、あした見にこいよ。」それなり、二人はだまって歩いていきました。"
+      }
+    },
+    {
+      "id": "gongitsune-by-nankichi-niimi-s0012",
+      "error_type": "under_segmentation",
+      "span": "水がすくないのですが、三日もの雨で、",
+      "evidence": "quality 1.0 with n_segments=1 despite a clear contrastive clause boundary ('のですが、') that could be split for latency gain",
+      "cause": "model treated the whole sentence as atomic even though the contrastive clause and its consequence are independently translatable",
+      "proposed_rule": "Split at contrastive connectives (が, のですが, けれども) whenever both resulting clauses are complete and independently translatable, even if a single pass already scores well.",
+      "example_pair": {
+        "input": "川は、いつもは水がすくないのですが、三日もの雨で、水が、どっとましていました。",
+        "output": "川は、いつもは水がすくないのですが、 <SEG> 三日もの雨で、水が、どっとましていました。"
+      }
+    },
+    {
+      "id": "gongitsune-by-nankichi-niimi-s0020",
+      "error_type": "under_segmentation",
+      "span": "しばらくすると、",
+      "evidence": "n_segments=1 though the sentence opens with a fronted temporal clause followed by a fully independent main clause",
+      "cause": "no split placed after a safe fronted adverbial clause, missing an easy latency gain",
+      "proposed_rule": "Split after a fronted temporal/adverbial clause (しばらくすると, それから, etc.) when the remainder forms a complete independent clause.",
+      "example_pair": {
+        "input": "しばらくすると、兵十は、はりきり網の一ばんうしろの、袋のようになったところを、水の中からもちあげました。",
+        "output": "しばらくすると、 <SEG> 兵十は、はりきり網の一ばんうしろの、袋のようになったところを、水の中からもちあげました。"
+      }
+    }
+  ],
+  "summary": "The main failures come from splitting direct quotations away from their attribution/reaction clause, which blocks the natural quote-narration reordering the whole-sentence model performs, and from cutting idiomatic or connective phrases away from the clause that resolves their meaning. Separately, several sentences with clear safe clause boundaries (contrastive が, fronted temporal clauses) were left completely unsegmented, wasting available latency gains despite perfect quality.",
+  "aggregate": {
+    "dominant_error": "wrong_boundary",
+    "error_counts": {
+      "wrong_boundary": 3,
+      "over_segmentation": 1,
+      "under_segmentation": 2
+    },
+    "over_seg_count": 4,
+    "under_seg_count": 2,
+    "direction": "fix boundary placement",
+    "summary": "The main failures come from splitting direct quotations away from their attribution/reaction clause, which blocks the natural quote-narration reordering the whole-sentence model performs, and from cutting idiomatic or connective phrases away from the clause that resolves their meaning. Separately, several sentences with clear safe clause boundaries (contrastive が, fronted temporal clauses) were left completely unsegmented, wasting available latency gains despite perfect quality."
+  }
+}

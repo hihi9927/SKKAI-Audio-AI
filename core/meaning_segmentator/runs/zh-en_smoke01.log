@@ -1,0 +1,9 @@
+[data] fleurs-zh-en: 전체 240, train 10 / dev 20 / test 20
+[gateway] 경고: 'gpt-5-mini' 는 temperature 를 지원하지 않아 기본값(1)으로 돈다 — 분절이 비결정론적이 된다.
+[profile] 경고: trailing_punctuation: LLM=['”', '。', '）', '，'] 측정=[')', '-', '·', '“', '”', '、', '。', '）', '，'] — 측정값 채택
+[profile] Chinese (Mandarin, Simplified) / 어순 SVO | Most sample sentences place the subject before the verb and the object after the verb (e.g. “皮特曼认为天气情况要到下周才能改善”). / 띄어쓰기 False(측정) / 타깃 띄어쓰기 True
+[translator] google:en:ctx=True (대표 타깃 English)
+[targets] 1개: English  (목적함수 = 타깃별 z-정규화 effective 의 평균)
+[profiler] prompt_v0 작성 완료 (9934자)
+[iter 0] 1차 위반 12건 {'text_modified': 1, 'gap_too_small': 4, 'too_few_tags': 7}
+[iter 0] train fmt=0.60(1st 0.00)  score=0.0000

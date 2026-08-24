@@ -439,3 +439,76 @@ python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \
 python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \
   --model "finetuned(1.0.1)" --scope full --tag run_01 --fresh-start
 ```
+
+---
+
+## 7. AST 트랙 (음성번역 — LAAL + BLEU)
+
+ASR 트랙(WER/CER + FSL)과 **서버도 클라이언트도 다르다.** 지연은 LAAL(ms), 품질은 BLEU 로 잰다.
+데이터셋은 manifest(JSONL)로 갈아 끼우므로 데이터셋별 클라이언트를 만들지 않는다.
+
+전체 절차·지표 정의·주의사항: [ast/README.md](ast/README.md)
+
+```bash
+# 0) 의존성 (sacrebleu 추가됨)
+pip install -r evaluation/ast/requirements.txt
+
+# 1) 데이터 (FLEURS, 리포 밖에 둔다 — en 오디오 + 타깃 언어 참조 TSV, 약 280MB)
+hf download google/fleurs --repo-type dataset \
+  --include "data/en_us/test.tsv" "data/en_us/audio/test.tar.gz" \
+            "data/de_de/test.tsv" "data/ko_kr/test.tsv" "data/ja_jp/test.tsv" \
+            "data/cmn_hans_cn/test.tsv" "data/es_419/test.tsv" \
+  --local-dir ~/datasets/fleurs
+
+# 2) manifest 생성
+python evaluation/ast/build_manifest_fleurs.py \
+  --fleurs-root ~/datasets/fleurs --src en_us --tgt de_de \
+  --out evaluation/ast/manifests/fleurs_en-de_test.jsonl --verify-audio
+
+# 3) 서버 (별도 터미널)
+python evaluation/streaming_websocket_server_ast.py \
+  --model models/Qwen3-ASR-1.7B-en-silence-c80-merged --no-idle-shutdown
+
+# 4) 테스트 실행
+python evaluation/ast/test_ast.py \
+  --manifest evaluation/ast/manifests/fleurs_en-de_test.jsonl \
+  --dataset FLEURS --model "en-silence-c80" --scope full --tag run_01 \
+  --src-lang en --target-lang de
+
+# 5) 서버 종료 (pkill 은 vLLM EngineCore 를 남긴다)
+bash evaluation/LibriSpeech/paper_result/ASR/scripts/stop_server.sh 8765
+```
+
+결과: `evaluation/ast/results/{dataset}/{model}/{scope}/{tag}/metric.json`
+(`--tag` 재사용 시 이어서 실행, `--fresh-start` 로 초기화 — ASR 트랙과 동일)
+
+### AST 전용 인자
+
+| 인자 | 기본값 | 설명 |
+|---|---|---|
+| `--manifest` | (필수) | `build_manifest_*.py` 로 만든 JSONL |
+| `--dataset` | `MuST-C` | 결과 디렉토리의 데이터셋 이름 (FLEURS 사용 시 `--dataset FLEURS`) |
+| `--src-lang` | `en` | ASR 소스 언어. `auto` 로 두면 서버의 언어 제한이 꺼진다 |
+| `--target-lang` | `de` | 번역 대상 |
+| `--laal-unit` | `word` | LAAL 의 \|Y\| 단위 (de/en/es → word, zh/ja → char) |
+| `--laal-cap-source` | 켬 | 비계산인지 지연을 소스 길이로 상한 |
+| `--bleu-tokenize` | 타깃 언어로 결정 | sacrebleu 토크나이저 |
+| `--strip-nonspeech` | 켬 | `(Laughter)` 등 이벤트 표기 제거 |
+
+> 아래 네 인자는 **점수를 바꾼다.** 다른 값으로 낸 점수끼리는 비교할 수 없으므로 실험군 전체에서
+> 고정해야 한다. 실제 사용값은 `meta.json` 과 `metric.json` 의 `summary` 에 자동 기록된다.
+
+> **VAD off 로 돌릴 때 주의.** base 서버는 스트림 종료 시 남은 오디오의 최종 디코딩
+> (`_asr_finish_streaming`)과 번역 태스크 드레인(`_drain_pending_gpt`)을 하지 않는다 —
+> 둘 다 VAD 커밋 경로에만 있다. 그래서 마지막 미완성 청크의 음성이 **전사조차 되지 않는다.**
+> 커밋 정책과 무관하므로 always/dot/seg 가 똑같이 겪는다. AST 평가 서버는 둘 다 보완했다.
+> 실측(CoVoST2 200발화, 침묵 500ms): seg BLEU 27.62 → 36.71, dot 27.57 → 36.32.
+> 침묵을 4000ms 로 늘려도 비슷해지지만 처리량이 13→8배속으로 떨어진다.
+
+> 병렬 실행은 `--clients N`. 16 병렬 실측 8.0배속(침묵 4초 포함), 번역 실패 0건.
+
+> FLEURS en→de test 전체는 346발화(0.95시간 오디오)로 실시간 페이싱 기준 **약 63분**이다.
+> 반복 개발은 `--limit` 서브셋으로 한다. 타깃 언어는 `--tgt` 만 바꾸면 된다
+> (`ko_kr` `ja_jp` `cmn_hans_cn` `es_419`) — 오디오는 소스 언어 것만 있으면 되므로 재다운로드가 필요 없다.
+>
+> MuST-C 는 배포처가 사라져 쓰지 않는다. 경위와 사본 확보 시 절차는 [ast/README.md](ast/README.md) 참조.

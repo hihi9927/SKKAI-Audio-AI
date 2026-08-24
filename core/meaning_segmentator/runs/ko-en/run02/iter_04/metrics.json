@@ -1,0 +1,62 @@
+{
+  "train": {
+    "n": 30,
+    "format_pass_rate": 1.0,
+    "format_pass_rate_no_retry": 1.0,
+    "by_T": {
+      "3": {
+        "target_chunk_words": 3,
+        "n": 30,
+        "n_scored": 30,
+        "effective": 0.7677,
+        "adequacy": 0.7844,
+        "contradiction": 0.0218,
+        "effective_min": 0.3786,
+        "effective_p10": 0.6787,
+        "consistency": 0.8148,
+        "consistency_chrf": 0.66,
+        "laal_words": 3.3024,
+        "chunks_per_sentence": 3.1667,
+        "split_ratio": 0.9333,
+        "truncation_shortfall": 1.1667,
+        "premature_rate": null
+      },
+      "6": {
+        "target_chunk_words": 6,
+        "n": 30,
+        "n_scored": 30,
+        "effective": 0.7707,
+        "adequacy": 0.7779,
+        "contradiction": 0.0098,
+        "effective_min": 0.4794,
+        "effective_p10": 0.6787,
+        "consistency": 0.8424,
+        "consistency_chrf": 0.7295,
+        "laal_words": 3.8195,
+        "chunks_per_sentence": 2.3,
+        "split_ratio": 0.9333,
+        "truncation_shortfall": 0.0667,
+        "premature_rate": 0.4167
+      }
+    },
+    "score": 0.7692
+  },
+  "dev": null,
+  "score_train": 0.7692,
+  "score_dev": null,
+  "paired_train": {
+    "mean_delta": -0.00338,
+    "se_delta": 0.00876,
+    "n_pairs": 30,
+    "n_changed": 14
+  },
+  "paired_dev": null,
+  "adopted": false,
+  "usage": {
+    "calls": 342,
+    "prompt_tokens": 1206225,
+    "completion_tokens": 472787,
+    "cached_tokens": 0,
+    "cost": 7.14032
+  }
+}

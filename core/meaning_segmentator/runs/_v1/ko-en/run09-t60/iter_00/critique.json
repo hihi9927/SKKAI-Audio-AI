@@ -1,0 +1,137 @@
+{
+  "cases": [
+    {
+      "id": "KsponSpeech_E00353",
+      "error_type": "over_segmentation",
+      "span": "하시다보니까 <SEG> 이제 아침에",
+      "evidence": "seg2 'Now in the morning, the kids' has no verb; ref supplies 'watch the kids'",
+      "cause": "second clause's predicate is elided in speech and depends on the first clause; splitting removed that shared verb",
+      "proposed_rule": "Do not split before a clause whose main verb is elided/implied and must be borrowed from the preceding clause.",
+      "example_pair": {
+        "input": "두 분이 맞벌이를 하시다보니까 이제 아침에 이제 애들을",
+        "output": "두 분이 맞벌이를 하시다보니까 이제 아침에 이제 애들을"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00945",
+      "error_type": "over_segmentation",
+      "span": "많고 <SEG> ... 때문에 <SEG> 최대한",
+      "evidence": "each piece became an isolated statement, losing the therefore-chain of the full causal reason",
+      "cause": "multiple embedded 'because/so' clauses forming one continuous causal chain were cut into independent fragments",
+      "proposed_rule": "Keep a chain of causally-linked clauses (reason -> reason -> consequence) in one segment even if long; only split after the chain resolves.",
+      "example_pair": {
+        "input": "왜냐면 그만큼 지원하는 애들이 많고 그걸 신경을 쓸 수 없기 때문에 최대한 줄여서 하는 건지 알고 있는데",
+        "output": "왜냐면 그만큼 지원하는 애들이 많고 그걸 신경을 쓸 수 없기 때문에 <SEG> 최대한 줄여서 하는 건지 알고 있는데"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00509",
+      "error_type": "wrong_boundary",
+      "span": "도움을 받아서 <SEG> 또 일어나라하기",
+      "evidence": "ref: 'ask myself to get up again'; seg: 'tell you to wake up again' — person flipped",
+      "cause": "second clause's subject (나/myself) is elided and coreferential with speaker in clause 1; isolating it let the model default to 'you'",
+      "proposed_rule": "Do not split before a clause with an elided subject that corefers with the speaker/subject established earlier; keep them together.",
+      "example_pair": {
+        "input": "나 왜 너무 많은 도움을 받아서 또 일어나라하기 좀 그래",
+        "output": "나 왜 너무 많은 도움을 받아서 또 일어나라하기 좀 그래"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00451",
+      "error_type": "wrong_boundary",
+      "span": "안된다면 <SEG> 또 제가",
+      "evidence": "seg has duplicated connectives: 'And if...' plus 'Also, I want...' vs ref's single flow",
+      "cause": "source repeats the connective 또 across the split point; each half re-translated its own 또, creating redundancy",
+      "proposed_rule": "If a connective (e.g. 또) is repeated across a candidate boundary marking one list/contrast, do not split between the repetitions.",
+      "example_pair": {
+        "input": "또 그쪽이 안된다면 또 제가 역사학을 원해 좋아하다 보니까",
+        "output": "또 그쪽이 안된다면 또 제가 역사학을 원해 좋아하다 보니까"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00001",
+      "error_type": "over_segmentation",
+      "span": "전달할 수 있을까 <SEG> 공감을 시킬 수 있을까",
+      "evidence": "seg2 'I wonder if I can empathize' loses the causative sense in ref 'make people empathize'",
+      "cause": "the two parallel rhetorical questions share an implied object (the listener); splitting stripped that antecedent, flipping causative to reflexive",
+      "proposed_rule": "Keep parallel rhetorical-question clauses (same '-을까' pattern sharing an object/goal) in a single segment.",
+      "example_pair": {
+        "input": "이걸 어떻게 전달할 수 있을까 공감을 시킬 수 있을까 해서 좀",
+        "output": "이걸 어떻게 전달할 수 있을까 공감을 시킬 수 있을까 해서 좀"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00414",
+      "error_type": "under_segmentation",
+      "span": "호텔카지노? <SEG> 그런쪽으로",
+      "evidence": "reference_segmentation splits at the question mark; current sentence was left whole despite 0.23 free quality headroom",
+      "cause": "a strong clause-final punctuation boundary (question mark) was not used as a split point",
+      "proposed_rule": "Treat sentence-internal question marks / strong clause-final punctuation as default safe split points at no latency cost.",
+      "example_pair": {
+        "input": "승무원쪽 가거나 아니면 호텔카지노? 그런쪽으로 가는 목적이 있어가지고",
+        "output": "승무원쪽 가거나 아니면 호텔카지노? <SEG> 그런쪽으로 가는 목적이 있어가지고"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00587",
+      "error_type": "under_segmentation",
+      "span": "때 이제 <SEG> 그 여름방학기",
+      "evidence": "reference_segmentation splits before the new clause 'summer vacation begins'; current left whole with 0.23 free headroom",
+      "cause": "a topic-shifting temporal connector ('이제') before a new independent clause was not used as a boundary",
+      "proposed_rule": "Split before a new independent clause introduced after a topic-shift connective (e.g. 이제) when the preceding material is a complete temporal/conditional clause.",
+      "example_pair": {
+        "input": "다음 학기 때 쉴 때 이제 그 여름방학기 시작되잖아",
+        "output": "다음 학기 때 쉴 때 이제 <SEG> 그 여름방학기 시작되잖아"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00831",
+      "error_type": "under_segmentation",
+      "span": "어쨌든 <SEG> 나는",
+      "evidence": "reference_segmentation splits off the leading discourse marker '어쨌든'; current left the sentence whole with 0.11 free headroom",
+      "cause": "sentence-initial discourse marker carrying no clause content was kept fused to the main clause",
+      "proposed_rule": "Split off a sentence-initial short discourse marker (e.g. 어쨌든, 그래서, 근데) as its own segment when it precedes a full independent clause; it translates independently at no quality cost.",
+      "example_pair": {
+        "input": "어쨌든 나는 이제 가정을 같이 이끌어 나갈려면",
+        "output": "어쨌든 <SEG> 나는 이제 가정을 같이 이끌어 나갈려면"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00102",
+      "error_type": "under_segmentation",
+      "span": "그래서 <SEG> 그런 식으로",
+      "evidence": "reference_segmentation splits off leading '그래서'; current sentence whole with 0.09 free headroom",
+      "cause": "leading connective 그래서 was fused with the main clause instead of split off",
+      "proposed_rule": "Split off a sentence-initial connective/filler word before a self-contained clause when doing so does not change the clause's meaning.",
+      "example_pair": {
+        "input": "그래서 그런 식으로 다치는 사람도 진짜 많은 거 같더라.",
+        "output": "그래서 <SEG> 그런 식으로 다치는 사람도 진짜 많은 거 같더라."
+      }
+    },
+    {
+      "id": "KsponSpeech_E00938",
+      "error_type": "under_segmentation",
+      "span": "막 그냥 <SEG> ... 근데 <SEG> 나",
+      "evidence": "reference_segmentation adds an extra split off the filler '그냥' and repositions the boundary before '근데'; missed_gain 0.09 remains even after current split",
+      "cause": "current segmentation only cut one boundary; an additional cheap filler-initial split was left unused",
+      "proposed_rule": "When a filler word (그냥, 막) precedes an independent clause, split it off separately in addition to any existing later boundary.",
+      "example_pair": {
+        "input": "막 그냥 어렸을 때부터 그래서 그런 거 같은데 근데 나 귀가 좀 아픈 거 같애",
+        "output": "막 그냥 <SEG> 어렸을 때부터 그래서 그런 거 같은데 근데 <SEG> 나 귀가 좀 아픈 거 같애"
+      }
+    }
+  ],
+  "summary": "Over-segmentation failures mostly come from cutting between clauses that share an elided verb, a coreferential pronoun, or a parallel causative structure, which flips meaning or drops content. Under-segmentation failures are frequent and cheap to fix: leading discourse markers/fillers and mid-sentence punctuation (question marks, topic-shift connectives) are safe boundaries that were left unsplit, wasting available free latency. The prompt needs boundary rules keyed to clause completeness and shared referents/predicates, not just connective type.",
+  "aggregate": {
+    "dominant_error": "under_segmentation",
+    "error_counts": {
+      "over_segmentation": 3,
+      "wrong_boundary": 2,
+      "under_segmentation": 5
+    },
+    "over_seg_count": 5,
+    "under_seg_count": 5,
+    "direction": "fix boundary placement",
+    "summary": "Over-segmentation failures mostly come from cutting between clauses that share an elided verb, a coreferential pronoun, or a parallel causative structure, which flips meaning or drops content. Under-segmentation failures are frequent and cheap to fix: leading discourse markers/fillers and mid-sentence punctuation (question marks, topic-shift connectives) are safe boundaries that were left unsplit, wasting available free latency. The prompt needs boundary rules keyed to clause completeness and shared referents/predicates, not just connective type."
+  }
+}

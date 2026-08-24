@@ -1,0 +1,93 @@
+[
+  {
+    "id": "cmn_hans_cn_1376",
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "这部由瑞恩·高斯林 (Ryan Gosling) 和艾玛·斯通 (Emma Stone) 主演的电影获得了各大奖项的提名。",
+    "seg_text": "这部由瑞恩·高斯林 <SEG:5> (Ryan Gosling) <SEG:1> 和艾玛·斯通 <SEG:4> (Emma Stone) <SEG:2> 主演的电影获得了各大 <SEG:3> 奖项的提名。"
+  },
+  {
+    "id": "cmn_hans_cn_1154",
+    "rule": "gap_too_small",
+    "detail": "조각 5단위 — 최소 간격 6 미만",
+    "text": "尽管 Winfrey 在告别时热泪盈眶，但她向粉丝们明确表示，她还会回来。",
+    "seg_text": "尽管 Winfrey <SEG:3> 在告别时热 <SEG:4> 泪盈眶，但她 <SEG:2> 向粉丝们明确表示， <SEG:1> 她还会回来。"
+  },
+  {
+    "id": "cmn_hans_cn_714",
+    "rule": "gap_too_small",
+    "detail": "조각 3단위 — 최소 간격 6 미만",
+    "text": "多数人很早就提前订好位置（因为船在旺季通常会客满）。",
+    "seg_text": "多数人很早就 <SEG:2> 提前订 <SEG:3> 好位置 <SEG:1> （因为船在旺季通 <SEG:4> 常会客满）。"
+  },
+  {
+    "id": "cmn_hans_cn_739",
+    "rule": "gap_too_small",
+    "detail": "조각 5단위 — 최소 간격 6 미만",
+    "text": "CafeNet El Sol 提供预约服务，收费 30 美元，而一日通票价格为 10 美元；详情请见其 Corcovado 页面。",
+    "seg_text": "CafeNet El Sol <SEG:5> 提供预约服务， <SEG:2> 收费 30 美元， <SEG:3> 而一日通票价格为 <SEG:6> 10 美元； <SEG:1> 详情请见其 <SEG:4> Corcovado 页面。"
+  },
+  {
+    "id": "cmn_hans_cn_1048",
+    "rule": "gap_too_small",
+    "detail": "조각 4단위 — 최소 간격 6 미만",
+    "text": "他接受过产科医生培训，从 1959 年开始在奥克兰国家妇女医院工作。",
+    "seg_text": "他接受过产科 <SEG:4> 医生培训，从 <SEG:3> 1959 <SEG:2> 年开始在奥克 <SEG:1> 兰国家妇女医院工作。"
+  },
+  {
+    "id": "cmn_hans_cn_967",
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "五渔村（Cinque Terre），原意为五块土地，由位于意大利利古里亚（Liguria）地区的五座沿海小村庄 Riomaggiore、Manarola、Corniglia、Vernazza 和 Monterosso 组成。",
+    "seg_text": "五渔村（Cinque Terre）， <SEG:5> 原意为五块土 <SEG:10> 地， 由位于意大利利利古亚 <SEG:9> 亚 <SEG:7> （Liguria） <SEG:6> 地区的五座沿 <SEG:8> 海小村庄 Riomaggiore、 <SEG:1> Manarola、 <SEG:2> Corniglia、 <SEG:3> Vernazza <SEG:4> 和 Monterosso 组成。"
+  },
+  {
+    "id": "cmn_hans_cn_967",
+    "rule": "too_few_tags",
+    "detail": "경계 10개 — 최소 12개 필요",
+    "text": "五渔村（Cinque Terre），原意为五块土地，由位于意大利利古里亚（Liguria）地区的五座沿海小村庄 Riomaggiore、Manarola、Corniglia、Vernazza 和 Monterosso 组成。",
+    "seg_text": "五渔村（Cinque Terre）， <SEG:5> 原意为五块土 <SEG:10> 地， 由位于意大利利利古亚 <SEG:9> 亚 <SEG:7> （Liguria） <SEG:6> 地区的五座沿 <SEG:8> 海小村庄 Riomaggiore、 <SEG:1> Manarola、 <SEG:2> Corniglia、 <SEG:3> Vernazza <SEG:4> 和 Monterosso 组成。"
+  },
+  {
+    "id": "cmn_hans_cn_967",
+    "rule": "gap_too_small",
+    "detail": "조각 1단위 — 최소 간격 6 미만",
+    "text": "五渔村（Cinque Terre），原意为五块土地，由位于意大利利古里亚（Liguria）地区的五座沿海小村庄 Riomaggiore、Manarola、Corniglia、Vernazza 和 Monterosso 组成。",
+    "seg_text": "五渔村（Cinque Terre）， <SEG:5> 原意为五块土 <SEG:10> 地， 由位于意大利利利古亚 <SEG:9> 亚 <SEG:7> （Liguria） <SEG:6> 地区的五座沿 <SEG:8> 海小村庄 Riomaggiore、 <SEG:1> Manarola、 <SEG:2> Corniglia、 <SEG:3> Vernazza <SEG:4> 和 Monterosso 组成。"
+  },
+  {
+    "id": "cmn_hans_cn_348",
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "幸存者弗朗齐歇克·科瓦尔说：“终于有一块玻璃碎了，他们开始从窗户逃出去。”",
+    "seg_text": "幸存者弗朗齐 <SEG:5> 歇克·科瓦尔 <SEG:2> 说：“终于有 <SEG:4> 一块玻璃碎了， <SEG:1> 他们开始从窗 <SEG:3> 户逃出去了。”"
+  },
+  {
+    "id": "cmn_hans_cn_637",
+    "rule": "gap_too_small",
+    "detail": "조각 5단위 — 최소 간격 6 미만",
+    "text": "1970 年，医学博士兼研究科学家雷蒙德·达马迪安 (Raymond Damadian) 发现了使用磁共振成像作为医学诊断工具的基础原理。",
+    "seg_text": "1970 年， <SEG:1> 医学博士兼研 <SEG:8> 究科学家雷蒙 <SEG:7> 德·达马迪安 <SEG:3> (Raymond Damadian) <SEG:2> 发现了使用 <SEG:4> 磁共振成像作 <SEG:6> 为医学诊断工 <SEG:5> 具的基础原理。"
+  },
+  {
+    "id": "cmn_hans_cn_732",
+    "rule": "gap_too_small",
+    "detail": "조각 4단위 — 최소 간격 6 미만",
+    "text": "对那些喜欢户外活动的人来说，必然会徒步登上 Sea to Sky。",
+    "seg_text": "对那些喜欢户外 <SEG:3> 活动的人来说， <SEG:1> 必然会徒步登 <SEG:4> 上 Sea <SEG:2> to Sky。"
+  },
+  {
+    "id": "cmn_hans_cn_1231",
+    "rule": "gap_too_small",
+    "detail": "조각 5단위 — 최소 간격 6 미만",
+    "text": "周一，法国东部里昂附近的沼泽内发现了一只死野鸭。经证实，这只野鸭感染了对人类致命的 H5N1 型禽流感病毒。",
+    "seg_text": "周一，法国东 <SEG:7> 部里昂附近的 <SEG:4> 沼泽内发现了 <SEG:3> 一只死野鸭。 <SEG:1> 经证实，这只 <SEG:5> 野鸭感染了对 <SEG:6> 人类致命的 <SEG:2> H5N1 型禽流感病毒。"
+  },
+  {
+    "id": "cmn_hans_cn_594",
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "只有动物有脑（但也不是所有动物都有，比如水母就没有脑）。",
+    "seg_text": "只有动物有脑 <SEG:2> （但也不是所有动物都有， <SEG:1> 比如水母就没有脑）。"
+  }
+]

@@ -1,0 +1,157 @@
+{
+  "train": {
+    "n": 40,
+    "format_pass_rate": 1.0,
+    "format_pass_rate_no_retry": 0.825,
+    "by_T": {
+      "3": {
+        "target_chunk_words": 3,
+        "n": 40,
+        "n_scored": 40,
+        "n_effective": 40,
+        "effective": 0.7353,
+        "adequacy": 0.8034,
+        "contradiction": 0.0847,
+        "effective_min": 0.2271,
+        "effective_p10": 0.5621,
+        "consistency": 0.7757,
+        "consistency_chrf": 0.3843,
+        "laal_words": 2.9055,
+        "chunks_per_sentence": 7.45,
+        "split_ratio": 1.0,
+        "missing_boundaries": 0.0,
+        "premature_rate": null,
+        "reference_suspect_rate": null,
+        "rank_contra_spearman": -0.0155,
+        "rank_contra_gap": 0.0039
+      },
+      "6": {
+        "target_chunk_words": 6,
+        "n": 40,
+        "n_scored": 40,
+        "n_effective": 40,
+        "effective": 0.7819,
+        "adequacy": 0.8433,
+        "contradiction": 0.0734,
+        "effective_min": 0.4647,
+        "effective_p10": 0.674,
+        "consistency": 0.7271,
+        "consistency_chrf": 0.611,
+        "laal_words": 5.1554,
+        "chunks_per_sentence": 3.775,
+        "split_ratio": 1.0,
+        "missing_boundaries": 0.0,
+        "premature_rate": 0.0,
+        "reference_suspect_rate": 0.04,
+        "rank_contra_spearman": null,
+        "rank_contra_gap": null
+      }
+    },
+    "score": 0.7586
+  },
+  "dev": {
+    "n": 60,
+    "format_pass_rate": 1.0,
+    "format_pass_rate_no_retry": 0.8667,
+    "by_T": {
+      "3": {
+        "target_chunk_words": 3,
+        "n": 60,
+        "n_scored": 60,
+        "n_effective": 60,
+        "effective": 0.7461,
+        "adequacy": 0.7952,
+        "contradiction": 0.0619,
+        "effective_min": 0.1897,
+        "effective_p10": 0.6609,
+        "consistency": 0.8494,
+        "consistency_chrf": 0.3548,
+        "laal_words": 3.0768,
+        "chunks_per_sentence": 7.5333,
+        "split_ratio": 1.0,
+        "missing_boundaries": 0.0,
+        "premature_rate": null,
+        "reference_suspect_rate": null,
+        "rank_contra_spearman": null,
+        "rank_contra_gap": null
+      },
+      "6": {
+        "target_chunk_words": 6,
+        "n": 60,
+        "n_scored": 60,
+        "n_effective": 60,
+        "effective": 0.797,
+        "adequacy": 0.84,
+        "contradiction": 0.0509,
+        "effective_min": 0.3704,
+        "effective_p10": 0.6687,
+        "consistency": 0.8053,
+        "consistency_chrf": 0.5607,
+        "laal_words": 5.1302,
+        "chunks_per_sentence": 3.85,
+        "split_ratio": 1.0,
+        "missing_boundaries": 0.0,
+        "premature_rate": null,
+        "reference_suspect_rate": null,
+        "rank_contra_spearman": null,
+        "rank_contra_gap": null
+      }
+    },
+    "score": 0.7716
+  },
+  "score_train": 0.7586,
+  "score_dev": 0.7716,
+  "paired_train": null,
+  "paired_dev": null,
+  "adopted": true,
+  "usage": {
+    "calls": 142,
+    "prompt_tokens": 229697,
+    "completion_tokens": 652953,
+    "cached_tokens": 145920,
+    "truncated": 0,
+    "cost": 3.012065,
+    "by_purpose": {
+      "segment": {
+        "calls": 100,
+        "prompt_tokens": 177425,
+        "completion_tokens": 535609,
+        "reasoning_tokens": 522463,
+        "cached_tokens": 126720,
+        "cost": 2.457773
+      },
+      "segment_retry": {
+        "calls": 15,
+        "prompt_tokens": 29096,
+        "completion_tokens": 90845,
+        "reasoning_tokens": 88696,
+        "cached_tokens": 19200,
+        "cost": 0.417665
+      },
+      "judge": {
+        "calls": 25,
+        "prompt_tokens": 20550,
+        "completion_tokens": 14434,
+        "reasoning_tokens": 13097,
+        "cached_tokens": 0,
+        "cost": 0.080366
+      },
+      "prompt_v0": {
+        "calls": 1,
+        "prompt_tokens": 1608,
+        "completion_tokens": 10438,
+        "reasoning_tokens": 8594,
+        "cached_tokens": 0,
+        "cost": 0.048177
+      },
+      "profiler": {
+        "calls": 1,
+        "prompt_tokens": 1018,
+        "completion_tokens": 1627,
+        "reasoning_tokens": 1167,
+        "cached_tokens": 0,
+        "cost": 0.008085
+      }
+    }
+  }
+}

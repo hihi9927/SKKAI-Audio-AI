@@ -1,0 +1,105 @@
+{
+  "cases": [
+    {
+      "id": "cmn_hans_cn_1593",
+      "error_type": "format_violation",
+      "span": "1767 年， 第一条",
+      "evidence": "Many adjacent tags produced tiny segments (gap_too_small).",
+      "cause": "boundaries inserted inside short numeral+classifier+noun runs and too-close tags.",
+      "proposed_rule": "Require a minimum token/char gap (e.g. ≥6 characters or a full word) between adjacent boundaries unless the split is at sentence-final or strong punctuation; do not place boundaries inside numeral+classifier+noun sequences.",
+      "example_pair": {
+        "input": "最终，木轮被铁轮所取代。1767 年，第一条全铁轨道问世。",
+        "output": "最终，木轮被铁轮所取代。 <SEG:1> 1767 年，第一条全铁轨道问世。"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_1522",
+      "error_type": "placement",
+      "span": "学生可以在课堂上",
+      "evidence": "First piece rendered as “Students can be in class” (verb 'view' missing).",
+      "cause": "boundary cut before the clause's main verb (head not yet arrived).",
+      "proposed_rule": "Avoid boundaries that end before a clause's main verb/predicate head; wait for the verb or punctuation before emitting the predicate.",
+      "example_pair": {
+        "input": "虚拟实地考察是高科技的解决方案。学生可以在课堂上观看博物馆的人工制品，参观水族馆，或者欣赏精美的艺术品。",
+        "output": "虚拟实地考察是高科技的解决方案。 <SEG:1> 学生可以在课堂上观看博物馆的人工制品，参观水族馆，或者欣赏精美的艺术品。"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_829",
+      "error_type": "priority",
+      "span": "参与非法市场、",
+      "evidence": "Top-ranked boundary caused the first piece to end with a dangling 'or' (incomplete coordination).",
+      "cause": "a defensible boundary that leaves a coordination marker waiting was ranked too high and survived under tight budgets.",
+      "proposed_rule": "Demote boundaries that would end a piece immediately before/after a coordinating marker or inside a list; prefer boundaries after list completion or before the list starts so coordination isn't left dangling.",
+      "example_pair": {
+        "input": "该设想假定旅行者不会为了自己的利益而进行偷窃、非法侵入、参与非法市场、乞讨或为了私利剥削他人。",
+        "output": "该设想假定旅行者不会为了自己的利益而进行偷窃、非法侵入、参与非法市场、乞讨或为了私利剥削他人。 <SEG:1>"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_86",
+      "error_type": "placement",
+      "span": "天气 情况",
+      "evidence": "First piece yielded 'pitman thinks the weather' (noun head separated), making a fragment that invites wrong continuations.",
+      "cause": "boundary split a compact nominal (modifier + head) so the noun head arrived after the cut.",
+      "proposed_rule": "Avoid placing boundaries between a noun modifier and its head; wait for the noun phrase head (or punctuation) before cutting a nominal unit.",
+      "example_pair": {
+        "input": "皮特曼认为天气情况要到下周才能改善。",
+        "output": "皮特曼认为天气情况要到下周才能改善。 <SEG:1>"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_163",
+      "error_type": "priority",
+      "span": "正在确定 <SEG:1> 安全撤离",
+      "evidence": "Quality improved when lower-ranked boundaries also survived, so the top-ranked boundary was risky; first piece ended with 'determining' needing its object.",
+      "cause": "a boundary was ranked high that ends immediately after a verb that expects a complement (leaving the quoted complement for the next piece).",
+      "proposed_rule": "Lower priority for boundaries that terminate right after verbs (especially transitive/reporting verbs) which expect a complement; prefer to include verb + complement together or wait for punctuation.",
+      "example_pair": {
+        "input": "他们还在一份声明中表示，“船员目前正在确定安全撤离军舰的最佳方法”。",
+        "output": "他们还在一份声明中表示，“船员目前正在确定安全撤离军舰的最佳方法”。 <SEG:1>"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_605",
+      "error_type": "placement",
+      "span": "物理 状态",
+      "evidence": "First piece translated as 'Although its physical' — modifier rendered without its noun head, producing an incomplete fragment.",
+      "cause": "boundary split between adjective/modifier and noun head inside a nominal phrase.",
+      "proposed_rule": "Do not split between an adjective/modifier and its noun head when the modifier alone could be read as a complete phrase; keep the nominal phrase intact or wait for punctuation.",
+      "example_pair": {
+        "input": "虽然它的物理状态可能会改变，但化学状态保持不变。",
+        "output": "虽然它的物理状态可能会改变， <SEG:1> 但化学状态保持不变。"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_658",
+      "error_type": "placement",
+      "span": "睡眠不足 <SEG:1> 和相关健康问题",
+      "evidence": "Piece boundary splits a coordinated noun phrase (first piece ends before the coordinator), which can yield awkward or incomplete partial renderings.",
+      "cause": "boundary inserted inside a coordination such that coordination scope is split across pieces.",
+      "proposed_rule": "When splitting inside coordinated phrases, prefer to keep the conjunction and its following item together (i.e. place the boundary before the coordinator or after the entire coordination) so no piece ends committing to a coordination without its partner.",
+      "example_pair": {
+        "input": "夏季漫长的白昼会导致睡眠不足和相关健康问题。",
+        "output": "夏季漫长的白昼会导致睡眠不足和相关健康问题。 <SEG:1>"
+      }
+    }
+  ],
+  "summary": "The prompt repeatedly places boundaries inside minimal syntactic units (numeral+classifier runs, modifier–head nominals, before main verbs, or inside coordinations), producing tiny segments or fragments that are hard to translate. It also ranks some defensible but risky splits (those that leave a coordinator or a verb expecting a complement) too highly so they survive tight budgets; rules should demote such boundaries and enforce minimum-gap and syntactic-completion conditions.",
+  "aggregate": {
+    "dominant_error": "placement",
+    "error_counts": {
+      "format_violation": 1,
+      "placement": 4,
+      "priority": 2
+    },
+    "focus": "format",
+    "focus_reason": "format_pass_rate 0.9000 < 1.0",
+    "priority_audit": [],
+    "max_missing_boundaries": 0.0,
+    "max_premature_rate": 0.0,
+    "rank_lift": null,
+    "rank_lift_t": null,
+    "summary": "The prompt repeatedly places boundaries inside minimal syntactic units (numeral+classifier runs, modifier–head nominals, before main verbs, or inside coordinations), producing tiny segments or fragments that are hard to translate. It also ranks some defensible but risky splits (those that leave a coordinator or a verb expecting a complement) too highly so they survive tight budgets; rules should demote such boundaries and enforce minimum-gap and syntactic-completion conditions."
+  }
+}

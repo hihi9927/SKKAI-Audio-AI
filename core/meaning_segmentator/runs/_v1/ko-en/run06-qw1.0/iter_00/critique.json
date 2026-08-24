@@ -1,0 +1,101 @@
+{
+  "cases": [
+    {
+      "id": "KsponSpeech_E00353",
+      "error_type": "wrong_boundary",
+      "span": "이제 아침에 이제 애들을",
+      "evidence": "Second piece became a bare noun phrase 'Now in the morning, the kids' while reference supplies a full predicate 'you can now watch the kids'.",
+      "cause": "Split placed right before a clause-final fragment lacking its own verb, forcing a literal, verbless translation.",
+      "proposed_rule": "Do not place a split boundary immediately before a trailing fragment that has no verb of its own; only split where the following piece is a complete predicate.",
+      "example_pair": {
+        "input": "두 두 분이 맞벌이를 하시다보니까 이제 아침에 이제 애들을",
+        "output": "두 두 분이 맞벌이를 하시다보니까 이제 아침에 이제 애들을"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00509",
+      "error_type": "over_segmentation",
+      "span": "받아서 <SEG> 또 일어나라하기",
+      "evidence": "Diagnostics show even the best equally-fast alternative boundary only recovers part of the loss (headroom 0.048); quality stays well below reference regardless of exact cut point.",
+      "cause": "Sentence opens with stacked fillers/false starts ('근데 아니 근데 아') before the real clause; any interior split inherits this instability.",
+      "proposed_rule": "When a clause is preceded by multiple repeated discourse fillers or false starts, avoid splitting inside that filler-laden span; treat it as part of the following segment as a whole.",
+      "example_pair": {
+        "input": "근데 아니 근데 아 나 왜 너무 많은 도움을 받아서 또 일어나라하기 좀 그래.",
+        "output": "근데 아니 근데 아 나 왜 너무 많은 도움을 받아서 또 일어나라하기 좀 그래."
+      }
+    },
+    {
+      "id": "KsponSpeech_E00451",
+      "error_type": "over_segmentation",
+      "span": "안된다면 <SEG> 또 제가",
+      "evidence": "Best alternative split gains only 0.006 headroom, so no nearby boundary fixes the damage; scope of repeated '또' shifts under the current cut.",
+      "cause": "Chain of connectives ('-면...또...하다보니까') with reduplicated fillers means any split changes which clause '또' attaches to.",
+      "proposed_rule": "Avoid splitting inside a chain of clauses linked by a repeated coordinating adverb (e.g. '또') when no equally-fast alternative boundary improves quality.",
+      "example_pair": {
+        "input": "또 이제 그 그쪽이 안된다면 또 제가 저 역사학을 원해 좋 좋아하다 보니까",
+        "output": "또 이제 그 그쪽이 안된다면 또 제가 저 역사학을 원해 좋 좋아하다 보니까"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00691",
+      "error_type": "over_segmentation",
+      "span": "마시고 <SEG> 진짜 조용히만",
+      "evidence": "Negative headroom (-0.059): the tested alternative boundary is worse, so no equally-fast cut preserves the conditional-result link.",
+      "cause": "Split falls inside a chained conditional construction (V-고 V-면 → result), separating condition from consequence.",
+      "proposed_rule": "Do not split inside a chained conditional/purpose construction (V-고 ... V-면 ... 결과); keep it as one piece since interior cuts break the logical link regardless of position.",
+      "example_pair": {
+        "input": "진짜 얘 애들 술 한번 풀어주는 날 마시고 진짜 조용히만 들어가면 상관이 없어",
+        "output": "진짜 얘 애들 술 한번 풀어주는 날 마시고 진짜 조용히만 들어가면 상관이 없어"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00521",
+      "error_type": "over_segmentation",
+      "span": "그런 것도 없고 <SEG> 그냥 무조건",
+      "evidence": "Alt boundary tested is also worse (headroom -0.032); the terminal appositive list ('챔피언 버스 타는 챔피언') loses coherence under either 3-way split.",
+      "cause": "Heavy filler repetition plus a trailing appositive list makes any 3-piece split too fragmenting for this sentence's density.",
+      "proposed_rule": "Cap split count by filler/repetition density, not just length; sentences with heavy repeated fillers and a terminal appositive list should get at most one split.",
+      "example_pair": {
+        "input": "에 에 에 이제 옛날이면 자신있게 자기 막 잘하고 그랬는데 이제 그런 것도 없고 그냥 무조건 그냥 반만 가는 챔피언 버스 타는 챔피언",
+        "output": "에 에 에 이제 옛날이면 자신있게 자기 막 잘하고 그랬는데 <SEG> 이제 그런 것도 없고 그냥 무조건 그냥 반만 가는 챔피언 버스 타는 챔피언"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00414",
+      "error_type": "under_segmentation",
+      "span": "가거나 아니면 호텔카지노? 그런쪽으로",
+      "evidence": "Whole sentence left unsplit though it has two independent clauses joined at a question-mark boundary; the second clause refers back with an explicit noun phrase ('그런쪽으로'), not a pronoun.",
+      "cause": "Model did not treat the sentence-final punctuation boundary as a safe cut because the two clauses share a topic, but the second clause is self-contained.",
+      "proposed_rule": "When a long sentence has two clauses separated by internal punctuation and the second clause refers back with an explicit noun phrase (not a bare pronoun), insert a split there to gain latency at no quality cost.",
+      "example_pair": {
+        "input": "나는 다른학교 편입으로 승무원쪽 가거나 아니면 호텔카지노? 그런쪽으로 가는 목적이 있어가지고",
+        "output": "나는 다른학교 편입으로 승무원쪽 가거나 아니면 호텔카지노? <SEG> 그런쪽으로 가는 목적이 있어가지고"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00587",
+      "error_type": "under_segmentation",
+      "span": "다니고 <SEG> 다음 학기 때",
+      "evidence": "Sentence kept whole despite two coordinate, self-contained temporal clauses ('다니고' / '쉴 때') feeding a single main verb.",
+      "cause": "Model treated the coordinate '-고' listing of time clauses as inseparable even though each clause stands alone semantically.",
+      "proposed_rule": "For sentences listing sequential time clauses joined by '-고' before a main verb, split after the first clause when each clause is independently interpretable.",
+      "example_pair": {
+        "input": "이번 학기 다니고 다음 학기 때 쉴 때 이제 그 여름방학기 시작되잖아",
+        "output": "이번 학기 다니고 <SEG> 다음 학기 때 쉴 때 이제 그 여름방학기 시작되잖아"
+      }
+    }
+  ],
+  "summary": "The segmenter frequently cuts inside filler-laden or chained-conditional clauses where no equally-fast alternative boundary helps, causing quality loss that is inherent to over-splitting rather than fixable by relocation. At the same time it under-uses safe, cost-free splits on longer sentences with clearly independent coordinate or punctuation-marked clauses, sacrificing latency gains for no quality benefit.",
+  "aggregate": {
+    "dominant_error": "over_segmentation",
+    "error_counts": {
+      "wrong_boundary": 1,
+      "over_segmentation": 4,
+      "under_segmentation": 2
+    },
+    "over_seg_count": 5,
+    "under_seg_count": 2,
+    "direction": "fix boundary placement",
+    "summary": "The segmenter frequently cuts inside filler-laden or chained-conditional clauses where no equally-fast alternative boundary helps, causing quality loss that is inherent to over-splitting rather than fixable by relocation. At the same time it under-uses safe, cost-free splits on longer sentences with clearly independent coordinate or punctuation-marked clauses, sacrificing latency gains for no quality benefit."
+  }
+}

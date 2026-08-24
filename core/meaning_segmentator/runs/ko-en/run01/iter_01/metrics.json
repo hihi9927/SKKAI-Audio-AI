@@ -1,0 +1,49 @@
+{
+  "train": {
+    "n": 30,
+    "format_pass_rate": 0.9667,
+    "format_pass_rate_no_retry": 0.9667,
+    "by_T": {
+      "3": {
+        "target_chunk_words": 3,
+        "n": 30,
+        "adequacy": 0.7784,
+        "adequacy_min": 0.6481,
+        "adequacy_p10": 0.6762,
+        "consistency": 0.7778,
+        "consistency_chrf": 0.6047,
+        "laal_words": 2.7599,
+        "chunks_per_sentence": 3.7,
+        "split_ratio": 1.0,
+        "truncation_shortfall": 0.6333,
+        "premature_rate": null
+      },
+      "6": {
+        "target_chunk_words": 6,
+        "n": 30,
+        "adequacy": 0.7781,
+        "adequacy_min": 0.648,
+        "adequacy_p10": 0.6484,
+        "consistency": 0.8462,
+        "consistency_chrf": 0.7262,
+        "laal_words": 3.7314,
+        "chunks_per_sentence": 2.3667,
+        "split_ratio": 1.0,
+        "truncation_shortfall": 0.0,
+        "premature_rate": 0.2727
+      }
+    },
+    "score": -9.0333
+  },
+  "dev": null,
+  "score_train": -9.0333,
+  "score_dev": null,
+  "adopted": false,
+  "usage": {
+    "calls": 150,
+    "prompt_tokens": 560783,
+    "completion_tokens": 186343,
+    "cached_tokens": 0,
+    "cost": 2.984996
+  }
+}

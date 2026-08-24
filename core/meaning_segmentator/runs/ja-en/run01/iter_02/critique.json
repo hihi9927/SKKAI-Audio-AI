@@ -1,0 +1,164 @@
+{
+  "cases": [
+    {
+      "id": "ja_jp_1273",
+      "error_type": "placement",
+      "span": "新華社は、政府の調査員",
+      "evidence": "emitted \"Xinhua News Agency is a government investigator\"",
+      "cause": "topic (は) led to agent assignment before clause verb arrived",
+      "proposed_rule": "If a は-topic is followed by a が-marked noun, delay committing agent/role until the clause verb appears.",
+      "example_pair": {
+        "input": "新華社は、政府の調査員が水曜日に「ブラックボックス」のフライトレコーダー2台を回収したと報じました。",
+        "output": "新華社は、政府の調査員が水曜日に「ブラックボックス」のフライトレコーダー2台を回収したと報じました。<SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_1173",
+      "error_type": "placement",
+      "span": "海外での性転換手術を受ける予定の旅行者は、",
+      "evidence": "first piece read as an action without its modified noun (no subject)",
+      "cause": "boundary split a prenominal relative clause from its head noun",
+      "proposed_rule": "Avoid boundaries that separate prenominal relative clauses from the head noun they modify; wait for the head noun.",
+      "example_pair": {
+        "input": "海外での性転換手術を受ける予定の旅行者は、帰国時に身分証明できる有効な書類を確実に携帯する必要があります。",
+        "output": "海外での性転換手術を受ける予定の旅行者は、<SEG:1> 帰国時に身分証明できる有効な書類を確実に携帯する必要があります。"
+      }
+    },
+    {
+      "id": "ja_jp_1123",
+      "error_type": "format_violation",
+      "span": "面積は3,850 km²で、",
+      "evidence": "tagging split numeric/unit or placed too close to neighboring tags (gap too small)",
+      "cause": "boundary placed inside short token/number or within minimal-gap window",
+      "proposed_rule": "Never place boundaries inside numbers, units, abbreviations, or within very short orthographic tokens; place boundaries at token boundaries with a minimum span.",
+      "example_pair": {
+        "input": "スンダルバンスの面積は3,850 km²で、その約3分の1は水域/湿地帯で覆われています。",
+        "output": "スンダルバンスの面積は3,850 km²で、<SEG:1> その約3分の1は水域/湿地帯で覆われています。"
+      }
+    },
+    {
+      "id": "ja_jp_48",
+      "error_type": "placement",
+      "span": "A1GPニュージーランドチーム",
+      "evidence": "produced fragments like 'A1GP News' / split 'New Zealand' into 'News'",
+      "cause": "finalized inside a multi-token proper name before the full name arrived",
+      "proposed_rule": "Do not finalize or emit translations inside multi-token proper names (countries, orgs, persons); wait for the full name token sequence.",
+      "example_pair": {
+        "input": "A1GPニュージーランドチームのコ・ドライバーであるジョニー・リードは本日、48年以上の歴史があるニュージーランドのオークランド・ハーバー・ブリッジを違反なく最速で駆け抜け、歴史に名を刻みました。",
+        "output": "A1GPニュージーランドチームの<SEG:1> コ・ドライバーであるジョニー・リードは本日、48年以上の歴史があるニュージーランドのオークランド・ハーバー・ブリッジを違反なく最速で駆け抜け、歴史に名を刻みました。"
+      }
+    },
+    {
+      "id": "ja_jp_906",
+      "error_type": "format_violation",
+      "span": "パーソナルVPN（仮想私設網）",
+      "evidence": "boundary split inside parenthetical or immediately adjacent to parentheses (gap too small)",
+      "cause": "boundary placed inside/around a parenthetical abbreviation or acronym",
+      "proposed_rule": "Avoid boundaries inside parentheticals, acronyms, or between an acronym and its explanation; prefer boundaries after the whole parenthetical.",
+      "example_pair": {
+        "input": "パーソナルVPN（仮想私設網）プロバイダーは、政治的検閲と商業的IPジオフィルタリングの両方を回避するうえで優れた方法です。",
+        "output": "パーソナルVPN（仮想私設網）プロバイダーは、<SEG:1> 政治的検閲と商業的IPジオフィルタリングの両方を回避するうえで優れた方法です。"
+      }
+    },
+    {
+      "id": "ja_jp_1143",
+      "error_type": "placement",
+      "span": "これは英国内の他の地域で一般的に行われていることですが、",
+      "evidence": "first piece rendered as 'This is other than in the UK' contradicting whole sentence (0.9927)",
+      "cause": "scope of '他の' (other) unclear until locative/head noun appears",
+      "proposed_rule": "Delay resolving vague demonstratives/contrastive terms ('other', 'those') until the following locative or head noun is available to determine scope.",
+      "example_pair": {
+        "input": "これは英国内の他の地域で一般的に行われていることですが、スコットランドの司法制度は異なっており、裁判所は写真の公開を潜在的に悪影響のあるものと見なしています。",
+        "output": "これは英国内の他の地域で一般的に行われていることですが、<SEG:1> スコットランドの司法制度は異なっており、裁判所は写真の公開を潜在的に悪影響のあるものと見なしています。"
+      }
+    },
+    {
+      "id": "ja_jp_1098",
+      "error_type": "placement",
+      "span": "で販売する暴力的なビデオゲームに",
+      "evidence": "produced 'violent to sell' — adjective emitted before head noun",
+      "cause": "modifier emitted before head noun arrived (head not yet arrived)",
+      "proposed_rule": "Delay translating adjectives/prenominal modifiers until the head noun is visible; keep modifier+head in the same piece.",
+      "example_pair": {
+        "input": "法案では、カリフォルニア州で販売する暴力的なビデオゲームに「18歳」というラベルを貼ることを義務付け、1回の違反（未成年者への販売）につき1000ドルの罰金が科されます。",
+        "output": "法案では、カリフォルニア州で販売する暴力的なビデオゲームに「18歳」というラベルを貼ることを義務付け、<SEG:1> 1回の違反（未成年者への販売）につき1000ドルの罰金が科されます。"
+      }
+    },
+    {
+      "id": "ja_jp_1593",
+      "error_type": "placement",
+      "span": "最終的に、木製の",
+      "evidence": "first piece 'Finally, wooden' contradicted by rest (0.9908)",
+      "cause": "boundary split prenominal modifier from head noun",
+      "proposed_rule": "Never split a prenominal modifier from its head noun; keep modifier+head together to avoid premature assertions.",
+      "example_pair": {
+        "input": "最終的に、木製の車輪は鉄製の車輪に取って代わられました。1767年、総鉄製レールが初めて導入されました。",
+        "output": "最終的に、木製の車輪は鉄製の車輪に取って代わられました。<SEG:1> 1767年、総鉄製レールが初めて導入されました。"
+      }
+    },
+    {
+      "id": "ja_jp_264",
+      "error_type": "placement",
+      "span": "原産地規則や関税についてはまだ合意に至っていないものの、",
+      "evidence": "first piece contradicted by rest (0.9585) — concessive/contrast not resolved",
+      "cause": "clause polarity and concessive connective not settled until verb phrase completes",
+      "proposed_rule": "Avoid emitting main-clause polarity or resolving concessive/connective scope until the clause verb or connective-final element is present.",
+      "example_pair": {
+        "input": "長官は、「原産地規則や関税についてはまだ合意に至っていないものの、2020年7月1日に取引を始めるための枠組みは十分に整っている」と述べました。",
+        "output": "長官は、「原産地規則や関税についてはまだ合意に至っていないものの、2020年7月1日に取引を始めるための枠組みは十分に整っている」と述べました。<SEG:1>"
+      }
+    }
+  ],
+  "summary": "The prompt systematically splits modifiers, prenominal clauses, and multi-token named entities too eagerly, and sometimes inserts tags inside numerical/parenthetical tokens. It over-trusts boundaries at early relative positions (see '상대위치 0/3' feature) and needs priority demotion for those spots and hard rules to never split modifier–head, topic–clause, or inside tokens/parentheticals.",
+  "aggregate": {
+    "dominant_error": "placement",
+    "error_counts": {
+      "placement": 7,
+      "format_violation": 2
+    },
+    "focus": "format",
+    "focus_reason": "format_pass_rate 0.8000 < 1.0",
+    "priority_audit": [
+      {
+        "feature": "상대위치 0/3",
+        "n": 22,
+        "rank_percentile": 0.383,
+        "contradiction": 0.2838,
+        "over_trust": 0.2176
+      },
+      {
+        "feature": "뒤 구두점 '、'",
+        "n": 11,
+        "rank_percentile": 0.629,
+        "contradiction": 0.1636,
+        "over_trust": 0.0062
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 39,
+        "rank_percentile": 0.671,
+        "contradiction": 0.4114,
+        "over_trust": -0.036
+      },
+      {
+        "feature": "상대위치 1/3",
+        "n": 16,
+        "rank_percentile": 0.702,
+        "contradiction": 0.3528,
+        "over_trust": -0.0635
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 15,
+        "rank_percentile": 0.956,
+        "contradiction": 0.397,
+        "over_trust": -0.3703
+      }
+    ],
+    "max_missing_boundaries": 0.0,
+    "max_premature_rate": 0.0,
+    "rank_lift": null,
+    "rank_lift_t": null,
+    "summary": "The prompt systematically splits modifiers, prenominal clauses, and multi-token named entities too eagerly, and sometimes inserts tags inside numerical/parenthetical tokens. It over-trusts boundaries at early relative positions (see '상대위치 0/3' feature) and needs priority demotion for those spots and hard rules to never split modifier–head, topic–clause, or inside tokens/parentheticals."
+  }
+}

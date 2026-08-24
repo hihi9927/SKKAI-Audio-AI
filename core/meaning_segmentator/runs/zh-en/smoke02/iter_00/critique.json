@@ -1,0 +1,80 @@
+{
+  "cases": [
+    {
+      "id": "cmn_hans_cn_1498",
+      "error_type": "priority",
+      "span": "由于参加上述任何活动",
+      "evidence": "First emitted piece asserted a causal/locative claim ('rare to find a place... due to participating') that the missing predicate later disambiguates.",
+      "cause": "clause head (main predicate/noun) had not arrived when boundary was ranked highest",
+      "proposed_rule": "Demote boundaries that end immediately before a clause's main predicate or nominal head; only rank them highly when the head (verb/noun phrase that completes the assertion) is already present earlier in the piece.",
+      "example_pair": {
+        "input": "全年都有很多人到大堡礁旅游，而且在大堡礁很少发生由于参加上述任何活动而受伤的情况。",
+        "output": "全年都有很多人到大堡礁旅游， <SEG:1> 而且在大堡礁很少发生由于参加上述任何活动而受伤的情况。"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_86",
+      "error_type": "placement",
+      "span": "天气情况",
+      "evidence": "Boundary after the topical noun phrase did not commit to polarity; emitted text remained interpretable and later piece supplied predicate.",
+      "cause": "break occurs at a topic/subject NP before the main verb arrives but does not change meaning",
+      "proposed_rule": "Allow boundaries after short topical/subject NPs when the following segment will contain the main predicate and the partial text does not assert a polarity or contrary fact.",
+      "example_pair": {
+        "input": "皮特曼认为天气情况要到下周才能改善。",
+        "output": "皮特曼认为天气情况 <SEG:1> 要到下周才能改善。"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_163",
+      "error_type": "placement",
+      "span": "“",
+      "evidence": "Emitted piece ended at the opening quote; the sentence-in-quote remained intact and no contradiction occurred.",
+      "cause": "boundary placed at a quotation opening where the quoted clause is self-contained",
+      "proposed_rule": "Treat openings of quoted clauses as low-risk boundary points (rank them higher) when the quoted content forms a self-contained clause.",
+      "example_pair": {
+        "input": "他们还在一份声明中表示，“船员目前正在确定安全撤离军舰的最佳方法”。",
+        "output": "他们还在一份声明中表示，\" <SEG:1> 船员目前正在确定安全撤离军舰的最佳方法\"。"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_605",
+      "error_type": "placement",
+      "span": "虽然它的物理状态可能会改变",
+      "evidence": "Boundary splits subordinate clause from main clause but emitted fragment does not assert a contradictory fact; interpretation remains stable.",
+      "cause": "segment placed after a concessive/subordinate clause before the main clause predicate",
+      "proposed_rule": "Permit segmentation after subordinate conjunctions (e.g. '虽然') when the subordinate clause does not itself assert an eventuality that could be reversed by the main clause.",
+      "example_pair": {
+        "input": "虽然它的物理状态可能会改变，但化学状态保持不变。",
+        "output": "虽然它的物理状态可能会改变， <SEG:1> 但化学状态保持不变。"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_658",
+      "error_type": "placement",
+      "span": "夏季漫长的白昼",
+      "evidence": "Boundary after the subject NP produced an incomplete but non-committal fragment; the main predicate follows and completes the meaning.",
+      "cause": "break placed after a subject/topic NP before predicate arrival but without committing to a polarity or contradicted assertion",
+      "proposed_rule": "Allow early boundaries after subject/topic NPs when the emitted fragment is neutrally descriptive and cannot be contradicted by the upcoming predicate.",
+      "example_pair": {
+        "input": "夏季漫长的白昼会导致睡眠不足和相关健康问题。",
+        "output": "夏季漫长的白昼 <SEG:1> 会导致睡眠不足和相关健康问题。"
+      }
+    }
+  ],
+  "summary": "The prompt is ranking a risky boundary too highly when it cuts off before a clause's main head (priority error), producing mistranslations under tight budgets. Other boundaries cut at topics, subordinate clauses or quote openings and are harmless; the remedy is to demote boundaries that end immediately before a predicate/nominal head while allowing (higher rank) breaks at self-contained topical NPs, subordinate clauses that don't assert reversible facts, and quotation openings.",
+  "aggregate": {
+    "dominant_error": "placement",
+    "error_counts": {
+      "priority": 1,
+      "placement": 4
+    },
+    "focus": "placement",
+    "focus_reason": "측정 지표가 아무것도 안 걸림 — 기본값. 확실한 근거가 없으니 작은 수정만 할 것",
+    "priority_audit": [],
+    "max_missing_boundaries": 0.0,
+    "max_premature_rate": 0.0,
+    "rank_lift": null,
+    "rank_lift_t": null,
+    "summary": "The prompt is ranking a risky boundary too highly when it cuts off before a clause's main head (priority error), producing mistranslations under tight budgets. Other boundaries cut at topics, subordinate clauses or quote openings and are harmless; the remedy is to demote boundaries that end immediately before a predicate/nominal head while allowing (higher rank) breaks at self-contained topical NPs, subordinate clauses that don't assert reversible facts, and quotation openings."
+  }
+}

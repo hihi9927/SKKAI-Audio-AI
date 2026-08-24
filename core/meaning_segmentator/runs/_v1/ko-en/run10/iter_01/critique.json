@@ -1,0 +1,137 @@
+{
+  "cases": [
+    {
+      "id": "KsponSpeech_E00353",
+      "error_type": "wrong_boundary",
+      "span": "맞벌이를 하시다보니까",
+      "evidence": "seg_trans becomes two disconnected fragments; ref completes the elided main verb 'watch the kids' which the split piece lacks",
+      "cause": "connective '-다보니까' clause was split before the main clause was complete enough to resolve the following elliptical fragment",
+      "proposed_rule": "Do not split a reason/'-다보니까'-type clause off from a following clause that is elliptical or verb-less; keep them together so the elided predicate can be resolved.",
+      "example_pair": {
+        "input": "두 두 분이 맞벌이를 하시다보니까 이제 아침에 이제 애들을",
+        "output": "두 두 분이 맞벌이를 하시다보니까 이제 아침에 이제 애들을"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00945",
+      "error_type": "over_segmentation",
+      "span": "왜냐면 ... 때문에",
+      "evidence": "seg_trans repeats 'Because' three times as separate sentences, losing the single causal chain the reference expresses as one flow",
+      "cause": "a multi-clause causal chain was cut at every connective, turning subordination into disconnected independent sentences",
+      "proposed_rule": "When a sentence contains a chained causal/subordinate structure (e.g. 왜냐면...때문에), split at most once at the top-level boundary, not at every internal connective.",
+      "example_pair": {
+        "input": "알아요 왜냐면 그만큼 지원하는 애들이 많고 그걸 주구장창 한 달 내내 걔네들 뽑는 거에만 신경을 쓸 수 없기 때문에 최대한 줄여서 줄여서 하는 건지 알고 있는데",
+        "output": "알아요 <SEG> 왜냐면 그만큼 지원하는 애들이 많고 그걸 주구장창 한 달 내내 걔네들 뽑는 거에만 신경을 쓸 수 없기 때문에 최대한 줄여서 줄여서 하는 건지 알고 있는데"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00521",
+      "error_type": "wrong_boundary",
+      "span": "자기 막 잘하고 그랬는데",
+      "evidence": "seg_trans drops the adverbial nuance '무조건' present in the reference translation of the final clause",
+      "cause": "splitting before the adversative '-는데' clause separated a modifier from the clause it scoped over",
+      "proposed_rule": "Avoid placing a boundary immediately before an adversative '-는데' clause that carries adverbial modifiers referring back to the prior clause; keep such contrastive pairs in one segment.",
+      "example_pair": {
+        "input": "에 에 에 이제 옛날이면 자신있게 자기 막 잘하고 그랬는데 이제 그런 것도 없고 그냥 무조건 그냥 반만 가는 챔피언 버스 타는 챔피언",
+        "output": "에 에 에 이제 옛날이면 자신있게 자기 막 잘하고 그랬는데 <SEG> 이제 그런 것도 없고 그냥 무조건 그냥 반만 가는 챔피언 버스 타는 챔피언"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00691",
+      "error_type": "wrong_boundary",
+      "span": "마시고 진짜 조용히만 들어가면",
+      "evidence": "seg_trans turns 'let them drink' into an imperative while ref keeps it as part of a single conditional 'as long as ... and go in quietly'",
+      "cause": "splitting between the '-고' linking clause and the '-면' conditional clause broke the conditional's scope, changing sentence mood",
+      "proposed_rule": "Do not split between a '-고' linked clause and a following '-면' conditional clause when the conditional governs both; keep the whole conditional structure in one segment.",
+      "example_pair": {
+        "input": "진짜 얘 애들 술 한번 풀어주는 날 마시고 진짜 조용히만 들어가면 상관이 없어",
+        "output": "진짜 얘 애들 술 한번 풀어주는 날 마시고 진짜 조용히만 들어가면 상관이 없어"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00573",
+      "error_type": "wrong_boundary",
+      "span": "대마도 한 번 갔다왔거든 일본에 있는 대마도를",
+      "evidence": "seg_trans mistranslates '대마도' as 'marijuana' because the disambiguating clause 'Japan' fell in a separate segment",
+      "cause": "an ambiguous proper noun was split away from its clarifying appositive clause, removing the context needed for correct sense disambiguation",
+      "proposed_rule": "Keep an ambiguous entity mention in the same segment as its immediately following clarifying clause (e.g. location/appositive) that disambiguates it.",
+      "example_pair": {
+        "input": "그 뭐든지 해보는 건 좋은 거 같애 나도 이것저것 많이 안 해본 게 많아서 나 같은 경우는 해외는 딱 한 번 대마도 한 번 갔다왔거든 일본에 있는 대마도를 갔다왔는데",
+        "output": "그 뭐든지 해보는 건 좋은 거 같애 <SEG> 나도 이것저것 많이 안 해본 게 많아서 나 같은 경우는 해외는 딱 한 번 대마도 한 번 갔다왔거든 일본에 있는 대마도를 갔다왔는데"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00360",
+      "error_type": "under_segmentation",
+      "span": "잘 안 돼서",
+      "evidence": "reference_segmentation adds a boundary after the reason clause with reference_gain 0.2422 and zero quality loss",
+      "cause": "the '-어서' reason clause boundary is a safe split point that was left untagged, costing free latency",
+      "proposed_rule": "When a sentence contains a complete reason clause ending in '-어서'/'-서' followed by an independent main clause, place a boundary right after the reason clause.",
+      "example_pair": {
+        "input": "지금 우리가 뭔가 하고 준비를 하고있는 게 잘 안 돼서 오빠가 조금 조급해하고 있는 것 같은데",
+        "output": "지금 우리가 뭔가 하고 준비를 하고있는 게 잘 안 돼서 <SEG> 오빠가 조금 조급해하고 있는 것 같은데"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00414",
+      "error_type": "under_segmentation",
+      "span": "호텔카지노?",
+      "evidence": "reference_segmentation splits right after the question-mark clause, gaining 0.2304 with no quality cost",
+      "cause": "a punctuation-marked rhetorical question boundary was ignored, leaving the sentence whole for no benefit",
+      "proposed_rule": "Treat an internal question mark or other strong punctuation boundary followed by a syntactically independent clause as a safe split point.",
+      "example_pair": {
+        "input": "나는 다른학교 편입으로 승무원쪽 가거나 아니면 호텔카지노? 그런쪽으로 가는 목적이 있어가지고",
+        "output": "나는 다른학교 편입으로 승무원쪽 가거나 아니면 호텔카지노? <SEG> 그런쪽으로 가는 목적이 있어가지고"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00587",
+      "error_type": "under_segmentation",
+      "span": "쉴 때 이제",
+      "evidence": "reference_segmentation splits after the temporal filler '이제' before the main clause, gaining 0.2279 with no quality loss",
+      "cause": "a temporal filler marking the clause boundary before the main predicate was left fused with it, missing a free split",
+      "proposed_rule": "When a temporal filler (e.g. '이제', '그때') sits right before a syntactically independent main clause, split immediately after the filler.",
+      "example_pair": {
+        "input": "이번 학기 다니고 다음 학기 때 쉴 때 이제 그 여름방학기 시작되잖아",
+        "output": "이번 학기 다니고 다음 학기 때 쉴 때 이제 <SEG> 그 여름방학기 시작되잖아"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00474",
+      "error_type": "under_segmentation",
+      "span": "아 어 근데",
+      "evidence": "reference_segmentation adds a second boundary isolating the discourse filler '아 어 근데', raising gain from 0.0736 to 0.2431",
+      "cause": "a filler+discourse-connective cluster was left attached to the following conditional clause instead of being split off on its own",
+      "proposed_rule": "Isolate short filler+discourse-marker clusters (e.g. '아 어 근데') into their own segment when a substantive clause follows, even after an earlier boundary already exists.",
+      "example_pair": {
+        "input": "왜? 아 어 근데 그거 안 먹으면 그 안 나와.",
+        "output": "왜? <SEG> 아 어 근데 <SEG> 그거 안 먹으면 그 안 나와."
+      }
+    },
+    {
+      "id": "KsponSpeech_E00831",
+      "error_type": "under_segmentation",
+      "span": "어쨌든",
+      "evidence": "reference_segmentation splits off the discourse marker '어쨌든' as its own piece, gaining 0.1094 with no quality loss",
+      "cause": "a sentence-initial discourse marker was fused with the main clause instead of being split off, missing a free-latency boundary",
+      "proposed_rule": "Split a sentence-initial discourse marker (e.g. '어쨌든', '그래서') from the following independent clause when it does not affect that clause's meaning.",
+      "example_pair": {
+        "input": "어쨌든 나는 이제 가정을 같이 이끌어 나갈려면",
+        "output": "어쨌든 <SEG> 나는 이제 가정을 같이 이끌어 나갈려면"
+      }
+    }
+  ],
+  "summary": "The current segmenter over-fragments causal/conditional chains and cuts ambiguous entities or modifiers away from their disambiguating context, damaging translation quality; simultaneously it leaves many long sentences fully unsplit even when a discourse marker, reason clause, or punctuation boundary offers a free latency gain. Both errors stem from not distinguishing clause-completeness boundaries from arbitrary connective endings.",
+  "aggregate": {
+    "dominant_error": "under_segmentation",
+    "error_counts": {
+      "wrong_boundary": 4,
+      "over_segmentation": 1,
+      "under_segmentation": 5
+    },
+    "over_seg_count": 5,
+    "under_seg_count": 5,
+    "direction": "move boundaries, keep the count",
+    "summary": "The current segmenter over-fragments causal/conditional chains and cuts ambiguous entities or modifiers away from their disambiguating context, damaging translation quality; simultaneously it leaves many long sentences fully unsplit even when a discourse marker, reason clause, or punctuation boundary offers a free latency gain. Both errors stem from not distinguishing clause-completeness boundaries from arbitrary connective endings."
+  }
+}

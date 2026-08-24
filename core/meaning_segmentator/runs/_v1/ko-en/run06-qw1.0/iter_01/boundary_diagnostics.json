@@ -1,0 +1,57 @@
+{
+  "KsponSpeech_E00587": {
+    "n_segments": 2,
+    "current_segmentation": "이번 학기 다니고 <SEG> 다음 학기 때 쉴 때 이제 그 여름방학기 시작되잖아",
+    "current_quality": 0.7794,
+    "current_latency": 0.8159,
+    "best_alt_segmentation": "이번 학기 다니고 다음 학기 때 쉴 때 이제 그 <SEG> 여름방학기 시작되잖아",
+    "best_alt_quality": 0.9457,
+    "best_alt_latency": 0.7911,
+    "free_quality_headroom": 0.1663,
+    "verdict": "placement — a split that is just as fast scores clearly higher"
+  },
+  "KsponSpeech_E00521": {
+    "n_segments": 2,
+    "current_segmentation": "에 에 에 이제 옛날이면 자신있게 자기 막 잘하고 그랬는데 <SEG> 이제 그런 것도 없고 그냥 무조건 그냥 반만 가는 챔피언 버스 타는 챔피언",
+    "current_quality": 0.8015,
+    "current_latency": 0.7538,
+    "best_alt_segmentation": "에 에 에 이제 옛날이면 자신있게 자기 막 잘하고 그랬는데 이제 그런 <SEG> 것도 없고 그냥 무조건 그냥 반만 가는 챔피언 버스 타는 챔피언",
+    "best_alt_quality": 0.8228,
+    "best_alt_latency": 0.7504,
+    "free_quality_headroom": 0.0213,
+    "verdict": "not placement — no equally-fast split does better; the damage is inherent to splitting this sentence this many times"
+  },
+  "KsponSpeech_E00164": {
+    "n_segments": 3,
+    "current_segmentation": "그래가지고 그것도 이해를 못 해가지고 막 설명을 해주고 <SEG> 근데 지가 뭐 신청했는지도 기억을 못하는 거야. <SEG> 지가 교직신청을 했는지 안 했는지.",
+    "current_quality": 0.8484,
+    "current_latency": 0.6722,
+    "best_alt_segmentation": "그래가지고 그것도 이해를 못 해가지고 막 설명을 <SEG> 해주고 근데 지가 뭐 신청했는지도 기억을 못하는 거야. <SEG> 지가 교직신청을 했는지 안 했는지.",
+    "best_alt_quality": 0.8595,
+    "best_alt_latency": 0.6722,
+    "free_quality_headroom": 0.0111,
+    "verdict": "not placement — no equally-fast split does better; the damage is inherent to splitting this sentence this many times"
+  },
+  "KsponSpeech_E00719": {
+    "n_segments": 3,
+    "current_segmentation": "어떻게 보면 이 세상이 조금 이제 잘 돼있긴 하지만 <SEG> 그 속속히 들어가서 깊숙이 보면 많이 부당한 것도 있고 <SEG> 그리고 우리 밑에 애들도 우리를 보면 부당하다고 느끼는 것도 있겠지 근데 나는",
+    "current_quality": 0.8719,
+    "current_latency": 0.6732,
+    "best_alt_segmentation": "어떻게 보면 이 세상이 조금 이제 잘 돼있긴 하지만 <SEG> 그 속속히 들어가서 깊숙이 보면 많이 부당한 것도 있고 그리고 <SEG> 우리 밑에 애들도 우리를 보면 부당하다고 느끼는 것도 있겠지 근데 나는",
+    "best_alt_quality": 0.8616,
+    "best_alt_latency": 0.6696,
+    "free_quality_headroom": -0.0103,
+    "verdict": "not placement — no equally-fast split does better; the damage is inherent to splitting this sentence this many times"
+  },
+  "KsponSpeech_E00348": {
+    "n_segments": 4,
+    "current_segmentation": "그래서 1학기 때 그 시험이 있었는데 <SEG> 중간고사하고 기말고사가 있을 거 아냐? <SEG> 우리는 그리고 시험이 다 공대다 보니까 주관식이야. <SEG> 객관식이 하나도 없어.",
+    "current_quality": 0.8732,
+    "current_latency": 0.6348,
+    "best_alt_segmentation": "그래서 1학기 때 그 시험이 <SEG> 있었는데 중간고사하고 기말고사가 있을 거 <SEG> 아냐? 우리는 그리고 시험이 다 공대다 보니까 <SEG> 주관식이야. 객관식이 하나도 없어.",
+    "best_alt_quality": 0.8028,
+    "best_alt_latency": 0.6292,
+    "free_quality_headroom": -0.0704,
+    "verdict": "not placement — no equally-fast split does better; the damage is inherent to splitting this sentence this many times"
+  }
+}

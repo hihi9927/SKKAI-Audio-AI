@@ -1,0 +1,67 @@
+{
+  "source_language": "Chinese (Mandarin, written)",
+  "source_code": "zh",
+  "uses_spaces_between_words": false,
+  "word_order": "SVO | e.g. 夏季...会导致睡眠不足 (Subject 夏季... + Verb 会导致 + Object 睡眠不足); 皮特曼认为... (皮特曼 = S, 认为 = V, clause = O)",
+  "head_final": false,
+  "punctuation_present": "sometimes",
+  "trailing_punctuation": [
+    "。",
+    "，",
+    "）",
+    "”",
+    "."
+  ],
+  "register": "formal informational/expository written prose (encyclopedic, newsy or academic style)",
+  "fillers_and_hesitations": [
+    "嗯",
+    "呃",
+    "啊",
+    "那个",
+    "就是"
+  ],
+  "discourse_markers": [
+    "对于",
+    "虽然",
+    "而且",
+    "最终",
+    "还",
+    "该",
+    "因此",
+    "但是",
+    "或者",
+    "在...中"
+  ],
+  "clause_boundary_signals": [
+    "。",
+    "，",
+    "虽然",
+    "而且",
+    "因此",
+    "但是",
+    "最终",
+    "对于",
+    "或者"
+  ],
+  "non_boundary_traps": [
+    "的",
+    "了",
+    "年",
+    "、",
+    "和",
+    "与",
+    "以及"
+  ],
+  "unstable_prefix_signals": [
+    "如果",
+    "因为",
+    "虽然",
+    "为了",
+    "在",
+    "要",
+    "可能",
+    "可以",
+    "当"
+  ],
+  "notes_for_prompt_writer": "Operate without reliance on word spaces: use punctuation and multi-character discourse markers to detect safe split points. Prefer to wait for clause-final punctuation (。 or clear coordinating/subordinating markers like 而且/但是/虽然) before emitting a segment; do not split immediately after function particles such as 的 or aspect markers like 了. Keep quoted or parenthetical spans and numeric+classifier/year expressions intact (avoid splitting between digits and 年 or inside （...） or “...” )."
+}

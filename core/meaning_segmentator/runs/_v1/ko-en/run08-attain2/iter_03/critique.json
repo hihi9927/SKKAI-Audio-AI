@@ -1,0 +1,168 @@
+{
+  "cases": [
+    {
+      "id": "KsponSpeech_E00353",
+      "error_type": "wrong_boundary",
+      "span": "이제 아침에 이제 애들을",
+      "evidence": "seg_trans renders the second piece as a verbless fragment ('Now in the morning, the kids') while full_trans supplies the missing predicate ('you can now watch the kids')",
+      "cause": "split separated an elliptical result clause from the cause clause that supplied its implied verb",
+      "proposed_rule": "Do not split immediately before a trailing clause that lacks its own finite verb; keep verbless/elliptical continuations attached to the clause that supplies their predicate.",
+      "example_pair": {
+        "input": "두 두 분이 맞벌이를 하시다보니까 이제 아침에 이제 애들을",
+        "output": "두 두 분이 맞벌이를 하시다보니까 이제 아침에 이제 애들을"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00521",
+      "error_type": "wrong_boundary",
+      "span": "그랬는데 <SEG> 이제",
+      "evidence": "full_trans keeps a 'but now' contrast; seg_trans drops it into two flat sentences, losing the concessive link and some nuance",
+      "cause": "boundary placed right after a contrastive connective (-는데), stranding the following clause without its contrast marker",
+      "proposed_rule": "When a clause ends in a contrastive/concessive connective (-는데, -지만), avoid splitting right there unless the following piece explicitly restores the contrast (e.g. starts with 'but').",
+      "example_pair": {
+        "input": "...자기 막 잘하고 그랬는데 이제 그런 것도 없고 그냥 무조건...",
+        "output": "...자기 막 잘하고 그랬는데 이제 그런 것도 없고 <SEG> 그냥 무조건 그냥 반만 가는 챔피언 버스 타는 챔피언"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00140",
+      "error_type": "over_segmentation",
+      "span": "지브리 같다고 <SEG> 막 뭐 한창",
+      "evidence": "seg_trans loses the Ghibli reference in the second clause, only saying 'I just did something like that' vs full_trans keeping the comparison",
+      "cause": "split separated the quotative clause (-다고) from the verb reporting it, so the quote content was lost downstream",
+      "proposed_rule": "Never split between a quotative marker (-다고/-라고) and the verb that reports it; keep the quoted content and its reporting verb in one segment.",
+      "example_pair": {
+        "input": "이거 분위기가 막 지브리 같다고 막 뭐 한창 그거 했던 거 같은데",
+        "output": "이거 분위기가 막 지브리 같다고 막 뭐 한창 그거 했던 거 같은데"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00348",
+      "error_type": "wrong_boundary",
+      "span": "우리는 그리고 시험이 다 공대다 보니까 <SEG> 주관식이야.",
+      "evidence": "seg_trans mistranslates as 'Since all of our exams are from engineering school, It's subjective' losing correct subject-predicate attachment present in full_trans",
+      "cause": "split separated the topic '시험이' from its predicate '주관식이야', leaving the predicate without its subject",
+      "proposed_rule": "Do not place a boundary between a topic/subject phrase and the short predicate that completes it in the next clause.",
+      "example_pair": {
+        "input": "...우리는 그리고 시험이 다 공대다 보니까 주관식이야. 객관식이 하나도 없어.",
+        "output": "...중간고사하고 기말고사가 있을 거 아냐? <SEG> 우리는 그리고 시험이 다 공대다 보니까 주관식이야. <SEG> 객관식이 하나도 없어."
+      }
+    },
+    {
+      "id": "KsponSpeech_E00170",
+      "error_type": "wrong_boundary",
+      "span": "예를 들어서 <SEG>",
+      "evidence": "isolating 'For example' as its own segment leaves a bare fragment that concatenates awkwardly with the next sentence, lowering chrf/quality",
+      "cause": "boundary placed right after a short leading discourse marker with no verb of its own",
+      "proposed_rule": "Do not isolate a short leading discourse marker (e.g. '예를 들어서', '그러니까') as its own segment; attach it to the following clause instead.",
+      "example_pair": {
+        "input": "예를 들어서 요즘 카페 창업이든 음식점 창업이던 좀 남을 따라하려는 경향이 좀 많아서 그래서 좀 더",
+        "output": "예를 들어서 요즘 카페 창업이든 음식점 창업이던 좀 남을 따라하려는 경향이 좀 많아서 <SEG> 그래서 좀 더"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00691",
+      "error_type": "under_segmentation",
+      "span": "...마시고 진짜 조용히만 들어가면...",
+      "evidence": "quality 1.0 with n_segments=1; sentence has two independently complete clauses joined by -고, no split taken",
+      "cause": "a safe coordinating connective boundary was left unused, forfeiting latency gain",
+      "proposed_rule": "When a coordinating '-고' connects two clauses that each have their own subject and verb, insert a boundary there to gain latency at no quality cost.",
+      "example_pair": {
+        "input": "진짜 얘 애들 술 한번 풀어주는 날 마시고 진짜 조용히만 들어가면 상관이 없어",
+        "output": "진짜 얘 애들 술 한번 풀어주는 날 마시고 <SEG> 진짜 조용히만 들어가면 상관이 없어"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00509",
+      "error_type": "under_segmentation",
+      "span": "...도움을 받아서 또 일어나라하기...",
+      "evidence": "quality 1.0 with n_segments=1; a causal connective '-아서' separates a self-contained cause from an independent result clause",
+      "cause": "safe causal-connective boundary left unsplit",
+      "proposed_rule": "For sentences with a causal connective (-아서/-어서/-니까) followed by an independent result clause, split at the connective to gain latency without quality loss.",
+      "example_pair": {
+        "input": "근데 아니 근데 아 나 왜 너무 많은 도움을 받아서 또 일어나라하기 좀 그래.",
+        "output": "근데 아니 근데 아 나 왜 너무 많은 도움을 받아서 <SEG> 또 일어나라하기 좀 그래."
+      }
+    },
+    {
+      "id": "KsponSpeech_E00451",
+      "error_type": "under_segmentation",
+      "span": "...안된다면 또 제가...",
+      "evidence": "quality 1.0 with n_segments=1; conditional connective '-면' separates a full condition clause from an independent consequence",
+      "cause": "safe conditional boundary left unsplit",
+      "proposed_rule": "When a conditional connective (-면/-다면) separates a condition from a consequence that can stand alone, split at that connective.",
+      "example_pair": {
+        "input": "또 이제 그 그쪽이 안된다면 또 제가 저 역사학을 원해 좋 좋아하다 보니까",
+        "output": "또 이제 그 그쪽이 안된다면 <SEG> 또 제가 저 역사학을 원해 좋 좋아하다 보니까"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00018",
+      "error_type": "under_segmentation",
+      "span": "즉흥적인 거보다는 너무 준비해온 것만...",
+      "evidence": "quality 1.0 with n_segments=1; comparison connective '-보다는' separates two nominalized clauses that could be split",
+      "cause": "safe comparative-connective boundary left unsplit",
+      "proposed_rule": "When a comparative connective (-보다는) introduces a contrast between two nominalized clauses, split right after it if the remainder still forms a complete predicate.",
+      "example_pair": {
+        "input": "음 그러니까 뭔가 즉흥적인 거보다는 너무 준비해온 것만 하는 느낌",
+        "output": "음 그러니까 뭔가 즉흥적인 거보다는 <SEG> 너무 준비해온 것만 하는 느낌"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00716",
+      "error_type": "under_segmentation",
+      "span": "밤에 나중에 알바 끝나고 나서 친구들이랑...",
+      "evidence": "missed_gain 0.2975; reference_segmentation splits after '나중에' and after '끝나고 나서', current has zero splits",
+      "cause": "sequential temporal clauses were left merged although each stands alone as a time-setup clause",
+      "proposed_rule": "For sentences chaining multiple sequential/temporal clauses (e.g. ending in '나중에', '끝나고 나서'), insert a boundary after each self-contained temporal clause.",
+      "example_pair": {
+        "input": "밤에 나중에 알바 끝나고 나서 친구들이랑 고기를 먹고 헤어졌는데",
+        "output": "밤에 나중에 <SEG> 알바 끝나고 나서 <SEG> 친구들이랑 고기를 먹고 헤어졌는데"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00831",
+      "error_type": "under_segmentation",
+      "span": "어쨌든 <SEG> 나는 이제...",
+      "evidence": "missed_gain 0.1094; reference_segmentation splits off the leading discourse adverb '어쨌든' while current merges it into the clause",
+      "cause": "leading discourse adverb not split off despite being a safe standalone unit",
+      "proposed_rule": "Split a leading discourse adverb ('어쨌든', '아무튼', etc.) into its own segment when it is followed by a complete independent clause.",
+      "example_pair": {
+        "input": "어쨌든 나는 이제 가정을 같이 이끌어 나갈려면",
+        "output": "어쨌든 <SEG> 나는 이제 가정을 같이 이끌어 나갈려면"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00171",
+      "error_type": "under_segmentation",
+      "span": "나 <SEG> 1년만 더...",
+      "evidence": "missed_gain 0.0384; reference_segmentation splits off the subject pronoun '나' alone, current leaves it merged",
+      "cause": "short subject pronoun not split off before a long conditional clause, forfeiting a small but free latency gain",
+      "proposed_rule": "When a short subject pronoun precedes a long conditional clause, splitting it off as its own segment is safe and yields latency gain without quality loss.",
+      "example_pair": {
+        "input": "나 1년만 더 버텼으면은 면제받을 수 있었잖아.",
+        "output": "나 <SEG> 1년만 더 버텼으면은 면제받을 수 있었잖아."
+      }
+    },
+    {
+      "id": "KsponSpeech_E00951",
+      "error_type": "under_segmentation",
+      "span": "나는 난 <SEG> 그렇게 생각하지 않는데.",
+      "evidence": "missed_gain 0.3124 vs reference_gain 0.3444; current split only at sentence-final punctuation, reference adds an internal split before the repeated-subject predicate",
+      "cause": "boundaries were placed only at orthographic sentence ends, missing a safe internal split before a repeated/emphatic subject's predicate",
+      "proposed_rule": "Within a sentence, when a subject is repeated or restated for emphasis before its predicate, insert a boundary between the repeated subject and the predicate to capture additional safe latency gain."
+    }
+  ],
+  "aggregate": {
+    "dominant_error": "under_segmentation",
+    "error_counts": {
+      "wrong_boundary": 4,
+      "over_segmentation": 1,
+      "under_segmentation": 8
+    },
+    "over_seg_count": 5,
+    "under_seg_count": 8,
+    "direction": "segment more aggressively",
+    "summary": null
+  }
+}

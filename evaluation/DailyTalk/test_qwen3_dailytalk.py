@@ -243,6 +243,8 @@ def find_audio_files(test_jsonl, split_only=True):
         If False, include all entries.
     """
     audio_files = []
+    # 매니페스트의 상대 audio 경로는 CWD 가 아니라 jsonl 자신의 위치 기준으로 푼다.
+    base_dir = Path(test_jsonl).resolve().parent
     with open(test_jsonl, 'r', encoding='utf-8') as f:
         for line in f:
             line = line.strip()
@@ -250,6 +252,8 @@ def find_audio_files(test_jsonl, split_only=True):
                 continue
             entry = json.loads(line)
             audio_path = entry.get('audio', '')
+            if audio_path and not Path(audio_path).is_absolute():
+                audio_path = str((base_dir / audio_path).resolve())
             if split_only and 'split_audio_test' not in audio_path:
                 continue
             transcript = _parse_text(entry.get('text', ''))

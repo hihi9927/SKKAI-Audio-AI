@@ -1,0 +1,14 @@
+{
+  "sections_changed": [
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "changelog": [
+    "Priority Rules: added explicit demotion signals for (a) boundaries that split a noun head from an immediate postnominal modifier/apposition within the next ~3 tokens, (b) boundaries immediately after a colon that introduces a clause completing or qualifying the prior assertion, and (c) candidates that are clustered within three source words of another candidate without intervening strong punctuation — these are ranking signals, not prohibitions.",
+    "Decision Procedure: instruct generating step to annotate candidates with surface features (distance to nearest candidate; whether a likely modifier/apposition begins within the next 3 tokens) and clarify that these annotations are used only during ranking to apply the demotion signals; emphasize not to remove candidates in generation."
+  ],
+  "scope_violations": [
+    "[Priority Rules] 가 3236 -> 4080자 (1.26배 > 1.25)",
+    "[Decision Procedure] 가 871 -> 1759자 (2.02배 > 1.25)"
+  ]
+}

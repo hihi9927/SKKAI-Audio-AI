@@ -1,0 +1,26 @@
+{
+  "train": {
+    "n": 20,
+    "valid_rate": 1.0,
+    "first_pass_valid_rate": 0.85,
+    "quality": 0.9679,
+    "quality_chrf": 0.8793,
+    "latency": 0.912,
+    "latency_gain": 0.088,
+    "mean_segments": 1.35,
+    "segmented_rate": 0.3,
+    "quality_min": 0.8016,
+    "quality_p10": 0.8207
+  },
+  "dev": null,
+  "objective_train": 0.088,
+  "objective_dev": null,
+  "adopted": false,
+  "usage": {
+    "calls": 221,
+    "prompt_tokens": 323465,
+    "completion_tokens": 53046,
+    "cached_tokens": 0,
+    "cost": 1.1708
+  }
+}

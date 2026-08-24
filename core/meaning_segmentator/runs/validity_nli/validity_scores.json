@@ -1,0 +1,263 @@
+{
+  "cases": "/home/skkai/STiTy/core/meaning_segmentator/autoseg/validity_cases.json",
+  "results": [
+    {
+      "backend": "nli-mdeberta",
+      "per_case": {
+        "ja-ko-01": {
+          "identical": 1.0,
+          "benign_minimal": 0.0477,
+          "benign_paraphrase": 0.9838,
+          "negation_flip": 0.0016,
+          "role_swap": 0.0048,
+          "clause_omission": 0.3955,
+          "referent_loss": 0.6699,
+          "unrelated": 0.012
+        },
+        "ko-en-01": {
+          "identical": 1.0,
+          "benign_minimal": 0.8908,
+          "benign_paraphrase": 0.9424,
+          "negation_flip": 0.0001,
+          "role_swap": 0.0332,
+          "clause_omission": 0.0064,
+          "referent_loss": 0.0338,
+          "unrelated": 0.0004
+        },
+        "ko-en-02": {
+          "identical": 1.0,
+          "benign_minimal": 0.9544,
+          "benign_paraphrase": 0.9806,
+          "negation_flip": 0.0027,
+          "clause_omission": 0.0023,
+          "referent_loss": 0.0026,
+          "unrelated": 0.0015
+        },
+        "ko-en-03": {
+          "identical": 1.0,
+          "benign_minimal": 0.8385,
+          "benign_paraphrase": 0.9898,
+          "negation_flip": 0.0652,
+          "clause_omission": 0.0793,
+          "referent_loss": 0.008,
+          "unrelated": 0.0277
+        },
+        "ko-en-04": {
+          "identical": 1.0,
+          "benign_minimal": 0.9589,
+          "benign_paraphrase": 0.9483,
+          "negation_flip": 0.001,
+          "clause_omission": 0.9254,
+          "referent_loss": 0.8069,
+          "unrelated": 0.0002
+        }
+      },
+      "by_variant": {
+        "identical": 1.0,
+        "benign_minimal": 0.7381,
+        "benign_paraphrase": 0.969,
+        "negation_flip": 0.0141,
+        "role_swap": 0.019,
+        "clause_omission": 0.2818,
+        "referent_loss": 0.3042,
+        "unrelated": 0.0084
+      },
+      "violations": [
+        {
+          "case": "ja-ko-01",
+          "severe": "clause_omission",
+          "severe_score": 0.3955,
+          "benign_score": 0.0477,
+          "margin": 0.3478
+        },
+        {
+          "case": "ja-ko-01",
+          "severe": "referent_loss",
+          "severe_score": 0.6699,
+          "benign_score": 0.0477,
+          "margin": 0.6222
+        },
+        {
+          "case": "ja-ko-01",
+          "severe": "negation_flip",
+          "severe_score": 0.0016,
+          "benign_score": 0.012,
+          "margin": 0.0104,
+          "kind": "unrelated_above_severe"
+        },
+        {
+          "case": "ja-ko-01",
+          "severe": "role_swap",
+          "severe_score": 0.0048,
+          "benign_score": 0.012,
+          "margin": 0.0072,
+          "kind": "unrelated_above_severe"
+        },
+        {
+          "case": "ko-en-01",
+          "severe": "negation_flip",
+          "severe_score": 0.0001,
+          "benign_score": 0.0004,
+          "margin": 0.0003,
+          "kind": "unrelated_above_severe"
+        },
+        {
+          "case": "ko-en-03",
+          "severe": "referent_loss",
+          "severe_score": 0.008,
+          "benign_score": 0.0277,
+          "margin": 0.0197,
+          "kind": "unrelated_above_severe"
+        }
+      ],
+      "n_ordering_checks": 17,
+      "n_soft_violations": 0,
+      "passed": false
+    },
+    {
+      "backend": "nli-deberta",
+      "per_case": {
+        "ja-ko-01": {
+          "identical": 1.0,
+          "benign_minimal": 0.2473,
+          "benign_paraphrase": 0.2004,
+          "negation_flip": 0.3595,
+          "role_swap": 0.9951,
+          "clause_omission": 0.0624,
+          "referent_loss": 0.1371,
+          "unrelated": 0.0797
+        },
+        "ko-en-01": {
+          "identical": 1.0,
+          "benign_minimal": 0.9969,
+          "benign_paraphrase": 0.9964,
+          "negation_flip": 0.0001,
+          "role_swap": 0.6717,
+          "clause_omission": 0.0095,
+          "referent_loss": 0.8931,
+          "unrelated": 0.0388
+        },
+        "ko-en-02": {
+          "identical": 1.0,
+          "benign_minimal": 0.9923,
+          "benign_paraphrase": 0.5397,
+          "negation_flip": 0.0021,
+          "clause_omission": 0.0002,
+          "referent_loss": 0.0002,
+          "unrelated": 0.0182
+        },
+        "ko-en-03": {
+          "identical": 1.0,
+          "benign_minimal": 0.9924,
+          "benign_paraphrase": 0.9943,
+          "negation_flip": 0.0767,
+          "clause_omission": 0.0003,
+          "referent_loss": 0.0004,
+          "unrelated": 0.0453
+        },
+        "ko-en-04": {
+          "identical": 1.0,
+          "benign_minimal": 0.9936,
+          "benign_paraphrase": 0.9899,
+          "negation_flip": 0.0003,
+          "clause_omission": 0.5853,
+          "referent_loss": 0.2527,
+          "unrelated": 0.0002
+        }
+      },
+      "by_variant": {
+        "identical": 1.0,
+        "benign_minimal": 0.8445,
+        "benign_paraphrase": 0.7441,
+        "negation_flip": 0.0877,
+        "role_swap": 0.8334,
+        "clause_omission": 0.1315,
+        "referent_loss": 0.2567,
+        "unrelated": 0.0364
+      },
+      "violations": [
+        {
+          "case": "ja-ko-01",
+          "severe": "negation_flip",
+          "severe_score": 0.3595,
+          "benign_score": 0.2473,
+          "margin": 0.1122
+        },
+        {
+          "case": "ja-ko-01",
+          "severe": "role_swap",
+          "severe_score": 0.9951,
+          "benign_score": 0.2473,
+          "margin": 0.7478
+        },
+        {
+          "case": "ja-ko-01",
+          "severe": "clause_omission",
+          "severe_score": 0.0624,
+          "benign_score": 0.0797,
+          "margin": 0.0173,
+          "kind": "unrelated_above_severe"
+        },
+        {
+          "case": "ko-en-01",
+          "severe": "negation_flip",
+          "severe_score": 0.0001,
+          "benign_score": 0.0388,
+          "margin": 0.0387,
+          "kind": "unrelated_above_severe"
+        },
+        {
+          "case": "ko-en-01",
+          "severe": "clause_omission",
+          "severe_score": 0.0095,
+          "benign_score": 0.0388,
+          "margin": 0.0293,
+          "kind": "unrelated_above_severe"
+        },
+        {
+          "case": "ko-en-02",
+          "severe": "negation_flip",
+          "severe_score": 0.0021,
+          "benign_score": 0.0182,
+          "margin": 0.0161,
+          "kind": "unrelated_above_severe"
+        },
+        {
+          "case": "ko-en-02",
+          "severe": "clause_omission",
+          "severe_score": 0.0002,
+          "benign_score": 0.0182,
+          "margin": 0.018,
+          "kind": "unrelated_above_severe"
+        },
+        {
+          "case": "ko-en-02",
+          "severe": "referent_loss",
+          "severe_score": 0.0002,
+          "benign_score": 0.0182,
+          "margin": 0.018,
+          "kind": "unrelated_above_severe"
+        },
+        {
+          "case": "ko-en-03",
+          "severe": "clause_omission",
+          "severe_score": 0.0003,
+          "benign_score": 0.0453,
+          "margin": 0.045,
+          "kind": "unrelated_above_severe"
+        },
+        {
+          "case": "ko-en-03",
+          "severe": "referent_loss",
+          "severe_score": 0.0004,
+          "benign_score": 0.0453,
+          "margin": 0.0449,
+          "kind": "unrelated_above_severe"
+        }
+      ],
+      "n_ordering_checks": 17,
+      "n_soft_violations": 2,
+      "passed": false
+    }
+  ]
+}

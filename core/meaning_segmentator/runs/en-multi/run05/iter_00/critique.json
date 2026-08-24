@@ -1,0 +1,139 @@
+{
+  "cases": [
+    {
+      "id": "en_us_1749_13727467",
+      "error_type": "format_violation",
+      "span": "the \"Vichy\" French.",
+      "evidence": "seg tags clustered with gaps <3 words (format error)",
+      "cause": "too-dense candidate tagging inside short noun phrases",
+      "proposed_rule": "Enforce a minimum token gap (e.g. ≥3 words) between candidate boundaries and avoid placing boundaries inside short NPs or quoted names; prefer after the NP head or sentence-final punctuation.",
+      "example_pair": {
+        "input": "It was ruled by the \"Vichy\" French. These were French people who had made peace with the Germans in 1940 and worked with the invaders instead of fighting them.",
+        "output": "It was ruled by the \"Vichy\" French. <SEG:1> These were French people who had made peace with the Germans in 1940 and worked with the invaders instead of fighting them."
+      }
+    },
+    {
+      "id": "en_us_1940_13388880",
+      "error_type": "placement",
+      "span": "we should not be",
+      "evidence": "emitted subject/modality before clause head and negation, causing dropped 'not be surprised' or wrong subject assignment",
+      "cause": "polarity/head verb not yet arrived",
+      "proposed_rule": "Do not finalize a clause's subject or modality before the clause's main verb or negation is available; place candidate boundaries after the clause head (verb/negation) or its complement.",
+      "example_pair": {
+        "input": "All things considered, we should not be surprised if our own ancestors solved their \"protein problem\" in somewhat the same way that chimps on the savanna do today.",
+        "output": "All things considered, <SEG:1> we should not be surprised if our own ancestors solved their \"protein problem\" in somewhat the same way that chimps on the savanna do today."
+      }
+    },
+    {
+      "id": "en_us_1693_15739600",
+      "error_type": "placement",
+      "span": "captain's wicket",
+      "evidence": "domain-specific noun ('wicket') was disambiguated incorrectly when emitted early (rendered as unrelated sense)",
+      "cause": "ambiguous domain-specific noun before disambiguating context (e.g. numeric/object words)",
+      "proposed_rule": "Delay committing translation for ambiguous domain-specific nouns until disambiguating collocates (numbers, objects, or domain markers like 'runs'/'wickets') are available; avoid boundaries that separate those collocates.",
+      "example_pair": {
+        "input": "But, after losing the captain's wicket India only made 36 runs loosing 7 wickets to end the innings.",
+        "output": "But, after losing the captain's wicket India only made 36 runs loosing 7 wickets to end the innings. <SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_1831_81483219",
+      "error_type": "placement",
+      "span": "national",
+      "evidence": "modifier ('national') was translated before its head, producing 'national team' instead of 'national park'",
+      "cause": "modifier committed before head noun arrived",
+      "proposed_rule": "Do not finalize translations of modifiers (adjectives/nominal modifiers) before the head noun arrives; prefer boundaries after the head noun.",
+      "example_pair": {
+        "input": "The Plitvice Lakes national park is heavily forested, mainly with beech, spruce, and fir trees, and features a mixture of Alpine and Mediterranean vegetation.",
+        "output": "The Plitvice Lakes national park <SEG:1> is heavily forested, mainly with beech, spruce, and fir trees, and features a mixture of Alpine and Mediterranean vegetation."
+      }
+    },
+    {
+      "id": "en_us_1838_15622589",
+      "error_type": "placement",
+      "span": "is the only one",
+      "evidence": "segment ended after copula+predicative, separating it from its complement ('of the seven wonders...'), producing fragmented translations",
+      "cause": "copula/predicative split before its complement or relative clause",
+      "proposed_rule": "Avoid placing a boundary immediately after a copula + predicative expression when a complement (prepositional phrase or relative clause) follows; keep predicate+complement together.",
+      "example_pair": {
+        "input": "The Great Pyramid at Giza is the only one of the seven wonders that is still standing today.",
+        "output": "The Great Pyramid at Giza is the only one of the seven wonders that is still standing today. <SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_1997_72373076",
+      "error_type": "placement",
+      "span": "6,000 of the",
+      "evidence": "numeric count got detached and contradicted the earlier clause when emitted separately",
+      "cause": "numeric quantifier separated from its clause/unit (split around punctuation like semicolon)",
+      "proposed_rule": "Keep numeric counts and their measures/units with the clause or phrase that introduces them; do not emit a boundary immediately before a numeric count that completes a preceding statement.",
+      "example_pair": {
+        "input": "However, the percentage of XDR-TB in the entire group of people with tuberculosis still seems to be low; 6,000 of the total 330,000 people infected at any particular moment in South Africa.",
+        "output": "However, the percentage of XDR-TB in the entire group of people with tuberculosis still seems to be low; <SEG:1> 6,000 of the total 330,000 people infected at any particular moment in South Africa."
+      }
+    },
+    {
+      "id": "en_us_1881_97204279",
+      "error_type": "placement",
+      "span": "reflect a",
+      "evidence": "verb + preposition sequence was split, producing 'reflect a' separated from 'on a trip' and yielding ungrammatical output",
+      "cause": "splitting verb + particle/preposition from its object",
+      "proposed_rule": "Do not place boundaries between a verb (especially verbs that take prepositional particles) and its preposition/object; keep verb+particle+object contiguous.",
+      "example_pair": {
+        "input": "Sharing a field trip virtually is also a great way to reflect a on a trip and share experiences with future classes.",
+        "output": "Sharing a field trip virtually is also a great way to reflect on a trip and share experiences with future classes. <SEG:1>"
+      }
+    }
+  ],
+  "summary": "The prompt frequently places candidate boundaries that split linguistic heads from dependents: modifiers before their noun heads, subjects/modality before the main verb or negation, verbs from their prepositional particle/object, and numeric measures separated from their clause. It also clusters tags too densely inside short NPs (format errors). De-prioritise boundaries at positions that would cut modifier-head, predicate-complement, verb‑particle, or numeric-unit spans (the audit shows over-trust near relative positions 0/3 and 2/3).",
+  "aggregate": {
+    "dominant_error": "placement",
+    "error_counts": {
+      "format_violation": 1,
+      "placement": 6
+    },
+    "focus": "format",
+    "focus_reason": "format_pass_rate 0.9750 < 1.0",
+    "priority_audit": [
+      {
+        "feature": "상대위치 0/3",
+        "n": 30,
+        "rank_percentile": 0.563,
+        "contradiction": 0.0326,
+        "over_trust": 0.0489
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 21,
+        "rank_percentile": 0.584,
+        "contradiction": 0.0458,
+        "over_trust": 0.0488
+      },
+      {
+        "feature": "뒤 구두점 ','",
+        "n": 16,
+        "rank_percentile": 0.368,
+        "contradiction": 0.0,
+        "over_trust": 0.0
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 50,
+        "rank_percentile": 0.765,
+        "contradiction": 0.0527,
+        "over_trust": -0.1429
+      },
+      {
+        "feature": "상대위치 1/3",
+        "n": 23,
+        "rank_percentile": 0.775,
+        "contradiction": 0.0697,
+        "over_trust": -0.2041
+      }
+    ],
+    "max_missing_boundaries": 0.0,
+    "max_premature_rate": 0.0,
+    "rank_contra_gap": 0.017,
+    "summary": "The prompt frequently places candidate boundaries that split linguistic heads from dependents: modifiers before their noun heads, subjects/modality before the main verb or negation, verbs from their prepositional particle/object, and numeric measures separated from their clause. It also clusters tags too densely inside short NPs (format errors). De-prioritise boundaries at positions that would cut modifier-head, predicate-complement, verb‑particle, or numeric-unit spans (the audit shows over-trust near relative positions 0/3 and 2/3)."
+  }
+}

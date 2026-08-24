@@ -1,0 +1,40 @@
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/torchmetrics/utilities/imports.py:23: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
+Encoder model frozen.
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/core/saving.py:197: Found keys that are not in the model state dict but in the checkpoint: ['encoder.model.embeddings.position_ids']
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Device set to use cuda:0
+  German    평균 0.7289
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  Spanish   평균 0.7667
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  Korean    평균 0.7620
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  Chinese   평균 0.7364
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  Japanese  평균 0.7835
+
+공통 문장 100
+
+타깃 조합                                 문장별 sd     평균의 se
+German                                0.1733    0.01733
+Spanish                               0.1692    0.01692
+Korean                                0.1964    0.01964
+Chinese                               0.1469    0.01469
+Japanese                              0.1639    0.01639
+
+평균 2개 타깃 (조합 10개)                     0.1317    0.01317
+평균 3개 타깃 (조합 10개)                     0.1162    0.01162
+평균 5개 타깃 (조합 1개)                      0.1021    0.01021
+
+=== 타깃 간 상관 (문장별 effective) ===
+  German    vs Spanish   +0.579
+  German    vs Korean    +0.527
+  German    vs Chinese   +0.608
+  German    vs Japanese  +0.525
+  Spanish   vs Korean    +0.499
+  Spanish   vs Chinese   +0.628
+  Spanish   vs Japanese  +0.557
+  Korean    vs Chinese   +0.537
+  Korean    vs Japanese  +0.555
+  Chinese   vs Japanese  +0.547

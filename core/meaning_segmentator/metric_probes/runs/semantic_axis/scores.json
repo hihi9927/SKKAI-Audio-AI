@@ -1,0 +1,1988 @@
+{
+  "run_id": "ko-en/run04",
+  "encoder": "e5-inst",
+  "encoder_id": "intfloat/multilingual-e5-large-instruct",
+  "n_neg_pairs": 4000,
+  "n_mnli": 40000,
+  "random_cos": 0.03125,
+  "axis_alignment": {
+    "neg_rule vs mnli_mean": 0.5865,
+    "neg_rule vs mnli_lda": 0.0352,
+    "mnli_mean vs mnli_lda": 0.1184
+  },
+  "mnli_auc": [
+    {
+      "name": "cos (거리, 1차원)",
+      "dims": 1,
+      "auc": 0.7217
+    },
+    {
+      "name": "axis:neg_rule (라벨 없음)",
+      "dims": 1,
+      "auc": 0.7839
+    },
+    {
+      "name": "axis:mnli_mean (클래스 평균)",
+      "dims": 1,
+      "auc": 0.7976
+    },
+    {
+      "name": "axis:mnli_lda (Fisher)",
+      "dims": 1,
+      "auc": 0.7363
+    },
+    {
+      "name": "axis:mnli_lda 부호 있음",
+      "dims": 1,
+      "auc": 0.7363
+    },
+    {
+      "name": "probe (전체 지도, 참고)",
+      "dims": 2048,
+      "auc": 0.8701
+    }
+  ],
+  "gate": [
+    {
+      "backend": "axis:neg_rule",
+      "rows": [
+        {
+          "id": "ko-en-p01",
+          "variant": "premature_negation",
+          "expect": "premature",
+          "premise": "I don't think that will be a problem.",
+          "hypothesis": "That's a problem",
+          "hyp_words": 3,
+          "raw": 0.0786,
+          "floor": 0.0242,
+          "z": 0.502
+        },
+        {
+          "id": "ko-en-p01",
+          "variant": "safe_boundary",
+          "expect": "safe",
+          "premise": "I don't think that will be a problem.",
+          "hypothesis": "As for that,",
+          "hyp_words": 3,
+          "raw": 0.1181,
+          "floor": 0.0637,
+          "z": 1.321
+        },
+        {
+          "id": "ko-en-p02",
+          "variant": "premature_role",
+          "expect": "premature",
+          "premise": "I heard that Kim handed the report over to Manager Park.",
+          "hypothesis": "Manager Park gave it to Kim",
+          "hyp_words": 6,
+          "raw": 0.0232,
+          "floor": 0.0,
+          "z": -0.55
+        },
+        {
+          "id": "ko-en-p02",
+          "variant": "benign_incomplete",
+          "expect": "safe",
+          "premise": "I heard that Kim handed the report over to Manager Park.",
+          "hypothesis": "Kim, to Manager Park —",
+          "hyp_words": 5,
+          "raw": 0.0199,
+          "floor": 0.0,
+          "z": -0.625
+        },
+        {
+          "id": "ko-en-p03",
+          "variant": "premature_scope",
+          "expect": "premature",
+          "premise": "They say the laptop I bought yesterday is already broken.",
+          "hypothesis": "It broke yesterday",
+          "hyp_words": 3,
+          "raw": 0.037,
+          "floor": 0.0,
+          "z": -0.361
+        },
+        {
+          "id": "ko-en-p03",
+          "variant": "benign_incomplete",
+          "expect": "safe",
+          "premise": "They say the laptop I bought yesterday is already broken.",
+          "hypothesis": "Bought yesterday —",
+          "hyp_words": 3,
+          "raw": 0.0593,
+          "floor": 0.0049,
+          "z": 0.102
+        },
+        {
+          "id": "ko-en-p04",
+          "variant": "premature_head",
+          "expect": "premature",
+          "premise": "They asked me to send the meeting materials by today.",
+          "hypothesis": "They finished the meeting materials by today",
+          "hyp_words": 7,
+          "raw": 0.011,
+          "floor": 0.0,
+          "z": -0.718
+        },
+        {
+          "id": "ko-en-p04",
+          "variant": "benign_incomplete",
+          "expect": "safe",
+          "premise": "They asked me to send the meeting materials by today.",
+          "hypothesis": "The meeting materials, by today —",
+          "hyp_words": 6,
+          "raw": 0.013,
+          "floor": 0.0,
+          "z": -0.781
+        },
+        {
+          "id": "ko-en-p04",
+          "variant": "benign_reordered",
+          "expect": "safe",
+          "premise": "They asked me to send the meeting materials by today.",
+          "hypothesis": "By today, the meeting materials —",
+          "hyp_words": 6,
+          "raw": 0.035,
+          "floor": 0.0,
+          "z": -0.282
+        },
+        {
+          "id": "ko-en-p06",
+          "variant": "benign_incomplete",
+          "expect": "safe",
+          "premise": "They say the meeting schedule might change tomorrow afternoon.",
+          "hypothesis": "Tomorrow afternoon,",
+          "hyp_words": 2,
+          "raw": 0.0709,
+          "floor": 0.0,
+          "z": -0.043
+        },
+        {
+          "id": "ko-en-p06",
+          "variant": "premature_modal",
+          "expect": "premature",
+          "premise": "They say the meeting schedule might change tomorrow afternoon.",
+          "hypothesis": "Tomorrow afternoon's meeting schedule is fixed",
+          "hyp_words": 6,
+          "raw": 0.0657,
+          "floor": 0.0183,
+          "z": 0.416
+        },
+        {
+          "id": "ja-ko-p05",
+          "variant": "premature_negation",
+          "expect": "premature",
+          "premise": "곤은 뱀장어를 훔치지 않았습니다",
+          "hypothesis": "곤은 뱀장어를 훔쳤습니다",
+          "hyp_words": 3,
+          "raw": 0.2239,
+          "floor": 0.1695,
+          "z": 3.517
+        },
+        {
+          "id": "ja-ko-p05",
+          "variant": "benign_incomplete",
+          "expect": "safe",
+          "premise": "곤은 뱀장어를 훔치지 않았습니다",
+          "hypothesis": "곤은 뱀장어를",
+          "hyp_words": 2,
+          "raw": 0.207,
+          "floor": 0.1336,
+          "z": 2.268
+        }
+      ],
+      "variants": {
+        "raw": {
+          "violations": 4,
+          "n_cases": 6,
+          "detail": [
+            {
+              "case": "ko-en-p01",
+              "min_premature": 0.0786,
+              "max_safe": 0.1181
+            },
+            {
+              "case": "ko-en-p03",
+              "min_premature": 0.037,
+              "max_safe": 0.0593
+            },
+            {
+              "case": "ko-en-p04",
+              "min_premature": 0.011,
+              "max_safe": 0.035
+            },
+            {
+              "case": "ko-en-p06",
+              "min_premature": 0.0657,
+              "max_safe": 0.0709
+            }
+          ],
+          "mean_premature": 0.0732,
+          "mean_safe": 0.0747,
+          "margin": -0.0015,
+          "passed": false
+        },
+        "floor": {
+          "violations": 4,
+          "n_cases": 6,
+          "detail": [
+            {
+              "case": "ko-en-p01",
+              "min_premature": 0.0242,
+              "max_safe": 0.0637
+            },
+            {
+              "case": "ko-en-p02",
+              "min_premature": 0.0,
+              "max_safe": 0.0
+            },
+            {
+              "case": "ko-en-p03",
+              "min_premature": 0.0,
+              "max_safe": 0.0049
+            },
+            {
+              "case": "ko-en-p04",
+              "min_premature": 0.0,
+              "max_safe": 0.0
+            }
+          ],
+          "mean_premature": 0.0353,
+          "mean_safe": 0.0289,
+          "margin": 0.0064,
+          "passed": false
+        },
+        "z": {
+          "violations": 3,
+          "n_cases": 6,
+          "detail": [
+            {
+              "case": "ko-en-p01",
+              "min_premature": 0.502,
+              "max_safe": 1.321
+            },
+            {
+              "case": "ko-en-p03",
+              "min_premature": -0.361,
+              "max_safe": 0.102
+            },
+            {
+              "case": "ko-en-p04",
+              "min_premature": -0.718,
+              "max_safe": -0.282
+            }
+          ],
+          "mean_premature": 0.4677,
+          "mean_safe": 0.28,
+          "margin": 0.1877,
+          "passed": false
+        }
+      },
+      "scorer": "axis:neg_rule"
+    },
+    {
+      "backend": "axis:mnli_mean",
+      "rows": [
+        {
+          "id": "ko-en-p01",
+          "variant": "premature_negation",
+          "expect": "premature",
+          "premise": "I don't think that will be a problem.",
+          "hypothesis": "That's a problem",
+          "hyp_words": 3,
+          "raw": 0.0657,
+          "floor": 0.0017,
+          "z": 0.03
+        },
+        {
+          "id": "ko-en-p01",
+          "variant": "safe_boundary",
+          "expect": "safe",
+          "premise": "I don't think that will be a problem.",
+          "hypothesis": "As for that,",
+          "hyp_words": 3,
+          "raw": 0.1184,
+          "floor": 0.0544,
+          "z": 0.959
+        },
+        {
+          "id": "ko-en-p02",
+          "variant": "premature_role",
+          "expect": "premature",
+          "premise": "I heard that Kim handed the report over to Manager Park.",
+          "hypothesis": "Manager Park gave it to Kim",
+          "hyp_words": 6,
+          "raw": 0.0078,
+          "floor": 0.0,
+          "z": -0.98
+        },
+        {
+          "id": "ko-en-p02",
+          "variant": "benign_incomplete",
+          "expect": "safe",
+          "premise": "I heard that Kim handed the report over to Manager Park.",
+          "hypothesis": "Kim, to Manager Park —",
+          "hyp_words": 5,
+          "raw": 0.0054,
+          "floor": 0.0,
+          "z": -1.029
+        },
+        {
+          "id": "ko-en-p03",
+          "variant": "premature_scope",
+          "expect": "premature",
+          "premise": "They say the laptop I bought yesterday is already broken.",
+          "hypothesis": "It broke yesterday",
+          "hyp_words": 3,
+          "raw": 0.0051,
+          "floor": 0.0,
+          "z": -1.039
+        },
+        {
+          "id": "ko-en-p03",
+          "variant": "benign_incomplete",
+          "expect": "safe",
+          "premise": "They say the laptop I bought yesterday is already broken.",
+          "hypothesis": "Bought yesterday —",
+          "hyp_words": 3,
+          "raw": 0.0931,
+          "floor": 0.0291,
+          "z": 0.513
+        },
+        {
+          "id": "ko-en-p04",
+          "variant": "premature_head",
+          "expect": "premature",
+          "premise": "They asked me to send the meeting materials by today.",
+          "hypothesis": "They finished the meeting materials by today",
+          "hyp_words": 7,
+          "raw": 0.0191,
+          "floor": 0.0,
+          "z": -0.592
+        },
+        {
+          "id": "ko-en-p04",
+          "variant": "benign_incomplete",
+          "expect": "safe",
+          "premise": "They asked me to send the meeting materials by today.",
+          "hypothesis": "The meeting materials, by today —",
+          "hyp_words": 6,
+          "raw": 0.0038,
+          "floor": 0.0,
+          "z": -1.06
+        },
+        {
+          "id": "ko-en-p04",
+          "variant": "benign_reordered",
+          "expect": "safe",
+          "premise": "They asked me to send the meeting materials by today.",
+          "hypothesis": "By today, the meeting materials —",
+          "hyp_words": 6,
+          "raw": 0.0043,
+          "floor": 0.0,
+          "z": -1.05
+        },
+        {
+          "id": "ko-en-p06",
+          "variant": "benign_incomplete",
+          "expect": "safe",
+          "premise": "They say the meeting schedule might change tomorrow afternoon.",
+          "hypothesis": "Tomorrow afternoon,",
+          "hyp_words": 2,
+          "raw": 0.0269,
+          "floor": 0.0,
+          "z": -0.73
+        },
+        {
+          "id": "ko-en-p06",
+          "variant": "premature_modal",
+          "expect": "premature",
+          "premise": "They say the meeting schedule might change tomorrow afternoon.",
+          "hypothesis": "Tomorrow afternoon's meeting schedule is fixed",
+          "hyp_words": 6,
+          "raw": 0.0763,
+          "floor": 0.0196,
+          "z": 0.393
+        },
+        {
+          "id": "ja-ko-p05",
+          "variant": "premature_negation",
+          "expect": "premature",
+          "premise": "곤은 뱀장어를 훔치지 않았습니다",
+          "hypothesis": "곤은 뱀장어를 훔쳤습니다",
+          "hyp_words": 3,
+          "raw": 0.117,
+          "floor": 0.053,
+          "z": 0.936
+        },
+        {
+          "id": "ja-ko-p05",
+          "variant": "benign_incomplete",
+          "expect": "safe",
+          "premise": "곤은 뱀장어를 훔치지 않았습니다",
+          "hypothesis": "곤은 뱀장어를",
+          "hyp_words": 2,
+          "raw": 0.1304,
+          "floor": 0.058,
+          "z": 0.93
+        }
+      ],
+      "variants": {
+        "raw": {
+          "violations": 3,
+          "n_cases": 6,
+          "detail": [
+            {
+              "case": "ko-en-p01",
+              "min_premature": 0.0657,
+              "max_safe": 0.1184
+            },
+            {
+              "case": "ko-en-p03",
+              "min_premature": 0.0051,
+              "max_safe": 0.0931
+            },
+            {
+              "case": "ja-ko-p05",
+              "min_premature": 0.117,
+              "max_safe": 0.1304
+            }
+          ],
+          "mean_premature": 0.0485,
+          "mean_safe": 0.0546,
+          "margin": -0.0061,
+          "passed": false
+        },
+        "floor": {
+          "violations": 5,
+          "n_cases": 6,
+          "detail": [
+            {
+              "case": "ko-en-p01",
+              "min_premature": 0.0017,
+              "max_safe": 0.0544
+            },
+            {
+              "case": "ko-en-p02",
+              "min_premature": 0.0,
+              "max_safe": 0.0
+            },
+            {
+              "case": "ko-en-p03",
+              "min_premature": 0.0,
+              "max_safe": 0.0291
+            },
+            {
+              "case": "ko-en-p04",
+              "min_premature": 0.0,
+              "max_safe": 0.0
+            },
+            {
+              "case": "ja-ko-p05",
+              "min_premature": 0.053,
+              "max_safe": 0.058
+            }
+          ],
+          "mean_premature": 0.0124,
+          "mean_safe": 0.0202,
+          "margin": -0.0078,
+          "passed": false
+        },
+        "z": {
+          "violations": 2,
+          "n_cases": 6,
+          "detail": [
+            {
+              "case": "ko-en-p01",
+              "min_premature": 0.03,
+              "max_safe": 0.959
+            },
+            {
+              "case": "ko-en-p03",
+              "min_premature": -1.039,
+              "max_safe": 0.513
+            }
+          ],
+          "mean_premature": -0.2087,
+          "mean_safe": -0.2096,
+          "margin": 0.0009,
+          "passed": false
+        }
+      },
+      "scorer": "axis:mnli_mean"
+    },
+    {
+      "backend": "axis:mnli_lda",
+      "rows": [
+        {
+          "id": "ko-en-p01",
+          "variant": "premature_negation",
+          "expect": "premature",
+          "premise": "I don't think that will be a problem.",
+          "hypothesis": "That's a problem",
+          "hyp_words": 3,
+          "raw": 0.011,
+          "floor": 0.0022,
+          "z": 0.323
+        },
+        {
+          "id": "ko-en-p01",
+          "variant": "safe_boundary",
+          "expect": "safe",
+          "premise": "I don't think that will be a problem.",
+          "hypothesis": "As for that,",
+          "hyp_words": 3,
+          "raw": 0.026,
+          "floor": 0.0172,
+          "z": 2.563
+        },
+        {
+          "id": "ko-en-p02",
+          "variant": "premature_role",
+          "expect": "premature",
+          "premise": "I heard that Kim handed the report over to Manager Park.",
+          "hypothesis": "Manager Park gave it to Kim",
+          "hyp_words": 6,
+          "raw": 0.0037,
+          "floor": 0.0,
+          "z": -0.539
+        },
+        {
+          "id": "ko-en-p02",
+          "variant": "benign_incomplete",
+          "expect": "safe",
+          "premise": "I heard that Kim handed the report over to Manager Park.",
+          "hypothesis": "Kim, to Manager Park —",
+          "hyp_words": 5,
+          "raw": 0.0004,
+          "floor": 0.0,
+          "z": -1.076
+        },
+        {
+          "id": "ko-en-p03",
+          "variant": "premature_scope",
+          "expect": "premature",
+          "premise": "They say the laptop I bought yesterday is already broken.",
+          "hypothesis": "It broke yesterday",
+          "hyp_words": 3,
+          "raw": 0.0001,
+          "floor": 0.0,
+          "z": -1.298
+        },
+        {
+          "id": "ko-en-p03",
+          "variant": "benign_incomplete",
+          "expect": "safe",
+          "premise": "They say the laptop I bought yesterday is already broken.",
+          "hypothesis": "Bought yesterday —",
+          "hyp_words": 3,
+          "raw": 0.0039,
+          "floor": 0.0,
+          "z": -0.735
+        },
+        {
+          "id": "ko-en-p04",
+          "variant": "premature_head",
+          "expect": "premature",
+          "premise": "They asked me to send the meeting materials by today.",
+          "hypothesis": "They finished the meeting materials by today",
+          "hyp_words": 7,
+          "raw": 0.0077,
+          "floor": 0.0025,
+          "z": 0.526
+        },
+        {
+          "id": "ko-en-p04",
+          "variant": "benign_incomplete",
+          "expect": "safe",
+          "premise": "They asked me to send the meeting materials by today.",
+          "hypothesis": "The meeting materials, by today —",
+          "hyp_words": 6,
+          "raw": 0.0019,
+          "floor": 0.0,
+          "z": -0.833
+        },
+        {
+          "id": "ko-en-p04",
+          "variant": "benign_reordered",
+          "expect": "safe",
+          "premise": "They asked me to send the meeting materials by today.",
+          "hypothesis": "By today, the meeting materials —",
+          "hyp_words": 6,
+          "raw": 0.0056,
+          "floor": 0.0,
+          "z": -0.209
+        },
+        {
+          "id": "ko-en-p06",
+          "variant": "benign_incomplete",
+          "expect": "safe",
+          "premise": "They say the meeting schedule might change tomorrow afternoon.",
+          "hypothesis": "Tomorrow afternoon,",
+          "hyp_words": 2,
+          "raw": 0.01,
+          "floor": 0.0002,
+          "z": 0.02
+        },
+        {
+          "id": "ko-en-p06",
+          "variant": "premature_modal",
+          "expect": "premature",
+          "premise": "They say the meeting schedule might change tomorrow afternoon.",
+          "hypothesis": "Tomorrow afternoon's meeting schedule is fixed",
+          "hyp_words": 6,
+          "raw": 0.0179,
+          "floor": 0.011,
+          "z": 1.832
+        },
+        {
+          "id": "ja-ko-p05",
+          "variant": "premature_negation",
+          "expect": "premature",
+          "premise": "곤은 뱀장어를 훔치지 않았습니다",
+          "hypothesis": "곤은 뱀장어를 훔쳤습니다",
+          "hyp_words": 3,
+          "raw": 0.0075,
+          "floor": 0.0,
+          "z": -0.2
+        },
+        {
+          "id": "ja-ko-p05",
+          "variant": "benign_incomplete",
+          "expect": "safe",
+          "premise": "곤은 뱀장어를 훔치지 않았습니다",
+          "hypothesis": "곤은 뱀장어를",
+          "hyp_words": 2,
+          "raw": 0.0083,
+          "floor": 0.0,
+          "z": -0.204
+        }
+      ],
+      "variants": {
+        "raw": {
+          "violations": 3,
+          "n_cases": 6,
+          "detail": [
+            {
+              "case": "ko-en-p01",
+              "min_premature": 0.011,
+              "max_safe": 0.026
+            },
+            {
+              "case": "ko-en-p03",
+              "min_premature": 0.0001,
+              "max_safe": 0.0039
+            },
+            {
+              "case": "ja-ko-p05",
+              "min_premature": 0.0075,
+              "max_safe": 0.0083
+            }
+          ],
+          "mean_premature": 0.008,
+          "mean_safe": 0.008,
+          "margin": -0.0,
+          "passed": false
+        },
+        "floor": {
+          "violations": 4,
+          "n_cases": 6,
+          "detail": [
+            {
+              "case": "ko-en-p01",
+              "min_premature": 0.0022,
+              "max_safe": 0.0172
+            },
+            {
+              "case": "ko-en-p02",
+              "min_premature": 0.0,
+              "max_safe": 0.0
+            },
+            {
+              "case": "ko-en-p03",
+              "min_premature": 0.0,
+              "max_safe": 0.0
+            },
+            {
+              "case": "ja-ko-p05",
+              "min_premature": 0.0,
+              "max_safe": 0.0
+            }
+          ],
+          "mean_premature": 0.0026,
+          "mean_safe": 0.0025,
+          "margin": 0.0001,
+          "passed": false
+        },
+        "z": {
+          "violations": 2,
+          "n_cases": 6,
+          "detail": [
+            {
+              "case": "ko-en-p01",
+              "min_premature": 0.323,
+              "max_safe": 2.563
+            },
+            {
+              "case": "ko-en-p03",
+              "min_premature": -1.298,
+              "max_safe": -0.735
+            }
+          ],
+          "mean_premature": 0.1073,
+          "mean_safe": -0.0677,
+          "margin": 0.175,
+          "passed": false
+        }
+      },
+      "scorer": "axis:mnli_lda"
+    },
+    {
+      "backend": "axis:neg_rule/norm",
+      "rows": [
+        {
+          "id": "ko-en-p01",
+          "variant": "premature_negation",
+          "expect": "premature",
+          "premise": "I don't think that will be a problem.",
+          "hypothesis": "That's a problem",
+          "hyp_words": 3,
+          "raw": 0.1272,
+          "floor": 0.0391,
+          "z": 0.503
+        },
+        {
+          "id": "ko-en-p01",
+          "variant": "safe_boundary",
+          "expect": "safe",
+          "premise": "I don't think that will be a problem.",
+          "hypothesis": "As for that,",
+          "hyp_words": 3,
+          "raw": 0.1808,
+          "floor": 0.0927,
+          "z": 1.193
+        },
+        {
+          "id": "ko-en-p02",
+          "variant": "premature_role",
+          "expect": "premature",
+          "premise": "I heard that Kim handed the report over to Manager Park.",
+          "hypothesis": "Manager Park gave it to Kim",
+          "hyp_words": 6,
+          "raw": 0.0541,
+          "floor": 0.0,
+          "z": -0.433
+        },
+        {
+          "id": "ko-en-p02",
+          "variant": "benign_incomplete",
+          "expect": "safe",
+          "premise": "I heard that Kim handed the report over to Manager Park.",
+          "hypothesis": "Kim, to Manager Park —",
+          "hyp_words": 5,
+          "raw": 0.0425,
+          "floor": 0.0,
+          "z": -0.579
+        },
+        {
+          "id": "ko-en-p03",
+          "variant": "premature_scope",
+          "expect": "premature",
+          "premise": "They say the laptop I bought yesterday is already broken.",
+          "hypothesis": "It broke yesterday",
+          "hyp_words": 3,
+          "raw": 0.0649,
+          "floor": 0.0,
+          "z": -0.299
+        },
+        {
+          "id": "ko-en-p03",
+          "variant": "benign_incomplete",
+          "expect": "safe",
+          "premise": "They say the laptop I bought yesterday is already broken.",
+          "hypothesis": "Bought yesterday —",
+          "hyp_words": 3,
+          "raw": 0.0939,
+          "floor": 0.0058,
+          "z": 0.074
+        },
+        {
+          "id": "ko-en-p04",
+          "variant": "premature_head",
+          "expect": "premature",
+          "premise": "They asked me to send the meeting materials by today.",
+          "hypothesis": "They finished the meeting materials by today",
+          "hyp_words": 7,
+          "raw": 0.0237,
+          "floor": 0.0,
+          "z": -0.765
+        },
+        {
+          "id": "ko-en-p04",
+          "variant": "benign_incomplete",
+          "expect": "safe",
+          "premise": "They asked me to send the meeting materials by today.",
+          "hypothesis": "The meeting materials, by today —",
+          "hyp_words": 6,
+          "raw": 0.0319,
+          "floor": 0.0,
+          "z": -0.713
+        },
+        {
+          "id": "ko-en-p04",
+          "variant": "benign_reordered",
+          "expect": "safe",
+          "premise": "They asked me to send the meeting materials by today.",
+          "hypothesis": "By today, the meeting materials —",
+          "hyp_words": 6,
+          "raw": 0.0827,
+          "floor": 0.0,
+          "z": -0.07
+        },
+        {
+          "id": "ko-en-p06",
+          "variant": "benign_incomplete",
+          "expect": "safe",
+          "premise": "They say the meeting schedule might change tomorrow afternoon.",
+          "hypothesis": "Tomorrow afternoon,",
+          "hyp_words": 2,
+          "raw": 0.1265,
+          "floor": 0.0184,
+          "z": 0.212
+        },
+        {
+          "id": "ko-en-p06",
+          "variant": "premature_modal",
+          "expect": "premature",
+          "premise": "They say the meeting schedule might change tomorrow afternoon.",
+          "hypothesis": "Tomorrow afternoon's meeting schedule is fixed",
+          "hyp_words": 6,
+          "raw": 0.13,
+          "floor": 0.0418,
+          "z": 0.53
+        },
+        {
+          "id": "ja-ko-p05",
+          "variant": "premature_negation",
+          "expect": "premature",
+          "premise": "곤은 뱀장어를 훔치지 않았습니다",
+          "hypothesis": "곤은 뱀장어를 훔쳤습니다",
+          "hyp_words": 3,
+          "raw": 0.7,
+          "floor": 0.6119,
+          "z": 7.875
+        },
+        {
+          "id": "ja-ko-p05",
+          "variant": "benign_incomplete",
+          "expect": "safe",
+          "premise": "곤은 뱀장어를 훔치지 않았습니다",
+          "hypothesis": "곤은 뱀장어를",
+          "hyp_words": 2,
+          "raw": 0.5974,
+          "floor": 0.4893,
+          "z": 5.637
+        }
+      ],
+      "variants": {
+        "raw": {
+          "violations": 3,
+          "n_cases": 6,
+          "detail": [
+            {
+              "case": "ko-en-p01",
+              "min_premature": 0.1272,
+              "max_safe": 0.1808
+            },
+            {
+              "case": "ko-en-p03",
+              "min_premature": 0.0649,
+              "max_safe": 0.0939
+            },
+            {
+              "case": "ko-en-p04",
+              "min_premature": 0.0237,
+              "max_safe": 0.0827
+            }
+          ],
+          "mean_premature": 0.1833,
+          "mean_safe": 0.1651,
+          "margin": 0.0182,
+          "passed": false
+        },
+        "floor": {
+          "violations": 4,
+          "n_cases": 6,
+          "detail": [
+            {
+              "case": "ko-en-p01",
+              "min_premature": 0.0391,
+              "max_safe": 0.0927
+            },
+            {
+              "case": "ko-en-p02",
+              "min_premature": 0.0,
+              "max_safe": 0.0
+            },
+            {
+              "case": "ko-en-p03",
+              "min_premature": 0.0,
+              "max_safe": 0.0058
+            },
+            {
+              "case": "ko-en-p04",
+              "min_premature": 0.0,
+              "max_safe": 0.0
+            }
+          ],
+          "mean_premature": 0.1155,
+          "mean_safe": 0.0866,
+          "margin": 0.0289,
+          "passed": false
+        },
+        "z": {
+          "violations": 3,
+          "n_cases": 6,
+          "detail": [
+            {
+              "case": "ko-en-p01",
+              "min_premature": 0.503,
+              "max_safe": 1.193
+            },
+            {
+              "case": "ko-en-p03",
+              "min_premature": -0.299,
+              "max_safe": 0.074
+            },
+            {
+              "case": "ko-en-p04",
+              "min_premature": -0.765,
+              "max_safe": -0.07
+            }
+          ],
+          "mean_premature": 1.2352,
+          "mean_safe": 0.822,
+          "margin": 0.4132,
+          "passed": false
+        }
+      },
+      "scorer": "axis:neg_rule/norm"
+    },
+    {
+      "backend": "axis:mnli_mean/norm",
+      "rows": [
+        {
+          "id": "ko-en-p01",
+          "variant": "premature_negation",
+          "expect": "premature",
+          "premise": "I don't think that will be a problem.",
+          "hypothesis": "That's a problem",
+          "hyp_words": 3,
+          "raw": 0.1063,
+          "floor": 0.0029,
+          "z": 0.032
+        },
+        {
+          "id": "ko-en-p01",
+          "variant": "safe_boundary",
+          "expect": "safe",
+          "premise": "I don't think that will be a problem.",
+          "hypothesis": "As for that,",
+          "hyp_words": 3,
+          "raw": 0.1813,
+          "floor": 0.0779,
+          "z": 0.867
+        },
+        {
+          "id": "ko-en-p02",
+          "variant": "premature_role",
+          "expect": "premature",
+          "premise": "I heard that Kim handed the report over to Manager Park.",
+          "hypothesis": "Manager Park gave it to Kim",
+          "hyp_words": 6,
+          "raw": 0.0181,
+          "floor": 0.0,
+          "z": -0.967
+        },
+        {
+          "id": "ko-en-p02",
+          "variant": "benign_incomplete",
+          "expect": "safe",
+          "premise": "I heard that Kim handed the report over to Manager Park.",
+          "hypothesis": "Kim, to Manager Park —",
+          "hyp_words": 5,
+          "raw": 0.0115,
+          "floor": 0.0,
+          "z": -1.041
+        },
+        {
+          "id": "ko-en-p03",
+          "variant": "premature_scope",
+          "expect": "premature",
+          "premise": "They say the laptop I bought yesterday is already broken.",
+          "hypothesis": "It broke yesterday",
+          "hyp_words": 3,
+          "raw": 0.0089,
+          "floor": 0.0,
+          "z": -1.052
+        },
+        {
+          "id": "ko-en-p03",
+          "variant": "benign_incomplete",
+          "expect": "safe",
+          "premise": "They say the laptop I bought yesterday is already broken.",
+          "hypothesis": "Bought yesterday —",
+          "hyp_words": 3,
+          "raw": 0.1472,
+          "floor": 0.0438,
+          "z": 0.488
+        },
+        {
+          "id": "ko-en-p04",
+          "variant": "premature_head",
+          "expect": "premature",
+          "premise": "They asked me to send the meeting materials by today.",
+          "hypothesis": "They finished the meeting materials by today",
+          "hyp_words": 7,
+          "raw": 0.0409,
+          "floor": 0.0,
+          "z": -0.623
+        },
+        {
+          "id": "ko-en-p04",
+          "variant": "benign_incomplete",
+          "expect": "safe",
+          "premise": "They asked me to send the meeting materials by today.",
+          "hypothesis": "The meeting materials, by today —",
+          "hyp_words": 6,
+          "raw": 0.0094,
+          "floor": 0.0,
+          "z": -1.065
+        },
+        {
+          "id": "ko-en-p04",
+          "variant": "benign_reordered",
+          "expect": "safe",
+          "premise": "They asked me to send the meeting materials by today.",
+          "hypothesis": "By today, the meeting materials —",
+          "hyp_words": 6,
+          "raw": 0.0102,
+          "floor": 0.0,
+          "z": -1.056
+        },
+        {
+          "id": "ko-en-p06",
+          "variant": "benign_incomplete",
+          "expect": "safe",
+          "premise": "They say the meeting schedule might change tomorrow afternoon.",
+          "hypothesis": "Tomorrow afternoon,",
+          "hyp_words": 2,
+          "raw": 0.0479,
+          "floor": 0.0,
+          "z": -0.644
+        },
+        {
+          "id": "ko-en-p06",
+          "variant": "premature_modal",
+          "expect": "premature",
+          "premise": "They say the meeting schedule might change tomorrow afternoon.",
+          "hypothesis": "Tomorrow afternoon's meeting schedule is fixed",
+          "hyp_words": 6,
+          "raw": 0.151,
+          "floor": 0.0462,
+          "z": 0.515
+        },
+        {
+          "id": "ja-ko-p05",
+          "variant": "premature_negation",
+          "expect": "premature",
+          "premise": "곤은 뱀장어를 훔치지 않았습니다",
+          "hypothesis": "곤은 뱀장어를 훔쳤습니다",
+          "hyp_words": 3,
+          "raw": 0.3659,
+          "floor": 0.2625,
+          "z": 2.923
+        },
+        {
+          "id": "ja-ko-p05",
+          "variant": "benign_incomplete",
+          "expect": "safe",
+          "premise": "곤은 뱀장어를 훔치지 않았습니다",
+          "hypothesis": "곤은 뱀장어를",
+          "hyp_words": 2,
+          "raw": 0.3765,
+          "floor": 0.2696,
+          "z": 2.947
+        }
+      ],
+      "variants": {
+        "raw": {
+          "violations": 3,
+          "n_cases": 6,
+          "detail": [
+            {
+              "case": "ko-en-p01",
+              "min_premature": 0.1063,
+              "max_safe": 0.1813
+            },
+            {
+              "case": "ko-en-p03",
+              "min_premature": 0.0089,
+              "max_safe": 0.1472
+            },
+            {
+              "case": "ja-ko-p05",
+              "min_premature": 0.3659,
+              "max_safe": 0.3765
+            }
+          ],
+          "mean_premature": 0.1152,
+          "mean_safe": 0.112,
+          "margin": 0.0032,
+          "passed": false
+        },
+        "floor": {
+          "violations": 5,
+          "n_cases": 6,
+          "detail": [
+            {
+              "case": "ko-en-p01",
+              "min_premature": 0.0029,
+              "max_safe": 0.0779
+            },
+            {
+              "case": "ko-en-p02",
+              "min_premature": 0.0,
+              "max_safe": 0.0
+            },
+            {
+              "case": "ko-en-p03",
+              "min_premature": 0.0,
+              "max_safe": 0.0438
+            },
+            {
+              "case": "ko-en-p04",
+              "min_premature": 0.0,
+              "max_safe": 0.0
+            },
+            {
+              "case": "ja-ko-p05",
+              "min_premature": 0.2625,
+              "max_safe": 0.2696
+            }
+          ],
+          "mean_premature": 0.0519,
+          "mean_safe": 0.0559,
+          "margin": -0.004,
+          "passed": false
+        },
+        "z": {
+          "violations": 3,
+          "n_cases": 6,
+          "detail": [
+            {
+              "case": "ko-en-p01",
+              "min_premature": 0.032,
+              "max_safe": 0.867
+            },
+            {
+              "case": "ko-en-p03",
+              "min_premature": -1.052,
+              "max_safe": 0.488
+            },
+            {
+              "case": "ja-ko-p05",
+              "min_premature": 2.923,
+              "max_safe": 2.947
+            }
+          ],
+          "mean_premature": 0.138,
+          "mean_safe": 0.0709,
+          "margin": 0.0671,
+          "passed": false
+        }
+      },
+      "scorer": "axis:mnli_mean/norm"
+    },
+    {
+      "backend": "axis:mean/norm+cos",
+      "rows": [
+        {
+          "id": "ko-en-p01",
+          "variant": "premature_negation",
+          "expect": "premature",
+          "premise": "I don't think that will be a problem.",
+          "hypothesis": "That's a problem",
+          "hyp_words": 3,
+          "raw": 0.2973,
+          "floor": 0.0032,
+          "z": 0.03
+        },
+        {
+          "id": "ko-en-p01",
+          "variant": "safe_boundary",
+          "expect": "safe",
+          "premise": "I don't think that will be a problem.",
+          "hypothesis": "As for that,",
+          "hyp_words": 3,
+          "raw": 0.3945,
+          "floor": 0.1004,
+          "z": 0.959
+        },
+        {
+          "id": "ko-en-p02",
+          "variant": "premature_role",
+          "expect": "premature",
+          "premise": "I heard that Kim handed the report over to Manager Park.",
+          "hypothesis": "Manager Park gave it to Kim",
+          "hyp_words": 6,
+          "raw": 0.1102,
+          "floor": 0.0,
+          "z": -1.312
+        },
+        {
+          "id": "ko-en-p02",
+          "variant": "benign_incomplete",
+          "expect": "safe",
+          "premise": "I heard that Kim handed the report over to Manager Park.",
+          "hypothesis": "Kim, to Manager Park —",
+          "hyp_words": 5,
+          "raw": 0.121,
+          "floor": 0.0,
+          "z": -1.21
+        },
+        {
+          "id": "ko-en-p03",
+          "variant": "premature_scope",
+          "expect": "premature",
+          "premise": "They say the laptop I bought yesterday is already broken.",
+          "hypothesis": "It broke yesterday",
+          "hyp_words": 3,
+          "raw": 0.1715,
+          "floor": 0.0,
+          "z": -1.171
+        },
+        {
+          "id": "ko-en-p03",
+          "variant": "benign_incomplete",
+          "expect": "safe",
+          "premise": "They say the laptop I bought yesterday is already broken.",
+          "hypothesis": "Bought yesterday —",
+          "hyp_words": 3,
+          "raw": 0.347,
+          "floor": 0.0529,
+          "z": 0.506
+        },
+        {
+          "id": "ko-en-p04",
+          "variant": "premature_head",
+          "expect": "premature",
+          "premise": "They asked me to send the meeting materials by today.",
+          "hypothesis": "They finished the meeting materials by today",
+          "hyp_words": 7,
+          "raw": 0.1494,
+          "floor": 0.0,
+          "z": -0.483
+        },
+        {
+          "id": "ko-en-p04",
+          "variant": "benign_incomplete",
+          "expect": "safe",
+          "premise": "They asked me to send the meeting materials by today.",
+          "hypothesis": "The meeting materials, by today —",
+          "hyp_words": 6,
+          "raw": 0.0925,
+          "floor": 0.0,
+          "z": -1.479
+        },
+        {
+          "id": "ko-en-p04",
+          "variant": "benign_reordered",
+          "expect": "safe",
+          "premise": "They asked me to send the meeting materials by today.",
+          "hypothesis": "By today, the meeting materials —",
+          "hyp_words": 6,
+          "raw": 0.0997,
+          "floor": 0.0,
+          "z": -1.411
+        },
+        {
+          "id": "ko-en-p06",
+          "variant": "benign_incomplete",
+          "expect": "safe",
+          "premise": "They say the meeting schedule might change tomorrow afternoon.",
+          "hypothesis": "Tomorrow afternoon,",
+          "hyp_words": 2,
+          "raw": 0.2048,
+          "floor": 0.0,
+          "z": -1.32
+        },
+        {
+          "id": "ko-en-p06",
+          "variant": "premature_modal",
+          "expect": "premature",
+          "premise": "They say the meeting schedule might change tomorrow afternoon.",
+          "hypothesis": "Tomorrow afternoon's meeting schedule is fixed",
+          "hyp_words": 6,
+          "raw": 0.2786,
+          "floor": 0.0288,
+          "z": 0.271
+        },
+        {
+          "id": "ja-ko-p05",
+          "variant": "premature_negation",
+          "expect": "premature",
+          "premise": "곤은 뱀장어를 훔치지 않았습니다",
+          "hypothesis": "곤은 뱀장어를 훔쳤습니다",
+          "hyp_words": 3,
+          "raw": 0.4171,
+          "floor": 0.123,
+          "z": 1.174
+        },
+        {
+          "id": "ja-ko-p05",
+          "variant": "benign_incomplete",
+          "expect": "safe",
+          "premise": "곤은 뱀장어를 훔치지 않았습니다",
+          "hypothesis": "곤은 뱀장어를",
+          "hyp_words": 2,
+          "raw": 0.4366,
+          "floor": 0.1003,
+          "z": 1.007
+        }
+      ],
+      "variants": {
+        "raw": {
+          "violations": 4,
+          "n_cases": 6,
+          "detail": [
+            {
+              "case": "ko-en-p01",
+              "min_premature": 0.2973,
+              "max_safe": 0.3945
+            },
+            {
+              "case": "ko-en-p02",
+              "min_premature": 0.1102,
+              "max_safe": 0.121
+            },
+            {
+              "case": "ko-en-p03",
+              "min_premature": 0.1715,
+              "max_safe": 0.347
+            },
+            {
+              "case": "ja-ko-p05",
+              "min_premature": 0.4171,
+              "max_safe": 0.4366
+            }
+          ],
+          "mean_premature": 0.2374,
+          "mean_safe": 0.2423,
+          "margin": -0.0049,
+          "passed": false
+        },
+        "floor": {
+          "violations": 4,
+          "n_cases": 6,
+          "detail": [
+            {
+              "case": "ko-en-p01",
+              "min_premature": 0.0032,
+              "max_safe": 0.1004
+            },
+            {
+              "case": "ko-en-p02",
+              "min_premature": 0.0,
+              "max_safe": 0.0
+            },
+            {
+              "case": "ko-en-p03",
+              "min_premature": 0.0,
+              "max_safe": 0.0529
+            },
+            {
+              "case": "ko-en-p04",
+              "min_premature": 0.0,
+              "max_safe": 0.0
+            }
+          ],
+          "mean_premature": 0.0258,
+          "mean_safe": 0.0362,
+          "margin": -0.0104,
+          "passed": false
+        },
+        "z": {
+          "violations": 3,
+          "n_cases": 6,
+          "detail": [
+            {
+              "case": "ko-en-p01",
+              "min_premature": 0.03,
+              "max_safe": 0.959
+            },
+            {
+              "case": "ko-en-p02",
+              "min_premature": -1.312,
+              "max_safe": -1.21
+            },
+            {
+              "case": "ko-en-p03",
+              "min_premature": -1.171,
+              "max_safe": 0.506
+            }
+          ],
+          "mean_premature": -0.2485,
+          "mean_safe": -0.4211,
+          "margin": 0.1726,
+          "passed": false
+        }
+      },
+      "scorer": "axis:mean/norm+cos"
+    }
+  ],
+  "floors": [
+    {
+      "scorer": "axis:neg_rule",
+      "floor": {
+        "backend": "axis:neg_rule",
+        "n_sentences": 150,
+        "n_prefixes": 2292,
+        "overall": {
+          "n": 2292,
+          "mean": 0.042,
+          "sd": 0.0442,
+          "p50": 0.0249,
+          "p90": 0.1107
+        },
+        "by_length_bucket": {
+          "1-2": {
+            "n": 300,
+            "mean": 0.0734,
+            "sd": 0.0589,
+            "p50": 0.0614,
+            "p90": 0.1579
+          },
+          "3-4": {
+            "n": 300,
+            "mean": 0.0544,
+            "sd": 0.0482,
+            "p50": 0.0387,
+            "p90": 0.127
+          },
+          "5-6": {
+            "n": 300,
+            "mean": 0.0474,
+            "sd": 0.044,
+            "p50": 0.0311,
+            "p90": 0.1212
+          },
+          "7-9": {
+            "n": 434,
+            "mean": 0.0394,
+            "sd": 0.0395,
+            "p50": 0.0235,
+            "p90": 0.1044
+          },
+          "10-14": {
+            "n": 590,
+            "mean": 0.0316,
+            "sd": 0.0339,
+            "p50": 0.0196,
+            "p90": 0.0825
+          },
+          "15+": {
+            "n": 368,
+            "mean": 0.0217,
+            "sd": 0.0247,
+            "p50": 0.0139,
+            "p90": 0.0467
+          }
+        }
+      }
+    },
+    {
+      "scorer": "axis:mnli_mean",
+      "floor": {
+        "backend": "axis:mnli_mean",
+        "n_sentences": 150,
+        "n_prefixes": 2292,
+        "overall": {
+          "n": 2292,
+          "mean": 0.0465,
+          "sd": 0.0476,
+          "p50": 0.0294,
+          "p90": 0.1196
+        },
+        "by_length_bucket": {
+          "1-2": {
+            "n": 300,
+            "mean": 0.0724,
+            "sd": 0.0624,
+            "p50": 0.0533,
+            "p90": 0.1684
+          },
+          "3-4": {
+            "n": 300,
+            "mean": 0.064,
+            "sd": 0.0567,
+            "p50": 0.044,
+            "p90": 0.1503
+          },
+          "5-6": {
+            "n": 300,
+            "mean": 0.0567,
+            "sd": 0.0499,
+            "p50": 0.0394,
+            "p90": 0.134
+          },
+          "7-9": {
+            "n": 434,
+            "mean": 0.0454,
+            "sd": 0.0445,
+            "p50": 0.0289,
+            "p90": 0.1114
+          },
+          "10-14": {
+            "n": 590,
+            "mean": 0.0342,
+            "sd": 0.0334,
+            "p50": 0.0255,
+            "p90": 0.0773
+          },
+          "15+": {
+            "n": 368,
+            "mean": 0.0239,
+            "sd": 0.0226,
+            "p50": 0.0184,
+            "p90": 0.0542
+          }
+        }
+      }
+    },
+    {
+      "scorer": "axis:mnli_lda",
+      "floor": {
+        "backend": "axis:mnli_lda",
+        "n_sentences": 150,
+        "n_prefixes": 2292,
+        "overall": {
+          "n": 2292,
+          "mean": 0.0058,
+          "sd": 0.0056,
+          "p50": 0.0039,
+          "p90": 0.0136
+        },
+        "by_length_bucket": {
+          "1-2": {
+            "n": 300,
+            "mean": 0.0098,
+            "sd": 0.0074,
+            "p50": 0.0086,
+            "p90": 0.0191
+          },
+          "3-4": {
+            "n": 300,
+            "mean": 0.0088,
+            "sd": 0.0067,
+            "p50": 0.0078,
+            "p90": 0.0183
+          },
+          "5-6": {
+            "n": 300,
+            "mean": 0.0069,
+            "sd": 0.006,
+            "p50": 0.0051,
+            "p90": 0.0152
+          },
+          "7-9": {
+            "n": 434,
+            "mean": 0.0052,
+            "sd": 0.0047,
+            "p50": 0.0036,
+            "p90": 0.0115
+          },
+          "10-14": {
+            "n": 590,
+            "mean": 0.0036,
+            "sd": 0.0032,
+            "p50": 0.0026,
+            "p90": 0.0079
+          },
+          "15+": {
+            "n": 368,
+            "mean": 0.0032,
+            "sd": 0.0026,
+            "p50": 0.0026,
+            "p90": 0.0068
+          }
+        }
+      }
+    },
+    {
+      "scorer": "axis:neg_rule/norm",
+      "floor": {
+        "backend": "axis:neg_rule/norm",
+        "n_sentences": 150,
+        "n_prefixes": 2292,
+        "overall": {
+          "n": 2292,
+          "mean": 0.0886,
+          "sd": 0.0832,
+          "p50": 0.0613,
+          "p90": 0.2078
+        },
+        "by_length_bucket": {
+          "1-2": {
+            "n": 300,
+            "mean": 0.1081,
+            "sd": 0.0868,
+            "p50": 0.0933,
+            "p90": 0.2228
+          },
+          "3-4": {
+            "n": 300,
+            "mean": 0.0881,
+            "sd": 0.0777,
+            "p50": 0.0614,
+            "p90": 0.2062
+          },
+          "5-6": {
+            "n": 300,
+            "mean": 0.0882,
+            "sd": 0.0789,
+            "p50": 0.0623,
+            "p90": 0.2115
+          },
+          "7-9": {
+            "n": 434,
+            "mean": 0.0862,
+            "sd": 0.0817,
+            "p50": 0.0592,
+            "p90": 0.2097
+          },
+          "10-14": {
+            "n": 590,
+            "mean": 0.0885,
+            "sd": 0.0877,
+            "p50": 0.0605,
+            "p90": 0.2149
+          },
+          "15+": {
+            "n": 368,
+            "mean": 0.0761,
+            "sd": 0.0792,
+            "p50": 0.0535,
+            "p90": 0.1601
+          }
+        }
+      }
+    },
+    {
+      "scorer": "axis:mnli_mean/norm",
+      "floor": {
+        "backend": "axis:mnli_mean/norm",
+        "n_sentences": 150,
+        "n_prefixes": 2292,
+        "overall": {
+          "n": 2292,
+          "mean": 0.098,
+          "sd": 0.0886,
+          "p50": 0.0709,
+          "p90": 0.2244
+        },
+        "by_length_bucket": {
+          "1-2": {
+            "n": 300,
+            "mean": 0.1069,
+            "sd": 0.0915,
+            "p50": 0.0778,
+            "p90": 0.2493
+          },
+          "3-4": {
+            "n": 300,
+            "mean": 0.1034,
+            "sd": 0.0898,
+            "p50": 0.0718,
+            "p90": 0.2338
+          },
+          "5-6": {
+            "n": 300,
+            "mean": 0.1048,
+            "sd": 0.0896,
+            "p50": 0.0746,
+            "p90": 0.2411
+          },
+          "7-9": {
+            "n": 434,
+            "mean": 0.0988,
+            "sd": 0.093,
+            "p50": 0.0663,
+            "p90": 0.2361
+          },
+          "10-14": {
+            "n": 590,
+            "mean": 0.0961,
+            "sd": 0.0896,
+            "p50": 0.0721,
+            "p90": 0.1924
+          },
+          "15+": {
+            "n": 368,
+            "mean": 0.0832,
+            "sd": 0.0745,
+            "p50": 0.0688,
+            "p90": 0.1797
+          }
+        }
+      }
+    },
+    {
+      "scorer": "axis:mean/norm+cos",
+      "floor": {
+        "backend": "axis:mean/norm+cos",
+        "n_sentences": 150,
+        "n_prefixes": 2292,
+        "overall": {
+          "n": 2292,
+          "mean": 0.2151,
+          "sd": 0.1222,
+          "p50": 0.1957,
+          "p90": 0.3913
+        },
+        "by_length_bucket": {
+          "1-2": {
+            "n": 300,
+            "mean": 0.3363,
+            "sd": 0.0996,
+            "p50": 0.3044,
+            "p90": 0.4816
+          },
+          "3-4": {
+            "n": 300,
+            "mean": 0.2941,
+            "sd": 0.1047,
+            "p50": 0.2704,
+            "p90": 0.4428
+          },
+          "5-6": {
+            "n": 300,
+            "mean": 0.2498,
+            "sd": 0.1064,
+            "p50": 0.2308,
+            "p90": 0.4044
+          },
+          "7-9": {
+            "n": 434,
+            "mean": 0.2019,
+            "sd": 0.1086,
+            "p50": 0.1742,
+            "p90": 0.3619
+          },
+          "10-14": {
+            "n": 590,
+            "mean": 0.1602,
+            "sd": 0.099,
+            "p50": 0.1409,
+            "p90": 0.2898
+          },
+          "15+": {
+            "n": 368,
+            "mean": 0.1272,
+            "sd": 0.0797,
+            "p50": 0.1142,
+            "p90": 0.2315
+          }
+        }
+      }
+    }
+  ],
+  "real": [
+    {
+      "backend": "axis:neg_rule",
+      "n_boundaries": 1003,
+      "variants": {
+        "raw": {
+          "spearman_global": 0.1711,
+          "spearman_within_sentence": 0.2401,
+          "n_within": 148,
+          "topk": 20,
+          "topk_overlap": 0.3,
+          "mean": 0.0576
+        },
+        "floor": {
+          "spearman_global": 0.1101,
+          "spearman_within_sentence": 0.1266,
+          "n_within": 105,
+          "topk": 20,
+          "topk_overlap": 0.3,
+          "mean": 0.0219
+        },
+        "z": {
+          "spearman_global": 0.0627,
+          "spearman_within_sentence": 0.0806,
+          "n_within": 148,
+          "topk": 20,
+          "topk_overlap": 0.1,
+          "mean": 0.1478
+        }
+      },
+      "scorer": "axis:neg_rule"
+    },
+    {
+      "backend": "axis:mnli_mean",
+      "n_boundaries": 1003,
+      "variants": {
+        "raw": {
+          "spearman_global": 0.1158,
+          "spearman_within_sentence": 0.1242,
+          "n_within": 148,
+          "topk": 20,
+          "topk_overlap": 0.0,
+          "mean": 0.0605
+        },
+        "floor": {
+          "spearman_global": 0.0508,
+          "spearman_within_sentence": 0.0617,
+          "n_within": 105,
+          "topk": 20,
+          "topk_overlap": 0.05,
+          "mean": 0.0225
+        },
+        "z": {
+          "spearman_global": 0.0212,
+          "spearman_within_sentence": 0.0971,
+          "n_within": 148,
+          "topk": 20,
+          "topk_overlap": 0.0,
+          "mean": 0.1432
+        }
+      },
+      "scorer": "axis:mnli_mean"
+    },
+    {
+      "backend": "axis:mnli_lda",
+      "n_boundaries": 1003,
+      "variants": {
+        "raw": {
+          "spearman_global": 0.0764,
+          "spearman_within_sentence": 0.0529,
+          "n_within": 148,
+          "topk": 20,
+          "topk_overlap": 0.15,
+          "mean": 0.007
+        },
+        "floor": {
+          "spearman_global": -0.0153,
+          "spearman_within_sentence": -0.0021,
+          "n_within": 114,
+          "topk": 20,
+          "topk_overlap": 0.1,
+          "mean": 0.0021
+        },
+        "z": {
+          "spearman_global": -0.0487,
+          "spearman_within_sentence": -0.0188,
+          "n_within": 148,
+          "topk": 20,
+          "topk_overlap": 0.05,
+          "mean": 0.0723
+        }
+      },
+      "scorer": "axis:mnli_lda"
+    },
+    {
+      "backend": "axis:neg_rule/norm",
+      "n_boundaries": 1003,
+      "variants": {
+        "raw": {
+          "spearman_global": 0.103,
+          "spearman_within_sentence": 0.1848,
+          "n_within": 148,
+          "topk": 20,
+          "topk_overlap": 0.3,
+          "mean": 0.0947
+        },
+        "floor": {
+          "spearman_global": 0.0918,
+          "spearman_within_sentence": 0.0749,
+          "n_within": 93,
+          "topk": 20,
+          "topk_overlap": 0.3,
+          "mean": 0.0321
+        },
+        "z": {
+          "spearman_global": 0.0625,
+          "spearman_within_sentence": 0.0926,
+          "n_within": 148,
+          "topk": 20,
+          "topk_overlap": 0.2,
+          "mean": 0.0183
+        }
+      },
+      "scorer": "axis:neg_rule/norm"
+    },
+    {
+      "backend": "axis:mnli_mean/norm",
+      "n_boundaries": 1003,
+      "variants": {
+        "raw": {
+          "spearman_global": 0.0426,
+          "spearman_within_sentence": 0.0866,
+          "n_within": 148,
+          "topk": 20,
+          "topk_overlap": 0.0,
+          "mean": 0.1004
+        },
+        "floor": {
+          "spearman_global": 0.0334,
+          "spearman_within_sentence": 0.0205,
+          "n_within": 92,
+          "topk": 20,
+          "topk_overlap": 0.0,
+          "mean": 0.0328
+        },
+        "z": {
+          "spearman_global": 0.0256,
+          "spearman_within_sentence": 0.0721,
+          "n_within": 148,
+          "topk": 20,
+          "topk_overlap": 0.0,
+          "mean": -0.0116
+        }
+      },
+      "scorer": "axis:mnli_mean/norm"
+    },
+    {
+      "backend": "axis:mean/norm+cos",
+      "n_boundaries": 1003,
+      "variants": {
+        "raw": {
+          "spearman_global": 0.2776,
+          "spearman_within_sentence": 0.2464,
+          "n_within": 148,
+          "topk": 20,
+          "topk_overlap": 0.0,
+          "mean": 0.2847
+        },
+        "floor": {
+          "spearman_global": 0.0762,
+          "spearman_within_sentence": 0.0917,
+          "n_within": 124,
+          "topk": 20,
+          "topk_overlap": 0.1,
+          "mean": 0.0535
+        },
+        "z": {
+          "spearman_global": 0.0835,
+          "spearman_within_sentence": 0.1156,
+          "n_within": 148,
+          "topk": 20,
+          "topk_overlap": 0.05,
+          "mean": 0.2759
+        }
+      },
+      "scorer": "axis:mean/norm+cos"
+    }
+  ],
+  "n_boundaries": 1003
+}

@@ -1,0 +1,10 @@
+{
+  "sections_changed": [
+    "[Never Segment]",
+    "[Decision Procedure]"
+  ],
+  "changelog": [
+    "Updated [Never Segment]: added an explicit, format-focused rule forbidding tags inside orthographic words or bound morpheme sequences and requiring boundaries align with original token/character boundaries so removing tags returns the exact source string — fixes the reported insertion-inside-word format errors.",
+    "Updated [Decision Procedure]: added a pre-check step requiring all marked positions to align with original token/character boundaries and that removing tags reproduces the original input exactly; clarified that tags must never split orthographic or morphological units — enforces the format constraints during candidate marking and tagging."
+  ]
+}

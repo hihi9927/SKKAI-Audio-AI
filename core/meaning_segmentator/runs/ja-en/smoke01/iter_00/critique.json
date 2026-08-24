@@ -1,0 +1,79 @@
+{
+  "cases": [
+    {
+      "id": "ja_jp_219",
+      "error_type": "placement",
+      "span": "支持していた",
+      "evidence": "First piece asserted 'Everyone supported women winning' and was later negated.",
+      "cause": "polarity not yet settled",
+      "proposed_rule": "Do not commit to sentence polarity before seeing downstream negation or polarity-setting particles/phrases.",
+      "example_pair": {
+        "input": "全員が女性の入賞を支持していたわけではありません。",
+        "output": "全員が女性の入賞を支持していたわけではありません。 <SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_1167",
+      "error_type": "placement",
+      "span": "アウストラロピテクスには",
+      "evidence": "First piece implied the ancestor had the habit; final clause negated that.",
+      "cause": "polarity not yet settled",
+      "proposed_rule": "Delay committing to positive/negative existence or habitual statements until the main verb/negation is visible.",
+      "example_pair": {
+        "input": "直接の祖先であるアウストラロピテクスには、一定時間以上の直立歩行を続ける習慣はありませんでした。",
+        "output": "直接の祖先であるアウストラロピテクスには、一定時間以上の直立歩行を続ける習慣はありませんでした。 <SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_406",
+      "error_type": "placement",
+      "span": "保有するほど",
+      "evidence": "Emitted text claimed Germany 'had several' submarines; later clause negated trust/permission meaning is different.",
+      "cause": "polarity not yet settled",
+      "proposed_rule": "Avoid asserting quantities/existence before downstream evaluative or negating predicates (e.g., '〜なくなった','ない').",
+      "example_pair": {
+        "input": "潜水艦で成功したドイツは、戦後は何隻も保有するほど信頼されなくなりました。",
+        "output": "潜水艦で成功したドイツは、戦後は何隻も保有するほど信頼されなくなりました。 <SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_1000",
+      "error_type": "placement",
+      "span": "攻撃に関与した",
+      "evidence": "Segment emitted a responsibility assertion before the reporting verb introduced the speaker's stance.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Wait for the main verb (reporting verbs, modals, or stance markers) before asserting responsibility or the reporter's belief.",
+      "example_pair": {
+        "input": "警察は、攻撃に関与した過激派ダーシュ（ISIL）を疑っていると述べました。",
+        "output": "警察は、攻撃に関与した過激派ダーシュ（ISIL）を疑っていると述べました。 <SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_1322",
+      "error_type": "placement",
+      "span": "ダニアスは",
+      "evidence": "Emitted boundary caused an early speaker attribution that produced a wrong/guessed name form.",
+      "cause": "premature emission of a proper name",
+      "proposed_rule": "Avoid emitting or normalizing proper names until the full name/confirming context is observed; delay speaker labels until the reporting phrase is complete.",
+      "example_pair": {
+        "input": "ダニアスは「今は何もしていない。彼の親しい協力者に電話をかけたり、メールを送ったりしたが、非常に友好的な返事が返ってきた。今のところは、確かにそれで十分だ。」と語った。",
+        "output": "ダニアスは「今は何もしていない。彼の親しい協力者に電話をかけたり、メールを送ったりしたが、非常に友好的な返事が返ってきた。今のところは、確かにそれで十分だ。」と語った。 <SEG:1>"
+      }
+    }
+  ],
+  "summary": "The prompt frequently allows high-confidence boundaries before polarity-setting words (negation, evaluative verbs) or before the main/head verb, causing premature assertions. It also permits early emission of proper names, leading to guessing or wrong name forms. Fixes: prefer lower confidence for boundaries that occur before negation/main verb/reporting phrases or before confirmed proper-name context.",
+  "aggregate": {
+    "dominant_error": "placement",
+    "error_counts": {
+      "placement": 5
+    },
+    "focus": "placement",
+    "focus_reason": "premature_rate 0.4444 > 0.15",
+    "priority_audit": [],
+    "max_missing_boundaries": 0.0,
+    "max_premature_rate": 0.4444,
+    "rank_lift": null,
+    "rank_lift_t": null,
+    "summary": "The prompt frequently allows high-confidence boundaries before polarity-setting words (negation, evaluative verbs) or before the main/head verb, causing premature assertions. It also permits early emission of proper names, leading to guessing or wrong name forms. Fixes: prefer lower confidence for boundaries that occur before negation/main verb/reporting phrases or before confirmed proper-name context."
+  }
+}

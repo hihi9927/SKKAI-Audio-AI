@@ -1,0 +1,5 @@
+[data] kspon-train: 전체 10000, train 120 / dev 150 / test 150
+[profile] 경고: trailing_punctuation: LLM=['!', ')', '.', '?', '’', '”', '…', '。'] 측정=[',', '.', '?'] — 측정값 채택
+[profile] Korean / 어순 SOV — verbs/predicates consistently appear clause-finally, e.g. '수연이가 뭘 좋아하는지 모르는데' (object before verb '모르는데'). / 띄어쓰기 True(측정) / 타깃 띄어쓰기 True
+[translator] google:en:ctx=True
+[profiler] prompt_v0 작성 완료 (8391자)

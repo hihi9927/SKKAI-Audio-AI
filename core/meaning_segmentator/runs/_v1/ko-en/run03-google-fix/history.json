@@ -1,0 +1,241 @@
+[
+  {
+    "version": 0,
+    "adopted": true,
+    "train": {
+      "n": 30,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9251,
+      "quality_segmented": 0.8978,
+      "quality_segmented_std": 0.1121,
+      "n_segmented": 22,
+      "quality_chrf": 0.8886,
+      "latency": 0.8179,
+      "latency_gain": 0.1821,
+      "mean_segments": 2.0667,
+      "segmented_rate": 0.7333,
+      "quality_min": 0.6194,
+      "quality_p10": 0.7655
+    },
+    "dev": {
+      "n": 60,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9107,
+      "quality_segmented": 0.8809,
+      "quality_segmented_std": 0.089,
+      "n_segmented": 45,
+      "quality_chrf": 0.8242,
+      "latency": 0.8031,
+      "latency_gain": 0.1969,
+      "mean_segments": 2.1,
+      "segmented_rate": 0.75,
+      "quality_min": 0.6763,
+      "quality_p10": 0.7919
+    },
+    "objective_train": -1.0082,
+    "objective_dev": -1.0144,
+    "changelog": null,
+    "next_changelog": [
+      "Added four precise, generalizable non-boundary rules to [Never Segment]: (1) don't split right after a causal/result connective (-다보니까/-아서/-니까) when the following clause's main verb hasn't appeared yet or shares an implicit subject with the preceding clause; (2) don't split inside a conditional chain (…하고 … -면) where the first clause has no complete predicate independent of the following if/when clause; (3) don't split where a discourse marker (또/그리고/근데) recurs on both sides of the boundary, which causes duplicated connectives in translation; (4) don't split right before a clause-final -고 that introduces a bare NP/predicate list still depending on the earlier clause's subject or copula.",
+      "Added four matching [Examples — Do NOT Segment] entries (generalized, not copied from evaluation data) illustrating each new rule, bringing the section to the 12-example cap without removing existing entries since the limit was not previously reached."
+    ]
+  },
+  {
+    "version": 1,
+    "adopted": true,
+    "train": {
+      "n": 30,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9728,
+      "quality_segmented": 0.9455,
+      "quality_segmented_std": 0.0705,
+      "n_segmented": 15,
+      "quality_chrf": 0.9517,
+      "latency": 0.8591,
+      "latency_gain": 0.1409,
+      "mean_segments": 1.7333,
+      "segmented_rate": 0.5,
+      "quality_min": 0.8015,
+      "quality_p10": 0.8646
+    },
+    "dev": {
+      "n": 60,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 0.9833,
+      "quality": 0.9452,
+      "quality_segmented": 0.9033,
+      "quality_segmented_std": 0.0864,
+      "n_segmented": 34,
+      "quality_chrf": 0.9055,
+      "latency": 0.8409,
+      "latency_gain": 0.1591,
+      "mean_segments": 1.8,
+      "segmented_rate": 0.5667,
+      "quality_min": 0.6869,
+      "quality_p10": 0.8134
+    },
+    "objective_train": 0.1409,
+    "objective_dev": 0.1591,
+    "changelog": [
+      "Added four precise, generalizable non-boundary rules to [Never Segment]: (1) don't split right after a causal/result connective (-다보니까/-아서/-니까) when the following clause's main verb hasn't appeared yet or shares an implicit subject with the preceding clause; (2) don't split inside a conditional chain (…하고 … -면) where the first clause has no complete predicate independent of the following if/when clause; (3) don't split where a discourse marker (또/그리고/근데) recurs on both sides of the boundary, which causes duplicated connectives in translation; (4) don't split right before a clause-final -고 that introduces a bare NP/predicate list still depending on the earlier clause's subject or copula.",
+      "Added four matching [Examples — Do NOT Segment] entries (generalized, not copied from evaluation data) illustrating each new rule, bringing the section to the 12-example cap without removing existing entries since the limit was not previously reached."
+    ],
+    "next_changelog": [
+      "[When to Segment]: Added three concrete permissive rules to increase splitting frequency: (1) internal sentence-final punctuation ('.', '?') anywhere mid-utterance is always a mandatory split candidate, not only at the very end; (2) causal/additive connectives (그래서/그러니까/그런데/근데) mark a valid split point as soon as the preceding clause has a complete predicate, even if what follows is short or trails off — a short/incomplete remainder is never a reason to withhold the split; (3) coordinate -고/-며 clauses with independently resolved subjects/objects on each side are a valid split point without waiting for later material.",
+      "[Never Segment]: Narrowed the causal/result connective prohibition so it only blocks a split when clause B has NOT YET reached any predicate at all (a bare fragment) — removed the broader 'shares implicit subject' clause that was causing over-cautious under-segmentation; once B reaches its own complete predicate, splitting is allowed even with a shared subject. Also added a clarifying sentence restricting the conditional-chain prohibition strictly to the '…하고 … -면/-거든' pattern so it no longer discourages ordinary -고 coordination between two already-complete predicates, which is now explicitly permitted under [When to Segment]."
+    ]
+  },
+  {
+    "version": 2,
+    "adopted": true,
+    "train": {
+      "n": 30,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9641,
+      "quality_segmented": 0.9327,
+      "quality_segmented_std": 0.071,
+      "n_segmented": 16,
+      "quality_chrf": 0.9284,
+      "latency": 0.8448,
+      "latency_gain": 0.1552,
+      "mean_segments": 1.8,
+      "segmented_rate": 0.5333,
+      "quality_min": 0.8015,
+      "quality_p10": 0.8561
+    },
+    "dev": {
+      "n": 60,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9392,
+      "quality_segmented": 0.8987,
+      "quality_segmented_std": 0.0906,
+      "n_segmented": 36,
+      "quality_chrf": 0.8884,
+      "latency": 0.8298,
+      "latency_gain": 0.1702,
+      "mean_segments": 1.8833,
+      "segmented_rate": 0.6,
+      "quality_min": 0.6869,
+      "quality_p10": 0.8015
+    },
+    "objective_train": 0.1552,
+    "objective_dev": 0.1702,
+    "changelog": [
+      "[When to Segment]: Added three concrete permissive rules to increase splitting frequency: (1) internal sentence-final punctuation ('.', '?') anywhere mid-utterance is always a mandatory split candidate, not only at the very end; (2) causal/additive connectives (그래서/그러니까/그런데/근데) mark a valid split point as soon as the preceding clause has a complete predicate, even if what follows is short or trails off — a short/incomplete remainder is never a reason to withhold the split; (3) coordinate -고/-며 clauses with independently resolved subjects/objects on each side are a valid split point without waiting for later material.",
+      "[Never Segment]: Narrowed the causal/result connective prohibition so it only blocks a split when clause B has NOT YET reached any predicate at all (a bare fragment) — removed the broader 'shares implicit subject' clause that was causing over-cautious under-segmentation; once B reaches its own complete predicate, splitting is allowed even with a shared subject. Also added a clarifying sentence restricting the conditional-chain prohibition strictly to the '…하고 … -면/-거든' pattern so it no longer discourages ordinary -고 coordination between two already-complete predicates, which is now explicitly permitted under [When to Segment]."
+    ],
+    "next_changelog": [
+      "[When to Segment]: Added explicit permissive rules to fix under-segmentation: (1) 그런데/근데/그래서/그러니까 always mark a valid split the instant the prior clause has a complete predicate, even if what follows is itself another connective-headed clause — segment at the FIRST such boundary, don't wait for a later one; (2) any -고/-며 coordination between two clauses that each have their own subject and verb (subject may be pro-dropped but recoverable from the immediately preceding NP) is always a valid split point, without waiting for confirmation from later material; (3) clarified that '?' or '.' occurring on a bare word/short phrase mid-utterance (not just after a full sentence) is still a mandatory split candidate.",
+      "[Never Segment]: Narrowed two over-broad prohibitions that were causing missed splits: the 'duplicated discourse marker' rule now only blocks a boundary when the identical marker token repeats with NO intervening complete clause between the two occurrences (not just general co-occurrence); the 'dependent NP list' rule now only blocks bare noun-phrase lists with no verb at all, and explicitly no longer applies once the following material contains its own complete predicate — such cases must be split per the new coordinate-clause rule in [When to Segment]."
+    ]
+  },
+  {
+    "version": 3,
+    "adopted": false,
+    "train": {
+      "n": 30,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9636,
+      "quality_segmented": 0.9393,
+      "quality_segmented_std": 0.071,
+      "n_segmented": 18,
+      "quality_chrf": 0.943,
+      "latency": 0.8431,
+      "latency_gain": 0.1569,
+      "mean_segments": 1.8667,
+      "segmented_rate": 0.6,
+      "quality_min": 0.8015,
+      "quality_p10": 0.8617
+    },
+    "dev": {
+      "n": 60,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9284,
+      "quality_segmented": 0.887,
+      "quality_segmented_std": 0.0973,
+      "n_segmented": 38,
+      "quality_chrf": 0.8634,
+      "latency": 0.8292,
+      "latency_gain": 0.1708,
+      "mean_segments": 1.9667,
+      "segmented_rate": 0.6333,
+      "quality_min": 0.6763,
+      "quality_p10": 0.7919
+    },
+    "objective_train": 0.1569,
+    "objective_dev": -1.0109,
+    "changelog": [
+      "[When to Segment]: Added explicit permissive rules to fix under-segmentation: (1) 그런데/근데/그래서/그러니까 always mark a valid split the instant the prior clause has a complete predicate, even if what follows is itself another connective-headed clause — segment at the FIRST such boundary, don't wait for a later one; (2) any -고/-며 coordination between two clauses that each have their own subject and verb (subject may be pro-dropped but recoverable from the immediately preceding NP) is always a valid split point, without waiting for confirmation from later material; (3) clarified that '?' or '.' occurring on a bare word/short phrase mid-utterance (not just after a full sentence) is still a mandatory split candidate.",
+      "[Never Segment]: Narrowed two over-broad prohibitions that were causing missed splits: the 'duplicated discourse marker' rule now only blocks a boundary when the identical marker token repeats with NO intervening complete clause between the two occurrences (not just general co-occurrence); the 'dependent NP list' rule now only blocks bare noun-phrase lists with no verb at all, and explicitly no longer applies once the following material contains its own complete predicate — such cases must be split per the new coordinate-clause rule in [When to Segment]."
+    ],
+    "next_changelog": [
+      "[Core Principles]: Strengthened the final 'when in doubt, split' bullet into an explicit left-to-right scanning rule: once a connective-ending or punctuation boundary is reached and it already closes a complete predicate, take that split immediately rather than waiting for a later, 'safer-looking' boundary further on. This directly targets under-segmentation (long multi-clause sentences left whole despite clear early connective/punctuation boundaries) without adding any new prohibition — it only clarifies the existing bias-to-split principle.",
+      "[Examples — Segment]: Added three new generalized examples demonstrating the three most common missed-split patterns from measurement: (a) splitting immediately after a complete clause followed by 그런데/근데, (b) splitting at a mid-utterance '?' before further speech continues, (c) splitting a '-고' coordination where each side has its own distinct subject and verb. No examples were removed since the section remains under the 12-example cap (11/12)."
+    ]
+  },
+  {
+    "version": 4,
+    "adopted": false,
+    "train": {
+      "n": 30,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9636,
+      "quality_segmented": 0.9357,
+      "quality_segmented_std": 0.0715,
+      "n_segmented": 17,
+      "quality_chrf": 0.9432,
+      "latency": 0.853,
+      "latency_gain": 0.147,
+      "mean_segments": 1.8,
+      "segmented_rate": 0.5667,
+      "quality_min": 0.8015,
+      "quality_p10": 0.8617
+    },
+    "dev": null,
+    "objective_train": 0.147,
+    "objective_dev": null,
+    "changelog": [
+      "[Core Principles]: Strengthened the final 'when in doubt, split' bullet into an explicit left-to-right scanning rule: once a connective-ending or punctuation boundary is reached and it already closes a complete predicate, take that split immediately rather than waiting for a later, 'safer-looking' boundary further on. This directly targets under-segmentation (long multi-clause sentences left whole despite clear early connective/punctuation boundaries) without adding any new prohibition — it only clarifies the existing bias-to-split principle.",
+      "[Examples — Segment]: Added three new generalized examples demonstrating the three most common missed-split patterns from measurement: (a) splitting immediately after a complete clause followed by 그런데/근데, (b) splitting at a mid-utterance '?' before further speech continues, (c) splitting a '-고' coordination where each side has its own distinct subject and verb. No examples were removed since the section remains under the 12-example cap (11/12)."
+    ],
+    "next_changelog": [
+      "[When to Segment]: Added a new bullet clarifying that connective-based (그런데/근데/그래서/그러니까) and coordinate -고/-며 split points must be taken independently each time they occur, regardless of sentence length or how many other clauses remain unresolved in the same long utterance — a long sentence with only one qualifying boundary should still be split there rather than left whole, and a sentence with several qualifying boundaries should be split at every one of them, not just the first.",
+      "[Never Segment]: Narrowed the 'mid-clause, before the verb/predicate has appeared' prohibition by adding an explicit exemption: this prohibition does not apply when the candidate boundary coincides with an existing terminal punctuation mark ('.', '?', '!') in the transcript, since such punctuation already marks a speaker/transcriber-intended completed unit and overrides the predicate-completeness check."
+    ]
+  },
+  {
+    "version": 5,
+    "adopted": false,
+    "train": {
+      "n": 30,
+      "valid_rate": 1.0,
+      "first_pass_valid_rate": 1.0,
+      "quality": 0.9682,
+      "quality_segmented": 0.9439,
+      "quality_segmented_std": 0.0704,
+      "n_segmented": 17,
+      "quality_chrf": 0.9457,
+      "latency": 0.8509,
+      "latency_gain": 0.1491,
+      "mean_segments": 1.8,
+      "segmented_rate": 0.5667,
+      "quality_min": 0.8015,
+      "quality_p10": 0.8631
+    },
+    "dev": null,
+    "objective_train": 0.1491,
+    "objective_dev": null,
+    "changelog": [
+      "[When to Segment]: Added a new bullet clarifying that connective-based (그런데/근데/그래서/그러니까) and coordinate -고/-며 split points must be taken independently each time they occur, regardless of sentence length or how many other clauses remain unresolved in the same long utterance — a long sentence with only one qualifying boundary should still be split there rather than left whole, and a sentence with several qualifying boundaries should be split at every one of them, not just the first.",
+      "[Never Segment]: Narrowed the 'mid-clause, before the verb/predicate has appeared' prohibition by adding an explicit exemption: this prohibition does not apply when the candidate boundary coincides with an existing terminal punctuation mark ('.', '?', '!') in the transcript, since such punctuation already marks a speaker/transcriber-intended completed unit and overrides the predicate-completeness check."
+    ]
+  }
+]

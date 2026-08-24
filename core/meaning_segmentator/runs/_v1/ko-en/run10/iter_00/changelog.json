@@ -1,0 +1,10 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Decision Procedure]"
+  ],
+  "changelog": [
+    "[When to Segment]: added concrete positive rules for cases the critic showed as free latency left on the table at zero quality cost — splitting right after a sentence-initial discourse marker or a leading filler run when a full clause follows, splitting after a sentence-internal '?' when what follows is self-contained, splitting at a contrastive -는데/-지만 boundary between two complete clauses, splitting after -어/아 가지고 when the remainder stands alone, and testing a split before the final noun phrase in long filler-heavy sentences.",
+    "[Decision Procedure]: added explicit guidance to relocate (not delete) a boundary that would otherwise land between an object/topic and its not-yet-spoken verb, inside a reason+direct-consequence pair, between a conditional and the referent it modifies, or between two parallel coordinated clauses — the tag should move to the next safe clause-final point instead of being dropped, preserving segmentation count while fixing placement."
+  ]
+}

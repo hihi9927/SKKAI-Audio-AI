@@ -1,0 +1,23 @@
+{
+  "backend": "comet",
+  "q_mechanical_split": 0.6457,
+  "q_ceiling_retranslate": 0.8591,
+  "anchor_gap": 0.2134,
+  "q_floor": 0.7951,
+  "mechanical_every_chars": 8,
+  "ratio": 0.7,
+  "alt_backends": {
+    "chrf": {
+      "q_mechanical_split": 0.4706,
+      "q_ceiling_retranslate": 0.7123,
+      "anchor_gap": 0.2417,
+      "q_floor": 0.6398
+    },
+    "embed": {
+      "q_mechanical_split": 0.7356,
+      "q_ceiling_retranslate": 0.915,
+      "anchor_gap": 0.1794,
+      "q_floor": 0.8612
+    }
+  }
+}

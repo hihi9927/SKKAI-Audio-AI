@@ -1,0 +1,457 @@
+{
+  "run_id": "ko-en/run04",
+  "n_sentences": 194,
+  "n_prefixes": 2375,
+  "n_positions": 2251,
+  "distribution": [
+    {
+      "measure": "entail",
+      "horizon": "next",
+      "stats": {
+        "n": 2251,
+        "p10": 0.0045,
+        "p50": 0.0417,
+        "p90": 0.958,
+        "mean": 0.2634,
+        "frac_below_0.05": 0.5158,
+        "frac_below_0.20": 0.661
+      }
+    },
+    {
+      "measure": "entail",
+      "horizon": "final",
+      "stats": {
+        "n": 2251,
+        "p10": 0.0063,
+        "p50": 0.1467,
+        "p90": 0.9875,
+        "mean": 0.3649,
+        "frac_below_0.05": 0.3598,
+        "frac_below_0.20": 0.5335
+      }
+    },
+    {
+      "measure": "entail",
+      "horizon": "min",
+      "stats": {
+        "n": 2251,
+        "p10": 0.0095,
+        "p50": 0.4794,
+        "p90": 0.9968,
+        "mean": 0.4984,
+        "frac_below_0.05": 0.2514,
+        "frac_below_0.20": 0.3914
+      }
+    },
+    {
+      "measure": "cos",
+      "horizon": "next",
+      "stats": {
+        "n": 2251,
+        "p10": 0.0034,
+        "p50": 0.0455,
+        "p90": 0.1332,
+        "mean": 0.0584,
+        "frac_below_0.05": 0.5331,
+        "frac_below_0.20": 0.9858
+      }
+    },
+    {
+      "measure": "cos",
+      "horizon": "final",
+      "stats": {
+        "n": 2251,
+        "p10": 0.029,
+        "p50": 0.1061,
+        "p90": 0.2377,
+        "mean": 0.1203,
+        "frac_below_0.05": 0.2217,
+        "frac_below_0.20": 0.8187
+      }
+    },
+    {
+      "measure": "cos",
+      "horizon": "min",
+      "stats": {
+        "n": 2251,
+        "p10": 0.0309,
+        "p50": 0.1125,
+        "p90": 0.2467,
+        "mean": 0.1263,
+        "frac_below_0.05": 0.2008,
+        "frac_below_0.20": 0.7979
+      }
+    },
+    {
+      "measure": "chrf",
+      "horizon": "next",
+      "stats": {
+        "n": 2251,
+        "p10": 0.0552,
+        "p50": 0.3398,
+        "p90": 0.7861,
+        "mean": 0.3833,
+        "frac_below_0.05": 0.0942,
+        "frac_below_0.20": 0.2928
+      }
+    },
+    {
+      "measure": "chrf",
+      "horizon": "final",
+      "stats": {
+        "n": 2251,
+        "p10": 0.2489,
+        "p50": 0.6352,
+        "p90": 0.9536,
+        "mean": 0.6157,
+        "frac_below_0.05": 0.0116,
+        "frac_below_0.20": 0.0653
+      }
+    },
+    {
+      "measure": "chrf",
+      "horizon": "min",
+      "stats": {
+        "n": 2251,
+        "p10": 0.2647,
+        "p50": 0.6508,
+        "p90": 0.9577,
+        "mean": 0.6296,
+        "frac_below_0.05": 0.0111,
+        "frac_below_0.20": 0.0582
+      }
+    }
+  ],
+  "at_cuts": [
+    {
+      "measure": "entail",
+      "horizon": "next",
+      "raw": {
+        "auc": 0.5261,
+        "mean_gap": 0.0224,
+        "n_sentences": 194
+      },
+      "prior": {
+        "auc": 0.6971,
+        "mean_gap": 0.0203,
+        "n_sentences": 194
+      },
+      "resid": {
+        "auc": 0.4458,
+        "mean_gap": 0.0021,
+        "n_sentences": 194
+      },
+      "local": {
+        "auc": 0.4956,
+        "mean_gap": 0.0019,
+        "n_sentences": 194
+      },
+      "agreement": {
+        "hit_rate": 0.2536,
+        "n": 619
+      }
+    },
+    {
+      "measure": "entail",
+      "horizon": "final",
+      "raw": {
+        "auc": 0.5289,
+        "mean_gap": 0.0273,
+        "n_sentences": 194
+      },
+      "prior": {
+        "auc": 0.7664,
+        "mean_gap": 0.0496,
+        "n_sentences": 194
+      },
+      "resid": {
+        "auc": 0.4467,
+        "mean_gap": -0.0223,
+        "n_sentences": 194
+      },
+      "local": {
+        "auc": 0.4705,
+        "mean_gap": -0.0366,
+        "n_sentences": 194
+      },
+      "agreement": {
+        "hit_rate": 0.2504,
+        "n": 619
+      }
+    },
+    {
+      "measure": "entail",
+      "horizon": "min",
+      "raw": {
+        "auc": 0.5468,
+        "mean_gap": 0.0872,
+        "n_sentences": 194
+      },
+      "prior": {
+        "auc": 0.7797,
+        "mean_gap": 0.1087,
+        "n_sentences": 194
+      },
+      "resid": {
+        "auc": 0.4442,
+        "mean_gap": -0.0215,
+        "n_sentences": 194
+      },
+      "local": {
+        "auc": 0.4777,
+        "mean_gap": -0.0169,
+        "n_sentences": 194
+      },
+      "agreement": {
+        "hit_rate": 0.2294,
+        "n": 619
+      }
+    },
+    {
+      "measure": "cos",
+      "horizon": "next",
+      "raw": {
+        "auc": 0.6432,
+        "mean_gap": 0.0275,
+        "n_sentences": 194
+      },
+      "prior": {
+        "auc": 0.8064,
+        "mean_gap": 0.0142,
+        "n_sentences": 194
+      },
+      "resid": {
+        "auc": 0.5526,
+        "mean_gap": 0.0133,
+        "n_sentences": 194
+      },
+      "local": {
+        "auc": 0.5165,
+        "mean_gap": 0.0067,
+        "n_sentences": 194
+      },
+      "agreement": {
+        "hit_rate": 0.1777,
+        "n": 619
+      }
+    },
+    {
+      "measure": "cos",
+      "horizon": "final",
+      "raw": {
+        "auc": 0.7853,
+        "mean_gap": 0.0704,
+        "n_sentences": 194
+      },
+      "prior": {
+        "auc": 0.8064,
+        "mean_gap": 0.0462,
+        "n_sentences": 194
+      },
+      "resid": {
+        "auc": 0.6313,
+        "mean_gap": 0.0242,
+        "n_sentences": 194
+      },
+      "local": {
+        "auc": 0.5511,
+        "mean_gap": 0.0087,
+        "n_sentences": 194
+      },
+      "agreement": {
+        "hit_rate": 0.0275,
+        "n": 619
+      }
+    },
+    {
+      "measure": "cos",
+      "horizon": "min",
+      "raw": {
+        "auc": 0.7952,
+        "mean_gap": 0.0733,
+        "n_sentences": 194
+      },
+      "prior": {
+        "auc": 0.8064,
+        "mean_gap": 0.0486,
+        "n_sentences": 194
+      },
+      "resid": {
+        "auc": 0.6279,
+        "mean_gap": 0.0247,
+        "n_sentences": 194
+      },
+      "local": {
+        "auc": 0.5545,
+        "mean_gap": 0.0096,
+        "n_sentences": 194
+      },
+      "agreement": {
+        "hit_rate": 0.0226,
+        "n": 619
+      }
+    },
+    {
+      "measure": "chrf",
+      "horizon": "next",
+      "raw": {
+        "auc": 0.6685,
+        "mean_gap": 0.1585,
+        "n_sentences": 194
+      },
+      "prior": {
+        "auc": 0.8064,
+        "mean_gap": 0.0822,
+        "n_sentences": 194
+      },
+      "resid": {
+        "auc": 0.5806,
+        "mean_gap": 0.0763,
+        "n_sentences": 194
+      },
+      "local": {
+        "auc": 0.5295,
+        "mean_gap": 0.03,
+        "n_sentences": 194
+      },
+      "agreement": {
+        "hit_rate": 0.1712,
+        "n": 619
+      }
+    },
+    {
+      "measure": "chrf",
+      "horizon": "final",
+      "raw": {
+        "auc": 0.8091,
+        "mean_gap": 0.2377,
+        "n_sentences": 194
+      },
+      "prior": {
+        "auc": 0.8064,
+        "mean_gap": 0.1762,
+        "n_sentences": 194
+      },
+      "resid": {
+        "auc": 0.621,
+        "mean_gap": 0.0615,
+        "n_sentences": 194
+      },
+      "local": {
+        "auc": 0.555,
+        "mean_gap": 0.0221,
+        "n_sentences": 194
+      },
+      "agreement": {
+        "hit_rate": 0.0162,
+        "n": 619
+      }
+    },
+    {
+      "measure": "chrf",
+      "horizon": "min",
+      "raw": {
+        "auc": 0.8123,
+        "mean_gap": 0.2333,
+        "n_sentences": 194
+      },
+      "prior": {
+        "auc": 0.8064,
+        "mean_gap": 0.175,
+        "n_sentences": 194
+      },
+      "resid": {
+        "auc": 0.6217,
+        "mean_gap": 0.0583,
+        "n_sentences": 194
+      },
+      "local": {
+        "auc": 0.5636,
+        "mean_gap": 0.0241,
+        "n_sentences": 194
+      },
+      "agreement": {
+        "hit_rate": 0.0178,
+        "n": 619
+      }
+    }
+  ],
+  "vs_contra": [
+    {
+      "spearman": 0.3989,
+      "n": 871,
+      "measure": "entail",
+      "horizon": "next",
+      "spearman_resid": 0.3999,
+      "spearman_local": 0.1108
+    },
+    {
+      "spearman": 0.5919,
+      "n": 871,
+      "measure": "entail",
+      "horizon": "final",
+      "spearman_resid": 0.5758,
+      "spearman_local": 0.2434
+    },
+    {
+      "spearman": 0.4815,
+      "n": 871,
+      "measure": "entail",
+      "horizon": "min",
+      "spearman_resid": 0.4684,
+      "spearman_local": 0.1912
+    },
+    {
+      "spearman": 0.4168,
+      "n": 871,
+      "measure": "cos",
+      "horizon": "next",
+      "spearman_resid": 0.4122,
+      "spearman_local": 0.1133
+    },
+    {
+      "spearman": 0.3748,
+      "n": 871,
+      "measure": "cos",
+      "horizon": "final",
+      "spearman_resid": 0.379,
+      "spearman_local": 0.1621
+    },
+    {
+      "spearman": 0.3831,
+      "n": 871,
+      "measure": "cos",
+      "horizon": "min",
+      "spearman_resid": 0.3855,
+      "spearman_local": 0.1725
+    },
+    {
+      "spearman": 0.4216,
+      "n": 871,
+      "measure": "chrf",
+      "horizon": "next",
+      "spearman_resid": 0.424,
+      "spearman_local": 0.1517
+    },
+    {
+      "spearman": 0.403,
+      "n": 871,
+      "measure": "chrf",
+      "horizon": "final",
+      "spearman_resid": 0.421,
+      "spearman_local": 0.2307
+    },
+    {
+      "spearman": 0.3979,
+      "n": 871,
+      "measure": "chrf",
+      "horizon": "min",
+      "spearman_resid": 0.414,
+      "spearman_local": 0.2204
+    }
+  ],
+  "chance": {
+    "hit_rate": 0.2836,
+    "n_boundaries": 12380
+  }
+}

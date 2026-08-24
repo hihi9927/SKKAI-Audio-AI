@@ -1,0 +1,8 @@
+{
+  "sections_changed": [
+    "[Decision Procedure]"
+  ],
+  "changelog": [
+    "[Decision Procedure]: Replaced the single closing repeat-instruction with a two-part safeguard: (a) an opening reminder that tags may only be inserted, never delete or truncate content, and (b) a final self-verification checklist run once before emitting output, checking that the emitted string is non-empty and contains every original character in original order; if verification fails for any reason, the model must discard any partial tagging and emit the untouched original input. This targets the format_violation (empty seg_text) case via the decision procedure only, as required by the 'fix output format' direction, using a structurally different verification-checklist framing (rather than the previously-rejected single 'mandatory fallback step' wording) so as not to repeat the earlier rejected variant."
+  ]
+}

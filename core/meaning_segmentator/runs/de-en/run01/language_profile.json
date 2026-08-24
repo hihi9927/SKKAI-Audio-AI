@@ -1,0 +1,74 @@
+{
+  "source_language": "German",
+  "source_code": "de",
+  "uses_spaces_between_words": true,
+  "word_order": "SOV | many subordinate clauses in the sample show verb-final order (e.g. \"der ... gegangen war\", \"auf dem die Entscheidung ... beruhe\"), while main clauses show verb-second patterns.",
+  "head_final": true,
+  "punctuation_present": "always — as observed in the sample",
+  "trailing_punctuation": [
+    ".",
+    ",",
+    ")",
+    "\"",
+    "„",
+    "“",
+    "-",
+    "–"
+  ],
+  "register": "formal written news/encyclopedic prose (newswire/encyclopedia style)",
+  "fillers_and_hesitations": [
+    "äh",
+    "ähm",
+    "hm",
+    "mhm",
+    "also",
+    "na ja"
+  ],
+  "discourse_markers": [
+    "und",
+    "aber",
+    "auch",
+    "dass",
+    "wenn",
+    "während",
+    "trotz",
+    "weil",
+    "denn",
+    "sowohl",
+    "als",
+    "dann",
+    "schließlich",
+    "wegen"
+  ],
+  "clause_boundary_signals": [
+    ",",
+    "dass",
+    "wenn",
+    "während",
+    "weil",
+    "obwohl",
+    "als",
+    "dann",
+    "schließlich",
+    "der",
+    "die",
+    "das"
+  ],
+  "non_boundary_traps": [
+    "z.B.",
+    "u.a.",
+    "bzw.",
+    "Abkürzungen mit Punkt (z. B.)",
+    "hyphenated compounds (e.g. ACTA-Beitrittsprozess)",
+    "commas inside lists/appositives",
+    "quotation marks around single words (e.g. „Black Box“-)"
+  ],
+  "unstable_prefix_signals": [
+    "fronted infinitival/PP/adverbial phrases often ending with a comma (e.g. initial \"Mehr ... zu erfahren,\")",
+    "subordinating conjunctions: wenn, dass, weil, obwohl, während",
+    "relative pronouns: der, die, das (introducing embedded clauses)",
+    "opening quotes: \" or „",
+    "("
+  ],
+  "notes_for_prompt_writer": "Prefer splitting at clause boundaries marked by commas followed by a new finite clause or by explicit subordinators, but do not finalize a segment inside subordinate (verb-final) clauses — wait for the clause-final verb. Keep trailing punctuation and closing quotes/brackets attached to the preceding segment. Avoid splitting after abbreviations (e.g. z.B.), inside hyphenated compounds, or immediately after an opening quote/parenthesis; fronted phrases followed by a comma are unstable and may require waiting for the following finite verb."
+}

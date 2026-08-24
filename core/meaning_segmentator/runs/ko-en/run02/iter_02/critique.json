@@ -1,0 +1,63 @@
+{
+  "cases": [
+    {
+      "id": "KsponSpeech_E00761",
+      "error_type": "placement",
+      "span": "그때 봤다고",
+      "evidence": "Piece 1 asserted 'I saw it then' as fact, but the sentence later reveals it is embedded under 'I think I said'.",
+      "cause": "head (reporting/opinion verb) had not yet arrived when the clause was cut off",
+      "proposed_rule": "If a clause is grammatically dependent on a later reporting or opinion verb (e.g. '~다고', '~것 같다'), do not place a boundary before that verb arrives.",
+      "example_pair": {
+        "input": "그때 봤다고 내가 말했던 거 같은데 그래서 맨날",
+        "output": "그때 봤다고 내가 말했던 거 같은데 <SEG:1> 그래서 맨날"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00066",
+      "error_type": "placement",
+      "span": "다른 데",
+      "evidence": "Piece 1 turned 'a bit of a dead end from the beginning' into a claim about the mother, but the phrase is actually an unresolved object awaiting a governing verb far later.",
+      "cause": "governing verb ('하라고 하는데') had not yet arrived, so the dangling NP was mis-resolved into a predicate",
+      "proposed_rule": "Do not close a boundary right after a bare noun/locative phrase whose grammatical role (destination, object, description) depends on a verb that has not yet appeared.",
+      "example_pair": {
+        "input": "엄마는 그냐 처음부터 조금 막 다른 데 대전 어 대전이라든가 아니면은 지역 중앙회 같은 거 이렇게 하라고 하는데.",
+        "output": "엄마는 그냐 처음부터 조금 막 다른 데 대전 어 대전이라든가 아니면은 지역 중앙회 같은 거 이렇게 하라고 하는데 <SEG:1>."
+      }
+    },
+    {
+      "id": "KsponSpeech_E00391",
+      "error_type": "placement",
+      "span": "주말 껴서 주말 껴서",
+      "evidence": "The isolated piece was rendered as 'Enjoy the weekend' instead of the correct 'spanning/including the weekend', because the disambiguating continuation ('갔다 와서') was cut off.",
+      "cause": "idiomatic connective sense ('껴서' = spanning) was not yet disambiguated without the following clause",
+      "proposed_rule": "When a repeated or idiomatic connective phrase's meaning depends on the clause that follows it, do not place a boundary until that following clause is included.",
+      "example_pair": {
+        "input": "주말 껴서 주말 껴서 갔다 와서 또 다시 밀린 일 해야 되고.",
+        "output": "주말 껴서 주말 껴서 갔다 와서 <SEG:1> 또 다시 밀린 일 해야 되고."
+      }
+    },
+    {
+      "id": "KsponSpeech_E00948",
+      "error_type": "placement",
+      "span": "공부밖에 없지",
+      "evidence": "Piece 1 rendered the subject as 'I' when the postposed subject '우리는' (we) had not yet appeared.",
+      "cause": "postposed subject not yet arrived, so pronoun was guessed wrong",
+      "proposed_rule": "Do not commit to a subject pronoun before an explicit postposed subject marker (e.g. '~는/~은') has been seen; wait for it before closing the boundary.",
+      "example_pair": {
+        "input": "뭐 학교 얀기는 공부밖에 없지 우리는. 언제나 공부 얀기 밖에 없지.",
+        "output": "뭐 학교 얀기는 공부밖에 없지 우리는. <SEG:1> 언제나 공부 얀기 밖에 없지."
+      }
+    }
+  ],
+  "summary": "Most failures are placement errors: boundaries are cut before a reporting verb, governing verb, disambiguating clause, or postposed subject arrives, causing the emitted piece to assert something the rest of the sentence later contradicts or mistranslates. The aggregate premature_rate rising sharply at the large chunk size shows these risky early-cut boundaries are also being ranked too high, compounding the placement problem into a priority one at tight budgets.",
+  "aggregate": {
+    "dominant_error": "placement",
+    "error_counts": {
+      "placement": 4
+    },
+    "focus": "placement",
+    "max_truncation_shortfall": 1.2,
+    "max_premature_rate": 0.3333,
+    "summary": "Most failures are placement errors: boundaries are cut before a reporting verb, governing verb, disambiguating clause, or postposed subject arrives, causing the emitted piece to assert something the rest of the sentence later contradicts or mistranslates. The aggregate premature_rate rising sharply at the large chunk size shows these risky early-cut boundaries are also being ranked too high, compounding the placement problem into a priority one at tight budgets."
+  }
+}

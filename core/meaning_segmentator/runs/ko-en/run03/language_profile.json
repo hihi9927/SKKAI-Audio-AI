@@ -1,0 +1,66 @@
+{
+  "source_language": "Korean",
+  "source_code": "ko",
+  "uses_spaces_between_words": true,
+  "word_order": "SOV — verbs/predicates consistently appear clause-finally (e.g. '맞는 거 같애', '판단을 한 후에', '돌아온거야'), with objects/complements preceding them.",
+  "head_final": true,
+  "punctuation_present": "sometimes — many utterances end with '.' or '?' but several run-on speech clauses have no terminal punctuation at all",
+  "trailing_punctuation": [
+    "。",
+    ".",
+    "?",
+    "!",
+    "…"
+  ],
+  "register": "spontaneous conversational speech (transcribed dialogue/interview, informal spoken Korean with fillers, self-corrections, and trailing connective endings)",
+  "fillers_and_hesitations": [
+    "그",
+    "뭐",
+    "이제",
+    "어",
+    "음",
+    "그니까",
+    "그래서 그",
+    "아",
+    "저"
+  ],
+  "discourse_markers": [
+    "근데",
+    "그래서",
+    "그러다가",
+    "그런데",
+    "그리고",
+    "아니",
+    "네",
+    "응"
+  ],
+  "clause_boundary_signals": [
+    "-는데",
+    "-고",
+    "-어/아",
+    "-거든",
+    "-잖아",
+    "-니까",
+    "-면서",
+    "-다가",
+    "-던데",
+    "sentence-final endings like -습니다/-어요/-야/-지",
+    "?",
+    "."
+  ],
+  "non_boundary_traps": [
+    "-는데 (often continues into next clause rather than ending it)",
+    "-고 (frequently coordinates rather than closes)",
+    "그 (demonstrative filler, not a clause boundary)",
+    "뭐 (filler particle, not a topic marker boundary)",
+    "이런 거/이런데 (vague nominalizers that attach to preceding clause)"
+  ],
+  "target_language_risks": [
+    "Korean drops subjects/objects freely (pro-drop), so a segment translated alone into English may lack an explicit subject or object recoverable only from prior context",
+    "Sentence-final connective endings like -는데/-고/-다가 signal continuation, not completion; cutting there yields incomplete English clauses",
+    "Honorific/speech-level endings (-습니다 vs -어/아) affect register and must stay consistent across segments",
+    "Topic markers (은/는) and case particles can be omitted in casual speech, making constituent boundaries ambiguous",
+    "Repeated hedging fillers (뭐, 그, 이제) have no direct English equivalent and may be mistakenly treated as segment boundaries"
+  ],
+  "notes_for_prompt_writer": "This is casual spoken Korean transcript with frequent fillers, self-repairs, and run-on clauses linked by connective endings (-는데, -고, -다가, -면서). Segment primarily at true clause-final endings (-어/아, -습니다, -거든, -잖아) and at strong punctuation (., ?, !), but treat -는데/-고 as weak/continuing boundaries requiring lookahead before splitting. Never start a new segment with trailing punctuation or with a demonstrative/filler like 그/뭐/이제 that grammatically attaches to the prior clause; instead attach these to the following clause only if they begin a new sentence after a period."
+}

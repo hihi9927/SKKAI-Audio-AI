@@ -1,0 +1,2546 @@
+{
+  "prompt_file": "core/meaning_segmentator/runs/en-multi/run06/best_prompt.txt",
+  "split": "test",
+  "t_grid": [
+    4,
+    6,
+    8,
+    12
+  ],
+  "tgt_lang": "German",
+  "min_gap": 3,
+  "candidate_t": 4,
+  "priority_depth": null,
+  "batch_size": 6,
+  "require_priority": true,
+  "adequacy_backend": "cometkiwi",
+  "consistency_backend": "nli",
+  "contradiction_backend": "xlmr-anli",
+  "translator": "google:de:ctx=True",
+  "metrics": {
+    "n": 20,
+    "format_pass_rate": 0.95,
+    "format_pass_rate_no_retry": 0.85,
+    "by_T": {
+      "4": {
+        "target_chunk_words": 4,
+        "n": 20,
+        "n_scored": 20,
+        "n_effective": 20,
+        "effective": 0.7067,
+        "adequacy": 0.762,
+        "contradiction": 0.0693,
+        "effective_min": 0.0194,
+        "effective_p10": 0.5022,
+        "consistency": 0.9002,
+        "consistency_chrf": 0.6802,
+        "laal_words": 2.8696,
+        "chunks_per_sentence": 4.4,
+        "split_ratio": 1.0,
+        "missing_boundaries": 0.0,
+        "premature_rate": null,
+        "reference_suspect_rate": null,
+        "rank_contra_spearman": null,
+        "rank_contra_gap": null,
+        "rank_contra_gap_se": null,
+        "rank_contra_gap_n": null,
+        "effective_z": null,
+        "n_targets": null
+      },
+      "6": {
+        "target_chunk_words": 6,
+        "n": 20,
+        "n_scored": 20,
+        "n_effective": 20,
+        "effective": 0.7349,
+        "adequacy": 0.789,
+        "contradiction": 0.0667,
+        "effective_min": 0.0194,
+        "effective_p10": 0.5199,
+        "consistency": 0.8527,
+        "consistency_chrf": 0.7353,
+        "laal_words": 3.8831,
+        "chunks_per_sentence": 3.2,
+        "split_ratio": 1.0,
+        "missing_boundaries": 0.0,
+        "premature_rate": null,
+        "reference_suspect_rate": null,
+        "rank_contra_spearman": null,
+        "rank_contra_gap": null,
+        "rank_contra_gap_se": null,
+        "rank_contra_gap_n": null,
+        "effective_z": null,
+        "n_targets": null
+      },
+      "8": {
+        "target_chunk_words": 8,
+        "n": 20,
+        "n_scored": 20,
+        "n_effective": 20,
+        "effective": 0.7437,
+        "adequacy": 0.8061,
+        "contradiction": 0.0756,
+        "effective_min": 0.0194,
+        "effective_p10": 0.4239,
+        "consistency": 0.8216,
+        "consistency_chrf": 0.7716,
+        "laal_words": 4.7455,
+        "chunks_per_sentence": 2.55,
+        "split_ratio": 1.0,
+        "missing_boundaries": 0.0,
+        "premature_rate": null,
+        "reference_suspect_rate": null,
+        "rank_contra_spearman": null,
+        "rank_contra_gap": null,
+        "rank_contra_gap_se": null,
+        "rank_contra_gap_n": null,
+        "effective_z": null,
+        "n_targets": null
+      },
+      "12": {
+        "target_chunk_words": 12,
+        "n": 20,
+        "n_scored": 20,
+        "n_effective": 20,
+        "effective": 0.7715,
+        "adequacy": 0.814,
+        "contradiction": 0.0515,
+        "effective_min": 0.0194,
+        "effective_p10": 0.603,
+        "consistency": 0.8299,
+        "consistency_chrf": 0.7967,
+        "laal_words": 5.6099,
+        "chunks_per_sentence": 2.1,
+        "split_ratio": 1.0,
+        "missing_boundaries": 0.0,
+        "premature_rate": null,
+        "reference_suspect_rate": null,
+        "rank_contra_spearman": null,
+        "rank_contra_gap": null,
+        "rank_contra_gap_se": null,
+        "rank_contra_gap_n": null,
+        "effective_z": null,
+        "n_targets": null
+      }
+    },
+    "score": 0.7392,
+    "rank_lift": 0.04711,
+    "rank_lift_se": 0.01766,
+    "rank_lift_t": 2.67,
+    "rank_lift_n": 20,
+    "rank_lift_T": 12
+  },
+  "violations": [
+    {
+      "id": "en_us_464",
+      "rule": "gap_too_small",
+      "detail": "조각 2단위 — 최소 간격 3 미만",
+      "text": "Unfortunately, when you make a DVD, it's borders will most likely be cut too, and if the video had subtitles too close to the bottom, they won't be fully shown.",
+      "seg_text": "Unfortunately, when you <SEG:8> make a DVD, <SEG:1> it's borders will <SEG:3> most likely be <SEG:6> cut too, <SEG:7> and if the video <SEG:5> had subtitles too <SEG:4> close to the bottom, <SEG:2> they won't be fully shown."
+    },
+    {
+      "rule": "too_few_tags",
+      "detail": "경계 4개 — 최소 5개 필요",
+      "text": "During the 1976 selections he advised Carter on foreign policy, then served as National Security Advisor (NSA) from 1977 to 1981, succeeding Henry Kissinger.",
+      "seg_text": "During the 1976 selections <SEG:4> he advised Carter on foreign policy, <SEG:3> then served as National Security Advisor (NSA) <SEG:1> from 1977 to 1981, <SEG:2> succeeding Henry Kissinger.",
+      "first_pass": true
+    },
+    {
+      "rule": "gap_too_small",
+      "detail": "조각 2단위 — 최소 간격 3 미만",
+      "text": "There are many things you have to take into consideration before and when you travel somewhere.",
+      "seg_text": "There are many things <SEG:2> you have to <SEG:4> take into consideration <SEG:1> before and <SEG:3> when you travel somewhere.",
+      "first_pass": true
+    },
+    {
+      "rule": "gap_too_small",
+      "detail": "조각 2단위 — 최소 간격 3 미만",
+      "text": "Unfortunately, when you make a DVD, it's borders will most likely be cut too, and if the video had subtitles too close to the bottom, they won't be fully shown.",
+      "seg_text": "Unfortunately, when you <SEG:5> make a DVD, <SEG:2> it's borders will most likely <SEG:6> be cut too, <SEG:1> and if the <SEG:7> video had subtitles <SEG:3> too close to <SEG:8> the bottom, <SEG:4> they won't be fully shown.",
+      "first_pass": true
+    }
+  ],
+  "rows": [
+    {
+      "id": "en_us_1150",
+      "text": "During the 1976 selections he advised Carter on foreign policy, then served as National Security Advisor (NSA) from 1977 to 1981, succeeding Henry Kissinger.",
+      "seg_text": "During the 1976 selections <SEG:5> he advised Carter <SEG:4> on foreign policy, <SEG:3> then served as <SEG:6> National Security Advisor (NSA) <SEG:1> from 1977 to 1981, <SEG:2> succeeding Henry Kissinger.",
+      "valid": true,
+      "full_trans": "Während der Auswahl 1976 beriet er Carter in Fragen der Außenpolitik und fungierte dann von 1977 bis 1981 als Nationaler Sicherheitsberater (NSA) als Nachfolger von Henry Kissinger.",
+      "by_T": {
+        "4": {
+          "seg_text": "During the 1976 selections <SEG:5> he advised Carter <SEG:4> on foreign policy, <SEG:3> then served as National Security Advisor (NSA) <SEG:1> from 1977 to 1981, <SEG:2> succeeding Henry Kissinger.",
+          "k": 6,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "During the 1976 selections",
+            "he advised Carter",
+            "on foreign policy,",
+            "then served as National Security Advisor (NSA)",
+            "from 1977 to 1981,",
+            "succeeding Henry Kissinger."
+          ],
+          "pieces_tgt": [
+            "Während der Auswahl 1976",
+            "er beriet Carter",
+            "zur Außenpolitik,",
+            "diente dann als Nationaler Sicherheitsberater (NSA)",
+            "von 1977 bis 1981,",
+            "Nachfolger von Henry Kissinger."
+          ],
+          "pieces_contra": [
+            0.0005,
+            0.0007,
+            0.0009,
+            0.0022,
+            0.0015,
+            0.0
+          ],
+          "seg_trans": "Während der Auswahl 1976 er beriet Carter zur Außenpolitik, diente dann als Nationaler Sicherheitsberater (NSA) von 1977 bis 1981, Nachfolger von Henry Kissinger.",
+          "effective": 0.827,
+          "adequacy": 0.8279,
+          "contradiction": 0.0012,
+          "consistency": 0.9949,
+          "chrf": 0.7458,
+          "laal_words": 4.9056
+        },
+        "6": {
+          "seg_text": "During the 1976 selections he advised Carter on foreign policy, <SEG:3> then served as National Security Advisor (NSA) <SEG:1> from 1977 to 1981, <SEG:2> succeeding Henry Kissinger.",
+          "k": 4,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "During the 1976 selections he advised Carter on foreign policy,",
+            "then served as National Security Advisor (NSA)",
+            "from 1977 to 1981,",
+            "succeeding Henry Kissinger."
+          ],
+          "pieces_tgt": [
+            "Während der Auswahl 1976 beriet er Carter in Fragen der Außenpolitik,",
+            "diente dann als Nationaler Sicherheitsberater (NSA)",
+            "von 1977 bis 1981,",
+            "Nachfolger von Henry Kissinger."
+          ],
+          "pieces_contra": [
+            0.001,
+            0.0028,
+            0.0022,
+            0.0
+          ],
+          "seg_trans": "Während der Auswahl 1976 beriet er Carter in Fragen der Außenpolitik, diente dann als Nationaler Sicherheitsberater (NSA) von 1977 bis 1981, Nachfolger von Henry Kissinger.",
+          "effective": 0.8425,
+          "adequacy": 0.8442,
+          "contradiction": 0.002,
+          "consistency": 0.9754,
+          "chrf": 0.862,
+          "laal_words": 5.2121
+        },
+        "8": {
+          "seg_text": "During the 1976 selections he advised Carter on foreign policy, then served as National Security Advisor (NSA) <SEG:1> from 1977 to 1981, <SEG:2> succeeding Henry Kissinger.",
+          "k": 3,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "During the 1976 selections he advised Carter on foreign policy, then served as National Security Advisor (NSA)",
+            "from 1977 to 1981,",
+            "succeeding Henry Kissinger."
+          ],
+          "pieces_tgt": [
+            "Während der Auswahl 1976 beriet er Carter in Fragen der Außenpolitik und fungierte dann als Nationaler Sicherheitsberater (NSA).",
+            "von 1977 bis 1981,",
+            "Nachfolger von Henry Kissinger."
+          ],
+          "pieces_contra": [
+            0.0067,
+            0.048,
+            0.0
+          ],
+          "seg_trans": "Während der Auswahl 1976 beriet er Carter in Fragen der Außenpolitik und fungierte dann als Nationaler Sicherheitsberater (NSA). von 1977 bis 1981, Nachfolger von Henry Kissinger.",
+          "effective": 0.8235,
+          "adequacy": 0.8467,
+          "contradiction": 0.0273,
+          "consistency": 0.7882,
+          "chrf": 0.932,
+          "laal_words": 8.2222
+        },
+        "12": {
+          "seg_text": "During the 1976 selections he advised Carter on foreign policy, then served as National Security Advisor (NSA) <SEG:1> from 1977 to 1981, succeeding Henry Kissinger.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "During the 1976 selections he advised Carter on foreign policy, then served as National Security Advisor (NSA)",
+            "from 1977 to 1981, succeeding Henry Kissinger."
+          ],
+          "pieces_tgt": [
+            "Während der Auswahl 1976 beriet er Carter in Fragen der Außenpolitik und fungierte dann als Nationaler Sicherheitsberater (NSA).",
+            "von 1977 bis 1981 als Nachfolger von Henry Kissinger."
+          ],
+          "pieces_contra": [
+            0.0067,
+            0.0
+          ],
+          "seg_trans": "Während der Auswahl 1976 beriet er Carter in Fragen der Außenpolitik und fungierte dann als Nationaler Sicherheitsberater (NSA). von 1977 bis 1981 als Nachfolger von Henry Kissinger.",
+          "effective": 0.8393,
+          "adequacy": 0.845,
+          "contradiction": 0.0067,
+          "consistency": 0.8627,
+          "chrf": 0.9657,
+          "laal_words": 9.3684
+        }
+      }
+    },
+    {
+      "id": "en_us_213",
+      "text": "No one was inside the apartment.",
+      "seg_text": "No one was <SEG:1> inside the apartment.",
+      "valid": true,
+      "full_trans": "Niemand befand sich in der Wohnung.",
+      "by_T": {
+        "4": {
+          "seg_text": "No one was <SEG:1> inside the apartment.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "No one was",
+            "inside the apartment."
+          ],
+          "pieces_tgt": [
+            "Niemand war",
+            "in der Wohnung."
+          ],
+          "pieces_contra": [
+            0.0022,
+            0.0
+          ],
+          "seg_trans": "Niemand war in der Wohnung.",
+          "effective": 0.603,
+          "adequacy": 0.6043,
+          "contradiction": 0.0022,
+          "consistency": 0.9984,
+          "chrf": 0.5744,
+          "laal_words": 3.0
+        },
+        "6": {
+          "seg_text": "No one was <SEG:1> inside the apartment.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "No one was",
+            "inside the apartment."
+          ],
+          "pieces_tgt": [
+            "Niemand war",
+            "in der Wohnung."
+          ],
+          "pieces_contra": [
+            0.0022,
+            0.0
+          ],
+          "seg_trans": "Niemand war in der Wohnung.",
+          "effective": 0.603,
+          "adequacy": 0.6043,
+          "contradiction": 0.0022,
+          "consistency": 0.9984,
+          "chrf": 0.5744,
+          "laal_words": 3.0
+        },
+        "8": {
+          "seg_text": "No one was <SEG:1> inside the apartment.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "No one was",
+            "inside the apartment."
+          ],
+          "pieces_tgt": [
+            "Niemand war",
+            "in der Wohnung."
+          ],
+          "pieces_contra": [
+            0.0022,
+            0.0
+          ],
+          "seg_trans": "Niemand war in der Wohnung.",
+          "effective": 0.603,
+          "adequacy": 0.6043,
+          "contradiction": 0.0022,
+          "consistency": 0.9984,
+          "chrf": 0.5744,
+          "laal_words": 3.0
+        },
+        "12": {
+          "seg_text": "No one was <SEG:1> inside the apartment.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "No one was",
+            "inside the apartment."
+          ],
+          "pieces_tgt": [
+            "Niemand war",
+            "in der Wohnung."
+          ],
+          "pieces_contra": [
+            0.0022,
+            0.0
+          ],
+          "seg_trans": "Niemand war in der Wohnung.",
+          "effective": 0.603,
+          "adequacy": 0.6043,
+          "contradiction": 0.0022,
+          "consistency": 0.9984,
+          "chrf": 0.5744,
+          "laal_words": 3.0
+        }
+      }
+    },
+    {
+      "id": "en_us_588",
+      "text": "Greed and selfishness will always be with us and it is the nature of cooperation that when the majority benefit there will always be more to gain in the short term by acting selfishly",
+      "seg_text": "Greed and selfishness <SEG:8> will always be with us <SEG:1> and it is <SEG:7> the nature of cooperation <SEG:3> that when the majority benefit <SEG:6> there will always be <SEG:4> more to gain <SEG:5> in the short term <SEG:2> by acting selfishly",
+      "valid": true,
+      "full_trans": "Gier und Egoismus werden uns immer begleiten, und es liegt in der Natur der Zusammenarbeit, dass wir durch egoistisches Handeln kurzfristig immer mehr gewinnen können, wenn die Mehrheit davon profitiert",
+      "by_T": {
+        "4": {
+          "seg_text": "Greed and selfishness will always be with us <SEG:1> and it is <SEG:7> the nature of cooperation <SEG:3> that when the majority benefit <SEG:6> there will always be <SEG:4> more to gain <SEG:5> in the short term <SEG:2> by acting selfishly",
+          "k": 8,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "Greed and selfishness will always be with us",
+            "and it is",
+            "the nature of cooperation",
+            "that when the majority benefit",
+            "there will always be",
+            "more to gain",
+            "in the short term",
+            "by acting selfishly"
+          ],
+          "pieces_tgt": [
+            "Gier und Egoismus werden immer bei uns sein",
+            "und das ist es",
+            "die Art der Zusammenarbeit",
+            "das, wenn die Mehrheit davon profitiert",
+            "Es wird immer welche geben",
+            "mehr zu gewinnen",
+            "kurzfristig",
+            "durch egoistisches Handeln"
+          ],
+          "pieces_contra": [
+            0.0004,
+            0.0003,
+            0.0003,
+            0.0004,
+            0.0004,
+            0.0003,
+            0.0003,
+            0.0
+          ],
+          "seg_trans": "Gier und Egoismus werden immer bei uns sein und das ist es die Art der Zusammenarbeit das, wenn die Mehrheit davon profitiert Es wird immer welche geben mehr zu gewinnen kurzfristig durch egoistisches Handeln",
+          "effective": 0.7936,
+          "adequacy": 0.7939,
+          "contradiction": 0.0003,
+          "consistency": 0.9992,
+          "chrf": 0.6871,
+          "laal_words": 1.8125
+        },
+        "6": {
+          "seg_text": "Greed and selfishness will always be with us <SEG:1> and it is the nature of cooperation <SEG:3> that when the majority benefit there will always be <SEG:4> more to gain <SEG:5> in the short term <SEG:2> by acting selfishly",
+          "k": 6,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "Greed and selfishness will always be with us",
+            "and it is the nature of cooperation",
+            "that when the majority benefit there will always be",
+            "more to gain",
+            "in the short term",
+            "by acting selfishly"
+          ],
+          "pieces_tgt": [
+            "Gier und Egoismus werden immer bei uns sein",
+            "und es liegt in der Natur der Zusammenarbeit",
+            "dass es immer einen Vorteil geben wird, wenn die Mehrheit davon profitiert",
+            "mehr zu gewinnen",
+            "kurzfristig",
+            "durch egoistisches Handeln"
+          ],
+          "pieces_contra": [
+            0.0004,
+            0.0004,
+            0.0003,
+            0.0004,
+            0.0004,
+            0.0
+          ],
+          "seg_trans": "Gier und Egoismus werden immer bei uns sein und es liegt in der Natur der Zusammenarbeit dass es immer einen Vorteil geben wird, wenn die Mehrheit davon profitiert mehr zu gewinnen kurzfristig durch egoistisches Handeln",
+          "effective": 0.8096,
+          "adequacy": 0.81,
+          "contradiction": 0.0004,
+          "consistency": 0.9993,
+          "chrf": 0.7816,
+          "laal_words": 3.1844
+        },
+        "8": {
+          "seg_text": "Greed and selfishness will always be with us <SEG:1> and it is the nature of cooperation <SEG:3> that when the majority benefit there will always be more to gain in the short term <SEG:2> by acting selfishly",
+          "k": 4,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "Greed and selfishness will always be with us",
+            "and it is the nature of cooperation",
+            "that when the majority benefit there will always be more to gain in the short term",
+            "by acting selfishly"
+          ],
+          "pieces_tgt": [
+            "Gier und Egoismus werden immer bei uns sein",
+            "und es liegt in der Natur der Zusammenarbeit",
+            "dass es kurzfristig immer mehr zu gewinnen gibt, wenn die Mehrheit davon profitiert",
+            "durch egoistisches Handeln"
+          ],
+          "pieces_contra": [
+            0.0004,
+            0.0004,
+            0.0004,
+            0.0
+          ],
+          "seg_trans": "Gier und Egoismus werden immer bei uns sein und es liegt in der Natur der Zusammenarbeit dass es kurzfristig immer mehr zu gewinnen gibt, wenn die Mehrheit davon profitiert durch egoistisches Handeln",
+          "effective": 0.8504,
+          "adequacy": 0.8507,
+          "contradiction": 0.0004,
+          "consistency": 0.9994,
+          "chrf": 0.7955,
+          "laal_words": 5.2938
+        },
+        "12": {
+          "seg_text": "Greed and selfishness will always be with us <SEG:1> and it is the nature of cooperation that when the majority benefit there will always be more to gain in the short term <SEG:2> by acting selfishly",
+          "k": 3,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "Greed and selfishness will always be with us",
+            "and it is the nature of cooperation that when the majority benefit there will always be more to gain in the short term",
+            "by acting selfishly"
+          ],
+          "pieces_tgt": [
+            "Gier und Egoismus werden immer bei uns sein",
+            "Und es liegt in der Natur der Zusammenarbeit, dass es kurzfristig immer mehr zu gewinnen gibt, wenn die Mehrheit davon profitiert",
+            "durch egoistisches Handeln"
+          ],
+          "pieces_contra": [
+            0.0004,
+            0.0004,
+            0.0
+          ],
+          "seg_trans": "Gier und Egoismus werden immer bei uns sein Und es liegt in der Natur der Zusammenarbeit, dass es kurzfristig immer mehr zu gewinnen gibt, wenn die Mehrheit davon profitiert durch egoistisches Handeln",
+          "effective": 0.8575,
+          "adequacy": 0.8578,
+          "contradiction": 0.0004,
+          "consistency": 0.9994,
+          "chrf": 0.8065,
+          "laal_words": 9.5604
+        }
+      }
+    },
+    {
+      "id": "en_us_289",
+      "text": "The CCTV would certainly send a strong signal to those people working with animals that their welfare is of the highest priority.",
+      "seg_text": "The CCTV would certainly send <SEG:4> a strong signal <SEG:2> to those people <SEG:3> working with animals <SEG:1> that their welfare is of <SEG:5> the highest priority.",
+      "valid": true,
+      "full_trans": "Die Videoüberwachung wäre sicherlich ein starkes Signal an die Menschen, die mit Tieren arbeiten, dass ihr Wohlergehen höchste Priorität hat.",
+      "by_T": {
+        "4": {
+          "seg_text": "The CCTV would certainly send <SEG:4> a strong signal <SEG:2> to those people <SEG:3> working with animals <SEG:1> that their welfare is of <SEG:5> the highest priority.",
+          "k": 6,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "The CCTV would certainly send",
+            "a strong signal",
+            "to those people",
+            "working with animals",
+            "that their welfare is of",
+            "the highest priority."
+          ],
+          "pieces_tgt": [
+            "Die Videoüberwachung würde sicherlich senden",
+            "ein starkes Signal",
+            "an diese Leute",
+            "mit Tieren arbeiten",
+            "dass ihr Wohlergehen von Bedeutung ist",
+            "die höchste Priorität."
+          ],
+          "pieces_contra": [
+            0.0003,
+            0.0003,
+            0.0005,
+            0.0005,
+            0.0004,
+            0.0
+          ],
+          "seg_trans": "Die Videoüberwachung würde sicherlich senden ein starkes Signal an diese Leute mit Tieren arbeiten dass ihr Wohlergehen von Bedeutung ist die höchste Priorität.",
+          "effective": 0.7933,
+          "adequacy": 0.7936,
+          "contradiction": 0.0004,
+          "consistency": 0.9994,
+          "chrf": 0.7457,
+          "laal_words": 2.8157
+        },
+        "6": {
+          "seg_text": "The CCTV would certainly send a strong signal <SEG:2> to those people <SEG:3> working with animals <SEG:1> that their welfare is of the highest priority.",
+          "k": 4,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "The CCTV would certainly send a strong signal",
+            "to those people",
+            "working with animals",
+            "that their welfare is of the highest priority."
+          ],
+          "pieces_tgt": [
+            "Die Videoüberwachung würde sicherlich ein starkes Signal senden",
+            "an diese Leute",
+            "mit Tieren arbeiten",
+            "dass ihr Wohl oberste Priorität hat."
+          ],
+          "pieces_contra": [
+            0.0004,
+            0.0005,
+            0.0005,
+            0.0
+          ],
+          "seg_trans": "Die Videoüberwachung würde sicherlich ein starkes Signal senden an diese Leute mit Tieren arbeiten dass ihr Wohl oberste Priorität hat.",
+          "effective": 0.8339,
+          "adequacy": 0.8343,
+          "contradiction": 0.0005,
+          "consistency": 0.9992,
+          "chrf": 0.7114,
+          "laal_words": 3.0333
+        },
+        "8": {
+          "seg_text": "The CCTV would certainly send a strong signal <SEG:2> to those people working with animals <SEG:1> that their welfare is of the highest priority.",
+          "k": 3,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "The CCTV would certainly send a strong signal",
+            "to those people working with animals",
+            "that their welfare is of the highest priority."
+          ],
+          "pieces_tgt": [
+            "Die Videoüberwachung würde sicherlich ein starkes Signal senden",
+            "an die Menschen, die mit Tieren arbeiten",
+            "dass ihr Wohl oberste Priorität hat."
+          ],
+          "pieces_contra": [
+            0.0004,
+            0.0006,
+            0.0
+          ],
+          "seg_trans": "Die Videoüberwachung würde sicherlich ein starkes Signal senden an die Menschen, die mit Tieren arbeiten dass ihr Wohl oberste Priorität hat.",
+          "effective": 0.8412,
+          "adequacy": 0.8416,
+          "contradiction": 0.0005,
+          "consistency": 0.9986,
+          "chrf": 0.8106,
+          "laal_words": 3.6429
+        },
+        "12": {
+          "seg_text": "The CCTV would certainly send a strong signal to those people working with animals <SEG:1> that their welfare is of the highest priority.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "The CCTV would certainly send a strong signal to those people working with animals",
+            "that their welfare is of the highest priority."
+          ],
+          "pieces_tgt": [
+            "Die Videoüberwachung würde sicherlich ein starkes Signal an die Menschen senden, die mit Tieren arbeiten",
+            "dass ihr Wohl oberste Priorität hat."
+          ],
+          "pieces_contra": [
+            0.0006,
+            0.0
+          ],
+          "seg_trans": "Die Videoüberwachung würde sicherlich ein starkes Signal an die Menschen senden, die mit Tieren arbeiten dass ihr Wohl oberste Priorität hat.",
+          "effective": 0.8534,
+          "adequacy": 0.8539,
+          "contradiction": 0.0006,
+          "consistency": 0.9984,
+          "chrf": 0.8233,
+          "laal_words": 6.6429
+        }
+      }
+    },
+    {
+      "id": "en_us_304",
+      "text": "He documented himself in a 1998 book.",
+      "seg_text": "He documented himself <SEG:1> in a 1998 book.",
+      "valid": true,
+      "full_trans": "Er dokumentierte sich 1998 in einem Buch.",
+      "by_T": {
+        "4": {
+          "seg_text": "He documented himself <SEG:1> in a 1998 book.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "He documented himself",
+            "in a 1998 book."
+          ],
+          "pieces_tgt": [
+            "Er hat sich selbst dokumentiert",
+            "in einem Buch von 1998."
+          ],
+          "pieces_contra": [
+            0.0004,
+            0.0
+          ],
+          "seg_trans": "Er hat sich selbst dokumentiert in einem Buch von 1998.",
+          "effective": 0.7986,
+          "adequacy": 0.7989,
+          "contradiction": 0.0004,
+          "consistency": 0.9994,
+          "chrf": 0.6298,
+          "laal_words": 1.9167
+        },
+        "6": {
+          "seg_text": "He documented himself <SEG:1> in a 1998 book.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "He documented himself",
+            "in a 1998 book."
+          ],
+          "pieces_tgt": [
+            "Er hat sich selbst dokumentiert",
+            "in einem Buch von 1998."
+          ],
+          "pieces_contra": [
+            0.0004,
+            0.0
+          ],
+          "seg_trans": "Er hat sich selbst dokumentiert in einem Buch von 1998.",
+          "effective": 0.7986,
+          "adequacy": 0.7989,
+          "contradiction": 0.0004,
+          "consistency": 0.9994,
+          "chrf": 0.6298,
+          "laal_words": 1.9167
+        },
+        "8": {
+          "seg_text": "He documented himself <SEG:1> in a 1998 book.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "He documented himself",
+            "in a 1998 book."
+          ],
+          "pieces_tgt": [
+            "Er hat sich selbst dokumentiert",
+            "in einem Buch von 1998."
+          ],
+          "pieces_contra": [
+            0.0004,
+            0.0
+          ],
+          "seg_trans": "Er hat sich selbst dokumentiert in einem Buch von 1998.",
+          "effective": 0.7986,
+          "adequacy": 0.7989,
+          "contradiction": 0.0004,
+          "consistency": 0.9994,
+          "chrf": 0.6298,
+          "laal_words": 1.9167
+        },
+        "12": {
+          "seg_text": "He documented himself <SEG:1> in a 1998 book.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "He documented himself",
+            "in a 1998 book."
+          ],
+          "pieces_tgt": [
+            "Er hat sich selbst dokumentiert",
+            "in einem Buch von 1998."
+          ],
+          "pieces_contra": [
+            0.0004,
+            0.0
+          ],
+          "seg_trans": "Er hat sich selbst dokumentiert in einem Buch von 1998.",
+          "effective": 0.7986,
+          "adequacy": 0.7989,
+          "contradiction": 0.0004,
+          "consistency": 0.9994,
+          "chrf": 0.6298,
+          "laal_words": 1.9167
+        }
+      }
+    },
+    {
+      "id": "en_us_1559",
+      "text": "Pronunciation is relatively easy in Italian since most words are pronounced exactly how they are written",
+      "seg_text": "Pronunciation is relatively <SEG:3> easy in Italian <SEG:1> since most words <SEG:2> are pronounced exactly how <SEG:4> they are written",
+      "valid": true,
+      "full_trans": "Die Aussprache ist im Italienischen relativ einfach, da die meisten Wörter genau so ausgesprochen werden, wie sie geschrieben sind",
+      "by_T": {
+        "4": {
+          "seg_text": "Pronunciation is relatively <SEG:3> easy in Italian <SEG:1> since most words <SEG:2> are pronounced exactly how they are written",
+          "k": 4,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "Pronunciation is relatively",
+            "easy in Italian",
+            "since most words",
+            "are pronounced exactly how they are written"
+          ],
+          "pieces_tgt": [
+            "Die Aussprache ist relativ",
+            "einfach auf Italienisch",
+            "da die meisten Wörter",
+            "werden genau so ausgesprochen, wie sie geschrieben werden"
+          ],
+          "pieces_contra": [
+            0.0015,
+            0.0004,
+            0.0005,
+            0.0
+          ],
+          "seg_trans": "Die Aussprache ist relativ einfach auf Italienisch da die meisten Wörter werden genau so ausgesprochen, wie sie geschrieben werden",
+          "effective": 0.7487,
+          "adequacy": 0.7493,
+          "contradiction": 0.0008,
+          "consistency": 0.9994,
+          "chrf": 0.8129,
+          "laal_words": 2.2018
+        },
+        "6": {
+          "seg_text": "Pronunciation is relatively easy in Italian <SEG:1> since most words <SEG:2> are pronounced exactly how they are written",
+          "k": 3,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "Pronunciation is relatively easy in Italian",
+            "since most words",
+            "are pronounced exactly how they are written"
+          ],
+          "pieces_tgt": [
+            "Die Aussprache ist im Italienischen relativ einfach",
+            "da die meisten Wörter",
+            "werden genau so ausgesprochen, wie sie geschrieben werden"
+          ],
+          "pieces_contra": [
+            0.0004,
+            0.0012,
+            0.0
+          ],
+          "seg_trans": "Die Aussprache ist im Italienischen relativ einfach da die meisten Wörter werden genau so ausgesprochen, wie sie geschrieben werden",
+          "effective": 0.7727,
+          "adequacy": 0.7733,
+          "contradiction": 0.0008,
+          "consistency": 0.9983,
+          "chrf": 0.8909,
+          "laal_words": 3.2018
+        },
+        "8": {
+          "seg_text": "Pronunciation is relatively easy in Italian <SEG:1> since most words are pronounced exactly how they are written",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "Pronunciation is relatively easy in Italian",
+            "since most words are pronounced exactly how they are written"
+          ],
+          "pieces_tgt": [
+            "Die Aussprache ist im Italienischen relativ einfach",
+            "da die meisten Wörter genau so ausgesprochen werden, wie sie geschrieben sind"
+          ],
+          "pieces_contra": [
+            0.0004,
+            0.0
+          ],
+          "seg_trans": "Die Aussprache ist im Italienischen relativ einfach da die meisten Wörter genau so ausgesprochen werden, wie sie geschrieben sind",
+          "effective": 0.8588,
+          "adequacy": 0.8592,
+          "contradiction": 0.0004,
+          "consistency": 0.9986,
+          "chrf": 0.9696,
+          "laal_words": 4.3026
+        },
+        "12": {
+          "seg_text": "Pronunciation is relatively easy in Italian <SEG:1> since most words are pronounced exactly how they are written",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "Pronunciation is relatively easy in Italian",
+            "since most words are pronounced exactly how they are written"
+          ],
+          "pieces_tgt": [
+            "Die Aussprache ist im Italienischen relativ einfach",
+            "da die meisten Wörter genau so ausgesprochen werden, wie sie geschrieben sind"
+          ],
+          "pieces_contra": [
+            0.0004,
+            0.0
+          ],
+          "seg_trans": "Die Aussprache ist im Italienischen relativ einfach da die meisten Wörter genau so ausgesprochen werden, wie sie geschrieben sind",
+          "effective": 0.8588,
+          "adequacy": 0.8592,
+          "contradiction": 0.0004,
+          "consistency": 0.9986,
+          "chrf": 0.9696,
+          "laal_words": 4.3026
+        }
+      }
+    },
+    {
+      "id": "en_us_819",
+      "text": "There are many things you have to take into consideration before and when you travel somewhere.",
+      "seg_text": "There are many things <SEG:2> you have to <SEG:3> take into consideration <SEG:1> before and when <SEG:4> you travel somewhere.",
+      "valid": true,
+      "full_trans": "Es gibt viele Dinge, die Sie vor und nach einer Reise beachten müssen.",
+      "by_T": {
+        "4": {
+          "seg_text": "There are many things <SEG:2> you have to <SEG:3> take into consideration <SEG:1> before and when you travel somewhere.",
+          "k": 4,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "There are many things",
+            "you have to",
+            "take into consideration",
+            "before and when you travel somewhere."
+          ],
+          "pieces_tgt": [
+            "Es gibt viele Dinge",
+            "Du musst",
+            "berücksichtigen",
+            "bevor und wenn Sie irgendwohin reisen."
+          ],
+          "pieces_contra": [
+            0.0003,
+            0.0003,
+            0.0004,
+            0.0
+          ],
+          "seg_trans": "Es gibt viele Dinge Du musst berücksichtigen bevor und wenn Sie irgendwohin reisen.",
+          "effective": 0.7971,
+          "adequacy": 0.7973,
+          "contradiction": 0.0003,
+          "consistency": 0.9993,
+          "chrf": 0.4557,
+          "laal_words": 2.6923
+        },
+        "6": {
+          "seg_text": "There are many things <SEG:2> you have to take into consideration <SEG:1> before and when you travel somewhere.",
+          "k": 3,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "There are many things",
+            "you have to take into consideration",
+            "before and when you travel somewhere."
+          ],
+          "pieces_tgt": [
+            "Es gibt viele Dinge",
+            "das muss man berücksichtigen",
+            "bevor und wenn Sie irgendwohin reisen."
+          ],
+          "pieces_contra": [
+            0.0003,
+            0.0004,
+            0.0
+          ],
+          "seg_trans": "Es gibt viele Dinge das muss man berücksichtigen bevor und wenn Sie irgendwohin reisen.",
+          "effective": 0.8115,
+          "adequacy": 0.8117,
+          "contradiction": 0.0003,
+          "consistency": 0.9994,
+          "chrf": 0.4565,
+          "laal_words": 3.4286
+        },
+        "8": {
+          "seg_text": "There are many things you have to take into consideration <SEG:1> before and when you travel somewhere.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "There are many things you have to take into consideration",
+            "before and when you travel somewhere."
+          ],
+          "pieces_tgt": [
+            "Es gibt viele Dinge, die Sie berücksichtigen müssen",
+            "bevor und wenn Sie irgendwohin reisen."
+          ],
+          "pieces_contra": [
+            0.0004,
+            0.0
+          ],
+          "seg_trans": "Es gibt viele Dinge, die Sie berücksichtigen müssen bevor und wenn Sie irgendwohin reisen.",
+          "effective": 0.8461,
+          "adequacy": 0.8464,
+          "contradiction": 0.0004,
+          "consistency": 0.9922,
+          "chrf": 0.6079,
+          "laal_words": 6.0952
+        },
+        "12": {
+          "seg_text": "There are many things you have to take into consideration <SEG:1> before and when you travel somewhere.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "There are many things you have to take into consideration",
+            "before and when you travel somewhere."
+          ],
+          "pieces_tgt": [
+            "Es gibt viele Dinge, die Sie berücksichtigen müssen",
+            "bevor und wenn Sie irgendwohin reisen."
+          ],
+          "pieces_contra": [
+            0.0004,
+            0.0
+          ],
+          "seg_trans": "Es gibt viele Dinge, die Sie berücksichtigen müssen bevor und wenn Sie irgendwohin reisen.",
+          "effective": 0.8461,
+          "adequacy": 0.8464,
+          "contradiction": 0.0004,
+          "consistency": 0.9922,
+          "chrf": 0.6079,
+          "laal_words": 6.0952
+        }
+      }
+    },
+    {
+      "id": "en_us_308",
+      "text": "He died in Osaka on Tuesday.",
+      "seg_text": "He died in <SEG:1> Osaka on Tuesday.",
+      "valid": true,
+      "full_trans": "Er starb am Dienstag in Osaka.",
+      "by_T": {
+        "4": {
+          "seg_text": "He died in <SEG:1> Osaka on Tuesday.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "He died in",
+            "Osaka on Tuesday."
+          ],
+          "pieces_tgt": [
+            "Er starb in",
+            "Osaka am Dienstag."
+          ],
+          "pieces_contra": [
+            0.0038,
+            0.0
+          ],
+          "seg_trans": "Er starb in Osaka am Dienstag.",
+          "effective": 0.8162,
+          "adequacy": 0.8193,
+          "contradiction": 0.0038,
+          "consistency": 0.9993,
+          "chrf": 0.7268,
+          "laal_words": 2.25
+        },
+        "6": {
+          "seg_text": "He died in <SEG:1> Osaka on Tuesday.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "He died in",
+            "Osaka on Tuesday."
+          ],
+          "pieces_tgt": [
+            "Er starb in",
+            "Osaka am Dienstag."
+          ],
+          "pieces_contra": [
+            0.0038,
+            0.0
+          ],
+          "seg_trans": "Er starb in Osaka am Dienstag.",
+          "effective": 0.8162,
+          "adequacy": 0.8193,
+          "contradiction": 0.0038,
+          "consistency": 0.9993,
+          "chrf": 0.7268,
+          "laal_words": 2.25
+        },
+        "8": {
+          "seg_text": "He died in <SEG:1> Osaka on Tuesday.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "He died in",
+            "Osaka on Tuesday."
+          ],
+          "pieces_tgt": [
+            "Er starb in",
+            "Osaka am Dienstag."
+          ],
+          "pieces_contra": [
+            0.0038,
+            0.0
+          ],
+          "seg_trans": "Er starb in Osaka am Dienstag.",
+          "effective": 0.8162,
+          "adequacy": 0.8193,
+          "contradiction": 0.0038,
+          "consistency": 0.9993,
+          "chrf": 0.7268,
+          "laal_words": 2.25
+        },
+        "12": {
+          "seg_text": "He died in <SEG:1> Osaka on Tuesday.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "He died in",
+            "Osaka on Tuesday."
+          ],
+          "pieces_tgt": [
+            "Er starb in",
+            "Osaka am Dienstag."
+          ],
+          "pieces_contra": [
+            0.0038,
+            0.0
+          ],
+          "seg_trans": "Er starb in Osaka am Dienstag.",
+          "effective": 0.8162,
+          "adequacy": 0.8193,
+          "contradiction": 0.0038,
+          "consistency": 0.9993,
+          "chrf": 0.7268,
+          "laal_words": 2.25
+        }
+      }
+    },
+    {
+      "id": "en_us_1564",
+      "text": "Some patients might have contracted the bug in the hospital, Dr. Moll thinks, and at least two were hospital health workers.",
+      "seg_text": "Some patients might have <SEG:5> contracted the bug <SEG:3> in the hospital, <SEG:2> Dr. Moll thinks, <SEG:1> and at least <SEG:4> two were hospital health workers.",
+      "valid": true,
+      "full_trans": "Einige Patienten könnten sich im Krankenhaus mit dem Virus infiziert haben, glaubt Dr. Moll, und mindestens zwei waren im Krankenhaus tätig.",
+      "by_T": {
+        "4": {
+          "seg_text": "Some patients might have contracted the bug <SEG:3> in the hospital, <SEG:2> Dr. Moll thinks, <SEG:1> and at least <SEG:4> two were hospital health workers.",
+          "k": 5,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "Some patients might have contracted the bug",
+            "in the hospital,",
+            "Dr. Moll thinks,",
+            "and at least",
+            "two were hospital health workers."
+          ],
+          "pieces_tgt": [
+            "Einige Patienten könnten sich mit dem Virus infiziert haben",
+            "im Krankenhaus,",
+            "Dr. Moll meint:",
+            "und zumindest",
+            "zwei waren Gesundheitspersonal in Krankenhäusern."
+          ],
+          "pieces_contra": [
+            0.0004,
+            0.0005,
+            0.0006,
+            0.0004,
+            0.0
+          ],
+          "seg_trans": "Einige Patienten könnten sich mit dem Virus infiziert haben im Krankenhaus, Dr. Moll meint: und zumindest zwei waren Gesundheitspersonal in Krankenhäusern.",
+          "effective": 0.8339,
+          "adequacy": 0.8343,
+          "contradiction": 0.0005,
+          "consistency": 0.9988,
+          "chrf": 0.6856,
+          "laal_words": 2.2941
+        },
+        "6": {
+          "seg_text": "Some patients might have contracted the bug <SEG:3> in the hospital, <SEG:2> Dr. Moll thinks, <SEG:1> and at least two were hospital health workers.",
+          "k": 4,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "Some patients might have contracted the bug",
+            "in the hospital,",
+            "Dr. Moll thinks,",
+            "and at least two were hospital health workers."
+          ],
+          "pieces_tgt": [
+            "Einige Patienten könnten sich mit dem Virus infiziert haben",
+            "im Krankenhaus,",
+            "Dr. Moll meint:",
+            "und mindestens zwei waren Gesundheitspersonal in Krankenhäusern."
+          ],
+          "pieces_contra": [
+            0.0004,
+            0.0005,
+            0.0006,
+            0.0
+          ],
+          "seg_trans": "Einige Patienten könnten sich mit dem Virus infiziert haben im Krankenhaus, Dr. Moll meint: und mindestens zwei waren Gesundheitspersonal in Krankenhäusern.",
+          "effective": 0.8483,
+          "adequacy": 0.8487,
+          "contradiction": 0.0005,
+          "consistency": 0.9948,
+          "chrf": 0.7429,
+          "laal_words": 2.5333
+        },
+        "8": {
+          "seg_text": "Some patients might have contracted the bug in the hospital, <SEG:2> Dr. Moll thinks, <SEG:1> and at least two were hospital health workers.",
+          "k": 3,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "Some patients might have contracted the bug in the hospital,",
+            "Dr. Moll thinks,",
+            "and at least two were hospital health workers."
+          ],
+          "pieces_tgt": [
+            "Einige Patienten könnten sich im Krankenhaus mit dem Virus infiziert haben,",
+            "Dr. Moll meint:",
+            "und mindestens zwei waren Gesundheitspersonal in Krankenhäusern."
+          ],
+          "pieces_contra": [
+            0.0006,
+            0.0007,
+            0.0
+          ],
+          "seg_trans": "Einige Patienten könnten sich im Krankenhaus mit dem Virus infiziert haben, Dr. Moll meint: und mindestens zwei waren Gesundheitspersonal in Krankenhäusern.",
+          "effective": 0.857,
+          "adequacy": 0.8576,
+          "contradiction": 0.0006,
+          "consistency": 0.9937,
+          "chrf": 0.7792,
+          "laal_words": 4.3333
+        },
+        "12": {
+          "seg_text": "Some patients might have contracted the bug in the hospital, Dr. Moll thinks, <SEG:1> and at least two were hospital health workers.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "Some patients might have contracted the bug in the hospital, Dr. Moll thinks,",
+            "and at least two were hospital health workers."
+          ],
+          "pieces_tgt": [
+            "Einige Patienten könnten sich im Krankenhaus mit dem Virus infiziert haben, denkt Dr. Moll.",
+            "und mindestens zwei waren Gesundheitspersonal in Krankenhäusern."
+          ],
+          "pieces_contra": [
+            0.0014,
+            0.0
+          ],
+          "seg_trans": "Einige Patienten könnten sich im Krankenhaus mit dem Virus infiziert haben, denkt Dr. Moll. und mindestens zwei waren Gesundheitspersonal in Krankenhäusern.",
+          "effective": 0.8638,
+          "adequacy": 0.865,
+          "contradiction": 0.0014,
+          "consistency": 0.9866,
+          "chrf": 0.7848,
+          "laal_words": 6.5333
+        }
+      }
+    },
+    {
+      "id": "en_us_1554",
+      "text": "He built a WiFi door bell, he said.",
+      "seg_text": "He built a WiFi door <SEG:1> bell, he said.",
+      "valid": true,
+      "full_trans": "Er habe eine WiFi-Türklingel gebaut, sagte er.",
+      "by_T": {
+        "4": {
+          "seg_text": "He built a WiFi door <SEG:1> bell, he said.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "He built a WiFi door",
+            "bell, he said."
+          ],
+          "pieces_tgt": [
+            "Er baute eine WiFi-Tür",
+            "Glocke, sagte er."
+          ],
+          "pieces_contra": [
+            0.9765,
+            0.0
+          ],
+          "seg_trans": "Er baute eine WiFi-Tür Glocke, sagte er.",
+          "effective": 0.0194,
+          "adequacy": 0.8254,
+          "contradiction": 0.9765,
+          "consistency": 0.0007,
+          "chrf": 0.5349,
+          "laal_words": 3.3143
+        },
+        "6": {
+          "seg_text": "He built a WiFi door <SEG:1> bell, he said.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "He built a WiFi door",
+            "bell, he said."
+          ],
+          "pieces_tgt": [
+            "Er baute eine WiFi-Tür",
+            "Glocke, sagte er."
+          ],
+          "pieces_contra": [
+            0.9765,
+            0.0
+          ],
+          "seg_trans": "Er baute eine WiFi-Tür Glocke, sagte er.",
+          "effective": 0.0194,
+          "adequacy": 0.8254,
+          "contradiction": 0.9765,
+          "consistency": 0.0007,
+          "chrf": 0.5349,
+          "laal_words": 3.3143
+        },
+        "8": {
+          "seg_text": "He built a WiFi door <SEG:1> bell, he said.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "He built a WiFi door",
+            "bell, he said."
+          ],
+          "pieces_tgt": [
+            "Er baute eine WiFi-Tür",
+            "Glocke, sagte er."
+          ],
+          "pieces_contra": [
+            0.9765,
+            0.0
+          ],
+          "seg_trans": "Er baute eine WiFi-Tür Glocke, sagte er.",
+          "effective": 0.0194,
+          "adequacy": 0.8254,
+          "contradiction": 0.9765,
+          "consistency": 0.0007,
+          "chrf": 0.5349,
+          "laal_words": 3.3143
+        },
+        "12": {
+          "seg_text": "He built a WiFi door <SEG:1> bell, he said.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "He built a WiFi door",
+            "bell, he said."
+          ],
+          "pieces_tgt": [
+            "Er baute eine WiFi-Tür",
+            "Glocke, sagte er."
+          ],
+          "pieces_contra": [
+            0.9765,
+            0.0
+          ],
+          "seg_trans": "Er baute eine WiFi-Tür Glocke, sagte er.",
+          "effective": 0.0194,
+          "adequacy": 0.8254,
+          "contradiction": 0.9765,
+          "consistency": 0.0007,
+          "chrf": 0.5349,
+          "laal_words": 3.3143
+        }
+      }
+    },
+    {
+      "id": "en_us_1211",
+      "text": "Willingness of foreign governments to honour these documents is just as widely variable.",
+      "seg_text": "Willingness of foreign governments <SEG:1> to honour these <SEG:3> documents is just <SEG:2> as widely variable.",
+      "valid": true,
+      "full_trans": "Die Bereitschaft ausländischer Regierungen, diese Dokumente anzuerkennen, ist ebenso sehr unterschiedlich.",
+      "by_T": {
+        "4": {
+          "seg_text": "Willingness of foreign governments <SEG:1> to honour these documents is just <SEG:2> as widely variable.",
+          "k": 3,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "Willingness of foreign governments",
+            "to honour these documents is just",
+            "as widely variable."
+          ],
+          "pieces_tgt": [
+            "Bereitschaft ausländischer Regierungen",
+            "Diese Dokumente zu ehren ist gerecht",
+            "als sehr variabel."
+          ],
+          "pieces_contra": [
+            0.0017,
+            0.0022,
+            0.0
+          ],
+          "seg_trans": "Bereitschaft ausländischer Regierungen Diese Dokumente zu ehren ist gerecht als sehr variabel.",
+          "effective": 0.8114,
+          "adequacy": 0.813,
+          "contradiction": 0.0019,
+          "consistency": 0.9908,
+          "chrf": 0.5661,
+          "laal_words": 3.625
+        },
+        "6": {
+          "seg_text": "Willingness of foreign governments <SEG:1> to honour these documents is just as widely variable.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "Willingness of foreign governments",
+            "to honour these documents is just as widely variable."
+          ],
+          "pieces_tgt": [
+            "Bereitschaft ausländischer Regierungen",
+            "Die Würdigung dieser Dokumente ist ebenso sehr unterschiedlich."
+          ],
+          "pieces_contra": [
+            0.0017,
+            0.0
+          ],
+          "seg_trans": "Bereitschaft ausländischer Regierungen Die Würdigung dieser Dokumente ist ebenso sehr unterschiedlich.",
+          "effective": 0.7521,
+          "adequacy": 0.7534,
+          "contradiction": 0.0017,
+          "consistency": 0.999,
+          "chrf": 0.7608,
+          "laal_words": 4.4773
+        },
+        "8": {
+          "seg_text": "Willingness of foreign governments <SEG:1> to honour these documents is just as widely variable.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "Willingness of foreign governments",
+            "to honour these documents is just as widely variable."
+          ],
+          "pieces_tgt": [
+            "Bereitschaft ausländischer Regierungen",
+            "Die Würdigung dieser Dokumente ist ebenso sehr unterschiedlich."
+          ],
+          "pieces_contra": [
+            0.0017,
+            0.0
+          ],
+          "seg_trans": "Bereitschaft ausländischer Regierungen Die Würdigung dieser Dokumente ist ebenso sehr unterschiedlich.",
+          "effective": 0.7521,
+          "adequacy": 0.7534,
+          "contradiction": 0.0017,
+          "consistency": 0.999,
+          "chrf": 0.7608,
+          "laal_words": 4.4773
+        },
+        "12": {
+          "seg_text": "Willingness of foreign governments <SEG:1> to honour these documents is just as widely variable.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "Willingness of foreign governments",
+            "to honour these documents is just as widely variable."
+          ],
+          "pieces_tgt": [
+            "Bereitschaft ausländischer Regierungen",
+            "Die Würdigung dieser Dokumente ist ebenso sehr unterschiedlich."
+          ],
+          "pieces_contra": [
+            0.0017,
+            0.0
+          ],
+          "seg_trans": "Bereitschaft ausländischer Regierungen Die Würdigung dieser Dokumente ist ebenso sehr unterschiedlich.",
+          "effective": 0.7521,
+          "adequacy": 0.7534,
+          "contradiction": 0.0017,
+          "consistency": 0.999,
+          "chrf": 0.7608,
+          "laal_words": 4.4773
+        }
+      }
+    },
+    {
+      "id": "en_us_341",
+      "text": "Zayat was unhurt in the accident.",
+      "seg_text": "Zayat was unhurt <SEG:1> in the accident.",
+      "valid": true,
+      "full_trans": "Zayat blieb bei dem Unfall unverletzt.",
+      "by_T": {
+        "4": {
+          "seg_text": "Zayat was unhurt <SEG:1> in the accident.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "Zayat was unhurt",
+            "in the accident."
+          ],
+          "pieces_tgt": [
+            "Zayat blieb unverletzt",
+            "bei dem Unfall."
+          ],
+          "pieces_contra": [
+            0.0005,
+            0.0
+          ],
+          "seg_trans": "Zayat blieb unverletzt bei dem Unfall.",
+          "effective": 0.7224,
+          "adequacy": 0.7228,
+          "contradiction": 0.0005,
+          "consistency": 0.9989,
+          "chrf": 0.8014,
+          "laal_words": 2.25
+        },
+        "6": {
+          "seg_text": "Zayat was unhurt <SEG:1> in the accident.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "Zayat was unhurt",
+            "in the accident."
+          ],
+          "pieces_tgt": [
+            "Zayat blieb unverletzt",
+            "bei dem Unfall."
+          ],
+          "pieces_contra": [
+            0.0005,
+            0.0
+          ],
+          "seg_trans": "Zayat blieb unverletzt bei dem Unfall.",
+          "effective": 0.7224,
+          "adequacy": 0.7228,
+          "contradiction": 0.0005,
+          "consistency": 0.9989,
+          "chrf": 0.8014,
+          "laal_words": 2.25
+        },
+        "8": {
+          "seg_text": "Zayat was unhurt <SEG:1> in the accident.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "Zayat was unhurt",
+            "in the accident."
+          ],
+          "pieces_tgt": [
+            "Zayat blieb unverletzt",
+            "bei dem Unfall."
+          ],
+          "pieces_contra": [
+            0.0005,
+            0.0
+          ],
+          "seg_trans": "Zayat blieb unverletzt bei dem Unfall.",
+          "effective": 0.7224,
+          "adequacy": 0.7228,
+          "contradiction": 0.0005,
+          "consistency": 0.9989,
+          "chrf": 0.8014,
+          "laal_words": 2.25
+        },
+        "12": {
+          "seg_text": "Zayat was unhurt <SEG:1> in the accident.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "Zayat was unhurt",
+            "in the accident."
+          ],
+          "pieces_tgt": [
+            "Zayat blieb unverletzt",
+            "bei dem Unfall."
+          ],
+          "pieces_contra": [
+            0.0005,
+            0.0
+          ],
+          "seg_trans": "Zayat blieb unverletzt bei dem Unfall.",
+          "effective": 0.7224,
+          "adequacy": 0.7228,
+          "contradiction": 0.0005,
+          "consistency": 0.9989,
+          "chrf": 0.8014,
+          "laal_words": 2.25
+        }
+      }
+    },
+    {
+      "id": "en_us_189",
+      "text": "As of the night of August 9, the eye of Morakot was about seventy kilometres away from the Chinese province of Fujian.",
+      "seg_text": "As of the night <SEG:3> of August 9, <SEG:1> the eye of <SEG:4> Morakot was about <SEG:5> seventy kilometres away <SEG:2> from the Chinese <SEG:6> province of Fujian.",
+      "valid": true,
+      "full_trans": "In der Nacht des 9. August war das Auge von Morakot etwa siebzig Kilometer von der chinesischen Provinz Fujian entfernt.",
+      "by_T": {
+        "4": {
+          "seg_text": "As of the night <SEG:3> of August 9, <SEG:1> the eye of <SEG:4> Morakot was about <SEG:5> seventy kilometres away <SEG:2> from the Chinese province of Fujian.",
+          "k": 6,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "As of the night",
+            "of August 9,",
+            "the eye of",
+            "Morakot was about",
+            "seventy kilometres away",
+            "from the Chinese province of Fujian."
+          ],
+          "pieces_tgt": [
+            "Ab der Nacht",
+            "vom 9. August",
+            "das Auge von",
+            "Morakot war in der Nähe",
+            "siebzig Kilometer entfernt",
+            "aus der chinesischen Provinz Fujian."
+          ],
+          "pieces_contra": [
+            0.0008,
+            0.0476,
+            0.844,
+            0.1246,
+            0.5151,
+            0.0
+          ],
+          "seg_trans": "Ab der Nacht vom 9. August das Auge von Morakot war in der Nähe siebzig Kilometer entfernt aus der chinesischen Provinz Fujian.",
+          "effective": 0.5022,
+          "adequacy": 0.724,
+          "contradiction": 0.3064,
+          "consistency": 0.0882,
+          "chrf": 0.7448,
+          "laal_words": 2.5
+        },
+        "6": {
+          "seg_text": "As of the night <SEG:3> of August 9, <SEG:1> the eye of Morakot was about seventy kilometres away <SEG:2> from the Chinese province of Fujian.",
+          "k": 4,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "As of the night",
+            "of August 9,",
+            "the eye of Morakot was about seventy kilometres away",
+            "from the Chinese province of Fujian."
+          ],
+          "pieces_tgt": [
+            "Ab der Nacht",
+            "vom 9. August",
+            "Das Auge von Morakot war etwa siebzig Kilometer entfernt",
+            "aus der chinesischen Provinz Fujian."
+          ],
+          "pieces_contra": [
+            0.0008,
+            0.0476,
+            0.9363,
+            0.0
+          ],
+          "seg_trans": "Ab der Nacht vom 9. August Das Auge von Morakot war etwa siebzig Kilometer entfernt aus der chinesischen Provinz Fujian.",
+          "effective": 0.5199,
+          "adequacy": 0.774,
+          "contradiction": 0.3282,
+          "consistency": 0.2503,
+          "chrf": 0.7628,
+          "laal_words": 4.1875
+        },
+        "8": {
+          "seg_text": "As of the night of August 9, <SEG:1> the eye of Morakot was about seventy kilometres away <SEG:2> from the Chinese province of Fujian.",
+          "k": 3,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "As of the night of August 9,",
+            "the eye of Morakot was about seventy kilometres away",
+            "from the Chinese province of Fujian."
+          ],
+          "pieces_tgt": [
+            "Ab der Nacht des 9. August",
+            "Das Auge von Morakot war etwa siebzig Kilometer entfernt",
+            "aus der chinesischen Provinz Fujian."
+          ],
+          "pieces_contra": [
+            0.0247,
+            0.9478,
+            0.0
+          ],
+          "seg_trans": "Ab der Nacht des 9. August Das Auge von Morakot war etwa siebzig Kilometer entfernt aus der chinesischen Provinz Fujian.",
+          "effective": 0.4239,
+          "adequacy": 0.8252,
+          "contradiction": 0.4862,
+          "consistency": 0.1783,
+          "chrf": 0.8124,
+          "laal_words": 4.75
+        },
+        "12": {
+          "seg_text": "As of the night of August 9, <SEG:1> the eye of Morakot was about seventy kilometres away from the Chinese province of Fujian.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "As of the night of August 9,",
+            "the eye of Morakot was about seventy kilometres away from the Chinese province of Fujian."
+          ],
+          "pieces_tgt": [
+            "Ab der Nacht des 9. August",
+            "Das Auge von Morakot lag etwa siebzig Kilometer von der chinesischen Provinz Fujian entfernt."
+          ],
+          "pieces_contra": [
+            0.0247,
+            0.0
+          ],
+          "seg_trans": "Ab der Nacht des 9. August Das Auge von Morakot lag etwa siebzig Kilometer von der chinesischen Provinz Fujian entfernt.",
+          "effective": 0.812,
+          "adequacy": 0.8326,
+          "contradiction": 0.0247,
+          "consistency": 0.0372,
+          "chrf": 0.8893,
+          "laal_words": 5.8429
+        }
+      }
+    },
+    {
+      "id": "en_us_464",
+      "text": "Unfortunately, when you make a DVD, it's borders will most likely be cut too, and if the video had subtitles too close to the bottom, they won't be fully shown.",
+      "seg_text": "Unfortunately, when you <SEG:8> make a DVD, <SEG:1> it's borders will <SEG:3> most likely be <SEG:6> cut too, <SEG:7> and if the video <SEG:5> had subtitles too <SEG:4> close to the bottom, <SEG:2> they won't be fully shown.",
+      "valid": false,
+      "full_trans": "Leider werden beim Erstellen einer DVD höchstwahrscheinlich auch die Ränder abgeschnitten, und wenn die Untertitel des Videos zu weit unten waren, werden diese nicht vollständig angezeigt.",
+      "by_T": {
+        "4": {
+          "seg_text": "Unfortunately, when you <SEG:8> make a DVD, <SEG:1> it's borders will <SEG:3> most likely be <SEG:6> cut too, and if the video <SEG:5> had subtitles too <SEG:4> close to the bottom, <SEG:2> they won't be fully shown.",
+          "k": 8,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "Unfortunately, when you",
+            "make a DVD,",
+            "it's borders will",
+            "most likely be",
+            "cut too, and if the video",
+            "had subtitles too",
+            "close to the bottom,",
+            "they won't be fully shown."
+          ],
+          "pieces_tgt": [
+            "Leider, wenn Sie",
+            "eine DVD erstellen,",
+            "Es sind Grenzen",
+            "höchstwahrscheinlich sein",
+            "auch schneiden, und wenn das Video",
+            "Hatte auch Untertitel",
+            "ganz unten,",
+            "sie werden nicht vollständig angezeigt."
+          ],
+          "pieces_contra": [
+            0.0031,
+            0.001,
+            0.0055,
+            0.0017,
+            0.0019,
+            0.0202,
+            0.0048,
+            0.0
+          ],
+          "seg_trans": "Leider, wenn Sie eine DVD erstellen, Es sind Grenzen höchstwahrscheinlich sein auch schneiden, und wenn das Video Hatte auch Untertitel ganz unten, sie werden nicht vollständig angezeigt.",
+          "effective": 0.6713,
+          "adequacy": 0.675,
+          "contradiction": 0.0055,
+          "consistency": 0.9905,
+          "chrf": 0.5674,
+          "laal_words": 2.0821
+        },
+        "6": {
+          "seg_text": "Unfortunately, when you make a DVD, <SEG:1> it's borders will <SEG:3> most likely be cut too, and if the video had subtitles too <SEG:4> close to the bottom, <SEG:2> they won't be fully shown.",
+          "k": 5,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "Unfortunately, when you make a DVD,",
+            "it's borders will",
+            "most likely be cut too, and if the video had subtitles too",
+            "close to the bottom,",
+            "they won't be fully shown."
+          ],
+          "pieces_tgt": [
+            "Wenn Sie eine DVD erstellen,",
+            "Es sind Grenzen",
+            "höchstwahrscheinlich auch geschnitten werden, und wenn das Video auch Untertitel hätte",
+            "ganz unten,",
+            "sie werden nicht vollständig angezeigt."
+          ],
+          "pieces_contra": [
+            0.0009,
+            0.0022,
+            0.0145,
+            0.0021,
+            0.0
+          ],
+          "seg_trans": "Wenn Sie eine DVD erstellen, Es sind Grenzen höchstwahrscheinlich auch geschnitten werden, und wenn das Video auch Untertitel hätte ganz unten, sie werden nicht vollständig angezeigt.",
+          "effective": 0.6963,
+          "adequacy": 0.6998,
+          "contradiction": 0.0049,
+          "consistency": 0.9982,
+          "chrf": 0.6044,
+          "laal_words": 4.6119
+        },
+        "8": {
+          "seg_text": "Unfortunately, when you make a DVD, <SEG:1> it's borders will <SEG:3> most likely be cut too, and if the video had subtitles too close to the bottom, <SEG:2> they won't be fully shown.",
+          "k": 4,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "Unfortunately, when you make a DVD,",
+            "it's borders will",
+            "most likely be cut too, and if the video had subtitles too close to the bottom,",
+            "they won't be fully shown."
+          ],
+          "pieces_tgt": [
+            "Wenn Sie eine DVD erstellen,",
+            "Es sind Grenzen",
+            "höchstwahrscheinlich auch geschnitten werden, und wenn das Video Untertitel zu weit unten hatte,",
+            "sie werden nicht vollständig angezeigt."
+          ],
+          "pieces_contra": [
+            0.0009,
+            0.0022,
+            0.0017,
+            0.0
+          ],
+          "seg_trans": "Wenn Sie eine DVD erstellen, Es sind Grenzen höchstwahrscheinlich auch geschnitten werden, und wenn das Video Untertitel zu weit unten hatte, sie werden nicht vollständig angezeigt.",
+          "effective": 0.6806,
+          "adequacy": 0.6817,
+          "contradiction": 0.0016,
+          "consistency": 0.9885,
+          "chrf": 0.6374,
+          "laal_words": 6.6119
+        },
+        "12": {
+          "seg_text": "Unfortunately, when you make a DVD, <SEG:1> it's borders will most likely be cut too, and if the video had subtitles too close to the bottom, they won't be fully shown.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "Unfortunately, when you make a DVD,",
+            "it's borders will most likely be cut too, and if the video had subtitles too close to the bottom, they won't be fully shown."
+          ],
+          "pieces_tgt": [
+            "Wenn Sie eine DVD erstellen,",
+            "Die Ränder werden höchstwahrscheinlich ebenfalls abgeschnitten, und wenn die Untertitel des Videos zu weit unten liegen, werden diese nicht vollständig angezeigt."
+          ],
+          "pieces_contra": [
+            0.0009,
+            0.0
+          ],
+          "seg_trans": "Wenn Sie eine DVD erstellen, Die Ränder werden höchstwahrscheinlich ebenfalls abgeschnitten, und wenn die Untertitel des Videos zu weit unten liegen, werden diese nicht vollständig angezeigt.",
+          "effective": 0.8052,
+          "adequacy": 0.8059,
+          "contradiction": 0.0009,
+          "consistency": 0.9988,
+          "chrf": 0.7886,
+          "laal_words": 7.1154
+        }
+      }
+    },
+    {
+      "id": "en_us_41",
+      "text": "John Grant, from WNED Buffalo (Reading Rainbow's home station) said \"Reading Rainbow taught kids why to read,... the love of reading — [the show] encouraged kids to pick up a book and to read.\"",
+      "seg_text": "John Grant, from <SEG:7> WNED Buffalo (Reading <SEG:6> Rainbow's home station) <SEG:1> said \"Reading Rainbow taught <SEG:3> kids why to <SEG:9> read,... the love <SEG:5> of reading — <SEG:2> [the show] encouraged <SEG:4> kids to pick <SEG:8> up a book and to read.\"",
+      "valid": true,
+      "full_trans": "John Grant von WNED Buffalo (dem Heimatsender von Reading Rainbow) sagte: „Reading Rainbow lehrte Kinder, warum man liest, ... die Liebe zum Lesen – [die Show] ermutigte Kinder, ein Buch in die Hand zu nehmen und zu lesen.“",
+      "by_T": {
+        "4": {
+          "seg_text": "John Grant, from <SEG:7> WNED Buffalo (Reading <SEG:6> Rainbow's home station) <SEG:1> said \"Reading Rainbow taught <SEG:3> kids why to read,... the love <SEG:5> of reading — <SEG:2> [the show] encouraged <SEG:4> kids to pick up a book and to read.\"",
+          "k": 8,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "John Grant, from",
+            "WNED Buffalo (Reading",
+            "Rainbow's home station)",
+            "said \"Reading Rainbow taught",
+            "kids why to read,... the love",
+            "of reading —",
+            "[the show] encouraged",
+            "kids to pick up a book and to read.\""
+          ],
+          "pieces_tgt": [
+            "John Grant, aus",
+            "WNED Buffalo (Lesung",
+            "Rainbows Heimatstation)",
+            "sagte: „Das Lesen wurde von Rainbow gelehrt.“",
+            "Kinder, warum lesen,... die Liebe",
+            "des Lesens –",
+            "[die Show] ermutigt",
+            "Kinder, ein Buch in die Hand zu nehmen und zu lesen.“"
+          ],
+          "pieces_contra": [
+            0.3559,
+            0.0988,
+            0.0011,
+            0.0009,
+            0.0068,
+            0.0056,
+            0.0013,
+            0.0
+          ],
+          "seg_trans": "John Grant, aus WNED Buffalo (Lesung Rainbows Heimatstation) sagte: „Das Lesen wurde von Rainbow gelehrt.“ Kinder, warum lesen,... die Liebe des Lesens – [die Show] ermutigt Kinder, ein Buch in die Hand zu nehmen und zu lesen.“",
+          "effective": 0.7025,
+          "adequacy": 0.7531,
+          "contradiction": 0.0672,
+          "consistency": 0.9953,
+          "chrf": 0.6707,
+          "laal_words": 3.4055
+        },
+        "6": {
+          "seg_text": "John Grant, from WNED Buffalo (Reading Rainbow's home station) <SEG:1> said \"Reading Rainbow taught <SEG:3> kids why to read,... the love <SEG:5> of reading — <SEG:2> [the show] encouraged <SEG:4> kids to pick up a book and to read.\"",
+          "k": 6,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "John Grant, from WNED Buffalo (Reading Rainbow's home station)",
+            "said \"Reading Rainbow taught",
+            "kids why to read,... the love",
+            "of reading —",
+            "[the show] encouraged",
+            "kids to pick up a book and to read.\""
+          ],
+          "pieces_tgt": [
+            "John Grant von WNED Buffalo (Heimatsender von Reading Rainbow)",
+            "sagte: „Das Lesen wurde von Rainbow gelehrt.“",
+            "Kinder, warum lesen,... die Liebe",
+            "des Lesens –",
+            "[die Show] ermutigt",
+            "Kinder, ein Buch in die Hand zu nehmen und zu lesen.“"
+          ],
+          "pieces_contra": [
+            0.0011,
+            0.0007,
+            0.0078,
+            0.0045,
+            0.001,
+            0.0
+          ],
+          "seg_trans": "John Grant von WNED Buffalo (Heimatsender von Reading Rainbow) sagte: „Das Lesen wurde von Rainbow gelehrt.“ Kinder, warum lesen,... die Liebe des Lesens – [die Show] ermutigt Kinder, ein Buch in die Hand zu nehmen und zu lesen.“",
+          "effective": 0.7705,
+          "adequacy": 0.7729,
+          "contradiction": 0.003,
+          "consistency": 0.9961,
+          "chrf": 0.7742,
+          "laal_words": 3.7068
+        },
+        "8": {
+          "seg_text": "John Grant, from WNED Buffalo (Reading Rainbow's home station) <SEG:1> said \"Reading Rainbow taught <SEG:3> kids why to read,... the love of reading — <SEG:2> [the show] encouraged kids to pick up a book and to read.\"",
+          "k": 4,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "John Grant, from WNED Buffalo (Reading Rainbow's home station)",
+            "said \"Reading Rainbow taught",
+            "kids why to read,... the love of reading —",
+            "[the show] encouraged kids to pick up a book and to read.\""
+          ],
+          "pieces_tgt": [
+            "John Grant von WNED Buffalo (Heimatsender von Reading Rainbow)",
+            "sagte: „Das Lesen wurde von Rainbow gelehrt.“",
+            "Kinder, warum man liest,... die Liebe zum Lesen –",
+            "[die Show] ermutigte Kinder, ein Buch in die Hand zu nehmen und zu lesen.“"
+          ],
+          "pieces_contra": [
+            0.0011,
+            0.0007,
+            0.0052,
+            0.0
+          ],
+          "seg_trans": "John Grant von WNED Buffalo (Heimatsender von Reading Rainbow) sagte: „Das Lesen wurde von Rainbow gelehrt.“ Kinder, warum man liest,... die Liebe zum Lesen – [die Show] ermutigte Kinder, ein Buch in die Hand zu nehmen und zu lesen.“",
+          "effective": 0.8395,
+          "adequacy": 0.8414,
+          "contradiction": 0.0023,
+          "consistency": 0.9945,
+          "chrf": 0.8837,
+          "laal_words": 4.641
+        },
+        "12": {
+          "seg_text": "John Grant, from WNED Buffalo (Reading Rainbow's home station) <SEG:1> said \"Reading Rainbow taught kids why to read,... the love of reading — <SEG:2> [the show] encouraged kids to pick up a book and to read.\"",
+          "k": 3,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "John Grant, from WNED Buffalo (Reading Rainbow's home station)",
+            "said \"Reading Rainbow taught kids why to read,... the love of reading —",
+            "[the show] encouraged kids to pick up a book and to read.\""
+          ],
+          "pieces_tgt": [
+            "John Grant von WNED Buffalo (Heimatsender von Reading Rainbow)",
+            "sagte: „Reading Rainbow hat Kindern beigebracht, warum man liest, ... die Liebe zum Lesen –",
+            "[die Show] ermutigte Kinder, ein Buch in die Hand zu nehmen und zu lesen.“"
+          ],
+          "pieces_contra": [
+            0.0011,
+            0.0005,
+            0.0
+          ],
+          "seg_trans": "John Grant von WNED Buffalo (Heimatsender von Reading Rainbow) sagte: „Reading Rainbow hat Kindern beigebracht, warum man liest, ... die Liebe zum Lesen – [die Show] ermutigte Kinder, ein Buch in die Hand zu nehmen und zu lesen.“",
+          "effective": 0.8621,
+          "adequacy": 0.8628,
+          "contradiction": 0.0008,
+          "consistency": 0.9986,
+          "chrf": 0.9084,
+          "laal_words": 7.0632
+        }
+      }
+    },
+    {
+      "id": "en_us_1628",
+      "text": "Handicraft products might be defined as antiques, though they are younger than similar mass-produced goods.",
+      "seg_text": "Handicraft products might <SEG:3> be defined as <SEG:4> antiques, though they <SEG:2> are younger than <SEG:1> similar mass-produced goods.",
+      "valid": true,
+      "full_trans": "Kunsthandwerkliche Produkte können als Antiquitäten definiert werden, obwohl sie jünger sind als ähnliche Massenprodukte.",
+      "by_T": {
+        "4": {
+          "seg_text": "Handicraft products might <SEG:3> be defined as antiques, though they <SEG:2> are younger than <SEG:1> similar mass-produced goods.",
+          "k": 4,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "Handicraft products might",
+            "be defined as antiques, though they",
+            "are younger than",
+            "similar mass-produced goods."
+          ],
+          "pieces_tgt": [
+            "Kunsthandwerkliche Produkte könnten",
+            "als Antiquitäten definiert werden, obwohl sie",
+            "sind jünger als",
+            "ähnliche Massenware."
+          ],
+          "pieces_contra": [
+            0.0008,
+            0.0152,
+            0.0072,
+            0.0
+          ],
+          "seg_trans": "Kunsthandwerkliche Produkte könnten als Antiquitäten definiert werden, obwohl sie sind jünger als ähnliche Massenware.",
+          "effective": 0.741,
+          "adequacy": 0.7468,
+          "contradiction": 0.0077,
+          "consistency": 0.9887,
+          "chrf": 0.8345,
+          "laal_words": 2.3407
+        },
+        "6": {
+          "seg_text": "Handicraft products might be defined as antiques, though they are younger than <SEG:1> similar mass-produced goods.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "Handicraft products might be defined as antiques, though they are younger than",
+            "similar mass-produced goods."
+          ],
+          "pieces_tgt": [
+            "Kunsthandwerkliche Produkte können als Antiquitäten definiert werden, obwohl sie jünger sind",
+            "ähnliche Massenware."
+          ],
+          "pieces_contra": [
+            0.002,
+            0.0
+          ],
+          "seg_trans": "Kunsthandwerkliche Produkte können als Antiquitäten definiert werden, obwohl sie jünger sind ähnliche Massenware.",
+          "effective": 0.8138,
+          "adequacy": 0.8154,
+          "contradiction": 0.002,
+          "consistency": 0.1539,
+          "chrf": 0.8817,
+          "laal_words": 6.3571
+        },
+        "8": {
+          "seg_text": "Handicraft products might be defined as antiques, though they are younger than <SEG:1> similar mass-produced goods.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "Handicraft products might be defined as antiques, though they are younger than",
+            "similar mass-produced goods."
+          ],
+          "pieces_tgt": [
+            "Kunsthandwerkliche Produkte können als Antiquitäten definiert werden, obwohl sie jünger sind",
+            "ähnliche Massenware."
+          ],
+          "pieces_contra": [
+            0.002,
+            0.0
+          ],
+          "seg_trans": "Kunsthandwerkliche Produkte können als Antiquitäten definiert werden, obwohl sie jünger sind ähnliche Massenware.",
+          "effective": 0.8138,
+          "adequacy": 0.8154,
+          "contradiction": 0.002,
+          "consistency": 0.1539,
+          "chrf": 0.8817,
+          "laal_words": 6.3571
+        },
+        "12": {
+          "seg_text": "Handicraft products might be defined as antiques, though they are younger than <SEG:1> similar mass-produced goods.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "Handicraft products might be defined as antiques, though they are younger than",
+            "similar mass-produced goods."
+          ],
+          "pieces_tgt": [
+            "Kunsthandwerkliche Produkte können als Antiquitäten definiert werden, obwohl sie jünger sind",
+            "ähnliche Massenware."
+          ],
+          "pieces_contra": [
+            0.002,
+            0.0
+          ],
+          "seg_trans": "Kunsthandwerkliche Produkte können als Antiquitäten definiert werden, obwohl sie jünger sind ähnliche Massenware.",
+          "effective": 0.8138,
+          "adequacy": 0.8154,
+          "contradiction": 0.002,
+          "consistency": 0.1539,
+          "chrf": 0.8817,
+          "laal_words": 6.3571
+        }
+      }
+    },
+    {
+      "id": "en_us_909",
+      "text": "The media companies routinely lie about the purpose of this, claiming that it is to \"prevent piracy\".",
+      "seg_text": "The media companies <SEG:2> routinely lie about <SEG:4> the purpose of this, <SEG:1> claiming that it <SEG:3> is to \"prevent piracy\".",
+      "valid": true,
+      "full_trans": "Die Medienunternehmen lügen regelmäßig über den Zweck und behaupten, es handele sich um die „Verhinderung von Piraterie“.",
+      "by_T": {
+        "4": {
+          "seg_text": "The media companies <SEG:2> routinely lie about the purpose of this, <SEG:1> claiming that it <SEG:3> is to \"prevent piracy\".",
+          "k": 4,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "The media companies",
+            "routinely lie about the purpose of this,",
+            "claiming that it",
+            "is to \"prevent piracy\"."
+          ],
+          "pieces_tgt": [
+            "Die Medienunternehmen",
+            "regelmäßig über den Zweck davon lügen,",
+            "behaupten, dass es",
+            "ist die „Verhinderung von Piraterie“."
+          ],
+          "pieces_contra": [
+            0.001,
+            0.0011,
+            0.0099,
+            0.0
+          ],
+          "seg_trans": "Die Medienunternehmen regelmäßig über den Zweck davon lügen, behaupten, dass es ist die „Verhinderung von Piraterie“.",
+          "effective": 0.7834,
+          "adequacy": 0.7865,
+          "contradiction": 0.004,
+          "consistency": 0.9966,
+          "chrf": 0.7706,
+          "laal_words": 4.6667
+        },
+        "6": {
+          "seg_text": "The media companies <SEG:2> routinely lie about the purpose of this, <SEG:1> claiming that it is to \"prevent piracy\".",
+          "k": 3,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "The media companies",
+            "routinely lie about the purpose of this,",
+            "claiming that it is to \"prevent piracy\"."
+          ],
+          "pieces_tgt": [
+            "Die Medienunternehmen",
+            "regelmäßig über den Zweck davon lügen,",
+            "mit der Behauptung, es handele sich um die „Verhinderung von Piraterie“."
+          ],
+          "pieces_contra": [
+            0.001,
+            0.0011,
+            0.0
+          ],
+          "seg_trans": "Die Medienunternehmen regelmäßig über den Zweck davon lügen, mit der Behauptung, es handele sich um die „Verhinderung von Piraterie“.",
+          "effective": 0.847,
+          "adequacy": 0.8479,
+          "contradiction": 0.0011,
+          "consistency": 0.9968,
+          "chrf": 0.8616,
+          "laal_words": 5.6433
+        },
+        "8": {
+          "seg_text": "The media companies routinely lie about the purpose of this, <SEG:1> claiming that it is to \"prevent piracy\".",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "The media companies routinely lie about the purpose of this,",
+            "claiming that it is to \"prevent piracy\"."
+          ],
+          "pieces_tgt": [
+            "Die Medienunternehmen lügen routinemäßig über den Zweck davon,",
+            "mit der Behauptung, es handele sich um die „Verhinderung von Piraterie“."
+          ],
+          "pieces_contra": [
+            0.0004,
+            0.0
+          ],
+          "seg_trans": "Die Medienunternehmen lügen routinemäßig über den Zweck davon, mit der Behauptung, es handele sich um die „Verhinderung von Piraterie“.",
+          "effective": 0.8562,
+          "adequacy": 0.8566,
+          "contradiction": 0.0004,
+          "consistency": 0.9989,
+          "chrf": 0.8234,
+          "laal_words": 7.1988
+        },
+        "12": {
+          "seg_text": "The media companies routinely lie about the purpose of this, <SEG:1> claiming that it is to \"prevent piracy\".",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "The media companies routinely lie about the purpose of this,",
+            "claiming that it is to \"prevent piracy\"."
+          ],
+          "pieces_tgt": [
+            "Die Medienunternehmen lügen routinemäßig über den Zweck davon,",
+            "mit der Behauptung, es handele sich um die „Verhinderung von Piraterie“."
+          ],
+          "pieces_contra": [
+            0.0004,
+            0.0
+          ],
+          "seg_trans": "Die Medienunternehmen lügen routinemäßig über den Zweck davon, mit der Behauptung, es handele sich um die „Verhinderung von Piraterie“.",
+          "effective": 0.8562,
+          "adequacy": 0.8566,
+          "contradiction": 0.0004,
+          "consistency": 0.9989,
+          "chrf": 0.8234,
+          "laal_words": 7.1988
+        }
+      }
+    },
+    {
+      "id": "en_us_305",
+      "text": "In the 1960s he headed back to newly-independent Algeria to teach film directing.",
+      "seg_text": "In the 1960s <SEG:2> he headed back <SEG:3> to newly-independent Algeria <SEG:1> to teach film directing.",
+      "valid": true,
+      "full_trans": "In den 1960er Jahren kehrte er in das gerade unabhängige Algerien zurück, um Filmregie zu unterrichten.",
+      "by_T": {
+        "4": {
+          "seg_text": "In the 1960s <SEG:2> he headed back to newly-independent Algeria <SEG:1> to teach film directing.",
+          "k": 3,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "In the 1960s",
+            "he headed back to newly-independent Algeria",
+            "to teach film directing."
+          ],
+          "pieces_tgt": [
+            "In den 1960er Jahren",
+            "Er kehrte in das gerade unabhängige Algerien zurück",
+            "Filmregie zu unterrichten."
+          ],
+          "pieces_contra": [
+            0.0007,
+            0.0032,
+            0.0
+          ],
+          "seg_trans": "In den 1960er Jahren Er kehrte in das gerade unabhängige Algerien zurück Filmregie zu unterrichten.",
+          "effective": 0.8266,
+          "adequacy": 0.8282,
+          "contradiction": 0.002,
+          "consistency": 0.9914,
+          "chrf": 0.8605,
+          "laal_words": 2.5865
+        },
+        "6": {
+          "seg_text": "In the 1960s he headed back to newly-independent Algeria <SEG:1> to teach film directing.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "In the 1960s he headed back to newly-independent Algeria",
+            "to teach film directing."
+          ],
+          "pieces_tgt": [
+            "In den 1960er Jahren kehrte er in das gerade unabhängige Algerien zurück",
+            "Filmregie zu unterrichten."
+          ],
+          "pieces_contra": [
+            0.0029,
+            0.0
+          ],
+          "seg_trans": "In den 1960er Jahren kehrte er in das gerade unabhängige Algerien zurück Filmregie zu unterrichten.",
+          "effective": 0.8325,
+          "adequacy": 0.8349,
+          "contradiction": 0.0029,
+          "consistency": 0.991,
+          "chrf": 0.9419,
+          "laal_words": 4.4327
+        },
+        "8": {
+          "seg_text": "In the 1960s he headed back to newly-independent Algeria <SEG:1> to teach film directing.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "In the 1960s he headed back to newly-independent Algeria",
+            "to teach film directing."
+          ],
+          "pieces_tgt": [
+            "In den 1960er Jahren kehrte er in das gerade unabhängige Algerien zurück",
+            "Filmregie zu unterrichten."
+          ],
+          "pieces_contra": [
+            0.0029,
+            0.0
+          ],
+          "seg_trans": "In den 1960er Jahren kehrte er in das gerade unabhängige Algerien zurück Filmregie zu unterrichten.",
+          "effective": 0.8325,
+          "adequacy": 0.8349,
+          "contradiction": 0.0029,
+          "consistency": 0.991,
+          "chrf": 0.9419,
+          "laal_words": 4.4327
+        },
+        "12": {
+          "seg_text": "In the 1960s he headed back to newly-independent Algeria <SEG:1> to teach film directing.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "In the 1960s he headed back to newly-independent Algeria",
+            "to teach film directing."
+          ],
+          "pieces_tgt": [
+            "In den 1960er Jahren kehrte er in das gerade unabhängige Algerien zurück",
+            "Filmregie zu unterrichten."
+          ],
+          "pieces_contra": [
+            0.0029,
+            0.0
+          ],
+          "seg_trans": "In den 1960er Jahren kehrte er in das gerade unabhängige Algerien zurück Filmregie zu unterrichten.",
+          "effective": 0.8325,
+          "adequacy": 0.8349,
+          "contradiction": 0.0029,
+          "consistency": 0.991,
+          "chrf": 0.9419,
+          "laal_words": 4.4327
+        }
+      }
+    },
+    {
+      "id": "en_us_33",
+      "text": "As the cars ahead of Alonso went in for fuel under the safety car, he moved up the pack to take victory.",
+      "seg_text": "As the cars ahead <SEG:5> of Alonso went <SEG:4> in for fuel <SEG:2> under the safety car, <SEG:1> he moved up <SEG:3> the pack to take victory.",
+      "valid": true,
+      "full_trans": "Als die Autos vor Alonso unter dem Safety-Car tanken mussten, rückte er an der Spitze vor und holte sich den Sieg.",
+      "by_T": {
+        "4": {
+          "seg_text": "As the cars ahead <SEG:5> of Alonso went <SEG:4> in for fuel <SEG:2> under the safety car, <SEG:1> he moved up <SEG:3> the pack to take victory.",
+          "k": 6,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "As the cars ahead",
+            "of Alonso went",
+            "in for fuel",
+            "under the safety car,",
+            "he moved up",
+            "the pack to take victory."
+          ],
+          "pieces_tgt": [
+            "Wie die Autos voraus",
+            "von Alonso ging",
+            "für Kraftstoff",
+            "unter dem Safety Car,",
+            "er ist aufgestiegen",
+            "das Rudel, um den Sieg zu erringen."
+          ],
+          "pieces_contra": [
+            0.0015,
+            0.0073,
+            0.0032,
+            0.0026,
+            0.0014,
+            0.0
+          ],
+          "seg_trans": "Wie die Autos voraus von Alonso ging für Kraftstoff unter dem Safety Car, er ist aufgestiegen das Rudel, um den Sieg zu erringen.",
+          "effective": 0.6006,
+          "adequacy": 0.6025,
+          "contradiction": 0.0032,
+          "consistency": 0.9764,
+          "chrf": 0.3984,
+          "laal_words": 3.289
+        },
+        "6": {
+          "seg_text": "As the cars ahead of Alonso went in for fuel <SEG:2> under the safety car, <SEG:1> he moved up <SEG:3> the pack to take victory.",
+          "k": 4,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "As the cars ahead of Alonso went in for fuel",
+            "under the safety car,",
+            "he moved up",
+            "the pack to take victory."
+          ],
+          "pieces_tgt": [
+            "Als die Autos vor Alonso Kraftstoff holten",
+            "unter dem Safety Car,",
+            "er ist aufgestiegen",
+            "das Rudel, um den Sieg zu erringen."
+          ],
+          "pieces_contra": [
+            0.0015,
+            0.0017,
+            0.0006,
+            0.0
+          ],
+          "seg_trans": "Als die Autos vor Alonso Kraftstoff holten unter dem Safety Car, er ist aufgestiegen das Rudel, um den Sieg zu erringen.",
+          "effective": 0.7547,
+          "adequacy": 0.7556,
+          "contradiction": 0.0013,
+          "consistency": 0.7066,
+          "chrf": 0.4767,
+          "laal_words": 5.9333
+        },
+        "8": {
+          "seg_text": "As the cars ahead of Alonso went in for fuel <SEG:2> under the safety car, <SEG:1> he moved up the pack to take victory.",
+          "k": 3,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "As the cars ahead of Alonso went in for fuel",
+            "under the safety car,",
+            "he moved up the pack to take victory."
+          ],
+          "pieces_tgt": [
+            "Als die Autos vor Alonso Kraftstoff holten",
+            "unter dem Safety Car,",
+            "Er rückte im Feld nach oben und holte sich den Sieg."
+          ],
+          "pieces_contra": [
+            0.0015,
+            0.0017,
+            0.0
+          ],
+          "seg_trans": "Als die Autos vor Alonso Kraftstoff holten unter dem Safety Car, Er rückte im Feld nach oben und holte sich den Sieg.",
+          "effective": 0.8064,
+          "adequacy": 0.8077,
+          "contradiction": 0.0016,
+          "consistency": 0.3606,
+          "chrf": 0.5978,
+          "laal_words": 6.8333
+        },
+        "12": {
+          "seg_text": "As the cars ahead of Alonso went in for fuel under the safety car, <SEG:1> he moved up the pack to take victory.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "As the cars ahead of Alonso went in for fuel under the safety car,",
+            "he moved up the pack to take victory."
+          ],
+          "pieces_tgt": [
+            "Als die Autos vor Alonso unter dem Safety-Car tanken mussten,",
+            "Er rückte im Feld nach oben und holte sich den Sieg."
+          ],
+          "pieces_contra": [
+            0.0026,
+            0.0
+          ],
+          "seg_trans": "Als die Autos vor Alonso unter dem Safety-Car tanken mussten, Er rückte im Feld nach oben und holte sich den Sieg.",
+          "effective": 0.7852,
+          "adequacy": 0.7873,
+          "contradiction": 0.0026,
+          "consistency": 0.5871,
+          "chrf": 0.7839,
+          "laal_words": 9.4892
+        }
+      }
+    },
+    {
+      "id": "en_us_323",
+      "text": "China's GDP could be larger than the United States within two decades.",
+      "seg_text": "China's GDP could be <SEG:2> larger than the United States <SEG:1> within two decades.",
+      "valid": true,
+      "full_trans": "Chinas BIP könnte innerhalb von zwei Jahrzehnten größer sein als das der Vereinigten Staaten.",
+      "by_T": {
+        "4": {
+          "seg_text": "China's GDP could be <SEG:2> larger than the United States <SEG:1> within two decades.",
+          "k": 3,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "China's GDP could be",
+            "larger than the United States",
+            "within two decades."
+          ],
+          "pieces_tgt": [
+            "Chinas BIP könnte sein",
+            "größer als die Vereinigten Staaten",
+            "innerhalb von zwei Jahrzehnten."
+          ],
+          "pieces_contra": [
+            0.0003,
+            0.0004,
+            0.0
+          ],
+          "seg_trans": "Chinas BIP könnte sein größer als die Vereinigten Staaten innerhalb von zwei Jahrzehnten.",
+          "effective": 0.7429,
+          "adequacy": 0.7432,
+          "contradiction": 0.0003,
+          "consistency": 0.9992,
+          "chrf": 0.7907,
+          "laal_words": 3.4429
+        },
+        "6": {
+          "seg_text": "China's GDP could be larger than the United States <SEG:1> within two decades.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "China's GDP could be larger than the United States",
+            "within two decades."
+          ],
+          "pieces_tgt": [
+            "Chinas BIP könnte größer sein als das der Vereinigten Staaten",
+            "innerhalb von zwei Jahrzehnten."
+          ],
+          "pieces_contra": [
+            0.0004,
+            0.0
+          ],
+          "seg_trans": "Chinas BIP könnte größer sein als das der Vereinigten Staaten innerhalb von zwei Jahrzehnten.",
+          "effective": 0.8323,
+          "adequacy": 0.8326,
+          "contradiction": 0.0004,
+          "consistency": 0.9993,
+          "chrf": 0.9301,
+          "laal_words": 4.987
+        },
+        "8": {
+          "seg_text": "China's GDP could be larger than the United States <SEG:1> within two decades.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "China's GDP could be larger than the United States",
+            "within two decades."
+          ],
+          "pieces_tgt": [
+            "Chinas BIP könnte größer sein als das der Vereinigten Staaten",
+            "innerhalb von zwei Jahrzehnten."
+          ],
+          "pieces_contra": [
+            0.0004,
+            0.0
+          ],
+          "seg_trans": "Chinas BIP könnte größer sein als das der Vereinigten Staaten innerhalb von zwei Jahrzehnten.",
+          "effective": 0.8323,
+          "adequacy": 0.8326,
+          "contradiction": 0.0004,
+          "consistency": 0.9993,
+          "chrf": 0.9301,
+          "laal_words": 4.987
+        },
+        "12": {
+          "seg_text": "China's GDP could be larger than the United States <SEG:1> within two decades.",
+          "k": 2,
+          "missing_boundaries": 0,
+          "pieces_src": [
+            "China's GDP could be larger than the United States",
+            "within two decades."
+          ],
+          "pieces_tgt": [
+            "Chinas BIP könnte größer sein als das der Vereinigten Staaten",
+            "innerhalb von zwei Jahrzehnten."
+          ],
+          "pieces_contra": [
+            0.0004,
+            0.0
+          ],
+          "seg_trans": "Chinas BIP könnte größer sein als das der Vereinigten Staaten innerhalb von zwei Jahrzehnten.",
+          "effective": 0.8323,
+          "adequacy": 0.8326,
+          "contradiction": 0.0004,
+          "consistency": 0.9993,
+          "chrf": 0.9301,
+          "laal_words": 4.987
+        }
+      }
+    }
+  ],
+  "usage": {
+    "calls": 7,
+    "prompt_tokens": 20135,
+    "completion_tokens": 53212,
+    "cached_tokens": 9856,
+    "truncated": 0,
+    "cost": 0.10924,
+    "by_purpose": {
+      "segment": {
+        "calls": 4,
+        "prompt_tokens": 11575,
+        "completion_tokens": 41807,
+        "reasoning_tokens": 40896,
+        "cached_tokens": 4480,
+        "cost": 0.0855
+      },
+      "segment_retry": {
+        "calls": 3,
+        "prompt_tokens": 8560,
+        "completion_tokens": 11405,
+        "reasoning_tokens": 11200,
+        "cached_tokens": 5376,
+        "cost": 0.02374
+      }
+    }
+  }
+}

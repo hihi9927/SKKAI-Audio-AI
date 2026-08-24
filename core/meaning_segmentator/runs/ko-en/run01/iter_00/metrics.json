@@ -1,0 +1,84 @@
+{
+  "train": {
+    "n": 30,
+    "format_pass_rate": 1.0,
+    "format_pass_rate_no_retry": 0.9667,
+    "by_T": {
+      "3": {
+        "target_chunk_words": 3,
+        "n": 30,
+        "adequacy": 0.7848,
+        "adequacy_min": 0.6481,
+        "adequacy_p10": 0.6975,
+        "consistency": 0.8363,
+        "consistency_chrf": 0.7037,
+        "laal_words": 3.4479,
+        "chunks_per_sentence": 2.9667,
+        "split_ratio": 0.9333,
+        "truncation_shortfall": 1.3667,
+        "premature_rate": null
+      },
+      "6": {
+        "target_chunk_words": 6,
+        "n": 30,
+        "adequacy": 0.7844,
+        "adequacy_min": 0.6481,
+        "adequacy_p10": 0.6795,
+        "consistency": 0.8738,
+        "consistency_chrf": 0.7651,
+        "laal_words": 4.0667,
+        "chunks_per_sentence": 2.3,
+        "split_ratio": 0.9333,
+        "truncation_shortfall": 0.0667,
+        "premature_rate": 0.25
+      }
+    },
+    "score": 0.7846
+  },
+  "dev": {
+    "n": 60,
+    "format_pass_rate": 1.0,
+    "format_pass_rate_no_retry": 0.9833,
+    "by_T": {
+      "3": {
+        "target_chunk_words": 3,
+        "n": 60,
+        "adequacy": 0.7861,
+        "adequacy_min": 0.67,
+        "adequacy_p10": 0.6989,
+        "consistency": 0.8354,
+        "consistency_chrf": 0.7331,
+        "laal_words": 3.9497,
+        "chunks_per_sentence": 2.75,
+        "split_ratio": 0.8833,
+        "truncation_shortfall": 1.5333,
+        "premature_rate": null
+      },
+      "6": {
+        "target_chunk_words": 6,
+        "n": 60,
+        "adequacy": 0.7767,
+        "adequacy_min": 0.5929,
+        "adequacy_p10": 0.6795,
+        "consistency": 0.8658,
+        "consistency_chrf": 0.7851,
+        "laal_words": 4.5541,
+        "chunks_per_sentence": 2.2,
+        "split_ratio": 0.8833,
+        "truncation_shortfall": 0.1333,
+        "premature_rate": null
+      }
+    },
+    "score": 0.7814
+  },
+  "score_train": 0.7846,
+  "score_dev": 0.7814,
+  "adopted": true,
+  "usage": {
+    "calls": 106,
+    "prompt_tokens": 395947,
+    "completion_tokens": 119862,
+    "cached_tokens": 0,
+    "cost": 1.990514
+  }
+}

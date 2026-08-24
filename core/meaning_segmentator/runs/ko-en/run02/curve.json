@@ -1,0 +1,112 @@
+{
+  "ours": {
+    "2": {
+      "target_chunk_words": 2,
+      "n": 100,
+      "n_scored": 100,
+      "effective": 0.7416,
+      "adequacy": 0.7788,
+      "contradiction": 0.0482,
+      "effective_min": 0.2168,
+      "effective_p10": 0.6205,
+      "consistency": 0.7839,
+      "consistency_chrf": 0.6349,
+      "laal_words": 3.0231,
+      "chunks_per_sentence": 3.54,
+      "split_ratio": 0.99,
+      "truncation_shortfall": 3.18,
+      "premature_rate": null
+    },
+    "3": {
+      "target_chunk_words": 3,
+      "n": 100,
+      "n_scored": 100,
+      "effective": 0.7437,
+      "adequacy": 0.7784,
+      "contradiction": 0.045,
+      "effective_min": 0.2168,
+      "effective_p10": 0.6305,
+      "consistency": 0.7938,
+      "consistency_chrf": 0.6486,
+      "laal_words": 3.0851,
+      "chunks_per_sentence": 3.42,
+      "split_ratio": 0.99,
+      "truncation_shortfall": 1.08,
+      "premature_rate": null
+    },
+    "4": {
+      "target_chunk_words": 4,
+      "n": 100,
+      "n_scored": 100,
+      "effective": 0.7484,
+      "adequacy": 0.7772,
+      "contradiction": 0.0377,
+      "effective_min": 0.2617,
+      "effective_p10": 0.6327,
+      "consistency": 0.8172,
+      "consistency_chrf": 0.6819,
+      "laal_words": 3.2298,
+      "chunks_per_sentence": 3.03,
+      "split_ratio": 0.99,
+      "truncation_shortfall": 0.33,
+      "premature_rate": null
+    },
+    "6": {
+      "target_chunk_words": 6,
+      "n": 100,
+      "n_scored": 100,
+      "effective": 0.7503,
+      "adequacy": 0.7747,
+      "contradiction": 0.0323,
+      "effective_min": 0.2969,
+      "effective_p10": 0.6559,
+      "consistency": 0.8389,
+      "consistency_chrf": 0.7188,
+      "laal_words": 3.5235,
+      "chunks_per_sentence": 2.44,
+      "split_ratio": 0.99,
+      "truncation_shortfall": 0.03,
+      "premature_rate": 0.1667
+    }
+  },
+  "baselines": {
+    "unsegmented": {
+      "target_chunk_words": 0,
+      "n": 100,
+      "n_scored": 100,
+      "effective": 0.7719,
+      "adequacy": 0.7719,
+      "contradiction": 0.0,
+      "effective_min": 0.5506,
+      "effective_p10": 0.7049,
+      "consistency": 1.0,
+      "consistency_chrf": 1.0,
+      "laal_words": 13.44,
+      "chunks_per_sentence": 1.0,
+      "split_ratio": 0.0,
+      "truncation_shortfall": 0.0,
+      "premature_rate": null
+    },
+    "mechanical_8": {
+      "target_chunk_words": 0,
+      "n": 100,
+      "n_scored": 100,
+      "effective": 0.585,
+      "adequacy": 0.7159,
+      "contradiction": 0.1849,
+      "effective_min": 0.0651,
+      "effective_p10": 0.2806,
+      "consistency": 0.5968,
+      "consistency_chrf": 0.4199,
+      "laal_words": 2.0995,
+      "chunks_per_sentence": 6.2,
+      "split_ratio": 1.0,
+      "truncation_shortfall": 0.0,
+      "premature_rate": null
+    }
+  },
+  "axes": {
+    "x": "laal_words (source words, lower = faster)",
+    "y": "adequacy (reference-free QE)"
+  }
+}

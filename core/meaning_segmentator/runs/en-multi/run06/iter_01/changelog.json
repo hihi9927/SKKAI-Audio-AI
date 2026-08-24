@@ -1,0 +1,9 @@
+{
+  "sections_changed": [
+    "[Priority Rules]"
+  ],
+  "changelog": [
+    "Added a low-confidence ranking item: demote boundaries that leave a verb or directional predicate as the final token before the tag when the following text begins a noun phrase or locative expression, since the object/locative often determines meaning."
+  ],
+  "scope_violations": []
+}

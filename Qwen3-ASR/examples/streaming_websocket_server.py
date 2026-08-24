@@ -46,7 +46,11 @@ except ImportError:
 
 from qwen_asr import Qwen3ASRModel
 from qwen_asr.inference.utils import warmup_streaming
-from qwen_asr.inference.sentence_boundary import DOT_COMMIT_BOUNDARY_RE, count_dot_commit_boundaries
+from qwen_asr.inference.sentence_boundary import (
+    DOT_COMMIT_BOUNDARY_RE,
+    count_dot_commit_boundaries,
+    split_sentences,
+)
 
 try:
     import sys as _sys
@@ -1492,7 +1496,7 @@ class Qwen3ASRStreamingHandler:
         if self.always_commit or not text:
             return text
         kept, batch_last = [], None
-        for sent in re.findall(r'[^.!?。！？]*[.!?。！？]+\s*|[^.!?。！？]+$', text):
+        for sent in split_sentences(text):
             disp = sent.strip()
             if not disp:
                 continue
@@ -1560,7 +1564,7 @@ class Qwen3ASRStreamingHandler:
             return out, dropped
 
         # 1) 문장 단위 — 관측된 반복 루프는 전부 구두점으로 끝나는 문장의 반복이었다.
-        sentences = re.findall(r'[^.!?。！？]*[.!?。！？]+\s*|[^.!?。！？]+$', text)
+        sentences = split_sentences(text)
         kept, dropped = _collapse(sentences, [cls._boundary_key(s) for s in sentences],
                                   max_period=4)
         result = "".join(kept)
@@ -1597,7 +1601,10 @@ class Qwen3ASRStreamingHandler:
         #  - generate 루프 안의 on_dot 콜백이 이미 last_text를 갱신해버리기 때문에
         #    "pending이 있을 때만" 통과시키면 pending을 등록할 기회 자체가 사라진다
         #    (등록은 chunk_end에서만 하므로 조기 리턴 ↔ 미등록 교착).
-        _recheck_pending = chunk_end and self.dot_commit_confirm
+        #  - final(스트림 종료, 규칙 4)은 dot_commit_confirm과 무관하게 반드시 통과시킨다.
+        #    종료 직전 청크에서 이미 같은 텍스트로 한 번 돌았으면 current_text ==
+        #    last_text라 여기서 조기 리턴되고, 잔여가 통째로 flush(finish)로 흘러간다.
+        _recheck_pending = chunk_end and (self.dot_commit_confirm or final)
         if not current_text or (current_text == slot["last_text"] and not _recheck_pending):
             return None
 
@@ -1677,10 +1684,15 @@ class Qwen3ASRStreamingHandler:
                     # 스트림 종료인데 경계를 못 찾은 잔여. 약어(No./S. J.)나 구두점 없는
                     # 짧은 발화('si')가 여기 온다. 오디오가 더 오지 않으므로 이 잔여는
                     # 그 자체로 완결된 단위다 — 경계가 없다고 flush로 흘려보낼 이유가 없다.
-                    trigger = "dot"
+                    # 커밋 사유는 축을 따라간다. dot 축이 아닌데 "dot"으로 찍으면
+                    # metric의 commit_reason_counts에 남의 축 라벨이 섞인다.
+                    trigger = "dot" if self.enable_dot_commit else "seg"
                     after = ""
                     sentence = remaining.strip()
-                    self.log.info(f"[DOT-CONFIRM] rule=final-residual slot={slot_key} text={sentence!r}")
+                    self.log.info(
+                        f"[COMMIT-RESIDUAL] rule=final slot={slot_key} "
+                        f"trigger={trigger} text={sentence!r}"
+                    )
                     sentence_display_check = sentence.replace("<SEG>", "").strip()
                     if sentence_display_check:
                         _skip = self._commit_skip_reason(
@@ -1693,8 +1705,9 @@ class Qwen3ASRStreamingHandler:
                                 f"[COMMIT-SKIP] reason={_skip} stage=extract slot={slot_key} "
                                 f"text={sentence_display_check!r}"
                             )
+                            sentences_to_commit.append((sentence, trigger, False))
                         else:
-                            sentences_to_commit.append((sentence, trigger))
+                            sentences_to_commit.append((sentence, trigger, True))
                             slot.pop("pending_dot_text", None)
                             slot.pop("pending_dot_accum", None)
                             _last_extracted_repeat = (
@@ -1789,8 +1802,17 @@ class Qwen3ASRStreamingHandler:
                         f"[COMMIT-SKIP] reason={_skip} stage=extract slot={slot_key} "
                         f"text={sentence_display_check!r}"
                     )
+                    # 스킵은 "안 내보낸다"이지 "원문에서 소비 안 했다"가 아니다.
+                    # 목록에서 빼버리면 Phase 1의 tail이 스킵된 문장에서 시작한 채로
+                    # 다음 문장의 startswith 검사를 받아 실패 → break, 뒤 문장 전부가
+                    # 미커밋으로 남아 flush(finish)로 흘러간다(실측 CoVoST2-spk
+                    # en_de_2c41823446e3: 모델이 'Fine.'을 두 번 뱉어 중복 1건이
+                    # 뒤의 'I agree.' / 'This could be the case.'를 인질로 잡아
+                    # finish 3건). emit=False로 함께 실어 커서만 전진시킨다.
+                    # commit 단계 스킵에는 이미 같은 처리가 있다(아래 Phase 1).
+                    sentences_to_commit.append((sentence, trigger, False))
                 else:
-                    sentences_to_commit.append((sentence, trigger))
+                    sentences_to_commit.append((sentence, trigger, True))
                     slot.pop("pending_dot_text", None)  # 커밋되면 보류 후보는 무효
                     slot.pop("pending_dot_accum", None)
                     _last_extracted_repeat = (
@@ -1804,7 +1826,11 @@ class Qwen3ASRStreamingHandler:
 
         # ── Phase 1: 커서 추적 + committed_len 즉시 확정 (GPT 호출 전) ─────────
         # raw ASR 텍스트 기준으로 커서를 확정하므로 GPT 교정 결과와 무관하게 안전.
+        # sentences_to_commit 원소는 (raw, trigger, emit)이며 emit=False는 "소비했지만
+        # 배출하지 않는다" — 커서만 전진시킨다.
         committed_items = []  # list of (sentence_display, trigger_reason)
+        _consumed_seg = 0     # emit=False로 소비한 <SEG> 수 (committed_seg_count 보정용)
+        _consumed_any = False  # 배출은 없어도 커서가 전진했는지
         latest_text: Optional[str] = None  # flush_lock 안에서 읽은 스냅샷, 호출자에게 반환
         # ASR revision으로 trailing punct가 바뀌어도 (거고, → 거고) 같은 문장으로 취급.
         # 대소문자도 같은 범주의 재디코딩 변형이다 — 커밋 후 모델이 'Oh, Papa!'를
@@ -1822,17 +1848,18 @@ class Qwen3ASRStreamingHandler:
                 latest_ns = re.sub(r'\s+', ' ', latest_text.replace("<SEG>", "")).strip()
                 cdisp = slot["committed_display"]
                 pos = len(cdisp) if (cdisp and latest_ns.startswith(cdisp)) else 0
-                for sentence_raw, trigger_reason in sentences_to_commit:
+                for sentence_raw, trigger_reason, _emit in sentences_to_commit:
                     sentence_display = sentence_raw.replace("<SEG>", "").strip()
                     _audio_span = self.current_time - slot.get("audio_anchor_sec", 0.0)
-                    _skip = self._commit_skip_reason(
-                        slot, sentence_display, stage="commit", trigger=trigger_reason)
-                    if _skip:
-                        self.log.info(
-                            f"[COMMIT-SKIP] reason={_skip} stage=commit slot={slot_key} "
-                            f"span={_audio_span:.2f}s text={sentence_display!r}"
-                        )
-                        continue
+                    if _emit:
+                        _skip = self._commit_skip_reason(
+                            slot, sentence_display, stage="commit", trigger=trigger_reason)
+                        if _skip:
+                            self.log.info(
+                                f"[COMMIT-SKIP] reason={_skip} stage=commit slot={slot_key} "
+                                f"span={_audio_span:.2f}s text={sentence_display!r}"
+                            )
+                            _emit = False
                     sent_core = sentence_display.rstrip(_PUNCT)
                     tail_ns = latest_ns[pos:].lstrip()
                     lead = len(latest_ns[pos:]) - len(tail_ns)
@@ -1844,12 +1871,17 @@ class Qwen3ASRStreamingHandler:
                     while end < len(tail_ns) and tail_ns[end] in _PUNCT:
                         end += 1
                     pos += lead + end
+                    if not _emit:
+                        # 소비만 하고 배출하지 않는다. 커서를 두면 다음 문장의
+                        # startswith가 실패해 뒤 문장 전부가 flush(finish)로 끌려간다.
+                        _consumed_any = True
+                        continue
                     # 커서(pos)는 원문 기준으로 이미 전진시켰으므로 여기서 잘라도 안전하다
                     sentence_display = self._strip_committed_prefix(slot, sentence_display)
                     if not sentence_display:
                         continue
                     committed_items.append((sentence_display, trigger_reason))
-                if committed_items:
+                if committed_items or _consumed_any:
                     slot["committed_display"] = latest_ns[:pos].strip()
                     slot["committed_len"] = len(latest_text)
                     slot["audio_anchor_sec"] = self.current_time
@@ -1873,21 +1905,25 @@ class Qwen3ASRStreamingHandler:
                         _found += 1
                     cursor = _p
                 tail = latest_text[cursor:]
-                for sentence_raw, trigger_reason in sentences_to_commit:
+                for sentence_raw, trigger_reason, _emit in sentences_to_commit:
                     sentence_display = sentence_raw.replace("<SEG>", "").strip()
                     _audio_span = self.current_time - slot.get("audio_anchor_sec", 0.0)
-                    _skip = self._commit_skip_reason(
-                        slot, sentence_display, stage="commit", trigger=trigger_reason)
-                    if _skip:
-                        self.log.info(
-                            f"[COMMIT-SKIP] reason={_skip} stage=commit slot={slot_key} "
-                            f"span={_audio_span:.2f}s text={sentence_display!r}"
-                        )
+                    if _emit:
+                        _skip = self._commit_skip_reason(
+                            slot, sentence_display, stage="commit", trigger=trigger_reason)
+                        if _skip:
+                            self.log.info(
+                                f"[COMMIT-SKIP] reason={_skip} stage=commit slot={slot_key} "
+                                f"span={_audio_span:.2f}s text={sentence_display!r}"
+                            )
+                            _emit = False
+                    if not _emit:
                         # 스킵은 "안 내보낸다"이지 "원문에서 소비 안 했다"가 아니다.
                         # 커서를 그대로 두면 다음 문장의 startswith 검사가 실패해 break로
                         # 빠지고, 뒤 문장 전부가 미커밋으로 남아 finish flush로 흘러간다
                         # (실측 1998-29455-0019: 중복 1건이 뒤의 'You are.' 2문장을 인질로
                         # 잡아 finish행). 스킵한 문장만큼 커서를 전진시킨다.
+                        # extract 단계 스킵도 emit=False로 여기 도달한다.
                         _st = tail.lstrip()
                         _lw = len(tail) - len(_st)
                         while _st.startswith("<SEG>"):
@@ -1896,6 +1932,8 @@ class Qwen3ASRStreamingHandler:
                         if _st.startswith(sentence_raw):
                             cursor += _lw + len(sentence_raw)
                             tail = latest_text[cursor:]
+                            _consumed_seg += sentence_raw.count("<SEG>")
+                            _consumed_any = True
                         continue
                     sentence_display = self._strip_committed_prefix(slot, sentence_display)
                     if not sentence_display:
@@ -1915,13 +1953,14 @@ class Qwen3ASRStreamingHandler:
                     cursor += leading_ws + len(sentence_raw)
                     tail = latest_text[cursor:]
                     committed_items.append((sentence_display, trigger_reason))
-                if committed_items:
+                if committed_items or _consumed_any:
                     slot["committed_len"] = cursor
                     slot["committed_prefix"] = latest_text[:cursor]
                     slot["committed_display"] = re.sub(
                         r'\s+', ' ', slot["committed_prefix"].replace("<SEG>", "")
                     ).strip()
-                    slot["committed_seg_count"] += sum(1 for _, tr in committed_items if tr == "seg")
+                    slot["committed_seg_count"] += (
+                        sum(1 for _, tr in committed_items if tr == "seg") + _consumed_seg)
                     slot["audio_anchor_sec"] = self.current_time
                     slot["committed_asr_set"].update(_asr_key(t) for t, _ in committed_items)
                     slot["committed_fuzzy_keys"].extend(
@@ -2115,14 +2154,20 @@ class Qwen3ASRStreamingHandler:
         # flush로 가기 전에 dot 확정 판정을 한 번 더 태운다(규칙 4). flush는 남은 걸 통째로
         # 한 커밋에 담지만, 확정 게이트를 태우면 문장 단위로 쪼개져 나간다. 커밋 시점은
         # 어차피 같은 순간이라 지연 손해는 없고, 클라이언트/번역이 문장 단위로 받는다.
-        if self.enable_dot_commit and self.dot_commit_confirm:
-            await self._process_slot_updates(self.active_slot, chunk_end=True, final=True)
-            # 규칙 4로 만들어진 커밋을 여기서 반드시 배출해야 한다. dot 커밋을 지연 전송하는
-            # 서브클래스(평가 서버)는 generate 완료 시점에 큐를 비우는데, 규칙 4는 finish
-            # 시점에 커밋하므로 뒤따르는 generate가 없어 비울 사람이 없다. 그대로 두면
-            # 확정·번역까지 다 해놓고 final 메시지를 안 보내 전사가 통째로 빈다
-            # (실측: 6128-63241-0006 등 6건이 빈 전사).
-            await self._drain_deferred_commits()
+        #
+        # 규칙 4는 **모든 축**에 태운다. 예전엔 dot 확정 게이트 전용이라
+        # `enable_dot_commit and dot_commit_confirm` 으로 막혀 있었는데, 그러면
+        # seg/always 축은 이 블록을 통째로 건너뛰고 잔여가 전부 flush(finish)로
+        # 흘러갔다(실측 CoVoST2-spk seg 축: 18,655 세그 중 5,793개가 finish).
+        # flush 는 잔여를 dot 경계 정규식으로 쪼개므로 SEG 기반 축에서 분할 기준이
+        # 어긋나고, 커서 전진/스킵 가드도 타지 않는다. 잔여는 축의 커밋 경로로 내보낸다.
+        await self._process_slot_updates(self.active_slot, chunk_end=True, final=True)
+        # 규칙 4로 만들어진 커밋을 여기서 반드시 배출해야 한다. dot 커밋을 지연 전송하는
+        # 서브클래스(평가 서버)는 generate 완료 시점에 큐를 비우는데, 규칙 4는 finish
+        # 시점에 커밋하므로 뒤따르는 generate가 없어 비울 사람이 없다. 그대로 두면
+        # 확정·번역까지 다 해놓고 final 메시지를 안 보내 전사가 통째로 빈다
+        # (실측: 6128-63241-0006 등 6건이 빈 전사).
+        await self._drain_deferred_commits()
         await self.flush_uncommitted(force=True, reason="finish", slot_key=self.active_slot)
 
     # ── 서브클래스 훅 ──────────────────────────────────────────────────────────

@@ -1,0 +1,430 @@
+{
+  "run_id": "ko-en/run04",
+  "n_units": 410,
+  "n_boundaries": 1003,
+  "score_keys": [
+    "delta_prefix",
+    "delta_prefix_prior",
+    "delta_prefix_resid",
+    "tile",
+    "tile_prior",
+    "tile_resid",
+    "ctx_delta",
+    "ctx_delta_prior",
+    "ctx_delta_resid"
+  ],
+  "encoders": [
+    {
+      "encoder": "multilingual-e5-large@L-1",
+      "agreement": {
+        "delta_prefix": {
+          "hit_rate": 0.4925,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.4944,
+            "6": 0.488
+          }
+        },
+        "delta_prefix_prior": {
+          "hit_rate": 0.5414,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.5253,
+            "6": 0.5808
+          }
+        },
+        "delta_prefix_resid": {
+          "hit_rate": 0.2822,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.2978,
+            "6": 0.244
+          }
+        },
+        "tile": {
+          "hit_rate": 0.337,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.3567,
+            "6": 0.2887
+          }
+        },
+        "tile_prior": {
+          "hit_rate": 0.4397,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.382,
+            "6": 0.5808
+          }
+        },
+        "tile_resid": {
+          "hit_rate": 0.2692,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.3188,
+            "6": 0.1478
+          }
+        },
+        "ctx_delta": {
+          "hit_rate": 0.5025,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.5042,
+            "6": 0.4983
+          }
+        },
+        "ctx_delta_prior": {
+          "hit_rate": 0.5414,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.5253,
+            "6": 0.5808
+          }
+        },
+        "ctx_delta_resid": {
+          "hit_rate": 0.2692,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.2654,
+            "6": 0.2784
+          }
+        }
+      },
+      "agreement_tol1": {
+        "delta_prefix": {
+          "hit_rate": 0.8046,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.8146,
+            "6": 0.7801
+          }
+        },
+        "delta_prefix_prior": {
+          "hit_rate": 0.8285,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.8413,
+            "6": 0.7973
+          }
+        },
+        "delta_prefix_resid": {
+          "hit_rate": 0.5284,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.5618,
+            "6": 0.4467
+          }
+        },
+        "tile": {
+          "hit_rate": 0.5244,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.5646,
+            "6": 0.4261
+          }
+        },
+        "tile_prior": {
+          "hit_rate": 0.668,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.6152,
+            "6": 0.7973
+          }
+        },
+        "tile_resid": {
+          "hit_rate": 0.4526,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.5267,
+            "6": 0.2715
+          }
+        },
+        "ctx_delta": {
+          "hit_rate": 0.8415,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.8539,
+            "6": 0.811
+          }
+        },
+        "ctx_delta_prior": {
+          "hit_rate": 0.8285,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.8413,
+            "6": 0.7973
+          }
+        },
+        "ctx_delta_resid": {
+          "hit_rate": 0.4875,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.4831,
+            "6": 0.4983
+          }
+        }
+      },
+      "rank_alignment": {
+        "delta_prefix": {
+          "mean_gap": 0.0392,
+          "auc": 0.7934,
+          "n_sentences": 410
+        },
+        "delta_prefix_prior": {
+          "mean_gap": 0.0337,
+          "auc": 0.8641,
+          "n_sentences": 410
+        },
+        "delta_prefix_resid": {
+          "mean_gap": 0.0055,
+          "auc": 0.4943,
+          "n_sentences": 410
+        },
+        "tile": {
+          "mean_gap": 0.0149,
+          "auc": 0.6465,
+          "n_sentences": 410
+        },
+        "tile_prior": {
+          "mean_gap": 0.0104,
+          "auc": 0.7341,
+          "n_sentences": 410
+        },
+        "tile_resid": {
+          "mean_gap": 0.0045,
+          "auc": 0.5422,
+          "n_sentences": 410
+        },
+        "ctx_delta": {
+          "mean_gap": 0.0049,
+          "auc": 0.8148,
+          "n_sentences": 410
+        },
+        "ctx_delta_prior": {
+          "mean_gap": 0.0035,
+          "auc": 0.8641,
+          "n_sentences": 410
+        },
+        "ctx_delta_resid": {
+          "mean_gap": 0.0015,
+          "auc": 0.451,
+          "n_sentences": 410
+        }
+      }
+    },
+    {
+      "encoder": "xlm-roberta-large@L-1",
+      "agreement": {
+        "delta_prefix": {
+          "hit_rate": 0.4756,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.4705,
+            "6": 0.488
+          }
+        },
+        "delta_prefix_prior": {
+          "hit_rate": 0.5414,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.5253,
+            "6": 0.5808
+          }
+        },
+        "delta_prefix_resid": {
+          "hit_rate": 0.2263,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.2233,
+            "6": 0.2337
+          }
+        },
+        "tile": {
+          "hit_rate": 0.3141,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.3202,
+            "6": 0.299
+          }
+        },
+        "tile_prior": {
+          "hit_rate": 0.348,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.3202,
+            "6": 0.4158
+          }
+        },
+        "tile_resid": {
+          "hit_rate": 0.2453,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.2851,
+            "6": 0.1478
+          }
+        },
+        "ctx_delta": {
+          "hit_rate": 0.4756,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.4761,
+            "6": 0.4742
+          }
+        },
+        "ctx_delta_prior": {
+          "hit_rate": 0.5414,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.5253,
+            "6": 0.5808
+          }
+        },
+        "ctx_delta_resid": {
+          "hit_rate": 0.2393,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.2444,
+            "6": 0.2268
+          }
+        }
+      },
+      "agreement_tol1": {
+        "delta_prefix": {
+          "hit_rate": 0.8136,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.8216,
+            "6": 0.7938
+          }
+        },
+        "delta_prefix_prior": {
+          "hit_rate": 0.8285,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.8413,
+            "6": 0.7973
+          }
+        },
+        "delta_prefix_resid": {
+          "hit_rate": 0.4536,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.4621,
+            "6": 0.433
+          }
+        },
+        "tile": {
+          "hit_rate": 0.5145,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.5478,
+            "6": 0.433
+          }
+        },
+        "tile_prior": {
+          "hit_rate": 0.5055,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.486,
+            "6": 0.5533
+          }
+        },
+        "tile_resid": {
+          "hit_rate": 0.4367,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.5154,
+            "6": 0.244
+          }
+        },
+        "ctx_delta": {
+          "hit_rate": 0.8126,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.8174,
+            "6": 0.8007
+          }
+        },
+        "ctx_delta_prior": {
+          "hit_rate": 0.8285,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.8413,
+            "6": 0.7973
+          }
+        },
+        "ctx_delta_resid": {
+          "hit_rate": 0.4606,
+          "n_boundaries": 1003,
+          "by_T": {
+            "3": 0.4747,
+            "6": 0.4261
+          }
+        }
+      },
+      "rank_alignment": {
+        "delta_prefix": {
+          "mean_gap": 0.004,
+          "auc": 0.7974,
+          "n_sentences": 410
+        },
+        "delta_prefix_prior": {
+          "mean_gap": 0.0031,
+          "auc": 0.8641,
+          "n_sentences": 410
+        },
+        "delta_prefix_resid": {
+          "mean_gap": 0.0008,
+          "auc": 0.4333,
+          "n_sentences": 410
+        },
+        "tile": {
+          "mean_gap": 0.0024,
+          "auc": 0.6102,
+          "n_sentences": 410
+        },
+        "tile_prior": {
+          "mean_gap": 0.0018,
+          "auc": 0.6852,
+          "n_sentences": 410
+        },
+        "tile_resid": {
+          "mean_gap": 0.0006,
+          "auc": 0.5271,
+          "n_sentences": 410
+        },
+        "ctx_delta": {
+          "mean_gap": 0.0021,
+          "auc": 0.7926,
+          "n_sentences": 410
+        },
+        "ctx_delta_prior": {
+          "mean_gap": 0.0014,
+          "auc": 0.8641,
+          "n_sentences": 410
+        },
+        "ctx_delta_resid": {
+          "mean_gap": 0.0007,
+          "auc": 0.4189,
+          "n_sentences": 410
+        }
+      }
+    }
+  ],
+  "chance": {
+    "hit_rate": 0.2347,
+    "n_boundaries": 20060
+  },
+  "chance_tol1": {
+    "hit_rate": 0.4428,
+    "n_boundaries": 20060
+  },
+  "mechanical": {
+    "hit_rate": 0.1974,
+    "n_boundaries": 1003
+  },
+  "mechanical_tol1": {
+    "hit_rate": 0.4337,
+    "n_boundaries": 1003
+  }
+}

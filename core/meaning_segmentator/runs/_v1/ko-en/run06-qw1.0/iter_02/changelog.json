@@ -1,0 +1,10 @@
+{
+  "sections_changed": [
+    "[Decision Procedure]",
+    "[Examples — Segment]"
+  ],
+  "changelog": [
+    "[Decision Procedure]: Added an explicit pre-scan step requiring the model to enumerate ALL candidate split points across the whole sentence (every connective ending/particle/punctuation cue from [When to Segment]) before evaluating any one of them, and revised step 7 to require re-applying steps 1–6 to remaining pieces (especially the longest/dominant one) after each accepted split instead of stopping at the first cut. This targets the critic's mean_k_eff diagnosis: sentences were getting one split while leaving a long dominant clause internally un-split, so latency was left on the table even where quality was safe.",
+    "[Examples — Segment]: Added two new generalizable example pairs (a mid-sentence '?' split and a causal -아서/그래서 split leading to an independent judgment clause) to reinforce, via demonstration rather than new rule text, that internal question marks and causal connectives followed by an independently interpretable clause are valid cut points — the exact permissive behaviors the critic's under-segmentation cases were missing. No examples removed since the section stayed under the 12-example cap."
+  ]
+}

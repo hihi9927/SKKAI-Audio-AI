@@ -17,17 +17,32 @@ _ABBREV_LOOKBEHIND = r"(?<!Mr)(?<!Mrs)(?<!Dr)(?<!St)(?<!Jr)(?<!Sr)(?<!vs)(?<!No)
 # 안쪽에 찍혀(`... a shop boy."`) 마침표 바로 뒤가 공백도 문자열 끝도 아니게 된다.
 # 이걸 흡수하지 않으면 인용문으로 끝나는 문장은 경계로 인정되지 않아 dot-commit이
 # 아예 발동하지 못하고 finish 커밋으로만 빠진다.
-_CLOSERS = r"[\"'”’»›\)\]\}]*"
+CLOSERS = r"[\"'”’»›\)\]\}]*"
 
 # 소수점(3.14)은 마침표 뒤에 공백이 없어 자연히 제외됨 — 별도 처리 불필요.
 DOT_COMMIT_BOUNDARY_RE = re.compile(
     r"(?:"
-    rf"{_ABBREV_LOOKBEHIND}\.{_CLOSERS}(?:\s+|$)"
-    rf"|[?!]{_CLOSERS}(?:\s+|$)"
-    rf"|[。？！]{_CLOSERS}"
+    rf"{_ABBREV_LOOKBEHIND}\.{CLOSERS}(?:\s+|$)"
+    rf"|[?!]{CLOSERS}(?:\s+|$)"
+    rf"|[。？！]{CLOSERS}"
     r"|<SEG>"
     r")"
 )
+
+# 종료 문장부호 기준 단순 분할 — 약어를 구분하지 않으므로 커밋 경계 판정에는 쓰지
+# 말고(그건 DOT_COMMIT_BOUNDARY_RE), "텍스트를 문장 단위 조각으로 훑는" 용도로만 쓴다.
+# 닫는 따옴표/괄호는 앞 문장에 붙여 흡수한다. 흡수하지 않으면 인용문으로 끝나는
+# 문장에서 닫는 따옴표가 독립 조각으로 떨어져 나온다(`... own men!"` →
+# `... own men!` + `"`). 앞 조각이 dedup 등으로 폐기되면 그 따옴표만 살아남아
+# 한 글자짜리 커밋이 나갔다 (실측: dev-clean 5694-64029-0020이 finish 커밋).
+SENTENCE_SPLIT_RE = re.compile(
+    rf"[^.!?。！？]*[.!?。！？]+{CLOSERS}\s*|[^.!?。！？]+$"
+)
+
+
+def split_sentences(text: str) -> list[str]:
+    """`text`를 종료 문장부호 기준으로 쪼갠다. 조각을 이어붙이면 원문이 복원된다."""
+    return SENTENCE_SPLIT_RE.findall(text)
 
 
 def count_dot_commit_boundaries(text: str) -> int:

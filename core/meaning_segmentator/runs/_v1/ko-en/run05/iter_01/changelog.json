@@ -1,0 +1,10 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Never Segment]"
+  ],
+  "changelog": [
+    "[When to Segment]: added explicit permissive rules to split before a discourse marker (그런데, 근데, 그래서, 그러니까) that begins a new clause even when the preceding clause ends in a causal/result connective or the discourse-marker clause trails off without a finished predicate, and reinforced that internal sentence-final punctuation (?/./!) is always a safe split point regardless of whether following material still elaborates the same referent — recovers the measured under-segmentation cases (그런데/그래서/? left unsplit) at no quality cost.",
+    "[Never Segment]: narrowed the causal/result-connective-fragment ban so it no longer blocks splits when the trailing span is itself introduced by a discourse marker (그래서/그러니까/근데/그런데), and removed the overly broad 'trailing ? on bare NP' prohibition since it was suppressing safe, measured latency gains at real punctuation boundaries — direction says segment more aggressively, so over-broad prohibitions are narrowed/removed rather than adding new restrictions."
+  ]
+}

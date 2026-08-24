@@ -1,0 +1,128 @@
+{
+  "cases": [
+    {
+      "id": "de_de_416",
+      "error_type": "format_violation",
+      "span": "Pythagoras, der hauptsächlich",
+      "evidence": "Many adjacent tags created gaps <3 tokens (gap_too_small).",
+      "cause": "Too-frequent boundaries without intervening punctuation or clause break.",
+      "proposed_rule": "Disallow proposing two boundaries that would be fewer than 3 source words apart unless a strong punctuation or an explicit clause boundary (.,;: or clear subordinating marker) sits between them.",
+      "example_pair": {
+        "input": "Ein anderer bekannter Grieche ist der Mathematiker Pythagoras, der hauptsächlich für seinen berühmten Lehrsatz über die Seitenverhältnisse von rechtwinkligen Dreiecken bekannt ist.",
+        "output": "Ein anderer bekannter Grieche <SEG:1> ist der Mathematiker Pythagoras, der hauptsächlich für seinen berühmten Lehrsatz über die Seitenverhältnisse von rechtwinkligen Dreiecken bekannt ist. <SEG:2>"
+      }
+    },
+    {
+      "id": "de_de_527",
+      "error_type": "priority",
+      "span": "den Chefingenieur <SEG:1> der italienischen",
+      "evidence": "The top-ranked boundary emitted 'seized the chief engineer' before the postnominal modifier 'of the Italian Tenth Army'.",
+      "cause": "boundary fell immediately after a noun head while a postnominal modifier/apposition had not arrived (modifier scope not yet settled).",
+      "proposed_rule": "Lower priority for boundaries at or near 상대위치 1/3 that sit immediately after a noun head when a genitive/postnominal modifier or appositive begins within the next ~3 tokens.",
+      "example_pair": {
+        "input": "Bei einem Überfall im Osten von Bardia ergriffen die Briten den Chefingenieur der italienischen Zehnten Armee, General Lastucci.",
+        "output": "Bei einem Überfall im Osten von Bardia <SEG:1> ergriffen die Briten den Chefingenieur der italienischen Zehnten Armee, General Lastucci. <SEG:2>"
+      }
+    },
+    {
+      "id": "de_de_1287",
+      "error_type": "priority",
+      "span": "Hebron, <SEG:1> der traditionellen",
+      "evidence": "Top-ranked break before an appositive led to piece split; adequacy improves slightly with more pieces.",
+      "cause": "boundary placed immediately before a long appositive/explanatory noun phrase (appositive not yet present).",
+      "proposed_rule": "When a boundary follows a place name or noun and is at 상대위치 1/3 (early-mid sentence) and the next span begins an appositive/explanatory noun phrase (often set off by comma), lower its rank so the appositive stays tied to its head when possible.",
+      "example_pair": {
+        "input": "Es gibt außerdem ein paar Busse, die nordwärts nach Hebron, der traditionellen Begräbnisstätte der biblischen Patriarchen Abraham, Isaak, Jakob und deren Ehefrauen, fahren.",
+        "output": "Es gibt außerdem ein paar Busse, die nordwärts nach Hebron, der traditionellen Begräbnisstätte der biblischen Patriarchen Abraham, Isaak, Jakob und deren Ehefrauen, fahren. <SEG:1>"
+      }
+    },
+    {
+      "id": "de_de_627",
+      "error_type": "priority",
+      "span": "ist folgender: <SEG:2> Es gibt nur",
+      "evidence": "Adequacy is noticeably better when lower-ranked boundaries are allowed (T=12 > T=6).",
+      "cause": "boundary placed right after a colon introducing a clause; the colon-introduced content completes the assertion and benefits from being emitted with the following clause.",
+      "proposed_rule": "Lower priority for boundaries that occur immediately after a colon or similar introducer at 상대위치 1/3 where the colon begins a clause that completes or qualifies the preceding assertion; prefer tying the introduced clause to the following clause.",
+      "example_pair": {
+        "input": "Der wichtigste Faktor dieser Einstellung ist folgender: Es gibt nur eine richtige Antwort. Man denkt an nur zwei mögliche Antworten, nämlich richtig oder falsch.",
+        "output": "Der wichtigste Faktor dieser Einstellung ist folgender: Es gibt nur eine richtige Antwort. <SEG:1> Man denkt an nur zwei mögliche Antworten, nämlich richtig oder falsch. <SEG:2>"
+      }
+    },
+    {
+      "id": "de_de_1449",
+      "error_type": "priority",
+      "span": "ein lebhaftes Bild <SEG:1> von Mohammeds",
+      "evidence": "Piece split the noun head from its 'of'-phrase; adequacy improved when that modifier remained attached.",
+      "cause": "boundary separates a noun head from its immediately following prepositional/postnominal modifier (modifier scope not yet available).",
+      "proposed_rule": "When a boundary falls where 구두점 없음 (no punctuation) separates a noun head from an immediate 'of'/'von' modifier within the next ~3 tokens, lower its rank so the head and modifier are kept together.",
+      "example_pair": {
+        "input": "Die Höhle selbst hat die Zeiten überdauert und bietet ein lebhaftes Bild von Mohammeds spirituellen Neigungen.",
+        "output": "Die Höhle selbst hat die Zeiten überdauert und bietet ein lebhaftes Bild von Mohammeds spirituellen Neigungen. <SEG:1>"
+      }
+    },
+    {
+      "id": "de_de_1276",
+      "error_type": "priority",
+      "span": "im Kofferraum ihres Autos entdeckt wurde, <SEG:1> sagen",
+      "evidence": "Adequacy at small T is substantially lower than at larger T (0.7576 -> 0.8236), so a top-ranked boundary was risky.",
+      "cause": "boundary placed near sentence-internal reporting/secondary clause boundaries early (relative position ~1/3) causing fragmentation of clause that conditions interpretation.",
+      "proposed_rule": "Reduce priority for boundaries occurring near 상대위치 1/3 when they cut off the end of a subordinate clause just before a reporting/main clause (reporting verbs like 'sagen', main finite verb), tie the clause to its reporting clause where possible.",
+      "example_pair": {
+        "input": "Eine Ärztin, die im Kinderkrankenhaus von Pittsburgh (Pennsylvania) tätig war, wird wegen schweren Mordes angeklagt, nachdem ihre tote Mutter am Mittwoch im Kofferraum ihres Autos entdeckt wurde, sagen Behörden in Ohio.",
+        "output": "Eine Ärztin, die im Kinderkrankenhaus von Pittsburgh (Pennsylvania) tätig war, wird wegen schweren Mordes angeklagt, nachdem ihre tote Mutter am Mittwoch im Kofferraum ihres Autos entdeckt wurde, <SEG:1> sagen Behörden in Ohio. <SEG:2>"
+      }
+    }
+  ],
+  "summary": "The prompt systematically over-ranks early/mid-sentence boundaries (상대위치 1/3) and boundaries that split heads from immediate postnominal modifiers or clause-introducing punctuation. Also it allows too-small gaps between proposed tags. Adjust priority down for boundaries that separate a noun head from its modifier, follow a colon, or occur within three words of another tag; enforce a minimum-gap condition unless strong punctuation or a clause boundary justifies it.",
+  "aggregate": {
+    "dominant_error": "priority",
+    "error_counts": {
+      "format_violation": 1,
+      "priority": 5
+    },
+    "focus": "placement",
+    "focus_reason": "측정 지표가 아무것도 안 걸림 — 기본값. 확실한 근거가 없으니 작은 수정만 할 것",
+    "priority_audit": [
+      {
+        "feature": "상대위치 1/3",
+        "n": 8,
+        "rank_percentile": 0.5,
+        "contradiction": 0.0245,
+        "over_trust": 0.1322
+      },
+      {
+        "feature": "뒤 구두점 ','",
+        "n": 12,
+        "rank_percentile": 0.618,
+        "contradiction": 0.0047,
+        "over_trust": 0.0067
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 8,
+        "rank_percentile": 0.74,
+        "contradiction": 0.0066,
+        "over_trust": -0.0177
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 9,
+        "rank_percentile": 0.824,
+        "contradiction": 0.0109,
+        "over_trust": -0.0604
+      },
+      {
+        "feature": "상대위치 0/3",
+        "n": 9,
+        "rank_percentile": 0.731,
+        "contradiction": 0.0548,
+        "over_trust": -0.1319
+      }
+    ],
+    "max_missing_boundaries": 0.0,
+    "max_premature_rate": 0.0,
+    "rank_lift": null,
+    "rank_lift_t": null,
+    "summary": "The prompt systematically over-ranks early/mid-sentence boundaries (상대위치 1/3) and boundaries that split heads from immediate postnominal modifiers or clause-introducing punctuation. Also it allows too-small gaps between proposed tags. Adjust priority down for boundaries that separate a noun head from its modifier, follow a colon, or occur within three words of another tag; enforce a minimum-gap condition unless strong punctuation or a clause boundary justifies it."
+  }
+}

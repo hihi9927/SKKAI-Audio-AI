@@ -1,0 +1,10 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Never Segment]"
+  ],
+  "changelog": [
+    "[When to Segment]: added two generalized rules to close under-segmentation gaps — (1) split after a fronted temporal/adverbial clause (e.g. しばらくすると、それから、) whenever the remainder is a complete independent clause with its own subject and verb, and (2) split at contrastive connectives (が、のですが、けれども) whenever both resulting clauses are complete and independently translatable, even if the whole sentence would already score well unsplit.",
+    "[Never Segment]: added three generalized trap rules from critic findings — (1) never split between a closing quotation and an immediately following short clause naming the speaker's/listener's reaction, since the quote and its reaction form one reorderable unit in Korean; (2) never split immediately after an idiomatic or ambiguous temporal/conditional phrase whose sense is only resolved by the clause that follows; (3) never split between two adjacent quoted utterances (or right before a sentence-final referential connective like それなり, そうして) when a later connective refers back to the combined exchange as a single unit."
+  ]
+}

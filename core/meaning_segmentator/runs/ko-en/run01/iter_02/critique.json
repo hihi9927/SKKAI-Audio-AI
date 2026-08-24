@@ -1,0 +1,63 @@
+{
+  "cases": [
+    {
+      "id": "KsponSpeech_E00391",
+      "error_type": "placement",
+      "span": "갔다 와서",
+      "evidence": "Piece rendered as completed past action ('came back') but the sentence's real aspect (recurring future obligation) only appears in 해야 되고, which came later and contradicted it.",
+      "cause": "head not yet arrived: tense/modality of the connective clause is set by a later obligation verb",
+      "proposed_rule": "When a connective clause's final tense or modality is governed by a later obligation/habitual verb (e.g. 해야 되다, 되고), do not fix past/completed tense for the earlier clause until that governing verb has been seen; rank such a boundary low or delay it past the governing verb.",
+      "example_pair": {
+        "input": "주말 껴서 주말 껴서 갔다 와서 또 다시 밀린 일 해야 되고.",
+        "output": "주말 껴서 주말 껴서 <SEG:2> 갔다 와서 또 다시 밀린 일 해야 되고 <SEG:1>."
+      }
+    },
+    {
+      "id": "KsponSpeech_E00066",
+      "error_type": "placement",
+      "span": "대전이라든가 아니면은",
+      "evidence": "Both early pieces assert mom herself is 'in a dead end', but the oracle shows mom telling someone else to go there; the reported-speech verb 하라고 하다 at the end reassigns subject/role.",
+      "cause": "head not yet arrived: clause structure (actor vs addressee) is only fixed by a later quotative/imperative verb",
+      "proposed_rule": "When a sentence ends in a reported-speech or imperative verb (e.g. ~하라고 하다) that determines whether preceding NPs are actor or addressee, do not segment before that verb arrives; keep candidate boundaries low-ranked until the verb is visible.",
+      "example_pair": {
+        "input": "엄마는 그냥 처음부터 조금 막 다른 데 대전 어 대전이라든가 아니면은 지역 중앙회 같은 거 이렇게 하라고 하는데.",
+        "output": "엄마는 그냥 처음부터 조금 막 다른 데 대전 어 대전이라든가 아니면은 지역 중앙회 같은 거 이렇게 하라고 하는데 <SEG:1>."
+      }
+    },
+    {
+      "id": "KsponSpeech_E00010",
+      "error_type": "placement",
+      "span": "지금 7월달에는 | 사람들이",
+      "evidence": "'사람들이' was rendered as generic 'People', but it refers to the speaker's own group ('we'); the antecedent '나는' was already sealed off in an earlier piece, removing the context needed to disambiguate.",
+      "cause": "wrong participant: referring pronoun/subject context was cut off by an earlier boundary",
+      "proposed_rule": "Do not separate a first-person subject marker from a following collective noun (e.g. 사람들이) that depends on it for an inclusive ('we') reading; keep them in the same piece so agent identity is resolvable.",
+      "example_pair": {
+        "input": "그래서 나는 지금 7월달에는 사람들이 돈 30만 원씩 뭐 달마다 30만 원씩 모아서 지금 그 태국여행 가기로 했거든.",
+        "output": "그래서 나는 지금 7월달에는 사람들이 돈 30만 원씩 뭐 달마다 30만 원씩 모아서 <SEG:1> 지금 그 태국여행 가기로 했거든."
+      }
+    },
+    {
+      "id": "KsponSpeech_E00036",
+      "error_type": "placement",
+      "span": "파는데",
+      "evidence": "The piece inserted an explicit 'I' as seller, but the source clause has no subject and the true agent is never the speaker per the oracle.",
+      "cause": "wrong participant: subject-omitted clause forced an agent guess before context established one",
+      "proposed_rule": "Do not close a boundary right after a subject-omitted converbal clause (e.g. ending in -는데) when no subject has yet been introduced; keep it merged with the following clause until an explicit or inferable subject appears, rather than inventing one.",
+      "example_pair": {
+        "input": "파는데 뭐 거기 그 관광비라 드는 거 같은데.",
+        "output": "파는데 뭐 거기 그 관광비라 드는 거 같은데 <SEG:1>."
+      }
+    }
+  ],
+  "summary": "Most failures are placement problems where a boundary was cut before a later verb or antecedent had resolved tense, modality, or participant identity, causing the emitted piece to assert something the rest of the sentence contradicts or forcing an invented subject/generic reading. The remaining cases (safe verdicts, missing boundaries) show no actionable defect and should not be treated as errors under the current rules.",
+  "aggregate": {
+    "dominant_error": "placement",
+    "error_counts": {
+      "placement": 4
+    },
+    "focus": "placement",
+    "max_truncation_shortfall": 1.3667,
+    "max_premature_rate": 0.25,
+    "summary": "Most failures are placement problems where a boundary was cut before a later verb or antecedent had resolved tense, modality, or participant identity, causing the emitted piece to assert something the rest of the sentence contradicts or forcing an invented subject/generic reading. The remaining cases (safe verdicts, missing boundaries) show no actionable defect and should not be treated as errors under the current rules."
+  }
+}

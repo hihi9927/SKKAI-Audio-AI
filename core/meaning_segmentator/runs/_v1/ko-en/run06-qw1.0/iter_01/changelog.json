@@ -1,0 +1,10 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Never Segment]"
+  ],
+  "changelog": [
+    "[When to Segment]: Added four concrete permissive rules based on measured under-segmentation cases — split after a causal '-아서'/'니까'/그래서 clause even in short sentences when the next clause is an independent judgment/result; split BEFORE a full condition+result '-면' unit when the preceding material is already a complete clause (not between the condition and its own result); treat internal '?' as a mandatory split candidate; split at a contrastive '그런데'/'하지만' joining two independently complete clauses. These directly target the five under-segmentation failures the critic identified without touching restrictive rules.",
+    "[Never Segment]: Narrowed two over-broad prohibitions that were blocking safe splits. The conditional/purpose-then-result ban now only blocks splitting BETWEEN a '-면' clause and its own result (not before the whole unit). The filler-dense/appositive-list cap now only applies when no clean causal/contrastive/punctuation boundary exists elsewhere in the sentence; if one does, split there (capped at two total) instead of defaulting to zero extra splits — this removes the mechanism that was driving mean_k_eff down while still protecting the specific dense-filler case the critic flagged as unrecoverable."
+  ]
+}

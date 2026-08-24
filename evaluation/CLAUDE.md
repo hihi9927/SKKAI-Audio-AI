@@ -2,7 +2,10 @@
 
 STiTy ASR+번역 파이프라인의 벤치마킹 하네스. 모든 평가는 별도로 실행 중인 WebSocket 서버에 연결해 진행한다.
 
-## 공통 실행 패턴
+트랙이 둘이다. **ASR 트랙**(WER/CER + FSL)은 아래 공통 패턴을 쓰고, **AST 트랙**(LAAL + BLEU)은
+서버·클라이언트가 따로다 — @ast/README.md 참조.
+
+## 공통 실행 패턴 (ASR 트랙)
 
 ```bash
 # 터미널 1 — 평가 서버 (모든 데이터셋에서 공유)
@@ -30,6 +33,7 @@ LibriSpeech만 클라이언트가 `servers/` 아래에 있다 (`servers/test_qwe
 | `(zh)RAMC/` | 중국어 | CER | 단문 발화 11,793개 / 화자 20명, TSV 레이블 |
 | `(es)CIEMPIESS/` | 스페인어 | WER | 1,000개 단문 클립, 4개 서브셋(train/read/fm/description) |
 | `smartturn/` | — | VAD F1/지연 | SmartTurn VAD 실험 (독립 트랙) |
+| `ast/` | en→de/ko/ja/zh/es | **LAAL + BLEU** | AST 트랙. 데이터는 FLEURS(리포 밖 `~/datasets/fleurs`), 서버는 `streaming_websocket_server_ast.py`, 데이터셋은 manifest로 교체 (독립 트랙) |
 
 ## 데이터 추적 정책
 
@@ -45,6 +49,8 @@ evaluation/{Dataset}/results/{model}/{scope}/{tag}/
 ├── plots/
 └── logs/
 ```
+
+AST 트랙은 데이터셋 이름이 한 단계 더 들어간다: `evaluation/ast/results/{dataset}/{model}/{scope}/{tag}/`.
 
 ## 주요 동작
 

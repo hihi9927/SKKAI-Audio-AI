@@ -1,0 +1,125 @@
+{
+  "note": "판정자(A6′ Judge) 타당도 관문의 고정 케이스. 사람이 작성했고 LLM 생성이 아니다 — LLM 이 만들면 판정자와 편향을 공유해 관문이 무력해진다. 각 변이의 expect 는 판정자가 내야 하는 verdict 다. benign_* 이 기준선이다: 조기 방출 자체는 죄가 아니고, 뒤가 반박할 때만 문제다. 이를 구별하지 못하는 판정자는 '짧은 조각은 다 나쁨'으로 퇴화해 루프를 보수화한다.",
+  "revisions": [
+    "2026-08-09: ko-en-p01 의 benign_incomplete 변이('그건 문제가' -> 'As for that, the problem') 삭제. 판정자가 3회 모두 premature 로 판정했고 그 근거('the problem' 의 정관사가 존재를 전제하는데 오라클은 그 존재를 부정)가 타당했다. 더 근본적으로 '그건 문제가' 는 영어로 옮길 때 관사를 강제당해 존재 전제 없는 렌더링이 불가능하므로, 무해한 조기 방출의 예시가 될 수 없는 소스 조각이다. 판정자에 맞춰 라벨을 바꾼 것이 아니라 방어할 수 없게 된 항목을 제거한 것이며, 기준선 역할은 ko-en-p06 으로 대체했다."
+  ],
+  "cases": [
+    {
+      "id": "ko-en-p01",
+      "type": "polarity",
+      "src": "그건 문제가 안 될 것 같은데",
+      "full_translation": "I don't think that will be a problem.",
+      "pieces_src": ["그건 문제가", "안 될 것 같은데"],
+      "boundary": 0,
+      "variants": {
+        "premature_negation": {
+          "pieces_tgt": ["That's a problem", "well, it probably won't be"],
+          "expect": "premature"
+        },
+        "safe_boundary": {
+          "pieces_src": ["그건", "문제가 안 될 것 같은데"],
+          "pieces_tgt": ["As for that,", "I don't think it will be a problem"],
+          "expect": "safe"
+        }
+      }
+    },
+    {
+      "id": "ko-en-p02",
+      "type": "participant",
+      "src": "김 대리가 박 과장한테 보고서를 넘겼다고 들었어요",
+      "full_translation": "I heard that Kim handed the report over to Manager Park.",
+      "pieces_src": ["김 대리가 박 과장한테", "보고서를 넘겼다고 들었어요"],
+      "boundary": 0,
+      "variants": {
+        "premature_role": {
+          "pieces_tgt": ["Manager Park gave it to Kim", "the report, I heard"],
+          "expect": "premature"
+        },
+        "benign_incomplete": {
+          "pieces_tgt": ["Kim, to Manager Park —", "handed over the report, I heard"],
+          "expect": "safe"
+        }
+      }
+    },
+    {
+      "id": "ko-en-p03",
+      "type": "modifier_scope",
+      "src": "어제 산 노트북이 벌써 고장 났대요",
+      "full_translation": "They say the laptop I bought yesterday is already broken.",
+      "pieces_src": ["어제 산", "노트북이 벌써 고장 났대요"],
+      "boundary": 0,
+      "variants": {
+        "premature_scope": {
+          "pieces_tgt": ["It broke yesterday", "the laptop, apparently, already"],
+          "expect": "premature"
+        },
+        "benign_incomplete": {
+          "pieces_tgt": ["Bought yesterday —", "the laptop is already broken, they say"],
+          "expect": "safe"
+        }
+      }
+    },
+    {
+      "id": "ko-en-p04",
+      "type": "head_not_arrived",
+      "src": "회의 자료를 오늘까지 보내달라고 하셨는데",
+      "full_translation": "They asked me to send the meeting materials by today.",
+      "pieces_src": ["회의 자료를 오늘까지", "보내달라고 하셨는데"],
+      "boundary": 0,
+      "variants": {
+        "premature_head": {
+          "pieces_tgt": ["They finished the meeting materials by today", "and asked me to send them"],
+          "expect": "premature"
+        },
+        "benign_incomplete": {
+          "pieces_tgt": ["The meeting materials, by today —", "they asked me to send them"],
+          "expect": "safe"
+        },
+        "benign_reordered": {
+          "pieces_tgt": ["By today, the meeting materials —", "please send them, they said"],
+          "expect": "safe"
+        }
+      }
+    },
+    {
+      "id": "ko-en-p06",
+      "type": "modal",
+      "note": "기준선 케이스. 소스 조각이 시간 부사구라 영어로 옮겨도 관사·극성이 붙지 않는다 — 뒤에 무엇이 오든 반박당할 수 없으므로 명확하게 무해하다. p01 의 삭제된 변이를 대체한다.",
+      "src": "내일 오후에 회의 일정이 바뀔 수도 있대요",
+      "full_translation": "They say the meeting schedule might change tomorrow afternoon.",
+      "pieces_src": ["내일 오후에", "회의 일정이 바뀔 수도 있대요"],
+      "boundary": 0,
+      "variants": {
+        "benign_incomplete": {
+          "pieces_tgt": ["Tomorrow afternoon,", "the meeting schedule might change, they say"],
+          "expect": "safe"
+        },
+        "premature_modal": {
+          "note": "경계를 한 칸 뒤로 옮겼다. 부사구 단독('내일 오후에')은 아무것도 단정할 수 없어 조기 방출 자체가 불가능하다 — 거기에 조기 변이를 얹으면 필연적으로 '없는 내용을 지어냄'(mistranslated)이 된다. '회의 일정이' 까지 오면 일정에 대해 단정할 수 있고, 그 단정을 뒤('바뀔 수도 있대요')가 반박한다.",
+          "pieces_src": ["내일 오후에 회의 일정이", "바뀔 수도 있대요"],
+          "boundary": 0,
+          "pieces_tgt": ["Tomorrow afternoon's meeting schedule is fixed", "or rather, it might change, they say"],
+          "expect": "premature"
+        }
+      }
+    },
+    {
+      "id": "ja-ko-p05",
+      "type": "polarity",
+      "src": "ごんはうなぎを盗みませんでした",
+      "full_translation": "곤은 뱀장어를 훔치지 않았습니다",
+      "pieces_src": ["ごんはうなぎを", "盗みませんでした"],
+      "boundary": 0,
+      "variants": {
+        "premature_negation": {
+          "pieces_tgt": ["곤은 뱀장어를 훔쳤습니다", "아니, 훔치지 않았습니다"],
+          "expect": "premature"
+        },
+        "benign_incomplete": {
+          "pieces_tgt": ["곤은 뱀장어를", "훔치지 않았습니다"],
+          "expect": "safe"
+        }
+      }
+    }
+  ]
+}

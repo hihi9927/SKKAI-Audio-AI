@@ -1,0 +1,10 @@
+{
+  "sections_changed": [
+    "[Never Segment]",
+    "[Examples — Segment]"
+  ],
+  "changelog": [
+    "Narrowed two over-broad [Never Segment] conditions (blanket discourse-marker restriction and trailing-connective restriction) that were blocking safe, evidence-backed splits: leading connectives (그니까/그래서/근데/etc.) followed by a full subject+predicate clause are now explicitly allowed as segment points right after the marker, and trailing result-connectives (그래서/그러니까) followed by additional clause content may now open a new segment, while bare/contentless trailing connectives remain merged. This follows the critic's 'segment more aggressively' direction by removing prohibitions rather than adding new ones, and targets the dominant under-segmentation failure (leading connectives, trailing short connective clauses) without touching the previously-tried and rejected [When to Segment]/[Decision Procedure] rule additions.",
+    "Refreshed [Examples — Segment] to replace two examples that were redundant with the existing terminal-punctuation rule with two new examples illustrating the newly-narrowed rules: splitting after a leading standalone discourse connective when a full clause follows, and splitting before a trailing result-connective clause that carries further content."
+  ]
+}

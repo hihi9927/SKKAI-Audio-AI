@@ -1,0 +1,10 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Priority Rules]"
+  ],
+  "changelog": [
+    "[When to Segment]: Added two permissive rules so boundaries before a not-yet-arrived reporting/opinion verb, governing verb, postposed subject, or disambiguating continuation of an idiomatic phrase are still marked as candidates instead of being withheld — increases coverage per critic focus.",
+    "[Priority Rules]: Added a new lowest tier (8) that explicitly demotes boundaries preceding a pending reporting/opinion verb, governing verb, postposed subject, or idiomatic-phrase disambiguation, addressing the placement cases by ranking them last rather than deleting them as candidates."
+  ]
+}

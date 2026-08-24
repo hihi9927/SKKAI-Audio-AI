@@ -1,0 +1,160 @@
+{
+  "cases": [
+    {
+      "id": "KsponSpeech_E00353",
+      "error_type": "over_segmentation",
+      "span": "하시다보니까 <SEG> 이제 아침에 이제 애들을",
+      "evidence": "seg piece 2 'Now in the morning, the kids' has no predicate, while full_trans supplies an inferred verb ('watch the kids')",
+      "cause": "trailing clause is elliptical/object-only and needs context from the whole sentence to infer its missing predicate; isolating it removes that cue",
+      "proposed_rule": "Do not place a boundary right before a trailing clause that ends in a bare object/noun with no verb of its own; keep it attached to the preceding clause so the predicate can be inferred.",
+      "example_pair": {
+        "input": "두 두 분이 맞벌이를 하시다보니까 이제 아침에 이제 애들을",
+        "output": "두 두 분이 맞벌이를 하시다보니까 이제 아침에 이제 애들을"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00509",
+      "error_type": "over_segmentation",
+      "span": "받아서 <SEG> 또 일어나라하기",
+      "evidence": "seg turns '왜...받아서' into a standalone question, losing the causal link to '일어나라하기 좀 그래', changing the meaning of the sentence",
+      "cause": "reason connective '-아서' scopes over the following clause via the earlier '왜'; splitting cuts that reason-result span",
+      "proposed_rule": "Do not split right after a reason connective (-아서/-니까) when an earlier interrogative or reason word in the sentence still needs the following clause to complete its scope.",
+      "example_pair": {
+        "input": "근데 아니 근데 아 나 왜 너무 많은 도움을 받아서 또 일어나라하기 좀 그래.",
+        "output": "근데 아니 근데 아 나 왜 너무 많은 도움을 받아서 또 일어나라하기 좀 그래."
+      }
+    },
+    {
+      "id": "KsponSpeech_E00451",
+      "error_type": "over_segmentation",
+      "span": "안된다면 <SEG> 또 제가",
+      "evidence": "seg inserts a redundant 'Also' and treats the condition as standalone, losing the fact that '안된다면' governs the later liking-history clause",
+      "cause": "conditional connective '-면/-다면' scope crosses the boundary; splitting detaches condition from the clause it modifies",
+      "proposed_rule": "Keep a conditional clause (-면, -다면) attached to the clause it governs; do not split immediately after the conditional connective.",
+      "example_pair": {
+        "input": "또 이제 그 그쪽이 안된다면 또 제가 저 역사학을 원해 좋 좋아하다 보니까",
+        "output": "또 이제 그 그쪽이 안된다면 또 제가 저 역사학을 원해 좋 좋아하다 보니까"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00691",
+      "error_type": "over_segmentation",
+      "span": "마시고 <SEG> 진짜 조용히만",
+      "evidence": "seg changes the single 'as long as they drink then go home quietly, it's fine' structure into an imperative 'let them drink' plus separate condition",
+      "cause": "the '-고' connective links two parts of one conditional statement; splitting changes mood and breaks the conditional relation",
+      "proposed_rule": "Do not split a '-고' connective when it links two halves of one overarching conditional ('as long as X, Y is fine') rather than two independent actions.",
+      "example_pair": {
+        "input": "진짜 얘 애들 술 한번 풀어주는 날 마시고 진짜 조용히만 들어가면 상관이 없어",
+        "output": "진짜 얘 애들 술 한번 풀어주는 날 마시고 진짜 조용히만 들어가면 상관이 없어"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00521",
+      "error_type": "over_segmentation",
+      "span": "없고 <SEG> 그냥 무조건",
+      "evidence": "final piece 'The champion who just goes halfway' is a bare noun phrase with no subject/verb, losing the implied 'I am' carried from earlier clauses",
+      "cause": "pro-drop subject continuity across clauses broken by an extra boundary, leaving a predicate-less fragment",
+      "proposed_rule": "Before finalizing a segment, check its translation can stand as a full sentence; if a segment would end as a bare noun phrase without subject/verb, merge it with the neighboring segment.",
+      "example_pair": {
+        "input": "에 에 에 이제 옛날이면 자신있게 자기 막 잘하고 그랬는데 이제 그런 것도 없고 그냥 무조건 그냥 반만 가는 챔피언 버스 타는 챔피언",
+        "output": "에 에 에 이제 옛날이면 자신있게 자기 막 잘하고 그랬는데 <SEG> 이제 그런 것도 없고 그냥 무조건 그냥 반만 가는 챔피언 버스 타는 챔피언"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00414",
+      "error_type": "under_segmentation",
+      "span": "호텔카지노? <SEG> 그런쪽으로",
+      "evidence": "reference_segmentation adds a boundary right after the rhetorical question, giving reference_gain 0.2304 with quality already at ceiling",
+      "cause": "a rhetorical question followed by an unrelated purpose clause is a free split point that was left untagged",
+      "proposed_rule": "Insert a boundary right after a sentence-medial question mark when it is followed by a separate purpose/reason clause; this costs no quality.",
+      "example_pair": {
+        "input": "나는 다른학교 편입으로 승무원쪽 가거나 아니면 호텔카지노? 그런쪽으로 가는 목적이 있어가지고",
+        "output": "나는 다른학교 편입으로 승무원쪽 가거나 아니면 호텔카지노? <SEG> 그런쪽으로 가는 목적이 있어가지고"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00587",
+      "error_type": "under_segmentation",
+      "span": "이제 <SEG> 그 여름방학기",
+      "evidence": "reference_segmentation splits right after the filler '이제' before the new independent clause, missed_gain 0.2279 at no quality cost",
+      "cause": "a temporal/discourse filler preceding a fresh subject+verb clause is a safe split point that was left whole",
+      "proposed_rule": "When a temporal/discourse filler (e.g. '이제') precedes a new independent clause with its own subject and verb, place the boundary right after the filler.",
+      "example_pair": {
+        "input": "이번 학기 다니고 다음 학기 때 쉴 때 이제 그 여름방학기 시작되잖아",
+        "output": "이번 학기 다니고 다음 학기 때 쉴 때 이제 <SEG> 그 여름방학기 시작되잖아"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00102",
+      "error_type": "under_segmentation",
+      "span": "그래서 <SEG> 그런 식으로",
+      "evidence": "reference_segmentation makes the leading connective '그래서' its own segment, missed_gain 0.09 with no quality loss",
+      "cause": "sentence-initial discourse connective followed by a full independent clause is a safe, low-risk split point",
+      "proposed_rule": "A sentence-initial discourse connective ('그래서', '근데', etc.) followed by a complete independent clause may be tagged as its own leading segment.",
+      "example_pair": {
+        "input": "그래서 그런 식으로 다치는 사람도 진짜 많은 거 같더라.",
+        "output": "그래서 <SEG> 그런 식으로 다치는 사람도 진짜 많은 거 같더라."
+      }
+    },
+    {
+      "id": "KsponSpeech_E00171",
+      "error_type": "under_segmentation",
+      "span": "버텼으면은 <SEG> 면제받을 수 있었잖아",
+      "evidence": "reference_segmentation splits the conditional clause from its result clause, missed_gain 0.2496 at no quality cost",
+      "cause": "a conditional clause ending in -았/었으면(은) followed by a self-contained result clause is a safe boundary that was skipped",
+      "proposed_rule": "Split a past-conditional clause ending in -았/었으면(은) from its following result clause when the result clause can stand alone.",
+      "example_pair": {
+        "input": "나 1년만 더 버텼으면은 면제받을 수 있었잖아.",
+        "output": "나 1년만 더 버텼으면은 <SEG> 면제받을 수 있었잖아."
+      }
+    },
+    {
+      "id": "KsponSpeech_E00831",
+      "error_type": "under_segmentation",
+      "span": "어쨌든 <SEG> 나는 이제",
+      "evidence": "reference_segmentation tags '어쨌든' as its own segment before the main clause, missed_gain 0.1094 with no quality loss",
+      "cause": "leading discourse marker 'anyway' followed by an independent clause is a free split point left untagged",
+      "proposed_rule": "Tag a sentence-initial discourse marker ('어쨌든', '아무튼', etc.) as its own segment when followed by an independent clause with its own subject and verb.",
+      "example_pair": {
+        "input": "어쨌든 나는 이제 가정을 같이 이끌어 나갈려면",
+        "output": "어쨌든 <SEG> 나는 이제 가정을 같이 이끌어 나갈려면"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00140",
+      "error_type": "under_segmentation",
+      "span": "지브리 같다고 <SEG> 막 뭐 한창",
+      "evidence": "perfect score with zero tags; no diagnostic headroom measured, but the quotation clause '...같다고' plus the trailing clause form two independent units",
+      "cause": "a quoted/reported-speech clause boundary ('-다고') was not exploited even though it can be translated independently",
+      "proposed_rule": "Consider a split right after a reported-speech connective (-다고/-라고) when the following clause is a separate independent statement, even if current quality is already at ceiling.",
+      "example_pair": {
+        "input": "이거 분위기가 막 지브리 같다고 막 뭐 한창 그거 했던 거 같은데",
+        "output": "이거 분위기가 막 지브리 같다고 <SEG> 막 뭐 한창 그거 했던 거 같은데"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00018",
+      "error_type": "under_segmentation",
+      "span": "음 그러니까 <SEG> 뭔가 즉흥적인",
+      "evidence": "perfect score with zero tags; no diagnostic headroom measured, but leading filler '음 그러니까' precedes a full independent clause",
+      "cause": "sentence-initial filler+connective combo was left attached instead of split off as its own low-risk segment",
+      "proposed_rule": "Split off a leading filler+discourse-connective combination ('음 그러니까', etc.) as its own segment when the remainder is a complete independent clause.",
+      "example_pair": {
+        "input": "음 그러니까 뭔가 즉흥적인 거보다는 너무 준비해온 것만 하는 느낌",
+        "output": "음 그러니까 <SEG> 뭔가 즉흥적인 거보다는 너무 준비해온 것만 하는 느낌"
+      }
+    }
+  ],
+  "summary": "The model over-splits disfluent spoken clauses right at causal/conditional/sequential connectives, severing reason-result or condition-result links and sometimes leaving predicate-less fragments; meanwhile it systematically leaves whole sentences with clear leading discourse markers, conditional endings, or question-then-purpose boundaries unsplit, forfeiting free latency gains. The fix is boundary placement relative to clause dependency (predicate/scope completeness), not fewer or more tags overall.",
+  "aggregate": {
+    "dominant_error": "under_segmentation",
+    "error_counts": {
+      "over_segmentation": 5,
+      "under_segmentation": 7
+    },
+    "over_seg_count": 5,
+    "under_seg_count": 7,
+    "direction": "fix boundary placement",
+    "summary": "The model over-splits disfluent spoken clauses right at causal/conditional/sequential connectives, severing reason-result or condition-result links and sometimes leaving predicate-less fragments; meanwhile it systematically leaves whole sentences with clear leading discourse markers, conditional endings, or question-then-purpose boundaries unsplit, forfeiting free latency gains. The fix is boundary placement relative to clause dependency (predicate/scope completeness), not fewer or more tags overall."
+  }
+}

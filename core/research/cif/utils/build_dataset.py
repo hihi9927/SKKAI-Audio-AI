@@ -132,6 +132,12 @@ def build(
     # 입력 데이터 로드
     with open(input_jsonl) as f:
         records = [json.loads(l) for l in f if l.strip()]
+
+    # 상대 audio 경로는 매니페스트(jsonl) 위치 기준으로 푼다 — CWD 에 의존하지 않게.
+    _base = Path(input_jsonl).resolve().parent
+    for r in records:
+        if r.get("audio") and not Path(r["audio"]).is_absolute():
+            r["audio"] = str((_base / r["audio"]).resolve())
     if limit > 0:
         records = records[:limit]
     log.info(f"총 {len(records)}개 샘플 처리")

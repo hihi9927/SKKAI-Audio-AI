@@ -1,0 +1,10 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Decision Procedure]"
+  ],
+  "changelog": [
+    "[When to Segment]: added a concrety rule to segment right after a complete '-어서/-서' reason clause when an independent main clause follows (zero-cost latency gain shown by reference data), a rule to isolate a filler+discourse-marker cluster (e.g. '아 어 근데') into its own segment even when it follows an existing boundary and a substantive clause follows, and sharpened the temporal-filler rule so that '이제'/'그때' sitting immediately before an independent main clause is split off with the PRECEDING material rather than left fused all the way through the main clause.",
+    "[Decision Procedure]: extended the fragile-spot relocation list (step 3) with four more patterns drawn from measured wrong-boundary cases — reason clause '-다보니까' feeding an elliptical continuation, an adversative '-는데' clause whose adverbial modifier scopes backward over the prior clause, a '-고' clause whose conditional scope continues into a following '-면' clause, and an ambiguous entity mention followed by its disambiguating appositive — in every case the instruction is to slide the boundary to the next safe clause-final point, never to drop the split. Also added a rule for chained causal explanations (e.g. 왜냐면...때문에 with multiple internal connectives): tag only the single outermost boundary between the claim and the whole causal explanation, not every internal connective inside it, since translating each internal connective as a separate sentence breaks the causal chain."
+  ]
+}

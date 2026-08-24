@@ -1,0 +1,10 @@
+{
+  "sections_changed": [
+    "[Never Segment]",
+    "[Examples — Do NOT Segment]"
+  ],
+  "changelog": [
+    "Added four precise, generalizable non-boundary rules to [Never Segment]: (1) don't split right after a causal/result connective (-다보니까/-아서/-니까) when the following clause's main verb hasn't appeared yet or shares an implicit subject with the preceding clause; (2) don't split inside a conditional chain (…하고 … -면) where the first clause has no complete predicate independent of the following if/when clause; (3) don't split where a discourse marker (또/그리고/근데) recurs on both sides of the boundary, which causes duplicated connectives in translation; (4) don't split right before a clause-final -고 that introduces a bare NP/predicate list still depending on the earlier clause's subject or copula.",
+    "Added four matching [Examples — Do NOT Segment] entries (generalized, not copied from evaluation data) illustrating each new rule, bringing the section to the 12-example cap without removing existing entries since the limit was not previously reached."
+  ]
+}

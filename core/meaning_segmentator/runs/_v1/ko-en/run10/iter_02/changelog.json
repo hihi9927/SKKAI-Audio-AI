@@ -1,0 +1,8 @@
+{
+  "sections_changed": [
+    "[When to Segment]"
+  ],
+  "changelog": [
+    "[When to Segment]: added six concrete repositioning rules drawn directly from measured wrong-boundary/under-segmentation cases, each telling the model WHERE to move an already-motivated boundary rather than adding a new prohibition or removing a split: (1) chained causal explanations (왜냐면...때문에) get exactly one boundary at the outer claim/explanation edge instead of one per internal connective; (2) a '-다보니까'/'-다 보니' clause followed by a still-elliptical, verb-less continuation is not cut at the connective — the cut moves forward to where the predicate actually closes; (3) a temporal/discourse filler (이제, 그때, 그니까) sitting between a subordinate clause and the following independent main clause is cut AFTER the filler, not before it; (4) a short filler+discourse-marker cluster (e.g. 아 어 근데) may be isolated as its own segment even when it follows an already-placed boundary, as long as a substantive clause follows; (5) an ambiguous/vague entity mention is kept together with its immediately following disambiguating clause, with the boundary moved past that clarifying material; (6) a '-고' linked clause and a following '-면' conditional that jointly govern the same scope are kept together, with the boundary placed after the whole conditional rather than between them. These reposition existing latency-motivated splits to the correct clause-closure point without reducing how often the model attempts to segment."
+  ]
+}

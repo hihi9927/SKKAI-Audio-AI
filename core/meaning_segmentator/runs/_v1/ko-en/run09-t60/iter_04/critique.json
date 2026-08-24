@@ -1,0 +1,149 @@
+{
+  "cases": [
+    {
+      "id": "KsponSpeech_E00353",
+      "error_type": "over_segmentation",
+      "span": "이제 아침에 이제 애들을",
+      "evidence": "Second piece has no verb; hypothesis says 'Now in the morning, the kids' losing the inferred verb the reference supplies ('watch the kids').",
+      "cause": "Split placed right before a syntactically incomplete trailing clause, so the isolated fragment has no verb for the translator to anchor to.",
+      "proposed_rule": "Do not place a boundary immediately before a clause that ends without a verb/predicate in the source; keep such trailing fragments attached to the preceding clause.",
+      "example_pair": {
+        "input": "두 두 분이 맞벌이를 하시다보니까 이제 아침에 이제 애들을",
+        "output": "두 두 분이 맞벌이를 하시다보니까 이제 아침에 이제 애들을"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00521",
+      "error_type": "over_segmentation",
+      "span": "그런 것도 없고 <SEG> 그냥 무조건",
+      "evidence": "Reference keeps 'I'm just a champion...' as one clause with implied subject; hypothesis drops the subject, rendering it as a bare noun phrase 'The champion who just goes halfway'.",
+      "cause": "Korean elides the subject; splitting before the final clause removes the only context that let the subject be inferred, so it disappears in translation.",
+      "proposed_rule": "When a clause has no explicit subject and depends on an earlier clause for its subject, do not split it off as a separate segment.",
+      "example_pair": {
+        "input": "에 에 에 이제 옛날이면 자신있게 자기 막 잘하고 그랬는데 이제 그런 것도 없고 그냥 무조건 그냥 반만 가는 챔피언 버스 타는 챔피언",
+        "output": "에 에 에 이제 옛날이면 자신있게 자기 막 잘하고 그랬는데 <SEG> 이제 그런 것도 없고 그냥 무조건 그냥 반만 가는 챔피언 버스 타는 챔피언"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00164",
+      "error_type": "over_segmentation",
+      "span": "그것도 이해를 못 해가지고 <SEG> 막 설명을 해주고",
+      "evidence": "Reference keeps 'they' as subject throughout; hypothesis's first segment switches to 'I' ('I don't understand that either') then the next segment reverts, producing an inconsistent subject.",
+      "cause": "Dropped subject pronoun is ambiguous out of context; isolating the clause makes the translator guess a different referent than the whole-sentence context implies.",
+      "proposed_rule": "Do not split a clause with an implicit/dropped subject away from the clause that establishes who that subject is.",
+      "example_pair": {
+        "input": "그래가지고 그것도 이해를 못 해가지고 막 설명을 해주고 근데 지가 뭐 신청했는지도 기억을 못하는 거야. 지가 교직신청을 했는지 안 했는지.",
+        "output": "그래가지고 그것도 이해를 못 해가지고 막 설명을 해주고 <SEG> 근데 지가 뭐 신청했는지도 기억을 못하는 거야. <SEG> 지가 교직신청을 했는지 안 했는지."
+      }
+    },
+    {
+      "id": "KsponSpeech_E00725",
+      "error_type": "wrong_boundary",
+      "span": "탔냐? 했더니 <SEG>",
+      "evidence": "Current segmentation attaches '했더니' to the question, producing a redundant 'I said... He said'; reference moves the boundary before '했더니' and avoids the duplication.",
+      "cause": "The reporting connective '했더니' ('so then/upon asking') introduces the following reported clause; keeping it with the preceding question forces the translator to add an extra reporting verb.",
+      "proposed_rule": "Place the boundary before a reporting connective like '했더니' so it stays attached to the clause it introduces, not the clause before it.",
+      "example_pair": {
+        "input": "어 근 걔 그러니까 내가 어 몇 번 탔냐? 했더니 자기도 3번밖에 안 탔다는 거야",
+        "output": "어 근 걔 그러니까 내가 어 몇 번 탔냐? <SEG> 했더니 자기도 3번밖에 안 탔다는 거야"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00483",
+      "error_type": "over_segmentation",
+      "span": "글쎄요 <SEG> 단 돈 15억엔을",
+      "evidence": "Splitting off the single filler word 'well' as its own segment adds a piece without any quality benefit, and overall segmentation quality (0.88) sits below threshold.",
+      "cause": "A one-word discourse filler translated alone still needs the following clause for tone/context, and isolating it buys no latency but risks tone mismatch.",
+      "proposed_rule": "Do not create a standalone segment for a single short discourse filler; attach it to the clause that follows.",
+      "example_pair": {
+        "input": "글쎄요 단 돈 15억엔을 받 받는다고 해서 우리가 그 아픔을 지울 수 있을까 저는 그건 아니라고 좀 보고 있습니다. 네.",
+        "output": "글쎄요 단 돈 15억엔을 받 받는다고 해서 우리가 그 아픔을 지울 수 있을까 <SEG> 저는 그건 아니라고 좀 보고 있습니다. <SEG> 네."
+      }
+    },
+    {
+      "id": "KsponSpeech_E00155",
+      "error_type": "under_segmentation",
+      "span": "아 그래도 <SEG> 워킹홀리데이",
+      "evidence": "Reference splits right after the opening filler+conjunction '아 그래도', gaining latency at zero quality cost (missed_gain 0.0826); current version left the whole sentence unsplit.",
+      "cause": "A leading filler+conjunction is a safe early boundary because everything after it forms a self-contained clause.",
+      "proposed_rule": "When a sentence opens with a short filler+conjunction (e.g. 'ah/well but'), place a boundary immediately after it if the remainder is a complete clause.",
+      "example_pair": {
+        "input": "아 그래도 워킹홀리데이 한 8개월만 하다 오면은 나름 괜찮을 거 같기도 해서 그런데 그 정도 휴학해도",
+        "output": "아 그래도 <SEG> 워킹홀리데이 한 8개월만 하다 오면은 나름 괜찮을 거 같기도 해서 그런데 그 정도 휴학해도"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00360",
+      "error_type": "under_segmentation",
+      "span": "잘 안 돼서 <SEG> 오빠가",
+      "evidence": "Reference splits at the causal connective '-어서' boundary, gaining large quality-free speed (missed_gain 0.2422); current left it whole.",
+      "cause": "The causal clause and its result clause are each independently translatable; failing to split at the '-어서' boundary wastes available latency.",
+      "proposed_rule": "Split at a causal connective ('-어서/-아서') when the clause before it and the clause after it can each stand as an independent statement.",
+      "example_pair": {
+        "input": "지금 우리가 뭔가 하고 준비를 하고있는 게 잘 안 돼서 오빠가 조금 조급해하고 있는 것 같은데",
+        "output": "지금 우리가 뭔가 하고 준비를 하고있는 게 잘 안 돼서 <SEG> 오빠가 조금 조급해하고 있는 것 같은데"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00716",
+      "error_type": "under_segmentation",
+      "span": "나중에 <SEG> 알바 끝나고 나서 <SEG>",
+      "evidence": "Reference places two boundaries around the sequential temporal clauses, gaining large free speed (missed_gain 0.2975); current sentence stayed whole.",
+      "cause": "Sequential time adverbials ('나중에', '-고 나서') mark natural clause-final points where the following action is self-contained.",
+      "proposed_rule": "Split after sequential temporal markers ('나중에', '-고 나서') when each resulting piece describes one complete event in the sequence.",
+      "example_pair": {
+        "input": "밤에 나중에 알바 끝나고 나서 친구들이랑 고기를 먹고 헤어졌는데",
+        "output": "밤에 나중에 <SEG> 알바 끝나고 나서 <SEG> 친구들이랑 고기를 먹고 헤어졌는데"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00704",
+      "error_type": "under_segmentation",
+      "span": "싶기도 <SEG> 내 생각에는",
+      "evidence": "Reference splits before the opinion-introducing phrase '내 생각에는', gaining large free speed (missed_gain 0.2431); current left it whole.",
+      "cause": "A shift to an explicit new subject/opinion marker ('내 생각에는') signals a self-contained clause that does not need prior context.",
+      "proposed_rule": "Split immediately before an explicit opinion-introducing phrase (e.g. '내 생각에는') when it starts a new independent statement.",
+      "example_pair": {
+        "input": "너도 뜻대로 잘 안 돼서 그렇게 좀 있는건가 싶기도 내 생각에는 그런 거 같 싶기도 하고",
+        "output": "너도 뜻대로 잘 안 돼서 그렇게 좀 있는건가 싶기도 <SEG> 내 생각에는 그런 거 같 싶기도 하고"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00414",
+      "error_type": "under_segmentation",
+      "span": "호텔카지노? <SEG> 그런쪽으로",
+      "evidence": "Reference splits right after the embedded question '호텔카지노?', gaining large free speed (missed_gain 0.2304); current version stayed whole.",
+      "cause": "The embedded rhetorical question is a complete unit by itself; the following resumption clause is independently translatable.",
+      "proposed_rule": "Split immediately after an embedded question mark inside a sentence when the following text resumes as a separate independent clause.",
+      "example_pair": {
+        "input": "나는 다른학교 편입으로 승무원쪽 가거나 아니면 호텔카지노? 그런쪽으로 가는 목적이 있어가지고",
+        "output": "나는 다른학교 편입으로 승무원쪽 가거나 아니면 호텔카지노? <SEG> 그런쪽으로 가는 목적이 있어가지고"
+      }
+    },
+    {
+      "id": "KsponSpeech_E00587",
+      "error_type": "under_segmentation",
+      "span": "이제 <SEG> 그 여름방학기",
+      "evidence": "Reference splits right before the final clause after the filler '이제', gaining large free speed (missed_gain 0.2279); current version stayed whole.",
+      "cause": "The trailing filler '이제' marks a topic shift into a new self-contained clause ('summer vacation begins'), which does not need prior context.",
+      "proposed_rule": "Split before a final clause introduced by a topic-shifting filler like '이제' when that clause is a complete independent statement.",
+      "example_pair": {
+        "input": "이번 학기 다니고 다음 학기 때 쉴 때 이제 그 여름방학기 시작되잖아",
+        "output": "이번 학기 다니고 다음 학기 때 쉴 때 이제 <SEG> 그 여름방학기 시작되잖아"
+      }
+    }
+  ],
+  "summary": "The prompt over-splits around dropped subjects, verb-less trailing fragments, and reporting connectives, breaking pronoun/subject continuity; it also under-splits many long sentences at safe, quality-neutral boundaries like causal '-어서', sequential '-고 나서', opinion markers, and topic-shifting fillers, leaving free latency on the table. Fixes should target boundary placement relative to elided subjects and connective scope rather than banning any specific ending outright.",
+  "aggregate": {
+    "dominant_error": "under_segmentation",
+    "error_counts": {
+      "over_segmentation": 4,
+      "wrong_boundary": 1,
+      "under_segmentation": 6
+    },
+    "over_seg_count": 5,
+    "under_seg_count": 6,
+    "direction": "fix boundary placement",
+    "summary": "The prompt over-splits around dropped subjects, verb-less trailing fragments, and reporting connectives, breaking pronoun/subject continuity; it also under-splits many long sentences at safe, quality-neutral boundaries like causal '-어서', sequential '-고 나서', opinion markers, and topic-shifting fillers, leaving free latency on the table. Fixes should target boundary placement relative to elided subjects and connective scope rather than banning any specific ending outright."
+  }
+}
