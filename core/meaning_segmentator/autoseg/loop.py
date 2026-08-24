@@ -25,7 +25,7 @@ from pathlib import Path
 from . import agents, data, metrics, noise_floor
 from .gateway import BudgetExceeded, Gateway
 from .pipeline import (GoogleTranslator, JsonCache, Translator, blocks_scoring,
-                       chunk_budget, normalize_tags, segment_batch, shuffle_priorities,
+                       coverage_need, normalize_tags, segment_batch, shuffle_priorities,
                        split_segments, to_lang_code, truncate, unit_count, validate)
 
 _HERE = Path(__file__).resolve().parent
@@ -581,24 +581,6 @@ def fmt_metrics(m: metrics.Metrics, tag: str) -> str:
 
 
 # ── 메인 ─────────────────────────────────────────────────────────────────
-
-def coverage_need(text: str, min_t: int, spaced: bool, min_gap: int) -> int:
-    """검증기가 요구할 최소 태그 수. **간격 용량을 넘지 않게 깎는다.**
-
-    개수 요건과 간격 요건은 서로 모른 채 각각 하한/상한을 건다. 짧은 문장에서
-    개수 요건이 태그를 요구하는데 `min_gap` 을 만족하는 자리가 0개면, 둘을 그대로 두면
-    **만족 불가능한 요건**이 되어 그 문장이 영원히 재시도를 돈다 (kspon 150문장 중
-    min_gap=3 에서 1건, =4 에서 7건).
-
-    용량으로 깎으면 그런 문장은 태그 0개가 허용되고 그대로 **무분절**로 나간다 —
-    절단기에서 무분절이 나오는 경로와 같은 결론이고, 짧은 발화가 통째로 나가야 하는
-    바로 그 경우다.
-    """
-    need = max(0, chunk_budget(text, min_t, spaced) - 1)
-    if min_gap > 0:
-        need = min(need, max(0, unit_count(text, spaced) // min_gap - 1))
-    return need
-
 
 # ── T 격자 유도 ──────────────────────────────────────────────────────────
 

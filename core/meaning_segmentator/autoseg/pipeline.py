@@ -533,6 +533,36 @@ def chunk_budget(text: str, target_chunk_words: int, spaced: bool) -> int:
     return max(1, round(unit_count(text, spaced) / target_chunk_words))
 
 
+def boundaries(text: str, target_chunk_words: int, spaced: bool) -> int:
+    """T 로 나눌 때 **필요한 경계 수**. `chunk_budget >= 1` 이라 음수가 안 나온다."""
+    return chunk_budget(text, target_chunk_words, spaced) - 1
+
+
+def capacity(text: str, min_gap: int, spaced: bool) -> int:
+    """`min_gap` 을 지키며 **넣을 수 있는 경계 수의 상한**.
+
+    조각이 각각 min_gap 이상이어야 하므로 조각 수가 `길이 // min_gap` 을 못 넘는다.
+    목표치(`boundaries`)는 반올림이지만 이쪽은 **버림**이다 — 한계라서 넘을 수 없다.
+    """
+    return max(0, unit_count(text, spaced) // min_gap - 1)
+
+
+def coverage_need(text: str, min_t: int, spaced: bool, min_gap: int) -> int:
+    """검증기가 요구할 최소 태그 수 = min(필요한 수, 넣을 수 있는 수).
+
+    개수 요건과 간격 요건은 서로 모른 채 각각 하한/상한을 건다. 용량으로 깎지 않으면
+    짧은 문장에서 **만족 불가능한 요건**이 되어 그 문장이 영원히 재시도를 돈다
+    (kspon 150문장 중 min_gap=3 에서 1건, =4 에서 7건).
+
+    깎여서 0 이 되면 그 문장은 태그 없이 통과하고 **무분절**로 나간다 — 절단기에서
+    무분절이 나오는 경로와 같은 결론이고, 짧은 발화가 통째로 나가야 하는 경우다.
+    """
+    need = boundaries(text, min_t, spaced)
+    if min_gap > 0:
+        need = min(need, capacity(text, min_gap, spaced))
+    return need
+
+
 def truncate(seg_text: str, target_chunk_words: int,
              spaced: bool = True, min_gap: int = 0) -> tuple[str, int]:
     """순위 상위 `k−1` 개 경계만 남긴다. 반환 `(절단된 seg_text, missing_boundaries)`.
@@ -584,11 +614,11 @@ def truncate(seg_text: str, target_chunk_words: int,
     """
     tags = list(TAG_RE.finditer(seg_text))
     if not tags:
-        return seg_text, max(0, chunk_budget(seg_text, target_chunk_words, spaced) - 1)
+        return seg_text, boundaries(seg_text, target_chunk_words, spaced)
 
     prios = [int(m.group(1)) if m.group(1) else None for m in tags]
     body = strip_tags(seg_text, spaced)
-    want = max(0, chunk_budget(body, target_chunk_words, spaced) - 1)
+    want = boundaries(body, target_chunk_words, spaced)
     if any(p is None for p in prios):
         return seg_text, max(0, want - len(tags))      # 순위 없음 — 절단 불가
 

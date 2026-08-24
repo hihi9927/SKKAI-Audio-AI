@@ -46,7 +46,7 @@ from . import data, metrics
 from .gateway import Gateway
 from .loop import (compare_baselines, load_contra_floor, score_split,
                    target_is_spaced)
-from .pipeline import (GoogleTranslator, JsonCache, blocks_scoring, chunk_budget,
+from .pipeline import (GoogleTranslator, JsonCache, blocks_scoring, coverage_need,
                        normalize_tags, segment_batch, to_lang_code, truncate,
                        validate)
 
@@ -299,7 +299,7 @@ def main() -> int:
 
     try:
         # ── 분절 1회 (타깃 무관) ─────────────────────────────────────────
-        need = lambda txt: max(0, chunk_budget(txt, coverage_t, spaced) - 1)
+        need = lambda txt: coverage_need(txt, coverage_t, spaced, 0)
         before = gw.usage.snapshot()["calls"]
         seg_texts, first_pass = segment_batch(
             gw, prompt, texts, cache=seg_cache, workers=args.workers,

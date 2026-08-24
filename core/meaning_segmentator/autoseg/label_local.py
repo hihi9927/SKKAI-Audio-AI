@@ -27,7 +27,7 @@ from pathlib import Path
 
 from . import repair_local as R
 from .ollama_gateway import Gateway
-from .pipeline import (JsonCache, chunk_budget, normalize_tags, split_segments,
+from .pipeline import (JsonCache, coverage_need, normalize_tags, split_segments,
                        truncate, unit_count, validate)
 
 SPACED = True
@@ -46,12 +46,6 @@ RETRY_TMPL = (
     "every piece has at least 3 words.]"
 )
 
-
-def coverage_need(text: str, min_t: int, spaced: bool, min_gap: int) -> int:
-    need = max(0, chunk_budget(text, min_t, spaced) - 1)
-    if min_gap > 0:
-        need = min(need, max(0, unit_count(text, spaced) // min_gap - 1))
-    return need
 
 
 def main() -> int:
