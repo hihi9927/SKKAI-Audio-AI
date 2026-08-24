@@ -40,6 +40,7 @@ LANGS = {
     "ja": ("ja_jp", "Japanese", False),
     "zh": ("cmn_hans_cn", "Chinese", False),
     "ko": ("ko_kr", "Korean", True),
+    "en": ("en_us", "English", True),
 }
 
 
@@ -121,6 +122,16 @@ def main() -> int:
     jobs, missing = [], 0
     for line in man.open(encoding="utf-8"):
         e = json.loads(line)
+        # 매니페스트가 wav 경로를 직접 갖고 있으면 그걸 쓴다 (en-de 트랙 형식).
+        # 없으면 TSV 에서 talk_id -> 파일명을 찾는다 (n-way 형식).
+        if e.get("wav"):
+            wav = Path(e["wav"])
+            dur = float(e.get("duration") or 0.0) * 1000
+            if not wav.exists() or dur <= 0:
+                missing += 1
+                continue
+            jobs.append((e["utt_id"], e["src_text"], wav, dur))
+            continue
         split = e.get("fleurs_split") or "train"
         cands = tsv.get(split, {}).get(str(e["talk_id"]))
         if not cands:

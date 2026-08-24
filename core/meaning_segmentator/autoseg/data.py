@@ -219,6 +219,52 @@ def _load_multi2en(src: str, path: Path | None = None) -> list[Sentence]:
     return load_ast_manifest(path)
 
 
+# 데이터셋 -> 매니페스트 경로. 발화 속도를 재려면 발화 길이가 필요한데, 그건
+# 매니페스트 옆의 강제정렬 산출물(`*_unittimes.json`)에 들어 있다.
+# 없는 데이터셋은 `--units-per-sec` 로 직접 주거나 `--min-gap` 을 직접 준다.
+_AST = _REPO_ROOT / "evaluation" / "ast" / "manifests"
+MANIFESTS = {
+    "fleurs-en-de": _AST / "fleurs_en-de_test.jsonl",
+    "fleurs-en-ko": _AST / "fleurs_en-ko_test.jsonl",
+    "fleurs-de-en": _AST / "fleurs_nway_de-en_multi2en_loop240.jsonl",
+    "fleurs-ja-en": _AST / "fleurs_nway_ja-en_multi2en_loop240.jsonl",
+    "fleurs-zh-en": _AST / "fleurs_nway_zh-en_multi2en_loop240.jsonl",
+}
+
+
+def units_per_sec(dataset: str, sentences: list[Sentence],
+                  spaced: bool) -> tuple[float | None, str]:
+    """코퍼스 발화 속도 (단위/초). 반환 `(값, 출처)`.
+
+    **발화 구간으로 잰다** — `speech_ms` 는 첫 span 시작부터 마지막 span 끝까지다.
+    녹음 전체 길이(`dur_ms`)를 쓰면 앞뒤 무음이 섞여 속도가 과소평가된다:
+    FLEURS 실측에서 무음이 de/ja/zh 모두 24~25% 로, 총 길이 기준과 발화 구간 기준이
+    de 1.84 vs 2.43, ja 4.36 vs 5.77, zh 3.55 vs 4.74 (단위/초) 로 갈렸다.
+    녹음 관행이지 언어 특성이 아니므로 빼는 것이 맞다.
+
+    **두 기준을 섞으면 안 된다** — 25% 차이가 그대로 `min_gap` 으로 들어가 런 간
+    비교가 깨진다. 그래서 출처 문자열을 함께 돌려주고 호출자가 config 에 남긴다.
+    """
+    man = MANIFESTS.get(dataset)
+    if man is None:
+        return None, "none"
+    ut = man.with_name(man.stem + "_unittimes.json")
+    if not ut.exists():
+        return None, "none"
+    times = json.loads(ut.read_text(encoding="utf-8"))
+    unit = (lambda t: len(t.split())) if spaced else (lambda t: len(t.replace(" ", "")))
+    tot_u = tot_ms = 0.0
+    for s in sentences:
+        e = times.get(s.id)
+        if not e or not e.get("speech_ms"):
+            continue
+        tot_u += unit(s.text)
+        tot_ms += e["speech_ms"]
+    if tot_ms <= 0:
+        return None, "none"
+    return tot_u / (tot_ms / 1000.0), f"alignment:{ut.name}"
+
+
 LOADERS = {
     "kokoro": load_kokoro,
     "kspon": load_kspon,

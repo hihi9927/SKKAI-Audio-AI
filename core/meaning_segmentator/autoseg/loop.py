@@ -613,22 +613,31 @@ def coverage_need(text: str, min_t: int, spaced: bool, min_gap: int) -> int:
 # 그래서 격자 최소 T 를 `ceil(1.3 · min_gap)` 으로 잡으면 6개 실측 바닥을 모두 넘는다.
 # 배수 (1, 1.5, 2, 3) 은 기존 기본 격자 [2,3,4,6] 의 비율 그대로다 — `min_gap=0` 이면
 # 예전 기본값 ([2,3,4,6] / [3,6])이 정확히 재현되므로 기존 런과의 연속성이 유지된다.
-# **`min_gap` 은 코퍼스에서 유도한다 — 언어별로 사람이 정하지 않는다.**
-# 손으로 정했던 값들이 하나의 비율로 재현된다 (§MULTI2EN_DATASET.md 5.4):
-#   en 3/20=0.150  de 3/20=0.150  zh 6/38=0.158  ja 8/52=0.154
-# `1/0.15 ≈ 6.7` = "한 문장 최대 6~7조각"이라는 페이싱 상수로, 언어 속성이 아니다.
-# 단위는 `measure_profile` 이 판정한다(어절 vs 문자) — 그래서 값이 언어마다 달라도
-# **규칙은 하나**다.
+# **`min_gap` 은 시간이다 — 토큰 수가 아니다.**
 #
-# **한계**: 짧은 자발발화 레지스터에서는 어긋난다. ko(KsponSpeech)는 중앙 5어절인데
-# 실제로 쓴 값이 3(비율 0.60)이다. `min_gap` 이 두 역할을 겸하기 때문이다 —
-# ① 길이 비례 조각 수 상한(이 식), ② 길이와 무관한 절대 최소 방출량. 긴 문어체에서는
-# 둘이 같은 값에서 만나 구별되지 않는다. 유도값이 3 미만이면 경고한다.
-MIN_GAP_RATIO = 0.15
+# 하는 일이 "청자가 알아들을 수 있는 최소 방출량"이라 **문장 길이와 무관**해야 한다.
+# 종전 식 `중앙 문장길이 × 0.15` 는 길이 무관한 양을 길이에서 유도했고, 근거로 든
+# 네 언어 중 de·ja·zh 는 **같은 240문장**을 세 언어로 옮긴 것이라 독립 관측이 1개였다.
+# 성격이 다른 ko(KsponSpeech, 중앙 5어절)에서 유도값 2 가 나와 사람이 쓴 3 과 어긋났다.
+#
+# 강제정렬로 발화 속도를 재니 손으로 정했던 값들이 **하나의 시간**으로 모인다
+# (FLEURS loop240, 발화 구간 기준. `data.units_per_sec` 참고):
+#     de 3어절 / 2.43 = 1.23초    ja 8자 / 5.77 = 1.39초    zh 6자 / 4.74 = 1.27초
+# 산포가 토큰 축 2.7배 -> 시간 축 1.12배로 준다. `TIME_AXIS_KNOB.md` §3 이 예고한
+# "r=0.15 는 시간 불변성을 토큰 축에서 재구성한 것" 이 수치로 확인된 셈이다.
+#
+# **1300ms 는 사양이지 유도값이 아니다.** 목표 지연을 데이터에서 뽑지 않는 것과 같다.
+# 위 세 실측(1.23/1.39/1.27초)의 중앙이고, 언어별 값은 발화 속도로 환산해서 나온다.
+#
+# **시간이 프롬프트에 도달하지는 않는다.** 분절기는 텍스트 모델이라 "1.3초마다 표시"를
+# 못 알아듣는다(TIME_AXIS_KNOB.md §4.2). 환산은 여기서 끝나고 아래로는 전부 토큰
+# 단위로 흐른다 — 프롬프트 문면도 검증기도 절단기도 종전과 같다.
+MIN_GAP_MS = 1300
 
 
-def derive_min_gap(median_units: int) -> int:
-    return max(2, int(median_units * MIN_GAP_RATIO + 0.5))
+def derive_min_gap(units_per_sec: float) -> int:
+    """발화 속도(단위/초)를 최소 조각 크기(단위)로 환산한다."""
+    return max(2, round(MIN_GAP_MS / 1000.0 * units_per_sec))
 
 
 def derive_t_grids(min_gap: int) -> tuple[list[int], list[int]]:
@@ -707,6 +716,8 @@ def main() -> int:
                         "미지정 시 **코퍼스에서 유도**한다 (중앙 단위수 × 0.15). 0=끔")
     p.add_argument("--batch-size", type=int, default=6,
                    help="한 분절 호출에 넣을 문장 수. 실측 최적 6, 12 이상은 역효과")
+    p.add_argument("--units-per-sec", type=float, default=None,
+                   help="코퍼스 발화 속도(단위/초). 강제정렬 산출물이 없을 때 직접 준다")
     p.add_argument("--density", type=int, default=None,
                    help="후보 마킹 하한 기준 T. 작을수록 많이 찍는다. 미지정 시 min(--final-t-grid)")
     p.add_argument("--no-trust-region", action="store_true",
@@ -789,17 +800,25 @@ def main() -> int:
     # **`min_gap` 을 안 주면 코퍼스에서 유도한다.** 이게 있어야 언어별 숫자가 커맨드에서
     # 사라진다 — 격자·`density` 는 이미 `min_gap` 에서 나오므로 이 하나가 마지막 고리다.
     # 격자 결정보다 먼저여야 해서 데이터셋을 여기서 한 번 읽는다 (jsonl 읽기, 무시 가능).
+    rate_source = "cli:--min-gap"
     if args.min_gap is None:
-        _texts = [x.text for x in data.LOADERS[args.dataset]()]
-        _mp = data.measure_profile(_texts)
-        args.min_gap = derive_min_gap(_mp["median_units"])
-        print(f"[min_gap] {args.dataset}: 중앙 {_mp['median_units']}{_mp['unit']} "
-              f"× {MIN_GAP_RATIO} → --min-gap {args.min_gap}", flush=True)
-        if args.min_gap < 3:
-            print(f"[min_gap] 경고: 유도값 {args.min_gap} 이 3 미만이다. 짧은 발화 레지스터로 "
-                  f"보이며, 이 식은 조각 수 상한만 보고 **절대 최소 방출량**은 못 본다 "
-                  f"(ko/KsponSpeech 실측: 중앙 5어절인데 실제로 쓴 값은 3). "
-                  f"--min-gap 으로 직접 줄 것", flush=True)
+        _sents = data.LOADERS[args.dataset]()
+        _mp = data.measure_profile([x.text for x in _sents])
+        _spaced = _mp["uses_spaces_between_words"]
+        _rate, rate_source = data.units_per_sec(args.dataset, _sents, _spaced)
+        if _rate is None and args.units_per_sec:
+            _rate, rate_source = args.units_per_sec, "cli:--units-per-sec"
+        if _rate is None:
+            print(f"[min_gap] {args.dataset}: 발화 속도를 잴 수 없다 — 강제정렬 산출물"
+                  f"(`*_unittimes.json`)이 없다. `--units-per-sec` 로 직접 주거나 "
+                  f"`--min-gap` 으로 값을 직접 줄 것.\n"
+                  f"  정렬 산출: python -m core.meaning_segmentator.autoseg."
+                  f"baselines.build_unittimes --lang <de|ja|zh|ko>", flush=True)
+            return 2
+        args.min_gap = derive_min_gap(_rate)
+        print(f"[min_gap] {args.dataset}: {_rate:.2f}{_mp['unit']}/초 × "
+              f"{MIN_GAP_MS}ms → --min-gap {args.min_gap}  (출처 {rate_source})",
+              flush=True)
 
     # 격자를 안 주면 min_gap 에서 유도한다. min_gap 이 조각 길이 하한이므로 T 하한도
     # 거기서 나온다 — 상수로 박아 두면 min_gap 을 바꿀 때마다 포화점이 생긴다.
@@ -874,8 +893,17 @@ def main() -> int:
     # too_few_tags·gap_too_small 로 전량 재시도된다 (en 기준선 6%, de 8%).
     # 비율을 보존하면 zh 12% / ja 6% 로 내려온다. **min_gap 2·3·4 에서는 +1 과 값이 같아
     # 과거 런과 완전히 호환된다** (3→4, 4→5 동일).
-    density = args.density or (round(args.min_gap * 4 / 3) if args.min_gap > 0
-                                       else min(2, coverage_t))
+    # **`density` 는 유도 격자의 바닥(`t_floor`)과 같은 값이다.** 종전에는
+    # `round(min_gap * 4/3)` 이라는 별도 식이었는데 `t_floor = ceil(1.3 * min_gap)` 과
+    # 배수가 사실상 같아 min_gap 1~20 중 4곳에서만 1 차이가 났고, min_gap=20 에서는
+    # density(27) > t_floor(26) 로 **뒤집혀** 있었다 — 요구가 가장 작은 T 의 필요량을
+    # 넘어 전 문장이 too_few_tags 로 걸리는 잠재 버그다. 하나로 합쳐 없앤다.
+    #
+    # **사용자가 준 격자를 따라가지는 않는다.** `--t-grid` 를 크게 주면 density 가
+    # 같이 올라 마킹 요건이 느슨해지는데, 밀도는 지금까지 확인된 유일한 품질 레버다
+    # (밀도 0.348 -> 0.529 에서 T=6 품질 +0.013, docs/RANK_METRIC_DIAGNOSIS.md §8.1).
+    # 그래서 유도 격자의 바닥을 쓴다.
+    density = args.density or (t_floor if args.min_gap > 0 else min(2, coverage_t))
     main_t = args.main_t or t_grid[len(t_grid) // 2]
     if main_t not in t_grid:
         print(f"--main-t {main_t} 가 --t-grid {t_grid} 에 없습니다", file=sys.stderr)
@@ -988,6 +1016,8 @@ def main() -> int:
             "density": density,
             "curve_min_t": coverage_t,
             "coverage_required": not args.no_coverage_rule,
+            "min_gap_ms": MIN_GAP_MS,
+            "units_per_sec_source": rate_source,
             "t_floor": t_floor,                  # ceil(1.5 * min_gap). 아래 T 는 포화한다
             "t_grid_derived": derived,           # 격자를 min_gap 에서 유도했는가
         }, ensure_ascii=False, indent=2), encoding="utf-8")
