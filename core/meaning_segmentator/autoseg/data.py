@@ -166,62 +166,13 @@ def load_ast_manifest(path: Path, text_field: str = "src_text",
     return out
 
 
-def load_fleurs_en_de(path: Path | None = None) -> list[Sentence]:
-    """FLEURS en-de test (346발화). 소스는 영어 낭독체.
-
-    KsponSpeech(자발 발화, 구두점 없음)와 성격이 정반대다 — 문어체에 구두점이 완비돼
-    있어 `measured_profile` 의 `trailing_punctuation` 이 실제로 잡히고, 문장이 길다
-    (어절 중앙값 21). **총 346개뿐이라** `train_pool + dev + test <= 346` 을 지켜야
-    `split_data` 가 죽지 않는다.
-    """
-    path = path or (_REPO_ROOT / "evaluation" / "ast" / "manifests"
-                    / "fleurs_en-de_test.jsonl")
-    return load_ast_manifest(path)
-
-
-def load_fleurs_en_ko(path: Path | None = None) -> list[Sentence]:
-    """FLEURS en-ko test (270발화). 소스 영어는 `fleurs-en-de` 와 같은 낭독체다.
-
-    FLEURS 는 n-way 병렬이라 소스 문장은 공유되지만, ko_kr 전사가 있는 문장이 더
-    적어 en-de(346)의 부분집합에 가깝다 (교집합 268, ko 전용 2). 즉 **en-de 와
-    en-ko 는 사실상 같은 영어 문장을 타깃만 바꿔 돌리는 대조군**이다 — autoseg 는
-    `tgt_text` 를 읽지 않으므로 두 런의 차이는 번역기 타깃 언어와 지표뿐이다.
-
-    총 270개뿐이라 `train_pool + dev + test <= 270` 을 지켜야 `split_data` 가
-    죽지 않는다.
-
-    기본 `--contradiction-backend xlmr-anli` 가 다국어라 타깃별 지정이 필요 없다.
-    """
-    path = path or (_REPO_ROOT / "evaluation" / "ast" / "manifests"
-                    / "fleurs_en-ko_test.jsonl")
-    return load_ast_manifest(path)
-
-
-# 로더는 데이터셋별로 다를 수밖에 없다 (파일 포맷·전처리가 데이터셋 고유이므로).
-# 언어 무관이어야 하는 것은 에이전트와 지표이지 로더가 아니다.
-def _load_multi2en(src: str, path: Path | None = None) -> list[Sentence]:
-    """FLEURS {de,ja,zh}→en 루프용 240문장. 소스 언어만 다르고 **문장은 셋이 동일**하다.
-
-    en 기준 층화 정렬(`fleurs_nway_en_clean500_order.json`)의 500~739 구간이라
-    `en-multi/run06`(프롬프트 생성)·`clean500`(en→X 평가) 어느 쪽과도 겹치지 않는다.
-    같은 정렬의 740~1239 구간이 최종 평가용 `multi2en_eval500` 이다.
-
-    **길이 하한 필터는 없앴다** (`split_data` 참조). 예전에는 `--min-chars 0` 을 손으로
-    줘야 했다 — 기본 25자로 두면 밀도가 높은 zh 판만 240 중 34개가 빠져 세 트랙이 같은
-    문장을 쓴다는 전제가 깨졌기 때문이다. 이제 그 우회가 필요 없다.
-
-    소스 단위 중앙값이 언어마다 다르므로 (`pipeline.unit_count`: de 어절 20,
-    ja 문자 52, zh 문자 38) **`--t-grid`·`--min-gap` 을 그대로 쓰면 안 된다** —
-    환산은 `../MULTI2EN_DATASET.md` 참조.
-    """
-    path = path or (_REPO_ROOT / "evaluation" / "ast" / "manifests"
-                    / f"fleurs_nway_{src}-en_multi2en_loop240.jsonl")
-    return load_ast_manifest(path)
-
-
-# 데이터셋 -> 매니페스트 경로. 발화 속도를 재려면 발화 길이가 필요한데, 그건
-# 매니페스트 옆의 강제정렬 산출물(`*_unittimes.json`)에 들어 있다.
-# 없는 데이터셋은 `--units-per-sec` 로 직접 주거나 `--min-gap` 을 직접 준다.
+# **FLEURS 트랙은 로더 함수가 아니라 매니페스트 경로로 등록한다.** 예전에는 트랙마다
+# 함수가 하나씩 있었는데(en-de, en-ko, de/ja/zh-en) 전부 `load_ast_manifest(경로)` 에
+# 경로만 다른 래퍼였다. 경로로 두면 함수 5개가 사라지고 **새 언어를 추가할 때 코드를
+# 고칠 필요가 없다** — `--dataset <경로.jsonl>` 로 바로 돌린다.
+#
+# 발화 속도를 재려면 발화 길이가 필요한데, 그건 매니페스트 옆의 강제정렬 산출물
+# (`*_unittimes.json`)에 들어 있다. 없으면 `--units-per-sec` 나 `--min-gap` 을 직접 준다.
 _AST = _REPO_ROOT / "evaluation" / "ast" / "manifests"
 MANIFESTS = {
     "fleurs-en-de": _AST / "fleurs_en-de_test.jsonl",
@@ -230,6 +181,25 @@ MANIFESTS = {
     "fleurs-ja-en": _AST / "fleurs_nway_ja-en_multi2en_loop240.jsonl",
     "fleurs-zh-en": _AST / "fleurs_nway_zh-en_multi2en_loop240.jsonl",
 }
+
+
+def manifest_path(dataset: str) -> Path | None:
+    """등록된 이름이거나 `.jsonl` 경로면 매니페스트 경로를 준다. 아니면 None."""
+    if dataset in MANIFESTS:
+        return MANIFESTS[dataset]
+    q = Path(dataset)
+    return q if q.suffix == ".jsonl" and q.exists() else None
+
+
+def load(dataset: str) -> list[Sentence]:
+    """`--dataset` 하나로 받는다 — 등록된 이름이거나 매니페스트 경로(`.jsonl`)."""
+    if dataset in LOADERS:
+        return LOADERS[dataset]()
+    q = manifest_path(dataset)
+    if q is None:
+        raise ValueError(f"모르는 데이터셋: {dataset!r}. "
+                         f"등록된 이름 {DATASETS} 이거나 .jsonl 경로여야 한다")
+    return load_ast_manifest(q)
 
 
 def units_per_sec(dataset: str, sentences: list[Sentence],
@@ -245,7 +215,7 @@ def units_per_sec(dataset: str, sentences: list[Sentence],
     **두 기준을 섞으면 안 된다** — 25% 차이가 그대로 `min_gap` 으로 들어가 런 간
     비교가 깨진다. 그래서 출처 문자열을 함께 돌려주고 호출자가 config 에 남긴다.
     """
-    man = MANIFESTS.get(dataset)
+    man = manifest_path(dataset)
     if man is None:
         return None, "none"
     ut = man.with_name(man.stem + "_unittimes.json")
@@ -265,16 +235,13 @@ def units_per_sec(dataset: str, sentences: list[Sentence],
     return tot_u / (tot_ms / 1000.0), f"alignment:{ut.name}"
 
 
+# 파일 포맷이 고유한 것만 로더 함수로 남는다. 나머지는 위 MANIFESTS.
 LOADERS = {
-    "kokoro": load_kokoro,
-    "kspon": load_kspon,
+    "kokoro": load_kokoro,             # ja. 낭독 호흡 단위 -> 문장 복원이 필요
+    "kspon": load_kspon,               # ko. JSON 두 구조 흡수
     "kspon-train": load_kspon_train,
-    "fleurs-en-de": load_fleurs_en_de,
-    "fleurs-en-ko": load_fleurs_en_ko,
-    "fleurs-de-en": lambda: _load_multi2en("de"),
-    "fleurs-ja-en": lambda: _load_multi2en("ja"),
-    "fleurs-zh-en": lambda: _load_multi2en("zh"),
 }
+DATASETS = sorted(LOADERS) + sorted(MANIFESTS)
 
 
 # ── 측정 프로파일 ────────────────────────────────────────────────────────
@@ -373,7 +340,8 @@ def profile_settings(measured: dict) -> tuple[bool, str | None]:
 
 # ── 분할 ─────────────────────────────────────────────────────────────────
 
-def stratified_order(items: list, seed: int, text_of=lambda x: x.text) -> list:
+def stratified_order(items: list, seed: int, text_of=lambda x: x.text,
+                     limit: int | None = None) -> list:
     """길이 3분위 × 구두점 유무로 층을 만들고 라운드로빈으로 섞는다.
 
     분할이 성격에 치우치지 않게 하는 장치다. 그냥 앞에서부터 자르면 test 에 짧은
@@ -406,9 +374,12 @@ def stratified_order(items: list, seed: int, text_of=lambda x: x.text) -> list:
     for v in strata.values():
         rng.shuffle(v)
 
+    # `limit` 만큼 뽑으면 멈춘다 — 분할이 앞에서부터 떼가므로 뒤쪽은 안 쓴다.
+    # kspon-train(10000문장)에서 400개만 쓰는데 전량을 순서화하고 있었다.
+    need = len(items) if limit is None else min(limit, len(items))
     keys = sorted(strata, key=lambda k: (-len(strata[k]), str(k)))
     order, idx = [], {k: 0 for k in keys}
-    while len(order) < len(items):
+    while len(order) < need:
         progressed = False
         for k in keys:
             i = idx[k]
@@ -446,7 +417,7 @@ def split_data(
             f"문장 부족: 사용 가능 {len(pool)}개 < 요청 {n_train + n_dev + n_test}개"
         )
 
-    order = stratified_order(pool, seed)
+    order = stratified_order(pool, seed, limit=n_train + n_dev + n_test)
 
     # **test -> dev -> train 순으로 배분한다.** train 을 앞에서 떼면 train 크기를 바꿀
     # 때마다 test/dev 가 통째로 밀려 런 간 비교가 깨진다 (실측: train 30 -> 60 에서

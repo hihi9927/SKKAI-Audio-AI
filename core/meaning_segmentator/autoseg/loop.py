@@ -674,7 +674,8 @@ def derive_t_grids(min_gap: int) -> tuple[list[int], list[int]]:
 
 def main() -> int:
     p = argparse.ArgumentParser(description="의미 분절 프롬프트 자동 생성 루프 (v2)")
-    p.add_argument("--dataset", default="kspon", choices=sorted(data.LOADERS))
+    p.add_argument("--dataset", default="kspon",
+                   help="등록된 이름 또는 매니페스트 경로(.jsonl). 이름 목록은 data.DATASETS")
     p.add_argument("--src-lang", default="Korean")
     p.add_argument("--tgt-lang", default="English")
     p.add_argument("--run-id", default=None)
@@ -823,12 +824,22 @@ def main() -> int:
     # **`min_gap` 을 안 주면 코퍼스에서 유도한다.** 이게 있어야 언어별 숫자가 커맨드에서
     # 사라진다 — 격자·`t_floor` 는 이미 `min_gap` 에서 나오므로 이 하나가 마지막 고리다.
     # 격자 결정보다 먼저여야 해서 데이터셋을 여기서 한 번 읽는다 (jsonl 읽기, 무시 가능).
+    # **데이터를 여기서 한 번만 읽고 나눈다.** 격자 유도가 발화 속도를 요구하고,
+    # 발화 속도는 코퍼스를 봐야 나온다. 예전에는 여기서 한 번, 아래 A0 에서 또 한 번
+    # 읽어 `measure_profile` 이 두 번 돌았고 **모집단도 달랐다**.
+    #
+    # **측정은 train+dev 만 본다.** test 를 넣으면 그 문장의 구두점이 검증기 규칙
+    # (`trailing_punct`)에 반영되어 "루프가 한 번도 보지 않은 데이터" 라는 전제가 깨진다.
+    sentences = data.load(args.dataset)
+    pool_n = max(args.train, args.train_pool or args.train)
+    splits = data.split_data(sentences, pool_n, args.dev, args.test)
+    fit = splits["train"] + splits["dev"]
+    measured = data.measure_profile([x.text for x in fit])
+    spaced, trailing_punct = data.profile_settings(measured)
+
     rate_source = "cli:--min-gap"
     if args.min_gap is None:
-        _sents = data.LOADERS[args.dataset]()
-        _mp = data.measure_profile([x.text for x in _sents])
-        _spaced = _mp["uses_spaces_between_words"]
-        _rate, rate_source = data.units_per_sec(args.dataset, _sents, _spaced)
+        _rate, rate_source = data.units_per_sec(args.dataset, fit, spaced)
         if _rate is None and args.units_per_sec:
             _rate, rate_source = args.units_per_sec, "cli:--units-per-sec"
         if _rate is None:
@@ -839,7 +850,7 @@ def main() -> int:
                   f"baselines.build_unittimes --lang <de|ja|zh|ko>", flush=True)
             return 2
         args.min_gap = derive_min_gap(_rate)
-        print(f"[min_gap] {args.dataset}: {_rate:.2f}{_mp['unit']}/초 × "
+        print(f"[min_gap] {args.dataset}: {_rate:.2f}{measured['unit']}/초 × "
               f"{MIN_GAP_MS}ms → --min-gap {args.min_gap}  (출처 {rate_source})",
               flush=True)
 
@@ -944,16 +955,10 @@ def main() -> int:
 
     try:
         # ── A0 데이터 ────────────────────────────────────────────────────
-        sentences = data.LOADERS[args.dataset]()
-        pool_n = max(args.train, args.train_pool or args.train)
-        splits = data.split_data(sentences, pool_n, args.dev, args.test)
+        # 로딩·분할·측정은 위에서 이미 끝났다 (격자 유도가 발화 속도를 필요로 해서).
         data.write_splits(splits, run_dir / "data")
         log(f"[data] {args.dataset}: 전체 {len(sentences)}, "
             f"train {len(splits['train'])} / dev {len(splits['dev'])} / test {len(splits['test'])}")
-
-        # 측정 프로파일 — 결정론적 코드를 움직이는 필드는 코퍼스에서 직접 잰다
-        measured = data.measure_profile([s.text for s in
-                                         splits["train"] + splits["dev"] + splits["test"]])
         (run_dir / "measured_profile.json").write_text(
             json.dumps(measured, ensure_ascii=False, indent=2), encoding="utf-8")
 
@@ -970,7 +975,6 @@ def main() -> int:
 
         # **JSON 은 고치지 않는다.** 고치면 prompt_v0 가 달라져 기존 런과 비교가 깨진다.
         # 덮어쓰기는 소비 지점인 여기서만 한다.
-        spaced, trailing_punct = data.profile_settings(measured)
         tgt_spaced = (target_is_spaced(args.tgt_lang) if args.tgt_spaced is None
                       else args.tgt_spaced == "yes")
         log(f"[profile] {profile.get('source_language')} / 어순 {profile.get('word_order')} / "
