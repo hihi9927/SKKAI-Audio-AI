@@ -1,0 +1,107 @@
+[
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 1단위 — 최소 간격 3 미만",
+    "text": "Wenn es komplett von Tieren aufgezogen wurde, zeigt das wilde Kind Verhaltensweisen (im Rahmen seiner körperlichen Möglichkeiten), die fast komplett in Übereinstimmung mit denen seines spezifischen Pflegetiers sind, wie z.B. dessen Angst oder Gleichgültigkeit gegenüber Menschen.",
+    "seg_text": "Wenn es komplett <SEG:8> von Tieren aufgezogen wurde, <SEG:2> zeigt das wilde Kind Verhaltensweisen <SEG:3> (im Rahmen seiner körperlichen Möglichkeiten), <SEG:1> die fast komplett in <SEG:4> Übereinstimmung mit denen <SEG:5> seines spezifischen Pflegetiers <SEG:6> sind, <SEG:7> wie z.B. dessen Angst oder Gleichgültigkeit gegenüber Menschen.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Leslie Aun, eine Sprecherin der Komen-Stiftung, sagte, dass die Organisation eine neue Regel übernommen habe, die nicht zulasse, dass Zuschüsse oder Finanzmittel an Organisationen vergeben würden, gegen die ein gerichtliches Ermittlungsverfahren laufe.",
+    "seg_text": "Leslie Aun, eine <SEG:7> Sprecherin der Komen-Stiftung, <SEG:2> sagte, <SEG:3> dass die Organisation eine <SEG:1> neue Regel übernommen habe, <SEG:4> die nicht zulasse, <SEG:5> dass Zuschüsse oder Finanzmittel an Organisationen <SEG:6> vergeben würden, <SEG:?7> gegen die ein gerichtliches Ermittlungsverfahren laufe.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 1단위 — 최소 간격 3 미만",
+    "text": "Leslie Aun, eine Sprecherin der Komen-Stiftung, sagte, dass die Organisation eine neue Regel übernommen habe, die nicht zulasse, dass Zuschüsse oder Finanzmittel an Organisationen vergeben würden, gegen die ein gerichtliches Ermittlungsverfahren laufe.",
+    "seg_text": "Leslie Aun, eine <SEG:7> Sprecherin der Komen-Stiftung, <SEG:2> sagte, <SEG:3> dass die Organisation eine <SEG:1> neue Regel übernommen habe, <SEG:4> die nicht zulasse, <SEG:5> dass Zuschüsse oder Finanzmittel an Organisationen <SEG:6> vergeben würden, <SEG:?7> gegen die ein gerichtliches Ermittlungsverfahren laufe.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 1단위 — 최소 간격 3 미만",
+    "text": "Er bestätigte außerdem, dass er an das implizite Recht auf Privatsphäre glaube, auf dem die Entscheidung im Fall Roe beruhe.",
+    "seg_text": "Er bestätigte außerdem, <SEG:2> dass er an das <SEG:3> implizite Recht auf Privatsphäre <SEG:1> glaube, <SEG:4> auf dem die Entscheidung im Fall Roe beruhe.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 2단위 — 최소 간격 3 미만",
+    "text": "Sie können die Pyramiden in der Dunkelheit sehen und während es still ist, ehe die Show beginnt.",
+    "seg_text": "Sie können die Pyramiden in <SEG:3> der Dunkelheit sehen <SEG:1> und während es <SEG:2> still ist, <SEG:4> ehe die Show beginnt.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 2단위 — 최소 간격 3 미만",
+    "text": "Eine der Scheiben brach schließlich und dann begannen sie, durch das Fenster zu steigen,“ sagte der Überlebende Franciszek Kowal.",
+    "seg_text": "Eine der Scheiben <SEG:3> brach schließlich und <SEG:5> dann begannen sie, <SEG:1> durch das Fenster <SEG:2> zu steigen,“ <SEG:4> sagte der Überlebende Franciszek Kowal.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Um die Templer zu verstehen, muss man den Kontext verstehen, der zur Gründung des Ordens führte.",
+    "seg_text": "Um die Templer zu verstehen, <SEG:1> muss man den Kontext verstehen, <SEG:2> der zur Gründung des Ordens führte.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Dieser Brief muss vom ecuadorianischen Außenministerium für legal erklärt werden und bestimmte Anforderungen erfüllen.",
+    "seg_text": "Dieser Brief muss <SEG:2> vom ecuadorianischen Außenministerium für legal erklärt werden <SEG:1> und bestimmte Anforderungen erfüllen.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 7개 필요",
+    "text": "Historiker haben die Politik des FBI aus früherer Zeit kritisiert, seine Ressourcen in der Absicht, die Erfolgsquote der Behörde zu steigern, auf einfach zu lösende Fälle, insbesondere auf Fälle von Autodiebstahl, zu konzentrieren.",
+    "seg_text": "Historiker haben die Politik des FBI aus früherer Zeit kritisiert, <SEG:2> seine Ressourcen in der Absicht, die Erfolgsquote der Behörde zu steigern, <SEG:1> auf einfach zu lösende Fälle, insbesondere auf Fälle von Autodiebstahl, zu konzentrieren.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 6개 필요",
+    "text": "Die Managementfirma der Band, HK Management Inc., gab keinen anfänglichen Grund an, als sie am 20. September absagte, machte aber bereits am nächsten Tag logistische Gründe dafür verantwortlich.",
+    "seg_text": "Die Managementfirma der Band, HK Management Inc., <SEG:2> gab keinen anfänglichen Grund an, <SEG:1> als sie am 20. September absagte, <SEG:3> machte aber bereits am nächsten Tag logistische Gründe dafür verantwortlich.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 1단위 — 최소 간격 3 미만",
+    "text": "Beim Besuch der Klöster müssen Frauen Röcke tragen, die bis über die Knie reichen, und außerdem ihre Schultern bedecken.",
+    "seg_text": "Beim Besuch der Klöster <SEG:3> müssen Frauen Röcke tragen, <SEG:1> die bis über die Knie reichen, <SEG:2> und außerdem ihre Schultern <SEG:4> bedecken.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 4개 필요",
+    "text": "Viele Reisen zum Riff finden das ganze Jahr hindurch statt und Verletzungen aufgrund irgendeiner dieser Ursachen auf dem Riff sind selten.x",
+    "seg_text": "Viele Reisen zum Riff finden das ganze Jahr hindurch statt <SEG:1> und Verletzungen aufgrund irgendeiner dieser Ursachen auf dem Riff <SEG:2> sind selten.x",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 2단위 — 최소 간격 3 미만",
+    "text": "Viele Reisen zum Riff finden das ganze Jahr hindurch statt und Verletzungen aufgrund irgendeiner dieser Ursachen auf dem Riff sind selten.x",
+    "seg_text": "Viele Reisen zum Riff finden das ganze Jahr hindurch statt <SEG:1> und Verletzungen aufgrund irgendeiner dieser Ursachen auf dem Riff <SEG:2> sind selten.x",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "Aber unabhängig von seiner Entdeckung lebten Eskimo-Stämme dort bereits zu jener Zeit.",
+    "seg_text": "Aber unabhängig von seiner Entdeckung <SEG:1> lebten Eskimo-Stämme dort bereits zu jener Zeit.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 3개 필요",
+    "text": "Der Film mit Ryan Gosling und Emma Stone hat Nominierungen in allen Hauptkategorien erhalten.",
+    "seg_text": "Der Film mit Ryan Gosling und Emma Stone <SEG:1> hat Nominierungen in allen Hauptkategorien erhalten.",
+    "first_pass": true
+  }
+]

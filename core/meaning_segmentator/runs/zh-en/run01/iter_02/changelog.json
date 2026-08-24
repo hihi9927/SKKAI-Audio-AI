@@ -1,0 +1,9 @@
+{
+  "sections_changed": [
+    "[Never Segment]"
+  ],
+  "changelog": [
+    "Added an absolute prohibition against inserting boundaries inside quoted or otherwise delimited spans prior to their closing delimiter, treating quoted titles and delimited named phrases as atomic to prevent tags from splitting them."
+  ],
+  "scope_violations": []
+}

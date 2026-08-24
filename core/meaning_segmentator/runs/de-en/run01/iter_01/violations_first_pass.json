@@ -1,0 +1,142 @@
+[
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Mehr über die Funktionsweise von Flugzeugen und die Abläufe während eines Fluges zu erfahren, kann manchen helfen, die Angst zu überwinden, die mit dem Unbekannten oder mit dem Gefühl, keine Kontrolle zu haben, zusammenhängt.",
+    "seg_text": "Mehr über die Funktionsweise <SEG:4> von Flugzeugen und die Abläufe <SEG:3> während eines Fluges <SEG:2> zu erfahren, <SEG:5> kann manchen helfen, <SEG:1> die Angst <SEG:6> zu überwinden, die mit dem Unbekannten oder mit dem Gefühl <SEG:7> keine <SEG:9> Kontrolle <SEG:8> zu haben, zusammenhängt.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 2단위 — 최소 간격 3 미만",
+    "text": "Mehr über die Funktionsweise von Flugzeugen und die Abläufe während eines Fluges zu erfahren, kann manchen helfen, die Angst zu überwinden, die mit dem Unbekannten oder mit dem Gefühl, keine Kontrolle zu haben, zusammenhängt.",
+    "seg_text": "Mehr über die Funktionsweise <SEG:4> von Flugzeugen und die Abläufe <SEG:3> während eines Fluges <SEG:2> zu erfahren, <SEG:5> kann manchen helfen, <SEG:1> die Angst <SEG:6> zu überwinden, die mit dem Unbekannten oder mit dem Gefühl <SEG:7> keine <SEG:9> Kontrolle <SEG:8> zu haben, zusammenhängt.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 2단위 — 최소 간격 3 미만",
+    "text": "Schumacher, der 2006 nach dem siebenfachen Gewinn der Formel-1-Weltmeisterschaft in den Ruhestand gegangen war, sollte den verletzten Felipe Massa ersetzen.",
+    "seg_text": "Schumacher, der 2006 nach dem siebenfachen Gewinn der Formel-1-Weltmeisterschaft <SEG:2> in den Ruhestand gegangen war, <SEG:1> sollte den verletzten <SEG:3> Felipe Massa <SEG:4> ersetzen.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 2단위 — 최소 간격 3 미만",
+    "text": "Wenn es komplett von Tieren aufgezogen wurde, zeigt das wilde Kind Verhaltensweisen (im Rahmen seiner körperlichen Möglichkeiten), die fast komplett in Übereinstimmung mit denen seines spezifischen Pflegetiers sind, wie z.B. dessen Angst oder Gleichgültigkeit gegenüber Menschen.",
+    "seg_text": "Wenn es komplett von <SEG:12> Tieren aufgezogen wurde, <SEG:1> zeigt das <SEG:4> wilde Kind <SEG:5> Verhaltensweisen (im <SEG:6> Rahmen seiner <SEG:10> körperlichen Möglichkeiten), <SEG:3> die fast komplett in Übereinstimmung <SEG:2> mit denen seines spezifischen Pflegetiers <SEG:7> sind, wie z.B. <SEG:8> dessen Angst oder <SEG:9> Gleichgültigkeit <SEG:11> gegenüber Menschen.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 2단위 — 최소 간격 3 미만",
+    "text": "Leslie Aun, eine Sprecherin der Komen-Stiftung, sagte, dass die Organisation eine neue Regel übernommen habe, die nicht zulasse, dass Zuschüsse oder Finanzmittel an Organisationen vergeben würden, gegen die ein gerichtliches Ermittlungsverfahren laufe.",
+    "seg_text": "Leslie Aun, eine Sprecherin <SEG:5> der Komen-Stiftung, <SEG:3> sagte, <SEG:2> dass die Organisation eine neue Regel übernommen habe, <SEG:1> die nicht zulasse, <SEG:7> dass Zuschüsse oder Finanzmittel an <SEG:4> Organisationen vergeben würden, <SEG:6> gegen die ein gerichtliches Ermittlungsverfahren laufe.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 2단위 — 최소 간격 3 미만",
+    "text": "Er bestätigte außerdem, dass er an das implizite Recht auf Privatsphäre glaube, auf dem die Entscheidung im Fall Roe beruhe.",
+    "seg_text": "Er bestätigte außerdem, <SEG:2> dass er an das implizite <SEG:3> Recht auf <SEG:1> Privatsphäre <SEG:4> glaube, auf dem die <SEG:5> Entscheidung im Fall Roe beruhe.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 2단위 — 최소 간격 3 미만",
+    "text": "Sowohl Lettland als auch die Slowakei haben den ACTA-Beitrittsprozess verschoben.",
+    "seg_text": "Sowohl Lettland <SEG:3> als auch die Slowakei <SEG:1> haben den ACTA-Beitrittsprozess <SEG:2> verschoben.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 2단위 — 최소 간격 3 미만",
+    "text": "Xinhua berichtete, dass Ermittler der Regierung am Mittwoch zwei „Black Box“-Flugschreiber  geborgen haben.",
+    "seg_text": "Xinhua berichtete, <SEG:1> dass <SEG:4> Ermittler der Regierung am Mittwoch <SEG:3> zwei „Black Box“-Flugschreiber <SEG:2> geborgen haben.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 1단위 — 최소 간격 3 미만",
+    "text": "Sie können die Pyramiden in der Dunkelheit sehen und während es still ist, ehe die Show beginnt.",
+    "seg_text": "Sie können die Pyramiden in der Dunkelheit <SEG:3> sehen <SEG:1> und während es still ist, <SEG:2> ehe die Show beginnt.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 2단위 — 최소 간격 3 미만",
+    "text": "Wegen Bedenken bezüglich COVID-19 suspendierte die National Basketball Association (NBA) der Vereinigten Staaten am Mittwoch die professionelle Basketball-Saison.",
+    "seg_text": "Wegen Bedenken bezüglich COVID-19 <SEG:1> suspendierte die National Basketball Association (NBA) der Vereinigten Staaten <SEG:2> am Mittwoch <SEG:3> die professionelle Basketball-Saison.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 1단위 — 최소 간격 3 미만",
+    "text": "Er behauptet sogar, dass die Fähigkeiten, menschliches Verhalten zu interpretieren, möglicherweise mit Tieren wie Haushunden geteilt wird.",
+    "seg_text": "Er behauptet sogar, <SEG:1> dass die Fähigkeiten, menschliches Verhalten zu interpretieren, <SEG:2> möglicherweise <SEG:3> mit Tieren wie Haushunden <SEG:4> geteilt wird.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 1단위 — 최소 간격 3 미만",
+    "text": "Wir werden niemals ein Auto überholen, einen Brunnen in unserem Hinterhof bauen, nach Peru reisen, um antike Ruinen zu untersuchen, oder das Haus unseres Nachbarn umgestalten.",
+    "seg_text": "Wir werden niemals <SEG:6> ein Auto überholen, <SEG:2> einen Brunnen in unserem Hinterhof bauen, <SEG:3> nach Peru reisen, <SEG:4> um antike Ruinen zu untersuchen, <SEG:1> oder das Haus unseres Nachbarn <SEG:5> umgestalten.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 2단위 — 최소 간격 3 미만",
+    "text": "Historiker haben die Politik des FBI aus früherer Zeit kritisiert, seine Ressourcen in der Absicht, die Erfolgsquote der Behörde zu steigern, auf einfach zu lösende Fälle, insbesondere auf Fälle von Autodiebstahl, zu konzentrieren.",
+    "seg_text": "Historiker haben die Politik <SEG:8> des FBI aus früherer Zeit kritisiert, <SEG:2> seine Ressourcen <SEG:7> in der Absicht, <SEG:3> die Erfolgsquote der Behörde <SEG:6> zu steigern, <SEG:1> auf einfach zu lösende Fälle, <SEG:4> insbesondere auf Fälle von <SEG:5> Autodiebstahl, zu konzentrieren.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 1단위 — 최소 간격 3 미만",
+    "text": "Die Managementfirma der Band, HK Management Inc., gab keinen anfänglichen Grund an, als sie am 20. September absagte, machte aber bereits am nächsten Tag logistische Gründe dafür verantwortlich.",
+    "seg_text": "Die Managementfirma der Band, <SEG:3> HK Management Inc., <SEG:4> gab keinen anfänglichen Grund an, <SEG:2> als sie am 20. September absagte, <SEG:1> machte aber bereits <SEG:6> am <SEG:7> nächsten Tag <SEG:5> logistische Gründe dafür verantwortlich.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 1단위 — 최소 간격 3 미만",
+    "text": "Beim Besuch der Klöster müssen Frauen Röcke tragen, die bis über die Knie reichen, und außerdem ihre Schultern bedecken.",
+    "seg_text": "Beim Besuch der Klöster <SEG:3> müssen Frauen Röcke tragen, <SEG:2> die bis über die Knie reichen, <SEG:1> und <SEG:4> außerdem ihre Schultern bedecken.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 2단위 — 최소 간격 3 미만",
+    "text": "Viele Reisen zum Riff finden das ganze Jahr hindurch statt und Verletzungen aufgrund irgendeiner dieser Ursachen auf dem Riff sind selten.x",
+    "seg_text": "Viele Reisen zum Riff <SEG:3> finden das ganze Jahr hindurch statt <SEG:1> und Verletzungen aufgrund irgendeiner dieser Ursachen <SEG:2> auf dem Riff <SEG:4> sind selten.x",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 1단위 — 최소 간격 3 미만",
+    "text": "Drei weitere Bomben detonierten binnen zwei Stunden unweit von Regierungsgebäuden.",
+    "seg_text": "Drei weitere Bomben <SEG:2> detonierten <SEG:1> binnen zwei Stunden <SEG:3> unweit von Regierungsgebäuden.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 2단위 — 최소 간격 3 미만",
+    "text": "Damals wurden fast 100 Bewohner aus dem Gebiet evakuiert.",
+    "seg_text": "Damals wurden fast <SEG:3> 100 Bewohner <SEG:2> aus dem Gebiet <SEG:1> evakuiert.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 2단위 — 최소 간격 3 미만",
+    "text": "Aber unabhängig von seiner Entdeckung lebten Eskimo-Stämme dort bereits zu jener Zeit.",
+    "seg_text": "Aber unabhängig von seiner Entdeckung <SEG:1> lebten Eskimo-Stämme <SEG:2> dort bereits <SEG:3> zu jener Zeit.",
+    "first_pass": true
+  },
+  {
+    "rule": "gap_too_small",
+    "detail": "조각 2단위 — 최소 간격 3 미만",
+    "text": "Der Film mit Ryan Gosling und Emma Stone hat Nominierungen in allen Hauptkategorien erhalten.",
+    "seg_text": "Der Film mit Ryan Gosling <SEG:3> und Emma Stone <SEG:2> hat Nominierungen in allen <SEG:1> Hauptkategorien erhalten.",
+    "first_pass": true
+  }
+]

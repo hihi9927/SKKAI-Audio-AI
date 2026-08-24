@@ -613,6 +613,24 @@ def coverage_need(text: str, min_t: int, spaced: bool, min_gap: int) -> int:
 # 그래서 격자 최소 T 를 `ceil(1.3 · min_gap)` 으로 잡으면 6개 실측 바닥을 모두 넘는다.
 # 배수 (1, 1.5, 2, 3) 은 기존 기본 격자 [2,3,4,6] 의 비율 그대로다 — `min_gap=0` 이면
 # 예전 기본값 ([2,3,4,6] / [3,6])이 정확히 재현되므로 기존 런과의 연속성이 유지된다.
+# **`min_gap` 은 코퍼스에서 유도한다 — 언어별로 사람이 정하지 않는다.**
+# 손으로 정했던 값들이 하나의 비율로 재현된다 (§MULTI2EN_DATASET.md 5.4):
+#   en 3/20=0.150  de 3/20=0.150  zh 6/38=0.158  ja 8/52=0.154
+# `1/0.15 ≈ 6.7` = "한 문장 최대 6~7조각"이라는 페이싱 상수로, 언어 속성이 아니다.
+# 단위는 `measure_profile` 이 판정한다(어절 vs 문자) — 그래서 값이 언어마다 달라도
+# **규칙은 하나**다.
+#
+# **한계**: 짧은 자발발화 레지스터에서는 어긋난다. ko(KsponSpeech)는 중앙 5어절인데
+# 실제로 쓴 값이 3(비율 0.60)이다. `min_gap` 이 두 역할을 겸하기 때문이다 —
+# ① 길이 비례 조각 수 상한(이 식), ② 길이와 무관한 절대 최소 방출량. 긴 문어체에서는
+# 둘이 같은 값에서 만나 구별되지 않는다. 유도값이 3 미만이면 경고한다.
+MIN_GAP_RATIO = 0.15
+
+
+def derive_min_gap(median_units: int) -> int:
+    return max(2, int(median_units * MIN_GAP_RATIO + 0.5))
+
+
 def derive_t_grids(min_gap: int) -> tuple[list[int], list[int]]:
     """(t_grid, final_t_grid). min_gap 아래로는 어차피 못 내려가므로 요청도 안 한다."""
     b = max(2, -(-13 * max(0, min_gap) // 10))        # ceil(1.3 * min_gap)
@@ -647,7 +665,7 @@ def main() -> int:
     # v0 후보 개수와 선별 표본. 1 이면 종전 동작(첫 골격 통과본 사용).
     # 이터레이션당 만들 개정 후보 수. 1 이면 종전(제안 1개 = 검증 1개).
     # 2 이상이면 첫 개는 자유 개정, 나머지는 Critic 의 `proposed_rule` 을 하나씩만 반영.
-    p.add_argument("--revision-candidates", type=int, default=1,
+    p.add_argument("--revision-candidates", type=int, default=3,
                    help="이터레이션당 개정 후보 수. 2 이상이면 probe 로 골라 쓴다")
     p.add_argument("--v0-candidates", type=int, default=1,
                    help="prompt_v0 후보 수. 2 이상이면 dev 일부로 골라 시작한다")
@@ -684,9 +702,10 @@ def main() -> int:
     #
     # 이 값은 T 에 비례하지 않는 **절대 하한**이라, T 를 줄여도 과분절이 안 따라
     # 내려간다 — 저지연 작동점에서 유일하게 듣는 제약이다.
-    p.add_argument("--min-gap", type=int, default=3,
-                   help="절단 시 경계 간 최소 어절 간격. 0=끔. T 는 이 값의 1.5배 이상일 것")
-    p.add_argument("--batch-size", type=int, default=1,
+    p.add_argument("--min-gap", type=int, default=None,
+                   help="절단 시 경계 간 최소 간격(단위는 측정이 정한다: 어절 또는 문자). "
+                        "미지정 시 **코퍼스에서 유도**한다 (중앙 단위수 × 0.15). 0=끔")
+    p.add_argument("--batch-size", type=int, default=6,
                    help="한 분절 호출에 넣을 문장 수. 실측 최적 6, 12 이상은 역효과")
     p.add_argument("--candidate-t", type=int, default=None,
                    help="후보 마킹 하한 기준 T. 작을수록 많이 찍는다. 미지정 시 min(--final-t-grid)")
@@ -697,7 +716,7 @@ def main() -> int:
     p.add_argument("--agent-reasoning-effort", default="medium",
                    choices=["minimal", "low", "medium", "high", "none"],
                    help="Profiler/Judge/Critic/PE 사고량. none = 모델 기본값")
-    p.add_argument("--seg-reasoning-effort", default="low",
+    p.add_argument("--seg-reasoning-effort", default="medium",
                    choices=["minimal", "low", "medium", "high", "none"],
                    help="분절 호출 사고량. none = 모델 기본값. 에이전트 호출에는 영향 없음")
     p.add_argument("--translator", default="google", choices=["llm", "google"])
@@ -767,6 +786,21 @@ def main() -> int:
     for _f in ("seg_reasoning_effort", "agent_reasoning_effort"):
         if getattr(args, _f) == "none":
             setattr(args, _f, None)           # 모델 기본값에 맡긴다
+
+    # **`min_gap` 을 안 주면 코퍼스에서 유도한다.** 이게 있어야 언어별 숫자가 커맨드에서
+    # 사라진다 — 격자·`candidate_t` 는 이미 `min_gap` 에서 나오므로 이 하나가 마지막 고리다.
+    # 격자 결정보다 먼저여야 해서 데이터셋을 여기서 한 번 읽는다 (jsonl 읽기, 무시 가능).
+    if args.min_gap is None:
+        _texts = [x.text for x in data.LOADERS[args.dataset]()]
+        _mp = data.measure_profile(_texts)
+        args.min_gap = derive_min_gap(_mp["median_units"])
+        print(f"[min_gap] {args.dataset}: 중앙 {_mp['median_units']}{_mp['unit']} "
+              f"× {MIN_GAP_RATIO} → --min-gap {args.min_gap}", flush=True)
+        if args.min_gap < 3:
+            print(f"[min_gap] 경고: 유도값 {args.min_gap} 이 3 미만이다. 짧은 발화 레지스터로 "
+                  f"보이며, 이 식은 조각 수 상한만 보고 **절대 최소 방출량**은 못 본다 "
+                  f"(ko/KsponSpeech 실측: 중앙 5어절인데 실제로 쓴 값은 3). "
+                  f"--min-gap 으로 직접 줄 것", flush=True)
 
     # 격자를 안 주면 min_gap 에서 유도한다. min_gap 이 조각 길이 하한이므로 T 하한도
     # 거기서 나온다 — 상수로 박아 두면 min_gap 을 바꿀 때마다 포화점이 생긴다.
@@ -940,7 +974,11 @@ def main() -> int:
         log(f"[targets] {len(targets)}개: {', '.join(targets)}  "
             f"(목적함수 = 타깃별 z-정규화 effective 의 평균)")
 
-        (run_dir / "config.json").write_text(json.dumps({
+        # **`--final-only` 는 config 를 덮어쓰지 않는다.** 인자를 안 준 항목이 기본값으로
+        # 채워져 저장되면 **그 런을 만든 설정 기록이 사라진다** — ja/run01 실측:
+        # `revision_candidates 3 -> 1`, `v0_probe 20 -> 40`, `budget 10 -> 4` 로 덮였다.
+        if not (args.final_only and (run_dir / "config.json").exists()):
+            (run_dir / "config.json").write_text(json.dumps({
             **vars(args), "t_grid": t_grid, "final_t_grid": final_grid, "main_t": main_t,
             "translator_id": translator_id, "tgt_spaced": tgt_spaced,
             "adequacy_model": metrics.QE_CHECKPOINTS[args.adequacy_backend],
@@ -978,6 +1016,21 @@ def main() -> int:
                    reasoning_effort=args.seg_reasoning_effort,
                    batch_size=args.batch_size, min_gap=args.min_gap,
                    skip_translation_below=args.skip_translation_below)
+
+        # **부트스트랩에서는 이 가드를 면제한다.** 가드의 목적은 "쓰레기를 번역하느라 돈
+        # 쓰지 말라"인데, 기준선이 아직 없는 첫 평가에서 걸리면 **점수 자체가 안 나와**
+        # 루프가 개선할 신호를 못 얻는다 — zh 실측: fmt 0.60 < 0.95 로 채점이 통째로
+        # 스킵돼 `score=0.0000`, 개정 조향 불가 (MULTI2EN_DATASET.md §5.3-2).
+        # 새 언어의 v0 는 en 만큼 형식을 지키지 못하는 것이 정상이므로, 한 번은 재고
+        # 나서 판단한다.
+        # **절대 임계값이 아니라 달성 가능한 값 대비로 잰다.** 0.95 는 en 에서 관찰된
+        # 수준이라 새 언어에는 구조적으로 높다 — ja 실측 dev fmt 는 0.87~0.92 로, iter 0 만
+        # 면제해도 iter 1 부터 다시 걸려 루프가 멈춘다. 기준선의 80% 로 두면 "붕괴한
+        # 개정"만 걸러지고 정상 범위는 통과한다 (ja: 0.87 × 0.8 = 0.70).
+        def _set_skip_guard(baseline_fmt: float | None) -> None:
+            _kw["skip_translation_below"] = (
+                0.0 if baseline_fmt is None
+                else min(args.skip_translation_below, 0.8 * baseline_fmt))
 
         # **z 기준선은 분할별로 한 번 정해 끝까지 고정한다.** 평가마다 다시 잡으면
         # 채택 판정이 프롬프트가 아니라 기준선 이동을 재게 된다 (`_zmix` 참고).
@@ -1158,7 +1211,8 @@ def main() -> int:
             return u
 
         history: list[dict] = []
-        best = {"version": 0, "prompt": prompt, "train_score": None, "dev_score": None}
+        best = {"version": 0, "prompt": prompt, "train_score": None,
+                "dev_score": None, "fmt": None}
         best_ctx: dict = {}
         best_critique: dict | None = None
         last_focus: str | None = None
@@ -1205,6 +1259,7 @@ def main() -> int:
             it_dir.mkdir(parents=True, exist_ok=True)
             (it_dir / "prompt.txt").write_text(prompt, encoding="utf-8")
 
+            _set_skip_guard(best.get("fmt") if best["train_score"] is not None else None)
             batch = splits["train"]
             if len(batch) > args.train:
                 batch = random.Random(20260808 + it).sample(batch, args.train)
@@ -1376,7 +1431,8 @@ def main() -> int:
                     adopted = dev_score > best["dev_score"]
             if adopted:
                 best = {"version": it, "prompt": prompt,
-                        "train_score": sc, "dev_score": dev_score}
+                        "train_score": sc, "dev_score": dev_score,
+                        "fmt": m.format_pass_rate}
                 (run_dir / "best_prompt.txt").write_text(prompt, encoding="utf-8")
                 best_ctx = {"rows": rows, "dev_rows": dev_rows, "metrics": m.to_dict(),
                             "violations": viol, "judgements": judgements,
@@ -1417,7 +1473,7 @@ def main() -> int:
                 if adopted:
                     trust["growth"] = min(trust["growth"] * 1.2, agents.TRUST_GROWTH_MAX)
                 else:
-                    trust["growth"] = max(trust["growth"] / 2, agents.MAX_SECTION_GROWTH)
+                    trust["growth"] = max(trust["growth"] / 1.5, agents.MAX_SECTION_GROWTH)
                     trust["sections"] = max(trust["sections"] - 1, agents.MAX_SECTIONS_CHANGED)
                 log(f"[iter {it}] 신뢰영역 {before[0]:.2f}배/{before[1]}섹션 -> "
                     f"{trust['growth']:.2f}배/{trust['sections']}섹션 "
@@ -1491,19 +1547,49 @@ def main() -> int:
                         return None
                     return rv
 
-                cands = []
+                raw_cands = []
                 for hint in jobs:
                     rv = make(hint)
                     if not rv: continue
                     pr = rv.get("prompt", "")
-                    if not pr or agents.check_skeleton(pr): continue
-                    if agents.check_revision(best["prompt"], pr, last_focus,
-                                             trust["sections"], trust["growth"]): continue
+                    if pr and not agents.check_skeleton(pr):
+                        raw_cands.append((pr, rv))
+
+                # **게이트 기아 회복.** 후보가 전멸하면 반경을 넓혀 **이미 만든 후보를 다시
+                # 거른다** (재생성 없음 = 추가 비용 0). 근거: 반경은 *측정된* 위험을 통제하는
+                # 장치인데, 아무것도 측정 못 하는 상태는 나쁜 개정을 한 번 재는 것보다 나쁘다.
+                # 게이트 기각은 "개정이 나빴다"는 증거가 아니라 "반경이 표본을 못 뽑을 만큼
+                # 좁다"는 증거이므로, 좁힐 근거가 없고 넓힐 근거가 있다.
+                #
+                # 이게 없으면 **교착**이다 (de/run01 실측): 기각 1회 → 반경이 하한 1.25 로
+                # 축소 → PE 산출 성장률 분포(실측 1.31~2.66)가 통째로 그 위 → 0/3 통과 →
+                # 측정 불가 → 채택 불가 → 반경이 영영 안 넓어진다. 하한이 분포 밖이라
+                # "종전 동작으로 복귀"가 곧 "영구 봉쇄"였다.
+                cands = []
+                for _attempt in range(3):
+                    cands = []
+                    for pr, rv in raw_cands:
+                        if agents.check_revision(best["prompt"], pr, last_focus,
+                                                 trust["sections"], trust["growth"]):
+                            continue
+                        cands.append((pr, rv))
+                    if cands or not raw_cands or trust["growth"] >= agents.TRUST_GROWTH_MAX:
+                        break
+                    before = trust["growth"]
+                    trust["growth"] = min(trust["growth"] * 1.5, agents.TRUST_GROWTH_MAX)
+                    trust["sections"] = min(trust["sections"] + 1, agents.TRUST_SECTIONS_MAX)
+                    log(f"[iter {it}] 게이트 기아 — 후보 0/{len(raw_cands)} 통과. "
+                        f"신뢰영역 {before:.2f}배 -> {trust['growth']:.2f}배/"
+                        f"{trust['sections']}섹션 으로 넓혀 재검사")
+
+                _cands2 = []
+                for pr, rv in cands:
                     tl = agents.check_target_agnostic(pr, args.src_lang)
                     if tl:
                         log(f"[iter {it}] 개정 후보 타깃 종속 — 거부: {'; '.join(tl)}")
                         continue
-                    cands.append((pr, rv))
+                    _cands2.append((pr, rv))
+                cands = _cands2
                 if len(cands) > 1:
                     pick = select_prompt([c[0] for c in cands], args.v0_probe, f"iter {it} 개정")
                     revised = next(rv for pr, rv in cands if pr == pick)

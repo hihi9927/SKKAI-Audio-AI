@@ -296,8 +296,15 @@ def measure_profile(texts: list[str], min_count: int = 2, attach_ratio: float = 
         and attached.get(c, 0) / n >= attach_ratio
     )
 
+    # **`min_gap`·`T` 유도가 이 값을 쓴다** (`loop.derive_min_gap`). 단위는 spaced 여부로
+    # 갈린다(어절 vs 문자) — 그래서 여기서 함께 재야 판정과 단위가 어긋나지 않는다.
+    spaced_ = space_ratio_median > 0.02
+    units = sorted((len(t.split()) if spaced_ else len(t.replace(" ", "")))
+                   for t in texts if t.strip())
     return {
         "n": len(texts),
+        "median_units": units[len(units) // 2] if units else 0,
+        "unit": "word" if spaced_ else "char",
         "space_ratio": round(space_ratio, 4),
         "space_ratio_median": round(space_ratio_median, 4),
         "space_sentence_ratio": round(space_sentence_ratio, 4),

@@ -1,0 +1,79 @@
+[
+  {
+    "id": "cmn_hans_cn_1376",
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "这部由瑞恩·高斯林 (Ryan Gosling) 和艾玛·斯通 (Emma Stone) 主演的电影获得了各大奖项的提名。",
+    "seg_text": "这部由瑞恩·高斯林 <SEG:1> (Ryan <SEG:8> Gosli <SEG:6> n) 和艾玛· <SEG:7> 斯通 (E <SEG:4> mma St <SEG:5> one) 主 <SEG:2> 演的电影获得 <SEG:3> 了各大奖项的提名。"
+  },
+  {
+    "id": "cmn_hans_cn_1376",
+    "rule": "gap_too_small",
+    "detail": "조각 5단위 — 최소 간격 6 미만",
+    "text": "这部由瑞恩·高斯林 (Ryan Gosling) 和艾玛·斯通 (Emma Stone) 主演的电影获得了各大奖项的提名。",
+    "seg_text": "这部由瑞恩·高斯林 <SEG:1> (Ryan <SEG:8> Gosli <SEG:6> n) 和艾玛· <SEG:7> 斯通 (E <SEG:4> mma St <SEG:5> one) 主 <SEG:2> 演的电影获得 <SEG:3> 了各大奖项的提名。"
+  },
+  {
+    "id": "cmn_hans_cn_337",
+    "rule": "gap_too_small",
+    "detail": "조각 5단위 — 최소 간격 6 미만",
+    "text": "作为压轴，土耳其舞蹈团”安纳托利亚之火“表演了节目《特洛伊》。",
+    "seg_text": "作为压轴，土耳 <SEG:4> 其舞蹈团”安 <SEG:3> 纳托利亚之火“ <SEG:2> 表演了节目 <SEG:1> 《特洛伊》。"
+  },
+  {
+    "id": "cmn_hans_cn_739",
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "CafeNet El Sol 提供预约服务，收费 30 美元，而一日通票价格为 10 美元；详情请见其 Corcovado 页面。",
+    "seg_text": "CafeNet <SEG:4> El So <SEG:8> l 提供约 <SEG:7> 服务，收费 <SEG:3> 30 美元， <SEG:1> 而一日通票价 <SEG:6> 格为 10 <SEG:2> 美元；详情请 <SEG:5> 见其 Cor <SEG:9> covado 页面。"
+  },
+  {
+    "id": "cmn_hans_cn_739",
+    "rule": "gap_too_small",
+    "detail": "조각 4단위 — 최소 간격 6 미만",
+    "text": "CafeNet El Sol 提供预约服务，收费 30 美元，而一日通票价格为 10 美元；详情请见其 Corcovado 页面。",
+    "seg_text": "CafeNet <SEG:4> El So <SEG:8> l 提供约 <SEG:7> 服务，收费 <SEG:3> 30 美元， <SEG:1> 而一日通票价 <SEG:6> 格为 10 <SEG:2> 美元；详情请 <SEG:5> 见其 Cor <SEG:9> covado 页面。"
+  },
+  {
+    "id": "cmn_hans_cn_1005",
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "人工智能系统现在经常用于经济、医学、工程学和军事领域，有些家用计算机和电子游戏软件应用程序已经有内置的人工智能系统。",
+    "seg_text": "人工智能系统 <SEG:2> 现在经常用于 <SEG:5> 经济、医学， <SEG:1> 工程学和军事 <SEG:3> 领域，有些家 <SEG:6> 用计算机和电 <SEG:7> 子电子游戏软件应 <SEG:8> 用程序已经有 <SEG:4> 内置的人工智能系统。"
+  },
+  {
+    "id": "cmn_hans_cn_967",
+    "rule": "too_few_tags",
+    "detail": "경계 9개 — 최소 12개 필요",
+    "text": "五渔村（Cinque Terre），原意为五块土地，由位于意大利利古里亚（Liguria）地区的五座沿海小村庄 Riomaggiore、Manarola、Corniglia、Vernazza 和 Monterosso 组成。",
+    "seg_text": "五渔村（Cinque Terre）， <SEG:5> 原意为五块土地， <SEG:9> 由位于意大利利古里亚（Liguria）地区 <SEG:4> 的五座沿海小村庄 <SEG:6> Riomaggiore、 <SEG:2> Manarola、 <SEG:3> Corniglia、 <SEG:1> Vernazza <SEG:7> 和 Monterosso <SEG:8> 组成。"
+  },
+  {
+    "id": "cmn_hans_cn_967",
+    "rule": "gap_too_small",
+    "detail": "조각 3단위 — 최소 간격 6 미만",
+    "text": "五渔村（Cinque Terre），原意为五块土地，由位于意大利利古里亚（Liguria）地区的五座沿海小村庄 Riomaggiore、Manarola、Corniglia、Vernazza 和 Monterosso 组成。",
+    "seg_text": "五渔村（Cinque Terre）， <SEG:5> 原意为五块土地， <SEG:9> 由位于意大利利古里亚（Liguria）地区 <SEG:4> 的五座沿海小村庄 <SEG:6> Riomaggiore、 <SEG:2> Manarola、 <SEG:3> Corniglia、 <SEG:1> Vernazza <SEG:7> 和 Monterosso <SEG:8> 组成。"
+  },
+  {
+    "id": "cmn_hans_cn_637",
+    "rule": "gap_too_small",
+    "detail": "조각 5단위 — 최소 간격 6 미만",
+    "text": "1970 年，医学博士兼研究科学家雷蒙德·达马迪安 (Raymond Damadian) 发现了使用磁共振成像作为医学诊断工具的基础原理。",
+    "seg_text": "1970 年， <SEG:2> 医学博士兼研 <SEG:7> 究科学家雷蒙 <SEG:8> 德·达马迪安 <SEG:3> (Raymond Damadian) <SEG:1> 发现了使用 <SEG:5> 磁共振成像 <SEG:6> 作为医学诊断工具 <SEG:4> 的基础原理。"
+  },
+  {
+    "id": "cmn_hans_cn_855",
+    "rule": "gap_too_small",
+    "detail": "조각 5단위 — 최소 간격 6 미만",
+    "text": "MetroPlus 更舒适，也没那么拥挤，但稍微贵了一点，即便如此还是比欧洲的普通地铁票便宜。",
+    "seg_text": "MetroPlus <SEG:3> 更舒适，也 <SEG:5> 没那么拥挤， <SEG:1> 但稍微贵了 <SEG:6> 一点， <SEG:2> 即便如此 <SEG:4> 还是比欧洲的普通地铁票便宜。"
+  },
+  {
+    "id": "cmn_hans_cn_868",
+    "rule": "gap_too_small",
+    "detail": "조각 2단위 — 최소 간격 6 미만",
+    "text": "许多情绪稳定、能力较强的旅客都曾被在发展中国家旅行的新问题所吓倒，在那里，需要迅速适应接踵而至的许多细微文化差异。",
+    "seg_text": "许多情绪稳定、 <SEG:4> 能力较强的旅 <SEG:5> 客都曾被在发 <SEG:6> 展中国家旅行 <SEG:3> 的新问题所吓 <SEG:7> 倒， <SEG:1> 在那里， <SEG:2> 需要迅速适应接踵而至的许 <SEG:8> 多细微文化差异。"
+  }
+]

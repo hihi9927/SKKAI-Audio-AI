@@ -1,0 +1,11 @@
+{
+  "sections_changed": [
+    "[Decision Procedure]"
+  ],
+  "changelog": [
+    "Clarified and extended the Decision Procedure to require an explicit index-normalisation and format-validation pass after ranking so numeric tags are mapped to consecutive integers starting at 1 (preserving confidence order) and to ensure final output obeys the frozen [Output Rules]. This addresses the critic's 'format' focus and prevents tag-numbering/spacing violations."
+  ],
+  "scope_violations": [
+    "[Decision Procedure] 가 1081 -> 2468자 (2.28배 > 1.25)"
+  ]
+}

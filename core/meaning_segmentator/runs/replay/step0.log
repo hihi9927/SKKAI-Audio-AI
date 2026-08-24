@@ -1,0 +1,27 @@
+########## de-en/run01
+[device] cpu
+Device set to use cpu
+iter_00: lift +0.0379 se 0.0203 t +1.87 n 30 | focus(D1만 고침) format | focus(D1+D2) placement
+iter_01: lift +0.0530 se 0.0188 t +2.82 n 30 | focus(D1만 고침) format | focus(D1+D2) placement
+iter_02: lift +0.0530 se 0.0188 t +2.82 n 30 | focus(D1만 고침) format | focus(D1+D2) placement
+Traceback (most recent call last):
+FileNotFoundError: [Errno 2] No such file or directory: 'core/meaning_segmentator/runs/de-en/run01/iter_03/critique.json'
+########## ja-en/run01
+[device] cpu
+Device set to use cpu
+iter_00: lift +0.0184 se 0.0550 t +0.33 n 30 | focus(D1만 고침) format | focus(D1+D2) priority
+iter_01: lift -0.0275 se 0.0509 t -0.54 n 30 | focus(D1만 고침) format | focus(D1+D2) priority
+iter_02: lift +0.1069 se 0.0440 t +2.43 n 30 | focus(D1만 고침) format | focus(D1+D2) placement
+[offline] 캐시 미스 0 건
+저장: core/meaning_segmentator/runs/replay/ja-en_run01_focus.json
+########## zh-en/run01
+[device] cpu
+Encoder model frozen.
+Device set to use cpu
+iter_00: lift +0.0535 se 0.0314 t +1.70 n 30 | focus(D1만 고침) format | focus(D1+D2) placement
+iter_01: lift +0.0416 se 0.0313 t +1.33 n 30 | focus(D1만 고침) format | focus(D1+D2) placement
+iter_02: lift +0.0261 se 0.0344 t +0.76 n 30 | focus(D1만 고침) format | focus(D1+D2) priority
+[offline] 캐시 미스 0 건
+저장: core/meaning_segmentator/runs/replay/zh-en_run01_focus.json
+corrupted double-linked list
+timeout: the monitored command dumped core

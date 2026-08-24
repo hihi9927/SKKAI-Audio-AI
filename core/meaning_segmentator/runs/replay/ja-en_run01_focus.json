@@ -1,0 +1,48 @@
+{
+  "run": "core/meaning_segmentator/runs/ja-en/run01",
+  "t_lift": 32,
+  "iters": {
+    "iter_00": {
+      "rank_lift": {
+        "lift": 0.01842,
+        "se": 0.05504,
+        "t": 0.33,
+        "n": 30,
+        "T": 32,
+        "n_rows": 30
+      },
+      "focus_now": "format",
+      "focus_now_reason": "format_pass_rate 0.8667 < 1.0",
+      "focus_relaxed_fmt": "priority",
+      "focus_relaxed_reason": "rank_lift +0.0184 (t +0.33) — 순위를 무작위로 섞어도 품질이 안 떨어짐"
+    },
+    "iter_01": {
+      "rank_lift": {
+        "lift": -0.02751,
+        "se": 0.05087,
+        "t": -0.54,
+        "n": 30,
+        "T": 32,
+        "n_rows": 30
+      },
+      "focus_now": "format",
+      "focus_now_reason": "format_pass_rate 0.8000 < 1.0",
+      "focus_relaxed_fmt": "priority",
+      "focus_relaxed_reason": "rank_lift -0.0275 (t -0.54) — 순위를 무작위로 섞으면 품질이 오히려 오름"
+    },
+    "iter_02": {
+      "rank_lift": {
+        "lift": 0.10692,
+        "se": 0.04397,
+        "t": 2.43,
+        "n": 30,
+        "T": 32,
+        "n_rows": 30
+      },
+      "focus_now": "format",
+      "focus_now_reason": "format_pass_rate 0.8000 < 1.0",
+      "focus_relaxed_fmt": "placement",
+      "focus_relaxed_reason": "측정 지표가 아무것도 안 걸림 — 기본값. 확실한 근거가 없으니 작은 수정만 할 것"
+    }
+  }
+}
