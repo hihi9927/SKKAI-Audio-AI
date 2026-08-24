@@ -182,7 +182,121 @@ def run_gdt(data: list, output_path: Path, delay: float = 0.2, resume: bool = Tr
     print(f"\nGDT 번역 완료. 저장: {output_path}")
 
 
-def mark_segmentation(client, text: str, model: str, provider: str = "openai", max_retries: int = 5) -> str:
+SEG_TAG_RE = re.compile(r"\s*<SEG:(\d+)>\s*")
+
+BATCH_SUFFIX = """
+
+[Batch Mode]
+You will receive several numbered input lines, one sentence per line, in the form "1. <sentence>".
+Apply all rules above to EACH line independently — confidence ranks restart at 1 within each line.
+Output exactly one line per input line, in the same order, prefixed with the same number and a period,
+and nothing else. Do not merge, reorder, drop, or add lines. Do not add commentary.
+"""
+
+
+def _norm(s: str) -> str:
+    return re.sub(r"\s+", " ", s).strip()
+
+
+def _strip_seg(s: str) -> str:
+    """SEG 태그 제거 후 공백 정규화."""
+    return _norm(SEG_TAG_RE.sub(" ", s))
+
+
+def _is_exact_seg_output(original: str, output: str) -> bool:
+    return _strip_seg(output) == _norm(original)
+
+
+def _split_seg(seg_text: str) -> tuple[list[str], list[int]]:
+    """태그 기준 분리 → (조각 리스트, 등장 순 랭크 번호 리스트)."""
+    parts = SEG_TAG_RE.split(seg_text)
+    return [x.strip() for x in parts[0::2]], [int(n) for n in parts[1::2]]
+
+
+def _renumber_ranks(seg_text: str) -> str:
+    """랭크 번호를 상대 순서 유지한 채 1..k로 재부여 (번호 누락/중복 복구)."""
+    _, nums = _split_seg(seg_text)
+    if not nums or sorted(nums) == list(range(1, len(nums) + 1)):
+        return seg_text
+    order = sorted(range(len(nums)), key=lambda i: (nums[i], i))
+    new = [0] * len(nums)
+    for rank, i in enumerate(order, start=1):
+        new[i] = rank
+    it = iter(new)
+    return SEG_TAG_RE.sub(lambda m: f" <SEG:{next(it)}> ", seg_text).strip()
+
+
+def _recover_seg_positions(original: str, modified_with_seg: str) -> str | None:
+    """
+    모델이 원문을 수정했을 때 SEG 경계를 원문에 복원.
+    각 경계의 좌측 마지막 단어(anchor)를 원문에서 찾아 그 뒤에 태그를 삽입한다.
+    anchor를 못 찾으면 None.
+    """
+    segments, nums = _split_seg(modified_with_seg)
+    if len(segments) <= 1:
+        return None
+
+    inserts: list[tuple[int, int]] = []   # (원문 위치, 랭크 번호)
+    search_start = 0
+
+    for seg, num in zip(segments[:-1], nums):
+        words = seg.split()
+        if not words:
+            return None
+        for n_anchor in (2, 1):
+            if len(words) < n_anchor:
+                continue
+            anchors = [re.sub(r"[?!.,;:]+$", "", w) for w in words[-n_anchor:]]
+            pattern = re.compile(r"\s+".join(re.escape(a) for a in anchors) + r"[?!.,;:]*")
+            m = pattern.search(original, search_start)
+            if m:
+                break
+        else:
+            return None
+        inserts.append((m.end(), num))
+        search_start = m.end()
+
+    result = original
+    for pos, num in sorted(inserts, reverse=True):
+        result = result[:pos] + f" <SEG:{num}>" + result[pos:]
+
+    return _renumber_ranks(result) if _is_exact_seg_output(original, result) else None
+
+
+def _postprocess(original: str, result: str) -> tuple[str, str]:
+    """(정리된 seg_text, 상태) — 상태: ok / recovered / failed."""
+    result = _renumber_ranks(result)
+    if _is_exact_seg_output(original, result):
+        return result, "ok"
+    recovered = _recover_seg_positions(original, result)
+    if recovered:
+        return recovered, "recovered"
+    return original, "failed"
+
+
+def _reasoning_extra(effort: str | None) -> dict:
+    """reasoning 제어 파라미터. gpt-oss는 low/medium/high만 인식(true/false 무시),
+    nemotron류는 think 불리언만 인식 — 모델별로 다르므로 명시 지정 시 그대로 전달."""
+    return {"reasoning_effort": effort} if effort else {"think": False}
+
+
+def _clean_output(text: str, result: str) -> str:
+    """로컬 모델이 붙이는 라벨/코드펜스/설명 줄을 제거하고 태그된 한 줄만 남긴다."""
+    result = re.sub(r"^```[a-zA-Z]*\n|```$", "", result.strip()).strip()
+    result = re.sub(r"^(Output|출력)\s*:\s*", "", result, flags=re.IGNORECASE).strip()
+    lines = [ln.strip() for ln in result.splitlines() if ln.strip()]
+    if len(lines) > 1:
+        tagged = [ln for ln in lines if "<SEG" in ln]
+        if tagged:
+            return tagged[0]
+        return lines[0]
+    return result if lines else text
+
+
+def mark_segmentation(client, text: str, model: str, provider: str = "openai",
+                      max_retries: int = 5, system_prompt: str | None = None,
+                      reasoning_effort: str | None = None) -> str:
+    system_prompt = system_prompt or SYSTEM_PROMPT
     for attempt in range(max_retries):
         try:
             if provider == "claude":
@@ -192,23 +306,46 @@ def mark_segmentation(client, text: str, model: str, provider: str = "openai", m
                     system=[
                         {
                             "type": "text",
-                            "text": SYSTEM_PROMPT,
+                            "text": system_prompt,
                             "cache_control": {"type": "ephemeral"},
                         }
                     ],
                     messages=[{"role": "user", "content": text}],
                 )
-                return response.content[0].text.strip()
+                raw = response.content[0].text.strip()
+            elif provider == "ollama":
+                # assistant prefill로 출력만 생성하도록 유도, think=False로 reasoning 모드 차단
+                response = client.chat.completions.create(
+                    model=model,
+                    messages=[
+                        {"role": "system",    "content": system_prompt},
+                        {"role": "user",      "content": f"Input: {text}"},
+                        {"role": "assistant", "content": "Output: "},
+                    ],
+                    temperature=0,
+                    extra_body=_reasoning_extra(reasoning_effort),
+                )
+                raw = _clean_output(text, response.choices[0].message.content)
             else:
                 response = client.chat.completions.create(
                     model=model,
                     messages=[
-                        {"role": "system", "content": SYSTEM_PROMPT},
+                        {"role": "system", "content": system_prompt},
                         {"role": "user",   "content": text},
                     ],
                     temperature=0,
                 )
-                return response.choices[0].message.content.strip()
+                raw = response.choices[0].message.content.strip()
+
+            seg, status = _postprocess(text, raw)
+            if status == "recovered":
+                print(f"  [복원] 원문 수정 감지 → SEG 위치 복원 성공")
+            elif status == "failed":
+                print(f"  [경고] 원문 수정 감지, 복원 실패 ({attempt+1}/{max_retries}): {raw[:80]!r}")
+                if attempt < max_retries - 1:
+                    continue
+                print("  [폴백] 원문 그대로 반환")
+            return seg
         except Exception as e:
             msg = str(e)
             if "429" in msg or "rate_limit" in msg.lower() or "overloaded" in msg.lower():
@@ -225,6 +362,59 @@ def mark_segmentation(client, text: str, model: str, provider: str = "openai", m
     raise RuntimeError(f"최대 재시도({max_retries}회) 초과: {text[:30]}")
 
 
+
+def mark_segmentation_batch(client, texts: list[str], model: str, provider: str = "openai",
+                            system_prompt: str | None = None, max_retries: int = 3,
+                            reasoning_effort: str | None = None) -> list[str | None]:
+    """여러 문장을 한 요청으로 분절. 줄 누락/복원 실패 항목은 None으로 반환(호출부가 단건 재시도)."""
+    system_prompt = (system_prompt or SYSTEM_PROMPT) + BATCH_SUFFIX
+    user = "\n".join(f"{i+1}. {t}" for i, t in enumerate(texts))
+
+    for attempt in range(max_retries):
+        try:
+            if provider == "claude":
+                response = client.messages.create(
+                    model=model, max_tokens=4096,
+                    system=[{"type": "text", "text": system_prompt,
+                             "cache_control": {"type": "ephemeral"}}],
+                    messages=[{"role": "user", "content": user}],
+                )
+                out = response.content[0].text.strip()
+            else:
+                kwargs = {"extra_body": _reasoning_extra(reasoning_effort)} if provider == "ollama" else {}
+                response = client.chat.completions.create(
+                    model=model,
+                    messages=[{"role": "system", "content": system_prompt},
+                              {"role": "user", "content": user}],
+                    temperature=0, **kwargs,
+                )
+                out = response.choices[0].message.content.strip()
+            break
+        except Exception as e:
+            msg = str(e)
+            if attempt < max_retries - 1 and ("429" in msg or "rate_limit" in msg.lower()
+                                              or "overloaded" in msg.lower()):
+                time.sleep(2 ** attempt)
+                continue
+            raise
+
+    got: dict[int, str] = {}
+    for line in out.splitlines():
+        m = re.match(r"^\s*(\d+)\s*[.)]\s*(.+)$", line)
+        if m:
+            got[int(m.group(1))] = m.group(2).strip()
+
+    results: list[str | None] = []
+    for i, src in enumerate(texts):
+        raw = got.get(i + 1)
+        if raw is None:
+            results.append(None)
+            continue
+        seg, status = _postprocess(src, raw)
+        results.append(None if status == "failed" else seg)
+    return results
+
+
 def main():
     _base = Path(__file__).resolve().parent.parent.parent.parent / "evaluation" / "DailyTalk"
     _transcribe_dir = _base / "transcribe"
@@ -235,13 +425,26 @@ def main():
                         help="입력 JSON 파일명 (evaluation/KsponSpeech/transcribe/ 기준, 예: eval_clean.json)")
     parser.add_argument("--output",  type=str, default=None,
                         help="출력 JSON 파일명 (기본: 입력 파일명에 _seg_eng 추가, evaluation/KsponSpeech/results/ 저장)")
-    parser.add_argument("--provider", type=str, default="openai", choices=["openai", "claude"],
-                        help="사용할 API 제공자 (openai 또는 claude)")
+    parser.add_argument("--provider", type=str, default="openai", choices=["openai", "claude", "ollama"],
+                        help="사용할 API 제공자 (openai, claude, ollama)")
     parser.add_argument("--model",   type=str, default=None,
-                        help="모델명 (openai 기본값: gpt-5.4-mini, claude 기본값: claude-haiku-4-5)")
+                        help="모델명 (openai 기본값: gpt-5.4-mini, claude 기본값: claude-haiku-4-5, ollama 기본값: llama3.3:70b)")
+    parser.add_argument("--prompt-file", type=str, default=None,
+                        help="시스템 프롬프트 txt 경로 (미지정 시 내장 SYSTEM_PROMPT 사용). 예: prompt_en_ranked.txt")
+    parser.add_argument("--ollama-host", type=str, default=None,
+                        help="Ollama 호스트 (기본: OLLAMA_HOST 환경변수 또는 localhost:11434)")
     parser.add_argument("--api-key", type=str, default=None,
                         help="API 키 (미입력 시 OPENAI_API_KEY 또는 ANTHROPIC_API_KEY 환경변수 사용)")
-    parser.add_argument("--delay",     type=float, default=0.5, help="요청 간 딜레이(초)")
+    parser.add_argument("--delay",     type=float, default=0.5, help="요청 간 딜레이(초, workers>1이면 무시)")
+    parser.add_argument("--workers",   type=int, default=1,
+                        help="동시 요청 수 (ollama 병렬 배치용, 기본 1=순차). ollama는 OLLAMA_NUM_PARALLEL도 함께 키울 것")
+    parser.add_argument("--reasoning-effort", type=str, default=None,
+                        choices=["low", "medium", "high"],
+                        help="reasoning 모델의 사고 길이 (gpt-oss 등). 미지정 시 think:false 전달")
+    parser.add_argument("--batch-size", type=int, default=1,
+                        help="한 요청에 넣을 문장 수 (기본 1). >1이면 묶음 모드: 프롬프트 prefill 비용을 나눠 처리량↑")
+    parser.add_argument("--save-every", type=int, default=20,
+                        help="병렬 처리 시 중간 저장 주기(건수)")
     parser.add_argument("--no-resume", dest="resume", action="store_false", help="이미 seg_text가 있는 항목도 재처리")
     parser.add_argument("--gdt",       action="store_true",
                         help="분절 완료 후 GDT(Google 번역) + COMET 평가 자동 실행")
@@ -260,12 +463,28 @@ def main():
             raise ValueError("Anthropic API 키가 필요합니다. --api-key 또는 ANTHROPIC_API_KEY 환경변수를 설정하세요.")
         client = anthropic.Anthropic(api_key=api_key)
         model = args.model or "claude-haiku-4-5"
+    elif args.provider == "ollama":
+        host = args.ollama_host or os.environ.get("OLLAMA_HOST", "localhost:11434")
+        client = OpenAI(base_url=f"http://{host}/v1", api_key="ollama")
+        model = args.model or "llama3.3:70b"
     else:
         api_key = args.api_key or os.environ.get("OPENAI_API_KEY")
         if not api_key:
             raise ValueError("OpenAI API 키가 필요합니다. --api-key 또는 OPENAI_API_KEY 환경변수를 설정하세요.")
         client = OpenAI(api_key=api_key)
         model = args.model or "gpt-5.4-mini"
+
+    if args.prompt_file:
+        pf = Path(args.prompt_file)
+        if not pf.is_absolute() and not pf.exists():
+            pf = Path(__file__).resolve().parent / args.prompt_file
+        if not pf.exists():
+            raise FileNotFoundError(f"프롬프트 파일을 찾을 수 없습니다: {args.prompt_file}")
+        system_prompt = pf.read_text(encoding="utf-8")
+        print(f"프롬프트: {pf} ({len(system_prompt)}자)")
+    else:
+        system_prompt = SYSTEM_PROMPT
+        print("프롬프트: 내장 SYSTEM_PROMPT")
 
     input_path = _transcribe_dir / args.input
 
@@ -317,6 +536,76 @@ def main():
             grouped[gk]["data"].append(e)
         output_path.write_text(json.dumps(grouped, ensure_ascii=False, indent=2), encoding="utf-8")
 
+    # ── 병렬/묶음 분절: 전량 선처리 후 아래 루프는 GDT만 담당 ──
+    if args.workers > 1 or args.batch_size > 1:
+        from concurrent.futures import ThreadPoolExecutor
+
+        pending = [i for i, e in enumerate(target)
+                   if not (args.resume and bool(e.get("seg_text")))]
+        skipped = len(target) - len(pending)
+        if skipped:
+            print(f"건너뜀 (이미 처리됨): {skipped}개")
+
+        if pending:
+            bs = max(1, args.batch_size)
+            chunks = [pending[i:i + bs] for i in range(0, len(pending), bs)]
+            print(f"분절 시작: {len(pending)}개 / 요청 {len(chunks)}건 "
+                  f"(batch={bs}, workers={args.workers}), model={model}")
+
+            def work(idxs):
+                texts = [target[i]["text"] for i in idxs]
+                try:
+                    if len(idxs) == 1:
+                        return idxs, [mark_segmentation(client, texts[0], model, args.provider,
+                                                        system_prompt=system_prompt,
+                                                        reasoning_effort=args.reasoning_effort)], None
+                    return idxs, mark_segmentation_batch(client, texts, model, args.provider,
+                                                         system_prompt=system_prompt,
+                                                         reasoning_effort=args.reasoning_effort), None
+                except Exception as e:
+                    return idxs, [None] * len(idxs), str(e)
+
+            done = 0
+            retry_single: list[int] = []
+            with ThreadPoolExecutor(max_workers=max(1, args.workers)) as ex:
+                for idxs, outs, err in ex.map(work, chunks):
+                    if err:
+                        print(f"  [요청 오류] {err}")
+                    for i, seg_text in zip(idxs, outs):
+                        if seg_text is None:
+                            retry_single.append(i)
+                        else:
+                            target[i]["seg_text"] = seg_text
+                            print(f"[{i+1}/{len(target)}] {target[i]['file']}: {seg_text}")
+                    done += len(idxs)
+                    if done % args.save_every < len(idxs):
+                        save()
+                        print(f"  ── 중간 저장 ({done}/{len(pending)}) ──")
+
+            # 묶음에서 누락/복원 실패한 항목만 단건 재시도
+            if retry_single:
+                print(f"단건 재시도: {len(retry_single)}개")
+                def work_one(i):
+                    try:
+                        return i, mark_segmentation(client, target[i]["text"], model, args.provider,
+                                                    system_prompt=system_prompt,
+                                                    reasoning_effort=args.reasoning_effort), None
+                    except Exception as e:
+                        return i, None, str(e)
+                with ThreadPoolExecutor(max_workers=max(1, args.workers)) as ex:
+                    for i, seg_text, err in ex.map(work_one, retry_single):
+                        if err:
+                            print(f"  [{i+1}] 오류: {err}")
+                        target[i]["seg_text"] = seg_text
+                        print(f"[재시도 {i+1}] {seg_text}")
+
+            save()
+            filled = sum(1 for e in target if e.get("seg_text"))
+            print(f"분절 완료: {filled}/{len(target)}")
+
+        # 분절은 방금 끝났으므로 아래 루프에서 재요청하지 않도록 고정
+        args.resume = True
+
     budget_exceeded = False
     total = len(target)
     for i, entry in enumerate(target):
@@ -334,7 +623,8 @@ def main():
         # ── 1. 분절 ──────────────────────────────────────────────
         if not (args.resume and seg_done):
             try:
-                seg_text = mark_segmentation(client, text, model, args.provider)
+                seg_text = mark_segmentation(client, text, model, args.provider, system_prompt=system_prompt,
+                                             reasoning_effort=args.reasoning_effort)
                 entry["seg_text"] = seg_text
                 print(f"  분절: {seg_text}")
             except Exception as e:
