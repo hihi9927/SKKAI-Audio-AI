@@ -262,14 +262,23 @@ ko-en v2 런(`runs/ko-en/run01`~`run03`)의 `effective`·`contradiction` 은 **�
 
 ## 새 언어 추가
 
-`data.py` 의 `LOADERS` 에 로더 하나만 추가하면 된다. 프롬프트는 손대지 않는다.
+**코드를 안 고치는 것이 기본이다.** `evaluation/ast/manifests/*.jsonl` 형식이면
+경로를 그대로 넘긴다 — 프롬프트도 로더도 손대지 않는다.
+
+```bash
+--dataset evaluation/ast/manifests/fleurs_en-fr_test.jsonl
+```
+
+자주 쓸 이름은 `data.py` 의 `MANIFESTS` 에 한 줄로 등록한다.
 
 ```python
-LOADERS = {
-    "kokoro": load_kokoro,
-    "my_data": lambda: load_json_entries(Path("..."), text_field="text"),
+MANIFESTS = {
+    "fleurs-en-fr": _AST / "fleurs_en-fr_test.jsonl",
 }
 ```
+
+`LOADERS` 에 함수를 추가하는 것은 **파일 포맷 자체가 고유할 때만**이다
+(kokoro 의 낭독 호흡 단위 → 문장 복원 같은 전처리).
 
 ## 관문 두 개 — 루프보다 먼저
 

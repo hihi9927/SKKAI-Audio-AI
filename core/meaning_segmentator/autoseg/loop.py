@@ -769,6 +769,9 @@ def main() -> int:
     p.add_argument("--max-prompt-growth", type=float, default=1.3)
     p.add_argument("--dev", type=int, default=60)
     p.add_argument("--test", type=int, default=100)
+    p.add_argument("--seed", type=int, default=data.DEFAULT_SEED,
+                   help="층화 분할 시드. config.json 에 기록된다 — 바꾸면 "
+                        "train/dev/test 가 통째로 달라져 런 간 비교가 깨진다")
     # 노브. 루프에서는 부분집합만 쓴다 — 조각 번역이 격자 크기에 비례해 늘기 때문이다.
     p.add_argument("--t-grid", type=int, nargs="+", default=None,
                    help="루프가 쓰는 목표 조각 크기. score 는 이 격자에서의 adequacy 평균이라 "
@@ -832,7 +835,7 @@ def main() -> int:
     # (`trailing_punct`)에 반영되어 "루프가 한 번도 보지 않은 데이터" 라는 전제가 깨진다.
     sentences = data.load(args.dataset)
     pool_n = max(args.train, args.train_pool or args.train)
-    splits = data.split_data(sentences, pool_n, args.dev, args.test)
+    splits = data.split_data(sentences, pool_n, args.dev, args.test, seed=args.seed)
     fit = splits["train"] + splits["dev"]
     measured = data.measure_profile([x.text for x in fit])
     spaced, trailing_punct = data.profile_settings(measured)

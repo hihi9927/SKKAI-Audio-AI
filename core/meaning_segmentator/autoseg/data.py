@@ -99,7 +99,7 @@ def _is_wellformed(s: str) -> bool:
     return s[-1] in _JA_TERMINATORS or s[-1] == "」"
 
 
-def load_json_entries(path: Path, text_field: str = "text", id_field: str = "file") -> list[Sentence]:
+def _load_json_entries(path: Path, text_field: str = "text", id_field: str = "file") -> list[Sentence]:
     """평가 데이터셋 JSON 두 구조를 모두 흡수.
 
     KsponSpeech:  {"data": [...]}
@@ -130,21 +130,25 @@ def load_kspon(path: Path | None = None) -> list[Sentence]:
     각 항목이 이미 하나의 발화 단위다. 구두점이 없는 항목이 많은 것이 정상이며,
     그것이 바로 실시간 분절이 풀어야 하는 조건이다."""
     path = path or (_REPO_ROOT / "evaluation" / "KsponSpeech" / "transcribe" / "eval_clean_1000.json")
-    return load_json_entries(path, text_field="text", id_field="file")
+    return _load_json_entries(path, text_field="text", id_field="file")
 
 
 def load_kspon_train(path: Path | None = None) -> list[Sentence]:
-    """KsponSpeech train.json — 대용량 풀 (10000발화, 25자 이상 4884).
+    """KsponSpeech train.json — 10000발화. `kspon` 과 **분포가 다르다**.
 
-    `kspon`(eval_clean_1000)은 25자 필터 후 337문장뿐이라 train-pool·dev·test 를
-    키우면 바닥난다 (run04 에서 420 요청 > 337 로 실패). 같은 코퍼스의 학습 분할
-    전사이고 id·텍스트 모두 유니크 실측 확인. autoseg 는 ASR 을 평가하지 않으므로
-    학습 분할 사용이 오염을 만들지 않는다."""
+    도입 당시 사유는 길이 하한 필터(`min_chars=25`) 때문에 `kspon` 이 337문장으로
+    말라붙는 것이었는데, 그 필터는 없어졌다 (`split_data` 참조). 그럼에도 남기는
+    이유는 **꼬리 길이**다 — 어절 수 p99 가 `kspon` 26 vs 여기 47, 최대 36 vs 72.
+    긴 문장에서만 나타나는 실패(`pipeline.SEG_MAX_TOKENS` 주석의 빈 출력)는
+    `kspon` 으로는 재현되지 않는다. ko-en run04·run05 가 이 풀로 돌았다.
+
+    같은 코퍼스의 학습 분할 전사이고 id·텍스트 모두 유니크 실측 확인. autoseg 는
+    ASR 을 평가하지 않으므로 학습 분할 사용이 오염을 만들지 않는다."""
     path = path or (_REPO_ROOT / "evaluation" / "KsponSpeech" / "transcribe" / "train.json")
-    return load_json_entries(path, text_field="text", id_field="file")
+    return _load_json_entries(path, text_field="text", id_field="file")
 
 
-def load_ast_manifest(path: Path, text_field: str = "src_text",
+def _load_ast_manifest(path: Path, text_field: str = "src_text",
                       id_field: str = "utt_id") -> list[Sentence]:
     """`evaluation/ast/manifests/*.jsonl` — AST 평가 트랙의 공용 매니페스트.
 
@@ -167,7 +171,7 @@ def load_ast_manifest(path: Path, text_field: str = "src_text",
 
 
 # **FLEURS 트랙은 로더 함수가 아니라 매니페스트 경로로 등록한다.** 예전에는 트랙마다
-# 함수가 하나씩 있었는데(en-de, en-ko, de/ja/zh-en) 전부 `load_ast_manifest(경로)` 에
+# 함수가 하나씩 있었는데(en-de, en-ko, de/ja/zh-en) 전부 `_load_ast_manifest(경로)` 에
 # 경로만 다른 래퍼였다. 경로로 두면 함수 5개가 사라지고 **새 언어를 추가할 때 코드를
 # 고칠 필요가 없다** — `--dataset <경로.jsonl>` 로 바로 돌린다.
 #
@@ -182,8 +186,16 @@ MANIFESTS = {
     "fleurs-zh-en": _AST / "fleurs_nway_zh-en_multi2en_loop240.jsonl",
 }
 
+# 파일 포맷이 고유한 것만 로더 함수로 남는다. 나머지는 위 MANIFESTS.
+LOADERS = {
+    "kokoro": load_kokoro,             # ja. 낭독 호흡 단위 -> 문장 복원이 필요
+    "kspon": load_kspon,               # ko. eval_clean_1000
+    "kspon-train": load_kspon_train,   # ko. 같은 코퍼스, 꼬리가 2배 길다
+}
+DATASETS = sorted(LOADERS) + sorted(MANIFESTS)
 
-def manifest_path(dataset: str) -> Path | None:
+
+def _manifest_path(dataset: str) -> Path | None:
     """등록된 이름이거나 `.jsonl` 경로면 매니페스트 경로를 준다. 아니면 None."""
     if dataset in MANIFESTS:
         return MANIFESTS[dataset]
@@ -195,11 +207,11 @@ def load(dataset: str) -> list[Sentence]:
     """`--dataset` 하나로 받는다 — 등록된 이름이거나 매니페스트 경로(`.jsonl`)."""
     if dataset in LOADERS:
         return LOADERS[dataset]()
-    q = manifest_path(dataset)
+    q = _manifest_path(dataset)
     if q is None:
         raise ValueError(f"모르는 데이터셋: {dataset!r}. "
                          f"등록된 이름 {DATASETS} 이거나 .jsonl 경로여야 한다")
-    return load_ast_manifest(q)
+    return _load_ast_manifest(q)
 
 
 def units_per_sec(dataset: str, sentences: list[Sentence],
@@ -215,7 +227,7 @@ def units_per_sec(dataset: str, sentences: list[Sentence],
     **두 기준을 섞으면 안 된다** — 25% 차이가 그대로 `min_gap` 으로 들어가 런 간
     비교가 깨진다. 그래서 출처 문자열을 함께 돌려주고 호출자가 config 에 남긴다.
     """
-    man = manifest_path(dataset)
+    man = _manifest_path(dataset)
     if man is None:
         return None, "none"
     ut = man.with_name(man.stem + "_unittimes.json")
@@ -233,15 +245,6 @@ def units_per_sec(dataset: str, sentences: list[Sentence],
     if tot_ms <= 0:
         return None, "none"
     return tot_u / (tot_ms / 1000.0), f"alignment:{ut.name}"
-
-
-# 파일 포맷이 고유한 것만 로더 함수로 남는다. 나머지는 위 MANIFESTS.
-LOADERS = {
-    "kokoro": load_kokoro,             # ja. 낭독 호흡 단위 -> 문장 복원이 필요
-    "kspon": load_kspon,               # ko. JSON 두 구조 흡수
-    "kspon-train": load_kspon_train,
-}
-DATASETS = sorted(LOADERS) + sorted(MANIFESTS)
 
 
 # ── 측정 프로파일 ────────────────────────────────────────────────────────
@@ -318,7 +321,7 @@ def measure_profile(texts: list[str], min_count: int = 2, attach_ratio: float = 
         "space_ratio": round(space_ratio, 4),
         "space_ratio_median": round(space_ratio_median, 4),
         "space_sentence_ratio": round(space_sentence_ratio, 4),
-        "uses_spaces_between_words": space_ratio_median > 0.02,
+        "uses_spaces_between_words": spaced_,
         "trailing_punctuation": trailing,
         "punctuation_counts": dict(sorted(seen.items(), key=lambda x: -x[1])),
         "final_punctuation_counts": dict(sorted(finals.items(), key=lambda x: -x[1])),
@@ -339,6 +342,12 @@ def profile_settings(measured: dict) -> tuple[bool, str | None]:
 
 
 # ── 분할 ─────────────────────────────────────────────────────────────────
+
+# **분할 시드는 config 에 기록된다** (`loop.py --seed`). 값 자체에 의미는 없지만,
+# 바꾸면 train/dev/test 가 통째로 달라져 런 간 비교가 깨진다. 어떤 시드로 나눈
+# 분할인지가 산출물에 안 남으면 재현이 불가능하다.
+DEFAULT_SEED = 20260806
+
 
 def stratified_order(items: list, seed: int, text_of=lambda x: x.text,
                      limit: int | None = None) -> list:
@@ -395,7 +404,7 @@ def split_data(
     n_train: int,
     n_dev: int,
     n_test: int,
-    seed: int = 20260806,
+    seed: int = DEFAULT_SEED,
 ) -> dict[str, list[Sentence]]:
     """층화 후 라운드로빈으로 train/dev/test 를 겹치지 않게 뽑는다.
 
