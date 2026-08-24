@@ -970,9 +970,7 @@ def main() -> int:
 
         # **JSON 은 고치지 않는다.** 고치면 prompt_v0 가 달라져 기존 런과 비교가 깨진다.
         # 덮어쓰기는 소비 지점인 여기서만 한다.
-        spaced, trailing_punct, warns = data.reconcile_profile(measured, profile)
-        for w in warns:
-            log(f"[profile] 경고: {w}")
+        spaced, trailing_punct = data.profile_settings(measured)
         tgt_spaced = (target_is_spaced(args.tgt_lang) if args.tgt_spaced is None
                       else args.tgt_spaced == "yes")
         log(f"[profile] {profile.get('source_language')} / 어순 {profile.get('word_order')} / "

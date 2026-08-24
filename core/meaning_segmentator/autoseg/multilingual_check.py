@@ -272,7 +272,7 @@ def main() -> int:
     cfg = json.loads((run_dir / "config.json").read_text(encoding="utf-8"))
     profile = json.loads((run_dir / "language_profile.json").read_text(encoding="utf-8"))
     measured = json.loads((run_dir / "measured_profile.json").read_text(encoding="utf-8"))
-    spaced, trailing_punct, _ = data.reconcile_profile(measured, profile)
+    spaced, trailing_punct = data.profile_settings(measured)
 
     t_grid = sorted(set(args.t_grid or cfg.get("final_t_grid") or [2, 3, 4, 6]))
     coverage_t = cfg.get("min_boundaries_per") or min(t_grid)

@@ -342,14 +342,11 @@ def measure_profile(texts: list[str], min_count: int = 2, attach_ratio: float = 
         and attached.get(c, 0) / n >= attach_ratio
     )
 
-    # **`min_gap`·`T` 유도가 이 값을 쓴다** (`loop.derive_min_gap`). 단위는 spaced 여부로
-    # 갈린다(어절 vs 문자) — 그래서 여기서 함께 재야 판정과 단위가 어긋나지 않는다.
+    # 단위는 spaced 여부로 갈린다(어절 vs 문자). `pipeline.unit_count` 와 같은 규칙이라
+    # 여기서 함께 정해야 판정과 단위가 어긋나지 않는다.
     spaced_ = space_ratio_median > 0.02
-    units = sorted((len(t.split()) if spaced_ else len(t.replace(" ", "")))
-                   for t in texts if t.strip())
     return {
         "n": len(texts),
-        "median_units": units[len(units) // 2] if units else 0,
         "unit": "word" if spaced_ else "char",
         "space_ratio": round(space_ratio, 4),
         "space_ratio_median": round(space_ratio_median, 4),
@@ -362,24 +359,16 @@ def measure_profile(texts: list[str], min_count: int = 2, attach_ratio: float = 
     }
 
 
-def reconcile_profile(measured: dict, profile: dict) -> tuple[bool, str | None, list[str]]:
-    """측정값과 LLM 프로파일을 대조한다. 반환 `(spaced, trailing_punct, 경고들)`.
+def profile_settings(measured: dict) -> tuple[bool, str | None]:
+    """검증기·절단기가 쓸 `(spaced, trailing_punct)`. **측정값만 본다.**
 
-    **측정값이 이긴다.** 불일치는 경고로 남겨 프로파일러 품질 진단에 쓴다."""
-    warn: list[str] = []
-    spaced = bool(measured["uses_spaces_between_words"])
-    if profile.get("uses_spaces_between_words") not in (None, spaced):
-        warn.append(f"uses_spaces_between_words: LLM={profile.get('uses_spaces_between_words')} "
-                    f"측정={spaced} (공백비율 {measured['space_ratio']}) — 측정값 채택")
-
-    llm_punct = set(profile.get("trailing_punctuation") or [])
-    measured_punct = set(measured["trailing_punctuation"])
-    if not llm_punct:
-        warn.append(f"trailing_punctuation: LLM 이 비었음 — 측정값 {sorted(measured_punct)} 채택")
-    elif llm_punct != measured_punct:
-        warn.append(f"trailing_punctuation: LLM={sorted(llm_punct)} "
-                    f"측정={sorted(measured_punct)} — 측정값 채택")
-    return spaced, ("".join(sorted(measured_punct)) or None), warn
+    종전에는 LLM 프로파일과 대조해 불일치를 경고했는데(`reconcile_profile`), 측정값이
+    무조건 이기는 구조라 경고는 로그 한 줄로 끝나고 아무 동작도 바꾸지 않았다.
+    LLM 이 이 두 필드를 내놓을 이유도 없다 — 코퍼스에서 직접 세는 값이다.
+    (Profiler 프롬프트에서 필드를 빼는 것은 prompt_v0 를 바꾸므로 별도 판단.)
+    """
+    return (bool(measured["uses_spaces_between_words"]),
+            "".join(sorted(measured["trailing_punctuation"])) or None)
 
 
 # ── 분할 ─────────────────────────────────────────────────────────────────

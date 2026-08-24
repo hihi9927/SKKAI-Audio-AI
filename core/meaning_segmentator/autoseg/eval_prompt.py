@@ -88,7 +88,7 @@ def main() -> int:
     mp = run_dir / "measured_profile.json"
     if mp.exists():
         measured = json.loads(mp.read_text(encoding="utf-8"))
-        spaced, trailing_punct, _ = data.reconcile_profile(measured, profile)
+        spaced, trailing_punct = data.profile_settings(measured)
     else:
         spaced = bool(profile.get("uses_spaces_between_words", True))
         trailing_punct = "".join(profile.get("trailing_punctuation") or []) or None

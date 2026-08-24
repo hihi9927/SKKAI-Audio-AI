@@ -316,8 +316,8 @@ def main() -> int:
     mp = run_dir / "measured_profile.json"
     if mp.exists():
         from ..autoseg import data as _data
-        spaced, _tp, _ = _data.reconcile_profile(
-            json.loads(mp.read_text(encoding="utf-8")), profile)
+        spaced, _tp = _data.profile_settings(
+            json.loads(mp.read_text(encoding="utf-8")))
     else:
         spaced = bool(profile.get("uses_spaces_between_words", True))
     tgt_spaced = bool(cfg.get("tgt_spaced", target_is_spaced(cfg.get("tgt_lang", "English"))))
