@@ -87,32 +87,9 @@ def used_sentence_ids(run_dir: Path) -> set[str]:
 
 
 def stratified_order(items: list[tuple[str, str]], seed: int) -> list[tuple[str, str]]:
-    """`data.split_data` 와 같은 층화 라운드로빈 정렬 (길이 3분위 × 구두점 유무)."""
-    rng = random.Random(seed)
-    strata: dict[tuple, list[tuple[str, str]]] = {}
-    for sid, text in items:
-        n = len(text)
-        bucket = 0 if n < 25 else (1 if n < 40 else 2)
-        has_punct = any(unicodedata.category(ch).startswith("P") for ch in text)
-        strata.setdefault((bucket, has_punct), []).append((sid, text))
-    for v in strata.values():
-        rng.shuffle(v)
-
-    keys = sorted(strata, key=lambda k: (-len(strata[k]), str(k)))
-    order: list[tuple[str, str]] = []
-    idx = {k: 0 for k in keys}
-    while len(order) < len(items):
-        progressed = False
-        for k in keys:
-            i = idx[k]
-            if i < len(strata[k]):
-                order.append(strata[k][i])
-                idx[k] = i + 1
-                progressed = True
-        if not progressed:
-            break
-    return order
-
+    """층화 라운드로빈 정렬. `autoseg.data` 의 것을 그대로 쓴다 — 예전에는 같은 규칙이
+    양쪽에 복사돼 있어 한쪽만 고치면 조용히 갈라졌다."""
+    return autoseg_data.stratified_order(items, seed, text_of=lambda x: x[1])
 
 def main() -> int:
     p = argparse.ArgumentParser(description="FLEURS n-way 텍스트 manifest (오디오 불필요)")

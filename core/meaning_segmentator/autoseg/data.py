@@ -373,14 +373,50 @@ def profile_settings(measured: dict) -> tuple[bool, str | None]:
 
 # ── 분할 ─────────────────────────────────────────────────────────────────
 
-def _stratum(s: Sentence) -> tuple[int, bool]:
-    """길이 3분위 × 구두점 유무로 층을 만든다.
+def stratified_order(items: list, seed: int, text_of=lambda x: x.text) -> list:
+    """길이 3분위 × 구두점 유무로 층을 만들고 라운드로빈으로 섞는다.
 
-    구두점 판정은 유니코드 범주로 한다 — 문자 목록을 박으면 층화가 언어 종속이 된다."""
-    n = len(s.text)
-    bucket = 0 if n < 25 else (1 if n < 40 else 2)
-    has_punct = any(unicodedata.category(ch).startswith("P") for ch in s.text)
-    return bucket, has_punct
+    분할이 성격에 치우치지 않게 하는 장치다. 그냥 앞에서부터 자르면 test 에 짧은
+    문장만, dev 에 긴 문장만 몰릴 수 있고, 그러면 점수가 프롬프트가 아니라 분할
+    난이도를 재게 된다.
+
+    **경계는 이 코퍼스에서 계산한다.** 종전에는 25/40자 고정이라 문자 밀도가 높은
+    언어에서 층이 붕괴했다 — zh 는 중앙 38자라 첫 층(<25)이 거의 비고, ja 는 중앙
+    52자라 거의 전부가 마지막 층(>=40)에 들어간다. 주석은 "3분위"라고 적혀 있었지만
+    실제로는 고정값이었다. 실제 분위수를 쓰면 세 층이 항상 비슷한 크기가 되고
+    상수 두 개가 사라진다.
+
+    구두점 판정은 유니코드 범주로 한다 — 문자 목록을 박으면 층화가 언어 종속이 된다.
+
+    `evaluation/ast/build_manifest_fleurs_text.py` 가 이 함수를 그대로 쓴다. 예전에는
+    같은 규칙이 양쪽에 복사돼 있었다. **2026-08-24 이전에 만든 매니페스트는 고정
+    경계(25/40)로 정렬된 것이라 재생성하면 순서가 달라진다.**
+    """
+    if not items:
+        return []
+    lens = sorted(len(text_of(x)) for x in items)
+    lo, hi = lens[len(lens) // 3], lens[2 * len(lens) // 3]
+    rng = random.Random(seed)
+    strata: dict[tuple, list] = {}
+    for x in items:
+        t = text_of(x)
+        bucket = 0 if len(t) < lo else (1 if len(t) < hi else 2)
+        has_punct = any(unicodedata.category(ch).startswith("P") for ch in t)
+        strata.setdefault((bucket, has_punct), []).append(x)
+    for v in strata.values():
+        rng.shuffle(v)
+
+    keys = sorted(strata, key=lambda k: (-len(strata[k]), str(k)))
+    order, idx = [], {k: 0 for k in keys}
+    while len(order) < len(items):
+        progressed = False
+        for k in keys:
+            i = idx[k]
+            if i < len(strata[k]):
+                order.append(strata[k][i]); idx[k] = i + 1; progressed = True
+        if not progressed:
+            break
+    return order
 
 
 def split_data(
@@ -410,26 +446,7 @@ def split_data(
             f"문장 부족: 사용 가능 {len(pool)}개 < 요청 {n_train + n_dev + n_test}개"
         )
 
-    rng = random.Random(seed)
-    strata: dict[tuple, list[Sentence]] = {}
-    for s in pool:
-        strata.setdefault(_stratum(s), []).append(s)
-    for v in strata.values():
-        rng.shuffle(v)
-
-    keys = sorted(strata, key=lambda k: (-len(strata[k]), str(k)))
-    order: list[Sentence] = []
-    idx = {k: 0 for k in keys}
-    while len(order) < len(pool):
-        progressed = False
-        for k in keys:
-            i = idx[k]
-            if i < len(strata[k]):
-                order.append(strata[k][i])
-                idx[k] = i + 1
-                progressed = True
-        if not progressed:
-            break
+    order = stratified_order(pool, seed)
 
     # **test -> dev -> train 순으로 배분한다.** train 을 앞에서 떼면 train 크기를 바꿀
     # 때마다 test/dev 가 통째로 밀려 런 간 비교가 깨진다 (실측: train 30 -> 60 에서
