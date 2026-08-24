@@ -34,6 +34,18 @@ sys.path.insert(0, str(_REPO))
 ALIGNER = "Qwen/Qwen3-ForcedAligner-0.6B"
 _WS = re.compile(r"\s+")
 
+# **쉼의 기준.** 문헌 표준은 200ms(지각 임계 — 이보다 짧으면 사람이 쉼으로 못 느낀다)
+# 와 250ms(Goldman-Eisler, IPU 정의에 가장 널리 쓰임)다. 정렬기가 80ms 격자로만 시각을
+# 내므로(실측: 타임스탬프 98% 가 80 의 배수) 고를 수 있는 값은 80·160·240·320… 뿐이고,
+# 240ms 가 250ms 표준에 가장 가깝다. 종전 160ms 는 지각 임계 아래였다.
+#
+# 이 값으로 나온 IPU 분포는 **진단용**이다 — `min_gap` 산출에는 쓰지 않는다. 실측에서
+# IPU 백분위는 두 독립 앵커(de 3, ko 3)를 동시에 재현하지 못했다: p25 는 de 만(ko 2),
+# p30 은 ko 만(de 4) 맞는다. 시간 상수 1200ms 는 둘 다 맞힌다. 즉 청자의 최소 단위는
+# 화자가 어떻게 끊느냐가 아니라 시간에 붙어 있다. IPU 는 레지스터 지표로만 쓴다
+# (de p25 1360ms vs ko 960ms — 낭독 vs 자발발화 차이가 드러난다).
+PAUSE_MS = 240
+
 # (fleurs 디렉토리, 정렬기 언어명, 띄어쓰기 여부)
 LANGS = {
     "de": ("de_de", "German", True),
@@ -54,6 +66,27 @@ def load_tsv(base: Path, split: str) -> dict[str, list[tuple[str, int]]]:
             if len(c) >= 6 and c[5].isdigit():
                 out.setdefault(c[0], []).append((c[1], int(c[5])))
     return out
+
+
+def to_ipu_ms(items) -> list[float]:
+    """쉼(PAUSE_MS 이상)으로 끊은 덩어리들의 길이(ms).
+
+    화자가 스스로 말을 어떻게 끊는지다. `min_gap` 을 이 분포의 백분위로 잡으면
+    코퍼스의 레지스터(낭독 vs 자발발화)에 자동으로 맞춰진다.
+    """
+    out, cur = [], 0.0
+    seq = [it for it in items if (it.text or "").strip()]
+    for a, b in zip(seq, seq[1:]):
+        gap = (b.start_time - a.end_time) * 1000
+        cur += (a.end_time - a.start_time) * 1000
+        if gap >= PAUSE_MS:
+            out.append(cur + gap)
+            cur = 0.0
+    if seq:
+        cur += (seq[-1].end_time - seq[-1].start_time) * 1000
+    if cur:
+        out.append(cur)
+    return [round(x, 1) for x in out]
 
 
 def to_unit_ends(items, text: str, dur_s: float, spaced: bool) -> tuple[list[float], float, float]:
@@ -171,6 +204,7 @@ def main() -> int:
                 continue
             out[key] = {"wav": wav.name, "dur_ms": round(dur_ms, 1),
                         "speech_ms": round((f1 - f0) * 1000, 1),
+                        "ipu_ms": to_ipu_ms(list(r)),
                         "word_end_ms": [round(e * 1000, 1) for e in ends]}
         done = i + len(chunk)
         if done % 40 == 0 or done >= len(jobs):
