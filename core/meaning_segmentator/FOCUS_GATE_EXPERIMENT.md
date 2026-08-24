@@ -271,3 +271,49 @@ de iter0 은 p=0.465 로 유의하지 않다. **매 이터 걸리는 것이 아�
 문턱은 상수가 아니라 **매 이터 계산되는 귀무**라, 새로 생기는 임의 상수가 없다.
 
 비용: 순열 200회 × `priority_audit` (순수 산술). 번역·모델 호출 0.
+
+---
+
+## 변경 내역 (브랜치 `autoseg/focus-gate`)
+
+**코드는 아직 한 줄도 고치지 않았다.** Step 0 이 D1 단독 수정이 무효임을 보였고
+(9/9 이터 `focus=format` 유지), D3 문턱은 귀무를 만든 뒤에야 정해졌기 때문이다.
+"검증 먼저, 수정은 그 다음" 순서를 지킨 결과다.
+
+### 추가한 것
+
+| 파일 | 역할 |
+|---|---|
+| `FOCUS_GATE_EXPERIMENT.md` | 이 문서 — 결함 진단, 가설, Step 0/0b 결과, D3 확정안 |
+| `autoseg/replay_focus.py` | 저장된 런 재생 — `rank_lift` 복원 + `focus` 재도출. `--offline` 로 캐시 전용 실행 증명, `--device` 로 CPU 폴백 |
+| `runs/replay/{de,ja,zh}-en_run01_focus.json` | 재생 결과 (rank_lift, focus) |
+| `runs/replay/priority_audit_dist.json` | 5개 런 16 이터의 감사표 77행 |
+| `runs/replay/over_trust_null.json` | 순열 귀무 대비 1위 과신의 z·p |
+| `runs/replay/step0.log` | 재생 로그 |
+| `fix_gpu.sh` | (임시) `nvidia_uvm` 재적재. **효과 없었음** — 재부팅 필요, 삭제 가능 |
+
+### 고친 문서
+
+- `MULTI2EN_DATASET.md` §10.3′·10.4′ — 재생으로 뒤집힌 두 주장 정정
+  ("de 순위축 고장" 철회, "순위축 살아 있는 언어만 채택 성공" 가설 폐기,
+  "감사 정보 전달은 되나 미반영" → 전달 자체가 안 됨)
+- `core/CLAUDE.md` — 이 문서 색인 추가
+
+### 확정된 처방 (구현 대기)
+
+| | 내용 | 근거 |
+|---|---|---|
+| **D1** | `evaluate_multi` 의 `Metrics` 재구성에 `rank_lift*` 5개 필드 전달 | 필드 누락으로 `focus=priority` 도달 불가 |
+| **D2** | format 관문 상대화 — **이것이 실제 병목** | 9/9 이터가 첫 관문에 갇혔다 |
+| **D3a′** | 1위 `over_trust` > 순열 귀무 95분위 → `focus=priority` 허용 (`rank_lift` 와 OR) | 발화율 31% (5/16). 생값 문턱은 94%로 사용 불가 |
+
+D2 의 구체안(`< min(1.0, 직전 baseline)` vs "2회 연속 format 이면 다음 관문")은
+아직 안 골랐다. 재현 런에서 둘을 비교하는 것이 남은 설계 판단이다.
+
+### 남은 차단 요인
+
+- **GPU** — `cuInit → 100`. 커널·dkms 모듈·드라이버 패키지·libcuda 전부 580.173.02 로
+  일치하고 kernel 은 6.8.0-138. 버전·설정 문제가 아니며 `nvidia_uvm` 재적재로도 안 풀렸다.
+  **재부팅 필요.** 재발하면 의심 대상은 프리빌트 `linux-modules-nvidia-580-6.8.0-138`
+  과 `nvidia-dkms-580` 의 이중 공급, 또는 하드웨어.
+- **zh 최종 평가** — gtx 429 (별건, `MULTI2EN_DATASET.md` §10.5)

@@ -11,6 +11,7 @@
 | `meaning_segmentator/utils/` | 의미 분절 연구 스크립트 (GPT `<SEG>` 마킹, 점진적 컨텍스트 번역, COMET 평가) |
 | `meaning_segmentator/autoseg/` | 분절 프롬프트 자동 생성 에이전트 루프 (v2). 설계 @meaning_segmentator/AUTO_PROMPT_LOOP_DESIGN.md, 사용법 @meaning_segmentator/autoseg/README.md |
 | `meaning_segmentator/TIME_AXIS_KNOB.md` | 노브를 토큰 축 → 시간 축으로 옮기는 설계 항목. 관측 가능성 논거, 토큰 2.6배 vs 시간 1.13배 실측, 선행 조건(강제정렬) |
+| `meaning_segmentator/FOCUS_GATE_EXPERIMENT.md` | `focus` 캐스케이드 진단. format 관문 고착·`rank_lift` 필드 누락·`over_trust` 순열 귀무. 브랜치 `autoseg/focus-gate` |
 | `meaning_segmentator/MULTI2EN_DATASET.md` | {de,ja,zh}→en 트랙 데이터셋 구축 기록. 소스 언어별 단위·`T` 환산과 오염 방지 구간 배분 |
 | `meaning_segmentator/metric_probes/` | `contradiction`(NLI) 지표 백엔드 대체 탐침. **루프 경로 아님** — 기존 런을 읽어 재활용. 결론 @meaning_segmentator/NLI_ALTERNATIVES.md |
 | `meaning_segmentator/docs/` | 진단 기록. 순위 축·비용 구조·루프 채택 실패 원인과 처방 @meaning_segmentator/docs/RANK_METRIC_DIAGNOSIS.md |
