@@ -718,7 +718,7 @@ def main() -> int:
                    help="한 분절 호출에 넣을 문장 수. 실측 최적 6, 12 이상은 역효과")
     p.add_argument("--units-per-sec", type=float, default=None,
                    help="코퍼스 발화 속도(단위/초). 강제정렬 산출물이 없을 때 직접 준다")
-    p.add_argument("--density", type=int, default=None,
+    p.add_argument("--t-floor", type=int, default=None,
                    help="후보 마킹 하한 기준 T. 작을수록 많이 찍는다. 미지정 시 min(--final-t-grid)")
     p.add_argument("--no-trust-region", action="store_true",
                    help="개정 범위를 고정 임계값(섹션 2, 1.25배)으로 되돌린다. 과거 런 재현용")
@@ -798,7 +798,7 @@ def main() -> int:
             setattr(args, _f, None)           # 모델 기본값에 맡긴다
 
     # **`min_gap` 을 안 주면 코퍼스에서 유도한다.** 이게 있어야 언어별 숫자가 커맨드에서
-    # 사라진다 — 격자·`density` 는 이미 `min_gap` 에서 나오므로 이 하나가 마지막 고리다.
+    # 사라진다 — 격자·`t_floor` 는 이미 `min_gap` 에서 나오므로 이 하나가 마지막 고리다.
     # 격자 결정보다 먼저여야 해서 데이터셋을 여기서 한 번 읽는다 (jsonl 읽기, 무시 가능).
     rate_source = "cli:--min-gap"
     if args.min_gap is None:
@@ -867,43 +867,21 @@ def main() -> int:
     # 요건으로 학습하면 마지막 평가에서만 무너진다 (run03: test 1차 통과율 0.34).
     # 검증기(`evaluate`)와 프롬프트 문면(`output_rules`)이 **같은 값**을 써야 한다.
     coverage_t = min(final_grid)
-    # 후보 풀 하한. 기본은 곡선의 가장 조인 점이지만, 그 값이면 **후보 수 ≈ 채택 수** 가 되어
-    # 순위 절단이 고를 게 없다 (en-de run01: 마킹 7.2 / 채택 6.2, 폐기 1개).
-    # 더 작은 값을 주면 더 많이 찍게 강제된다 — 실측에서 밀도 0.348 → 0.529, T=6 품질
-    # +0.013 로 **오늘까지 확인된 유일한 품질 레버**다 (docs/RANK_METRIC_DIAGNOSIS.md §8.1).
-    # 문면(`initial_prompt`)과 검증기(`need`)가 **같은 값**을 써야 한다 — 어긋나면 전 문장이
-    # too_few_tags 로 재시도돼 비용이 두 배가 되고 1차 통과율 신호가 오염된다.
+    # `t_floor` = 유도 격자의 바닥이자 **마킹 밀도 기준**. 종전에 `density` 라는
+    # 별도 이름·별도 식(`round(min_gap*4/3)`)이었는데 `ceil(1.3*min_gap)` 과 배수가
+    # 사실상 같아 min_gap 1~20 중 4곳만 1 차이였고, min_gap=20 에서는 뒤집혀
+    # (27 > 26) 전 문장이 too_few_tags 로 걸리는 버그였다. 하나로 합쳤다.
     #
-    # **격자를 따라 올라가면 안 된다.** `coverage_t` 는 곡선을 따라가지만 `density` 는
-    # 마킹 밀도 노브라 성격이 다르다. min_gap 에서 격자를 유도하면서 coverage_t 가 2 -> 4 로
-    # 오르는데, 그대로 물려 두면 문면이 "2어절당 하나" -> "4어절당 하나"가 되어 밀도 요건이
-    # 절반이 된다 — §8.1 의 레버를 거꾸로 당기는 셈이다.
+    # 문면(`initial_prompt`)과 검증기(`need`)가 **같은 값**을 써야 한다 — 어긋나면
+    # 전 문장이 재시도돼 비용이 두 배가 되고 1차 통과율 신호가 오염된다.
     #
-    # min_gap 이 원하는 방향은 정반대다: 간격 제약이 붙어 있는 자리를 **버리므로**, 필터가
-    # 고를 대안이 남으려면 후보가 더 많아야 한다. 그래서 격자와 분리해 2 로 고정한다
-    # (기존 기본 격자에서의 값과 같아 min_gap=0 이면 동작이 완전히 같다).
-    # min_gap 이 켜져 있으면 **간격을 지킬 수 있는 값**이어야 한다. `density = min_gap`
-    # 은 round() 때문에 요구 개수가 용량을 살짝 넘는다 (ko-en 실측 하한 3.8 > 용량 3.5)
-    # — 그러면 만족 불가능한 요건이 되어 전 문장이 재시도로 돈다.
-    #
-    # **여유를 정하는 것은 오프셋이 아니라 비율 `min_gap / density` 다.** 예전 `min_gap + 1`
-    # 은 상수라 min_gap 이 커질수록 비율이 1 로 붙어 여유가 사라진다 (3/4=0.75 → 6/7=0.857 →
-    # 8/9=0.889). zh(min_gap 6)·ja(min_gap 8) 실측에서 **요구 경계가 물리적 수용량 이상인
-    # 문장이 48% / 64%** 나왔다 — 모델이 min_gap 격자에 정확히 맞춰야만 통과하는 요건이라
-    # too_few_tags·gap_too_small 로 전량 재시도된다 (en 기준선 6%, de 8%).
-    # 비율을 보존하면 zh 12% / ja 6% 로 내려온다. **min_gap 2·3·4 에서는 +1 과 값이 같아
-    # 과거 런과 완전히 호환된다** (3→4, 4→5 동일).
-    # **`density` 는 유도 격자의 바닥(`t_floor`)과 같은 값이다.** 종전에는
-    # `round(min_gap * 4/3)` 이라는 별도 식이었는데 `t_floor = ceil(1.3 * min_gap)` 과
-    # 배수가 사실상 같아 min_gap 1~20 중 4곳에서만 1 차이가 났고, min_gap=20 에서는
-    # density(27) > t_floor(26) 로 **뒤집혀** 있었다 — 요구가 가장 작은 T 의 필요량을
-    # 넘어 전 문장이 too_few_tags 로 걸리는 잠재 버그다. 하나로 합쳐 없앤다.
-    #
-    # **사용자가 준 격자를 따라가지는 않는다.** `--t-grid` 를 크게 주면 density 가
-    # 같이 올라 마킹 요건이 느슨해지는데, 밀도는 지금까지 확인된 유일한 품질 레버다
+    # **사용자가 준 `--t-grid` 는 따라가지 않는다.** 격자를 크게 주면 마킹 요건이
+    # 같이 느슨해지는데, 밀도는 지금까지 확인된 유일한 품질 레버다
     # (밀도 0.348 -> 0.529 에서 T=6 품질 +0.013, docs/RANK_METRIC_DIAGNOSIS.md §8.1).
-    # 그래서 유도 격자의 바닥을 쓴다.
-    density = args.density or (t_floor if args.min_gap > 0 else min(2, coverage_t))
+    if args.t_floor:
+        t_floor = args.t_floor
+    elif args.min_gap <= 0:
+        t_floor = min(2, coverage_t)
     main_t = args.main_t or t_grid[len(t_grid) // 2]
     if main_t not in t_grid:
         print(f"--main-t {main_t} 가 --t-grid {t_grid} 에 없습니다", file=sys.stderr)
@@ -1012,8 +990,7 @@ def main() -> int:
                                          args.consistency_backend),
             "judge_prompt_hash": JsonCache.key(agents.JUDGE_SYSTEM),
             "judge_model": args.judge_model or args.model,
-            "min_boundaries_per": density,   # [Output Rules] 에 박히는 값 = 검증기 요건
-            "density": density,
+            "min_boundaries_per": t_floor,   # [Output Rules] 에 박히는 값 = 검증기 요건
             "curve_min_t": coverage_t,
             "coverage_required": not args.no_coverage_rule,
             "min_gap_ms": MIN_GAP_MS,
@@ -1040,7 +1017,7 @@ def main() -> int:
 
         _kw = dict(gw=gw, spaced=spaced, seg_cache=seg_cache, workers=args.workers,
                    trailing_punct=trailing_punct,
-                   require_coverage=not args.no_coverage_rule, coverage_t=density,
+                   require_coverage=not args.no_coverage_rule, coverage_t=t_floor,
                    reasoning_effort=args.seg_reasoning_effort,
                    batch_size=args.batch_size, min_gap=args.min_gap,
                    skip_translation_below=args.skip_translation_below)
@@ -1094,7 +1071,7 @@ def main() -> int:
             def one(pr: str):
                 # 프롬프트 **안**의 병렬(=콜 수)만으로는 워커를 못 채운다. 프롬프트
                 # **사이**에도 병렬을 걸어야 동시 폭이 후보 수만큼 곱해진다.
-                min_t = density
+                min_t = t_floor
                 need = (lambda t: coverage_need(t, min_t, spaced, args.min_gap)
                         ) if not args.no_coverage_rule else (lambda t: None)
                 segment_batch(
@@ -1186,7 +1163,7 @@ def main() -> int:
             for attempt in range(3 * max(1, args.v0_candidates)):
                 if len(candidates) >= args.v0_candidates:
                     break
-                cand = profiler.initial_prompt(profile, None, spaced, density,
+                cand = profiler.initial_prompt(profile, None, spaced, t_floor,
                                                args.min_gap)
                 missing = agents.check_skeleton(cand)
                 if missing:

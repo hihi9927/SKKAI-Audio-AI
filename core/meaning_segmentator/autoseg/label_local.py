@@ -68,7 +68,7 @@ def main() -> int:
     p.add_argument("--num-ctx", type=int, default=8192)
     p.add_argument("--t-grid", type=int, nargs="+", default=[4, 6, 8, 12])
     p.add_argument("--min-gap", type=int, default=3)
-    p.add_argument("--density", type=int, default=4)
+    p.add_argument("--t-floor", type=int, default=4)
     args = p.parse_args()
 
     rows_in = [json.loads(l) for l in
@@ -84,12 +84,12 @@ def main() -> int:
 
     def check(text: str, seg: str):
         return validate("", text, seg, SPACED, TRAILING_PUNCT, True,
-                        coverage_need(text, args.density, SPACED, args.min_gap),
+                        coverage_need(text, args.t_floor, SPACED, args.min_gap),
                         None, args.min_gap)
 
     def one(text: str) -> tuple[str, bool, list]:
         k = JsonCache.key("ollama-seg1", prompt_hash, gw.model, str(args.min_gap),
-                          str(args.density), text)
+                          str(args.t_floor), text)
         hit = cache.get(k)
         if hit is not None and (hit[0] or "").strip():
             return hit[0], hit[1], hit[2]
@@ -165,7 +165,7 @@ def main() -> int:
         "t_grid": args.t_grid,
         "tgt_lang": "German",
         "min_gap": args.min_gap,
-        "density": args.density,
+        "t_floor": args.t_floor,
         "priority_depth": None,
         "batch_size": 1,
         "require_priority": True,
