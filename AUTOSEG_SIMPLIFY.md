@@ -48,13 +48,18 @@ min_gap  ──▶  t_floor = ceil(1.3 × min_gap)
 ### 조각 수 계산
 
 ```
-조각 수     = max(1, round(문장길이 / T))
-남길 경계   = 조각 수 - 1
+조각 수  = max(1, round(문장길이 / T))         chunk_budget()
+경계 수  = 조각 수 - 1                         boundaries()
+용량     = max(0, 문장길이 // min_gap - 1)     capacity()
 
-표시 요구량 = max(1, round(문장길이 / t_floor)) - 1
-              단, min_gap 용량으로 깎임:
-              min(위 값, 문장길이 // min_gap - 1)
+남길 경계    = 경계 수(T)                      truncate()
+표시 요구량  = min(경계 수(t_floor), 용량)     coverage_need()
 ```
+
+같은 계산에 다른 T를 넣는다. 표시 쪽에만 용량 상한이 붙는다 — 요구는 지킬 수 있어야
+하기 때문이다 (못 지키면 재시도를 영원히 돈다). 절단은 자리가 없으면 덜 자른다.
+
+조각 수는 목표라 **반올림**, 용량은 한계라 **버림**.
 
 여기서 따라 나오는 것:
 
