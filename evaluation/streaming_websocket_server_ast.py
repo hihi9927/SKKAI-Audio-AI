@@ -28,6 +28,7 @@ import asyncio
 import json
 import logging
 import os
+import re
 import sys
 from pathlib import Path
 from typing import Optional
@@ -42,6 +43,9 @@ sys.path.insert(1, str(PROJECT_ROOT))
 sys.path.insert(2, str(FSL_SERVER_DIR))
 
 import streaming_websocket_server_fsl as fsl_server  # noqa: E402
+
+sys.path.insert(3, str(HERE / "ast"))
+import trans_guard  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
@@ -155,18 +159,46 @@ class ASTStreamingHandler(fsl_server.FSLStreamingHandler):
     # 그대로 재현한다. `_translate` / `_correct_and_translate` 는 커밋 직후(번역 태스크
     # 진입 시점)에 실행되므로 여기서 읽는 값이 그 커밋이 속한 발화다.
 
+    # ── 번역 호출 계측 ──────────────────────────────────────────────────────
+    # call count 는 보고할 지표이고, **번역 실패는 사후에 복구할 수 없다.** 실패하면
+    # 번역문이 빈 문자열로 돌아와 "정책이 아무 말도 못 만든 커밋"과 구분되지 않는다.
+    # 그래서 커밋 시점에 세어서 payload 에 실어 보낸다(`trans_guard` 참고).
+    #
+    # `begin_local` 은 이미 상위가 집계 중이면 None 을 준다 — base 의 방향 자가교정이
+    # `_translate` 를 한 번 더 부르므로, 가장 바깥(`_correct_and_translate`)만 센다.
+
+    @staticmethod
+    def _attach_trans_stats(extra: dict, local: Optional[dict]) -> None:
+        if not local:
+            return
+        extra["transCalls"] = local.get("calls", 0)
+        extra["transRetries"] = local.get("retries", 0)
+        extra["transFailed"] = bool(local.get("failed", 0))
+
     async def _translate(self, text, target_lang, audio_end_sec=None):
         utt_id = self._ast_utt_id
-        translation, lang, extra = await super()._translate(text, target_lang, audio_end_sec)
+        tok = trans_guard.begin_local()
+        try:
+            translation, lang, extra = await super()._translate(
+                text, target_lang, audio_end_sec
+            )
+        finally:
+            local = trans_guard.end_local(tok)
         extra["uttId"] = utt_id
+        self._attach_trans_stats(extra, local)
         return translation, lang, extra
 
     async def _correct_and_translate(self, text, current_lang, audio_end_sec):
         utt_id = self._ast_utt_id
-        corrected, translation, lang, extra = await super()._correct_and_translate(
-            text, current_lang, audio_end_sec
-        )
+        tok = trans_guard.begin_local()
+        try:
+            corrected, translation, lang, extra = await super()._correct_and_translate(
+                text, current_lang, audio_end_sec
+            )
+        finally:
+            local = trans_guard.end_local(tok)
         extra["uttId"] = utt_id
+        self._attach_trans_stats(extra, local)
         return corrected, translation, lang, extra
 
     async def _emit_final_payload(
@@ -297,7 +329,78 @@ class ASTStreamingHandler(fsl_server.FSLStreamingHandler):
 
 
 class ASTStreamingServer(fsl_server.FSLStreamingServer):
+    """FSL 서버 + static/punct 축에서 `<SEG>` 를 **서버 눈에만** 안 보이게 한다."""
+
+    def _ast_hide_seg_token(self) -> None:
+        """seg 축이 아니면 `<SEG>` 를 파싱 단계에서 걷어낸다. **생성은 건드리지 않는다.**
+
+        왜 필요한가
+        -----------
+        세 축을 같은 가중치(en-dailytalk-seg)로 돌린다. 그 모델은 축과 무관하게 항상
+        `<SEG>` 를 뱉으므로, static/punct 축이 그걸 무시하지 못하면 축이 조용히 섞인다.
+        실측(20발화, punct 축): 커밋 사유가 `{'dot': 21, 'seg': 12}` — 36% 가 seg 였다.
+
+        단순 라벨 문제가 아니다. base 는 커밋 구간에 `<SEG>` 가 섞이면
+
+            trigger = "seg" if "<SEG>" in matched_text else "dot"
+            ...
+            if trigger == "dot" and self.dot_commit_confirm:   # ← 확정 게이트
+
+        라벨을 seg 로 바꾸면서 **확정 게이트를 건너뛴다.** 그 커밋만 확정 없이 즉시
+        나가 punct 축의 LAAL 이 낙관적으로 잡힌다. FSL 도 `"<SEG>" in state.text` 만
+        보고 `_slot_seg_detected` 를 채우므로 dot 커밋에 SEG 감지 시점이 새어 든다.
+
+        왜 생성을 막으면 안 되나
+        ------------------------
+        처음엔 vLLM `bad_words=["<SEG>"]` 로 생성을 막았는데 **전사가 망가졌다.**
+        모델이 `<SEG>` 에 둔 확률 질량이 차선 토큰으로 흘러 무의미한 단어가 끼어든다.
+        실측(같은 20발화, en→de, 정답 대비 WER):
+
+            seg   (차단 없음)  WER  9.26%   'icky' 0회
+            punct (차단)       WER 11.73%   'icky' 12회 / 7발화
+            static(차단)       WER 29.63%   'icky' 18회 / 10발화
+
+        정책과 무관한 ASR 열화를 static/punct 에만 씌우는 셈이라, seg 가 실제보다
+        좋아 보이게 만드는 반대 방향의 교란이 된다.
+
+        어떻게 하나
+        -----------
+        `parse_asr_output` 을 감싼다. 디코딩된 원문(`state._raw_decoded`)은 그대로 두고,
+        **서버가 받아보는 텍스트에서만** `<SEG>` 를 지운다. 이 한 지점이 전부를 덮는다:
+
+            state.text          ← txt_p 가 여기 대입된다 (FSL 의 SEG 감지도 이걸 본다)
+            on_seg 콜백          ← `txt_p.count("<SEG>")` 로 발동하므로 0 이 되어 안 뜬다
+            커밋 trigger 판정     ← matched_text 에 `<SEG>` 가 없어 항상 "dot"
+
+        결과적으로 세 축이 **완전히 동일한 ASR 출력**을 공유하고 정책만 갈린다.
+        """
+        if not (self.config.always_commit or self.config.enable_dot_commit):
+            return                      # seg 축 — 그대로 둔다
+        if getattr(self, "_ast_seg_hidden", False):
+            return
+        # `parse_asr_output` 은 qwen3_asr 모듈에 이름으로 바인딩돼 호출된다. 그 모듈의
+        # 속성을 갈아끼워야 호출부가 우리 래퍼를 본다.
+        mod = sys.modules.get(type(self.asr).__module__)
+        orig = getattr(mod, "parse_asr_output", None) if mod else None
+        if orig is None:
+            logger.error("[AST-HIDE-SEG] parse_asr_output 을 찾지 못했습니다 — "
+                         "static/punct 축이 <SEG> 에 오염된 채 돌 수 있습니다 (모듈=%s)",
+                         getattr(mod, "__name__", None))
+            return
+
+        def _hide_seg(*args, **kwargs):
+            lang, txt = orig(*args, **kwargs)
+            if txt and "<SEG>" in txt:
+                txt = re.sub(r"\s*<SEG>\s*", " ", txt).strip()
+            return lang, txt
+
+        mod.parse_asr_output = _hide_seg
+        self._ast_seg_hidden = True
+        logger.info("[AST-HIDE-SEG] static/punct 축 — 파싱 단계에서 `<SEG>` 제거 "
+                    "(생성·디코딩은 그대로, 모듈=%s)", mod.__name__)
+
     async def handle_connection(self, websocket):
+        self._ast_hide_seg_token()
         async with self.connection_lock:
             self.active_connections += 1
             if self.idle_task and not self.idle_task.done():
@@ -324,12 +427,91 @@ class ASTStreamingServer(fsl_server.FSLStreamingServer):
                     self._restart_idle_timer()
 
 
+def _install_trans_guard() -> None:
+    """AST 전용 인자를 sys.argv 에서 걷어내고 번역 계측을 설치한다.
+
+    FSL 의 `main()` 이 argparse 를 쥐고 있으므로 여기서 먼저 떼어내야 한다
+    (FSL 자신도 `parse_known_args` 로 같은 일을 한다).
+    """
+    import argparse as _argparse
+
+    pre = _argparse.ArgumentParser(add_help=False)
+    pre.add_argument("--trans-backend", default="v2", choices=["v2", "gtx"],
+                     help="v2=공식 Cloud Translation Basic(API 키 필요, 기본값), "
+                          "gtx=무료 위젯 엔드포인트(대량 호출 시 IP 차단됨)")
+    pre.add_argument("--trans-api-key", default=None,
+                     help="미지정 시 GOOGLE_TRANSLATE_API_KEY 환경변수를 쓴다")
+    pre.add_argument("--trans-retries", type=int, default=3,
+                     help="번역 총 시도 횟수(첫 시도 포함). 1이면 재시도 없음")
+    pre.add_argument("--trans-timeout", type=float, default=10.0)
+    pre.add_argument("--trans-backoff", type=float, default=0.5,
+                     help="재시도 지수 백오프 기준(초)")
+    pre.add_argument("--trans-backoff-429", type=float, default=5.0,
+                     help="429/403 일 때의 백오프 기준(초). rate-limit 은 더 물러선다")
+    pre.add_argument("--trans-alert-rate", type=float, default=0.005,
+                     help="번역 실패율이 이 값을 넘으면 CRITICAL 로 경보")
+    pre.add_argument("--trans-alert-min-calls", type=int, default=200)
+    pre.add_argument("--trans-dump-every", type=int, default=50,
+                     help="이 호출 수마다 통계 파일을 갱신한다(중간에 죽어도 남게)")
+    pre.add_argument("--trans-stats-out", default=None,
+                     help="번역 통계 JSON 을 쓸 경로. 주기적으로 갱신된다")
+    args, remaining = pre.parse_known_args()
+    sys.argv = [sys.argv[0]] + remaining
+
+    # `stop_server.sh` 는 SIGTERM 을 보낸다. 파이썬의 기본 SIGTERM 처리는 프로세스를
+    # 즉시 끝내고 **finally 블록을 실행하지 않으므로**, 아래 main() 의 finally 에 있는
+    # 통계 기록이 통째로 날아간다. 축마다 서버를 내리는 실험에서는 그게 곧 "이 런을
+    # 믿어도 되는가"의 근거가 사라진다는 뜻이다.
+    #
+    # 핸들러에서 기록만 하고 기본 동작으로 되돌린 뒤 같은 시그널을 자신에게 다시
+    # 보낸다 — vLLM 종료 경로를 바꾸지 않으면서 통계만 건진다.
+    import signal as _signal
+
+    def _on_term(signum, _frame):
+        trans_guard.log_summary(f"[TRANS-STATS/sig{signum}]")
+        trans_guard.dump()
+        _signal.signal(signum, _signal.SIG_DFL)
+        os.kill(os.getpid(), signum)
+
+    for _sig in (_signal.SIGTERM, _signal.SIGINT):
+        try:
+            _signal.signal(_sig, _on_term)
+        except (ValueError, OSError):
+            pass  # 메인 스레드가 아닌 경우 등 — 기록을 못 할 뿐 런은 계속된다
+
+    # 정상 종료 경로용 보조. 시그널 경로와 중복 기록돼도 같은 내용이라 무해하다.
+    import atexit as _atexit
+    _atexit.register(trans_guard.dump)
+
+    api_key = args.trans_api_key or os.environ.get("GOOGLE_TRANSLATE_API_KEY")
+    trans_guard.install(
+        fsl_server.base_server,
+        backend=args.trans_backend,
+        api_key=api_key,
+        retries=args.trans_retries,
+        timeout=args.trans_timeout,
+        backoff=args.trans_backoff,
+        backoff_429=args.trans_backoff_429,
+        alert_rate=args.trans_alert_rate,
+        alert_min_calls=args.trans_alert_min_calls,
+        stats_path=args.trans_stats_out,
+        dump_every=args.trans_dump_every,
+    )
+
+
 def main():
     # FSL main() 의 인자 파싱 + StreamingConfig 구성을 그대로 쓴다. 서버 클래스만
     # 갈아끼우는 이유는 중복 때문이다 — config 필드를 복사해두면 base 에 플래그가
     # 하나 늘 때마다 이 파일이 조용히 낡는다.
     fsl_server.FSLStreamingServer = ASTStreamingServer
-    fsl_server.main()
+    _install_trans_guard()
+    try:
+        fsl_server.main()
+    finally:
+        # 서버가 어떻게 끝나든(정상 종료, Ctrl-C, 예외) 번역 통계는 남겨야 한다.
+        # 이게 없으면 "이 런을 믿어도 되는가"를 나중에 판정할 근거가 사라진다.
+        trans_guard.log_summary("[TRANS-STATS/final]")
+        trans_guard.dump()
 
 
 if __name__ == "__main__":
