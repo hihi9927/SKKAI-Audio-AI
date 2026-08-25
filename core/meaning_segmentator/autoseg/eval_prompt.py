@@ -55,8 +55,6 @@ def main() -> int:
     # (실측 24문장: b=1 5,237 → b=3 2,994 → b=6 1,680 사고/문장).
     p.add_argument("--batch-size", type=int, default=1,
                    help="한 분절 호출에 넣을 문장 수. 1 = 종전 동작")
-    p.add_argument("--priority-depth", type=int, default=None,
-                   help="상위 N 개만 번호 요구. 미지정 시 전체 순위")
     p.add_argument("--t-floor", type=int, default=None,
                    help="후보 마킹 하한 기준 T. 미지정 시 min(t_grid)")
     p.add_argument("--seg-reasoning-effort", default=None,
@@ -160,7 +158,6 @@ def main() -> int:
                                  coverage_t=(args.t_floor or cfg.get("t_floor") or cfg.get("density")
                                              or cfg.get("candidate_t")
                                              or min(t_grid)),
-                                 priority_depth=args.priority_depth,
                                  batch_size=args.batch_size,
                                  min_gap=(args.min_gap if args.min_gap is not None
                                           else int(cfg.get("min_gap", 0))),
@@ -177,7 +174,6 @@ def main() -> int:
                         else int(cfg.get("min_gap", 0))),
             "t_floor": (args.t_floor or cfg.get("t_floor") or cfg.get("density")
                         or cfg.get("candidate_t") or min(t_grid)),
-            "priority_depth": args.priority_depth,
             "batch_size": args.batch_size,
             "require_priority": not args.no_priority,
             "adequacy_backend": adequacy.name,

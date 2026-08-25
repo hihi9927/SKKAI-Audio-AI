@@ -188,24 +188,40 @@ def segment_batch(
     batch_prompt = prompt if batch_size <= 1 else prompt + BATCH_PROTOCOL
     prompt_hash = JsonCache.key(prompt)
 
-    def one(t: str, pre: str | None = None) -> tuple[str, bool]:
-        # 캐시 키의 "seg3" 는 정규화 도입 시점 표시다. 이전 캐시는 정규화 전 문자열이라
-        # 그대로 쓰면 새 코드와 옛 결과가 섞인다.
-        # 사고량이 바뀌면 분절도 바뀌므로 캐시 키에 넣는다. 안 넣으면 effort=low 런이
-        # medium 으로 만든 옛 결과를 그대로 돌려받아 비교가 조용히 깨진다.
+    def cache_key(t: str) -> str:
+        # "seg3" 는 정규화 도입 시점 표시다. 이전 캐시는 정규화 전 문자열이라 그대로 쓰면
+        # 새 코드와 옛 결과가 섞인다.
+        # 사고량이 바뀌면 분절도 바뀌므로 키에 넣는다. 안 넣으면 effort=low 런이 medium 으로
+        # 만든 옛 결과를 그대로 돌려받아 비교가 조용히 깨진다.
         # **모델도 같은 이유로 키에 들어간다.** 없으면 모델을 바꿔 돌린 평가가 이전 모델의
         # 캐시를 그대로 맞아 호출 0 회로 "동일한 결과"를 내놓는다 — 두 모델을 비교하려던
         # 실험이 조용히 같은 분절을 두 번 채점하는 것으로 바뀐다.
-        k = JsonCache.key("seg3", prompt_hash, gw.model, reasoning_effort or "-",
-                          str(batch_size), t)
-        if cache is not None:
-            hit = cache.get(k)
-            # 빈 출력은 **실패한 호출**이지 결과가 아니다. 예전 캐시에 남아 있는 빈 값을
-            # 그대로 돌려주면 호출 없이(calls=0) 포맷 통과율이 떨어져, 원인이 캐시라는
-            # 사실이 로그 어디에도 안 남는다 — run04 에서 실제로 이것 때문에 score 가 0 이
-            # 되고 judge 가 빈 리스트를 인덱싱해 루프 전체가 중단됐다. 미스로 처리해 재호출한다.
-            if hit is not None and (hit[0] or "").strip():
-                return hit[0], hit[1]
+        return JsonCache.key("seg3", prompt_hash, gw.model, reasoning_effort or "-",
+                             str(batch_size), t)
+
+    def cached(t: str) -> list | None:
+        """쓸 수 있는 캐시 값. 없거나 빈 출력이면 None.
+
+        빈 출력은 **실패한 호출**이지 결과가 아니다. 예전 캐시에 남아 있는 빈 값을 그대로
+        돌려주면 호출 없이(calls=0) 포맷 통과율이 떨어져, 원인이 캐시라는 사실이 로그
+        어디에도 안 남는다 — run04 에서 실제로 이것 때문에 score 가 0 이 되고 judge 가 빈
+        리스트를 인덱싱해 루프 전체가 중단됐다. 미스로 처리해 재호출한다.
+
+        **키 계산과 빈 값 판정은 여기 한 곳에만 둔다.** 예전에는 `one()` 과 배치 제외 목록이
+        같은 6조각 키를 각자 만들어, 한쪽만 고치면 배치 경로가 캐시를 통째로 놓치면서도
+        겉으로는 정상 동작으로 보였다.
+        """
+        if cache is None:
+            return None
+        hit = cache.get(cache_key(t))
+        if hit is None or not (hit[0] or "").strip():
+            return None
+        return hit
+
+    def one(t: str, pre: str | None = None) -> tuple[str, bool]:
+        hit = cached(t)
+        if hit is not None:
+            return hit[0], hit[1]
 
         out = pre if pre is not None else gw.chat(
             system=prompt, user=t, max_tokens=SEG_MAX_TOKENS,
@@ -244,42 +260,38 @@ def segment_batch(
         # 실패(빈 출력)는 캐싱하지 않는다. 캐싱하면 다음 런이 재시도조차 못 하고
         # 같은 실패를 영구히 재생한다.
         if cache is not None and (out or "").strip():
-            cache.put(k, [out, first_ok])
+            cache.put(cache_key(t), [out, first_ok])
         return out, first_ok
 
-    if batch_size <= 1:
-        with ThreadPoolExecutor(max_workers=workers) as ex:
-            results = list(ex.map(one, texts))
-    else:
+    def call_group(g: list[str]) -> dict[str, str]:
+        user = "\n".join(f"[{i + 1}] {t}" for i, t in enumerate(g))
+        raw = gw.chat(system=batch_prompt, user=user, max_tokens=SEG_MAX_TOKENS,
+                      reasoning_effort=reasoning_effort, purpose="segment")
+        got: dict[str, str] = {}
+        for line in raw.splitlines():
+            m = _BATCH_LINE.match(line.strip())
+            if not m:
+                continue
+            idx = int(m.group(1))
+            if 1 <= idx <= len(g):
+                got[g[idx - 1]] = m.group(2).strip()
+        return got
+
+    # 배치는 **미리 채우기**일 뿐이다. `batch_size <= 1` 이면 pre_map 이 비고, 아래 단건
+    # 경로가 전부 직접 부른다 — 그래서 두 경우가 같은 코드다.
+    pre_map: dict[str, str] = {}
+    if batch_size > 1:
         # 캐시에 있는 것은 배치에서 뺀다 — 캐시 적중분까지 다시 부르면 배치의 의미가 없다.
-        todo = [t for t in texts if cache is None
-                or not (cache.get(JsonCache.key("seg3", prompt_hash, gw.model,
-                                                reasoning_effort or "-", str(batch_size), t))
-                        or [""])[0].strip()]
+        todo = [t for t in texts if cached(t) is None]
         groups = [todo[i:i + batch_size] for i in range(0, len(todo), batch_size)]
-
-        def call_group(g: list[str]) -> dict[str, str]:
-            user = "\n".join(f"[{i + 1}] {t}" for i, t in enumerate(g))
-            raw = gw.chat(system=batch_prompt, user=user, max_tokens=SEG_MAX_TOKENS,
-                          reasoning_effort=reasoning_effort, purpose="segment")
-            got: dict[str, str] = {}
-            for line in raw.splitlines():
-                m = _BATCH_LINE.match(line.strip())
-                if not m:
-                    continue
-                idx = int(m.group(1))
-                if 1 <= idx <= len(g):
-                    got[g[idx - 1]] = m.group(2).strip()
-            return got
-
-        pre_map: dict[str, str] = {}
         if groups:
             with ThreadPoolExecutor(max_workers=workers) as ex:
                 for d in ex.map(call_group, groups):
                     pre_map.update(d)
-        # 파싱이 안 된 문장은 pre=None 이라 one() 이 단건으로 다시 부른다 — 조용한 누락 방지.
-        with ThreadPoolExecutor(max_workers=workers) as ex:
-            results = list(ex.map(lambda t: one(t, pre_map.get(t)), texts))
+    # 배치가 안 돌았거나 파싱이 안 된 문장은 pre=None 이라 one() 이 단건으로 부른다
+    # — 조용한 누락 방지.
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        results = list(ex.map(lambda t: one(t, pre_map.get(t)), texts))
     if cache is not None:
         cache.flush()
     return [r[0] for r in results], [r[1] for r in results]
@@ -390,7 +402,6 @@ def validate(sent_id: str, original: str, seg_text: str, spaced: bool,
              trailing_punct: str | None = None,
              require_priority: bool = True,
              min_tags: int | None = None,
-             priority_depth: int | None = None,
              min_gap: int = 0) -> list[Violation]:
     """번역 호출 전에 도는 하드 게이트. LLM 없이 순수 문자열 검사.
 
@@ -430,30 +441,14 @@ def validate(sent_id: str, original: str, seg_text: str, spaced: bool,
 
     # ── 순위 규칙 (v2) ──────────────────────────────────────────────────
     # 순위가 깨지면 Truncator 가 "상위 k−1개"를 정의할 수 없어 노브 자체가 죽는다.
+    #
+    # **부분 순위(`priority_depth`)는 기각됐다** — 상위 N 개만 번호를 요구해 사고량을
+    # 아끼려 했으나, 정렬 생략은 평가 생략이 아니라 사고가 오히려 +17% 늘었다
+    # (docs/RANK_METRIC_DIAGNOSIS.md §8.3). 배선은 본 루프에서 한 번도 켜진 적이 없어
+    # 지웠다. 되살리려면 그 절을 먼저 읽을 것.
     if require_priority and tags:
         prios = [int(m.group(1)) if m.group(1) else None for m in tags]
-        numbered = [p for p in prios if p is not None]
-        # `priority_depth` — **부분 순위**. 절단은 상위 k−1 개만 소비하므로 그보다 깊은
-        # 순위는 계산해도 아무도 안 본다 (en-de 대풀 실측: 마킹 10.8 개 중 소비 2.7 개,
-        # 순위 계산의 75~90% 가 폐기). 상위 N 개만 번호를 요구하고 나머지는 무번호
-        # `<SEG>` 로 받으면 그 사고량을 안 쓴다. 무번호 태그는 `normalize_tags` 가
-        # 번호 붙은 것들 **뒤로** 밀어 정렬하므로 절단 규약은 그대로다.
-        if priority_depth is not None:
-            if not numbered:
-                v.append(Violation(sent_id, "bad_priority_format",
-                                   "번호 붙은 태그가 하나도 없음"))
-            else:
-                need_n = min(priority_depth, len(tags))
-                if len(numbered) < need_n:
-                    v.append(Violation(sent_id, "too_few_ranked",
-                                       f"번호 {len(numbered)}개 — 상위 {need_n}개 필요"))
-                if len(set(numbered)) != len(numbered):
-                    v.append(Violation(sent_id, "duplicate_priority",
-                                       f"순위 중복: {sorted(numbered)}"))
-                elif sorted(numbered) != list(range(1, len(numbered) + 1)):
-                    v.append(Violation(sent_id, "priority_gap",
-                                       f"순위가 1..{len(numbered)} 연속이 아님: {sorted(numbered)}"))
-        elif any(p is None for p in prios):
+        if any(p is None for p in prios):
             v.append(Violation(sent_id, "bad_priority_format",
                                "순위 없는 태그. 모든 태그는 <SEG:n> 형태여야 함"))
         else:

@@ -240,7 +240,8 @@ ko-en `run05` 가 세 런 중 유일하게 gap 양수였던 것도 같은 이유
 5개를 번호 붙일지"라는 판단이 새로 생긴다. 재시도는 절반으로 줄었지만(무번호 허용이 포맷
 위반 여지를 줄임) 사고 증가에 상쇄됐다.
 
-`priority_depth` 배선 자체는 남겨 뒀다 (`validate` / `evaluate` / `eval_prompt`).
+`priority_depth` 배선은 **제거했다** — 본 루프에서 한 번도 켜지지 않았고 위 결과로
+기각됐다. 되살리려면 `validate` / `evaluate` / `eval_prompt` 세 곳에 다시 넣어야 한다.
 
 ---
 

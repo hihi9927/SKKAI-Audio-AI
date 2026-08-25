@@ -79,7 +79,7 @@ def main() -> int:
     def check(text: str, seg: str):
         return validate("", text, seg, SPACED, TRAILING_PUNCT, True,
                         coverage_need(text, args.t_floor, SPACED, args.min_gap),
-                        None, args.min_gap)
+                        args.min_gap)
 
     def one(text: str) -> tuple[str, bool, list]:
         k = JsonCache.key("ollama-seg1", prompt_hash, gw.model, str(args.min_gap),
@@ -160,7 +160,6 @@ def main() -> int:
         "tgt_lang": "German",
         "min_gap": args.min_gap,
         "t_floor": args.t_floor,
-        "priority_depth": None,
         "batch_size": 1,
         "require_priority": True,
         "segmenter": f"ollama:{args.model}",

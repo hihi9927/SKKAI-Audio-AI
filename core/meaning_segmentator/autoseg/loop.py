@@ -381,7 +381,6 @@ def evaluate(
     contradiction: "metrics.ContradictionBackend | None" = None,
     coverage_t: int | None = None,
     reasoning_effort: str | None = None,
-    priority_depth: int | None = None,
     batch_size: int = 1,
     min_gap: int = 0,
     rank_lift_seed: int = 0,
@@ -408,8 +407,7 @@ def evaluate(
     seg_texts, first_pass = segment_batch(
         gw, prompt, texts, cache=seg_cache, workers=workers,
         validate_fn=lambda t, out: validate("", t, out, spaced, trailing_punct,
-                                            require_priority, need(t), priority_depth,
-                                            min_gap),
+                                            require_priority, need(t), min_gap),
         normalize_fn=lambda out: normalize_tags(out, spaced, trailing_punct),
         reasoning_effort=reasoning_effort,
         batch_size=batch_size,
@@ -421,7 +419,7 @@ def evaluate(
     scored_flags: list[bool] = []
     for s, seg in zip(sentences, seg_texts):
         vs = validate(s.id, s.text, seg, spaced, trailing_punct, require_priority,
-                      need(s.text), priority_depth, min_gap)
+                      need(s.text), min_gap)
         valid_flags.append(not vs)
         scored_flags.append(not blocks_scoring(vs))
         violations.extend({"id": v.id, "rule": v.rule, "detail": v.detail,
@@ -1105,7 +1103,7 @@ def main() -> int:
                 segment_batch(
                     gw, pr, texts, cache=seg_cache, workers=args.workers,
                     validate_fn=lambda t, out: validate("", t, out, spaced, trailing_punct,
-                                                        True, need(t), None, args.min_gap),
+                                                        True, need(t), args.min_gap),
                     normalize_fn=lambda o: normalize_tags(o, spaced, trailing_punct),
                     reasoning_effort=args.seg_reasoning_effort,
                     batch_size=args.batch_size)
