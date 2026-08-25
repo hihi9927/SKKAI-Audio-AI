@@ -163,7 +163,7 @@ PYTHONPATH=. python -m core.meaning_segmentator.autoseg.eval_prompt \
 
 | 옵션 | 기본 | 설명 |
 |---|---|---|
-| `--dataset` | `kspon` | `data.py` 의 `LOADERS` 키 (`kokoro`=ja, `kspon`=ko) |
+| `--dataset` | `kspon` | 등록된 이름(`data.DATASETS`) 또는 매니페스트 경로(`.jsonl`) |
 | `--model` | `gpt-5-mini` | 분절·에이전트 모델. en-de test 100문장 실측에서 `gpt-5.4-mini` 대비 **비용 1/3.9 에 품질 차이 검출 안 됨**(쌍체 t=−1.0~0.0). `gpt-5-nano` 는 지시를 못 따라 커버리지 1/15 로 실격 |
 | `--judge-model` | `--model` | 판정자. **분절기와 다른 모델을 쓰면 순환이 준다** |
 | `--translator` | `google` | `llm` 또는 `google`. 운영 서버 경로는 `google` |
@@ -278,7 +278,7 @@ MANIFESTS = {
 ```
 
 `LOADERS` 에 함수를 추가하는 것은 **파일 포맷 자체가 고유할 때만**이다
-(kokoro 의 낭독 호흡 단위 → 문장 복원 같은 전처리).
+(KsponSpeech 의 JSON 두 구조 흡수 같은 전처리).
 
 ## 관문 두 개 — 루프보다 먼저
 

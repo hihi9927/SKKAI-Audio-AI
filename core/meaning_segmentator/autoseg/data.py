@@ -6,7 +6,6 @@
 
 from __future__ import annotations
 
-import csv
 import json
 import random
 import unicodedata
@@ -26,78 +25,6 @@ class Sentence:
 
 
 # ── 로더 ─────────────────────────────────────────────────────────────────
-
-_JA_TERMINATORS = "。！？"
-
-
-def load_kokoro(path: Path | None = None) -> list[Sentence]:
-    """KokoroSpeech metadata.csv (ja).
-
-    형식: id|분かち書き 텍스트|음소열
-
-    두 가지 정규화가 필요하다.
-
-    1. 2번째 필드는 형태소 단위로 공백 분리되어 있으나 일본어 원문에는 공백이 없다.
-       공백을 제거해 자연스러운 표기로 되돌린다.
-    2. **각 행은 문장이 아니라 낭독 호흡 단위다.** 행이 어중에서 끊겨
-       "た。" 로 시작하거나 "ごんは、「ふふん、" 로 끝난다. 그대로 쓰면 분절 대상이
-       문장이 아니게 되어 실험 자체가 무의미해진다. 인용부호 깊이를 추적하면서
-       문말 부호가 나올 때까지 이어 붙여 문장을 복원한다.
-    """
-    path = path or (_REPO_ROOT / "evaluation" / "KokoroSpeech" / "metadata.csv")
-    rows: list[tuple[str, str]] = []
-    with path.open(encoding="utf-8") as f:
-        for row in csv.reader(f, delimiter="|"):
-            if len(row) < 2:
-                continue
-            text = row[1].replace(" ", "").replace("　", "").strip()
-            if text:
-                rows.append((row[0], text))
-
-    stories: dict[str, str] = {}
-    for rid, text in rows:
-        stories.setdefault(rid.rsplit("-", 1)[0], "")
-        stories[rid.rsplit("-", 1)[0]] += text
-
-    out: list[Sentence] = []
-    for story, blob in stories.items():
-        for i, sent in enumerate(_split_ja_sentences(blob)):
-            out.append(Sentence(id=f"{story}-s{i:04d}", text=sent))
-    return out
-
-
-def _split_ja_sentences(blob: str, max_chars: int = 120) -> list[str]:
-    """문말 부호에서 자르되 인용부호 안은 자르지 않는다.
-
-    원문에 인용부호 짝이 맞지 않는 구간이 있어 그대로 두면 버퍼가 무한 누적된다.
-    max_chars 를 넘으면 강제로 끊되, **그렇게 끊긴 조각은 버린다** — 인용부호가
-    열린 채 끝나거나 문말 부호 없이 잘린 텍스트는 문장이 아니고, 분절 모델이
-    빈 출력을 내놓는 원인이 된다 (실측 확인). 깨진 입력으로 프롬프트를 평가하면
-    포맷 유효율이 영원히 1.0에 도달하지 못한다.
-    """
-    out, buf, depth = [], "", 0
-    for ch in blob:
-        buf += ch
-        if ch == "「":
-            depth += 1
-        elif ch == "」":
-            depth = max(0, depth - 1)
-        elif ch in _JA_TERMINATORS and depth == 0:
-            out.append(buf)
-            buf = ""
-        if len(buf) > max_chars:      # 강제 절단분은 채택하지 않는다
-            buf, depth = "", 0
-    if buf.strip():
-        out.append(buf)
-    return [s for s in (x.strip() for x in out) if _is_wellformed(s)]
-
-
-def _is_wellformed(s: str) -> bool:
-    """인용부호 짝이 맞고 문말 부호로 끝나는 것만 문장으로 인정."""
-    if not s or s.count("「") != s.count("」"):
-        return False
-    return s[-1] in _JA_TERMINATORS or s[-1] == "」"
-
 
 def _load_json_entries(path: Path, text_field: str = "text", id_field: str = "file") -> list[Sentence]:
     """평가 데이터셋 JSON 두 구조를 모두 흡수.
@@ -126,8 +53,7 @@ def _load_json_entries(path: Path, text_field: str = "text", id_field: str = "fi
 def load_kspon(path: Path | None = None) -> list[Sentence]:
     """KsponSpeech eval_clean_1000.json (ko).
 
-    실제 자발 발화 ASR 전사. KokoroSpeech 와 달리 문장 재구성이 필요 없다 —
-    각 항목이 이미 하나의 발화 단위다. 구두점이 없는 항목이 많은 것이 정상이며,
+    실제 자발 발화 ASR 전사. 각 항목이 이미 하나의 발화 단위다. 구두점이 없는 항목이 많은 것이 정상이며,
     그것이 바로 실시간 분절이 풀어야 하는 조건이다."""
     path = path or (_REPO_ROOT / "evaluation" / "KsponSpeech" / "transcribe" / "eval_clean_1000.json")
     return _load_json_entries(path, text_field="text", id_field="file")
@@ -188,7 +114,6 @@ MANIFESTS = {
 
 # 파일 포맷이 고유한 것만 로더 함수로 남는다. 나머지는 위 MANIFESTS.
 LOADERS = {
-    "kokoro": load_kokoro,             # ja. 낭독 호흡 단위 -> 문장 복원이 필요
     "kspon": load_kspon,               # ko. eval_clean_1000
     "kspon-train": load_kspon_train,   # ko. 같은 코퍼스, 꼬리가 2배 길다
 }
