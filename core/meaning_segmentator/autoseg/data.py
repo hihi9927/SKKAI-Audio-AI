@@ -186,7 +186,12 @@ def units_per_sec(dataset: str, sentences: list[Sentence],
 # Prompt Engineer 컨텍스트로 들어가 프롬프트가 달라지고 기존 런과 비교가 깨진다.
 # 덮어쓰기는 소비 지점(loop.py)에서만 한다.
 
-_PO_SENTENCE_OPENERS = "¿¡"
+# **모양이 여닫이를 확정하는 글자는 분류로 뺀다.** 괄호(`Ps`/`Pe`)와 곡선 따옴표
+# (`Pi`/`Pf`)가 그것이다. 어느 쪽이 여는 것인지는 언어마다 뒤집히지만 — 독일어
+# `„…“` 는 `“` 로 닫고 중국어 `“…”` 는 `“` 로 연다 — **"따옴표인가"는 안 뒤집힌다.**
+# 그래서 여닫이를 가르려 하지 않고 따옴표를 통째로 뺀다. `Pe`(닫는 괄호)만 남겨
+# 실측을 태우는데, 닫는 괄호는 어느 언어에서도 앞말에 붙는다.
+_SHAPE_OPENING = {"Ps", "Pi", "Pf"}
 
 
 def measure_profile(texts: list[str], min_count: int = 2, attach_ratio: float = 0.9) -> dict:
@@ -195,8 +200,34 @@ def measure_profile(texts: list[str], min_count: int = 2, attach_ratio: float = 
     `trailing_punctuation` 의 정의는 **"앞 텍스트에 붙는 구두점"** 이다. 그래서
     문말 등장만 세면 안 된다 — 일본어 `、` 는 절 구분자라 문말에 안 나오지만 태그
     직후에 오면 안 되는 문자다. 대신 **거의 항상 비공백 문자 뒤에 붙어 나오는가**로
-    판정한다. 이 규칙은 언어 무관이고, 여는 부호(`「`, 스페인어 `¿¡`)는 자동으로
-    빠진다 — 그것들은 공백이나 문장 시작 뒤에 오기 때문이다.
+    판정한다.
+
+    **판정은 두 갈래다. 모양이 확정하는 것은 분류로, 모호한 것만 실측으로.**
+
+    실측 규칙("앞이 공백이 아닌가")은 **공백을 쓰는 언어에서만 신호가 있다.** 중국어
+    실측: `“`(여는) 9회·`”`(닫는) 9회가 **둘 다 붙음 1.00** 이다 — 공백이 없으니
+    여닫이가 구별되지 않는다. 그래서 zh 런 5개 전부 `“` 가 목록에 들어갔고,
+    `normalize_tags` 가 여는 따옴표를 앞 조각 꼬리로 끌어당겼다 (실측 13건.
+    `涂鸦活动和“ <SEG:6> 合法”涂鸦墙` — 인용어 한복판이 잘린다). `normalize_tags` 가
+    조용히 고치는 경로라 `punct_after_tag` 위반은 v2 런 전체에서 **0건**이었다.
+
+    반대로 실측이 꼭 필요한 글자도 있다 — 유니코드가 `Po` 로 뭉뚱그려 모양으로는
+    못 가르는 것들이다:
+
+        `"`  영어 17회 = 여는 8(앞이 공백) + 닫는 9(앞이 글자) -> 0.53. **일관되지
+             않으므로** 제외한다. 강제로 옮기면 절반이 틀린다.
+        `¿¡` 스페인어. 항상 문장 맨앞이거나 공백 뒤 -> 0.00 으로 제외된다.
+             종전의 하드코딩 목록 `_PO_SENTENCE_OPENERS` 가 하던 일이고, 실측이
+             이미 하고 있어 지웠다.
+
+    **둘은 안 겹친다** — 실측이 눈머는 조건(공백 없음)과 실측이 꼭 필요한 글자
+    (`"` `¿¡`)는 같은 언어에 안 나타난다. 그래서 나눠 맡기면 빈틈이 없다.
+
+    닫는 따옴표를 더는 되돌리지 않는 것이 이 변경의 대가다. 모델이 스스로 제자리에
+    놓는다는 근거는 있다 — 어느 목록에도 없어 한 번도 정규화되지 않은 `"` 가 새 조각을
+    시작한 62건이 **62건 모두 여는 따옴표**였고, 독일어 `„` 19/19·영어 `“` 12/12 도
+    같다. 다만 닫는 쪽은 늘 옮겨져 와서 자연 배치를 관측한 적이 없다. 바꾼 뒤
+    `<SEG> ”` 패턴이 나오는지 확인할 것.
     """
     total_chars = sum(len(t) for t in texts) or 1
     space_ratio = sum(t.count(" ") for t in texts) / total_chars
@@ -232,8 +263,8 @@ def measure_profile(texts: list[str], min_count: int = 2, attach_ratio: float = 
 
     trailing = sorted(
         c for c, n in seen.items()
-        if n >= min_count and c not in _PO_SENTENCE_OPENERS
-        and unicodedata.category(c) != "Ps"
+        if n >= min_count
+        and unicodedata.category(c) not in _SHAPE_OPENING
         and attached.get(c, 0) / n >= attach_ratio
     )
 

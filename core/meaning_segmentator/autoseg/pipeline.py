@@ -87,10 +87,13 @@ Output nothing else — no blank lines, no commentary.
 _BATCH_LINE = re.compile(r"^\s*\[(\d+)\]\s*(.*)$")
 
 # 어느 문자가 "앞 텍스트에 붙는" 구두점인지는 언어마다 다르다. 목록을 코드에
-# 박으면 검증기가 언어 종속이 되므로, 기본값은 언어 프로파일이 제공한다
-# (Language Profiler 의 trailing_punctuation). 프로파일에 없을 때만 유니코드
-# 범주로 추정한다 — Pe(닫는 괄호)/Pf(닫는 인용부호)는 항상 뒤따르는 문자이고,
-# Po 중에서는 문장을 여는 용도로 쓰이는 것(스페인어 ¿¡ 등)만 제외한다.
+# 박으면 검증기가 언어 종속이 되므로, 정상 경로는 `data.measure_profile` 의 실측이다.
+# 여기는 그 실측이 빈 목록을 낼 때(구두점이 거의 없는 코퍼스)만 도는 대비책이다.
+#
+# **`Pf`(닫는 곡선따옴표)를 뺀 것이 실측 규칙과의 정합이다.** `data.measure_profile`
+# 이 따옴표(`Pi`/`Pf`)를 통째로 제외하는 이유가 여기도 그대로 적용된다 — 여닫이가
+# 언어마다 뒤집혀서 되돌리면 인용문 한복판을 자른다 (그 docstring 의 zh 실측 참조).
+# `¿¡` 는 표본 하나로는 붙음비율을 못 재므로 여기서만 목록으로 남는다.
 _PO_SENTENCE_OPENERS = "¿¡"
 
 
@@ -101,7 +104,7 @@ def default_trailing_punct(sample: str) -> str:
     for ch in set(sample):
         if ch in _PO_SENTENCE_OPENERS:
             continue
-        if unicodedata.category(ch) in ("Po", "Pe", "Pf"):
+        if unicodedata.category(ch) in ("Po", "Pe"):
             out.add(ch)
     return "".join(sorted(out))
 
