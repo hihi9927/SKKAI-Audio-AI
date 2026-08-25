@@ -468,34 +468,93 @@ class PairingHub:
             await self._detach_locked(websocket, notify_peer=True)
 
 
+# ── 번역 백엔드 ────────────────────────────────────────────────────────────────
+# gtx 는 구글 번역 위젯이 쓰는 비공식 엔드포인트다. 키 없이 공짜로 되지만 할당량이
+# 문서화돼 있지 않고, 호출이 몰리면 429 와 함께 HTML 차단 페이지를 돌려준다. 그러면
+# `resp.json()` 이 터지고 → 아래 except 가 빈 문자열을 반환하고 → **앱에는 원문만 뜨고
+# 번역칸만 빈다.** 서버는 죽지 않으므로 로그를 보지 않으면 원인을 알기 어렵다.
+#
+# 키가 있으면 공식 Cloud Translation Basic(v2) 로 간다. 월 50만 자 무료, 이후 백만 자당
+# $20. 평가 경로(`evaluation/ast/trans_guard.py`)가 쓰던 것과 같은 엔드포인트다.
+GTX_URL = "https://translate.googleapis.com/translate_a/single"
+V2_URL = "https://translation.googleapis.com/language/translate/v2"
+
+# 환경변수로 주는 게 기본. `--google-api-key` 로도 덮어쓸 수 있다(키는 커밋 금지).
+GOOGLE_TRANSLATE_API_KEY: str = os.environ.get("GOOGLE_TRANSLATE_API_KEY", "").strip()
+
+
+def set_google_translate_api_key(key: Optional[str]) -> None:
+    global GOOGLE_TRANSLATE_API_KEY
+    if key:
+        GOOGLE_TRANSLATE_API_KEY = key.strip()
+    if GOOGLE_TRANSLATE_API_KEY:
+        logger.info("[translate] Cloud Translation v2 사용 (API 키 감지)")
+    else:
+        logger.warning(
+            "[translate] GOOGLE_TRANSLATE_API_KEY 가 없어 무료 gtx 엔드포인트를 씁니다 — "
+            "호출이 몰리면 429 로 막혀 번역이 빈 채로 나갑니다"
+        )
+
+
+async def _translate_v2(
+    session: aiohttp.ClientSession, text: str, target_lang: str
+) -> tuple[str, str]:
+    """공식 Cloud Translation Basic(v2).
+
+    `source` 를 넘기지 않고 자동 감지에 맡긴다 — gtx 의 `sl=auto` 와 같은 조건이라야
+    `detectedSourceLanguage` 를 받아 기존 언어 판정 로직이 그대로 돈다.
+    """
+    body = {"q": text, "target": target_lang, "format": "text"}
+    async with session.post(V2_URL, params={"key": GOOGLE_TRANSLATE_API_KEY}, json=body) as resp:
+        payload = await resp.json(content_type=None)
+        if resp.status != 200:
+            err = (payload or {}).get("error", {})
+            raise RuntimeError(f"HTTP {resp.status} {str(err)[:200]}")
+    tr = payload["data"]["translations"][0]
+    # format=text 면 이스케이프하지 않는 게 문서상 동작이지만 실제로는 `&#39;` 가 섞여
+    # 나오는 사례가 있다. 자막에 그대로 보이면 안 되므로 푼다.
+    import html as _html
+    return _html.unescape(tr.get("translatedText") or ""), tr.get("detectedSourceLanguage") or ""
+
+
+async def _translate_gtx(
+    session: aiohttp.ClientSession, text: str, target_lang: str
+) -> tuple[str, str]:
+    params = {"client": "gtx", "sl": "auto", "tl": target_lang, "dt": "t", "q": text}
+    async with session.get(
+        GTX_URL, params=params, headers={"User-Agent": "Mozilla/5.0"}
+    ) as resp:
+        if resp.status != 200:
+            await resp.read()          # 본문을 비워야 keep-alive 커넥션이 재사용된다
+            raise RuntimeError(f"HTTP {resp.status}")
+        data = await resp.json(content_type=None)
+    translated = "".join(item[0] for item in data[0] if item and item[0])
+    detected_lang = data[2] if len(data) > 2 else ""
+    return translated, detected_lang
+
+
 async def google_translate_async(
     session: aiohttp.ClientSession, text: str, target_lang: str
 ) -> tuple[str, str]:
     """Async Google Translate call.
     Returns: (translated_text, detected_source_lang_code)
+
+    키가 있으면 v2, 없으면 gtx. 일시적 실패(429/타임아웃)를 한 번 흡수하되, 실시간
+    자막이라 오래 붙들 수 없으므로 재시도는 1회 · 0.4초로 끊는다.
     """
     if not text.strip() or not target_lang:
         return "", ""
-    try:
-        params = {
-            "client": "gtx",
-            "sl": "auto",
-            "tl": target_lang,
-            "dt": "t",
-            "q": text,
-        }
-        async with session.get(
-            "https://translate.googleapis.com/translate_a/single",
-            params=params,
-            headers={"User-Agent": "Mozilla/5.0"},
-        ) as resp:
-            data = await resp.json(content_type=None)
-            translated = "".join(item[0] for item in data[0] if item and item[0])
-            detected_lang = data[2] if len(data) > 2 else ""
-            return translated, detected_lang
-    except Exception as e:
-        logger.warning(f"Translation failed: {e}")
-        return "", ""
+    call = _translate_v2 if GOOGLE_TRANSLATE_API_KEY else _translate_gtx
+    last_err: Optional[Exception] = None
+    for attempt in range(2):
+        try:
+            return await call(session, text, target_lang)
+        except Exception as e:
+            last_err = e
+            if attempt == 0:
+                await asyncio.sleep(0.4)
+    logger.warning(f"Translation failed: {last_err}")
+    return "", ""
 
 
 async def google_translate_with_context_async(
@@ -2865,6 +2924,11 @@ def parse_args():
         help="번역 컨텍스트 문장 수 (기본값: 5, --gpt-translation / --google-context 공유)",
     )
     parser.add_argument(
+        "--google-api-key", type=str, default=None,
+        help="Cloud Translation v2 API 키. 미지정 시 GOOGLE_TRANSLATE_API_KEY 환경변수를 "
+             "쓰고, 그것도 없으면 무료 gtx 엔드포인트로 떨어진다(429 로 막힐 수 있음)",
+    )
+    parser.add_argument(
         "--google-context", action="store_true",
         help="Google Translate에 이전 N개 원문을 함께 전송해 문맥 인식 개선 (--context-window 문장 수 사용)",
     )
@@ -2900,6 +2964,7 @@ def parse_args():
 def main():
     args = parse_args()
     _configure_logging(use_json=args.log_json, log_file=args.log_file)
+    set_google_translate_api_key(args.google_api_key)
 
     config = StreamingConfig(
         model_path=args.model,
