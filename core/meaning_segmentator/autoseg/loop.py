@@ -1190,7 +1190,7 @@ def main() -> int:
                 if len(candidates) >= args.v0_candidates:
                     break
                 cand = profiler.initial_prompt(profile, None, spaced, t_floor,
-                                               args.min_gap)
+                                               args.min_gap, measured=measured)
                 missing = agents.check_skeleton(cand)
                 if missing:
                     log(f"[profiler] 골격 누락 {missing} — 재시도 {attempt + 1}")
@@ -1570,7 +1570,8 @@ def main() -> int:
                         rv = engineer.revise(best["prompt"], critique, history, profile,
                                              t_grid, only_rule=hint,
                                              max_sections=trust["sections"],
-                                             max_growth=trust["growth"])
+                                             max_growth=trust["growth"],
+                                             measured=measured)
                     except BudgetExceeded:
                         raise
                     except Exception as e:                      # 후보 하나 실패로 안 죽는다
@@ -1630,7 +1631,8 @@ def main() -> int:
                     # 후보가 전멸하면 종전 경로로 한 번 더 — 게이트 사유를 로그에 남긴다.
                     revised = engineer.revise(best["prompt"], critique, history, profile,
                                               t_grid, max_sections=trust["sections"],
-                                              max_growth=trust["growth"])
+                                              max_growth=trust["growth"],
+                                              measured=measured)
                 log(f"[iter {it}] 개정 후보 {len(cands)}/{len(jobs)} 통과")
                 new_prompt = revised.get("prompt", "")
                 budget = int(prompt_v0_len * args.max_prompt_growth)

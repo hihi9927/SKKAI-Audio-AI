@@ -182,9 +182,11 @@ def units_per_sec(dataset: str, sentences: list[Sentence],
 #     `['.','?',',',…]`(코퍼스에 실제로 있는 `,` 를 포함 — 동작이 갈림)로 제각각이었다.
 # 지표는 틀리면 숫자로 드러나지만 검증기 규칙은 조용히 틀린다.
 #
-# **language_profile.json 은 고치지 않는다.** JSON 을 바꾸면 그게 prompt_v0 writer 와
-# Prompt Engineer 컨텍스트로 들어가 프롬프트가 달라지고 기존 런과 비교가 깨진다.
-# 덮어쓰기는 소비 지점(loop.py)에서만 한다.
+# **Profiler 는 이제 이 다섯을 내지 않는다** (`agents.PROFILER_SYSTEM`). 종전에는
+# 코드가 실측을 쓰면서 `language_profile.json` 은 그대로 뒀는데, 그 JSON 이 프롬프트
+# 작성기·PE 컨텍스트로 들어가 **모델이 읽는 규칙만 틀린 목록을 근거로 쓰였다**
+# (26개 런 중 25개에서 `trailing_punctuation` 이 실측과 불일치). 지금은 실측이
+# `agents.measured_facts()` 로 양쪽에 같이 들어간다.
 
 # **모양이 여닫이를 확정하는 글자는 분류로 뺀다.** 괄호(`Ps`/`Pe`)와 곡선 따옴표
 # (`Pi`/`Pf`)가 그것이다. 어느 쪽이 여는 것인지는 언어마다 뒤집히지만 — 독일어

@@ -80,16 +80,19 @@ def main() -> int:
         return 1
 
     cfg = json.loads((run_dir / "config.json").read_text(encoding="utf-8"))
-    profile = json.loads((run_dir / "language_profile.json").read_text(encoding="utf-8"))
 
-    # 측정 프로파일이 있으면 그것이 이긴다 (루프와 같은 규칙).
+    # **폴백도 LLM 이 아니라 실측이다.** 종전에는 `measured_profile.json` 이 없으면
+    # `language_profile.json`(LLM)의 같은 이름 필드를 읽었는데, 그 둘은 26개 런 중
+    # 25개에서 `trailing_punctuation` 이 달랐다. 이제 Profiler 는 그 필드를 내지도
+    # 않는다 (agents.measured_facts). 분할 파일은 항상 있으므로 거기서 다시 잰다.
     mp = run_dir / "measured_profile.json"
     if mp.exists():
         measured = json.loads(mp.read_text(encoding="utf-8"))
-        spaced, trailing_punct = data.profile_settings(measured)
     else:
-        spaced = bool(profile.get("uses_spaces_between_words", True))
-        trailing_punct = "".join(profile.get("trailing_punctuation") or []) or None
+        fit = (data.read_split(run_dir / "data" / "train.json")
+               + data.read_split(run_dir / "data" / "dev.json"))
+        measured = data.measure_profile([x.text for x in fit])
+    spaced, trailing_punct = data.profile_settings(measured)
 
     tgt_name = args.tgt_lang or cfg.get("tgt_lang", "English")
     tgt_spaced = (target_is_spaced(tgt_name) if args.tgt_lang

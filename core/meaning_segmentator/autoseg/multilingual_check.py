@@ -270,7 +270,6 @@ def main() -> int:
         print(f"런 디렉토리 없음: {run_dir}", file=sys.stderr)
         return 1
     cfg = json.loads((run_dir / "config.json").read_text(encoding="utf-8"))
-    profile = json.loads((run_dir / "language_profile.json").read_text(encoding="utf-8"))
     measured = json.loads((run_dir / "measured_profile.json").read_text(encoding="utf-8"))
     spaced, trailing_punct = data.profile_settings(measured)
 

@@ -248,15 +248,15 @@ unit is translated as soon as it is emitted, seeing only the units before it and
 units after it. Splitting earlier lowers latency; splitting in the wrong place destroys the
 translation.
 
+Do NOT report anything that can be COUNTED from the sample — writing system, punctuation
+inventory, or how often punctuation appears. Those are measured directly and given to the
+prompt writer alongside your profile. Report only what counting cannot reach: word order,
+register, and the concrete surface forms below.
+
 Return ONLY a JSON object with exactly these keys:
 {
   "source_language": "language name",
-  "source_code": "ISO 639-1 code",
-  "uses_spaces_between_words": true or false,
   "word_order": "SOV | SVO | VSO | other, with a one-line justification from the sample",
-  "head_final": true or false,
-  "punctuation_present": "always | sometimes | never — as observed in the sample",
-  "trailing_punctuation": ["characters that attach to the END of the preceding text and must never start a new segment, e.g. sentence-final and clause-separating marks and closing quotes/brackets in this language. Give the characters themselves, no descriptions. Empty list if the language writes none."],
   "register": "what kind of text this is (spontaneous speech, read-aloud prose, meeting, ...)",
   "fillers_and_hesitations": ["actual tokens observed or expected in this language"],
   "discourse_markers": ["tokens that open or link clauses"],
@@ -266,6 +266,63 @@ Return ONLY a JSON object with exactly these keys:
   "notes_for_prompt_writer": "2-4 sentences of practical guidance"
 }
 No prose outside the JSON."""
+
+def measured_facts(measured: dict | None) -> str:
+    """실측 프로파일을 프롬프트 작성기·PE 가 읽을 문단으로. 없으면 빈 문자열.
+
+    **셀 수 있는 것은 Profiler 가 아니라 여기서 온다.** 종전에는 같은 다섯 값을
+    Profiler(LLM)가 추측해 `language_profile.json` 에 넣었는데, 코드는 실측을 쓰고
+    프롬프트 작성기만 LLM 값을 봤다 — 26개 런 중 **25개에서 `trailing_punctuation`
+    이 실측과 달랐다**. zh-en/run01 은 LLM 이 `] } "` 를 지어내고 실제로 있는
+    `、 · - /` 를 빠뜨렸고, 그 목록이 그대로 프롬프트 규칙이 됐다.
+
+    나머지 넷도 셀 수 있는 값이었다: `uses_spaces_between_words`(26/26 맞혔으나 코드는
+    실측을 쓰므로 잉여), `punctuation_present`(자유서술. 3건은 "sometimes" 인데 실측
+    1.000), `head_final`(39/39 가 `word_order` 로 결정 — SOV->True, SVO->False. 같은
+    독일어 데이터에서 런마다 뒤집혔다), `source_code`(코드 참조 0건).
+
+    **수치가 아니라 프롬프트가 쓸 수 있는 문장으로 준다** — 작성기는 이걸 근거로
+    `[Never Segment]`·`[Priority Rules]` 를 쓰므로 "0.9947" 보다 "거의 모든 문장이
+    구두점으로 끝난다"가 그대로 규칙이 된다.
+    """
+    if not measured:
+        return ""
+    # 옛 런의 `measured_profile.json` 에는 `unit` 이 없다(뒤에 추가된 필드). 이어 돌릴 때
+    # 죽지 않도록 `uses_spaces_between_words` 에서 되살린다 — 같은 규칙으로 정해지는 값이다.
+    is_spaced = bool(measured.get("uses_spaces_between_words"))
+    unit = ("whitespace-separated words"
+            if measured.get("unit", "word" if is_spaced else "char") == "word"
+            else "characters")
+    spaced = ("This language DOES separate words with spaces." if is_spaced else
+              "This language does NOT put spaces between words.")
+    trailing = measured.get("trailing_punctuation") or []
+    rate = measured.get("punctuation_final_rate")
+    if rate is None:
+        punct_line = ""
+    elif rate >= 0.9:
+        punct_line = f"Almost every sentence ends in punctuation ({rate:.0%})."
+    elif rate >= 0.1:
+        punct_line = (f"Only {rate:.0%} of sentences end in punctuation — most utterances "
+                      f"simply stop. Rules that depend on punctuation will not fire.")
+    else:
+        punct_line = (f"Sentences essentially never end in punctuation ({rate:.0%}). "
+                      f"Do not write rules that rely on it.")
+    lines = [
+        "Measured facts about this corpus (counted directly from the text, not estimated — "
+        "these override anything the profile implies):",
+        f"- {spaced} Segment length is therefore counted in {unit}.",
+    ]
+    if punct_line:
+        lines.append(f"- {punct_line}")
+    if trailing:
+        lines.append(
+            "- These characters attach to the text BEFORE them and must never start a new "
+            f"segment: {' '.join(trailing)}. This list is exhaustive for this corpus — do "
+            "not add characters to it from general knowledge of the language.")
+    else:
+        lines.append("- No punctuation attaches to the preceding text in this corpus.")
+    return "\n".join(lines)
+
 
 PROMPT_WRITER_SYSTEM = """You write system prompts for a meaning-based segmentation model.
 
@@ -355,16 +412,23 @@ class Profiler:
                                  purpose="profiler")
 
     def initial_prompt(self, profile: dict, target_language: str | None, spaced: bool,
-                       min_t: int = 3, min_gap: int = 0) -> str:
-        """`target_language` 는 **의도적으로 쓰지 않는다** (Profiler.profile 참조)."""
+                       min_t: int = 3, min_gap: int = 0,
+                       measured: dict | None = None) -> str:
+        """`target_language` 는 **의도적으로 쓰지 않는다** (Profiler.profile 참조).
+
+        `measured` 는 실측 프로파일이다. 종전에는 작성기가 구두점 목록을 LLM 프로파일
+        에서 받았는데 그게 검증기가 쓰는 실측과 25/26 런에서 달랐다 (`measured_facts`).
+        """
         # 밀도 지침(N/{min_t})은 검증기의 커버리지 요건과 **같은 값**이어야 한다.
         # run03 에서 지침 N/3 vs 요건 N/2 불일치가 1차 통과율을 깎았다 (재시도로 복구되나
         # 프롬프트 품질 신호인 1차 통과율이 오염된다). 시스템 프롬프트에 JSON 중괄호가
         # 많아 .format 은 못 쓰고 표적 치환만 한다.
         sys_p = PROMPT_WRITER_SYSTEM.replace("N/{min_t}", f"N/{min_t}")
+        facts = measured_facts(measured)
         user = (
             f"Language profile:\n{json.dumps(profile, ensure_ascii=False, indent=2)}\n\n"
-            "The prompt must be TARGET-LANGUAGE-AGNOSTIC. It will be reused for many "
+            + (facts + "\n\n" if facts else "")
+            + "The prompt must be TARGET-LANGUAGE-AGNOSTIC. It will be reused for many "
             "different target languages without modification, so it may not name one, "
             "nor lean on one's grammar (no case, gender, article, or word-order arguments "
             "that belong to a specific target).\n\n"
@@ -1063,6 +1127,7 @@ class PromptEngineer:
         only_rule: str | None = None,
         max_sections: int | None = None,
         max_growth: float | None = None,
+        measured: dict | None = None,
     ) -> dict:
         """`only_rule` 이 있으면 **그 규칙 하나만** 반영하게 한다.
 
@@ -1072,9 +1137,11 @@ class PromptEngineer:
         여러 개 만들어 **probe 로 고르면** 그 둘이 동시에 풀린다.
         """
         hist = json.dumps(history[-8:], ensure_ascii=False, indent=2)
+        facts = measured_facts(measured)
         user = (
             f"Language profile (fixed):\n{json.dumps(profile, ensure_ascii=False, indent=2)}\n\n"
-            f"Latency budgets in use (target piece size in source words): {t_grid}. "
+            + (facts + "\n\n" if facts else "")
+            + f"Latency budgets in use (target piece size in source words): {t_grid}. "
             f"A budget of T keeps roughly (sentence length / T) pieces, so the LARGEST T "
             f"exercises only your highest-ranked boundaries.\n\n"
             f"Attempt history (prompt version -> scores, and whether it was adopted):\n{hist}\n\n"
