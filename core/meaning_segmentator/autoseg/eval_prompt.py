@@ -154,6 +154,9 @@ def main() -> int:
                                  require_priority=not args.no_priority,
                                  contradiction=contradiction,
                                  reasoning_effort=seg_effort,
+                                 # `density`·`candidate_t` 는 **옛 config 의 키 이름**이다.
+                                 # 지금 이름은 `t_floor` 하나이고, 기존 런을 다시 재려면
+                                 # 그 런이 저장한 이름으로 읽어야 한다.
                                  coverage_t=(args.t_floor or cfg.get("t_floor") or cfg.get("density")
                                              or cfg.get("candidate_t")
                                              or min(t_grid)),

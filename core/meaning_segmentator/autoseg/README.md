@@ -151,7 +151,7 @@ PYTHONPATH=. python -m core.meaning_segmentator.autoseg.noise_floor \
 PYTHONPATH=. python -m core.meaning_segmentator.autoseg.loop \
     --dataset kspon --src-lang Korean --tgt-lang English \
     --pair-id ko-en --run-id run13 \
-    --iterations 6 --train 30 --dev 60 --test 100 --min-chars 25 --budget 20
+    --iterations 6 --train 30 --dev 60 --test 100 --budget 20
 
 # 3) 비교군을 같은 자로 평가 (사람 프롬프트는 순위 태그가 없으므로 --no-priority)
 PYTHONPATH=. python -m core.meaning_segmentator.autoseg.eval_prompt \
@@ -293,8 +293,9 @@ MANIFESTS = {
 
 adequacy 관문 실측 (`runs/adequacy_validity/`): 부정 뒤집힘·의미 변경·무관 문장은 전
 케이스 정상 검출. 위반 2건은 관용구 조각("밀려 썼던") 하나에 국한 — 특히 **source_echo
-(원문 그대로 반환)를 정답 번역보다 높게** 주는 복사 편향. 번역 층의 `looks_untranslated`
-재시도가 1차 방어이나, 관용구 밀도가 높은 데이터에서는 adequacy 를 과신하지 말 것.
+(원문 그대로 반환)를 정답 번역보다 높게** 주는 복사 편향. **현재 이 실패에 방어가 없다** —
+번역 층의 에코 재시도는 LLM 번역기와 함께 사라졌다. 관용구 밀도가 높은 데이터에서는
+adequacy 를 과신하지 말 것.
 
 양방향 NLI 관문 실측 (`runs/validity_nli/`): **en 타깃 4케이스 위반 0** (두 모델 모두),
 soft 위반(재서술 편향) comet 12건 → nli 0건. 위반은 전부 ja-ko 케이스 — mdeberta 가

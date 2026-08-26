@@ -156,7 +156,7 @@ t2:                "...probably won't be an issue"
 것**이라 대응이 완전히 다르다: 재시도로 고칠 수 없고, 코드를 고쳐야 한다. 채점에 섞지
 않고 `sink` 기록 + 종류당 경고 1회로 남긴다 (예외를 던지면 100문장 런이 통째로 죽는다).
 
-`punct_after_tag` 도 검증기에서 뺐는데, **그 근거는 나중에야 성립했다.** 정규화가 태그 뒤
+태그 뒤 구두점 검사도 검증기에서 뺐는데, **그 근거는 나중에야 성립했다.** 정규화가 태그 뒤
 구두점을 "바로 왼쪽" 조각에 얹었기 때문에, 그 자리가 연속 태그 사이의 빈 조각이면
 정규화가 **스스로** `<SEG:n> ,` 를 만들어냈다. v2 런에서 0건이었던 건 그 경로가
 `text_modified` 쪽으로 먼저 잡혀서다. 받는 조각을 "가장 가까운 내용 있는" 쪽으로 바꾼
@@ -590,10 +590,13 @@ LLM 판단은 다섯 종류(프로파일링·분절·판정·비평/개정·압�
 | A10 | Compressor | LLM | 길이 예산을 넘긴 개정본 축소 (이번에 바꾼 섹션은 보호) | `agents.py` |
 | A11 | Loop Controller | 결정론 | hill climbing, 채택·롤백, 재개, 예산 가드, 곡선·리포트 | `loop.py` |
 
-번역기는 `GoogleTranslator`(기본, gtx 엔드포인트) 또는 LLM `Translator` 다. 조각 번역은
-앞 조각 번역을 컨텍스트로 확정한 채 진행하고(무수정 제약), 출력이 원문 그대로면
-(`looks_untranslated`) 한 번 재시도한다. gtx 컨텍스트 번역의 줄 수 불일치는 카운트해
-런 끝에 경고한다.
+번역기는 `GoogleTranslator` 하나다 — 운영 서버가 쓰는 경로이고, 목적함수가 운영에
+옮겨 붙는지를 재는 것이므로 같은 번역기여야 한다. 백엔드는 둘이다: `GOOGLE_TRANSLATE_API_KEY`
+가 있으면 공식 Cloud Translation Basic(**v2**), 없으면 무료 비공식 엔드포인트(**gtx**).
+**두 백엔드의 번역문은 같지 않으므로**(기존 캐시 18건 재번역 대조에서 일치 0/18) 캐시 키와
+`translator_id` 에 백엔드가 들어가고, 서로 다른 백엔드로 잰 점수는 같은 축이 아니다.
+조각 번역은 앞 조각 번역을 컨텍스트로 확정한 채 진행한다(무수정 제약). 컨텍스트 번역의
+줄 수 불일치는 카운트해 런 끝에 경고한다.
 
 ### 8.2 데이터 흐름
 
@@ -806,7 +809,7 @@ adopt_se_mult / patience / budget       채택 임계 / 중단 조건
 
 ```
 data.py    measure_profile(texts) → measured_profile.json
-loop.py    reconcile_profile() 로 spaced / trailing_punct 를 측정값 우선으로 결정
+loop.py    data.profile_settings() 로 spaced / trailing_punct 를 측정값에서 결정
 agents.py  LLM 에 넘기는 JSON 은 language_profile.json 원본 그대로
 ```
 
@@ -1156,8 +1159,9 @@ ko→en 은 B 가 흔하다. Zhang 의 해법(단조 번역 모델)은 우리가
    raw −0.25 가 보정 후 **+0.14 로 뒤집혔다** (여전히 약하다). 남은 결정: 루프 목적함수에서
    c₀ 를 차감할지 — 지금은 raw.
 7. **adequacy 조각 관문의 지위가 잠정.** `adequacy_cases.json` 문안이 사람 확정 전이다.
-   국소 탈락 2건(관용구 조각의 복사 편향)은 번역 층의 `looks_untranslated` 재시도가 1차
-   방어이나, 관용구 밀도가 높은 데이터에서 `adequacy` 를 과신하지 말 것.
+   국소 탈락 2건(관용구 조각의 복사 편향)에는 **현재 방어가 없다** — 번역 층의 에코
+   재시도는 LLM 번역기와 함께 사라졌다. 관용구 밀도가 높은 데이터에서 `adequacy` 를
+   과신하지 말 것.
 8. **비영어 타깃의 `consistency` 백엔드.** 양방향 NLI 는 고유명사 음역 변이를 다른 개체로
    읽는다 (ja-ko 관문에서 mdeberta 위반 2건). COMET 도 같은 케이스에서 role_swap 위반이라
    **현재 비영어 타깃을 깨끗이 통과하는 백엔드가 없다.**

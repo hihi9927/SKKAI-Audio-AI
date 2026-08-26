@@ -62,9 +62,8 @@ def load_kspon(path: Path | None = None) -> list[Sentence]:
 def load_kspon_train(path: Path | None = None) -> list[Sentence]:
     """KsponSpeech train.json — 10000발화. `kspon` 과 **분포가 다르다**.
 
-    도입 당시 사유는 길이 하한 필터(`min_chars=25`) 때문에 `kspon` 이 337문장으로
-    말라붙는 것이었는데, 그 필터는 없어졌다 (`split_data` 참조). 그럼에도 남기는
-    이유는 **꼬리 길이**다 — 어절 수 p99 가 `kspon` 26 vs 여기 47, 최대 36 vs 72.
+    도입 당시 사유는 길이 하한 필터 때문에 `kspon` 이 337문장으로 말라붙는 것이었는데,
+    그 필터는 없어졌다 (`split_data` 참조). 그럼에도 남기는 이유는 **꼬리 길이**다 — 어절 수 p99 가 `kspon` 26 vs 여기 47, 최대 36 vs 72.
     긴 문장에서만 나타나는 실패(`pipeline.SEG_MAX_TOKENS` 주석의 빈 출력)는
     `kspon` 으로는 재현되지 않는다. ko-en run04·run05 가 이 풀로 돌았다.
 
@@ -211,7 +210,8 @@ def measure_profile(texts: list[str], min_count: int = 2, attach_ratio: float = 
     여닫이가 구별되지 않는다. 그래서 zh 런 5개 전부 `“` 가 목록에 들어갔고,
     `normalize_tags` 가 여는 따옴표를 앞 조각 꼬리로 끌어당겼다 (실측 13건.
     `涂鸦活动和“ <SEG:6> 合法”涂鸦墙` — 인용어 한복판이 잘린다). `normalize_tags` 가
-    조용히 고치는 경로라 `punct_after_tag` 위반은 v2 런 전체에서 **0건**이었다.
+    조용히 고치는 경로라 검증기의 태그-뒤-구두점 검사는 v2 런 전체에서 **0건**이었다
+    (그래서 그 검사는 지웠다 — `validate` 참조).
 
     반대로 실측이 꼭 필요한 글자도 있다 — 유니코드가 `Po` 로 뭉뚱그려 모양으로는
     못 가르는 것들이다:
@@ -290,8 +290,8 @@ def measure_profile(texts: list[str], min_count: int = 2, attach_ratio: float = 
 def profile_settings(measured: dict) -> tuple[bool, str | None]:
     """검증기·절단기가 쓸 `(spaced, trailing_punct)`. **측정값만 본다.**
 
-    종전에는 LLM 프로파일과 대조해 불일치를 경고했는데(`reconcile_profile`), 측정값이
-    무조건 이기는 구조라 경고는 로그 한 줄로 끝나고 아무 동작도 바꾸지 않았다.
+    종전에는 LLM 프로파일과 대조해 불일치를 경고했는데, 측정값이 무조건 이기는 구조라
+    경고는 로그 한 줄로 끝나고 아무 동작도 바꾸지 않았다.
     LLM 이 이 두 필드를 내놓을 이유도 없다 — 코퍼스에서 직접 세는 값이다.
     (Profiler 프롬프트에서 필드를 빼는 것은 prompt_v0 를 바꾸므로 별도 판단.)
     """
@@ -366,13 +366,12 @@ def split_data(
 ) -> dict[str, list[Sentence]]:
     """층화 후 라운드로빈으로 train/dev/test 를 겹치지 않게 뽑는다.
 
-    **길이 하한 필터(`min_chars`)는 없앴다.** 짧은 문장을 거르는 선은 이미
-    `min_gap` 이 갖고 있다 — `truncate` 는 양끝에서 각각 `min_gap` 이상 떨어진 자리에만
-    경계를 놓으므로 `unit_count < 2*min_gap` 인 문장은 **구조적으로 무분절**이다.
-    `min_chars` 는 그 선을 문자 수로 근사한 두 번째 절단선이었고, 단위가 달라
-    언어마다 어긋났다 (en/ko 는 25자 ≈ 2*min_gap 으로 우연히 일치, zh 는 무분절 경계가
-    12자인데 25자에서 잘려 240 중 34 문장이 과다 탈락 — 그래서 multi2en 트랙이
-    `--min-chars 0` 을 손으로 꺼야 했다).
+    **길이 하한 필터를 두지 않는다.** 짧은 문장을 거르는 선은 이미 `min_gap` 이 갖고
+    있다 — `truncate` 는 양끝에서 각각 `min_gap` 이상 떨어진 자리에만 경계를 놓으므로
+    `unit_count < 2*min_gap` 인 문장은 **구조적으로 무분절**이다. 예전에 있던 문자 수
+    기준 하한은 그 선을 근사한 두 번째 절단선이었고, 단위가 달라 언어마다 어긋났다
+    (en/ko 는 25자 ≈ 2*min_gap 으로 우연히 일치, zh 는 무분절 경계가 12자인데 25자에서
+    잘려 240 중 34 문장이 과다 탈락했다).
 
     거를 이유도 사라졌다. 구조적 무분절 문장은 `coverage_need == 0` 이라 분절 호출을
     건너뛸 수 있고(결과가 호출 전에 확정), `effective` 가 프롬프트 불변 상수라 채택

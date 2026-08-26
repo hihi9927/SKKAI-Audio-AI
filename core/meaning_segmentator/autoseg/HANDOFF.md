@@ -18,7 +18,7 @@ HTTP 429 {"type":"usage_limit_exceeded","detail":"COST limit exceeded"}
 잔액이 거의 없었다. **한도를 올리거나 충전하기 전에는 autoseg 의 어떤 것도 진행 불가**
 (분절·프로파일러·판정자·비평가가 전부 게이트웨이를 탄다).
 
-번역기(`--translator google`)는 게이트웨이와 무관하고 정상이다 — gtx 엔드포인트 직접 확인.
+번역기(Google)는 게이트웨이와 무관하고 정상이다 — 엔드포인트 직접 확인.
 
 ## 환경은 이제 준비돼 있다 (이 머신)
 
@@ -44,7 +44,7 @@ protobuf 7.35.1→4.25.9 로 내려가 **vllm 0.14.0 ASR 평가 스택이 깨진
 cd /home/mobility/STiTy && set -a && . ./.env && set +a && \
 PYTHONPATH=. .venv-autoseg/bin/python -m core.meaning_segmentator.autoseg.loop \
     --dataset kspon-train --src-lang Korean --tgt-lang English \
-    --pair-id ko-en --run-id run04 --translator google \
+    --pair-id ko-en --run-id run04 \
     --iterations 6 --train 60 --train-pool 120 --dev 150 --test 150 --budget 60
 ```
 
