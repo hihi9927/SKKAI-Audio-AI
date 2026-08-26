@@ -568,14 +568,14 @@ LLM 판단은 다섯 종류(프로파일링·분절·판정·비평/개정·압�
 | A1 | Language Profiler | LLM 1회 | 언어 특성 구조화 → `prompt_v0` | `agents.py` |
 | A2 | Segmenter | LLM | 프롬프트 주입, `<SEG:n>` 삽입, 복구 재시도 | `pipeline.py` |
 | A3 | Format Validator | 결정론 | 태그 문법·원문 보존·커버리지 검사 + 정규화 | `pipeline.py` |
-| A9 | Truncator | 결정론 | T 마다 상위 (k_s−1) 경계만 남김 | `pipeline.py` |
-| A4 | Translation Tools | 결정론 래퍼 | full 번역 / 스트리밍 조각 번역 + 캐시 | `pipeline.py` |
-| A5 | Scorer | 결정론 | `adequacy`·`contradiction`·`consistency`·`laal_words` 집계 | `metrics.py` |
-| A6′ | Judge | LLM | 경계별 조기 방출 판정 + 이동 제안 | `agents.py` |
-| A6 | Critic | LLM | 실패를 문장 단위로 언어화, 일반화 규칙 제안 | `agents.py` |
-| A7 | Prompt Engineer | LLM | 프롬프트 개정 + changelog | `agents.py` |
+| A4 | Truncator | 결정론 | T 마다 상위 (k_s−1) 경계만 남김 | `pipeline.py` |
+| A5 | Translation Tools | 결정론 래퍼 | full 번역 / 스트리밍 조각 번역 + 캐시 | `pipeline.py` |
+| A6 | Scorer | 결정론 | `adequacy`·`contradiction`·`consistency`·`laal_words` 집계 | `metrics.py` |
+| A7 | Judge | LLM | 경계별 조기 방출 판정 + 이동 제안 | `agents.py` |
+| A8 | Critic | LLM | 실패를 문장 단위로 언어화, 일반화 규칙 제안 | `agents.py` |
+| A9 | Prompt Engineer | LLM | 프롬프트 개정 + changelog | `agents.py` |
 | A10 | Compressor | LLM | 길이 예산을 넘긴 개정본 축소 (이번에 바꾼 섹션은 보호) | `agents.py` |
-| A8 | Loop Controller | 결정론 | hill climbing, 채택·롤백, 재개, 예산 가드, 곡선·리포트 | `loop.py` |
+| A11 | Loop Controller | 결정론 | hill climbing, 채택·롤백, 재개, 예산 가드, 곡선·리포트 | `loop.py` |
 
 번역기는 `GoogleTranslator`(기본, gtx 엔드포인트) 또는 LLM `Translator` 다. 조각 번역은
 앞 조각 번역을 컨텍스트로 확정한 채 진행하고(무수정 제약), 출력이 원문 그대로면
@@ -603,29 +603,29 @@ LLM 판단은 다섯 종류(프로파일링·분절·판정·비평/개정·압�
 │                채점 가능 비율 < 0.95 ───────────────┐ (번역 생략)   │
 │                      │ ≥ 0.95                      │               │
 │                      ▼                             │               │
-│              [A9 Truncator]   루프 격자 T ∈ {3,6}   │               │
+│              [A4 Truncator]   루프 격자 T ∈ {3,6}   │               │
 │                      │  각 T 마다 분절 확정         │               │
 │        ┌─────────────┴──────────────┐              │               │
 │        ▼                            ▼              │               │
-│  [A4 Full Translator]   [A4 Streaming Seg Translator]              │
+│  [A5 Full Translator]   [A5 Streaming Seg Translator]              │
 │    full_trans (1회, 캐시)   조각별 번역 (앞 번역 확정)              │
 │        └─────────────┬──────────────┘              │               │
 │                      ▼                             │               │
-│              [A5 Scorer]  adequacy / contradiction / effective     │
+│              [A6 Scorer]  adequacy / contradiction / effective     │
 │                          / consistency / laal_words × T            │
 │                      │                             │               │
 │                      ├──▶ rank_contra_spearman (최소 T)            │
 │                      ▼                             │               │
-│              [A6′ Judge]  경계별 verdict + shift    │               │
+│              [A7 Judge]  경계별 verdict + shift    │               │
 │                      │  (주 작동점 T, 실패 조준 N문장)              │
 │                      ▼                             ▼               │
-│              [A8]  train 개선 시 dev 재평가 → 쌍체 Δ 로 채택 판정    │
+│              [A11]  train 개선 시 dev 재평가 → 쌍체 Δ 로 채택 판정    │
 │                      │                                             │
 │                      ▼                                             │
-│              [A6 Critic] ◀── best_prompt 의 사례·지표·위반          │
+│              [A8 Critic] ◀── best_prompt 의 사례·지표·위반          │
 │                      │  구조화 피드백 (규칙 + 예시쌍 + focus)        │
 │                      ▼                                             │
-│              [A7 Prompt Engineer] ◀── 프롬프트 버전 이력            │
+│              [A9 Prompt Engineer] ◀── 프롬프트 버전 이력            │
 │                      │  prompt_v(N+1) ─▶ [A10 Compressor] (예산 초과 시)
 │                      ▼                                             │
 └──────────────────────┴─────────────────────────────────────────────┘
@@ -800,7 +800,7 @@ agents.py  LLM 에 넘기는 JSON 은 language_profile.json 원본 그대로
 JSON 을 고치면 `prompt_v0` 가 달라져 기존 런과 비교 불가가 된다. **소비 지점에서만
 덮어쓴다.** 불일치는 경고 로그로 남긴다.
 
-### 9.2 A9 Truncator — 결정론
+### 9.2 A4 Truncator — 결정론
 
 ```python
 def truncate(seg_text, target_chunk_words, spaced):
@@ -816,7 +816,7 @@ def truncate(seg_text, target_chunk_words, spaced):
   Critic 의 `focus = "coverage"` 판정에 쓰인다
 - 순위가 없으면(비교군) 절단하지 않고 그대로 둔다
 
-### 9.3 A6′ Judge — LLM
+### 9.3 A7 Judge — LLM
 
 full 번역을 오라클로 삼아 **경계별로** 조기 방출을 판정한다.
 
@@ -878,7 +878,7 @@ hypothesis = 조각 1..i 번역의 누적       ← 그 시점까지 사용자�
 | 오라클이 틀림 | `reference_suspect` 를 `verdict` 값에 포함. `reference_suspect_rate` 가 높으면 번역기 상향 신호 |
 | 비용 | 주 작동점 T 하나 × `--judge-rows` 문장. 판정 실패는 `verdict="error"` 로 흘려보내고 루프를 죽이지 않는다 |
 
-### 9.4 A6 Critic — 입력과 `focus`
+### 9.4 A8 Critic — 입력과 `focus`
 
 **입력**: 판정자가 `premature`/`mistranslated` 로 표시한 경계 + 포맷 위반 + `rank_by_failure`
 하위 문장 + `missing_boundaries` 가 있는 문장. 각 사례에 `adequacy_by_T`,
@@ -939,7 +939,7 @@ run04 dev 재계산이 그 크기를 보여준다: **raw −0.0012 → 보정 �
 **고착 방지**: dev 무개선이 2회 이상이면 이전 `focus` 를 피하도록 반전시킨다. 캐시된 비평이
 이 장치를 우회하지 않도록 집계만 다시 계산한다 (LLM 호출 없음).
 
-### 9.5 A7 Prompt Engineer + A10 Compressor
+### 9.5 A9 Prompt Engineer + A10 Compressor
 
 골격은 고정이고 PE 는 섹션 **내용**만 바꾼다:
 
@@ -959,7 +959,7 @@ run04 dev 재계산이 그 크기를 보여준다: **raw −0.0012 → 보정 �
 옛 규칙에서만 깎으므로 과적합 기전(규칙 누적)을 정확히 겨냥한다. 압축이 실패하면 개정 자체를
 거부한다.
 
-### 9.6 A8 Loop Controller
+### 9.6 A11 Loop Controller
 
 hill climbing + dev 게이트 + 재개 + 예산 가드. 채택 판정은 §7.1.
 

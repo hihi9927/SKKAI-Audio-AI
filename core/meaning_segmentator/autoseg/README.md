@@ -192,10 +192,10 @@ PYTHONPATH=. python -m core.meaning_segmentator.autoseg.eval_prompt \
 |---|---|---|
 | `gateway.py` | Letsur AI Gateway 클라이언트, 재시도, 비용 집계, 예산 가드, JSON 복구 | — |
 | `data.py` | A0 Data Preparer — 정규화, 층화 분할, **측정 프로파일** | — |
-| `pipeline.py` | A2 Segmenter / A3 Validator / **A9 Truncator** / A4 번역 툴 2종 + 캐시 | 분절·번역만 |
-| `metrics.py` | A5 Scorer — `adequacy`(QE) / `consistency` / `laal_words` / `score` | — |
-| `agents.py` | A1 Profiler / **A6′ Judge** / A6 Critic / A7 Prompt Engineer / Compressor | ● |
-| `loop.py` | A8 Loop Controller — T 격자 평가, 채택·롤백·중단, 곡선·비교군·리포트 | — |
+| `pipeline.py` | A2 Segmenter / A3 Validator / **A4 Truncator** / A5 번역 툴 2종 + 캐시 | 분절·번역만 |
+| `metrics.py` | A6 Scorer — `adequacy`(QE) / `consistency` / `laal_words` / `score` | — |
+| `agents.py` | A1 Profiler / **A7 Judge** / A8 Critic / A9 Prompt Engineer / Compressor | ● |
+| `loop.py` | A11 Loop Controller — T 격자 평가, 채택·롤백·중단, 곡선·비교군·리포트 | — |
 | `eval_prompt.py` | 임의 프롬프트 1개를 루프와 동일 지표로 평가 | — |
 | `validity_check.py` | consistency 백엔드 타당도 게이트 — 오류 주입 후 순위 확인 | — |
 | `adequacy_check.py` | **adequacy 백엔드 조각 입력 게이트** — QE 가 조각에서도 오류 순위를 지키는지 | — |

@@ -11,7 +11,7 @@ from dataclasses import dataclass
 
 from .gateway import Gateway
 
-# ── 출력 토큰 예산 ───────────────────────────────────────────────────────
+# ── 출력 토큰 예산 ─────────────────────────────────────────────────────────────
 # **추론 모델은 사고 토큰이 max_tokens 에 함께 잡힌다.** 예산이 모자라면 사고가 그걸
 # 다 먹고 content 가 빈 문자열로 돌아오는데(finish_reason='length'), 상위에서는 그게
 # "모델이 답을 못 냈다"가 아니라 "이상한 답을 냈다"로 보인다 — 판정자에서는
@@ -30,7 +30,7 @@ JUDGE_MAX_TOKENS = 16000        # 산출물은 작은 JSON 하나. 사실상 전
 PROFILER_MAX_TOKENS = 16000     # 언어 프로파일 JSON
 PROMPT_MAX_TOKENS = 32000       # prompt_v0 생성·Critic·PE·Compressor — 출력 자체가 길다
 
-# ── 프롬프트 골격 ────────────────────────────────────────────────────────
+# ── 프롬프트 골격 ──────────────────────────────────────────────────────────────
 # 골격은 고정한다. Prompt Engineer는 섹션 '내용'만 바꾼다 — 구조를 흔들면 루프가
 # 발산하고, 점수 변화를 어떤 변경에 귀속시킬 수 없게 된다.
 
@@ -441,9 +441,7 @@ class Profiler:
                             purpose="prompt_v0")
 
 
-# ── A6 Critic ────────────────────────────────────────────────────────────
-
-# ── A6′ Judge — 경계별 조기 방출 판정 ────────────────────────────────────
+# ── A7 Judge — 경계별 조기 방출 판정 ──────────────────────────────────────────────
 
 # 왜 별도 에이전트인가: `adequacy` 는 `(조각 원문, 조각 번역)` 만 본다. "그건 문제가 →
 # That's a problem" 은 그 조각의 번역으로 완벽하므로 만점이 나온다. 뒤에 "안 될 것
@@ -640,7 +638,7 @@ def unsafe_rate(judgements: list[dict]) -> float | None:
     return sum(1 for j in scored if j["verdict"] in UNSAFE_VERDICTS) / len(scored)
 
 
-# ── A6 Critic ────────────────────────────────────────────────────────────
+# ── A8 Critic ────────────────────────────────────────────────────────────
 
 CRITIC_SYSTEM = """You diagnose failures of a meaning-based segmentation prompt.
 
@@ -938,7 +936,7 @@ def select_cases(rows: list[dict], main_T: int, judgements: list[dict] | None = 
     return picked
 
 
-# ── A9 Compressor ────────────────────────────────────────────────────────
+# ── A10 Compressor ───────────────────────────────────────────────────────
 
 # 길이 예산을 넘긴 개정본을 줄인다. PE 에게 "짧게 다시 써라"를 맡기지 않는 이유는
 # 개선과 축소를 한 호출에 섞으면 **방금 추가한 규칙을 스스로 지우기** 때문이다.
@@ -983,7 +981,7 @@ class Compressor:
                             purpose="compressor")
 
 
-# ── A7 Prompt Engineer ───────────────────────────────────────────────────
+# ── A9 Prompt Engineer ───────────────────────────────────────────────────
 
 ENGINEER_SYSTEM = """You revise a meaning-based segmentation system prompt, one iteration at a time.
 

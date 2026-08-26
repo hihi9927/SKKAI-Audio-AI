@@ -1,4 +1,4 @@
-"""A2 Segmenter / A3 Format Validator / A4 Translation Tools.
+"""A2 Segmenter / A3 Format Validator / A5 Translation Tools.
 
 전부 결정론적 래퍼이거나 프롬프트 주입형 LLM 호출이다. 판단하는 에이전트는 없다.
 번역기의 모델·프롬프트는 런 전체에서 고정한다 — 여기가 흔들리면 점수 변화가
@@ -109,7 +109,7 @@ def default_trailing_punct(sample: str) -> str:
     return "".join(sorted(out))
 
 
-# ── 캐시 ─────────────────────────────────────────────────────────────────
+# ── 캐시 ───────────────────────────────────────────────────────────────────
 
 class JsonCache:
     """디스크 영속 캐시. 이터레이션 간 분절이 안 바뀐 문장의 재번역을 막는다."""
@@ -575,7 +575,7 @@ def split_segments(seg_text: str) -> list[str]:
     return [p.strip() for p in TAG_RE.split(seg_text)[::2] if p and p.strip()]
 
 
-# ── A9 Truncator — 지연 노브, 결정론적 ───────────────────────────────────
+# ── A4 Truncator — 지연 노브, 결정론적 ───────────────────────────────────────────
 
 def chunk_budget(text: str, target_chunk_words: int, spaced: bool) -> int:
     """이 문장을 몇 조각으로 낼 것인가.
@@ -791,7 +791,7 @@ def looks_untranslated(source: str, output: str, n: int = 8,
     return sum(covered) / len(out) >= min_coverage
 
 
-# ── A4 Translation Tools ─────────────────────────────────────────────────
+# ── A5 Translation Tools ─────────────────────────────────────────────────
 
 # 번역기 변동이 Q 잡음의 주원인이었다 (동일 문장 2회 번역의 Q가 0.9273, 최악 0.5866).
 # 자유도가 큰 축 — 고유명사 표기, 인용부호, 절 순서 — 을 세 프롬프트에 동일하게 못 박아
@@ -937,7 +937,7 @@ class Translator:
         return joined, pieces
 
 
-# ── Google Translate 번역기 ──────────────────────────────────────────────
+# ── Google Translate 번역기 ─────────────────────────────────────────────────
 
 # 운영 서버(`streaming_websocket_server.py`)의 기본 번역 경로가 이것이다. LLM 번역기로
 # 잰 점수가 운영에 옮겨 붙는지 확인하려면 같은 번역기로 재야 한다.

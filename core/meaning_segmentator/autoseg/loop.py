@@ -1,4 +1,4 @@
-"""A8 Loop Controller — 결정론적 오케스트레이터.
+"""A11 Loop Controller — 결정론적 오케스트레이터.
 
 LLM 판단은 없다. 실행 순서, 채택/롤백, 예산, 중단 조건만 관리한다.
 설계는 `../AUTO_PROMPT_LOOP_DESIGN.md`.
@@ -75,7 +75,7 @@ class ScoredSplit:
     k: list[int]
 
 
-# ── 다언어 목적함수 ──────────────────────────────────────────────────────
+# ── 다언어 목적함수 ─────────────────────────────────────────────────────────
 #
 # **분절은 타깃과 무관하다** — 문장당 1회이고 캐시가 타깃을 안 탄다. 그래서 타깃을 N개로
 # 늘려도 비용의 90% 를 차지하는 분절 호출은 **그대로**이고, 번역(gtx 무료)과 채점(GPU)만
@@ -364,7 +364,7 @@ def score_split(seg_texts: list[str], texts: list[str], full: list[str],
     )
 
 
-# ── 평가 1회 ─────────────────────────────────────────────────────────────
+# ── 평가 1회 ────────────────────────────────────────────────────────────
 
 def evaluate(
     gw: Gateway,
@@ -598,7 +598,7 @@ def fmt_metrics(m: metrics.Metrics, tag: str) -> str:
     return "  ".join(parts)
 
 
-# ── 메인 ─────────────────────────────────────────────────────────────────
+# ── 메인 ───────────────────────────────────────────────────────────────
 
 # ── T 격자 유도 ──────────────────────────────────────────────────────────
 
@@ -1320,7 +1320,7 @@ def main() -> int:
             rows, m, viol = run_eval(prompt, batch, t_grid, "train")
             sc = metrics.score(m)
 
-            # ── A6′ Judge — 주 작동점에서만 (비용) ────────────────────────
+            # ── A7 Judge — 주 작동점에서만 (비용) ────────────────────────
             judgements: list[dict] = []
             if judge is not None and m.by_T:
                 judgements = judge_distributed(
@@ -1559,7 +1559,7 @@ def main() -> int:
             ctx = best_ctx or {"rows": rows, "metrics": m.to_dict(),
                                "violations": viol, "judgements": judgements}
             try:
-                # ── A6 Critic ───────────────────────────────────────────
+                # ── A8 Critic ───────────────────────────────────────────
                 # 비평 대상과 개정 대상은 반드시 같은 프롬프트여야 한다.
                 if best_critique is None:
                     cases = agents.select_cases(ctx["rows"], main_t, ctx.get("judgements"))
@@ -1581,7 +1581,7 @@ def main() -> int:
                 log(f"[iter {it}] critic dominant={agg.get('dominant_error')} "
                     f"focus={last_focus}")
 
-                # ── A7 Prompt Engineer ──────────────────────────────────
+                # ── A9 Prompt Engineer ──────────────────────────────────
                 # **제안 1개를 검증 1개로 받던 구조를 K개 생성 -> 선택으로 바꾼다.**
                 # 오늘 실측에서 dev 까지 간 개정 3건이 전부 음수였다(t = −0.8 ~ −3.2) —
                 # 채택 문턱이 아니라 개정 품질이 원인이다. LLM 은 좋은 개정을 확실히
@@ -1790,7 +1790,7 @@ def main() -> int:
         gw.close()
 
 
-# ── 비교군 ───────────────────────────────────────────────────────────────
+# ── 비교군 ──────────────────────────────────────────────────────────────
 
 def compare_baselines(translator, adequacy, consistency, sentences, spaced,
                       tgt_spaced, workers, mech_every: int = 8,

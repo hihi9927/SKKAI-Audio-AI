@@ -1,4 +1,4 @@
-"""A5 Scorer — 결정론적.
+"""A6 Scorer — 결정론적.
 
 설계 (`../AUTO_PROMPT_LOOP_DESIGN.md`). 축이 세 개다.
 
