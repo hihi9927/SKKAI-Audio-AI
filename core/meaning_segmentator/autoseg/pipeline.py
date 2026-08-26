@@ -8,7 +8,9 @@
 from __future__ import annotations
 
 import hashlib
+import html
 import json
+import os
 import random
 import re
 import threading
@@ -848,27 +850,84 @@ def _rebuild(seg_text: str, keep: set[int], spaced: bool) -> str:
 #   2. 결정론적이다. 같은 문장 3회 번역이 5/5 문장에서 완전히 일치했다. 따라서
 #      상한 앵커(무분절 재번역)가 정확히 1.0 이 되고, Q 에서 번역기 잡음이 사라진다.
 
-GOOGLE_URL = "https://translate.googleapis.com/translate_a/single"
-# 지수 백오프. 비공식 엔드포인트라 429 를 맞으면 IP 단위로 걸리므로 넉넉히 기다린다.
+# **백엔드 둘 — 같은 Google 번역기의 다른 접근 경로다.**
+#
+#   gtx  웹 위젯이 쓰는 **비공식** 엔드포인트. 인증이 없어 Google 이 구분할 수 있는 건
+#        IP 뿐이라 대량으로 쓰면 IP 단위로 429 를 맞는다. 실제로 2026-08 에 이 실험이
+#        6일간 30만 건을 호출해 막혔고, 2026-08-26 현재도 이 IP 는 429 다.
+#        429 일 때 HTML 차단 페이지를 주므로 `r.json()` 이 터진다.
+#   v2   공식 Cloud Translation **Basic**. API 키로 인증한다 (Advanced/v3 는 서비스
+#        계정이 필요해 API 키로는 못 쓴다). 월 50만 자 무료.
+#
+# **두 백엔드의 번역문은 같지 않다.** 기존 gtx 캐시 18건을 v2 로 재번역해 대조한 결과
+# **일치 0/18** 이다 (`It's this month` vs `It's February` 처럼 v2 가 더 정확한 쪽이
+# 많다). 그래서 캐시 키에 백엔드를 넣고, `translator_id` 에도 남겨 런 간 비교가
+# 조용히 섞이지 않게 한다 — **gtx 로 잰 점수와 v2 로 잰 점수는 같은 축이 아니다.**
+GTX_URL = "https://translate.googleapis.com/translate_a/single"
+GTX_HEADERS = {"User-Agent": "Mozilla/5.0"}
+V2_URL = "https://translation.googleapis.com/language/translate/v2"
+
+# 지수 백오프. 비공식 엔드포인트는 429 를 맞으면 IP 단위로 걸리므로 넉넉히 기다린다.
 BACKOFF_BASE = 2
 BACKOFF_MAX = 30
-GOOGLE_HEADERS = {"User-Agent": "Mozilla/5.0"}
+RETRY_STATUS = (429, 500, 502, 503, 504)
 
-# tgt_name 은 사람이 읽는 언어명("English")이라 gtx 의 tl 코드로 바꿔야 한다.
-LANG_CODES = {
-    "english": "en", "korean": "ko", "japanese": "ja",
-    "chinese": "zh-CN", "spanish": "es", "french": "fr", "german": "de",
-}
+
+def google_api_key() -> str:
+    """`GOOGLE_TRANSLATE_API_KEY`. 프로덕션 서버·AST 평가 트랙과 같은 이름을 쓴다."""
+    return os.environ.get("GOOGLE_TRANSLATE_API_KEY", "").strip()
 
 
 def to_lang_code(name: str) -> str:
-    key = name.strip().lower()
-    if key in LANG_CODES:
-        return LANG_CODES[key]
-    if len(key) <= 5 and "-" in key or len(key) == 2:
-        return name.strip()      # 이미 코드로 넘어온 경우
-    raise ValueError(f"Google 번역 대상 언어 코드를 알 수 없습니다: {name!r}. "
-                     f"--tgt-code 로 직접 지정하세요.")
+    """언어 이름이나 코드를 Google 이 받는 태그로. **표를 코드에 박지 않는다.**
+
+    종전에는 7개 언어 표(`LANG_CODES`)를 두고 그 밖은 `ValueError` 였다. 데이터셋은
+    A0 에서 경로만 주면 코드 수정 없이 늘어나게 해 뒀는데 타깃 언어만 표를 고쳐야
+    했다. `langcodes` 는 CLDR 이름표를 쓰므로 `Portuguese`·`Vietnamese`·`한국어` 가
+    전부 되고 표가 사라진다.
+
+    **중국어 매핑이 `zh-CN` 에서 `zh` 로 바뀌지만 출력은 같다** — v2 실측에서
+    `zh`/`zh-CN`/`zh-Hans` 가 모두 `你好吗？`, `zh-TW`/`zh-Hant` 가 `你好嗎？` 로,
+    간체/번체 구분만 유효하고 지역 태그는 무의미했다.
+
+    이미 코드로 들어온 값(`en`, `zh-TW`, `pt-BR`)은 그대로 통과시킨다.
+    """
+    import langcodes                      # 22MB 데이터라 지연 로드
+    key = name.strip()
+    if not key:
+        raise ValueError("타깃 언어가 비었습니다")
+    # **코드인지 먼저 본다.** 순서가 반대면 안 된다 — `find("en")` 은 `enc`(엔가) 를
+    # 돌려준다. 이름 조회는 두 글자 코드를 이름의 접두사로 읽는다.
+    try:
+        tag = langcodes.Language.get(key)
+        if tag.is_valid() and tag.language:
+            return key                    # 이미 코드다 — 지역/스크립트를 그대로 보존
+    except langcodes.tag_parser.LanguageTagError:
+        pass                              # 코드가 아니다 -> 이름으로 조회
+    try:
+        return str(langcodes.find(key))
+    except LookupError:
+        raise ValueError(f"모르는 언어: {name!r}. --tgt-code 로 직접 지정하세요.")
+
+
+def parse_translator_id(tr_id: str, fallback_code: str) -> tuple[str | None, str, bool]:
+    """`translator_id` -> `(backend, tgt_code, use_context)`. **형식이 두 세대다.**
+
+        google:v2:en:ctx=True     현행 — 백엔드가 들어간다
+        google:en:ctx=True        구형 — 전부 gtx 였다
+        llm:gpt-5-mini            폐기된 LLM 번역기. 백엔드는 기본값에 맡긴다
+        (없음)                     아주 옛 런
+
+    구형을 gtx 로 읽는 것이 중요하다 — 기본값(키 있으면 v2)으로 읽으면 그 런의 캐시를
+    통째로 놓치고, 더 나쁘게는 **다른 번역기로 잰 점수를 같은 축으로 착각한다**.
+    파싱이 `eval_prompt` 와 `metric_probes/rank_ablation` 에 복제돼 있던 것을 합쳤다.
+    """
+    if not tr_id.startswith("google:"):
+        return None, fallback_code, True          # 백엔드는 호출자/기본값에 맡긴다
+    parts = tr_id.split(":")
+    if len(parts) >= 4:                           # google:backend:code:ctx=...
+        return parts[1], parts[2], parts[3].endswith("True")
+    return "gtx", parts[1], parts[-1].endswith("True")
 
 
 @dataclass
@@ -885,11 +944,14 @@ class GoogleTranslator:
 
     tgt_code: str
     cache: JsonCache | None = None
-    workers: int = 4          # 비공식 무료 엔드포인트다. 동시성을 낮게 잡는다
+    workers: int = 4          # gtx 는 비공식이라 동시성을 낮게 잡는다
     use_context: bool = True
     timeout: float = 30.0
     max_retries: int = 5
     calls: int = 0
+    # 미지정이면 키 유무로 정한다 — 키가 있으면 v2, 없으면 gtx. 프로덕션 서버와 같은 규칙.
+    backend: str | None = None
+    api_key: str = ""
     # 컨텍스트 번역은 앞 조각들을 개행으로 붙여 보내고 마지막 줄만 취한다. gtx 가
     # 줄을 합치면 마지막 줄이 엉뚱한 것이 되어 조각 번역이 조용히 오염된다 —
     # 발생 건수를 세서 런 끝에 경고한다.
@@ -898,6 +960,11 @@ class GoogleTranslator:
     _lock: threading.Lock = field(init=False, repr=False, default_factory=threading.Lock)
 
     def __post_init__(self):
+        self.api_key = self.api_key or google_api_key()
+        if self.backend is None:
+            self.backend = "v2" if self.api_key else "gtx"
+        if self.backend == "v2" and not self.api_key:
+            raise ValueError("backend='v2' 인데 GOOGLE_TRANSLATE_API_KEY 가 없습니다")
         self._client = httpx.Client(
             timeout=self.timeout,
             limits=httpx.Limits(max_connections=self.workers,
@@ -909,28 +976,50 @@ class GoogleTranslator:
             self._client.close()
 
     # ── 저수준 ───────────────────────────────────────────────────────────
+    def _get_gtx(self, text: str) -> str:
+        params = {"client": "gtx", "sl": "auto", "tl": self.tgt_code, "dt": "t", "q": text}
+        r = self._client.get(GTX_URL, params=params, headers=GTX_HEADERS)
+        if r.status_code in RETRY_STATUS:
+            raise RuntimeError(f"HTTP {r.status_code}")
+        r.raise_for_status()
+        data = r.json()
+        return "".join(item[0] for item in data[0] if item and item[0])
+
+    def _get_v2(self, text: str) -> str:
+        """공식 Cloud Translation Basic.
+
+        `source` 를 넘기지 않고 자동 감지에 맡긴다 — gtx 의 `sl=auto` 와 같은 조건이라야
+        두 백엔드가 같은 입력 조건에서 비교된다.
+
+        `format=text` 면 이스케이프하지 않는 것이 문서상 동작이지만 실제로는 `&#39;` 가
+        섞여 나오는 사례가 있다. 남으면 지표가 깎이므로 푼다 (AST 트랙과 같은 처리).
+        """
+        body = {"q": text, "target": self.tgt_code, "format": "text"}
+        r = self._client.post(V2_URL, params={"key": self.api_key}, json=body)
+        if r.status_code in RETRY_STATUS:
+            raise RuntimeError(f"HTTP {r.status_code}")
+        r.raise_for_status()
+        tr = r.json()["data"]["translations"][0]
+        return html.unescape(tr.get("translatedText") or "")
+
     def _raw(self, text: str) -> str:
         if not text.strip():
             return ""
-        params = {"client": "gtx", "sl": "auto", "tl": self.tgt_code, "dt": "t", "q": text}
+        fetch = self._get_v2 if self.backend == "v2" else self._get_gtx
         last: Exception | None = None
         for attempt in range(self.max_retries):
             try:
-                r = self._client.get(GOOGLE_URL, params=params, headers=GOOGLE_HEADERS)
-                if r.status_code in (429, 500, 502, 503, 504):
-                    last = RuntimeError(f"HTTP {r.status_code}")
-                else:
-                    r.raise_for_status()
-                    data = r.json()
-                    with self._lock:
-                        self.calls += 1
-                    return "".join(item[0] for item in data[0] if item and item[0])
-            except (httpx.HTTPError, ValueError, IndexError, TypeError) as e:
+                out = fetch(text)
+                with self._lock:
+                    self.calls += 1
+                return out
+            except (httpx.HTTPError, RuntimeError, ValueError, IndexError, TypeError, KeyError) as e:
                 last = e
             # 대기는 **한 곳에서만** 계산한다. 예전에는 HTTP 실패 경로와 예외 경로가
             # 같은 식을 각자 갖고 있어, 한쪽만 고치면 상황에 따라 대기가 달라졌다.
             time.sleep(min(BACKOFF_BASE ** attempt, BACKOFF_MAX))
-        raise RuntimeError(f"Google 번역 실패({self.max_retries}회 재시도): {last}")
+        raise RuntimeError(f"Google 번역 실패({self.max_retries}회 재시도, "
+                           f"backend={self.backend}): {last}")
 
     def _call(self, text: str) -> str:
         """캐시를 거친 번역 1회.
@@ -945,7 +1034,7 @@ class GoogleTranslator:
         """
         if not text.strip():
             return ""
-        k = JsonCache.key("gtx", self.tgt_code, text)
+        k = JsonCache.key(self.backend, self.tgt_code, text)
         if self.cache is not None:
             hit = self.cache.get(k)
             if hit is not None and hit.strip():

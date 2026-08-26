@@ -6,7 +6,8 @@ unbabel-comet>=2.2.0   # COMET MT 평가 지표 (comet_eval.py, autoseg 기본 �
 openai>=1.0.0          # gpt_seg.py
 
 # 프롬프트 자동 생성 루프 (autoseg/)
-httpx>=0.27.0          # Letsur AI Gateway 호출
+httpx>=0.27.0          # Letsur AI Gateway 호출 + Google 번역
+langcodes[data]>=3.5   # 언어 이름 -> 코드 (pipeline.to_lang_code). 표를 코드에 안 박으려고 쓴다
 setuptools<81          # torchmetrics 0.10.x 가 pkg_resources 를 import 한다 (81+ 에서 제거됨)
 # 아래 둘은 `metric_probes/` 전용이다. 루프(`autoseg/`)는 안 쓴다.
 sentence-transformers>=5.0  # MTEB 임베딩 후보 로드

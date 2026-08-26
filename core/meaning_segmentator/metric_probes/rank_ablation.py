@@ -55,7 +55,7 @@ from pathlib import Path
 from ..autoseg import metrics, noise_floor
 from ..autoseg.gateway import Gateway
 from ..autoseg.loop import score_split, target_is_spaced
-from ..autoseg.pipeline import (TAG_RE, GoogleTranslator, JsonCache, chunk_budget, strip_tags, tag, truncate, unit_count)
+from ..autoseg.pipeline import (TAG_RE, GoogleTranslator, parse_translator_id, JsonCache, chunk_budget, strip_tags, tag, truncate, unit_count)
 from .paths import OUT_RUNS, SEG_RUNS
 
 
@@ -330,14 +330,11 @@ def main() -> int:
     tr_cache = JsonCache(run_dir / "cache" / "translate.json")
     # 번역기는 Google 하나다 (LLM 분기 제거). `translator_id` 가 없는 옛 런은 타깃
     # 언어명에서 코드를 유도한다.
-    tr_id = cfg.get("translator_id") or ""
-    if tr_id.startswith("google:"):
-        _, code, ctx = tr_id.split(":", 2)
-    else:
-        code, ctx = to_lang_code(cfg["tgt_lang"]), "ctx=True"
+    backend, code, ctx = parse_translator_id(cfg.get("translator_id") or "",
+                                             to_lang_code(cfg["tgt_lang"]))
     translator = GoogleTranslator(tgt_code=code, cache=tr_cache,
                                   workers=min(args.workers, 4),
-                                  use_context=ctx.endswith("True"))
+                                  use_context=ctx, backend=backend)
 
     adequacy = metrics.make_adequacy_backend(cfg.get("adequacy_backend", "cometkiwi"),
                                              batch_size=args.comet_batch_size)

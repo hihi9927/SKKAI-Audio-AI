@@ -173,6 +173,7 @@ PYTHONPATH=. python -m core.meaning_segmentator.autoseg.eval_prompt \
 | `--no-judge` | — | 판정자를 끄고 adequacy 만으로 조향 |
 | `--adequacy-backend` | `cometkiwi` | `cometkiwi` / `cometkiwi-xl` |
 | `--contradiction-backend` | `xlmr-anli` | 조기 방출 NLI. **다국어 — 타깃별로 바꿀 필요 없다.** `mdeberta-xnli` 는 잡음 바닥(0.102)이 실측 신호(0.075)보다 커 사실상 무정보이고 ko/zh/ja 타깃에서 곡선이 역전한다(5개 타깃 중 2개만 정상). `deberta-mnli` 는 영어 전용 |
+| `--translate-backend` | 자동 | `v2`(공식 Cloud Translation Basic, API 키 필요) / `gtx`(무료 비공식). 미지정 시 `GOOGLE_TRANSLATE_API_KEY` 가 있으면 v2. **두 백엔드의 번역문은 같지 않다** — 기존 gtx 캐시 18건 재번역 대조에서 일치 0/18. `translator_id` 와 캐시 키에 백엔드가 들어가 섞이지 않지만, gtx 로 잰 점수와 v2 로 잰 점수는 **같은 축이 아니다** |
 | `--adopt-se-mult` | `0.5` | 채택 요건 `dev 쌍체 Δ > k·se`. 점 비교는 오차막대 안 잡음까지 채택했다. `0` = 이전 방식. **1.0 → 0.5 로 낮춘 이유가 `xlmr-anli` 다** — 지표 타당도가 훨씬 나은 대신 문장별 분산이 커서 dev 쌍체 se 가 0.0065 → 0.0144 로 배증한다. 배수를 그대로 두면 문턱이 두 배가 되어 채택이 더 어려워진다 (run01~03 이 이미 채택 0회) |
 | `--no-coverage-rule` | — | 최소 경계 수 요건 해제. **노브가 k 를 통제 못 하게 된다** |
 | `--no-contradiction` | — | NLI 해제. `effective = adequacy` 가 되어 조기 방출이 안 벌받는다 |

@@ -776,6 +776,9 @@ def main() -> int:
     p.add_argument("--seg-reasoning-effort", default="medium",
                    choices=["minimal", "low", "medium", "high", "none"],
                    help="분절 호출 사고량. none = 모델 기본값. 에이전트 호출에는 영향 없음")
+    p.add_argument("--translate-backend", default=None, choices=["gtx", "v2"],
+                   help="번역 백엔드. 미지정 시 GOOGLE_TRANSLATE_API_KEY 가 있으면 v2, "
+                        "없으면 gtx. **두 백엔드의 번역문은 같지 않다** — 섞어 비교 금지")
     p.add_argument("--tgt-code", default=None)
     # **목적함수를 다언어로.** 분절은 타깃 무관이라 비용의 90% 가 그대로다 (loop 상단 주석).
     # 소스 언어는 자동 제외한다.
@@ -1015,8 +1018,11 @@ def main() -> int:
         tr_cache = JsonCache(run_dir / "cache" / f"translate_{rep_code}.json")
         translator = GoogleTranslator(
             tgt_code=rep_code, cache=tr_cache, workers=min(args.workers, 4),
-            use_context=not args.no_google_context)
-        translator_id = f"google:{translator.tgt_code}:ctx={translator.use_context}"
+            use_context=not args.no_google_context, backend=args.translate_backend)
+        # **백엔드가 id 에 들어간다.** gtx 와 v2 의 번역문은 같지 않다 (기존 캐시 18건
+        # 재번역 대조에서 일치 0/18). id 에 안 남기면 다른 자로 잰 점수가 조용히 섞인다.
+        translator_id = (f"google:{translator.backend}:{translator.tgt_code}"
+                         f":ctx={translator.use_context}")
         log(f"[translator] {translator_id} (대표 타깃 {rep_tgt})")
         log(f"[targets] {len(targets)}개: {', '.join(targets)}  "
             f"(목적함수 = 타깃별 z-정규화 effective 의 평균)")
