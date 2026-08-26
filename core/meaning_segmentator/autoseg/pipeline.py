@@ -362,16 +362,29 @@ def normalize_tags(seg_text: str, spaced: bool, trailing_punct: str | None = Non
     raw_prios: list[int | None] = [int(p) if p else None for p in parts[1::2]]
 
     # 태그 직후 구두점 -> 앞 조각 끝으로 옮긴다 (원문 문자는 보존)
+    #
+    # **받는 쪽은 "가장 가까운 내용 있는" 왼쪽 조각이다.** 바로 왼쪽이 연속 태그 사이의
+    # 빈 조각이면 구두점이 거기 얹혀 그 조각이 구두점 하나짜리로 되살아난다 —
+    # `aa <SEG:2> <SEG:1> , bb` 가 `aa <SEG:2> , <SEG:1> bb` 가 되어 경계 하나를 쉼표에
+    # 쓰고, 태그를 떼도 `aa , bb` 라 원문과 달라져 `text_modified` 로 잡혔다. 그건 유일한
+    # 채점 차단 위반이라 그 행이 점수에서 빠지고 LLM 재시도까지 나간다.
+    # 원문에서 구두점이 붙어 있던 자리가 곧 그 조각이므로, 이쪽이 원문 보존이기도 하다.
     for i in range(len(raw_prios)):
         nxt = pieces[i + 1]
         moved = ""
         while nxt and punct and nxt[0] in punct:
             moved += nxt[0]
             nxt = nxt[1:].lstrip()
-        if moved:
-            pieces[i] = pieces[i] + moved
-            pieces[i + 1] = nxt
-            _note(sink, "punct_moved", f"태그 뒤 {moved!r} 를 앞 조각 끝으로 옮김")
+        if not moved:
+            continue
+        j = i
+        while j >= 0 and not pieces[j]:
+            j -= 1
+        if j < 0:
+            continue        # 왼쪽에 내용이 아예 없다 = 맨 앞 구두점. 옮기면 원문이 바뀐다
+        pieces[j] = pieces[j] + moved
+        pieces[i + 1] = nxt
+        _note(sink, "punct_moved", f"태그 뒤 {moved!r} 를 앞 조각 끝으로 옮김")
 
     # 1) 어느 태그가 살아남는지 먼저 정한다. 태그는 **양쪽에 실제 내용이 있을 때만** 산다.
     #    미리 keep 배열을 만들면 연속 태그 `A <SEG:1> <SEG:2> B` 에서 가운데 빈 조각을
