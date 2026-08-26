@@ -240,6 +240,14 @@ def segment_batch(
                         {"rule": v.rule, "detail": v.detail, "text": t, "seg_text": out}
                         for v in vs)
                 detail = "; ".join(f"{v.rule}: {v.detail}" for v in vs)
+                # **규칙을 여기 다시 쓰지 않는다.** `system=prompt` 로 프롬프트를 통째로
+                # 다시 주므로 `[Output Rules]` 가 이미 들어가 있다. 예전에는 번호 규약
+                # ("numbered 1..N by confidence")과 커버리지 지침("marking one is free")을
+                # 이 문자열에 복사해 뒀는데, 그건 `agents.output_rules()` 가 만드는 문장과
+                # 같은 말이다. A1 쪽에서 규칙을 고치면 여기만 옛말로 남아 **1차 호출과
+                # 재시도가 서로 다른 규칙을 요구**하게 되고, 재시도가 고칠 수 없는 것을
+                # 시키는 무한 실패가 된다. 이 콜이 더할 것은 위반 내역과 "원문 그대로
+                # 다시 내라"뿐이다.
                 out = gw.chat(
                     system=prompt,
                     user=(
@@ -247,11 +255,10 @@ def segment_batch(
                         f"[Your previous answer violated the output rules: {detail}]\n"
                         f"[Previous answer: {out}]\n"
                         f"[Re-emit the ORIGINAL text above, character for character, with only "
-                        f"<SEG:n> tags inserted, numbered 1..N by confidence with no gaps or "
-                        f"duplicates. Do not shorten, rewrite, or add anything. If the "
-                        f"violation says too few tags, add boundaries at the next-safest "
-                        f"positions and rank them last — marking one is free, withholding "
-                        f"it is not.]"
+                        f"<SEG:n> tags inserted. Fix every violation listed above by following "
+                        f"the [Output Rules] section of your instructions — it already states "
+                        f"how tags must be numbered and what to do when you cannot find enough "
+                        f"safe positions. Do not shorten, rewrite, or add anything.]"
                     ),
                     max_tokens=SEG_MAX_TOKENS,
                     reasoning_effort=reasoning_effort,
@@ -308,14 +315,58 @@ class Violation:
     detail: str
 
 
-def _canon(s: str, spaced: bool) -> str:
-    return strip_tags(s, spaced)
-
-
 def _note(sink: list[dict] | None, kind: str, detail: str) -> None:
     """결정론적 수정 하나를 기록. `sink` 가 없으면 아무 일도 안 한다."""
     if sink is not None:
         sink.append({"kind": kind, "detail": detail})
+
+
+# 정규화가 지키기로 한 약속. 어기면 **프롬프트 문제가 아니라 이 함수의 버그**다.
+#
+# 여기 있는 항목은 전부 예전에 `validate` 의 위반 규칙이었다. 정규화가 생기면서
+# 구조적으로 못 뜨게 됐고(마지막 실측이 ko-en/run01 — 정규화 도입 직전이다), 위반
+# 목록에 남겨 두면 죽은 규칙이 살아 있는 것처럼 보인다. 그렇다고 그냥 지우면 정규화가
+# 약속을 어겨도 아무도 모른다 — 실제로 순위 뒤집힘(연속 태그가 낮은 번호로 살아남음)과
+# 구두점 조각(쉼표가 빈 조각을 되살림) 두 버그가 여기서 났고, 둘 다 위반 목록이 아니라
+# 이 점검으로 잡혔어야 했다.
+#
+# 위반이 아니라 **버그 신고**이므로 채점에 섞지 않는다. `sink` 에 남기고 종류마다 한 번
+# 경고만 찍는다 — 예외를 던지면 100문장 런이 통째로 죽는다.
+_SELF_CHECK_SEEN: set[str] = set()
+
+
+def _self_check(out: str, spaced: bool, punct: str,
+                sink: list[dict] | None = None) -> list[str]:
+    """정규화 결과가 약속을 지켰는지 본다. 반환은 위반한 약속 목록(정상이면 빈 리스트)."""
+    bad: list[str] = []
+    tags = list(TAG_RE.finditer(out))
+    if tags and tags[0].start() == 0:
+        bad.append("맨 앞 태그가 남음")
+    if tags and tags[-1].end() == len(out):
+        bad.append("맨 뒤 태그가 남음")
+    if CONSECUTIVE.search(out):
+        bad.append("연속 태그가 남음")
+    if punct and re.search(r"<SEG(?::\d+)?>\s*([" + re.escape(punct) + r"])", out):
+        bad.append("태그 직후 구두점이 남음")
+    for m in tags:
+        before, after = out[: m.start()], out[m.end():]
+        if (before and not before.endswith(" ")) or (after and not after.startswith(" ")):
+            bad.append("태그 좌우 공백이 하나가 아님")
+            break
+    prios = [int(m.group(1)) if m.group(1) else None for m in tags]
+    numbered = [p for p in prios if p is not None]
+    if numbered:
+        # 하나라도 번호가 있으면 **전부** 번호가 있어야 하고 1..N 이어야 한다.
+        if len(numbered) != len(prios):
+            bad.append(f"번호 있는 태그와 없는 태그가 섞임: {prios}")
+        elif sorted(numbered) != list(range(1, len(numbered) + 1)):
+            bad.append(f"번호가 1..N 이 아님: {sorted(numbered)}")
+    for b in bad:
+        _note(sink, "self_check_failed", b)
+        if b not in _SELF_CHECK_SEEN:
+            _SELF_CHECK_SEEN.add(b)
+            print(f"[normalize] 버그: {b} — {out!r}")
+    return bad
 
 
 def normalize_tags(seg_text: str, spaced: bool, trailing_punct: str | None = None,
@@ -335,6 +386,11 @@ def normalize_tags(seg_text: str, spaced: bool, trailing_punct: str | None = Non
 
     잔여 위반 2건이 모두 여기서 처리되는 유형이었다. 남는 것은 `text_modified` 뿐이고,
     그건 모델이 원문을 고쳐 쓴 것이라 결정론적으로 복구할 수 없다 (LLM 재시도 몫).
+
+    **`punct_after_tag` 가 v2 런에서 0건이었던 건 이 함수가 다 고쳐서가 아니었다.** 구두점을
+    바로 왼쪽(=연속 태그 사이의 빈) 조각에 얹으면 이 함수가 스스로 `<SEG:n> ,` 를 만들어
+    냈고, 그건 `text_modified` 쪽으로 먼저 잡혔다. 받는 조각을 "가장 가까운 내용 있는" 쪽으로
+    바꾼 뒤에야 그 경로가 실제로 닫혔다 — 지금은 `_self_check` 가 계속 지켜본다.
 
     고치는 것: 번호 조밀화(**확신 순위 보존**), 맨 앞/뒤 태그 삭제, 연속 태그 축약,
     태그 직후 구두점 재배치, 태그 좌우 공백.
@@ -455,7 +511,9 @@ def normalize_tags(seg_text: str, spaced: bool, trailing_punct: str | None = Non
     out = chunks[0]
     for label, nxt in zip(labels, chunks[1:]):
         out = f"{out} {tag(label)} {nxt}"
-    return out.strip()
+    out = out.strip()
+    _self_check(out, spaced, punct, sink)
+    return out
 
 
 # 위반 중 **채점을 무의미하게 만드는 것**만 행을 제외한다. 나머지는 `format_pass_rate`
@@ -478,6 +536,15 @@ def validate(sent_id: str, original: str, seg_text: str, spaced: bool,
              min_gap: int = 0) -> list[Violation]:
     """번역 호출 전에 도는 하드 게이트. LLM 없이 순수 문자열 검사.
 
+    **표기 규칙은 여기 없다.** 맨앞/맨뒤 태그·연속 태그·태그 좌우 공백·번호 중복·번호
+    결번은 전부 `normalize_tags` 가 먼저 고쳐 놓아 구조적으로 못 걸린다(마지막 실측이
+    ko-en/run01, 정규화 도입 직전이다). 죽은 규칙을 위반 목록에 두면 산출물이 "검사하고
+    있다"고 거짓말한다. 같은 항목은 `_self_check` 가 **버그 신고**로 본다 — 거기서 걸리면
+    프롬프트가 아니라 정규화가 잘못한 것이라 대응이 완전히 다르다.
+
+    여기 남은 것은 정규화가 **원리적으로 못 고치는** 것뿐이다: 원문 훼손, 태그 개수 부족,
+    조각 간격 부족, 무번호 태그.
+
     trailing_punct 는 언어 프로파일에서 온다 — 검증 규칙 자체는 언어 무관이고,
     언어 지식은 데이터로 주입된다. 출처는 LLM 추정이 아니라 코퍼스 실측이다
     (`data.measure_profile`) — ja 런에서 LLM 이 이 필드를 통째로 빠뜨린 적이 있다.
@@ -490,48 +557,24 @@ def validate(sent_id: str, original: str, seg_text: str, spaced: bool,
     punct = trailing_punct if trailing_punct is not None else default_trailing_punct(original)
     tags = list(TAG_RE.finditer(s))
 
-    if _canon(s, spaced) != _canon(original, spaced):
+    if strip_tags(s, spaced) != strip_tags(original, spaced):
         v.append(Violation(sent_id, "text_modified",
                            "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)"))
-    if tags and tags[0].start() == 0:
-        v.append(Violation(sent_id, "leading_tag", "맨 앞에 태그"))
-    if tags and tags[-1].end() == len(s):
-        v.append(Violation(sent_id, "trailing_tag", "맨 뒤에 태그"))
-    if CONSECUTIVE.search(s):
-        v.append(Violation(sent_id, "consecutive_tags", "연속 태그"))
-    # `punct_after_tag` 검사는 없앴다 — **구조적으로 못 걸린다.** `segment_batch` 는
-    # `normalize_fn` 을 먼저 돌리고 그 결과를 `validate_fn` 에 넣으므로, 태그 뒤 구두점은
-    # 검증 시점에 이미 앞 조각으로 옮겨져 있다 (v2 런 전체 위반 0건). 같은 사건은 이제
-    # `normalize_tags(sink=)` 가 `punct_moved` 로 기록한다 — 위반이 아니라 기록이어야
-    # 규칙이 틀렸을 때 흔적이 남는다.
-    for m in tags:
-        before, after = s[: m.start()], s[m.end():]
-        if before and not before.endswith(" "):
-            v.append(Violation(sent_id, "missing_space", "태그 앞 공백 없음"))
-            break
-        if after and not after.startswith(" "):
-            v.append(Violation(sent_id, "missing_space", "태그 뒤 공백 없음"))
-            break
-
-    # ── 순위 규칙 (v2) ──────────────────────────────────────────────────
+    # ── 순위 규칙 ──────────────────────────────────────────────────────
     # 순위가 깨지면 Truncator 가 "상위 k−1개"를 정의할 수 없어 노브 자체가 죽는다.
+    #
+    # 남는 검사는 **무번호 태그** 하나뿐이다. 번호 중복·결번은 정규화가 1..N 으로 다시
+    # 매기지만, 전부 무번호인 출력은 비교군(사람 프롬프트·기계분절)일 수 있어 그대로
+    # 두기 때문이다. 루프에서는 순위가 없으면 절단이 불가능하므로 위반이다.
     #
     # **부분 순위(`priority_depth`)는 기각됐다** — 상위 N 개만 번호를 요구해 사고량을
     # 아끼려 했으나, 정렬 생략은 평가 생략이 아니라 사고가 오히려 +17% 늘었다
     # (docs/RANK_METRIC_DIAGNOSIS.md §8.3). 배선은 본 루프에서 한 번도 켜진 적이 없어
     # 지웠다. 되살리려면 그 절을 먼저 읽을 것.
     if require_priority and tags:
-        prios = [int(m.group(1)) if m.group(1) else None for m in tags]
-        if any(p is None for p in prios):
+        if any(m.group(1) is None for m in tags):
             v.append(Violation(sent_id, "bad_priority_format",
                                "순위 없는 태그. 모든 태그는 <SEG:n> 형태여야 함"))
-        else:
-            if len(set(prios)) != len(prios):
-                v.append(Violation(sent_id, "duplicate_priority",
-                                   f"순위 중복: {sorted(prios)}"))
-            if sorted(prios) != list(range(1, len(prios) + 1)):
-                v.append(Violation(sent_id, "priority_gap",
-                                   f"순위가 1..{len(prios)} 연속이 아님: {sorted(prios)}"))
 
     # ── 커버리지 요건 (v2, C 방식) ──────────────────────────────────────
     # 노브는 경계를 **빼기만** 하므로 프롬프트가 안 찍은 경계는 만들어낼 수 없다.
