@@ -582,7 +582,7 @@ LLM 판단은 다섯 종류(프로파일링·분절·판정·비평/개정·압�
 | A2 | Segmenter | LLM | 프롬프트 주입, `<SEG:n>` 삽입, 복구 재시도 | `pipeline.py` |
 | A3 | Format Validator | 결정론 | 태그 문법·원문 보존·커버리지 검사 + 정규화 | `pipeline.py` |
 | A4 | Truncator | 결정론 | T 마다 상위 (k_s−1) 경계만 남김 | `pipeline.py` |
-| A5 | Translation Tools | 결정론 래퍼 | full 번역 / 스트리밍 조각 번역 + 캐시 | `pipeline.py` |
+| A5 | Translation Tools | 결정론 래퍼 | Google 번역 — full / 스트리밍 조각 + 캐시 | `pipeline.py` |
 | A6 | Scorer | 결정론 | `adequacy`·`contradiction`·`consistency`·`laal_words` 집계 | `metrics.py` |
 | A7 | Judge | LLM | 경계별 조기 방출 판정 + 이동 제안 | `agents.py` |
 | A8 | Critic | LLM | 실패를 문장 단위로 언어화, 일반화 규칙 제안 | `agents.py` |

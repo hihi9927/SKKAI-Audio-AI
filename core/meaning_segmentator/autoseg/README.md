@@ -150,7 +150,7 @@ PYTHONPATH=. python -m core.meaning_segmentator.autoseg.noise_floor \
 # 2) 루프
 PYTHONPATH=. python -m core.meaning_segmentator.autoseg.loop \
     --dataset kspon --src-lang Korean --tgt-lang English \
-    --pair-id ko-en --run-id run13 --translator google \
+    --pair-id ko-en --run-id run13 \
     --iterations 6 --train 30 --dev 60 --test 100 --min-chars 25 --budget 20
 
 # 3) 비교군을 같은 자로 평가 (사람 프롬프트는 순위 태그가 없으므로 --no-priority)
@@ -166,7 +166,6 @@ PYTHONPATH=. python -m core.meaning_segmentator.autoseg.eval_prompt \
 | `--dataset` | `kspon` | 등록된 이름(`data.DATASETS`) 또는 매니페스트 경로(`.jsonl`) |
 | `--model` | `gpt-5-mini` | 분절·에이전트 모델. en-de test 100문장 실측에서 `gpt-5.4-mini` 대비 **비용 1/3.9 에 품질 차이 검출 안 됨**(쌍체 t=−1.0~0.0). `gpt-5-nano` 는 지시를 못 따라 커버리지 1/15 로 실격 |
 | `--judge-model` | `--model` | 판정자. **분절기와 다른 모델을 쓰면 순환이 준다** |
-| `--translator` | `google` | `llm` 또는 `google`. 운영 서버 경로는 `google` |
 | `--t-grid` | `3 6` | 루프가 쓰는 목표 조각 크기. **다른 격자로 잰 `score` 와 비교 불가** |
 | `--final-t-grid` | `2 3 4 6` | 최종 test 곡선용 격자 |
 | `--main-t` | 격자 중앙값 | 판정자가 도는 주 작동점 |
@@ -192,7 +191,7 @@ PYTHONPATH=. python -m core.meaning_segmentator.autoseg.eval_prompt \
 |---|---|---|
 | `gateway.py` | Letsur AI Gateway 클라이언트, 재시도, 비용 집계, 예산 가드, JSON 복구 | — |
 | `data.py` | A0 Data Preparer — 정규화, 층화 분할, **측정 프로파일** | — |
-| `pipeline.py` | A2 Segmenter / A3 Validator / **A4 Truncator** / A5 번역 툴 2종 + 캐시 | 분절·번역만 |
+| `pipeline.py` | A2 Segmenter / A3 Validator / **A4 Truncator** / A5 Google 번역 + 캐시 | 분절만 |
 | `metrics.py` | A6 Scorer — `adequacy`(QE) / `consistency` / `laal_words` / `score` | — |
 | `agents.py` | A1 Profiler / **A7 Judge** / A8 Critic / A9 Prompt Engineer / Compressor | ● |
 | `loop.py` | A11 Loop Controller — T 격자 평가, 채택·롤백·중단, 곡선·비교군·리포트 | — |

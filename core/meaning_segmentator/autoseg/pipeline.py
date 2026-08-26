@@ -805,179 +805,22 @@ def _rebuild(seg_text: str, keep: set[int], spaced: bool) -> str:
     return out.strip()
 
 
-def looks_untranslated(source: str, output: str, n: int = 8,
-                       min_coverage: float = 0.7) -> bool:
-    """출력이 원문을 그대로 되돌린 것으로 보이면 참.
-
-    **판정 기준은 "n-gram 하나라도 겹치는가"가 아니라 "출력의 몇 %가 원문으로 덮이는가"다.**
-    종전(any n-gram)은 어휘·고유명사를 공유하는 언어쌍에서 무너졌다 — en→de 실측에서
-    정상 번역의 16.8% 를 에코로 오판했다(`Eine Suche im Internet`, `und civitas, ...`).
-    LLM 번역기 경로에서는 그만큼 헛재시도가 나간다.
-
-    커버리지로 바꾸면 갈린다 (en-de test 355조각 실측):
-        정상 번역   평균 0.066, 중앙 0.000, p90 0.276
-        실제 에코   평균 0.977
-        임계 0.7    오탐 2.0%, 미탐 2.3%
-
-    남은 오탐 2% 는 숫자·고유명사만으로 이뤄진 짧은 조각이라 원리적으로 못 가른다.
-    언어 무관 휴리스틱이라는 성질은 그대로다 — 스크립트를 가정하지 않는다.
-    """
-    src = re.sub(r"\s+", "", source)
-    out = re.sub(r"\s+", "", output)
-    if len(src) < n or len(out) < n:
-        return False
-    covered = [False] * len(out)
-    for i in range(len(out) - n + 1):
-        if out[i : i + n] in src:
-            for j in range(i, i + n):
-                covered[j] = True
-    return sum(covered) / len(out) >= min_coverage
-
-
 # ── A5 Translation Tools ─────────────────────────────────────────────────
 
-# 번역기 변동이 Q 잡음의 주원인이었다 (동일 문장 2회 번역의 Q가 0.9273, 최악 0.5866).
-# 자유도가 큰 축 — 고유명사 표기, 인용부호, 절 순서 — 을 세 프롬프트에 동일하게 못 박아
-# reference 쪽 변동을 줄인다. 규범 자체는 언어 무관이다.
-_NORMS = (
-    "- Proper nouns (people, places): always render them phonetically in {tgt_name}. "
-    "Never leave them in the source script.\n"
-    "- Keep the source's quotation and punctuation marks as they are; do not convert them "
-    "to {tgt_name} conventions.\n"
-    "- Keep the order of clauses as in the source. Do not reorder or merge them.\n"
-    "- Translate faithfully — do not add, omit, or infer meaning beyond what is stated."
-)
-
-FULL_SYSTEM = (
-    "You are a precise translator from {src_name} into {tgt_name}, specializing in "
-    "spoken and conversational language.\n"
-    "Rules:\n"
-    "- Output ONLY the {tgt_name} translation. No explanations, notes, or alternatives.\n"
-    "- Translate the entire passage as one coherent unit.\n"
-    "- Preserve the register (casual/formal) exactly as in the source.\n"
-    "- Fillers and disfluencies: render naturally or omit if they carry no meaning.\n"
-    + _NORMS
-)
-
-SEG_FIRST_SYSTEM = (
-    "You are a precise translator from {src_name} into {tgt_name}, specializing in "
-    "spoken and conversational language.\n"
-    "Rules:\n"
-    "- Output ONLY the {tgt_name} translation. Nothing else.\n"
-    "- The input may be a sentence fragment — translate exactly what is given. "
-    "Do NOT complete or extend it.\n"
-    "- Preserve the register exactly as in the source.\n"
-    + _NORMS
-)
-
-SEG_CONTEXT_SYSTEM = (
-    "You are a precise translator from {src_name} into {tgt_name}, specializing in "
-    "spoken and conversational language.\n"
-    "You will receive already-confirmed preceding segment translations as context, "
-    "then a new segment to translate.\n"
-    "Rules:\n"
-    "- Output ONLY the {tgt_name} translation of the NEW segment. Nothing else.\n"
-    "- The preceding translations are FINAL. Do NOT reproduce, paraphrase, or continue them.\n"
-    "- The new segment may be a grammatical fragment — translate exactly what is given, "
-    "do NOT complete it.\n"
-    "- Match the register, terminology, and tone established in the preceding translations.\n"
-    + _NORMS
-)
-
-
-@dataclass
-class Translator:
-    """번역 툴 2종. 스트리밍 번역기는 세그먼트 i를 1..i-1 컨텍스트만으로 번역해
-    실시간 커밋 조건을 재현한다 — 미래 문맥을 절대 보지 않는다."""
-
-    gw: Gateway
-    src_name: str
-    tgt_name: str
-    model: str
-    cache: JsonCache | None = None
-    workers: int = 8
-    _fmt: dict = field(init=False, default_factory=dict)
-
-    def __post_init__(self):
-        self._fmt = {"src_name": self.src_name, "tgt_name": self.tgt_name}
-
-    def _call(self, system: str, user: str, source: str | None = None) -> str:
-        k = JsonCache.key("tr", self.model, system, user)
-        if self.cache is not None:
-            hit = self.cache.get(k)
-            if hit is not None:
-                return hit
-        out = self.gw.chat(system=system, user=user, model=self.model, max_tokens=2048,
-                           purpose="translate")
-        # 번역기가 원문을 그대로 되돌리는 실패가 실제로 관측된다. 그대로 두면
-        # 분절 탓이 아닌 손실이 Q에 섞여 루프가 엉뚱한 방향으로 간다.
-        if source and looks_untranslated(source, out):
-            out = self.gw.chat(
-                system=system + "\n- CRITICAL: never echo the source text. Output must be "
-                                f"written entirely in {self.tgt_name}.",
-                user=user, model=self.model, max_tokens=2048,
-                purpose="translate_retry",
-            )
-        if self.cache is not None:
-            self.cache.put(k, out)
-        return out
-
-    def full(self, texts: list[str]) -> list[str]:
-        sys_p = FULL_SYSTEM.format(**self._fmt)
-        with ThreadPoolExecutor(max_workers=self.workers) as ex:
-            out = list(ex.map(lambda t: self._call(sys_p, t, source=t), texts))
-        if self.cache is not None:
-            self.cache.flush()
-        return out
-
-    def full_uncached(self, texts: list[str]) -> list[str]:
-        """캐시를 우회한 독립 재번역.
-
-        Q 의 상한 앵커(지표 잡음 바닥)를 재려면 같은 입력에 대한 **두 번째 독립
-        표본**이 필요하다. 캐시를 타면 같은 문자열이 돌아와 잡음이 0으로 보인다."""
-        sys_p = FULL_SYSTEM.format(**self._fmt)
-        with ThreadPoolExecutor(max_workers=self.workers) as ex:
-            return list(ex.map(
-                lambda t: self.gw.chat(system=sys_p, user=t, model=self.model,
-                                       max_tokens=2048, purpose="translate_uncached"),
-                texts))
-
-    def streaming_segments(self, segments: list[str]) -> list[str]:
-        """한 문장의 세그먼트를 순서대로 번역. 앞선 번역은 확정되어 수정하지 않는다."""
-        first_p = SEG_FIRST_SYSTEM.format(**self._fmt)
-        ctx_p = SEG_CONTEXT_SYSTEM.format(**self._fmt)
-        done: list[str] = []
-        for i, seg in enumerate(segments):
-            if i == 0:
-                done.append(self._call(first_p, seg, source=seg))
-                continue
-            ctx = "\n".join(f"[{j+1}] SRC: {segments[j]} -> TGT: {done[j]}" for j in range(i))
-            user = (
-                "=== Preceding segments (FINAL — do NOT reproduce or modify) ===\n"
-                f"{ctx}\n\n"
-                "=== Translate ONLY this new segment ===\n"
-                f"{seg}"
-            )
-            done.append(self._call(ctx_p, user, source=seg))
-        return done
-
-    def seg_batch(self, seg_texts: list[str], full_fallback: list[str]) -> tuple[list[str], list[list[str]]]:
-        """분절이 없는 문장은 full 번역을 그대로 쓴다 (재호출 낭비 방지)."""
-        def one(pair):
-            seg_text, fb = pair
-            parts = split_segments(seg_text)
-            if len(parts) <= 1:
-                return fb, [fb]
-            pieces = self.streaming_segments(parts)
-            return " ".join(p for p in pieces if p), pieces
-
-        with ThreadPoolExecutor(max_workers=self.workers) as ex:
-            results = list(ex.map(one, zip(seg_texts, full_fallback)))
-        if self.cache is not None:
-            self.cache.flush()
-        joined = [r[0] for r in results]
-        pieces = [r[1] for r in results]
-        return joined, pieces
+# **번역기는 Google 하나다.** LLM 번역기(`--translator llm`) 분기를 들어냈다.
+#
+# 근거: v2 런 26개의 `config.json` 이 **전부 `translator: google`** 이다 — LLM 경로는
+# 한 번도 안 돌았다. 그런데 두 클래스가 `seg_batch` 를 글자까지 같은 코드로 들고 있어
+# (15줄 중 12줄 동일), 한쪽만 고치면 안 쓰이는 쪽이 조용히 갈라진다. 안 도는 코드라
+# 갈라져도 안 드러나는 것이 복제의 최악 조건이다.
+#
+# 함께 사라진 것: 번역 규범 3종(`_NORMS`/`FULL_SYSTEM`/`SEG_*_SYSTEM`),
+# 에코 검출(`looks_untranslated`), `max_tokens=2048` 3벌, `--translator*` 플래그 2개.
+# 되살릴 일이 생기면 이 커밋을 보면 된다.
+#
+# 판단 근거는 "안 쓰니까"만이 아니다 — 목적함수가 **운영에 옮겨 붙는지**를 재는 것이라
+# 운영이 쓰는 번역기로 재야 한다. 운영 서버는 Google 이다
+# (`Qwen3-ASR/examples/streaming_websocket_server.py`).
 
 
 # ── Google Translate 번역기 ─────────────────────────────────────────────────
@@ -993,6 +836,9 @@ class Translator:
 #      상한 앵커(무분절 재번역)가 정확히 1.0 이 되고, Q 에서 번역기 잡음이 사라진다.
 
 GOOGLE_URL = "https://translate.googleapis.com/translate_a/single"
+# 지수 백오프. 비공식 엔드포인트라 429 를 맞으면 IP 단위로 걸리므로 넉넉히 기다린다.
+BACKOFF_BASE = 2
+BACKOFF_MAX = 30
 GOOGLE_HEADERS = {"User-Agent": "Mozilla/5.0"}
 
 # tgt_name 은 사람이 읽는 언어명("English")이라 gtx 의 tl 코드로 바꿔야 한다.
@@ -1059,31 +905,44 @@ class GoogleTranslator:
             try:
                 r = self._client.get(GOOGLE_URL, params=params, headers=GOOGLE_HEADERS)
                 if r.status_code in (429, 500, 502, 503, 504):
-                    time.sleep(min(2 ** attempt, 30))
                     last = RuntimeError(f"HTTP {r.status_code}")
-                    continue
-                r.raise_for_status()
-                data = r.json()
-                with self._lock:
-                    self.calls += 1
-                return "".join(item[0] for item in data[0] if item and item[0])
+                else:
+                    r.raise_for_status()
+                    data = r.json()
+                    with self._lock:
+                        self.calls += 1
+                    return "".join(item[0] for item in data[0] if item and item[0])
             except (httpx.HTTPError, ValueError, IndexError, TypeError) as e:
                 last = e
-                time.sleep(min(2 ** attempt, 30))
+            # 대기는 **한 곳에서만** 계산한다. 예전에는 HTTP 실패 경로와 예외 경로가
+            # 같은 식을 각자 갖고 있어, 한쪽만 고치면 상황에 따라 대기가 달라졌다.
+            time.sleep(min(BACKOFF_BASE ** attempt, BACKOFF_MAX))
         raise RuntimeError(f"Google 번역 실패({self.max_retries}회 재시도): {last}")
 
     def _call(self, text: str) -> str:
+        """캐시를 거친 번역 1회.
+
+        **빈 값은 결과가 아니라 실패다 — 읽지도 쓰지도 않는다.** `segment_batch` 에서
+        이미 한 번 크게 터진 유형이다: 빈 출력이 캐시에 박히면 다음 런이 호출조차
+        안 하고(calls=0) 그 문장을 영영 빈 번역으로 돌려주는데, 원인이 캐시라는 사실이
+        로그 어디에도 안 남는다 (run04 에서 score 가 0 이 되고 판정자가 빈 리스트를
+        인덱싱해 루프 전체가 중단됐다).
+
+        입력 자체가 공백이면 빈 출력이 정상이므로 그때만 통과시킨다.
+        """
+        if not text.strip():
+            return ""
         k = JsonCache.key("gtx", self.tgt_code, text)
         if self.cache is not None:
             hit = self.cache.get(k)
-            if hit is not None:
+            if hit is not None and hit.strip():
                 return hit
         out = self._raw(text)
-        if self.cache is not None:
+        if self.cache is not None and (out or "").strip():
             self.cache.put(k, out)
         return out
 
-    # ── Translator 와 동일한 인터페이스 ──────────────────────────────────
+    # ── 공개 인터페이스 ──────────────────────────────────────────────────
     def full(self, texts: list[str]) -> list[str]:
         with ThreadPoolExecutor(max_workers=self.workers) as ex:
             out = list(ex.map(self._call, texts))

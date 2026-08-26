@@ -23,7 +23,7 @@ from pathlib import Path
 from . import data, metrics
 from .gateway import Gateway
 from .loop import _cell, evaluate, target_is_spaced
-from .pipeline import GoogleTranslator, JsonCache, Translator, to_lang_code
+from .pipeline import GoogleTranslator, JsonCache, to_lang_code
 
 _HERE = Path(__file__).resolve().parent
 
@@ -107,25 +107,21 @@ def main() -> int:
     seg_cache = JsonCache(run_dir / "cache" / "segment.json")
 
     # **번역기와 백엔드는 기준 런에서 상속한다.** 다른 조합으로 재면 같은 축이 아니다.
-    tr_id = cfg.get("translator_id") or f"llm:{cfg.get('translator_model')}"
-    if tr_id.startswith("google:"):
-        _, code, ctx = tr_id.split(":", 2)
-        if args.tgt_lang:
-            code = to_lang_code(tgt_name)
-            tr_id = f"google:{code}:{ctx}"
-        # 다언어 런은 타깃별 캐시 파일을 쓴다. 옛 런의 단일 translate.json 도 계속 읽는다.
-        cf = run_dir / "cache" / f"translate_{code}.json"
-        if not cf.exists() and (run_dir / "cache" / "translate.json").exists():
-            cf = run_dir / "cache" / "translate.json"
-        tr_cache = JsonCache(cf)
-        translator = GoogleTranslator(tgt_code=code, cache=tr_cache,
-                                      workers=min(args.workers, 4),
-                                      use_context=ctx.endswith("True"))
-    else:
-        tr_cache = JsonCache(run_dir / "cache" / "translate.json")
-        translator = Translator(gw=gw, src_name=cfg["src_lang"], tgt_name=tgt_name,
-                                model=tr_id.split(":", 1)[-1], cache=tr_cache,
-                                workers=args.workers)
+    # 옛 런은 `translator_id` 가 없거나 `llm:...` 일 수 있다. 번역기가 Google 하나뿐이라
+    # 어느 쪽이든 Google 로 읽는다 — 다만 그 런의 캐시는 LLM 번역이라 재사용되지 않는다.
+    tr_id = cfg.get("translator_id") or ""
+    ctx = tr_id.split(":", 2)[2] if tr_id.startswith("google:") else "ctx=True"
+    code = (to_lang_code(tgt_name) if args.tgt_lang or not tr_id.startswith("google:")
+            else tr_id.split(":", 2)[1])
+    tr_id = f"google:{code}:{ctx}"
+    # 다언어 런은 타깃별 캐시 파일을 쓴다. 옛 런의 단일 translate.json 도 계속 읽는다.
+    cf = run_dir / "cache" / f"translate_{code}.json"
+    if not cf.exists() and (run_dir / "cache" / "translate.json").exists():
+        cf = run_dir / "cache" / "translate.json"
+    tr_cache = JsonCache(cf)
+    translator = GoogleTranslator(tgt_code=code, cache=tr_cache,
+                                  workers=min(args.workers, 4),
+                                  use_context=ctx.endswith("True"))
 
     adequacy = metrics.make_adequacy_backend(
         args.adequacy_backend or cfg.get("adequacy_backend", "cometkiwi"),

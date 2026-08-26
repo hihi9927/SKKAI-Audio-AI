@@ -55,8 +55,7 @@ from pathlib import Path
 from ..autoseg import metrics, noise_floor
 from ..autoseg.gateway import Gateway
 from ..autoseg.loop import score_split, target_is_spaced
-from ..autoseg.pipeline import (TAG_RE, GoogleTranslator, JsonCache, Translator,
-                                chunk_budget, strip_tags, tag, truncate, unit_count)
+from ..autoseg.pipeline import (TAG_RE, GoogleTranslator, JsonCache, chunk_budget, strip_tags, tag, truncate, unit_count)
 from .paths import OUT_RUNS, SEG_RUNS
 
 
@@ -329,16 +328,16 @@ def main() -> int:
     # 번역기·백엔드는 기준 런에서 그대로 상속한다. 다른 자로 재면 같은 축이 아니다.
     gw = Gateway(model=cfg.get("model", "gpt-5-mini"), budget=0.5)
     tr_cache = JsonCache(run_dir / "cache" / "translate.json")
-    tr_id = cfg.get("translator_id") or f"llm:{cfg.get('translator_model')}"
+    # 번역기는 Google 하나다 (LLM 분기 제거). `translator_id` 가 없는 옛 런은 타깃
+    # 언어명에서 코드를 유도한다.
+    tr_id = cfg.get("translator_id") or ""
     if tr_id.startswith("google:"):
         _, code, ctx = tr_id.split(":", 2)
-        translator = GoogleTranslator(tgt_code=code, cache=tr_cache,
-                                      workers=min(args.workers, 4),
-                                      use_context=ctx.endswith("True"))
     else:
-        translator = Translator(gw=gw, src_name=cfg["src_lang"], tgt_name=cfg["tgt_lang"],
-                                model=tr_id.split(":", 1)[-1], cache=tr_cache,
-                                workers=args.workers)
+        code, ctx = to_lang_code(cfg["tgt_lang"]), "ctx=True"
+    translator = GoogleTranslator(tgt_code=code, cache=tr_cache,
+                                  workers=min(args.workers, 4),
+                                  use_context=ctx.endswith("True"))
 
     adequacy = metrics.make_adequacy_backend(cfg.get("adequacy_backend", "cometkiwi"),
                                              batch_size=args.comet_batch_size)

@@ -5,7 +5,7 @@ LLM 판단은 없다. 실행 순서, 채택/롤백, 예산, 중단 조건만 관
 
   python -m core.meaning_segmentator.autoseg.loop \
       --dataset kspon --src-lang Korean --tgt-lang English \
-      --translator google --iterations 6 --train 30 --dev 60 --test 100
+      --iterations 6 --train 30 --dev 60 --test 100
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ from pathlib import Path
 
 from . import agents, data, metrics, noise_floor
 from .gateway import BudgetExceeded, Gateway
-from .pipeline import (GoogleTranslator, JsonCache, Translator, blocks_scoring,
+from .pipeline import (GoogleTranslator, JsonCache, blocks_scoring,
                        coverage_need, normalize_tags, segment_batch, shuffle_priorities,
                        split_segments, to_lang_code, truncate, unit_count, validate)
 
@@ -702,7 +702,6 @@ def main() -> int:
     p.add_argument("--model", default="gpt-5-mini")
     p.add_argument("--judge-model", default=None,
                    help="판정자 모델. 미지정 시 --model. 분절기와 다른 모델을 쓰면 순환이 준다")
-    p.add_argument("--translator-model", default="gpt-5-mini")
     # 비용의 98% 가 분절 호출의 사고 토큰이다 (run05 실측). low 는 medium 대비 2.7배
     # 싸면서 태그 수·원문 보존이 같거나 낫고, gpt-5.4-mini 는 명시하지 않으면 사고를
     # 아예 안 해 태그가 필요량의 1/3 로 떨어진다. 자세한 실측은 gateway.Gateway.chat.
@@ -772,7 +771,6 @@ def main() -> int:
     p.add_argument("--seg-reasoning-effort", default="medium",
                    choices=["minimal", "low", "medium", "high", "none"],
                    help="분절 호출 사고량. none = 모델 기본값. 에이전트 호출에는 영향 없음")
-    p.add_argument("--translator", default="google", choices=["llm", "google"])
     p.add_argument("--tgt-code", default=None)
     # **목적함수를 다언어로.** 분절은 타깃 무관이라 비용의 90% 가 그대로다 (loop 상단 주석).
     # 소스 언어는 자동 제외한다.
@@ -1010,16 +1008,10 @@ def main() -> int:
         rep_tgt = targets[0]
         rep_code = args.tgt_code or to_lang_code(rep_tgt)
         tr_cache = JsonCache(run_dir / "cache" / f"translate_{rep_code}.json")
-        if args.translator == "google":
-            translator = GoogleTranslator(
-                tgt_code=rep_code, cache=tr_cache, workers=min(args.workers, 4),
-                use_context=not args.no_google_context)
-            translator_id = f"google:{translator.tgt_code}:ctx={translator.use_context}"
-        else:
-            translator = Translator(gw=gw, src_name=args.src_lang, tgt_name=rep_tgt,
-                                    model=args.translator_model, cache=tr_cache,
-                                    workers=args.workers)
-            translator_id = f"llm:{args.translator_model}"
+        translator = GoogleTranslator(
+            tgt_code=rep_code, cache=tr_cache, workers=min(args.workers, 4),
+            use_context=not args.no_google_context)
+        translator_id = f"google:{translator.tgt_code}:ctx={translator.use_context}"
         log(f"[translator] {translator_id} (대표 타깃 {rep_tgt})")
         log(f"[targets] {len(targets)}개: {', '.join(targets)}  "
             f"(목적함수 = 타깃별 z-정규화 effective 의 평균)")
