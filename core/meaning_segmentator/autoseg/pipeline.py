@@ -48,6 +48,18 @@ def strip_tags(seg_text: str, spaced: bool = True) -> str:
     return re.sub(r"\s+", " ", s).strip() if spaced else re.sub(r"\s+", "", s)
 
 
+def round_half_up(x: float) -> int:
+    """0.5 는 **항상 위로**. 파이썬 `round()` 는 짝수 반올림이라 `round(2.5)==2` 다.
+
+    조각 수와 T 격자가 같은 파라미터 사슬에 있는데 예전에는 반올림이 서로 달랐다
+    (`chunk_budget` 은 `round()`, 격자 유도는 `int(x+0.5)`). 정확히 .5 가 되는 길이에서
+    조각 수가 갈렸다 — min_gap=3 격자에서 (길이, T) 조합의 7.1%, 예를 들어 T=4·10어절이
+    2조각과 3조각으로 나뉘었다. 격자 쪽도 `t_floor=7` 이면 `7×1.5=10.5` 가 10 과 11 로
+    갈렸다. 규칙 하나로 통일한다.
+    """
+    return int(x + 0.5)
+
+
 def unit_count(text: str, spaced: bool) -> int:
     """T(목표 조각 크기)의 단위. 띄어쓰기 언어는 어절, 아니면 문자."""
     return len(text.split()) if spaced else len(re.sub(r"\s+", "", text))
@@ -599,19 +611,29 @@ def validate(sent_id: str, original: str, seg_text: str, spaced: bool,
     # 문면만으로는 안 움직인다 — 개수 요건과 같은 이유로 검증기가 강제해야 한다
     # (docs/RANK_METRIC_DIAGNOSIS.md §8.1: 문면으로만 시킨 dense 는 밀도 불변).
     if min_gap > 0 and tags:
-        pieces = [q.strip() for q in TAG_RE.split(s)[::2]]
-        wc = [unit_count(q, spaced) for q in pieces]
-        edges, acc = [], 0
-        for w in wc[:-1]:
-            acc += w
-            edges.append(acc)
-        total = acc + wc[-1]
+        edges, total = tag_positions(s, spaced)
         for a, b in zip([0] + edges, edges + [total]):
             if b - a < min_gap:
                 v.append(Violation(sent_id, "gap_too_small",
                                    f"조각 {b - a}단위 — 최소 간격 {min_gap} 미만"))
                 break
     return v
+
+
+def tag_positions(seg_text: str, spaced: bool) -> tuple[list[int], int]:
+    """태그마다 "그 앞까지의 단위 수", 그리고 문장 전체 단위 수.
+
+    **마킹 시점(`validate` 의 간격 검사)과 절단 시점(`truncate`)이 같은 규칙을 써야**
+    절단기 필터가 항등이 된다. 예전에는 같은 6줄이 두 군데 복붙돼 있어서 한쪽만 고치면
+    조용히 어긋났다 — 설계의 요점이 바로 그 둘을 일치시키는 것이라 특히 나쁜 중복이었다.
+    """
+    pieces = [q.strip() for q in TAG_RE.split(seg_text.strip())[::2]]
+    wc = [unit_count(q, spaced) for q in pieces]
+    pos, acc = [], 0
+    for w in wc[:-1]:
+        acc += w
+        pos.append(acc)
+    return pos, acc + wc[-1]
 
 
 def split_segments(seg_text: str) -> list[str]:
@@ -645,7 +667,7 @@ def chunk_budget(text: str, target_chunk_words: int, spaced: bool) -> int:
     커버리지 요건(`coverage_need`)에는 영향이 거의 없다. 하한이 걸릴 만큼 짧은 문장은
     `min_gap` 용량 상한(`units // min_gap - 1`)에서 이미 0 으로 깎이기 때문이다.
     """
-    return max(1, round(unit_count(text, spaced) / target_chunk_words))
+    return max(1, round_half_up(unit_count(text, spaced) / target_chunk_words))
 
 
 def boundaries(text: str, target_chunk_words: int, spaced: bool) -> int:
@@ -714,9 +736,9 @@ def truncate(seg_text: str, target_chunk_words: int,
       (2) **문장이 짧아 자리가 없음** — `units < 2*min_gap` 이면 양끝에서 각각
           min_gap 이상 떨어진 자리가 하나도 없다. T 와 무관한 **문장 고유 성질**이다
           (run05 실측 min_gap=3 에서 1/150, =4 에서 7/150).
-    둘 다 `want`(요청 경계 수)와 일치하므로 `missing_boundaries` 는 0 이다. 요청이
-    1 이상인데 놓인 것이 0 인 경우만 프롬프트 실패이고, 그건 아래 반환값이 아니라
-    호출자가 `want` 대비 실제 배치 수로 판정해야 한다.
+    둘 다 `want`(요청 경계 수)와 일치하므로 `missing_boundaries` 는 0 이다. "마킹은
+    했는데 min_gap 때문에 하나도 못 놓았다"는 경우는 여기서 안 센다 — 그건 마킹 시점에
+    `validate` 의 `gap_too_small` 이 이미 막으므로 절단기까지 오지 않는다.
 
     **T 는 min_gap 보다 커야 한다.** T 는 조각 크기의 평균이고 min_gap 은 최소라,
     둘이 같으면 모든 조각이 정확히 min_gap 이어야 해서 사실상 불가능하다. `T <= min_gap`
@@ -738,29 +760,20 @@ def truncate(seg_text: str, target_chunk_words: int,
     if any(p is None for p in prios):
         return seg_text, max(0, want - len(tags))      # 순위 없음 — 절단 불가
 
+    # `min_gap <= 0` 을 따로 분기하지 않는다 — 거리 조건이 절대 참이 안 되므로 아래
+    # 루프가 그대로 `order[:want]` 가 된다 (랜덤 20,000건 검증, 불일치 0).
     order = sorted(range(len(prios)), key=lambda i: prios[i])
-    if min_gap <= 0:
-        keep = set(order[:want])
-    else:
-        # 태그 i 의 어절 위치 = 그 앞까지의 누적 어절 수
-        parts = TAG_RE.split(seg_text.strip())
-        pieces = [q.strip() for q in parts[::2]]
-        wc = [unit_count(q, spaced) for q in pieces]
-        pos, acc = [], 0
-        for w in wc[:-1]:
-            acc += w
-            pos.append(acc)
-        total = acc + wc[-1]
-        chosen: list[int] = []
-        for i in order:
-            if len(chosen) >= want:
-                break
-            edges = [0, total] + [pos[j] for j in chosen]
-            if min(abs(pos[i] - e) for e in edges) < min_gap:
-                continue
-            chosen.append(i)
-        keep = set(chosen)                   # 못 채우면 덜 자른다 — 보충하지 않는다
-    return _rebuild(seg_text, keep, spaced), max(0, want - len(tags))
+    pos, total = tag_positions(seg_text, spaced)
+    chosen: list[int] = []
+    for i in order:
+        if len(chosen) >= want:
+            break
+        edges = [0, total] + [pos[j] for j in chosen]
+        if min(abs(pos[i] - e) for e in edges) < min_gap:
+            continue
+        chosen.append(i)
+    # 못 채우면 덜 자른다 — 순위 순 보충을 하지 않는다
+    return _rebuild(seg_text, set(chosen), spaced), max(0, want - len(tags))
 
 
 def shuffle_priorities(seg_text: str, rng: random.Random) -> str:

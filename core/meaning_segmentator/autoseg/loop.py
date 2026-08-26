@@ -25,8 +25,9 @@ from pathlib import Path
 from . import agents, data, metrics, noise_floor
 from .gateway import BudgetExceeded, Gateway
 from .pipeline import (GoogleTranslator, JsonCache, blocks_scoring,
-                       coverage_need, normalize_tags, segment_batch, shuffle_priorities,
-                       split_segments, to_lang_code, truncate, unit_count, validate)
+                       coverage_need, normalize_tags, round_half_up, segment_batch,
+                       shuffle_priorities, split_segments, to_lang_code, truncate,
+                       unit_count, validate)
 
 _HERE = Path(__file__).resolve().parent
 
@@ -682,11 +683,15 @@ def derive_t_floor(min_gap: int) -> int:
 
 
 def derive_t_grids(min_gap: int) -> tuple[list[int], list[int]]:
-    """(t_grid, final_t_grid). min_gap 아래로는 어차피 못 내려가므로 요청도 안 한다."""
+    """(t_grid, final_t_grid). min_gap 아래로는 어차피 못 내려가므로 요청도 안 한다.
+
+    반올림은 `chunk_budget` 과 **같은 규칙**(`round_half_up`)을 쓴다. 예전에는 여기만
+    `int(x+0.5)`, 조각 수는 파이썬 `round()`(짝수 반올림)라 같은 사슬 안에서 규칙이
+    둘이었다.
+    """
     b = derive_t_floor(min_gap)
-    r = lambda x: int(x + 0.5)
-    final = sorted({r(b * m) for m in (1, 1.5, 2, 3)})
-    loop = sorted({r(b * 1.5), r(b * 3)})
+    final = sorted({round_half_up(b * m) for m in (1, 1.5, 2, 3)})
+    loop = sorted({round_half_up(b * 1.5), round_half_up(b * 3)})
     return loop, final
 
 
@@ -903,7 +908,7 @@ def main() -> int:
     # 하한은 격자 유도와 **같은 식**을 쓴다 (derive_t_grids 의 b). 예전엔 1.5배를 썼는데
     # 그건 "보충 발동률이 낮아지는 지점"을 눈대중한 값이었고, 실측한 도달 가능 바닥은
     # min_gap 의 1.21~1.33배다. 상수가 둘이면 유도 격자가 자기 경고에 걸린다.
-    t_floor = derive_t_grids(args.min_gap)[1][0]  # 유도 격자의 최소 T = ceil(1.3·min_gap)
+    t_floor = derive_t_grids(args.min_gap)[1][0]  # = derive_t_floor(min_gap)
     if args.min_gap > 0:
         dup = [t for t in final_grid if t <= args.min_gap]
         tight = [t for t in final_grid if args.min_gap < t < t_floor]
@@ -1033,7 +1038,7 @@ def main() -> int:
             "coverage_required": not args.no_coverage_rule,
             "min_gap_ms": MIN_GAP_MS,
             "units_per_sec_source": rate_source,
-            "t_floor": t_floor,                  # ceil(1.5 * min_gap). 아래 T 는 포화한다
+            "t_floor": t_floor,     # max(2, min_gap+1, ceil(1.25*min_gap)). 아래 T 는 포화
             "t_grid_derived": derived,           # 격자를 min_gap 에서 유도했는가
         }, ensure_ascii=False, indent=2), encoding="utf-8")
 
