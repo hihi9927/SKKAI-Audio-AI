@@ -338,8 +338,7 @@ def main() -> int:
 
     adequacy = metrics.make_adequacy_backend(cfg.get("adequacy_backend", "cometkiwi"),
                                              batch_size=args.comet_batch_size)
-    nli_key = cfg.get("contradiction_backend", "deberta-mnli")
-    contradiction = metrics.make_contradiction_backend(nli_key)
+    contradiction = metrics.make_contradiction_backend()
 
     class _NoConsistency:
         """`effective = adequacy × (1 − contradiction)` 에 안 들어가는 보고 지표.
@@ -351,10 +350,10 @@ def main() -> int:
 
     if args.consistency:
         cons_name = cfg.get("consistency_backend", "nli")
-        consistency = (metrics.make_backend("nli", model_name=metrics.NLI_MODELS[nli_key],
+        consistency = (metrics.make_backend("nli", model_name=metrics.NLI_MODEL,
                                             batch_size=args.comet_batch_size)
                        if cons_name == "nli" else
-                       metrics.make_backend(cons_name, gw=gw,
+                       metrics.make_backend(cons_name,
                                             **({"batch_size": args.comet_batch_size}
                                                if cons_name in metrics.COMET_CHECKPOINTS else {})))
     else:

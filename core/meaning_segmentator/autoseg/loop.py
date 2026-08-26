@@ -251,14 +251,16 @@ def evaluate_multi(targets: list[str], make_ctx, prompt, sentences, t_grid,
         sm = copy.copy(rep)
         ok = [x for x in mixed_raw if x is not None]
         okz = [x for x in mixed_z if x is not None]
-        sm.effective = round(sum(ok) / len(ok), 4) if ok else 0.0
+        # **빈 경우는 None 이다 — 0.0 이 아니다.** 단일 타깃(`aggregate_split`)과 규약이
+        # 달랐다. `score()` 는 None 을 평균에서 빼지만 0.0 은 넣으므로, 전 문장 무분절인
+        # 비교군이 다언어 모드에서만 0 점으로 끌려 내려갔다.
+        sm.effective = round(sum(ok) / len(ok), 4) if ok else None
         sm.effective_z = round(sum(okz) / len(okz), 4) if okz else None
         sm.n_effective = len(ok)
         sm.n_targets = len(targets)
-        e_sorted = sorted(ok)
         sm.effective_min = round(min(ok), 4) if ok else None
-        sm.effective_p10 = (round(e_sorted[max(0, int(0.10 * (len(e_sorted) - 1)))], 4)
-                            if e_sorted else None)
+        p10 = metrics.percentile10(ok)
+        sm.effective_p10 = round(p10, 4) if p10 is not None else None
         split_m[T] = sm
     m0 = per_m[targets[0]]
     merged_m = metrics.Metrics(n=m0.n, format_pass_rate=m0.format_pass_rate,
@@ -494,7 +496,7 @@ def evaluate(
         pick = lambda xs: [xs[i] for i in keep]
         by_T[str(T)] = metrics.aggregate_split(
             T, pick(sp.effective), pick(sp.adequacy), pick(sp.contradiction),
-            pick(sp.consistency), pick(sp.chrf), pick(sp.laal_words), pick(sp.k),
+            pick(sp.consistency), pick(sp.laal_words), pick(sp.k),
             pick(missings), n_total=len(rows))
         if T == lift_T:
             real_eff_at_lift_T = list(sp.effective)
@@ -811,9 +813,9 @@ def main() -> int:
                    choices=sorted(metrics.QE_CHECKPOINTS),
                    help="참조 없는 QE. y축 주지표")
     p.add_argument("--consistency-backend", default="nli",
-                   choices=["nli", "comet", "xcomet", "embed", "chrf"],
+                   choices=["nli", "comet", "xcomet"],
                    help="가설 검증값(보고용). 기본 nli = 합본 vs full 의 양방향 entailment — "
-                        "어순 무관. 모델은 --contradiction-backend 를 따른다. "
+                        "어순 무관. 모델은 metrics.NLI_MODEL 고정. "
                         "comet 계열은 참조 기반이라 어순 편향이 있다")
     # `xlmr-anli` 로 바꾼 근거 (en-de test 100문장 + 관문 6케이스 실측, 2026-08-19):
     #   관문 최소 여유   mdeberta-xnli 0.0027 (통과선상) / deberta-mnli 미측정 / xlmr-anli 0.0994
@@ -821,10 +823,6 @@ def main() -> int:
     #   잡음 바닥       mdeberta 0.102 — 실측 신호 0.075 보다 커서 사실상 무정보
     # 대가가 있다: 문장별 분산이 커져 dev 쌍체 se 가 0.0065 -> 0.0144 로 배증한다.
     # 채택 문턱이 `Δ > adopt_se_mult·se` 라 그만큼 보수화되므로 기본 배수를 함께 낮춘다.
-    p.add_argument("--contradiction-backend", default="xlmr-anli",
-                   choices=sorted(metrics.NLI_MODELS),
-                   help="조기 방출 검출 NLI. 기본값이 다국어라 타깃별 지정 불필요. "
-                        "영어 전용 데이터면 deberta-mnli 가 분리는 더 깨끗하다")
     p.add_argument("--no-coverage-rule", action="store_true",
                    help="최소 경계 수 요건을 끈다. 노브가 k 를 통제하지 못하게 된다")
     p.add_argument("--no-contradiction", action="store_true",
@@ -967,15 +965,15 @@ def main() -> int:
     # 타깃 언어 쌍을 재므로 언어 선택 기준이 같다 — 기본 xlmr-anli 는 다국어라 공통이다.
     if args.consistency_backend == "nli":
         consistency = metrics.make_backend(
-            "nli", model_name=metrics.NLI_MODELS[args.contradiction_backend],
+            "nli", model_name=metrics.NLI_MODEL,
             batch_size=args.comet_batch_size)
     else:
         consistency = metrics.make_backend(
-            args.consistency_backend, gw=gw,
+            args.consistency_backend,
             **({"batch_size": args.comet_batch_size}
                if args.consistency_backend in metrics.COMET_CHECKPOINTS else {}))
     contradiction = (None if args.no_contradiction else
-                     metrics.make_contradiction_backend(args.contradiction_backend))
+                     metrics.make_contradiction_backend())
 
     def log(msg: str) -> None:
         print(msg, flush=True)
@@ -1809,7 +1807,7 @@ def compare_baselines(translator, adequacy, consistency, sentences, spaced,
                          spaced, tgt_spaced, contradiction)
         out[name] = metrics.aggregate_split(
             0, sp.effective, sp.adequacy, sp.contradiction, sp.consistency,
-            sp.chrf, sp.laal_words, sp.k, [0] * len(texts)).to_dict()
+            sp.laal_words, sp.k, [0] * len(texts)).to_dict()
     return out
 
 
@@ -1842,7 +1840,7 @@ def build_report(args, run_dir, profile, measured, history, best, test_m, test_v
         f"(가중치·임계값 없음). 채택 판정은 **쌍체 비교**",
         f"- contradiction 백엔드: "
         + ("없음 (조기 방출이 벌받지 않음)" if args.no_contradiction
-           else f"**{args.contradiction_backend}** (`{metrics.NLI_MODELS[args.contradiction_backend]}`)"),
+           else f"**xlmr-anli** (`{metrics.NLI_MODEL}`)"),
         f"- 채택된 프롬프트: iter_{best['version']:02d}",
         "",
         "## 이터레이션 이력",

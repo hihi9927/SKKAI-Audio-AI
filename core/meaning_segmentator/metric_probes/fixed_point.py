@@ -368,7 +368,6 @@ def main() -> int:
     p.add_argument("--max-words", type=int, default=24,
                    help="이보다 긴 문장은 제외 (prefix 수가 제곱으로 는다)")
     p.add_argument("--embed-model", default="e5-inst", choices=sorted(MODELS))
-    p.add_argument("--nli-model", default="deberta-mnli", choices=sorted(metrics.NLI_MODELS))
     p.add_argument("--workers", type=int, default=4)
     p.add_argument("--render-only", action="store_true")
     p.add_argument("--out", default=None)
@@ -420,7 +419,7 @@ def main() -> int:
                     "distribution": [], "at_cuts": [], "vs_contra": [],
                     "chance": chance_rate(sents, 0)}
 
-    entail = EntailBackend(model_name=metrics.NLI_MODELS[args.nli_model])
+    entail = EntailBackend(model_name=metrics.NLI_MODEL)
     embed = EmbedScorer(args.embed_model, MODELS[args.embed_model])
 
     class _CosPreserve:

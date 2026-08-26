@@ -259,7 +259,6 @@ def main() -> int:
     p = argparse.ArgumentParser(description="임베딩 기하·차원 읽기 실험")
     p.add_argument("--run-id", default="ko-en/run04")
     p.add_argument("--encoder", default="e5-inst", choices=sorted(MODELS))
-    p.add_argument("--nli-model", default="deberta-mnli", choices=sorted(metrics.NLI_MODELS))
     p.add_argument("--max-words", type=int, default=24)
     p.add_argument("--max-sentences", type=int, default=0)
     p.add_argument("--n-pcs", type=int, default=10)
@@ -305,7 +304,7 @@ def main() -> int:
     pairs = build_pairs(sents)
     print(f"[data] 쌍 {len(pairs)}개", flush=True)
 
-    entail = EntailBackend(model_name=metrics.NLI_MODELS[args.nli_model])
+    entail = EntailBackend(model_name=metrics.NLI_MODEL)
     print("[nli] 함의 계산...", flush=True)
     ent = entail.score([q["a"] for q in pairs], [q["b"] for q in pairs])
     for q, e in zip(pairs, ent):

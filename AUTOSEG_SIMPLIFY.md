@@ -217,6 +217,27 @@ v2 : It's February, but I heard the engineering department has an MT in March.
 그래서 캐시 키와 `translator_id` 에 백엔드가 들어간다. 섞이지는 않지만,
 **gtx 로 잰 기존 26개 런의 점수는 v2 런과 비교할 수 없다.**
 
+### 쓰는 모델
+
+고를 수 있게 열어 두면 런마다 다른 모델로 잰 값이 한 표에 섞인다. 실제로 섞여 있었다
+(NLI 저장분: xlmr-anli 19 / mdeberta-xnli 16 / deberta-mnli 7). 각 자리에 **하나씩만** 둔다.
+
+| 자리 | 모델 | 왜 이것 |
+|---|---|---|
+| 분절·에이전트 | `gpt-5-mini` | `gpt-5.4-mini` 대비 비용 1/3.9 에 품질 차 검출 안 됨 |
+| 번역 | Google Translate (gtx) | 운영 서버와 같은 경로. 결정론적이라 번역기 잡음 0 |
+| adequacy | CometKiwi (`wmt22-cometkiwi-da`) | 참조 없는 QE. **y축 주지표** |
+| contradiction | `xlm-roberta-large-xnli-anli` | 조기 방출 검출. 다국어 large 여야 함 |
+| consistency | 같은 NLI (양방향 함의) | 보고용. 모델을 contradiction 과 공유해 GPU 1벌 |
+
+**NLI 는 다국어 large 가 아니면 안 된다.** base 급 `mDeBERTa-v3-base-xnli` 는 ko/zh/ja
+타깃에서 consistency 곡선이 뒤집혔다 — T 를 키울수록 통째 번역에서 멀어진다고 나오는데,
+경계를 빼기만 하므로 물리적으로 불가능한 방향이다. 같은 데이터에서 comet·chrf 는 5/5 정상.
+영어 전용 `deberta-large-mnli` 는 분리가 가장 깨끗하지만 비영어 타깃에서 무음으로 틀린다.
+
+**embed·chrf consistency 백엔드는 삭제했다** — 45개 런에서 사용 0회(nli 39 / comet 4).
+embed 하나 때문에 채점 모듈이 임베딩 API(`Gateway`)를 물고 있었다.
+
 ### A6 — 채점 `metrics.py` · **결정론**
 ```
 adequacy       조각별 번역 품질(참조 없음). 조각 길이로 가중 평균
@@ -226,6 +247,11 @@ effective      adequacy × (1 - contradiction)      ← 목적함수
 laal_words     지연. 조각 크기로 가중
 consistency    합본 vs 전체번역 양방향 함의의 min   ← 보고용
 ```
+
+**빈 값은 `None` 이지 0 이 아니다.** 무분절 문장은 모순을 낼 경계가 없어 *미정의*다 —
+0(무죄)으로 넣으면 무분절이 자동 만점을 받는다. 목적함수는 None 을 평균에서 뺀다.
+다언어 병합 경로만 `0.0` 을 쓰고 있었고(비교군이 그 모드에서만 0점으로 끌려 내려갔다),
+이번에 통일했다.
 
 ### A7 — 판정자 `agents.py` · **LLM**
 경계마다 "여기서 낸 게 너무 일렀나"를 판정한다. 대표 T에서 8문장만.

@@ -145,9 +145,7 @@ def main() -> int:
         batch_size=cfg.get("comet_batch_size", 16),
         gpus=1 if use_cuda else 0)
     contradiction = (None if cfg.get("no_contradiction") else
-                     metrics.make_contradiction_backend(
-                         cfg.get("contradiction_backend", "xlmr-anli"),
-                         device=0 if use_cuda else -1))
+                     metrics.make_contradiction_backend(device=0 if use_cuda else -1))
 
     it_dirs = ([run / x for x in a.iters] if a.iters else
                sorted(d for d in run.glob("iter_*") if (d / "train_rows.json").exists()))

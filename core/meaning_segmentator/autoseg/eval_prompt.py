@@ -127,21 +127,20 @@ def main() -> int:
         args.adequacy_backend or cfg.get("adequacy_backend", "cometkiwi"),
         batch_size=args.comet_batch_size)
     cons_name = args.consistency_backend or cfg.get("consistency_backend", "comet")
-    nli_key = cfg.get("contradiction_backend", "xlmr-anli")
     if cons_name == "nli":
         consistency = metrics.make_backend(
-            "nli", model_name=metrics.NLI_MODELS[nli_key],
+            "nli", model_name=metrics.NLI_MODEL,
             batch_size=args.comet_batch_size)
     else:
         consistency = metrics.make_backend(
-            cons_name, gw=gw,
+            cons_name,
             **({"batch_size": args.comet_batch_size}
                if cons_name in metrics.COMET_CHECKPOINTS else {}))
 
     # 조기 방출 NLI 도 기준 런에서 상속한다 — 루프의 effective 와 같은 자로 재야
     # 비교군 표에 나란히 놓을 수 있다.
     contradiction = (None if (args.no_contradiction or cfg.get("no_contradiction"))
-                     else metrics.make_contradiction_backend(nli_key))
+                     else metrics.make_contradiction_backend())
 
     seg_effort = args.seg_reasoning_effort or cfg.get("seg_reasoning_effort", "low")
     if seg_effort == "none":

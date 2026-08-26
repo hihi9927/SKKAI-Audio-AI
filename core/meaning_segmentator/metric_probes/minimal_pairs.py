@@ -124,7 +124,7 @@ FRAGMENT_TRIPLES = [
 ]
 
 
-def fragment_check(encoders: list[str], nli_model: str) -> dict:
+def fragment_check(encoders: list[str]) -> dict:
     """길이를 맞춘 조각 대조. **aligned 가 flipped 보다 가까워야 정답.**"""
     import numpy as np
     out: dict = {"n": len(FRAGMENT_TRIPLES), "rows": [], "backends": {}}
@@ -146,11 +146,11 @@ def fragment_check(encoders: list[str], nli_model: str) -> dict:
         gc.collect()
         torch.cuda.empty_cache()
 
-    b = metrics.make_contradiction_backend(nli_model)
+    b = metrics.make_contradiction_backend()
     F = [t[0] for t in FRAGMENT_TRIPLES]
     ca = b.score(F, [t[1] for t in FRAGMENT_TRIPLES])
     cb = b.score(F, [t[2] for t in FRAGMENT_TRIPLES])
-    out["backends"][f"contra:{nli_model}"] = {
+    out["backends"]["contra:xlmr-anli"] = {
         "correct": sum(1 for a, c in zip(ca, cb) if a < c),
         "mean_gap": round(float(sum(c - a for a, c in zip(ca, cb)) / len(ca)), 4),
         "pairs": [[round(a, 4), round(c, 4)] for a, c in zip(ca, cb)]}
@@ -178,12 +178,12 @@ def embed_scores(key: str, batch_size: int = 32) -> dict:
     return out
 
 
-def nli_scores(model_key: str) -> dict:
+def nli_scores() -> dict:
     """세트별 `1 − P(기준 ⊨ 변이)`. 임베딩 거리와 **방향을 맞춘다** (낮을수록 가깝다).
 
     `1 − contradiction` 이 아니라 함의를 쓰는 이유는, 여기서 재는 것이 '모순인가' 가
     아니라 '의미가 보존됐는가' 라서다 — 표의 다른 열과 같은 질문이어야 비교가 된다."""
-    b = metrics.ContradictionBackend(model_name=metrics.NLI_MODELS[model_key])
+    b = metrics.ContradictionBackend(model_name=metrics.NLI_MODEL)
     pipe = b.load()
     out = {}
     for s in SETS:
@@ -276,8 +276,6 @@ def main() -> int:
     p = argparse.ArgumentParser(description="통제된 최소쌍 진단")
     p.add_argument("--encoders", nargs="+", default=["e5-inst", "gte-base"],
                    choices=sorted(MODELS))
-    p.add_argument("--nli-model", default="deberta-mnli",
-                   choices=sorted(metrics.NLI_MODELS))
     p.add_argument("--skip-nli", action="store_true")
     p.add_argument("--out", default=None)
     args = p.parse_args()
@@ -290,12 +288,12 @@ def main() -> int:
         print(f"[{key}] 인코딩...", flush=True)
         scores[f"cos:{key}"] = embed_scores(key)
     if not args.skip_nli:
-        print(f"[{args.nli_model}] 함의...", flush=True)
-        scores[f"entail:{args.nli_model}"] = nli_scores(args.nli_model)
+        print("[xlmr-anli] 함의...", flush=True)
+        scores["entail:xlmr-anli"] = nli_scores()
 
     result = {"backends": list(scores), "scores": scores, "verdict": []}
     print("[fragment] 길이 맞춘 조각 대조...", flush=True)
-    result["fragment_check"] = fragment_check(args.encoders, args.nli_model)
+    result["fragment_check"] = fragment_check(args.encoders)
 
     # 판정 — 자동 집계
     def blind(col, variant):

@@ -93,7 +93,7 @@ def score_one_target(tgt_name: str, sentences, texts, seg_texts, spaced: bool,
                 }
             by_T[str(T)] = metrics.aggregate_split(
                 T, sp.effective, sp.adequacy, sp.contradiction, sp.consistency,
-                sp.chrf, sp.laal_words, sp.k, missings).to_dict()
+                sp.laal_words, sp.k, missings).to_dict()
             s = by_T[str(T)]
             log(f"[{tgt_name}] T={T}  eff={_cell(s['effective'], '.4f')} "
                 f"adq={s['adequacy']:.4f} contra={_cell(s['contradiction'], '.4f')} "
@@ -249,9 +249,6 @@ def main() -> int:
                    default=["English", "German", "Spanish", "Japanese", "Chinese"])
     p.add_argument("--t-grid", type=int, nargs="+", default=None,
                    help="미지정 시 기준 런의 final_t_grid")
-    p.add_argument("--nli", default="xlmr-anli", choices=sorted(metrics.NLI_MODELS),
-                   help="**전 타깃 통일.** 타깃마다 다른 모델을 쓰면 모델 차이가 "
-                        "언어 차이로 오독된다")
     p.add_argument("--adequacy-backend", default=None, help="미지정 시 기준 런에서 상속")
     p.add_argument("--no-google-context", action="store_true")
     p.add_argument("--comet-batch-size", type=int, default=16)
@@ -323,8 +320,8 @@ def main() -> int:
         adequacy = metrics.make_adequacy_backend(
             args.adequacy_backend or cfg.get("adequacy_backend", "cometkiwi"),
             batch_size=args.comet_batch_size)
-        contradiction = metrics.make_contradiction_backend(args.nli)
-        consistency = metrics.make_backend("nli", model_name=metrics.NLI_MODELS[args.nli],
+        contradiction = metrics.make_contradiction_backend()
+        consistency = metrics.make_backend("nli", model_name=metrics.NLI_MODEL,
                                            batch_size=args.comet_batch_size)
 
         res = {
@@ -335,7 +332,7 @@ def main() -> int:
             "format_pass_rate": round(fmt, 4),
             "format_pass_rate_no_retry": round(sum(first_pass) / len(first_pass), 4),
             "n_violations": len(violations),
-            "adequacy_backend": adequacy.name, "nli_backend": args.nli,
+            "adequacy_backend": adequacy.name, "nli_backend": contradiction.name,
             "use_context": not args.no_google_context,
             "gate_run": False,
             "targets": {},

@@ -432,8 +432,6 @@ def main() -> int:
                    choices=["oracle", "retrans"])
     p.add_argument("--scorers", nargs="+",
                    default=["nli", "summac", "minicheck", "erasure", "erasure_p"])
-    p.add_argument("--nli-backend", default="deberta-mnli",
-                   choices=sorted(metrics.NLI_MODELS))
     p.add_argument("--floor-sentences", type=int, default=150)
     p.add_argument("--max-boundaries", type=int, default=0)
     p.add_argument("--workers", type=int, default=4)
@@ -498,7 +496,7 @@ def main() -> int:
             return SurfaceErasure(strict=True)
         raise ValueError(name)
 
-    base_nli = metrics.make_contradiction_backend(args.nli_backend)
+    base_nli = metrics.make_contradiction_backend()
 
     for mode in args.premise_modes:
         # premise 축 적용 — 레코드의 premise 를 갈아끼운다

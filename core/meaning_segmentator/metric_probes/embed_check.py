@@ -596,7 +596,7 @@ def render(result: dict) -> str:
             "1.0 쪽으로 보낸다.",
             "",
             "**대안이 필요하다면** 대칭 유사도가 아니라 방향성 있는 것을 찾아야 한다 — "
-            "다른 NLI 체크포인트(`metrics.NLI_MODELS`), cross-encoder 계열, 또는 "
+            "다른 NLI 체크포인트(`metrics.NLI_MODEL`), cross-encoder 계열, 또는 "
             "참조 기반 QE. 임베딩은 `consistency` 보조 지표로도 T2 를 통과하지 못했다.",
         ]
     return "\n".join(L)
@@ -607,8 +607,6 @@ def main() -> int:
     p.add_argument("--run-id", default="ko-en/run04", help="runs/ 이하 경로")
     p.add_argument("--models", nargs="+", default=["e5-inst", "qwen3-06b"],
                    choices=sorted(MODELS), help="비교할 임베딩 후보")
-    p.add_argument("--nli-backend", default="deberta-mnli",
-                   choices=sorted(metrics.NLI_MODELS), help="기준선 NLI")
     p.add_argument("--floor-sentences", type=int, default=150,
                    help="잡음 바닥 측정에 쓸 full 번역 문장 수")
     p.add_argument("--max-boundaries", type=int, default=0,
@@ -657,7 +655,7 @@ def main() -> int:
 
     backends: list = []
     # 기준선 NLI 를 먼저 — 같은 자로 재야 비교가 성립한다.
-    backends.append(("nli", metrics.make_contradiction_backend(args.nli_backend), None))
+    backends.append(("nli", metrics.make_contradiction_backend(), None))
     for key in args.models:
         sc = EmbedScorer(key, MODELS[key], batch_size=args.batch_size)
         backends.append((key, sc, sc))

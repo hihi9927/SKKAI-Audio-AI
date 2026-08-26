@@ -192,8 +192,6 @@ def main() -> int:
     p = argparse.ArgumentParser(description="contradiction 잡음 바닥 측정")
     p.add_argument("--run-id", required=True, help="runs/ 이하 경로 (예: ko-en/run03)")
     p.add_argument("--split", default="test", choices=["train", "dev", "test"])
-    p.add_argument("--contradiction-backend", default=None,
-                   help="미지정 시 기준 런 config 상속")
     p.add_argument("--recheck-t", type=int, default=None,
                    help="이 T 의 경계 contradiction 을 바닥 보정해 순위 정렬도 재계산")
     p.add_argument("--max-prefixes", type=int, default=20)
@@ -214,13 +212,11 @@ def main() -> int:
         return 1
 
     cfg = json.loads((run_dir / "config.json").read_text(encoding="utf-8"))
-    backend_name = (args.contradiction_backend
-                    or cfg.get("contradiction_backend", "xlmr-anli"))
-    backend = metrics.make_contradiction_backend(backend_name)
+    backend = metrics.make_contradiction_backend()
 
     rows = json.loads(rows_path.read_text(encoding="utf-8"))
     fulls = [r.get("full_trans") or "" for r in rows if r.get("full_trans")]
-    print(f"[floor] {len(fulls)}문장, 백엔드 {backend_name}", flush=True)
+    print(f"[floor] {len(fulls)}문장, 백엔드 {backend.name}", flush=True)
 
     floor = measure_floor(fulls, backend, args.max_prefixes,
                           tgt_spaced=bool(cfg.get("tgt_spaced", True)))

@@ -342,7 +342,7 @@ def main() -> int:
     p.add_argument("--batch-size", type=int, default=128)
     p.add_argument("--floor-sentences", type=int, default=150)
     p.add_argument("--max-boundaries", type=int, default=0)
-    p.add_argument("--nli-model", default="microsoft/deberta-large-mnli")
+    p.add_argument("--nli-model", default=metrics.NLI_MODEL)
     p.add_argument("--skip-ceiling", action="store_true")
     p.add_argument("--render-only", action="store_true")
     p.add_argument("--out", default=None)

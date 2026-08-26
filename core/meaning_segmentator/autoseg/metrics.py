@@ -38,7 +38,6 @@ import re
 from collections import Counter
 from dataclasses import dataclass, asdict, field
 
-from .gateway import Gateway
 from .pipeline import TAG_RE, split_segments, unit_count
 
 _WS = re.compile(r"\s+")
@@ -74,32 +73,6 @@ def chrf(hyp: str, ref: str, max_n: int = 6, beta: float = 2.0) -> float:
     return (1 + b2) * p * r / (b2 * p + r)
 
 
-# ── 임베딩 코사인 ────────────────────────────────────────────────────────
-
-def _cosine(a: list[float], b: list[float]) -> float:
-    dot = sum(x * y for x, y in zip(a, b))
-    na = math.sqrt(sum(x * x for x in a))
-    nb = math.sqrt(sum(y * y for y in b))
-    return dot / (na * nb) if na and nb else 0.0
-
-
-def embed_similarity(gw: Gateway, hyps: list[str], refs: list[str]) -> list[float]:
-    """두 문자열이 동일하면 호출 없이 1.0."""
-    pending = [i for i, (h, r) in enumerate(zip(hyps, refs)) if h != r and h and r]
-    scores = [1.0] * len(hyps)
-    for i, (h, r) in enumerate(zip(hyps, refs)):
-        if not h or not r:
-            scores[i] = 0.0
-    if not pending:
-        return scores
-    texts = [hyps[i] for i in pending] + [refs[i] for i in pending]
-    vecs = gw.embed(texts)
-    half = len(pending)
-    for j, i in enumerate(pending):
-        scores[i] = _cosine(vecs[j], vecs[half + j])
-    return scores
-
-
 # ── consistency 백엔드 (참조 기반) ───────────────────────────────────────
 
 def _identity_shortcut(hyps: list[str], refs: list[str]) -> tuple[list[float], list[int]]:
@@ -120,32 +93,15 @@ def _identity_shortcut(hyps: list[str], refs: list[str]) -> tuple[list[float], l
 class QualityBackend:
     """`consistency` 계산 백엔드 (참조 기반).
 
-    `src` 를 받는 이유는 COMET 이 원문을 입력으로 쓰기 때문이다. embed·chrF 는 무시한다."""
+    `src` 를 받는 이유는 COMET 이 원문을 입력으로 쓰기 때문이다. NLI 는 무시한다.
+
+    **embed·chrF 백엔드는 삭제했다.** 45개 런에서 한 번도 안 쓰였고(nli 39 / comet 4),
+    embed 는 그 하나 때문에 `Gateway`(임베딩 API 호출)를 이 모듈에 끌어들이고 있었다."""
 
     name = "base"
 
     def score(self, srcs: list[str], hyps: list[str], refs: list[str]) -> list[float]:
         raise NotImplementedError
-
-
-class EmbedBackend(QualityBackend):
-    name = "embed"
-
-    def __init__(self, gw: Gateway):
-        self.gw = gw
-
-    def score(self, srcs, hyps, refs):
-        return embed_similarity(self.gw, hyps, refs)
-
-
-class ChrfBackend(QualityBackend):
-    name = "chrf"
-
-    def score(self, srcs, hyps, refs):
-        scores, pending = _identity_shortcut(hyps, refs)
-        for i in pending:
-            scores[i] = chrf(hyps[i], refs[i])
-        return scores
 
 
 class _CometBase:
@@ -206,23 +162,16 @@ COMET_CHECKPOINTS = {
 }
 
 
-def make_backend(name: str, gw: Gateway | None = None, **kw) -> QualityBackend:
-    if name == "embed":
-        if gw is None:
-            raise ValueError("embed 백엔드에는 Gateway 가 필요합니다")
-        return EmbedBackend(gw)
-    if name == "chrf":
-        return ChrfBackend()
+def make_backend(name: str, **kw) -> QualityBackend:
     if name == "nli":
-        # **다국어 기본.** 예전엔 deberta-mnli(영어 전용)로 조용히 대체돼서,
-        # model_name 을 안 넘긴 호출자가 비영어 타깃에서 무음으로 틀린 값을 받았다.
-        kw.setdefault("model_name", NLI_MODELS["xlmr-anli"])
+        kw.setdefault("model_name", NLI_MODEL)
         kw.setdefault("name", name)
         return BidirectionalNliBackend(**kw)
     if name in COMET_CHECKPOINTS:
         kw.setdefault("model_name", COMET_CHECKPOINTS[name])
         return CometBackend(name=name, **kw)
-    raise ValueError(f"알 수 없는 consistency 백엔드: {name}")
+    raise ValueError(f"알 수 없는 consistency 백엔드: {name}. "
+                     f"쓸 수 있는 값: nli, {', '.join(sorted(COMET_CHECKPOINTS))}")
 
 
 # ── adequacy 백엔드 (참조 없음) ──────────────────────────────────────────
@@ -290,16 +239,17 @@ def make_adequacy_backend(name: str, **kw) -> AdequacyBackend:
 #     불완전함(neutral)과 모순(contradiction)을 구별한다
 #
 # 실측 (premature_cases.json, contradiction 확률 순위): 위반 0/5. QE 는 4/5 였다.
-NLI_MODELS = {
-    "deberta-mnli": "microsoft/deberta-large-mnli",              # en 타깃. 분리가 가장 깨끗
-    "deberta-anli": "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli",
-    "mdeberta-xnli": "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7",  # 다국어(base)
-    # **다국어 large.** base 급 `mdeberta-xnli` 는 ko/zh/ja 타깃에서 consistency 곡선이
-    # 뒤집힌다 (T 를 키울수록 offline 번역에서 멀어진다고 나온다 — 물리적으로 불가능).
-    # 같은 데이터에서 comet·chrf 는 5/5 정상 방향이라 NLI 쪽 결함이다.
-    "xlmr-xnli": "joeddav/xlm-roberta-large-xnli",
-    "xlmr-anli": "vicgalle/xlm-roberta-large-xnli-anli",
-}
+# **모델은 하나로 고정한다.** 후보 비교는 끝났고, 고를 수 있게 열어 두면 런마다 다른
+# 체크포인트로 잰 값이 한 표에 섞인다 (저장된 런에 실제로 셋이 섞여 있었다:
+# xlmr-anli 19 / mdeberta-xnli 16 / deberta-mnli 7).
+#
+# `xlm-roberta-large-xnli-anli` 인 이유 — **다국어 large 여야 한다.** base 급
+# `mDeBERTa-v3-base-xnli` 는 ko/zh/ja 타깃에서 consistency 곡선이 뒤집혔다 (T 를 키울수록
+# offline 번역에서 멀어진다고 나온다 — 물리적으로 불가능). 같은 데이터에서 comet·chrf 는
+# 5/5 정상 방향이라 NLI 쪽 결함이었다. 영어 전용 `deberta-large-mnli` 는 분리가 가장
+# 깨끗하지만 비영어 타깃에서 무음으로 틀린 값을 준다.
+# 후보 비교 기록: ../NLI_ALTERNATIVES.md, docs/RANK_METRIC_DIAGNOSIS.md
+NLI_MODEL = "vicgalle/xlm-roberta-large-xnli-anli"
 
 
 class _NliBase:
@@ -312,7 +262,7 @@ class _NliBase:
 
     _PIPES: dict = {}
 
-    def __init__(self, model_name: str = NLI_MODELS["xlmr-anli"],
+    def __init__(self, model_name: str = NLI_MODEL,
                  batch_size: int = 16, device: int = 0, name: str = ""):
         self.model_name = model_name
         self.batch_size = batch_size
@@ -351,7 +301,7 @@ class ContradictionBackend(_NliBase):
     argmax 라벨이 아니라 **contradiction 확률**을 쓴다. 라벨이 `neutral` 로 어긋나도
     확률 순위는 유지되므로(실측) 임계값 없이 연속 점수로 쓸 수 있다."""
 
-    def __init__(self, model_name: str = NLI_MODELS["xlmr-anli"],
+    def __init__(self, model_name: str = NLI_MODEL,
                  batch_size: int = 16, device: int = 0, name: str = "xlmr-anli"):
         super().__init__(model_name, batch_size, device, name)
 
@@ -384,9 +334,9 @@ class BidirectionalNliBackend(_NliBase, QualityBackend):
     명제만 보므로 표면 어순·문장 수가 달라도 감점이 없고, 부정 뒤집힘은 양방향
     모두에서 contradiction 으로 잡힌다. 두 입력이 모두 타깃 언어라 소스 언어별
     자원도 필요 없다. 기본 `xlmr-anli` 는 다국어라 **타깃에 따라 바꿀 필요가 없다** —
-    예전 처방이던 `mdeberta-xnli` 는 ko/zh/ja 에서 곡선이 뒤집힌다 (NLI_MODELS 주석)."""
+    예전 처방이던 base 급 다국어 모델은 ko/zh/ja 에서 곡선이 뒤집힌다 (`NLI_MODEL` 주석)."""
 
-    def __init__(self, model_name: str = NLI_MODELS["xlmr-anli"],
+    def __init__(self, model_name: str = NLI_MODEL,
                  batch_size: int = 16, device: int = 0, name: str = "nli"):
         super().__init__(model_name, batch_size, device, name)
 
@@ -405,11 +355,10 @@ class BidirectionalNliBackend(_NliBase, QualityBackend):
         return scores
 
 
-def make_contradiction_backend(name: str, **kw) -> ContradictionBackend:
-    if name not in NLI_MODELS:
-        raise ValueError(f"알 수 없는 NLI 백엔드: {name}. 쓸 수 있는 값: {sorted(NLI_MODELS)}")
-    kw.setdefault("model_name", NLI_MODELS[name])
-    return ContradictionBackend(name=name, **kw)
+def make_contradiction_backend(**kw) -> ContradictionBackend:
+    kw.setdefault("model_name", NLI_MODEL)
+    kw.setdefault("name", "xlmr-anli")
+    return ContradictionBackend(**kw)
 
 
 def effective_of(adequacy: float, contradiction: float) -> float:
@@ -488,7 +437,6 @@ class SplitMetrics:
 
     target_chunk_words: int
     n: int
-    n_scored: int              # 포맷 위반을 제외하고 실제로 채점된 문장 수
     n_effective: int           # 경계가 있어 effective 가 정의된 문장 수 (k≥2)
     effective: float | None
     adequacy: float
@@ -496,10 +444,8 @@ class SplitMetrics:
     effective_min: float | None
     effective_p10: float | None
     consistency: float
-    consistency_chrf: float
     laal_words: float
     chunks_per_sentence: float
-    split_ratio: float
     missing_boundaries: float
     premature_rate: float | None = None
     reference_suspect_rate: float | None = None    # 판정자가 오라클을 의심한 경계 비율
@@ -577,13 +523,23 @@ class Metrics:
         return self.by_T.get(str(T))
 
 
+def percentile10(xs: list[float]) -> float | None:
+    """하위 10% 지점 값. 평균이 못 보는 **꼬리**를 본다.
+
+    같은 식이 `loop` 의 다언어 병합 쪽에도 복붙돼 있었다 — 정의가 갈리면 단일 타깃과
+    다언어의 p10 을 나란히 놓을 수 없다."""
+    if not xs:
+        return None
+    e = sorted(xs)
+    return e[max(0, int(0.10 * (len(e) - 1)))]
+
+
 def aggregate_split(
     target_chunk_words: int,
     effective_scores: list[float | None],
     adequacy_scores: list[float],
     contradiction_scores: list[float | None],
     consistency_scores: list[float],
-    chrf_scores: list[float],
     laals: list[float],
     ks: list[int],
     missings: list[int],
@@ -602,8 +558,6 @@ def aggregate_split(
     n_scored = len(effective_scores)
     eff_vals = [e for e in effective_scores if e is not None]
     con_vals = [c for c in contradiction_scores if c is not None]
-    e_sorted = sorted(eff_vals)
-    p10 = (e_sorted[max(0, int(0.10 * (len(e_sorted) - 1)))] if e_sorted else None)
 
     def mean(xs, default=0.0):
         return sum(xs) / len(xs) if xs else default
@@ -611,18 +565,15 @@ def aggregate_split(
     return SplitMetrics(
         target_chunk_words=target_chunk_words,
         n=n_total if n_total is not None else n_scored,
-        n_scored=n_scored,
         n_effective=len(eff_vals),
         effective=(mean(eff_vals) if eff_vals else None),
         adequacy=mean(adequacy_scores),
         contradiction=(mean(con_vals) if con_vals else None),
-        effective_min=(e_sorted[0] if e_sorted else None),
-        effective_p10=p10,
+        effective_min=(min(eff_vals) if eff_vals else None),
+        effective_p10=percentile10(eff_vals),
         consistency=mean(consistency_scores, 1.0),
-        consistency_chrf=mean(chrf_scores),
         laal_words=mean(laals),
         chunks_per_sentence=mean([float(k) for k in ks], 1.0),
-        split_ratio=(sum(1 for k in ks if k > 1) / len(ks)) if ks else 0.0,
         missing_boundaries=mean([float(s) for s in missings]),
     )
 
@@ -650,7 +601,7 @@ def score(m: Metrics) -> float:
     프롬프트를 `-9.03` 으로 폐기시켰고, 그 크기가 실제 프롬프트 차이(0.003)를 3000배
     압도해 hill climbing 이 "이번에 위반이 났는가"로 결정됐다. 지금은 표기 오류를
     `pipeline.normalize_tags` 가 결정론적으로 고치고, 남은 위반 문장은 채점에서
-    제외되며(`n_scored`), `format_pass_rate` 는 별도로 보고된다. 번역 비용 방어는
+    제외되고, `format_pass_rate` 는 별도로 보고된다. 번역 비용 방어는
     `skip_translation_below` 가 계속 담당한다.
 
     `effective` 가 None 인 T(전 문장 무분절 — 비교군에서만 발생)는 평균에서 뺀다.

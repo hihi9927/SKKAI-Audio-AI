@@ -56,7 +56,7 @@ def is_safe(v: str) -> bool:
     return v == "safe"
 
 
-def check_nli(cases: list[dict], backend_name: str) -> tuple[list[dict], int, int]:
+def check_nli(cases: list[dict]) -> tuple[list[dict], int, int]:
     """같은 fixture 로 **NLI contradiction 백엔드**를 검사한다.
 
     NLI 는 판정자와 달리 목적함수에 직접 들어간다 (`effective = adequacy × (1 − contradiction)`).
@@ -66,7 +66,7 @@ def check_nli(cases: list[dict], backend_name: str) -> tuple[list[dict], int, in
     통과 조건: 모든 케이스에서 `min(premature 확률) > max(safe 확률)`.
     """
     from . import metrics
-    b = metrics.make_contradiction_backend(backend_name)
+    b = metrics.make_contradiction_backend()
     rows = []
     for c in cases:
         for name, v in c["variants"].items():
@@ -165,7 +165,7 @@ def build_report(results: list[dict], model: str, repeats: int,
         lines += ["", f"순위 위반 {viol}/{tot} → "
                   + ("**통과**" if viol == 0 else "**탈락**"), ""]
         if viol:
-            lines += ["탈락이면 다른 NLI 체크포인트를 시도한다 (`metrics.NLI_MODELS`). "
+            lines += ["탈락이면 NLI 체크포인트 교체를 검토한다 (`metrics.NLI_MODEL`). "
                       "전부 떨어지면 조기 방출을 목적함수에서 검출할 수단이 없으므로, "
                       "판정자 결과를 채택 게이트의 비악화 조건으로 쓰는 방어책으로 후퇴한다.", ""]
     return "\n".join(lines)
@@ -182,8 +182,6 @@ def main() -> int:
     p.add_argument("--budget", type=float, default=1.0)
     p.add_argument("--cases", default=str(CASES_PATH))
     p.add_argument("--out", default=None, help="리포트 경로 (기본 runs/judge_validity/report.md)")
-    p.add_argument("--nli-backend", default="xlmr-anli",
-                   help="함께 검사할 NLI 백엔드 (metrics.NLI_MODELS 의 키)")
     p.add_argument("--skip-judge", action="store_true",
                    help="LLM 판정자 검사를 건너뛰고 NLI 만 검사 (API 호출 0)")
     p.add_argument("--skip-nli", action="store_true", help="NLI 검사를 건너뛴다")
@@ -224,9 +222,9 @@ def main() -> int:
 
     nli = None
     if not args.skip_nli:
-        rows, viol, tot = check_nli(cases, args.nli_backend)
-        nli = (rows, viol, tot, args.nli_backend)
-        print(f"\n[NLI {args.nli_backend}] 순위 위반 {viol}/{tot}", flush=True)
+        rows, viol, tot = check_nli(cases)
+        nli = (rows, viol, tot, metrics.NLI_MODEL)
+        print(f"\n[NLI xlmr-anli] 순위 위반 {viol}/{tot}", flush=True)
 
     out_dir = Path(args.out).parent if args.out else (_HERE.parent / "runs" / "judge_validity")
     out_dir.mkdir(parents=True, exist_ok=True)
