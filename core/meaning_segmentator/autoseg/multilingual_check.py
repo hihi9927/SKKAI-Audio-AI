@@ -304,7 +304,7 @@ def main() -> int:
             gw, prompt, texts, cache=seg_cache, workers=args.workers,
             validate_fn=lambda t, out: validate("", t, out, spaced, trailing_punct,
                                                 True, need(t)),
-            normalize_fn=lambda out: normalize_tags(out, spaced, trailing_punct),
+            normalize_fn=lambda t, out: normalize_tags(out, spaced, trailing_punct),
         )
         seg_calls = gw.usage.snapshot()["calls"] - before
 

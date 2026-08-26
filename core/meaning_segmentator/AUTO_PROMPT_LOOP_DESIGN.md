@@ -141,8 +141,17 @@ t2:                "...probably won't be an issue"
 | `text_modified` | 태그를 제거한 결과가 원문과 다름 |
 | `leading_tag` / `trailing_tag` | 맨 앞/맨 뒤 태그 |
 | `consecutive_tags` | 연속 태그 |
-| `punct_after_tag` | 태그 직후 구두점 |
 | `missing_space` | 태그 좌우 공백 없음 |
+
+`punct_after_tag` 는 제거됐다 — `normalize_fn` 이 `validate_fn` 보다 먼저 돌아 태그 뒤
+구두점을 이미 옮겨 놓으므로 구조적으로 걸릴 수 없다 (v2 런 전체 0건). 같은 사건은
+`normalize_tags(sink=)` 가 `punct_moved` 로 기록해 `iter_NN/normalizations.json` 에 남는다.
+
+**결정론적 수정은 위반이 아니라 기록이다.** `normalize_tags` 가 고치는 5종 —
+`punct_moved`(태그 뒤 구두점 재배치) · `tag_dropped`(맨 앞/뒤 태그) ·
+`tags_merged`(연속 태그) · `renumbered`(번호 조밀화) — 은 전부 산출물을 조용히 바꾸므로,
+남기지 않으면 규칙이 틀렸을 때 흔적이 없다. 중국어 여는 따옴표 `“` 가 `trailing_punct` 에
+잘못 들어가 13건이 인용어 한복판에서 잘렸는데 위반 로그는 깨끗했다.
 | `bad_priority_format` | 태그가 `<SEG:정수>` 형태가 아님 |
 | `duplicate_priority` | 한 문장 안에 같은 번호가 둘 이상 |
 | `priority_gap` | 번호가 1부터 연속이 아님 |
@@ -767,7 +776,7 @@ adopt_se_mult / patience / budget       채택 임계 / 중단 조건
 | 필드 | 소비처 | 측정 방법 |
 |---|---|---|
 | `uses_spaces_between_words` | `spaced` → validator 공백 규칙, 길이·T 단위 | 공백 문자 비율 > 0.02 |
-| `trailing_punctuation` | validator `punct_after_tag`, `normalize_tags` | 부호별 "앞 텍스트에 붙어 나오는 비율 ≥ 0.9" |
+| `trailing_punctuation` | `normalize_tags` | 괄호·따옴표(`Ps`/`Pi`/`Pf`)는 분류로 제외, 나머지는 "앞 텍스트에 붙어 나오는 비율 ≥ 0.9" |
 
 `measure_profile()` 산출: `n`, `space_ratio`, `uses_spaces_between_words`,
 `trailing_punctuation`, `punctuation_counts`, `final_punctuation_counts`,

@@ -167,7 +167,9 @@ def segment_batch(
     """프롬프트 주입형 분절. 동일 (프롬프트, 문장) 조합은 캐시 재사용.
 
     복구는 두 단계다.
-      1. `normalize_fn` — 표기 오류를 결정론적으로 고친다 (번호·태그 위치·공백).
+      1. `normalize_fn(원문, 출력)` — 표기 오류를 결정론적으로 고친다 (번호·태그 위치·공백).
+         **`validate_fn` 과 같은 (원문, 출력) 형태다** — 무엇을 고쳤는지 기록하려면
+         어느 문장인지 알아야 하는데, 출력만 받으면 그 연결이 끊긴다.
          LLM 호출이 없고 경계 위치를 안 바꾸므로 무료이고 안전하다.
       2. LLM 복구 재시도 1회 — 정규화로 못 고치는 것(`text_modified`)만 남는다.
 
@@ -227,7 +229,7 @@ def segment_batch(
             system=prompt, user=t, max_tokens=SEG_MAX_TOKENS,
             reasoning_effort=reasoning_effort, purpose="segment")
         if normalize_fn is not None:
-            out = normalize_fn(out)
+            out = normalize_fn(t, out)
         first_ok = True
         if validate_fn is not None:
             vs = validate_fn(t, out)
@@ -256,7 +258,7 @@ def segment_batch(
                     purpose="segment_retry",
                 )
                 if normalize_fn is not None:
-                    out = normalize_fn(out)
+                    out = normalize_fn(t, out)
         # 실패(빈 출력)는 캐싱하지 않는다. 캐싱하면 다음 런이 재시도조차 못 하고
         # 같은 실패를 영구히 재생한다.
         if cache is not None and (out or "").strip():
@@ -310,8 +312,22 @@ def _canon(s: str, spaced: bool) -> str:
     return strip_tags(s, spaced)
 
 
-def normalize_tags(seg_text: str, spaced: bool, trailing_punct: str | None = None) -> str:
+def _note(sink: list[dict] | None, kind: str, detail: str) -> None:
+    """결정론적 수정 하나를 기록. `sink` 가 없으면 아무 일도 안 한다."""
+    if sink is not None:
+        sink.append({"kind": kind, "detail": detail})
+
+
+def normalize_tags(seg_text: str, spaced: bool, trailing_punct: str | None = None,
+                   sink: list[dict] | None = None) -> str:
     """표기 오류만 결정론적으로 고친다. **경계 위치는 절대 건드리지 않는다.**
+
+    **`sink` 가 주어지면 무엇을 고쳤는지 기록한다.** 이 함수는 조용히 산출물을 바꾸는데,
+    그게 어디에도 안 남으면 규칙이 틀렸을 때 영영 모른다 — 실제로 중국어 여는 따옴표
+    `“` 가 `trailing_punct` 에 잘못 들어가 13건이 앞 조각 꼬리로 끌려갔는데
+    (`涂鸦活动和“ <SEG:6> 合法”涂鸦墙` — 인용어 한복판이 잘린다), 검증기의
+    `punct_after_tag` 는 **이 함수가 먼저 돌아 다 고쳐 놓기 때문에** v2 런 전체에서
+    0건이었다. 위반이 아니라 기록으로 남겨야 하는 이유다.
 
     포맷 위반은 프롬프트의 성질이 아니라 분절 모델의 표본 사건이다. run01 에서 30문장 중
     1건의 위반(`priority_gap [2,3,4]`)이 프롬프트 전체를 `score −9.03` 으로 폐기시켰다 —
@@ -322,6 +338,11 @@ def normalize_tags(seg_text: str, spaced: bool, trailing_punct: str | None = Non
 
     고치는 것: 번호 조밀화(**확신 순위 보존**), 맨 앞/뒤 태그 삭제, 연속 태그 축약,
     태그 직후 구두점 재배치, 태그 좌우 공백.
+
+    **연속 태그는 합치되 번호는 가장 확신한 것을 쓴다.** 사이에 글자가 없으니 두 태그는
+    같은 경계이고, 남는 정보는 위치가 아니라 번호다. 예전에는 뒤엣것을 남겨
+    `<SEG:1> <SEG:4>` 가 4 위로 살아남았다 — 모델이 1등으로 꼽은 자리가 `truncate` 에서
+    먼저 잘리는 경로였다.
 
     **번호는 등장 순서가 아니라 모델이 매긴 순위 관계로 다시 붙인다.** 예전에는
     좌->우로 1..N 을 붙였는데, 그러면 `<SEG:n>` 이 확신도가 아니라 위치를 뜻하게 되고
@@ -350,26 +371,57 @@ def normalize_tags(seg_text: str, spaced: bool, trailing_punct: str | None = Non
         if moved:
             pieces[i] = pieces[i] + moved
             pieces[i + 1] = nxt
+            _note(sink, "punct_moved", f"태그 뒤 {moved!r} 를 앞 조각 끝으로 옮김")
 
     # 1) 어느 태그가 살아남는지 먼저 정한다. 태그는 **양쪽에 실제 내용이 있을 때만** 산다.
     #    미리 keep 배열을 만들면 연속 태그 `A <SEG:1> <SEG:2> B` 에서 가운데 빈 조각을
     #    양쪽 태그가 각각 보고 둘 다 탈락시킨다. 순차 조립은 앞 태그만 버리고 뒤를 살린다.
     #    맨 앞/뒤 태그도 같은 규칙에서 자동으로 떨어진다.
-    joiner = " " if spaced else ""
     chunks: list[str] = [pieces[0].strip()]
     survivors: list[int] = []                 # 살아남은 태그의 원래 인덱스
+    absorbed: dict[int, list[int | None]] = {}   # 살아남은 태그가 흡수한 이웃의 원래 번호
+    pending: list[int | None] = []
     for i, nxt in enumerate(pieces[1:]):
         nxt = nxt.strip()
         if chunks[-1] and nxt:
             survivors.append(i)
+            if pending:
+                absorbed[i] = pending
+                pending = []
             chunks.append(nxt)
+        elif chunks[-1]:
+            # 다음 조각이 비었다 = 바로 뒤 태그와 **같은 자리**다. 위치가 같으니 남는
+            # 정보는 번호뿐이고, 더 확신한 번호를 살려야 한다. 예전에는 그냥 뒤엣것을
+            # 남겨서 `<SEG:1> <SEG:4>` 가 4 로 살아남았고, 모델이 1등이라 한 경계가
+            # 절단에서 먼저 잘렸다.
+            pending.append(raw_prios[i])
+            chunks[-1] = chunks[-1] + nxt
+            # 뒤 조각이 비는 경우는 둘이다 — 연속 태그이거나, **마지막 태그**라 뒤에
+            # 아무것도 없거나. 후자는 아래에서 `tag_dropped` 로 따로 기록되므로 여기선
+            # 세지 않는다. 같은 사건이 두 종류로 잡히면 집계가 어긋난다.
+            if i < len(pieces) - 2:
+                _note(sink, "tags_merged",
+                      f"연속 태그 — {tag(raw_prios[i])} 를 다음 태그와 같은 자리로 합침")
         else:
-            chunks[-1] = ((chunks[-1] + joiner + nxt).strip()
-                          if (chunks[-1] and nxt) else (chunks[-1] + nxt))
+            # 맨 앞 태그 — **자리 자체가 무효**라 번호도 버린다. 뒤 태그는 실제 텍스트
+            # 뒤에 있어 위치가 다르므로, 무효 자리의 확신도를 거기 이식하면 안 된다.
+            if pending:
+                _note(sink, "tag_dropped",
+                      f"맨 앞 태그 {len(pending)}개 — 자리가 무효라 번호까지 버림")
+            pending = []
+            chunks[-1] = chunks[-1] + nxt
+            if i == 0:
+                _note(sink, "tag_dropped", f"맨 앞 태그 {tag(raw_prios[i])} 삭제")
+    # 맨 뒤에 남은 pending 은 trailing tag 몫 — 물려줄 상대가 없으니 버린다.
 
     # 2) 살아남은 태그에만 번호를 다시 매긴다 — 원래 번호의 **순위 관계**를 보존한 채
     #    1..N 으로 조밀화한다. 중복·결번은 등장 순서로 깨고, 번호 없는 태그는 뒤로 민다.
-    vals = [raw_prios[i] for i in survivors]
+    #    같은 자리로 합쳐진 태그들은 그중 **가장 확신한 번호**로 대표된다.
+    def _best(i: int) -> int | None:
+        nums = [x for x in (raw_prios[i], *absorbed.get(i, [])) if x is not None]
+        return min(nums) if nums else None
+
+    vals = [_best(i) for i in survivors]
     if all(v is None for v in vals):
         labels: list[int | None] = [None] * len(vals)          # 비교군 — 그대로 둔다
     else:
@@ -378,6 +430,14 @@ def normalize_tags(seg_text: str, spaced: bool, trailing_punct: str | None = Non
         labels = [0] * len(vals)
         for rank, j in enumerate(order, 1):
             labels[j] = rank
+
+    if pending:
+        _note(sink, "tag_dropped", f"맨 뒤 태그 {len(pending)}개 삭제")
+
+    # 번호가 실제로 바뀌었을 때만 기록한다 — 조밀화는 대부분의 문장에서 무동작이다.
+    kept = [raw_prios[i] for i in survivors]
+    if labels != kept and any(v is not None for v in vals):
+        _note(sink, "renumbered", f"{kept} -> {labels} (순위 관계 보존)")
 
     out = chunks[0]
     for label, nxt in zip(labels, chunks[1:]):
@@ -426,10 +486,11 @@ def validate(sent_id: str, original: str, seg_text: str, spaced: bool,
         v.append(Violation(sent_id, "trailing_tag", "맨 뒤에 태그"))
     if CONSECUTIVE.search(s):
         v.append(Violation(sent_id, "consecutive_tags", "연속 태그"))
-    if punct:
-        m = re.search(r"<SEG(?::\d+)?>\s*([" + re.escape(punct) + r"])", s)
-        if m:
-            v.append(Violation(sent_id, "punct_after_tag", f"태그 직후 구두점: {m.group(1)!r}"))
+    # `punct_after_tag` 검사는 없앴다 — **구조적으로 못 걸린다.** `segment_batch` 는
+    # `normalize_fn` 을 먼저 돌리고 그 결과를 `validate_fn` 에 넣으므로, 태그 뒤 구두점은
+    # 검증 시점에 이미 앞 조각으로 옮겨져 있다 (v2 런 전체 위반 0건). 같은 사건은 이제
+    # `normalize_tags(sink=)` 가 `punct_moved` 로 기록한다 — 위반이 아니라 기록이어야
+    # 규칙이 틀렸을 때 흔적이 남는다.
     for m in tags:
         before, after = s[: m.start()], s[m.end():]
         if before and not before.endswith(" "):

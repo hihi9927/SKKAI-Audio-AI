@@ -198,6 +198,7 @@ def evaluate_multi(targets: list[str], make_ctx, prompt, sentences, t_grid,
     per_rows: dict[str, list[dict]] = {}
     per_m: dict[str, "metrics.Metrics"] = {}
     viol: list[dict] = []
+    norm_sink: list[dict] | None = kw.pop("norm_sink", None)
     for k, tgt in enumerate(targets):
         tr, adq, cons, contra, tsp = make_ctx(tgt)
         r, m, v = evaluate(gw=kw["gw"], translator=tr, prompt=prompt, sentences=sentences,
@@ -209,7 +210,10 @@ def evaluate_multi(targets: list[str], make_ctx, prompt, sentences, t_grid,
                            coverage_t=kw["coverage_t"],
                            reasoning_effort=kw["reasoning_effort"],
                            batch_size=kw["batch_size"], min_gap=kw["min_gap"],
-                           skip_translation_below=kw["skip_translation_below"])
+                           skip_translation_below=kw["skip_translation_below"],
+                           # 정규화도 분절의 성질이라 타깃과 무관하다 — 첫 타깃만 모은다.
+                           # 나머지는 전부 캐시 히트라 normalize 가 아예 안 돈다.
+                           norm_sink=(norm_sink if k == 0 else None))
         per_rows[tgt] = r
         per_m[tgt] = m
         if k == 0:                      # 위반은 분절의 성질이라 타깃과 무관 — 한 번만
@@ -385,6 +389,7 @@ def evaluate(
     min_gap: int = 0,
     rank_lift_seed: int = 0,
     rank_lift_shuffles: int = 3,
+    norm_sink: list[dict] | None = None,
 ) -> tuple[list[dict], metrics.Metrics, list[dict]]:
     """분절 1회 + 노브 값마다 번역·채점.
 
@@ -404,11 +409,26 @@ def evaluate(
                         if require_coverage else None)
 
     first_pass_viol: list[dict] = []
+
+    # **결정론적 수정을 기록한다.** `normalize_tags` 는 산출물을 조용히 바꾸는데(구두점
+    # 재배치·태그 삭제·연속 태그 병합·재번호) 그게 어디에도 안 남으면 규칙이 틀렸을 때
+    # 영영 모른다 — zh 여는 따옴표 13건이 정확히 그렇게 묻혔다. 검증기의
+    # `punct_after_tag` 는 이 함수가 먼저 돌아 고쳐 놓으므로 구조적으로 0건이다.
+    norm_log: list[dict] = []
+
+    def _norm(t: str, out: str) -> str:
+        rec: list[dict] = []
+        fixed = normalize_tags(out, spaced, trailing_punct, sink=rec)
+        norm_log.extend({"text": t, **e} for e in rec)
+        if norm_sink is not None:
+            norm_sink.extend({"text": t, **e} for e in rec)
+        return fixed
+
     seg_texts, first_pass = segment_batch(
         gw, prompt, texts, cache=seg_cache, workers=workers,
         validate_fn=lambda t, out: validate("", t, out, spaced, trailing_punct,
                                             require_priority, need(t), min_gap),
-        normalize_fn=lambda out: normalize_tags(out, spaced, trailing_punct),
+        normalize_fn=_norm,
         reasoning_effort=reasoning_effort,
         batch_size=batch_size,
         first_pass_sink=first_pass_viol,
@@ -1072,8 +1092,11 @@ def main() -> int:
 
         def run_eval(prompt_: str, split_sentences, grid, split: str = "train"):
             zb = zbase_all.setdefault(split, {}) if len(targets) > 1 else None
+            norm: list[dict] = []
             rows_, m_, viol_, per_, per_rows_ = evaluate_multi(
-                targets, make_ctx, prompt_, split_sentences, grid, zbase=zb, **_kw)
+                targets, make_ctx, prompt_, split_sentences, grid, zbase=zb,
+                norm_sink=norm, **_kw)
+            run_eval.last_normalizations = norm
             if zb is not None:
                 zbase_path.write_text(json.dumps(zbase_all, ensure_ascii=False, indent=2),
                                       encoding="utf-8")
@@ -1104,7 +1127,7 @@ def main() -> int:
                     gw, pr, texts, cache=seg_cache, workers=args.workers,
                     validate_fn=lambda t, out: validate("", t, out, spaced, trailing_punct,
                                                         True, need(t), args.min_gap),
-                    normalize_fn=lambda o: normalize_tags(o, spaced, trailing_punct),
+                    normalize_fn=lambda t, o: normalize_tags(o, spaced, trailing_punct),
                     reasoning_effort=args.seg_reasoning_effort,
                     batch_size=args.batch_size)
 
@@ -1369,6 +1392,16 @@ def main() -> int:
                 import collections as _c
                 log(f"[iter {it}] 1차 위반 {len(viol_1st)}건 "
                     f"{dict(_c.Counter(v['rule'] for v in viol_1st))}")
+            # **결정론적 수정은 위반이 아니라 기록이다.** 검증기를 통과시키려고 고친
+            # 것이므로 `violations.json` 에 넣으면 "고쳐졌는데 결함"이 되고, 안 남기면
+            # 규칙이 틀렸을 때 아무 흔적이 없다 (zh 여는 따옴표 13건이 그렇게 묻혔다).
+            norm = getattr(run_eval, "last_normalizations", None)
+            if norm:
+                (it_dir / "normalizations.json").write_text(
+                    json.dumps(norm, ensure_ascii=False, indent=2), encoding="utf-8")
+                import collections as _c2
+                log(f"[iter {it}] 결정론 수정 {len(norm)}건 "
+                    f"{dict(_c2.Counter(x['kind'] for x in norm))}")
             log(f"[iter {it}] {fmt_metrics(m, 'train')}"
                 + (f"  premature={m.by_T[str(main_t)].premature_rate}"
                    if m.by_T.get(str(main_t)) and m.by_T[str(main_t)].premature_rate is not None
