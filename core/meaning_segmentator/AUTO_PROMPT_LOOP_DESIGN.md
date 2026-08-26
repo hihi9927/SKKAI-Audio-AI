@@ -134,28 +134,41 @@ t2:                "...probably won't be an issue"
 
 ### 5.1 `format_pass_rate` — 보고 지표 (하드 게이트 아님)
 
-번역 호출 **전에** 도는 순수 문자열 검사 (`pipeline.validate`). 규칙 10종:
+번역 호출 **전에** 도는 순수 문자열 검사 (`pipeline.validate`). 규칙 **4종**:
 
 | 위반 코드 | 조건 |
 |---|---|
 | `text_modified` | 태그를 제거한 결과가 원문과 다름 |
-| `leading_tag` / `trailing_tag` | 맨 앞/맨 뒤 태그 |
-| `consecutive_tags` | 연속 태그 |
-| `missing_space` | 태그 좌우 공백 없음 |
-
-`punct_after_tag` 는 제거됐다 — `normalize_fn` 이 `validate_fn` 보다 먼저 돌아 태그 뒤
-구두점을 이미 옮겨 놓으므로 구조적으로 걸릴 수 없다 (v2 런 전체 0건). 같은 사건은
-`normalize_tags(sink=)` 가 `punct_moved` 로 기록해 `iter_NN/normalizations.json` 에 남는다.
-
-**결정론적 수정은 위반이 아니라 기록이다.** `normalize_tags` 가 고치는 5종 —
-`punct_moved`(태그 뒤 구두점 재배치) · `tag_dropped`(맨 앞/뒤 태그) ·
-`tags_merged`(연속 태그) · `renumbered`(번호 조밀화) — 은 전부 산출물을 조용히 바꾸므로,
-남기지 않으면 규칙이 틀렸을 때 흔적이 없다. 중국어 여는 따옴표 `“` 가 `trailing_punct` 에
-잘못 들어가 13건이 인용어 한복판에서 잘렸는데 위반 로그는 깨끗했다.
-| `bad_priority_format` | 태그가 `<SEG:정수>` 형태가 아님 |
-| `duplicate_priority` | 한 문장 안에 같은 번호가 둘 이상 |
-| `priority_gap` | 번호가 1부터 연속이 아님 |
 | `too_few_tags` | 경계 수 < `chunk_budget(문장, 커버리지 T) − 1` (§6.4) |
+| `gap_too_small` | 조각 하나가 `min_gap` 미만 (§6.5) |
+| `bad_priority_format` | 태그에 번호가 없음 (`<SEG>`). 전부 무번호면 정규화가 그대로 둔다 |
+
+**표기 규칙 6종은 검증기에서 뺐다** — `leading_tag`·`trailing_tag`·`consecutive_tags`·
+`missing_space`·`duplicate_priority`·`priority_gap`. `normalize_fn` 이 `validate_fn` 보다
+먼저 돌아 전부 고쳐 놓으므로 구조적으로 걸릴 수 없다 (마지막 실측이 ko-en/run01 로,
+정규화 도입 직전이다). 죽은 규칙을 위반 목록에 두면 산출물이 "검사하고 있다"고 거짓말한다.
+남긴 4종은 정규화가 **원리적으로 못 고치는** 것뿐이다 — 없는 태그를 만들 수도, 경계를
+옮길 수도, 모델이 고쳐 쓴 원문을 되살릴 수도 없다.
+
+**같은 항목은 `_self_check` 가 지킨다 — 위반이 아니라 버그 신고로.** 정규화 직후 자기
+출력을 검사해 약속(맨앞뒤 태그 없음 · 연속 없음 · 태그 좌우 공백 하나 · 태그 뒤 구두점
+없음 · 번호가 1..N)을 어겼는지 본다. 여기서 걸리면 **프롬프트가 아니라 정규화가 잘못한
+것**이라 대응이 완전히 다르다: 재시도로 고칠 수 없고, 코드를 고쳐야 한다. 채점에 섞지
+않고 `sink` 기록 + 종류당 경고 1회로 남긴다 (예외를 던지면 100문장 런이 통째로 죽는다).
+
+`punct_after_tag` 도 검증기에서 뺐는데, **그 근거는 나중에야 성립했다.** 정규화가 태그 뒤
+구두점을 "바로 왼쪽" 조각에 얹었기 때문에, 그 자리가 연속 태그 사이의 빈 조각이면
+정규화가 **스스로** `<SEG:n> ,` 를 만들어냈다. v2 런에서 0건이었던 건 그 경로가
+`text_modified` 쪽으로 먼저 잡혀서다. 받는 조각을 "가장 가까운 내용 있는" 쪽으로 바꾼
+뒤에야 실제로 닫혔고, 지금은 `_self_check` 가 계속 지켜본다.
+
+**결정론적 수정은 위반이 아니라 기록이다.** `normalize_tags` 가 고치는 것 —
+`punct_moved`(태그 뒤 구두점 재배치) · `tag_dropped`(맨 앞/뒤 태그) ·
+`tags_merged`(연속 태그를 같은 자리로 합치고 **가장 확신한 번호**를 남김) ·
+`renumbered`(번호 조밀화, 순위 관계 보존) — 은 전부 산출물을 조용히 바꾸므로, 남기지
+않으면 규칙이 틀렸을 때 흔적이 없다. 중국어 여는 따옴표 `“` 가 `trailing_punct` 에
+잘못 들어가 13건이 인용어 한복판에서 잘렸는데 위반 로그는 깨끗했다.
+`iter_NN/normalizations.json` 에 남는다.
 
 언어 지식(`trailing_punctuation`)은 데이터로 주입되고, 출처는 LLM 추정이 아니라 코퍼스
 측정값이다 (§9.1). 프로파일에 없으면 유니코드 범주 폴백(`Po`/`Pe`/`Pf`, 문장 여는
