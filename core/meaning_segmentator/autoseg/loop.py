@@ -458,7 +458,7 @@ def evaluate(
 
     def _norm(t: str, out: str) -> str:
         rec: list[dict] = []
-        fixed = normalize_tags(out, spaced, trailing_punct, sink=rec)
+        fixed = normalize_tags(out, spaced, trailing_punct, sink=rec, min_gap=min_gap)
         norm_log.extend({"text": t, **e} for e in rec)
         if norm_sink is not None:
             norm_sink.extend({"text": t, **e} for e in rec)
@@ -467,7 +467,7 @@ def evaluate(
     seg_texts, first_pass = segment_batch(
         gw, prompt, texts, cache=seg_cache, workers=workers,
         validate_fn=lambda t, out: validate("", t, out, spaced, trailing_punct,
-                                            require_priority, need(t), min_gap),
+                                            require_priority, need(t)),
         normalize_fn=_norm,
         reasoning_effort=reasoning_effort,
         batch_size=batch_size,
@@ -479,7 +479,7 @@ def evaluate(
     scored_flags: list[bool] = []
     for s, seg in zip(sentences, seg_texts):
         vs = validate(s.id, s.text, seg, spaced, trailing_punct, require_priority,
-                      need(s.text), min_gap)
+                      need(s.text))
         valid_flags.append(not vs)
         scored_flags.append(not blocks_scoring(vs))
         violations.extend({"id": v.id, "rule": v.rule, "detail": v.detail,
@@ -1223,8 +1223,9 @@ def main() -> int:
                 segment_batch(
                     gw, pr, texts, cache=seg_cache, workers=args.workers,
                     validate_fn=lambda t, out: validate("", t, out, spaced, trailing_punct,
-                                                        True, need(t), args.min_gap),
-                    normalize_fn=lambda t, o: normalize_tags(o, spaced, trailing_punct),
+                                                        True, need(t)),
+                    normalize_fn=lambda t, o: normalize_tags(o, spaced, trailing_punct,
+                                                             min_gap=args.min_gap),
                     reasoning_effort=args.seg_reasoning_effort,
                     batch_size=args.batch_size)
 

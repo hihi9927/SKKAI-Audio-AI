@@ -78,8 +78,7 @@ def main() -> int:
 
     def check(text: str, seg: str):
         return validate("", text, seg, SPACED, TRAILING_PUNCT, True,
-                        coverage_need(text, args.t_floor, SPACED, args.min_gap),
-                        args.min_gap)
+                        coverage_need(text, args.t_floor, SPACED, args.min_gap))
 
     def one(text: str) -> tuple[str, bool, list]:
         k = JsonCache.key("ollama-seg1", prompt_hash, gw.model, str(args.min_gap),
@@ -99,7 +98,7 @@ def main() -> int:
         for attempt in range(args.retries + 1):
             raw = gw.chat(system=prompt, user=user, max_tokens=SEG_MAX_TOKENS,
                           purpose="segment" if attempt == 0 else "segment_retry")
-            seg = normalize_tags(R.repair(text, raw), SPACED, TRAILING_PUNCT)
+            seg = normalize_tags(R.repair(text, raw), SPACED, TRAILING_PUNCT, min_gap=args.min_gap)
             vs = check(text, seg)
             if attempt == 0:
                 first_ok = not vs

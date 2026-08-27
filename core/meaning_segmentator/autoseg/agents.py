@@ -90,7 +90,8 @@ _COVERAGE_RULE = (
 # 순위 1.92 -> 2.98). 그래서 **간격을 마킹 시점에 지키게** 한다.
 #
 # 문면만으로는 안 움직인다 — 밀도를 문면으로 시킨 `dense` 변종이 0.354 로 사실상
-# 불변이었다 (docs/RANK_METRIC_DIAGNOSIS.md §8.1). `validate(min_gap=)` 가 함께 강제한다.
+# 불변이었다 (docs/RANK_METRIC_DIAGNOSIS.md §8.1). 그래서 강제는 문면이 아니라
+# `normalize_tags(min_gap=)` 가 한다 — 너무 가까운 태그를 결정론으로 쳐낸다.
 _GAP_RULE = (
     "- Leave AT LEAST {gap} {unit} between any two tags, and the same distance between a tag\n"
     "  and either end of the text. A piece shorter than that cannot be translated on its own,\n"

@@ -350,7 +350,7 @@ _SELF_CHECK_SEEN: set[str] = set()
 
 
 def _self_check(out: str, spaced: bool, punct: str,
-                sink: list[dict] | None = None) -> list[str]:
+                sink: list[dict] | None = None, min_gap: int = 0) -> list[str]:
     """정규화 결과가 약속을 지켰는지 본다. 반환은 위반한 약속 목록(정상이면 빈 리스트)."""
     bad: list[str] = []
     tags = list(TAG_RE.finditer(out))
@@ -367,6 +367,14 @@ def _self_check(out: str, spaced: bool, punct: str,
         if (before and not before.endswith(" ")) or (after and not after.startswith(" ")):
             bad.append("태그 좌우 공백이 하나가 아님")
             break
+    # 간격은 **번호가 있을 때만** 본다. 무번호 `<SEG>`(비교군)는 정규화가 일부러 안
+    # 쳐내므로(절단 자체가 없는 규약) 여기서 잡으면 헛울린다.
+    if min_gap > 0 and tags and any(m.group(1) for m in tags):
+        edges, total = tag_positions(out, spaced)
+        for a, b in zip([0] + edges, edges + [total]):
+            if b - a < min_gap:
+                bad.append(f"조각 {b - a}단위 — 최소 간격 {min_gap} 미만")
+                break
     prios = [int(m.group(1)) if m.group(1) else None for m in tags]
     numbered = [p for p in prios if p is not None]
     if numbered:
@@ -384,7 +392,7 @@ def _self_check(out: str, spaced: bool, punct: str,
 
 
 def normalize_tags(seg_text: str, spaced: bool, trailing_punct: str | None = None,
-                   sink: list[dict] | None = None) -> str:
+                   sink: list[dict] | None = None, min_gap: int = 0) -> str:
     """표기 오류만 결정론적으로 고친다. **경계 위치는 절대 건드리지 않는다.**
 
     **`sink` 가 주어지면 무엇을 고쳤는지 기록한다.** 이 함수는 조용히 산출물을 바꾸는데,
@@ -425,6 +433,28 @@ def normalize_tags(seg_text: str, spaced: bool, trailing_punct: str | None = Non
     순위 없는 `<SEG>` 는 **번호를 붙이지 않고 그대로 둔다.** 비교군(사람 프롬프트,
     기계분절)이 그 형태이고, `truncate()` 는 순위가 없으면 절단하지 않기로 되어 있다
     (설계 §9.2). 예전처럼 번호를 붙이면 비교군이 절단 대상이 되어 규약이 깨진다.
+
+    **`min_gap` 을 주면 너무 가까운 태그를 여기서 쳐낸다 — LLM 재시도로 넘기지 않는다.**
+
+    간격 위반은 v2 위반의 절반~전부를 차지했다 (253건; de-en 78%, en-multi/run06 92%).
+    그리고 대부분이 **한 칸 모자란다** — min_gap=3 에서 71%가 2어절, =6 에서 39%가 5자,
+    =8 에서 43%가 7자다. 모델이 규칙을 모르는 게 아니라(문면에 `_GAP_RULE` 이 있다)
+    의미적으로 좋아 보이는 자리가 가까울 때 그냥 찍는 것이다. 설계 문서가 밀도에 대해
+    같은 결론을 냈다 — **문면만으로는 안 움직인다.**
+
+    대가는 비용이었다. 1차 통과율이 0.5056 이라 **분절 호출의 절반이 재시도를 한 번 더
+    탄다.** 비용의 90%가 분절이므로 ≈1.5배다. 재시도가 79%를 고쳐서 최종 통과율 0.87 로
+    보이는 바람에 문제가 가려져 있었다.
+
+    **그런데 이건 LLM 을 쓸 일이 아니다.** 너무 가까운 두 태그 중 순위 낮은 쪽을 지우면
+    되고, 그게 정확히 `truncate` 가 나중에 하는 일이다 — 어차피 안 쓰일 태그를 두고
+    모델에게 다시 물어보고 있었다. 여기서 미리 쳐내면 검증기에 도달하는 시점에 이미
+    간격이 지켜져 있어 **절단기 필터가 항등이 된다** — 마킹 시점에 규칙을 거는 원래 목적
+    (사후에만 걸면 절단이 상위 순위를 건너뛰어 평균 순위 1.92 → 2.98) 이 그대로 달성되고
+    LLM 호출만 사라진다.
+
+    고르는 규칙은 `truncate` 와 같다 — 순위 1등부터, 이미 고른 자리·문장 양끝과 min_gap
+    이상 떨어진 것만. 순위가 없으면(비교군) 쳐내지 않는다.
     """
     punct = trailing_punct if trailing_punct is not None else default_trailing_punct(seg_text)
     parts = TAG_RE.split(seg_text.strip())
@@ -505,6 +535,43 @@ def normalize_tags(seg_text: str, spaced: bool, trailing_punct: str | None = Non
         return min(nums) if nums else None
 
     vals = [_best(i) for i in survivors]
+
+    # 2.5) 간격 정리 — 너무 가까운 태그를 순위 낮은 쪽부터 버린다.
+    #      `truncate` 와 **같은 규칙**이라 결과가 같고, LLM 재시도가 사라진다.
+    #      순위가 하나도 없으면(비교군) 손대지 않는다 — 절단 자체가 없는 규약이다.
+    if min_gap > 0 and len(survivors) > 0 and any(v is not None for v in vals):
+        wc = [unit_count(c, spaced) for c in chunks]
+        pos, acc = [], 0
+        for w in wc[:-1]:
+            acc += w
+            pos.append(acc)
+        total = acc + wc[-1]
+        order = sorted(range(len(vals)),
+                       key=lambda j: (vals[j] is None, vals[j] if vals[j] is not None else 0, j))
+        keep: list[int] = []
+        for j in order:
+            edges = [0, total] + [pos[t] for t in keep]
+            if min(abs(pos[j] - e) for e in edges) < min_gap:
+                continue
+            keep.append(j)
+        if len(keep) < len(vals):
+            dropped = [tag(vals[j]) for j in range(len(vals)) if j not in keep]
+            _note(sink, "gap_pruned",
+                  f"간격 {min_gap} 미만이라 {len(dropped)}개 삭제: {' '.join(dropped)}")
+            keep_set = set(keep)
+            joiner = " " if spaced else ""
+            new_chunks = [chunks[0]]
+            new_vals: list[int | None] = []
+            new_survivors: list[int] = []
+            for j in range(len(vals)):
+                if j in keep_set:
+                    new_chunks.append(chunks[j + 1])
+                    new_vals.append(vals[j])
+                    new_survivors.append(survivors[j])
+                else:
+                    new_chunks[-1] = (new_chunks[-1] + joiner + chunks[j + 1]).strip()
+            chunks, vals, survivors = new_chunks, new_vals, new_survivors
+
     if all(v is None for v in vals):
         labels: list[int | None] = [None] * len(vals)          # 비교군 — 그대로 둔다
     else:
@@ -526,7 +593,7 @@ def normalize_tags(seg_text: str, spaced: bool, trailing_punct: str | None = Non
     for label, nxt in zip(labels, chunks[1:]):
         out = f"{out} {tag(label)} {nxt}"
     out = out.strip()
-    _self_check(out, spaced, punct, sink)
+    _self_check(out, spaced, punct, sink, min_gap)
     return out
 
 
@@ -546,8 +613,7 @@ def blocks_scoring(violations: list["Violation"]) -> bool:
 def validate(sent_id: str, original: str, seg_text: str, spaced: bool,
              trailing_punct: str | None = None,
              require_priority: bool = True,
-             min_tags: int | None = None,
-             min_gap: int = 0) -> list[Violation]:
+             min_tags: int | None = None) -> list[Violation]:
     """번역 호출 전에 도는 하드 게이트. LLM 없이 순수 문자열 검사.
 
     **표기 규칙은 여기 없다.** 맨앞/맨뒤 태그·연속 태그·태그 좌우 공백·번호 중복·번호
@@ -603,22 +669,14 @@ def validate(sent_id: str, original: str, seg_text: str, spaced: bool,
         v.append(Violation(sent_id, "too_few_tags",
                            f"경계 {len(tags)}개 — 최소 {min_tags}개 필요"))
 
-    # ── 간격 요건 ────────────────────────────────────────────────────
-    # `truncate` 의 min_gap 과 **같은 규칙을 마킹 시점에** 건다. 사후에만 걸면 절단기가
-    # 간격 위반인 상위 순위를 건너뛰고 아래 순위를 집게 되어(실측 남긴 경계 평균 순위
-    # 1.92 -> 2.98), 정보가 없다고 측정된 순위축(rank_contra_gap ≈ 0)에 선택이 통째로
-    # 실린다. 마킹이 이미 간격을 지키면 절단기 필터는 항등이 되고, 순위는 "쓸 수 있는
-    # 자리들 사이"에서만 작동한다.
+    # ── 간격 요건은 여기 없다 ──────────────────────────────────────────
+    # `normalize_tags(min_gap=)` 가 먼저 돌아 너무 가까운 태그를 결정론으로 쳐낸다.
+    # 검증기에 도달하는 시점에는 이미 간격이 지켜져 있어 구조적으로 못 걸린다 —
+    # 남겨 두면 죽은 규칙이 살아 있는 것처럼 보인다. `_self_check` 가 대신 지켜본다.
     #
-    # 문면만으로는 안 움직인다 — 개수 요건과 같은 이유로 검증기가 강제해야 한다
-    # (docs/RANK_METRIC_DIAGNOSIS.md §8.1: 문면으로만 시킨 dense 는 밀도 불변).
-    if min_gap > 0 and tags:
-        edges, total = tag_positions(s, spaced)
-        for a, b in zip([0] + edges, edges + [total]):
-            if b - a < min_gap:
-                v.append(Violation(sent_id, "gap_too_small",
-                                   f"조각 {b - a}단위 — 최소 간격 {min_gap} 미만"))
-                break
+    # 종전에는 여기서 위반으로 잡아 **LLM 재시도**로 보냈고, 그게 v2 위반의 절반~전부
+    # (253건)에 1차 통과율 0.5056 의 주범이었다. 어차피 `truncate` 가 안 쓸 태그를 두고
+    # 모델에게 다시 물어보던 셈이다.
     return v
 
 
