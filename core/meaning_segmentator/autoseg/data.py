@@ -106,9 +106,17 @@ _AST = _REPO_ROOT / "evaluation" / "ast" / "manifests"
 MANIFESTS = {
     "fleurs-en-de": _AST / "fleurs_en-de_test.jsonl",
     "fleurs-en-ko": _AST / "fleurs_en-ko_test.jsonl",
-    "fleurs-de-en": _AST / "fleurs_nway_de-en_multi2en_loop240.jsonl",
-    "fleurs-ja-en": _AST / "fleurs_nway_ja-en_multi2en_loop240.jsonl",
-    "fleurs-zh-en": _AST / "fleurs_nway_zh-en_multi2en_loop240.jsonl",
+    # **loop405 = loop240 + 미사용 꼬리 165.** 층화 정렬(`fleurs_nway_en_clean500_order.json`,
+    # 1,405문장)에서 1240~1404 구간이 아무에게도 배정되지 않은 채 남아 있었다. 홀드아웃
+    # `multi2en_eval500`(740~1239)은 건드리지 않으므로 최종 평가의 독립성은 그대로다.
+    #
+    # 왜 늘렸나 — **채택 판정의 검출력이 부족했다.** dev 60문장에서 쌍체 se 중앙이 0.0110
+    # 이라 t=2 로 검출 가능한 최소 차이가 0.024 인데, 프롬프트 간 실제 차이는 0.003~0.007
+    # 이다. 프로젝트 전체 이력 14회 판정 중 |t|>2 는 1회뿐이었고 그마저 기각이었다.
+    # dev 265 면 se 가 0.0052 로 줄어 검출 한계가 0.0104 가 된다.
+    "fleurs-de-en": _AST / "fleurs_nway_de-en_multi2en_loop405.jsonl",
+    "fleurs-ja-en": _AST / "fleurs_nway_ja-en_multi2en_loop405.jsonl",
+    "fleurs-zh-en": _AST / "fleurs_nway_zh-en_multi2en_loop405.jsonl",
 }
 
 # 파일 포맷이 고유한 것만 로더 함수로 남는다. 나머지는 위 MANIFESTS.

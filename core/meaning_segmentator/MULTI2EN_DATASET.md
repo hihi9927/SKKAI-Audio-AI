@@ -18,18 +18,37 @@ en 기준 층화 정렬(`evaluation/ast/manifests/fleurs_nway_en_clean500_order.
 | 구간 | 용도 | 크기 | 상태 |
 |---|---|---|---|
 | 0 – 499 | `clean500` — en→{de,ja,zh} BLEU/COMET 평가 | 500 | 소진 |
-| **500 – 739** | **`multi2en_loop240` — 새 트랙 루프(train/dev/test)** | **240** | 신규 |
+| **500 – 739** | `multi2en_loop240` — 새 트랙 루프 (구) | 240 | `loop405` 에 흡수 |
 | **740 – 1239** | **`multi2en_eval500` — 새 트랙 최종 평가** | **500** | 신규 |
-| 1240 – 1404 | 예비 (확장용) | 165 | 미사용 |
+| **1240 – 1404** | **`multi2en_loop405` = loop240 + 이 구간 165** | **165** | **신규 편입** |
 
-교차 검증 결과 **네 구간이 서로도, `en-multi/run06`(프롬프트 생성분 240)과도 교집합 0**이다.
+교차 검증 결과 **각 구간이 서로도, `en-multi/run06`(프롬프트 생성분 240)과도 교집합 0**이다.
 FLEURS `test` 스플릿은 애초에 제외돼 있다(오디오 보유 분할 = 파인튜닝 모델 평가용 봉인, §8.5 ④).
 
 산출 파일 (`evaluation/ast/manifests/`):
 
 ```
-fleurs_nway_{de,ja,zh}-en_multi2en_loop240.jsonl    각 240행
-fleurs_nway_{de,ja,zh}-en_multi2en_eval500.jsonl    각 500행
+fleurs_nway_{de,ja,zh}-en_multi2en_loop240.jsonl    각 240행  (구, 보존)
+fleurs_nway_{de,ja,zh}-en_multi2en_loop405.jsonl    각 405행  ← data.py 가 쓰는 것
+fleurs_nway_{de,ja,zh}-en_multi2en_eval500.jsonl    각 500행  (홀드아웃, 불변)
+
+**`loop405` 로 늘린 이유 — 채택 판정의 검출력이 부족했다.** dev 60문장에서 쌍체 se 중앙이
+0.0110 이라 `t=2` 로 검출 가능한 최소 차이가 **0.0220** 인데, 프롬프트 간 실제 차이는
+**0.003~0.007** 이다(en-de/run01 프롬프트 9개 실측). 프로젝트 전체 이력의 쌍체 판정 14회
+중 `|t|>2` 는 1회뿐이었고 그마저 **기각**이었다 — 채택된 4회는 t = +0.53 / +1.31 / +0.75 다.
+채택 규칙 `Δ > 0.5·se` 는 t>0.5 이므로 한쪽 검정 p≈0.31, 참값이 0이어도 셋에 한 번은
+통과한다.
+
+`se ∝ 1/√n` 은 실측으로 확인했다 (en-de/run01 test 100문장 부분표집: n=20 0.0168 →
+40 0.0131 → 60 0.0110 → 100 0.0087). dev 265 면 se 0.0052, 검출 한계 0.0105 이다.
+
+| 분할 | 합 | 예상 dev se | 검출 한계(t=2) |
+|---|---|---|---|
+| 40 / 60 / 100 (구) | 200 | 0.0110 | 0.0220 |
+| 40 / 265 / 100 | 405 | 0.0052 | **0.0105** |
+| 60 / 245 / 100 | 405 | 0.0054 | 0.0109 |
+
+**홀드아웃은 안 건드렸다** — `eval500`(740–1239)과 겹침 0을 확인했다.
 fleurs_nway_{de,ja,zh}_multi2en_*_order.json        재현·확장 메타
 ```
 
@@ -183,10 +202,16 @@ ja 16/32) — 두 점이 실제로 다른 작동점(k=3 / k=2)을 잰다.
 ```bash
 ORD=evaluation/ast/manifests/fleurs_nway_en_clean500_order.json
 for src in de_de ja_jp cmn_hans_cn; do
-  for spec in "500 240 multi2en_loop240" "740 500 multi2en_eval500"; do
+  for spec in "500 240 multi2en_loop240" "740 500 multi2en_eval500" "1240 165 multi2en_tail165"; do
     set -- $spec
     python evaluation/ast/build_manifest_fleurs_text.py \
       --src $src --tgts en_us --order-from $ORD --skip $1 --n $2 --tag $3
+  done
+  # loop405 = loop240 + tail165 (구간이 이어져 있지 않아 이어붙인다)
+  for pair in de-en ja-en zh-en; do
+    cat evaluation/ast/manifests/fleurs_nway_${pair}_multi2en_loop240.jsonl \
+        evaluation/ast/manifests/fleurs_nway_${pair}_multi2en_tail165.jsonl \
+        > evaluation/ast/manifests/fleurs_nway_${pair}_multi2en_loop405.jsonl
   done
 done
 ```
