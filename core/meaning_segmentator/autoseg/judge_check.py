@@ -13,9 +13,9 @@
   정확도 — 모든 변이의 다수결이 `expect` 와 일치. 오분류 0건.
   안정성 — 같은 입력 반복 실행에 판정이 동일.
 
-둘 다 **`safe` / `not-safe` 이진**으로 본다. `premature` 와 `mistranslated` 를 소비하는
-곳이 없기 때문이다 — 둘 다 "경계를 표시하고 `cause`·`shift` 를 Critic 에 넘긴다"로 같은
-행동을 부르고, 채택 게이트도 `agents.unsafe_rate` 를 쓴다. 세부 라벨은 진단으로만 남긴다.
+둘 다 **`safe` / `not-safe` 이진**으로 본다. 판정자는 이제 점수를 안 낸다 — 모순이 가장
+큰 경계에 `cause`·`shift` 를 붙여 Critic 에 넘기는 것이 전부이고, `premature` 와
+`mistranslated` 는 거기서 같은 행동을 부른다. 세부 라벨은 진단으로만 남긴다.
 
 `benign_*` 이 기준선이다. 조기 방출 자체는 죄가 아니고 뒤가 반박할 때만 문제인데,
 이를 구별하지 못하는 판정자는 "짧은 조각은 다 나쁨"으로 퇴화해 루프를 보수화한다.
@@ -112,7 +112,7 @@ def build_report(results: list[dict], model: str, repeats: int,
         "",
         "두 조건 모두 세부 라벨이 아니라 **safe / not-safe 이진**으로 본다. 이유: `premature` 와",
         "`mistranslated` 는 루프에서 같은 행동을 부른다 — 경계를 표시하고 `cause`·`shift` 를",
-        "Critic 에 넘긴다. 채택 게이트도 `unsafe_rate` 를 쓴다. 세부 라벨을 소비하는 곳이",
+        "Critic 에 넘긴다. 판정자는 점수를 내지 않는다. 세부 라벨을 소비하는 곳이",
         "없으므로 그 축을 관문 조건으로 두면 과잉 명세다. `라벨정확`·`라벨고정` 열에 진단으로만 남긴다.",
         "",
         "판정 기준선은 `benign_*` 이다. 조기 방출 자체가 아니라 **뒤가 반박하는지**를",
@@ -207,7 +207,7 @@ def main() -> int:
                     # 정확도·안정성 모두 safe / not-safe 축에서 본다.
                     # premature 와 mistranslated 를 소비하는 곳이 없다 — 둘 다 "이 경계를
                     # 표시하고 cause·shift 를 Critic 에 넘긴다"로 같은 행동을 부르고,
-                    # 채택 게이트도 unsafe_rate 를 쓴다. 쓰이지 않는 구별을 관문 조건으로
+                    # 판정자는 점수를 내지 않는다. 쓰이지 않는 구별을 관문 조건으로
                     # 두면 과잉 명세다. 세부 라벨은 진단으로만 보고한다.
                     "accurate": is_safe(majority) == is_safe(variant["expect"]),
                     "label_accurate": majority == variant["expect"],

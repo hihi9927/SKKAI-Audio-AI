@@ -565,73 +565,52 @@ def _interleave(a: list[dict], b: list[dict]):
             yield b[i]
 
 
-def judge_rows(judge: Judge, rows: list[dict], T: int, max_rows: int = 8,
-               sample: str = "failure", seed: int = 20260810) -> list[dict]:
-    """N문장의 모든 경계를 판정한다. 마지막 경계는 대상이 아니다 — 뒤에
-    미래가 없으므로 반박당할 수 없다.
+def judge_top_contra(judge: Judge, rows: list[dict], T: int,
+                     max_boundaries: int = 8) -> list[dict]:
+    """**모순이 가장 크게 잡힌 경계**만 판정한다. 점수는 내지 않는다 — 설명만 낸다.
 
-    `sample="failure"` — 실패 의심 문장 조준 (`rank_by_failure`). 루프 중 Critic 입력용.
-    `sample="random"`  — 시드 고정 무작위. **보고용 `premature_rate` 는 이쪽으로 재야
-    한다** — 실패 조준 표본으로 재면 조건부 상향 추정치가 된다 (run03 test 0.2727 이
-    그 값이다).
+    종전에는 문장 8개를 뽑아 그 안의 **모든** 경계를 판정하고, 결과로 `premature_rate`
+    라는 비율을 만들어 Critic·리포트에 실었다. 두 가지가 틀려 있었다.
+
+    **① 탐지기로 못 쓴다.** 판정자의 `premature` 정의는 *"내보낸 말이 뒤에 올 내용과
+    모순된다"* 로 `contradiction` 지표와 글자 그대로 같은 질문인데, 저장된 판정에서 둘의
+    AUC 가 **0.663** 이고 `mistranslated` 로 찍힌 경계의 모순 중앙값(0.0699)이 `safe` 와
+    **같다**. 같은 질문에 답하는 두 측정이 서로 안 맞으면, 싼 쪽(NLI, 추가 호출 0)을 두고
+    비싼 쪽(LLM)을 탐지에 쓸 이유가 없다.
+
+    **② 비율이 편향돼 있었다.** 표본을 실패 조준으로 뽑고 그 표본으로 비율을 쟀다 —
+    조건부 상향 추정치다 (run03 test 0.2727). 그래서 리포트용으로 무작위 표본을 한 번 더
+    돌리는 우회로가 붙어 있었는데, 그 수를 결정에 쓰는 곳은 없었다.
+
+    그래서 **역할을 바꿨다**: *어디가* 나쁜지는 `contradiction` 이 고르고, 판정자는 고른
+    자리에 *왜·어디로*(`cause`, `shift`, `generalized_rule`)를 붙인다. 모순 점수는 쌍체
+    평균으로 뭉개져 문장이 안 남지만 판정자 출력에는 남는다 — 그게 Critic 이 규칙을
+    지어내는 데 필요한 재료다.
+
+    부수 효과로 호출이 준다. 문장당 모든 경계(≈3개)를 재던 것이 상위 경계 하나씩이 된다.
     """
-    import random as _random
+    cand: list[tuple[float, dict, int]] = []
+    for r in rows:
+        d = (r.get("by_T", {}) or {}).get(str(T)) or {}
+        ps, pc = d.get("pieces_tgt"), d.get("pieces_contra")
+        if not ps or len(ps) < 2 or not pc:
+            continue
+        # 마지막 경계는 대상이 아니다 — 뒤에 미래가 없으므로 반박당할 수 없다.
+        for b in range(min(len(ps) - 1, len(pc))):
+            if pc[b] is not None:
+                cand.append((pc[b], r, b))
+    cand.sort(key=lambda x: -x[0])
     out: list[dict] = []
-    targets = [r for r in rows
-               if r.get("by_T", {}).get(str(T), {}).get("pieces_tgt")
-               and len(r["by_T"][str(T)]["pieces_tgt"]) > 1]
-    if sample == "random":
-        targets = _random.Random(seed).sample(targets, min(max_rows, len(targets)))
-    else:
-        targets = rank_by_failure(targets, T, max_rows)
-    for r in targets:
+    for contra, r, b in cand[:max_boundaries]:
         d = r["by_T"][str(T)]
-        for b in range(len(d["pieces_tgt"]) - 1):
-            try:
-                v = judge.judge(r["text"], r.get("full_trans") or "",
-                                d["pieces_src"], d["pieces_tgt"], b)
-            except Exception as e:                      # 판정 실패로 루프를 죽이지 않는다
-                v = {"verdict": "error", "conflict": str(e)[:200]}
-            out.append({"id": r["id"], "boundary": b,
-                        "seg_text": d["seg_text"], **v})
+        try:
+            v = judge.judge(r["text"], r.get("full_trans") or "",
+                            d["pieces_src"], d["pieces_tgt"], b)
+        except Exception as e:                      # 판정 실패로 루프를 죽이지 않는다
+            v = {"verdict": "error", "conflict": str(e)[:200]}
+        out.append({"id": r["id"], "boundary": b, "contradiction": round(contra, 4),
+                    "seg_text": d["seg_text"], **v})
     return out
-
-
-SCORED_VERDICTS = ("safe", "premature", "mistranslated")
-UNSAFE_VERDICTS = ("premature", "mistranslated")
-
-
-def premature_rate(judgements: list[dict]) -> float | None:
-    """미래가 반박한 경계의 비율. `adequacy` 가 원리적으로 못 보는 축이다."""
-    scored = [j for j in judgements if j.get("verdict") in SCORED_VERDICTS]
-    if not scored:
-        return None
-    return sum(1 for j in scored if j["verdict"] == "premature") / len(scored)
-
-
-def reference_suspect_rate(judgements: list[dict]) -> float | None:
-    """판정자가 "오라클(full 번역) 자체가 틀렸다"고 본 경계의 비율.
-
-    contradiction·consistency 는 full 번역을 정답지로 쓴다 — 정답지가 틀리면 옳은
-    조각이 벌받고, 그 오염은 지표 숫자에서 안 보인다. 이 비율이 높으면 지표가 아니라
-    번역기(오라클)를 의심해야 한다는 신호다."""
-    judged = [j for j in judgements
-              if j.get("verdict") in SCORED_VERDICTS + ("reference_suspect",)]
-    if not judged:
-        return None
-    return sum(1 for j in judged if j["verdict"] == "reference_suspect") / len(judged)
-
-
-def unsafe_rate(judgements: list[dict]) -> float | None:
-    """`premature` + `mistranslated`. 둘 다 "이 경계를 고쳐야 한다"로 같은 행동을 부른다.
-
-    라벨이 둘 사이에서 흔들려도 이 값은 안정적이다 — 관문 실측에서 같은 경계가
-    `mistranslated` 1회 / `premature` 2회로 갈렸는데 `cause` 와 `conflict` 는 3회
-    동일했다. 조향에 쓰이는 것은 세부 라벨이 아니라 "표시되었는가"다."""
-    scored = [j for j in judgements if j.get("verdict") in SCORED_VERDICTS]
-    if not scored:
-        return None
-    return sum(1 for j in scored if j["verdict"] in UNSAFE_VERDICTS) / len(scored)
 
 
 # ── A8 Critic ────────────────────────────────────────────────────────────
@@ -657,11 +636,19 @@ MEASURED EVIDENCE — JUDGEMENTS. Cases may carry "judgements": a per-boundary v
 by re-examining what the user had actually seen at that moment against an oracle translation of
 the whole sentence.
 
+Judged boundaries are NOT a random sample: they are the boundaries with the HIGHEST measured
+`contradiction` this iteration. So the verdict tells you what kind of failure the measurement
+found, and "contradiction" on each judgement is the score that put it there.
+
   "premature"      the emitted text asserted something the rest of the sentence CONTRADICTS.
-                   This is the boundary being in the wrong place. It is invisible to the
-                   quality scores, because the later pieces repair the final concatenation.
-  "mistranslated"  the piece was rendered wrong on its own terms.
-  "safe"           fine. Different word order from the oracle is NOT a defect.
+                   The boundary is in the wrong place.
+  "mistranslated"  the piece was rendered wrong on its own terms — not a placement problem.
+  "safe"           a reader disagrees with the measurement. The number was high but nothing was
+                   actually overturned; do not write a rule for this boundary.
+
+Because the sample is the worst boundaries, do NOT read the mix of verdicts as a rate. Four
+"premature" out of four does not mean the prompt fails everywhere; it means the four worst
+boundaries failed. Count nothing here — read WHY.
 
 A "premature" verdict comes with "cause" and "shift" — where the boundary should have gone
 instead. Turn that into a general condition, never into a rule about that one sentence.
@@ -806,7 +793,6 @@ def summarize_critique(cases: list[dict], metrics: dict, summary: str | None,
     # 있다 — run04 iter0 (train fmt=0.93, by_T={}). 정작 그 상황의 판정은 첫 분기(format)
     # 라 by_T 가 필요 없으므로, 아래는 전부 빈 dict 에서도 도는 형태로만 쓴다.
     missing = max((v.get("missing_boundaries") or 0.0) for v in by_T.values()) if by_T else 0.0
-    prem = max((v.get("premature_rate") or 0.0) for v in by_T.values()) if by_T else 0.0
 
     # 순위 진단은 **순위를 망가뜨려 본다** (`metrics.rank_lift`). 절단기가 순위를 쓰는
     # 곳은 keep-vs-discard 한 군데뿐이므로, 그 결정만 무작위로 바꿔 손실을 재는 것이
@@ -847,7 +833,6 @@ def summarize_critique(cases: list[dict], metrics: dict, summary: str | None,
         "stuck_hint": stuck,
         "priority_audit": (priority_audit or [])[:6],
         "max_missing_boundaries": round(missing, 4),
-        "max_premature_rate": round(prem, 4),
         "rank_lift": lift,
         "rank_lift_t": lift_t,
         "summary": summary,

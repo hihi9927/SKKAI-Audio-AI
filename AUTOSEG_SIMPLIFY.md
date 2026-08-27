@@ -330,7 +330,70 @@ consistency    합본 vs 전체번역 양방향 함의의 min   ← 보고용
 `--adopt-se-mult` 재조정이 함께 필요하다 (전례: mdeberta→xlmr-anli 때 1.0 → 0.5).
 
 ### A7 — 판정자 `agents.py` · **LLM**
-경계마다 "여기서 낸 게 너무 일렀나"를 판정한다. 대표 T에서 8문장만.
+**점수를 안 낸다. 사례에 설명만 붙인다.**
+
+```
+종전   문장 8개를 뽑아 그 안의 모든 경계를 판정 → premature_rate 라는 비율 생산
+       그 비율이 Critic 지표 블록·최종 리포트로 감
+
+지금   contradiction 상위 경계 N개만 판정 → cause / shift / generalized_rule 만
+       그 사례에 붙어서 Critic 에게 감. 비율은 만들지 않는다
+```
+
+**왜 탐지기에서 뺐나.** 판정자의 `premature` 정의를 그대로 옮기면
+
+> the emitted text asserts a proposition that the rest of the sentence **CONTRADICTS**
+
+인데, 이건 `contradiction` 지표가 재는 것과 **글자 그대로 같은 질문**이다 (전제 = 문장 전체
+번역, 가설 = 누적 방출). 그런데 저장된 판정에서 둘이 안 맞는다:
+
+```
+판정자 vs contradiction   AUC 0.663      ← 0.5 가 동전 던지기
+mistranslated 로 찍힌 경계  contra 중앙 0.0699
+safe 로 찍힌 경계           contra 중앙 0.0699    ← 같다
+```
+
+같은 질문에 답하는 두 측정이 서로 안 맞으면, **싼 쪽(NLI, 추가 호출 0)을 두고 비싼
+쪽(LLM)을 탐지에 쓸 이유가 없다.** 게다가 그 판정이 `select_cases` 의 우선 쿼터를 채우고
+있었으므로, Critic 이 보는 사례가 *점수를 실제로 깎는 문장*이 아니라 *판정자가 깎일 거라고
+생각한 문장*으로 채워지고 있었다.
+
+**비율도 편향돼 있었다.** 표본을 실패 조준으로 뽑고 그 표본으로 비율을 쟀다 — 조건부 상향
+추정치다 (run03 test 0.2727). 그래서 리포트용으로 무작위 표본을 한 번 더 돌리는 우회로가
+붙어 있었는데, 그 수를 결정에 쓰는 곳은 없었다. 그 test 판정 패스도 같이 지웠다.
+
+**그래도 남긴 이유.** `contradiction` 은 쌍체 평균으로 뭉개져서 **어느 문장의 어느 자리가
+왜 나빴는지가 안 남는다.** Critic 이 규칙을 지어내려면 그 재료가 필요하고, 그건 숫자가 아니라
+말이다:
+
+```
+cause              polarity not yet settled | wrong participant | modifier scope |
+                   head not yet arrived | referent lost
+shift              경계를 오른쪽으로 몇 단위, 어떤 말 뒤로 옮겼어야 했나
+generalized_rule   이 부류를 막을 규칙 한 줄
+```
+
+즉 **조준은 측정이, 설명은 LLM 이** 한다.
+
+**Critic 에게 표본의 성격도 알려준다.** 판정 대상이 무작위가 아니라 *가장 나쁜 경계*라는
+사실을 모르면 "4개 중 4개가 premature" 를 비율로 읽는다. 지시문에 *"여기서는 아무것도
+세지 마라 — 왜인지만 읽어라"* 를 넣었다. `safe` 판정도 정보다 — **측정은 높게 나왔는데
+사람이 보기엔 뒤집힌 게 없다**는 뜻이라, 그 경계엔 규칙을 쓰지 말라는 신호다.
+
+호출도 준다. 문장당 모든 경계(≈3개)를 재던 것이 상위 경계 하나씩이 된다.
+`--judge-rows` → `--judge-boundaries` 로 단위가 바뀌었다.
+
+### A8 — 진단 `agents.py` · **LLM + 결정론**
+실패 사례를 모아 말로 정리한다. **무엇을 고칠지는 Critic 이 정한다 — `focus` 는 없앴다.**
+
+```
+Critic 이 받는 것
+   실패 사례 (contradiction 상위 + adequacy 하위 + 포맷 위반)
+   그중 모순 상위 경계에는 판정자의 cause / shift 가 붙어 있다   ← A7
+   지표 전체 + 각 지표의 뜻 + [프롬프트로 움직일 수 있는가]   ← metrics.GLOSSARY
+   순위 감사 (어떤 표면 특징을 과신하는가)
+   고착 힌트 (직전에 고쳐서 실패한 섹션)
+```
 
 **지표는 뜻과 함께 넘긴다 — 그리고 무엇이 프롬프트의 몫인지 표시한다.**
 Critic 에게 가는 지표가 31개인데 **설명이 있는 건 7개뿐**이었다. 목적함수 `effective` 조차
@@ -345,7 +408,7 @@ Critic 에게 가는 지표가 31개인데 **설명이 있는 건 7개뿐**이�
 
 ```
 움직일 수 있음   score · effective · adequacy · contradiction ·
-                 rank_lift · missing_boundaries · premature_rate
+                 rank_lift · missing_boundaries
 못 움직임        laal_words (T가 정한다) · chunks_per_sentence (절단기가 고정한다) ·
                  format_pass_rate (남는 건 원문 훼손) · 그 외 진단·보고 지표
 ```
@@ -368,16 +431,6 @@ rank_lift ≈ 0    순위에 정보가 없다 → [Priority Rules] 를 고쳐봐
 `m.to_dict()` 에 실려 가긴 했지만 **무엇인지 알려주지 않아** LLM 이 읽지 못했다.
 다언어 병합에서 값이 통째로 떨어지던 버그도 함께 고쳤다.
 
-### A8 — 진단 `agents.py` · **LLM + 결정론**
-실패 사례를 모아 말로 정리한다. **무엇을 고칠지는 Critic 이 정한다 — `focus` 는 없앴다.**
-
-```
-Critic 이 받는 것
-   실패 사례 (조기 방출 판정 우선)
-   지표 전체 + 각 지표의 뜻 + [프롬프트로 움직일 수 있는가]   ← metrics.GLOSSARY
-   순위 감사 (어떤 표면 특징을 과신하는가)
-   고착 힌트 (직전에 고쳐서 실패한 섹션)
-```
 
 **왜 `focus` 를 없앴나.** 지표에서 방향을 결정론으로 뽑아 PE 에게 "측정에서 나온 것이니
 따르라"(Rule 7)고 강제했는데, 네 갈래 어느 것도 자기 목표를 못 고쳤다 — 목표 지표 개선

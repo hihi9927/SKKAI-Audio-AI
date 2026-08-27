@@ -164,21 +164,20 @@ def _zmix(per_target: dict[str, list[float | None]],
 
 
 def judge_distributed(judge, per_rows: dict[str, list[dict]], T: int,
-                      total_rows: int, sample: str = "failure", seed: int = 20260810):
+                      total_boundaries: int):
     """판정 예산을 **타깃에 나눈다.** 총 호출 수는 그대로다.
 
-    한 타깃에만 판정자를 돌리면 목적함수에서 뺀 타깃 편향이 조향(`premature_rate`,
-    Critic 케이스 선정)으로 되돌아온다. 행 수를 나누면 비용은 그대로면서 편향이 없고,
-    타깃마다 다른 실패(어떤 언어에서만 깨지는 경계)가 드러나는 이득이 붙는다.
-    타깃당 표본이 얇아지지만 이 값은 조향 신호이지 목적함수가 아니다.
+    한 타깃에만 판정자를 돌리면 목적함수에서 뺀 타깃 편향이 Critic 케이스 선정으로
+    되돌아온다. 예산을 나누면 비용은 그대로면서 편향이 없고, 타깃마다 다른 실패
+    (어떤 언어에서만 깨지는 경계)가 드러나는 이득이 붙는다.
     """
     tgts = list(per_rows)
     if not tgts:
         return []
-    per = max(1, total_rows // len(tgts))
+    per = max(1, total_boundaries // len(tgts))
     out: list[dict] = []
-    for k, t in enumerate(tgts):
-        js = agents.judge_rows(judge, per_rows[t], T, per, sample=sample, seed=seed + k)
+    for t in tgts:
+        js = agents.judge_top_contra(judge, per_rows[t], T, per)
         for j in js:
             j["target"] = t
         out.extend(js)
@@ -919,9 +918,10 @@ def main() -> int:
                    help="최종 test 곡선용 격자")
     p.add_argument("--main-t", type=int, default=None,
                    help="판정자가 도는 주 작동점. 미지정 시 --t-grid 의 중앙값")
-    p.add_argument("--judge-rows", type=int, default=8,
-                   help="이터레이션당 판정할 문장 수 (adequacy 하위부터)")
-    p.add_argument("--no-judge", action="store_true", help="판정자를 끄고 adequacy 만으로 조향")
+    p.add_argument("--judge-boundaries", type=int, default=8,
+                   help="이터레이션당 판정할 경계 수 (contradiction 상위부터)")
+    p.add_argument("--no-judge", action="store_true",
+                   help="판정자를 끈다. 사례에 '왜·어디로' 설명이 안 붙는다")
     p.add_argument("--adequacy-backend", default="cometkiwi",
                    choices=sorted(metrics.QE_CHECKPOINTS),
                    help="참조 없는 QE. y축 주지표")
@@ -1440,17 +1440,13 @@ def main() -> int:
             sc = metrics.score(m)
 
             # ── A7 Judge — 주 작동점에서만 (비용) ────────────────────────
+            # **점수를 안 낸다.** 모순이 가장 큰 경계에 "왜·어디로" 를 붙일 뿐이고,
+            # 그 설명은 Critic 케이스에만 실린다 (`agents.judge_top_contra` 참조).
             judgements: list[dict] = []
             if judge is not None and m.by_T:
                 judgements = judge_distributed(
                     judge, getattr(run_eval, 'last_per_rows', {'_': rows}),
-                    main_t, args.judge_rows)
-                pr = agents.premature_rate(judgements)
-                if pr is not None and str(main_t) in m.by_T:
-                    m.by_T[str(main_t)].premature_rate = round(pr, 4)
-                rs = agents.reference_suspect_rate(judgements)
-                if rs is not None and str(main_t) in m.by_T:
-                    m.by_T[str(main_t)].reference_suspect_rate = round(rs, 4)
+                    main_t, args.judge_boundaries)
                 (it_dir / "judgements.json").write_text(
                     json.dumps(judgements, ensure_ascii=False, indent=2), encoding="utf-8")
 
@@ -1521,10 +1517,7 @@ def main() -> int:
                 import collections as _c2
                 log(f"[iter {it}] 결정론 수정 {len(norm)}건 "
                     f"{dict(_c2.Counter(x['kind'] for x in norm))}")
-            log(f"[iter {it}] {fmt_metrics(m, 'train')}"
-                + (f"  premature={m.by_T[str(main_t)].premature_rate}"
-                   if m.by_T.get(str(main_t)) and m.by_T[str(main_t)].premature_rate is not None
-                   else ""))
+            log(f"[iter {it}] {fmt_metrics(m, 'train')}")
 
             # 쌍체 차이. dev 가 고정 집합이라 `mean(new) − mean(old) = mean(new − old)` 가
             # 항등이고 점추정은 절대값 비교와 동일하다. 얻는 것은 **오차막대와 유효 표본**:
@@ -1854,21 +1847,6 @@ def main() -> int:
         if test_viol_1st:
             (run_dir / "test_violations_first_pass.json").write_text(
                 json.dumps(test_viol_1st, ensure_ascii=False, indent=2), encoding="utf-8")
-        if judge is not None and test_m.by_T:
-            # 보고용 test 판정은 **무작위 표본**이다. 루프 중에는 실패 조준 표본
-            # (Critic 입력용)이 맞지만, 그 표본으로 잰 premature_rate 는 조건부 상향
-            # 추정치라 리포트 수치로 못 쓴다 (run03 의 0.2727 이 그 값).
-            tj = judge_distributed(
-                judge, getattr(run_eval, "last_per_rows", {"_": test_rows}),
-                main_t, args.judge_rows * 2, sample="random")
-            pr = agents.premature_rate(tj)
-            if pr is not None and str(main_t) in test_m.by_T:
-                test_m.by_T[str(main_t)].premature_rate = round(pr, 4)
-            rs = agents.reference_suspect_rate(tj)
-            if rs is not None and str(main_t) in test_m.by_T:
-                test_m.by_T[str(main_t)].reference_suspect_rate = round(rs, 4)
-            (run_dir / "test_judgements.json").write_text(
-                json.dumps(tj, ensure_ascii=False, indent=2), encoding="utf-8")
         if test_m.by_T:
             low_t = min(final_grid)
             if floor_fn is None:
@@ -2060,9 +2038,6 @@ def build_report(args, run_dir, profile, measured, history, best, test_m, test_v
                   "필요하면 `eval_prompt --tgt-lang` 으로 재채점한다 (번역 캐시가 "
                   "남아 있어 API 비용 없음)."]
 
-    main_s = test_m.by_T.get(str(main_t))
-    pr = main_s.premature_rate if main_s else None
-    rs = main_s.reference_suspect_rate if main_s else None
     low_s = test_m.by_T.get(str(min(final_grid)))
     sp = low_s.rank_contra_spearman if low_s else None
     gap = low_s.rank_contra_gap if low_s else None
@@ -2070,11 +2045,6 @@ def build_report(args, run_dir, profile, measured, history, best, test_m, test_v
         "",
         f"- 포맷 통과율 {test_m.format_pass_rate:.4f} (재시도 없이 "
         f"{test_m.format_pass_rate_no_retry:.4f}), 위반 {len(test_viol)}건",
-        f"- premature_rate (T={main_t}, 부록 지표, **무작위 표본**): "
-        + (f"**{pr:.4f}**" if pr is not None else "미측정"),
-        f"- reference_suspect_rate (T={main_t}): "
-        + (f"{rs:.4f}" if rs is not None else "미측정")
-        + " — 높으면 오라클(full 번역)을 의심할 것. contradiction·consistency 가 오염된다",
         f"- **순위 격차 `rank_contra_gap` (T={min(final_grid)}, 바닥 보정)**: "
         + (f"**{gap:+.4f}**" if gap is not None else "미측정")
         + " — 순위 하위 절반 − 상위 절반의 경계 contradiction 차. "

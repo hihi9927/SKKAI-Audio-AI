@@ -484,8 +484,6 @@ class SplitMetrics:
     laal_words: float
     chunks_per_sentence: float
     missing_boundaries: float
-    premature_rate: float | None = None
-    reference_suspect_rate: float | None = None    # 판정자가 오라클을 의심한 경계 비율
     rank_contra_spearman: float | None = None      # 순위 vs 실측 contra 정렬도. 양수=정렬
     # 순위 하위 절반 − 상위 절반의 경계 contradiction 차. 양수=정렬, 0 이하=순위 무정보.
     # focus="priority" 판정이 쓰는 값 (`rank_contra_gap`).
@@ -709,11 +707,6 @@ GLOSSARY: dict[str, tuple[str, bool]] = {
                             "only changes WHICH boundaries survive.", False),
     "missing_boundaries": ("how many boundaries the budget asked for that the prompt never "
                            "marked. Above zero means the knob cannot reach that T.", True),
-    "premature_rate": ("fraction of judged boundaries the judge called too early.", True),
-    "reference_suspect_rate": ("fraction where the judge suspected the reference "
-                               "translation itself, not the segmentation. High values mean "
-                               "the cases are unreliable, not that the prompt is wrong.",
-                               False),
     "rank_contra_spearman": ("rank correlation between assigned confidence and measured "
                              "contradiction. Superseded by `rank_lift`; reported only.",
                              False),
