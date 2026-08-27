@@ -1823,11 +1823,16 @@ def main() -> int:
                                               measured=measured)
                 log(f"[iter {it}] 개정 후보 {len(cands)}/{len(jobs)} 통과")
                 new_prompt = revised.get("prompt", "")
+                # **바뀐 섹션은 diff 로 센다 — PE 자기신고를 쓰지 않는다**
+                # (`agents.changed_sections` 참조: 저장분 36건 중 14건 불일치).
+                # 압축 *전* 프롬프트로 재는 것이 맞다 — 압축기가 보호해야 하는 것은
+                # 이번 이터레이션이 넣은 변경이고, 압축은 그 뒤에 일어난다.
+                sections_changed = (agents.changed_sections(best["prompt"], new_prompt)
+                                    if new_prompt else [])
                 budget = int(prompt_v0_len * args.max_prompt_growth)
                 if new_prompt and len(new_prompt) > budget:
                     log(f"[iter {it}] 개정본 {len(new_prompt)}자 > 예산 {budget}자 — 압축")
-                    packed = compressor.compress(
-                        new_prompt, budget, revised.get("sections_changed") or [])
+                    packed = compressor.compress(new_prompt, budget, sections_changed)
                     if (packed and not agents.check_skeleton(packed)
                             and len(packed) <= budget):
                         log(f"[iter {it}] 압축 성공 {len(new_prompt)} -> {len(packed)}자")
@@ -1851,7 +1856,8 @@ def main() -> int:
                     prompt = new_prompt
                     revision_applied = True
                 (it_dir / "changelog.json").write_text(json.dumps({
-                    "sections_changed": revised.get("sections_changed"),
+                    "sections_changed": sections_changed,
+                    "sections_reported": revised.get("sections_changed"),
                     "changelog": revised.get("changelog"),
                     "scope_violations": scope,
                 }, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -1860,9 +1866,11 @@ def main() -> int:
                 # 채택 여부와 무관하게 "직전에 무엇을 건드렸나" 를 기억한다. 채택되면
                 # stale 이 0 으로 돌아가 avoid 가 안 걸리므로, 실제로 쓰이는 건 실패했을
                 # 때뿐이다.
-                _sc = revised.get("sections_changed") or []
-                last_sections = ", ".join(_sc) if _sc else None
-                log(f"[iter {it}] 개정: {revised.get('sections_changed')}")
+                last_sections = ", ".join(sections_changed) if sections_changed else None
+                _rep = revised.get("sections_changed") or []
+                log(f"[iter {it}] 개정: {sections_changed}"
+                    + (f"  (PE 신고 {_rep} — 불일치)" if sorted(_rep) != sorted(sections_changed)
+                       else ""))
             except BudgetExceeded:
                 raise
             except Exception as e:
