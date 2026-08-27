@@ -656,11 +656,15 @@ def rank_contra_spearman(rows: list[dict], T: int, min_boundaries: int = 3) -> t
     `[Priority Rules]` 조향(`focus=priority`)이 근거 없는 축이 된다는 뜻이다.
 
     **주의 — 이 값은 원시(raw) contradiction 기준이라 길이 교란이 섞여 있다.**
-    NLI 잡음 바닥은 hypothesis 가 짧을수록 크고(run03 실측: 1-2어절 0.113, 10어절+
-    0.003), 상위 순위 경계는 문장 앞쪽(짧은 hypothesis)에 몰린다. run03 test 에서
-    raw −0.25 가 바닥 보정 후 **+0.14 로 뒤집혔다** — 역전처럼 보인 것의 대부분이
-    위치 교란이었다. 이 값이 음수로 나오면 결론 내리기 전에
-    `noise_floor.py --recheck-t` 로 보정값을 확인할 것.
+    NLI 잡음 바닥은 hypothesis 길이에 따라 다르고 상위 순위 경계는 문장 앞쪽(짧은
+    hypothesis)에 몰린다. run03 test 에서 raw −0.25 가 바닥 보정 후 **+0.14 로 뒤집혔다** —
+    역전처럼 보인 것의 대부분이 위치 교란이었다.
+
+    **그 보정의 방향이 현행 백엔드에서 뒤집혔다.** run03 은 `deberta-mnli`(짧을수록 바닥이
+    큼: 1-2어절 0.113, 10어절+ 0.003)로 잰 것이고 그 백엔드는 삭제됐다. `xlmr-anli` 는
+    반대로 **길수록 크다** (German 0.024 → 0.107, `runs/noise_floor_xlmr/`). 따라서 지금
+    보정은 앞쪽 경계의 불리를 없애는 게 아니라 **키울 수 있다.** 이 값의 부호를 읽기 전에
+    그 문서를 먼저 볼 것.
 
     가장 작은 T(경계 최다 생존)에서 재야 표본이 산다. 반환 (평균, 문장 수).
     """
@@ -686,8 +690,11 @@ def _floor_corrected(d: dict, contras: list[float], floor_fn,
     """경계별 contradiction 에서 길이 잡음 바닥 c0(hypothesis 길이)를 뺀다.
 
     경계 j 의 hypothesis 는 조각 번역 1..j+1 을 이어붙인 것이므로 길이가 j 와 함께
-    자란다. 바닥은 짧을수록 크므로(run03: 1-2어절 0.113 vs 10어절+ 0.003) 보정 없이는
-    **문장 앞쪽 경계가 구조적으로 불리**하다.
+    자란다. 바닥이 길이에 따라 출렁이므로 보정 없이는 특정 위치의 경계가 구조적으로
+    불리해진다.
+
+    **방향은 현행 백엔드에서 뒤집혔다.** "짧을수록 크다" 는 삭제된 `deberta-mnli` 성질이고,
+    `xlmr-anli` 는 길수록 크다 (German 0.024 → 0.107, `runs/noise_floor_xlmr/`).
 
     길이는 **타깃 표기 체계**로 센다 (`unit_count`). 어절로 고정하면 무공백 타깃(ja/zh)
     에서 조각을 공백으로 이어붙인 문자열의 `split()` 이 **조각 수**를 세게 되어, 실제
