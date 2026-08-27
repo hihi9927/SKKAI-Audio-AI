@@ -1001,6 +1001,14 @@ def main() -> int:
     p.add_argument("--budget", type=float, default=5.0)
     p.add_argument("--workers", type=int, default=8)
     p.add_argument("--fresh", action="store_true")
+    # **중간 재개.** 3~5시간짜리 런이 이터레이션 도중 죽으면 종전 선택지는 두 개뿐이었다
+    # — 처음부터 다시(PE 가 비결정론적이라 앞의 이터레이션이 통째로 무의미해진다) 또는
+    # `--final-only`(거기까지의 best 로 test 만 뽑고 끝). run05 가 실제로 SIGTERM 으로
+    # 그렇게 죽었다. 분절·번역 캐시는 남아 있으므로 잃는 것은 **루프 상태**뿐이고,
+    # 그 상태는 전부 디스크에 있다 (history.json + iter_NN/).
+    p.add_argument("--resume", action="store_true",
+                   help="같은 run-id 의 history.json 을 이어받아 중단된 이터레이션부터 "
+                        "계속한다. --run-id 를 함께 줘야 한다")
     p.add_argument("--final-only", action="store_true",
                    help="이터레이션을 건너뛰고 기존 best_prompt.txt 로 최종 test 평가만 "
                         "다시 돈다. 루프는 끝났는데 마지막 단계가 죽었을 때 쓴다")
@@ -1114,6 +1122,16 @@ def main() -> int:
     run_dir = _HERE.parent / "runs" / pair_id / run_id
     if args.fresh and run_dir.exists():
         shutil.rmtree(run_dir)
+    # **재개 전제는 먼저 본다.** 아래에서 CometKiwi·NLI 를 GPU 에 올리는 데 몇 분이
+    # 걸리므로, 이어갈 것이 없다는 사실은 그 전에 알려야 한다.
+    if args.resume:
+        if not (run_dir / "history.json").exists():
+            print(f"[stop] --resume 인데 {run_dir}/history.json 이 없다. "
+                  f"--run-id 로 이어갈 런을 지정할 것 (지금 {run_id})", file=sys.stderr)
+            return 2
+        if args.fresh:
+            print("[stop] --resume 과 --fresh 는 같이 못 쓴다", file=sys.stderr)
+            return 2
     run_dir.mkdir(parents=True, exist_ok=True)
 
     gw = Gateway(model=args.model, budget=args.budget,
@@ -1442,6 +1460,7 @@ def main() -> int:
         best = {"version": 0, "prompt": prompt, "train_score": None,
                 "dev_score": None, "fmt": None}
         best_ctx: dict = {}
+        start_it = 0
         best_critique: dict | None = None
         # 고착 방지 핸들 — 직전 개정이 **어느 섹션을 고쳤는지**. focus 라벨을 쓰던
         # 것을 바꿨다: 라벨이 달라도 같은 섹션을 고치는 경우가 8/30(27%)이라
@@ -1449,6 +1468,52 @@ def main() -> int:
         last_sections: str | None = None
         stale = 0
         floor_fn = None          # contradiction 잡음 바닥 — 첫 평가 후 1회 측정
+
+        # ── `--resume` — 중단 지점부터 이어간다 ─────────────────────────
+        # 복원해야 하는 것은 넷이다: `history`(PE 가 읽는 시도 이력), `best`(비교 기준),
+        # `best_ctx["dev_rows"]`(쌍체 Δ 의 기준선 — **이게 없으면 채택 판정이 무너진다**),
+        # 그리고 다음 이터레이션 번호. 앞의 셋은 전부 디스크에 있다.
+        #
+        # `best_ctx` 의 나머지(rows/metrics/violations/judgements)는 Critic 입력이라
+        # 없어도 죽지 않는다 — 첫 이터레이션이 새로 만든 것을 쓴다. 그래서 저장된 것만
+        # 채우고 없으면 비운다.
+        if args.resume:
+            hist_path = run_dir / "history.json"
+            best_path = run_dir / "best_prompt.txt"
+            if not hist_path.exists() or not best_path.exists():
+                log(f"[stop] --resume 인데 {run_dir} 에 history.json / best_prompt.txt 가 없다")
+                return 2
+            history = json.loads(hist_path.read_text(encoding="utf-8"))
+            start_it = len(history)
+            prompt = best["prompt"] = best_path.read_text(encoding="utf-8")
+            done = [h for h in history if h.get("adopted")]
+            if done:
+                last = done[-1]
+                best["version"] = last["version"]
+                best["train_score"] = last.get("score_train")
+                best["dev_score"] = last.get("score_dev")
+                best["fmt"] = (last.get("train") or {}).get("format_pass_rate")
+                d = run_dir / f"iter_{last['version']:02d}"
+                for k, f in (("rows", "train_rows.json"), ("dev_rows", "dev_rows.json"),
+                             ("violations", "violations.json"),
+                             ("judgements", "judgements.json"),
+                             ("priority_audit", "priority_audit.json")):
+                    if (d / f).exists():
+                        best_ctx[k] = json.loads((d / f).read_text(encoding="utf-8"))
+                mj = d / "metrics.json"
+                if mj.exists():
+                    best_ctx["metrics"] = json.loads(mj.read_text(encoding="utf-8")).get("train")
+                stale = len(history) - 1 - history.index(last)
+            else:
+                stale = len(history)
+            if "dev_rows" not in best_ctx:
+                log("[resume] 경고: best 의 dev_rows 를 못 찾았다 — 다음 이터레이션은 "
+                    "쌍체 Δ 없이 점수 비교로 판정한다")
+            log(f"[resume] iter {start_it} 부터 재개. best=v{best['version']} "
+                f"dev={best['dev_score']} stale={stale} 이력 {len(history)}건")
+            if start_it >= args.iterations:
+                log(f"[resume] 이미 {start_it}회 돌았다 (--iterations {args.iterations}) — "
+                    f"최종 평가로 넘어간다")
 
         # `--final-only` — 이터레이션을 건너뛰고 기존 `best_prompt.txt` 로 최종 test 평가만
         # 다시 돈다. 루프는 끝났는데 마지막 단계에서 죽는 경우가 실제로 있었고(run05,
@@ -1483,7 +1548,7 @@ def main() -> int:
                 log(f"[iter {it}] 소요 {tot:.0f}초 = "
                     + " + ".join(f"{r['stage']} {r['sec']:.0f}" for r in timer.rows))
 
-        for it in range(args.iterations):
+        for it in range(start_it, args.iterations):
             it_dir = run_dir / f"iter_{it:02d}"
             it_dir.mkdir(parents=True, exist_ok=True)
             (it_dir / "prompt.txt").write_text(prompt, encoding="utf-8")

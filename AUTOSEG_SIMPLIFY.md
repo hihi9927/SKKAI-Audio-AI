@@ -673,6 +673,44 @@ en 은 −12.4% 로 혼자 크게 움직였다. test 스플릿 346문장에서 �
 **스플릿 간 차이가 12% 나므로 대리 추정을 쓰지 않는 것이 맞다**. `min_gap` 은 3 으로 같아
 결과에는 영향이 없다.
 
+### 중단과 재개
+
+```
+--fresh        런 디렉토리를 지우고 처음부터
+--resume       history.json 을 이어받아 중단된 이터레이션부터 (--run-id 필수)
+--final-only   이터레이션 건너뛰고 best_prompt 로 test 평가만
+```
+
+**무엇이 실패해도 런이 안 죽나.**
+
+```
+API 5xx/429      게이트웨이 5회 재시도 + 지수 백오프(최대 30초).
+                 400 중 reasoning_effort/response_format 미지원은 그 필드를 떼고 재시도
+번역 실패        자체 재시도 후 예외. **빈 값은 캐시에 안 쓴다** — run04 에서 빈 번역이
+                 캐시에 박혀 다음 런이 호출조차 안 하고 score 0 이 됐다
+판정 1건 실패    verdict="error" 로 남기고 계속
+개정 후보 1개    그 후보만 버린다
+에이전트 블록    루프를 끊고 그때까지의 best 로 최종 test 평가로 넘어간다
+예산 초과        BudgetExceeded → 캐시 flush 후 종료
+계측 실패        전부 삼킨다
+```
+
+**`--resume` 이 복원하는 것 넷.** 분절·번역 캐시는 20건마다 자동 flush 되므로 살아 있고,
+잃는 것은 루프 상태뿐이다 — 그건 전부 디스크에 있다.
+
+```
+history          PE 가 읽는 시도 이력           history.json
+best             비교 기준 프롬프트·점수        best_prompt.txt + history
+best_ctx.dev_rows 쌍체 Δ 의 기준선             iter_NN/dev_rows.json  ← 없으면 채택 판정이 무너진다
+start_it         다음 이터레이션 번호           len(history)
+```
+
+저장된 런 3개에 걸어 확인했다 — `de-en/run01` 이력 4건 → iter 4 부터 `best=v0 stale=3`,
+`ja-en/run01` → iter 3 부터 `best=v1 stale=1`, dev_rows 60행 전부 복원.
+
+재개 전제(=이어갈 history 가 있는가)는 **CometKiwi·NLI 를 GPU 에 올리기 전에** 검사한다.
+모델 적재가 몇 분이라, 이어갈 것이 없다는 사실을 그 뒤에 알리면 늦다.
+
 ### 계측 — 시간과 비용
 
 ```
