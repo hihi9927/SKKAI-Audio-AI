@@ -16,6 +16,13 @@
 #   서버 기동  : **축당 1회**. 타깃 언어는 클라이언트가 start 메시지로 보내므로 서버는
 #                언어와 무관하다. 축마다 3언어를 이어 돌려 기동 6회를 아낀다.
 #
+# 환경변수
+#   AXES   돌릴 축 (기본 "static punct seg"). 예: AXES=static
+#   CHUNK  청크 크기 초 (기본 2.0). static 곡선을 그리는 스윕에 쓴다.
+#
+#   static 청크 스윕 예:
+#     AXES=static CHUNK=4.0 bash evaluation/ast/run_covost2.sh
+#
 # 종료는 반드시 stop_server.sh 로 한다(pkill 은 vLLM EngineCore 를 남긴다).
 
 set -u
@@ -27,6 +34,16 @@ PORT=8765
 MODEL="$REPO/models/Qwen3-ASR-1.7B-en-dailytalk-seg"
 
 LIMIT="${1:-}"
+AXES="${AXES:-static punct seg}"
+CHUNK="${CHUNK:-2.0}"
+
+# 청크가 기본값이 아니면 **결과 경로의 축 이름에 붙인다.** 안 붙이면 static@4s 가
+# static@2s 와 같은 폴더(`CoVoST2/static/n3000-de/`)를 쓰게 되고, --tag 가 다르면
+# 폴더는 갈리지만 "어느 청크에서 나온 점인가"가 결과에 남지 않는다. 곡선을 그릴 때
+# 점의 출처를 잃는 건 언어 충돌만큼 위험하다.
+axis_label() {
+  if [ "$CHUNK" = "2.0" ]; then echo "$1"; else echo "$1-c${CHUNK%.0}"; fi
+}
 STAMP="$(date +%Y%m%d_%H%M%S)"
 LOGDIR="$REPO/evaluation/ast/results/_runlogs/$STAMP"
 mkdir -p "$LOGDIR"
@@ -44,7 +61,9 @@ echo "════════════════════════�
 echo " CoVoST2 단클립 실험  tag=$STAMP"
 echo " 모델   : $(basename "$MODEL")"
 echo " 번역   : Cloud Translation v2"
-echo " 발화   : ${LIMIT:-전량(3,000)} × 3언어 × 3축"
+echo " 청크   : ${CHUNK}s"
+echo " 축     : $AXES"
+echo " 발화   : ${LIMIT:-전량(3,000)} × 3언어"
 echo " 로그   : $LOGDIR"
 echo " 시작   : $(date '+%F %T')"
 echo "═══════════════════════════════════════════════════════"
@@ -53,14 +72,15 @@ echo
 run_axis() {
   local axis="$1"; shift
   local server_args=("$@")
-  local slog="$LOGDIR/${axis}_server.log"
+  local label; label="$(axis_label "$axis")"
+  local slog="$LOGDIR/${label}_server.log"
 
-  echo "═══ [$axis] 서버 기동 ═══ $(date '+%T')"
+  echo "═══ [$label] 서버 기동 ═══ $(date '+%T')  (chunk ${CHUNK}s)"
   "$PY" "$REPO/evaluation/streaming_websocket_server_ast.py" \
-      --model "$MODEL" --no-vad --chunk-size "${CHUNK:-2.0}" \
+      --model "$MODEL" --no-vad --chunk-size "$CHUNK" \
       --port "$PORT" --no-idle-shutdown \
       --trans-backend v2 \
-      --trans-stats-out "$LOGDIR/${axis}_trans_stats.json" \
+      --trans-stats-out "$LOGDIR/${label}_trans_stats.json" \
       "${server_args[@]}" > "$slog" 2>&1 &
   local spid=$!
 
@@ -70,23 +90,23 @@ run_axis() {
   local waited=0
   until "$PY" -c "import socket;socket.create_connection(('127.0.0.1',$PORT),2).close()" 2>/dev/null; do
     if ! kill -0 "$spid" 2>/dev/null; then
-      echo "!! [$axis] 서버 기동 실패 — $slog"; tail -20 "$slog"; return 1
+      echo "!! [$label] 서버 기동 실패 — $slog"; tail -20 "$slog"; return 1
     fi
     sleep 5; waited=$((waited+5))
-    if [ "$waited" -ge 900 ]; then echo "!! [$axis] 기동 타임아웃"; return 1; fi
+    if [ "$waited" -ge 900 ]; then echo "!! [$label] 기동 타임아웃"; return 1; fi
   done
-  echo "═══ [$axis] 준비 완료 (${waited}초) ═══"
+  echo "═══ [$label] 준비 완료 (${waited}초) ═══"
 
   for lang in de ja zh; do
-    local clog="$LOGDIR/${axis}_${lang}_client.log"
-    echo "─── [$axis/$lang] $(date '+%T')"
+    local clog="$LOGDIR/${label}_${lang}_client.log"
+    echo "─── [$label/$lang] $(date '+%T')"
     # scope 에 언어를 넣어야 한다. 결과 경로가 {dataset}/{model}/{scope}/{tag} 인데
     # 언어가 빠지면 세 언어가 같은 폴더를 쓴다. 그러면 --tag 재사용의 "중단 지점부터
     # 재개" 로직이 걸려 ja/zh 가 "이번 실행 0개"로 통째로 건너뛰고, 마지막 언어의
     # 채점 설정으로 앞 언어의 번역을 다시 채점한 metric.json 이 남는다
     # (실측: 독일어 가설이 tok=zh / laal_unit=char 로 채점됨).
     local cargs=(--manifest "$REPO/evaluation/ast/manifests/covost2_en-${lang}_n3000.jsonl"
-                 --dataset CoVoST2 --model "$axis" --scope "n3000-${lang}" --tag "$STAMP"
+                 --dataset CoVoST2 --model "$label" --scope "n3000-${lang}" --tag "$STAMP"
                  --src-lang en --target-lang "$lang"
                  --laal-unit "${LAAL_UNIT[$lang]}"
                  --port "$PORT" --clients 16 --trailing-silence-ms 500)
@@ -96,37 +116,44 @@ run_axis() {
 
     # 재개 로직에 걸려 통째로 건너뛰면 "이번 실행 0개"가 찍힌다. 조용히 넘어가면 안 된다.
     if grep -q "이번 실행 0개" "$clog"; then
-      echo "!!! [$axis/$lang] 이번 실행 0개 — 결과 경로가 겹쳤을 수 있다"
+      echo "!!! [$label/$lang] 이번 실행 0개 — 결과 경로가 겹쳤을 수 있다"
     fi
     if grep -q "발화 0개" "$clog"; then
-      echo "!!! [$axis/$lang] 발화 0개 — 서버 연결 문제. $clog 확인"
+      echo "!!! [$label/$lang] 발화 0개 — 서버 연결 문제. $clog 확인"
     fi
     if grep -q "번역 실패 : [1-9]" "$clog"; then
-      echo "!!! [$axis/$lang] 번역 실패 발생 — 이 런의 점수는 신뢰할 수 없다"
+      echo "!!! [$label/$lang] 번역 실패 발생 — 이 런의 점수는 신뢰할 수 없다"
     fi
     echo
   done
 
-  echo "═══ [$axis] 서버 종료 ═══ $(date '+%T')"
+  echo "═══ [$label] 서버 종료 ═══ $(date '+%T')"
   bash "$STOP" "$PORT" 2>&1 | tail -2
   sleep 5
   echo
 }
 
 # 축 정의 — 서버 인자만 다르고 모델은 동일하다.
-run_axis static "--always-commit" "--disable-dot-commit"
-run_axis punct  "--enable-dot-commit" "--no-rep-dedup"
-run_axis seg    "--disable-dot-commit"
+for axis in $AXES; do
+  case "$axis" in
+    static) run_axis static "--always-commit" "--disable-dot-commit" ;;
+    punct)  run_axis punct  "--enable-dot-commit" "--no-rep-dedup" ;;
+    seg)    run_axis seg    "--disable-dot-commit" ;;
+    *) echo "!! 알 수 없는 축: $axis (static|punct|seg)"; exit 1 ;;
+  esac
+done
 
 echo "═══════════════ 요약 ═══════════════ $(date '+%F %T')"
-for axis in static punct seg; do
+for axis in $AXES; do
+  label="$(axis_label "$axis")"
   for lang in de ja zh; do
-    echo "── $axis / $lang"
+    echo "── $label / $lang"
     grep -E "발화 [0-9]+개|LAAL      :|BLEU      :|FTL       :|번역 호출|번역 실패" \
-         "$LOGDIR/${axis}_${lang}_client.log" 2>/dev/null | sed 's/^.*INFO - /   /;s/^.*ERROR - /   !! /'
+         "$LOGDIR/${label}_${lang}_client.log" 2>/dev/null | sed 's/^.*INFO - /   /;s/^.*ERROR - /   !! /'
   done
-  [ -f "$LOGDIR/${axis}_trans_stats.json" ] && \
-    echo "   번역 통계: $(tr -d '\n ' < "$LOGDIR/${axis}_trans_stats.json" | head -c 300)"
+  [ -f "$LOGDIR/${label}_trans_stats.json" ] && \
+    echo "   번역 통계: $(tr -d '\n ' < "$LOGDIR/${label}_trans_stats.json" | head -c 300)"
   echo
 done
-echo "결과: $REPO/evaluation/ast/results/CoVoST2/{static,punct,seg}/n3000-{de,ja,zh}/$STAMP/metric.json"
+_labels=""; for a in $AXES; do _labels="$_labels,$(axis_label "$a")"; done
+echo "결과: $REPO/evaluation/ast/results/CoVoST2/{${_labels#,}}/n3000-{de,ja,zh}/$STAMP/metric.json"

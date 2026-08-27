@@ -175,64 +175,34 @@ def changed_sections(old: str, new: str) -> list[str]:
     return [k for k in b if k in a and a[k] != b[k]]
 
 
-# **신뢰 영역의 하한**이다 (수렴 상태에서의 허용 폭). 상한은 `TRUST_*`.
-# **하한을 올렸다 (2 -> 3 섹션, 1.25 -> 1.5배).** PE 산출 성장률의 실측 분포가
-# 1.26~2.66 이라 1.25 는 분포 **밖**이었다 — de/run01 에서 기각 1회로 반경이 하한까지
-# 좁아지자 0/3 통과 -> 측정 불가 -> 채택 불가로 영구 봉쇄됐다. 게다가 이제 한 개정이
-# Critic 제안을 전부 실으므로 정당하게 더 커진다. 넘치는 몫은 `Compressor.fit_sections`
-# 가 줄인다.
-MAX_SECTIONS_CHANGED = 3
-MAX_SECTION_GROWTH = 1.5
-
-# 아직 아무 개정도 채택되지 않은 상태의 허용 폭. 걸음이 통하면 넓히고 나쁘면 좁힌다
-# (`loop.py` 의 trust region). 고정 임계값 하나로는 **부트스트랩**(v0 가 구조적으로 틀려
-# 큰 수리가 필요)과 **수렴**(진동을 막아야 함)을 구별할 수 없다 — de/zh/ja 실측에서
-# 세 언어 모두 개정이 거부됐고 둘은 1.25 를 0.01~0.06 초과한 것이었다.
-TRUST_SECTIONS_MAX = 4
-TRUST_GROWTH_MAX = 2.5
+# 개정 한 번이 프롬프트를 키울 수 있는 **전체** 배수. 걸음 크기 제한이지 국소성 제한이
+# 아니다 — 어느 섹션을 몇 개 건드리든 상관하지 않고, 합계 길이만 본다.
+#
+# **왜 섹션 개수·섹션별 성장을 뺐나.** 종전 관문은 (a) 변경 섹션 ≤ N개, (b) 변경 섹션의
+# 길이 ≤ M배 였다. 둘 다 "한 군데만 크게 고쳐라" 를 강제하는데, 정작 필요한 개정은 반대
+# 모양인 경우가 많다 — Critic 제안 여러 개를 각 섹션에 한 줄씩 반영하는 편집이 (a) 에
+# 걸리고, 짧은 섹션에 두 줄 넣는 편집이 (b) 에 걸린다. 실측 로그 26개에서 범위 위반 6건
+# 중 5건이 성장, 1건이 섹션 개수였고 **섹션 추가/삭제는 0건**이다. 즉 관문이 실제로 막고
+# 있던 것은 "분량" 하나뿐이었으므로, 분량 하나만 남긴다.
+#
+# 그리고 분량은 **거부할 일이 아니라 줄일 일**이다. 넘치면 `Compressor.compress` 가
+# 바뀐 섹션을 보호한 채 예산 안으로 깎고, 그래도 못 맞추면 그때 거부한다.
+MAX_PROMPT_GROWTH = 1.5
 
 
-def check_revision(old: str, new: str,
-                   max_sections: int | None = None,
-                   max_growth: float | None = None) -> list[str]:
-    """개정본이 **국소적인지** 검사하는 하드 게이트. 위반 사유 목록을 돌려준다.
+def check_revision(old: str, new: str) -> list[str]:
+    """개정본의 **구조**만 검사한다. 위반 사유 목록을 돌려준다.
 
-    종전에는 "AT MOST TWO sections" 가 지시문상의 권고였고,
-    실측에서 지켜지지 않았다 (en-de run01~03):
-      - run03 iter1: 한 섹션 개정에 프롬프트가 +29%(10,392 -> 13,401자) 부풀었다
-      - dev 분절이 62~95% 바뀌어 쌍체 비교의 이점(안 바뀐 문장은 분산 기여 0)이 사라졌고
-        se 가 0.007~0.009 로 커졌다
-    그 결과 dev 까지 간 개정 3건이 **전부 음수**(t = −0.8 ~ −3.2)로 기각됐다. 채택 문턱이
-    아니라 개정 품질이 원인이므로, 범위를 코드로 강제한다.
+    남은 규칙은 하나 — 섹션을 새로 만들거나 없애면 안 된다. 골격이 바뀌면 이전 버전과
+    섹션 단위로 비교할 수 없어서 압축기의 보호 목록도, `changed_sections` 도 의미를 잃는다.
 
-    **다만 고정 임계값은 두 상황을 구별하지 못한다.** 위 사례는 *이미 수렴한 상태에서의
-    대규모 재작성*이고, 새 소스 언어의 v0 는 반대로 *구조적으로 틀린 출발점*이라 큰 수리가
-    필요하다 (zh 실측: `[Never Segment]` 43줄 vs en 7줄). 실제로 de·zh·ja 세 언어에서
-    개정이 전부 거부됐고 그중 둘은 1.25 를 **0.01~0.06** 초과한 것이었다 — 세 언어 모두
-    채택이 v0 하나뿐이라 **루프의 최적화 단계가 한 번도 실행되지 않았다.**
-
-    그래서 `max_sections`/`max_growth` 를 인자로 받는다. 호출자(`loop.py`)가 신뢰 영역으로
-    조절한다 — 개정이 dev 에서 채택되면 넓히고 기각되면 좁힌다. 상한 2.5 에서 기각 1회면
-    2.5/2 = 1.25 로 **곧장 하한**이라, 큰 걸음은 한 번 측정될 기회를 얻고 나쁘면 즉시
-    종전 동작으로 돌아간다. 측정 한 번을 지불하고 배우는 구조이지, 시도를 영구히 막는
-    구조가 아니다 (en run03 의 나쁜 개정도 이 경로로 한 번 재어진 뒤 반경이 닫힌다).
+    **분량은 여기서 보지 않는다.** 호출자가 예산(`MAX_PROMPT_GROWTH`)과 비교하고,
+    넘치면 거부가 아니라 압축으로 처리한다.
     """
-    max_sections = MAX_SECTIONS_CHANGED if max_sections is None else max_sections
-    max_growth = MAX_SECTION_GROWTH if max_growth is None else max_growth
-    problems: list[str] = []
     a, b = split_sections(old), split_sections(new)
-    changed = changed_sections(old, new)
     added = [k for k in b if k not in a]
     removed = [k for k in a if k not in b]
-    if added or removed:
-        problems.append(f"섹션 추가/삭제: +{added} -{removed}")
-    if len(changed) > max_sections:
-        problems.append(f"{len(changed)}개 섹션 변경 — 최대 {max_sections}개 ({changed})")
-    for k in changed:
-        if len(a[k]) >= 200 and len(b[k]) > len(a[k]) * max_growth:
-            problems.append(f"{k} 가 {len(a[k])} -> {len(b[k])}자 "
-                            f"({len(b[k])/len(a[k]):.2f}배 > {max_growth:.2f})")
-    return problems
+    return [f"섹션 추가/삭제: +{added} -{removed}"] if (added or removed) else []
 
 
 def check_skeleton(prompt: str) -> list[str]:
@@ -954,66 +924,9 @@ Target: at most {budget} characters. Current: {current} characters.
 Return ONLY the prompt text. No commentary, no code fences."""
 
 
-# 섹션 하나를 성장 한도 안으로 줄이는 모드. 전체 예산 압축과 **방향이 반대다** —
-# 그쪽은 바뀐 섹션을 보호하고 다른 데를 깎지만, 여기서는 바뀐 섹션 자체가 한도를 넘었다.
-#
-# **왜 필요한가.** 국소성 관문에 걸린 개정은 통째로 버려진다. 실측(로그 26개): 개정
-# 이터레이션 21회 중 **6회(29%)가 범위 위반으로 무산**됐고, 거부 사유는 섹션 개수 1건을
-# 빼면 전부 성장이다 (`[Decision Procedure]` 745 -> 1983자 2.66배 등). 짧은 섹션일수록
-# 몇 줄만 늘려도 비율 한도를 넘는다.
-#
-# 그때 코드는 `engineer.revise` 를 한 번 더 부르는데, 같은 PE 가 같은 입력으로 같은 크기의
-# 개정을 낸다 — 전멸 6건과 최종 거부 6건이 정확히 짝을 이룬다. **LLM 호출만 한 번 더 쓰고
-# 결과는 같다.** 아이디어는 멀쩡한데 표현이 길 뿐이므로, 줄이는 일을 시키는 것이 맞다.
-SECTION_FIT_SYSTEM = """You shorten ONE section of a segmentation system prompt so it fits a
-length budget. You are NOT improving it and NOT changing what it asks the model to do.
-
-The section was just revised and the new material must survive. What must go is redundancy —
-conditions that restate each other, examples that duplicate a condition already in prose,
-hedging.
-
-Hard constraints — violating any of these makes your output unusable:
-1. Return ONLY the section body. No header line, no commentary, no code fences.
-2. NEVER delete a condition whose content is not covered anywhere else in the section. If you
-   cannot reach the budget without doing that, get as close as you can and stop.
-3. These conditions are the change being measured this iteration and must remain, in some
-   wording: {kept}
-4. Cut in this order: duplicate examples, the weakest / most specific examples, conditions that
-   restate another condition in different words (merge them into one), hedging and repetition.
-5. Keep every remaining rule in the source language forms it already uses. Do not translate,
-   generalise, or reword conditions beyond merging duplicates.
-
-Target: at most {budget} characters. Current: {current} characters."""
-
-
 @dataclass
 class Compressor:
     gw: Gateway
-
-    def fit_sections(self, new_prompt: str, old_prompt: str,
-                     max_growth: float, changelog: list[str] | None = None) -> str:
-        """성장 한도를 넘긴 섹션만 한도 안으로 줄인다. 나머지는 바이트 동일.
-
-        섹션 개수 위반은 여기서 못 고친다 — 아이디어를 지우는 일이라 압축이 아니다.
-        줄인 뒤에도 한도를 못 맞추면 호출자가 종전대로 거부하면 된다.
-        """
-        a, b = split_sections(old_prompt), split_sections(new_prompt)
-        over = {k: int(len(a[k]) * max_growth)
-                for k in b if k in a and a[k] and len(b[k]) > len(a[k]) * max_growth}
-        if not over:
-            return new_prompt
-        kept = "; ".join(changelog or []) or "(the newly added conditions)"
-        out = new_prompt
-        for sec, budget in over.items():
-            body = self.gw.chat(
-                SECTION_FIT_SYSTEM.format(kept=kept[:1200], budget=budget,
-                                          current=len(b[sec])),
-                f"{sec}\n{b[sec]}", max_tokens=PROMPT_MAX_TOKENS, purpose="section_fit")
-            body = body.strip()
-            if not body or len(body) >= len(b[sec]):
-                continue                      # 못 줄였으면 그대로 둔다
-            out = out.replace(b[sec], body, 1)
-        return out
 
     def compress(self, prompt: str, budget: int, protected: list[str]) -> str:
         sys_p = COMPRESSOR_SYSTEM.format(
@@ -1037,16 +950,17 @@ Hard constraints — violating any of these makes your output unusable:
    another section.** Spacing in particular is enforced deterministically: a boundary marked
    too close to another is silently dropped before scoring, so a rule telling the model to
    space boundaries out buys nothing.
-3. Change AT MOST THREE sections this iteration. Leave the rest byte-identical. A full rewrite
-   makes it impossible to attribute the score change to anything.
-   **A changed section may not grow beyond 1.5x its current length.** These two limits are
-   enforced by a deterministic gate after you answer — a revision that breaks either is
-   DISCARDED and the iteration is wasted. Edit the specific lines that are wrong; do not
-   rewrite a section wholesale to express one new idea.
-   Aim for the smallest edit that could plausibly move the metric. Measured failure: revisions
-   that rewrote a section wholesale changed 62-95% of all segmentations, which destroyed the
-   paired comparison's power (it only has signal on sentences whose segmentation changed) and
-   were rejected 3 times out of 3.
+3. SIZE BUDGET — this is the one limit on how much you may change. Your revised prompt must
+   be at most __BUDGET__ characters in total (the current prompt is __CURLEN__). This is
+   checked deterministically after you answer.
+   You may edit as MANY sections as the ideas require — changing one line in every section is
+   perfectly fine, and is often the right shape when the critic proposes several unrelated
+   rules. What is capped is the total length, not where you edit.
+   So spend the budget on wording, not on volume: express each idea in the fewest words that
+   still make it unambiguous, and if a new rule supersedes an existing line, REPLACE that line
+   instead of adding next to it. An over-budget revision is handed to a compressor that cuts it
+   back, and the compressor cannot know which of your words carried the idea — staying inside
+   the budget yourself is the only way to be sure your change survives intact.
 4. At most 12 examples per example section. If you add one, remove a weaker one. The prompt
    must stay a set of rules, not a memorised dataset.
 5. Consult the attempt history. Every entry with "adopted": false is a revision that was
@@ -1168,8 +1082,7 @@ class PromptEngineer:
         profile: dict,
         t_grid: list[int],
         only_rules: list[str] | None = None,
-        max_sections: int | None = None,
-        max_growth: float | None = None,
+        size_budget: int | None = None,
         measured: dict | None = None,
     ) -> dict:
         """`only_rules` 가 있으면 **그 규칙들만** 반영하게 한다.
@@ -1192,7 +1105,7 @@ class PromptEngineer:
 
         후보 K개는 유지한다. 다만 **규칙 부분집합이 아니라 표현 차이**로 나뉜다 — 첫
         후보는 자유 개정(PE 가 critique 을 보고 판단), 나머지는 같은 규칙 전부를 각자
-        구현한다. 크기가 넘치면 `Compressor.fit_sections` 가 받아준다.
+        구현한다. 크기가 넘치면 `Compressor.compress` 가 예산 안으로 깎는다.
         """
         hist = json.dumps(history[-8:], ensure_ascii=False, indent=2)
         facts = measured_facts(measured)
@@ -1225,15 +1138,12 @@ class PromptEngineer:
                 "if two of them say the same thing in different words, state it once. Keep the "
                 "edit as small as expressing all of them allows."
             )
-        # **지시문과 게이트가 같은 숫자를 말해야 한다.** 실측상 PE 는 이 값에 비례해
-        # 반응하지 않지만(1.25/2.5/4.0 지시 → 1.39/1.36/1.79 산출), 게이트가 2.5 인데
-        # 지시문이 1.25 라고 말하는 상태는 유지보수를 망가뜨린다.
-        sys_p = ENGINEER_SYSTEM
-        if max_sections is not None:
-            sys_p = sys_p.replace("Change AT MOST THREE sections",
-                                  f"Change AT MOST {max_sections} sections")
-        if max_growth is not None:
-            sys_p = sys_p.replace("may not grow beyond 1.5x its current length",
-                                  f"may not grow beyond {max_growth:.2f}x its current length")
+        # **지시문과 게이트가 같은 숫자를 말해야 한다.** 실측상 PE 는 배수 지시에 비례해
+        # 반응하지 않았는데(1.25/2.5/4.0 지시 → 1.39/1.36/1.79 산출), 배수는 PE 가 직접
+        # 셀 수 없는 값이라서다. **글자 수로 바꿔 준다** — 자기 출력 길이는 셀 수 있다.
+        budget = size_budget if size_budget is not None else \
+            int(len(current_prompt) * MAX_PROMPT_GROWTH)
+        sys_p = (ENGINEER_SYSTEM.replace("__BUDGET__", str(budget))
+                 .replace("__CURLEN__", str(len(current_prompt))))
         return self.gw.chat_json(sys_p, user, max_tokens=PROMPT_MAX_TOKENS,
                                  purpose="prompt_engineer")

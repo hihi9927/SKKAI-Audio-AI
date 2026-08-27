@@ -877,8 +877,6 @@ def main() -> int:
                    help="코퍼스 발화 속도(단위/초). 강제정렬 산출물이 없을 때 직접 준다")
     p.add_argument("--t-floor", type=int, default=None,
                    help="후보 마킹 하한 기준 T. 작을수록 많이 찍는다. 미지정 시 min(--final-t-grid)")
-    p.add_argument("--no-trust-region", action="store_true",
-                   help="개정 범위를 고정 임계값(섹션 2, 1.25배)으로 되돌린다. 과거 런 재현용")
     p.add_argument("--skip-translation-below", type=float, default=0.95,
                    help="원문 보존율이 이 값 미만이면 번역·채점 생략 (0 = 항상 채점)")
     p.add_argument("--agent-reasoning-effort", default="medium",
@@ -1422,16 +1420,6 @@ def main() -> int:
                 f"({len(best['prompt'])}자) 로 최종 평가만 수행한다")
             args.iterations = 0
 
-        # **신뢰 영역.** 개정 허용 폭을 성과로 조절한다. 고정 임계값 하나는 부트스트랩
-        # (v0 가 구조적으로 틀림)과 수렴(진동 방지)을 구별 못 한다 — de/zh/ja 3언어에서
-        # 개정이 전부 거부돼 루프의 최적화 단계가 한 번도 실행되지 않았다.
-        # 하한이 종전 상수라 **기각 1회면 곧장 종전 동작(1.25배)으로 떨어진다** (2.5/2=1.25).
-        # 즉 큰 걸음은 한 번 측정될 기회를 얻고, 나쁘면 즉시 보수 모드로 돌아간다.
-        trust = {"growth": agents.MAX_SECTION_GROWTH if args.no_trust_region
-                 else agents.TRUST_GROWTH_MAX,
-                 "sections": agents.MAX_SECTIONS_CHANGED if args.no_trust_region
-                 else agents.TRUST_SECTIONS_MAX}
-        revision_applied = False      # 직전 이터에서 개정본이 실제로 적용됐는가
 
         for it in range(args.iterations):
             it_dir = run_dir / f"iter_{it:02d}"
@@ -1671,8 +1659,6 @@ def main() -> int:
 
             history.append({
                 "version": it, "adopted": adopted,
-                "trust_growth": round(trust["growth"], 3),
-                "trust_sections": trust["sections"],
                 "train": m.to_dict(), "dev": dev_m.to_dict() if dev_m else None,
                 "score_train": round(sc, 4),
                 "score_dev": round(dev_score, 4) if dev_score is not None else None,
@@ -1685,20 +1671,6 @@ def main() -> int:
             })
             (run_dir / "history.json").write_text(
                 json.dumps(history, ensure_ascii=False, indent=2), encoding="utf-8")
-
-            # 신뢰 영역 갱신 — **실제로 개정본을 평가했을 때만** 움직인다.
-            # 게이트에 걸린 개정은 측정된 적이 없으므로 반경의 근거가 되지 못한다.
-            if revision_applied and not args.no_trust_region:
-                before = (trust["growth"], trust["sections"])
-                if adopted:
-                    trust["growth"] = min(trust["growth"] * 1.2, agents.TRUST_GROWTH_MAX)
-                else:
-                    trust["growth"] = max(trust["growth"] / 1.5, agents.MAX_SECTION_GROWTH)
-                    trust["sections"] = max(trust["sections"] - 1, agents.MAX_SECTIONS_CHANGED)
-                log(f"[iter {it}] 신뢰영역 {before[0]:.2f}배/{before[1]}섹션 -> "
-                    f"{trust['growth']:.2f}배/{trust['sections']}섹션 "
-                    f"({'채택 — 넓힘' if adopted else '기각 — 좁힘'})")
-            revision_applied = False
 
             u = usage_total()
             log(f"[iter {it}] adopted={adopted} stale={stale} "
@@ -1759,12 +1731,19 @@ def main() -> int:
                     else [None] * max(1, args.revision_candidates)
                 jobs = jobs[:max(1, args.revision_candidates)]
 
+                # 개정 한 번의 **분량 예산**. 두 개의 상한 중 작은 쪽 —
+                #   (a) 걸음 크기: 직전 best 대비 `MAX_PROMPT_GROWTH` 배
+                #   (b) 런 전체 천장: v0 대비 `--max-prompt-growth` 배
+                # 종전에는 (a) 를 섹션별로 재는 하드 게이트, (b) 를 압축으로 처리해서
+                # 경로가 둘이었다. 재는 대상이 같은 "분량" 이므로 한 숫자로 합친다.
+                size_budget = min(int(len(best["prompt"]) * agents.MAX_PROMPT_GROWTH),
+                                  int(prompt_v0_len * args.max_prompt_growth))
+
                 def make(hint):
                     try:
                         rv = engineer.revise(best["prompt"], critique, history, profile,
                                              t_grid, only_rules=hint,
-                                             max_sections=trust["sections"],
-                                             max_growth=trust["growth"],
+                                             size_budget=size_budget,
                                              measured=measured)
                     except BudgetExceeded:
                         raise
@@ -1781,32 +1760,13 @@ def main() -> int:
                     if pr and not agents.check_skeleton(pr):
                         raw_cands.append((pr, rv))
 
-                # **게이트 기아 회복.** 후보가 전멸하면 반경을 넓혀 **이미 만든 후보를 다시
-                # 거른다** (재생성 없음 = 추가 비용 0). 근거: 반경은 *측정된* 위험을 통제하는
-                # 장치인데, 아무것도 측정 못 하는 상태는 나쁜 개정을 한 번 재는 것보다 나쁘다.
-                # 게이트 기각은 "개정이 나빴다"는 증거가 아니라 "반경이 표본을 못 뽑을 만큼
-                # 좁다"는 증거이므로, 좁힐 근거가 없고 넓힐 근거가 있다.
-                #
-                # 이게 없으면 **교착**이다 (de/run01 실측): 기각 1회 → 반경이 하한 1.25 로
-                # 축소 → PE 산출 성장률 분포(실측 1.31~2.66)가 통째로 그 위 → 0/3 통과 →
-                # 측정 불가 → 채택 불가 → 반경이 영영 안 넓어진다. 하한이 분포 밖이라
-                # "종전 동작으로 복귀"가 곧 "영구 봉쇄"였다.
-                cands = []
-                for _attempt in range(3):
-                    cands = []
-                    for pr, rv in raw_cands:
-                        if agents.check_revision(best["prompt"], pr,
-                                                 trust["sections"], trust["growth"]):
-                            continue
-                        cands.append((pr, rv))
-                    if cands or not raw_cands or trust["growth"] >= agents.TRUST_GROWTH_MAX:
-                        break
-                    before = trust["growth"]
-                    trust["growth"] = min(trust["growth"] * 1.5, agents.TRUST_GROWTH_MAX)
-                    trust["sections"] = min(trust["sections"] + 1, agents.TRUST_SECTIONS_MAX)
-                    log(f"[iter {it}] 게이트 기아 — 후보 0/{len(raw_cands)} 통과. "
-                        f"신뢰영역 {before:.2f}배 -> {trust['growth']:.2f}배/"
-                        f"{trust['sections']}섹션 으로 넓혀 재검사")
+                # 남은 하드 게이트는 **구조** 하나다 — 섹션 추가/삭제 금지.
+                # 분량 위반은 여기서 거르지 않는다: 종전에는 후보 전원이 분량으로
+                # 탈락해 "0/3 통과 -> 측정 불가 -> 채택 불가" 교착이 생겼는데,
+                # 분량은 거부할 일이 아니라 압축기가 줄일 일이라서 그렇다. 선택이
+                # 끝난 뒤 한 번만 줄인다 (압축 호출 K번 -> 1번).
+                cands = [(pr, rv) for pr, rv in raw_cands
+                         if not agents.check_revision(best["prompt"], pr)]
 
                 _cands2 = []
                 for pr, rv in cands:
@@ -1821,23 +1781,11 @@ def main() -> int:
                     revised = next(rv for pr, rv in cands if pr == pick)
                 elif cands:
                     revised = cands[0][1]
-                elif raw_cands:
-                    # **전멸했으면 다시 쓰게 하지 말고 줄이게 한다.** 종전에는 같은 PE 를
-                    # 같은 입력으로 한 번 더 불렀는데, 같은 크기의 개정이 나와 최종 관문에
-                    # 또 걸렸다 — 실측 로그에서 전멸 6건과 최종 거부 6건이 정확히 짝을
-                    # 이룬다. 아이디어는 멀쩡하고 표현이 길 뿐이라 압축기 몫이다.
-                    revised = dict(raw_cands[0][1])
-                    fitted = compressor.fit_sections(
-                        raw_cands[0][0], best["prompt"], trust["growth"],
-                        revised.get("changelog"))
-                    revised["prompt"] = fitted
-                    log(f"[iter {it}] 후보 전멸 — 압축기로 섹션 축소 재시도 "
-                        f"({len(raw_cands[0][0])} -> {len(fitted)}자)")
                 else:
-                    revised = engineer.revise(best["prompt"], critique, history, profile,
-                                              t_grid, max_sections=trust["sections"],
-                                              max_growth=trust["growth"],
-                                              measured=measured)
+                    # 여기까지 전멸하려면 후보 전원이 섹션을 추가/삭제했거나 타깃 언어를
+                    # 박아 넣었다는 뜻이다 (실측 로그 26개에서 각각 0건/드묾). 분량 때문에
+                    # 비는 경우는 이제 없으므로, 재호출로 돈을 더 쓰지 않고 넘어간다.
+                    revised = {"prompt": ""}
                 log(f"[iter {it}] 개정 후보 {len(cands)}/{len(jobs)} 통과")
                 new_prompt = revised.get("prompt", "")
                 # **바뀐 섹션은 diff 로 센다 — PE 자기신고를 쓰지 않는다**
@@ -1846,56 +1794,37 @@ def main() -> int:
                 # 이번 이터레이션이 넣은 변경이고, 압축은 그 뒤에 일어난다.
                 sections_changed = (agents.changed_sections(best["prompt"], new_prompt)
                                     if new_prompt else [])
-                budget = int(prompt_v0_len * args.max_prompt_growth)
-                if new_prompt and len(new_prompt) > budget:
-                    log(f"[iter {it}] 개정본 {len(new_prompt)}자 > 예산 {budget}자 — 압축")
-                    packed = compressor.compress(new_prompt, budget, sections_changed)
+                # **분량 초과는 거부가 아니라 압축이다.** 아이디어가 나쁜 게 아니라
+                # 표현이 길 뿐이고, 압축기는 `sections_changed` 를 보호 목록으로 받아
+                # 이번에 넣은 변경을 남긴 채 나머지를 깎는다. 깎아도 예산을 못 맞추면
+                # 그때 거부한다.
+                over = new_prompt and len(new_prompt) > size_budget
+                if over:
+                    log(f"[iter {it}] 개정본 {len(new_prompt)}자 > 예산 {size_budget}자 — 압축")
+                    packed = compressor.compress(new_prompt, size_budget, sections_changed)
                     if (packed and not agents.check_skeleton(packed)
-                            and len(packed) <= budget):
+                            and len(packed) <= size_budget
+                            and not agents.check_revision(best["prompt"], packed)):
                         log(f"[iter {it}] 압축 성공 {len(new_prompt)} -> {len(packed)}자")
                         new_prompt = packed
+                        sections_changed = agents.changed_sections(best["prompt"], new_prompt)
                     else:
-                        log(f"[iter {it}] 압축 실패({len(packed or '')}자) — 개정 거부")
+                        log(f"[iter {it}] 압축 실패({len(packed or '')}자 / 예산 {size_budget}자) "
+                            f"— 개정 거부")
                         new_prompt = ""
                 missing = agents.check_skeleton(new_prompt) if new_prompt else []
-                # 국소성 하드 게이트 — 지시문 권고만으로는 안 지켜졌다 (agents.check_revision).
-                scope = (agents.check_revision(best["prompt"], new_prompt,
-                                               trust["sections"], trust["growth"])
-                         if new_prompt and not missing else [])
                 if not new_prompt:
                     log(f"[iter {it}] 개정 없음 — 이전 프롬프트 유지")
                 elif missing or len(new_prompt) < 500:
                     log(f"[iter {it}] 개정 프롬프트 골격 누락 {missing} — 이전 프롬프트 유지")
-                elif scope and all("섹션 변경" not in x for x in scope):
-                    # **성장 위반만이면 한 번 더 기회를 준다.** 섹션 개수 위반은 아이디어를
-                    # 지우는 일이라 압축으로 못 고치므로 그때는 종전대로 거부한다.
-                    fitted = compressor.fit_sections(
-                        new_prompt, best["prompt"], trust["growth"],
-                        revised.get("changelog"))
-                    scope2 = agents.check_revision(best["prompt"], fitted,
-                                                   trust["sections"], trust["growth"])
-                    if fitted != new_prompt and not scope2 and not agents.check_skeleton(fitted):
-                        log(f"[iter {it}] 범위 위반 — 압축으로 통과 "
-                            f"({len(new_prompt)} -> {len(fitted)}자): {'; '.join(scope)}")
-                        prompt = fitted
-                        new_prompt = fitted
-                        sections_changed = agents.changed_sections(best["prompt"], fitted)
-                        revision_applied = True
-                    else:
-                        log(f"[iter {it}] 개정 범위 위반 — 압축 후에도 거부: "
-                            f"{'; '.join(scope2 or scope)} "
-                            f"[신뢰영역 {trust['growth']:.2f}배/{trust['sections']}섹션]")
-                elif scope:
-                    log(f"[iter {it}] 개정 범위 위반 — 거부: {'; '.join(scope)} "
-                        f"[신뢰영역 {trust['growth']:.2f}배/{trust['sections']}섹션]")
                 else:
                     prompt = new_prompt
-                    revision_applied = True
                 (it_dir / "changelog.json").write_text(json.dumps({
                     "sections_changed": sections_changed,
                     "sections_reported": revised.get("sections_changed"),
                     "changelog": revised.get("changelog"),
-                    "scope_violations": scope,
+                    "size_budget": size_budget,
+                    "over_budget": bool(over),
                 }, ensure_ascii=False, indent=2), encoding="utf-8")
                 history[-1]["next_changelog"] = revised.get("changelog")
                 # 고착 방지 핸들 갱신 — **다음 이터레이션이 이 섹션을 다시 고치지 않도록.**

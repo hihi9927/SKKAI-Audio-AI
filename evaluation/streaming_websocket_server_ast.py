@@ -324,6 +324,20 @@ class ASTStreamingHandler(fsl_server.FSLStreamingHandler):
             kwargs["message"] = "Qwen3-ASR Streaming Server (AST)"
             cfg = dict(kwargs.get("serverConfig") or {})
             cfg["server"] = "ast"
+            # 축 라벨을 **서버가 스스로 판정해서** 박는다.
+            #
+            # 클라이언트의 `--model` 에도 축 이름이 들어가지만 그건 사람이 손으로 주는
+            # 값이라, `--model seg` 로 띄운 클라이언트를 `--always-commit` 서버에 붙이면
+            # 라벨이 조용히 거짓말을 한다. 곡선을 그릴 때 점이 뒤바뀌는 사고가 정확히
+            # 여기서 난다. 채점기는 이 값으로 그룹핑하고 `args.model` 과 교차검증한다.
+            if self.config.always_commit:
+                axis = "static"
+            elif self.config.enable_dot_commit:
+                axis = "punct"
+            else:
+                axis = "seg"
+            cfg["axis"] = axis
+            cfg["axis_chunk_size_sec"] = self.config.chunk_size_sec
             kwargs["serverConfig"] = cfg
         await super().send_message(msg_type, **kwargs)
 
