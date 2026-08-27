@@ -163,27 +163,26 @@ def _zmix(per_target: dict[str, list[float | None]],
     return out
 
 
-def judge_distributed(judge, per_rows: dict[str, list[dict]], T: int,
-                      total_boundaries: int):
-    """판정 예산을 **타깃에 나눈다.** 총 호출 수는 그대로다.
+def judge_distributed(judge, per_rows: dict[str, list[dict]], T: int, frac: float):
+    """타깃마다 **자기 경계의 `frac` 비율**을 판정한다.
 
     한 타깃에만 판정자를 돌리면 목적함수에서 뺀 타깃 편향이 Critic 케이스 선정으로
-    되돌아온다. 예산을 나누면 비용은 그대로면서 편향이 없고, 타깃마다 다른 실패
-    (어떤 언어에서만 깨지는 경계)가 드러나는 이득이 붙는다.
+    되돌아온다. 타깃별로 같은 비율을 재면 편향이 없고, 타깃마다 다른 실패(어떤
+    언어에서만 깨지는 경계)가 드러나는 이득이 붙는다.
+
+    **고정 개수(종전 8)를 비율로 바꿨다.** 개수는 train 크기와 T 에 따라 의미가 통째로
+    달라진다 — 같은 8 이 T=12·30문장에서는 경계의 4.7% 지만 T=6·40문장에서는 1.5% 다.
+    게다가 `total // len(targets)` 로 나눠서 나머지를 버렸다 (타깃 5개면 8 이 5가 됐다).
+    비율은 두 문제를 한 번에 없앤다.
     """
-    tgts = list(per_rows)
-    if not tgts:
-        return []
-    # **나머지를 버리지 않는다.** 종전 `total // len(tgts)` 는 몫만 썼다 — 타깃 5개에
-    # `--judge-boundaries 8` 이면 타깃당 1, 총 5개가 되어 요청의 3개가 사라졌다.
-    # 비율로 잘라 총합이 정확히 `total_boundaries` 가 되게 한다 (8/5 -> 2,1,2,1,2).
-    n = len(tgts)
     out: list[dict] = []
-    for k, t in enumerate(tgts):
-        per = (total_boundaries * (k + 1)) // n - (total_boundaries * k) // n
-        if per <= 0:
-            continue
-        js = agents.judge_top_contra(judge, per_rows[t], T, per)
+    for t, rows in per_rows.items():
+        n = 0
+        for r in rows:
+            d = (r.get("by_T", {}) or {}).get(str(T)) or {}
+            ps = d.get("pieces_tgt") or []
+            n += max(0, len(ps) - 1)
+        js = agents.judge_top_contra(judge, rows, T, max(1, int(n * frac + 0.5)))
         for j in js:
             j["target"] = t
         out.extend(js)
@@ -924,8 +923,12 @@ def main() -> int:
                    help="최종 test 곡선용 격자")
     p.add_argument("--main-t", type=int, default=None,
                    help="판정자가 도는 주 작동점. 미지정 시 --t-grid 의 중앙값")
-    p.add_argument("--judge-boundaries", type=int, default=8,
-                   help="이터레이션당 판정할 경계 수 (contradiction 상위부터)")
+    # **개수가 아니라 비율이다.** 판정자가 붙이는 `cause` 는 6개 범주인데, 저장된 43개
+    # 이터레이션에서 라벨이 붙은 경계가 **이터당 중앙 5개**였다 — 6범주에 5표라 최빈값이
+    # 1 대 1 대 1 이고, Critic 이 "어떤 실패가 지배적인가" 를 읽을 수 없었다. 비율로 두면
+    # train 크기와 T 가 바뀌어도 표본이 같이 따라온다.
+    p.add_argument("--judge-frac", type=float, default=0.10,
+                   help="타깃별로 판정할 경계 비율 (contradiction 상위부터). 0.10 = 10%%")
     p.add_argument("--no-judge", action="store_true",
                    help="판정자를 끈다. 사례에 '왜·어디로' 설명이 안 붙는다")
     p.add_argument("--adequacy-backend", default="cometkiwi",
@@ -1452,7 +1455,7 @@ def main() -> int:
             if judge is not None and m.by_T:
                 judgements = judge_distributed(
                     judge, getattr(run_eval, 'last_per_rows', {'_': rows}),
-                    main_t, args.judge_boundaries)
+                    main_t, args.judge_frac)
                 (it_dir / "judgements.json").write_text(
                     json.dumps(judgements, ensure_ascii=False, indent=2), encoding="utf-8")
 

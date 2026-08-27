@@ -885,7 +885,8 @@ def summarize_critique(cases: list[dict], metrics: dict, summary: str | None,
 
 
 def select_cases(rows: list[dict], main_T: int, judgements: list[dict] | None = None,
-                 n_worst: int = 5, n_invalid: int = 5, n_short: int = 3) -> list[dict]:
+                 n_worst: int = 5, n_invalid: int = 5, n_short: int = 3,
+                 n_flagged: int = 10) -> list[dict]:
     """비평 대상 선정 — 전량이 아니라 정보량이 있는 것만.
 
     v1 은 "COMET 하위 N개 문장"이었다. v2 는 **조기 방출로 판정된 경계**를 우선한다 —
@@ -903,9 +904,14 @@ def select_cases(rows: list[dict], main_T: int, judgements: list[dict] | None = 
         judged.setdefault(j["id"], []).append(j)
 
     invalid = [r for r in rows if not r["valid"]][:n_invalid]
-    flagged = [by_id[i] for i, js in judged.items()
-               if i in by_id and any(j.get("verdict") in ("premature", "mistranslated")
-                                     for j in js)]
+    # **쿼터를 씌운다.** 종전에는 무제한이라 판정 수가 곧 케이스 수였다. 판정을 고정 8개에서
+    # 경계의 10% 로 올리면 케이스 목록이 같이 부풀어 Critic 프롬프트를 삼킨다.
+    # 모순이 큰 것부터 자른다 — 판정 대상 자체가 모순 상위이므로 순서가 이미 그 축이다.
+    flagged = sorted(
+        (by_id[i] for i, js in judged.items()
+         if i in by_id and any(j.get("verdict") in ("premature", "mistranslated")
+                               for j in js)),
+        key=lambda r: -(max_contra(r, main_T) or 0.0))[:n_flagged]
     valid = [r for r in rows if r["valid"] and r.get("by_T", {}).get(key)]
     worst = rank_by_failure(valid, main_T, n_worst)
     short = sorted([r for r in valid if r["by_T"][key].get("missing_boundaries", 0) > 0],
