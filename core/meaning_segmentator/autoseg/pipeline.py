@@ -765,7 +765,7 @@ def truncate(seg_text: str, target_chunk_words: int,
     """순위 상위 `k−1` 개 경계만 남긴다. 반환 `(절단된 seg_text, missing_boundaries)`.
 
     `missing_boundaries` 는 예산이 요구한 경계 중 프롬프트가 못 준 개수다. 프롬프트가 충분히 공격적으로 자르지
-    않았다는 신호이며, Critic 의 `focus = "coverage"` 판정에 쓰인다.
+    않았다는 신호이며, Critic 이 마킹 밀도를 볼 때 쓴다.
 
     경계를 **빼기만** 하므로 조각 수(`k`)는 반드시 준다 — 이쪽은 구조적 보장이다.
     **`laal_words` 가 반드시 오르는 것은 아니다.** LAAL 은 "소스를 다 들은 시점"(`τ`)
@@ -812,7 +812,7 @@ def truncate(seg_text: str, target_chunk_words: int,
 
     반환하는 `missing_boundaries` 는 **마킹한 태그 수**로만 계산한다 (`want - len(tags)`).
     min_gap 때문에 못 놓은 몫은 빼고 센다 — 그건 프롬프트가 태그를 더 찍어서 고칠 수 있는
-    문제가 아니므로, Critic 의 `focus="coverage"` 조향에 섞으면 잘못된 압력이 된다.
+    문제가 아니므로, 마킹 밀도 신호에 섞으면 잘못된 압력이 된다.
     """
     tags = list(TAG_RE.finditer(seg_text))
     if not tags:

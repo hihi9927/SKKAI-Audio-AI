@@ -159,18 +159,6 @@ def split_sections(prompt: str) -> dict[str, str]:
     return out
 
 
-# focus 별로 손대도 되는 섹션. `priority` 만 엄격하다 — 지시문이 "[Priority Rules] ONLY"
-# 라고 못박는데 run03 iter1 에서 focus=placement 인 채로 [Priority Rules] 를 고쳤다.
-_FOCUS_SECTIONS = {
-    "priority": {"[Priority Rules]"},
-    "coverage": {"[When to Segment]", "[Never Segment]", "[Decision Procedure]",
-                 "[Priority Rules]"},
-    "placement": {"[When to Segment]", "[Never Segment]", "[Decision Procedure]",
-                  "[Examples — Segment]", "[Examples — Do NOT Segment]"},
-    "format": {"[Decision Procedure]", "[Core Principles]", "[Role]",
-               "[Examples — Segment]", "[Examples — Do NOT Segment]"},
-}
-
 # **신뢰 영역의 하한**이다 (수렴 상태에서의 허용 폭). 상한은 `TRUST_*`.
 MAX_SECTIONS_CHANGED = 2
 MAX_SECTION_GROWTH = 1.25
@@ -183,14 +171,13 @@ TRUST_SECTIONS_MAX = 4
 TRUST_GROWTH_MAX = 2.5
 
 
-def check_revision(old: str, new: str, focus: str | None = None,
+def check_revision(old: str, new: str,
                    max_sections: int | None = None,
                    max_growth: float | None = None) -> list[str]:
     """개정본이 **국소적인지** 검사하는 하드 게이트. 위반 사유 목록을 돌려준다.
 
-    종전에는 "AT MOST TWO sections", "focus 를 따르라" 가 전부 지시문상의 권고였고,
+    종전에는 "AT MOST TWO sections" 가 지시문상의 권고였고,
     실측에서 지켜지지 않았다 (en-de run01~03):
-      - run03 iter1: `focus=placement` 인데 `[Priority Rules]` 를 고쳤다
       - run03 iter1: 한 섹션 개정에 프롬프트가 +29%(10,392 -> 13,401자) 부풀었다
       - dev 분절이 62~95% 바뀌어 쌍체 비교의 이점(안 바뀐 문장은 분산 기여 0)이 사라졌고
         se 가 0.007~0.009 로 커졌다
@@ -224,11 +211,6 @@ def check_revision(old: str, new: str, focus: str | None = None,
         if len(a[k]) >= 200 and len(b[k]) > len(a[k]) * max_growth:
             problems.append(f"{k} 가 {len(a[k])} -> {len(b[k])}자 "
                             f"({len(b[k])/len(a[k]):.2f}배 > {max_growth:.2f})")
-    allowed = _FOCUS_SECTIONS.get(focus or "")
-    if allowed:
-        stray = [k for k in changed if k not in allowed]
-        if stray and focus == "priority":
-            problems.append(f"focus=priority 인데 {stray} 를 고침 — [Priority Rules] 만 허용")
     return problems
 
 
@@ -763,8 +745,6 @@ class Critic:
 
 # 임계값은 **잠정값**이다. 실측 전에 확정하면 v1 의 `q_weight`·`ratio` 처럼 근거 없는
 # 상수가 하나 더 생긴다. 첫 런들의 분포를 보고 고정할 것.
-MISSING_BOUNDARIES_LIMIT = 0.5       # 문장당 평균 부족 경계 수
-PREMATURE_LIMIT = 0.15      # 판정 대상 경계 중 조기 방출 비율
 
 # 순위축 조향 문턱. `rank_lift` 가 **오차 한 칸도 못 넘으면** 순위가 값을 못 하는 것으로
 # 본다 (`lift < 1·se`, 즉 t < 1).
@@ -777,7 +757,6 @@ PREMATURE_LIMIT = 0.15      # 판정 대상 경계 중 조기 방출 비율
 #   순위가 값을 하는 상태(real vs 셔플)에서 오작동  0/40
 #   순위가 무가치한 상태(셔플 vs 셔플, 참값 0)에서 검출  156/190, 164/190 (82~86%)
 # 상수 1.0 은 종전 `RANK_GAP_SE_MULT` 를 그대로 옮긴 것이라 새로 생긴 임의 상수가 아니다.
-RANK_LIFT_T_MIN = 1.0
 
 
 def summarize_critique(cases: list[dict], metrics: dict, summary: str | None,
@@ -785,9 +764,13 @@ def summarize_critique(cases: list[dict], metrics: dict, summary: str | None,
                        priority_audit: list[dict] | None = None) -> dict:
     """집계는 세는 일이지 판단이 아니다 — LLM 에 맡기면 누락되거나 틀린다.
 
-    `focus` 는 **측정된 지표**에서 도출한다. 사례 카운트로 정하면 안 된다: Critic
-    에게는 망가진 사례를 골라 보내므로 특정 유형이 항상 다수가 되고, 방향이 영구히
-    거기 고정된다 (v1 실측: direction 5회 고착, 분절률 0.72 -> 0.38).
+**`focus` 는 없앴다** — 아래 본문 주석 참고. 남은 것은 세는 일(오류 유형 카운트)과
+    고착 방지 힌트뿐이고, 방향 판단은 Critic 이 지표의 뜻을 보고 한다.
+
+    사례 카운트로 방향을 정하면 안 된다는 원칙은 그대로다: Critic 에게는 망가진 사례를
+    골라 보내므로 특정 유형이 항상 다수가 되고, 방향이 영구히 거기 고정된다
+    (v1 실측: direction 5회 고착, 분절률 0.72 -> 0.38). 그래서 `dominant_error` 는
+    참고용으로만 싣는다.
 
     v1 의 "더/덜 잘라라" 방향이 사라진 자리가 크다. 조각 수는 노브가 정하므로
     과소분절·과분절이라는 실패 자체가 없다. 남는 것은 위치와 순위뿐이다.
@@ -819,55 +802,37 @@ def summarize_critique(cases: list[dict], metrics: dict, summary: str | None,
     lift = metrics.get("rank_lift")
     lift_t = metrics.get("rank_lift_t")
 
-    focus_reason = ""
-    if metrics.get("format_pass_rate", 1.0) < 1.0:
-        focus = "format"
-        focus_reason = f"format_pass_rate {metrics.get('format_pass_rate'):.4f} < 1.0"
-    # 예산이 요구한 경계를 프롬프트가 못 내놓으면 순위도 위치도 논할 수 없다.
-    elif missing > MISSING_BOUNDARIES_LIMIT:
-        focus = "coverage"
-        focus_reason = f"missing_boundaries {missing:.3f} > {MISSING_BOUNDARIES_LIMIT}"
-    # 순위를 무작위로 섞어도 품질이 안 떨어지면 순위가 값을 못 하는 것 = 순위 문제.
-    # **폴백은 두지 않는다.** 종전의 T 대비(`adequacy(작은 T) − adequacy(큰 T)`)는 중첩
-    # 집합 비교인 데다 QE 길이 편향이 섞여 있어, 근거 없는 조향을 만드는 경로였다.
-    # 값이 없으면(--no-contradiction, 순위 없는 프롬프트) 순위축은 판단하지 않는다.
-    elif lift_t is not None and lift_t < RANK_LIFT_T_MIN:
-        focus = "priority"
-        focus_reason = (f"rank_lift {lift:+.4f} (t {lift_t:+.2f}) — 순위를 무작위로 "
-                        + ("섞으면 품질이 오히려 오름" if (lift or 0.0) < 0 else
-                           "섞어도 품질이 안 떨어짐"))
-    # 종전에는 이 두 갈래가 **같은 값을 넣어** PREMATURE_LIMIT 이 죽은 코드였다.
-    # 결론은 어차피 placement 지만 **근거가 다르다** — 측정된 조기방출이냐, 아무 지표도
-    # 안 걸린 기본값이냐. PE 가 그 차이를 알아야 확신 없는 개정을 덜 한다.
-    elif prem > PREMATURE_LIMIT:
-        focus = "placement"
-        focus_reason = f"premature_rate {prem:.4f} > {PREMATURE_LIMIT}"
-    else:
-        focus = "placement"
-        focus_reason = ("측정 지표가 아무것도 안 걸림 — 기본값. "
-                        "확실한 근거가 없으니 작은 수정만 할 것")
-
-    # **고착 방지.** 같은 방향이 반복되는데 dev 가 나아지지 않으면 탐색이 죽는다.
+    # **`focus` 는 없앴다.** 지표에서 방향을 결정론으로 뽑아 PE 에게 "측정에서 나온
+    # 것이니 따르라"(시스템 프롬프트 Rule 7)고 강제했는데, 실측상 네 갈래 어느 것도 자기
+    # 목표를 못 고쳤다 (목표 지표 개선 33~36% — 동전 던지기보다 못하다).
     #
-    # 단 **없는 근거를 만들어내지는 않는다.** 종전에는 placement 가 막히면 지표를 아예
-    # 안 보고 priority 로 뒤집었는데, 순위가 이미 값을 하고 있는 상태에서 그쪽을 고치라고
-    # 보내는 것은 잘 돌아가는 섹션을 건드리게 하는 것이다 — 실측상 순위는 effective
-    # +0.024~0.061 을 벌고 있다 (metric_probes/runs/rank_ablation/).
-    # priority 로 갈 근거가 있었으면 위 분기에서 이미 그렇게 됐으므로, 여기서 남은 경우는
-    # "근거가 없다"뿐이다. 그때는 축을 바꾸는 대신 **직전 실패를 PE 에게 알린다.**
-    if avoid and focus == avoid:
-        if focus == "priority":
-            focus = "placement"
-            focus_reason = f"고착 방지 — 직전 {avoid} 가 채택 실패해 방향 전환"
-        else:
-            focus_reason += (" | 고착 — 직전 개정이 채택 실패했다. 순위축으로 옮길 근거는 "
-                             "없으니 같은 축에서 **다른 각도**로 볼 것")
+    # 갈래별로 무너진 이유가 각각 있었다:
+    #   format     위반의 65%가 간격이었는데 이제 정규화가 결정론으로 처리한다.
+    #              12회 시도해서 못 고쳤다 (재시도 후 +0.0021, 1차 −0.0257)
+    #   priority   `rank_lift` 가 전 런에서 null 이었다 — 판정 기준이 비어 있는데도 발동
+    #   coverage   `missing_boundaries` 가 전 런 ~0 — 마찬가지
+    #   placement  "그 외" 기본값. 18회(42%)로 최다인데 contra·eff 를 둘 다 악화시켰다
+    #
+    # 그리고 섹션 제한은 `focus="priority"` 일 때만 실제로 강제됐다(4/43회). 나머지는
+    # 계산만 하고 안 썼으니, 조종은 사실상 PE 프롬프트의 Rule 7 하나였다 — 근거가 빈
+    # 판정을 "측정값"이라는 권위로 최우선 규칙으로 만든 셈이다.
+    #
+    # 대신 Critic 이 **지표의 뜻과 무엇이 프롬프트의 몫인지**를 함께 받는다
+    # (`metrics.GLOSSARY`). 방향은 거기서 판단한다.
+    #
+    # 고착 방지는 남긴다. 다만 핸들을 focus 가 아니라 **직전에 고친 섹션**으로 바꾼다 —
+    # 실측상 연속 이터레이션이 같은 섹션을 다시 고친 게 8/30(27%)인데 focus 는 그걸 못
+    # 잡았다 (라벨이 달라도 같은 섹션을 고쳤다).
+    stuck = ""
+    if avoid:
+        stuck = (f"직전 개정이 {avoid} 를 고쳤는데 채택에 실패했다. "
+                 f"같은 섹션을 같은 방식으로 다시 고치지 말 것 — 다른 섹션을 보거나 "
+                 f"같은 섹션이라도 반대 방향(금지 추가가 아니라 완화)을 검토할 것")
 
     return {
         "dominant_error": max(counts, key=counts.get) if counts else None,
         "error_counts": counts,
-        "focus": focus,
-        "focus_reason": focus_reason,
+        "stuck_hint": stuck,
         "priority_audit": (priority_audit or [])[:6],
         "max_missing_boundaries": round(missing, 4),
         "max_premature_rate": round(prem, 4),
@@ -1004,61 +969,34 @@ Hard constraints — violating any of these makes your output unusable:
    must stay a set of rules, not a memorised dataset.
 5. Consult the attempt history. Every entry with "adopted": false is a revision that was
    MEASURED AND REJECTED — its scores are shown. Do not repeat it or any minor variant of it.
-   If your last attempt was rejected, move in the OPPOSITE direction within the section the
-   focus points at, or edit a different rule inside it. **Rule 7 (focus) outranks this one** —
-   never leave the focus's section just because your last attempt there failed. When focus is
-   "priority" a gate rejects any edit outside [Priority Rules].
+   If your last attempt was rejected, move in the OPPOSITE direction — if it added a
+   restriction, try relaxing one instead. Read "stuck_hint" in the critique: when it says a
+   section was edited and rejected, do not edit that section the same way again.
 6. Rules must generalise. Never write a rule that names a specific sentence from the data.
    **Never name a target language or justify a rule with its grammar** (case, gender,
    articles, verb-final order, agreement). The prompt is reused for every target language;
    a deterministic gate rejects revisions that mention one. Say "the following words can
    still overturn what was emitted" instead — that holds for every target.
-7. Obey the critic's "focus" field. It is computed from measurements, not opinion:
-   - "format"    → touch the sections governing adherence and the decision procedure,
-                   including how tags are numbered. Do NOT add new segmentation restrictions.
-   - "coverage"  → the prompt is not marking enough boundaries to fill the latency budget.
-                   Remove or narrow over-broad prohibitions and add concrete permissive rules
-                   so more defensible positions get marked. Do NOT add restrictions. Marking a
-                   boundary is free — a risky one can simply be ranked last.
-   - "placement" → boundaries sit where they damage the translation. Edit [When to Segment],
-                   [Never Segment] and [Decision Procedure] to describe better positions.
-                   Use the judgement "cause" and "shift" evidence to say where the boundary
-                   should have gone instead.
-                   **Do not fix placement by forbidding more positions.** [Output Rules]
-                   demands a minimum number of tags per sentence and that minimum does not
-                   move; every prohibition you add makes it harder to reach, and output below
-                   it is REJECTED and re-generated. A risky-but-defensible position belongs at
-                   the BOTTOM of [Priority Rules], never in [Never Segment] — the truncator
-                   drops it for free, whereas withholding it costs a retry and removes an
-                   option the ranking could have used. [Never Segment] is only for positions
-                   that are wrong at ANY latency budget.
-                   Prefer rewriting a prohibition as a ranking signal. If your edit would
-                   plausibly reduce how many boundaries the model marks, it is the wrong edit.
-                   A prohibition leaks in through THREE sections, not one — guard all three:
-                     * [Never Segment] — the obvious one.
-                     * [When to Segment] — do NOT add negative admission conditions here
-                       ("do not mark if the left side ends in a determiner / an auxiliary /
-                       an unheaded modifier ..."). Phrased as an admission test they remove the
-                       candidate entirely; the same linguistic fact belongs in [Priority Rules]
-                       as a demotion, where it costs nothing.
-                     * [Decision Procedure] step 1 — this step marks GENEROUSLY and must not
-                       consult risk at all. Risk is step 2's job. Never move a coherence or
-                       safety check into step 1, and never make step 1 "enforce" a rule from
-                       another section.
-                   Measured failure this guard exists for: a placement revision rewrote
-                   [When to Segment] with coherence pre-checks and wired them into step 1;
-                   first-pass `too_few_tags` went 5/40 -> 19/40 and retries went 25 -> 44 calls
-                   (en-de run03 iter1), and the revision was rejected anyway.
-   - "priority"  → the positions are defensible but ranked wrong: a risky boundary was given
-                   rank 1, so it survives even under the tightest budget. Edit [Priority Rules]
-                   ONLY. Do not move or remove any boundary — reorder the confidence criteria.
-                   Use "priority_audit": each row pairs a surface feature with the average
-                   confidence rank the current prompt gives it (0 = most confident) and the
-                   MEASURED contradiction there. Demote features whose rank percentile is low
-                   while contradiction is high — those are the rules that are actively wrong.
-                   Do NOT rewrite the whole section; move the specific offending criteria.
-   Also read "focus_reason". If it says the focus is a DEFAULT with no metric triggered,
-   make a small, low-risk edit — there is no measured defect to chase.
+7. Decide what to change from the MEASUREMENTS, not from how many cases of a kind you see —
+   the cases are selected failures, so any type looks dominant there.
+   Every metric arrives with its meaning, and metrics you cannot move with prompt wording are
+   marked "[not movable by the prompt]". **Never spend a revision on those.** In particular:
+   - `laal_words` and `chunks_per_sentence` are set by the latency knob T, not by you.
+     **Telling the model to segment less does NOT reduce the number of pieces** — a
+     deterministic truncator cuts to the budget whenever enough boundaries were marked. All
+     a prohibition does is change WHICH boundaries survive, and the replacements may be worse.
+     If you are about to add "never segment X", ask what will be cut instead.
+   - `format_pass_rate` is enforced by deterministic repair and one retry. What still fails
+     there is the model rewriting the source text, which more wording does not fix.
+   - `rank_lift` tells you whether the RANKING is doing work. Near zero means rewriting
+     [Priority Rules] will not help — the problem is WHERE boundaries are marked. A clearly
+     positive value means the ranking already works; refine it only if the cases show
+     specific mis-ranked boundaries.
+   - `missing_boundaries` above zero means the prompt is not marking enough for the budget.
+     Relax prohibitions and add permissive rules — marking a boundary is free, a risky one
+     can simply be ranked last.
+   Prefer edits that ADD a positive criterion ("prefer a boundary where ...") or RELAX an
+   over-broad prohibition over edits that add another prohibition.
 
 MEASURED EVIDENCE IN THE CRITIQUE.
 

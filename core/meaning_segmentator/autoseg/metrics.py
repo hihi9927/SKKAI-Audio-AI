@@ -806,7 +806,7 @@ def rank_contra_spearman(rows: list[dict], T: int, min_boundaries: int = 3) -> t
 
     **양수 = 정렬됨** (순위 숫자가 클수록 = 확신 낮을수록 실측 위험이 큼).
     0 근처 = 순위가 위험과 무상관, 음수 = 거꾸로 — 절단이 위험을 줄이지 못하고
-    `[Priority Rules]` 조향(`focus=priority`)이 근거 없는 축이 된다는 뜻이다.
+    `[Priority Rules]` 를 고치는 것이 근거 없는 일이 된다는 뜻이다.
 
     **주의 — 이 값은 원시(raw) contradiction 기준이라 길이 교란이 섞여 있다.**
     NLI 잡음 바닥은 hypothesis 길이에 따라 다르고 상위 순위 경계는 문장 앞쪽(짧은
@@ -869,13 +869,13 @@ def rank_contra_gap(rows: list[dict], T: int, min_boundaries: int = 2,
 
     `rank_contra_spearman` 과 같은 축을 다른 통계량으로 잰다. Spearman 은 순위 상관만
     보므로 "정렬은 됐는데 격차가 없다"를 못 가르지만, 이 값은 **크기**를 재므로
-    절단이 실제로 위험을 얼마나 덜어내는지가 나온다. focus 판정이 쓰는 쪽은 이것이다.
+    절단이 실제로 위험을 얼마나 덜어내는지가 나온다.
 
     **양수 = 정렬됨** — 확신 낮다고 매긴 경계가 실제로 더 반박당함. 상위만 남기는
     절단이 위험을 덜어낸다는 뜻.
     **0 이하 = 순위가 정보를 안 준다** — 상위 경계가 하위와 같거나 더 위험하다.
     이 경우 노브를 조여도 품질이 안 오르고, 고칠 곳은 위치가 아니라 `[Priority Rules]`
-    다 (`focus="priority"`).
+    다.
 
     임계값이 **0** 인 것이 이 지표를 쓰는 이유다. 종전의 T 대비
     (`adequacy(작은 T) − adequacy(큰 T) > PRIORITY_MARGIN`)는 두 문제가 있었다.

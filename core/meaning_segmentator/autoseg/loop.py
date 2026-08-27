@@ -1391,7 +1391,10 @@ def main() -> int:
                 "dev_score": None, "fmt": None}
         best_ctx: dict = {}
         best_critique: dict | None = None
-        last_focus: str | None = None
+        # 고착 방지 핸들 — 직전 개정이 **어느 섹션을 고쳤는지**. focus 라벨을 쓰던
+        # 것을 바꿨다: 라벨이 달라도 같은 섹션을 고치는 경우가 8/30(27%)이라
+        # 라벨로는 반복을 못 잡았다.
+        last_sections: str | None = None
         stale = 0
         floor_fn = None          # contradiction 잡음 바닥 — 첫 평가 후 1회 측정
 
@@ -1718,21 +1721,20 @@ def main() -> int:
                     cases = agents.select_cases(ctx["rows"], main_t, ctx.get("judgements"))
                     best_critique = critic.review(
                         cases, ctx["metrics"], ctx["violations"],
-                        avoid=last_focus if stale >= 2 else None,
+                        avoid=last_sections if stale >= 2 else None,
                         priority_audit=ctx.get("priority_audit"))
                 critique = best_critique
                 # 캐시가 고착 방지를 우회하지 않도록 aggregate 만 다시 계산한다 (LLM 없음).
-                if stale >= 2 and last_focus:
+                if stale >= 2 and last_sections:
                     critique = {**critique, "aggregate": agents.summarize_critique(
                         critique.get("cases") or [], ctx["metrics"],
-                        critique.get("summary"), avoid=last_focus,
+                        critique.get("summary"), avoid=last_sections,
                         priority_audit=ctx.get("priority_audit"))}
                 (it_dir / "critique.json").write_text(
                     json.dumps(critique, ensure_ascii=False, indent=2), encoding="utf-8")
                 agg = critique.get("aggregate", {})
-                last_focus = agg.get("focus")
-                log(f"[iter {it}] critic dominant={agg.get('dominant_error')} "
-                    f"focus={last_focus}")
+                log(f"[iter {it}] critic dominant={agg.get('dominant_error')}"
+                    + (f" | {agg['stuck_hint'][:60]}" if agg.get("stuck_hint") else ""))
 
                 # ── A9 Prompt Engineer ──────────────────────────────────
                 # **제안 1개를 검증 1개로 받던 구조를 K개 생성 -> 선택으로 바꾼다.**
@@ -1787,7 +1789,7 @@ def main() -> int:
                 for _attempt in range(3):
                     cands = []
                     for pr, rv in raw_cands:
-                        if agents.check_revision(best["prompt"], pr, last_focus,
+                        if agents.check_revision(best["prompt"], pr,
                                                  trust["sections"], trust["growth"]):
                             continue
                         cands.append((pr, rv))
@@ -1835,7 +1837,7 @@ def main() -> int:
                         new_prompt = ""
                 missing = agents.check_skeleton(new_prompt) if new_prompt else []
                 # 국소성 하드 게이트 — 지시문 권고만으로는 안 지켜졌다 (agents.check_revision).
-                scope = (agents.check_revision(best["prompt"], new_prompt, last_focus,
+                scope = (agents.check_revision(best["prompt"], new_prompt,
                                                trust["sections"], trust["growth"])
                          if new_prompt and not missing else [])
                 if not new_prompt:
@@ -1854,6 +1856,12 @@ def main() -> int:
                     "scope_violations": scope,
                 }, ensure_ascii=False, indent=2), encoding="utf-8")
                 history[-1]["next_changelog"] = revised.get("changelog")
+                # 고착 방지 핸들 갱신 — **다음 이터레이션이 이 섹션을 다시 고치지 않도록.**
+                # 채택 여부와 무관하게 "직전에 무엇을 건드렸나" 를 기억한다. 채택되면
+                # stale 이 0 으로 돌아가 avoid 가 안 걸리므로, 실제로 쓰이는 건 실패했을
+                # 때뿐이다.
+                _sc = revised.get("sections_changed") or []
+                last_sections = ", ".join(_sc) if _sc else None
                 log(f"[iter {it}] 개정: {revised.get('sections_changed')}")
             except BudgetExceeded:
                 raise
