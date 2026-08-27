@@ -601,7 +601,16 @@ def fmt_metrics(m: metrics.Metrics, tag: str) -> str:
     parts = [f"{tag} fmt={m.format_pass_rate:.2f}(1st {m.format_pass_rate_no_retry:.2f})"]
     for k in sorted(m.by_T, key=int):
         s = m.by_T[k]
-        parts.append(f"T{k}: eff={_cell(s.effective, '.4f')} adq={s.adequacy:.4f} "
+        # **`p10` 을 평균 옆에 항상 같이 찍는다.** `effective` 평균은 소수의 나쁜 문장에
+        # 크게 끌린다 — 실측(en-de/run01 pool_base T=6, 100문장): 평균 0.7760 / 중앙
+        # 0.8021 이고 **최악 1문장을 빼면 평균이 +0.0034 오른다.** 프롬프트 간 실제 차이가
+        # 0.003~0.007 규모라 같은 크기다. 평균만 보면 "개선"과 "그 배치에 유난히 나쁜
+        # 문장이 하나 덜 걸림"을 구분할 수 없다.
+        #
+        #   평균 ↑ 이고 p10 도 ↑   →  꼬리까지 좋아졌다. 진짜 개선
+        #   평균 ↑ 인데 p10 은 ↓   →  꼬리 운이다. 의심할 것
+        parts.append(f"T{k}: eff={_cell(s.effective, '.4f')} p10={_cell(s.effective_p10, '.4f')} "
+                     f"adq={s.adequacy:.4f} "
                      f"contra={_cell(s.contradiction, '.3f')} laal={s.laal_words:.2f} "
                      f"k={s.chunks_per_sentence:.2f} miss={s.missing_boundaries:.2f}")
     parts.append(f"score={metrics.score(m):.4f}")
@@ -1899,20 +1908,30 @@ def build_report(args, run_dir, profile, measured, history, best, test_m, test_v
         "",
         "## 최종 test 곡선",
         "",
-        "| T (목표 조각 어절) | laal_words ↓ | **effective** ↑ | adequacy | contradiction ↓ | consistency | k | 부족 경계 |",
-        "|---|---|---|---|---|---|---|---|",
+        "| T (목표 조각 어절) | laal_words ↓ | **effective** ↑ | eff p10 ↑ | eff min ↑ | adequacy | contradiction ↓ | consistency | k | 부족 경계 |",
+        "|---|---|---|---|---|---|---|---|---|---|",
     ]
     for k in sorted(test_m.by_T, key=int):
         s = test_m.by_T[k]
         lines.append(f"| {k} | {s.laal_words:.2f} | **{_cell(s.effective, '.4f')}** | "
+                     f"{_cell(s.effective_p10, '.4f')} | {_cell(s.effective_min, '.4f')} | "
                      f"{s.adequacy:.4f} | {_cell(s.contradiction, '.4f')} | "
                      f"{s.consistency:.4f} | "
                      f"{s.chunks_per_sentence:.2f} | {s.missing_boundaries:.2f} |")
     for name, b in baselines.items():
         lines.append(f"| {name} (노브 없음) | {b['laal_words']:.2f} | "
                      f"**{_cell(b['effective'], '.4f')}** | "
+                     f"{_cell(b.get('effective_p10'), '.4f')} | {_cell(b.get('effective_min'), '.4f')} | "
                      f"{b['adequacy']:.4f} | {_cell(b['contradiction'], '.4f')} | "
                      f"{b['consistency']:.4f} | {b['chunks_per_sentence']:.2f} | — |")
+    lines += [
+        "",
+        "> `eff p10` 은 하위 10% 지점, `eff min` 은 최악 문장이다. **평균과 같이 읽어야 한다** —",
+        "> `effective` 평균은 소수의 나쁜 문장에 크게 끌린다 (실측: 100문장에서 최악 1문장을",
+        "> 빼면 평균이 +0.0034 오르는데, 프롬프트 간 실제 차이가 0.003~0.007 이라 같은 크기다).",
+        "> 평균과 p10 이 같이 오르면 진짜 개선이고, 평균만 오르고 p10 이 내리면 그 배치에 나쁜",
+        "> 문장이 덜 걸린 것일 수 있다.",
+    ]
 
     # 타깃별 곡선. 평균만으로는 어느 언어에서 무너지는지 안 보인다 — mdeberta-xnli 가
     # ko/zh/ja 에서만 곡선을 뒤집었던 것처럼 백엔드 결함이 언어별로 나타난다.
