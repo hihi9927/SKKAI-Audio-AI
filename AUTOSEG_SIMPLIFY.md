@@ -308,8 +308,10 @@ consistency    합본 vs 전체번역 양방향 함의의 min   ← 보고용
 설계가 일부러 피한 것이다. 관문에서 `benign_incomplete` 가 0.025~0.041 → 0.086~0.151 로
 3~4배 올랐다 (premature 0.99 와는 여전히 6배 이상 벌어져 분리는 유지).
 
-**판단 방법**: NLI 한 번 호출에 두 확률이 다 나오므로 **추가 비용 0** 이다. 교체하지 말고
-`effective_ent` 를 나란히 기록해 다음 런의 로그로 판단한다. `se` 가 1.44배 커지므로
+**판단 방법 — 구현됨.** NLI 한 번 호출에 세 라벨 확률이 다 나오므로 **추가 비용 0** 이다
+(`ContradictionBackend.score_dual`). 교체하지 않고 `effective_ent` 를 나란히 기록한다 —
+이터레이션 로그에 `[ent 0.7xxx]`, 최종 곡선 표에 `eff (ent)` / `contra (ent)` 열.
+**목적함수·채택 판정에는 안 들어간다.** 다음 런의 로그로 판단한다. `se` 가 1.44배 커지므로
 `--adopt-se-mult` 재조정이 함께 필요하다 (전례: mdeberta→xlmr-anli 때 1.0 → 0.5).
 
 ### A7 — 판정자 `agents.py` · **LLM**

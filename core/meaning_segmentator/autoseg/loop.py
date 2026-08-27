@@ -67,6 +67,10 @@ class ScoredSplit:
     pieces_src: list[list[str]]          # 조각 원문
     pieces_tgt: list[list[str]]          # 조각 번역
     pieces_contra: list[list[float]]     # 경계별 모순 확률. 마지막 원소는 항상 0.0
+    # 병기 지표 — 같은 NLI 호출에서 나온 `1 − entailment`. 목적함수에는 안 들어간다.
+    pieces_contra_ent: list[list[float]]
+    effective_ent: list[float | None]
+    contradiction_ent: list[float | None]
     effective: list[float | None]
     adequacy: list[float]
     contradiction: list[float | None]
@@ -226,6 +230,10 @@ def evaluate_multi(targets: list[str], make_ctx, prompt, sentences, t_grid,
     for T in by_T_keys:
         per_target = {t: [((r.get("by_T") or {}).get(T) or {}).get("effective")
                           for r in per_rows[t]] for t in targets}
+        # 병기 지표도 같은 방식으로 타깃 평균을 낸다. 안 하면 대표 타깃 값이 그대로 남아
+        # "다언어 평균" 인 척하게 된다.
+        per_target_ent = {t: [((r.get("by_T") or {}).get(T) or {}).get("effective_ent")
+                              for r in per_rows[t]] for t in targets}
         mixed_z = _zmix(per_target,
                         None if zbase is None else zbase.setdefault(str(T), {}))
         rep = per_m[targets[0]].by_T.get(T)
@@ -247,6 +255,8 @@ def evaluate_multi(targets: list[str], make_ctx, prompt, sentences, t_grid,
             d["effective_single"] = d.get("effective")
             d["effective"] = raw
             d["effective_z"] = mixed_z[i]
+            ev = [per_target_ent[t][i] for t in targets if per_target_ent[t][i] is not None]
+            d["effective_ent"] = (sum(ev) / len(ev)) if ev else None
             r.setdefault("by_T", {})[T] = d
         sm = copy.copy(rep)
         ok = [x for x in mixed_raw if x is not None]
@@ -256,6 +266,11 @@ def evaluate_multi(targets: list[str], make_ctx, prompt, sentences, t_grid,
         # 비교군이 다언어 모드에서만 0 점으로 끌려 내려갔다.
         sm.effective = round(sum(ok) / len(ok), 4) if ok else None
         sm.effective_z = round(sum(okz) / len(okz), 4) if okz else None
+        oke = [x for r in merged
+               for x in [((r.get("by_T") or {}).get(T) or {}).get("effective_ent")]
+               if x is not None]
+        sm.effective_ent = round(sum(oke) / len(oke), 4) if oke else None
+        sm.contradiction_ent = None      # 타깃마다 다른 값이라 평균이 뜻을 잃는다
         sm.n_effective = len(ok)
         sm.n_targets = len(targets)
         sm.effective_min = round(min(ok), 4) if ok else None
@@ -304,6 +319,7 @@ def score_split(seg_texts: list[str], texts: list[str], full: list[str],
     # 조기 방출 — 조각 j 뒤의 경계에서 "그 시점까지 방출된 누적 번역"이 오라클(full
     # 번역)과 모순되는가. 마지막 조각 뒤에는 미래가 없으므로 대상이 아니다.
     contra = [0.0] * len(pair_src)
+    contra_ent = [0.0] * len(pair_src)
     if contradiction is not None and pair_src:
         prem, hyp, slot = [], [], []
         pos = 0
@@ -315,15 +331,24 @@ def score_split(seg_texts: list[str], texts: list[str], full: list[str],
                     hyp.append(" ".join(x for x in list(ps)[: j + 1] if x).strip())
                     slot.append(pos)
                 pos += 1
-        for s, v in zip(slot, contradiction.score(prem, hyp)):
+        # **한 번의 NLI 호출로 두 척도를 다 받는다** — 세 라벨 확률이 같이 나오므로
+        # `1 − entailment` 를 병기하는 데 추가 비용이 0 이다 (`score_dual` 주석 참고).
+        if hasattr(contradiction, "score_dual"):
+            cs, es = contradiction.score_dual(prem, hyp)
+        else:
+            cs, es = contradiction.score(prem, hyp), [0.0] * len(prem)
+        for s, v, w in zip(slot, cs, es):
             contra[s] = v
+            contra_ent[s] = w
 
     # 경계별 값을 문장에 되돌린다. 문장 평균만 남기면 **어느 경계가** 반박당했는지가
     # 사라지는데, 판정자·비평가 조준에 필요한 것이 바로 그 위치다 (이미 계산된 값).
     # 각 문장 마지막 원소는 뒤에 미래가 없어 항상 0.0 — "안전"이 아니라 "대상 아님".
     contra_rows: list[list[float]] = [[] for _ in texts]
-    for i, v in zip(owner, contra):
+    contra_ent_rows: list[list[float]] = [[] for _ in texts]
+    for i, v, w in zip(owner, contra, contra_ent):
         contra_rows[i].append(round(v, 4))
+        contra_ent_rows[i].append(round(w, 4))
 
     def weighted(vals):
         num = [0.0] * len(texts)
@@ -341,21 +366,33 @@ def score_split(seg_texts: list[str], texts: list[str], full: list[str],
     adequacy_rows = weighted(qe)
     contradiction_rows: list[float | None] = []
     effective_rows: list[float | None] = []
-    for adq, cr in zip(adequacy_rows, contra_rows):
+    contradiction_ent_rows: list[float | None] = []
+    effective_ent_rows: list[float | None] = []
+    for adq, cr, er in zip(adequacy_rows, contra_rows, contra_ent_rows):
         bounds = cr[:-1]
         if bounds:
             c_mean = sum(bounds) / len(bounds)
             contradiction_rows.append(c_mean)
             effective_rows.append(metrics.effective_of(adq, c_mean))
+            eb = er[:-1]
+            e_mean = sum(eb) / len(eb) if eb else None
+            contradiction_ent_rows.append(e_mean)
+            effective_ent_rows.append(
+                metrics.effective_of(adq, e_mean) if e_mean is not None else None)
         else:
             contradiction_rows.append(None)
             effective_rows.append(None)
+            contradiction_ent_rows.append(None)
+            effective_ent_rows.append(None)
 
     return ScoredSplit(
         joined=list(joined),
         pieces_src=chunk_lists,
         pieces_tgt=[list(p) for p in pieces],
         pieces_contra=contra_rows,
+        pieces_contra_ent=contra_ent_rows,
+        effective_ent=effective_ent_rows,
+        contradiction_ent=contradiction_ent_rows,
         effective=effective_rows,
         adequacy=adequacy_rows,
         contradiction=contradiction_rows,
@@ -484,6 +521,10 @@ def evaluate(
                 "pieces_contra": sp.pieces_contra[i], "seg_trans": sp.joined[i],
                 "effective": (round(sp.effective[i], 4)
                               if sp.effective[i] is not None else None),
+                "effective_ent": (round(sp.effective_ent[i], 4)
+                                  if sp.effective_ent[i] is not None else None),
+                "contradiction_ent": (round(sp.contradiction_ent[i], 4)
+                                      if sp.contradiction_ent[i] is not None else None),
                 "adequacy": round(sp.adequacy[i], 4),
                 "contradiction": (round(sp.contradiction[i], 4)
                                   if sp.contradiction[i] is not None else None),
@@ -497,7 +538,9 @@ def evaluate(
         by_T[str(T)] = metrics.aggregate_split(
             T, pick(sp.effective), pick(sp.adequacy), pick(sp.contradiction),
             pick(sp.consistency), pick(sp.laal_words), pick(sp.k),
-            pick(missings), n_total=len(rows))
+            pick(missings), n_total=len(rows),
+            effective_ent_scores=pick(sp.effective_ent),
+            contradiction_ent_scores=pick(sp.contradiction_ent))
         if T == lift_T:
             real_eff_at_lift_T = list(sp.effective)
 
@@ -610,6 +653,7 @@ def fmt_metrics(m: metrics.Metrics, tag: str) -> str:
         #   평균 ↑ 이고 p10 도 ↑   →  꼬리까지 좋아졌다. 진짜 개선
         #   평균 ↑ 인데 p10 은 ↓   →  꼬리 운이다. 의심할 것
         parts.append(f"T{k}: eff={_cell(s.effective, '.4f')} p10={_cell(s.effective_p10, '.4f')} "
+                     f"[ent {_cell(s.effective_ent, '.4f')}] "
                      f"adq={s.adequacy:.4f} "
                      f"contra={_cell(s.contradiction, '.3f')} laal={s.laal_words:.2f} "
                      f"k={s.chunks_per_sentence:.2f} miss={s.missing_boundaries:.2f}")
@@ -1887,7 +1931,9 @@ def compare_baselines(translator, adequacy, consistency, sentences, spaced,
                          spaced, tgt_spaced, contradiction)
         out[name] = metrics.aggregate_split(
             0, sp.effective, sp.adequacy, sp.contradiction, sp.consistency,
-            sp.laal_words, sp.k, [0] * len(texts)).to_dict()
+            sp.laal_words, sp.k, [0] * len(texts),
+            effective_ent_scores=sp.effective_ent,
+            contradiction_ent_scores=sp.contradiction_ent).to_dict()
     return out
 
 
@@ -1942,21 +1988,25 @@ def build_report(args, run_dir, profile, measured, history, best, test_m, test_v
         "",
         "## 최종 test 곡선",
         "",
-        "| T (목표 조각 어절) | laal_words ↓ | **effective** ↑ | eff p10 ↑ | eff min ↑ | adequacy | contradiction ↓ | consistency | k | 부족 경계 |",
-        "|---|---|---|---|---|---|---|---|---|---|",
+        "| T (목표 조각 어절) | laal_words ↓ | **effective** ↑ | eff p10 ↑ | eff min ↑ | eff (ent) | adequacy | contradiction ↓ | contra (ent) | consistency | k | 부족 경계 |",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|",
     ]
     for k in sorted(test_m.by_T, key=int):
         s = test_m.by_T[k]
         lines.append(f"| {k} | {s.laal_words:.2f} | **{_cell(s.effective, '.4f')}** | "
                      f"{_cell(s.effective_p10, '.4f')} | {_cell(s.effective_min, '.4f')} | "
+                     f"{_cell(s.effective_ent, '.4f')} | "
                      f"{s.adequacy:.4f} | {_cell(s.contradiction, '.4f')} | "
+                     f"{_cell(s.contradiction_ent, '.4f')} | "
                      f"{s.consistency:.4f} | "
                      f"{s.chunks_per_sentence:.2f} | {s.missing_boundaries:.2f} |")
     for name, b in baselines.items():
         lines.append(f"| {name} (노브 없음) | {b['laal_words']:.2f} | "
                      f"**{_cell(b['effective'], '.4f')}** | "
                      f"{_cell(b.get('effective_p10'), '.4f')} | {_cell(b.get('effective_min'), '.4f')} | "
+                     f"{_cell(b.get('effective_ent'), '.4f')} | "
                      f"{b['adequacy']:.4f} | {_cell(b['contradiction'], '.4f')} | "
+                     f"{_cell(b.get('contradiction_ent'), '.4f')} | "
                      f"{b['consistency']:.4f} | {b['chunks_per_sentence']:.2f} | — |")
     lines += [
         "",
@@ -1965,6 +2015,11 @@ def build_report(args, run_dir, profile, measured, history, best, test_m, test_v
         "> 빼면 평균이 +0.0034 오르는데, 프롬프트 간 실제 차이가 0.003~0.007 이라 같은 크기다).",
         "> 평균과 p10 이 같이 오르면 진짜 개선이고, 평균만 오르고 p10 이 내리면 그 배치에 나쁜",
         "> 문장이 덜 걸린 것일 수 있다.",
+        ">",
+        "> `eff (ent)` / `contra (ent)` 는 **병기 지표**다 — 조기 방출을 모순 확률이 아니라",
+        "> `1 − 함의 확률` 로 잰 값이고 **목적함수·채택 판정에는 안 들어간다**. 같은 NLI 호출에서",
+        "> 세 라벨 확률이 함께 나오므로 추가 비용이 0 이다. 교체 여부를 이 로그로 판단한다",
+        "> (오프라인 실측은 관문 여유 14배·검출력 1.6배로 그쪽이 유리하지만 표본이 얇다).",
     ]
 
     # 타깃별 곡선. 평균만으로는 어느 언어에서 무너지는지 안 보인다 — mdeberta-xnli 가

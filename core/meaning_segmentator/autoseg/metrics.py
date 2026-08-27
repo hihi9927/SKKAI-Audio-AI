@@ -306,16 +306,38 @@ class ContradictionBackend(_NliBase):
         super().__init__(model_name, batch_size, device, name)
 
     def score(self, premises: list[str], hypotheses: list[str]) -> list[float]:
-        out = [0.0] * len(premises)
+        return self.score_dual(premises, hypotheses)[0]
+
+    def score_dual(self, premises: list[str],
+                   hypotheses: list[str]) -> tuple[list[float], list[float]]:
+        """`(contradiction, 1 − entailment)` 를 **한 번의 호출로** 둘 다 낸다.
+
+        NLI 는 세 라벨 확률을 한꺼번에 주므로 두 척도를 같이 재는 데 **추가 비용이 0** 이다.
+        `1 − entailment` 로 바꾸는 안이 검토 중이라(오프라인 실측이 전부 그쪽을 가리키지만
+        표본이 얇다) 목적함수는 `contradiction` 그대로 두고 다른 쪽을 **나란히 기록**한다.
+        다음 런의 로그로 판단한다.
+
+        오프라인 실측 (`AUTOSEG_SIMPLIFY.md` "확인해야 할 것"):
+          관문 최소 여유 0.0604 → 0.8377 · 긴 방출 구간 신호 +0.0115 → +0.0450
+          검출력 |t| 0.49 → 0.80 · 두 척도 순위상관 +0.923 · 채택 결정 11회 중 3회 뒤집힘
+
+        차이: `contradiction` 은 "틀렸다" 만 세고, `1 − entailment` 는 "아직 모르겠다"
+        (neutral)까지 센다. 미완성 조각은 원래 neutral 이 정상이라 무해한 미완성이
+        벌받을 수 있다 — 관문에서 `benign_incomplete` 가 3~4배 올랐다.
+        """
+        n = len(premises)
+        contra = [0.0] * n
+        one_minus_ent = [0.0] * n
         pending = [i for i, (p, h) in enumerate(zip(premises, hypotheses))
                    if p.strip() and h.strip()]
         if not pending:
-            return out
+            return contra, one_minus_ent
         res = self.load()([{"text": premises[i], "text_pair": hypotheses[i]}
                            for i in pending], batch_size=self.batch_size)
         for i, scores in zip(pending, res):
-            out[i] = self._prob(scores, "contr")
-        return out
+            contra[i] = self._prob(scores, "contr")
+            one_minus_ent[i] = 1.0 - self._prob(scores, "entail")
+        return contra, one_minus_ent
 
 
 class BidirectionalNliBackend(_NliBase, QualityBackend):
@@ -472,6 +494,10 @@ class SplitMetrics:
     rank_contra_gap: float | None = None
     rank_contra_gap_se: float | None = None
     rank_contra_gap_n: int | None = None
+    # **병기 지표 — 목적함수에는 안 들어간다.** 같은 NLI 호출에서 나온 `1 − entailment` 로
+    # 잰 값이다 (`ContradictionBackend.score_dual`). 교체 여부를 다음 런의 로그로 판단한다.
+    contradiction_ent: float | None = None
+    effective_ent: float | None = None
     # 다언어 목적함수에서만 채워진다. `effective` 는 **타깃별 원값의 평균**이라 해석·비교가
     # 되고, `effective_z` 는 **분할별로 고정된 기준선**으로 타깃별 z-정규화한 뒤 평균한
     # 값이다 (`loop._zmix`). **보고는 effective, 채택 판정은 effective_z** 로 축을 나눈다.
@@ -538,6 +564,14 @@ class Metrics:
         return self.by_T.get(str(T))
 
 
+def _opt_mean(xs: list[float | None] | None) -> float | None:
+    """None 을 빼고 평균. 값이 하나도 없으면 None (병기 지표가 꺼져 있을 때)."""
+    if not xs:
+        return None
+    v = [x for x in xs if x is not None]
+    return sum(v) / len(v) if v else None
+
+
 def percentile10(xs: list[float]) -> float | None:
     """하위 10% 지점 값. 평균이 못 보는 **꼬리**를 본다.
 
@@ -559,6 +593,8 @@ def aggregate_split(
     ks: list[int],
     missings: list[int],
     n_total: int | None = None,
+    effective_ent_scores: list[float | None] | None = None,
+    contradiction_ent_scores: list[float | None] | None = None,
 ) -> SplitMetrics:
     """점수 리스트는 **포맷을 통과한 문장만** 담는다.
 
@@ -590,6 +626,8 @@ def aggregate_split(
         laal_words=mean(laals),
         chunks_per_sentence=mean([float(k) for k in ks], 1.0),
         missing_boundaries=mean([float(s) for s in missings]),
+        effective_ent=_opt_mean(effective_ent_scores),
+        contradiction_ent=_opt_mean(contradiction_ent_scores),
     )
 
 
