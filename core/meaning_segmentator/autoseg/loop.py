@@ -899,7 +899,13 @@ def main() -> int:
     p.add_argument("--iterations", type=int, default=6)
     p.add_argument("--train", type=int, default=30)
     p.add_argument("--train-pool", type=int, default=None)
-    p.add_argument("--max-prompt-growth", type=float, default=1.3)
+    # 프롬프트가 v0 대비 커질 수 있는 **유일한** 상한. 품질 노브가 아니라 비용 천장이다 —
+    # 프롬프트는 문장마다 다시 보내므로 길이가 곧 토큰 비용이고, 이터레이션을 거듭하며
+    # 사례집으로 부푸는 것을 막는 장치다. 실측: 적용된 개정 42건에서 v0 대비 배수가
+    # 중앙 1.06 / p90 1.17 / 최대 1.29 이고 이 예산이 발동한 것은 1회(2%)다. 즉 PE 의
+    # 자연스러운 산출을 왜곡하지 않으면서 누적 팽창만 막는 자리에 있다.
+    p.add_argument("--max-prompt-growth", type=float, default=1.3,
+                   help="프롬프트 길이 천장 (v0 대비 배수). 넘치면 압축기가 깎는다")
     p.add_argument("--dev", type=int, default=60)
     p.add_argument("--test", type=int, default=100)
     p.add_argument("--seed", type=int, default=data.DEFAULT_SEED,
@@ -1340,7 +1346,7 @@ def main() -> int:
                     continue
                 # 분절은 소스 쪽 문제다 — 프롬프트가 타깃 언어에 기대면 다른 타깃에
                 # 재사용할 수 없고, 측정되지 않은 언어 지식이 섞인다.
-                tl = agents.check_target_agnostic(cand, args.src_lang)
+                tl = agents.check_target_agnostic(cand, args.src_lang, targets)
                 if tl:
                     log(f"[profiler] 타깃 종속 — 재시도 {attempt + 1}: {'; '.join(tl)}")
                     continue
@@ -1731,13 +1737,11 @@ def main() -> int:
                     else [None] * max(1, args.revision_candidates)
                 jobs = jobs[:max(1, args.revision_candidates)]
 
-                # 개정 한 번의 **분량 예산**. 두 개의 상한 중 작은 쪽 —
-                #   (a) 걸음 크기: 직전 best 대비 `MAX_PROMPT_GROWTH` 배
-                #   (b) 런 전체 천장: v0 대비 `--max-prompt-growth` 배
-                # 종전에는 (a) 를 섹션별로 재는 하드 게이트, (b) 를 압축으로 처리해서
-                # 경로가 둘이었다. 재는 대상이 같은 "분량" 이므로 한 숫자로 합친다.
-                size_budget = min(int(len(best["prompt"]) * agents.MAX_PROMPT_GROWTH),
-                                  int(prompt_v0_len * args.max_prompt_growth))
+                # 개정 한 번의 **분량 예산** — 런 전체 천장 하나뿐이다.
+                # 걸음 크기 상한(직전 best 대비)도 따로 뒀다가 뺐다: 적용된 개정 42건의
+                # 이터레이션 간 배수가 중앙 1.03 / p90 1.12 / 최대 1.29 라, 어떤 상수를
+                # 놓아도 v0 천장보다 먼저 걸릴 일이 없다.
+                size_budget = int(prompt_v0_len * args.max_prompt_growth)
 
                 def make(hint):
                     try:
@@ -1770,7 +1774,7 @@ def main() -> int:
 
                 _cands2 = []
                 for pr, rv in cands:
-                    tl = agents.check_target_agnostic(pr, args.src_lang)
+                    tl = agents.check_target_agnostic(pr, args.src_lang, targets)
                     if tl:
                         log(f"[iter {it}] 개정 후보 타깃 종속 — 거부: {'; '.join(tl)}")
                         continue

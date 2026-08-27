@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
 
 from . import metrics as _metrics
@@ -114,31 +115,60 @@ def output_rules(spaced: bool, min_t: int = 3, min_gap: int = 0) -> str:
 
 # 타깃 언어명·문법 근거 검출. 프롬프트는 소스에만 종속돼야 한다 — 지시만으로는 안 지켜졌다
 # (run04 산출물에 독일어 언급 8곳, 순위 규칙 8~11 이 그 위에 세워졌다).
+# 후보 타깃 언어명. 실제로 도는 타깃 목록을 `targets` 로 받으면 그쪽을 쓰고, 없으면
+# 이 목록으로 떨어진다. **`english` 가 여기 있어야 한다** — 현재 모든 런(de/ja/zh/ko→en)
+# 의 타깃이 English 인데 종전 목록에 빠져 있어서 그 런들에서는 언어명 검사가 구조적으로
+# 아무것도 못 잡았다.
 _TARGET_LANG_WORDS = (
-    "german", "korean", "japanese", "chinese", "spanish", "french", "italian",
-    "portuguese", "russian", "arabic", "hindi", "vietnamese", "thai", "dutch",
-    "polish", "turkish", "deutsch",
+    "english", "german", "korean", "japanese", "chinese", "spanish", "french",
+    "italian", "portuguese", "russian", "arabic", "hindi", "vietnamese", "thai",
+    "dutch", "polish", "turkish", "deutsch",
 )
-_TARGET_GRAMMAR_WORDS = ("case/gender", "case assignment", "grammatical gender",
-                         "case marking", "verb-final")
+
+# 타깃 문법 근거로 쓰이는 표현. 이것만으로는 판정하지 않는다 — 아래 참조.
+_TARGET_GRAMMAR_WORDS = (
+    "case/gender", "case assignment", "case marking", "grammatical gender",
+    "verb-final", "declension", "noun class", "agreement", "word order",
+    "inflection", "inflected",
+)
 
 
-def check_target_agnostic(prompt: str, src_lang: str | None = None) -> list[str]:
-    """프롬프트가 특정 타깃 언어에 기대고 있으면 사유를 돌려준다.
+def check_target_agnostic(prompt: str, src_lang: str | None = None,
+                          targets: list[str] | None = None) -> list[str]:
+    """프롬프트가 특정 타깃 언어의 **문법에 근거한 규칙**을 담고 있으면 사유를 돌려준다.
 
-    소스 언어명은 허용한다 — 프롬프트는 소스에 종속돼야 하므로 "English source text" 는
-    정상이다. 걸러야 하는 것은 **타깃** 언어명과 그 문법 근거다.
+    판정은 **연언**이다 — 같은 문장 안에 (a) 타깃 언어명과 (b) 문법 표현이 함께 있을 때만
+    건다. 저장된 프롬프트 190개로 세 가지 규칙을 재 봤다:
+
+    ```
+    언어명만          발동 68%   대부분 [Role] 의 "will be translated into English" 나
+                                zh 소스의 "or English text"(라틴 문자 설명). 못 쓴다
+    문법어만 (종전)   발동 33%   43건 중 5건 오검출 — ko-en/run01 전체가
+                                "Korean is head-final and verb-final" 로 걸렸다.
+                                소스 문법을 설명한 문장인데 문법어에는 소스 면제가 없었다
+    연언 (지금)       발동  8%   16건 전부 en→de 의 진짜 타깃 문법 규칙.
+                                오검출 0
+    ```
+
+    **정밀도를 재현율보다 우선한다.** 오검출은 이터레이션을 통째로 날리고(실측: 관문
+    기아가 영구 교착을 만들었다), 미검출은 그 규칙이 5개 타깃 평균에서 값을 못 하면
+    채택 판정에서 걸러진다. **이 게이트는 싼 사전확률이고 진짜 방어선은 다중 타깃
+    목적함수다** (`loop.py` 상단 주석).
+
+    알려진 미검출: `"...revise what has been emitted (case/gender/article, verb placement…)"`
+    처럼 언어를 안 대고 쓴 문장은 통과한다. case/gender 는 독일어·스페인어·러시아어에
+    두루 걸리므로 문면만으로 한 타깃 종속이라 단정할 수 없다 — 그건 점수가 가릴 일이다.
     """
-    low = prompt.lower()
     src = (src_lang or "").strip().lower()
-    hits = [w for w in _TARGET_LANG_WORDS if w != src and w in low]
-    gram = [w for w in _TARGET_GRAMMAR_WORDS if w in low]
-    out = []
-    if hits:
-        out.append(f"타깃 언어명 언급: {sorted(set(hits))}")
-    if gram:
-        out.append(f"타깃 문법 근거: {sorted(set(gram))}")
-    return out
+    pool = [t.strip().lower() for t in (targets or _TARGET_LANG_WORDS)]
+    tgt = [t for t in pool if t and t != src]
+    out: list[str] = []
+    for sent in re.split(r"[.\n]", prompt.lower()):
+        names = sorted({t for t in tgt if t in sent})
+        gram = sorted({g for g in _TARGET_GRAMMAR_WORDS if g in sent})
+        if names and gram:
+            out.append(f"타깃 문법 근거: {names} + {gram}")
+    return out[:5]
 
 
 def split_sections(prompt: str) -> dict[str, str]:
@@ -175,19 +205,10 @@ def changed_sections(old: str, new: str) -> list[str]:
     return [k for k in b if k in a and a[k] != b[k]]
 
 
-# 개정 한 번이 프롬프트를 키울 수 있는 **전체** 배수. 걸음 크기 제한이지 국소성 제한이
-# 아니다 — 어느 섹션을 몇 개 건드리든 상관하지 않고, 합계 길이만 본다.
-#
-# **왜 섹션 개수·섹션별 성장을 뺐나.** 종전 관문은 (a) 변경 섹션 ≤ N개, (b) 변경 섹션의
-# 길이 ≤ M배 였다. 둘 다 "한 군데만 크게 고쳐라" 를 강제하는데, 정작 필요한 개정은 반대
-# 모양인 경우가 많다 — Critic 제안 여러 개를 각 섹션에 한 줄씩 반영하는 편집이 (a) 에
-# 걸리고, 짧은 섹션에 두 줄 넣는 편집이 (b) 에 걸린다. 실측 로그 26개에서 범위 위반 6건
-# 중 5건이 성장, 1건이 섹션 개수였고 **섹션 추가/삭제는 0건**이다. 즉 관문이 실제로 막고
-# 있던 것은 "분량" 하나뿐이었으므로, 분량 하나만 남긴다.
-#
-# 그리고 분량은 **거부할 일이 아니라 줄일 일**이다. 넘치면 `Compressor.compress` 가
-# 바뀐 섹션을 보호한 채 예산 안으로 깎고, 그래도 못 맞추면 그때 거부한다.
-MAX_PROMPT_GROWTH = 1.5
+# **개정 한 번의 걸음 크기 제한은 두지 않는다.** 실측: 적용된 개정 42건의 이터레이션 간
+# 길이 배수가 중앙 1.03 / p90 1.12 / **최대 1.29** 다. 종전 상수 1.5 는 분포 밖이라 한 번도
+# 발동한 적이 없다 — 있으나 마나 한 파라미터였다. 분량 상한은 런 전체 천장
+# (`--max-prompt-growth`, v0 대비) 하나로 충분하다.
 
 
 def check_revision(old: str, new: str) -> list[str]:
@@ -196,7 +217,7 @@ def check_revision(old: str, new: str) -> list[str]:
     남은 규칙은 하나 — 섹션을 새로 만들거나 없애면 안 된다. 골격이 바뀌면 이전 버전과
     섹션 단위로 비교할 수 없어서 압축기의 보호 목록도, `changed_sections` 도 의미를 잃는다.
 
-    **분량은 여기서 보지 않는다.** 호출자가 예산(`MAX_PROMPT_GROWTH`)과 비교하고,
+    **분량은 여기서 보지 않는다.** 호출자가 예산(`--max-prompt-growth`)과 비교하고,
     넘치면 거부가 아니라 압축으로 처리한다.
     """
     a, b = split_sections(old), split_sections(new)
@@ -971,7 +992,8 @@ Hard constraints — violating any of these makes your output unusable:
 6. Rules must generalise. Never write a rule that names a specific sentence from the data.
    **Never name a target language or justify a rule with its grammar** (case, gender,
    articles, verb-final order, agreement). The prompt is reused for every target language;
-   a deterministic gate rejects revisions that mention one. Say "the following words can
+   a deterministic gate rejects any revision that names a target language in the same
+   sentence as a grammatical justification. Say "the following words can
    still overturn what was emitted" instead — that holds for every target.
 7. Decide what to change from the MEASUREMENTS, not from how many cases of a kind you see —
    the cases are selected failures, so any type looks dominant there.
@@ -1141,8 +1163,7 @@ class PromptEngineer:
         # **지시문과 게이트가 같은 숫자를 말해야 한다.** 실측상 PE 는 배수 지시에 비례해
         # 반응하지 않았는데(1.25/2.5/4.0 지시 → 1.39/1.36/1.79 산출), 배수는 PE 가 직접
         # 셀 수 없는 값이라서다. **글자 수로 바꿔 준다** — 자기 출력 길이는 셀 수 있다.
-        budget = size_budget if size_budget is not None else \
-            int(len(current_prompt) * MAX_PROMPT_GROWTH)
+        budget = size_budget if size_budget is not None else len(current_prompt)
         sys_p = (ENGINEER_SYSTEM.replace("__BUDGET__", str(budget))
                  .replace("__CURLEN__", str(len(current_prompt))))
         return self.gw.chat_json(sys_p, user, max_tokens=PROMPT_MAX_TOKENS,
