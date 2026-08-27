@@ -123,9 +123,9 @@ MANIFESTS = {
     # `clean500`(BLEU 홀드아웃, 0~499)·`fleurs-en-de`(test 스플릿)·기존 en 소스 런이
     # 쓴 문장과 **교집합 0** 이다.
     #
-    # 강제정렬 산출물이 없다. 영어 발화 속도는 같은 코퍼스 test 스플릿 346문장에서
-    # **2.879 어절/초**(발화 구간 기준)로 재어 두었고, 그 값이면 `min_gap 3` 으로
-    # 기존 en 런들과 같아진다. `--units-per-sec 2.879` 로 주고 돌린다.
+    # 강제정렬은 405문장 전량에 돌렸다 (`baselines.build_unittimes --lang en`, 실패 0).
+    # **2.521 어절/초** → `min_gap 3`, 격자 `[4,6,12]`. 같은 코퍼스 test 스플릿에서
+    # 추정했던 2.879 보다 12% 느리다 — 스플릿 간 차이이므로 대리 추정을 쓰지 않는다.
     "fleurs-en-multi": _AST / "fleurs_nway_en-de_multi_loop405.jsonl",
 }
 
