@@ -281,6 +281,16 @@ def evaluate_multi(targets: list[str], make_ctx, prompt, sentences, t_grid,
     merged_m = metrics.Metrics(n=m0.n, format_pass_rate=m0.format_pass_rate,
                                format_pass_rate_no_retry=m0.format_pass_rate_no_retry,
                                by_T=split_m)
+    # **순위축 진단을 병합에서 잃지 않는다.** `rank_lift` 는 타깃과 무관한 성질이다 —
+    # 분절이 같으므로 순위를 섞었을 때 잃는 것도 같은 축이다. 새 `Metrics` 를 만들면서
+    # 안 옮기면 다언어 런에서는 통째로 사라지고, `focus="priority"` 판정과 Critic 에게
+    # 넘길 정보가 둘 다 비게 된다. 대표 타깃(첫 번째) 값을 그대로 싣는다.
+    rep_m = per_m[targets[0]]
+    merged_m.rank_lift = rep_m.rank_lift
+    merged_m.rank_lift_se = rep_m.rank_lift_se
+    merged_m.rank_lift_t = rep_m.rank_lift_t
+    merged_m.rank_lift_n = rep_m.rank_lift_n
+    merged_m.rank_lift_T = rep_m.rank_lift_T
     return merged, merged_m, viol, per_m, per_rows
 
 
@@ -658,6 +668,12 @@ def fmt_metrics(m: metrics.Metrics, tag: str) -> str:
                      f"contra={_cell(s.contradiction, '.3f')} laal={s.laal_words:.2f} "
                      f"k={s.chunks_per_sentence:.2f} miss={s.missing_boundaries:.2f}")
     parts.append(f"score={metrics.score(m):.4f}")
+    # **순위축은 로그에 남긴다.** 지금까지 어느 런에도 기록된 적이 없어서(기능이 마지막
+    # 런보다 나중에 들어왔다) 순위가 실제로 값을 하는지 확인할 방법이 없었다.
+    if m.rank_lift is not None:
+        parts.append(f"rank_lift={m.rank_lift:+.4f}"
+                     + (f"(t{m.rank_lift_t:+.1f}, T{m.rank_lift_T})"
+                        if m.rank_lift_t is not None else ""))
     return "  ".join(parts)
 
 

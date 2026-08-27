@@ -740,7 +740,18 @@ class Critic:
             f"piece size: a LARGE key means few pieces, so only the TOP-RANKED boundaries "
             f"survive; a SMALL key means many pieces, so lower-ranked boundaries survive too. "
             f"missing_boundaries is how many boundaries the prompt failed to provide when "
-            f"the budget asked for more.)\n\n"
+            f"the budget asked for more. "
+            # **순위축은 지금까지 Critic 에게 설명 없이 전달됐다.** `m.to_dict()` 에 실려
+            # 가지만 무엇인지 알려주지 않으면 LLM 이 읽지 못한다. 그리고 어느 런에도
+            # 값이 기록된 적이 없었다 — 기능이 마지막 런보다 나중에 들어왔기 때문이다.
+            f"rank_lift is how much effective DROPS when the confidence numbers are "
+            f"randomly shuffled while keeping the same boundary positions. It isolates what "
+            f"the RANKING does, separately from where the boundaries are. A large positive "
+            f"rank_lift means the ranking is already doing real work — improve it further "
+            f"only if the cases show mis-ranked boundaries. A rank_lift near zero means the "
+            f"ranking carries no information: rewriting [Priority Rules] will not help, and "
+            f"the problem is WHERE boundaries are marked, not how they are ordered. "
+            f"null means it was not measured.)\n\n"
             f"Format violations ({len(violations)}):\n"
             f"{json.dumps(violations[:10], ensure_ascii=False, indent=2)}\n\n"
             f"Cases to diagnose:\n{json.dumps(cases, ensure_ascii=False, indent=2)}"
