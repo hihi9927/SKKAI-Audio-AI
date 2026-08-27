@@ -451,6 +451,42 @@ class Profiler:
 # 바꿔 준다.
 #
 # 목적함수에는 들어가지 않는다. Critic 의 입력을 고르고 이유를 붙이는 역할만 한다.
+
+# **`cause` 라벨의 뜻을 한 곳에 둔다.** 종전에는 판정자 출력 스키마에 목록만 있었고
+# (`"polarity not yet settled | wrong participant | ..."`), Critic 도 PE 도 맨 라벨을
+# 받았다. 판정자는 뜻을 안 배운 채 고르고, 읽는 쪽은 뜻을 모른 채 읽는다 —
+# `metrics.GLOSSARY` 를 만든 것과 같은 종류의 구멍이다.
+#
+# 라벨 자체가 이 문제의 **실패 분류 체계**이므로 세 프롬프트가 같은 정의를 봐야 한다.
+# 여기서 렌더링해 판정자·Critic·PE 에 함께 실린다.
+CAUSES: dict[str, str] = {
+    "polarity not yet settled":
+        "the emission committed to affirmative or negative before the negation, a "
+        "concessive, or a question marker arrived. The reader now believes the opposite "
+        "of what the sentence says.",
+    "wrong participant":
+        "the emission attached the action to the wrong agent, patient or possessor. The "
+        "constituent that would have disambiguated came after the cut.",
+    "modifier scope":
+        "a modifier was emitted attached to the wrong head, or with the wrong reach — a "
+        "relative clause, a quantifier, a negation or an adverbial that in fact governs "
+        "material on the other side of the cut.",
+    "head not yet arrived":
+        "the piece ended before the word it depends on. The translator had to guess a "
+        "head noun, a main predicate, or a case role, and guessed wrong.",
+    "referent lost":
+        "a pronoun, an ellipsis, or a bare noun was emitted while what it refers to was "
+        "still ahead, so the reader resolved it to the wrong thing.",
+    "other":
+        "a real contradiction that none of the labels above describes. Say what it was in "
+        "\"conflict\".",
+}
+
+
+def _cause_block() -> str:
+    return "\n".join(f'  "{k}"\n      {v}' for k, v in CAUSES.items())
+
+
 JUDGE_SYSTEM = """You judge whether a streaming translation segment was emitted TOO EARLY.
 
 Setup: a sentence is cut into pieces. Each piece is translated as soon as it arrives, seeing
@@ -484,11 +520,16 @@ a bad reference.
 For anything not "safe", say where the boundary should have gone instead. Express it as a shift
 to the RIGHT (later) by a number of words, and name the source words it should now follow.
 
+THE "cause" LABELS. Pick the one that names the MECHANISM, not the symptom. Every label below
+describes something the rest of the sentence did to text that had already been emitted.
+
+__CAUSES__
+
 Return ONLY JSON:
 {
   "verdict": "safe | premature | mistranslated | reference_suspect",
   "conflict": "the proposition that clashes with the oracle, in one short clause; null if safe",
-  "cause": "polarity not yet settled | wrong participant | modifier scope | head not yet arrived | referent lost | other",
+  "cause": "one label from the list above, or null",
   "shift": {"units": 2, "to_after": "the source words the boundary should follow"},
   "generalized_rule": "one rule that would prevent this class of boundary, phrased for unseen sentences"
 }
@@ -650,8 +691,12 @@ Because the sample is the worst boundaries, do NOT read the mix of verdicts as a
 "premature" out of four does not mean the prompt fails everywhere; it means the four worst
 boundaries failed. Count nothing here — read WHY.
 
-A "premature" verdict comes with "cause" and "shift" — where the boundary should have gone
-instead. Turn that into a general condition, never into a rule about that one sentence.
+A "premature" verdict comes with "cause" and "shift" — the mechanism, and where the boundary
+should have gone instead. Turn that into a general condition, never into a rule about that one
+sentence. The mechanism is what generalises: a rule that prevents "head not yet arrived" applies
+to every sentence with that shape, while a rule about this sentence applies to nothing.
+
+__CAUSES__
 
 MEASURED EVIDENCE — CONTRADICTION. Cases may carry "contradiction_after_each_piece": one number
 per piece, the probability that the text visible AFTER that piece was emitted is contradicted by
@@ -1019,7 +1064,10 @@ MEASURED EVIDENCE IN THE CRITIQUE.
 moment against an oracle translation of the whole sentence. A "premature" verdict means the
 emitted text asserted something the rest of the sentence contradicts, and the user could never
 see it corrected. This is invisible to the quality scores because later pieces repair the final
-concatenation. Each carries "cause" and "shift" — where the boundary should have gone.
+concatenation. Each carries "cause" and "shift" — the mechanism, and where the boundary should
+have gone. The mechanisms are:
+
+__CAUSES__
 
 "contradiction_after_each_piece" — one number per piece: the probability that the text visible
 after that piece was emitted is contradicted by the oracle translation of the whole sentence.
@@ -1153,3 +1201,10 @@ class PromptEngineer:
                  .replace("__CURLEN__", str(len(current_prompt))))
         return self.gw.chat_json(sys_p, user, max_tokens=PROMPT_MAX_TOKENS,
                                  purpose="prompt_engineer")
+
+
+# 세 지시문에 같은 정의를 채워 넣는다 — 손으로 세 군데 쓰면 라벨이 늘 때 안 따라온다.
+_CB = _cause_block()
+JUDGE_SYSTEM = JUDGE_SYSTEM.replace("__CAUSES__", _CB)
+CRITIC_SYSTEM = CRITIC_SYSTEM.replace("__CAUSES__", _CB)
+ENGINEER_SYSTEM = ENGINEER_SYSTEM.replace("__CAUSES__", _CB)

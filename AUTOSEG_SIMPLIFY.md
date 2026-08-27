@@ -380,8 +380,31 @@ generalized_rule   이 부류를 막을 규칙 한 줄
 세지 마라 — 왜인지만 읽어라"* 를 넣었다. `safe` 판정도 정보다 — **측정은 높게 나왔는데
 사람이 보기엔 뒤집힌 게 없다**는 뜻이라, 그 경계엔 규칙을 쓰지 말라는 신호다.
 
+**`cause` 라벨의 뜻을 한 곳에 뒀다.** 종전에는 판정자 출력 스키마에 목록만 있었다 —
+`"polarity not yet settled | wrong participant | modifier scope | ..."`. 판정자는 뜻을 안
+배운 채 하나 고르고, Critic 과 PE 는 맨 라벨을 읽었다. 지표에서 `metrics.GLOSSARY` 를
+만든 것과 같은 종류의 구멍이다. 이 라벨은 **이 문제의 실패 분류 체계**이므로 세 프롬프트가
+같은 정의를 봐야 한다 — `agents.CAUSES` 에 두고 판정자·Critic·PE 에 렌더링한다.
+
+```
+polarity not yet settled  부정·양보·의문 표지가 오기 전에 긍정/부정을 확정했다
+wrong participant         행위를 엉뚱한 주체·대상·소유자에 붙였다
+modifier scope            수식어를 잘못된 핵에, 또는 잘못된 범위로 붙였다
+head not yet arrived      기대는 말이 오기 전에 조각이 끝나 번역기가 핵을 추측했다
+referent lost             대명사·생략·맨명사를 지시 대상이 오기 전에 내보냈다
+other                     위 어디에도 안 맞는 진짜 모순. conflict 에 적는다
+```
+
+Critic·PE 쪽에는 **"일반화되는 것은 메커니즘이다"** 를 함께 적었다 — `head not yet arrived`
+를 막는 규칙은 그 모양의 모든 문장에 걸리지만, 그 문장 얘기를 하는 규칙은 아무 데도 안 걸린다.
+
 호출도 준다. 문장당 모든 경계(≈3개)를 재던 것이 상위 경계 하나씩이 된다.
 `--judge-rows` → `--judge-boundaries` 로 단위가 바뀌었다.
+
+**예산 배분에서 나머지를 버리고 있었다.** 판정 예산은 타깃 편향을 막으려고 타깃에 나누는데
+`total // len(targets)` 라 몫만 썼다 — 타깃 5개에 `--judge-boundaries 8` 이면 타깃당 1,
+**총 5개**가 되어 요청한 3개가 사라졌다. 비율로 잘라 총합이 정확히 맞게 고쳤다
+(8/5 → 1,2,1,2,2).
 
 ### A8 — 진단 `agents.py` · **LLM + 결정론**
 실패 사례를 모아 말로 정리한다. **무엇을 고칠지는 Critic 이 정한다 — `focus` 는 없앴다.**

@@ -174,9 +174,15 @@ def judge_distributed(judge, per_rows: dict[str, list[dict]], T: int,
     tgts = list(per_rows)
     if not tgts:
         return []
-    per = max(1, total_boundaries // len(tgts))
+    # **나머지를 버리지 않는다.** 종전 `total // len(tgts)` 는 몫만 썼다 — 타깃 5개에
+    # `--judge-boundaries 8` 이면 타깃당 1, 총 5개가 되어 요청의 3개가 사라졌다.
+    # 비율로 잘라 총합이 정확히 `total_boundaries` 가 되게 한다 (8/5 -> 2,1,2,1,2).
+    n = len(tgts)
     out: list[dict] = []
-    for t in tgts:
+    for k, t in enumerate(tgts):
+        per = (total_boundaries * (k + 1)) // n - (total_boundaries * k) // n
+        if per <= 0:
+            continue
         js = agents.judge_top_contra(judge, per_rows[t], T, per)
         for j in js:
             j["target"] = t
