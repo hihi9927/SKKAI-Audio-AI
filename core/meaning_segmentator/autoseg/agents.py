@@ -970,7 +970,11 @@ Hard constraints — violating any of these makes your output unusable:
    [Never Segment], [Priority Rules], [Decision Procedure], [Output Rules],
    [Examples — Segment], [Examples — Do NOT Segment]. Same headers, same order.
 2. Copy [Output Rules] verbatim from the current prompt. It is frozen — a deterministic
-   validator depends on it.
+   validator depends on it. It already states the tag format, the minimum boundary count for
+   the budget, and the minimum spacing between boundaries. **Do not restate any of those in
+   another section.** Spacing in particular is enforced deterministically: a boundary marked
+   too close to another is silently dropped before scoring, so a rule telling the model to
+   space boundaries out buys nothing.
 3. Change AT MOST TWO sections this iteration. Leave the rest byte-identical. A full rewrite
    makes it impossible to attribute the score change to anything.
    **A changed section may not grow beyond 1.25x its current length.** These two limits are
@@ -1014,6 +1018,18 @@ Hard constraints — violating any of these makes your output unusable:
    Prefer edits that ADD a positive criterion ("prefer a boundary where ...") or RELAX an
    over-broad prohibition over edits that add another prohibition.
 
+WHAT IS ALREADY HANDLED WITHOUT YOU.
+
+A deterministic pass runs on every output before it is scored. It renumbers the confidence
+ranks (preserving their order), removes tags at the very start or end, merges tags that sit at
+the same position, moves punctuation back onto the preceding piece, and drops boundaries that
+violate the minimum spacing. None of that is your problem — writing rules about tag numbering,
+tag placement at sentence edges, punctuation attachment or spacing wastes the iteration.
+
+What survives to the score is: the model rewriting the source text, too few boundaries for the
+budget, and — the one that matters — boundaries placed where the emitted text is contradicted
+by what follows.
+
 MEASURED EVIDENCE IN THE CRITIQUE.
 
 "judgements" — a per-boundary verdict from re-examining what the user had actually seen at that
@@ -1043,18 +1059,32 @@ key than a small one is a RANKING failure, not a position failure.
 
 Remember the objective:
 
-    score = average adequacy across latency budgets
+    score      = mean over the T grid of `effective`
+    effective  = adequacy x (1 - contradiction)          per sentence
 
-where adequacy scores each piece against ITS OWN source text, with no reference translation.
-The only hard condition is 100% valid output format.
+`adequacy` scores each piece against ITS OWN source text, with no reference translation.
+`contradiction` is measured AT EACH BOUNDARY: how much the text emitted so far is contradicted
+by the oracle translation of the whole sentence, averaged over the (k-1) boundaries.
 
-Three consequences:
+**Both factors matter, and the second one moves more.** Across stored runs the per-sentence
+spread of `contradiction` is 3.2x that of `adequacy` (0.175 vs 0.054). A boundary placed where
+the emitted text asserts something the rest of the sentence overturns is what actually costs
+score — better wording of the pieces cannot recover it, because the user already saw the
+wrong text.
+
+Format is NOT a hard gate. A violating sentence is simply left out of the average (only when
+the model rewrote the source text); `format_pass_rate` is reported separately. Do not spend a
+revision buying format.
+
+Four consequences:
 - Word order differing from an offline translation costs nothing. Do not add rules that try to
   preserve the offline word order.
 - Latency is NOT in the score. You cannot gain by splitting more or lose by splitting less —
   the budget decides that. What you control is WHERE boundaries may go and WHICH are safest.
 - A boundary that is safe only sometimes should still be marked, and ranked below the ones that
   are always safe.
+- Sentences with no boundary have NO `contradiction` — they are undefined and dropped from the
+  average, not scored zero. You cannot raise the score by making the model segment less.
 
 Return ONLY JSON:
 {
