@@ -4,6 +4,8 @@ weights/
 .venv/
 # autoseg 전용 venv (torch/CUDA 공유 라이브러리 수백 MB — 기존 .venv와 의존성 충돌 때문에 분리)
 .venv-autoseg/
+# StreamLAAL 평가용 venv (161MB)
+.venv-streamlaal/
 .DS_Store
 /APP_Design/
 *.pt
