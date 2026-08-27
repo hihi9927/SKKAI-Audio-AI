@@ -1749,14 +1749,20 @@ def main() -> int:
                     k = r[:80]
                     if k not in seen:
                         seen.add(k); hints.append(r)
-                hints = hints[:max(0, args.revision_candidates - 1)] or []
-                jobs = [None] + hints            # None = 종전 방식(자유 개정) 1개
+                # **후보는 규칙 부분집합이 아니라 표현 차이로 나뉜다.** 종전에는 규칙을
+                # 하나씩 나눠 실어 "어느 규칙이 도움됐나" 를 가리려 했는데, 한 규칙짜리
+                # 개정의 |Δ| 중앙이 0.00505 이고 dev 225 검출 한계가 0.0104 라 **전체가
+                # 도움됐는지조차 못 잰다.** 그 상태에서 규칙별 신용 배분은 환상이다.
+                # 첫 후보는 자유 개정(PE 가 critique 을 보고 판단), 나머지는 제안 전부를
+                # 각자 구현한다. 크기가 넘치면 압축기가 받는다.
+                jobs = [None] + [hints] * max(0, args.revision_candidates - 1) if hints \
+                    else [None] * max(1, args.revision_candidates)
                 jobs = jobs[:max(1, args.revision_candidates)]
 
                 def make(hint):
                     try:
                         rv = engineer.revise(best["prompt"], critique, history, profile,
-                                             t_grid, only_rule=hint,
+                                             t_grid, only_rules=hint,
                                              max_sections=trust["sections"],
                                              max_growth=trust["growth"],
                                              measured=measured)
