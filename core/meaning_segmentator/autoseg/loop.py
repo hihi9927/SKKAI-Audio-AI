@@ -1229,7 +1229,10 @@ def main() -> int:
 
         # 타깃별 컨텍스트. 번역기·바닥·띄어쓰기가 타깃마다 다르고, adequacy/NLI 백엔드는
         # 다국어라 공유한다. 캐시는 타깃별 파일로 분리해야 gtx 결과가 안 섞인다.
-        _tr_cache: dict = {rep_code: translator} if args.translator == "google" else {}
+        # 대표 타깃의 번역기는 위에서 이미 만들었으므로 그대로 재사용한다.
+        # (종전 `if args.translator == "google"` — `--translator` 는 A5 에서 Google 하나로
+        #  줄이며 사라진 인자다. 조건만 남아 시작하자마자 AttributeError 로 죽었다.)
+        _tr_cache: dict = {rep_code: translator}
 
         def make_ctx(tgt: str):
             code = args.tgt_code if len(targets) == 1 else None

@@ -1,0 +1,63 @@
+{
+  "source_language": "English",
+  "word_order": "SVO | examples show subjects preceding verbs and objects/predicates after verbs (e.g. 'The game is based...', 'Blood goes away from the heart').",
+  "register": "Edited written prose — formal informational text (encyclopedic entries, news reports, historical summaries); not spontaneous speech.",
+  "fillers_and_hesitations": [
+    "um",
+    "uh",
+    "er",
+    "well",
+    "you know",
+    "I mean",
+    "like"
+  ],
+  "discourse_markers": [
+    "and",
+    "but",
+    "although",
+    "as",
+    "when",
+    "because",
+    "which",
+    "that",
+    "such as",
+    "seeing"
+  ],
+  "clause_boundary_signals": [
+    "that",
+    "which",
+    "who",
+    "when",
+    "because",
+    "although",
+    "as",
+    "such as",
+    "but",
+    "and",
+    "seeing"
+  ],
+  "non_boundary_traps": [
+    "called (introducing apposition: 'called ziggurats')",
+    "such as (introducing examples within a phrase)",
+    "in (prepositional phrase starters)",
+    "with (prepositional attachment)",
+    "and (list continuation)",
+    "pending (prepositional/participial phrase)",
+    "seeing (participial modifier)"
+  ],
+  "unstable_prefix_signals": [
+    "which",
+    "that",
+    "who",
+    "when",
+    "because",
+    "although",
+    "as",
+    "such as",
+    "if",
+    "while",
+    "pending",
+    "seeing"
+  ],
+  "notes_for_prompt_writer": "This is formal written English: prefer emitting segments at clear clause/ sentence ends but avoid early splits after subordinators or relative pronouns. Do not treat list markers or apposition introducers (e.g. 'such as', 'called', 'and') as reliable boundaries. If a token is in the unstable_prefix_signals list, wait for the subordinate clause or the main-clause continuation before emitting the segment."
+}
