@@ -1342,7 +1342,8 @@ def main() -> int:
             # (설계 §8.6-5) v0 품질 분산이 크다 — 같은 데이터·같은 생성기인데 en-de
             # run01 6,968자 / run02 13,198자로 2배 갈렸다. 게다가 루프가 v0 를 못 이기는
             # 일이 잦아(run01 2회, run02 3회 모두 iter_00 채택) **런 결과가 v0 뽑기에
-            # 좌우된다.** 후보를 만들어 dev 일부로 고르면 그 분산을 산다.
+            # 좌우된다.** 후보를 만들어 고르면 그 분산을 산다 — 고르는 자는 **train** 이다
+            # (`select_prompt` 참조: dev 는 채택 판정 전용).
             candidates: list[str] = []
             for attempt in range(3 * max(1, args.v0_candidates)):
                 if len(candidates) >= args.v0_candidates:
