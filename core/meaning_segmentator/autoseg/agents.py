@@ -756,7 +756,8 @@ class Critic:
 
     def review(self, cases: list[dict], metrics: dict, violations: list[dict],
                avoid: str | None = None,
-               priority_audit: list[dict] | None = None) -> dict:
+               priority_audit: list[dict] | None = None,
+               judgements: list[dict] | None = None) -> dict:
         user = (
             f"Current metrics: {json.dumps(metrics, ensure_ascii=False)}\n\n"
             # **설명은 `metrics.GLOSSARY` 에서 생성한다.** 종전에는 여기 손으로 쓴 문단이
@@ -780,10 +781,22 @@ class Critic:
                 "the model these positions are safe when the measurement says they are not. "
                 "Cite the feature by name when you propose a priority rule.\n"
                 + json.dumps(priority_audit, ensure_ascii=False, indent=2))
+        # 판정 분포 — **사례로 못 간 판정까지 반영한다.** 사례는 10개뿐이라 거기서
+        # 원인 분포를 읽으면 표본이 라벨 5개 수준으로 떨어진다 (`cause_summary` 참조).
+        cs = cause_summary(judgements)
+        if cs:
+            user += (
+                "\n\nVERDICT AND CAUSE DISTRIBUTION over ALL boundaries judged this "
+                "iteration — a superset of the cases above, so it is the better basis for "
+                "asking WHICH failure dominates. Still not a corpus rate: these are the "
+                "worst-scoring boundaries by measured contradiction, so `safe` here means "
+                "the measurement fired and a reader disagreed.\n"
+                + json.dumps(cs, ensure_ascii=False, indent=2))
         out = self.gw.chat_json(CRITIC_SYSTEM, user, max_tokens=PROMPT_MAX_TOKENS,
                                 purpose="critic")
         out["aggregate"] = summarize_critique(out.get("cases") or [], metrics,
-                                              out.get("summary"), avoid, priority_audit)
+                                              out.get("summary"), avoid, priority_audit,
+                                              judgements)
         return out
 
 
@@ -805,7 +818,8 @@ class Critic:
 
 def summarize_critique(cases: list[dict], metrics: dict, summary: str | None,
                        avoid: str | None = None,
-                       priority_audit: list[dict] | None = None) -> dict:
+                       priority_audit: list[dict] | None = None,
+                       judgements: list[dict] | None = None) -> dict:
     """집계는 세는 일이지 판단이 아니다 — LLM 에 맡기면 누락되거나 틀린다.
 
 **`focus` 는 없앴다** — 아래 본문 주석 참고. 남은 것은 세는 일(오류 유형 카운트)과
@@ -877,10 +891,42 @@ def summarize_critique(cases: list[dict], metrics: dict, summary: str | None,
         "error_counts": counts,
         "stuck_hint": stuck,
         "priority_audit": (priority_audit or [])[:6],
+        "judge_distribution": cause_summary(judgements),
         "max_missing_boundaries": round(missing, 4),
         "rank_lift": lift,
         "rank_lift_t": lift_t,
         "summary": summary,
+    }
+
+
+def cause_summary(judgements: list[dict] | None) -> dict | None:
+    """판정 **전체**의 판정·원인 분포. 세는 일이므로 LLM 에 안 맡긴다.
+
+    **왜 따로 넘기나.** 판정은 경계의 10% 를 재는데, 그중 Critic 케이스로 살아남는 것은
+    `n_flagged` 개뿐이다 (실측 58%가 케이스가 못 됐다). 케이스로 못 간 판정의 *설명*은
+    프롬프트에 실을 자리가 없지만 **분포는 한 줄이면 실린다** — 사례 10개로는 "어떤 실패가
+    지배적인가" 를 못 읽는데(6범주에 라벨 5개) 분포는 전량을 반영한다.
+
+    개수와 비율을 함께 낸다. 비율만 주면 표본 크기가 안 보이고, 개수만 주면 이터레이션
+    간 비교가 안 된다.
+    """
+    js = [j for j in (judgements or []) if j.get("verdict")]
+    if not js:
+        return None
+    verdicts: dict[str, int] = {}
+    causes: dict[str, int] = {}
+    for j in js:
+        v = j["verdict"]
+        verdicts[v] = verdicts.get(v, 0) + 1
+        if v in ("premature", "mistranslated") and j.get("cause"):
+            causes[j["cause"]] = causes.get(j["cause"], 0) + 1
+    n_lab = sum(causes.values())
+    return {
+        "n_boundaries_judged": len(js),
+        "verdicts": dict(sorted(verdicts.items(), key=lambda kv: -kv[1])),
+        "n_with_cause": n_lab,
+        "causes": {k: {"n": v, "share": round(v / n_lab, 3)}
+                   for k, v in sorted(causes.items(), key=lambda kv: -kv[1])},
     }
 
 
@@ -1074,6 +1120,11 @@ concatenation. Each carries "cause" and "shift" — the mechanism, and where the
 have gone. The mechanisms are:
 
 __CAUSES__
+
+"judge_distribution" (in "aggregate") — the verdict and cause counts over ALL boundaries judged
+this iteration, not just the cases shown. Use it to decide WHICH mechanism to spend the revision
+on; the individual cases only show you what one instance looked like. It is NOT a corpus rate:
+the judged boundaries are the worst-scoring ones by measured contradiction, deliberately.
 
 "contradiction_after_each_piece" — one number per piece: the probability that the text visible
 after that piece was emitted is contradicted by the oracle translation of the whole sentence.

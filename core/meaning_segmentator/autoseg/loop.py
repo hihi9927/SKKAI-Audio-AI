@@ -1702,14 +1702,16 @@ def main() -> int:
                     best_critique = critic.review(
                         cases, ctx["metrics"], ctx["violations"],
                         avoid=last_sections if stale >= 2 else None,
-                        priority_audit=ctx.get("priority_audit"))
+                        priority_audit=ctx.get("priority_audit"),
+                        judgements=ctx.get("judgements"))
                 critique = best_critique
                 # 캐시가 고착 방지를 우회하지 않도록 aggregate 만 다시 계산한다 (LLM 없음).
                 if stale >= 2 and last_sections:
                     critique = {**critique, "aggregate": agents.summarize_critique(
                         critique.get("cases") or [], ctx["metrics"],
                         critique.get("summary"), avoid=last_sections,
-                        priority_audit=ctx.get("priority_audit"))}
+                        priority_audit=ctx.get("priority_audit"),
+                        judgements=ctx.get("judgements"))}
                 (it_dir / "critique.json").write_text(
                     json.dumps(critique, ensure_ascii=False, indent=2), encoding="utf-8")
                 agg = critique.get("aggregate", {})
