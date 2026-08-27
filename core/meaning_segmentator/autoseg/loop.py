@@ -953,9 +953,6 @@ def main() -> int:
     # 1.0 -> 0.5. `xlmr-anli` 는 지표 타당도가 훨씬 낫지만 문장별 분산이 커서 dev 쌍체
     # se 가 0.0065 -> 0.0144 로 배증한다 (run03 재채점 실측). 배수를 그대로 두면 문턱이
     # 두 배가 되어 채택이 더 어려워진다 — run01~03 이 이미 채택 0회다.
-    p.add_argument("--gate-se-mult", type=float, default=1.0,
-                   help="dev 실행 게이트. train 쌍체 Δ > -배수×se 면 dev 를 돌린다. "
-                        "0 이면 종전 동작(Δ>0), 크게 줄수록 거의 안 거른다")
     p.add_argument("--adopt-se-mult", type=float, default=0.5,
                    help="채택 요건: dev 쌍체 Δ > (이 값)·se. 점추정 비교는 오차막대 안 "
                         "잡음까지 채택했다. 0 이면 이전 방식(점 비교)")
@@ -1535,100 +1532,50 @@ def main() -> int:
             # se 가 훨씬 작게 나오고, `n_changed` 가 실제로 판정에 참여한 문장 수를 알려준다.
             # 채택 판정이 이 오차막대를 쓴다 (`Δ > adopt_se_mult·se`) — run01~03 실측에서
             # 점 비교는 오차막대 안 잡음(예: −0.013±0.014)까지 채택 후보로 만들었다.
+            # **dev 실행 게이트를 없앴다 — 아무것도 안 막고 있었다.**
+            #
+            # 게이트는 "train 에서 확실히 나쁘면 dev 를 아끼자" 는 장치였다. 기록된
+            # train Δ 19건에 문턱을 걸어 보면 **차단 0/19 (0%)** 다 (참 차단율 95% 상한
+            # ~15%). 즉 기대 절감은 $0 ~ $0.45/런인데, 게이트를 굴리려면 매 이터레이션
+            # best 를 같은 배치에 다시 평가해야 했다 — ~$0.10 × 6이터 = **$0.60/런**.
+            # 아끼는 것보다 쓰는 것이 크거나 비슷하다.
+            #
+            # 그리고 게이트에는 **순환**이 있었다. `select_prompt` 가 후보 K개 중
+            # train 최고를 고르는데, `--train-pool` 을 안 주면 그 train 이 게이트 배치와
+            # **같은 문장**이다 (설정 26개 중 14개가 겹침 100%). 고른 자로 그 선택을
+            # 재검사한 셈 — A9 에서 dev 를 두 번 쓰던 것과 같은 모양이다. 승자 이득을
+            # 실측하면 후보 그룹 18개(K=3)에서 최대값−평균 중앙 **0.0118**, 이론값
+            # 0.846·sd = 0.0109 와 일치한다. 게이트 여유(1×se) 중앙이 0.0156 이므로
+            # 편향이 여유의 70% 를 먹어 실효 문턱이 `−1.7·se` 였다. 다만 두 문턱 어느
+            # 쪽으로도 차단이 0/19 라 **바뀌는 결정은 없었다.**
+            #
+            # 게이트를 지우면 순환도 함께 사라진다 — 선별 결과를 재검사하는 구조가
+            # 없어지기 때문이다. 파국적 개정(포맷 붕괴)은 `--skip-translation-below` 와
+            # 골격 검사가 이미 잡는다. 가르는 일은 **dev 가 한다.**
+            #
             # **채택 판정은 z 축으로 한다.** 타깃별 분산이 달라(문장별 sd zh 0.147 ~
             # ko 0.196) 원값 평균의 차이는 분산 큰 타깃이 지배한다. z 는 그 지배를 없앤다
             # (run05 dev 실측 t: raw −0.10 → z −0.15). 보고값(`effective`)은 원값 평균이다.
             # z 기준선은 분할별로 고정돼 있어야 한다 — `_zmix` 참고.
             delta_key = "effective_z" if len(targets) > 1 else "effective"
-
-            # **best 를 같은 배치에 다시 잰다.** `--train-pool` 이 있으면 train 배치는
-            # 이터레이션마다 재표집되므로, best 가 자기 이터레이션에서 남긴 행과는 문장이
-            # 절반만 겹친다 (run05 실측 17~20/40). 쌍체는 겹친 문장만 쓰므로 검출력이
-            # 절반으로 깎이고, 남은 쌍도 어느 draw 를 뽑았느냐에 따라 난이도가 치우친다.
-            # best 를 현재 배치에 한 번 더 돌리면 쌍체가 n/n 이 되고, 회전의 이득(Critic 이
-            # 매번 새 실패를 본다)은 그대로 남는다 — 두 소비자를 분리하는 게 핵심이다.
-            # 겹치는 문장은 분절 캐시에 그대로 맞으므로 추가 호출은 **새 문장 몫뿐**이다
-            # (run05 기준 ~22문장, batch 6 → 4콜 ≈ $0.10/이터레이션).
-            base_rows = None
-            if best_ctx:
-                if best["prompt"] == prompt:
-                    base_rows = rows
-                else:
-                    _keep = (getattr(run_eval, "last_per_target", None),
-                             getattr(run_eval, "last_per_rows", None))
-                    base_rows, _bm, _bv = run_eval(best["prompt"], batch, t_grid, "train")
-                    # judge 는 새 프롬프트의 타깃별 행을 봐야 한다 — 되돌린다.
-                    run_eval.last_per_target, run_eval.last_per_rows = _keep
-
-            train_delta = (metrics.paired_delta(rows, base_rows, t_grid, delta_key)
-                           if base_rows is not None else None)
-            if train_delta and train_delta["mean_delta"] is not None:
-                log(f"[iter {it}] train Δ={train_delta['mean_delta']:+.5f} "
-                    f"±{train_delta['se_delta']:.5f} (분절 변경 {train_delta['n_changed']}"
-                    f"/{train_delta['n_pairs']}문장)")
-
-            # dev 검증은 train 이 개선됐을 때만 (비용 절약). **판정은 쌍체로 한다** —
-            # 절대 점수 비교는 문장 난이도 분산에 묻혀 (문장별 sd 0.05, 검출 목표 0.005)
-            # 개선된 개정을 걸러낸다. en-de run02 iter1 실측: 절대 0.7844 < 0.7925 로
-            # 막혔으나 쌍체는 +0.00929 로 개선 방향이었다 — 채택 판정(쌍체)을 받아볼
-            # 기회 자체가 없었다. 게이트와 채택이 서로 다른 통계를 쓰던 모순을 없앤다.
-            # 게이트는 점추정(> 0)만 보고, 오차막대 요구는 dev 채택 판정이 계속 맡는다.
-            dev_m = None
-            dev_score = None
-            dev_delta = None
-            dev_rows = None
-            if best["train_score"] is None:
-                run_dev = True
-            elif train_delta and train_delta.get("mean_delta") is not None:
-                # **명백히 나쁜 것만 거른다** — 종전 `Δ > 0` 은 좋은 개정을 대량으로 버렸다.
-                #
-                # train 쌍체 se 가 0.011~0.016(문장 30~60)인데 프롬프트 간 실제 차이는
-                # 0.003~0.007 이다. 부호만 보면 참값이 +0.005 여도 통과 확률이 63~68% 라
-                # **좋은 개정의 3분의 1이 dev 를 못 보고 사라진다.** train 을 30 -> 100 으로
-                # 3배 키워도 유실이 37% -> 28% 로밖에 안 준다 — 표본으로 못 고친다.
-                #
-                # 실측: v2 개정 37회 중 dev 도달 14회(38%), 게이트 차단 23회(62%). 차단된
-                # 것들은 측정된 적이 없어 좋았는지 영영 모른다. 그 사이 채택은 3회(8%)뿐이고
-                # 런 18개 중 13개가 v0 이후 아무것도 채택하지 못했다 — 채택이 이렇게 귀한데
-                # 3분의 1을 게이트가 버리고 있었다.
-                #
-                # 게이트가 아끼는 돈은 dev 265문장 기준 런당 ~$3 이다. 그 대가로 좋은 개정을
-                # 버리는 것은 수지가 안 맞는다. 문턱을 `−1·se` 로 내리면 (se≈0.0134 기준):
-                #
-                #   참값    Δ>0 (구)   Δ>−1·se (신)
-                #   +0.005     65%         92%      ← 좋은 개정 유실 35% -> 8%
-                #    0.000     50%         84%
-                #   −0.010     23%         60%
-                #   −0.020      7%         31%      ← 명백히 나쁜 것은 여전히 대부분 걸린다
-                #
-                # 관대해진 만큼 dev 비용이 늘지만(런당 ~$3), **거르는 목적이 "확실히 나쁜
-                # 것만 컷" 으로 바뀐 것이다.** 가르는 일은 dev 가 한다.
-                #
-                # **채택 판정(`--adopt-se-mult`)과는 방향이 반대인 문턱이다.** 이쪽은 "버릴
-                # 이유가 확실한가"를 묻고 저쪽은 "채택할 근거가 충분한가"를 묻는다.
-                run_dev = (train_delta["mean_delta"]
-                           > -args.gate_se_mult * (train_delta.get("se_delta") or 0.0))
-            else:
-                run_dev = sc > best["train_score"]      # 쌍체를 못 잰 경우만 후퇴
-            if run_dev:
-                dev_rows, dev_m, dev_viol = run_eval(prompt, splits["dev"], t_grid, "dev")
-                dev_score = metrics.score(dev_m)
-                dev_delta = (metrics.paired_delta(dev_rows, best_ctx["dev_rows"],
-                                                  t_grid, delta_key)
-                             if best_ctx.get("dev_rows") else None)
-                (it_dir / "dev_rows.json").write_text(
-                    json.dumps(dev_rows, ensure_ascii=False, indent=2), encoding="utf-8")
-                dev_viol, dev_viol_1st = split_first_pass(dev_viol)
-                (it_dir / "dev_violations.json").write_text(
-                    json.dumps(dev_viol, ensure_ascii=False, indent=2), encoding="utf-8")
-                if dev_viol_1st:
-                    (it_dir / "dev_violations_first_pass.json").write_text(
-                        json.dumps(dev_viol_1st, ensure_ascii=False, indent=2), encoding="utf-8")
-                viol = viol + dev_viol
-                log(f"[iter {it}] {fmt_metrics(dev_m, 'dev  ')}"
-                    + (f"  Δ={dev_delta['mean_delta']:+.5f} ±{dev_delta['se_delta']:.5f} "
-                       f"(변경 {dev_delta['n_changed']}/{dev_delta['n_pairs']})"
-                       if dev_delta and dev_delta["mean_delta"] is not None else ""))
+            dev_rows, dev_m, dev_viol = run_eval(prompt, splits["dev"], t_grid, "dev")
+            dev_score = metrics.score(dev_m)
+            dev_delta = (metrics.paired_delta(dev_rows, best_ctx["dev_rows"],
+                                              t_grid, delta_key)
+                         if best_ctx.get("dev_rows") else None)
+            (it_dir / "dev_rows.json").write_text(
+                json.dumps(dev_rows, ensure_ascii=False, indent=2), encoding="utf-8")
+            dev_viol, dev_viol_1st = split_first_pass(dev_viol)
+            (it_dir / "dev_violations.json").write_text(
+                json.dumps(dev_viol, ensure_ascii=False, indent=2), encoding="utf-8")
+            if dev_viol_1st:
+                (it_dir / "dev_violations_first_pass.json").write_text(
+                    json.dumps(dev_viol_1st, ensure_ascii=False, indent=2), encoding="utf-8")
+            viol = viol + dev_viol
+            log(f"[iter {it}] {fmt_metrics(dev_m, 'dev  ')}"
+                + (f"  Δ={dev_delta['mean_delta']:+.5f} ±{dev_delta['se_delta']:.5f} "
+                   f"(변경 {dev_delta['n_changed']}/{dev_delta['n_pairs']})"
+                   if dev_delta and dev_delta["mean_delta"] is not None else ""))
 
             # ── 채택 판정 — 첫 후보는 무조건, 이후는 쌍체 Δ 가 오차막대를 넘을 때만.
             # 점추정 비교(> 만)는 노이즈로 오른 개정을 채택한다. 쌍체 se 가 있으면
@@ -1661,7 +1608,7 @@ def main() -> int:
                 "dev": dev_m.to_dict() if dev_m else None,
                 "score_train": round(sc, 4),
                 "score_dev": round(dev_score, 4) if dev_score is not None else None,
-                "paired_train": train_delta, "paired_dev": dev_delta,
+                "paired_dev": dev_delta,
                 "adopted": adopted,
                 "usage": usage_total(),
             }, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -1671,10 +1618,6 @@ def main() -> int:
                 "train": m.to_dict(), "dev": dev_m.to_dict() if dev_m else None,
                 "score_train": round(sc, 4),
                 "score_dev": round(dev_score, 4) if dev_score is not None else None,
-                # **`paired_train` 도 남긴다.** 종전 이력에는 `paired_dev` 만 있어서 게이트에
-                # 걸린 개정(v2 기준 62%)이 얼마나 아까웠는지 사후에 확인할 방법이 없었다.
-                "paired_train": train_delta,
-                "gate_passed": run_dev,
                 "paired_dev": dev_delta,
                 "changelog": history[-1].get("next_changelog") if history else None,
             })
