@@ -877,6 +877,9 @@ def main() -> int:
     # 1.0 -> 0.5. `xlmr-anli` 는 지표 타당도가 훨씬 낫지만 문장별 분산이 커서 dev 쌍체
     # se 가 0.0065 -> 0.0144 로 배증한다 (run03 재채점 실측). 배수를 그대로 두면 문턱이
     # 두 배가 되어 채택이 더 어려워진다 — run01~03 이 이미 채택 0회다.
+    p.add_argument("--gate-se-mult", type=float, default=1.0,
+                   help="dev 실행 게이트. train 쌍체 Δ > -배수×se 면 dev 를 돌린다. "
+                        "0 이면 종전 동작(Δ>0), 크게 줄수록 거의 안 거른다")
     p.add_argument("--adopt-se-mult", type=float, default=0.5,
                    help="채택 요건: dev 쌍체 Δ > (이 값)·se. 점추정 비교는 오차막대 안 "
                         "잡음까지 채택했다. 0 이면 이전 방식(점 비교)")
@@ -1505,7 +1508,34 @@ def main() -> int:
             if best["train_score"] is None:
                 run_dev = True
             elif train_delta and train_delta.get("mean_delta") is not None:
-                run_dev = train_delta["mean_delta"] > 0
+                # **명백히 나쁜 것만 거른다** — 종전 `Δ > 0` 은 좋은 개정을 대량으로 버렸다.
+                #
+                # train 쌍체 se 가 0.011~0.016(문장 30~60)인데 프롬프트 간 실제 차이는
+                # 0.003~0.007 이다. 부호만 보면 참값이 +0.005 여도 통과 확률이 63~68% 라
+                # **좋은 개정의 3분의 1이 dev 를 못 보고 사라진다.** train 을 30 -> 100 으로
+                # 3배 키워도 유실이 37% -> 28% 로밖에 안 준다 — 표본으로 못 고친다.
+                #
+                # 실측: v2 개정 37회 중 dev 도달 14회(38%), 게이트 차단 23회(62%). 차단된
+                # 것들은 측정된 적이 없어 좋았는지 영영 모른다. 그 사이 채택은 3회(8%)뿐이고
+                # 런 18개 중 13개가 v0 이후 아무것도 채택하지 못했다 — 채택이 이렇게 귀한데
+                # 3분의 1을 게이트가 버리고 있었다.
+                #
+                # 게이트가 아끼는 돈은 dev 265문장 기준 런당 ~$3 이다. 그 대가로 좋은 개정을
+                # 버리는 것은 수지가 안 맞는다. 문턱을 `−1·se` 로 내리면 (se≈0.0134 기준):
+                #
+                #   참값    Δ>0 (구)   Δ>−1·se (신)
+                #   +0.005     65%         92%      ← 좋은 개정 유실 35% -> 8%
+                #    0.000     50%         84%
+                #   −0.010     23%         60%
+                #   −0.020      7%         31%      ← 명백히 나쁜 것은 여전히 대부분 걸린다
+                #
+                # 관대해진 만큼 dev 비용이 늘지만(런당 ~$3), **거르는 목적이 "확실히 나쁜
+                # 것만 컷" 으로 바뀐 것이다.** 가르는 일은 dev 가 한다.
+                #
+                # **채택 판정(`--adopt-se-mult`)과는 방향이 반대인 문턱이다.** 이쪽은 "버릴
+                # 이유가 확실한가"를 묻고 저쪽은 "채택할 근거가 충분한가"를 묻는다.
+                run_dev = (train_delta["mean_delta"]
+                           > -args.gate_se_mult * (train_delta.get("se_delta") or 0.0))
             else:
                 run_dev = sc > best["train_score"]      # 쌍체를 못 잰 경우만 후퇴
             if run_dev:
@@ -1571,6 +1601,10 @@ def main() -> int:
                 "train": m.to_dict(), "dev": dev_m.to_dict() if dev_m else None,
                 "score_train": round(sc, 4),
                 "score_dev": round(dev_score, 4) if dev_score is not None else None,
+                # **`paired_train` 도 남긴다.** 종전 이력에는 `paired_dev` 만 있어서 게이트에
+                # 걸린 개정(v2 기준 62%)이 얼마나 아까웠는지 사후에 확인할 방법이 없었다.
+                "paired_train": train_delta,
+                "gate_passed": run_dev,
                 "paired_dev": dev_delta,
                 "changelog": history[-1].get("next_changelog") if history else None,
             })
