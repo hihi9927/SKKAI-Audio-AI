@@ -651,6 +651,26 @@ compress()   프롬프트가 분량 예산을 넘으면 줄인다.
 
 압축해도 예산을 못 맞추거나 골격이 깨지면 그때 거부한다.
 
+### 계측 — 시간과 비용
+
+```
+LangSmith        LLM 호출 1건씩. 이미 켜져 있고 지속시간도 들어온다
+                 실측 중앙: segment 161s · segment_retry 50s · judge 6s
+                          critic 63s · prompt_engineer 49s · prompt_v0 94s
+timing.json      이터레이션 단계별 벽시계 (iter_NN/timing.json)
+timing_final.json 최종 test 평가
+Usage.by_purpose 용도별 비용. 런 끝에 표로
+```
+
+**LangSmith 로는 벽시계를 못 잰다.** 그쪽은 호출 1건씩만 본다. 루프의 시간에는 그 사이가
+들어 있다 — CometKiwi·NLI 채점(로컬 GPU), 번역, 그리고 **호출을 얼마나 겹쳐 던졌는가**.
+마지막 항목이 병목이었다 (run04 실측 평균 동시 실행 3.03 / 워커 8). 호출 시간을 다 더해도
+그건 안 보인다.
+
+그리고 **지금까지의 런은 시간이 하나도 안 남아 있다** — 로그에 타임스탬프가 없고 디렉토리
+mtime 은 체크아웃 시각으로 덮였다. `timing.json` 은 단계마다 갱신되므로 런이 중간에 죽어도
+거기까지는 남는다.
+
 ### A11 — 루프 제어 `loop.py` · **결정론**
 ```
 채택:  dev 쌍체 Δ > 0.5×se

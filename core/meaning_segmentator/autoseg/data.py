@@ -117,6 +117,16 @@ MANIFESTS = {
     "fleurs-de-en": _AST / "fleurs_nway_de-en_multi2en_loop405.jsonl",
     "fleurs-ja-en": _AST / "fleurs_nway_ja-en_multi2en_loop405.jsonl",
     "fleurs-zh-en": _AST / "fleurs_nway_zh-en_multi2en_loop405.jsonl",
+    # **영어 소스 루프용.** 종전 `fleurs-en-de`(346문장, FLEURS test 스플릿)로는
+    # `train 40 / dev 265 / test 100` = 405 가 안 들어간다. de/ja/zh 와 같은 방식으로
+    # 층화 정렬(`fleurs_nway_en_clean500_order.json`, 1,405문장)의 500~904 구간을 쓴다 —
+    # `clean500`(BLEU 홀드아웃, 0~499)·`fleurs-en-de`(test 스플릿)·기존 en 소스 런이
+    # 쓴 문장과 **교집합 0** 이다.
+    #
+    # 강제정렬 산출물이 없다. 영어 발화 속도는 같은 코퍼스 test 스플릿 346문장에서
+    # **2.879 어절/초**(발화 구간 기준)로 재어 두었고, 그 값이면 `min_gap 3` 으로
+    # 기존 en 런들과 같아진다. `--units-per-sec 2.879` 로 주고 돌린다.
+    "fleurs-en-multi": _AST / "fleurs_nway_en-de_multi_loop405.jsonl",
 }
 
 # 파일 포맷이 고유한 것만 로더 함수로 남는다. 나머지는 위 MANIFESTS.

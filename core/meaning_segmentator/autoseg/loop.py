@@ -163,6 +163,47 @@ def _zmix(per_target: dict[str, list[float | None]],
     return out
 
 
+class StageTimer:
+    """이터레이션의 **단계별 벽시계 시간**을 재서 파일로 남긴다.
+
+    **LangSmith 로는 안 된다.** 그쪽은 LLM 호출 1건씩만 본다 (실측 중앙: `segment`
+    161s, `segment_retry` 50s, `judge` 6s, `critic` 63s, `prompt_engineer` 49s).
+    루프의 벽시계에는 그 사이가 들어 있다 — CometKiwi·NLI 채점(로컬 GPU), 번역,
+    그리고 **호출을 얼마나 겹쳐서 던졌는가**. 마지막 항목이 병목이었다 (run04 실측
+    평균 동시 실행 3.03 / 워커 8). 호출 시간을 다 더해도 그건 안 보인다.
+
+    파일로 남기는 이유: 지금까지의 런은 **시간이 하나도 안 남아 있다.** 로그에
+    타임스탬프가 없고 디렉토리 mtime 은 체크아웃 시각으로 덮였다. 그래서 "6시간짜리
+    런이 어디서 오래 걸리나" 를 물으면 추정밖에 못 했다.
+    """
+
+    def __init__(self, path):
+        self.path = path
+        self.rows: list[dict] = []
+        self._t0 = time.time()
+        self._stage: str | None = None
+        self._start = self._t0
+
+    def mark(self, stage: str | None) -> None:
+        """직전 단계를 닫고 새 단계를 연다. `None` 이면 닫기만 한다."""
+        now = time.time()
+        if self._stage is not None:
+            self.rows.append({"stage": self._stage,
+                              "sec": round(now - self._start, 2),
+                              "at_sec": round(self._start - self._t0, 2)})
+            self._flush()
+        self._stage, self._start = stage, now
+
+    def _flush(self) -> None:
+        try:
+            self.path.write_text(json.dumps({
+                "total_sec": round(sum(r["sec"] for r in self.rows), 2),
+                "stages": self.rows,
+            }, ensure_ascii=False, indent=2), encoding="utf-8")
+        except Exception:                       # 계측이 런을 죽이면 안 된다
+            pass
+
+
 def judge_distributed(judge, per_rows: dict[str, list[dict]], T: int, frac: float):
     """타깃마다 **자기 경계의 `frac` 비율**을 판정한다.
 
@@ -1434,10 +1475,20 @@ def main() -> int:
             args.iterations = 0
 
 
+        def end_timer(timer, it: int) -> None:
+            """열린 단계를 닫고 한 줄로 요약한다. 이터레이션의 모든 출구에서 부른다."""
+            timer.mark(None)
+            if timer.rows:
+                tot = timer.rows[-1]["at_sec"] + timer.rows[-1]["sec"]
+                log(f"[iter {it}] 소요 {tot:.0f}초 = "
+                    + " + ".join(f"{r['stage']} {r['sec']:.0f}" for r in timer.rows))
+
         for it in range(args.iterations):
             it_dir = run_dir / f"iter_{it:02d}"
             it_dir.mkdir(parents=True, exist_ok=True)
             (it_dir / "prompt.txt").write_text(prompt, encoding="utf-8")
+            timer = StageTimer(it_dir / "timing.json")
+            timer.mark("train_eval")
 
             _set_skip_guard(best.get("fmt") if best["train_score"] is not None else None)
             batch = splits["train"]
@@ -1449,6 +1500,7 @@ def main() -> int:
             # ── A7 Judge — 주 작동점에서만 (비용) ────────────────────────
             # **점수를 안 낸다.** 모순이 가장 큰 경계에 "왜·어디로" 를 붙일 뿐이고,
             # 그 설명은 Critic 케이스에만 실린다 (`agents.judge_top_contra` 참조).
+            timer.mark("judge")
             judgements: list[dict] = []
             if judge is not None and m.by_T:
                 judgements = judge_distributed(
@@ -1457,6 +1509,7 @@ def main() -> int:
                 (it_dir / "judgements.json").write_text(
                     json.dumps(judgements, ensure_ascii=False, indent=2), encoding="utf-8")
 
+            timer.mark("rank_audit")
             # 순위 진단 — 모델이 단 순위가 실측 위험(경계 contradiction)과 맞는가.
             audit: list[dict] = []      # by_T 가 비면(포맷 붕괴) 아래 블록을 안 타므로 선초기화
             # 경계가 가장 많이 살아남는 최소 T 에서 잰다. 두 통계량을 함께 낸다:
@@ -1570,6 +1623,7 @@ def main() -> int:
             # 보고 정하면 된다. 보고값(`effective`)은 원값 평균이다.
             # z 기준선은 분할별로 고정돼 있어야 한다 — `_zmix` 참고.
             delta_key = "effective_z" if len(targets) > 1 else "effective"
+            timer.mark("dev_eval")
             dev_rows, dev_m, dev_viol = run_eval(prompt, splits["dev"], t_grid, "dev")
             dev_score = metrics.score(dev_m)
             dev_delta = (metrics.paired_delta(dev_rows, best_ctx["dev_rows"],
@@ -1642,8 +1696,10 @@ def main() -> int:
             log(f"[iter {it}] 비용내역 {fmt_by_purpose(u)}")
 
             if it == args.iterations - 1:
+                end_timer(timer, it)
                 break
             if stale >= args.patience:
+                end_timer(timer, it)
                 log(f"[stop] dev 개선 없음 {stale}회 연속 — 조기 종료")
                 break
 
@@ -1653,6 +1709,7 @@ def main() -> int:
             try:
                 # ── A8 Critic ───────────────────────────────────────────
                 # 비평 대상과 개정 대상은 반드시 같은 프롬프트여야 한다.
+                timer.mark("critic")
                 if best_critique is None:
                     cases = agents.select_cases(ctx["rows"], main_t, ctx.get("judgements"))
                     best_critique = critic.review(
@@ -1716,6 +1773,7 @@ def main() -> int:
                         return None
                     return rv
 
+                timer.mark("prompt_engineer")
                 raw_cands = []
                 for hint in jobs:
                     rv = make(hint)
@@ -1740,6 +1798,7 @@ def main() -> int:
                         continue
                     _cands2.append((pr, rv))
                 cands = _cands2
+                timer.mark("select_prompt")
                 if len(cands) > 1:
                     pick = select_prompt([c[0] for c in cands], args.select_n, f"iter {it} 개정")
                     revised = next(rv for pr, rv in cands if pr == pick)
@@ -1804,12 +1863,18 @@ def main() -> int:
                 raise
             except Exception as e:
                 log(f"[iter {it}] 에이전트 실패 — 루프 중단하고 최종 평가로 넘어간다: {e}")
+                end_timer(timer, it)
                 break
+            end_timer(timer, it)
 
         # ── 최종 test 평가 (전체 격자) ───────────────────────────────────
         log(f"[final] test 평가 — 격자 {final_grid} (루프가 한 번도 보지 않은 데이터)")
+        final_timer = StageTimer(run_dir / "timing_final.json")
+        final_timer.mark("test_eval")
         test_rows, test_m, test_viol = run_eval(best["prompt"], splits["test"],
                                                 final_grid, "test")
+        final_timer.mark(None)
+        log(f"[final] test 평가 {final_timer.rows[0]['sec']:.0f}초")
         test_viol, test_viol_1st = split_first_pass(test_viol)
         if test_viol_1st:
             (run_dir / "test_violations_first_pass.json").write_text(
