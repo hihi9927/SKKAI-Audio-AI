@@ -643,6 +643,121 @@ def aggregate(n: int, valid_flags: list[bool], first_pass_flags: list[bool] | No
     )
 
 
+# ── 지표 용어집 — Critic 에게 넘길 설명 ──────────────────────────────────
+#
+# **왜 코드 옆에 두나.** 종전에는 `Critic.review` 안에 손으로 쓴 문단이 있었고, 실려 가는
+# 지표 31개 중 **7개만** 설명돼 있었다. 목적함수 `effective` 조차 정의된 적이 없다 —
+# 무슨 숫자를 올려야 하는지 모르는 채로 진단하고 있었다는 뜻이다. 그리고 손으로 쓴
+# 문단은 필드가 늘어도 안 따라온다.
+#
+# `describe()` 가 **실제로 들어 있는 키만** 골라 렌더링하고, 용어집에 없는 키는
+# `(no description)` 로 드러난다. 필드를 추가하면 설명이 빠진 게 보인다.
+#
+# **`fixable` 이 핵심이다.** 프롬프트로 움직일 수 없는 것을 고치라고 시키는 게 루프가
+# 개선을 못 만든 큰 원인이었다 — `focus="format"` 개정 12회가 포맷을 못 고쳤고(재시도 후
+# +0.0021, 1차 −0.0257), 그 위반의 65%가 간격이었는데 그건 이제 정규화가 결정론으로
+# 처리한다. 무엇이 프롬프트의 몫이고 무엇이 아닌지 함께 알려준다.
+GLOSSARY: dict[str, tuple[str, bool]] = {
+    # key: (설명, 프롬프트로 움직일 수 있는가)
+    "n": ("sentences scored", False),
+    "score": ("THE OBJECTIVE. Mean of `effective` over the T grid. This is the single "
+              "number the loop maximises — everything else is diagnosis.", True),
+    "format_pass_rate": ("fraction of sentences with no rule violation after one repair "
+                         "retry. What still fails here is mostly the model rewriting the "
+                         "source text, which more prompt wording does not fix.", False),
+    "format_pass_rate_no_retry": ("same, before the repair retry. A low value costs money "
+                                  "(one extra LLM call per sentence) but does not lower "
+                                  "the score.", False),
+    "rank_lift": ("how much `effective` DROPS when the confidence numbers are randomly "
+                  "shuffled while the boundary positions stay the same. It isolates what "
+                  "the RANKING does. Large positive = the ranking already works, refine it "
+                  "only if the cases show mis-ranked boundaries. Near zero = the ranking "
+                  "carries no information, so rewriting [Priority Rules] will not help and "
+                  "the problem is WHERE boundaries are marked.", True),
+    "rank_lift_t": ("`rank_lift` divided by its standard error. Read the sign and the "
+                    "magnitude together — below ~1 the lift is not distinguishable from "
+                    "noise.", False),
+    "rank_lift_se": ("standard error of `rank_lift`.", False),
+    "rank_lift_n": ("sentences that contributed to `rank_lift`.", False),
+    "rank_lift_T": ("the T at which `rank_lift` was measured.", False),
+    "by_T": ("results keyed by target piece size T. A LARGE key means few pieces, so only "
+             "the TOP-RANKED boundaries survive; a SMALL key means many pieces, so "
+             "lower-ranked boundaries survive too.", False),
+    "target_chunk_words": ("the T of this row.", False),
+    "effective": ("adequacy x (1 - contradiction). The per-T objective. Undefined (null) "
+                  "for sentences with no boundary — those are excluded, not scored zero.",
+                  True),
+    "adequacy": ("translation quality of each piece against ITS OWN source, with no "
+                 "reference translation — word order differences from an offline "
+                 "translation do not lower it. Weighted by piece length.", True),
+    "contradiction": ("at each boundary, how much the text emitted SO FAR contradicts the "
+                      "whole-sentence translation. Averaged over the (k-1) boundaries. "
+                      "This is what a boundary placed too early costs.", True),
+    "effective_p10": ("the 10th percentile of `effective`. Read it next to the mean — the "
+                      "mean is pulled by a few bad sentences, so a mean that rises while "
+                      "p10 falls is luck, not improvement.", False),
+    "effective_min": ("the worst sentence.", False),
+    "n_effective": ("sentences where `effective` is defined (they had at least one "
+                    "boundary).", False),
+    "consistency": ("similarity of the concatenated pieces to the whole-sentence "
+                    "translation. Reported only — not in the objective.", False),
+    "laal_words": ("lag in source words, lower is faster. It is SET BY THE LATENCY BUDGET "
+                   "(T), not by the prompt. Do not try to move it.", False),
+    "chunks_per_sentence": ("mean pieces per sentence. Also set by T — the truncator cuts "
+                            "to the budget whenever enough boundaries were marked. "
+                            "**Telling the model to segment less does NOT reduce this**; it "
+                            "only changes WHICH boundaries survive.", False),
+    "missing_boundaries": ("how many boundaries the budget asked for that the prompt never "
+                           "marked. Above zero means the knob cannot reach that T.", True),
+    "premature_rate": ("fraction of judged boundaries the judge called too early.", True),
+    "reference_suspect_rate": ("fraction where the judge suspected the reference "
+                               "translation itself, not the segmentation. High values mean "
+                               "the cases are unreliable, not that the prompt is wrong.",
+                               False),
+    "rank_contra_spearman": ("rank correlation between assigned confidence and measured "
+                             "contradiction. Superseded by `rank_lift`; reported only.",
+                             False),
+    "rank_contra_gap": ("bottom-half minus top-half boundary contradiction. Superseded by "
+                        "`rank_lift`; its length-noise correction is currently under "
+                        "review, so do not act on its sign.", False),
+    "rank_contra_gap_se": ("standard error of `rank_contra_gap`.", False),
+    "rank_contra_gap_n": ("sentences behind `rank_contra_gap`.", False),
+    "effective_ent": ("`effective` recomputed with 1 - entailment instead of contradiction. "
+                      "REPORTED ONLY, being trialled — the objective still uses "
+                      "`effective`.", False),
+    "contradiction_ent": ("`contradiction` measured as 1 - entailment. Reported only.",
+                          False),
+    "effective_z": ("multi-target only: `effective` z-normalised per target then averaged. "
+                    "Used for the adoption test; `effective` is the reported value.", False),
+    "n_targets": ("multi-target only: how many target languages were averaged.", False),
+}
+
+
+def describe(d: dict, _seen: set | None = None) -> str:
+    """`Metrics.to_dict()` 에 실제로 들어 있는 키만 골라 설명을 만든다.
+
+    프롬프트에 손으로 적으면 필드가 늘어도 안 따라온다. 여기서 생성하면 설명이 없는
+    키가 `(no description)` 으로 드러나므로, 지표를 추가할 때 빠뜨린 게 보인다.
+    """
+    seen = _seen if _seen is not None else set()
+    lines: list[str] = []
+    for k, v in d.items():
+        if k in seen:
+            continue
+        seen.add(k)
+        if isinstance(v, dict) and k == "by_T":
+            desc, fix = GLOSSARY.get(k, ("(no description)", False))
+            lines.append(f"- {k}: {desc}")
+            for sub in v.values():
+                if isinstance(sub, dict):
+                    lines.append(describe(sub, seen))
+            continue
+        desc, fix = GLOSSARY.get(k, ("(no description)", False))
+        tail = "" if fix else "  [not movable by the prompt]"
+        lines.append(f"- {k}: {desc}{tail}")
+    return "\n".join(x for x in lines if x)
+
+
 def score(m: Metrics) -> float:
     """**단일축.** T 격자에서의 `effective` 평균.
 

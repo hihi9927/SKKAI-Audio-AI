@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 
+from . import metrics as _metrics
 from .gateway import Gateway
 
 # ── 출력 토큰 예산 ─────────────────────────────────────────────────────────────
@@ -731,27 +732,13 @@ class Critic:
                avoid: str | None = None,
                priority_audit: list[dict] | None = None) -> dict:
         user = (
-            f"Current metrics: {json.dumps(metrics, ensure_ascii=False)}\n"
-            f"(adequacy = quality of each piece against ITS OWN source, with no reference "
-            f"translation — word order differences from an offline translation do not lower "
-            f"it. consistency = similarity of the concatenated pieces to the whole-sentence "
-            f"translation, reported only. laal_words = lag in source words, lower is faster; "
-            f"it is set by the latency budget, NOT by the prompt. by_T is keyed by the target "
-            f"piece size: a LARGE key means few pieces, so only the TOP-RANKED boundaries "
-            f"survive; a SMALL key means many pieces, so lower-ranked boundaries survive too. "
-            f"missing_boundaries is how many boundaries the prompt failed to provide when "
-            f"the budget asked for more. "
-            # **순위축은 지금까지 Critic 에게 설명 없이 전달됐다.** `m.to_dict()` 에 실려
-            # 가지만 무엇인지 알려주지 않으면 LLM 이 읽지 못한다. 그리고 어느 런에도
-            # 값이 기록된 적이 없었다 — 기능이 마지막 런보다 나중에 들어왔기 때문이다.
-            f"rank_lift is how much effective DROPS when the confidence numbers are "
-            f"randomly shuffled while keeping the same boundary positions. It isolates what "
-            f"the RANKING does, separately from where the boundaries are. A large positive "
-            f"rank_lift means the ranking is already doing real work — improve it further "
-            f"only if the cases show mis-ranked boundaries. A rank_lift near zero means the "
-            f"ranking carries no information: rewriting [Priority Rules] will not help, and "
-            f"the problem is WHERE boundaries are marked, not how they are ordered. "
-            f"null means it was not measured.)\n\n"
+            f"Current metrics: {json.dumps(metrics, ensure_ascii=False)}\n\n"
+            # **설명은 `metrics.GLOSSARY` 에서 생성한다.** 종전에는 여기 손으로 쓴 문단이
+            # 있었고 실려 가는 지표 31개 중 7개만 설명돼 있었다 — 목적함수 `effective`
+            # 조차 정의된 적이 없다. 손으로 쓰면 필드가 늘어도 안 따라온다.
+            f"What each number means (metrics you cannot move with prompt wording are "
+            f"marked — do not spend a revision on those):\n"
+            f"{_metrics.describe(metrics)}\n\n"
             f"Format violations ({len(violations)}):\n"
             f"{json.dumps(violations[:10], ensure_ascii=False, indent=2)}\n\n"
             f"Cases to diagnose:\n{json.dumps(cases, ensure_ascii=False, indent=2)}"
