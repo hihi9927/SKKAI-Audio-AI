@@ -816,8 +816,11 @@ def main() -> int:
                    help="이터레이션당 개정 후보 수. 2 이상이면 probe 로 골라 쓴다")
     p.add_argument("--v0-candidates", type=int, default=1,
                    help="prompt_v0 후보 수. 2 이상이면 dev 일부로 골라 시작한다")
-    p.add_argument("--v0-probe", type=int, default=40,
-                   help="후보 1차 선별에 쓸 dev 문장 수. 실측 1위적중 20문장 36%% / 40문장 58%%")
+    p.add_argument("--select-n", type=int, default=0,
+                   help="후보 선별에 쓸 **train** 문장 수. 0 = train 전체. dev 는 채택 "
+                        "판정 전용이라 선별에 쓰지 않는다 (select_prompt 주석 참고). "
+                        "정확도는 문장 수만 따른다 — 실측 1위적중 20문장 36%% / 40문장 58%% "
+                        "/ 60문장 76%%")
     # 한 분절 호출에 넣을 문장 수. **비용의 유일한 큰 레버**다 — en-de test 100문장 실측:
     # b=1 $1.05 → b=6 $0.47 (55% 절감), 쌍체 Δ(T6) −0.0026±0.0056 으로 품질 차이 검출 안 됨.
     # **b=12 부터 무너진다**: 1차 통과율 0.75(b=12)·0.27(b=24)로 떨어져 단건 재시도가
@@ -1120,7 +1123,7 @@ def main() -> int:
 
         # **`--final-only` 는 config 를 덮어쓰지 않는다.** 인자를 안 준 항목이 기본값으로
         # 채워져 저장되면 **그 런을 만든 설정 기록이 사라진다** — ja/run01 실측:
-        # `revision_candidates 3 -> 1`, `v0_probe 20 -> 40`, `budget 10 -> 4` 로 덮였다.
+        # `revision_candidates 3 -> 1`, `budget 10 -> 4` 로 덮였다 (당시 `v0_probe` 포함).
         if not (args.final_only and (run_dir / "config.json").exists()):
             (run_dir / "config.json").write_text(json.dumps({
             **vars(args), "t_grid": t_grid, "final_t_grid": final_grid, "main_t": main_t,
@@ -1242,13 +1245,31 @@ def main() -> int:
             log(f"[prewarm] 후보 {len(prompts)} × 문장 {len(texts)} 예열 완료 "
                 f"(동시 최대 {len(prompts) * args.workers})")
 
-        def select_prompt(cands: list[str], probe_n: int, tag_: str) -> str:
-            """후보 여러 개 중 하나를 고른다. **2단계** — probe 로 거르고 상위 2개만 dev 전체.
+        def select_prompt(cands: list[str], select_n: int, tag_: str) -> str:
+            """후보 여러 개 중 하나를 고른다. **train 으로 고른다 — dev 는 안 쓴다.**
 
-            probe 하나로 고르면 못 믿는다 (test 100문장·변종 6종 실측): probe 20 은
-            1위 적중 36%, 40 은 58%, dev 전체(60)라야 76% 다. 상위 2개 포함률은 probe 40
-            에서 77% 이므로, 40 으로 두 개까지 좁힌 뒤 그 둘만 전체로 재는 것이 비용 대비
-            가장 낫다.
+            **왜 train 인가 — dev 를 두 번 쓰면 안 된다.** 종전에는 `dev[:40]` 로 상위 2개를
+            추리고 그 둘을 **dev 전체**로 재채점해 argmax 를 골랐다. 그리고 바로 그 dev 로
+            채택 판정을 했다 — 고르는 데 쓴 자로 그 선택이 옳았는지 판정한 셈이다.
+
+            그 결과 기준선과 새 개정본이 **양쪽 다 부풀어 있었다.** 후보 2개 중 최대값은
+            잡음 σ 일 때 평균 `0.564σ` 만큼 위로 뜨는데, dev 60 에서 σ≈0.011 이라 편향이
+            **≈0.006** 이다. 프롬프트 간 실제 차이가 0.005 규모이므로 **재려는 효과와 같은
+            크기**이고, 두 편향이 상쇄되는지 겹치는지 알 수 없어 쌍체 Δ 의 기대값이 정의되지
+            않았다. 실측이 이 그림과 맞는다 — 쌍체 Δ 14회 중 음수 9회, 런 18개 중 13개가
+            v0 이후 아무것도 채택 못 함.
+
+            train 으로 옮기면 역할이 갈린다: **train = 고르는 곳(게이트·Critic 사례·후보 선별),
+            dev = 판정하는 곳.** train 에 과적합되지만 그게 train 의 일이고, 판정은 깨끗한
+            dev 가 한다.
+
+            **2단계를 1단계로 합친다.** 2단계는 "dev 가 비싸니 아껴 쓰자"는 절충이었는데
+            dev 를 안 쓰면 필요 없다. 채점 비용도 같다 — 종전 `3후보×probe40 + 2후보×dev60
+            = 240문장` 이고 지금은 `3후보×train80 = 240문장` 이다.
+
+            선별 정확도는 **문장 수만 따른다** (test 100문장·변종 6종 실측: 20문장 1위 적중
+            36%, 40문장 58%, 60문장 76%). 같은 예산으로 한 단계에 몰면 표본이 커져 정확도가
+            오른다.
 
             **쌍체로 바꿔도 순위는 안 바뀐다** — 후보들이 같은 문장 집합을 쓰면 기준값이
             공통 상수라 argmax 에서 소거된다 (실측 소수점까지 동일). 쌍체의 이득은
@@ -1256,34 +1277,24 @@ def main() -> int:
             """
             if len(cands) <= 1:
                 return cands[0] if cands else ""
-            probe = splits["dev"][:probe_n]
+            pool = splits["train"]
+            sel = pool[:select_n] if select_n and select_n < len(pool) else pool
             # **분절을 먼저 한 풀에 몰아 캐시를 채운다.** 후보를 순차로 `run_eval` 하면
-            # 후보마다 probe/batch_size 개(=40/6≈7)의 콜만 던지게 되어 워커를 못 채운다
+            # 후보마다 select/batch_size 개의 콜만 던지게 되어 워커를 못 채운다
             # — run04 실측 평균 동시 실행 3.03 / 최대 7 (워커 8). 분절 1콜이 112초라
             # 그 직렬화가 곧 경과 시간이다. 후보 전체의 분절을 한 번에 던지면 동시 폭이
             # 후보 수만큼 늘고, 이후 `run_eval` 은 전부 캐시 히트로 지나간다.
-            prewarm(cands, probe)
+            prewarm(cands, sel)
             scored = []
             for i, c in enumerate(cands):
-                _r, _m, _v = run_eval(c, probe, t_grid, "train")
+                _r, _m, _v = run_eval(c, sel, t_grid, "train")
                 sc_i = metrics.score(_m)
                 scored.append((sc_i, i, c))
-                log(f"[{tag_}] 후보 {i}: {len(c)}자 probe({len(probe)}) "
+                log(f"[{tag_}] 후보 {i}: {len(c)}자 train({len(sel)}) "
                     f"score={sc_i:.4f} fmt={_m.format_pass_rate:.2f}")
             scored.sort(key=lambda x: -x[0])
-            finals = scored[:2]
-            if len(splits["dev"]) > probe_n:
-                prewarm([c for _s, _i, c in finals], splits["dev"])
-                re_scored = []
-                for sc_i, i, c in finals:
-                    _r, _m, _v = run_eval(c, splits["dev"], t_grid, "dev")
-                    s2 = metrics.score(_m)
-                    re_scored.append((s2, i, c))
-                    log(f"[{tag_}] 결선 후보 {i}: dev({len(splits['dev'])}) score={s2:.4f}")
-                re_scored.sort(key=lambda x: -x[0])
-                finals = re_scored
-            log(f"[{tag_}] 후보 {finals[0][1]} 채택 (score={finals[0][0]:.4f})")
-            return finals[0][2]
+            log(f"[{tag_}] 후보 {scored[0][1]} 채택 (score={scored[0][0]:.4f}) — dev 미사용")
+            return scored[0][2]
 
         prompt_path = run_dir / "iter_00" / "prompt.txt"
         if prompt_path.exists():
@@ -1325,7 +1336,7 @@ def main() -> int:
 
             for k, cand in enumerate(candidates):
                 (run_dir / f"prompt_v0_cand{k}.txt").write_text(cand, encoding="utf-8")
-            prompt = select_prompt(candidates, args.v0_probe, "profiler")
+            prompt = select_prompt(candidates, args.select_n, "profiler")
             prompt_path.parent.mkdir(parents=True, exist_ok=True)
             prompt_path.write_text(prompt, encoding="utf-8")
         prompt_v0_len = len(prompt)
@@ -1781,7 +1792,7 @@ def main() -> int:
                     _cands2.append((pr, rv))
                 cands = _cands2
                 if len(cands) > 1:
-                    pick = select_prompt([c[0] for c in cands], args.v0_probe, f"iter {it} 개정")
+                    pick = select_prompt([c[0] for c in cands], args.select_n, f"iter {it} 개정")
                     revised = next(rv for pr, rv in cands if pr == pick)
                 elif cands:
                     revised = cands[0][1]

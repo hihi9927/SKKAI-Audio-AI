@@ -884,11 +884,11 @@ ja 가 채택된 iter1 은 `rank_lift` 가 **음수**였던 이터다. 가설을
 python -m core.meaning_segmentator.autoseg.loop \
     --dataset fleurs-{de,zh}-en --src-lang {German,Chinese} \
     --tgt-lang English --tgt-langs English --pair-id {de,zh}-en --run-id run01 \
-    --train 30 --dev 60 --test 100 --iterations 4 --budget N --v0-probe 20
+    --train 80 --dev 225 --test 100 --iterations 4 --budget N
 ```
 
 길이 하한 해제는 언어별 값이 아니라 **이 트랙 고유**였다(en 피벗에서 이미 걸림. 지금은 플래그 자체가 없다),
-`--v0-probe 20` 은 **비용 노브**(기본 40).
+후보 선별은 **train** 에서 한다 (`--select-n`, 기본 0=train 전체) — dev 는 채택 판정 전용이다.
 
 ### 11.1 `min_gap` 자동 유도 (`derive_min_gap`)
 
@@ -960,7 +960,7 @@ de(구 코드, `÷2` 로 1.25)에서 0/3 낭비가 났던 자리에서 zh(신 �
 ### 11.5 `--final-only` 가 `config.json` 을 덮어쓰지 않는다
 
 인자를 안 준 항목이 기본값으로 채워져 저장되면 **그 런을 만든 설정 기록이 사라진다**
-(ja/run01 실측: `revision_candidates 3 → 1`, `v0_probe 20 → 40`, `budget 10 → 4`).
+(ja/run01 실측: `revision_candidates 3 → 1`, `budget 10 → 4`).
 
 ### 11.6 함께 고친 계측 버그
 
@@ -972,7 +972,7 @@ de(구 코드, `÷2` 로 1.25)에서 0/3 낭비가 났던 자리에서 zh(신 �
 | | 성격 |
 |---|---|
 | 길이 하한 해제 | 트랙 고유 (en 피벗에서 이미 적용). **이후 플래그 자체가 제거됨** |
-| `--v0-probe 20` | 비용 노브 (기본 40) |
+| `--select-n` | 후보 선별에 쓸 train 문장 수 (기본 0 = 전체) |
 | `--budget` | 런별 판단 (§10.6 의 예약 제안 참조) |
 
 **언어별 값은 0개다.**
