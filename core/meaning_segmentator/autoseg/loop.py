@@ -1815,8 +1815,19 @@ def main() -> int:
                     revised = next(rv for pr, rv in cands if pr == pick)
                 elif cands:
                     revised = cands[0][1]
+                elif raw_cands:
+                    # **전멸했으면 다시 쓰게 하지 말고 줄이게 한다.** 종전에는 같은 PE 를
+                    # 같은 입력으로 한 번 더 불렀는데, 같은 크기의 개정이 나와 최종 관문에
+                    # 또 걸렸다 — 실측 로그에서 전멸 6건과 최종 거부 6건이 정확히 짝을
+                    # 이룬다. 아이디어는 멀쩡하고 표현이 길 뿐이라 압축기 몫이다.
+                    revised = dict(raw_cands[0][1])
+                    fitted = compressor.fit_sections(
+                        raw_cands[0][0], best["prompt"], trust["growth"],
+                        revised.get("changelog"))
+                    revised["prompt"] = fitted
+                    log(f"[iter {it}] 후보 전멸 — 압축기로 섹션 축소 재시도 "
+                        f"({len(raw_cands[0][0])} -> {len(fitted)}자)")
                 else:
-                    # 후보가 전멸하면 종전 경로로 한 번 더 — 게이트 사유를 로그에 남긴다.
                     revised = engineer.revise(best["prompt"], critique, history, profile,
                                               t_grid, max_sections=trust["sections"],
                                               max_growth=trust["growth"],
@@ -1849,6 +1860,25 @@ def main() -> int:
                     log(f"[iter {it}] 개정 없음 — 이전 프롬프트 유지")
                 elif missing or len(new_prompt) < 500:
                     log(f"[iter {it}] 개정 프롬프트 골격 누락 {missing} — 이전 프롬프트 유지")
+                elif scope and all("섹션 변경" not in x for x in scope):
+                    # **성장 위반만이면 한 번 더 기회를 준다.** 섹션 개수 위반은 아이디어를
+                    # 지우는 일이라 압축으로 못 고치므로 그때는 종전대로 거부한다.
+                    fitted = compressor.fit_sections(
+                        new_prompt, best["prompt"], trust["growth"],
+                        revised.get("changelog"))
+                    scope2 = agents.check_revision(best["prompt"], fitted,
+                                                   trust["sections"], trust["growth"])
+                    if fitted != new_prompt and not scope2 and not agents.check_skeleton(fitted):
+                        log(f"[iter {it}] 범위 위반 — 압축으로 통과 "
+                            f"({len(new_prompt)} -> {len(fitted)}자): {'; '.join(scope)}")
+                        prompt = fitted
+                        new_prompt = fitted
+                        sections_changed = agents.changed_sections(best["prompt"], fitted)
+                        revision_applied = True
+                    else:
+                        log(f"[iter {it}] 개정 범위 위반 — 압축 후에도 거부: "
+                            f"{'; '.join(scope2 or scope)} "
+                            f"[신뢰영역 {trust['growth']:.2f}배/{trust['sections']}섹션]")
                 elif scope:
                     log(f"[iter {it}] 개정 범위 위반 — 거부: {'; '.join(scope)} "
                         f"[신뢰영역 {trust['growth']:.2f}배/{trust['sections']}섹션]")

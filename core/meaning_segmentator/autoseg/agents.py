@@ -949,9 +949,66 @@ Target: at most {budget} characters. Current: {current} characters.
 Return ONLY the prompt text. No commentary, no code fences."""
 
 
+# 섹션 하나를 성장 한도 안으로 줄이는 모드. 전체 예산 압축과 **방향이 반대다** —
+# 그쪽은 바뀐 섹션을 보호하고 다른 데를 깎지만, 여기서는 바뀐 섹션 자체가 한도를 넘었다.
+#
+# **왜 필요한가.** 국소성 관문에 걸린 개정은 통째로 버려진다. 실측(로그 26개): 개정
+# 이터레이션 21회 중 **6회(29%)가 범위 위반으로 무산**됐고, 거부 사유는 섹션 개수 1건을
+# 빼면 전부 성장이다 (`[Decision Procedure]` 745 -> 1983자 2.66배 등). 짧은 섹션일수록
+# 몇 줄만 늘려도 비율 한도를 넘는다.
+#
+# 그때 코드는 `engineer.revise` 를 한 번 더 부르는데, 같은 PE 가 같은 입력으로 같은 크기의
+# 개정을 낸다 — 전멸 6건과 최종 거부 6건이 정확히 짝을 이룬다. **LLM 호출만 한 번 더 쓰고
+# 결과는 같다.** 아이디어는 멀쩡한데 표현이 길 뿐이므로, 줄이는 일을 시키는 것이 맞다.
+SECTION_FIT_SYSTEM = """You shorten ONE section of a segmentation system prompt so it fits a
+length budget. You are NOT improving it and NOT changing what it asks the model to do.
+
+The section was just revised and the new material must survive. What must go is redundancy —
+conditions that restate each other, examples that duplicate a condition already in prose,
+hedging.
+
+Hard constraints — violating any of these makes your output unusable:
+1. Return ONLY the section body. No header line, no commentary, no code fences.
+2. NEVER delete a condition whose content is not covered anywhere else in the section. If you
+   cannot reach the budget without doing that, get as close as you can and stop.
+3. These conditions are the change being measured this iteration and must remain, in some
+   wording: {kept}
+4. Cut in this order: duplicate examples, the weakest / most specific examples, conditions that
+   restate another condition in different words (merge them into one), hedging and repetition.
+5. Keep every remaining rule in the source language forms it already uses. Do not translate,
+   generalise, or reword conditions beyond merging duplicates.
+
+Target: at most {budget} characters. Current: {current} characters."""
+
+
 @dataclass
 class Compressor:
     gw: Gateway
+
+    def fit_sections(self, new_prompt: str, old_prompt: str,
+                     max_growth: float, changelog: list[str] | None = None) -> str:
+        """성장 한도를 넘긴 섹션만 한도 안으로 줄인다. 나머지는 바이트 동일.
+
+        섹션 개수 위반은 여기서 못 고친다 — 아이디어를 지우는 일이라 압축이 아니다.
+        줄인 뒤에도 한도를 못 맞추면 호출자가 종전대로 거부하면 된다.
+        """
+        a, b = split_sections(old_prompt), split_sections(new_prompt)
+        over = {k: int(len(a[k]) * max_growth)
+                for k in b if k in a and a[k] and len(b[k]) > len(a[k]) * max_growth}
+        if not over:
+            return new_prompt
+        kept = "; ".join(changelog or []) or "(the newly added conditions)"
+        out = new_prompt
+        for sec, budget in over.items():
+            body = self.gw.chat(
+                SECTION_FIT_SYSTEM.format(kept=kept[:1200], budget=budget,
+                                          current=len(b[sec])),
+                f"{sec}\n{b[sec]}", max_tokens=PROMPT_MAX_TOKENS, purpose="section_fit")
+            body = body.strip()
+            if not body or len(body) >= len(b[sec]):
+                continue                      # 못 줄였으면 그대로 둔다
+            out = out.replace(b[sec], body, 1)
+        return out
 
     def compress(self, prompt: str, budget: int, protected: list[str]) -> str:
         sys_p = COMPRESSOR_SYSTEM.format(
