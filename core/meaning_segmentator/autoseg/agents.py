@@ -767,12 +767,23 @@ confidence (1 = most confident). A deterministic step then keeps only the top-ra
 as many as the latency budget allows, and each resulting piece is translated in order — seeing
 only the already-final translations before it, never what comes after, and never revisable.
 
-Because the piece COUNT is decided by that later step and not by the prompt, "too many" and
-"too few" tags are not failures you can diagnose. Only two things are:
+That later step can only pick from the tags the prompt produced. So the piece COUNT is out of
+your hands ONLY WHILE the prompt marks more candidates than the tightest budget needs. The
+COVERAGE REPORT in the user message tells you whether that holds this iteration:
+
+- coverage holds  ->  "too many" and "too few" tags are not failures you can diagnose. The only
+  two things that are: PLACEMENT and PRIORITY (below).
+- coverage BROKEN ->  the budget is asking for boundaries that were never marked, so pieces are
+  missing outright. COVERAGE is then the dominant failure and you must diagnose it first. In
+  this state every extra prohibition makes the score WORSE, because the truncator has nothing
+  left to choose from. Propose rules that OPEN safe positions the prompt is currently refusing,
+  and say which existing restriction to relax.
 
 - PLACEMENT — a boundary sits somewhere that damages the translation.
 - PRIORITY — the boundaries are in defensible places, but ranked wrong, so the ones kept under
   a tight budget are the risky ones.
+- COVERAGE — the prompt never marked enough boundaries for the budget to reach (only
+  diagnosable when the coverage report says it is broken).
 
 You do NOT assign scores — scores are computed separately. Your job is to explain WHY specific
 cases failed and to propose GENERALISED rules that would prevent them.
@@ -833,14 +844,22 @@ the CONDITION that separates the safe uses from the harmful ones.
 
 Never propose "mark fewer boundaries". Holding a boundary back cannot raise the score — it only
 removes an option from the ranking. If a boundary is risky, it belongs LOW in the ranking, not
-absent.
+absent. A new entry in [Never Segment] IS "mark fewer boundaries" restated: count it against
+this rule, not around it.
+
+REJECTED DIRECTIONS. The user message may list revisions already tried against THIS SAME prompt
+and measured as no better. Those were your earlier proposals. Re-proposing them costs an
+iteration and cannot succeed — the measurement already answered. Read them as "this axis is
+exhausted", and diagnose a DIFFERENT mechanism, a different section, or the opposite direction
+(relaxing a restriction rather than adding one). If the evidence genuinely supports no other
+change, say so in "summary" and return an empty "cases" list rather than repeating yourself.
 
 Return ONLY JSON:
 {
   "cases": [
     {
       "id": "case id",
-      "error_type": "placement | priority | format_violation | reference_suspect",
+      "error_type": "placement | priority | coverage | format_violation | reference_suspect",
       "span": "the exact source substring where the problem is",
       "evidence": "what specifically went wrong at the moment of emission",
       "cause": "short mechanism, e.g. polarity not yet settled / modifier scope changed / head had not arrived",
@@ -862,7 +881,9 @@ class Critic:
                avoid: str | None = None,
                priority_audit: list[dict] | None = None,
                judgements: list[dict] | None = None,
-               target_language: str | None = None) -> dict:
+               target_language: str | None = None,
+               coverage: dict | None = None,
+               rejected: list[dict] | None = None) -> dict:
         user = (
             # 타깃 인지 모드에서만 붙는다. 기본에서는 Critic 이 타깃을 모르는 편이 낫다 —
             # 알면 한 언어의 문법으로 규칙을 제안하고 그게 PE 를 거쳐 프롬프트에 남는다.
@@ -904,11 +925,35 @@ class Critic:
                 "worst-scoring boundaries by measured contradiction, so `safe` here means "
                 "the measurement fired and a reader disagreed.\n"
                 + json.dumps(cs, ensure_ascii=False, indent=2))
+        # 커버리지 보고 — **비평의 방향을 여는 유일한 증거다.** 지시문은 "조각 수는 노브가
+        # 정하므로 too_few 는 진단 대상이 아니다" 라고 못 박고 있는데, 그 전제는 후보가
+        # 예산보다 많을 때만 성립한다. run12 는 dev 265문장 중 264건이 `too_few_tags`
+        # 였는데도 사례가 11/11 전부 `placement` 로 나왔다 — Critic 이 원리적으로 다른
+        # 진단을 할 수 없었기 때문이다. 그 상태에서 나온 개정은 전부 금지 추가였고
+        # 4회 연속 거부됐다. 전제가 깨졌는지 여부를 숫자로 실어 준다.
+        if coverage:
+            user += (
+                "\n\nCOVERAGE REPORT — does the truncator have anything to choose from? "
+                "`missing` is how many boundaries the budget asked for that were never marked, "
+                "at the TIGHTEST budget in the grid (the one that needs the most boundaries).\n"
+                + json.dumps(coverage, ensure_ascii=False, indent=2)
+                + ("\n\nCOVERAGE IS BROKEN. Adding another prohibition here lowers the score "
+                   "mechanically — the budget already cannot be met. Diagnose coverage first."
+                   if coverage.get("broken") else
+                   "\n\nCoverage holds: more candidates are marked than the tightest budget "
+                   "needs, so piece count is not a failure you can diagnose."))
+        # 거부 이력 — 같은 프롬프트에 대해 이미 시도해 측정으로 부정된 방향.
+        if rejected:
+            user += (
+                "\n\nREVISIONS ALREADY TRIED AGAINST THIS SAME PROMPT AND MEASURED AS NO "
+                "BETTER. `delta` is the paired change in the objective on held-out data; "
+                "negative means it made things worse. Do not propose these again.\n"
+                + json.dumps(rejected, ensure_ascii=False, indent=2))
         out = self.gw.chat_json(CRITIC_SYSTEM, user, max_tokens=PROMPT_MAX_TOKENS,
                                 purpose="critic")
         out["aggregate"] = summarize_critique(out.get("cases") or [], metrics,
                                               out.get("summary"), avoid, priority_audit,
-                                              judgements)
+                                              judgements, coverage)
         return out
 
 
@@ -931,19 +976,63 @@ class Critic:
 def summarize_critique(cases: list[dict], metrics: dict, summary: str | None,
                        avoid: str | None = None,
                        priority_audit: list[dict] | None = None,
-                       judgements: list[dict] | None = None) -> dict:
+                       judgements: list[dict] | None = None,
+                       coverage: dict | None = None) -> dict:
     """집계는 세는 일이지 판단이 아니다 — LLM 에 맡기면 누락되거나 틀린다.
 
 **`focus` 는 없앴다** — 아래 본문 주석 참고. 남은 것은 세는 일(오류 유형 카운트)과
     고착 방지 힌트뿐이고, 방향 판단은 Critic 이 지표의 뜻을 보고 한다.
 
+    **`dominant_error` 는 사례 개수에서 실측 비율로 옮겼다.** 종전에는 `cases` 의
+    `error_type` 을 세어 최다를 골랐는데, 그 표본은 **일부러 최악만 고른 것**이라
+    비율이 아니다. 지시문이 같은 메시지에서 정확히 그걸 금지하고 있었다:
+
+        "Because the sample is the worst boundaries, do NOT read the mix of verdicts
+         as a rate. ... Count nothing here — read WHY."
+
+    그런데 이 함수가 바로 그 사례를 세어 `dominant_error` 라는 이름으로 `aggregate` 에
+    실었고, `aggregate` 는 `critique` 안에 담겨 PE 에게 통째로 넘어간다. run12 iter_02
+    실측이 그 어긋남을 그대로 보여준다:
+
+        dominant_error      placement 11/11 = 100%   (사례 11건 — 최악만 골라낸 것)
+        judge_distribution  premature 31 / mistranslated 7 / **safe 7** (판정 45건)
+        커버리지            부족 문장 260/265 = 98.1% (전 문장)
+
+    "placement 100%" 는 프롬프트가 placement 를 다 틀린다는 뜻이 아니라 **placement
+    사례만 골라 보냈다**는 뜻이다. `cause_summary` 가 따로 있는 이유가 이것이고
+    (docstring: "사례 10개로는 어떤 실패가 지배적인가를 못 읽는다"), 이 함수만 그 원칙
+    밖에 있었다.
+
+    **그래서 `dominant_error` 는 코퍼스 비율이 뒷받침할 때만 값을 갖는다.** 지금 그런
+    축은 커버리지 하나뿐이다:
+
+      coverage   `missing_boundaries > 0` 인 문장 비율. 전 문장이 분모라 진짜 비율이고,
+                 `truncate` 가 min_gap 몫을 빼고 세므로 **프롬프트가 고칠 수 있는 부족분**
+                 만 들어간다 (GLOSSARY movable=True).
+      format     `format_pass_rate` 는 GLOSSARY 가 movable=False 로 표시한다 — "남는
+                 실패는 대부분 모델이 원문을 고쳐 쓰는 것이고 문구로 안 고쳐진다".
+                 프롬프트의 몫이 아니므로 축이 될 수 없다.
+      placement  판정 경계는 **모순 상위 10%** 라 코퍼스 비율이 아니다 (지시문도
+                 "Still not a corpus rate" 라고 단서를 단다). 비율로 승격할 근거가 없다.
+      priority   `rank_lift` 는 값이 커도 "순위가 이미 잘 돈다"는 뜻이라 지배 실패를
+                 가리키지 않는다. 어느 방향으로도 축을 못 고른다.
+
+    커버리지가 성립하면 `dominant_error` 는 `None` 이다 — "비율로는 지배 실패를 못
+    가린다, 사례와 `judge_distribution` 을 읽어라"가 정직한 답이고, 그게 원래 설계다.
+    사례 라벨 카운트는 `case_label_counts` 로 남기되 이름과 `of` 로 표본임을 밝힌다.
+
     사례 카운트로 방향을 정하면 안 된다는 원칙은 그대로다: Critic 에게는 망가진 사례를
     골라 보내므로 특정 유형이 항상 다수가 되고, 방향이 영구히 거기 고정된다
-    (v1 실측: direction 5회 고착, 분절률 0.72 -> 0.38). 그래서 `dominant_error` 는
-    참고용으로만 싣는다.
+    (v1 실측: direction 5회 고착, 분절률 0.72 -> 0.38). 종전 주석은 여기서 "그래서
+    `dominant_error` 는 참고용으로만 싣는다" 로 끝났는데, **참고용이 아니었다** —
+    `aggregate` 가 `critique` 안에 담겨 PE 의 사용자 메시지로 통째로 직렬화된다
+    (`PromptEngineer.revise`). 지시문이 이름으로 지목해 쓰는 것은 `stuck_hint` 와
+    `judge_distribution` 뿐이고 `dominant_error` 는 계약에 없이 딸려 갔다. 위에서
+    비율 기반으로 옮긴 이유가 이것이다.
 
-    v1 의 "더/덜 잘라라" 방향이 사라진 자리가 크다. 조각 수는 노브가 정하므로
-    과소분절·과분절이라는 실패 자체가 없다. 남는 것은 위치와 순위뿐이다.
+    v1 의 "더/덜 잘라라" 방향이 사라진 자리가 크다. 조각 수는 **후보가 예산보다 많을
+    때만** 노브가 정하므로, 그 조건이 성립하면 과소분절·과분절이라는 실패가 없고 남는
+    것은 위치와 순위뿐이다. 깨지면 커버리지가 다시 실패 유형이 된다 (`coverage`).
 
     **순위 축은 순위를 망가뜨려 잰다** (`rank_lift`). 종전에 쓰던 `rank_contra_gap` 은
     **절단 후 살아남은 경계들끼리의 순서**만 보는데, 순위가 실제로 하는 일은 keep-vs-discard
@@ -998,9 +1087,52 @@ def summarize_critique(cases: list[dict], metrics: dict, summary: str | None,
                  f"같은 섹션을 같은 방식으로 다시 고치지 말 것 — 다른 섹션을 보거나 "
                  f"같은 섹션이라도 반대 방향(금지 추가가 아니라 완화)을 검토할 것")
 
+    # 실측 비율 — **분모를 값과 함께 싣는다.** 비율만 주면 표본 크기가 안 보이고,
+    # 무엇에 대한 비율인지 안 적으면 지금 고친 그 오독이 그대로 재발한다
+    # (`cause_summary` 가 개수와 share 를 함께 내는 것과 같은 이유).
+    rates: dict = {}
+    if coverage:
+        rates["coverage"] = {
+            "n": coverage.get("sentences_missing_boundaries"),
+            "of_n": coverage.get("sentences"),
+            "rate": coverage.get("fraction_missing"),
+            "of": "all sentences scored — a true corpus rate",
+            "meaning": ("sentences where the tightest budget asked for boundaries the "
+                        "prompt never marked, so pieces are missing outright"),
+        }
+    jd = cause_summary(judgements)
+    if jd:
+        _prem = (jd["verdicts"].get("premature", 0) + jd["verdicts"].get("mistranslated", 0))
+        rates["premature_among_judged"] = {
+            "n": _prem,
+            "of_n": jd["n_boundaries_judged"],
+            "rate": round(_prem / jd["n_boundaries_judged"], 3),
+            "of": ("boundaries judged this iteration, selected as the WORST by measured "
+                   "contradiction — NOT a corpus rate, do not compare it against `coverage`"),
+        }
+
+    dominant, basis = None, None
+    if coverage and coverage.get("broken"):
+        dominant = "coverage"
+        basis = (f"{coverage.get('sentences_missing_boundaries')}/"
+                 f"{coverage.get('sentences')} sentences "
+                 f"({coverage.get('fraction_missing')}) could not be given the boundaries the "
+                 f"tightest budget asked for. This is a corpus rate, and the shortfall is the "
+                 f"part the prompt can fix. Fix coverage before anything else — while it holds, "
+                 f"every added prohibition lowers the score mechanically.")
+    elif rates:
+        basis = ("No corpus rate identifies a dominant failure. Read the cases and "
+                 "`judge_distribution` for WHICH mechanism to fix — do not infer a rate from "
+                 "`case_label_counts`, those cases were selected for being the worst.")
+
     return {
-        "dominant_error": max(counts, key=counts.get) if counts else None,
-        "error_counts": counts,
+        "dominant_error": dominant,
+        "dominant_basis": basis,
+        "measured_rates": rates,
+        # **사례 라벨 카운트는 비율이 아니다.** 종전 `error_counts` 를 개명한 것이고,
+        # `dominant_error` 는 더 이상 이 값에서 나오지 않는다.
+        "case_label_counts": {"counts": counts, "of_n": len(cases),
+                              "of": "the selected worst cases — NOT a rate"},
         "stuck_hint": stuck,
         "priority_audit": (priority_audit or [])[:6],
         "judge_distribution": cause_summary(judgements),
@@ -1072,11 +1204,31 @@ def select_cases(rows: list[dict], main_T: int, judgements: list[dict] | None = 
         key=lambda r: -(max_contra(r, main_T) or 0.0))[:n_flagged]
     valid = [r for r in rows if r["valid"] and r.get("by_T", {}).get(key)]
     worst = rank_by_failure(valid, main_T, n_worst)
-    short = sorted([r for r in valid if r["by_T"][key].get("missing_boundaries", 0) > 0],
+    # **경계 부족 쿼터는 `valid` 에서 뽑으면 안 된다.** 경계가 모자라면 검증기가
+    # `too_few_tags` 로 그 행을 `valid=False` 로 만들므로, `valid` 안에는 그 실패가
+    # 원리적으로 거의 없다. run12 는 dev 265문장 중 264건이 경계 부족이었는데 이 쿼터가
+    # 0건을 골랐다 — 남은 사례가 전부 `placement` 라 비평이 한 방향으로 고정됐다.
+    # 전체 행에서 뽑고, 부족이 만연하면 쿼터도 함께 키운다 (그때는 그게 지배 실패다).
+    _short_pool = [r for r in rows
+                   if (r.get("by_T", {}).get(key) or {}).get("missing_boundaries", 0) > 0]
+    # 0.5 는 `loop.COVERAGE_BROKEN_FRAC` 과 같은 값이어야 한다 (거기서 import 하면
+    # loop -> agents 단방향 의존이 순환이 된다). 한쪽을 바꾸면 다른 쪽도 바꿀 것.
+    _coverage_broken = len(_short_pool) > 0.5 * max(1, len(rows))
+    if _coverage_broken:
+        # 쿼터를 조금만 키운다. 부족이 만연할 때 이 목록을 크게 잡으면 `flagged`/`worst`
+        # 가 중복 제거로 통째로 밀려나 **비평이 반대쪽으로 고정된다** — 한쪽 편향을
+        # 다른 쪽 편향으로 바꾸는 것뿐이다. 사례는 예시를 보여주는 자리이고, 얼마나
+        # 만연한지는 커버리지 보고(비율)가 말한다.
+        n_short = max(n_short, n_worst)
+    short = sorted(_short_pool,
                    key=lambda r: -r["by_T"][key]["missing_boundaries"])[:n_short]
 
+    # 커버리지가 깨진 이터레이션에서는 부족 사례를 **앞으로** 놓는다. 뒤에 두면 중복
+    # 제거로 밀려나 목록에서 사라진다 (아래 dedup 은 먼저 온 행을 남긴다).
+    _order = (invalid + short + flagged + worst if _coverage_broken
+              else invalid + flagged + worst + short)
     picked, seen = [], set()
-    for r in invalid + flagged + worst + short:
+    for r in _order:
         if r["id"] in seen:
             continue
         seen.add(r["id"])
@@ -1091,17 +1243,23 @@ def select_cases(rows: list[dict], main_T: int, judgements: list[dict] | None = 
                 (r.get("by_T", {}).get(key) or {}).get("pieces_contra"),
             "judgements": [{k: v for k, v in j.items() if k != "seg_text"}
                            for j in judged.get(r["id"], [])],
-            "selected_because": (
-                "format violation" if not r["valid"]
-                else "a boundary was judged premature or mistranslated"
-                     if r["id"] in judged and any(
-                         j.get("verdict") in ("premature", "mistranslated")
-                         for j in judged[r["id"]])
-                else "the prompt did not provide enough boundaries for the budget"
-                     if (r.get("by_T", {}).get(key) or {}).get("missing_boundaries", 0) > 0
-                else "a boundary was strongly contradicted by the rest of the sentence"
-                     if (max_contra(r, main_T) or 0.0) >= 0.5
-                else "lowest adequacy at the main budget"),
+            # **이유는 배타형이 아니라 누적형이다.** 종전 `if/elif` 사슬은 한 행에
+            # 하나만 남겼는데, 커버리지가 깨진 이터레이션에서는 거의 모든 행이 경계
+            # 부족이면서 동시에 조기 방출로 판정된 행이기도 하다. 하나만 남기면 어느
+            # 쪽으로 순서를 잡든 반대쪽 증거가 라벨에서 사라지고, 비평이 그 한 방향으로
+            # 고정된다 (run12: 사례 11/11 이 `placement`). 둘 다 적는다.
+            "selected_because": "; ".join(x for x in (
+                ("the prompt did not provide enough boundaries for the budget"
+                 if (r.get("by_T", {}).get(key) or {}).get("missing_boundaries", 0) > 0
+                 else None),
+                ("format violation" if not r["valid"] else None),
+                ("a boundary was judged premature or mistranslated"
+                 if r["id"] in judged and any(
+                     j.get("verdict") in ("premature", "mistranslated")
+                     for j in judged[r["id"]]) else None),
+                ("a boundary was strongly contradicted by the rest of the sentence"
+                 if (max_contra(r, main_T) or 0.0) >= 0.5 else None),
+            ) if x) or "lowest adequacy at the main budget",
         })
     return picked
 
@@ -1305,6 +1463,7 @@ class PromptEngineer:
         size_budget: int | None = None,
         measured: dict | None = None,
         target_language: str | None = None,
+        rejected: list[dict] | None = None,
     ) -> dict:
         """`only_rules` 가 있으면 **그 규칙들만** 반영하게 한다.
 
@@ -1342,6 +1501,19 @@ class PromptEngineer:
             f"Critic feedback on the current prompt:\n{json.dumps(critique, ensure_ascii=False, indent=2)}\n\n"
             f"=== CURRENT PROMPT ===\n{current_prompt}"
         )
+        # 거부 이력 — **`history` 만으로는 안 걸린다.** 시도 이력에도 `adopted`/`changelog`
+        # 가 들어 있지만 지표 딕셔너리에 파묻혀 있고, 아래 `only_rules` 의 "이 규칙을 전부
+        # 구현하라"가 그 위를 덮어쓴다. run12 는 그래서 v1~v4 개정 요지가 네 번 다 같았다
+        # (coordinate structure / prepositional phrase / polarity 금지 추가). 무엇이 이미
+        # 측정으로 부정됐는지를 지시문 높이에서 따로 말해 준다.
+        if rejected:
+            user += (
+                "\n\n=== ALREADY TRIED AND REJECTED (against this same base prompt) ===\n"
+                "Each was measured on held-out data and was not better; `delta` is the paired "
+                "change in the objective, negative meaning worse. Producing any of these again "
+                "wastes the iteration — the measurement already answered. Your revision must be "
+                "materially different from all of them, not a rewording.\n"
+                + json.dumps(rejected, ensure_ascii=False, indent=2))
         if only_rules:
             # **규칙은 지시가 아니라 데이터다.** 이 문자열은 Critic(LLM)이 실패 사례를
             # 보고 지어낸 것이고, Critic 은 그때 원문 문장을 읽고 있었다. 종전에는

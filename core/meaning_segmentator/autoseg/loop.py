@@ -699,6 +699,45 @@ def _cell(v, spec: str, dash: str = "—") -> str:
     return format(v, spec) if v is not None else dash
 
 
+# 커버리지가 깨졌다고 볼 문장 비율. **절반을 넘으면 지배 실패**로 본다 — 그 상태에서는
+# 절단기가 고를 후보가 없어서 `[Never Segment]` 에 규칙을 더할수록 점수가 기계적으로
+# 내려간다. 상수는 `agents.select_cases` 의 쿼터 확대 조건과 같은 값이어야 한다.
+COVERAGE_BROKEN_FRAC = 0.5
+
+
+def coverage_report(rows: list[dict], m: dict, t_grid: list[int]) -> dict:
+    """가장 빡빡한 예산에서 **요구된 경계를 실제로 받았는가.**
+
+    Critic 지시문은 "조각 수는 절단기가 정하므로 too_few 는 진단 대상이 아니다" 라고
+    못 박는데, 그 전제는 마킹된 후보가 예산보다 많을 때만 성립한다. run12 는 dev
+    265문장 중 264건이 `too_few_tags` 였는데도 비평 사례가 11/11 전부 `placement` 로
+    나왔다 — 전제가 깨진 것을 Critic 에게 알려줄 통로가 없었기 때문이다. 그 상태에서
+    나온 개정은 네 번 다 금지 추가였고 네 번 다 거부됐다.
+
+    가장 작은 T 를 보는 이유: 같은 문장에서 T 가 작을수록 조각이 많이 필요하므로 요구
+    경계 수가 최대가 된다. 커버리지 요건(`coverage_t`)도 거기서 걸린다.
+    """
+    t = min(t_grid) if t_grid else None
+    if t is None:
+        return {}
+    key = str(t)
+    n = len(rows)
+    short = [r for r in rows
+             if (r.get("by_T", {}).get(key) or {}).get("missing_boundaries", 0) > 0]
+    cell = (m.get("by_T") or {}).get(key) or {}
+    frac = (len(short) / n) if n else 0.0
+    return {
+        "tightest_budget_T": t,
+        "sentences": n,
+        "sentences_missing_boundaries": len(short),
+        "fraction_missing": round(frac, 4),
+        "mean_missing_per_sentence": cell.get("missing_boundaries"),
+        "format_pass_rate": m.get("format_pass_rate"),
+        "format_pass_rate_no_retry": m.get("format_pass_rate_no_retry"),
+        "broken": frac > COVERAGE_BROKEN_FRAC,
+    }
+
+
 def fmt_metrics(m: metrics.Metrics, tag: str) -> str:
     parts = [f"{tag} fmt={m.format_pass_rate:.2f}(1st {m.format_pass_rate_no_retry:.2f})"]
     for k in sorted(m.by_T, key=int):
@@ -933,7 +972,15 @@ def main() -> int:
                    help="Profiler/Judge/Critic/PE 사고량. none = 모델 기본값")
     p.add_argument("--seg-reasoning-effort", default="medium",
                    choices=["minimal", "low", "medium", "high", "none"],
-                   help="분절 호출 사고량. none = 모델 기본값. 에이전트 호출에는 영향 없음")
+                   help="분절 호출 사고량. none = 모델 기본값(사고 끔). 에이전트 호출에는 "
+                        "영향 없음. **none 은 결정론을 얻는 대신 커버리지를 잃는다** — "
+                        "run12(claude-haiku-4-5 + none)는 dev 264/265 가 요구 경계 수를 "
+                        "못 채웠고, run11(gpt-5-mini + medium)은 같은 격자에서 0/265 였다")
+    # 커버리지가 깨진 상태는 프롬프트 개정으로 못 고친다 — 절단기가 고를 후보가 없어서
+    # 어떤 개정도 점수를 못 올린다. 기본은 iter 0 에서 멈추는 것이고, 그 상태 자체를
+    # 관측하려는 실험에서만 이 플래그로 뚫는다.
+    p.add_argument("--allow-broken-coverage", action="store_true",
+                   help="분절기가 요구 경계 수를 못 채워도 루프를 계속한다 (기본: iter 0 에서 중단)")
     # **`local` 이 기본이다.** Cloud Translation v2 무료 한도가 월 50만 자인데 루프는
     # 이터당 105만 자를 쓴다 — 2026-08-28 에 한도가 차서 run10 이 iter1 에서 멈췄고
     # 무료 gtx 도 IP 차단이었다. 채점이 이미 전부 로컬인데 번역만 API 에 묶여 있었다.
@@ -1523,6 +1570,11 @@ def main() -> int:
         best_ctx: dict = {}
         start_it = 0
         best_critique: dict | None = None
+        # 현재 best 에 대해 **이미 시도했다가 거부된** 개정들. Critic 과 PE 둘 다에게
+        # 넘긴다 — 없으면 같은 방향을 무한히 다시 제안한다 (run12 v1~v4 개정 요지가
+        # 네 번 다 동일, critique.json 해시도 iter_02~04 가 같았다).
+        # best 가 바뀌면 기준 프롬프트가 달라져 같은 규칙이 다시 유효할 수 있으므로 비운다.
+        rejected_attempts: list[dict] = []
         # 고착 방지 핸들 — 직전 개정이 **어느 섹션을 고쳤는지**. focus 라벨을 쓰던
         # 것을 바꿨다: 라벨이 달라도 같은 섹션을 고치는 경우가 8/30(27%)이라
         # 라벨로는 반복을 못 잡았다.
@@ -1586,6 +1638,26 @@ def main() -> int:
                 stale = len(history) - 1 - history.index(last)
             else:
                 stale = len(history)
+            # **거부 이력도 복원한다.** 안 하면 재개한 런이 무엇을 이미 시도했는지 잊고
+            # 같은 개정을 다시 낸다 — 이 값이 막으려는 상황 그대로다. 마지막 채택 이후의
+            # 거부만 유효하다 (그 전은 기준 프롬프트가 달랐다). 개정 요지는 직전 항목의
+            # `next_changelog` 에 있으므로 한 칸 앞을 본다.
+            _since = history.index(done[-1]) + 1 if done else 1
+            for _i in range(_since, len(history)):
+                _h = history[_i]
+                _pd = _h.get("paired_dev") or {}
+                _cl = history[_i - 1].get("next_changelog")
+                if _h.get("adopted") or not _cl or not _pd.get("n_changed"):
+                    continue
+                rejected_attempts.append({
+                    "version": _h.get("version"), "sections_changed": None,
+                    "changelog": _cl, "delta": _pd.get("mean_delta"),
+                    "delta_se": _pd.get("se_delta"),
+                })
+            rejected_attempts = rejected_attempts[-6:]
+            if rejected_attempts:
+                log(f"[resume] 거부 이력 {len(rejected_attempts)}건 복원 — "
+                    f"v{[a['version'] for a in rejected_attempts]}")
             if "dev_rows" not in best_ctx:
                 log("[resume] 경고: best 의 dev_rows 를 못 찾았다 — 다음 이터레이션은 "
                     "쌍체 Δ 없이 점수 비교로 판정한다")
@@ -1727,6 +1799,32 @@ def main() -> int:
                     f"{dict(_c2.Counter(x['kind'] for x in norm))}")
             log(f"[iter {it}] {fmt_metrics(m, 'train')}")
 
+            # ── 커버리지 경보 — **망가진 상태로 조용히 도는 것을 막는다.**
+            # run12 는 분절기가 요구 경계 수를 못 채워 dev 265문장 중 264건이
+            # `too_few_tags` 였고 포맷 통과율이 0.019(재시도 전 0.004)였다. 그런데
+            # 어디에서도 멈추지 않아 이터레이션 5회에 $9.51 을 썼고, 비용의 74% 가
+            # **성공하지 못하는 재시도**였다. 원인은 run11 대비 설정 차이 하나였다:
+            #   model gpt-5-mini -> claude-haiku-4-5,  seg_reasoning_effort medium -> none
+            # 사고를 끄면 temperature=0 이 통과해 결정론은 얻지만(README '환경 주의사항'),
+            # 그 상태의 분절기는 과제 자체를 못 한다 — run11 은 같은 격자에서
+            # 포맷 0.99 / missing 0.00 이었다. 그리고 결정론으로 바꿔도 채택 판정의
+            # se 는 안 줄었다 (run11 0.021~0.029 vs run12 0.023~0.030).
+            cov = coverage_report(rows, m.to_dict(), t_grid)
+            if cov.get("broken"):
+                log(f"[iter {it}] **커버리지 경보** T={cov['tightest_budget_T']} 에서 "
+                    f"{cov['sentences_missing_boundaries']}/{cov['sentences']} 문장이 "
+                    f"요구 경계 수를 못 채웠다 (평균 부족 "
+                    f"{_cell(cov.get('mean_missing_per_sentence'), '.2f')}개, "
+                    f"포맷 통과 {_cell(cov.get('format_pass_rate'), '.4f')} / "
+                    f"재시도 전 {_cell(cov.get('format_pass_rate_no_retry'), '.4f')})")
+                if it == start_it and not args.allow_broken_coverage:
+                    log("[stop] 분절기가 예산을 못 맞춘다 — 프롬프트 개정으로 고칠 수 있는 "
+                        "상태가 아니다. 비용의 대부분이 실패하는 재시도로 나간다.")
+                    log("       --seg-reasoning-effort 를 low 이상으로 올리거나(사고를 끄면 "
+                        "요구 경계 수를 못 채운다), --t-floor 를 키워 요구량을 낮출 것. "
+                        "그래도 진행하려면 --allow-broken-coverage.")
+                    return 3
+
             # 쌍체 차이. dev 가 고정 집합이라 `mean(new) − mean(old) = mean(new − old)` 가
             # 항등이고 점추정은 절대값 비교와 동일하다. 얻는 것은 **오차막대와 유효 표본**:
             # 분절이 안 바뀐 문장은 차이가 정확히 0 이라 분산에 기여하지 않으므로
@@ -1812,6 +1910,7 @@ def main() -> int:
                             "violations": viol, "judgements": judgements,
                             "priority_audit": audit}
                 best_critique = None      # 새 best — 비평을 다시 받아야 한다
+                rejected_attempts = []    # 기준 프롬프트가 바뀌었다 — 옛 거부는 무효
                 adopted = True
                 stale = 0
             elif dev_delta and dev_delta.get("n_changed") == 0:
@@ -1823,6 +1922,21 @@ def main() -> int:
                 log(f"[iter {it}] 분절이 한 문장도 안 바뀌었다 — stale 유지 ({stale})")
             else:
                 stale += 1
+                # **무엇을 시도했다가 졌는지 남긴다.** 이 프롬프트는 직전 이터레이션이
+                # 만든 것이므로 그 개정 요지는 `history[-1]["next_changelog"]` 에 있다
+                # (이번 이터의 history 항목은 아래에서 append 되므로 아직 직전 것이다).
+                # 다음 Critic/PE 가 이걸 읽고 같은 축을 다시 파지 않는다.
+                _cl = history[-1].get("next_changelog") if history else None
+                if _cl:
+                    rejected_attempts.append({
+                        "version": it,
+                        "sections_changed": last_sections,
+                        "changelog": _cl,
+                        "delta": (dev_delta or {}).get("mean_delta"),
+                        "delta_se": (dev_delta or {}).get("se_delta"),
+                    })
+                    # 프롬프트 비대 방지 — 최근 6건이면 축은 충분히 덮는다.
+                    rejected_attempts = rejected_attempts[-6:]
 
             (it_dir / "metrics.json").write_text(json.dumps({
                 "train": m.to_dict(),
@@ -1865,14 +1979,27 @@ def main() -> int:
                 # ── A8 Critic ───────────────────────────────────────────
                 # 비평 대상과 개정 대상은 반드시 같은 프롬프트여야 한다.
                 timer.mark("critic")
-                if best_critique is None:
+                # **거부됐으면 비평을 다시 받는다.** 종전에는 채택될 때까지 첫 비평을
+                # 재사용했는데, PE 입력이 (같은 프롬프트 + 같은 비평)으로 고정돼 개정이
+                # 매 이터 같은 것이 나왔다 — run12 는 critique.json 해시가 iter_02~04
+                # 동일, 개정 요지가 v1~v4 네 번 다 같았고 전부 거부됐다. 이터레이션 5회를
+                # 같은 방향에 썼다는 뜻이다. 이제 거부 이력을 함께 넘겨 다른 축을
+                # 보게 한다. 비용은 Critic 1콜 ≈ $0.03/이터로 무시할 수준이다
+                # (run12 실측: 총 $9.51 중 critic $0.032).
+                # **비평 대상과 같은 분할에서 잰다.** `aggregate` 재계산에도 같은 값을
+                # 써야 한다 — 두 경로가 다른 커버리지를 보면 `dominant_error` 가
+                # 이터레이션 중에 뒤집힌다.
+                ctx_cov = coverage_report(ctx["rows"], ctx["metrics"], t_grid)
+                if best_critique is None or rejected_attempts:
                     cases = agents.select_cases(ctx["rows"], main_t, ctx.get("judgements"))
                     best_critique = critic.review(
                         cases, ctx["metrics"], ctx["violations"],
                         avoid=last_sections if stale >= 2 else None,
                         priority_audit=ctx.get("priority_audit"),
                         judgements=ctx.get("judgements"),
-                        target_language=pair_tgt)
+                        target_language=pair_tgt,
+                        coverage=ctx_cov,
+                        rejected=rejected_attempts or None)
                 critique = best_critique
                 # 캐시가 고착 방지를 우회하지 않도록 aggregate 만 다시 계산한다 (LLM 없음).
                 if stale >= 2 and last_sections:
@@ -1880,11 +2007,18 @@ def main() -> int:
                         critique.get("cases") or [], ctx["metrics"],
                         critique.get("summary"), avoid=last_sections,
                         priority_audit=ctx.get("priority_audit"),
-                        judgements=ctx.get("judgements"))}
+                        judgements=ctx.get("judgements"), coverage=ctx_cov)}
                 (it_dir / "critique.json").write_text(
                     json.dumps(critique, ensure_ascii=False, indent=2), encoding="utf-8")
                 agg = critique.get("aggregate", {})
+                # **비율을 함께 찍는다.** `dominant_error` 는 이제 커버리지가 깨졌을 때만
+                # 값을 갖고 평소엔 None 이라, 그것만 찍으면 로그가 매 이터 "None" 이 된다.
+                _r = (agg.get("measured_rates") or {})
+                _cv, _pj = _r.get("coverage") or {}, _r.get("premature_among_judged") or {}
                 log(f"[iter {it}] critic dominant={agg.get('dominant_error')}"
+                    + (f" 커버리지 부족 {_cv.get('n')}/{_cv.get('of_n')}"
+                       f"({_cv.get('rate')})" if _cv else "")
+                    + (f" 판정 조기방출 {_pj.get('n')}/{_pj.get('of_n')}" if _pj else "")
                     + (f" | {agg['stuck_hint'][:60]}" if agg.get("stuck_hint") else ""))
 
                 # ── A9 Prompt Engineer ──────────────────────────────────
@@ -1922,7 +2056,8 @@ def main() -> int:
                                              t_grid, only_rules=hint,
                                              size_budget=size_budget,
                                              measured=measured,
-                                             target_language=pair_tgt)
+                                             target_language=pair_tgt,
+                                             rejected=rejected_attempts or None)
                     except BudgetExceeded:
                         raise
                     except Exception as e:                      # 후보 하나 실패로 안 죽는다
