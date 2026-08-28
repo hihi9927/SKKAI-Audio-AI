@@ -206,14 +206,20 @@ def segment_batch(
     prompt_hash = JsonCache.key(prompt)
 
     def cache_key(t: str) -> str:
-        # "seg3" 는 정규화 도입 시점 표시다. 이전 캐시는 정규화 전 문자열이라 그대로 쓰면
-        # 새 코드와 옛 결과가 섞인다.
+        # "seg4" 는 **모델 입력이 바뀐 시점** 표시다. 캐시에 들어가는 값은 정규화 *후*
+        # 문자열이므로, 정규화 규칙이나 1차 호출의 사용자 메시지가 바뀌면 옛 값과 새 값이
+        # 섞인다. 지금까지의 승급:
+        #   seg3  정규화 도입
+        #   seg4  1차 호출에 **요구 경계 수**를 명시 (`need_fn`). 힌트 없이 만든 결과와
+        #         있는 결과는 다른 분포다 — 실측 1차 통과율 0.83 -> 0.94.
+        # 캐시는 런 디렉토리마다 따로이므로 새 런에는 영향이 없고, `--resume` 이 옛
+        # 디렉토리를 이어갈 때만 의미가 있다.
         # 사고량이 바뀌면 분절도 바뀌므로 키에 넣는다. 안 넣으면 effort=low 런이 medium 으로
         # 만든 옛 결과를 그대로 돌려받아 비교가 조용히 깨진다.
         # **모델도 같은 이유로 키에 들어간다.** 없으면 모델을 바꿔 돌린 평가가 이전 모델의
         # 캐시를 그대로 맞아 호출 0 회로 "동일한 결과"를 내놓는다 — 두 모델을 비교하려던
         # 실험이 조용히 같은 분절을 두 번 채점하는 것으로 바뀐다.
-        return JsonCache.key("seg3", prompt_hash, gw.model, reasoning_effort or "-",
+        return JsonCache.key("seg4", prompt_hash, gw.model, reasoning_effort or "-",
                              str(batch_size), t)
 
     def cached(t: str) -> list | None:
