@@ -364,14 +364,26 @@ class Gateway:
             "model": model or self.model,
             budget_key: max_tokens,
             **({} if self.omit_temperature else {"temperature": temperature}),
+            # **`is_openai` 로 막으면 안 된다.** Letsur 게이트웨이도 이 파라미터를
+            # 그대로 받는다 — 실측(gpt-5-mini, 분절 프롬프트 + 1문장):
+            #     low 640 / medium 2,752 / high 6,464 사고 토큰
+            # 종전에는 OpenAI 직결일 때만 실었기 때문에 **Letsur 런에서
+            # `--seg-reasoning-effort` 가 아무 일도 안 했다** (run09 실측: low 로 돌렸는데
+            # 사고가 15,330tok/콜 로 medium 런의 13,876 보다 오히려 컸다). 비용의 94% 가
+            # 분절 사고인데 유일한 손잡이가 조용히 끊겨 있었다.
+            #
+            # 거부하는 모델은 아래 400 처리가 `omit_reasoning_effort` 를 세워 다음
+            # 호출부터 뺀다 — 그게 이 플래그의 존재 이유다. 엔드포인트로 미리 막을 일이
+            # 아니다.
             **({"reasoning_effort": effort}
-               if (effort and self.is_openai and not self.omit_reasoning_effort)
-               else {}),
+               if (effort and not self.omit_reasoning_effort) else {}),
             # 구문상 유효한 JSON 을 서버가 보장한다. temperature 를 0 으로 못 박는
             # 모델에서는 이게 유일한 방어다 — en-de run01 에서 Profiler 가 깨진 JSON 을
             # 냈고 **복구 호출까지 같은 실패**를 반복해 런이 죽었다.
+            # 같은 이유로 `is_openai` 를 뺀다 — Letsur 도 `response_format` 을 받는다
+            # (실측: `{"type":"json_object"}` 로 정상 응답). 거부하면 400 처리가 끈다.
             **({"response_format": {"type": "json_object"}}
-               if (json_mode and self.is_openai and not self.omit_json_mode) else {}),
+               if (json_mode and not self.omit_json_mode) else {}),
             "messages": [
                 {"role": "system", "content": _cacheable(system)},
                 {"role": "user", "content": user},
