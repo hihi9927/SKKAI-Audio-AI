@@ -1,0 +1,37 @@
+[
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "On September 24, 1759, Arthur Guinness signed a 9,000 year lease for the St James' Gate Brewery in Dublin, Ireland.",
+    "seg_text": "On September 24, 1759, <SEG:2> Arthur Guinness signed a 9,000 year lease <SEG:1> for the St James' Gate Brewery <SEG:3> in Dublin, Ireland.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 9개 — 최소 10개 필요",
+    "text": "As NSA, he assisted Carter in diplomatically handling world affairs, such as the Camp David Accords, 1978; normalizing US–China relations thought the late 1970s; the Iranian Revolution, which led to the Iran hostage crisis, 1979; and the Soviet invasion in Afghanistan, 1979.",
+    "seg_text": "As NSA, he assisted <SEG:6> Carter in diplomatically <SEG:8> handling world affairs, <SEG:3> such as the Camp David Accords, 1978; <SEG:1> normalizing US–China relations <SEG:7> thought the late 1970s; <SEG:2> the Iranian Revolution, <SEG:5> which led to <SEG:9> the Iran hostage crisis, <SEG:4> 1979; and the Soviet invasion in Afghanistan, 1979.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "San Francisco is also one of the best places in the nation for other Asian cuisine: Korean, Thai, Indian, and Japanese.",
+    "seg_text": "San Francisco is also one of the best places <SEG:3> in the nation <SEG:2> for other Asian cuisine: <SEG:1> Korean, Thai, Indian, and Japanese.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "Although in the end, Krushchev sent in tanks to restore order, he did give way to some economic demands and agreed to appoint the popular Wladyslaw Gomulka as the new prime minister.",
+    "seg_text": "Although in the end, <SEG:2> Krushchev sent in tanks <SEG:5> to restore order, <SEG:1> he did give <SEG:6> way to some economic demands <SEG:4> and agreed to appoint the popular Wladyslaw Gomulka <SEG:3> as the new prime minister.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Only the effects of catastrophizing, not depression and fear was conditional of regular weekly structured PA sessions.",
+    "seg_text": "Only the effects of catastrophizing, <SEG:2> not depression and fear was conditional <SEG:1> of regular weekly structured PA sessions.",
+    "first_pass": true
+  }
+]

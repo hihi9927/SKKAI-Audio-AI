@@ -1,0 +1,29 @@
+[min_gap] fleurs-en-multi: 2.51word/초 × 1200ms → --min-gap 3  (출처 alignment:fleurs_nway_en-de_multi_loop405_unittimes.json)
+[grid] min_gap=3 에서 유도: --t-grid [4, 6, 12] --final-t-grid [4, 6, 8, 12]  (도달 가능한 최소 조각 ≈ 3.9단위, 그 아래 T 는 포화한다)
+[data] fleurs-en-multi: 전체 405, train 40 / dev 265 / test 100
+Traceback (most recent call last):
+  File "/home/mobility/STiTy/core/meaning_segmentator/autoseg/loop.py", line 1220, in main
+    profile = profiler.profile(samples, pair_tgt)
+  File "/home/mobility/STiTy/core/meaning_segmentator/autoseg/agents.py", line 495, in profile
+    return self.gw.chat_json(profiler_system(tgt), user,
+  File "/home/mobility/STiTy/core/meaning_segmentator/autoseg/gateway.py", line 419, in chat_json
+    raw = self.chat(system, user, **{**kw, "json_mode": True})
+  File "/home/mobility/STiTy/core/meaning_segmentator/autoseg/gateway.py", line 397, in chat
+    payload = self._post("/chat/completions", body, purpose)
+  File "/home/mobility/STiTy/core/meaning_segmentator/autoseg/gateway.py", line 331, in _post
+    raise RuntimeError(f"게이트웨이 호출 실패({self.max_retries}회 재시도): {last_err}")
+RuntimeError: 게이트웨이 호출 실패(5회 재시도): Client error '400 Bad Request' for url 'https://gw.letsur.ai/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/usr/lib/python3.10/runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+  File "/home/mobility/STiTy/core/meaning_segmentator/autoseg/loop.py", line 2292, in <module>
+    sys.exit(main())
+  File "/home/mobility/STiTy/core/meaning_segmentator/autoseg/loop.py", line 2111, in main
+    tr_cache.flush()
+UnboundLocalError: local variable 'tr_cache' referenced before assignment

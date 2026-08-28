@@ -39,7 +39,7 @@ import json
 import statistics
 import sys
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
@@ -88,6 +88,20 @@ def capture_fd_stdout():
             sink[0] = tmp.read().decode("utf-8", "replace")
 
 
+def _stat(xs: List[float]) -> Optional[dict]:
+    """FTL 요약. 평균·중앙·p90·음수 개수를 한 벌로 낸다."""
+    if not xs:
+        return None
+    ys = sorted(xs)
+    return {
+        "mean": round(statistics.mean(ys), 4),
+        "median": round(statistics.median(ys), 4),
+        "p90": round(ys[min(len(ys) - 1, int(len(ys) * 0.9))], 4),
+        "n": len(ys),
+        "n_negative": sum(1 for x in ys if x < 0),
+    }
+
+
 def load_manifest(path: Path) -> Dict[str, dict]:
     out = {}
     with path.open(encoding="utf-8") as f:
@@ -134,6 +148,8 @@ def score_one(run_dir: Path, manifest: Dict[str, dict], lang: str,
         print(f"   [주의] server_config 없음(구버전 런) — 축 교차검증 생략: {run_dir.name}")
 
     reseg_pairs, per_sentence = [], []
+    ftl: List[float] = []
+    ftl_ca: List[float] = []
     diag_total = Diagnostics()
     as_wers, n_null, n_ref_total = [], 0, 0
     n_neg = 0
@@ -178,6 +194,12 @@ def score_one(run_dir: Path, manifest: Dict[str, dict], lang: str,
                 n_null += 1
             else:
                 n_neg += sum(1 for x in h.ideal_delays if x - r.start_time < 0)
+                # 문장 단위 FTL — 그 문장의 **첫 글자**가 나오기까지 걸린 시간.
+                # 발표 단위 FTL(클라이언트가 재는 값)은 12분 발화의 첫 커밋 하나만
+                # 보므로 발표당 표본이 1개다(5발표 → 5표본). 축 비교에 못 쓴다.
+                # 여기 값은 StreamLAAL 이 평균 내는 재료의 **첫 항**과 같다.
+                ftl.append(h.ideal_delays[0] - r.start_time)
+                ftl_ca.append(h.computational_aware_delays[0] - r.start_time)
             reseg_pairs.append({"utt_id": row["utt_id"], "seg_id": s["seg_id"],
                                 "src": s["src"], "ref": r.content, "hyp": h.final_text})
             per_sentence.append({"seg_id": s["seg_id"], "n_units": len(h.ideal_delays)})
@@ -218,6 +240,12 @@ def score_one(run_dir: Path, manifest: Dict[str, dict], lang: str,
         "stream_laal_null_penalized_sec": (
             round(penalized, 4) if penalized is not None else None),
         "null_penalty_sec": null_penalty_sec,
+        # 평균만 쓰면 seg 를 과대평가한다 — seg 는 대체로 빠르지만 SEG 가뭄에서
+        # 크게 늦는 꼬리가 있다(실측 dev/ja: 평균 2.99s 인데 p90 9.05s, static@6s 는
+        # 평균 3.17s / p90 6.21s). p90 을 반드시 함께 보고할 것.
+        # 음수 FTL 은 자르지 않는다 — 자르면 재분절 오배정이 정시로 위장된다.
+        "ftl_sec": _stat(ftl),
+        "ftl_ca_sec": _stat(ftl_ca),
         "bleu": round(bs.score, 2),
         "bleu_signature": str(bleu.get_signature()),
         "n_talks": len(metric["rows"]),
@@ -270,6 +298,11 @@ def main() -> int:
             dg = r["diagnostics"]
             print(f"   StreamLAAL {r['stream_laal_sec']:7.3f}s  "
                   f"CA {r['stream_laal_ca_sec']:7.3f}s  BLEU {r['bleu']:5.2f}")
+            if r["ftl_sec"]:
+                f_, fc = r["ftl_sec"], r["ftl_ca_sec"]
+                print(f"   FTL 평균 {f_['mean']:.3f}s 중앙 {f_['median']:.3f}s "
+                      f"p90 {f_['p90']:.3f}s 음수 {f_['n_negative']}/{f_['n']} | "
+                      f"CA 평균 {fc['mean']:.3f}s p90 {fc['p90']:.3f}s")
             print(f"   null {r['n_null_sentences']}/{r['n_ref_sentences']} "
                   f"({r['null_rate']*100:.1f}%) → 벌점판 "
                   f"{r['stream_laal_null_penalized_sec']}s")
