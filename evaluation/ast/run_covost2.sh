@@ -31,6 +31,13 @@ REPO="/home/mobility/STiTy"
 PY="$REPO/.venv/bin/python"
 STOP="$REPO/evaluation/LibriSpeech/paper_result/ASR/scripts/stop_server.sh"
 PORT=8765
+# **GPU 점유 상한.** vLLM 기본 0.8 은 24GB 카드에서 19.2GB 를 선점한다 — 1.7B 모델이
+# 실제로 쓰는 양이 아니라 "남는 걸 다 잡아두는" 설계다. 2026-08-28 00:21 에 이것 때문에
+# 같은 카드에서 돌던 autoseg 루프(CometKiwi+NLI, 4.1GB)가 CUDA OOM 으로 죽었다
+# (EngineCore pid 149462 가 19.28GiB 점유, 여유 9.5MiB). 다른 트랙들은 이미 0.6~0.65 를
+# 쓴다. 0.5 면 12GB 로 이 모델엔 충분하고 나머지 12GB 를 비워 둔다.
+# 카드를 혼자 쓸 때는 `GPU_UTIL=0.8` 로 올리면 된다.
+GPU_UTIL="${GPU_UTIL:-0.5}"
 MODEL="$REPO/models/Qwen3-ASR-1.7B-en-dailytalk-seg"
 
 LIMIT="${1:-}"
@@ -79,6 +86,7 @@ run_axis() {
   "$PY" "$REPO/evaluation/streaming_websocket_server_ast.py" \
       --model "$MODEL" --no-vad --chunk-size "$CHUNK" \
       --port "$PORT" --no-idle-shutdown \
+      --gpu-memory-utilization "$GPU_UTIL" \
       --trans-backend v2 \
       --trans-stats-out "$LOGDIR/${label}_trans_stats.json" \
       "${server_args[@]}" > "$slog" 2>&1 &
