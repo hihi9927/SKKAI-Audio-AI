@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import re
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 
 from . import metrics as _metrics
@@ -607,7 +608,7 @@ def _interleave(a: list[dict], b: list[dict]):
 
 
 def judge_top_contra(judge: Judge, rows: list[dict], T: int,
-                     max_boundaries: int = 8) -> list[dict]:
+                     max_boundaries: int = 8, workers: int = 8) -> list[dict]:
     """**모순이 가장 크게 잡힌 경계**만 판정한다. 점수는 내지 않는다 — 설명만 낸다.
 
     종전에는 문장 8개를 뽑아 그 안의 **모든** 경계를 판정하고, 결과로 `premature_rate`
@@ -641,17 +642,27 @@ def judge_top_contra(judge: Judge, rows: list[dict], T: int,
             if pc[b] is not None:
                 cand.append((pc[b], r, b))
     cand.sort(key=lambda x: -x[0])
-    out: list[dict] = []
-    for contra, r, b in cand[:max_boundaries]:
+    picked = cand[:max_boundaries]
+
+    # **판정은 병렬로 던진다.** 종전에는 for 루프라 직렬이었다 — run07 실측에서 판정
+    # 단계가 이터당 495~759초였는데, 호출 1건은 6.4초(LangSmith 중앙)다. 즉 시간의
+    # 대부분이 대기였다. 판정끼리는 서로 독립이므로 겹쳐 던지면 그만큼 그대로 준다.
+    # 순서는 유지한다 — `executor.map` 은 입력 순서대로 돌려주므로 모순 큰 것부터다.
+    def one(item):
+        contra, r, b = item
         d = r["by_T"][str(T)]
         try:
             v = judge.judge(r["text"], r.get("full_trans") or "",
                             d["pieces_src"], d["pieces_tgt"], b)
         except Exception as e:                      # 판정 실패로 루프를 죽이지 않는다
             v = {"verdict": "error", "conflict": str(e)[:200]}
-        out.append({"id": r["id"], "boundary": b, "contradiction": round(contra, 4),
-                    "seg_text": d["seg_text"], **v})
-    return out
+        return {"id": r["id"], "boundary": b, "contradiction": round(contra, 4),
+                "seg_text": d["seg_text"], **v}
+
+    if not picked:
+        return []
+    with ThreadPoolExecutor(max_workers=max(1, min(workers, len(picked)))) as ex:
+        return list(ex.map(one, picked))
 
 
 # ── A8 Critic ────────────────────────────────────────────────────────────

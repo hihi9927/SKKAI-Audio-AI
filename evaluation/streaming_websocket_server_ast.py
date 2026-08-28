@@ -413,8 +413,127 @@ class ASTStreamingServer(fsl_server.FSLStreamingServer):
         logger.info("[AST-HIDE-SEG] static/punct 축 — 파싱 단계에서 `<SEG>` 제거 "
                     "(생성·디코딩은 그대로, 모듈=%s)", mod.__name__)
 
+    # ── 상한 도달 시 한시 prefix 굳힘 ─────────────────────────────────────────
+    # 기본은 **꺼짐**. `AST_CAP_FREEZE=1` 로 띄울 때만 설치된다. 끄면 base 와 바이트
+    # 단위로 같은 동작이므로, 롤백은 환경변수를 빼는 것으로 끝난다.
+    def _ast_install_cap_freeze(self) -> None:
+        """`gen_text` 가 `max_new_tokens` 에서 잘리면 그 청크부터 prefix 를 굴려 굳힌다.
+
+        무엇이 문제인가
+        ---------------
+        서버는 **마지막 `<SEG>` 까지만** prefix 로 굳히고 그 뒤는 매 청크 통째로 다시
+        생성한다(`_build_streaming_prefix`). 커밋이 멈추면 그 재생성 구간이 초당 약
+        3토큰씩 자라고, 약 43초면 `max_new_tokens=128` 에 닿아 문장 중간에서 잘린다.
+
+        잘리는 위치가 **텍스트 기준**이라 시간이 지나도 같은 자리에서 시작해 같은
+        128토큰을 만들고 같은 자리에서 잘린다. 그 뒤에 있을 `<SEG>` 는 생성 자체가
+        되지 않으므로 커밋이 영원히 안 난다 — 빠져나올 수 없는 고리다.
+
+        실측(ACL 60/60 dev, talk 2022.acl-long.110, seg 축, de/ja/zh + 단독 재현 4회 동일):
+        492.4초에 마지막 커밋 → 130청크 연속 **완전히 같은 656자**(=128토큰) 반복 →
+        703초짜리 발표의 뒤 210.6초가 통째로 유실. 다른 4개 발표의 최대 커밋 공백은
+        31.6초이고 40초를 넘긴 적이 없다.
+
+        무엇을 하나
+        -----------
+        잘렸다는 사실은 추측이 아니라 확정 신호다 — `state._last_chunk_new_tokens` 가
+        상한과 같으면 생성이 예산에서 끊긴 것이다. 그 시점부터 **한시 모드**로 들어가,
+        매 청크 `end_idx = len(cur_ids) - unfixed_token_num` 로 커서를 굴린다. 즉 마지막
+        몇 토큰만 수정 여지로 남기고 나머지는 모델이 다시 만들지 않는다. 재생성 구간이
+        작게 유지되므로 상한에 닿지 않고, `<SEG>` 가 나올 수 있는 자리까지 도달한다.
+
+        **커밋 정책은 건드리지 않는다.** 여기서 바뀌는 것은 모델이 다시 만들지 않는
+        범위(`_prefix_end_idx`)뿐이고, 클라이언트로 나가는 기준(`committed_display`)은
+        그대로다. `final` 은 여전히 `<SEG>` 에서만 나간다. 그래서 이 수정 뒤에 나온
+        숫자는 "정책을 바꾼 결과" 가 아니라 **seg 정책의 정직한 성능**이다.
+
+        한 번 굳히고 끝내면 안 된다 — 다음 청크부터 다시 자라 몇 십 초 뒤 또 터진다.
+        커서가 **매 청크 따라와야** 재생성 구간이 계속 작다.
+
+        해제 조건
+        ---------
+        정상 로직(마지막 `<SEG>` 기준)이 내는 재생성 구간이 상한의 절반 밑으로 내려오면
+        해제한다. 한시 모드 중에는 마지막 `<SEG>` 가 안 움직이므로 이 값이 계속 크고,
+        `<SEG>` 가 나와 끝 근처를 가리키는 순간에만 작아진다. 슬롯이 리셋되면 state 가
+        새로 생겨 플래그가 사라지므로 그 경로로도 자동 해제된다.
+
+        대가
+        ----
+        굳은 구간은 모델이 **수정할 수 없다.** 잘못 들은 게 있으면 그대로 간다. 다만
+        지금은 잘린 채 영구히 굳으므로 더 나빠지지는 않는다. 그래도 추론 경로 수정이라
+        전사 품질이 떨어질 수 있으니 발동한 발표와 안 한 발표를 함께 재서 확인할 것.
+
+        이 수정은 오디오 누적을 막지 않는다. `MAX_AUDIO_ACCUM_SEC=90` 안전판이
+        `if any_commit:` 안에 갇혀 커밋이 없으면 발동하지 않는 문제는 **여기서 고치지
+        않는다**(별건). 그래서 한시 모드 중 오디오는 계속 늘고, prefix 창이
+        `MAX_STREAMING_PREFIX_TOKENS=96` 로 묶여 있어 오디오가 길어질수록 모델이
+        "어디서 이어야 하는지" 를 찾기 어려워진다. `[CAP-FREEZE]` 지속 청크 수를
+        반드시 함께 볼 것.
+        """
+        if os.environ.get("AST_CAP_FREEZE") != "1":
+            return
+        mod = sys.modules.get(type(self.asr).__module__)
+        cls = type(self.asr)
+        if mod is None or getattr(cls, "_ast_cap_freeze_installed", False):
+            return
+        orig = getattr(cls, "_build_streaming_prefix", None)
+        max_prefix = getattr(mod, "MAX_STREAMING_PREFIX_TOKENS", 96)
+        if orig is None:
+            logger.error("[CAP-FREEZE] _build_streaming_prefix 를 찾지 못했습니다 — 설치 취소")
+            return
+
+        exit_ratio = float(os.environ.get("AST_CAP_FREEZE_EXIT_RATIO", "0.5"))
+
+        def _patched(model_self, state):
+            prefix = orig(model_self, state)
+            cap = getattr(getattr(model_self, "sampling_params", None), "max_tokens", 0) or 0
+            frozen = getattr(state, "_ast_cap_frozen", False)
+            last_new = getattr(state, "_last_chunk_new_tokens", 0) or 0
+            # 평소 경로는 추가 비용 0 — 토크나이즈도 하지 않고 그대로 돌려준다.
+            if not cap or (not frozen and last_new < cap):
+                return prefix
+
+            tok = model_self.processor.tokenizer
+            cur_ids = tok.encode(state._raw_decoded)
+            end_idx = state._prefix_end_idx
+            regen = len(cur_ids) - end_idx
+
+            if frozen and regen <= cap * exit_ratio:
+                state._ast_cap_frozen = False
+                logger.info("[CAP-FREEZE] 해제 — 지속 %d청크, 재생성 %d토큰",
+                            getattr(state, "_ast_cap_freeze_chunks", 0), regen)
+                return prefix
+
+            if not frozen:
+                state._ast_cap_frozen = True
+                state._ast_cap_freeze_chunks = 0
+                logger.info("[CAP-FREEZE] 진입 — 생성 %d토큰이 상한 %d 에서 잘림, 재생성 %d토큰",
+                            last_new, cap, regen)
+            state._ast_cap_freeze_chunks = getattr(state, "_ast_cap_freeze_chunks", 0) + 1
+
+            # 마지막 몇 토큰만 수정 여지로 남기고 굳힌다. `_init_forced_reset_slot` 이
+            # unfixed_token_num 을 0 으로 두는 경로가 있어 최소 1 은 남겨야 한다 —
+            # 0 이면 재생성 구간이 없어져 모델이 아무것도 못 내놓는다.
+            keep = max(1, int(getattr(state, "unfixed_token_num", 5) or 0))
+            new_end = max(end_idx, len(cur_ids) - keep)
+            if new_end <= end_idx:
+                return prefix
+            start = max(0, new_end - max_prefix)
+            frozen_prefix = tok.decode(cur_ids[start:new_end]) if new_end > start else ""
+            if "\ufffd" in frozen_prefix:
+                # 토큰 경계가 문자 중간을 갈랐다. 이번 청크는 원래 동작으로 넘긴다.
+                return prefix
+            state._prefix_end_idx = new_end
+            return frozen_prefix
+
+        cls._build_streaming_prefix = _patched
+        cls._ast_cap_freeze_installed = True
+        logger.info("[CAP-FREEZE] 설치됨 — 상한 도달 시 prefix 굴림 (해제비율 %.2f, "
+                    "prefix창 %d토큰). 커밋 정책은 불변.", exit_ratio, max_prefix)
+
     async def handle_connection(self, websocket):
         self._ast_hide_seg_token()
+        self._ast_install_cap_freeze()
         async with self.connection_lock:
             self.active_connections += 1
             if self.idle_task and not self.idle_task.done():

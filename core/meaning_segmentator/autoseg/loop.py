@@ -204,7 +204,8 @@ class StageTimer:
             pass
 
 
-def judge_distributed(judge, per_rows: dict[str, list[dict]], T: int, frac: float):
+def judge_distributed(judge, per_rows: dict[str, list[dict]], T: int, frac: float,
+                      workers: int = 8):
     """타깃마다 **자기 경계의 `frac` 비율**을 판정한다.
 
     한 타깃에만 판정자를 돌리면 목적함수에서 뺀 타깃 편향이 Critic 케이스 선정으로
@@ -223,7 +224,8 @@ def judge_distributed(judge, per_rows: dict[str, list[dict]], T: int, frac: floa
             d = (r.get("by_T", {}) or {}).get(str(T)) or {}
             ps = d.get("pieces_tgt") or []
             n += max(0, len(ps) - 1)
-        js = agents.judge_top_contra(judge, rows, T, max(1, int(n * frac + 0.5)))
+        js = agents.judge_top_contra(judge, rows, T, max(1, int(n * frac + 0.5)),
+                                     workers=workers)
         for j in js:
             j["target"] = t
         out.extend(js)
@@ -1573,7 +1575,7 @@ def main() -> int:
             if judge is not None and m.by_T:
                 judgements = judge_distributed(
                     judge, getattr(run_eval, 'last_per_rows', {'_': rows}),
-                    main_t, args.judge_frac)
+                    main_t, args.judge_frac, workers=args.workers)
                 (it_dir / "judgements.json").write_text(
                     json.dumps(judgements, ensure_ascii=False, indent=2), encoding="utf-8")
 
