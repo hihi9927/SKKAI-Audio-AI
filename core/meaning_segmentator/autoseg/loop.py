@@ -1,7 +1,7 @@
 """A11 Loop Controller — 결정론적 오케스트레이터.
 
 LLM 판단은 없다. 실행 순서, 채택/롤백, 예산, 중단 조건만 관리한다.
-설계는 `../AUTO_PROMPT_LOOP_DESIGN.md`.
+설계는 `AUTOSEG_SIMPLIFY.md`, 그 근거는 `AUTOSEG_DETAILS.md`.
 
   python -m core.meaning_segmentator.autoseg.loop \
       --dataset kspon --src-lang Korean --tgt-lang English \
@@ -662,7 +662,7 @@ def load_contra_floor(run_dir, rows: list[dict], backend,
     반환: `floor_fn(hyp_words) -> c0`. 잴 수 없으면 None (보정 없이 raw 로 진행).
 
     `filename` 은 타깃 언어마다 바닥이 다르기 때문에 있다 — full 번역이 달라지면
-    바닥도 달라진다 (`multilingual_check.py`).
+    바닥도 달라진다.
     """
     if backend is None:
         return None
@@ -763,7 +763,7 @@ MARK_SPACING_RATIO = 1.25
 # (FLEURS loop240, 발화 구간 기준. `data.units_per_sec` 참고):
 #     de 3어절 / 2.43 = 1.23초    zh 6자 / 4.74 = 1.27초
 #     ja 8자  / 5.77 = 1.39초    en 3어절 / 2.88 = 1.04초
-# 산포가 토큰 축 2.7배 -> 시간 축 1.12배로 준다. `TIME_AXIS_KNOB.md` §3 이 예고한
+# 산포가 토큰 축 2.7배 -> 시간 축 1.12배로 준다. 시간 축 재정의가 예고한
 # "r=0.15 는 시간 불변성을 토큰 축에서 재구성한 것" 이 수치로 확인된 셈이다.
 #
 # **1200ms 는 지연 요건에서 나온다 — 지각 하한이 아니다.**
@@ -791,7 +791,7 @@ MARK_SPACING_RATIO = 1.25
 # 되어 **네 점 중 둘이 수용 한계 3.5초 밖**이다. 빠른 구간을 못 재게 된다.
 #
 # **시간이 프롬프트에 도달하지는 않는다.** 분절기는 텍스트 모델이라 "1.3초마다 표시"를
-# 못 알아듣는다(TIME_AXIS_KNOB.md §4.2). 환산은 여기서 끝나고 아래로는 전부 토큰
+# 못 알아듣는다. 환산은 여기서 끝나고 아래로는 전부 토큰
 # 단위로 흐른다 — 프롬프트 문면도 검증기도 절단기도 종전과 같다.
 MIN_GAP_MS = 1200
 
@@ -1109,7 +1109,7 @@ def main() -> int:
     #
     # **사용자가 준 `--t-grid` 는 따라가지 않는다.** 격자를 크게 주면 마킹 요건이
     # 같이 느슨해지는데, 밀도는 지금까지 확인된 유일한 품질 레버다
-    # (밀도 0.348 -> 0.529 에서 T=6 품질 +0.013, docs/RANK_METRIC_DIAGNOSIS.md §8.1).
+    # (밀도 0.348 -> 0.529 에서 T=6 품질 +0.013. AUTOSEG_DETAILS.md '순위 축 진단').
     if args.t_floor:
         t_floor = args.t_floor
     elif args.min_gap <= 0:
@@ -1490,7 +1490,26 @@ def main() -> int:
                 return 2
             history = json.loads(hist_path.read_text(encoding="utf-8"))
             start_it = len(history)
-            prompt = best["prompt"] = best_path.read_text(encoding="utf-8")
+            best["prompt"] = best_path.read_text(encoding="utf-8")
+            # **평가할 프롬프트는 best 가 아니라 "대기 중인 개정본"이다.** 정상 흐름에서
+            # iter N 이 재는 것은 iter N-1 이 만든 개정본이고, best 는 비교 기준일 뿐이다.
+            # 종전 재개는 `prompt = best` 로 놓아 그 개정본을 버렸다 — run07 iter2 가
+            # v0 를 v0 와 비교해 Δ 정확히 0 / 변경 0문장이 됐고, 근거 없이 오른 stale 이
+            # patience 조기 종료를 앞당겼다 (6이터 예정 → 4이터).
+            #
+            # 두 곳을 본다. 이터 **도중** 크래시면 `iter_NN/prompt.txt` 가 이미 있고,
+            # 이터 **사이** 크래시면 `next_prompt.txt` 만 있다.
+            pending = run_dir / f"iter_{start_it:02d}" / "prompt.txt"
+            nxt = run_dir / "next_prompt.txt"
+            if pending.exists():
+                prompt = pending.read_text(encoding="utf-8")
+                src_ = f"iter_{start_it:02d}/prompt.txt"
+            elif nxt.exists():
+                prompt = nxt.read_text(encoding="utf-8")
+                src_ = "next_prompt.txt"
+            else:
+                prompt = best["prompt"]
+                src_ = "best_prompt.txt (대기 개정본 없음)"
             done = [h for h in history if h.get("adopted")]
             if done:
                 last = done[-1]
@@ -1516,6 +1535,9 @@ def main() -> int:
                     "쌍체 Δ 없이 점수 비교로 판정한다")
             log(f"[resume] iter {start_it} 부터 재개. best=v{best['version']} "
                 f"dev={best['dev_score']} stale={stale} 이력 {len(history)}건")
+            log(f"[resume] 평가할 프롬프트 {len(prompt)}자 <- {src_}"
+                + ("  (best 와 동일 — 개정본을 잃었다)"
+                   if prompt == best["prompt"] and pending.exists() else ""))
             if start_it >= args.iterations:
                 log(f"[resume] 이미 {start_it}회 돌았다 (--iterations {args.iterations}) — "
                     f"최종 평가로 넘어간다")
@@ -1924,6 +1946,11 @@ def main() -> int:
                 # 채택 여부와 무관하게 "직전에 무엇을 건드렸나" 를 기억한다. 채택되면
                 # stale 이 0 으로 돌아가 avoid 가 안 걸리므로, 실제로 쓰이는 건 실패했을
                 # 때뿐이다.
+                # **다음 이터가 평가할 프롬프트를 디스크에 남긴다.** `--resume` 은 이걸
+                # 읽어야 한다 — 안 그러면 iter N-1 이 만든 개정본을 잃고 best 를 다시
+                # 평가하게 된다 (run07 iter2 실측: v0 를 v0 와 비교해 Δ 정확히 0,
+                # 변경 0/265, stale 만 근거 없이 올라 조기 종료를 앞당겼다).
+                (run_dir / "next_prompt.txt").write_text(prompt, encoding="utf-8")
                 last_sections = ", ".join(sections_changed) if sections_changed else None
                 _rep = revised.get("sections_changed") or []
                 log(f"[iter {it}] 개정: {sections_changed}"

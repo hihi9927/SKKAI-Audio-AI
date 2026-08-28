@@ -649,7 +649,7 @@ def validate(sent_id: str, original: str, seg_text: str, spaced: bool,
     #
     # **부분 순위는 기각됐다** — 상위 N 개만 번호를 요구해 사고량을
     # 아끼려 했으나, 정렬 생략은 평가 생략이 아니라 사고가 오히려 +17% 늘었다
-    # (docs/RANK_METRIC_DIAGNOSIS.md §8.3). 배선은 본 루프에서 한 번도 켜진 적이 없어
+    # (AUTOSEG_DETAILS.md '순위 축 진단'). 배선은 본 루프에서 한 번도 켜진 적이 없어
     # 지웠다. 되살리려면 그 절을 먼저 읽을 것.
     if require_priority and tags:
         if any(m.group(1) is None for m in tags):
@@ -981,7 +981,7 @@ def parse_translator_id(tr_id: str, fallback_code: str) -> tuple[str | None, str
 
     구형을 gtx 로 읽는 것이 중요하다 — 기본값(키 있으면 v2)으로 읽으면 그 런의 캐시를
     통째로 놓치고, 더 나쁘게는 **다른 번역기로 잰 점수를 같은 축으로 착각한다**.
-    파싱이 `eval_prompt` 와 `metric_probes/rank_ablation` 에 복제돼 있던 것을 합쳤다.
+    파싱이 `eval_prompt` 에 복제돼 있던 것을 합쳤다.
     """
     if not tr_id.startswith("google:"):
         return None, fallback_code, True          # 백엔드는 호출자/기본값에 맡긴다

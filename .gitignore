@@ -198,8 +198,6 @@ Qwen3-ASR/finetuning/merged-en-dailytalk-t2-ck320/
 # autoseg 루프 산출물 (프롬프트/리포트만 추적, 캐시·중간 rows 제외)
 core/meaning_segmentator/runs/**/cache/
 core/meaning_segmentator/runs/**/*_rows.json
-# metric_probes 의 번역 캐시 — 재생성 가능하고 gtx 응답이라 커밋하지 않는다
-core/meaning_segmentator/metric_probes/runs/**/*_cache.json
 # 경계별 판정 원본. 리포트(final_report.md)와 curve.json 만 추적한다
 core/meaning_segmentator/runs/**/judgements.json
 core/meaning_segmentator/runs/**/test_judgements.json

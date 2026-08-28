@@ -93,7 +93,7 @@ _COVERAGE_RULE = (
 # 순위 1.92 -> 2.98). 그래서 **간격을 마킹 시점에 지키게** 한다.
 #
 # 문면만으로는 안 움직인다 — 밀도를 문면으로 시킨 `dense` 변종이 0.354 로 사실상
-# 불변이었다 (docs/RANK_METRIC_DIAGNOSIS.md §8.1). 그래서 강제는 문면이 아니라
+# 불변이었다 (AUTOSEG_DETAILS.md '순위 축 진단'). 그래서 강제는 문면이 아니라
 # `normalize_tags(min_gap=)` 가 한다 — 너무 가까운 태그를 결정론으로 쳐낸다.
 _GAP_RULE = (
     "- Leave AT LEAST {gap} {unit} between any two tags, and the same distance between a tag\n"
@@ -821,7 +821,7 @@ class Critic:
 # 이라 "순위가 **해롭다**는 증거"를 요구했다. 그런데 잡고 싶은 상태는 "이득이 없다"이지
 # "해롭다"가 아니다 — 그래서 순위가 정말 무가치할 때조차 다섯 번에 한 번밖에 안 울렸다.
 #
-# 문턱은 실측 발화율로 잡았다 (metric_probes/runs/rank_ablation/, 두 언어쌍 × 최대 T):
+# 문턱은 실측 발화율로 잡았다 (순위 셔플 대조, 두 언어쌍 × 최대 T):
 #   순위가 값을 하는 상태(real vs 셔플)에서 오작동  0/40
 #   순위가 무가치한 상태(셔플 vs 셔플, 참값 0)에서 검출  156/190, 164/190 (82~86%)
 # 상수 1.0 은 종전 `RANK_GAP_SE_MULT` 를 그대로 옮긴 것이라 새로 생긴 임의 상수가 아니다.
@@ -850,7 +850,7 @@ def summarize_critique(cases: list[dict], metrics: dict, summary: str | None,
     (en-de run04 T=6 실측: 후보 15.4개 중 생존 2.7개, **결정의 82% 가 지표 밖**).
     실측에서 두 값은 어긋났다: 순위를 섞으면 effective 가 0.024~0.061 떨어지는데
     (20/20 셔플 완승, 순열 p=0.048) `rank_contra_gap` 은 en-de 에서 오히려 무작위보다
-    낮게 나왔다. 근거: `../metric_probes/runs/rank_ablation/`, `docs/RANK_METRIC_DIAGNOSIS.md`.
+    낮게 나왔다. 근거: `AUTOSEG_DETAILS.md` '순위 축 진단'.
     """
     counts: dict[str, int] = {}
     for c in cases:

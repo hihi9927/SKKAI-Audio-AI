@@ -1,6 +1,6 @@
 """A6 Scorer — 결정론적.
 
-설계 (`../AUTO_PROMPT_LOOP_DESIGN.md`). 축이 세 개다.
+설계는 `AUTOSEG_SIMPLIFY.md`, 지표 선택의 근거는 `AUTOSEG_DETAILS.md`. 축이 세 개다.
 
   format_pass_rate — 포맷 검증 통과율. 1.0 미만이면 그 프롬프트는 탈락. 하드 게이트.
   adequacy         — QE(조각 원문, 조각 번역). **참조가 없다.** y축 주지표.
@@ -248,7 +248,7 @@ def make_adequacy_backend(name: str, **kw) -> AdequacyBackend:
 # offline 번역에서 멀어진다고 나온다 — 물리적으로 불가능). 같은 데이터에서 comet·chrf 는
 # 5/5 정상 방향이라 NLI 쪽 결함이었다. 영어 전용 `deberta-large-mnli` 는 분리가 가장
 # 깨끗하지만 비영어 타깃에서 무음으로 틀린 값을 준다.
-# 후보 비교 기록: ../NLI_ALTERNATIVES.md, docs/RANK_METRIC_DIAGNOSIS.md
+# 후보 비교 기록: AUTOSEG_DETAILS.md '검토했으나 채택하지 않은 것'
 NLI_MODEL = "vicgalle/xlm-roberta-large-xnli-anli"
 
 
@@ -531,7 +531,7 @@ class Metrics:
     # 직접 측정이다. 폐기된 경계는 렌더링이 없어 contra 값 자체가 없으므로
     # `rank_contra_gap`(생존 경계끼리의 순서)으로는 원리적으로 못 보는 양이다.
     #
-    # 실측 (metric_probes/runs/rank_ablation/, en-de run04 + ko-en run05, 셔플 20회):
+    # 실측 (순위 셔플 대조, en-de run04 + ko-en run05, 셔플 20회):
     #   폐기율 64% → lift +0.024,  82% → +0.050,  85% → +0.056,  93% → +0.061
     #   real 이 20/20 셔플을 이겼고(순열 p=0.048), 같은 조건에서 `rank_contra_gap` 은
     #   en-de 에서 오히려 무작위보다 낮게(z −0.6, −1.1) 나왔다 — 부호가 언어쌍마다 뒤집힌다.

@@ -5,7 +5,8 @@
 (분절 프롬프트 평가 등)에는 쓸 수 없다. 이 스크립트는 FLEURS 가 n-way 병렬이라는
 성질만 이용해 **소스 문장 id 교집합**을 잡고 타깃별 참조를 붙인다.
 
-기본 동작은 `core/meaning_segmentator/BLEU_COMPARISON_PLAN.md` 의 설계를 그대로 따른다.
+기본 동작은 `core/meaning_segmentator/autoseg/AUTOSEG_DETAILS.md` 의
+'참조 기반 평가 프로토콜' 을 그대로 따른다.
 
   - 소스 en_us, 타깃 de/ja/zh 의 **4언어 교집합**만 남긴다 (타깃별 n 이 같아야
     언어 간 비교가 문장 차이와 섞이지 않는다).

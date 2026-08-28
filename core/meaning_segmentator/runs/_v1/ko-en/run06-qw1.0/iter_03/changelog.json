@@ -1,8 +1,0 @@
-{
-  "sections_changed": [
-    "[When to Segment]"
-  ],
-  "changelog": [
-    "[When to Segment]: Added four narrowly-conditioned permissive rules targeting the five measured under-segmentation cases without touching any [Never Segment] restriction: (1) internal/mid-sentence '?' is now explicitly treated the same as terminal punctuation — always a valid, mandatory split point, not just when it ends the sentence; (2) a causal connective (-아서/-니까/-거든/-그래서) is now a valid split point even in short sentences whenever the following clause is an independent judgment/result that doesn't need the earlier clause's verb; (3) a contrastive connective (그런데/하지만) joining two already-complete clauses (each with its own resolved subject+predicate) is now a valid split point; (4) splitting immediately BEFORE a full condition+result '-면' unit is now explicit when the preceding material is already a complete, independently interpretable clause — this is compatible with the existing [Never Segment] ban, which only blocks splitting BETWEEN a condition and its own result, not before the whole unit. These are pure additions (no restrictions added, no existing rule narrowed), isolated to one section this iteration to cleanly measure their effect after the previous combined change (When to Segment + Never Segment) was rejected for dropping quality below the floor."
-  ]
-}
