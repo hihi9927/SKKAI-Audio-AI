@@ -1,0 +1,59 @@
+{
+  "source_language": "English",
+  "word_order": "SVO — subjects precede verbs and objects typically follow the verb in examples like “The game is based...”, “Police said they suspect an alleged...”, “Blood goes away from the heart...”",
+  "register": "Edited informational/encyclopedic prose (factual, formal, written; like encyclopedia or news-report style)",
+  "fillers_and_hesitations": [],
+  "discourse_markers": [
+    "and",
+    "but",
+    "although",
+    "when",
+    "as",
+    "because",
+    "such as",
+    "which",
+    "that",
+    "pending",
+    "seeing",
+    "especially",
+    "called",
+    "on"
+  ],
+  "clause_boundary_signals": [
+    "which",
+    "that",
+    "as",
+    "when",
+    "although",
+    "because",
+    "such as",
+    "pending",
+    "seeing",
+    "on"
+  ],
+  "non_boundary_traps": [
+    "called (appositive: 'towers, called ziggurats')",
+    "such as (introduces a following list)",
+    "and (within enumerations)",
+    "numeric expressions/dates (e.g. '1759', '9,000')",
+    "abbreviations/parenthetical acronyms (e.g. 'Daesh (ISIL)')"
+  ],
+  "unstable_prefix_signals": [
+    "which",
+    "that",
+    "as",
+    "when",
+    "because",
+    "for",
+    "in",
+    "on",
+    "with",
+    "to",
+    "pending",
+    "seeing",
+    "called",
+    "such as",
+    "especially"
+  ],
+  "notes_for_prompt_writer": "Prefer splitting at strong subordinators or full-clause introducers (e.g. 'which', 'although', 'because') but avoid finalizing a unit immediately after prepositions, subordinators or item-introducers ('in', 'on', 'with', 'such as', 'called', 'pending') because the following words commonly complete the clause. Treat enumerations and appositions as non-boundaries (do not emit a segment after 'such as', 'and' in lists, or 'called' in appositions). Be cautious with numbers/dates and parenthetical acronyms — they are often internal to a clause, not clause ends."
+}

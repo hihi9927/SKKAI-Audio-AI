@@ -1,0 +1,233 @@
+[
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 5개 필요",
+    "text": "Besides carrying three important scientific instruments, the lunar probe also carried the image of the Indian national flag, painted on all sides.",
+    "seg_text": "Besides carrying three important scientific instruments, <SEG:2> the lunar probe also carried the image <SEG:3> of the Indian national flag, <SEG:1> painted on all sides.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "The governor also stated, \"Today, we learned that some school aged children have been identified as having had contact with the patient.\"",
+    "seg_text": "The governor also stated, <SEG:2> \"Today, we learned <SEG:1> that some school aged children have been identified <SEG:3> as having had contact with the patient.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 5개 필요",
+    "text": "The governor also stated, \"Today, we learned that some school aged children have been identified as having had contact with the patient.\"",
+    "seg_text": "The governor also stated, <SEG:2> \"Today, we learned <SEG:1> that some school aged children have been identified <SEG:3> as having had contact with the patient.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "The outbreak has prompted the Indian government to undertake such measures as deployment of pig catchers in seriously affected areas, distributing thousands of mosquito curtains and spraying pesticides.",
+    "seg_text": "The outbreak has prompted the Indian government to undertake <SEG:2> such measures as deployment <SEG:3> of pig catchers <SEG:1> in seriously affected <SEG:4> areas, distributing thousands of mosquito curtains <SEG:5> and spraying pesticides.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "He originally named the Hangeul alphabet Hunmin Jeongeum, which means \"the correct sounds for the instruction of the people\".",
+    "seg_text": "He originally named <SEG:4> the Hangeul alphabet Hunmin Jeongeum, <SEG:1> which means \"the correct sounds\" <SEG:2> for the instruction <SEG:3> of the people.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Periodic rhythms, which are not simply responses to external periodic cues, have been documented for most living beings, including bacteria, fungi, plants, and animals.",
+    "seg_text": "Periodic rhythms, which are not simply responses to external <SEG:4> periodic cues, have <SEG:2> been documented for <SEG:3> most living beings, <SEG:1> including bacteria, fungi, plants, and animals.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "A person working in a garage near where the accident occurred said: \"There were children waiting to cross the road and they were all screaming and crying.\"",
+    "seg_text": "A person working in a garage <SEG:4> near where the accident occurred <SEG:1> said: \"There were children <SEG:3> waiting to cross the road <SEG:2> and they were all <SEG:5> screaming and crying.\"",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "Leslie Aun, a spokesperson for the Komen Foundation, said the organization adopted a new rule that does not allow grants or funding to be awarded to organizations that are under legal investigation.",
+    "seg_text": "Leslie Aun, a spokesperson <SEG:5> for the Komen Foundation, <SEG:3> said the organization <SEG:4> adopted a new rule <SEG:1> that does not allow grants or funding <SEG:6> to be awarded to organizations <SEG:2> that are under legal investigation.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Eventually, wooden wheels were replaced by iron wheels. In 1767, the first full-iron rails were introduced.",
+    "seg_text": "Eventually, wooden wheels were replaced <SEG:2> by iron wheels. <SEG:1> In 1767, the first full-iron rails were introduced.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 5개 필요",
+    "text": "Last month a presidential commission recommended the prior CEP's resignation as part of a package of measures to move the country towards new elections.",
+    "seg_text": "Last month a presidential commission recommended the prior CEP's resignation <SEG:1> as part of a package <SEG:2> of measures to move <SEG:3> the country towards new elections.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 6개 필요",
+    "text": "In the 16th century Paraguay, formerly called \"The Giant Province of the Indies\", was born as a result of the encounter of Spanish conquerors with the native indigenous groups.",
+    "seg_text": "In the 16th century Paraguay, <SEG:3> formerly called \"The Giant Province of the Indies\", was born <SEG:1> as a result <SEG:4> of the encounter <SEG:2> of Spanish conquerors with the native indigenous groups.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "The steel needle floats on top of the water because of surface tension.",
+    "seg_text": "The steel needle floats on top of the water <SEG:1> because of surface tension.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "The Sun doesn't have a crust like the Earth that you can stand on. The whole Sun is made out of gases, fire, and plasma.",
+    "seg_text": "The Sun doesn't have a crust like the Earth <SEG:3> that you can stand on. <SEG:1> The whole Sun is made out of gases <SEG:2> fire and plasma.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 5개 필요",
+    "text": "The Sun doesn't have a crust like the Earth that you can stand on. The whole Sun is made out of gases, fire, and plasma.",
+    "seg_text": "The Sun doesn't have a crust like the Earth <SEG:3> that you can stand on. <SEG:1> The whole Sun is made out of gases <SEG:2> fire and plasma.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "\"Based on this fossil, that means the split is much earlier than has been anticipated by the molecular evidence.",
+    "seg_text": "Based on this fossil, <SEG:1> that means the split <SEG:4> is much earlier <SEG:2> than has been anticipated <SEG:3> by the molecular evidence.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "However, a nationwide road network is not economically viable for just a handful of cars, so new methods of production are developed to reduce the cost of car ownership.",
+    "seg_text": "However, a nationwide road network <SEG:4> is not economically viable <SEG:1> for just a handful of cars, <SEG:2> so new methods of production <SEG:3> are developed to reduce the cost <SEG:5> of car ownership.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "The strain of bird flu lethal to humans, H5N1, has been confirmed to have infected a dead wild duck, found on Monday, in marshland near Lyon in the east of France.",
+    "seg_text": "The strain of bird flu <SEG:4> lethal to humans, H5N1, <SEG:2> has been confirmed to have infected <SEG:6> a dead wild duck, <SEG:1> found on Monday, <SEG:3> in marshland near Lyon <SEG:5> in the east of France.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 8개 필요",
+    "text": "Yesterday, the post office released their apology to citizens and the media after discovering that the boy had hidden more than 600 postal documents, including 429 New Year postcards, which weren't delivered to their intended recipients.",
+    "seg_text": "Yesterday, the post office <SEG:3> released their apology to citizens <SEG:4> and the media after discovering <SEG:1> that the boy had hidden <SEG:5> more than 600 postal documents, <SEG:2> including 429 New Year postcards, <SEG:6> which weren't delivered <SEG:7> to their intended recipients.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Danius said, \"Right now we are doing nothing. I have called and sent emails to his closest collaborator and received very friendly replies. For now, that is certainly enough.\"",
+    "seg_text": "Danius said, \"Right now we are doing nothing. <SEG:2> I have called <SEG:3> and sent emails <SEG:5> to his closest collaborator <SEG:4> and received very friendly replies. <SEG:1> For now, that <SEG:6> is certainly enough.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 10개 — 최소 11개 필요",
+    "text": "Police said Lo Piccolo had the upper hand because he had been Provenzano's right-hand man in Palermo and his greater experience won him the respect of the older generation of bosses as they pursued Provenzano's policy of keeping as low as possible while strengthening their power network.",
+    "seg_text": "Police said Lo Piccolo <SEG:5> had the upper hand <SEG:1> because he had been <SEG:6> Provenzano's right-hand man in <SEG:7> Palermo and his greater <SEG:8> experience won him the <SEG:9> respect of the older <SEG:10> generation of bosses <SEG:2> as they pursued <SEG:3> Provenzano's policy of keeping <SEG:4> as low as possible while strengthening their power network.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "The death toll is at least 15, a figure which is expected to rise.",
+    "seg_text": "The death toll is <SEG:2> at least 15, a figure <SEG:1> which is expected to rise.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "He even suggests that such abilities in interpreting human behavior may be shared by animals such as domestic dogs.",
+    "seg_text": "He even suggests <SEG:1> that such abilities in interpreting human behavior <SEG:2> may be shared <SEG:3> by animals such as domestic dogs.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "For example, “learning” and “socialization” are suggested as important motivations for Internet use (James et al., 1995).",
+    "seg_text": "For example, “learning” and “socialization” are <SEG:1> suggested as important motivations <SEG:2> for Internet use (James et al., 1995).",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "Bird flu, or more formally avian influenza, can infect both birds and mammals.",
+    "seg_text": "Bird flu, or more formally avian influenza, <SEG:1> can infect both birds and mammals.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "Jardín de la Unión. This space was built as the atrium for a 17th-century convent, of which the Templo de San Diego is the sole surviving building.",
+    "seg_text": "Jardín de la Unión. <SEG:1> This space was built <SEG:4> as the atrium <SEG:3> for a 17th-century convent, <SEG:2> of which the Templo de <SEG:5> San Diego is the sole surviving building.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "The 30-year-old husband, who was born in Buffalo, was one of the four killed in the shooting, but his wife was not hurt.",
+    "seg_text": "The 30-year-old husband, <SEG:1> who was born in Buffalo, <SEG:3> was one of the four <SEG:4> killed in the shooting, <SEG:2> his wife was not hurt.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "The 30-year-old husband, who was born in Buffalo, was one of the four killed in the shooting, but his wife was not hurt.",
+    "seg_text": "The 30-year-old husband, <SEG:1> who was born in Buffalo, <SEG:3> was one of the four <SEG:4> killed in the shooting, <SEG:2> his wife was not hurt.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "The sign was not physically damaged; the modification was done using black tarpaulins decorated with signs of peace and heart to alter the \"O\" to read lowercase \"e\".",
+    "seg_text": "The sign was not physically damaged; <SEG:1> the modification was done <SEG:3> using black tarpaulins <SEG:2> decorated with signs <SEG:4> of peace and heart <SEG:5> to alter the \"O\" to read lowercase \"e\".",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "There are also a few buses going north to Hebron, the traditional burial place of the Biblical patriarchs Abraham, Isaac, Jacob, and their wives.",
+    "seg_text": "There are also a few buses <SEG:2> going north to Hebron, <SEG:1> the traditional burial place <SEG:3> of the Biblical patriarchs Abraham, <SEG:4> Isaac, Jacob, and their wives.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 6개 필요",
+    "text": "Squash, karate and roller sports tried to get onto the Olympic program as well as baseball and softball, which were voted out of the Olympic Games in 2005.",
+    "seg_text": "Squash, karate and roller sports <SEG:3> tried to get onto the Olympic program <SEG:2> as well as baseball and softball, <SEG:1> which were voted out <SEG:4> of the Olympic Games in 2005.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "The AI ​​system is now often used in the fields of economics, medicine, engineering and the military, as has been built in several home computer and video game software applications.",
+    "seg_text": "The AI system <SEG:2> is now often used <SEG:3> in the fields <SEG:4> of economics, medicine <SEG:5> engineering and the military, <SEG:1> as has been built <SEG:6> in several home computer and <SEG:7> video game software applications.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 8개 필요",
+    "text": "When the capsule gets to Earth and enters the atmosphere, at about 5am (eastern time), it is expected to put on quite a light show for folks in Northern California, Oregon, Nevada, and Utah.",
+    "seg_text": "When the capsule gets to Earth <SEG:5> and enters the atmosphere, <SEG:1> at about 5am (eastern time), <SEG:2> it is expected <SEG:4> to put on <SEG:6> quite a light show <SEG:3> for folks in Northern <SEG:7> California, Oregon, Nevada, and Utah.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Visa requirements and costs vary from nation to nation and are affected by the country you come from.",
+    "seg_text": "Visa requirements and costs vary <SEG:1> from nation to nation <SEG:3> and are affected by the country <SEG:2> you come from.",
+    "first_pass": true
+  }
+]

@@ -1175,3 +1175,147 @@ class GoogleTranslator:
         if self.cache is not None:
             self.cache.flush()
         return [r[0] for r in results], [r[1] for r in results]
+
+
+# ── 로컬 번역기 ──────────────────────────────────────────────────────────
+
+# **왜 로컬로 옮겼나.** Cloud Translation v2 무료 한도가 월 50만 자인데 루프는
+# **이터레이션 하나에 약 105만 자**를 쓴다 (dev 265 + train 40 + 후보 120 문장 ×
+# 격자 3 + full × 타깃 5). 8이터면 840만 자 = 유료로 약 $168 이고, LLM 비용($15~20)의
+# 10배다. 2026-08-28 에 실제로 한도가 차서 run10 이 iter 1 에서 멈췄고 무료 gtx 경로도
+# IP 차단이었다. **채점(CometKiwi·NLI)이 이미 전부 로컬인데 번역만 유료 API 에 묶여
+# 한도가 차면 루프 전체가 멈추는 구조**였다.
+#
+# 후보 4종을 같은 100문장·5타깃으로 재고 골랐다 (CometKiwi = 루프의 adequacy):
+#
+#   google-v2      0.8712   기준선
+#   madlad400-3b   0.8554   −0.0158   zh 0.831
+#   nllb-1.3B      0.8344   −0.0368   zh 0.743   ← 중국어가 무너진다
+#   nllb-600M      0.8216   −0.0495   zh 0.732
+#   m2m100-418M    0.8088   −0.0624
+#
+# greedy + 배치로 바꾸면 madlad 가 **40 문장/초**(빔4 대비 29배)이고 품질은 0.8473 로
+# 0.008 만 떨어진다. 이터당 번역 약 24,650건 = **10분**으로, 지금 Google dev 평가
+# (15분)보다 빠르다. VRAM 8.8GB.
+#
+# **문맥 번역은 안 쓴다.** Google 경로의 `use_context` 는 앞 조각들을 개행으로 붙여
+# 통째 번역하고 마지막 줄만 취하는데, seq2seq 번역 모델은 개행 구조를 보존하지 않아
+# 그 규약이 성립하지 않는다. 조각을 독립 번역하는 쪽이 **결정론적**이라 쌍체 비교에
+# 오히려 유리하다 — Google 은 문맥이 분절과 함께 바뀌어 잡음이 낀다.
+LOCAL_MT_DEFAULT = "google/madlad400-3b-mt"
+_MT_SHARED: dict = {}
+_MT_LOCK = threading.Lock()
+
+
+@dataclass
+class LocalTranslator:
+    """`GoogleTranslator` 와 같은 공개 인터페이스를 갖는 로컬 seq2seq 번역기.
+
+    호출부(`evaluate`)는 `full` / `full_uncached` / `seg_batch` 만 쓰므로 교체가
+    투명하다. 캐시 키·형식도 같다 (`backend` 문자열만 다르다).
+
+    **마이크로 배칭.** 상위 코드가 `ThreadPoolExecutor` 로 문장마다 `_call` 을 부르는데
+    GPU 는 배치로 돌려야 빠르다. 그래서 `_raw` 가 큐에 넣고 기다리고, 워커 스레드가
+    최대 `batch` 개 또는 `wait` 초까지 모아 한 번에 돌린다.
+    """
+
+    tgt_code: str
+    cache: JsonCache | None = None
+    model_id: str = LOCAL_MT_DEFAULT
+    batch: int = 48
+    wait: float = 0.05
+    max_new_tokens: int = 192
+    device: str = "cuda"
+    workers: int = 64          # 배칭이 GPU 를 채우므로 스레드는 많을수록 좋다
+    use_context: bool = False  # 위 주석 참조 — 로컬에서는 쓰지 않는다
+    calls: int = 0
+    context_line_mismatches: int = 0
+    # 캐시 키의 첫 조각이다 (`_call`). **모델 이름을 담아야** 모델을 바꿨을 때 옛
+    # 번역을 그대로 맞고 "같은 자로 쟀다"고 착각하지 않는다 — gtx/v2 를 나눈 것과 같은
+    # 이유다 (기존 캐시 18건 재번역 대조 일치 0/18).
+    backend: str = ""
+    _lock: threading.Lock = field(init=False, repr=False, default_factory=threading.Lock)
+
+
+    def __post_init__(self):
+        self.backend = self.backend or f"local:{self.model_id}"
+        self._q: list = []
+        self._cv = threading.Condition()
+        self._stop = False
+        self._thread = threading.Thread(target=self._drain, daemon=True)
+        self._thread.start()
+
+    # ── 모델 ─────────────────────────────────────────────────────────────
+    # 모델은 **프로세스당 1회** 로드하고 타깃 간에 공유한다. 타깃 5개마다 3GB 모델을
+    # 새로 올리면 VRAM 이 5배가 된다. (dataclass 필드로 두면 mutable default 가 되므로
+    # 클래스 밖 모듈 전역으로 뺀다.)
+    @classmethod
+    def _get_model(cls, model_id: str, device: str):
+        with _MT_LOCK:
+            if model_id not in _MT_SHARED:
+                import torch
+                from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+                tok = AutoTokenizer.from_pretrained(model_id)
+                mdl = AutoModelForSeq2SeqLM.from_pretrained(
+                    model_id, dtype=torch.float16).to(device).eval()
+                _MT_SHARED[model_id] = (tok, mdl)
+            return _MT_SHARED[model_id]
+
+    def _prefix(self, text: str) -> str:
+        """모델별 타깃 지정 규약. madlad 는 `<2xx>`, nllb 는 forced_bos 를 쓴다."""
+        return f"<2{self.tgt_code}> {text}"
+
+    def _generate(self, texts: list[str]) -> list[str]:
+        import torch
+        tok, mdl = self._get_model(self.model_id, self.device)
+        with torch.inference_mode():
+            enc = tok([self._prefix(t) for t in texts], return_tensors="pt",
+                      padding=True, truncation=True, max_length=384).to(self.device)
+            gen = mdl.generate(**enc, max_new_tokens=self.max_new_tokens, num_beams=1)
+        return tok.batch_decode(gen, skip_special_tokens=True)
+
+    # ── 배칭 ─────────────────────────────────────────────────────────────
+    def _drain(self):
+        while True:
+            with self._cv:
+                while not self._q and not self._stop:
+                    self._cv.wait(timeout=0.5)
+                if self._stop and not self._q:
+                    return
+                self._cv.wait(timeout=self.wait) if len(self._q) < self.batch else None
+                jobs, self._q = self._q[: self.batch], self._q[self.batch:]
+            if not jobs:
+                continue
+            try:
+                outs = self._generate([j[0] for j in jobs])
+            except Exception as e:                      # noqa: BLE001
+                outs = None
+                err = e
+            for k, (_, box, ev) in enumerate(jobs):
+                box.append(outs[k] if outs is not None else err)
+                ev.set()
+            with self._lock:
+                self.calls += len(jobs)
+
+    def _raw(self, text: str) -> str:
+        box: list = []
+        ev = threading.Event()
+        with self._cv:
+            self._q.append((text, box, ev))
+            self._cv.notify()
+        ev.wait()
+        if isinstance(box[0], Exception):
+            raise RuntimeError(f"로컬 번역 실패({self.model_id}): {box[0]}")
+        return box[0]
+
+    # ── 공개 인터페이스 — GoogleTranslator 와 동일 ───────────────────────
+    _call = GoogleTranslator._call
+    full = GoogleTranslator.full
+    full_uncached = GoogleTranslator.full_uncached
+    streaming_segments = GoogleTranslator.streaming_segments
+    seg_batch = GoogleTranslator.seg_batch
+
+    def close(self):
+        with self._cv:
+            self._stop = True
+            self._cv.notify_all()

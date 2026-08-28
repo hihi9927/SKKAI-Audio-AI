@@ -204,7 +204,13 @@ def score_one(run_dir: Path, manifest: Dict[str, dict], lang: str,
 
     return {
         "run_dir": str(run_dir),
-        "axis": axis_server or axis_client,
+        # **클라이언트 라벨을 쓴다.** 서버 판정(`axis_server`)은 커밋 정책만 보므로
+        # 청크 스윕이 전부 "static" 으로 뭉개진다. 그러면 `reseg_*.json` 의 키
+        # (`{axis}/{lang}`)가 static@2s/4s/6s 끼리 충돌해 COMET 채점에서 두 조건이
+        # 조용히 사라진다(실측: c4·c6 가 통째로 누락). 위에서 이미
+        # `axis_server == axis_client.split("-c")[0]` 로 교차검증했으므로 라벨을
+        # 믿어도 된다.
+        "axis": axis_client or axis_server,
         "lang": lang,
         "latency_unit": unit,
         "stream_laal_sec": round(scores.ideal_latency, 4),

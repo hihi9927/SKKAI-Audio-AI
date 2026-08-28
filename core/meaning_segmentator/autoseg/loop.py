@@ -26,6 +26,7 @@ from . import agents, data, metrics, noise_floor
 from .gateway import BudgetExceeded, Gateway
 from .pipeline import (GoogleTranslator, JsonCache, blocks_scoring,
                        coverage_need, normalize_tags, round_half_up, segment_batch,
+                       LocalTranslator, LOCAL_MT_DEFAULT,
                        shuffle_priorities, split_segments, to_lang_code, truncate,
                        unit_count, validate)
 
@@ -933,9 +934,16 @@ def main() -> int:
     p.add_argument("--seg-reasoning-effort", default="medium",
                    choices=["minimal", "low", "medium", "high", "none"],
                    help="분절 호출 사고량. none = 모델 기본값. 에이전트 호출에는 영향 없음")
-    p.add_argument("--translate-backend", default=None, choices=["gtx", "v2"],
-                   help="번역 백엔드. 미지정 시 GOOGLE_TRANSLATE_API_KEY 가 있으면 v2, "
-                        "없으면 gtx. **두 백엔드의 번역문은 같지 않다** — 섞어 비교 금지")
+    # **`local` 이 기본이다.** Cloud Translation v2 무료 한도가 월 50만 자인데 루프는
+    # 이터당 105만 자를 쓴다 — 2026-08-28 에 한도가 차서 run10 이 iter1 에서 멈췄고
+    # 무료 gtx 도 IP 차단이었다. 채점이 이미 전부 로컬인데 번역만 API 에 묶여 있었다.
+    # 품질 실측(100문장·5타깃, CometKiwi): google 0.8712 / madlad-3b 0.8554.
+    p.add_argument("--local-mt-model", default=LOCAL_MT_DEFAULT,
+                   help="--translate-backend local 일 때 쓸 HF seq2seq 번역 모델")
+    p.add_argument("--translate-backend", default="local", choices=["gtx", "v2", "local"],
+                   help="번역 백엔드. 기본 local (--local-mt-model). v2 는 Cloud "
+                        "Translation, gtx 는 무료 엔드포인트. **백엔드마다 번역문이 "
+                        "다르다** — 섞어 비교 금지 (캐시 키와 translator_id 에 들어간다)")
     p.add_argument("--tgt-code", default=None)
     # **목적함수를 다언어로.** 분절은 타깃 무관이라 비용의 90% 가 그대로다 (loop 상단 주석).
     # 소스 언어는 자동 제외한다.
@@ -1229,13 +1237,25 @@ def main() -> int:
         rep_tgt = targets[0]
         rep_code = args.tgt_code or to_lang_code(rep_tgt)
         tr_cache = JsonCache(run_dir / "cache" / f"translate_{rep_code}.json")
-        translator = GoogleTranslator(
-            tgt_code=rep_code, cache=tr_cache, workers=min(args.workers, 4),
-            use_context=not args.no_google_context, backend=args.translate_backend)
+
+        def make_translator(code: str, cache: JsonCache):
+            if args.translate_backend == "local":
+                return LocalTranslator(tgt_code=code, cache=cache,
+                                       model_id=args.local_mt_model)
+            return GoogleTranslator(
+                tgt_code=code, cache=cache, workers=min(args.workers, 4),
+                use_context=not args.no_google_context,
+                backend=args.translate_backend)
+
+        translator = make_translator(rep_code, tr_cache)
         # **백엔드가 id 에 들어간다.** gtx 와 v2 의 번역문은 같지 않다 (기존 캐시 18건
         # 재번역 대조에서 일치 0/18). id 에 안 남기면 다른 자로 잰 점수가 조용히 섞인다.
-        translator_id = (f"google:{translator.backend}:{translator.tgt_code}"
-                         f":ctx={translator.use_context}")
+        # 로컬 모델도 같은 이유로 모델 이름이 들어간다.
+        translator_id = (
+            f"local:{args.local_mt_model}:{translator.tgt_code}:ctx=False"
+            if args.translate_backend == "local"
+            else f"google:{translator.backend}:{translator.tgt_code}"
+                 f":ctx={translator.use_context}")
         log(f"[translator] {translator_id} (대표 타깃 {rep_tgt})")
         log(f"[targets] {len(targets)}개: {', '.join(targets)}  "
             f"(목적함수 = 타깃별 z-정규화 effective 의 평균)")
@@ -1276,11 +1296,8 @@ def main() -> int:
             code = args.tgt_code if len(targets) == 1 else None
             code = code or to_lang_code(tgt)
             if code not in _tr_cache:
-                _tr_cache[code] = GoogleTranslator(
-                    tgt_code=code,
-                    cache=JsonCache(run_dir / "cache" / f"translate_{code}.json"),
-                    workers=args.workers,
-                    use_context=not args.no_google_context)
+                _tr_cache[code] = make_translator(
+                    code, JsonCache(run_dir / "cache" / f"translate_{code}.json"))
             return (_tr_cache[code], adequacy, consistency, contradiction,
                     target_is_spaced(tgt))
 
@@ -2092,7 +2109,7 @@ def main() -> int:
     finally:
         seg_cache.flush()
         tr_cache.flush()
-        if isinstance(translator, GoogleTranslator):
+        if isinstance(translator, (GoogleTranslator, LocalTranslator)):
             translator.close()
         if judge_gw is not None:
             judge_gw.close()
