@@ -199,10 +199,11 @@ PYTHONPATH=. python -m core.meaning_segmentator.autoseg.cost_report --run-id en-
 | `--consistency-backend` | `nli` | 보고용 가설 검증값. `nli`(양방향 entailment, 어순 무관) / `comet` / `xcomet`. **NLI 모델은 `metrics.NLI_MODEL` 로 고정**돼 있다 (`xlm-roberta-large-xnli-anli`) — 다국어라 타깃별로 바꿀 필요가 없고, 자리마다 모델을 하나로 못박은 것이 런 간 값이 섞이는 것을 막는다 |
 | `--translate-backend` | 자동 | `v2`(공식 Cloud Translation Basic, API 키 필요) / `gtx`(무료 비공식). 미지정 시 `GOOGLE_TRANSLATE_API_KEY` 가 있으면 v2. **두 백엔드의 번역문은 같지 않다** — 기존 gtx 캐시 18건 재번역 대조에서 일치 0/18. `translator_id` 와 캐시 키에 백엔드가 들어가 섞이지는 않지만, **gtx 로 잰 기존 26개 런의 점수는 v2 런과 비교할 수 없다** |
 | `--tgt-langs` | 기본 풀 | 목적함수를 다언어로. 분절은 타깃 무관이라 비용의 90% 가 그대로다. 소스 언어는 자동 제외 |
+| `--target-aware` | — | **언어쌍 전용 프롬프트(비교군)**. 타깃 1개 필수. 네 에이전트가 타깃 문법을 근거로 쓸 수 있게 풀고 `check_target_agnostic` 게이트를 끈다. 아래 §언어쌍 전용 비교군 |
 | `--seg-reasoning-effort` | `medium` | 분절 호출 사고량. **비용의 98% 가 여기다** |
 | `--agent-reasoning-effort` | `medium` | Profiler/Judge/Critic/PE 사고량 |
 | `--adopt-se-mult` | `0.5` | 채택 요건 `dev 쌍체 Δ > k·se`. 점 비교는 오차막대 안 잡음까지 채택했다. `0` = 이전 방식. **1.0 → 0.5 로 낮춘 이유가 `xlmr-anli` 다** — 지표 타당도가 훨씬 나은 대신 문장별 분산이 커서 dev 쌍체 se 가 0.0065 → 0.0144 로 배증한다 |
-| `--max-prompt-growth` | `1.3` | 프롬프트 길이 천장 (v0 대비 배수). 품질 노브가 아니라 **비용 천장**이다 — 넘치면 압축기가 깎는다. 적용된 개정 42건에서 실제 발동은 1회(2%) |
+| `--max-prompt-growth` | `1.6` | 프롬프트 길이 천장 (v0 대비 배수). 품질 노브가 아니라 **비용 천장**이다 — 넘치면 압축기가 깎는다. **1.3 에서 올렸다** — 그 값은 섹션 관문 시절 실측(발동 2%)에서 나왔는데, 관문을 없애자 run08 에서 발동이 연속 100% 가 되어 이터레이션이 통째로 헛돌았다. 비용 영향은 전체 토큰의 5% 남짓 |
 | `--skip-translation-below` | `0.95` | 원문 보존율이 이 값 미만이면 번역·채점을 통째로 생략. **분할 크기에 따라 유효 허용 건수가 달라진다** — 0.95 는 train 60 에서 3건, train 40 에서 2건까지 |
 | `--no-coverage-rule` | — | 최소 경계 수 요건 해제. **노브가 k 를 통제 못 하게 된다** |
 | `--no-contradiction` | — | NLI 해제. `effective = adequacy` 가 되어 조기 방출이 안 벌받는다 |
@@ -218,6 +219,49 @@ PYTHONPATH=. python -m core.meaning_segmentator.autoseg.cost_report --run-id en-
 
 `--fresh` 없이 같은 `--run-id` 로 다시 실행하면 언어 프로파일·prompt_v0·번역 캐시를
 재사용해 이어서 돈다.
+
+## 언어쌍 전용 비교군 (`--target-aware`)
+
+기본 프롬프트는 **타깃 무관**이다 — 하나로 모든 타깃을 커버하는 것이 설계 전제고,
+`check_target_agnostic` 과 다중 타깃 목적함수가 그걸 지킨다. 그런데 "가장 좋은 프롬프트"의
+상한선은 **언어쌍에 최적화된 것**이다. 이 모드는 그 상한선을 실제로 만들어서, 무관 프롬프트가
+거기 얼마나 근접하는지를 재기 위한 **비교군 전용**이다.
+
+풀리는 것은 네 군데다 — A1 Profiler, prompt_v0 작성기, A8 Critic, A9 PE 가 타깃 언어명과 그
+문법을 근거로 쓸 수 있게 되고, 결정론적 거부 게이트가 꺼진다. 대신 네 지시문 모두에 같은
+단서가 붙는다: **분절기는 추론 시점에 소스 문장만 본다.** 타깃 지식은 "어디를 자를까"를 소스
+표면형으로 판정하는 규칙의 *근거*로만 들어갈 수 있고, 실행 중에 참조할 수 있는 것이 아니다.
+
+```bash
+PYTHONPATH=. python -m core.meaning_segmentator.autoseg.loop \
+    --target-aware \
+    --dataset fleurs-en-multi --src-lang English --tgt-lang German \
+    --pair-id en-de-aware --run-id run01 \
+    --iterations 8 --patience 5 --budget 25 --seg-reasoning-effort low \
+    --train 40 --dev 265 --test 100 --workers 24 \
+    --judge-model gpt-5-mini --translate-backend v2
+```
+
+**두 런의 `score` 를 직접 비교하면 안 된다.** 다중 타깃 런의 `score` 는 타깃별 z-정규화
+평균이고 이 런은 단일 타깃 원값이라 애초에 다른 수다. 비교는 반드시 **같은 타깃으로 다시
+재서** 한다 — 같은 런 디렉토리에 두 프롬프트를 넣으면 분할·캐시·백엔드가 전부 같아진다.
+
+```bash
+for L in agnostic:runs/en-multi/run09/best_prompt.txt aware:runs/en-de-aware/run01/best_prompt.txt; do
+  PYTHONPATH=. python -m core.meaning_segmentator.autoseg.eval_prompt \
+      --run-id en-multi/run09 --tgt-lang German --split test \
+      --prompt "${L#*:}" --label "${L%%:*}_de"
+done
+```
+
+비교 런은 기준 런과 **분할이 같아야** 한다: `--dataset`·`--seed`·`--train`/`--dev`/`--test`
+가 하나라도 다르면 문장 집합이 달라져 쌍체 비교가 깨진다. `min_gap`·`t_grid` 는 같은
+데이터셋에서 자동으로 같은 값이 유도된다.
+
+**검출력 주의.** 단일 타깃 `effective` 의 test 100문장 se 는 ~0.017 인데 예상 격차는 0.005
+수준이다 — test 100 만으로는 "차이 없음"과 "못 잼"이 구분되지 않는다. 주 근거는 500문장
+홀드아웃(`runs/en-multi/clean500/`)에 두 프롬프트를 넣고 `bleu_eval` 의 쌍체 부트스트랩으로
+잡는 쪽이다.
 
 ## 구성
 

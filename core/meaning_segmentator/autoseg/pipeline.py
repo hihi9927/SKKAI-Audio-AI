@@ -177,6 +177,7 @@ def segment_batch(
     reasoning_effort: str | None = None,
     batch_size: int = 1,
     first_pass_sink: list | None = None,
+    need_fn=None,
 ) -> tuple[list[str], list[bool]]:
     """프롬프트 주입형 분절. 동일 (프롬프트, 문장) 조합은 캐시 재사용.
 
@@ -288,6 +289,21 @@ def segment_batch(
 
     def call_group(g: list[str]) -> dict[str, str]:
         user = "\n".join(f"[{i + 1}] {t}" for i, t in enumerate(g))
+        # **요구 개수는 우리가 세어서 알려준다.** 종전에는 문장만 보내고 최소 경계 수를
+        # `[Output Rules]` 의 규칙에서 모델이 직접 유도하게 했는데, 그 요건이 실제로는
+        # 거의 최대치다 — 실측 405문장에서 **65%가 여유 ≤1**, 8%는 여유 0 이라 합법
+        # 위치를 하나도 안 놓쳐야 통과한다. 그래서 1차 위반이 거의 전부 `too_few_tags`
+        # 였고(run08 iter0 3건 중 3건, run09 16건 중 16건), 재시도 프롬프트가 "N개 —
+        # 최소 M개 필요"로 **숫자를 알려주면 그때 통과**했다. 세는 일은 결정론이므로
+        # 1차부터 알려주는 것이 맞다 — 재시도는 비용의 23~31%다.
+        if need_fn is not None:
+            reqs = [(i + 1, need_fn(t)) for i, t in enumerate(g)]
+            reqs = [(i, n) for i, n in reqs if n]
+            if reqs:
+                user += ("\n\n[Minimum number of <SEG:n> tags required per sentence — "
+                         "counted deterministically from sentence length and the spacing "
+                         "rule, NOT a suggestion. An answer with fewer is rejected.]\n"
+                         + "  ".join(f"[{i}] {n}" for i, n in reqs))
         raw = gw.chat(system=batch_prompt, user=user, max_tokens=SEG_MAX_TOKENS,
                       reasoning_effort=reasoning_effort, purpose="segment")
         got: dict[str, str] = {}

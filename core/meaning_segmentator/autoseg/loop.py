@@ -526,6 +526,7 @@ def evaluate(
         validate_fn=lambda t, out: validate("", t, out, spaced, trailing_punct,
                                             require_priority, need(t)),
         normalize_fn=_norm,
+        need_fn=need,
         reasoning_effort=reasoning_effort,
         batch_size=batch_size,
         first_pass_sink=first_pass_viol,
@@ -940,6 +941,12 @@ def main() -> int:
     # 소스 언어는 자동 제외한다.
     p.add_argument("--tgt-langs", nargs="+", default=None,
                    help=f"검증 타깃 풀. 기본 {' '.join(DEFAULT_TARGET_POOL)} (소스는 자동 제외)")
+    # **비교군 전용 모드다.** 언어쌍 하나에 최적화한 프롬프트가 상한선으로 얼마나 좋은지
+    # 재서, 타깃 무관 프롬프트가 거기 얼마나 근접하는지 보이려는 것이다 (agents.py
+    # '타깃 인지 모드' 주석). 기본 런의 동작은 이 플래그 없이는 한 글자도 안 바뀐다 —
+    # 네 지시문 모두 `target_language=None` 에서 종전과 바이트 단위로 같다.
+    p.add_argument("--target-aware", action="store_true",
+                   help="언어쌍 전용 프롬프트(비교군). 타깃 1개 필수, 타깃 무관 게이트 해제")
     p.add_argument("--no-google-context", action="store_true")
     p.add_argument("--tgt-spaced", default=None, choices=["yes", "no"],
                    help="타깃 언어가 띄어쓰기를 쓰는가. 미지정 시 --tgt-lang 에서 추론 (LAAL 단위)")
@@ -1027,6 +1034,22 @@ def main() -> int:
     for _f in ("seg_reasoning_effort", "agent_reasoning_effort"):
         if getattr(args, _f) == "none":
             setattr(args, _f, None)           # 모델 기본값에 맡긴다
+
+    # **타깃 인지 모드는 타깃이 정확히 하나여야 한다.** 여러 타깃에 최적화한 프롬프트는
+    # 이 모드가 만들려는 "언어쌍 상한선"이 아니고, 목적함수가 z-평균이라 점수의 자도
+    # 달라진다. `--tgt-langs` 를 안 주면 `--tgt-lang` 하나로 본다.
+    pair_tgt = None
+    if args.target_aware:
+        want = args.tgt_langs or [args.tgt_lang]
+        if len(want) != 1:
+            print(f"[stop] --target-aware 는 타깃 1개만 받는다 (지금 {want})", file=sys.stderr)
+            return 2
+        if want[0].strip().lower() == (args.src_lang or "").strip().lower():
+            print(f"[stop] --target-aware 인데 소스와 타깃이 같다 ({want[0]}). "
+                  f"--tgt-lang 으로 타깃을 줄 것", file=sys.stderr)
+            return 2
+        args.tgt_langs = want
+        pair_tgt = want[0]
 
     # **`min_gap` 을 안 주면 코퍼스에서 유도한다.** 이게 있어야 언어별 숫자가 커맨드에서
     # 사라진다 — 격자·`t_floor` 는 이미 `min_gap` 에서 나오므로 이 하나가 마지막 고리다.
@@ -1186,7 +1209,7 @@ def main() -> int:
             profile = json.loads(profile_path.read_text(encoding="utf-8"))
         else:
             samples = [s.text for s in splits["train"][:20]]
-            profile = profiler.profile(samples)
+            profile = profiler.profile(samples, pair_tgt)
             profile_path.write_text(json.dumps(profile, ensure_ascii=False, indent=2),
                                     encoding="utf-8")
 
@@ -1216,6 +1239,10 @@ def main() -> int:
         log(f"[translator] {translator_id} (대표 타깃 {rep_tgt})")
         log(f"[targets] {len(targets)}개: {', '.join(targets)}  "
             f"(목적함수 = 타깃별 z-정규화 effective 의 평균)")
+        if pair_tgt:
+            log(f"[target-aware] {args.src_lang} -> {pair_tgt} 전용 프롬프트를 만든다 — "
+                f"타깃 무관 게이트 해제. **다른 타깃에 재사용 불가**, 점수도 다중 타깃 "
+                f"런과 같은 자가 아니다 (비교는 eval_prompt --tgt-lang 으로)")
 
         # **`--final-only` 는 config 를 덮어쓰지 않는다.** 인자를 안 준 항목이 기본값으로
         # 채워져 저장되면 **그 런을 만든 설정 기록이 사라진다** — ja/run01 실측:
@@ -1420,7 +1447,7 @@ def main() -> int:
             for attempt in range(3 * max(1, args.v0_candidates)):
                 if len(candidates) >= args.v0_candidates:
                     break
-                cand = profiler.initial_prompt(profile, None, spaced, t_floor,
+                cand = profiler.initial_prompt(profile, pair_tgt, spaced, t_floor,
                                                args.min_gap, measured=measured)
                 missing = agents.check_skeleton(cand)
                 if missing:
@@ -1428,7 +1455,8 @@ def main() -> int:
                     continue
                 # 분절은 소스 쪽 문제다 — 프롬프트가 타깃 언어에 기대면 다른 타깃에
                 # 재사용할 수 없고, 측정되지 않은 언어 지식이 섞인다.
-                tl = agents.check_target_agnostic(cand, args.src_lang, targets)
+                tl = ([] if pair_tgt else
+                      agents.check_target_agnostic(cand, args.src_lang, targets))
                 if tl:
                     log(f"[profiler] 타깃 종속 — 재시도 {attempt + 1}: {'; '.join(tl)}")
                     continue
@@ -1826,7 +1854,8 @@ def main() -> int:
                         cases, ctx["metrics"], ctx["violations"],
                         avoid=last_sections if stale >= 2 else None,
                         priority_audit=ctx.get("priority_audit"),
-                        judgements=ctx.get("judgements"))
+                        judgements=ctx.get("judgements"),
+                        target_language=pair_tgt)
                 critique = best_critique
                 # 캐시가 고착 방지를 우회하지 않도록 aggregate 만 다시 계산한다 (LLM 없음).
                 if stale >= 2 and last_sections:
@@ -1875,7 +1904,8 @@ def main() -> int:
                         rv = engineer.revise(best["prompt"], critique, history, profile,
                                              t_grid, only_rules=hint,
                                              size_budget=size_budget,
-                                             measured=measured)
+                                             measured=measured,
+                                             target_language=pair_tgt)
                     except BudgetExceeded:
                         raise
                     except Exception as e:                      # 후보 하나 실패로 안 죽는다
@@ -1902,7 +1932,8 @@ def main() -> int:
 
                 _cands2 = []
                 for pr, rv in cands:
-                    tl = agents.check_target_agnostic(pr, args.src_lang, targets)
+                    tl = ([] if pair_tgt else
+                          agents.check_target_agnostic(pr, args.src_lang, targets))
                     if tl:
                         log(f"[iter {it}] 개정 후보 타깃 종속 — 거부: {'; '.join(tl)}")
                         continue

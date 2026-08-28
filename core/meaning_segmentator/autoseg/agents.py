@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import re
+import textwrap
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 
@@ -233,6 +234,93 @@ def check_skeleton(prompt: str) -> list[str]:
 
 # ── A1 Language Profiler ─────────────────────────────────────────────────
 
+# ── 타깃 인지 모드 (`--target-aware`) ─────────────────────────────────────
+#
+# 기본은 **타깃 무관**이다 — 프롬프트 하나를 모든 타깃에 재사용하는 것이 설계 전제고,
+# `check_target_agnostic` 과 다중 타깃 목적함수가 그것을 지킨다.
+#
+# 이 모드는 그 전제를 **일부러 깬 비교군**을 만든다: 언어쌍 하나에만 쓰는 프롬프트가
+# 상한선으로 얼마나 좋은지를 재서, 무관 프롬프트가 거기에 얼마나 근접하는지 보이기
+# 위한 것이다. 여기서 나온 프롬프트는 **다른 타깃에 쓰면 안 되고**, 점수도 다중 타깃
+# 런의 `score`(z-평균)와 같은 자가 아니다 — 비교는 같은 타깃으로 다시 재서 할 것
+# (`eval_prompt --tgt-lang`).
+#
+# **분절기는 추론 시점에 소스 문장만 본다.** 타깃 지식은 프롬프트 문면의 규칙으로만
+# 들어갈 수 있다. 네 지시문이 모두 이 문장을 함께 싣는다 — 빠지면 "타깃 번역을 보고
+# 판단하라" 는 실행 불가능한 규칙이 나온다.
+#
+# 인자가 `None` 이면 **모든 지시문이 종전과 바이트 단위로 같다** — 기존 런의 재현성이
+# 이 모드 추가로 흔들리면 안 된다.
+
+def _run_time_caveat(tgt: str) -> str:
+    return (f"The segmenter still sees ONLY the source sentence at run time — never a "
+            f"{tgt} translation. Every rule must therefore be decidable from a source "
+            f"surface form; {tgt} supplies the REASON a position is risky and how to RANK "
+            f"it, never something to look at.")
+
+
+_WRITER_POLICY_AGNOSTIC = """HARD CONSTRAINT — the prompt must be TARGET-LANGUAGE-AGNOSTIC.
+The same prompt is reused for every target language, so it may not name a target language
+and may not justify any rule with a target language's grammar (case, gender, articles,
+verb-final order, agreement). Segmentation is decided on the SOURCE text alone.
+Express risk the target-neutral way instead: "the following words can still overturn what
+was already emitted". That statement is true for every target; "German case assignment"
+is not."""
+
+
+def _writer_policy(tgt: str | None) -> str:
+    if not tgt:
+        return _WRITER_POLICY_AGNOSTIC
+    return (f"THIS PROMPT SERVES ONE LANGUAGE PAIR — source -> {tgt}.\n"
+            f"You MAY name {tgt} and MAY justify a rule with its grammar (case, gender, "
+            f"articles, verb placement, agreement) wherever that is what actually makes a "
+            f"boundary risky. State what {tgt} forces: \"once this is emitted, {tgt} word "
+            f"order can no longer place the verb\".\n"
+            + _run_time_caveat(tgt))
+
+
+_ENGINEER_RULE_AGNOSTIC = """   **Never name a target language or justify a rule with its grammar** (case, gender,
+   articles, verb-final order, agreement). The prompt is reused for every target language;
+   a deterministic gate rejects any revision that names a target language in the same
+   sentence as a grammatical justification. Say "the following words can
+   still overturn what was emitted" instead — that holds for every target."""
+
+
+def _engineer_rule(tgt: str | None) -> str:
+    if not tgt:
+        return _ENGINEER_RULE_AGNOSTIC
+    # 주변이 번호 목록이라 폭을 맞춰 접는다 — 규칙 6 만 한 줄로 길면 모델이 목록의
+    # 한 항목이 아니라 다른 종류의 텍스트로 읽을 여지가 생긴다.
+    body = (f"This prompt serves ONE language pair — source -> {tgt}. You MAY name {tgt} "
+            f"and MAY justify a rule with its grammar (case, gender, articles, verb "
+            f"placement, agreement) when that is what makes a boundary risky. "
+            + _run_time_caveat(tgt))
+    return textwrap.fill(body, width=95, initial_indent="   ", subsequent_indent="   ")
+
+
+def profiler_system(tgt: str | None) -> str:
+    """타깃 인지 모드에서만 A1 지시문을 바꾼다. `None` 이면 원문 그대로."""
+    if not tgt:
+        return PROFILER_SYSTEM
+    note = (
+        f"This profile serves ONE language pair: the source language in the sample -> "
+        f"{tgt}. Report the source-side facts below as usual, but you MAY use what you know "
+        f"about {tgt} to decide which prefixes are unsafe, and you SHOULD state "
+        f"\"unstable_prefix_signals\" in terms of what {tgt} would be forced to revise once "
+        f"the rest of the sentence arrives.\n"
+        f"Add ONE extra key to the JSON specified below, after the keys listed there:\n"
+        f"  \"target_transfer_hazards\": [\"source surface forms whose rendering into {tgt}\n"
+        f"                              is not settled until later material arrives — each\n"
+        f"                              stated so it can be recognised in the SOURCE text\n"
+        f"                              alone\"]\n"
+        f"A hazard that cannot be spotted in the source is useless: {tgt} is never visible "
+        f"at run time.")
+    anchor = "translation.\n\nDo NOT report anything that can be COUNTED"
+    assert PROFILER_SYSTEM.count(anchor) == 1
+    return PROFILER_SYSTEM.replace(
+        anchor, f"translation.\n\n{note}\n\nDo NOT report anything that can be COUNTED")
+
+
 PROFILER_SYSTEM = """You are a computational linguist preparing a meaning-based segmentation
 system for a real-time speech translation pipeline.
 
@@ -323,13 +411,7 @@ def measured_facts(measured: dict | None) -> str:
 
 PROMPT_WRITER_SYSTEM = """You write system prompts for a meaning-based segmentation model.
 
-HARD CONSTRAINT — the prompt must be TARGET-LANGUAGE-AGNOSTIC.
-The same prompt is reused for every target language, so it may not name a target language
-and may not justify any rule with a target language's grammar (case, gender, articles,
-verb-final order, agreement). Segmentation is decided on the SOURCE text alone.
-Express risk the target-neutral way instead: "the following words can still overturn what
-was already emitted". That statement is true for every target; "German case assignment"
-is not.
+__TARGET_POLICY__
 
 Given a language profile, write the initial segmentation system prompt.
 
@@ -392,26 +474,31 @@ class Profiler:
     gw: Gateway
 
     def profile(self, samples: list[str], target_language: str | None = None) -> dict:
-        """소스 언어만 프로파일한다. `target_language` 는 호환용이며 **쓰지 않는다**.
+        """소스 언어를 프로파일한다. `target_language` 는 **`--target-aware` 에서만** 쓴다.
 
-        분절은 소스 쪽 문제라는 것이 설계 전제인데, 타깃 언어명을 넘기면 LLM 이 측정되지
-        않은 타깃 문법 지식을 프롬프트에 써넣는다 — run04 산출물에 독일어 격·성 근거가
-        8곳 들어갔고 순위 규칙 8~11(Medium/Lower 구간 전체)이 그 위에 세워졌다.
-        `core/CLAUDE.md` 의 "언어 지식은 측정으로만" 원칙과 어긋난다.
+        기본(`None`)에서 안 쓰는 이유: 분절은 소스 쪽 문제라는 것이 설계 전제인데, 타깃
+        언어명을 넘기면 LLM 이 측정되지 않은 타깃 문법 지식을 프롬프트에 써넣는다 —
+        run04 산출물에 독일어 격·성 근거가 8곳 들어갔고 순위 규칙 8~11(Medium/Lower 구간
+        전체)이 그 위에 세워졌다. `core/CLAUDE.md` 의 "언어 지식은 측정으로만" 원칙과
+        어긋난다. 값을 주는 것은 그 편향을 **일부러 사는** 비교군뿐이다.
         """
+        tgt = target_language
         user = (
-            "The segmentation prompt you are profiling for must work for ANY target "
-            "language. Describe only properties of the SOURCE text.\n\n"
-            f"Source sentences ({len(samples)} samples):\n"
+            (f"The segmentation prompt you are profiling for serves {tgt} ONLY. Describe "
+             f"properties of the SOURCE text; where {tgt} is what makes a prefix unsafe, "
+             f"say so.\n\n" if tgt else
+             "The segmentation prompt you are profiling for must work for ANY target "
+             "language. Describe only properties of the SOURCE text.\n\n")
+            + f"Source sentences ({len(samples)} samples):\n"
             + "\n".join(f"{i+1}. {s}" for i, s in enumerate(samples))
         )
-        return self.gw.chat_json(PROFILER_SYSTEM, user, max_tokens=PROFILER_MAX_TOKENS,
-                                 purpose="profiler")
+        return self.gw.chat_json(profiler_system(tgt), user,
+                                 max_tokens=PROFILER_MAX_TOKENS, purpose="profiler")
 
     def initial_prompt(self, profile: dict, target_language: str | None, spaced: bool,
                        min_t: int = 3, min_gap: int = 0,
                        measured: dict | None = None) -> str:
-        """`target_language` 는 **의도적으로 쓰지 않는다** (Profiler.profile 참조).
+        """`target_language` 는 **`--target-aware` 에서만** 쓴다 (Profiler.profile 참조).
 
         `measured` 는 실측 프로파일이다. 종전에는 작성기가 구두점 목록을 LLM 프로파일
         에서 받았는데 그게 검증기가 쓰는 실측과 25/26 런에서 달랐다 (`measured_facts`).
@@ -420,16 +507,22 @@ class Profiler:
         # run03 에서 지침 N/3 vs 요건 N/2 불일치가 1차 통과율을 깎았다 (재시도로 복구되나
         # 프롬프트 품질 신호인 1차 통과율이 오염된다). 시스템 프롬프트에 JSON 중괄호가
         # 많아 .format 은 못 쓰고 표적 치환만 한다.
-        sys_p = PROMPT_WRITER_SYSTEM.replace("N/{min_t}", f"N/{min_t}")
+        sys_p = (PROMPT_WRITER_SYSTEM.replace("N/{min_t}", f"N/{min_t}")
+                 .replace("__TARGET_POLICY__", _writer_policy(target_language)))
         facts = measured_facts(measured)
         user = (
             f"Language profile:\n{json.dumps(profile, ensure_ascii=False, indent=2)}\n\n"
             + (facts + "\n\n" if facts else "")
-            + "The prompt must be TARGET-LANGUAGE-AGNOSTIC. It will be reused for many "
-            "different target languages without modification, so it may not name one, "
-            "nor lean on one's grammar (no case, gender, article, or word-order arguments "
-            "that belong to a specific target).\n\n"
-            f"Copy this [Output Rules] section verbatim into the prompt:\n\n{output_rules(spaced, min_t, min_gap)}"
+            + (f"The prompt is used for source -> {target_language} ONLY. Naming "
+               f"{target_language} and citing its grammar is allowed, and is the right "
+               f"move wherever that is the real reason a boundary is risky. It must still "
+               f"be applicable to the source text alone at run time.\n\n"
+               if target_language else
+               "The prompt must be TARGET-LANGUAGE-AGNOSTIC. It will be reused for many "
+               "different target languages without modification, so it may not name one, "
+               "nor lean on one's grammar (no case, gender, article, or word-order "
+               "arguments that belong to a specific target).\n\n")
+            + f"Copy this [Output Rules] section verbatim into the prompt:\n\n{output_rules(spaced, min_t, min_gap)}"
         )
         # thinking 모델은 사고 토큰이 max_tokens 에 같이 잡힌다 (SEG_MAX_TOKENS 와 같은
         # 문제). 6000 에서는 사고가 예산을 먹고 프롬프트 꼬리 섹션이 잘렸다 — run04 에서
@@ -768,9 +861,17 @@ class Critic:
     def review(self, cases: list[dict], metrics: dict, violations: list[dict],
                avoid: str | None = None,
                priority_audit: list[dict] | None = None,
-               judgements: list[dict] | None = None) -> dict:
+               judgements: list[dict] | None = None,
+               target_language: str | None = None) -> dict:
         user = (
-            f"Current metrics: {json.dumps(metrics, ensure_ascii=False)}\n\n"
+            # 타깃 인지 모드에서만 붙는다. 기본에서는 Critic 이 타깃을 모르는 편이 낫다 —
+            # 알면 한 언어의 문법으로 규칙을 제안하고 그게 PE 를 거쳐 프롬프트에 남는다.
+            (f"This prompt serves ONE language pair: source -> {target_language}. The "
+             f"pieces below were translated into {target_language}. A proposed rule MAY "
+             f"cite {target_language} grammar as the REASON, but must state the condition "
+             f"in SOURCE surface forms — the segmenter never sees a translation.\n\n"
+             if target_language else "")
+            + f"Current metrics: {json.dumps(metrics, ensure_ascii=False)}\n\n"
             # **설명은 `metrics.GLOSSARY` 에서 생성한다.** 종전에는 여기 손으로 쓴 문단이
             # 있었고 실려 가는 지표 31개 중 7개만 설명돼 있었다 — 목적함수 `effective`
             # 조차 정의된 적이 없다. 손으로 쓰면 필드가 늘어도 안 따라온다.
@@ -1083,11 +1184,7 @@ Hard constraints — violating any of these makes your output unusable:
    restriction, try relaxing one instead. Read "stuck_hint" in the critique: when it says a
    section was edited and rejected, do not edit that section the same way again.
 6. Rules must generalise. Never write a rule that names a specific sentence from the data.
-   **Never name a target language or justify a rule with its grammar** (case, gender,
-   articles, verb-final order, agreement). The prompt is reused for every target language;
-   a deterministic gate rejects any revision that names a target language in the same
-   sentence as a grammatical justification. Say "the following words can
-   still overturn what was emitted" instead — that holds for every target.
+__TARGET_RULE__
 7. Decide what to change from the MEASUREMENTS, not from how many cases of a kind you see —
    the cases are selected failures, so any type looks dominant there.
    Every metric arrives with its meaning, and metrics you cannot move with prompt wording are
@@ -1207,6 +1304,7 @@ class PromptEngineer:
         only_rules: list[str] | None = None,
         size_budget: int | None = None,
         measured: dict | None = None,
+        target_language: str | None = None,
     ) -> dict:
         """`only_rules` 가 있으면 **그 규칙들만** 반영하게 한다.
 
@@ -1233,7 +1331,9 @@ class PromptEngineer:
         hist = json.dumps(history[-8:], ensure_ascii=False, indent=2)
         facts = measured_facts(measured)
         user = (
-            f"Language profile (fixed):\n{json.dumps(profile, ensure_ascii=False, indent=2)}\n\n"
+            (f"This prompt serves source -> {target_language} only.\n\n"
+             if target_language else "")
+            + f"Language profile (fixed):\n{json.dumps(profile, ensure_ascii=False, indent=2)}\n\n"
             + (facts + "\n\n" if facts else "")
             + f"Latency budgets in use (target piece size in source words): {t_grid}. "
             f"A budget of T keeps roughly (sentence length / T) pieces, so the LARGEST T "
@@ -1266,7 +1366,8 @@ class PromptEngineer:
         # 셀 수 없는 값이라서다. **글자 수로 바꿔 준다** — 자기 출력 길이는 셀 수 있다.
         budget = size_budget if size_budget is not None else len(current_prompt)
         sys_p = (ENGINEER_SYSTEM.replace("__BUDGET__", str(budget))
-                 .replace("__CURLEN__", str(len(current_prompt))))
+                 .replace("__CURLEN__", str(len(current_prompt)))
+                 .replace("__TARGET_RULE__", _engineer_rule(target_language)))
         return self.gw.chat_json(sys_p, user, max_tokens=PROMPT_MAX_TOKENS,
                                  purpose="prompt_engineer")
 
