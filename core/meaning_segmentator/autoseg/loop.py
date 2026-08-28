@@ -947,11 +947,20 @@ def main() -> int:
     p.add_argument("--train", type=int, default=30)
     p.add_argument("--train-pool", type=int, default=None)
     # 프롬프트가 v0 대비 커질 수 있는 **유일한** 상한. 품질 노브가 아니라 비용 천장이다 —
-    # 프롬프트는 문장마다 다시 보내므로 길이가 곧 토큰 비용이고, 이터레이션을 거듭하며
-    # 사례집으로 부푸는 것을 막는 장치다. 실측: 적용된 개정 42건에서 v0 대비 배수가
-    # 중앙 1.06 / p90 1.17 / 최대 1.29 이고 이 예산이 발동한 것은 1회(2%)다. 즉 PE 의
-    # 자연스러운 산출을 왜곡하지 않으면서 누적 팽창만 막는 자리에 있다.
-    p.add_argument("--max-prompt-growth", type=float, default=1.3,
+    # 프롬프트는 문장마다 다시 보내므로 길이가 곧 토큰 비용이다.
+    #
+    # **1.3 -> 1.6.** 1.3 은 "적용된 개정 42건의 v0 대비 배수가 중앙 1.06 / 최대 1.29,
+    # 예산 발동 2%" 라는 실측에서 나왔는데, 그 42건은 전부 **예전 섹션 관문을 통과한**
+    # 개정이다. 관문을 없애 PE 가 자유로워지자 산출이 1.4~1.5배로 올라갔고, run08 에서
+    # 예산 발동이 2% 가 아니라 **연속 100%** 가 됐다:
+    #   iter2  17,215자 -> 압축 16,334  > 예산 14,652  거부
+    #   iter3  15,866자 -> 압축 14,755  > 예산 14,652  거부 (103자 차)
+    # 거부되면 프롬프트가 안 바뀌어 다음 이터가 같은 것을 다시 재고(Δ 정확히 0,
+    # 변경 0/265) 이터레이션 하나가 통째로 헛돈다.
+    #
+    # 실제 비용 영향은 작다 — 호출 1건의 사고 토큰이 13.7k 인데 프롬프트는 ~3k 라
+    # 1.3 -> 1.6 이 전체 토큰의 5% 남짓이다. 천장을 조금 올려 개정을 살리는 쪽이 맞다.
+    p.add_argument("--max-prompt-growth", type=float, default=1.6,
                    help="프롬프트 길이 천장 (v0 대비 배수). 넘치면 압축기가 깎는다")
     p.add_argument("--dev", type=int, default=60)
     p.add_argument("--test", type=int, default=100)
@@ -1336,7 +1345,7 @@ def main() -> int:
             log(f"[prewarm] 후보 {len(prompts)} × 문장 {len(texts)} 예열 완료 "
                 f"(동시 최대 {len(prompts) * args.workers})")
 
-        def select_prompt(cands: list[str], select_n: int, tag_: str) -> str:
+        def select_prompt(cands: list[str], select_n: int, tag_: str) -> list[str]:
             """후보 여러 개 중 하나를 고른다. **train 으로 고른다 — dev 는 안 쓴다.**
 
             **왜 train 인가 — dev 를 두 번 쓰면 안 된다.** 종전에는 `dev[:40]` 로 상위 2개를
@@ -1367,7 +1376,7 @@ def main() -> int:
             오차막대이지 순위가 아니다.
             """
             if len(cands) <= 1:
-                return cands[0] if cands else ""
+                return list(cands)
             pool = splits["train"]
             sel = pool[:select_n] if select_n and select_n < len(pool) else pool
             # **분절을 먼저 한 풀에 몰아 캐시를 채운다.** 후보를 순차로 `run_eval` 하면
@@ -1385,7 +1394,9 @@ def main() -> int:
                     f"score={sc_i:.4f} fmt={_m.format_pass_rate:.2f}")
             scored.sort(key=lambda x: -x[0])
             log(f"[{tag_}] 후보 {scored[0][1]} 채택 (score={scored[0][0]:.4f}) — dev 미사용")
-            return scored[0][2]
+            # **순위 전체를 돌려준다.** 1위가 분량 관문에 걸리면 2·3위를 시도해야 한다 —
+            # 이미 채점한 후보를 버리고 이터레이션을 통째로 헛돌리는 것보다 낫다.
+            return [c for _, _, c in scored]
 
         prompt_path = run_dir / "iter_00" / "prompt.txt"
         if prompt_path.exists():
@@ -1428,7 +1439,7 @@ def main() -> int:
 
             for k, cand in enumerate(candidates):
                 (run_dir / f"prompt_v0_cand{k}.txt").write_text(cand, encoding="utf-8")
-            prompt = select_prompt(candidates, args.select_n, "profiler")
+            prompt = select_prompt(candidates, args.select_n, "profiler")[0]
             prompt_path.parent.mkdir(parents=True, exist_ok=True)
             prompt_path.write_text(prompt, encoding="utf-8")
         prompt_v0_len = len(prompt)
@@ -1758,6 +1769,13 @@ def main() -> int:
                 best_critique = None      # 새 best — 비평을 다시 받아야 한다
                 adopted = True
                 stale = 0
+            elif dev_delta and dev_delta.get("n_changed") == 0:
+                # **아무것도 안 잰 이터레이션은 실패로 세지 않는다.** 직전 개정이
+                # 거부돼 프롬프트가 그대로면 분절이 한 문장도 안 바뀌고 Δ 가 정확히
+                # 0 이 된다 (run08 iter3: Δ 0.00000, 변경 0/265). 그건 "개선이 없었다"
+                # 는 증거가 아니라 **측정이 없었다**는 뜻이므로 patience 를 깎으면 안
+                # 된다 — run07 에서 이 종류의 가짜 증가가 조기 종료를 앞당겼다.
+                log(f"[iter {it}] 분절이 한 문장도 안 바뀌었다 — stale 유지 ({stale})")
             else:
                 stale += 1
 
@@ -1891,10 +1909,15 @@ def main() -> int:
                     _cands2.append((pr, rv))
                 cands = _cands2
                 timer.mark("select_prompt")
+                # 점수 순으로 줄 세운다 — 1위가 분량 관문에 걸리면 아래에서 차례로 시도한다.
+                ranked: list[dict] = []
                 if len(cands) > 1:
-                    pick = select_prompt([c[0] for c in cands], args.select_n, f"iter {it} 개정")
-                    revised = next(rv for pr, rv in cands if pr == pick)
+                    order = select_prompt([c[0] for c in cands], args.select_n,
+                                          f"iter {it} 개정")
+                    ranked = [next(rv for pr, rv in cands if pr == pr_) for pr_ in order]
+                    revised = ranked[0]
                 elif cands:
+                    ranked = [cands[0][1]]
                     revised = cands[0][1]
                 else:
                     # 여기까지 전멸하려면 후보 전원이 섹션을 추가/삭제했거나 타깃 언어를
@@ -1902,31 +1925,41 @@ def main() -> int:
                     # 비는 경우는 이제 없으므로, 재호출로 돈을 더 쓰지 않고 넘어간다.
                     revised = {"prompt": ""}
                 log(f"[iter {it}] 개정 후보 {len(cands)}/{len(jobs)} 통과")
-                new_prompt = revised.get("prompt", "")
+
+                # **분량 관문에 걸리면 다음 후보를 시도한다.** 종전에는 1위가 걸리면
+                # 그 이터레이션의 개정이 통째로 없어졌고, 프롬프트가 안 바뀌니 **다음
+                # 이터가 같은 것을 다시 쟀다** — run08 에서 Δ 정확히 0 / 변경 0/265 로
+                # 이터레이션 두 개가 헛돌았다. 후보는 이미 채점해 두었으므로 아래로
+                # 내려가는 데 드는 추가 비용은 압축 호출 한 번뿐이다.
+                #
                 # **바뀐 섹션은 diff 로 센다 — PE 자기신고를 쓰지 않는다**
                 # (`agents.changed_sections` 참조: 저장분 36건 중 14건 불일치).
                 # 압축 *전* 프롬프트로 재는 것이 맞다 — 압축기가 보호해야 하는 것은
                 # 이번 이터레이션이 넣은 변경이고, 압축은 그 뒤에 일어난다.
-                sections_changed = (agents.changed_sections(best["prompt"], new_prompt)
-                                    if new_prompt else [])
-                # **분량 초과는 거부가 아니라 압축이다.** 아이디어가 나쁜 게 아니라
-                # 표현이 길 뿐이고, 압축기는 `sections_changed` 를 보호 목록으로 받아
-                # 이번에 넣은 변경을 남긴 채 나머지를 깎는다. 깎아도 예산을 못 맞추면
-                # 그때 거부한다.
-                over = new_prompt and len(new_prompt) > size_budget
-                if over:
-                    log(f"[iter {it}] 개정본 {len(new_prompt)}자 > 예산 {size_budget}자 — 압축")
-                    packed = compressor.compress(new_prompt, size_budget, sections_changed)
-                    if (packed and not agents.check_skeleton(packed)
-                            and len(packed) <= size_budget
-                            and not agents.check_revision(best["prompt"], packed)):
-                        log(f"[iter {it}] 압축 성공 {len(new_prompt)} -> {len(packed)}자")
-                        new_prompt = packed
-                        sections_changed = agents.changed_sections(best["prompt"], new_prompt)
-                    else:
-                        log(f"[iter {it}] 압축 실패({len(packed or '')}자 / 예산 {size_budget}자) "
-                            f"— 개정 거부")
-                        new_prompt = ""
+                new_prompt, sections_changed, over = "", [], False
+                for _rank, _rv in enumerate(ranked or [revised]):
+                    cand_p = _rv.get("prompt", "")
+                    if not cand_p:
+                        continue
+                    cand_sec = agents.changed_sections(best["prompt"], cand_p)
+                    if len(cand_p) > size_budget:
+                        over = True
+                        log(f"[iter {it}] 후보 {_rank}: 개정본 {len(cand_p)}자 > 예산 "
+                            f"{size_budget}자 — 압축")
+                        packed = compressor.compress(cand_p, size_budget, cand_sec)
+                        if (packed and not agents.check_skeleton(packed)
+                                and len(packed) <= size_budget
+                                and not agents.check_revision(best["prompt"], packed)):
+                            log(f"[iter {it}] 압축 성공 {len(cand_p)} -> {len(packed)}자")
+                            cand_p = packed
+                            cand_sec = agents.changed_sections(best["prompt"], cand_p)
+                        else:
+                            log(f"[iter {it}] 후보 {_rank} 압축 실패"
+                                f"({len(packed or '')}자 / 예산 {size_budget}자)"
+                                + ("  — 다음 후보 시도" if _rank + 1 < len(ranked) else ""))
+                            continue
+                    new_prompt, sections_changed, revised = cand_p, cand_sec, _rv
+                    break
                 missing = agents.check_skeleton(new_prompt) if new_prompt else []
                 if not new_prompt:
                     log(f"[iter {it}] 개정 없음 — 이전 프롬프트 유지")

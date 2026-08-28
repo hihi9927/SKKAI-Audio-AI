@@ -1,0 +1,232 @@
+{
+  "cases": [
+    {
+      "id": "en_us_120",
+      "error_type": "placement",
+      "span": "between American <SEG:1> and Iraqi",
+      "evidence": "Emitted participant 'American' alone, producing 'American and British' or duplicated participant.",
+      "cause": "wrong participant",
+      "proposed_rule": "Delay finalizing participant identities in coordinated 'between A and B' phrases until the conjunction and the second conjunct have been seen.",
+      "example_pair": {
+        "input": "The game is based on the Second Battle of Fallujah, a vicious battle between American and Iraqi forces.",
+        "output": "The game is <SEG:3> based on the Second Battle of Fallujah, a vicious battle between American and Iraqi forces.<SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_687",
+      "error_type": "placement",
+      "span": "remove it <SEG:4> from the coffin <SEG:2> will",
+      "evidence": "Committed to positive visibility of damage before main-clause polarity ('will be disappointed') appeared.",
+      "cause": "polarity not yet settled",
+      "proposed_rule": "Do not assert positive facts about perception/visibility before the main-clause polarity (e.g., verb that establishes disappointment/negation) is available.",
+      "example_pair": {
+        "input": "Anyone interested in seeing evidence of the damage to the mummy done during attempts to remove it from the coffin will be disappointed as only the head and shoulders are visible.",
+        "output": "Anyone interested in seeing evidence of the damage to the mummy done during attempts to remove it from the coffin <SEG:2> will be disappointed as only the head and shoulders are visible.<SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_929",
+      "error_type": "placement",
+      "span": "Nowadays air travel <SEG:3> is only",
+      "evidence": "Finalized a broad claim ('air travel bookings are rare') before restrictive modifiers ('directly', 'without first searching...') arrived.",
+      "cause": "modifier scope",
+      "proposed_rule": "Do not finalize a global claim about frequency/scope until following restrictive modifiers or prepositional complements (e.g., 'directly', 'without ...') have been seen.",
+      "example_pair": {
+        "input": "Nowadays air travel is only rarely booked directly through the airline without first searching and comparing prices.",
+        "output": "Nowadays air travel is only rarely booked directly through the airline without first searching and comparing prices.<SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_1468",
+      "error_type": "placement",
+      "span": "any eyewitness evidence <SEG:1> may",
+      "evidence": "Rendered 'any X' as existential negative before the modal/predicate that resolves polarity, producing 'there are no eyewitness statements'.",
+      "cause": "polarity not yet settled",
+      "proposed_rule": "Do not render indefinites like 'any' as negation; wait for the following modal/verb (e.g., 'may be tainted') before choosing polarity or lexicalization.",
+      "example_pair": {
+        "input": "She is in custody pending indictment and trial, but any eyewitness evidence may be tainted because her image has been widely published.",
+        "output": "She is in custody pending indictment and trial, but any eyewitness evidence may be tainted because her image has been widely published.<SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_268",
+      "error_type": "placement",
+      "span": "the leading internet <SEG:3> service",
+      "evidence": "Translated modifier ('leading internet') before the head noun 'service provider AOL', producing an incorrect general claim about Virginia.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Delay translating modifiers or adjectives that depend on a following head noun; wait for the NP head (e.g., 'service provider', proper name) before finalizing lexical choices.",
+      "example_pair": {
+        "input": "The case was prosecuted in Virginia because it is the home to the leading internet service provider AOL, the company who instigated the charges.",
+        "output": "The case was prosecuted in Virginia because it is the home to the leading internet service provider AOL, the company who instigated the charges.<SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_1428",
+      "error_type": "placement",
+      "span": "the first recreational ski <SEG:3> club",
+      "evidence": "Emitted 'first recreational ski' as a complete unit before the head 'club', causing mistranslation (e.g., 'ski appeared' / wrong noun form).",
+      "cause": "head not yet arrived",
+      "proposed_rule": "If the next token can be the NP's head (or form a compound head), wait for it before rendering the preceding modifiers or selecting a noun form.",
+      "example_pair": {
+        "input": "Downhill skiing as a sport goes back to at least the 17th century, and in 1861 the first recreational ski club was opened by Norwegians in Australia.",
+        "output": "Downhill skiing as a sport goes back to at least the 17th century, and in 1861 the first recreational ski club was opened by Norwegians in Australia.<SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_565",
+      "error_type": "placement",
+      "span": "Only the effects <SEG:2> of catastrophizing",
+      "evidence": "Emitted 'the effects' before its postnominal complement 'of catastrophizing', causing omission of the true source of the effects.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not emit a bare noun phrase (e.g., 'the effects') before its postnominal complement (e.g., 'of X') has arrived; keep the NP intact until its complement is seen.",
+      "example_pair": {
+        "input": "Only the effects of catastrophizing, not depression and fear was conditional of regular weekly structured PA sessions.",
+        "output": "Only the effects of catastrophizing, not depression and fear, was conditional of regular weekly structured PA sessions.<SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_46",
+      "error_type": "placement",
+      "span": "signed <SEG:4> a 9,000 year lease <SEG:1> for",
+      "evidence": "Rendered the verb phrase ('signed a 9,000 year lease') without the following 'for ...' that names the property, producing a vague or wrong object.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Delay specifying the exact object or property of a verb ('signed a lease for X') until the following 'for' phrase or naming complement arrives.",
+      "example_pair": {
+        "input": "On September 24, 1759, Arthur Guinness signed a 9,000 year lease for the St James' Gate Brewery in Dublin, Ireland.",
+        "output": "On September 24, 1759, Arthur Guinness signed a 9,000 year lease for the St James' Gate Brewery in Dublin, Ireland.<SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_1604",
+      "error_type": "placement",
+      "span": "and the Soviet invasion <SEG:4> in Afghanistan",
+      "evidence": "Committed to wrong location/participant (e.g., 'invasion of Iran') because the prepositional complement 'in Afghanistan' was cut off from the verb.",
+      "cause": "wrong participant",
+      "proposed_rule": "Delay committing the target/location of an action (e.g., 'invasion') until its following complement (prepositional phrase) has been seen.",
+      "example_pair": {
+        "input": "As NSA, he assisted Carter in diplomatically handling world affairs, such as the Camp David Accords, 1978; normalizing US–China relations through the late 1970s; the Iranian Revolution, which led to the Iran hostage crisis, 1979; and the Soviet invasion in Afghanistan, 1979.",
+        "output": "As NSA, he assisted Carter in diplomatically handling world affairs, such as the Camp David Accords, 1978; normalizing US–China relations through the late 1970s; the Iranian Revolution, which led to the Iran hostage crisis, 1979; and the Soviet invasion in Afghanistan, 1979.<SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_703",
+      "error_type": "placement",
+      "span": "at least 6 <SEG:4> months",
+      "evidence": "Emitted numeral before its unit, producing wrong duration (e.g., '6 years' instead of '6 months').",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not emit numeric quantities before their unit/measure word arrives; keep number+unit together before finalizing the piece.",
+      "example_pair": {
+        "input": "Your passport must be valid for at least 6 months beyond your travel dates. A round/onward trip ticket is needed to prove the length of your stay.",
+        "output": "Your passport must be valid for at least 6 months beyond your travel dates.<SEG:2> A round/onward trip ticket is needed to prove the length of your stay.<SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_417",
+      "error_type": "placement",
+      "span": "how many people speak <SEG:4> Hindi",
+      "evidence": "Cut before the language name led to misidentifying the target language ('English' instead of 'Hindi').",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Keep verb + its object (e.g., 'speak' + language name) together; do not cut immediately before a low-frequency lexical head that disambiguates meaning.",
+      "example_pair": {
+        "input": "There are varying estimates for how many people speak Hindi. It is estimated to be between the second and fourth most commonly spoken language in the world.",
+        "output": "There are varying estimates for how many people speak Hindi.<SEG:2> It is estimated to be between the second and fourth most commonly spoken language in the world.<SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_664",
+      "error_type": "placement",
+      "span": "for other Asian <SEG:3> cuisine: Korean",
+      "evidence": "Split before the list introduced by a colon caused loss of the culinary-list scope and produced generic or incorrect renderings of 'places for ... cuisine'.",
+      "cause": "modifier scope",
+      "proposed_rule": "Avoid ending a piece immediately before a colon-introduced list or enumeration; include the list head and at least the first list item in the same piece.",
+      "example_pair": {
+        "input": "San Francisco is also one of the best places in the nation for other Asian cuisine: Korean, Thai, Indian, and Japanese.",
+        "output": "San Francisco is also one of the best places in the nation for other Asian cuisine: Korean, Thai, Indian, and Japanese.<SEG:1>"
+      }
+    }
+  ],
+  "summary": "Most failures are placement errors: the prompt lets boundaries cut off heads, complements, numeric units, coordinated participants, or polarity-resolving verbs. Prioritise rules that prevent cuts immediately before NP heads, numeric units, conjunctioned participants, colon-lists, and before modals/verbs that resolve polarity so emitted pieces are not misleading on their own.",
+  "aggregate": {
+    "dominant_error": "placement",
+    "error_counts": {
+      "placement": 12
+    },
+    "stuck_hint": "",
+    "priority_audit": [
+      {
+        "feature": "상대위치 1/3",
+        "n": 53,
+        "rank_percentile": 0.55,
+        "contradiction": 0.177,
+        "over_trust": 0.0878
+      },
+      {
+        "feature": "뒤 구두점 ','",
+        "n": 11,
+        "rank_percentile": 0.378,
+        "contradiction": 0.0032,
+        "over_trust": 0.006
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 46,
+        "rank_percentile": 0.608,
+        "contradiction": 0.1413,
+        "over_trust": 0.0043
+      },
+      {
+        "feature": "상대위치 0/3",
+        "n": 66,
+        "rank_percentile": 0.665,
+        "contradiction": 0.0734,
+        "over_trust": -0.0308
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 143,
+        "rank_percentile": 0.655,
+        "contradiction": 0.1383,
+        "over_trust": -0.0475
+      }
+    ],
+    "judge_distribution": {
+      "n_boundaries_judged": 50,
+      "verdicts": {
+        "safe": 28,
+        "mistranslated": 12,
+        "premature": 10
+      },
+      "n_with_cause": 22,
+      "causes": {
+        "head not yet arrived": {
+          "n": 12,
+          "share": 0.545
+        },
+        "wrong participant": {
+          "n": 4,
+          "share": 0.182
+        },
+        "polarity not yet settled": {
+          "n": 2,
+          "share": 0.091
+        },
+        "modifier scope": {
+          "n": 2,
+          "share": 0.091
+        },
+        "mistranslated": {
+          "n": 1,
+          "share": 0.045
+        },
+        "other": {
+          "n": 1,
+          "share": 0.045
+        }
+      }
+    },
+    "max_missing_boundaries": 0.0,
+    "rank_lift": 0.01737,
+    "rank_lift_t": 0.29,
+    "summary": "Most failures are placement errors: the prompt lets boundaries cut off heads, complements, numeric units, coordinated participants, or polarity-resolving verbs. Prioritise rules that prevent cuts immediately before NP heads, numeric units, conjunctioned participants, colon-lists, and before modals/verbs that resolve polarity so emitted pieces are not misleading on their own."
+  }
+}

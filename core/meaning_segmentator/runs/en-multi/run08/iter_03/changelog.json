@@ -1,0 +1,19 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "sections_reported": [
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "changelog": [
+    "Merged the critic's surface rules into [When to Segment]: added concise guidance to delay finalizing polarity/quantifiers/adverbs, modifier-only stretches (no head yet), locative complements, demonstrative/pronoun resolutions, ambiguous-attachment modifiers, parentheticals/appositives and trailing locatives, and speech-act/imperative formation until disambiguating material appears — mark these positions as candidates but treat them as risky.",
+    "Updated [Priority Rules] to include those patterns among the lower-confidence signals (adverb/quantifier-adjacent cuts, modifier-only pre-head cuts, locative-complement cuts, demonstrative/pronoun-disambiguation cuts, ambiguous-attachment modifiers, and comma-appositive cuts) so they are ranked low rather than forbidden.",
+    "Expanded [Decision Procedure] local safety checks to demote (lower confidence for) any candidate matching the high-risk patterns above and to treat comma-introduced parentheticals/appositives as low-priority unless the next token is an unambiguous finite verb."
+  ],
+  "size_budget": 14652,
+  "over_budget": true
+}
