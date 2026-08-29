@@ -1,6 +1,6 @@
-"""A5 Scorer — 결정론적.
+"""A6 Scorer — 결정론적.
 
-설계 (`../AUTO_PROMPT_LOOP_DESIGN.md`). 축이 세 개다.
+설계는 `AUTOSEG_SIMPLIFY.md`, 지표 선택의 근거는 `AUTOSEG_DETAILS.md`. 축이 세 개다.
 
   format_pass_rate — 포맷 검증 통과율. 1.0 미만이면 그 프롬프트는 탈락. 하드 게이트.
   adequacy         — QE(조각 원문, 조각 번역). **참조가 없다.** y축 주지표.
@@ -38,7 +38,6 @@ import re
 from collections import Counter
 from dataclasses import dataclass, asdict, field
 
-from .gateway import Gateway
 from .pipeline import TAG_RE, split_segments, unit_count
 
 _WS = re.compile(r"\s+")
@@ -74,32 +73,6 @@ def chrf(hyp: str, ref: str, max_n: int = 6, beta: float = 2.0) -> float:
     return (1 + b2) * p * r / (b2 * p + r)
 
 
-# ── 임베딩 코사인 ────────────────────────────────────────────────────────
-
-def _cosine(a: list[float], b: list[float]) -> float:
-    dot = sum(x * y for x, y in zip(a, b))
-    na = math.sqrt(sum(x * x for x in a))
-    nb = math.sqrt(sum(y * y for y in b))
-    return dot / (na * nb) if na and nb else 0.0
-
-
-def embed_similarity(gw: Gateway, hyps: list[str], refs: list[str]) -> list[float]:
-    """두 문자열이 동일하면 호출 없이 1.0."""
-    pending = [i for i, (h, r) in enumerate(zip(hyps, refs)) if h != r and h and r]
-    scores = [1.0] * len(hyps)
-    for i, (h, r) in enumerate(zip(hyps, refs)):
-        if not h or not r:
-            scores[i] = 0.0
-    if not pending:
-        return scores
-    texts = [hyps[i] for i in pending] + [refs[i] for i in pending]
-    vecs = gw.embed(texts)
-    half = len(pending)
-    for j, i in enumerate(pending):
-        scores[i] = _cosine(vecs[j], vecs[half + j])
-    return scores
-
-
 # ── consistency 백엔드 (참조 기반) ───────────────────────────────────────
 
 def _identity_shortcut(hyps: list[str], refs: list[str]) -> tuple[list[float], list[int]]:
@@ -120,32 +93,15 @@ def _identity_shortcut(hyps: list[str], refs: list[str]) -> tuple[list[float], l
 class QualityBackend:
     """`consistency` 계산 백엔드 (참조 기반).
 
-    `src` 를 받는 이유는 COMET 이 원문을 입력으로 쓰기 때문이다. embed·chrF 는 무시한다."""
+    `src` 를 받는 이유는 COMET 이 원문을 입력으로 쓰기 때문이다. NLI 는 무시한다.
+
+    **embed·chrF 백엔드는 삭제했다.** 45개 런에서 한 번도 안 쓰였고(nli 39 / comet 4),
+    embed 는 그 하나 때문에 `Gateway`(임베딩 API 호출)를 이 모듈에 끌어들이고 있었다."""
 
     name = "base"
 
     def score(self, srcs: list[str], hyps: list[str], refs: list[str]) -> list[float]:
         raise NotImplementedError
-
-
-class EmbedBackend(QualityBackend):
-    name = "embed"
-
-    def __init__(self, gw: Gateway):
-        self.gw = gw
-
-    def score(self, srcs, hyps, refs):
-        return embed_similarity(self.gw, hyps, refs)
-
-
-class ChrfBackend(QualityBackend):
-    name = "chrf"
-
-    def score(self, srcs, hyps, refs):
-        scores, pending = _identity_shortcut(hyps, refs)
-        for i in pending:
-            scores[i] = chrf(hyps[i], refs[i])
-        return scores
 
 
 class _CometBase:
@@ -206,23 +162,16 @@ COMET_CHECKPOINTS = {
 }
 
 
-def make_backend(name: str, gw: Gateway | None = None, **kw) -> QualityBackend:
-    if name == "embed":
-        if gw is None:
-            raise ValueError("embed 백엔드에는 Gateway 가 필요합니다")
-        return EmbedBackend(gw)
-    if name == "chrf":
-        return ChrfBackend()
+def make_backend(name: str, **kw) -> QualityBackend:
     if name == "nli":
-        # **다국어 기본.** 예전엔 deberta-mnli(영어 전용)로 조용히 대체돼서,
-        # model_name 을 안 넘긴 호출자가 비영어 타깃에서 무음으로 틀린 값을 받았다.
-        kw.setdefault("model_name", NLI_MODELS["xlmr-anli"])
+        kw.setdefault("model_name", NLI_MODEL)
         kw.setdefault("name", name)
         return BidirectionalNliBackend(**kw)
     if name in COMET_CHECKPOINTS:
         kw.setdefault("model_name", COMET_CHECKPOINTS[name])
         return CometBackend(name=name, **kw)
-    raise ValueError(f"알 수 없는 consistency 백엔드: {name}")
+    raise ValueError(f"알 수 없는 consistency 백엔드: {name}. "
+                     f"쓸 수 있는 값: nli, {', '.join(sorted(COMET_CHECKPOINTS))}")
 
 
 # ── adequacy 백엔드 (참조 없음) ──────────────────────────────────────────
@@ -290,16 +239,17 @@ def make_adequacy_backend(name: str, **kw) -> AdequacyBackend:
 #     불완전함(neutral)과 모순(contradiction)을 구별한다
 #
 # 실측 (premature_cases.json, contradiction 확률 순위): 위반 0/5. QE 는 4/5 였다.
-NLI_MODELS = {
-    "deberta-mnli": "microsoft/deberta-large-mnli",              # en 타깃. 분리가 가장 깨끗
-    "deberta-anli": "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli",
-    "mdeberta-xnli": "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7",  # 다국어(base)
-    # **다국어 large.** base 급 `mdeberta-xnli` 는 ko/zh/ja 타깃에서 consistency 곡선이
-    # 뒤집힌다 (T 를 키울수록 offline 번역에서 멀어진다고 나온다 — 물리적으로 불가능).
-    # 같은 데이터에서 comet·chrf 는 5/5 정상 방향이라 NLI 쪽 결함이다.
-    "xlmr-xnli": "joeddav/xlm-roberta-large-xnli",
-    "xlmr-anli": "vicgalle/xlm-roberta-large-xnli-anli",
-}
+# **모델은 하나로 고정한다.** 후보 비교는 끝났고, 고를 수 있게 열어 두면 런마다 다른
+# 체크포인트로 잰 값이 한 표에 섞인다 (저장된 런에 실제로 셋이 섞여 있었다:
+# xlmr-anli 19 / mdeberta-xnli 16 / deberta-mnli 7).
+#
+# `xlm-roberta-large-xnli-anli` 인 이유 — **다국어 large 여야 한다.** base 급
+# `mDeBERTa-v3-base-xnli` 는 ko/zh/ja 타깃에서 consistency 곡선이 뒤집혔다 (T 를 키울수록
+# offline 번역에서 멀어진다고 나온다 — 물리적으로 불가능). 같은 데이터에서 comet·chrf 는
+# 5/5 정상 방향이라 NLI 쪽 결함이었다. 영어 전용 `deberta-large-mnli` 는 분리가 가장
+# 깨끗하지만 비영어 타깃에서 무음으로 틀린 값을 준다.
+# 후보 비교 기록: AUTOSEG_DETAILS.md '검토했으나 채택하지 않은 것'
+NLI_MODEL = "vicgalle/xlm-roberta-large-xnli-anli"
 
 
 class _NliBase:
@@ -312,7 +262,7 @@ class _NliBase:
 
     _PIPES: dict = {}
 
-    def __init__(self, model_name: str = NLI_MODELS["xlmr-anli"],
+    def __init__(self, model_name: str = NLI_MODEL,
                  batch_size: int = 16, device: int = 0, name: str = ""):
         self.model_name = model_name
         self.batch_size = batch_size
@@ -351,21 +301,43 @@ class ContradictionBackend(_NliBase):
     argmax 라벨이 아니라 **contradiction 확률**을 쓴다. 라벨이 `neutral` 로 어긋나도
     확률 순위는 유지되므로(실측) 임계값 없이 연속 점수로 쓸 수 있다."""
 
-    def __init__(self, model_name: str = NLI_MODELS["xlmr-anli"],
+    def __init__(self, model_name: str = NLI_MODEL,
                  batch_size: int = 16, device: int = 0, name: str = "xlmr-anli"):
         super().__init__(model_name, batch_size, device, name)
 
     def score(self, premises: list[str], hypotheses: list[str]) -> list[float]:
-        out = [0.0] * len(premises)
+        return self.score_dual(premises, hypotheses)[0]
+
+    def score_dual(self, premises: list[str],
+                   hypotheses: list[str]) -> tuple[list[float], list[float]]:
+        """`(contradiction, 1 − entailment)` 를 **한 번의 호출로** 둘 다 낸다.
+
+        NLI 는 세 라벨 확률을 한꺼번에 주므로 두 척도를 같이 재는 데 **추가 비용이 0** 이다.
+        `1 − entailment` 로 바꾸는 안이 검토 중이라(오프라인 실측이 전부 그쪽을 가리키지만
+        표본이 얇다) 목적함수는 `contradiction` 그대로 두고 다른 쪽을 **나란히 기록**한다.
+        다음 런의 로그로 판단한다.
+
+        오프라인 실측 (`AUTOSEG_SIMPLIFY.md` "확인해야 할 것"):
+          관문 최소 여유 0.0604 → 0.8377 · 긴 방출 구간 신호 +0.0115 → +0.0450
+          검출력 |t| 0.49 → 0.80 · 두 척도 순위상관 +0.923 · 채택 결정 11회 중 3회 뒤집힘
+
+        차이: `contradiction` 은 "틀렸다" 만 세고, `1 − entailment` 는 "아직 모르겠다"
+        (neutral)까지 센다. 미완성 조각은 원래 neutral 이 정상이라 무해한 미완성이
+        벌받을 수 있다 — 관문에서 `benign_incomplete` 가 3~4배 올랐다.
+        """
+        n = len(premises)
+        contra = [0.0] * n
+        one_minus_ent = [0.0] * n
         pending = [i for i, (p, h) in enumerate(zip(premises, hypotheses))
                    if p.strip() and h.strip()]
         if not pending:
-            return out
+            return contra, one_minus_ent
         res = self.load()([{"text": premises[i], "text_pair": hypotheses[i]}
                            for i in pending], batch_size=self.batch_size)
         for i, scores in zip(pending, res):
-            out[i] = self._prob(scores, "contr")
-        return out
+            contra[i] = self._prob(scores, "contr")
+            one_minus_ent[i] = 1.0 - self._prob(scores, "entail")
+        return contra, one_minus_ent
 
 
 class BidirectionalNliBackend(_NliBase, QualityBackend):
@@ -384,9 +356,9 @@ class BidirectionalNliBackend(_NliBase, QualityBackend):
     명제만 보므로 표면 어순·문장 수가 달라도 감점이 없고, 부정 뒤집힘은 양방향
     모두에서 contradiction 으로 잡힌다. 두 입력이 모두 타깃 언어라 소스 언어별
     자원도 필요 없다. 기본 `xlmr-anli` 는 다국어라 **타깃에 따라 바꿀 필요가 없다** —
-    예전 처방이던 `mdeberta-xnli` 는 ko/zh/ja 에서 곡선이 뒤집힌다 (NLI_MODELS 주석)."""
+    예전 처방이던 base 급 다국어 모델은 ko/zh/ja 에서 곡선이 뒤집힌다 (`NLI_MODEL` 주석)."""
 
-    def __init__(self, model_name: str = NLI_MODELS["xlmr-anli"],
+    def __init__(self, model_name: str = NLI_MODEL,
                  batch_size: int = 16, device: int = 0, name: str = "nli"):
         super().__init__(model_name, batch_size, device, name)
 
@@ -405,11 +377,10 @@ class BidirectionalNliBackend(_NliBase, QualityBackend):
         return scores
 
 
-def make_contradiction_backend(name: str, **kw) -> ContradictionBackend:
-    if name not in NLI_MODELS:
-        raise ValueError(f"알 수 없는 NLI 백엔드: {name}. 쓸 수 있는 값: {sorted(NLI_MODELS)}")
-    kw.setdefault("model_name", NLI_MODELS[name])
-    return ContradictionBackend(name=name, **kw)
+def make_contradiction_backend(**kw) -> ContradictionBackend:
+    kw.setdefault("model_name", NLI_MODEL)
+    kw.setdefault("name", "xlmr-anli")
+    return ContradictionBackend(**kw)
 
 
 def effective_of(adequacy: float, contradiction: float) -> float:
@@ -448,6 +419,21 @@ def laal_words(seg_text: str, seg_pieces: list[str] | None, full_translation: st
 
     참조 길이 `|Y*|` 는 gold 참조가 없으므로 full 번역 길이로 대신한다.
     단위가 ms 가 아니라 어절이므로 논문 수치와 직접 비교하면 안 된다.
+
+    **문장 단위로는 T 에 대해 단조가 아니다.** `τ` 는 "소스를 다 들은 시점"이라 그 뒤는
+    안 세는데(AL/LAAL 표준), 경계를 빼면 마지막 조각이 커져 그 시점이 **앞당겨진다**.
+    그러면 가장 오래 기다린 뒤쪽 항이 통째로 집계에서 빠져 평균이 내려갈 수 있다.
+
+    최소 반례 (소스 11어절):
+        조각 3개  소스 [3,5,3] 타깃 [4,1,5]  τ=6  항 [3.0,1.9,0.8,−0.3,3.6,5.5]  laal 2.4167
+        2·3 합침  소스 [3,8]   타깃 [4,6]    τ=5  항 [3.0,1.9,0.8,−0.3,6.6]      laal 2.4000
+    5번 항은 3.6 → 6.6 으로 **올랐는데**(기다림은 실제로 늘었다) 6번 항 5.5 가 사라져
+    합이 14.50 → 12.00 이 됐다.
+
+    저장된 런 실측: 문장×T 계열 2,120 중 247(11.7%)이 이 모양이다. **집계 평균은
+    17/17 런에서 단조 증가**라 곡선은 안전하다 — 문장마다 방향이 엇갈려도 상쇄된다.
+    따라서 `laal_words` 는 **집계에서만 해석한다.** 문장 하나를 놓고 "T 를 키우면 지연이
+    준다"고 읽으면 안 된다.
     """
     chunks = split_segments(seg_text)
     if not chunks:
@@ -488,7 +474,6 @@ class SplitMetrics:
 
     target_chunk_words: int
     n: int
-    n_scored: int              # 포맷 위반을 제외하고 실제로 채점된 문장 수
     n_effective: int           # 경계가 있어 effective 가 정의된 문장 수 (k≥2)
     effective: float | None
     adequacy: float
@@ -496,13 +481,9 @@ class SplitMetrics:
     effective_min: float | None
     effective_p10: float | None
     consistency: float
-    consistency_chrf: float
     laal_words: float
     chunks_per_sentence: float
-    split_ratio: float
     missing_boundaries: float
-    premature_rate: float | None = None
-    reference_suspect_rate: float | None = None    # 판정자가 오라클을 의심한 경계 비율
     rank_contra_spearman: float | None = None      # 순위 vs 실측 contra 정렬도. 양수=정렬
     # 순위 하위 절반 − 상위 절반의 경계 contradiction 차. 양수=정렬, 0 이하=순위 무정보.
     # focus="priority" 판정이 쓰는 값 (`rank_contra_gap`).
@@ -511,6 +492,10 @@ class SplitMetrics:
     rank_contra_gap: float | None = None
     rank_contra_gap_se: float | None = None
     rank_contra_gap_n: int | None = None
+    # **병기 지표 — 목적함수에는 안 들어간다.** 같은 NLI 호출에서 나온 `1 − entailment` 로
+    # 잰 값이다 (`ContradictionBackend.score_dual`). 교체 여부를 다음 런의 로그로 판단한다.
+    contradiction_ent: float | None = None
+    effective_ent: float | None = None
     # 다언어 목적함수에서만 채워진다. `effective` 는 **타깃별 원값의 평균**이라 해석·비교가
     # 되고, `effective_z` 는 **분할별로 고정된 기준선**으로 타깃별 z-정규화한 뒤 평균한
     # 값이다 (`loop._zmix`). **보고는 effective, 채택 판정은 effective_z** 로 축을 나눈다.
@@ -546,7 +531,7 @@ class Metrics:
     # 직접 측정이다. 폐기된 경계는 렌더링이 없어 contra 값 자체가 없으므로
     # `rank_contra_gap`(생존 경계끼리의 순서)으로는 원리적으로 못 보는 양이다.
     #
-    # 실측 (metric_probes/runs/rank_ablation/, en-de run04 + ko-en run05, 셔플 20회):
+    # 실측 (순위 셔플 대조, en-de run04 + ko-en run05, 셔플 20회):
     #   폐기율 64% → lift +0.024,  82% → +0.050,  85% → +0.056,  93% → +0.061
     #   real 이 20/20 셔플을 이겼고(순열 p=0.048), 같은 조건에서 `rank_contra_gap` 은
     #   en-de 에서 오히려 무작위보다 낮게(z −0.6, −1.1) 나왔다 — 부호가 언어쌍마다 뒤집힌다.
@@ -577,17 +562,37 @@ class Metrics:
         return self.by_T.get(str(T))
 
 
+def _opt_mean(xs: list[float | None] | None) -> float | None:
+    """None 을 빼고 평균. 값이 하나도 없으면 None (병기 지표가 꺼져 있을 때)."""
+    if not xs:
+        return None
+    v = [x for x in xs if x is not None]
+    return sum(v) / len(v) if v else None
+
+
+def percentile10(xs: list[float]) -> float | None:
+    """하위 10% 지점 값. 평균이 못 보는 **꼬리**를 본다.
+
+    같은 식이 `loop` 의 다언어 병합 쪽에도 복붙돼 있었다 — 정의가 갈리면 단일 타깃과
+    다언어의 p10 을 나란히 놓을 수 없다."""
+    if not xs:
+        return None
+    e = sorted(xs)
+    return e[max(0, int(0.10 * (len(e) - 1)))]
+
+
 def aggregate_split(
     target_chunk_words: int,
     effective_scores: list[float | None],
     adequacy_scores: list[float],
     contradiction_scores: list[float | None],
     consistency_scores: list[float],
-    chrf_scores: list[float],
     laals: list[float],
     ks: list[int],
     missings: list[int],
     n_total: int | None = None,
+    effective_ent_scores: list[float | None] | None = None,
+    contradiction_ent_scores: list[float | None] | None = None,
 ) -> SplitMetrics:
     """점수 리스트는 **포맷을 통과한 문장만** 담는다.
 
@@ -602,8 +607,6 @@ def aggregate_split(
     n_scored = len(effective_scores)
     eff_vals = [e for e in effective_scores if e is not None]
     con_vals = [c for c in contradiction_scores if c is not None]
-    e_sorted = sorted(eff_vals)
-    p10 = (e_sorted[max(0, int(0.10 * (len(e_sorted) - 1)))] if e_sorted else None)
 
     def mean(xs, default=0.0):
         return sum(xs) / len(xs) if xs else default
@@ -611,19 +614,18 @@ def aggregate_split(
     return SplitMetrics(
         target_chunk_words=target_chunk_words,
         n=n_total if n_total is not None else n_scored,
-        n_scored=n_scored,
         n_effective=len(eff_vals),
         effective=(mean(eff_vals) if eff_vals else None),
         adequacy=mean(adequacy_scores),
         contradiction=(mean(con_vals) if con_vals else None),
-        effective_min=(e_sorted[0] if e_sorted else None),
-        effective_p10=p10,
+        effective_min=(min(eff_vals) if eff_vals else None),
+        effective_p10=percentile10(eff_vals),
         consistency=mean(consistency_scores, 1.0),
-        consistency_chrf=mean(chrf_scores),
         laal_words=mean(laals),
         chunks_per_sentence=mean([float(k) for k in ks], 1.0),
-        split_ratio=(sum(1 for k in ks if k > 1) / len(ks)) if ks else 0.0,
         missing_boundaries=mean([float(s) for s in missings]),
+        effective_ent=_opt_mean(effective_ent_scores),
+        contradiction_ent=_opt_mean(contradiction_ent_scores),
     )
 
 
@@ -639,6 +641,116 @@ def aggregate(n: int, valid_flags: list[bool], first_pass_flags: list[bool] | No
     )
 
 
+# ── 지표 용어집 — Critic 에게 넘길 설명 ──────────────────────────────────
+#
+# **왜 코드 옆에 두나.** 종전에는 `Critic.review` 안에 손으로 쓴 문단이 있었고, 실려 가는
+# 지표 31개 중 **7개만** 설명돼 있었다. 목적함수 `effective` 조차 정의된 적이 없다 —
+# 무슨 숫자를 올려야 하는지 모르는 채로 진단하고 있었다는 뜻이다. 그리고 손으로 쓴
+# 문단은 필드가 늘어도 안 따라온다.
+#
+# `describe()` 가 **실제로 들어 있는 키만** 골라 렌더링하고, 용어집에 없는 키는
+# `(no description)` 로 드러난다. 필드를 추가하면 설명이 빠진 게 보인다.
+#
+# **`fixable` 이 핵심이다.** 프롬프트로 움직일 수 없는 것을 고치라고 시키는 게 루프가
+# 개선을 못 만든 큰 원인이었다 — `focus="format"` 개정 12회가 포맷을 못 고쳤고(재시도 후
+# +0.0021, 1차 −0.0257), 그 위반의 65%가 간격이었는데 그건 이제 정규화가 결정론으로
+# 처리한다. 무엇이 프롬프트의 몫이고 무엇이 아닌지 함께 알려준다.
+GLOSSARY: dict[str, tuple[str, bool]] = {
+    # key: (설명, 프롬프트로 움직일 수 있는가)
+    "n": ("sentences scored", False),
+    "score": ("THE OBJECTIVE. Mean of `effective` over the T grid. This is the single "
+              "number the loop maximises — everything else is diagnosis.", True),
+    "format_pass_rate": ("fraction of sentences with no rule violation after one repair "
+                         "retry. What still fails here is mostly the model rewriting the "
+                         "source text, which more prompt wording does not fix.", False),
+    "format_pass_rate_no_retry": ("same, before the repair retry. A low value costs money "
+                                  "(one extra LLM call per sentence) but does not lower "
+                                  "the score.", False),
+    "rank_lift": ("how much `effective` DROPS when the confidence numbers are randomly "
+                  "shuffled while the boundary positions stay the same. It isolates what "
+                  "the RANKING does. Large positive = the ranking already works, refine it "
+                  "only if the cases show mis-ranked boundaries. Near zero = the ranking "
+                  "carries no information, so rewriting [Priority Rules] will not help and "
+                  "the problem is WHERE boundaries are marked.", True),
+    "rank_lift_t": ("`rank_lift` divided by its standard error. Read the sign and the "
+                    "magnitude together — below ~1 the lift is not distinguishable from "
+                    "noise.", False),
+    "rank_lift_se": ("standard error of `rank_lift`.", False),
+    "rank_lift_n": ("sentences that contributed to `rank_lift`.", False),
+    "rank_lift_T": ("the T at which `rank_lift` was measured.", False),
+    "by_T": ("results keyed by target piece size T. A LARGE key means few pieces, so only "
+             "the TOP-RANKED boundaries survive; a SMALL key means many pieces, so "
+             "lower-ranked boundaries survive too.", False),
+    "target_chunk_words": ("the T of this row.", False),
+    "effective": ("adequacy x (1 - contradiction). The per-T objective. Undefined (null) "
+                  "for sentences with no boundary — those are excluded, not scored zero.",
+                  True),
+    "adequacy": ("translation quality of each piece against ITS OWN source, with no "
+                 "reference translation — word order differences from an offline "
+                 "translation do not lower it. Weighted by piece length.", True),
+    "contradiction": ("at each boundary, how much the text emitted SO FAR contradicts the "
+                      "whole-sentence translation. Averaged over the (k-1) boundaries. "
+                      "This is what a boundary placed too early costs.", True),
+    "effective_p10": ("the 10th percentile of `effective`. Read it next to the mean — the "
+                      "mean is pulled by a few bad sentences, so a mean that rises while "
+                      "p10 falls is luck, not improvement.", False),
+    "effective_min": ("the worst sentence.", False),
+    "n_effective": ("sentences where `effective` is defined (they had at least one "
+                    "boundary).", False),
+    "consistency": ("similarity of the concatenated pieces to the whole-sentence "
+                    "translation. Reported only — not in the objective.", False),
+    "laal_words": ("lag in source words, lower is faster. It is SET BY THE LATENCY BUDGET "
+                   "(T), not by the prompt. Do not try to move it.", False),
+    "chunks_per_sentence": ("mean pieces per sentence. Also set by T — the truncator cuts "
+                            "to the budget whenever enough boundaries were marked. "
+                            "**Telling the model to segment less does NOT reduce this**; it "
+                            "only changes WHICH boundaries survive.", False),
+    "missing_boundaries": ("how many boundaries the budget asked for that the prompt never "
+                           "marked. Above zero means the knob cannot reach that T.", True),
+    "rank_contra_spearman": ("rank correlation between assigned confidence and measured "
+                             "contradiction. Superseded by `rank_lift`; reported only.",
+                             False),
+    "rank_contra_gap": ("bottom-half minus top-half boundary contradiction. Superseded by "
+                        "`rank_lift`; its length-noise correction is currently under "
+                        "review, so do not act on its sign.", False),
+    "rank_contra_gap_se": ("standard error of `rank_contra_gap`.", False),
+    "rank_contra_gap_n": ("sentences behind `rank_contra_gap`.", False),
+    "effective_ent": ("`effective` recomputed with 1 - entailment instead of contradiction. "
+                      "REPORTED ONLY, being trialled — the objective still uses "
+                      "`effective`.", False),
+    "contradiction_ent": ("`contradiction` measured as 1 - entailment. Reported only.",
+                          False),
+    "effective_z": ("multi-target only: `effective` z-normalised per target then averaged. "
+                    "Used for the adoption test; `effective` is the reported value.", False),
+    "n_targets": ("multi-target only: how many target languages were averaged.", False),
+}
+
+
+def describe(d: dict, _seen: set | None = None) -> str:
+    """`Metrics.to_dict()` 에 실제로 들어 있는 키만 골라 설명을 만든다.
+
+    프롬프트에 손으로 적으면 필드가 늘어도 안 따라온다. 여기서 생성하면 설명이 없는
+    키가 `(no description)` 으로 드러나므로, 지표를 추가할 때 빠뜨린 게 보인다.
+    """
+    seen = _seen if _seen is not None else set()
+    lines: list[str] = []
+    for k, v in d.items():
+        if k in seen:
+            continue
+        seen.add(k)
+        if isinstance(v, dict) and k == "by_T":
+            desc, fix = GLOSSARY.get(k, ("(no description)", False))
+            lines.append(f"- {k}: {desc}")
+            for sub in v.values():
+                if isinstance(sub, dict):
+                    lines.append(describe(sub, seen))
+            continue
+        desc, fix = GLOSSARY.get(k, ("(no description)", False))
+        tail = "" if fix else "  [not movable by the prompt]"
+        lines.append(f"- {k}: {desc}{tail}")
+    return "\n".join(x for x in lines if x)
+
+
 def score(m: Metrics) -> float:
     """**단일축.** T 격자에서의 `effective` 평균.
 
@@ -650,7 +762,7 @@ def score(m: Metrics) -> float:
     프롬프트를 `-9.03` 으로 폐기시켰고, 그 크기가 실제 프롬프트 차이(0.003)를 3000배
     압도해 hill climbing 이 "이번에 위반이 났는가"로 결정됐다. 지금은 표기 오류를
     `pipeline.normalize_tags` 가 결정론적으로 고치고, 남은 위반 문장은 채점에서
-    제외되며(`n_scored`), `format_pass_rate` 는 별도로 보고된다. 번역 비용 방어는
+    제외되고, `format_pass_rate` 는 별도로 보고된다. 번역 비용 방어는
     `skip_translation_below` 가 계속 담당한다.
 
     `effective` 가 None 인 T(전 문장 무분절 — 비교군에서만 발생)는 평균에서 뺀다.
@@ -687,14 +799,18 @@ def rank_contra_spearman(rows: list[dict], T: int, min_boundaries: int = 3) -> t
 
     **양수 = 정렬됨** (순위 숫자가 클수록 = 확신 낮을수록 실측 위험이 큼).
     0 근처 = 순위가 위험과 무상관, 음수 = 거꾸로 — 절단이 위험을 줄이지 못하고
-    `[Priority Rules]` 조향(`focus=priority`)이 근거 없는 축이 된다는 뜻이다.
+    `[Priority Rules]` 를 고치는 것이 근거 없는 일이 된다는 뜻이다.
 
     **주의 — 이 값은 원시(raw) contradiction 기준이라 길이 교란이 섞여 있다.**
-    NLI 잡음 바닥은 hypothesis 가 짧을수록 크고(run03 실측: 1-2어절 0.113, 10어절+
-    0.003), 상위 순위 경계는 문장 앞쪽(짧은 hypothesis)에 몰린다. run03 test 에서
-    raw −0.25 가 바닥 보정 후 **+0.14 로 뒤집혔다** — 역전처럼 보인 것의 대부분이
-    위치 교란이었다. 이 값이 음수로 나오면 결론 내리기 전에
-    `noise_floor.py --recheck-t` 로 보정값을 확인할 것.
+    NLI 잡음 바닥은 hypothesis 길이에 따라 다르고 상위 순위 경계는 문장 앞쪽(짧은
+    hypothesis)에 몰린다. run03 test 에서 raw −0.25 가 바닥 보정 후 **+0.14 로 뒤집혔다** —
+    역전처럼 보인 것의 대부분이 위치 교란이었다.
+
+    **그 보정의 방향이 현행 백엔드에서 뒤집혔다.** run03 은 `deberta-mnli`(짧을수록 바닥이
+    큼: 1-2어절 0.113, 10어절+ 0.003)로 잰 것이고 그 백엔드는 삭제됐다. `xlmr-anli` 는
+    반대로 **길수록 크다** (German 0.024 → 0.107, `runs/noise_floor_xlmr/`). 따라서 지금
+    보정은 앞쪽 경계의 불리를 없애는 게 아니라 **키울 수 있다.** 이 값의 부호를 읽기 전에
+    그 문서를 먼저 볼 것.
 
     가장 작은 T(경계 최다 생존)에서 재야 표본이 산다. 반환 (평균, 문장 수).
     """
@@ -720,8 +836,11 @@ def _floor_corrected(d: dict, contras: list[float], floor_fn,
     """경계별 contradiction 에서 길이 잡음 바닥 c0(hypothesis 길이)를 뺀다.
 
     경계 j 의 hypothesis 는 조각 번역 1..j+1 을 이어붙인 것이므로 길이가 j 와 함께
-    자란다. 바닥은 짧을수록 크므로(run03: 1-2어절 0.113 vs 10어절+ 0.003) 보정 없이는
-    **문장 앞쪽 경계가 구조적으로 불리**하다.
+    자란다. 바닥이 길이에 따라 출렁이므로 보정 없이는 특정 위치의 경계가 구조적으로
+    불리해진다.
+
+    **방향은 현행 백엔드에서 뒤집혔다.** "짧을수록 크다" 는 삭제된 `deberta-mnli` 성질이고,
+    `xlmr-anli` 는 길수록 크다 (German 0.024 → 0.107, `runs/noise_floor_xlmr/`).
 
     길이는 **타깃 표기 체계**로 센다 (`unit_count`). 어절로 고정하면 무공백 타깃(ja/zh)
     에서 조각을 공백으로 이어붙인 문자열의 `split()` 이 **조각 수**를 세게 되어, 실제
@@ -743,13 +862,13 @@ def rank_contra_gap(rows: list[dict], T: int, min_boundaries: int = 2,
 
     `rank_contra_spearman` 과 같은 축을 다른 통계량으로 잰다. Spearman 은 순위 상관만
     보므로 "정렬은 됐는데 격차가 없다"를 못 가르지만, 이 값은 **크기**를 재므로
-    절단이 실제로 위험을 얼마나 덜어내는지가 나온다. focus 판정이 쓰는 쪽은 이것이다.
+    절단이 실제로 위험을 얼마나 덜어내는지가 나온다.
 
     **양수 = 정렬됨** — 확신 낮다고 매긴 경계가 실제로 더 반박당함. 상위만 남기는
     절단이 위험을 덜어낸다는 뜻.
     **0 이하 = 순위가 정보를 안 준다** — 상위 경계가 하위와 같거나 더 위험하다.
     이 경우 노브를 조여도 품질이 안 오르고, 고칠 곳은 위치가 아니라 `[Priority Rules]`
-    다 (`focus="priority"`).
+    다.
 
     임계값이 **0** 인 것이 이 지표를 쓰는 이유다. 종전의 T 대비
     (`adequacy(작은 T) − adequacy(큰 T) > PRIORITY_MARGIN`)는 두 문제가 있었다.

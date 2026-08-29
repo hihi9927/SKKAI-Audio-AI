@@ -250,6 +250,10 @@ class Gateway:
         self.is_openai = self.base_url.startswith(OPENAI_BASE_URL)
         self._warned_temperature = False
         self._warned_reasoning = False
+        # **이 플래그는 게이트웨이 전체에 걸린다.** 에이전트 호출 때문에 한 번 서면
+        # 분절 호출도 temperature 를 잃어 **비결정론이 된다**. Claude 계열에서 사고를
+        # 켜면 temperature 가 거부되므로, 결정론이 필요하면 `--seg-reasoning-effort`
+        # 와 `--agent-reasoning-effort` 를 **둘 다** none 으로 둘 것.
         self.omit_temperature = False    # 이 모델이 temperature 를 거부한다고 확인되면 True
         self.omit_reasoning_effort = False   # 이 모델이 reasoning_effort 를 거부하면 True
         self.omit_json_mode = False          # 이 모델이 response_format 을 거부하면 True
@@ -275,6 +279,24 @@ class Gateway:
         if self.budget is not None and self.usage.cost >= self.budget:
             raise BudgetExceeded(f"예산 초과: {self.usage.cost:.4f} >= {self.budget}")
 
+        def _rejected(resp, name: str) -> bool:
+            """400 응답이 `name` 파라미터를 문제 삼았는가.
+
+            **에러 형식이 게이트웨이마다 다르다.** OpenAI 는 `error.param` 에 이름을
+            넣지만 Letsur 는 `{"type":"service_error","detail":"- {\\"message\\": ...}"}`
+            로 감싸 보내 `param` 이 없다. `param` 만 보던 종전 코드는 그 400 을 못 알아보고
+            5회 재시도 뒤 런을 죽였다 — run12 가 시작 즉시 그렇게 죽었다
+            (claude-haiku + temperature 0 + 사고: "`temperature` may only be set to 1
+            when thinking is enabled"). 그래서 본문 문자열도 함께 본다.
+            """
+            try:
+                j = resp.json()
+            except Exception:                                    # noqa: BLE001
+                return name in (resp.text or "")
+            if (j.get("error") or {}).get("param") == name:
+                return True
+            return name in json.dumps(j, ensure_ascii=False)
+
         last_err: Exception | None = None
         for attempt in range(self.max_retries):
             try:
@@ -285,23 +307,23 @@ class Gateway:
                 # (설계 §8.6-5: 모델이 흔들리면 점수 변화의 귀속이 불가능).
                 # 죽이지는 않되, 무엇이 바뀌었는지 반드시 로그에 남긴다.
                 if r.status_code == 400 and "temperature" in body:
-                    err = (r.json().get("error") or {})
-                    if err.get("param") == "temperature":
+                    if _rejected(r, "temperature"):
                         body = {k: v for k, v in body.items() if k != "temperature"}
                         # **플래그로 기억한다.** 호출마다 다시 붙이면 매 호출이 400 을 한 번씩
                         # 먹고 재시도 예산도 하나씩 깎는다 (run05 초반 로그에서 실제로 그랬다).
                         self.omit_temperature = True
                         if not self._warned_temperature:
                             self._warned_temperature = True
-                            print(f"[gateway] 경고: '{body.get('model')}' 는 temperature 를 "
-                                  f"지원하지 않아 기본값(1)으로 돈다 — 분절이 비결정론적이 된다.",
-                                  file=sys.stderr)
+                            print(f"[gateway] 경고: '{body.get('model')}' 가 temperature 를 "
+                                  f"거부해 기본값으로 돈다 — **분절이 비결정론적이 된다**. "
+                                  f"Claude 계열은 사고를 켜면 temperature 를 1 로만 받으므로, "
+                                  f"결정론이 필요하면 `--seg-reasoning-effort none` 으로 "
+                                  f"사고를 끌 것.", file=sys.stderr)
                         continue
                 # `reasoning_effort` 미지원 모델도 같은 형태로 400 을 준다. 사고량 조절은
                 # 비용 최적화지 정확성 요건이 아니므로, 거부하면 떼고 계속 간다.
                 if r.status_code == 400 and "reasoning_effort" in body:
-                    err = (r.json().get("error") or {})
-                    if err.get("param") == "reasoning_effort":
+                    if _rejected(r, "reasoning_effort"):
                         body = {k: v for k, v in body.items() if k != "reasoning_effort"}
                         self.omit_reasoning_effort = True
                         if not self._warned_reasoning:
@@ -311,8 +333,7 @@ class Gateway:
                                   file=sys.stderr)
                         continue
                 if r.status_code == 400 and "response_format" in body:
-                    err = (r.json().get("error") or {})
-                    if err.get("param") in ("response_format", "response_format.type"):
+                    if _rejected(r, "response_format"):
                         body = {k: v for k, v in body.items() if k != "response_format"}
                         self.omit_json_mode = True
                         continue
@@ -364,14 +385,26 @@ class Gateway:
             "model": model or self.model,
             budget_key: max_tokens,
             **({} if self.omit_temperature else {"temperature": temperature}),
+            # **`is_openai` 로 막으면 안 된다.** Letsur 게이트웨이도 이 파라미터를
+            # 그대로 받는다 — 실측(gpt-5-mini, 분절 프롬프트 + 1문장):
+            #     low 640 / medium 2,752 / high 6,464 사고 토큰
+            # 종전에는 OpenAI 직결일 때만 실었기 때문에 **Letsur 런에서
+            # `--seg-reasoning-effort` 가 아무 일도 안 했다** (run09 실측: low 로 돌렸는데
+            # 사고가 15,330tok/콜 로 medium 런의 13,876 보다 오히려 컸다). 비용의 94% 가
+            # 분절 사고인데 유일한 손잡이가 조용히 끊겨 있었다.
+            #
+            # 거부하는 모델은 아래 400 처리가 `omit_reasoning_effort` 를 세워 다음
+            # 호출부터 뺀다 — 그게 이 플래그의 존재 이유다. 엔드포인트로 미리 막을 일이
+            # 아니다.
             **({"reasoning_effort": effort}
-               if (effort and self.is_openai and not self.omit_reasoning_effort)
-               else {}),
+               if (effort and not self.omit_reasoning_effort) else {}),
             # 구문상 유효한 JSON 을 서버가 보장한다. temperature 를 0 으로 못 박는
             # 모델에서는 이게 유일한 방어다 — en-de run01 에서 Profiler 가 깨진 JSON 을
             # 냈고 **복구 호출까지 같은 실패**를 반복해 런이 죽었다.
+            # 같은 이유로 `is_openai` 를 뺀다 — Letsur 도 `response_format` 을 받는다
+            # (실측: `{"type":"json_object"}` 로 정상 응답). 거부하면 400 처리가 끈다.
             **({"response_format": {"type": "json_object"}}
-               if (json_mode and self.is_openai and not self.omit_json_mode) else {}),
+               if (json_mode and not self.omit_json_mode) else {}),
             "messages": [
                 {"role": "system", "content": _cacheable(system)},
                 {"role": "user", "content": user},

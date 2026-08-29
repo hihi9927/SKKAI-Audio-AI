@@ -13,9 +13,9 @@
   정확도 — 모든 변이의 다수결이 `expect` 와 일치. 오분류 0건.
   안정성 — 같은 입력 반복 실행에 판정이 동일.
 
-둘 다 **`safe` / `not-safe` 이진**으로 본다. `premature` 와 `mistranslated` 를 소비하는
-곳이 없기 때문이다 — 둘 다 "경계를 표시하고 `cause`·`shift` 를 Critic 에 넘긴다"로 같은
-행동을 부르고, 채택 게이트도 `agents.unsafe_rate` 를 쓴다. 세부 라벨은 진단으로만 남긴다.
+둘 다 **`safe` / `not-safe` 이진**으로 본다. 판정자는 이제 점수를 안 낸다 — 모순이 가장
+큰 경계에 `cause`·`shift` 를 붙여 Critic 에 넘기는 것이 전부이고, `premature` 와
+`mistranslated` 는 거기서 같은 행동을 부른다. 세부 라벨은 진단으로만 남긴다.
 
 `benign_*` 이 기준선이다. 조기 방출 자체는 죄가 아니고 뒤가 반박할 때만 문제인데,
 이를 구별하지 못하는 판정자는 "짧은 조각은 다 나쁨"으로 퇴화해 루프를 보수화한다.
@@ -56,7 +56,7 @@ def is_safe(v: str) -> bool:
     return v == "safe"
 
 
-def check_nli(cases: list[dict], backend_name: str) -> tuple[list[dict], int, int]:
+def check_nli(cases: list[dict]) -> tuple[list[dict], int, int]:
     """같은 fixture 로 **NLI contradiction 백엔드**를 검사한다.
 
     NLI 는 판정자와 달리 목적함수에 직접 들어간다 (`effective = adequacy × (1 − contradiction)`).
@@ -66,7 +66,7 @@ def check_nli(cases: list[dict], backend_name: str) -> tuple[list[dict], int, in
     통과 조건: 모든 케이스에서 `min(premature 확률) > max(safe 확률)`.
     """
     from . import metrics
-    b = metrics.make_contradiction_backend(backend_name)
+    b = metrics.make_contradiction_backend()
     rows = []
     for c in cases:
         for name, v in c["variants"].items():
@@ -112,7 +112,7 @@ def build_report(results: list[dict], model: str, repeats: int,
         "",
         "두 조건 모두 세부 라벨이 아니라 **safe / not-safe 이진**으로 본다. 이유: `premature` 와",
         "`mistranslated` 는 루프에서 같은 행동을 부른다 — 경계를 표시하고 `cause`·`shift` 를",
-        "Critic 에 넘긴다. 채택 게이트도 `unsafe_rate` 를 쓴다. 세부 라벨을 소비하는 곳이",
+        "Critic 에 넘긴다. 판정자는 점수를 내지 않는다. 세부 라벨을 소비하는 곳이",
         "없으므로 그 축을 관문 조건으로 두면 과잉 명세다. `라벨정확`·`라벨고정` 열에 진단으로만 남긴다.",
         "",
         "판정 기준선은 `benign_*` 이다. 조기 방출 자체가 아니라 **뒤가 반박하는지**를",
@@ -165,7 +165,7 @@ def build_report(results: list[dict], model: str, repeats: int,
         lines += ["", f"순위 위반 {viol}/{tot} → "
                   + ("**통과**" if viol == 0 else "**탈락**"), ""]
         if viol:
-            lines += ["탈락이면 다른 NLI 체크포인트를 시도한다 (`metrics.NLI_MODELS`). "
+            lines += ["탈락이면 NLI 체크포인트 교체를 검토한다 (`metrics.NLI_MODEL`). "
                       "전부 떨어지면 조기 방출을 목적함수에서 검출할 수단이 없으므로, "
                       "판정자 결과를 채택 게이트의 비악화 조건으로 쓰는 방어책으로 후퇴한다.", ""]
     return "\n".join(lines)
@@ -182,8 +182,6 @@ def main() -> int:
     p.add_argument("--budget", type=float, default=1.0)
     p.add_argument("--cases", default=str(CASES_PATH))
     p.add_argument("--out", default=None, help="리포트 경로 (기본 runs/judge_validity/report.md)")
-    p.add_argument("--nli-backend", default="xlmr-anli",
-                   help="함께 검사할 NLI 백엔드 (metrics.NLI_MODELS 의 키)")
     p.add_argument("--skip-judge", action="store_true",
                    help="LLM 판정자 검사를 건너뛰고 NLI 만 검사 (API 호출 0)")
     p.add_argument("--skip-nli", action="store_true", help="NLI 검사를 건너뛴다")
@@ -209,7 +207,7 @@ def main() -> int:
                     # 정확도·안정성 모두 safe / not-safe 축에서 본다.
                     # premature 와 mistranslated 를 소비하는 곳이 없다 — 둘 다 "이 경계를
                     # 표시하고 cause·shift 를 Critic 에 넘긴다"로 같은 행동을 부르고,
-                    # 채택 게이트도 unsafe_rate 를 쓴다. 쓰이지 않는 구별을 관문 조건으로
+                    # 판정자는 점수를 내지 않는다. 쓰이지 않는 구별을 관문 조건으로
                     # 두면 과잉 명세다. 세부 라벨은 진단으로만 보고한다.
                     "accurate": is_safe(majority) == is_safe(variant["expect"]),
                     "label_accurate": majority == variant["expect"],
@@ -224,9 +222,9 @@ def main() -> int:
 
     nli = None
     if not args.skip_nli:
-        rows, viol, tot = check_nli(cases, args.nli_backend)
-        nli = (rows, viol, tot, args.nli_backend)
-        print(f"\n[NLI {args.nli_backend}] 순위 위반 {viol}/{tot}", flush=True)
+        rows, viol, tot = check_nli(cases)
+        nli = (rows, viol, tot, metrics.NLI_MODEL)
+        print(f"\n[NLI xlmr-anli] 순위 위반 {viol}/{tot}", flush=True)
 
     out_dir = Path(args.out).parent if args.out else (_HERE.parent / "runs" / "judge_validity")
     out_dir.mkdir(parents=True, exist_ok=True)

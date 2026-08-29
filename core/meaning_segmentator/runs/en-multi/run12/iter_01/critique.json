@@ -1,0 +1,212 @@
+{
+  "cases": [
+    {
+      "id": "en_us_120",
+      "error_type": "placement",
+      "span": "a vicious battle between American",
+      "evidence": "contradiction_after_each_piece[1] = 0.9995. Emitted 'American' alone in a coordinate participant list; reader resolved to wrong second party (North Korea, China) instead of waiting for 'Iraqi'.",
+      "cause": "wrong participant — coordinate structure incomplete",
+      "proposed_rule": "Do not emit a participant in a coordinate relational phrase (X and Y) until both coordinates have arrived. Mark boundaries only after the complete list closes.",
+      "example_pair": {
+        "input": "a vicious battle between American and Iraqi forces",
+        "output": "a vicious battle between American and Iraqi <SEG:1> forces"
+      }
+    },
+    {
+      "id": "en_us_1000",
+      "error_type": "placement",
+      "span": "of responsibility",
+      "evidence": "contradiction_after_each_piece[0] = 0.9183. Emitted 'responsibility' without its complement 'for the attack'; reader inferred incomplete or wrong scope.",
+      "cause": "head not yet arrived — prepositional phrase incomplete",
+      "proposed_rule": "Do not emit a noun that is the head of a prepositional phrase until its complement (the object of the preposition) has arrived in the source.",
+      "example_pair": {
+        "input": "suspect an alleged Daesh militant of responsibility for the attack",
+        "output": "suspect an alleged Daesh militant of responsibility for <SEG:1> the attack"
+      }
+    },
+    {
+      "id": "en_us_46",
+      "error_type": "placement",
+      "span": "a 9,000 year lease for the St James' Gate Brewery",
+      "evidence": "contradiction_after_each_piece[1] = 0.9683. Emitted 'Brewery' as direct object of 'signed', but source says Guinness signed a lease, not the brewery.",
+      "cause": "head not yet arrived — object noun phrase incomplete",
+      "proposed_rule": "When a transitive verb is followed by a noun phrase with a prepositional modifier (NP for X), do not emit the prepositional phrase's object until the complete NP has been seen. The object of 'for' is not the object of the verb.",
+      "example_pair": {
+        "input": "signed a 9,000 year lease for the St James' Gate Brewery in Dublin",
+        "output": "signed a 9,000 year lease for the St James' Gate <SEG:1> Brewery in Dublin"
+      }
+    },
+    {
+      "id": "en_us_151",
+      "error_type": "placement",
+      "span": "had a bid for the bank",
+      "evidence": "contradiction_after_each_piece[1] = 0.9995. Emitted affirmative 'had a bid' (did make); source later says bid was 'rejected'.",
+      "cause": "polarity not yet settled — negation/reversal not yet arrived",
+      "proposed_rule": "Do not emit a completed action or state (especially with agency or volition) until you have seen whether it is negated, rejected, reversed, or qualified by what follows.",
+      "example_pair": {
+        "input": "had a bid for the bank rejected prior to nationalisation",
+        "output": "had a bid for the bank rejected <SEG:1> prior to nationalisation"
+      }
+    },
+    {
+      "id": "en_us_929",
+      "error_type": "placement",
+      "span": "is only rarely booked directly through the airline",
+      "evidence": "contradiction_after_each_piece[0] = 0.999. Emitted affirmative 'is booked'; source later says 'without first searching' (negation of direct booking).",
+      "cause": "polarity not yet settled — negation scope not yet arrived",
+      "proposed_rule": "Do not emit a main clause with positive polarity when a negation, concession, or restrictive adverbial phrase that reverses or qualifies its truth value is still ahead in the source.",
+      "example_pair": {
+        "input": "air travel is only rarely booked directly through the airline without first searching and comparing prices",
+        "output": "air travel is only rarely booked directly through the airline without <SEG:1> first searching and comparing prices"
+      }
+    },
+    {
+      "id": "en_us_687",
+      "error_type": "placement",
+      "span": "to the mummy done during attempts to remove it",
+      "evidence": "contradiction_after_each_piece[1] = 0.9984. Emitted past participle 'done' (completed); oracle shows damage is partial ('only head and shoulders visible').",
+      "cause": "head not yet arrived — scope/limitation modifier not yet arrived",
+      "proposed_rule": "Do not emit a past participle describing extent or completion of an action until you have seen modifiers that restrict or qualify its scope (e.g., 'only', 'partially', or limiting relative clauses).",
+      "example_pair": {
+        "input": "evidence of the damage to the mummy done during attempts to remove it from the coffin will be disappointed as only the head and shoulders are visible",
+        "output": "evidence of the damage to the mummy done during attempts to remove it from the coffin will be disappointed as <SEG:1> only the head and shoulders are visible"
+      }
+    },
+    {
+      "id": "en_us_61",
+      "error_type": "placement",
+      "span": "by walking onto the stage",
+      "evidence": "contradiction_after_each_piece[1] = 0.9947. Emitted 'walking onto stage' as the sole means; source later adds 'and taking the iPhone out' as co-equal means.",
+      "cause": "modifier scope — coordinate modifier incomplete",
+      "proposed_rule": "Do not emit a gerundial or prepositional phrase that modifies the main verb until all coordinate or conjoined actions in that phrase have arrived (especially when joined by 'and').",
+      "example_pair": {
+        "input": "unveiled the device by walking onto the stage and taking the iPhone out of his jeans pocket",
+        "output": "unveiled the device by walking onto the stage and taking <SEG:1> the iPhone out of his jeans pocket"
+      }
+    },
+    {
+      "id": "en_us_368",
+      "error_type": "placement",
+      "span": "Blood goes away from the heart in tubes called arteries",
+      "evidence": "contradiction_after_each_piece[0] = 0.9908. Emitted outflow only; source later adds inflow via veins as parallel process.",
+      "cause": "polarity not yet settled — parallel/contrasting branch not yet arrived",
+      "proposed_rule": "Do not emit a complete directional or causal claim about a process until all parallel or contrasting branches of that process have arrived (especially in coordinate structures with 'and').",
+      "example_pair": {
+        "input": "Blood goes away from the heart in tubes called arteries and comes back to the heart in tubes called veins",
+        "output": "Blood goes away from the heart in tubes called arteries and comes back <SEG:1> to the heart in tubes called veins"
+      }
+    },
+    {
+      "id": "en_us_565",
+      "error_type": "placement",
+      "span": "Only the effects of catastrophizing,",
+      "evidence": "contradiction_after_each_piece[0] = 0.9953. Emitted 'only catastrophizing effects matter'; source later says 'not depression and fear' also matter.",
+      "cause": "polarity not yet settled — contrastive scope not yet arrived",
+      "proposed_rule": "Do not emit 'only X' or exclusive constructions until you have seen the full scope of negation or the contrastive material that follows (e.g., 'not Y').",
+      "example_pair": {
+        "input": "Only the effects of catastrophizing, not depression and fear was conditional",
+        "output": "Only the effects of catastrophizing, not depression and fear <SEG:1> was conditional"
+      }
+    },
+    {
+      "id": "en_us_1604",
+      "error_type": "placement",
+      "span": "the Iranian Revolution,",
+      "evidence": "contradiction_after_each_piece[3] = 0.045. Emitted noun as standalone list item; source immediately follows with 'which led to the Iran hostage crisis', revealing causal relationship.",
+      "cause": "modifier scope — relative clause not yet arrived",
+      "proposed_rule": "Do not emit a noun phrase as a list item when a relative clause or causal modifier immediately follows it in the source; wait until the modifier arrives to emit the complete constituent.",
+      "example_pair": {
+        "input": "such as the Camp David Accords, 1978; the Iranian Revolution, which led to the Iran hostage crisis, 1979",
+        "output": "such as the Camp David Accords, 1978; the Iranian Revolution, which led to <SEG:1> the Iran hostage crisis, 1979"
+      }
+    },
+    {
+      "id": "en_us_1428",
+      "error_type": "placement",
+      "span": "was opened",
+      "evidence": "contradiction_after_each_piece[3] = 0.9082. Emitted passive without agent; reader inferred wrong agent or location.",
+      "cause": "wrong participant — agent phrase not yet arrived",
+      "proposed_rule": "Do not emit a passive voice clause until the agent (by-phrase) has arrived in the source, or recast to active voice with the agent as subject.",
+      "example_pair": {
+        "input": "the first recreational ski club was opened by Norwegians in Australia",
+        "output": "the first recreational ski club was opened by <SEG:1> Norwegians in Australia"
+      }
+    }
+  ],
+  "summary": "The prompt systematically marks boundaries too early when a coordinate structure, prepositional phrase, or polarity-reversing element is incomplete. The three dominant failure modes are: (1) **head not yet arrived** (35% of premature verdicts) — emitting a noun or verb before its complement or modifier; (2) **wrong participant** (32%) — cutting before all parties in a relational phrase arrive; (3) **polarity not yet settled** (16%) — emitting affirmative or exclusive claims before negations or contrasts. The ranking audit shows the prompt over-trusts boundaries at relative position 0/3 (early in the sentence) and after commas, which are often safe but become dangerous when they fall inside incomplete coordinate structures or before polarity reversals. Rewrite [When to Segment] to forbid boundaries inside coordinate structures until all coordinates close, and inside prepositional phrases until the object arrives.",
+  "aggregate": {
+    "dominant_error": "placement",
+    "error_counts": {
+      "placement": 11
+    },
+    "stuck_hint": "",
+    "priority_audit": [
+      {
+        "feature": "상대위치 0/3",
+        "n": 14,
+        "rank_percentile": 0.401,
+        "contradiction": 0.015,
+        "over_trust": 0.0813
+      },
+      {
+        "feature": "뒤 구두점 ','",
+        "n": 12,
+        "rank_percentile": 0.503,
+        "contradiction": 0.0175,
+        "over_trust": 0.0493
+      },
+      {
+        "feature": "상대위치 1/3",
+        "n": 14,
+        "rank_percentile": 0.64,
+        "contradiction": 0.0561,
+        "over_trust": -0.0403
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 21,
+        "rank_percentile": 0.671,
+        "contradiction": 0.0643,
+        "over_trust": -0.0958
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 12,
+        "rank_percentile": 0.826,
+        "contradiction": 0.0471,
+        "over_trust": -0.2579
+      }
+    ],
+    "judge_distribution": {
+      "n_boundaries_judged": 45,
+      "verdicts": {
+        "premature": 31,
+        "mistranslated": 7,
+        "safe": 7
+      },
+      "n_with_cause": 31,
+      "causes": {
+        "head not yet arrived": {
+          "n": 11,
+          "share": 0.355
+        },
+        "wrong participant": {
+          "n": 10,
+          "share": 0.323
+        },
+        "polarity not yet settled": {
+          "n": 5,
+          "share": 0.161
+        },
+        "modifier scope": {
+          "n": 5,
+          "share": 0.161
+        }
+      }
+    },
+    "max_missing_boundaries": 2.3714,
+    "rank_lift": -0.01195,
+    "rank_lift_t": -0.82,
+    "summary": "The prompt systematically marks boundaries too early when a coordinate structure, prepositional phrase, or polarity-reversing element is incomplete. The three dominant failure modes are: (1) **head not yet arrived** (35% of premature verdicts) — emitting a noun or verb before its complement or modifier; (2) **wrong participant** (32%) — cutting before all parties in a relational phrase arrive; (3) **polarity not yet settled** (16%) — emitting affirmative or exclusive claims before negations or contrasts. The ranking audit shows the prompt over-trusts boundaries at relative position 0/3 (early in the sentence) and after commas, which are often safe but become dangerous when they fall inside incomplete coordinate structures or before polarity reversals. Rewrite [When to Segment] to forbid boundaries inside coordinate structures until all coordinates close, and inside prepositional phrases until the object arrives."
+  }
+}

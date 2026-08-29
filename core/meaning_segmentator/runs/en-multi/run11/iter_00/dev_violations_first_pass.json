@@ -1,0 +1,198 @@
+[
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "No major injuries were reported, but at least five people on scene at the time of the explosion were treated for symptoms of shock.",
+    "seg_text": "No major injuries were reported, <SEG:1> but at least five <SEG:3> people on scene at <SEG:4> the time of the explosion were treated <SEG:2> for symptoms of shock.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "\"It's going to behave like water. It's transparent just the way water is.",
+    "seg_text": "\"It's going to behave like water. <SEG:1> It's transparent just the way water is.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "This way, you will tire yourself out as little as possible. Remember there's no need to hit the keys with a lot of force for extra volume like on the piano.",
+    "seg_text": "This way, you will <SEG:6> tire yourself out <SEG:4> as little as possible. <SEG:1> Remember there's no need to hit the keys <SEG:2> with a lot of force <SEG:3> for extra volume like <SEG:5> on the piano.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "The main reason for this phenomenon is the result of the lucid dreams expanding the length of time between REM states.",
+    "seg_text": "The main reason for this phenomenon <SEG:3> is the result <SEG:2> of the lucid dreams <SEG:1> expanding the length of time between REM states.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Periodic rhythms, which are not simply responses to external periodic cues, have been documented for most living beings, including bacteria, fungi, plants, and animals.",
+    "seg_text": "Periodic rhythms, which are not simply responses to external periodic responses <SEG:4> to external periodic cues, <SEG:1> have been documented <SEG:2> for most living beings, <SEG:3> including bacteria, fungi, <SEG:5> plants, and animals.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "However, this does not come cheap: as rough rules of thumb, you can expect to pay up to four times the normal economy fare for business, and eleven times for first class!",
+    "seg_text": "However, this does not come cheap: <SEG:1> as rough rules of thumb, <SEG:3> you can expect to pay to <SEG:7> up to four <SEG:5> times the normal economy <SEG:6> fare for business, <SEG:2> and eleven times <SEG:4> for first class!",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "Nevertheless, all French-speaking Belgians and Swiss would have learned standard French in school, so they would be able to understand you even if you used the standard French numbering system.",
+    "seg_text": "Nevertheless, all French-speaking <SEG:5> Belgians and Swiss <SEG:3> would have learned <SEG:4> standard French in school, <SEG:1> so they would be able to understand you <SEG:2> even if you used <SEG:6> the standard French numbering system.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "CafeNet El Sol offers a reservation service for a fee of US$30, or $10 for one-day passes; details on their Corcovado page.",
+    "seg_text": "CafeNet El Sol <SEG:3> offers a reservation service <SEG:2> for a fee of US$30, <SEG:1> or $10 for one-day passes; <SEG:4> details on their Corcovado page.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Former House Speaker Newt Gingrich, Texas governor Rick Perry, and Congresswoman Michele Bachmann finished in fourth, fifth, and sixth place, respectively.",
+    "seg_text": "Former House Speaker Newt Gingrich, <SEG:3> Texas governor Rick Perry, <SEG:2> and Congresswoman Michele Bachmann <SEG:1> finished in fourth, fifth, and sixth place, respectively.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 8개 — 최소 10개 필요",
+    "text": "The feathers' structure suggests that they were not used in flight but rather for temperature regulation or display. The researchers suggested that, even though this is the tail of a young dinosaur, the sample shows adult plumage and not a chick's down.",
+    "seg_text": "The feathers' structure <SEG:4> suggests that they were not used in flight <SEG:2> but rather for temperature <SEG:5> regulation or display. <SEG:1> The researchers suggested <SEG:3> that, even though <SEG:6> this is the <SEG:7> tail of a young dinosaur, the sample <SEG:8> shows adult plumage and not a chick's down.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "In the 16th century Paraguay, formerly called \"The Giant Province of the Indies\", was born as a result of the encounter of Spanish conquerors with the native indigenous groups.",
+    "seg_text": "In the 16th century <SEG:2> Paraguay, formerly called \"The Giant <SEG:3> Province of the Indies\", <SEG:1> was born as a result <SEG:4> of the encounter of Spanish conquerors with <SEG:5> the native indigenous groups.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "If visiting a formally arranged garden, collecting \"specimens\" is also going to get you ejected, without discussion.",
+    "seg_text": "If visiting a formally arranged garden, <SEG:1> collecting \"specimens\" is also <SEG:2> going to get you ejected, without discussion.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 7개 필요",
+    "text": "The strain of bird flu lethal to humans, H5N1, has been confirmed to have infected a dead wild duck, found on Monday, in marshland near Lyon in the east of France.",
+    "seg_text": "The strain of bird flu <SEG:5> lethal to humans, H5N1, <SEG:4> has been confirmed to have infected a dead wild duck, <SEG:1> found on Monday, <SEG:3> in marshland near Lyon <SEG:2> in the east of France.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Drink alcoholic drinks with moderation. Alcohol affects everyone differently, and knowing your limit is very important.",
+    "seg_text": "Drink alcoholic drinks with moderation. <SEG:2> Alcohol affects everyone differently, <SEG:1> and knowing your limit is very important.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 8개 필요",
+    "text": "Yesterday, the post office released their apology to citizens and the media after discovering that the boy had hidden more than 600 postal documents, including 429 New Year postcards, which weren't delivered to their intended recipients.",
+    "seg_text": "Yesterday, the post office released their apology to citizens and the media <SEG:3> after discovering that the boy had hidden more than 600 postal documents, <SEG:1> including 429 New Year postcards, <SEG:2> which weren't delivered <SEG:4> to their intended recipients.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "The first economic reforms were made under the leadership of Deng Xiaoping.",
+    "seg_text": "The first economic reforms <SEG:1> were made under the leadership of Deng Xiaoping.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Unlike larger vehicles, you are probably already familiar with driving your car and know its limitations.",
+    "seg_text": "Unlike larger vehicles, <SEG:2> you are probably already familiar with driving your car <SEG:1> and know its limitations.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "As soon as you get out of the current, swimming back is no more difficult than normally.",
+    "seg_text": "As soon as <SEG:2> you get out of the current, <SEG:1> swimming back is no more difficult than normally.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "Danius said, \"Right now we are doing nothing. I have called and sent emails to his closest collaborator and received very friendly replies. For now, that is certainly enough.\"",
+    "seg_text": "Danius said, \"Right <SEG:5> now we are doing nothing. <SEG:1> I have called and sent emails <SEG:4> to his closest collaborator <SEG:2> and received very friendly replies. <SEG:3> For now, that is certainly enough.\"",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "This includes waiting in line, as drug-sniffing dogs could be used at any time without notice.",
+    "seg_text": "This includes waiting in line, <SEG:1> as drug-sniffing dogs <SEG:2> could be used at any time without notice.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 5개 필요",
+    "text": "The report showed test scores had increased implausibly fast, and alleged the school internally detected problems but didn't act on the findings.",
+    "seg_text": "The report showed <SEG:3> test scores had increased implausibly fast, <SEG:1> and alleged the school internally detected problems <SEG:2> but didn't act on the findings.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Humans have been making and using lenses for magnification for thousands and thousands of years.",
+    "seg_text": "Humans have been making <SEG:2> and using lenses <SEG:1> for magnification for thousands and thousands of years.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 8개 필요",
+    "text": "Mysticism can be distinguished from other forms of religious belief and worship by its emphasis on the direct personal experience of a unique state of consciousness, particularly those of a peaceful, insightful, blissful, or even ecstatic character.",
+    "seg_text": "Mysticism can be distinguished <SEG:4> from other forms of religious belief and worship <SEG:2> by its emphasis <SEG:7> on the direct personal experience <SEG:3> of a unique <SEG:5> state of consciousness, <SEG:1> particularly those of a peaceful, insightful, blissful, <SEG:6> or even ecstatic character.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "While visiting the monasteries, women are required to wear skirts covering the knees and have their shoulders covered, too.",
+    "seg_text": "While visiting the monasteries, <SEG:1> women are required to wear <SEG:3> skirts covering the knees <SEG:2> and have their shoulders covered, too.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 8개 필요",
+    "text": "Stardust will set a new all-time record for being the fastest spacecraft to return to Earth, breaking the previous record set in May of 1969 during the return of the Apollo X command module.",
+    "seg_text": "Stardust will set a new all-time record <SEG:3> for being the fastest spacecraft <SEG:4> to return to Earth, <SEG:1> breaking the previous record <SEG:5> set in May of 1969 <SEG:2> during the return <SEG:6> of the Apollo <SEG:7> X command module.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "He trained as an obstetrician and began to work at the Auckland's National Women's Hospital in 1959.",
+    "seg_text": "He trained as an obstetrician <SEG:1> and began to work <SEG:2> at the Auckland's National Women's Hospital in 1959.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Mr Costello said that when nuclear power generation becomes economically viable, Australia should pursue its use.",
+    "seg_text": "Mr Costello said <SEG:2> that when nuclear power generation becomes economically viable, <SEG:1> Australia should pursue its use.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "For some, understanding something about how aircraft work and what happens during a flight may help to overcome a fear which is based on the unknown or on not being in control.",
+    "seg_text": "For some, understanding something about how aircraft work <SEG:3> and what happens during a flight <SEG:2> may help to overcome a fear <SEG:1> which is based <SEG:5> on the unknown <SEG:4> or on not <SEG:6> being in control.",
+    "first_pass": true
+  }
+]

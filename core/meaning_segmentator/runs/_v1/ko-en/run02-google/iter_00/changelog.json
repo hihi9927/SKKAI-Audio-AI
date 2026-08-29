@@ -1,8 +1,0 @@
-{
-  "sections_changed": [
-    "[Decision Procedure]"
-  ],
-  "changelog": [
-    "Added an explicit mandatory fallback step to [Decision Procedure]: if no safe split point can be confidently identified, or segmentation would be unsafe, the model must output the original text completely unchanged and never produce an empty or partial string. This directly targets the format_violation case where seg_text was returned as empty instead of echoing the source."
-  ]
-}

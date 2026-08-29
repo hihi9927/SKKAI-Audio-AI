@@ -5,7 +5,7 @@
 
 - 빌더: [../../evaluation/ast/build_manifest_fleurs_text.py](../../evaluation/ast/build_manifest_fleurs_text.py)
 - 로더: `autoseg/data.py` 의 `fleurs-{de,ja,zh}-en`
-- 오염 방지 규율: [BLEU_COMPARISON_PLAN.md](BLEU_COMPARISON_PLAN.md) §8.5
+- 오염 방지 규율: [autoseg/AUTOSEG_DETAILS.md](autoseg/AUTOSEG_DETAILS.md) '데이터셋 역할 분리'
 
 ---
 
@@ -18,18 +18,37 @@ en 기준 층화 정렬(`evaluation/ast/manifests/fleurs_nway_en_clean500_order.
 | 구간 | 용도 | 크기 | 상태 |
 |---|---|---|---|
 | 0 – 499 | `clean500` — en→{de,ja,zh} BLEU/COMET 평가 | 500 | 소진 |
-| **500 – 739** | **`multi2en_loop240` — 새 트랙 루프(train/dev/test)** | **240** | 신규 |
+| **500 – 739** | `multi2en_loop240` — 새 트랙 루프 (구) | 240 | `loop405` 에 흡수 |
 | **740 – 1239** | **`multi2en_eval500` — 새 트랙 최종 평가** | **500** | 신규 |
-| 1240 – 1404 | 예비 (확장용) | 165 | 미사용 |
+| **1240 – 1404** | **`multi2en_loop405` = loop240 + 이 구간 165** | **165** | **신규 편입** |
 
-교차 검증 결과 **네 구간이 서로도, `en-multi/run06`(프롬프트 생성분 240)과도 교집합 0**이다.
+교차 검증 결과 **각 구간이 서로도, `en-multi/run06`(프롬프트 생성분 240)과도 교집합 0**이다.
 FLEURS `test` 스플릿은 애초에 제외돼 있다(오디오 보유 분할 = 파인튜닝 모델 평가용 봉인, §8.5 ④).
 
 산출 파일 (`evaluation/ast/manifests/`):
 
 ```
-fleurs_nway_{de,ja,zh}-en_multi2en_loop240.jsonl    각 240행
-fleurs_nway_{de,ja,zh}-en_multi2en_eval500.jsonl    각 500행
+fleurs_nway_{de,ja,zh}-en_multi2en_loop240.jsonl    각 240행  (구, 보존)
+fleurs_nway_{de,ja,zh}-en_multi2en_loop405.jsonl    각 405행  ← data.py 가 쓰는 것
+fleurs_nway_{de,ja,zh}-en_multi2en_eval500.jsonl    각 500행  (홀드아웃, 불변)
+
+**`loop405` 로 늘린 이유 — 채택 판정의 검출력이 부족했다.** dev 60문장에서 쌍체 se 중앙이
+0.0110 이라 `t=2` 로 검출 가능한 최소 차이가 **0.0220** 인데, 프롬프트 간 실제 차이는
+**0.003~0.007** 이다(en-de/run01 프롬프트 9개 실측). 프로젝트 전체 이력의 쌍체 판정 14회
+중 `|t|>2` 는 1회뿐이었고 그마저 **기각**이었다 — 채택된 4회는 t = +0.53 / +1.31 / +0.75 다.
+채택 규칙 `Δ > 0.5·se` 는 t>0.5 이므로 한쪽 검정 p≈0.31, 참값이 0이어도 셋에 한 번은
+통과한다.
+
+`se ∝ 1/√n` 은 실측으로 확인했다 (en-de/run01 test 100문장 부분표집: n=20 0.0168 →
+40 0.0131 → 60 0.0110 → 100 0.0087). dev 265 면 se 0.0052, 검출 한계 0.0105 이다.
+
+| 분할 | 합 | 예상 dev se | 검출 한계(t=2) |
+|---|---|---|---|
+| 40 / 60 / 100 (구) | 200 | 0.0110 | 0.0220 |
+| 40 / 265 / 100 | 405 | 0.0052 | **0.0105** |
+| 60 / 245 / 100 | 405 | 0.0054 | 0.0109 |
+
+**홀드아웃은 안 건드렸다** — `eval500`(740–1239)과 겹침 0을 확인했다.
 fleurs_nway_{de,ja,zh}_multi2en_*_order.json        재현·확장 메타
 ```
 
@@ -70,10 +89,10 @@ CafeNet El Sol 提供预约服务，收费 30 美元，…
 기존 런 17개의 저장된 프로파일을 전수 대조했고 **판정이 바뀌는 런은 없다**(전부 en/ko,
 0.15~0.27 로 두 규칙 모두 spaced). 과거 수치와의 비교 가능성은 유지된다.
 
-### 2.2 `--min-chars` 를 기본값으로 두면 세 트랙이 달라진다
+### 2.2 길이 하한을 기본값으로 두면 세 트랙이 달라진다 (해소됨)
 
-`split_data(min_chars=25)` 는 소스 텍스트 길이로 거른다. 길이 하한은 **en 피벗에서 이미
-걸렸는데**(25자), 같은 문장의 다른 언어 판은 밀도가 달라 길이가 다르다:
+당시 `split_data` 에는 문자 수 기준 길이 하한이 있었다(기본 25자). 길이 하한은 **en 피벗
+에서 이미 걸렸는데**, 같은 문장의 다른 언어 판은 밀도가 달라 길이가 다르다:
 
 | | 문자 중앙 | 25자 미만 (240 중) |
 |---|---|---|
@@ -82,9 +101,18 @@ CafeNet El Sol 提供预约服务，收费 30 美元，…
 | **zh** | **38** | **34** |
 
 기본값으로 돌리면 zh 만 34문장이 빠져 세 트랙이 서로 다른 문장을 쓰게 된다.
-⇒ **루프는 `--min-chars 0` 으로 돌린다.** 필터는 이미 끝났다.
+⇒ 당시 결론은 **길이 하한을 끄고 돌린다**였다. 필터는 en 피벗에서 이미 끝났다.
 
-### 2.3 `candidate_t` 유도식이 `min_gap` 에 비례하지 않았다 (수정함)
+> **이후 해소됐다.** 길이 하한은 `split_data` 에서 제거됐다 — 짧은 문장을 거르는 선은
+> `min_gap` 이 이미 갖고 있고(`unit_count < 2*min_gap` 이면 구조적 무분절), 문자 수
+> 근사는 언어마다 어긋나는 두 번째 절단선이었다. 지금은 끌 플래그가 없다.
+
+### 2.3 마킹 밀도 하한의 유도식이 `min_gap` 에 비례하지 않았다 (수정함)
+
+> **이름과 유도가 모두 바뀌었다.** 이 절의 `density` 는 현재 **`t_floor`** 다
+> (`--t-floor`). 유도도 길이 비율이 아니라 시간 축에서 나온다 —
+> `min_gap = MIN_GAP_MS(1200) × 코퍼스 발화 속도`, `t_floor = max(2, min_gap+1,
+> ceil(1.25 × min_gap))`. 아래는 그 이전 세대의 진단 기록이다.
 
 zh 스모크 런 iter 0 에서 train 10문장 중 **7건이 1차 위반**(`too_few_tags` 3, `gap_too_small` 2,
 `text_modified` 2)으로 나왔다. 재시도 후에도 4건이 남았다. en 은 1차 통과율 0.97 이다.
@@ -93,8 +121,8 @@ zh 스모크 런 iter 0 에서 train 10문장 중 **7건이 1차 위반**(`too_f
 `coverage_need` 가 요구하는 경계 수가 `min_gap` 이 허용하는 최대 경계 수(=수용량)와 같거나
 그보다 많으면, 모델은 경계를 **정확히 min_gap 격자에 맞춰야만** 통과한다.
 
-여유를 정하는 것은 오프셋이 아니라 비율 `min_gap / candidate_t` 인데, 예전 유도식
-`candidate_t = min_gap + 1` 은 **상수**라 min_gap 이 커질수록 비율이 1 로 붙는다:
+여유를 정하는 것은 오프셋이 아니라 비율 `min_gap / density` 인데, 예전 유도식
+`density = min_gap + 1` 은 **상수**라 min_gap 이 커질수록 비율이 1 로 붙는다:
 en 3/4 = 0.75 → zh 6/7 = 0.857 → ja 8/9 = 0.889.
 
 240문장 실측, **요구 ≥ 수용량인 문장 비율**:
@@ -102,12 +130,12 @@ en 3/4 = 0.75 → zh 6/7 = 0.857 → ja 8/9 = 0.889.
 | | 기존 (`min_gap+1`) | 수정 (`round(min_gap×4/3)`) |
 |---|---|---|
 | en run06 (기준선) | 6% | — |
-| de (min_gap 3) | 8% | 8% (`candidate_t` 4, 불변) |
+| de (min_gap 3) | 8% | 8% (`density` 4, 불변) |
 | **zh (min_gap 6)** | **48%** | **12%** (7 → 8) |
 | **ja (min_gap 8)** | **64%** | **6%** (9 → 11) |
 
 **`min_gap` 2·3·4 에서는 두 식의 값이 같다**(3, 4, 5) — 과거 런은 전부 이 범위라 완전히
-호환되고 재현이 깨지지 않는다. 수정 위치는 [loop.py](autoseg/loop.py) `candidate_t` 유도부.
+호환되고 재현이 깨지지 않는다. 수정 위치는 [loop.py](autoseg/loop.py) `density` 유도부.
 
 `text_modified` 2건은 별개다 — FLEURS 중국어 원문의 따옴표가 불일치하는 곳
 (`”传染性”和“触染性”`)에서 모델이 표기를 정규화해 버린다. 소스 데이터 성질이라 프롬프트로
@@ -129,13 +157,13 @@ en 3/4 = 0.75 → zh 6/7 = 0.857 → ja 8/9 = 0.889.
 en/de 의 `min_gap=3` 을 같은 비율로 환산하면 **zh 6, ja 8** 이다. 격자는 `min_gap` 의 배수로
 정의하면 언어 간에 같은 공격성을 유지한다 — en 의 `4/6/8/12` 는 `{4/3, 2, 8/3, 4} × min_gap` 이다:
 
-| 소스 | `--min-gap` | `--t-grid` (루프) | `--final-t-grid` (최종) | `candidate_t` (자동) |
+| 소스 | `--min-gap` | `--t-grid` (루프) | `--final-t-grid` (최종) | `t_floor` (자동, 당시 이름 `density`) |
 |---|---|---|---|---|
 | de | 3 | 6 12 | 4 6 8 12 | 4 |
 | zh | 6 | 12 24 | 8 12 16 24 | 8 |
 | ja | 8 | 16 32 | 11 16 21 32 | 11 |
 
-`candidate_t` 는 `loop.py` 가 자동 유도하므로 따로 줄 필요가 없다 — 단 **유도식을 고쳤다**(§2.3).
+`t_floor`(당시 `density`)는 `loop.py` 가 자동 유도하므로 따로 줄 필요가 없다 — 단 **유도식을 고쳤다**(§2.3).
 
 **검증 — 세 언어가 같은 공격성이 된다.** 실측 중앙값:
 
@@ -160,7 +188,7 @@ ja 16/32) — 두 점이 실제로 다른 작동점(k=3 / k=2)을 잰다.
 
 **이것은 en 관행과 어긋나지 않는다.** 처음에 "en 기본값과 달라져 `score` 비교가 불가하다"고
 적었으나 **틀렸다** — CLI 기본값이 `3 6` 일 뿐, 실제 최신 en 런 `en-multi/run06` 의 `config.json`
-은 `t_grid [6, 12]`, `min_gap 3`, `candidate_t 4` 다. 즉 run06 이 이미 `{2, 4} × min_gap` 을
+은 `t_grid [6, 12]`, `min_gap 3`, `density 4` 다. 즉 run06 이 이미 `{2, 4} × min_gap` 을
 쓰고 있었고, **de 트랙 설정은 run06 과 문자 그대로 같다.** zh/ja 는 그것을 단위 환산한 것이다.
 
 **최종 격자의 최저점은 `1.33 × min_gap` 이다** (de 4, zh 8, ja 11). 1.5배 요건에는 못 미치지만
@@ -174,38 +202,44 @@ ja 16/32) — 두 점이 실제로 다른 작동점(k=3 / k=2)을 잰다.
 ```bash
 ORD=evaluation/ast/manifests/fleurs_nway_en_clean500_order.json
 for src in de_de ja_jp cmn_hans_cn; do
-  for spec in "500 240 multi2en_loop240" "740 500 multi2en_eval500"; do
+  for spec in "500 240 multi2en_loop240" "740 500 multi2en_eval500" "1240 165 multi2en_tail165"; do
     set -- $spec
     python evaluation/ast/build_manifest_fleurs_text.py \
       --src $src --tgts en_us --order-from $ORD --skip $1 --n $2 --tag $3
   done
+  # loop405 = loop240 + tail165 (구간이 이어져 있지 않아 이어붙인다)
+  for pair in de-en ja-en zh-en; do
+    cat evaluation/ast/manifests/fleurs_nway_${pair}_multi2en_loop240.jsonl \
+        evaluation/ast/manifests/fleurs_nway_${pair}_multi2en_tail165.jsonl \
+        > evaluation/ast/manifests/fleurs_nway_${pair}_multi2en_loop405.jsonl
+  done
 done
 ```
 
-루프 실행 — §3 의 확정 격자. 세 언어가 `--min-chars 0` 을 공유한다(§2.2).
+루프 실행 — §3 의 확정 격자. (당시 세 언어가 길이 하한 해제를 공유했다 §2.2.)
 
 ```bash
 # de → en
 PYTHONPATH=. python -m core.meaning_segmentator.autoseg.loop \
     --dataset fleurs-de-en --src-lang German --tgt-lang English \
-    --pair-id de-en --run-id run01 --translator google \
-    --min-chars 0 --min-gap 3 --t-grid 6 12 --final-t-grid 4 6 8 12 \
+    --pair-id de-en --run-id run01 \
+    --min-gap 3 --t-grid 6 12 --final-t-grid 4 6 8 12 \
     --train 30 --dev 60 --test 100 --iterations 6 --budget 20 \
     --batch-size 6 --seg-reasoning-effort medium
 
 # zh → en
 PYTHONPATH=. python -m core.meaning_segmentator.autoseg.loop \
     --dataset fleurs-zh-en --src-lang Chinese --tgt-lang English \
-    --pair-id zh-en --run-id run01 --translator google \
-    --min-chars 0 --min-gap 6 --t-grid 12 24 --final-t-grid 8 12 16 24 \
+    --pair-id zh-en --run-id run01 \
+    --min-gap 6 --t-grid 12 24 --final-t-grid 8 12 16 24 \
     --train 30 --dev 60 --test 100 --iterations 6 --budget 20 \
     --batch-size 6 --seg-reasoning-effort medium
 
 # ja → en
 PYTHONPATH=. python -m core.meaning_segmentator.autoseg.loop \
     --dataset fleurs-ja-en --src-lang Japanese --tgt-lang English \
-    --pair-id ja-en --run-id run01 --translator google \
-    --min-chars 0 --min-gap 8 --t-grid 16 32 --final-t-grid 11 16 21 32 \
+    --pair-id ja-en --run-id run01 \
+    --min-gap 8 --t-grid 16 32 --final-t-grid 11 16 21 32 \
     --train 30 --dev 60 --test 100 --iterations 6 --budget 20 \
     --batch-size 6 --seg-reasoning-effort medium
 ```
@@ -213,8 +247,8 @@ PYTHONPATH=. python -m core.meaning_segmentator.autoseg.loop \
 `--main-t` 는 격자 중앙값이 자동 선택되어 큰 쪽(de 12 / zh 24 / ja 32)이 된다 — en 관행
 (`3 6` → 6)과 같다. `--batch-size 6` 과 `--seg-reasoning-effort medium` 은 **CLI 기본값(1 / low)이 아니라**
 성공한 en 런들(`en-multi/run06`, `en-de/run04`, `clean500`)이 실제로 쓴 값이다. 기본 `low` 는
-`docs/RANK_METRIC_DIAGNOSIS.md` 부록에서 영어 커버리지 붕괴가 보고된 설정이고, 비영어 소스는
-미검증이므로 검증된 쪽에 맞춘다. 첫 런에서 **1차 포맷 통과율**을 반드시 확인할 것.
+영어 커버리지 붕괴가 보고된 설정이고(`autoseg/AUTOSEG_DETAILS.md` '순위 축 진단'), 비영어
+소스는 미검증이므로 검증된 쪽에 맞춘다. 첫 런에서 **1차 포맷 통과율**을 반드시 확인할 것.
 
 ---
 
@@ -269,7 +303,7 @@ en 은 1차 0.82 / 최종 1.00. 이 격차가 세 갈래로 전파된다:
 
 | # | 막은 것 | 증상 | 처방 | 상태 |
 |---|---|---|---|---|
-| 1 | `candidate_t = min_gap + 1` (상수 오프셋) | 요구 경계 ≥ 물리적 수용량인 문장이 zh 48% / ja 64% (en 6%) → 만족 불가능한 요건 | 비율 보존 `round(min_gap×4/3)` | **수정함** (§2.3) |
+| 1 | `density = min_gap + 1` (상수 오프셋) | 요구 경계 ≥ 물리적 수용량인 문장이 zh 48% / ja 64% (en 6%) → 만족 불가능한 요건 | 비율 보존 `round(min_gap×4/3)` | **수정함** (§2.3) |
 | 2 | `skip_translation_below 0.95` | fmt 0.60 < 0.95 → 번역·채점 전체 스킵 → `by_T` 공백 → `score=0.0000` | iter 0(기준선 없음)에는 면제 | 미수정 (`--skip-translation-below 0.5` 로 우회) |
 | 3 | 개정 범위 게이트 (섹션 ≤2, ≤1.25배) | Critic 이 **정확히 옳은 진단**(`focus=placement`, `[When to Segment]` 1.66배 확대)을 냈으나 거부 → 개정 0건 | 허용 폭을 건강 상태와의 거리에 비례 | 미수정 |
 
@@ -290,7 +324,7 @@ en 은 1차 0.82 / 최종 1.00. 이 격차가 세 갈래로 전파된다:
 | zh | 문자 | 38 | 6 | **0.158** |
 | ja | 문자 | 52 | 8 | **0.154** |
 
-`min_gap = round(측정 중앙 단위수 × 0.15)`. `T` 격자는 `min_gap` 의 배수, `candidate_t` 는
+`min_gap = round(측정 중앙 단위수 × 0.15)`. `T` 격자는 `min_gap` 의 배수, `t_floor` 는
 `round(min_gap×4/3)` 이므로 **언어별 설정 전체가 측정값 + 전역 상수 r 로 붕괴한다.**
 `1/r ≈ 6.7` = "한 문장 최대 6~7조각"이라는 페이싱 상수로 해석되며 언어 속성이 아니다.
 
@@ -321,7 +355,7 @@ en 은 1차 0.82 / 최종 1.00. 이 격차가 세 갈래로 전파된다:
 
 | 순서 | 할 일 | 근거 |
 |---|---|---|
-| 1 | `measure_profile` 에 중앙 단위수 추가 → `min_gap`·`T`·`candidate_t` 자동 유도 | §5.4 |
+| 1 | `measure_profile` 에 중앙 단위수 추가 → `min_gap`·`T`·`t_floor` 자동 유도 | §5.4 |
 | 2 | 개정 범위 게이트를 거리 비례로 전환 | §5.3-3 |
 | 3 | `skip_translation_below` 를 iter 0 에서 면제 | §5.3-2 |
 | 4 | 1~3 적용 후 zh·ja·de 를 **언어별 인자 없이 같은 커맨드**로 실행 | 확장성 실증 |
@@ -333,7 +367,7 @@ en 은 1차 0.82 / 최종 1.00. 이 격차가 세 갈래로 전파된다:
 `runs/de-en/smoke01`. zh 와 같은 규모(train 10 / dev 20 / test 20, 2 이터). **총 비용 $0.4990.**
 
 **de 를 먼저 돌린 이유는 통제군이기 때문이다.** de 는 단위가 en 과 같아(어절, 중앙 20)
-`min_gap 3` · `t-grid 6 12` · `candidate_t 4` 가 **`en-multi/run06` 과 문자 그대로 같다**.
+`min_gap 3` · `t-grid 6 12` · `density 4` 가 **`en-multi/run06` 과 문자 그대로 같다**.
 따라서 run06 과의 유일한 차이가 소스 언어이고, zh 에서 본 문제가 "비공백 특유"인지
 "영어가 아닌 소스 일반"인지를 가른다.
 
@@ -452,8 +486,7 @@ zh 와 ja 가 **호출 수까지 동일**하다. §6.3 의 판별에 따르면 �
 한 번도 실행되지 않았다.** 파이프라인이 도는 것과 루프가 학습하는 것은 다르다 —
 지금 보인 것은 전자뿐이다.
 
-거부 폭이 셋 중 둘은 **0.01~0.06** 이다. 임계값 1.25 는 `docs/RANK_METRIC_DIAGNOSIS.md` §10 의
-en run03 진동 사례 **하나**에서 나온 값이고, 그때 막으려던 것은 **이미 수렴한 상태에서의
+거부 폭이 셋 중 둘은 **0.01~0.06** 이다. 임계값 1.25 는 en run03 진동 사례 **하나**에서 나온 값이고, 그때 막으려던 것은 **이미 수렴한 상태에서의
 대규모 재작성**(dev 분절이 62~95% 바뀌어 쌍체 비교의 이점이 사라짐)이었다. 지금 막히는 것은
 **아직 수렴하지 않은 v0 의 첫 수리**로 성격이 정반대인데, 하나의 절대 임계값이 둘을 구별하지 못한다.
 
@@ -514,8 +547,7 @@ en run03 진동 사례 **하나**에서 나온 값이고, 그때 막으려던 �
 | `--revision-candidates` | **3** | 후보 3개가 전부 꼬리에 걸릴 확률 ≈ `(1/7)³` |
 
 후보 다중화는 **이미 구현돼 있었고 기본값만 1** 이었다. Critic 이 `proposed_rule` 을 7개
-냈는데 전부 버려지고 있었다 — `docs/RANK_METRIC_DIAGNOSIS.md` §10-4 가 설계한 기전이
-꺼진 상태였던 셈이다.
+냈는데 전부 버려지고 있었다 — 다후보 선택 기전이 꺼진 상태였던 셈이다.
 
 ### 8.3 결과 — 개정이 **처음으로 측정됐다**
 
@@ -735,13 +767,12 @@ de 는 "개선이 없음"(부호가 음수)이다. 셋을 한 줄로 "실패"로
 | 3 | **뒤 구두점 `,`** | 0.51 | **0.2244** (n=12) |
 
 모델이 상위권으로 확신하는 쉼표 경계가 실측으로는 **비구두점(0.10~0.13)보다 위험하다.**
-`docs/RANK_METRIC_DIAGNOSIS.md` §4 가 en 에서 찾은 것과 같은 현상이다 (en: 쉼표 0.0727 vs
-비쉼표 0.0432). 독일어는 종속절 동사후치가 겹쳐 더 나쁠 수 있다.
+en 에서 찾은 것과 같은 현상이다 (en: 쉼표 0.0727 vs 비쉼표 0.0432 —
+`autoseg/AUTOSEG_DETAILS.md` '순위 축 진단'). 독일어는 종속절 동사후치가 겹쳐 더 나쁠 수 있다.
 
-**그런데 고쳐지지 않았다.** 이는 `RANK_METRIC_DIAGNOSIS.md` §12-3 의 미해결 항목
-("`priority_audit` → PE 전달 실효성 점검 — 매 이터 쉼표를 지목했는데 산출 프롬프트는
-쉼표를 여전히 상위에 둔다")이 **de 에서 그대로 재현된 것**이다. 감사 정보가 PE 까지
-전달은 되지만 프롬프트에 반영되지 않는다.
+**그런데 고쳐지지 않았다.** en 에서도 미해결로 남았던 항목("`priority_audit` 가 매 이터
+쉼표를 지목했는데 산출 프롬프트는 쉼표를 여전히 상위에 둔다")이 **de 에서 그대로 재현된
+것**이다. 감사 정보가 PE 까지 전달은 되지만 프롬프트에 반영되지 않는다.
 
 ⇒ de 의 3전 3패는 "고칠 게 없어서"가 아니라 **"고쳐야 할 것을 고치는 경로가 막혀서"** 다.
 
@@ -758,8 +789,8 @@ zh test 가 비어 있어 아직 가설이다 — "순위축이 살아 있는 �
 
 ### 10.3′ · 10.4′ 정정 — 재생으로 위 두 절이 뒤집혔다 (2026-08-23)
 
-`FOCUS_GATE_EXPERIMENT.md` 의 Step 0 재생(비용 $0, 순위 셔플 대조군)에서 **위 두 절의
-핵심 주장이 각각 틀렸다**는 것이 확인됐다.
+순위 셔플 대조군으로 기존 런을 재생한 결과(비용 $0), **위 두 절의 핵심 주장이 각각
+틀렸다**는 것이 확인됐다.
 
 **§10.3 "de 는 순위축이 고장나 있었다" → 틀렸다.**
 근거로 쓴 `rank_contra_gap` 은 절단 후 생존 경계끼리의 순서만 보는 **간접** 지표이고,
@@ -789,7 +820,12 @@ ja 가 채택된 iter1 은 `rank_lift` 가 **음수**였던 이터다. 가설을
 (`format_pass_rate < 1.0` 이 캐스케이드의 첫 관문), PE 지시문은 `priority_audit` 를
 `focus == "priority"` 일 때만 쓰라고 못박는다. 게다가 `evaluate_multi` 가 `Metrics` 를
 재구성할 때 `rank_lift*` 5개 필드를 버려서 `focus = "priority"` 는 **구조적으로 도달
-불가능**했다. 상세와 처방은 `FOCUS_GATE_EXPERIMENT.md`.
+불가능**했다.
+
+> **그래서 `focus` 캐스케이드 자체를 없앴다** (커밋 `a8ac1b5`). 근거가 빈 판정을
+> "측정값" 권위로 PE 에게 강제하고 있었기 때문이다. 지금은 지표 전체 + 각 지표의 뜻 +
+> "프롬프트로 움직일 수 있는가" 표시를 Critic 에게 넘기고 방향은 Critic 이 정한다
+> (`autoseg/AUTOSEG_SIMPLIFY.md` A8). `rank_lift` 필드 유실도 함께 고쳤다.
 
 **다만 §10.3 의 쉼표 지적 자체는 살아남았다** — 오히려 강화됐다. 순위 번호를 200회
 치환한 귀무 대비 de iter1/2 의 쉼표 과신은 **z=+2.44, p=0.020** 이다.
@@ -850,17 +886,20 @@ ja 가 채택된 iter1 은 `rank_lift` 가 **음수**였던 이터다. 가설을
 python -m core.meaning_segmentator.autoseg.loop \
     --dataset fleurs-{de,zh}-en --src-lang {German,Chinese} \
     --tgt-lang English --tgt-langs English --pair-id {de,zh}-en --run-id run01 \
-    --min-chars 0 --train 30 --dev 60 --test 100 --iterations 4 --budget N --v0-probe 20
+    --train 80 --dev 225 --test 100 --iterations 4 --budget N
 ```
 
-`--min-chars 0` 은 언어별 값이 아니라 **이 트랙 고유**(길이 하한이 en 피벗에서 이미 걸림),
-`--v0-probe 20` 은 **비용 노브**(기본 40).
+길이 하한 해제는 언어별 값이 아니라 **이 트랙 고유**였다(en 피벗에서 이미 걸림. 지금은 플래그 자체가 없다),
+후보 선별은 **train** 에서 한다 (`--select-n`, 기본 0=train 전체) — dev 는 채택 판정 전용이다.
 
 ### 11.1 `min_gap` 자동 유도 (`derive_min_gap`)
 
-`measure_profile` 에 `median_units`·`unit` 을 추가하고 `round(중앙 × 0.15)` 로 유도한다.
-`--min-gap` 기본값을 `3` → `None`(유도 트리거)로 바꿨다. 격자와 `candidate_t` 는 이미
-`min_gap` 에서 나오므로(`derive_t_grids`) **이 하나가 마지막 고리였다.**
+문장 길이 중앙값의 0.15배로 유도했다. `--min-gap` 기본값을 `3` → `None`(유도 트리거)로
+바꿨고, 격자와 마킹 밀도 하한은 이미 `min_gap` 에서 나오므로 **이 하나가 마지막 고리였다.**
+
+> **이후 바뀌었다.** 노브가 토큰 축에서 시간 축으로 옮겨가면서 `min_gap` 은 길이 비율이
+> 아니라 **`MIN_GAP_MS(1200) × 코퍼스 발화 속도`** 로 유도된다 (`derive_min_gap`).
+> 길이 중앙값은 더 이상 쓰지 않는다.
 
 **실런 로그로 검증**:
 ```
@@ -923,7 +962,7 @@ de(구 코드, `÷2` 로 1.25)에서 0/3 낭비가 났던 자리에서 zh(신 �
 ### 11.5 `--final-only` 가 `config.json` 을 덮어쓰지 않는다
 
 인자를 안 준 항목이 기본값으로 채워져 저장되면 **그 런을 만든 설정 기록이 사라진다**
-(ja/run01 실측: `revision_candidates 3 → 1`, `v0_probe 20 → 40`, `budget 10 → 4`).
+(ja/run01 실측: `revision_candidates 3 → 1`, `budget 10 → 4`).
 
 ### 11.6 함께 고친 계측 버그
 
@@ -934,8 +973,8 @@ de(구 코드, `÷2` 로 1.25)에서 0/3 낭비가 났던 자리에서 zh(신 �
 
 | | 성격 |
 |---|---|
-| `--min-chars 0` | 트랙 고유 (en 피벗에서 길이 하한 이미 적용) |
-| `--v0-probe 20` | 비용 노브 (기본 40) |
+| 길이 하한 해제 | 트랙 고유 (en 피벗에서 이미 적용). **이후 플래그 자체가 제거됨** |
+| `--select-n` | 후보 선별에 쓸 train 문장 수 (기본 0 = 전체) |
 | `--budget` | 런별 판단 (§10.6 의 예약 제안 참조) |
 
 **언어별 값은 0개다.**

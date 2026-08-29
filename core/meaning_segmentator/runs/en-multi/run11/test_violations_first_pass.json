@@ -1,0 +1,107 @@
+[
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "In late 2017, Siminoff appeared on shopping television channel QVC.",
+    "seg_text": "In late 2017, <SEG:1> Siminoff appeared on shopping television channel QVC.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Pre-modern observatories are usually obsolete today, and remain as museums, or sites of education.",
+    "seg_text": "Pre-modern observatories are usually obsolete <SEG:1> today, and remain <SEG:2> as museums, or sites of education.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "Germany code-named the attack “Operation Sealion”. Most of the British Army's heavy weapons and supplies had been lost when it evacuated from Dunkirk, so the army was fairly weak.",
+    "seg_text": "Germany code-named the attack “Operation Sealion”. <SEG:1> Most of the British <SEG:3> Army's heavy weapons <SEG:2> and supplies had <SEG:4> been lost when it evacuated from Dunkirk, <SEG:5> so the army was fairly weak.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Maroochydore had finished on top of the ladder, six points clear of Noosa in second.",
+    "seg_text": "Maroochydore had finished <SEG:2> on top of the ladder, <SEG:1> six points clear of Noosa in second.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "When completely brought up by non-human animals, the feral child exhibits behaviors (within physical limits) almost entirely like those of the particular care-animal, such as its fear of or indifference to humans.",
+    "seg_text": "When completely brought up by non-human animals, <SEG:1> the feral child exhibits <SEG:3> behaviors (within physical limits) <SEG:2> almost entirely like <SEG:5> those of the particular <SEG:4> care-animal, as its fear of <SEG:6> or indifference to humans.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "When completely brought up by non-human animals, the feral child exhibits behaviors (within physical limits) almost entirely like those of the particular care-animal, such as its fear of or indifference to humans.",
+    "seg_text": "When completely brought up by non-human animals, <SEG:1> the feral child exhibits <SEG:3> behaviors (within physical limits) <SEG:2> almost entirely like <SEG:5> those of the particular <SEG:4> care-animal, as its fear of <SEG:6> or indifference to humans.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "However, nowadays there are established graffiti artists, graffiti events and \"legal\" walls. Graffiti paintings in this context often resemble artworks rather than illegible tags.",
+    "seg_text": "However, nowadays there <SEG:3> are established graffiti artists, graffiti <SEG:2> events and \"legal\" walls. <SEG:1> Graffiti paintings in <SEG:4> this context often resemble artworks rather than illegible tags.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Many governments require visitors entering, or residents leaving, their countries to be vaccinated for a range of diseases.",
+    "seg_text": "Many governments require visitors entering, <SEG:1> or residents leaving, <SEG:2> their countries to be vaccinated <SEG:3> for a range of diseases.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "The Amazon River is the second longest and the biggest river on Earth. It carries more than 8 times as much water as the second biggest river.",
+    "seg_text": "The Amazon River <SEG:2> is the second longest <SEG:4> and the biggest river. <SEG:1> It carries more than 8 <SEG:3> times as much water as the second biggest river.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 6개 필요",
+    "text": "The Amazon River is the second longest and the biggest river on Earth. It carries more than 8 times as much water as the second biggest river.",
+    "seg_text": "The Amazon River <SEG:2> is the second longest <SEG:4> and the biggest river. <SEG:1> It carries more than 8 <SEG:3> times as much water as the second biggest river.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "\"Panama Papers\" is an umbrella term for roughly ten million documents from Panamanian law firm Mossack Fonseca, leaked to the press in spring 2016.",
+    "seg_text": "\"Panama Papers\" is an umbrella term <SEG:4> for roughly ten million documents <SEG:2> from Panamanian law firm Mossack Fonseca, <SEG:1> leaked to the press <SEG:3> in spring 2016.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "Please remember that you are essentially visiting a mass grave site, as well as a site that has an almost incalculable meaning to a significant portion of the world's population.",
+    "seg_text": "Please remember that you <SEG:3> are essentially visiting <SEG:2> a mass grave site, <SEG:1> as well as a <SEG:4> site that has an almost <SEG:5> incalculable meaning to <SEG:6> a significant portion of the world's population.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Generally speaking, there is no point in even looking for discounts for business or first-class seats on direct flights from A to B.",
+    "seg_text": "Generally speaking, there is no <SEG:4> point in even looking for discounts <SEG:2> for business or first-class <SEG:3> seats on direct flights <SEG:1> from A to B.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 8개 — 최소 9개 필요",
+    "text": "They were compelled to pay taxes to the U.S. colonial regime to defray a major part of the expenditures and the interest on bonds floated in the name of the Philippine government through the Wall Street banking houses.",
+    "seg_text": "They were compelled to <SEG:5> pay taxes to the <SEG:6> U.S. colonial regime <SEG:1> to defray a major <SEG:4> part of the expenditures <SEG:2> and the interest on <SEG:7> bonds floated in the name of the Philippine <SEG:3> government through the <SEG:8> Wall Street banking houses.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "This is just like symptomatic treatment in many cases. However, if we do not only want a temporary solution, then we should find the root of the problems, and we should deactivate them.",
+    "seg_text": "This is just like symptomatic treatment <SEG:4> in many cases. <SEG:1> However, if we do not only <SEG:6> want a temporary solution, <SEG:2> then we should find <SEG:5> the root of the problems, <SEG:3> and we should deactivate them.",
+    "first_pass": true
+  }
+]

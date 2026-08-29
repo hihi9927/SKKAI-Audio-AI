@@ -1,11 +1,11 @@
-"""A8 Loop Controller — 결정론적 오케스트레이터.
+"""A11 Loop Controller — 결정론적 오케스트레이터.
 
 LLM 판단은 없다. 실행 순서, 채택/롤백, 예산, 중단 조건만 관리한다.
-설계는 `../AUTO_PROMPT_LOOP_DESIGN.md`.
+설계는 `AUTOSEG_SIMPLIFY.md`, 그 근거는 `AUTOSEG_DETAILS.md`.
 
   python -m core.meaning_segmentator.autoseg.loop \
       --dataset kspon --src-lang Korean --tgt-lang English \
-      --translator google --iterations 6 --train 30 --dev 60 --test 100
+      --iterations 6 --train 30 --dev 60 --test 100
 """
 
 from __future__ import annotations
@@ -24,9 +24,11 @@ from pathlib import Path
 
 from . import agents, data, metrics, noise_floor
 from .gateway import BudgetExceeded, Gateway
-from .pipeline import (GoogleTranslator, JsonCache, Translator, blocks_scoring,
-                       chunk_budget, normalize_tags, segment_batch, shuffle_priorities,
-                       split_segments, to_lang_code, truncate, unit_count, validate)
+from .pipeline import (GoogleTranslator, JsonCache, blocks_scoring,
+                       coverage_need, normalize_tags, round_half_up, segment_batch,
+                       LocalTranslator, LOCAL_MT_DEFAULT,
+                       shuffle_priorities, split_segments, to_lang_code, truncate,
+                       unit_count, validate)
 
 _HERE = Path(__file__).resolve().parent
 
@@ -66,6 +68,10 @@ class ScoredSplit:
     pieces_src: list[list[str]]          # 조각 원문
     pieces_tgt: list[list[str]]          # 조각 번역
     pieces_contra: list[list[float]]     # 경계별 모순 확률. 마지막 원소는 항상 0.0
+    # 병기 지표 — 같은 NLI 호출에서 나온 `1 − entailment`. 목적함수에는 안 들어간다.
+    pieces_contra_ent: list[list[float]]
+    effective_ent: list[float | None]
+    contradiction_ent: list[float | None]
     effective: list[float | None]
     adequacy: list[float]
     contradiction: list[float | None]
@@ -75,7 +81,7 @@ class ScoredSplit:
     k: list[int]
 
 
-# ── 다언어 목적함수 ──────────────────────────────────────────────────────
+# ── 다언어 목적함수 ─────────────────────────────────────────────────────────
 #
 # **분절은 타깃과 무관하다** — 문장당 1회이고 캐시가 타깃을 안 탄다. 그래서 타깃을 N개로
 # 늘려도 비용의 90% 를 차지하는 분절 호출은 **그대로**이고, 번역(gtx 무료)과 채점(GPU)만
@@ -158,22 +164,69 @@ def _zmix(per_target: dict[str, list[float | None]],
     return out
 
 
-def judge_distributed(judge, per_rows: dict[str, list[dict]], T: int,
-                      total_rows: int, sample: str = "failure", seed: int = 20260810):
-    """판정 예산을 **타깃에 나눈다.** 총 호출 수는 그대로다.
+class StageTimer:
+    """이터레이션의 **단계별 벽시계 시간**을 재서 파일로 남긴다.
 
-    한 타깃에만 판정자를 돌리면 목적함수에서 뺀 타깃 편향이 조향(`premature_rate`,
-    Critic 케이스 선정)으로 되돌아온다. 행 수를 나누면 비용은 그대로면서 편향이 없고,
-    타깃마다 다른 실패(어떤 언어에서만 깨지는 경계)가 드러나는 이득이 붙는다.
-    타깃당 표본이 얇아지지만 이 값은 조향 신호이지 목적함수가 아니다.
+    **LangSmith 로는 안 된다.** 그쪽은 LLM 호출 1건씩만 본다 (실측 중앙: `segment`
+    161s, `segment_retry` 50s, `judge` 6s, `critic` 63s, `prompt_engineer` 49s).
+    루프의 벽시계에는 그 사이가 들어 있다 — CometKiwi·NLI 채점(로컬 GPU), 번역,
+    그리고 **호출을 얼마나 겹쳐서 던졌는가**. 마지막 항목이 병목이었다 (run04 실측
+    평균 동시 실행 3.03 / 워커 8). 호출 시간을 다 더해도 그건 안 보인다.
+
+    파일로 남기는 이유: 지금까지의 런은 **시간이 하나도 안 남아 있다.** 로그에
+    타임스탬프가 없고 디렉토리 mtime 은 체크아웃 시각으로 덮였다. 그래서 "6시간짜리
+    런이 어디서 오래 걸리나" 를 물으면 추정밖에 못 했다.
     """
-    tgts = list(per_rows)
-    if not tgts:
-        return []
-    per = max(1, total_rows // len(tgts))
+
+    def __init__(self, path):
+        self.path = path
+        self.rows: list[dict] = []
+        self._t0 = time.time()
+        self._stage: str | None = None
+        self._start = self._t0
+
+    def mark(self, stage: str | None) -> None:
+        """직전 단계를 닫고 새 단계를 연다. `None` 이면 닫기만 한다."""
+        now = time.time()
+        if self._stage is not None:
+            self.rows.append({"stage": self._stage,
+                              "sec": round(now - self._start, 2),
+                              "at_sec": round(self._start - self._t0, 2)})
+            self._flush()
+        self._stage, self._start = stage, now
+
+    def _flush(self) -> None:
+        try:
+            self.path.write_text(json.dumps({
+                "total_sec": round(sum(r["sec"] for r in self.rows), 2),
+                "stages": self.rows,
+            }, ensure_ascii=False, indent=2), encoding="utf-8")
+        except Exception:                       # 계측이 런을 죽이면 안 된다
+            pass
+
+
+def judge_distributed(judge, per_rows: dict[str, list[dict]], T: int, frac: float,
+                      workers: int = 8):
+    """타깃마다 **자기 경계의 `frac` 비율**을 판정한다.
+
+    한 타깃에만 판정자를 돌리면 목적함수에서 뺀 타깃 편향이 Critic 케이스 선정으로
+    되돌아온다. 타깃별로 같은 비율을 재면 편향이 없고, 타깃마다 다른 실패(어떤
+    언어에서만 깨지는 경계)가 드러나는 이득이 붙는다.
+
+    **고정 개수(종전 8)를 비율로 바꿨다.** 개수는 train 크기와 T 에 따라 의미가 통째로
+    달라진다 — 같은 8 이 T=12·30문장에서는 경계의 4.7% 지만 T=6·40문장에서는 1.5% 다.
+    게다가 `total // len(targets)` 로 나눠서 나머지를 버렸다 (타깃 5개면 8 이 5가 됐다).
+    비율은 두 문제를 한 번에 없앤다.
+    """
     out: list[dict] = []
-    for k, t in enumerate(tgts):
-        js = agents.judge_rows(judge, per_rows[t], T, per, sample=sample, seed=seed + k)
+    for t, rows in per_rows.items():
+        n = 0
+        for r in rows:
+            d = (r.get("by_T", {}) or {}).get(str(T)) or {}
+            ps = d.get("pieces_tgt") or []
+            n += max(0, len(ps) - 1)
+        js = agents.judge_top_contra(judge, rows, T, max(1, int(n * frac + 0.5)),
+                                     workers=workers)
         for j in js:
             j["target"] = t
         out.extend(js)
@@ -198,6 +251,7 @@ def evaluate_multi(targets: list[str], make_ctx, prompt, sentences, t_grid,
     per_rows: dict[str, list[dict]] = {}
     per_m: dict[str, "metrics.Metrics"] = {}
     viol: list[dict] = []
+    norm_sink: list[dict] | None = kw.pop("norm_sink", None)
     for k, tgt in enumerate(targets):
         tr, adq, cons, contra, tsp = make_ctx(tgt)
         r, m, v = evaluate(gw=kw["gw"], translator=tr, prompt=prompt, sentences=sentences,
@@ -209,7 +263,10 @@ def evaluate_multi(targets: list[str], make_ctx, prompt, sentences, t_grid,
                            coverage_t=kw["coverage_t"],
                            reasoning_effort=kw["reasoning_effort"],
                            batch_size=kw["batch_size"], min_gap=kw["min_gap"],
-                           skip_translation_below=kw["skip_translation_below"])
+                           skip_translation_below=kw["skip_translation_below"],
+                           # 정규화도 분절의 성질이라 타깃과 무관하다 — 첫 타깃만 모은다.
+                           # 나머지는 전부 캐시 히트라 normalize 가 아예 안 돈다.
+                           norm_sink=(norm_sink if k == 0 else None))
         per_rows[tgt] = r
         per_m[tgt] = m
         if k == 0:                      # 위반은 분절의 성질이라 타깃과 무관 — 한 번만
@@ -221,6 +278,10 @@ def evaluate_multi(targets: list[str], make_ctx, prompt, sentences, t_grid,
     for T in by_T_keys:
         per_target = {t: [((r.get("by_T") or {}).get(T) or {}).get("effective")
                           for r in per_rows[t]] for t in targets}
+        # 병기 지표도 같은 방식으로 타깃 평균을 낸다. 안 하면 대표 타깃 값이 그대로 남아
+        # "다언어 평균" 인 척하게 된다.
+        per_target_ent = {t: [((r.get("by_T") or {}).get(T) or {}).get("effective_ent")
+                              for r in per_rows[t]] for t in targets}
         mixed_z = _zmix(per_target,
                         None if zbase is None else zbase.setdefault(str(T), {}))
         rep = per_m[targets[0]].by_T.get(T)
@@ -242,23 +303,42 @@ def evaluate_multi(targets: list[str], make_ctx, prompt, sentences, t_grid,
             d["effective_single"] = d.get("effective")
             d["effective"] = raw
             d["effective_z"] = mixed_z[i]
+            ev = [per_target_ent[t][i] for t in targets if per_target_ent[t][i] is not None]
+            d["effective_ent"] = (sum(ev) / len(ev)) if ev else None
             r.setdefault("by_T", {})[T] = d
         sm = copy.copy(rep)
         ok = [x for x in mixed_raw if x is not None]
         okz = [x for x in mixed_z if x is not None]
-        sm.effective = round(sum(ok) / len(ok), 4) if ok else 0.0
+        # **빈 경우는 None 이다 — 0.0 이 아니다.** 단일 타깃(`aggregate_split`)과 규약이
+        # 달랐다. `score()` 는 None 을 평균에서 빼지만 0.0 은 넣으므로, 전 문장 무분절인
+        # 비교군이 다언어 모드에서만 0 점으로 끌려 내려갔다.
+        sm.effective = round(sum(ok) / len(ok), 4) if ok else None
         sm.effective_z = round(sum(okz) / len(okz), 4) if okz else None
+        oke = [x for r in merged
+               for x in [((r.get("by_T") or {}).get(T) or {}).get("effective_ent")]
+               if x is not None]
+        sm.effective_ent = round(sum(oke) / len(oke), 4) if oke else None
+        sm.contradiction_ent = None      # 타깃마다 다른 값이라 평균이 뜻을 잃는다
         sm.n_effective = len(ok)
         sm.n_targets = len(targets)
-        e_sorted = sorted(ok)
         sm.effective_min = round(min(ok), 4) if ok else None
-        sm.effective_p10 = (round(e_sorted[max(0, int(0.10 * (len(e_sorted) - 1)))], 4)
-                            if e_sorted else None)
+        p10 = metrics.percentile10(ok)
+        sm.effective_p10 = round(p10, 4) if p10 is not None else None
         split_m[T] = sm
     m0 = per_m[targets[0]]
     merged_m = metrics.Metrics(n=m0.n, format_pass_rate=m0.format_pass_rate,
                                format_pass_rate_no_retry=m0.format_pass_rate_no_retry,
                                by_T=split_m)
+    # **순위축 진단을 병합에서 잃지 않는다.** `rank_lift` 는 타깃과 무관한 성질이다 —
+    # 분절이 같으므로 순위를 섞었을 때 잃는 것도 같은 축이다. 새 `Metrics` 를 만들면서
+    # 안 옮기면 다언어 런에서는 통째로 사라지고, `focus="priority"` 판정과 Critic 에게
+    # 넘길 정보가 둘 다 비게 된다. 대표 타깃(첫 번째) 값을 그대로 싣는다.
+    rep_m = per_m[targets[0]]
+    merged_m.rank_lift = rep_m.rank_lift
+    merged_m.rank_lift_se = rep_m.rank_lift_se
+    merged_m.rank_lift_t = rep_m.rank_lift_t
+    merged_m.rank_lift_n = rep_m.rank_lift_n
+    merged_m.rank_lift_T = rep_m.rank_lift_T
     return merged, merged_m, viol, per_m, per_rows
 
 
@@ -297,6 +377,7 @@ def score_split(seg_texts: list[str], texts: list[str], full: list[str],
     # 조기 방출 — 조각 j 뒤의 경계에서 "그 시점까지 방출된 누적 번역"이 오라클(full
     # 번역)과 모순되는가. 마지막 조각 뒤에는 미래가 없으므로 대상이 아니다.
     contra = [0.0] * len(pair_src)
+    contra_ent = [0.0] * len(pair_src)
     if contradiction is not None and pair_src:
         prem, hyp, slot = [], [], []
         pos = 0
@@ -308,15 +389,24 @@ def score_split(seg_texts: list[str], texts: list[str], full: list[str],
                     hyp.append(" ".join(x for x in list(ps)[: j + 1] if x).strip())
                     slot.append(pos)
                 pos += 1
-        for s, v in zip(slot, contradiction.score(prem, hyp)):
+        # **한 번의 NLI 호출로 두 척도를 다 받는다** — 세 라벨 확률이 같이 나오므로
+        # `1 − entailment` 를 병기하는 데 추가 비용이 0 이다 (`score_dual` 주석 참고).
+        if hasattr(contradiction, "score_dual"):
+            cs, es = contradiction.score_dual(prem, hyp)
+        else:
+            cs, es = contradiction.score(prem, hyp), [0.0] * len(prem)
+        for s, v, w in zip(slot, cs, es):
             contra[s] = v
+            contra_ent[s] = w
 
     # 경계별 값을 문장에 되돌린다. 문장 평균만 남기면 **어느 경계가** 반박당했는지가
     # 사라지는데, 판정자·비평가 조준에 필요한 것이 바로 그 위치다 (이미 계산된 값).
     # 각 문장 마지막 원소는 뒤에 미래가 없어 항상 0.0 — "안전"이 아니라 "대상 아님".
     contra_rows: list[list[float]] = [[] for _ in texts]
-    for i, v in zip(owner, contra):
+    contra_ent_rows: list[list[float]] = [[] for _ in texts]
+    for i, v, w in zip(owner, contra, contra_ent):
         contra_rows[i].append(round(v, 4))
+        contra_ent_rows[i].append(round(w, 4))
 
     def weighted(vals):
         num = [0.0] * len(texts)
@@ -334,21 +424,33 @@ def score_split(seg_texts: list[str], texts: list[str], full: list[str],
     adequacy_rows = weighted(qe)
     contradiction_rows: list[float | None] = []
     effective_rows: list[float | None] = []
-    for adq, cr in zip(adequacy_rows, contra_rows):
+    contradiction_ent_rows: list[float | None] = []
+    effective_ent_rows: list[float | None] = []
+    for adq, cr, er in zip(adequacy_rows, contra_rows, contra_ent_rows):
         bounds = cr[:-1]
         if bounds:
             c_mean = sum(bounds) / len(bounds)
             contradiction_rows.append(c_mean)
             effective_rows.append(metrics.effective_of(adq, c_mean))
+            eb = er[:-1]
+            e_mean = sum(eb) / len(eb) if eb else None
+            contradiction_ent_rows.append(e_mean)
+            effective_ent_rows.append(
+                metrics.effective_of(adq, e_mean) if e_mean is not None else None)
         else:
             contradiction_rows.append(None)
             effective_rows.append(None)
+            contradiction_ent_rows.append(None)
+            effective_ent_rows.append(None)
 
     return ScoredSplit(
         joined=list(joined),
         pieces_src=chunk_lists,
         pieces_tgt=[list(p) for p in pieces],
         pieces_contra=contra_rows,
+        pieces_contra_ent=contra_ent_rows,
+        effective_ent=effective_ent_rows,
+        contradiction_ent=contradiction_ent_rows,
         effective=effective_rows,
         adequacy=adequacy_rows,
         contradiction=contradiction_rows,
@@ -360,7 +462,7 @@ def score_split(seg_texts: list[str], texts: list[str], full: list[str],
     )
 
 
-# ── 평가 1회 ─────────────────────────────────────────────────────────────
+# ── 평가 1회 ────────────────────────────────────────────────────────────
 
 def evaluate(
     gw: Gateway,
@@ -381,11 +483,11 @@ def evaluate(
     contradiction: "metrics.ContradictionBackend | None" = None,
     coverage_t: int | None = None,
     reasoning_effort: str | None = None,
-    priority_depth: int | None = None,
     batch_size: int = 1,
     min_gap: int = 0,
     rank_lift_seed: int = 0,
     rank_lift_shuffles: int = 3,
+    norm_sink: list[dict] | None = None,
 ) -> tuple[list[dict], metrics.Metrics, list[dict]]:
     """분절 1회 + 노브 값마다 번역·채점.
 
@@ -405,12 +507,27 @@ def evaluate(
                         if require_coverage else None)
 
     first_pass_viol: list[dict] = []
+
+    # **결정론적 수정을 기록한다.** `normalize_tags` 는 산출물을 조용히 바꾸는데(구두점
+    # 재배치·태그 삭제·연속 태그 병합·재번호) 그게 어디에도 안 남으면 규칙이 틀렸을 때
+    # 영영 모른다 — zh 여는 따옴표 13건이 정확히 그렇게 묻혔다. 검증기의
+    # 검증기의 태그-뒤-구두점 검사는 이 함수가 먼저 돌아 고쳐 놓으므로 구조적으로 0건이었다.
+    norm_log: list[dict] = []
+
+    def _norm(t: str, out: str) -> str:
+        rec: list[dict] = []
+        fixed = normalize_tags(out, spaced, trailing_punct, sink=rec, min_gap=min_gap)
+        norm_log.extend({"text": t, **e} for e in rec)
+        if norm_sink is not None:
+            norm_sink.extend({"text": t, **e} for e in rec)
+        return fixed
+
     seg_texts, first_pass = segment_batch(
         gw, prompt, texts, cache=seg_cache, workers=workers,
         validate_fn=lambda t, out: validate("", t, out, spaced, trailing_punct,
-                                            require_priority, need(t), priority_depth,
-                                            min_gap),
-        normalize_fn=lambda out: normalize_tags(out, spaced, trailing_punct),
+                                            require_priority, need(t)),
+        normalize_fn=_norm,
+        need_fn=need,
         reasoning_effort=reasoning_effort,
         batch_size=batch_size,
         first_pass_sink=first_pass_viol,
@@ -421,7 +538,7 @@ def evaluate(
     scored_flags: list[bool] = []
     for s, seg in zip(sentences, seg_texts):
         vs = validate(s.id, s.text, seg, spaced, trailing_punct, require_priority,
-                      need(s.text), priority_depth, min_gap)
+                      need(s.text))
         valid_flags.append(not vs)
         scored_flags.append(not blocks_scoring(vs))
         violations.extend({"id": v.id, "rule": v.rule, "detail": v.detail,
@@ -463,6 +580,10 @@ def evaluate(
                 "pieces_contra": sp.pieces_contra[i], "seg_trans": sp.joined[i],
                 "effective": (round(sp.effective[i], 4)
                               if sp.effective[i] is not None else None),
+                "effective_ent": (round(sp.effective_ent[i], 4)
+                                  if sp.effective_ent[i] is not None else None),
+                "contradiction_ent": (round(sp.contradiction_ent[i], 4)
+                                      if sp.contradiction_ent[i] is not None else None),
                 "adequacy": round(sp.adequacy[i], 4),
                 "contradiction": (round(sp.contradiction[i], 4)
                                   if sp.contradiction[i] is not None else None),
@@ -475,8 +596,10 @@ def evaluate(
         pick = lambda xs: [xs[i] for i in keep]
         by_T[str(T)] = metrics.aggregate_split(
             T, pick(sp.effective), pick(sp.adequacy), pick(sp.contradiction),
-            pick(sp.consistency), pick(sp.chrf), pick(sp.laal_words), pick(sp.k),
-            pick(missings), n_total=len(rows))
+            pick(sp.consistency), pick(sp.laal_words), pick(sp.k),
+            pick(missings), n_total=len(rows),
+            effective_ent_scores=pick(sp.effective_ent),
+            contradiction_ent_scores=pick(sp.contradiction_ent))
         if T == lift_T:
             real_eff_at_lift_T = list(sp.effective)
 
@@ -523,10 +646,17 @@ def load_contra_floor(run_dir, rows: list[dict], backend,
                       filename: str = "contra_floor.json", tgt_spaced: bool = True):
     """경계 contradiction 의 **길이별 잡음 바닥**. 런당 1회 측정하고 디스크에 캐시한다.
 
-    NLI 는 무해한 미완성에도 0 이 아닌 모순 확률을 준다 (짧을수록 크다: run03 실측
-    1-2어절 0.113, 10어절+ 0.003). 상위 순위 경계는 문장 앞쪽 = 짧은 hypothesis 에
-    몰리므로, 보정 없이 순위별 위험을 비교하면 **상위 순위가 구조적으로 불리**하다.
-    run03 test 에서 이 교란만으로 순위 정렬도가 −0.25 로 나왔고 보정 후 +0.14 였다.
+    NLI 는 무해한 미완성에도 0 이 아닌 모순 확률을 준다. 그 크기가 hypothesis 길이에
+    따라 달라지므로, 보정 없이 순위별 위험을 비교하면 특정 위치의 경계가 구조적으로
+    불리해진다. run03 test 에서 이 교란만으로 순위 정렬도가 −0.25 로 나왔고 보정 후
+    +0.14 였다.
+
+    **방향은 백엔드마다 다르다 — 그리고 뒤집혔다.** 위 run03 근거와 종전 주석이 인용하던
+    "짧을수록 크다(1-2어절 0.113, 10어절+ 0.003)" 는 `deberta-mnli` 측정이고, 그 백엔드는
+    삭제됐다. 현행 `xlmr-anli` 는 반대로 **길수록 크다** — German 0.024 → 0.107,
+    English 0.065 → 0.117, Chinese 0.074 → 0.123 (문장 611/350/100 재측정,
+    `runs/noise_floor_xlmr/`). 저장된 바닥 파일 9개 중 "짧을수록 큼" 은 0개다.
+    따라서 이 보정을 쓰는 진단(`rank_contra_gap`)의 부호 해석을 다시 봐야 한다.
 
     바닥은 (코퍼스, 번역기, NLI 백엔드)의 성질이지 프롬프트의 성질이 아니다 — full
     번역은 이터레이션 간 불변이므로 다시 잴 이유가 없다. 번역 호출은 0 이고 NLI 만 돈다.
@@ -534,7 +664,7 @@ def load_contra_floor(run_dir, rows: list[dict], backend,
     반환: `floor_fn(hyp_words) -> c0`. 잴 수 없으면 None (보정 없이 raw 로 진행).
 
     `filename` 은 타깃 언어마다 바닥이 다르기 때문에 있다 — full 번역이 달라지면
-    바닥도 달라진다 (`multilingual_check.py`).
+    바닥도 달라진다.
     """
     if backend is None:
         return None
@@ -569,80 +699,202 @@ def _cell(v, spec: str, dash: str = "—") -> str:
     return format(v, spec) if v is not None else dash
 
 
+# 커버리지가 깨졌다고 볼 문장 비율. **절반을 넘으면 지배 실패**로 본다 — 그 상태에서는
+# 절단기가 고를 후보가 없어서 `[Never Segment]` 에 규칙을 더할수록 점수가 기계적으로
+# 내려간다. 상수는 `agents.select_cases` 의 쿼터 확대 조건과 같은 값이어야 한다.
+COVERAGE_BROKEN_FRAC = 0.5
+
+
+def coverage_report(rows: list[dict], m: dict, t_grid: list[int]) -> dict:
+    """가장 빡빡한 예산에서 **요구된 경계를 실제로 받았는가.**
+
+    Critic 지시문은 "조각 수는 절단기가 정하므로 too_few 는 진단 대상이 아니다" 라고
+    못 박는데, 그 전제는 마킹된 후보가 예산보다 많을 때만 성립한다. run12 는 dev
+    265문장 중 264건이 `too_few_tags` 였는데도 비평 사례가 11/11 전부 `placement` 로
+    나왔다 — 전제가 깨진 것을 Critic 에게 알려줄 통로가 없었기 때문이다. 그 상태에서
+    나온 개정은 네 번 다 금지 추가였고 네 번 다 거부됐다.
+
+    가장 작은 T 를 보는 이유: 같은 문장에서 T 가 작을수록 조각이 많이 필요하므로 요구
+    경계 수가 최대가 된다. 커버리지 요건(`coverage_t`)도 거기서 걸린다.
+    """
+    t = min(t_grid) if t_grid else None
+    if t is None:
+        return {}
+    key = str(t)
+    n = len(rows)
+    short = [r for r in rows
+             if (r.get("by_T", {}).get(key) or {}).get("missing_boundaries", 0) > 0]
+    cell = (m.get("by_T") or {}).get(key) or {}
+    frac = (len(short) / n) if n else 0.0
+    return {
+        "tightest_budget_T": t,
+        "sentences": n,
+        "sentences_missing_boundaries": len(short),
+        "fraction_missing": round(frac, 4),
+        "mean_missing_per_sentence": cell.get("missing_boundaries"),
+        "format_pass_rate": m.get("format_pass_rate"),
+        "format_pass_rate_no_retry": m.get("format_pass_rate_no_retry"),
+        "broken": frac > COVERAGE_BROKEN_FRAC,
+    }
+
+
 def fmt_metrics(m: metrics.Metrics, tag: str) -> str:
     parts = [f"{tag} fmt={m.format_pass_rate:.2f}(1st {m.format_pass_rate_no_retry:.2f})"]
     for k in sorted(m.by_T, key=int):
         s = m.by_T[k]
-        parts.append(f"T{k}: eff={_cell(s.effective, '.4f')} adq={s.adequacy:.4f} "
+        # **`p10` 을 평균 옆에 항상 같이 찍는다.** `effective` 평균은 소수의 나쁜 문장에
+        # 크게 끌린다 — 실측(en-de/run01 pool_base T=6, 100문장): 평균 0.7760 / 중앙
+        # 0.8021 이고 **최악 1문장을 빼면 평균이 +0.0034 오른다.** 프롬프트 간 실제 차이가
+        # 0.003~0.007 규모라 같은 크기다. 평균만 보면 "개선"과 "그 배치에 유난히 나쁜
+        # 문장이 하나 덜 걸림"을 구분할 수 없다.
+        #
+        #   평균 ↑ 이고 p10 도 ↑   →  꼬리까지 좋아졌다. 진짜 개선
+        #   평균 ↑ 인데 p10 은 ↓   →  꼬리 운이다. 의심할 것
+        parts.append(f"T{k}: eff={_cell(s.effective, '.4f')} p10={_cell(s.effective_p10, '.4f')} "
+                     f"[ent {_cell(s.effective_ent, '.4f')}] "
+                     f"adq={s.adequacy:.4f} "
                      f"contra={_cell(s.contradiction, '.3f')} laal={s.laal_words:.2f} "
                      f"k={s.chunks_per_sentence:.2f} miss={s.missing_boundaries:.2f}")
     parts.append(f"score={metrics.score(m):.4f}")
+    # **순위축은 로그에 남긴다.** 지금까지 어느 런에도 기록된 적이 없어서(기능이 마지막
+    # 런보다 나중에 들어왔다) 순위가 실제로 값을 하는지 확인할 방법이 없었다.
+    if m.rank_lift is not None:
+        parts.append(f"rank_lift={m.rank_lift:+.4f}"
+                     + (f"(t{m.rank_lift_t:+.1f}, T{m.rank_lift_T})"
+                        if m.rank_lift_t is not None else ""))
     return "  ".join(parts)
 
 
-# ── 메인 ─────────────────────────────────────────────────────────────────
-
-def coverage_need(text: str, min_t: int, spaced: bool, min_gap: int) -> int:
-    """검증기가 요구할 최소 태그 수. **간격 용량을 넘지 않게 깎는다.**
-
-    개수 요건과 간격 요건은 서로 모른 채 각각 하한/상한을 건다. 짧은 문장에서는
-    `chunk_budget` 의 하한 2 가 태그 1개를 요구하는데 `min_gap` 을 만족하는 자리가
-    0개라, 둘을 그대로 두면 **만족 불가능한 요건**이 되어 그 문장이 영원히 재시도를
-    돈다 (kspon 150문장 중 min_gap=3 에서 1건, =4 에서 7건).
-
-    용량으로 깎으면 그런 문장은 태그 0개가 허용되고 그대로 **무분절**로 나간다 —
-    절단기에서 무분절이 나오는 경로와 같은 결론이고, 짧은 발화가 통째로 나가야 하는
-    바로 그 경우다.
-    """
-    need = max(0, chunk_budget(text, min_t, spaced) - 1)
-    if min_gap > 0:
-        need = min(need, max(0, unit_count(text, spaced) // min_gap - 1))
-    return need
-
+# ── 메인 ───────────────────────────────────────────────────────────────
 
 # ── T 격자 유도 ──────────────────────────────────────────────────────────
 
-# `min_gap` 은 조각 길이의 하한이므로 **T 의 하한도 함께 정한다.** 그보다 작은 T 를
-# 요청하면 절단기가 그만큼 자르지 못하고(보충 안 함) min_gap 바닥에서 포화한다 —
-# 곡선에 같은 점이 두 번 찍히고, `T=2` 라는 라벨이 실제 분절을 설명하지 못하게 된다.
+# **`t_floor` 는 하한 두 개 중 큰 쪽이다.** 종전 `ceil(1.3 · min_gap)` 은 둘을 한
+# 상수로 뭉뚱그렸고, 주석은 그걸 "포화 바닥"이라고만 설명해 근거가 틀려 있었다.
 #
-# 실측 바닥(도달 가능한 최소 평균 조각 크기)은 min_gap 의 **1.21~1.33배**로, 소스 언어에
-# 둔감하다 (ko kspon / en fleurs, 각각 min_gap 2·3·4):
-#     min_gap=2  ko 2.41  en 2.62      min_gap=3  ko 3.66  en 3.83
-#     min_gap=4  ko 4.91  en 5.30
-# 그래서 격자 최소 T 를 `ceil(1.3 · min_gap)` 으로 잡으면 6개 실측 바닥을 모두 넘는다.
+# ① **포화 바닥 = `min_gap + 1`** — 절단기 쪽. 유도된다.
+#    `T <= min_gap` 이면 요청 조각 수가 용량(`길이 // min_gap`)을 넘어 전부 같은 결과가
+#    나온다. 곡선에 같은 점이 여러 번 찍히므로 격자에 넣을 이유가 없다.
+#    저장된 런 5개 재절단에서 "앞 T 와 값이 처음 달라지는 T" 가 **5/5 모두 min_gap+1**:
+#        en-de/run01 mg3 -> 4   de-en/run01 mg3 -> 4   ko-en/run04 mg3 -> 4
+#        ja-en/run01 mg8 -> 9   zh-en/smoke04 mg6 -> 7
+#
+# ② **마킹 한계 ≈ `1.25 · min_gap`** — 모델 쪽. 실측이다.
+#    검증기가 `길이/t_floor - 1` 개를 요구하는데, 모델이 그만큼 못 찍으면 재시도가
+#    성공할 수 없다. 실제 마킹 간격 (길이 / (마크+1)):
+#        de 3.39 (mg3, 1.13배)   zh 7.17 (mg6, 1.20배)   ja 9.89 (mg8, 1.24배)
+#    **하드 한계는 아니다** — 물리적 상한은 min_gap(=1.0배)이고 모델은 그 77~86% 만
+#    찍는다. 즉 1.25 는 "관측된 행동"이지 "능력의 벽"이 아니라, 런에서 더 촘촘히
+#    찍는 것이 확인되면 내릴 수 있다. 내리면 후보가 늘어 절단이 고를 여지가 커진다.
+#
+# 둘 중 어느 쪽이 이기는지는 min_gap 크기에 따라 갈린다 (교차점 min_gap=4~5):
+# 어절 언어(mg 3~4)는 ①, 글자 언어(mg 6~8)는 ② 가 결정한다.
+#
 # 배수 (1, 1.5, 2, 3) 은 기존 기본 격자 [2,3,4,6] 의 비율 그대로다 — `min_gap=0` 이면
 # 예전 기본값 ([2,3,4,6] / [3,6])이 정확히 재현되므로 기존 런과의 연속성이 유지된다.
-# **`min_gap` 은 코퍼스에서 유도한다 — 언어별로 사람이 정하지 않는다.**
-# 손으로 정했던 값들이 하나의 비율로 재현된다 (§MULTI2EN_DATASET.md 5.4):
-#   en 3/20=0.150  de 3/20=0.150  zh 6/38=0.158  ja 8/52=0.154
-# `1/0.15 ≈ 6.7` = "한 문장 최대 6~7조각"이라는 페이싱 상수로, 언어 속성이 아니다.
-# 단위는 `measure_profile` 이 판정한다(어절 vs 문자) — 그래서 값이 언어마다 달라도
-# **규칙은 하나**다.
+MARK_SPACING_RATIO = 1.25
+# **`min_gap` 은 시간이다 — 토큰 수가 아니다.**
 #
-# **한계**: 짧은 자발발화 레지스터에서는 어긋난다. ko(KsponSpeech)는 중앙 5어절인데
-# 실제로 쓴 값이 3(비율 0.60)이다. `min_gap` 이 두 역할을 겸하기 때문이다 —
-# ① 길이 비례 조각 수 상한(이 식), ② 길이와 무관한 절대 최소 방출량. 긴 문어체에서는
-# 둘이 같은 값에서 만나 구별되지 않는다. 유도값이 3 미만이면 경고한다.
-MIN_GAP_RATIO = 0.15
+# 하는 일이 "청자가 알아들을 수 있는 최소 방출량"이라 **문장 길이와 무관**해야 한다.
+# 종전 식 `중앙 문장길이 × 0.15` 는 길이 무관한 양을 길이에서 유도했고, 근거로 든
+# 네 언어 중 de·ja·zh 는 **같은 240문장**을 세 언어로 옮긴 것이라 독립 관측이 1개였다.
+# 성격이 다른 ko(KsponSpeech, 중앙 5어절)에서 유도값 2 가 나와 사람이 쓴 3 과 어긋났다.
+#
+# 강제정렬로 발화 속도를 재니 손으로 정했던 값들이 **하나의 시간**으로 모인다
+# (FLEURS loop240, 발화 구간 기준. `data.units_per_sec` 참고):
+#     de 3어절 / 2.43 = 1.23초    zh 6자 / 4.74 = 1.27초
+#     ja 8자  / 5.77 = 1.39초    en 3어절 / 2.88 = 1.04초
+# 산포가 토큰 축 2.7배 -> 시간 축 1.12배로 준다. 시간 축 재정의가 예고한
+# "r=0.15 는 시간 불변성을 토큰 축에서 재구성한 것" 이 수치로 확인된 셈이다.
+#
+# **1200ms 는 지연 요건에서 나온다 — 지각 하한이 아니다.**
+#
+# 문헌에 "의미를 파악할 수 있는 최소 덩어리"의 하한은 없다. 있는 것은 **범위**다:
+#     의미 덩어리(intonation unit)   1.6~3초   (Chafe; 자발발화 intonational phrase)
+#     언어 처리 시간 창              ~2.7초    (Nature Rev. Psych. 2026)
+#     청자가 지각하는 덩어리          ~2.5초
+#     통역사 EVS                     2~4초
+#     사용자 수용 지연               <3.5초, 이상적 <2~3초
+# 즉 문헌이 정하는 것은 **T 의 범위**이고, `min_gap` 은 거기서 역산된다:
+#     ① 곡선이 수용 구간(<3.5초)을 아래까지 훑으려면 최소 작동점 ~1.5초
+#     ② 최소 작동점 = t_floor
+#     ③ min_gap = t_floor / 1.25 (마킹 한계 실측) = 1.2초
+#
+# 실측 검증 — 사람이 손으로 정한 값과 일치한다 (독립 판단 두 개):
+#     de  1.2 x 2.43 = 2.92 -> 3   (손값 3)
+#     en  1.2 x 2.88 = 3.46 -> 3   (손값 3)
+#     ko  1.2 x 2.11 = 2.53 -> 3   (손값 3, KsponSpeech 자발발화)
+# ko 는 종전 `0.15 x 중앙길이` 가 2 를 내서 어긋나던 케이스다 — 시간 축이 고쳤다.
+# zh 6 / ja 7 은 검증이 아니다: 그 손값(6, 8)이 en 의 3 을 길이 비율로 환산한
+# 파생값이기 때문이다 (MULTI2EN_DATASET.md §3).
+#
+# 문헌 하한(1.6초)에 맞추면 안 된다 — en min_gap 5, 격자가 {2.4, 3.8, 4.9, 7.3}초가
+# 되어 **네 점 중 둘이 수용 한계 3.5초 밖**이다. 빠른 구간을 못 재게 된다.
+#
+# **시간이 프롬프트에 도달하지는 않는다.** 분절기는 텍스트 모델이라 "1.3초마다 표시"를
+# 못 알아듣는다. 환산은 여기서 끝나고 아래로는 전부 토큰
+# 단위로 흐른다 — 프롬프트 문면도 검증기도 절단기도 종전과 같다.
+MIN_GAP_MS = 1200
 
 
-def derive_min_gap(median_units: int) -> int:
-    return max(2, int(median_units * MIN_GAP_RATIO + 0.5))
+def derive_min_gap(units_per_sec: float) -> int:
+    """발화 속도(단위/초)를 최소 조각 크기(단위)로 환산한다."""
+    return max(2, round(MIN_GAP_MS / 1000.0 * units_per_sec))
+
+
+def derive_t_floor(min_gap: int) -> int:
+    """격자 바닥이자 마킹 밀도 기준. 포화 바닥과 마킹 한계 중 **큰 쪽**."""
+    mg = max(0, min_gap)
+    return max(2, mg + 1, -(-125 * mg // 100))        # ceil(1.25 * mg)
 
 
 def derive_t_grids(min_gap: int) -> tuple[list[int], list[int]]:
-    """(t_grid, final_t_grid). min_gap 아래로는 어차피 못 내려가므로 요청도 안 한다."""
-    b = max(2, -(-13 * max(0, min_gap) // 10))        # ceil(1.3 * min_gap)
-    r = lambda x: int(x + 0.5)
-    final = sorted({r(b * m) for m in (1, 1.5, 2, 3)})
-    loop = sorted({r(b * 1.5), r(b * 3)})
+    """(t_grid, final_t_grid). min_gap 아래로는 어차피 못 내려가므로 요청도 안 한다.
+
+    반올림은 `chunk_budget` 과 **같은 규칙**(`round_half_up`)을 쓴다. 예전에는 여기만
+    `int(x+0.5)`, 조각 수는 파이썬 `round()`(짝수 반올림)라 같은 사슬 안에서 규칙이
+    둘이었다.
+
+    **루프 격자에 `t_floor`(배수 1)를 넣는다 — 종전 `{1.5, 3}` 에서 바꿨다.**
+
+    종전 조합에 근거가 있었던 게 아니다. 옛 기본값이 `--t-grid 3 6` / `--final-t-grid
+    2 3 4 6` 이었고, 격자를 `min_gap` 에서 유도하도록 바꿀 때 "`min_gap=0` 이면 옛
+    기본값이 그대로 재현되게" 배수를 역산한 결과가 `{1.5, 3}` 이었다. 점을 왜 그 둘로
+    골랐는지는 어디에도 없다. 부분집합을 쓰는 이유만 적혀 있다 — 조각 번역 호출이 격자
+    크기에 비례해서(설계 §8.5).
+
+    그 사이 격자가 통째로 위로 밀렸다. 옛 `{3,6}` 은 최종 `[2,3,4,6]` 에서 최소값 하나만
+    뺀 것이었는데, `min_gap=3` 이면 루프 `[6,12]` / 최종 `[4,6,8,12]` 라 **아래 절반**이
+    빠진다. 그래서 세 가지가 어긋나 있었다.
+
+      1. 커버리지 요건은 `coverage_t = min(최종 격자) = t_floor` 로 강제하는데 **점수는
+         거기를 안 잰다.** 같은 종류의 불일치가 run03 에서 test 1차 통과율 0.34 사고를
+         냈다 (요건 쪽은 그때 고쳤고 점수 쪽이 남아 있었다).
+      2. 채택된 프롬프트가 **한 번도 최적화되지 않은 점**(T=t_floor)에서 최종 심판을
+         받는다. T 별 프롬프트 순위는 같지 않다 — en-de/run01 프롬프트 9개에서
+         Spearman(T6, T12) = +0.70, 1등도 서로 다르다.
+      3. `t_floor` 는 논문이 주장할 **최저지연 작동점**이다. 그 점을 안 보고 최적화한다.
+
+    배수 `{1, 1.5, 3}` 은 곡선의 앞·중간·뒤를 잡는다. 양 끝만(`{1,3}`) 쓰면 가운데에서
+    무너지는 프롬프트를 못 걸러낸다. 비용은 조각 번역 기준 2점 → 3점으로 +50% 인데,
+    기본 번역기가 Google(사실상 0원, 결정론)이라 LLM 번역기를 쓸 때만 실제 부담이다.
+
+    **격자를 바꾸면 `score` 는 이전 런과 비교할 수 없다** — 격자 평균이기 때문이다.
+    어떤 격자를 썼는지는 `config.json` 에 남는다.
+
+    부수 효과: `main_t`(판정자 작동점, 기본 `t_grid` 의 중앙)가 최대값에서 가운데 점으로
+    옮겨간다 (min_gap=3 이면 12 → 6). 판정자는 대표 작동점을 봐야 하므로 이쪽이 맞다.
+    """
+    b = derive_t_floor(min_gap)
+    final = sorted({round_half_up(b * m) for m in (1, 1.5, 2, 3)})
+    loop = sorted({round_half_up(b * m) for m in (1, 1.5, 3)})
     return loop, final
 
 
 def main() -> int:
     p = argparse.ArgumentParser(description="의미 분절 프롬프트 자동 생성 루프 (v2)")
-    p.add_argument("--dataset", default="kspon", choices=sorted(data.LOADERS))
+    p.add_argument("--dataset", default="kspon",
+                   help="등록된 이름 또는 매니페스트 경로(.jsonl). 이름 목록은 data.DATASETS")
     p.add_argument("--src-lang", default="Korean")
     p.add_argument("--tgt-lang", default="English")
     p.add_argument("--run-id", default=None)
@@ -651,7 +903,6 @@ def main() -> int:
     p.add_argument("--model", default="gpt-5-mini")
     p.add_argument("--judge-model", default=None,
                    help="판정자 모델. 미지정 시 --model. 분절기와 다른 모델을 쓰면 순환이 준다")
-    p.add_argument("--translator-model", default="gpt-5-mini")
     # 비용의 98% 가 분절 호출의 사고 토큰이다 (run05 실측). low 는 medium 대비 2.7배
     # 싸면서 태그 수·원문 보존이 같거나 낫고, gpt-5.4-mini 는 명시하지 않으면 사고를
     # 아예 안 해 태그가 필요량의 1/3 로 떨어진다. 자세한 실측은 gateway.Gateway.chat.
@@ -669,8 +920,11 @@ def main() -> int:
                    help="이터레이션당 개정 후보 수. 2 이상이면 probe 로 골라 쓴다")
     p.add_argument("--v0-candidates", type=int, default=1,
                    help="prompt_v0 후보 수. 2 이상이면 dev 일부로 골라 시작한다")
-    p.add_argument("--v0-probe", type=int, default=40,
-                   help="후보 1차 선별에 쓸 dev 문장 수. 실측 1위적중 20문장 36%% / 40문장 58%%")
+    p.add_argument("--select-n", type=int, default=0,
+                   help="후보 선별에 쓸 **train** 문장 수. 0 = train 전체. dev 는 채택 "
+                        "판정 전용이라 선별에 쓰지 않는다 (select_prompt 주석 참고). "
+                        "정확도는 문장 수만 따른다 — 실측 1위적중 20문장 36%% / 40문장 58%% "
+                        "/ 60문장 76%%")
     # 한 분절 호출에 넣을 문장 수. **비용의 유일한 큰 레버**다 — en-de test 100문장 실측:
     # b=1 $1.05 → b=6 $0.47 (55% 절감), 쌍체 Δ(T6) −0.0026±0.0056 으로 품질 차이 검출 안 됨.
     # **b=12 부터 무너진다**: 1차 통과율 0.75(b=12)·0.27(b=24)로 떨어져 단건 재시도가
@@ -697,7 +951,7 @@ def main() -> int:
     # 청자에게 무의미한 한 단어 방출은 지표가 아니라 사용 요건으로 막는다.
     #
     # 부수 효과가 본 기능이기도 하다: 짧은 문장은 min_gap 을 만족하는 자리가 없어
-    # 경계 0개 = **무분절**로 나온다. chunk_budget 하한이 2 라 T 로는 절대 못 만드는
+    # 경계 0개 = **무분절**로 나온다. T 가 요청하는 경로와는 별개로, min_gap 이 만드는
     # 상태이고 (pipeline.truncate 참조), 이 경로가 유일하다.
     #
     # 이 값은 T 에 비례하지 않는 **절대 하한**이라, T 를 줄여도 과분절이 안 따라
@@ -707,10 +961,10 @@ def main() -> int:
                         "미지정 시 **코퍼스에서 유도**한다 (중앙 단위수 × 0.15). 0=끔")
     p.add_argument("--batch-size", type=int, default=6,
                    help="한 분절 호출에 넣을 문장 수. 실측 최적 6, 12 이상은 역효과")
-    p.add_argument("--candidate-t", type=int, default=None,
+    p.add_argument("--units-per-sec", type=float, default=None,
+                   help="코퍼스 발화 속도(단위/초). 강제정렬 산출물이 없을 때 직접 준다")
+    p.add_argument("--t-floor", type=int, default=None,
                    help="후보 마킹 하한 기준 T. 작을수록 많이 찍는다. 미지정 시 min(--final-t-grid)")
-    p.add_argument("--no-trust-region", action="store_true",
-                   help="개정 범위를 고정 임계값(섹션 2, 1.25배)으로 되돌린다. 과거 런 재현용")
     p.add_argument("--skip-translation-below", type=float, default=0.95,
                    help="원문 보존율이 이 값 미만이면 번역·채점 생략 (0 = 항상 채점)")
     p.add_argument("--agent-reasoning-effort", default="medium",
@@ -718,23 +972,63 @@ def main() -> int:
                    help="Profiler/Judge/Critic/PE 사고량. none = 모델 기본값")
     p.add_argument("--seg-reasoning-effort", default="medium",
                    choices=["minimal", "low", "medium", "high", "none"],
-                   help="분절 호출 사고량. none = 모델 기본값. 에이전트 호출에는 영향 없음")
-    p.add_argument("--translator", default="google", choices=["llm", "google"])
+                   help="분절 호출 사고량. none = 모델 기본값(사고 끔). 에이전트 호출에는 "
+                        "영향 없음. **none 은 결정론을 얻는 대신 커버리지를 잃는다** — "
+                        "run12(claude-haiku-4-5 + none)는 dev 264/265 가 요구 경계 수를 "
+                        "못 채웠고, run11(gpt-5-mini + medium)은 같은 격자에서 0/265 였다")
+    # 커버리지가 깨진 상태는 프롬프트 개정으로 못 고친다 — 절단기가 고를 후보가 없어서
+    # 어떤 개정도 점수를 못 올린다. 기본은 iter 0 에서 멈추는 것이고, 그 상태 자체를
+    # 관측하려는 실험에서만 이 플래그로 뚫는다.
+    p.add_argument("--allow-broken-coverage", action="store_true",
+                   help="분절기가 요구 경계 수를 못 채워도 루프를 계속한다 (기본: iter 0 에서 중단)")
+    # **`local` 이 기본이다.** Cloud Translation v2 무료 한도가 월 50만 자인데 루프는
+    # 이터당 105만 자를 쓴다 — 2026-08-28 에 한도가 차서 run10 이 iter1 에서 멈췄고
+    # 무료 gtx 도 IP 차단이었다. 채점이 이미 전부 로컬인데 번역만 API 에 묶여 있었다.
+    # 품질 실측(100문장·5타깃, CometKiwi): google 0.8712 / madlad-3b 0.8554.
+    p.add_argument("--local-mt-model", default=LOCAL_MT_DEFAULT,
+                   help="--translate-backend local 일 때 쓸 HF seq2seq 번역 모델")
+    p.add_argument("--translate-backend", default="local", choices=["gtx", "v2", "local"],
+                   help="번역 백엔드. 기본 local (--local-mt-model). v2 는 Cloud "
+                        "Translation, gtx 는 무료 엔드포인트. **백엔드마다 번역문이 "
+                        "다르다** — 섞어 비교 금지 (캐시 키와 translator_id 에 들어간다)")
     p.add_argument("--tgt-code", default=None)
     # **목적함수를 다언어로.** 분절은 타깃 무관이라 비용의 90% 가 그대로다 (loop 상단 주석).
     # 소스 언어는 자동 제외한다.
     p.add_argument("--tgt-langs", nargs="+", default=None,
                    help=f"검증 타깃 풀. 기본 {' '.join(DEFAULT_TARGET_POOL)} (소스는 자동 제외)")
+    # **비교군 전용 모드다.** 언어쌍 하나에 최적화한 프롬프트가 상한선으로 얼마나 좋은지
+    # 재서, 타깃 무관 프롬프트가 거기 얼마나 근접하는지 보이려는 것이다 (agents.py
+    # '타깃 인지 모드' 주석). 기본 런의 동작은 이 플래그 없이는 한 글자도 안 바뀐다 —
+    # 네 지시문 모두 `target_language=None` 에서 종전과 바이트 단위로 같다.
+    p.add_argument("--target-aware", action="store_true",
+                   help="언어쌍 전용 프롬프트(비교군). 타깃 1개 필수, 타깃 무관 게이트 해제")
     p.add_argument("--no-google-context", action="store_true")
     p.add_argument("--tgt-spaced", default=None, choices=["yes", "no"],
                    help="타깃 언어가 띄어쓰기를 쓰는가. 미지정 시 --tgt-lang 에서 추론 (LAAL 단위)")
     p.add_argument("--iterations", type=int, default=6)
     p.add_argument("--train", type=int, default=30)
     p.add_argument("--train-pool", type=int, default=None)
-    p.add_argument("--max-prompt-growth", type=float, default=1.3)
+    # 프롬프트가 v0 대비 커질 수 있는 **유일한** 상한. 품질 노브가 아니라 비용 천장이다 —
+    # 프롬프트는 문장마다 다시 보내므로 길이가 곧 토큰 비용이다.
+    #
+    # **1.3 -> 1.6.** 1.3 은 "적용된 개정 42건의 v0 대비 배수가 중앙 1.06 / 최대 1.29,
+    # 예산 발동 2%" 라는 실측에서 나왔는데, 그 42건은 전부 **예전 섹션 관문을 통과한**
+    # 개정이다. 관문을 없애 PE 가 자유로워지자 산출이 1.4~1.5배로 올라갔고, run08 에서
+    # 예산 발동이 2% 가 아니라 **연속 100%** 가 됐다:
+    #   iter2  17,215자 -> 압축 16,334  > 예산 14,652  거부
+    #   iter3  15,866자 -> 압축 14,755  > 예산 14,652  거부 (103자 차)
+    # 거부되면 프롬프트가 안 바뀌어 다음 이터가 같은 것을 다시 재고(Δ 정확히 0,
+    # 변경 0/265) 이터레이션 하나가 통째로 헛돈다.
+    #
+    # 실제 비용 영향은 작다 — 호출 1건의 사고 토큰이 13.7k 인데 프롬프트는 ~3k 라
+    # 1.3 -> 1.6 이 전체 토큰의 5% 남짓이다. 천장을 조금 올려 개정을 살리는 쪽이 맞다.
+    p.add_argument("--max-prompt-growth", type=float, default=1.6,
+                   help="프롬프트 길이 천장 (v0 대비 배수). 넘치면 압축기가 깎는다")
     p.add_argument("--dev", type=int, default=60)
     p.add_argument("--test", type=int, default=100)
-    p.add_argument("--min-chars", type=int, default=25)
+    p.add_argument("--seed", type=int, default=data.DEFAULT_SEED,
+                   help="층화 분할 시드. config.json 에 기록된다 — 바꾸면 "
+                        "train/dev/test 가 통째로 달라져 런 간 비교가 깨진다")
     # 노브. 루프에서는 부분집합만 쓴다 — 조각 번역이 격자 크기에 비례해 늘기 때문이다.
     p.add_argument("--t-grid", type=int, nargs="+", default=None,
                    help="루프가 쓰는 목표 조각 크기. score 는 이 격자에서의 adequacy 평균이라 "
@@ -743,16 +1037,21 @@ def main() -> int:
                    help="최종 test 곡선용 격자")
     p.add_argument("--main-t", type=int, default=None,
                    help="판정자가 도는 주 작동점. 미지정 시 --t-grid 의 중앙값")
-    p.add_argument("--judge-rows", type=int, default=8,
-                   help="이터레이션당 판정할 문장 수 (adequacy 하위부터)")
-    p.add_argument("--no-judge", action="store_true", help="판정자를 끄고 adequacy 만으로 조향")
+    # **개수가 아니라 비율이다.** 판정자가 붙이는 `cause` 는 6개 범주인데, 저장된 43개
+    # 이터레이션에서 라벨이 붙은 경계가 **이터당 중앙 5개**였다 — 6범주에 5표라 최빈값이
+    # 1 대 1 대 1 이고, Critic 이 "어떤 실패가 지배적인가" 를 읽을 수 없었다. 비율로 두면
+    # train 크기와 T 가 바뀌어도 표본이 같이 따라온다.
+    p.add_argument("--judge-frac", type=float, default=0.10,
+                   help="타깃별로 판정할 경계 비율 (contradiction 상위부터). 0.10 = 10%%")
+    p.add_argument("--no-judge", action="store_true",
+                   help="판정자를 끈다. 사례에 '왜·어디로' 설명이 안 붙는다")
     p.add_argument("--adequacy-backend", default="cometkiwi",
                    choices=sorted(metrics.QE_CHECKPOINTS),
                    help="참조 없는 QE. y축 주지표")
     p.add_argument("--consistency-backend", default="nli",
-                   choices=["nli", "comet", "xcomet", "embed", "chrf"],
+                   choices=["nli", "comet", "xcomet"],
                    help="가설 검증값(보고용). 기본 nli = 합본 vs full 의 양방향 entailment — "
-                        "어순 무관. 모델은 --contradiction-backend 를 따른다. "
+                        "어순 무관. 모델은 metrics.NLI_MODEL 고정. "
                         "comet 계열은 참조 기반이라 어순 편향이 있다")
     # `xlmr-anli` 로 바꾼 근거 (en-de test 100문장 + 관문 6케이스 실측, 2026-08-19):
     #   관문 최소 여유   mdeberta-xnli 0.0027 (통과선상) / deberta-mnli 미측정 / xlmr-anli 0.0994
@@ -760,10 +1059,6 @@ def main() -> int:
     #   잡음 바닥       mdeberta 0.102 — 실측 신호 0.075 보다 커서 사실상 무정보
     # 대가가 있다: 문장별 분산이 커져 dev 쌍체 se 가 0.0065 -> 0.0144 로 배증한다.
     # 채택 문턱이 `Δ > adopt_se_mult·se` 라 그만큼 보수화되므로 기본 배수를 함께 낮춘다.
-    p.add_argument("--contradiction-backend", default="xlmr-anli",
-                   choices=sorted(metrics.NLI_MODELS),
-                   help="조기 방출 검출 NLI. 기본값이 다국어라 타깃별 지정 불필요. "
-                        "영어 전용 데이터면 deberta-mnli 가 분리는 더 깨끗하다")
     p.add_argument("--no-coverage-rule", action="store_true",
                    help="최소 경계 수 요건을 끈다. 노브가 k 를 통제하지 못하게 된다")
     p.add_argument("--no-contradiction", action="store_true",
@@ -779,6 +1074,14 @@ def main() -> int:
     p.add_argument("--budget", type=float, default=5.0)
     p.add_argument("--workers", type=int, default=8)
     p.add_argument("--fresh", action="store_true")
+    # **중간 재개.** 3~5시간짜리 런이 이터레이션 도중 죽으면 종전 선택지는 두 개뿐이었다
+    # — 처음부터 다시(PE 가 비결정론적이라 앞의 이터레이션이 통째로 무의미해진다) 또는
+    # `--final-only`(거기까지의 best 로 test 만 뽑고 끝). run05 가 실제로 SIGTERM 으로
+    # 그렇게 죽었다. 분절·번역 캐시는 남아 있으므로 잃는 것은 **루프 상태**뿐이고,
+    # 그 상태는 전부 디스크에 있다 (history.json + iter_NN/).
+    p.add_argument("--resume", action="store_true",
+                   help="같은 run-id 의 history.json 을 이어받아 중단된 이터레이션부터 "
+                        "계속한다. --run-id 를 함께 줘야 한다")
     p.add_argument("--final-only", action="store_true",
                    help="이터레이션을 건너뛰고 기존 best_prompt.txt 로 최종 test 평가만 "
                         "다시 돈다. 루프는 끝났는데 마지막 단계가 죽었을 때 쓴다")
@@ -787,20 +1090,54 @@ def main() -> int:
         if getattr(args, _f) == "none":
             setattr(args, _f, None)           # 모델 기본값에 맡긴다
 
+    # **타깃 인지 모드는 타깃이 정확히 하나여야 한다.** 여러 타깃에 최적화한 프롬프트는
+    # 이 모드가 만들려는 "언어쌍 상한선"이 아니고, 목적함수가 z-평균이라 점수의 자도
+    # 달라진다. `--tgt-langs` 를 안 주면 `--tgt-lang` 하나로 본다.
+    pair_tgt = None
+    if args.target_aware:
+        want = args.tgt_langs or [args.tgt_lang]
+        if len(want) != 1:
+            print(f"[stop] --target-aware 는 타깃 1개만 받는다 (지금 {want})", file=sys.stderr)
+            return 2
+        if want[0].strip().lower() == (args.src_lang or "").strip().lower():
+            print(f"[stop] --target-aware 인데 소스와 타깃이 같다 ({want[0]}). "
+                  f"--tgt-lang 으로 타깃을 줄 것", file=sys.stderr)
+            return 2
+        args.tgt_langs = want
+        pair_tgt = want[0]
+
     # **`min_gap` 을 안 주면 코퍼스에서 유도한다.** 이게 있어야 언어별 숫자가 커맨드에서
-    # 사라진다 — 격자·`candidate_t` 는 이미 `min_gap` 에서 나오므로 이 하나가 마지막 고리다.
+    # 사라진다 — 격자·`t_floor` 는 이미 `min_gap` 에서 나오므로 이 하나가 마지막 고리다.
     # 격자 결정보다 먼저여야 해서 데이터셋을 여기서 한 번 읽는다 (jsonl 읽기, 무시 가능).
+    # **데이터를 여기서 한 번만 읽고 나눈다.** 격자 유도가 발화 속도를 요구하고,
+    # 발화 속도는 코퍼스를 봐야 나온다. 예전에는 여기서 한 번, 아래 A0 에서 또 한 번
+    # 읽어 `measure_profile` 이 두 번 돌았고 **모집단도 달랐다**.
+    #
+    # **측정은 train+dev 만 본다.** test 를 넣으면 그 문장의 구두점이 검증기 규칙
+    # (`trailing_punct`)에 반영되어 "루프가 한 번도 보지 않은 데이터" 라는 전제가 깨진다.
+    sentences = data.load(args.dataset)
+    pool_n = max(args.train, args.train_pool or args.train)
+    splits = data.split_data(sentences, pool_n, args.dev, args.test, seed=args.seed)
+    fit = splits["train"] + splits["dev"]
+    measured = data.measure_profile([x.text for x in fit])
+    spaced, trailing_punct = data.profile_settings(measured)
+
+    rate_source = "cli:--min-gap"
     if args.min_gap is None:
-        _texts = [x.text for x in data.LOADERS[args.dataset]()]
-        _mp = data.measure_profile(_texts)
-        args.min_gap = derive_min_gap(_mp["median_units"])
-        print(f"[min_gap] {args.dataset}: 중앙 {_mp['median_units']}{_mp['unit']} "
-              f"× {MIN_GAP_RATIO} → --min-gap {args.min_gap}", flush=True)
-        if args.min_gap < 3:
-            print(f"[min_gap] 경고: 유도값 {args.min_gap} 이 3 미만이다. 짧은 발화 레지스터로 "
-                  f"보이며, 이 식은 조각 수 상한만 보고 **절대 최소 방출량**은 못 본다 "
-                  f"(ko/KsponSpeech 실측: 중앙 5어절인데 실제로 쓴 값은 3). "
-                  f"--min-gap 으로 직접 줄 것", flush=True)
+        _rate, rate_source = data.units_per_sec(args.dataset, fit, spaced)
+        if _rate is None and args.units_per_sec:
+            _rate, rate_source = args.units_per_sec, "cli:--units-per-sec"
+        if _rate is None:
+            print(f"[min_gap] {args.dataset}: 발화 속도를 잴 수 없다 — 강제정렬 산출물"
+                  f"(`*_unittimes.json`)이 없다. `--units-per-sec` 로 직접 주거나 "
+                  f"`--min-gap` 으로 값을 직접 줄 것.\n"
+                  f"  정렬 산출: python -m core.meaning_segmentator.autoseg."
+                  f"baselines.build_unittimes --lang <de|ja|zh|ko>", flush=True)
+            return 2
+        args.min_gap = derive_min_gap(_rate)
+        print(f"[min_gap] {args.dataset}: {_rate:.2f}{measured['unit']}/초 × "
+              f"{MIN_GAP_MS}ms → --min-gap {args.min_gap}  (출처 {rate_source})",
+              flush=True)
 
     # 격자를 안 주면 min_gap 에서 유도한다. min_gap 이 조각 길이 하한이므로 T 하한도
     # 거기서 나온다 — 상수로 박아 두면 min_gap 을 바꿀 때마다 포화점이 생긴다.
@@ -832,7 +1169,7 @@ def main() -> int:
     # 하한은 격자 유도와 **같은 식**을 쓴다 (derive_t_grids 의 b). 예전엔 1.5배를 썼는데
     # 그건 "보충 발동률이 낮아지는 지점"을 눈대중한 값이었고, 실측한 도달 가능 바닥은
     # min_gap 의 1.21~1.33배다. 상수가 둘이면 유도 격자가 자기 경고에 걸린다.
-    t_floor = derive_t_grids(args.min_gap)[1][0]  # 유도 격자의 최소 T = ceil(1.3·min_gap)
+    t_floor = derive_t_grids(args.min_gap)[1][0]  # = derive_t_floor(min_gap)
     if args.min_gap > 0:
         dup = [t for t in final_grid if t <= args.min_gap]
         tight = [t for t in final_grid if args.min_gap < t < t_floor]
@@ -849,34 +1186,21 @@ def main() -> int:
     # 요건으로 학습하면 마지막 평가에서만 무너진다 (run03: test 1차 통과율 0.34).
     # 검증기(`evaluate`)와 프롬프트 문면(`output_rules`)이 **같은 값**을 써야 한다.
     coverage_t = min(final_grid)
-    # 후보 풀 하한. 기본은 곡선의 가장 조인 점이지만, 그 값이면 **후보 수 ≈ 채택 수** 가 되어
-    # 순위 절단이 고를 게 없다 (en-de run01: 마킹 7.2 / 채택 6.2, 폐기 1개).
-    # 더 작은 값을 주면 더 많이 찍게 강제된다 — 실측에서 밀도 0.348 → 0.529, T=6 품질
-    # +0.013 로 **오늘까지 확인된 유일한 품질 레버**다 (docs/RANK_METRIC_DIAGNOSIS.md §8.1).
-    # 문면(`initial_prompt`)과 검증기(`need`)가 **같은 값**을 써야 한다 — 어긋나면 전 문장이
-    # too_few_tags 로 재시도돼 비용이 두 배가 되고 1차 통과율 신호가 오염된다.
+    # `t_floor` = 유도 격자의 바닥이자 **마킹 밀도 기준**. 종전에 `density` 라는
+    # 별도 이름·별도 식(`round(min_gap*4/3)`)이었는데 `ceil(1.3*min_gap)` 과 배수가
+    # 사실상 같아 min_gap 1~20 중 4곳만 1 차이였고, min_gap=20 에서는 뒤집혀
+    # (27 > 26) 전 문장이 too_few_tags 로 걸리는 버그였다. 하나로 합쳤다.
     #
-    # **격자를 따라 올라가면 안 된다.** `coverage_t` 는 곡선을 따라가지만 `candidate_t` 는
-    # 마킹 밀도 노브라 성격이 다르다. min_gap 에서 격자를 유도하면서 coverage_t 가 2 -> 4 로
-    # 오르는데, 그대로 물려 두면 문면이 "2어절당 하나" -> "4어절당 하나"가 되어 밀도 요건이
-    # 절반이 된다 — §8.1 의 레버를 거꾸로 당기는 셈이다.
+    # 문면(`initial_prompt`)과 검증기(`need`)가 **같은 값**을 써야 한다 — 어긋나면
+    # 전 문장이 재시도돼 비용이 두 배가 되고 1차 통과율 신호가 오염된다.
     #
-    # min_gap 이 원하는 방향은 정반대다: 간격 제약이 붙어 있는 자리를 **버리므로**, 필터가
-    # 고를 대안이 남으려면 후보가 더 많아야 한다. 그래서 격자와 분리해 2 로 고정한다
-    # (기존 기본 격자에서의 값과 같아 min_gap=0 이면 동작이 완전히 같다).
-    # min_gap 이 켜져 있으면 **간격을 지킬 수 있는 값**이어야 한다. `candidate_t = min_gap`
-    # 은 round() 때문에 요구 개수가 용량을 살짝 넘는다 (ko-en 실측 하한 3.8 > 용량 3.5)
-    # — 그러면 만족 불가능한 요건이 되어 전 문장이 재시도로 돈다.
-    #
-    # **여유를 정하는 것은 오프셋이 아니라 비율 `min_gap / candidate_t` 다.** 예전 `min_gap + 1`
-    # 은 상수라 min_gap 이 커질수록 비율이 1 로 붙어 여유가 사라진다 (3/4=0.75 → 6/7=0.857 →
-    # 8/9=0.889). zh(min_gap 6)·ja(min_gap 8) 실측에서 **요구 경계가 물리적 수용량 이상인
-    # 문장이 48% / 64%** 나왔다 — 모델이 min_gap 격자에 정확히 맞춰야만 통과하는 요건이라
-    # too_few_tags·gap_too_small 로 전량 재시도된다 (en 기준선 6%, de 8%).
-    # 비율을 보존하면 zh 12% / ja 6% 로 내려온다. **min_gap 2·3·4 에서는 +1 과 값이 같아
-    # 과거 런과 완전히 호환된다** (3→4, 4→5 동일).
-    candidate_t = args.candidate_t or (round(args.min_gap * 4 / 3) if args.min_gap > 0
-                                       else min(2, coverage_t))
+    # **사용자가 준 `--t-grid` 는 따라가지 않는다.** 격자를 크게 주면 마킹 요건이
+    # 같이 느슨해지는데, 밀도는 지금까지 확인된 유일한 품질 레버다
+    # (밀도 0.348 -> 0.529 에서 T=6 품질 +0.013. AUTOSEG_DETAILS.md '순위 축 진단').
+    if args.t_floor:
+        t_floor = args.t_floor
+    elif args.min_gap <= 0:
+        t_floor = min(2, coverage_t)
     main_t = args.main_t or t_grid[len(t_grid) // 2]
     if main_t not in t_grid:
         print(f"--main-t {main_t} 가 --t-grid {t_grid} 에 없습니다", file=sys.stderr)
@@ -887,6 +1211,16 @@ def main() -> int:
     run_dir = _HERE.parent / "runs" / pair_id / run_id
     if args.fresh and run_dir.exists():
         shutil.rmtree(run_dir)
+    # **재개 전제는 먼저 본다.** 아래에서 CometKiwi·NLI 를 GPU 에 올리는 데 몇 분이
+    # 걸리므로, 이어갈 것이 없다는 사실은 그 전에 알려야 한다.
+    if args.resume:
+        if not (run_dir / "history.json").exists():
+            print(f"[stop] --resume 인데 {run_dir}/history.json 이 없다. "
+                  f"--run-id 로 이어갈 런을 지정할 것 (지금 {run_id})", file=sys.stderr)
+            return 2
+        if args.fresh:
+            print("[stop] --resume 과 --fresh 는 같이 못 쓴다", file=sys.stderr)
+            return 2
     run_dir.mkdir(parents=True, exist_ok=True)
 
     gw = Gateway(model=args.model, budget=args.budget,
@@ -901,32 +1235,25 @@ def main() -> int:
     # 타깃 언어 쌍을 재므로 언어 선택 기준이 같다 — 기본 xlmr-anli 는 다국어라 공통이다.
     if args.consistency_backend == "nli":
         consistency = metrics.make_backend(
-            "nli", model_name=metrics.NLI_MODELS[args.contradiction_backend],
+            "nli", model_name=metrics.NLI_MODEL,
             batch_size=args.comet_batch_size)
     else:
         consistency = metrics.make_backend(
-            args.consistency_backend, gw=gw,
+            args.consistency_backend,
             **({"batch_size": args.comet_batch_size}
                if args.consistency_backend in metrics.COMET_CHECKPOINTS else {}))
     contradiction = (None if args.no_contradiction else
-                     metrics.make_contradiction_backend(args.contradiction_backend))
+                     metrics.make_contradiction_backend())
 
     def log(msg: str) -> None:
         print(msg, flush=True)
 
     try:
         # ── A0 데이터 ────────────────────────────────────────────────────
-        sentences = data.LOADERS[args.dataset]()
-        pool_n = max(args.train, args.train_pool or args.train)
-        splits = data.split_data(sentences, pool_n, args.dev, args.test,
-                                 min_chars=args.min_chars)
+        # 로딩·분할·측정은 위에서 이미 끝났다 (격자 유도가 발화 속도를 필요로 해서).
         data.write_splits(splits, run_dir / "data")
         log(f"[data] {args.dataset}: 전체 {len(sentences)}, "
             f"train {len(splits['train'])} / dev {len(splits['dev'])} / test {len(splits['test'])}")
-
-        # 측정 프로파일 — 결정론적 코드를 움직이는 필드는 코퍼스에서 직접 잰다
-        measured = data.measure_profile([s.text for s in
-                                         splits["train"] + splits["dev"] + splits["test"]])
         (run_dir / "measured_profile.json").write_text(
             json.dumps(measured, ensure_ascii=False, indent=2), encoding="utf-8")
 
@@ -937,15 +1264,12 @@ def main() -> int:
             profile = json.loads(profile_path.read_text(encoding="utf-8"))
         else:
             samples = [s.text for s in splits["train"][:20]]
-            profile = profiler.profile(samples)
+            profile = profiler.profile(samples, pair_tgt)
             profile_path.write_text(json.dumps(profile, ensure_ascii=False, indent=2),
                                     encoding="utf-8")
 
         # **JSON 은 고치지 않는다.** 고치면 prompt_v0 가 달라져 기존 런과 비교가 깨진다.
         # 덮어쓰기는 소비 지점인 여기서만 한다.
-        spaced, trailing_punct, warns = data.reconcile_profile(measured, profile)
-        for w in warns:
-            log(f"[profile] 경고: {w}")
         tgt_spaced = (target_is_spaced(args.tgt_lang) if args.tgt_spaced is None
                       else args.tgt_spaced == "yes")
         log(f"[profile] {profile.get('source_language')} / 어순 {profile.get('word_order')} / "
@@ -960,23 +1284,36 @@ def main() -> int:
         rep_tgt = targets[0]
         rep_code = args.tgt_code or to_lang_code(rep_tgt)
         tr_cache = JsonCache(run_dir / "cache" / f"translate_{rep_code}.json")
-        if args.translator == "google":
-            translator = GoogleTranslator(
-                tgt_code=rep_code, cache=tr_cache, workers=min(args.workers, 4),
-                use_context=not args.no_google_context)
-            translator_id = f"google:{translator.tgt_code}:ctx={translator.use_context}"
-        else:
-            translator = Translator(gw=gw, src_name=args.src_lang, tgt_name=rep_tgt,
-                                    model=args.translator_model, cache=tr_cache,
-                                    workers=args.workers)
-            translator_id = f"llm:{args.translator_model}"
+
+        def make_translator(code: str, cache: JsonCache):
+            if args.translate_backend == "local":
+                return LocalTranslator(tgt_code=code, cache=cache,
+                                       model_id=args.local_mt_model)
+            return GoogleTranslator(
+                tgt_code=code, cache=cache, workers=min(args.workers, 4),
+                use_context=not args.no_google_context,
+                backend=args.translate_backend)
+
+        translator = make_translator(rep_code, tr_cache)
+        # **백엔드가 id 에 들어간다.** gtx 와 v2 의 번역문은 같지 않다 (기존 캐시 18건
+        # 재번역 대조에서 일치 0/18). id 에 안 남기면 다른 자로 잰 점수가 조용히 섞인다.
+        # 로컬 모델도 같은 이유로 모델 이름이 들어간다.
+        translator_id = (
+            f"local:{args.local_mt_model}:{translator.tgt_code}:ctx=False"
+            if args.translate_backend == "local"
+            else f"google:{translator.backend}:{translator.tgt_code}"
+                 f":ctx={translator.use_context}")
         log(f"[translator] {translator_id} (대표 타깃 {rep_tgt})")
         log(f"[targets] {len(targets)}개: {', '.join(targets)}  "
             f"(목적함수 = 타깃별 z-정규화 effective 의 평균)")
+        if pair_tgt:
+            log(f"[target-aware] {args.src_lang} -> {pair_tgt} 전용 프롬프트를 만든다 — "
+                f"타깃 무관 게이트 해제. **다른 타깃에 재사용 불가**, 점수도 다중 타깃 "
+                f"런과 같은 자가 아니다 (비교는 eval_prompt --tgt-lang 으로)")
 
         # **`--final-only` 는 config 를 덮어쓰지 않는다.** 인자를 안 준 항목이 기본값으로
         # 채워져 저장되면 **그 런을 만든 설정 기록이 사라진다** — ja/run01 실측:
-        # `revision_candidates 3 -> 1`, `v0_probe 20 -> 40`, `budget 10 -> 4` 로 덮였다.
+        # `revision_candidates 3 -> 1`, `budget 10 -> 4` 로 덮였다 (당시 `v0_probe` 포함).
         if not (args.final_only and (run_dir / "config.json").exists()):
             (run_dir / "config.json").write_text(json.dumps({
             **vars(args), "t_grid": t_grid, "final_t_grid": final_grid, "main_t": main_t,
@@ -986,33 +1323,34 @@ def main() -> int:
                                          args.consistency_backend),
             "judge_prompt_hash": JsonCache.key(agents.JUDGE_SYSTEM),
             "judge_model": args.judge_model or args.model,
-            "min_boundaries_per": candidate_t,   # [Output Rules] 에 박히는 값 = 검증기 요건
-            "candidate_t": candidate_t,
+            "min_boundaries_per": t_floor,   # [Output Rules] 에 박히는 값 = 검증기 요건
             "curve_min_t": coverage_t,
             "coverage_required": not args.no_coverage_rule,
-            "t_floor": t_floor,                  # ceil(1.5 * min_gap). 아래 T 는 포화한다
+            "min_gap_ms": MIN_GAP_MS,
+            "units_per_sec_source": rate_source,
+            "t_floor": t_floor,     # max(2, min_gap+1, ceil(1.25*min_gap)). 아래 T 는 포화
             "t_grid_derived": derived,           # 격자를 min_gap 에서 유도했는가
         }, ensure_ascii=False, indent=2), encoding="utf-8")
 
         # 타깃별 컨텍스트. 번역기·바닥·띄어쓰기가 타깃마다 다르고, adequacy/NLI 백엔드는
         # 다국어라 공유한다. 캐시는 타깃별 파일로 분리해야 gtx 결과가 안 섞인다.
-        _tr_cache: dict = {rep_code: translator} if args.translator == "google" else {}
+        # 대표 타깃의 번역기는 위에서 이미 만들었으므로 그대로 재사용한다.
+        # (종전 `if args.translator == "google"` — `--translator` 는 A5 에서 Google 하나로
+        #  줄이며 사라진 인자다. 조건만 남아 시작하자마자 AttributeError 로 죽었다.)
+        _tr_cache: dict = {rep_code: translator}
 
         def make_ctx(tgt: str):
             code = args.tgt_code if len(targets) == 1 else None
             code = code or to_lang_code(tgt)
             if code not in _tr_cache:
-                _tr_cache[code] = GoogleTranslator(
-                    tgt_code=code,
-                    cache=JsonCache(run_dir / "cache" / f"translate_{code}.json"),
-                    workers=args.workers,
-                    use_context=not args.no_google_context)
+                _tr_cache[code] = make_translator(
+                    code, JsonCache(run_dir / "cache" / f"translate_{code}.json"))
             return (_tr_cache[code], adequacy, consistency, contradiction,
                     target_is_spaced(tgt))
 
         _kw = dict(gw=gw, spaced=spaced, seg_cache=seg_cache, workers=args.workers,
                    trailing_punct=trailing_punct,
-                   require_coverage=not args.no_coverage_rule, coverage_t=candidate_t,
+                   require_coverage=not args.no_coverage_rule, coverage_t=t_floor,
                    reasoning_effort=args.seg_reasoning_effort,
                    batch_size=args.batch_size, min_gap=args.min_gap,
                    skip_translation_below=args.skip_translation_below)
@@ -1041,8 +1379,11 @@ def main() -> int:
 
         def run_eval(prompt_: str, split_sentences, grid, split: str = "train"):
             zb = zbase_all.setdefault(split, {}) if len(targets) > 1 else None
+            norm: list[dict] = []
             rows_, m_, viol_, per_, per_rows_ = evaluate_multi(
-                targets, make_ctx, prompt_, split_sentences, grid, zbase=zb, **_kw)
+                targets, make_ctx, prompt_, split_sentences, grid, zbase=zb,
+                norm_sink=norm, **_kw)
+            run_eval.last_normalizations = norm
             if zb is not None:
                 zbase_path.write_text(json.dumps(zbase_all, ensure_ascii=False, indent=2),
                                       encoding="utf-8")
@@ -1066,14 +1407,15 @@ def main() -> int:
             def one(pr: str):
                 # 프롬프트 **안**의 병렬(=콜 수)만으로는 워커를 못 채운다. 프롬프트
                 # **사이**에도 병렬을 걸어야 동시 폭이 후보 수만큼 곱해진다.
-                min_t = candidate_t
+                min_t = t_floor
                 need = (lambda t: coverage_need(t, min_t, spaced, args.min_gap)
                         ) if not args.no_coverage_rule else (lambda t: None)
                 segment_batch(
                     gw, pr, texts, cache=seg_cache, workers=args.workers,
                     validate_fn=lambda t, out: validate("", t, out, spaced, trailing_punct,
-                                                        True, need(t), None, args.min_gap),
-                    normalize_fn=lambda o: normalize_tags(o, spaced, trailing_punct),
+                                                        True, need(t)),
+                    normalize_fn=lambda t, o: normalize_tags(o, spaced, trailing_punct,
+                                                             min_gap=args.min_gap),
                     reasoning_effort=args.seg_reasoning_effort,
                     batch_size=args.batch_size)
 
@@ -1094,48 +1436,58 @@ def main() -> int:
             log(f"[prewarm] 후보 {len(prompts)} × 문장 {len(texts)} 예열 완료 "
                 f"(동시 최대 {len(prompts) * args.workers})")
 
-        def select_prompt(cands: list[str], probe_n: int, tag_: str) -> str:
-            """후보 여러 개 중 하나를 고른다. **2단계** — probe 로 거르고 상위 2개만 dev 전체.
+        def select_prompt(cands: list[str], select_n: int, tag_: str) -> list[str]:
+            """후보 여러 개 중 하나를 고른다. **train 으로 고른다 — dev 는 안 쓴다.**
 
-            probe 하나로 고르면 못 믿는다 (test 100문장·변종 6종 실측): probe 20 은
-            1위 적중 36%, 40 은 58%, dev 전체(60)라야 76% 다. 상위 2개 포함률은 probe 40
-            에서 77% 이므로, 40 으로 두 개까지 좁힌 뒤 그 둘만 전체로 재는 것이 비용 대비
-            가장 낫다.
+            **왜 train 인가 — dev 를 두 번 쓰면 안 된다.** 종전에는 `dev[:40]` 로 상위 2개를
+            추리고 그 둘을 **dev 전체**로 재채점해 argmax 를 골랐다. 그리고 바로 그 dev 로
+            채택 판정을 했다 — 고르는 데 쓴 자로 그 선택이 옳았는지 판정한 셈이다.
+
+            그 결과 기준선과 새 개정본이 **양쪽 다 부풀어 있었다.** 후보 2개 중 최대값은
+            잡음 σ 일 때 평균 `0.564σ` 만큼 위로 뜨는데, dev 60 에서 σ≈0.011 이라 편향이
+            **≈0.006** 이다. 프롬프트 간 실제 차이가 0.005 규모이므로 **재려는 효과와 같은
+            크기**이고, 두 편향이 상쇄되는지 겹치는지 알 수 없어 쌍체 Δ 의 기대값이 정의되지
+            않았다. 실측이 이 그림과 맞는다 — 쌍체 Δ 14회 중 음수 9회, 런 18개 중 13개가
+            v0 이후 아무것도 채택 못 함.
+
+            train 으로 옮기면 역할이 갈린다: **train = 고르는 곳(게이트·Critic 사례·후보 선별),
+            dev = 판정하는 곳.** train 에 과적합되지만 그게 train 의 일이고, 판정은 깨끗한
+            dev 가 한다.
+
+            **2단계를 1단계로 합친다.** 2단계는 "dev 가 비싸니 아껴 쓰자"는 절충이었는데
+            dev 를 안 쓰면 필요 없다. 채점 비용도 같다 — 종전 `3후보×probe40 + 2후보×dev60
+            = 240문장` 이고 지금은 `3후보×train80 = 240문장` 이다.
+
+            선별 정확도는 **문장 수만 따른다** (test 100문장·변종 6종 실측: 20문장 1위 적중
+            36%, 40문장 58%, 60문장 76%). 같은 예산으로 한 단계에 몰면 표본이 커져 정확도가
+            오른다.
 
             **쌍체로 바꿔도 순위는 안 바뀐다** — 후보들이 같은 문장 집합을 쓰면 기준값이
             공통 상수라 argmax 에서 소거된다 (실측 소수점까지 동일). 쌍체의 이득은
             오차막대이지 순위가 아니다.
             """
             if len(cands) <= 1:
-                return cands[0] if cands else ""
-            probe = splits["dev"][:probe_n]
+                return list(cands)
+            pool = splits["train"]
+            sel = pool[:select_n] if select_n and select_n < len(pool) else pool
             # **분절을 먼저 한 풀에 몰아 캐시를 채운다.** 후보를 순차로 `run_eval` 하면
-            # 후보마다 probe/batch_size 개(=40/6≈7)의 콜만 던지게 되어 워커를 못 채운다
+            # 후보마다 select/batch_size 개의 콜만 던지게 되어 워커를 못 채운다
             # — run04 실측 평균 동시 실행 3.03 / 최대 7 (워커 8). 분절 1콜이 112초라
             # 그 직렬화가 곧 경과 시간이다. 후보 전체의 분절을 한 번에 던지면 동시 폭이
             # 후보 수만큼 늘고, 이후 `run_eval` 은 전부 캐시 히트로 지나간다.
-            prewarm(cands, probe)
+            prewarm(cands, sel)
             scored = []
             for i, c in enumerate(cands):
-                _r, _m, _v = run_eval(c, probe, t_grid, "train")
+                _r, _m, _v = run_eval(c, sel, t_grid, "train")
                 sc_i = metrics.score(_m)
                 scored.append((sc_i, i, c))
-                log(f"[{tag_}] 후보 {i}: {len(c)}자 probe({len(probe)}) "
+                log(f"[{tag_}] 후보 {i}: {len(c)}자 train({len(sel)}) "
                     f"score={sc_i:.4f} fmt={_m.format_pass_rate:.2f}")
             scored.sort(key=lambda x: -x[0])
-            finals = scored[:2]
-            if len(splits["dev"]) > probe_n:
-                prewarm([c for _s, _i, c in finals], splits["dev"])
-                re_scored = []
-                for sc_i, i, c in finals:
-                    _r, _m, _v = run_eval(c, splits["dev"], t_grid, "dev")
-                    s2 = metrics.score(_m)
-                    re_scored.append((s2, i, c))
-                    log(f"[{tag_}] 결선 후보 {i}: dev({len(splits['dev'])}) score={s2:.4f}")
-                re_scored.sort(key=lambda x: -x[0])
-                finals = re_scored
-            log(f"[{tag_}] 후보 {finals[0][1]} 채택 (score={finals[0][0]:.4f})")
-            return finals[0][2]
+            log(f"[{tag_}] 후보 {scored[0][1]} 채택 (score={scored[0][0]:.4f}) — dev 미사용")
+            # **순위 전체를 돌려준다.** 1위가 분량 관문에 걸리면 2·3위를 시도해야 한다 —
+            # 이미 채점한 후보를 버리고 이터레이션을 통째로 헛돌리는 것보다 낫다.
+            return [c for _, _, c in scored]
 
         prompt_path = run_dir / "iter_00" / "prompt.txt"
         if prompt_path.exists():
@@ -1153,20 +1505,22 @@ def main() -> int:
             # (설계 §8.6-5) v0 품질 분산이 크다 — 같은 데이터·같은 생성기인데 en-de
             # run01 6,968자 / run02 13,198자로 2배 갈렸다. 게다가 루프가 v0 를 못 이기는
             # 일이 잦아(run01 2회, run02 3회 모두 iter_00 채택) **런 결과가 v0 뽑기에
-            # 좌우된다.** 후보를 만들어 dev 일부로 고르면 그 분산을 산다.
+            # 좌우된다.** 후보를 만들어 고르면 그 분산을 산다 — 고르는 자는 **train** 이다
+            # (`select_prompt` 참조: dev 는 채택 판정 전용).
             candidates: list[str] = []
             for attempt in range(3 * max(1, args.v0_candidates)):
                 if len(candidates) >= args.v0_candidates:
                     break
-                cand = profiler.initial_prompt(profile, None, spaced, candidate_t,
-                                               args.min_gap)
+                cand = profiler.initial_prompt(profile, pair_tgt, spaced, t_floor,
+                                               args.min_gap, measured=measured)
                 missing = agents.check_skeleton(cand)
                 if missing:
                     log(f"[profiler] 골격 누락 {missing} — 재시도 {attempt + 1}")
                     continue
                 # 분절은 소스 쪽 문제다 — 프롬프트가 타깃 언어에 기대면 다른 타깃에
                 # 재사용할 수 없고, 측정되지 않은 언어 지식이 섞인다.
-                tl = agents.check_target_agnostic(cand, args.src_lang)
+                tl = ([] if pair_tgt else
+                      agents.check_target_agnostic(cand, args.src_lang, targets))
                 if tl:
                     log(f"[profiler] 타깃 종속 — 재시도 {attempt + 1}: {'; '.join(tl)}")
                     continue
@@ -1177,7 +1531,7 @@ def main() -> int:
 
             for k, cand in enumerate(candidates):
                 (run_dir / f"prompt_v0_cand{k}.txt").write_text(cand, encoding="utf-8")
-            prompt = select_prompt(candidates, args.v0_probe, "profiler")
+            prompt = select_prompt(candidates, args.select_n, "profiler")[0]
             prompt_path.parent.mkdir(parents=True, exist_ok=True)
             prompt_path.write_text(prompt, encoding="utf-8")
         prompt_v0_len = len(prompt)
@@ -1214,10 +1568,107 @@ def main() -> int:
         best = {"version": 0, "prompt": prompt, "train_score": None,
                 "dev_score": None, "fmt": None}
         best_ctx: dict = {}
+        start_it = 0
         best_critique: dict | None = None
-        last_focus: str | None = None
+        # 현재 best 에 대해 **이미 시도했다가 거부된** 개정들. Critic 과 PE 둘 다에게
+        # 넘긴다 — 없으면 같은 방향을 무한히 다시 제안한다 (run12 v1~v4 개정 요지가
+        # 네 번 다 동일, critique.json 해시도 iter_02~04 가 같았다).
+        # best 가 바뀌면 기준 프롬프트가 달라져 같은 규칙이 다시 유효할 수 있으므로 비운다.
+        rejected_attempts: list[dict] = []
+        # 고착 방지 핸들 — 직전 개정이 **어느 섹션을 고쳤는지**. focus 라벨을 쓰던
+        # 것을 바꿨다: 라벨이 달라도 같은 섹션을 고치는 경우가 8/30(27%)이라
+        # 라벨로는 반복을 못 잡았다.
+        last_sections: str | None = None
         stale = 0
         floor_fn = None          # contradiction 잡음 바닥 — 첫 평가 후 1회 측정
+
+        # ── `--resume` — 중단 지점부터 이어간다 ─────────────────────────
+        # 복원해야 하는 것은 넷이다: `history`(PE 가 읽는 시도 이력), `best`(비교 기준),
+        # `best_ctx["dev_rows"]`(쌍체 Δ 의 기준선 — **이게 없으면 채택 판정이 무너진다**),
+        # 그리고 다음 이터레이션 번호. 앞의 셋은 전부 디스크에 있다.
+        #
+        # `best_ctx` 의 나머지(rows/metrics/violations/judgements)는 Critic 입력이라
+        # 없어도 죽지 않는다 — 첫 이터레이션이 새로 만든 것을 쓴다. 그래서 저장된 것만
+        # 채우고 없으면 비운다.
+        if args.resume:
+            hist_path = run_dir / "history.json"
+            best_path = run_dir / "best_prompt.txt"
+            if not hist_path.exists() or not best_path.exists():
+                log(f"[stop] --resume 인데 {run_dir} 에 history.json / best_prompt.txt 가 없다")
+                return 2
+            history = json.loads(hist_path.read_text(encoding="utf-8"))
+            start_it = len(history)
+            best["prompt"] = best_path.read_text(encoding="utf-8")
+            # **평가할 프롬프트는 best 가 아니라 "대기 중인 개정본"이다.** 정상 흐름에서
+            # iter N 이 재는 것은 iter N-1 이 만든 개정본이고, best 는 비교 기준일 뿐이다.
+            # 종전 재개는 `prompt = best` 로 놓아 그 개정본을 버렸다 — run07 iter2 가
+            # v0 를 v0 와 비교해 Δ 정확히 0 / 변경 0문장이 됐고, 근거 없이 오른 stale 이
+            # patience 조기 종료를 앞당겼다 (6이터 예정 → 4이터).
+            #
+            # 두 곳을 본다. 이터 **도중** 크래시면 `iter_NN/prompt.txt` 가 이미 있고,
+            # 이터 **사이** 크래시면 `next_prompt.txt` 만 있다.
+            pending = run_dir / f"iter_{start_it:02d}" / "prompt.txt"
+            nxt = run_dir / "next_prompt.txt"
+            if pending.exists():
+                prompt = pending.read_text(encoding="utf-8")
+                src_ = f"iter_{start_it:02d}/prompt.txt"
+            elif nxt.exists():
+                prompt = nxt.read_text(encoding="utf-8")
+                src_ = "next_prompt.txt"
+            else:
+                prompt = best["prompt"]
+                src_ = "best_prompt.txt (대기 개정본 없음)"
+            done = [h for h in history if h.get("adopted")]
+            if done:
+                last = done[-1]
+                best["version"] = last["version"]
+                best["train_score"] = last.get("score_train")
+                best["dev_score"] = last.get("score_dev")
+                best["fmt"] = (last.get("train") or {}).get("format_pass_rate")
+                d = run_dir / f"iter_{last['version']:02d}"
+                for k, f in (("rows", "train_rows.json"), ("dev_rows", "dev_rows.json"),
+                             ("violations", "violations.json"),
+                             ("judgements", "judgements.json"),
+                             ("priority_audit", "priority_audit.json")):
+                    if (d / f).exists():
+                        best_ctx[k] = json.loads((d / f).read_text(encoding="utf-8"))
+                mj = d / "metrics.json"
+                if mj.exists():
+                    best_ctx["metrics"] = json.loads(mj.read_text(encoding="utf-8")).get("train")
+                stale = len(history) - 1 - history.index(last)
+            else:
+                stale = len(history)
+            # **거부 이력도 복원한다.** 안 하면 재개한 런이 무엇을 이미 시도했는지 잊고
+            # 같은 개정을 다시 낸다 — 이 값이 막으려는 상황 그대로다. 마지막 채택 이후의
+            # 거부만 유효하다 (그 전은 기준 프롬프트가 달랐다). 개정 요지는 직전 항목의
+            # `next_changelog` 에 있으므로 한 칸 앞을 본다.
+            _since = history.index(done[-1]) + 1 if done else 1
+            for _i in range(_since, len(history)):
+                _h = history[_i]
+                _pd = _h.get("paired_dev") or {}
+                _cl = history[_i - 1].get("next_changelog")
+                if _h.get("adopted") or not _cl or not _pd.get("n_changed"):
+                    continue
+                rejected_attempts.append({
+                    "version": _h.get("version"), "sections_changed": None,
+                    "changelog": _cl, "delta": _pd.get("mean_delta"),
+                    "delta_se": _pd.get("se_delta"),
+                })
+            rejected_attempts = rejected_attempts[-6:]
+            if rejected_attempts:
+                log(f"[resume] 거부 이력 {len(rejected_attempts)}건 복원 — "
+                    f"v{[a['version'] for a in rejected_attempts]}")
+            if "dev_rows" not in best_ctx:
+                log("[resume] 경고: best 의 dev_rows 를 못 찾았다 — 다음 이터레이션은 "
+                    "쌍체 Δ 없이 점수 비교로 판정한다")
+            log(f"[resume] iter {start_it} 부터 재개. best=v{best['version']} "
+                f"dev={best['dev_score']} stale={stale} 이력 {len(history)}건")
+            log(f"[resume] 평가할 프롬프트 {len(prompt)}자 <- {src_}"
+                + ("  (best 와 동일 — 개정본을 잃었다)"
+                   if prompt == best["prompt"] and pending.exists() else ""))
+            if start_it >= args.iterations:
+                log(f"[resume] 이미 {start_it}회 돌았다 (--iterations {args.iterations}) — "
+                    f"최종 평가로 넘어간다")
 
         # `--final-only` — 이터레이션을 건너뛰고 기존 `best_prompt.txt` 로 최종 test 평가만
         # 다시 돈다. 루프는 끝났는데 마지막 단계에서 죽는 경우가 실제로 있었고(run05,
@@ -1243,21 +1694,21 @@ def main() -> int:
                 f"({len(best['prompt'])}자) 로 최종 평가만 수행한다")
             args.iterations = 0
 
-        # **신뢰 영역.** 개정 허용 폭을 성과로 조절한다. 고정 임계값 하나는 부트스트랩
-        # (v0 가 구조적으로 틀림)과 수렴(진동 방지)을 구별 못 한다 — de/zh/ja 3언어에서
-        # 개정이 전부 거부돼 루프의 최적화 단계가 한 번도 실행되지 않았다.
-        # 하한이 종전 상수라 **기각 1회면 곧장 종전 동작(1.25배)으로 떨어진다** (2.5/2=1.25).
-        # 즉 큰 걸음은 한 번 측정될 기회를 얻고, 나쁘면 즉시 보수 모드로 돌아간다.
-        trust = {"growth": agents.MAX_SECTION_GROWTH if args.no_trust_region
-                 else agents.TRUST_GROWTH_MAX,
-                 "sections": agents.MAX_SECTIONS_CHANGED if args.no_trust_region
-                 else agents.TRUST_SECTIONS_MAX}
-        revision_applied = False      # 직전 이터에서 개정본이 실제로 적용됐는가
 
-        for it in range(args.iterations):
+        def end_timer(timer, it: int) -> None:
+            """열린 단계를 닫고 한 줄로 요약한다. 이터레이션의 모든 출구에서 부른다."""
+            timer.mark(None)
+            if timer.rows:
+                tot = timer.rows[-1]["at_sec"] + timer.rows[-1]["sec"]
+                log(f"[iter {it}] 소요 {tot:.0f}초 = "
+                    + " + ".join(f"{r['stage']} {r['sec']:.0f}" for r in timer.rows))
+
+        for it in range(start_it, args.iterations):
             it_dir = run_dir / f"iter_{it:02d}"
             it_dir.mkdir(parents=True, exist_ok=True)
             (it_dir / "prompt.txt").write_text(prompt, encoding="utf-8")
+            timer = StageTimer(it_dir / "timing.json")
+            timer.mark("train_eval")
 
             _set_skip_guard(best.get("fmt") if best["train_score"] is not None else None)
             batch = splits["train"]
@@ -1266,21 +1717,19 @@ def main() -> int:
             rows, m, viol = run_eval(prompt, batch, t_grid, "train")
             sc = metrics.score(m)
 
-            # ── A6′ Judge — 주 작동점에서만 (비용) ────────────────────────
+            # ── A7 Judge — 주 작동점에서만 (비용) ────────────────────────
+            # **점수를 안 낸다.** 모순이 가장 큰 경계에 "왜·어디로" 를 붙일 뿐이고,
+            # 그 설명은 Critic 케이스에만 실린다 (`agents.judge_top_contra` 참조).
+            timer.mark("judge")
             judgements: list[dict] = []
             if judge is not None and m.by_T:
                 judgements = judge_distributed(
                     judge, getattr(run_eval, 'last_per_rows', {'_': rows}),
-                    main_t, args.judge_rows)
-                pr = agents.premature_rate(judgements)
-                if pr is not None and str(main_t) in m.by_T:
-                    m.by_T[str(main_t)].premature_rate = round(pr, 4)
-                rs = agents.reference_suspect_rate(judgements)
-                if rs is not None and str(main_t) in m.by_T:
-                    m.by_T[str(main_t)].reference_suspect_rate = round(rs, 4)
+                    main_t, args.judge_frac, workers=args.workers)
                 (it_dir / "judgements.json").write_text(
                     json.dumps(judgements, ensure_ascii=False, indent=2), encoding="utf-8")
 
+            timer.mark("rank_audit")
             # 순위 진단 — 모델이 단 순위가 실측 위험(경계 contradiction)과 맞는가.
             audit: list[dict] = []      # by_T 가 비면(포맷 붕괴) 아래 블록을 안 타므로 선초기화
             # 경계가 가장 많이 살아남는 최소 T 에서 잰다. 두 통계량을 함께 낸다:
@@ -1338,10 +1787,43 @@ def main() -> int:
                 import collections as _c
                 log(f"[iter {it}] 1차 위반 {len(viol_1st)}건 "
                     f"{dict(_c.Counter(v['rule'] for v in viol_1st))}")
-            log(f"[iter {it}] {fmt_metrics(m, 'train')}"
-                + (f"  premature={m.by_T[str(main_t)].premature_rate}"
-                   if m.by_T.get(str(main_t)) and m.by_T[str(main_t)].premature_rate is not None
-                   else ""))
+            # **결정론적 수정은 위반이 아니라 기록이다.** 검증기를 통과시키려고 고친
+            # 것이므로 `violations.json` 에 넣으면 "고쳐졌는데 결함"이 되고, 안 남기면
+            # 규칙이 틀렸을 때 아무 흔적이 없다 (zh 여는 따옴표 13건이 그렇게 묻혔다).
+            norm = getattr(run_eval, "last_normalizations", None)
+            if norm:
+                (it_dir / "normalizations.json").write_text(
+                    json.dumps(norm, ensure_ascii=False, indent=2), encoding="utf-8")
+                import collections as _c2
+                log(f"[iter {it}] 결정론 수정 {len(norm)}건 "
+                    f"{dict(_c2.Counter(x['kind'] for x in norm))}")
+            log(f"[iter {it}] {fmt_metrics(m, 'train')}")
+
+            # ── 커버리지 경보 — **망가진 상태로 조용히 도는 것을 막는다.**
+            # run12 는 분절기가 요구 경계 수를 못 채워 dev 265문장 중 264건이
+            # `too_few_tags` 였고 포맷 통과율이 0.019(재시도 전 0.004)였다. 그런데
+            # 어디에서도 멈추지 않아 이터레이션 5회에 $9.51 을 썼고, 비용의 74% 가
+            # **성공하지 못하는 재시도**였다. 원인은 run11 대비 설정 차이 하나였다:
+            #   model gpt-5-mini -> claude-haiku-4-5,  seg_reasoning_effort medium -> none
+            # 사고를 끄면 temperature=0 이 통과해 결정론은 얻지만(README '환경 주의사항'),
+            # 그 상태의 분절기는 과제 자체를 못 한다 — run11 은 같은 격자에서
+            # 포맷 0.99 / missing 0.00 이었다. 그리고 결정론으로 바꿔도 채택 판정의
+            # se 는 안 줄었다 (run11 0.021~0.029 vs run12 0.023~0.030).
+            cov = coverage_report(rows, m.to_dict(), t_grid)
+            if cov.get("broken"):
+                log(f"[iter {it}] **커버리지 경보** T={cov['tightest_budget_T']} 에서 "
+                    f"{cov['sentences_missing_boundaries']}/{cov['sentences']} 문장이 "
+                    f"요구 경계 수를 못 채웠다 (평균 부족 "
+                    f"{_cell(cov.get('mean_missing_per_sentence'), '.2f')}개, "
+                    f"포맷 통과 {_cell(cov.get('format_pass_rate'), '.4f')} / "
+                    f"재시도 전 {_cell(cov.get('format_pass_rate_no_retry'), '.4f')})")
+                if it == start_it and not args.allow_broken_coverage:
+                    log("[stop] 분절기가 예산을 못 맞춘다 — 프롬프트 개정으로 고칠 수 있는 "
+                        "상태가 아니다. 비용의 대부분이 실패하는 재시도로 나간다.")
+                    log("       --seg-reasoning-effort 를 low 이상으로 올리거나(사고를 끄면 "
+                        "요구 경계 수를 못 채운다), --t-floor 를 키워 요구량을 낮출 것. "
+                        "그래도 진행하려면 --allow-broken-coverage.")
+                    return 3
 
             # 쌍체 차이. dev 가 고정 집합이라 `mean(new) − mean(old) = mean(new − old)` 가
             # 항등이고 점추정은 절대값 비교와 동일하다. 얻는 것은 **오차막대와 유효 표본**:
@@ -1349,73 +1831,63 @@ def main() -> int:
             # se 가 훨씬 작게 나오고, `n_changed` 가 실제로 판정에 참여한 문장 수를 알려준다.
             # 채택 판정이 이 오차막대를 쓴다 (`Δ > adopt_se_mult·se`) — run01~03 실측에서
             # 점 비교는 오차막대 안 잡음(예: −0.013±0.014)까지 채택 후보로 만들었다.
-            # **채택 판정은 z 축으로 한다.** 타깃별 분산이 달라(문장별 sd zh 0.147 ~
-            # ko 0.196) 원값 평균의 차이는 분산 큰 타깃이 지배한다. z 는 그 지배를 없앤다
-            # (run05 dev 실측 t: raw −0.10 → z −0.15). 보고값(`effective`)은 원값 평균이다.
+            # **dev 실행 게이트를 없앴다 — 아무것도 안 막고 있었다.**
+            #
+            # 게이트는 "train 에서 확실히 나쁘면 dev 를 아끼자" 는 장치였다. 기록된
+            # train Δ 19건에 문턱을 걸어 보면 **차단 0/19 (0%)** 다 (참 차단율 95% 상한
+            # ~15%). 즉 기대 절감은 $0 ~ $0.45/런인데, 게이트를 굴리려면 매 이터레이션
+            # best 를 같은 배치에 다시 평가해야 했다 — ~$0.10 × 6이터 = **$0.60/런**.
+            # 아끼는 것보다 쓰는 것이 크거나 비슷하다.
+            #
+            # 그리고 게이트에는 **순환**이 있었다. `select_prompt` 가 후보 K개 중
+            # train 최고를 고르는데, `--train-pool` 을 안 주면 그 train 이 게이트 배치와
+            # **같은 문장**이다 (설정 26개 중 14개가 겹침 100%). 고른 자로 그 선택을
+            # 재검사한 셈 — A9 에서 dev 를 두 번 쓰던 것과 같은 모양이다. 승자 이득을
+            # 실측하면 후보 그룹 18개(K=3)에서 최대값−평균 중앙 **0.0118**, 이론값
+            # 0.846·sd = 0.0109 와 일치한다. 게이트 여유(1×se) 중앙이 0.0156 이므로
+            # 편향이 여유의 70% 를 먹어 실효 문턱이 `−1.7·se` 였다. 다만 두 문턱 어느
+            # 쪽으로도 차단이 0/19 라 **바뀌는 결정은 없었다.**
+            #
+            # 게이트를 지우면 순환도 함께 사라진다 — 선별 결과를 재검사하는 구조가
+            # 없어지기 때문이다. 파국적 개정(포맷 붕괴)은 `--skip-translation-below` 와
+            # 골격 검사가 이미 잡는다. 가르는 일은 **dev 가 한다.**
+            #
+            # **채택 판정은 z 축으로 한다 — 다만 근거가 약하다.** 타깃별 분산이 다르다는
+            # 것(문장별 sd 0.104~0.195)은 맞지만, 원값 평균에서 **신호에 대한 가중치는
+            # 모든 타깃이 정확히 1/K 로 같다.** sd 는 잡음에만 영향을 준다. z 는 오히려
+            # 가중치를 **분산 작은 타깃 쪽으로** 옮긴다 (δ 하나가 z 를 δ/(K·sd) 만큼
+            # 움직이므로). 표준화 효과크기를 재겠다는 선택이지 "지배를 없앤다"가 아니다.
+            #
+            # 검출력 차이를 공분산으로 계산하면 (다타깃 dev 2런):
+            #   균일 효과 δ      t(z)/t(raw) = 1.02~1.05
+            #   sd 비례 효과     t(z)/t(raw) = 0.99
+            # **±3%, 사실상 무승부다.** sd 비가 1.9배밖에 안 돼 두 가중치가 거의 같다.
+            # 종전 주석이 근거로 든 run05 비교는 raw t=−0.10 / z t≈+0.12 인데, 애초에
+            # 효과가 없는(t≈0) 쌍이라 잡음끼리 비교한 값이다.
+            #
+            # **양쪽 다 행에 기록되므로**(`effective`, `effective_z`) 다음 런의 Δ 분포를
+            # 보고 정하면 된다. 보고값(`effective`)은 원값 평균이다.
             # z 기준선은 분할별로 고정돼 있어야 한다 — `_zmix` 참고.
             delta_key = "effective_z" if len(targets) > 1 else "effective"
-
-            # **best 를 같은 배치에 다시 잰다.** `--train-pool` 이 있으면 train 배치는
-            # 이터레이션마다 재표집되므로, best 가 자기 이터레이션에서 남긴 행과는 문장이
-            # 절반만 겹친다 (run05 실측 17~20/40). 쌍체는 겹친 문장만 쓰므로 검출력이
-            # 절반으로 깎이고, 남은 쌍도 어느 draw 를 뽑았느냐에 따라 난이도가 치우친다.
-            # best 를 현재 배치에 한 번 더 돌리면 쌍체가 n/n 이 되고, 회전의 이득(Critic 이
-            # 매번 새 실패를 본다)은 그대로 남는다 — 두 소비자를 분리하는 게 핵심이다.
-            # 겹치는 문장은 분절 캐시에 그대로 맞으므로 추가 호출은 **새 문장 몫뿐**이다
-            # (run05 기준 ~22문장, batch 6 → 4콜 ≈ $0.10/이터레이션).
-            base_rows = None
-            if best_ctx:
-                if best["prompt"] == prompt:
-                    base_rows = rows
-                else:
-                    _keep = (getattr(run_eval, "last_per_target", None),
-                             getattr(run_eval, "last_per_rows", None))
-                    base_rows, _bm, _bv = run_eval(best["prompt"], batch, t_grid, "train")
-                    # judge 는 새 프롬프트의 타깃별 행을 봐야 한다 — 되돌린다.
-                    run_eval.last_per_target, run_eval.last_per_rows = _keep
-
-            train_delta = (metrics.paired_delta(rows, base_rows, t_grid, delta_key)
-                           if base_rows is not None else None)
-            if train_delta and train_delta["mean_delta"] is not None:
-                log(f"[iter {it}] train Δ={train_delta['mean_delta']:+.5f} "
-                    f"±{train_delta['se_delta']:.5f} (분절 변경 {train_delta['n_changed']}"
-                    f"/{train_delta['n_pairs']}문장)")
-
-            # dev 검증은 train 이 개선됐을 때만 (비용 절약). **판정은 쌍체로 한다** —
-            # 절대 점수 비교는 문장 난이도 분산에 묻혀 (문장별 sd 0.05, 검출 목표 0.005)
-            # 개선된 개정을 걸러낸다. en-de run02 iter1 실측: 절대 0.7844 < 0.7925 로
-            # 막혔으나 쌍체는 +0.00929 로 개선 방향이었다 — 채택 판정(쌍체)을 받아볼
-            # 기회 자체가 없었다. 게이트와 채택이 서로 다른 통계를 쓰던 모순을 없앤다.
-            # 게이트는 점추정(> 0)만 보고, 오차막대 요구는 dev 채택 판정이 계속 맡는다.
-            dev_m = None
-            dev_score = None
-            dev_delta = None
-            dev_rows = None
-            if best["train_score"] is None:
-                run_dev = True
-            elif train_delta and train_delta.get("mean_delta") is not None:
-                run_dev = train_delta["mean_delta"] > 0
-            else:
-                run_dev = sc > best["train_score"]      # 쌍체를 못 잰 경우만 후퇴
-            if run_dev:
-                dev_rows, dev_m, dev_viol = run_eval(prompt, splits["dev"], t_grid, "dev")
-                dev_score = metrics.score(dev_m)
-                dev_delta = (metrics.paired_delta(dev_rows, best_ctx["dev_rows"],
-                                                  t_grid, delta_key)
-                             if best_ctx.get("dev_rows") else None)
-                (it_dir / "dev_rows.json").write_text(
-                    json.dumps(dev_rows, ensure_ascii=False, indent=2), encoding="utf-8")
-                dev_viol, dev_viol_1st = split_first_pass(dev_viol)
-                (it_dir / "dev_violations.json").write_text(
-                    json.dumps(dev_viol, ensure_ascii=False, indent=2), encoding="utf-8")
-                if dev_viol_1st:
-                    (it_dir / "dev_violations_first_pass.json").write_text(
-                        json.dumps(dev_viol_1st, ensure_ascii=False, indent=2), encoding="utf-8")
-                viol = viol + dev_viol
-                log(f"[iter {it}] {fmt_metrics(dev_m, 'dev  ')}"
-                    + (f"  Δ={dev_delta['mean_delta']:+.5f} ±{dev_delta['se_delta']:.5f} "
-                       f"(변경 {dev_delta['n_changed']}/{dev_delta['n_pairs']})"
-                       if dev_delta and dev_delta["mean_delta"] is not None else ""))
+            timer.mark("dev_eval")
+            dev_rows, dev_m, dev_viol = run_eval(prompt, splits["dev"], t_grid, "dev")
+            dev_score = metrics.score(dev_m)
+            dev_delta = (metrics.paired_delta(dev_rows, best_ctx["dev_rows"],
+                                              t_grid, delta_key)
+                         if best_ctx.get("dev_rows") else None)
+            (it_dir / "dev_rows.json").write_text(
+                json.dumps(dev_rows, ensure_ascii=False, indent=2), encoding="utf-8")
+            dev_viol, dev_viol_1st = split_first_pass(dev_viol)
+            (it_dir / "dev_violations.json").write_text(
+                json.dumps(dev_viol, ensure_ascii=False, indent=2), encoding="utf-8")
+            if dev_viol_1st:
+                (it_dir / "dev_violations_first_pass.json").write_text(
+                    json.dumps(dev_viol_1st, ensure_ascii=False, indent=2), encoding="utf-8")
+            viol = viol + dev_viol
+            log(f"[iter {it}] {fmt_metrics(dev_m, 'dev  ')}"
+                + (f"  Δ={dev_delta['mean_delta']:+.5f} ±{dev_delta['se_delta']:.5f} "
+                   f"(변경 {dev_delta['n_changed']}/{dev_delta['n_pairs']})"
+                   if dev_delta and dev_delta["mean_delta"] is not None else ""))
 
             # ── 채택 판정 — 첫 후보는 무조건, 이후는 쌍체 Δ 가 오차막대를 넘을 때만.
             # 점추정 비교(> 만)는 노이즈로 오른 개정을 채택한다. 쌍체 se 가 있으면
@@ -1438,25 +1910,46 @@ def main() -> int:
                             "violations": viol, "judgements": judgements,
                             "priority_audit": audit}
                 best_critique = None      # 새 best — 비평을 다시 받아야 한다
+                rejected_attempts = []    # 기준 프롬프트가 바뀌었다 — 옛 거부는 무효
                 adopted = True
                 stale = 0
+            elif dev_delta and dev_delta.get("n_changed") == 0:
+                # **아무것도 안 잰 이터레이션은 실패로 세지 않는다.** 직전 개정이
+                # 거부돼 프롬프트가 그대로면 분절이 한 문장도 안 바뀌고 Δ 가 정확히
+                # 0 이 된다 (run08 iter3: Δ 0.00000, 변경 0/265). 그건 "개선이 없었다"
+                # 는 증거가 아니라 **측정이 없었다**는 뜻이므로 patience 를 깎으면 안
+                # 된다 — run07 에서 이 종류의 가짜 증가가 조기 종료를 앞당겼다.
+                log(f"[iter {it}] 분절이 한 문장도 안 바뀌었다 — stale 유지 ({stale})")
             else:
                 stale += 1
+                # **무엇을 시도했다가 졌는지 남긴다.** 이 프롬프트는 직전 이터레이션이
+                # 만든 것이므로 그 개정 요지는 `history[-1]["next_changelog"]` 에 있다
+                # (이번 이터의 history 항목은 아래에서 append 되므로 아직 직전 것이다).
+                # 다음 Critic/PE 가 이걸 읽고 같은 축을 다시 파지 않는다.
+                _cl = history[-1].get("next_changelog") if history else None
+                if _cl:
+                    rejected_attempts.append({
+                        "version": it,
+                        "sections_changed": last_sections,
+                        "changelog": _cl,
+                        "delta": (dev_delta or {}).get("mean_delta"),
+                        "delta_se": (dev_delta or {}).get("se_delta"),
+                    })
+                    # 프롬프트 비대 방지 — 최근 6건이면 축은 충분히 덮는다.
+                    rejected_attempts = rejected_attempts[-6:]
 
             (it_dir / "metrics.json").write_text(json.dumps({
                 "train": m.to_dict(),
                 "dev": dev_m.to_dict() if dev_m else None,
                 "score_train": round(sc, 4),
                 "score_dev": round(dev_score, 4) if dev_score is not None else None,
-                "paired_train": train_delta, "paired_dev": dev_delta,
+                "paired_dev": dev_delta,
                 "adopted": adopted,
                 "usage": usage_total(),
             }, ensure_ascii=False, indent=2), encoding="utf-8")
 
             history.append({
                 "version": it, "adopted": adopted,
-                "trust_growth": round(trust["growth"], 3),
-                "trust_sections": trust["sections"],
                 "train": m.to_dict(), "dev": dev_m.to_dict() if dev_m else None,
                 "score_train": round(sc, 4),
                 "score_dev": round(dev_score, 4) if dev_score is not None else None,
@@ -1466,28 +1959,16 @@ def main() -> int:
             (run_dir / "history.json").write_text(
                 json.dumps(history, ensure_ascii=False, indent=2), encoding="utf-8")
 
-            # 신뢰 영역 갱신 — **실제로 개정본을 평가했을 때만** 움직인다.
-            # 게이트에 걸린 개정은 측정된 적이 없으므로 반경의 근거가 되지 못한다.
-            if revision_applied and not args.no_trust_region:
-                before = (trust["growth"], trust["sections"])
-                if adopted:
-                    trust["growth"] = min(trust["growth"] * 1.2, agents.TRUST_GROWTH_MAX)
-                else:
-                    trust["growth"] = max(trust["growth"] / 1.5, agents.MAX_SECTION_GROWTH)
-                    trust["sections"] = max(trust["sections"] - 1, agents.MAX_SECTIONS_CHANGED)
-                log(f"[iter {it}] 신뢰영역 {before[0]:.2f}배/{before[1]}섹션 -> "
-                    f"{trust['growth']:.2f}배/{trust['sections']}섹션 "
-                    f"({'채택 — 넓힘' if adopted else '기각 — 좁힘'})")
-            revision_applied = False
-
             u = usage_total()
             log(f"[iter {it}] adopted={adopted} stale={stale} "
                 f"calls={u['calls']} cost={u['cost']:.4f}")
             log(f"[iter {it}] 비용내역 {fmt_by_purpose(u)}")
 
             if it == args.iterations - 1:
+                end_timer(timer, it)
                 break
             if stale >= args.patience:
+                end_timer(timer, it)
                 log(f"[stop] dev 개선 없음 {stale}회 연속 — 조기 종료")
                 break
 
@@ -1495,29 +1976,52 @@ def main() -> int:
             ctx = best_ctx or {"rows": rows, "metrics": m.to_dict(),
                                "violations": viol, "judgements": judgements}
             try:
-                # ── A6 Critic ───────────────────────────────────────────
+                # ── A8 Critic ───────────────────────────────────────────
                 # 비평 대상과 개정 대상은 반드시 같은 프롬프트여야 한다.
-                if best_critique is None:
+                timer.mark("critic")
+                # **거부됐으면 비평을 다시 받는다.** 종전에는 채택될 때까지 첫 비평을
+                # 재사용했는데, PE 입력이 (같은 프롬프트 + 같은 비평)으로 고정돼 개정이
+                # 매 이터 같은 것이 나왔다 — run12 는 critique.json 해시가 iter_02~04
+                # 동일, 개정 요지가 v1~v4 네 번 다 같았고 전부 거부됐다. 이터레이션 5회를
+                # 같은 방향에 썼다는 뜻이다. 이제 거부 이력을 함께 넘겨 다른 축을
+                # 보게 한다. 비용은 Critic 1콜 ≈ $0.03/이터로 무시할 수준이다
+                # (run12 실측: 총 $9.51 중 critic $0.032).
+                # **비평 대상과 같은 분할에서 잰다.** `aggregate` 재계산에도 같은 값을
+                # 써야 한다 — 두 경로가 다른 커버리지를 보면 `dominant_error` 가
+                # 이터레이션 중에 뒤집힌다.
+                ctx_cov = coverage_report(ctx["rows"], ctx["metrics"], t_grid)
+                if best_critique is None or rejected_attempts:
                     cases = agents.select_cases(ctx["rows"], main_t, ctx.get("judgements"))
                     best_critique = critic.review(
                         cases, ctx["metrics"], ctx["violations"],
-                        avoid=last_focus if stale >= 2 else None,
-                        priority_audit=ctx.get("priority_audit"))
+                        avoid=last_sections if stale >= 2 else None,
+                        priority_audit=ctx.get("priority_audit"),
+                        judgements=ctx.get("judgements"),
+                        target_language=pair_tgt,
+                        coverage=ctx_cov,
+                        rejected=rejected_attempts or None)
                 critique = best_critique
                 # 캐시가 고착 방지를 우회하지 않도록 aggregate 만 다시 계산한다 (LLM 없음).
-                if stale >= 2 and last_focus:
+                if stale >= 2 and last_sections:
                     critique = {**critique, "aggregate": agents.summarize_critique(
                         critique.get("cases") or [], ctx["metrics"],
-                        critique.get("summary"), avoid=last_focus,
-                        priority_audit=ctx.get("priority_audit"))}
+                        critique.get("summary"), avoid=last_sections,
+                        priority_audit=ctx.get("priority_audit"),
+                        judgements=ctx.get("judgements"), coverage=ctx_cov)}
                 (it_dir / "critique.json").write_text(
                     json.dumps(critique, ensure_ascii=False, indent=2), encoding="utf-8")
                 agg = critique.get("aggregate", {})
-                last_focus = agg.get("focus")
-                log(f"[iter {it}] critic dominant={agg.get('dominant_error')} "
-                    f"focus={last_focus}")
+                # **비율을 함께 찍는다.** `dominant_error` 는 이제 커버리지가 깨졌을 때만
+                # 값을 갖고 평소엔 None 이라, 그것만 찍으면 로그가 매 이터 "None" 이 된다.
+                _r = (agg.get("measured_rates") or {})
+                _cv, _pj = _r.get("coverage") or {}, _r.get("premature_among_judged") or {}
+                log(f"[iter {it}] critic dominant={agg.get('dominant_error')}"
+                    + (f" 커버리지 부족 {_cv.get('n')}/{_cv.get('of_n')}"
+                       f"({_cv.get('rate')})" if _cv else "")
+                    + (f" 판정 조기방출 {_pj.get('n')}/{_pj.get('of_n')}" if _pj else "")
+                    + (f" | {agg['stuck_hint'][:60]}" if agg.get("stuck_hint") else ""))
 
-                # ── A7 Prompt Engineer ──────────────────────────────────
+                # ── A9 Prompt Engineer ──────────────────────────────────
                 # **제안 1개를 검증 1개로 받던 구조를 K개 생성 -> 선택으로 바꾼다.**
                 # 오늘 실측에서 dev 까지 간 개정 3건이 전부 음수였다(t = −0.8 ~ −3.2) —
                 # 채택 문턱이 아니라 개정 품질이 원인이다. LLM 은 좋은 개정을 확실히
@@ -1530,16 +2034,30 @@ def main() -> int:
                     k = r[:80]
                     if k not in seen:
                         seen.add(k); hints.append(r)
-                hints = hints[:max(0, args.revision_candidates - 1)] or []
-                jobs = [None] + hints            # None = 종전 방식(자유 개정) 1개
+                # **후보는 규칙 부분집합이 아니라 표현 차이로 나뉜다.** 종전에는 규칙을
+                # 하나씩 나눠 실어 "어느 규칙이 도움됐나" 를 가리려 했는데, 한 규칙짜리
+                # 개정의 |Δ| 중앙이 0.00505 이고 dev 225 검출 한계가 0.0104 라 **전체가
+                # 도움됐는지조차 못 잰다.** 그 상태에서 규칙별 신용 배분은 환상이다.
+                # 첫 후보는 자유 개정(PE 가 critique 을 보고 판단), 나머지는 제안 전부를
+                # 각자 구현한다. 크기가 넘치면 압축기가 받는다.
+                jobs = [None] + [hints] * max(0, args.revision_candidates - 1) if hints \
+                    else [None] * max(1, args.revision_candidates)
                 jobs = jobs[:max(1, args.revision_candidates)]
+
+                # 개정 한 번의 **분량 예산** — 런 전체 천장 하나뿐이다.
+                # 걸음 크기 상한(직전 best 대비)도 따로 뒀다가 뺐다: 적용된 개정 42건의
+                # 이터레이션 간 배수가 중앙 1.03 / p90 1.12 / 최대 1.29 라, 어떤 상수를
+                # 놓아도 v0 천장보다 먼저 걸릴 일이 없다.
+                size_budget = int(prompt_v0_len * args.max_prompt_growth)
 
                 def make(hint):
                     try:
                         rv = engineer.revise(best["prompt"], critique, history, profile,
-                                             t_grid, only_rule=hint,
-                                             max_sections=trust["sections"],
-                                             max_growth=trust["growth"])
+                                             t_grid, only_rules=hint,
+                                             size_budget=size_budget,
+                                             measured=measured,
+                                             target_language=pair_tgt,
+                                             rejected=rejected_attempts or None)
                     except BudgetExceeded:
                         raise
                     except Exception as e:                      # 후보 하나 실패로 안 죽는다
@@ -1547,6 +2065,7 @@ def main() -> int:
                         return None
                     return rv
 
+                timer.mark("prompt_engineer")
                 raw_cands = []
                 for hint in jobs:
                     rv = make(hint)
@@ -1555,116 +2074,124 @@ def main() -> int:
                     if pr and not agents.check_skeleton(pr):
                         raw_cands.append((pr, rv))
 
-                # **게이트 기아 회복.** 후보가 전멸하면 반경을 넓혀 **이미 만든 후보를 다시
-                # 거른다** (재생성 없음 = 추가 비용 0). 근거: 반경은 *측정된* 위험을 통제하는
-                # 장치인데, 아무것도 측정 못 하는 상태는 나쁜 개정을 한 번 재는 것보다 나쁘다.
-                # 게이트 기각은 "개정이 나빴다"는 증거가 아니라 "반경이 표본을 못 뽑을 만큼
-                # 좁다"는 증거이므로, 좁힐 근거가 없고 넓힐 근거가 있다.
-                #
-                # 이게 없으면 **교착**이다 (de/run01 실측): 기각 1회 → 반경이 하한 1.25 로
-                # 축소 → PE 산출 성장률 분포(실측 1.31~2.66)가 통째로 그 위 → 0/3 통과 →
-                # 측정 불가 → 채택 불가 → 반경이 영영 안 넓어진다. 하한이 분포 밖이라
-                # "종전 동작으로 복귀"가 곧 "영구 봉쇄"였다.
-                cands = []
-                for _attempt in range(3):
-                    cands = []
-                    for pr, rv in raw_cands:
-                        if agents.check_revision(best["prompt"], pr, last_focus,
-                                                 trust["sections"], trust["growth"]):
-                            continue
-                        cands.append((pr, rv))
-                    if cands or not raw_cands or trust["growth"] >= agents.TRUST_GROWTH_MAX:
-                        break
-                    before = trust["growth"]
-                    trust["growth"] = min(trust["growth"] * 1.5, agents.TRUST_GROWTH_MAX)
-                    trust["sections"] = min(trust["sections"] + 1, agents.TRUST_SECTIONS_MAX)
-                    log(f"[iter {it}] 게이트 기아 — 후보 0/{len(raw_cands)} 통과. "
-                        f"신뢰영역 {before:.2f}배 -> {trust['growth']:.2f}배/"
-                        f"{trust['sections']}섹션 으로 넓혀 재검사")
+                # 남은 하드 게이트는 **구조** 하나다 — 섹션 추가/삭제 금지.
+                # 분량 위반은 여기서 거르지 않는다: 종전에는 후보 전원이 분량으로
+                # 탈락해 "0/3 통과 -> 측정 불가 -> 채택 불가" 교착이 생겼는데,
+                # 분량은 거부할 일이 아니라 압축기가 줄일 일이라서 그렇다. 선택이
+                # 끝난 뒤 한 번만 줄인다 (압축 호출 K번 -> 1번).
+                cands = [(pr, rv) for pr, rv in raw_cands
+                         if not agents.check_revision(best["prompt"], pr)]
 
                 _cands2 = []
                 for pr, rv in cands:
-                    tl = agents.check_target_agnostic(pr, args.src_lang)
+                    tl = ([] if pair_tgt else
+                          agents.check_target_agnostic(pr, args.src_lang, targets))
                     if tl:
                         log(f"[iter {it}] 개정 후보 타깃 종속 — 거부: {'; '.join(tl)}")
                         continue
                     _cands2.append((pr, rv))
                 cands = _cands2
+                timer.mark("select_prompt")
+                # 점수 순으로 줄 세운다 — 1위가 분량 관문에 걸리면 아래에서 차례로 시도한다.
+                ranked: list[dict] = []
                 if len(cands) > 1:
-                    pick = select_prompt([c[0] for c in cands], args.v0_probe, f"iter {it} 개정")
-                    revised = next(rv for pr, rv in cands if pr == pick)
+                    order = select_prompt([c[0] for c in cands], args.select_n,
+                                          f"iter {it} 개정")
+                    ranked = [next(rv for pr, rv in cands if pr == pr_) for pr_ in order]
+                    revised = ranked[0]
                 elif cands:
+                    ranked = [cands[0][1]]
                     revised = cands[0][1]
                 else:
-                    # 후보가 전멸하면 종전 경로로 한 번 더 — 게이트 사유를 로그에 남긴다.
-                    revised = engineer.revise(best["prompt"], critique, history, profile,
-                                              t_grid, max_sections=trust["sections"],
-                                              max_growth=trust["growth"])
+                    # 여기까지 전멸하려면 후보 전원이 섹션을 추가/삭제했거나 타깃 언어를
+                    # 박아 넣었다는 뜻이다 (실측 로그 26개에서 각각 0건/드묾). 분량 때문에
+                    # 비는 경우는 이제 없으므로, 재호출로 돈을 더 쓰지 않고 넘어간다.
+                    revised = {"prompt": ""}
                 log(f"[iter {it}] 개정 후보 {len(cands)}/{len(jobs)} 통과")
-                new_prompt = revised.get("prompt", "")
-                budget = int(prompt_v0_len * args.max_prompt_growth)
-                if new_prompt and len(new_prompt) > budget:
-                    log(f"[iter {it}] 개정본 {len(new_prompt)}자 > 예산 {budget}자 — 압축")
-                    packed = compressor.compress(
-                        new_prompt, budget, revised.get("sections_changed") or [])
-                    if (packed and not agents.check_skeleton(packed)
-                            and len(packed) <= budget):
-                        log(f"[iter {it}] 압축 성공 {len(new_prompt)} -> {len(packed)}자")
-                        new_prompt = packed
-                    else:
-                        log(f"[iter {it}] 압축 실패({len(packed or '')}자) — 개정 거부")
-                        new_prompt = ""
+
+                # **분량 관문에 걸리면 다음 후보를 시도한다.** 종전에는 1위가 걸리면
+                # 그 이터레이션의 개정이 통째로 없어졌고, 프롬프트가 안 바뀌니 **다음
+                # 이터가 같은 것을 다시 쟀다** — run08 에서 Δ 정확히 0 / 변경 0/265 로
+                # 이터레이션 두 개가 헛돌았다. 후보는 이미 채점해 두었으므로 아래로
+                # 내려가는 데 드는 추가 비용은 압축 호출 한 번뿐이다.
+                #
+                # **바뀐 섹션은 diff 로 센다 — PE 자기신고를 쓰지 않는다**
+                # (`agents.changed_sections` 참조: 저장분 36건 중 14건 불일치).
+                # 압축 *전* 프롬프트로 재는 것이 맞다 — 압축기가 보호해야 하는 것은
+                # 이번 이터레이션이 넣은 변경이고, 압축은 그 뒤에 일어난다.
+                new_prompt, sections_changed, over = "", [], False
+                for _rank, _rv in enumerate(ranked or [revised]):
+                    cand_p = _rv.get("prompt", "")
+                    if not cand_p:
+                        continue
+                    cand_sec = agents.changed_sections(best["prompt"], cand_p)
+                    if len(cand_p) > size_budget:
+                        over = True
+                        log(f"[iter {it}] 후보 {_rank}: 개정본 {len(cand_p)}자 > 예산 "
+                            f"{size_budget}자 — 압축")
+                        packed = compressor.compress(cand_p, size_budget, cand_sec)
+                        if (packed and not agents.check_skeleton(packed)
+                                and len(packed) <= size_budget
+                                and not agents.check_revision(best["prompt"], packed)):
+                            log(f"[iter {it}] 압축 성공 {len(cand_p)} -> {len(packed)}자")
+                            cand_p = packed
+                            cand_sec = agents.changed_sections(best["prompt"], cand_p)
+                        else:
+                            log(f"[iter {it}] 후보 {_rank} 압축 실패"
+                                f"({len(packed or '')}자 / 예산 {size_budget}자)"
+                                + ("  — 다음 후보 시도" if _rank + 1 < len(ranked) else ""))
+                            continue
+                    new_prompt, sections_changed, revised = cand_p, cand_sec, _rv
+                    break
                 missing = agents.check_skeleton(new_prompt) if new_prompt else []
-                # 국소성 하드 게이트 — 지시문 권고만으로는 안 지켜졌다 (agents.check_revision).
-                scope = (agents.check_revision(best["prompt"], new_prompt, last_focus,
-                                               trust["sections"], trust["growth"])
-                         if new_prompt and not missing else [])
                 if not new_prompt:
                     log(f"[iter {it}] 개정 없음 — 이전 프롬프트 유지")
                 elif missing or len(new_prompt) < 500:
                     log(f"[iter {it}] 개정 프롬프트 골격 누락 {missing} — 이전 프롬프트 유지")
-                elif scope:
-                    log(f"[iter {it}] 개정 범위 위반 — 거부: {'; '.join(scope)} "
-                        f"[신뢰영역 {trust['growth']:.2f}배/{trust['sections']}섹션]")
                 else:
                     prompt = new_prompt
-                    revision_applied = True
                 (it_dir / "changelog.json").write_text(json.dumps({
-                    "sections_changed": revised.get("sections_changed"),
+                    "sections_changed": sections_changed,
+                    "sections_reported": revised.get("sections_changed"),
                     "changelog": revised.get("changelog"),
-                    "scope_violations": scope,
+                    "size_budget": size_budget,
+                    "over_budget": bool(over),
                 }, ensure_ascii=False, indent=2), encoding="utf-8")
                 history[-1]["next_changelog"] = revised.get("changelog")
-                log(f"[iter {it}] 개정: {revised.get('sections_changed')}")
+                # 고착 방지 핸들 갱신 — **다음 이터레이션이 이 섹션을 다시 고치지 않도록.**
+                # 채택 여부와 무관하게 "직전에 무엇을 건드렸나" 를 기억한다. 채택되면
+                # stale 이 0 으로 돌아가 avoid 가 안 걸리므로, 실제로 쓰이는 건 실패했을
+                # 때뿐이다.
+                # **다음 이터가 평가할 프롬프트를 디스크에 남긴다.** `--resume` 은 이걸
+                # 읽어야 한다 — 안 그러면 iter N-1 이 만든 개정본을 잃고 best 를 다시
+                # 평가하게 된다 (run07 iter2 실측: v0 를 v0 와 비교해 Δ 정확히 0,
+                # 변경 0/265, stale 만 근거 없이 올라 조기 종료를 앞당겼다).
+                (run_dir / "next_prompt.txt").write_text(prompt, encoding="utf-8")
+                last_sections = ", ".join(sections_changed) if sections_changed else None
+                _rep = revised.get("sections_changed") or []
+                log(f"[iter {it}] 개정: {sections_changed}"
+                    + (f"  (PE 신고 {_rep} — 불일치)" if sorted(_rep) != sorted(sections_changed)
+                       else ""))
             except BudgetExceeded:
                 raise
             except Exception as e:
                 log(f"[iter {it}] 에이전트 실패 — 루프 중단하고 최종 평가로 넘어간다: {e}")
+                end_timer(timer, it)
                 break
+            end_timer(timer, it)
 
         # ── 최종 test 평가 (전체 격자) ───────────────────────────────────
         log(f"[final] test 평가 — 격자 {final_grid} (루프가 한 번도 보지 않은 데이터)")
+        final_timer = StageTimer(run_dir / "timing_final.json")
+        final_timer.mark("test_eval")
         test_rows, test_m, test_viol = run_eval(best["prompt"], splits["test"],
                                                 final_grid, "test")
+        final_timer.mark(None)
+        log(f"[final] test 평가 {final_timer.rows[0]['sec']:.0f}초")
         test_viol, test_viol_1st = split_first_pass(test_viol)
         if test_viol_1st:
             (run_dir / "test_violations_first_pass.json").write_text(
                 json.dumps(test_viol_1st, ensure_ascii=False, indent=2), encoding="utf-8")
-        if judge is not None and test_m.by_T:
-            # 보고용 test 판정은 **무작위 표본**이다. 루프 중에는 실패 조준 표본
-            # (Critic 입력용)이 맞지만, 그 표본으로 잰 premature_rate 는 조건부 상향
-            # 추정치라 리포트 수치로 못 쓴다 (run03 의 0.2727 이 그 값).
-            tj = judge_distributed(
-                judge, getattr(run_eval, "last_per_rows", {"_": test_rows}),
-                main_t, args.judge_rows * 2, sample="random")
-            pr = agents.premature_rate(tj)
-            if pr is not None and str(main_t) in test_m.by_T:
-                test_m.by_T[str(main_t)].premature_rate = round(pr, 4)
-            rs = agents.reference_suspect_rate(tj)
-            if rs is not None and str(main_t) in test_m.by_T:
-                test_m.by_T[str(main_t)].reference_suspect_rate = round(rs, 4)
-            (run_dir / "test_judgements.json").write_text(
-                json.dumps(tj, ensure_ascii=False, indent=2), encoding="utf-8")
         if test_m.by_T:
             low_t = min(final_grid)
             if floor_fn is None:
@@ -1717,14 +2244,14 @@ def main() -> int:
     finally:
         seg_cache.flush()
         tr_cache.flush()
-        if isinstance(translator, GoogleTranslator):
+        if isinstance(translator, (GoogleTranslator, LocalTranslator)):
             translator.close()
         if judge_gw is not None:
             judge_gw.close()
         gw.close()
 
 
-# ── 비교군 ───────────────────────────────────────────────────────────────
+# ── 비교군 ──────────────────────────────────────────────────────────────
 
 def compare_baselines(translator, adequacy, consistency, sentences, spaced,
                       tgt_spaced, workers, mech_every: int = 8,
@@ -1740,7 +2267,9 @@ def compare_baselines(translator, adequacy, consistency, sentences, spaced,
                          spaced, tgt_spaced, contradiction)
         out[name] = metrics.aggregate_split(
             0, sp.effective, sp.adequacy, sp.contradiction, sp.consistency,
-            sp.chrf, sp.laal_words, sp.k, [0] * len(texts)).to_dict()
+            sp.laal_words, sp.k, [0] * len(texts),
+            effective_ent_scores=sp.effective_ent,
+            contradiction_ent_scores=sp.contradiction_ent).to_dict()
     return out
 
 
@@ -1773,7 +2302,7 @@ def build_report(args, run_dir, profile, measured, history, best, test_m, test_v
         f"(가중치·임계값 없음). 채택 판정은 **쌍체 비교**",
         f"- contradiction 백엔드: "
         + ("없음 (조기 방출이 벌받지 않음)" if args.no_contradiction
-           else f"**{args.contradiction_backend}** (`{metrics.NLI_MODELS[args.contradiction_backend]}`)"),
+           else f"**xlmr-anli** (`{metrics.NLI_MODEL}`)"),
         f"- 채택된 프롬프트: iter_{best['version']:02d}",
         "",
         "## 이터레이션 이력",
@@ -1795,20 +2324,39 @@ def build_report(args, run_dir, profile, measured, history, best, test_m, test_v
         "",
         "## 최종 test 곡선",
         "",
-        "| T (목표 조각 어절) | laal_words ↓ | **effective** ↑ | adequacy | contradiction ↓ | consistency | k | 부족 경계 |",
-        "|---|---|---|---|---|---|---|---|",
+        "| T (목표 조각 어절) | laal_words ↓ | **effective** ↑ | eff p10 ↑ | eff min ↑ | eff (ent) | adequacy | contradiction ↓ | contra (ent) | consistency | k | 부족 경계 |",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|",
     ]
     for k in sorted(test_m.by_T, key=int):
         s = test_m.by_T[k]
         lines.append(f"| {k} | {s.laal_words:.2f} | **{_cell(s.effective, '.4f')}** | "
+                     f"{_cell(s.effective_p10, '.4f')} | {_cell(s.effective_min, '.4f')} | "
+                     f"{_cell(s.effective_ent, '.4f')} | "
                      f"{s.adequacy:.4f} | {_cell(s.contradiction, '.4f')} | "
+                     f"{_cell(s.contradiction_ent, '.4f')} | "
                      f"{s.consistency:.4f} | "
                      f"{s.chunks_per_sentence:.2f} | {s.missing_boundaries:.2f} |")
     for name, b in baselines.items():
         lines.append(f"| {name} (노브 없음) | {b['laal_words']:.2f} | "
                      f"**{_cell(b['effective'], '.4f')}** | "
+                     f"{_cell(b.get('effective_p10'), '.4f')} | {_cell(b.get('effective_min'), '.4f')} | "
+                     f"{_cell(b.get('effective_ent'), '.4f')} | "
                      f"{b['adequacy']:.4f} | {_cell(b['contradiction'], '.4f')} | "
+                     f"{_cell(b.get('contradiction_ent'), '.4f')} | "
                      f"{b['consistency']:.4f} | {b['chunks_per_sentence']:.2f} | — |")
+    lines += [
+        "",
+        "> `eff p10` 은 하위 10% 지점, `eff min` 은 최악 문장이다. **평균과 같이 읽어야 한다** —",
+        "> `effective` 평균은 소수의 나쁜 문장에 크게 끌린다 (실측: 100문장에서 최악 1문장을",
+        "> 빼면 평균이 +0.0034 오르는데, 프롬프트 간 실제 차이가 0.003~0.007 이라 같은 크기다).",
+        "> 평균과 p10 이 같이 오르면 진짜 개선이고, 평균만 오르고 p10 이 내리면 그 배치에 나쁜",
+        "> 문장이 덜 걸린 것일 수 있다.",
+        ">",
+        "> `eff (ent)` / `contra (ent)` 는 **병기 지표**다 — 조기 방출을 모순 확률이 아니라",
+        "> `1 − 함의 확률` 로 잰 값이고 **목적함수·채택 판정에는 안 들어간다**. 같은 NLI 호출에서",
+        "> 세 라벨 확률이 함께 나오므로 추가 비용이 0 이다. 교체 여부를 이 로그로 판단한다",
+        "> (오프라인 실측은 관문 여유 14배·검출력 1.6배로 그쪽이 유리하지만 표본이 얇다).",
+    ]
 
     # 타깃별 곡선. 평균만으로는 어느 언어에서 무너지는지 안 보인다 — mdeberta-xnli 가
     # ko/zh/ja 에서만 곡선을 뒤집었던 것처럼 백엔드 결함이 언어별로 나타난다.
@@ -1835,9 +2383,6 @@ def build_report(args, run_dir, profile, measured, history, best, test_m, test_v
                   "필요하면 `eval_prompt --tgt-lang` 으로 재채점한다 (번역 캐시가 "
                   "남아 있어 API 비용 없음)."]
 
-    main_s = test_m.by_T.get(str(main_t))
-    pr = main_s.premature_rate if main_s else None
-    rs = main_s.reference_suspect_rate if main_s else None
     low_s = test_m.by_T.get(str(min(final_grid)))
     sp = low_s.rank_contra_spearman if low_s else None
     gap = low_s.rank_contra_gap if low_s else None
@@ -1845,11 +2390,6 @@ def build_report(args, run_dir, profile, measured, history, best, test_m, test_v
         "",
         f"- 포맷 통과율 {test_m.format_pass_rate:.4f} (재시도 없이 "
         f"{test_m.format_pass_rate_no_retry:.4f}), 위반 {len(test_viol)}건",
-        f"- premature_rate (T={main_t}, 부록 지표, **무작위 표본**): "
-        + (f"**{pr:.4f}**" if pr is not None else "미측정"),
-        f"- reference_suspect_rate (T={main_t}): "
-        + (f"{rs:.4f}" if rs is not None else "미측정")
-        + " — 높으면 오라클(full 번역)을 의심할 것. contradiction·consistency 가 오염된다",
         f"- **순위 격차 `rank_contra_gap` (T={min(final_grid)}, 바닥 보정)**: "
         + (f"**{gap:+.4f}**" if gap is not None else "미측정")
         + " — 순위 하위 절반 − 상위 절반의 경계 contradiction 차. "

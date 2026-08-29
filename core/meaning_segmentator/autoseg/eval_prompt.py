@@ -23,7 +23,7 @@ from pathlib import Path
 from . import data, metrics
 from .gateway import Gateway
 from .loop import _cell, evaluate, target_is_spaced
-from .pipeline import GoogleTranslator, JsonCache, Translator, to_lang_code
+from .pipeline import parse_translator_id, GoogleTranslator, JsonCache, to_lang_code
 
 _HERE = Path(__file__).resolve().parent
 
@@ -43,21 +43,19 @@ def main() -> int:
     p.add_argument("--model", default="gpt-5-mini")
     # 비교군도 루프와 같은 사고량으로 재야 표에 나란히 놓을 수 있다 (기준 런 config 의
     # seg_reasoning_effort 를 상속하고, 없으면 루프 기본값 low).
-    # 후보 풀 하한을 곡선 격자와 **분리**한다. 검증기는 `round(어절/candidate_t)−1` 개를
+    # 후보 풀 하한을 곡선 격자와 **분리**한다. 검증기는 `round(어절/t_floor)−1` 개를
     # 요구하므로 이 값이 작을수록 모델이 더 많이 찍어야 한다. 순위 절단이 실제로 고를 수
     # 있으려면 후보가 채택 수보다 충분히 많아야 하는데, 기본값(=min(final_t_grid))에서는
     # 후보 7.2개 / 채택 6.2개로 폐기가 1개뿐이라 순위가 무력했다
-    # (docs/RANK_METRIC_DIAGNOSIS.md §6). **프롬프트 문면의 숫자와 반드시 일치시킬 것** —
+    # (AUTOSEG_DETAILS.md '순위 축 진단'). **프롬프트 문면의 숫자와 반드시 일치시킬 것** —
     # 어긋나면 전 문장이 too_few_tags 로 재시도돼 비용이 두 배가 된다.
     # 절단이 실제로 소비하는 순위 깊이만 요구한다. 나머지는 무번호 <SEG> 로 받아
-    # 사고 토큰을 아낀다 (docs/RANK_METRIC_DIAGNOSIS.md 부록).
+    # 사고 토큰을 아낀다 (AUTOSEG_DETAILS.md '순위 축 진단').
     # 한 콜에 넣는 문장 수. 분절 사고 토큰이 비용의 90% 라 가장 큰 레버다
     # (실측 24문장: b=1 5,237 → b=3 2,994 → b=6 1,680 사고/문장).
     p.add_argument("--batch-size", type=int, default=1,
                    help="한 분절 호출에 넣을 문장 수. 1 = 종전 동작")
-    p.add_argument("--priority-depth", type=int, default=None,
-                   help="상위 N 개만 번호 요구. 미지정 시 전체 순위")
-    p.add_argument("--candidate-t", type=int, default=None,
+    p.add_argument("--t-floor", type=int, default=None,
                    help="후보 마킹 하한 기준 T. 미지정 시 min(t_grid)")
     p.add_argument("--seg-reasoning-effort", default=None,
                    choices=["minimal", "low", "medium", "high", "none"],
@@ -82,16 +80,19 @@ def main() -> int:
         return 1
 
     cfg = json.loads((run_dir / "config.json").read_text(encoding="utf-8"))
-    profile = json.loads((run_dir / "language_profile.json").read_text(encoding="utf-8"))
 
-    # 측정 프로파일이 있으면 그것이 이긴다 (루프와 같은 규칙).
+    # **폴백도 LLM 이 아니라 실측이다.** 종전에는 `measured_profile.json` 이 없으면
+    # `language_profile.json`(LLM)의 같은 이름 필드를 읽었는데, 그 둘은 26개 런 중
+    # 25개에서 `trailing_punctuation` 이 달랐다. 이제 Profiler 는 그 필드를 내지도
+    # 않는다 (agents.measured_facts). 분할 파일은 항상 있으므로 거기서 다시 잰다.
     mp = run_dir / "measured_profile.json"
     if mp.exists():
         measured = json.loads(mp.read_text(encoding="utf-8"))
-        spaced, trailing_punct, _ = data.reconcile_profile(measured, profile)
     else:
-        spaced = bool(profile.get("uses_spaces_between_words", True))
-        trailing_punct = "".join(profile.get("trailing_punctuation") or []) or None
+        fit = (data.read_split(run_dir / "data" / "train.json")
+               + data.read_split(run_dir / "data" / "dev.json"))
+        measured = data.measure_profile([x.text for x in fit])
+    spaced, trailing_punct = data.profile_settings(measured)
 
     tgt_name = args.tgt_lang or cfg.get("tgt_lang", "English")
     tgt_spaced = (target_is_spaced(tgt_name) if args.tgt_lang
@@ -106,45 +107,40 @@ def main() -> int:
     seg_cache = JsonCache(run_dir / "cache" / "segment.json")
 
     # **번역기와 백엔드는 기준 런에서 상속한다.** 다른 조합으로 재면 같은 축이 아니다.
-    tr_id = cfg.get("translator_id") or f"llm:{cfg.get('translator_model')}"
-    if tr_id.startswith("google:"):
-        _, code, ctx = tr_id.split(":", 2)
-        if args.tgt_lang:
-            code = to_lang_code(tgt_name)
-            tr_id = f"google:{code}:{ctx}"
-        # 다언어 런은 타깃별 캐시 파일을 쓴다. 옛 런의 단일 translate.json 도 계속 읽는다.
-        cf = run_dir / "cache" / f"translate_{code}.json"
-        if not cf.exists() and (run_dir / "cache" / "translate.json").exists():
-            cf = run_dir / "cache" / "translate.json"
-        tr_cache = JsonCache(cf)
-        translator = GoogleTranslator(tgt_code=code, cache=tr_cache,
-                                      workers=min(args.workers, 4),
-                                      use_context=ctx.endswith("True"))
-    else:
-        tr_cache = JsonCache(run_dir / "cache" / "translate.json")
-        translator = Translator(gw=gw, src_name=cfg["src_lang"], tgt_name=tgt_name,
-                                model=tr_id.split(":", 1)[-1], cache=tr_cache,
-                                workers=args.workers)
+    # 옛 런은 `translator_id` 가 없거나 `llm:...` 일 수 있다. 번역기가 Google 하나뿐이라
+    # 어느 쪽이든 Google 로 읽는다 — 다만 그 런의 캐시는 LLM 번역이라 재사용되지 않는다.
+    backend, code, ctx = parse_translator_id(cfg.get("translator_id") or "",
+                                             to_lang_code(tgt_name))
+    if args.tgt_lang:                       # 타깃을 바꿔 재는 경우 코드도 따라간다
+        code = to_lang_code(tgt_name)
+    # 다언어 런은 타깃별 캐시 파일을 쓴다. 옛 런의 단일 translate.json 도 계속 읽는다.
+    cf = run_dir / "cache" / f"translate_{code}.json"
+    if not cf.exists() and (run_dir / "cache" / "translate.json").exists():
+        cf = run_dir / "cache" / "translate.json"
+    tr_cache = JsonCache(cf)
+    translator = GoogleTranslator(tgt_code=code, cache=tr_cache,
+                                  workers=min(args.workers, 4),
+                                  use_context=ctx, backend=backend)
+    tr_id = (f"google:{translator.backend}:{code}:ctx={ctx}")
 
     adequacy = metrics.make_adequacy_backend(
         args.adequacy_backend or cfg.get("adequacy_backend", "cometkiwi"),
         batch_size=args.comet_batch_size)
     cons_name = args.consistency_backend or cfg.get("consistency_backend", "comet")
-    nli_key = cfg.get("contradiction_backend", "xlmr-anli")
     if cons_name == "nli":
         consistency = metrics.make_backend(
-            "nli", model_name=metrics.NLI_MODELS[nli_key],
+            "nli", model_name=metrics.NLI_MODEL,
             batch_size=args.comet_batch_size)
     else:
         consistency = metrics.make_backend(
-            cons_name, gw=gw,
+            cons_name,
             **({"batch_size": args.comet_batch_size}
                if cons_name in metrics.COMET_CHECKPOINTS else {}))
 
     # 조기 방출 NLI 도 기준 런에서 상속한다 — 루프의 effective 와 같은 자로 재야
     # 비교군 표에 나란히 놓을 수 있다.
     contradiction = (None if (args.no_contradiction or cfg.get("no_contradiction"))
-                     else metrics.make_contradiction_backend(nli_key))
+                     else metrics.make_contradiction_backend())
 
     seg_effort = args.seg_reasoning_effort or cfg.get("seg_reasoning_effort", "low")
     if seg_effort == "none":
@@ -157,9 +153,12 @@ def main() -> int:
                                  require_priority=not args.no_priority,
                                  contradiction=contradiction,
                                  reasoning_effort=seg_effort,
-                                 coverage_t=(args.candidate_t or cfg.get("candidate_t")
+                                 # `density`·`candidate_t` 는 **옛 config 의 키 이름**이다.
+                                 # 지금 이름은 `t_floor` 하나이고, 기존 런을 다시 재려면
+                                 # 그 런이 저장한 이름으로 읽어야 한다.
+                                 coverage_t=(args.t_floor or cfg.get("t_floor") or cfg.get("density")
+                                             or cfg.get("candidate_t")
                                              or min(t_grid)),
-                                 priority_depth=args.priority_depth,
                                  batch_size=args.batch_size,
                                  min_gap=(args.min_gap if args.min_gap is not None
                                           else int(cfg.get("min_gap", 0))),
@@ -174,8 +173,8 @@ def main() -> int:
             "tgt_lang": tgt_name,
             "min_gap": (args.min_gap if args.min_gap is not None
                         else int(cfg.get("min_gap", 0))),
-            "candidate_t": args.candidate_t or cfg.get("candidate_t") or min(t_grid),
-            "priority_depth": args.priority_depth,
+            "t_floor": (args.t_floor or cfg.get("t_floor") or cfg.get("density")
+                        or cfg.get("candidate_t") or min(t_grid)),
             "batch_size": args.batch_size,
             "require_priority": not args.no_priority,
             "adequacy_backend": adequacy.name,

@@ -25,7 +25,7 @@ interface WebSocketContextType {
 const WebSocketContext = createContext<WebSocketContextType | null>(null);
 
 // 웹/네이티브 모두 RunPod 프록시(8765) 엔드포인트로 연결.
-const SERVER_URL = 'wss://h2b9loruk400f8-8765.proxy.runpod.net';
+const SERVER_URL = 'wss://qx74ylzesr5sqr-8765.proxy.runpod.net';
 // RunPod 서버는 상시 가동(콜드스타트 없음) — 짧은 타임아웃/빠른 재시도로
 // 서버가 떠 있으면 1~2초 안에 ready로 갱신되게 한다.
 const IS_WEB = Platform.OS === 'web';

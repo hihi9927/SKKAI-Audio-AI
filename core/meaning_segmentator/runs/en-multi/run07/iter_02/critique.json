@@ -1,0 +1,246 @@
+{
+  "cases": [
+    {
+      "id": "en_us_654",
+      "error_type": "format_violation",
+      "span": "Kalaalleq (plural Kalaallit), a Greenlander",
+      "evidence": "Submission failed rule 'too_few_tags' (3 tags < 4)",
+      "cause": "other",
+      "proposed_rule": "Ensure the output always marks all minimal defensible boundaries (e.g., subject, predicate, locative/appositive) so format checks cannot fail; if unsure, prefer an extra low-confidence tag rather than omitting one.",
+      "example_pair": {
+        "input": "The native inhabitants of Greenland call themselves Inuit in Canada and Kalaalleq (plural Kalaallit), a Greenlander, in Greenland.",
+        "output": "The native inhabitants of Greenland <SEG:1> call themselves Inuit <SEG:2> in Canada and Kalaalleq (plural Kalaallit), <SEG:3> a Greenlander, in Greenland <SEG:4>."
+      }
+    },
+    {
+      "id": "en_us_1428",
+      "error_type": "placement",
+      "span": "in 1861 the first recreational ski club",
+      "evidence": "Boundary cut before the verb/argument that names what happened ('was opened'), producing a premature predication.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not emit a completed predication after a temporal phrase (e.g. 'in 1861') — wait for the following verb or the noun that names the event.",
+      "example_pair": {
+        "input": "Downhill skiing as a sport goes back to at least the 17th century, and in 1861 the first recreational ski club was opened by Norwegians in Australia.",
+        "output": "Downhill skiing as a sport goes back to at least the 17th century, <SEG:1> and in 1861 the first recreational ski club was opened by Norwegians in Australia <SEG:2>."
+      }
+    },
+    {
+      "id": "en_us_687",
+      "error_type": "placement",
+      "span": "as only the head and shoulders are visible",
+      "evidence": "Emitter produced 'only the head is visible' before the coordinated item 'and shoulders' arrived; 'only' scoped incorrectly.",
+      "cause": "modifier scope",
+      "proposed_rule": "Delay emitting exclusive limiters (e.g. 'only') or fragments they modify until coordinated or enumerated items that they may scope over have arrived.",
+      "example_pair": {
+        "input": "Anyone interested in seeing evidence of the damage to the mummy done during attempts to remove it from the coffin will be disappointed as only the head and shoulders are visible.",
+        "output": "Anyone interested in seeing evidence of the damage to the mummy done during attempts to remove it from the coffin will be disappointed as only the head and shoulders are visible <SEG:1>."
+      }
+    },
+    {
+      "id": "en_us_471",
+      "error_type": "placement",
+      "span": "in which European nations sought to maintain",
+      "evidence": "Fragment rendered as a full proposition before its complement ('the national sovereignty of all European states') arrived, producing wrong meaning.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not render an opened clause (e.g. 'in which', relative or prepositional clauses) as a complete proposition until its main complement/head has appeared.",
+      "example_pair": {
+        "input": "The balance of power was a system in which European nations sought to maintain the national sovereignty of all European states.",
+        "output": "The balance of power was a system in which European nations sought to maintain the national sovereignty of all European states <SEG:1>."
+      }
+    },
+    {
+      "id": "en_us_990",
+      "error_type": "placement",
+      "span": "This will cause cracks, crevasses",
+      "evidence": "A main clause ('This will cause') was separated from its NP complement, leading to duplication or dropped attachment in the translation.",
+      "cause": "other",
+      "proposed_rule": "Avoid emitting a standalone main clause when it is immediately followed by a noun phrase complement; either attach the NP or wait for the complement to avoid restating the predicate.",
+      "example_pair": {
+        "input": "The glaciers are not stable, but flow down the mountain. This will cause cracks, crevasses, which may be obscured by snow bridges.",
+        "output": "The glaciers are not stable, but flow down the mountain. This will cause cracks, crevasses, which may be obscured by snow bridges <SEG:1>."
+      }
+    },
+    {
+      "id": "en_us_417",
+      "error_type": "placement",
+      "span": "to be between the second and fourth most",
+      "evidence": "Boundary emitted a quantified phrase before the head noun 'language' arrived, forcing a wrong head choice.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Don't produce or choose a head noun (or finalize a numeric/quantifier scope) before the source head word appears; wait for the head before emitting dependents.",
+      "example_pair": {
+        "input": "There are varying estimates for how many people speak Hindi. It is estimated to be between the second and fourth most commonly spoken language in the world.",
+        "output": "There are varying estimates for how many people speak Hindi. It is estimated to be between the second and fourth most commonly spoken language in the world <SEG:1>."
+      }
+    },
+    {
+      "id": "en_us_703",
+      "error_type": "placement",
+      "span": "is needed to prove the length of your stay",
+      "evidence": "Translation tied the ticket as proving the stay length before the full 'of your stay' modifier arrived, reversing scope.",
+      "cause": "modifier scope",
+      "proposed_rule": "Don't commit to the scope of a modifier or the object a noun proves/establishes until the following prepositional/possessive phrase (e.g. 'of your stay') is present.",
+      "example_pair": {
+        "input": "Your passport must be valid for at least 6 months beyond your travel dates. A round/onward trip ticket is needed to prove the length of your stay.",
+        "output": "Your passport must be valid for at least 6 months beyond your travel dates. A round/onward trip ticket is needed to prove the length of your stay <SEG:1>."
+      }
+    },
+    {
+      "id": "en_us_368",
+      "error_type": "placement",
+      "span": "called arteries and comes back to the heart",
+      "evidence": "Labels ('arteries'/'veins') were attached before the appositive 'called X' completed, causing roles to flip.",
+      "cause": "wrong participant",
+      "proposed_rule": "Wait for naming/appositive phrases (e.g. 'called X') before assigning that label to a preceding or following predicate or participant.",
+      "example_pair": {
+        "input": "Blood goes away from the heart in tubes called arteries and comes back to the heart in tubes called veins. The smallest tubes are called capillaries.",
+        "output": "Blood goes away from the heart in tubes called arteries and comes back to the heart in tubes called veins <SEG:1>. The smallest tubes are called capillaries <SEG:2>."
+      }
+    },
+    {
+      "id": "en_us_929",
+      "error_type": "placement",
+      "span": "is only rarely booked directly through the airline",
+      "evidence": "Fragment finalized polarity/implication before the negating complement ('without first searching and comparing prices') arrived, leading to wrong inference.",
+      "cause": "polarity not yet settled",
+      "proposed_rule": "Delay finalizing polarity or affirmation/negation when a negating adverbial (e.g. 'without', 'only rarely') may take a postposed complement; wait for its full complement/coordinated phrase.",
+      "example_pair": {
+        "input": "Nowadays air travel is only rarely booked directly through the airline without first searching and comparing prices.",
+        "output": "Nowadays air travel is only rarely booked directly through the airline without first searching and comparing prices <SEG:1>."
+      }
+    },
+    {
+      "id": "en_us_61",
+      "error_type": "placement",
+      "span": "taking the iPhone out of his jeans pocket",
+      "evidence": "Boundary separated 'taking the' from its object, causing translator to guess the object and produce incorrect role.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Don't finalize a verb's object or role for 'taking the ...' or similar constructions until the object/head noun arrives.",
+      "example_pair": {
+        "input": "Apple CEO Steve Jobs unveiled the device by walking onto the stage and taking the iPhone out of his jeans pocket.",
+        "output": "Apple CEO Steve Jobs unveiled the device by walking onto the stage and taking the iPhone out of his jeans pocket <SEG:1>."
+      }
+    },
+    {
+      "id": "en_us_1599",
+      "error_type": "placement",
+      "span": "they still need the same adaptations",
+      "evidence": "Fragment ended with 'they still' before main verb, yielding an added assertion ('they are the same') in the translation.",
+      "cause": "mistranslated",
+      "proposed_rule": "If a fragment ends with an adverb or auxiliary like 'still' and the main verb or complement hasn't arrived, wait for the verb before producing a predicate.",
+      "example_pair": {
+        "input": "The original population hasn't changed at all, they still need the same adaptations as before.",
+        "output": "The original population hasn't changed at all, they still need the same adaptations as before <SEG:1>."
+      }
+    },
+    {
+      "id": "en_us_1380",
+      "error_type": "placement",
+      "span": "called ziggurats, were built to be a part",
+      "evidence": "Low adequacy at tight budgets; likely cut between the appositive 'called ziggurats' and the verb 'were built', producing awkward fragments.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Keep appositive/name phrases (e.g. 'called X') attached to the verb they modify; avoid cutting between an appositive and its governing predicate.",
+      "example_pair": {
+        "input": "Sometimes special pyramid shaped towers, called ziggurats, were built to be a part of the temples.",
+        "output": "Sometimes special pyramid shaped towers, called ziggurats, were built to be a part of the temples <SEG:1>."
+      }
+    },
+    {
+      "id": "en_us_565",
+      "error_type": "priority",
+      "span": "Only the effects of catastrophizing, not depression and fear",
+      "evidence": "When only top-ranked boundaries survived (large T) the translation flipped contrastive scope; ranking put a risky comma-adjacent cut high.",
+      "cause": "modifier scope",
+      "proposed_rule": "Demote boundaries that appear immediately after a comma (feature: '뒤 구두점 \",\"') when the following fragment contains contrastive markers ('not', 'only') or parallel items; prefer keeping the comma-attached material with its contrasted counterpart.",
+      "example_pair": {
+        "input": "Only the effects of catastrophizing, not depression and fear was conditional of regular weekly structured PA sessions.",
+        "output": "Only the effects of catastrophizing, not depression and fear was conditional of regular weekly structured PA sessions <SEG:1>."
+      }
+    }
+  ],
+  "summary": "Most high-contradiction failures are placement errors: the model emits predicates, labels or scope before the disambiguating head, complement, or coordinated items arrive (head not yet arrived / modifier scope / wrong participant). One priority failure: the ranking over-trusts comma-adjacent cuts when contrastive markers ('only'/'not') follow — demote those features so they don't survive tight budgets.",
+  "aggregate": {
+    "dominant_error": "placement",
+    "error_counts": {
+      "format_violation": 1,
+      "placement": 11,
+      "priority": 1
+    },
+    "stuck_hint": "",
+    "priority_audit": [
+      {
+        "feature": "상대위치 2/3",
+        "n": 46,
+        "rank_percentile": 0.561,
+        "contradiction": 0.1124,
+        "over_trust": 0.0736
+      },
+      {
+        "feature": "뒤 구두점 ','",
+        "n": 8,
+        "rank_percentile": 0.561,
+        "contradiction": 0.1099,
+        "over_trust": 0.0722
+      },
+      {
+        "feature": "상대위치 1/3",
+        "n": 53,
+        "rank_percentile": 0.6,
+        "contradiction": 0.0933,
+        "over_trust": 0.0147
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 145,
+        "rank_percentile": 0.636,
+        "contradiction": 0.0767,
+        "over_trust": -0.0226
+      },
+      {
+        "feature": "상대위치 0/3",
+        "n": 65,
+        "rank_percentile": 0.659,
+        "contradiction": 0.042,
+        "over_trust": -0.0249
+      }
+    ],
+    "judge_distribution": {
+      "n_boundaries_judged": 50,
+      "verdicts": {
+        "safe": 34,
+        "premature": 10,
+        "mistranslated": 6
+      },
+      "n_with_cause": 16,
+      "causes": {
+        "head not yet arrived": {
+          "n": 6,
+          "share": 0.375
+        },
+        "other": {
+          "n": 3,
+          "share": 0.188
+        },
+        "modifier scope": {
+          "n": 2,
+          "share": 0.125
+        },
+        "polarity not yet settled": {
+          "n": 2,
+          "share": 0.125
+        },
+        "wrong participant": {
+          "n": 2,
+          "share": 0.125
+        },
+        "mistranslated": {
+          "n": 1,
+          "share": 0.062
+        }
+      }
+    },
+    "max_missing_boundaries": 0.025,
+    "rank_lift": 0.04137,
+    "rank_lift_t": 0.71,
+    "summary": "Most high-contradiction failures are placement errors: the model emits predicates, labels or scope before the disambiguating head, complement, or coordinated items arrive (head not yet arrived / modifier scope / wrong participant). One priority failure: the ranking over-trusts comma-adjacent cuts when contrastive markers ('only'/'not') follow — demote those features so they don't survive tight budgets."
+  }
+}
