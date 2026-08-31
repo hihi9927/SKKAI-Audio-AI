@@ -11,7 +11,13 @@
 #   발표가 5개뿐이라 병렬도를 5로 둔다(그 이상은 놀기만 한다). 실시간 페이싱이므로
 #   런당 대략 "가장 긴 발표 길이" ≈ 12분이다.
 #
-# 환경변수: AXES(기본 "static punct seg"), CHUNK(기본 2.0)
+# 환경변수
+#   AXES           기본 "static punct seg"
+#   CHUNK          기본 2.0
+#   TRANS_BACKEND  기본 v2. `local` 이면 MADLAD-400-3B(greedy)를 같은 GPU 에 올린다 —
+#                  **번역 품질이 달라 v2 로 낸 결과와 같은 표에 올리면 안 된다**
+#   GPU_MEM        vLLM gpu_memory_utilization. local 번역기(6.75GB)와 나눠 쓰려면 0.65
+#   AST_CAP_FREEZE / AST_AUDIO_END_AT_COMMIT   서버 수정 스위치(환경 그대로 상속된다)
 # 종료는 반드시 stop_server.sh 로 한다(pkill 은 vLLM EngineCore 를 남긴다).
 
 set -u
@@ -32,6 +38,10 @@ MODEL="$REPO/models/Qwen3-ASR-1.7B-en-dailytalk-seg"
 SPLIT="${1:-dev}"
 AXES="${AXES:-static punct seg}"
 CHUNK="${CHUNK:-2.0}"
+TRANS_BACKEND="${TRANS_BACKEND:-v2}"
+# 로컬 번역기 배치. punct/seg 는 커밋이 문장 단위라 길어서, 16 이면 활성값이
+# 커져 OOM 이 난다(실측 2026-08-30: punct/de 에서 OutOfMemoryError 61건).
+TRANS_BATCH="${TRANS_BATCH:-8}"
 STAMP="$(date +%Y%m%d_%H%M%S)"
 LOGDIR="$REPO/evaluation/ast/results/_runlogs/acl_${SPLIT}_$STAMP"
 mkdir -p "$LOGDIR"
@@ -53,6 +63,8 @@ echo "════════════════════════�
 echo " ACL 60/60 장문 실험  split=$SPLIT  tag=$STAMP"
 echo " 모델   : $(basename "$MODEL")"
 echo " 청크   : ${CHUNK}s     축: $AXES"
+echo " 번역   : $TRANS_BACKEND (배치 $TRANS_BATCH)   GPU: $GPU_UTIL"
+echo " 스위치 : CAP_FREEZE=${AST_CAP_FREEZE:-off}  AUDIO_END=${AST_AUDIO_END_AT_COMMIT:-off}"
 echo " 단위   : 발표 통짜 (발표 5개 × 3언어)"
 echo " 로그   : $LOGDIR"
 echo " 시작   : $(date '+%F %T')"
@@ -70,7 +82,8 @@ run_axis() {
       --model "$MODEL" --no-vad --chunk-size "$CHUNK" \
       --port "$PORT" --no-idle-shutdown \
       --gpu-memory-utilization "$GPU_UTIL" \
-      --trans-backend v2 \
+      --trans-local-batch "$TRANS_BATCH" \
+      --trans-backend "$TRANS_BACKEND" \
       --trans-stats-out "$LOGDIR/${label}_trans_stats.json" \
       "${server_args[@]}" > "$slog" 2>&1 &
   local spid=$!

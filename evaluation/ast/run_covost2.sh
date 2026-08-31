@@ -43,6 +43,12 @@ MODEL="$REPO/models/Qwen3-ASR-1.7B-en-dailytalk-seg"
 LIMIT="${1:-}"
 AXES="${AXES:-static punct seg}"
 CHUNK="${CHUNK:-2.0}"
+# 번역 백엔드. `local` 은 MADLAD-400-3B(greedy)를 같은 GPU 에 올린다 —
+# **번역 품질이 달라 v2 로 낸 결과와 같은 표에 올리면 안 된다.**
+TRANS_BACKEND="${TRANS_BACKEND:-v2}"
+# 로컬 번역기 배치. 커밋이 긴 축(punct/seg)에서 16 이면 OOM 이 난다
+# (실측 2026-08-30 ACL punct: OutOfMemoryError 61건).
+TRANS_BATCH="${TRANS_BATCH:-8}"
 
 # 청크가 기본값이 아니면 **결과 경로의 축 이름에 붙인다.** 안 붙이면 static@4s 가
 # static@2s 와 같은 폴더(`CoVoST2/static/n3000-de/`)를 쓰게 되고, --tag 가 다르면
@@ -70,6 +76,8 @@ echo " 모델   : $(basename "$MODEL")"
 echo " 번역   : Cloud Translation v2"
 echo " 청크   : ${CHUNK}s"
 echo " 축     : $AXES"
+echo " 번역   : $TRANS_BACKEND (배치 $TRANS_BATCH)   GPU: $GPU_UTIL"
+echo " 스위치 : CAP_FREEZE=${AST_CAP_FREEZE:-off}  AUDIO_END=${AST_AUDIO_END_AT_COMMIT:-off}  ANTI_REPEAT=${AST_TRANS_ANTI_REPEAT:-off}"
 echo " 발화   : ${LIMIT:-전량(3,000)} × 3언어"
 echo " 로그   : $LOGDIR"
 echo " 시작   : $(date '+%F %T')"
@@ -87,7 +95,8 @@ run_axis() {
       --model "$MODEL" --no-vad --chunk-size "$CHUNK" \
       --port "$PORT" --no-idle-shutdown \
       --gpu-memory-utilization "$GPU_UTIL" \
-      --trans-backend v2 \
+      --trans-backend "$TRANS_BACKEND" \
+      --trans-local-batch "$TRANS_BATCH" \
       --trans-stats-out "$LOGDIR/${label}_trans_stats.json" \
       "${server_args[@]}" > "$slog" 2>&1 &
   local spid=$!

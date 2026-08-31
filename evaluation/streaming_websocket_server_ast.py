@@ -146,9 +146,12 @@ class ASTStreamingHandler(fsl_server.FSLStreamingHandler):
             # 침묵을 기다린 비용은 정책이 치른 값이므로 지연에 포함되는 게 맞다.
             return float(self._pending_vad_trigger_sec)
 
-        seg_info = self._slot_seg_detected.get(slot_key)
-        if seg_info is not None and seg_info.get("audio_sec") is not None:
-            return float(seg_info["audio_sec"])
+        # `AST_AUDIO_END_AT_COMMIT=1` 이면 감지 시점을 쓰지 않는다. 이유는 아래
+        # `_emit_final_payload` 주석 참고 — 그 값은 세그먼트의 **시작**에 가깝지 끝이 아니다.
+        if os.environ.get("AST_AUDIO_END_AT_COMMIT") != "1":
+            seg_info = self._slot_seg_detected.get(slot_key)
+            if seg_info is not None and seg_info.get("audio_sec") is not None:
+                return float(seg_info["audio_sec"])
 
         # dot 커밋(SEG 미감지)과 finish: 현재까지 수신·투입된 오디오 전량
         return float(self.current_time)
@@ -214,9 +217,101 @@ class ASTStreamingHandler(fsl_server.FSLStreamingHandler):
     ) -> None:
         # extra 는 상위에서 timing 으로 쓰이고 payload 에 그대로 병합된다.
         merged = dict(extra or {})
+        # ── audio_end 진단 계측 ───────────────────────────────────────────────
+        # payload 가 **만들어지는 시점**을 남긴다. seg 축에서 `audio_end` 가 실제보다
+        # 수십 초 이르게 찍히는 문제(실측: 커밋 하나가 45초 분량 텍스트를 담고 있는데
+        # audio_end 는 500.4초)의 원인을 가르려면 이 세 값이 필요하다:
+        #
+        #   payloadAtAudioSec   지금 서버가 받은 오디오 위치. 텍스트가 여기까지의
+        #                       내용이어야 물리적으로 말이 된다
+        #   segInfoAudioSec     `_slot_seg_detected` 에 얼려둔 감지 시점. `audio_end`
+        #                       역추정의 기준이 되는 값
+        #   segInfoAgeSec       위 둘의 차이. 정상이면 1초 안쪽이고, 이게 크면
+        #                       "묵은 타임스탬프로 새 텍스트를 찍었다"는 뜻이다
+        #
+        # 여기서 읽어야 한다 — `_decision_audio_sec` 이 pop 하기 **전**이다.
+        _si = self._slot_seg_detected.get(slot_key) or {}
+        _now = float(self.current_time)
+        _det = _si.get("audio_sec")
+        merged["payloadAtAudioSec"] = round(_now, 3)
+        merged["payloadOriginalLen"] = len(original or "")
+        if _det is not None:
+            merged["segInfoAudioSec"] = round(float(_det), 3)
+            merged["segInfoAgeSec"] = round(_now - float(_det), 3)
+            merged["segInfoTokenIdx"] = _si.get("seg_token_idx")
+            merged["segInfoChunkStart"] = _si.get("chunk_audio_start")
+        try:
+            _accum = self._slot(slot_key)["state"].audio_accum.shape[0] / 16000.0
+            merged["slotAudioAccumSec"] = round(_accum, 3)
+        except Exception:  # noqa: BLE001 — 계측이 런을 죽이면 안 된다
+            pass
+        if _det is not None and _now - float(_det) > 3.0:
+            logger.info(
+                "[STALE-SEGINFO] reason=%s 감지 %.1fs → payload %.1fs (묵음 %.1fs) "
+                "누적 %.1fs 텍스트 %d자 | %.60s",
+                reason, float(_det), _now, _now - float(_det),
+                merged.get("slotAudioAccumSec", -1), len(original or ""), original or "")
         merged["decisionAudioSec"] = round(
             self._decision_audio_sec(slot_key, reason), 3
         )
+
+        # ── SEG 커밋의 audio_end 역추정 재설계 (AST_AUDIO_END_AT_COMMIT=1) ─────────
+        #
+        # 원래 식
+        #     audio_end = 감지시점_청크시작 + (k/n) × 청크크기(2초)
+        #     k = `<SEG>` 가 나온 시점의 누적 토큰, n = 그 청크가 생성한 총 토큰
+        #
+        # 의도는 옳았다 — 한 청크(2초) 안에 `<SEG>` 가 여럿이면 그 안의 위치를 알 수
+        # 없으니 토큰 진행률을 오디오 진행률로 근사한 것이다. 전제는 **"이 세그먼트의
+        # 텍스트는 이번 청크에서 생성됐다"** 이고, static/punct 는 커밋이 촘촘해 성립한다.
+        #
+        # seg 축에서 그 전제가 깨진다. 다음 `<SEG>` 를 기다리며 여러 청크에 걸쳐 텍스트가
+        # 쌓이기 때문이다. 두 군데가 동시에 틀어진다.
+        #
+        #   창   `chunk_audio_start`/`chunk_size` 가 **감지 당시의 2초 창**이라, 45초어치
+        #        텍스트도 그 안에 갇힌다. 실측(talk 2022.acl-long.110): 732자를 8.3초
+        #        구간에 담아 **88자/초** — 영어 발화 속도(12~17자/초)의 6배.
+        #   비율 `n` 이 마지막 청크 하나의 토큰 수라, 커밋이 여러 청크에 걸치면 `k/n` 이
+        #        그 커밋의 오디오 비중을 대표하지 못한다(실측 `tok=8/48` → 0.167 인데
+        #        텍스트는 구간 전체를 덮었다). 창만 넓히고 이 비율을 그대로 쓰면 오히려
+        #        더 앞당겨진다 — A/B 실측으로 `fsl` 최대가 2.2s → 15.1s 로 나빠졌다.
+        #
+        # 그래서 둘 다 바꾼다.
+        #     창   = 직전 커밋이 끝난 지점 ~ 지금   (이 커밋이 실제로 소비한 구간)
+        #     비율 = 이 커밋 글자 / (이 커밋 글자 + 아직 미커밋인 꼬리)
+        #
+        # 글자 수가 오디오 길이에 비례한다고 본다. 토큰 인덱스보다 훨씬 견고하다 —
+        # 자/초 중앙값이 축·언어와 무관하게 13~15로 일정한 것이 근거다. 꼬리가 비면
+        # 비율 1.0 이라 구간 끝(=지금)을 가져가고, 한 청크에서 커밋이 여러 개 나오면
+        # 그 구간을 글자 비율대로 나눠 갖는다. 두 실패 모드가 한 식으로 잡힌다.
+        #
+        # `decisionAudioSec` 도 같은 값을 쓴다 — "이 커밋을 내기까지 읽은 소스 오디오"는
+        # 이 커밋이 담은 마지막 음성의 위치와 같아야 하기 때문이다. 이 값이 StreamLAAL 의
+        # `d_i` 이고, 원래 식의 오차가 그대로 음수 지연(최악 −39.3초)이 되고 있었다.
+        #
+        # `seg_token_idx` 를 None 으로 두어 `_flush_deferred_seg_emits` 의 토큰 역추정이
+        # 이 값을 덮어쓰지 못하게 한다(`no-token-info` 경로로 떨어진다).
+        if os.environ.get("AST_AUDIO_END_AT_COMMIT") == "1" and reason == "seg":
+            _now = float(self.current_time)
+            _prev_end = float(getattr(self, "segment_audio_start_sec", 0.0) or 0.0)
+            _span = max(0.0, _now - _prev_end)
+            try:
+                _rest = self._slot_uncommitted_display(slot_key) or ""
+            except Exception:  # noqa: BLE001 — 계측이 런을 죽이면 안 된다
+                _rest = ""
+            _c = len((original or "").strip())
+            _r = len(_rest.strip())
+            _ratio = 1.0 if (_c + _r) <= 0 else min(1.0, _c / float(_c + _r))
+            audio_end_sec = _prev_end + _ratio * _span
+            merged["spanStartSec"] = round(_prev_end, 3)
+            merged["spanSec"] = round(_span, 3)
+            merged["spanRatio"] = round(_ratio, 4)
+            merged["restLen"] = _r
+            merged["decisionAudioSec"] = round(audio_end_sec, 3)
+            _si2 = self._slot_seg_detected.get(slot_key)
+            if _si2 is not None:
+                _si2["seg_token_idx"] = None
+
         await super()._emit_final_payload(
             slot_key=slot_key,
             original=original,
@@ -569,9 +664,19 @@ def _install_trans_guard() -> None:
     import argparse as _argparse
 
     pre = _argparse.ArgumentParser(add_help=False)
-    pre.add_argument("--trans-backend", default="v2", choices=["v2", "gtx"],
+    pre.add_argument("--trans-backend", default="v2", choices=["v2", "gtx", "local"],
                      help="v2=공식 Cloud Translation Basic(API 키 필요, 기본값), "
-                          "gtx=무료 위젯 엔드포인트(대량 호출 시 IP 차단됨)")
+                          "gtx=무료 위젯 엔드포인트(대량 호출 시 IP 차단됨), "
+                          "local=MADLAD-400-3B greedy(키 불필요, GPU 8.8GB)")
+    # 로컬 번역기는 **번역 품질이 다르다**(CometKiwi 0.8712 → 0.8473). v2 로 낸 결과와
+    # 같은 표에 올리면 안 되고, 바꾼 시점을 반드시 기록할 것.
+    pre.add_argument("--trans-local-model", default="google/madlad400-3b-mt")
+    pre.add_argument("--trans-local-device", default="cuda")
+    pre.add_argument("--trans-local-batch", type=int, default=16,
+                     help="한 번에 GPU 로 보내는 최대 문장 수")
+    pre.add_argument("--trans-local-wait", type=float, default=0.03,
+                     help="배치를 모으려 기다리는 시간(초). 지연에 그대로 더해진다")
+    pre.add_argument("--trans-local-max-new-tokens", type=int, default=192)
     pre.add_argument("--trans-api-key", default=None,
                      help="미지정 시 GOOGLE_TRANSLATE_API_KEY 환경변수를 쓴다")
     pre.add_argument("--trans-retries", type=int, default=3,
@@ -629,6 +734,11 @@ def _install_trans_guard() -> None:
         alert_min_calls=args.trans_alert_min_calls,
         stats_path=args.trans_stats_out,
         dump_every=args.trans_dump_every,
+        local_model=args.trans_local_model,
+        local_device=args.trans_local_device,
+        local_batch=args.trans_local_batch,
+        local_wait=args.trans_local_wait,
+        local_max_new_tokens=args.trans_local_max_new_tokens,
     )
 
 

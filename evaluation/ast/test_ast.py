@@ -219,6 +219,20 @@ async def stream_one(ws, audio, *, chunk_size_ms, send_interval_ms, target_lang,
                 "trans_failed": data.get("transFailed"),
                 "emit_elapsed_sec": data.get("emitElapsedSec"),
                 "recv_elapsed_sec": recv_elapsed,
+                # audio_end 진단 계측 (AST 서버). 구버전 서버면 None.
+                # payload_at_audio_sec 은 payload 가 만들어진 시점의 오디오 위치이고,
+                # seg_info_age_sec 이 크면 묵은 감지 타임스탬프로 새 텍스트를 찍은 것이다.
+                "payload_at_audio_sec": data.get("payloadAtAudioSec"),
+                "payload_original_len": data.get("payloadOriginalLen"),
+                "seg_info_audio_sec": data.get("segInfoAudioSec"),
+                "seg_info_age_sec": data.get("segInfoAgeSec"),
+                "seg_info_token_idx": data.get("segInfoTokenIdx"),
+                "seg_info_chunk_start": data.get("segInfoChunkStart"),
+                "slot_audio_accum_sec": data.get("slotAudioAccumSec"),
+                "span_start_sec": data.get("spanStartSec"),
+                "span_sec": data.get("spanSec"),
+                "span_ratio": data.get("spanRatio"),
+                "rest_len": data.get("restLen"),
             })
 
     await asyncio.gather(_send(), _recv())

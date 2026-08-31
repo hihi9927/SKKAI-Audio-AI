@@ -49,7 +49,9 @@ import contextvars
 import html
 import json
 import logging
+import os
 import random
+import re
 import threading
 import time
 from collections import Counter
@@ -77,8 +79,13 @@ class TranslateHTTPError(RuntimeError):
 
 @dataclass
 class _Config:
-    backend: str = "gtx"       # "gtx"(무료 위젯) | "v2"(공식 Cloud Translation Basic)
+    backend: str = "gtx"       # "gtx"(무료 위젯) | "v2"(Cloud Translation Basic) | "local"(MADLAD)
     api_key: Optional[str] = None
+    local_model: str = "google/madlad400-3b-mt"
+    local_device: str = "cuda"
+    local_batch: int = 16      # 한 번에 GPU 로 보내는 최대 문장 수
+    local_wait: float = 0.03   # 배치를 모으려고 기다리는 시간(초). 지연에 직접 더해진다
+    local_max_new_tokens: int = 192
     retries: int = 3           # 총 시도 횟수(첫 시도 포함)
     backoff: float = 0.5       # 지수 백오프 기준(초)
     backoff_429: float = 5.0   # 429/403 은 더 길게 — 몰아치면 IP 째로 막힌다
@@ -118,6 +125,7 @@ class _Stats:
             "calls_per_commit": round(self.calls / self.commits, 4) if self.commits else 0.0,
             "calls_per_sec": round(self.calls / el, 3),
             "errors": dict(self.errors),
+            "repeat_guard": dict(_REP_STATS),
             "elapsed_sec": round(el, 1),
             "backend": _CFG.backend,
         }
@@ -242,6 +250,186 @@ async def _call_v2(session, text: str, target_lang: str, timeout) -> tuple[str, 
     return html.unescape(tr.get("translatedText") or ""), tr.get("detectedSourceLanguage") or ""
 
 
+# ── 로컬 번역기(MADLAD-400-3B, greedy) ──────────────────────────────────────
+# Cloud Translation 키가 막혔을 때의 대체 경로. 품질은 Google 보다 낮다
+# (CometKiwi 0.8712 → greedy 0.8473, 실측 `core/meaning_segmentator/autoseg`).
+# **번역기를 바꾸면 BLEU/COMET 이 통째로 달라지므로 v2 로 낸 결과와 섞으면 안 된다.**
+#
+# 두 가지를 반드시 지킨다.
+#   1) 생성은 **executor 로 뺀다.** 이벤트 루프에서 돌리면 오디오 수신과 ASR 디코딩이
+#      멈춘다 — 실시간 페이싱 하네스에서는 그대로 측정 오염이다.
+#   2) **마이크로 배칭.** 서버는 커밋마다 `create_task` 로 번역을 발사하므로 동시 요청이
+#      몰린다. 하나씩 돌리면 GPU 가 논다. `local_wait` 만큼 모아 한 번에 돌린다 —
+#      그 대기는 지연에 그대로 더해지므로 크게 잡으면 안 된다.
+_LOCAL_LOCK = threading.Lock()
+_LOCAL_MODEL: dict = {}
+_LOCAL_Q: list = []
+_LOCAL_CV = threading.Condition()
+_LOCAL_THREAD = None
+
+
+def _local_model():
+    with _LOCAL_LOCK:
+        if "m" not in _LOCAL_MODEL:
+            import torch
+            from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+            t0 = time.time()
+            tok = AutoTokenizer.from_pretrained(_CFG.local_model)
+            mdl = AutoModelForSeq2SeqLM.from_pretrained(
+                _CFG.local_model, dtype=torch.float16).to(_CFG.local_device).eval()
+            _LOCAL_MODEL["m"] = (tok, mdl)
+            logger.info("[TRANS-GUARD] 로컬 번역기 로드 %s (%.1fs, device=%s)",
+                        _CFG.local_model, time.time() - t0, _CFG.local_device)
+        return _LOCAL_MODEL["m"]
+
+
+# ── 반복 폭주(degeneration) 탐지·복구 ────────────────────────────────────────
+# greedy 디코딩의 알려진 병증. 실측(ACL dev, MADLAD): `あの` 를 30회, `ニュースの分類に
+# 関する情報を，` 를 5회 반복하는 커밋이 나온다. 커밋 수로는 ja 3.5% 뿐인데 **글자 수로는
+# 18.4%** 라(한 커밋이 수백 자를 토해낸다) char 단위 채점을 통째로 오염시킨다:
+# static@6s/ja 음수율 11.82% 중 61.5% 가 이 커밋들에서 나왔다.
+#
+# `no_repeat_ngram_size` 는 쓰지 않는다. 정답 번역 자체가 4-gram 을 자연스럽게 반복하기
+# 때문이다 — 실측으로 gold 문장의 ja 10.5% / de 6.4% / zh 7.3% 가 반복 4-gram 을 갖는다.
+# n=4 로 막으면 그 문장들을 **아예 생성할 수 없고**, 현재 출력에서도 폭주 20건을 잡으려다
+# 정상 73건을 부순다(ja static@6s).
+#
+# 그래서 **사후 탐지 후 그 커밋만** 손본다. 정상 출력은 한 글자도 바뀌지 않으므로 이전
+# 결과와의 연속성이 유지된다.
+#   1) 같은 4~8자 부분열이 4회 이상 → 폭주로 판정
+#   2) `repetition_penalty` 를 걸고 그 문장만 재생성
+#   3) 그래도 폭주면 반복이 시작되는 지점에서 자른다(뜻은 앞부분에 남는다)
+_REP_STATS = Counter()
+
+
+def _is_degenerate(text: str) -> bool:
+    s = re.sub(r"\s+", "", text or "")
+    if len(s) < 16:
+        return False
+    for n in (4, 6, 8):
+        for i in range(len(s) - n):
+            if s.count(s[i:i + n]) >= 4:
+                return True
+    return False
+
+
+def _truncate_repeat(text: str) -> str:
+    """반복이 시작되는 자리에서 자른다. 못 찾으면 원문 그대로."""
+    s = text or ""
+    for n in (8, 6, 4):
+        for i in range(len(s) - n):
+            g = s[i:i + n]
+            if s.count(g) >= 4:
+                nxt = s.find(g, i + n)
+                if nxt > 0:
+                    return s[:nxt].rstrip()
+    return s
+
+
+def _local_generate(texts: list, targets: list) -> list:
+    """MADLAD 는 타깃을 `<2xx>` 접두사로 지정한다. 배치 안에 타깃이 섞여도 된다."""
+    import torch
+    tok, mdl = _local_model()
+    prompts = [f"<2{tg}> {tx}" for tx, tg in zip(texts, targets)]
+    with torch.inference_mode():
+        enc = tok(prompts, return_tensors="pt", padding=True,
+                  truncation=True, max_length=384).to(_CFG.local_device)
+        gen = mdl.generate(**enc, max_new_tokens=_CFG.local_max_new_tokens,
+                           num_beams=1)          # greedy — 빔4 대비 29배 빠르고 품질 −0.008
+    outs = tok.batch_decode(gen, skip_special_tokens=True)
+    if os.environ.get("AST_TRANS_ANTI_REPEAT") != "1":
+        return outs
+
+    bad = [i for i, o in enumerate(outs) if _is_degenerate(o)]
+    if not bad:
+        return outs
+    _REP_STATS["detected"] += len(bad)
+    # 폭주한 것만 페널티를 걸고 다시. 정상 출력은 건드리지 않는다.
+    with torch.inference_mode():
+        enc2 = tok([prompts[i] for i in bad], return_tensors="pt", padding=True,
+                   truncation=True, max_length=384).to(_CFG.local_device)
+        gen2 = mdl.generate(**enc2, max_new_tokens=_CFG.local_max_new_tokens,
+                            num_beams=1, repetition_penalty=1.15)
+    for k, i in enumerate(bad):
+        cand = tok.decode(gen2[k], skip_special_tokens=True)
+        if not _is_degenerate(cand):
+            outs[i] = cand
+            _REP_STATS["fixed_by_retry"] += 1
+        else:
+            outs[i] = _truncate_repeat(cand if len(cand) < len(outs[i]) else outs[i])
+            _REP_STATS["truncated"] += 1
+    return outs
+
+
+def _local_worker():
+    while True:
+        with _LOCAL_CV:
+            while not _LOCAL_Q:
+                _LOCAL_CV.wait(timeout=0.5)
+            if len(_LOCAL_Q) < _CFG.local_batch:
+                _LOCAL_CV.wait(timeout=_CFG.local_wait)
+            jobs, _LOCAL_Q[:] = _LOCAL_Q[:_CFG.local_batch], _LOCAL_Q[_CFG.local_batch:]
+        if not jobs:
+            continue
+        try:
+            outs = _local_generate([j[0] for j in jobs], [j[1] for j in jobs])
+            err = None
+        except Exception as exc:                  # noqa: BLE001
+            # OOM 은 배치가 커서 나는 것이므로 **한 건씩** 다시 돌리면 대개 통과한다.
+            # 그냥 실패로 두면 그 커밋의 번역이 빈 문자열이 되어 BLEU/COMET 이 오염된다
+            # (실측 2026-08-30 punct/de: OOM 61건 → 실패 18건, 5발화 손상).
+            if "CUDA out of memory" in str(exc) or exc.__class__.__name__ == "OutOfMemoryError":
+                try:
+                    import torch
+                    torch.cuda.empty_cache()
+                except Exception:  # noqa: BLE001
+                    pass
+                outs, err = [], None
+                for j in jobs:
+                    try:
+                        outs.append(_local_generate([j[0]], [j[1]])[0])
+                    except Exception as e2:       # noqa: BLE001
+                        outs, err = None, e2
+                        break
+                if outs is not None:
+                    logger.warning("[TRANS-GUARD] 로컬 번역 OOM — 배치 %d건을 1건씩 재처리해 복구",
+                                   len(jobs))
+            else:
+                outs, err = None, exc
+        for k, (_, _, box, ev) in enumerate(jobs):
+            box.append(outs[k] if outs is not None else err)
+            ev.set()
+
+
+def _local_submit(text: str, target_lang: str) -> str:
+    """워커 스레드에 넣고 결과를 기다린다(호출자는 executor 스레드다)."""
+    global _LOCAL_THREAD
+    with _LOCAL_LOCK:
+        if _LOCAL_THREAD is None:
+            _LOCAL_THREAD = threading.Thread(target=_local_worker, daemon=True)
+            _LOCAL_THREAD.start()
+    box: list = []
+    ev = threading.Event()
+    with _LOCAL_CV:
+        _LOCAL_Q.append((text, target_lang, box, ev))
+        _LOCAL_CV.notify()
+    ev.wait()
+    if isinstance(box[0], BaseException):
+        raise box[0]
+    return box[0]
+
+
+async def _call_local(session, text: str, target_lang: str, timeout) -> tuple[str, str]:
+    """`_call_v2` 와 같은 시그니처. session/timeout 은 쓰지 않는다.
+
+    감지 언어는 빈 문자열을 돌려준다 — base 의 방향 자가교정(`_maybe_fix_direction`)은
+    감지값이 비면 아무것도 하지 않으므로, 고정 방향(en→X) 평가에서는 그게 맞다.
+    """
+    loop = asyncio.get_running_loop()
+    out = await loop.run_in_executor(None, _local_submit, text, target_lang)
+    return (out or "").strip(), ""
+
+
 async def _guarded_translate(session, text: str, target_lang: str) -> tuple[str, str]:
     """재시도 + 계측을 붙인 번역. 원본 `google_translate_async` 와 같은 시그니처/반환형."""
     import aiohttp
@@ -254,7 +442,7 @@ async def _guarded_translate(session, text: str, target_lang: str) -> tuple[str,
     with _STATS._lock:
         _STATS.commits += 1
     timeout = aiohttp.ClientTimeout(total=_CFG.timeout)
-    call = _call_v2 if _CFG.backend == "v2" else _call_gtx
+    call = {"v2": _call_v2, "local": _call_local}.get(_CFG.backend, _call_gtx)
 
     last_exc: Optional[BaseException] = None
     for attempt in range(1, _CFG.retries + 1):
