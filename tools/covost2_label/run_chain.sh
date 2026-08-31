@@ -3,7 +3,7 @@
 # GPU 는 한 번에 한 모델만 쓰게 직렬화한다. 다운로드는 병렬로 따로 돈다.
 cd /home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy
 source ~/anaconda3/etc/profile.d/conda.sh && conda activate speech_ai
-export AUTOSEG_BASE_URL=http://localhost:11434/v1 OPENAI_API_KEY=local PYTHONPATH=.
+export PYTHONPATH=.
 OUT=core/meaning_segmentator/runs/covost2/sample300
 P=core/meaning_segmentator/runs/en-multi/run13/best_prompt.txt
 L=$OUT/logs
@@ -13,7 +13,7 @@ label () {
   echo "===== $1 / effort=$3 / batch6 / 20문장 ====="; date
   curl -s --max-time 1800 localhost:11434/api/generate \
     -d "{\"model\":\"$1\",\"prompt\":\"hi\",\"stream\":false,\"keep_alive\":\"24h\"}" >/dev/null
-  python tools/covost2_label/label_covost2.py --prompt $P \
+  python tools/covost2_label/label_covost2.py --provider local --prompt $P \
     --out   $OUT/labels/covost2_20_$2.jsonl \
     --cache $OUT/cache/segment_$2.json \
     --model $1 --workers 4 --limit 20 \

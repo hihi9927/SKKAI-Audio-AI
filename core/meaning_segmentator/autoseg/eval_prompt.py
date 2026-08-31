@@ -21,6 +21,7 @@ import sys
 from pathlib import Path
 
 from . import data, metrics
+from . import gateway
 from .gateway import Gateway
 from .loop import _cell, evaluate, target_is_spaced
 from .pipeline import parse_translator_id, GoogleTranslator, JsonCache, to_lang_code
@@ -41,6 +42,7 @@ def main() -> int:
                         "그 런이 이미 번역했다면 gtx 재호출이 없다")
     p.add_argument("--min-gap", type=int, default=None, help="미지정 시 기준 런에서 상속")
     p.add_argument("--model", default="gpt-5-mini")
+    gateway.add_provider_args(p)
     # 비교군도 루프와 같은 사고량으로 재야 표에 나란히 놓을 수 있다 (기준 런 config 의
     # seg_reasoning_effort 를 상속하고, 없으면 루프 기본값 low).
     # 후보 풀 하한을 곡선 격자와 **분리**한다. 검증기는 `round(어절/t_floor)−1` 개를
@@ -103,7 +105,7 @@ def main() -> int:
     prompt = Path(args.prompt).read_text(encoding="utf-8")
     label = args.label or Path(args.prompt).stem
 
-    gw = Gateway(model=args.model, budget=args.budget)
+    gw = Gateway.from_args(args, model=args.model, budget=args.budget)
     seg_cache = JsonCache(run_dir / "cache" / "segment.json")
 
     # **번역기와 백엔드는 기준 런에서 상속한다.** 다른 조합으로 재면 같은 축이 아니다.

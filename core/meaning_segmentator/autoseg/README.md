@@ -132,8 +132,11 @@ run03 재집계에서 유일하게 기울기가 살아있는 축이다 (laal 2.0
 
 ```bash
 # 의존성: pip install -r core/meaning_segmentator/requirements.txt
-# .env 에 API 키 필요 — 엔드포인트는 키 접두사로 정해진다 (`sk-` → OpenAI, 그 외 → Letsur).
-#   읽는 순서: LETSUR_API_KEY → OPENAI_API_KEY → CLAUDE_API_KEY. `AUTOSEG_BASE_URL` 이 최우선.
+# 엔드포인트는 `--provider` 하나가 정한다 (기본 letsur). 키는 그 프로바이더의 환경변수
+# **한 개**만 본다 — 환경변수 > 레포 루트 `.env`. 폴백 탐색은 없다.
+#   letsur → LETSUR_API_KEY   openai → OPENAI_API_KEY   local → 키 불필요(ollama :11434)
+#   포트가 다른 로컬 서버는 `--provider local --base-url http://호스트:포트/v1`.
+#   실제로 붙은 엔드포인트는 런의 `config.json` 에 `provider`/`api_base_url` 로 남는다.
 # CometKiwi 는 HF 게이트 모델 — 라이선스 동의 + `hf auth login` 선행
 #   (huggingface_hub 1.x 에서 huggingface-cli -> hf 로 개명됨)
 

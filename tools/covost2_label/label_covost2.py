@@ -13,6 +13,7 @@ import argparse, json, re, sys, time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from core.meaning_segmentator.autoseg import gateway
 from core.meaning_segmentator.autoseg.gateway import Gateway
 from core.meaning_segmentator.autoseg import pipeline as P
 
@@ -80,6 +81,7 @@ def main() -> int:
     # 16,000 토큰을 10.8 tok/s 로 쓰면 콜 하나가 최대 24분이다. 실측에서 15분에 잘리고
     # 재시도 5회가 전부 같은 이유로 잘려 런이 통째로 죽었다 (2026-08-31, 30문장 런).
     ap.add_argument("--timeout", type=float, default=900.0)
+    gateway.add_provider_args(ap)
     a = ap.parse_args()
 
     SPACED = True
@@ -97,7 +99,7 @@ def main() -> int:
     normalize_fn = lambda t, o: P.normalize_tags(o, SPACED, None, min_gap=a.min_gap)
 
     P.SEG_MAX_TOKENS = a.max_tokens
-    gw = Gateway(model=a.model, budget=a.budget, timeout=a.timeout)
+    gw = Gateway.from_args(a, model=a.model, budget=a.budget, timeout=a.timeout)
     cache = LiveCache(Path(a.cache), every=a.cache_every)
     first: list = []
     t0 = time.time()

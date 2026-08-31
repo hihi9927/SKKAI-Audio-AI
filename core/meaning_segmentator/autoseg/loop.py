@@ -23,6 +23,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from . import agents, data, metrics, noise_floor
+from . import gateway
 from .gateway import BudgetExceeded, Gateway
 from .pipeline import (GoogleTranslator, JsonCache, blocks_scoring,
                        coverage_need, normalize_tags, round_half_up, segment_batch,
@@ -902,6 +903,7 @@ def main() -> int:
     p.add_argument("--pair-id", default=None,
                    help="런 디렉토리 이름. 미지정 시 언어명에서 생성")
     p.add_argument("--model", default="gpt-5-mini")
+    gateway.add_provider_args(p)
     p.add_argument("--judge-model", default=None,
                    help="판정자 모델. 미지정 시 --model. 분절기와 다른 모델을 쓰면 순환이 준다")
     # 비용의 98% 가 분절 호출의 사고 토큰이다 (run05 실측). low 는 medium 대비 2.7배
@@ -1240,8 +1242,8 @@ def main() -> int:
             return 2
     run_dir.mkdir(parents=True, exist_ok=True)
 
-    gw = Gateway(model=args.model, budget=args.budget,
-                 reasoning_effort=args.agent_reasoning_effort)
+    gw = Gateway.from_args(args, model=args.model, budget=args.budget,
+                           reasoning_effort=args.agent_reasoning_effort)
     seg_cache = JsonCache(run_dir / "cache" / "segment.json")
     translator = None
     judge_gw = None
@@ -1360,6 +1362,10 @@ def main() -> int:
             (run_dir / "config.json").write_text(json.dumps({
             **vars(args), "t_grid": t_grid, "final_t_grid": final_grid, "main_t": main_t,
             "translator_id": translator_id, "tgt_spaced": tgt_spaced,
+            # `--provider` 는 `vars(args)` 로 들어가지만 `--base-url` 미지정이면 None 이라
+            # **실제로 어디에 붙었는지가 안 남는다.** 해석된 엔드포인트를 따로 박는다.
+            # 판정자 게이트웨이는 같은 `--provider` 로 만들어지므로 따로 안 남긴다.
+            "api_base_url": gw.base_url,
             "adequacy_model": metrics.QE_CHECKPOINTS[args.adequacy_backend],
             "consistency_model": getattr(consistency, "model_name",
                                          args.consistency_backend),
@@ -1586,8 +1592,9 @@ def main() -> int:
         # 판정자를 다른 모델로 쓰면 별도 Gateway 가 생긴다. 그 사용량이 비용 보고와
         # 예산 가드에서 빠지면 안 되므로 참조를 들고 합산한다.
         if not args.no_judge and args.judge_model:
-            judge_gw = Gateway(model=args.judge_model, budget=args.budget,
-                               reasoning_effort=args.agent_reasoning_effort)
+            judge_gw = Gateway.from_args(args, model=args.judge_model,
+                                         budget=args.budget,
+                                         reasoning_effort=args.agent_reasoning_effort)
         judge = None if args.no_judge else agents.Judge(judge_gw or gw)
 
         def usage_total() -> dict:

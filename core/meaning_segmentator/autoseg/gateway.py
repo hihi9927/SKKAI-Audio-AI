@@ -33,65 +33,73 @@ from . import tracing
 
 LETSUR_BASE_URL = "https://gw.letsur.ai/v1"
 OPENAI_BASE_URL = "https://api.openai.com/v1"
+LOCAL_BASE_URL = "http://localhost:11434/v1"   # ollama 기본 포트
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 
 # `chat(reasoning_effort=...)` 의 기본값. `None` 은 "파라미터를 아예 빼라"(=모델 기본
 # 사고량)라는 **명시적 지시**이므로, "지정 안 함"과 구분할 센티널이 따로 필요하다.
 _INHERIT = object()
 
-_KEY_NAMES = ("LETSUR_API_KEY", "OPENAI_API_KEY", "CLAUDE_API_KEY")
+# ── 프로바이더 ────────────────────────────────────────────────────────────
+# **어디로 붙을지는 `--provider` 하나가 정한다.** 종전에는 환경변수를 순서대로 뒤져
+# (`LETSUR_API_KEY` → `OPENAI_API_KEY` → `CLAUDE_API_KEY`) 먼저 잡히는 키로 엔드포인트를
+# 역추론하고, `AUTOSEG_BASE_URL` 이 있으면 그걸로 덮었다. 문제가 셋이었다:
+#
+#   - `.env` 에 키가 둘 이상이면 **명령줄만 봐서는 어디로 갔는지 알 수 없다.** 이 레포의
+#     `.env` 가 실제로 그렇다 (LETSUR + OPENAI) — 늘 앞의 것이 이겼다.
+#   - 키를 하나 **추가**한 것만으로 다음 런의 상대가 조용히 바뀐다.
+#   - `config.json` 에 안 남아 사후 확인이 불가능했다.
+#
+# 이제 프로바이더가 키 환경변수·엔드포인트·API 방언을 함께 정하고, 그 값이 런 기록에
+# 남는다. 폴백은 없다 — 지정한 프로바이더의 키가 없으면 그냥 죽는다.
 
 
-def load_api_key_with_source(env_path: Path | None = None) -> tuple[str, str]:
-    """API 키와 **그 키가 온 환경변수 이름**을 함께 돌려준다. 환경변수 > .env.
-
-    이름을 같이 넘기는 이유는 엔드포인트 선택 때문이다 (`_default_base_url`).
-    종전에는 키 접두사(`sk-`)로 골랐는데, **Letsur 키도 `sk-` 로 시작하는 것이
-    있어서** 그 휴리스틱이 조용히 틀린다 — Letsur 키를 OpenAI 로 보내 401 이 나고,
-    오류 메시지로는 키가 틀린 건지 상대가 틀린 건지 구분이 안 된다.
-    """
-    for name in _KEY_NAMES:
-        if os.environ.get(name):
-            return os.environ[name], name
-    env_path = env_path or (_REPO_ROOT / ".env")
-    if not env_path.exists():
-        raise RuntimeError(f"API 키를 찾을 수 없습니다. {env_path} 또는 {'/'.join(_KEY_NAMES)} 환경변수 필요.")
-    found: dict[str, str] = {}
-    for line in env_path.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if line.startswith("#") or "=" not in line:
-            continue
-        k, v = line.split("=", 1)
-        if k.strip() in _KEY_NAMES:
-            found[k.strip()] = v.strip().strip('"').strip("'")
-    for name in _KEY_NAMES:
-        if found.get(name):
-            return found[name], name
-    raise RuntimeError(f"{env_path} 에 {'/'.join(_KEY_NAMES)} 가 없습니다.")
+@dataclass(frozen=True)
+class Provider:
+    base_url: str
+    key_env: str | None      # None = 키가 필요 없다 (로컬 서버)
+    # OpenAI 방언인가. `max_completion_tokens` 사용 여부와 `_PRICES` 기반 비용 계산이
+    # 여기 걸린다. Letsur 는 `estimated_cost` 를 응답에 실어 주므로 표가 필요 없고,
+    # 로컬 서버는 `max_tokens` 를 받고 비용이 0 이다.
+    openai_dialect: bool
 
 
-def load_api_key(env_path: Path | None = None) -> str:
-    return load_api_key_with_source(env_path)[0]
-
-
-# 어느 환경변수에서 온 키인가로 엔드포인트를 고른다. **접두사보다 이게 확실하다** —
-# 이 레포의 `CLAUDE_API_KEY` 는 이력상의 이름이고 Letsur 게이트웨이 키를 담는 자리다
-# (Anthropic 키가 아니다). Letsur 키도 `sk-` 로 시작할 수 있어 접두사는 못 믿는다.
-_BASE_URL_BY_KEY_NAME = {
-    "LETSUR_API_KEY": LETSUR_BASE_URL,
-    "CLAUDE_API_KEY": LETSUR_BASE_URL,
-    "OPENAI_API_KEY": OPENAI_BASE_URL,
+PROVIDERS: dict[str, Provider] = {
+    "letsur": Provider(LETSUR_BASE_URL, "LETSUR_API_KEY", False),
+    "openai": Provider(OPENAI_BASE_URL, "OPENAI_API_KEY", True),
+    # ollama 등 OpenAI 호환 로컬 서버. 포트가 다르면 `--base-url` 로 바꾼다.
+    "local": Provider(LOCAL_BASE_URL, None, False),
 }
+DEFAULT_PROVIDER = "letsur"
 
 
-def _default_base_url(api_key: str, key_name: str | None = None) -> str:
-    """`AUTOSEG_BASE_URL` > 키가 온 환경변수 이름 > 접두사 휴리스틱 순."""
-    override = os.environ.get("AUTOSEG_BASE_URL")
-    if override:
-        return override
-    if key_name and key_name in _BASE_URL_BY_KEY_NAME:
-        return _BASE_URL_BY_KEY_NAME[key_name]
-    return OPENAI_BASE_URL if api_key.startswith("sk-") else LETSUR_BASE_URL
+def load_api_key(key_env: str, env_path: Path | None = None) -> str:
+    """`key_env` 환경변수 > 레포 루트 `.env` 의 **같은 이름**. 다른 이름은 안 본다."""
+    if os.environ.get(key_env):
+        return os.environ[key_env]
+    env_path = env_path or (_REPO_ROOT / ".env")
+    if env_path.exists():
+        for line in env_path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if line.startswith("#") or "=" not in line:
+                continue
+            k, v = line.split("=", 1)
+            if k.strip() == key_env:
+                v = v.strip().strip('"').strip("'")
+                if v:
+                    return v
+    raise RuntimeError(f"{key_env} 를 찾을 수 없습니다 — 환경변수 또는 {env_path} 에 넣으세요.")
+
+
+def add_provider_args(p) -> None:
+    """`--provider` / `--base-url`. Gateway 를 만드는 CLI 는 전부 이걸 쓴다 —
+    한 군데서 붙여야 인자 이름과 기본값이 갈라지지 않는다."""
+    p.add_argument("--provider", default=DEFAULT_PROVIDER, choices=sorted(PROVIDERS),
+                   help="LLM 엔드포인트. 키 환경변수도 이게 정한다 "
+                        "(letsur=LETSUR_API_KEY, openai=OPENAI_API_KEY, local=키 불필요). "
+                        f"기본 {DEFAULT_PROVIDER}")
+    p.add_argument("--base-url", default=None,
+                   help="프로바이더 기본 엔드포인트 대신 쓸 URL (로컬 서버 포트 등)")
 
 
 # OpenAI 단가 (USD / 1M 토큰, 2026-08 developers.openai.com/api/docs/pricing).
@@ -222,6 +230,7 @@ class BudgetExceeded(RuntimeError):
 class Gateway:
     def __init__(
         self,
+        provider: str = DEFAULT_PROVIDER,
         api_key: str | None = None,
         base_url: str | None = None,
         model: str = "gpt-5-mini",
@@ -237,17 +246,24 @@ class Gateway:
         timeout: float = 900.0,
         max_retries: int = 5,
     ):
-        key_name = None
+        if provider not in PROVIDERS:
+            raise ValueError(f"모르는 provider: {provider!r}. {sorted(PROVIDERS)} 중 하나여야 한다")
+        spec = PROVIDERS[provider]
+        self.provider = provider
         if api_key is None:
-            api_key, key_name = load_api_key_with_source()
+            # 키가 필요 없는 프로바이더(로컬)에도 Authorization 헤더는 실어 보낸다 —
+            # ollama 는 무시하고, 인증을 켠 로컬 서버는 자기 키를 환경변수로 받는다.
+            api_key = load_api_key(spec.key_env) if spec.key_env else "local"
         self.api_key = api_key
-        self.base_url = (base_url or _default_base_url(self.api_key, key_name)).rstrip("/")
+        self.base_url = (base_url or spec.base_url).rstrip("/")
         self.model = model
         self.embed_model = embed_model
         self.budget = budget
         self.max_retries = max_retries
         self.reasoning_effort = reasoning_effort
-        self.is_openai = self.base_url.startswith(OPENAI_BASE_URL)
+        # **base_url 이 아니라 프로바이더가 정한다.** URL 접두사로 보면 `--base-url` 로
+        # OpenAI 호환 프록시를 물렸을 때 방언 판정이 조용히 뒤집힌다.
+        self.is_openai = spec.openai_dialect
         self._warned_temperature = False
         self._warned_reasoning = False
         # **이 플래그는 게이트웨이 전체에 걸린다.** 에이전트 호출 때문에 한 번 서면
@@ -270,6 +286,11 @@ class Gateway:
             },
             limits=httpx.Limits(max_connections=16, max_keepalive_connections=16),
         )
+
+    @classmethod
+    def from_args(cls, args, **kw) -> "Gateway":
+        """`add_provider_args` 로 받은 인자를 그대로 넘겨 만든다."""
+        return cls(provider=args.provider, base_url=args.base_url, **kw)
 
     def close(self) -> None:
         self._client.close()
@@ -295,7 +316,16 @@ class Gateway:
                 return name in (resp.text or "")
             if (j.get("error") or {}).get("param") == name:
                 return True
-            return name in json.dumps(j, ensure_ascii=False)
+            blob = json.dumps(j, ensure_ascii=False)
+            if name in blob:
+                return True
+            # ollama 는 파라미터 이름을 아예 안 쓰고 기능 이름으로 거부한다:
+            # `{"error":{"message":"\"granite-16k\" does not support thinking"}}`.
+            # 이름만 찾던 종전 코드는 이 400 을 못 알아보고 5회 재시도 뒤 런을 죽였다
+            # (granite4 / qwen3-next 라벨링이 그렇게 죽었다).
+            if name == "reasoning_effort" and "does not support thinking" in blob:
+                return True
+            return False
 
         last_err: Exception | None = None
         for attempt in range(self.max_retries):

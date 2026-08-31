@@ -32,6 +32,7 @@ from collections import Counter
 from pathlib import Path
 
 from . import agents
+from . import gateway
 from .gateway import Gateway
 from .pipeline import JsonCache
 
@@ -180,6 +181,7 @@ def main() -> int:
                    choices=["minimal", "low", "medium", "high", "none"])
     p.add_argument("--repeats", type=int, default=3, help="안정성 확인용 반복 횟수")
     p.add_argument("--budget", type=float, default=1.0)
+    gateway.add_provider_args(p)
     p.add_argument("--cases", default=str(CASES_PATH))
     p.add_argument("--out", default=None, help="리포트 경로 (기본 runs/judge_validity/report.md)")
     p.add_argument("--skip-judge", action="store_true",
@@ -188,9 +190,9 @@ def main() -> int:
     args = p.parse_args()
 
     cases = json.loads(Path(args.cases).read_text(encoding="utf-8"))["cases"]
-    gw = Gateway(model=args.model, budget=args.budget,
-                 reasoning_effort=(None if args.reasoning_effort == "none"
-                                   else args.reasoning_effort))
+    gw = Gateway.from_args(args, model=args.model, budget=args.budget,
+                           reasoning_effort=(None if args.reasoning_effort == "none"
+                                             else args.reasoning_effort))
     judge = agents.Judge(gw)
 
     results: list[dict] = []
