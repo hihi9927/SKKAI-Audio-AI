@@ -1,0 +1,53 @@
+===== llama3.3:70b / prompt_en_ranked_v2 / batch6 / workers4 =====
+Tue Sep  1 12:21:01 AM KST 2026
+프롬프트: /home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/core/meaning_segmentator/utils/prompt_en_ranked_v2.txt (12258자)
+출력 파일 생성: /home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/evaluation/DailyTalk/results/covost2_sample300_llama33_ranked.json
+분절 시작: 20개 / 요청 4건 (batch=6, workers=4), model=llama3.3:70b
+[1/20] en_de_0a9a55afdba4: The Internet is built upon many protocols <SEG:1> which complement each other perfectly.
+[2/20] en_de_9ad638b0fd87: Please don't feed the pigeons, <SEG:1> or else they will haunt you forever!
+[3/20] en_de_cac6f89d6357: I'm going to become bitter <SEG:2> and distrustful of people because one person <SEG:1> betrayed me.
+[4/20] en_de_384e6d463505: It is possible that Aristander's writings <SEG:2> were, instead, a product of an Aristandrian school. <SEG:1>
+[5/20] en_de_63fc7cb9c669: A man in a white shirt carries a drum <SEG:1> as he talks to two other men.
+[6/20] en_de_cace1e35c594: """Well, why did you say that I don't know about love?"" <SEG:1> the sun asked the boy."
+  ── 중간 저장 (6/20) ──
+[7/20] en_de_b000ee18117c: I saw astonishment and horror on the faces of the people around me.
+[8/20] en_de_1631d224c9de: """Do you know someone here who cures people's illnesses?"" <SEG:1> the boy asked."
+[9/20] en_de_82add551d3e9: I'm trying to explain to my mother how to get pictures off her phone.
+[10/20] en_de_0a81889df470: It's almost as if he had been here and left his mark, <SEG:1> he thought.
+[11/20] en_de_090d4223c82b: The area was swirling in dust so intense that it hid the moon from view.
+[12/20] en_de_4d71168f6d40: The shop was busy, <SEG:1> and the man asked the shepherd to wait until the afternoon.
+  ── 중간 저장 (12/20) ──
+[13/20] en_de_158c38dbec2b: 'm all about those invisible cosmic connections <SEG:1> that transcend time and distance.
+[14/20] en_de_7bb24c6949cf: Didn't you know <SEG:1> that she took out a mortgage for her second apartment?
+[15/20] en_de_a83aa5c501d7: How can I tell you <SEG:1> that you are fit enough to join the camp?
+[16/20] en_de_db52527e30fd: He wrote numerous masses, <SEG:2> many with basso continuo, <SEG:1> showing his familiarity with contemporary practice.
+[17/20] en_de_c6480069c0b4: I'm looking forward to having more stability <SEG:2> in my position and being done <SEG:1> with the whole process.
+[18/20] en_de_4f735c91ab81: He put a sign on the door, <SEG:1> and they went to a small cafe nearby.
+  ── 중간 저장 (18/20) ──
+[19/20] en_de_a7a00f6e224d: And the leader <SEG:1> posted armed sentinels at the fringes of the group.
+[20/20] en_de_6aacaf263ed8: When there's a loss of cabin pressure, <SEG:1> oxygen masks will automatically drop down.
+분절 완료: 20/20
+[1/20] 건너뜀 (이미 처리됨): en_de_0a9a55afdba4
+[2/20] 건너뜀 (이미 처리됨): en_de_9ad638b0fd87
+[3/20] 건너뜀 (이미 처리됨): en_de_cac6f89d6357
+[4/20] 건너뜀 (이미 처리됨): en_de_384e6d463505
+[5/20] 건너뜀 (이미 처리됨): en_de_63fc7cb9c669
+[6/20] 건너뜀 (이미 처리됨): en_de_cace1e35c594
+[7/20] 건너뜀 (이미 처리됨): en_de_b000ee18117c
+[8/20] 건너뜀 (이미 처리됨): en_de_1631d224c9de
+[9/20] 건너뜀 (이미 처리됨): en_de_82add551d3e9
+[10/20] 건너뜀 (이미 처리됨): en_de_0a81889df470
+[11/20] 건너뜀 (이미 처리됨): en_de_090d4223c82b
+[12/20] 건너뜀 (이미 처리됨): en_de_4d71168f6d40
+[13/20] 건너뜀 (이미 처리됨): en_de_158c38dbec2b
+[14/20] 건너뜀 (이미 처리됨): en_de_7bb24c6949cf
+[15/20] 건너뜀 (이미 처리됨): en_de_a83aa5c501d7
+[16/20] 건너뜀 (이미 처리됨): en_de_db52527e30fd
+[17/20] 건너뜀 (이미 처리됨): en_de_c6480069c0b4
+[18/20] 건너뜀 (이미 처리됨): en_de_4f735c91ab81
+[19/20] 건너뜀 (이미 처리됨): en_de_a7a00f6e224d
+[20/20] 건너뜀 (이미 처리됨): en_de_6aacaf263ed8
+
+완료. 저장: /home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/evaluation/DailyTalk/results/covost2_sample300_llama33_ranked.json
+Tue Sep  1 12:25:36 AM KST 2026
+LLAMA33DONE
