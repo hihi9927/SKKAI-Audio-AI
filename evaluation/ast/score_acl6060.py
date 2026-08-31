@@ -202,12 +202,42 @@ def score_one(run_dir: Path, manifest: Dict[str, dict], lang: str,
                 ftl_ca.append(h.computational_aware_delays[0] - r.start_time)
             reseg_pairs.append({"utt_id": row["utt_id"], "seg_id": s["seg_id"],
                                 "src": s["src"], "ref": r.content, "hyp": h.final_text})
-            per_sentence.append({"seg_id": s["seg_id"], "n_units": len(h.ideal_delays)})
+            # 문장별 LAAL — `_do_score` 는 평균만 돌려주므로 같은 식(`_sentence_level_laal`)
+            # 을 문장마다 한 번 더 부른다. **재구현이 아니라 같은 메서드 호출**이다.
+            # 평균이 `stream_laal_sec` 과 일치하는지 아래에서 검산하므로, 어긋나면
+            # 즉시 터진다. 평균만 보면 꼬리가 숨는다 — 분포를 봐야 seg 를 제대로 읽는다.
+            _laal = _laal_ca = None
+            if h.ideal_delays:
+                _tl = len(text_items(r.content, unit))
+                _d = [x - r.start_time for x in h.ideal_delays]
+                _dc = [x - r.start_time for x in h.computational_aware_delays]
+                _laal = StreamLaal._sentence_level_laal(_d, r.duration, _tl)
+                _laal_ca = StreamLaal._sentence_level_laal(_dc, r.duration, _tl)
+            per_sentence.append({
+                "utt_id": row["utt_id"], "seg_id": s["seg_id"],
+                "n_units": len(h.ideal_delays),
+                "ref_units": len(text_items(r.content, unit)),
+                "ref_start_sec": round(r.start_time, 3),
+                "ref_dur_sec": round(r.duration, 3),
+                "laal_sec": round(_laal, 4) if _laal is not None else None,
+                "laal_ca_sec": round(_laal_ca, 4) if _laal_ca is not None else None,
+            })
 
     # ── 지연: 공식 구현에 위임 ───────────────────────────────────────────────
     warn = io.StringIO()
     with contextlib.redirect_stderr(warn):
         scores = scorer._do_score(samples)
+
+    # 검산: 문장별 LAAL 의 평균은 공식 구현의 집계와 일치해야 한다. 어긋나면
+    # 우리가 문장을 잘못 짝지었다는 뜻이므로 조용히 넘기지 않는다.
+    _sl = [x["laal_sec"] for x in per_sentence if x["laal_sec"] is not None]
+    if _sl:
+        _diff = abs(statistics.mean(_sl) - scores.ideal_latency)
+        if _diff > 1e-3:
+            raise SystemExit(
+                f"!! 문장별 LAAL 평균({statistics.mean(_sl):.4f})이 집계"
+                f"({scores.ideal_latency:.4f})와 다르다 — 문장 짝짓기를 확인할 것\n"
+                f"   {run_dir}")
 
     # ── 보조: null 에 벌점을 준 변형 ────────────────────────────────────────
     # 주지표(제외)는 어려운 문장을 안 내면 지연이 좋아지는 selection bias 가 있다.
@@ -264,6 +294,7 @@ def score_one(run_dir: Path, manifest: Dict[str, dict], lang: str,
             "notes": diag_total.notes[:10],
         },
         "_reseg": reseg_pairs,
+        "_per_sentence": per_sentence,
     }
 
 
@@ -319,12 +350,16 @@ def main() -> int:
 
     out = Path(a.out) if a.out else root / f"streamlaal_{a.split}_{a.tag}.json"
     reseg = {f"{r['axis']}/{r['lang']}": r.pop("_reseg") for r in results}
+    sents = {f"{r['axis']}/{r['lang']}": r.pop("_per_sentence") for r in results}
     out.write_text(json.dumps({"tag": a.tag, "split": a.split, "results": results},
                               ensure_ascii=False, indent=2), encoding="utf-8")
     (out.parent / f"reseg_{a.split}_{a.tag}.json").write_text(
         json.dumps(reseg, ensure_ascii=False), encoding="utf-8")
     print(f"\n저장: {out}")
     print(f"      {out.parent / f'reseg_{a.split}_{a.tag}.json'}  (COMET 채점용)")
+    (out.parent / f"laal_sentences_{a.split}_{a.tag}.json").write_text(
+        json.dumps(sents, ensure_ascii=False), encoding="utf-8")
+    print(f"      {out.parent / f'laal_sentences_{a.split}_{a.tag}.json'}  (문장별 LAAL 분포)")
 
     if a.baseline_out:
         Path(a.baseline_out).write_text(json.dumps(
