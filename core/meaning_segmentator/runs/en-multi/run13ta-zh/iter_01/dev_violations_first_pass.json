@@ -1,0 +1,310 @@
+[
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "Cinque Terre, which means Five Lands, comprises the five small coastal villages of Riomaggiore, Manarola, Corniglia, Vernazza and Monterosso located in the Italian region of Liguria.",
+    "seg_text": "Cinque Terre, which means Five Lands, <SEG:2> comprises the five small coastal villages <SEG:1> of Riomaggiore, Manarola, Corniglia, <SEG:4> Vernazza and Monterosso <SEG:3> located in the Italian <SEG:5> region of Liguria.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "The company hopes to diversify its profit sources and gain popularity in areas where Skype holds a strong position, such as China, Eastern Europe, and Brazil.",
+    "seg_text": "The company hopes to diversify its profit sources <SEG:2> and gain popularity in areas where <SEG:4> Skype holds a strong position, <SEG:1> such as China, <SEG:3> Eastern Europe and Brazil.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 6개 필요",
+    "text": "The company hopes to diversify its profit sources and gain popularity in areas where Skype holds a strong position, such as China, Eastern Europe, and Brazil.",
+    "seg_text": "The company hopes to diversify its profit sources <SEG:2> and gain popularity in areas where <SEG:4> Skype holds a strong position, <SEG:1> such as China, <SEG:3> Eastern Europe and Brazil.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "This way, you will tire yourself out as little as possible. Remember there's no need to hit the keys with a lot of force for extra volume like on the piano.",
+    "seg_text": "This way, you will <SEG:5> tire yourself out <SEG:4> as little as possible. <SEG:1> Remember there's no need to hit the keys <SEG:6> with a lot of force <SEG:3> for extra volume <SEG:2> like on the piano.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "We experience time as a series of events passing from the future through the present to the past.",
+    "seg_text": "We experience time <SEG:1> as a series <SEG:3> of events passing from the future through the present <SEG:2> to the past.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "However, the discovery of his tomb in 1922 made him a celebrity. While many tombs of the past were robbed, this tomb was left virtually undisturbed.",
+    "seg_text": "However, the discovery <SEG:5> of his tomb <SEG:4> in 1922 made <SEG:3> him a celebrity. <SEG:1> While many tombs of the past were robbed, <SEG:2> this tomb was left virtually undisturbed.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Combined with its relative inaccessibility, \"Timbuktu\" has come to be used as a metaphor for exotic, distant lands.",
+    "seg_text": "Combined with its relative inaccessibility, <SEG:2> \"Timbuktu\" has come to be used <SEG:3> as a metaphor <SEG:1> for exotic, distant lands.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 6개 필요",
+    "text": "If you visit Greenland during cold seasons (considering that the further north you go, the colder it will be), it is essential to bring warm enough clothing.",
+    "seg_text": "If you visit Greenland <SEG:2> during cold seasons (considering that the further north you go, the colder it will be), <SEG:1> it is essential to <SEG:3> bring warm enough clothing.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Robert Hooke, a biologist from England, saw small squares in cork with a microscope.",
+    "seg_text": "Robert Hooke, a biologist from England, <SEG:2> saw small squares in cork <SEG:1> with a microscope.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Had the Allies failed, Germany probably would have been able to conquer Britain as it had the rest of Europe.",
+    "seg_text": "Had the Allies failed, <SEG:1> Germany probably would have been able <SEG:3> to conquer Britain <SEG:2> as it had the rest of Europe.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "One of the panes finally broke, and they started to get out by the window,\" said survivor Franciszek Kowal.",
+    "seg_text": "One of the panes finally broke, <SEG:1> and they started <SEG:4> to get out <SEG:3> by the window, <SEG:2> said survivor Franciszek Kowal.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 3개 필요",
+    "text": "European Turkey (eastern Thrace or Rumelia in the Balkan peninsula) includes 3% of the country.",
+    "seg_text": "European Turkey (eastern Thrace or Rumelia in the Balkan peninsula) <SEG:1> includes 3% of the country.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "The games kicked off at 10:00am with great weather and apart from mid morning drizzle which quickly cleared up, it was a perfect day for 7's rugby.",
+    "seg_text": "The games kicked off at 10:00am <SEG:1> with great weather <SEG:3> and apart from mid morning drizzle <SEG:4> which quickly cleared up, <SEG:2> it was a perfect <SEG:5> day for 7's rugby.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "The U.N. also hopes to finalize a fund to help countries affected by global warming to cope with the impacts.",
+    "seg_text": "The U.N. also hopes <SEG:3> to finalize a fund to help <SEG:2> countries affected by global warming <SEG:1> to cope with the impacts.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Although in theory they can take place annually (so long as they are in different countries), in practice they are not.",
+    "seg_text": "Although in theory <SEG:2> they can take place annually ( <SEG:3> so long as they are in different countries), <SEG:1> in practice they are not.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Although in theory they can take place annually (so long as they are in different countries), in practice they are not.",
+    "seg_text": "Although in theory <SEG:2> they can take place annually ( <SEG:3> so long as they are in different countries), <SEG:1> in practice they are not.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "All animals that originally arrived in the islands came here either by swimming, flying or floating.",
+    "seg_text": "All animals that originally arrived <SEG:2> in the islands <SEG:1> came here either by swimming, flying or floating.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "However, a nationwide road network is not economically viable for just a handful of cars, so new methods of production are developed to reduce the cost of car ownership.",
+    "seg_text": "However, a nationwide road network is <SEG:4> not economically viable <SEG:3> for just a handful of cars, <SEG:2> so new methods of production are <SEG:5> developed to reduce the <SEG:1> cost of car ownership.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "Part of its charm is the lack of visible corporate development. Paths, trains and boats connect the villages, and cars cannot reach them from the outside.",
+    "seg_text": "Part of its charm is <SEG:5> the lack of visible corporate development. <SEG:1> Paths, trains and boats <SEG:3> connect the villages, <SEG:2> and cars cannot reach them <SEG:4> from the outside.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 9개 필요",
+    "text": "While you may not need a visa for short visits to certain countries as a tourist or for business, going there as an international student generally requires a longer stay than going there just as a casual tourist.",
+    "seg_text": "While you may not need a visa <SEG:6> for short visits <SEG:4> to certain countries <SEG:1> as a tourist <SEG:5> or for business, <SEG:2> going there as an international student <SEG:3> generally requires a longer stay than going there just as a casual tourist.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Despite his comments he said he will be supporting the British competitors at the 2012 Olympics being held in London.",
+    "seg_text": "Despite his comments <SEG:3> he will be supporting <SEG:2> the British competitors <SEG:1> at the 2012 Olympics <SEG:4> being held in London.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "He even suggests that such abilities in interpreting human behavior may be shared by animals such as domestic dogs.",
+    "seg_text": "He even suggests <SEG:3> that such abilities in interpreting human behavior <SEG:1> may be shared <SEG:2> by animals such as domestic dogs.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 9개 — 최소 11개 필요",
+    "text": "Police said Lo Piccolo had the upper hand because he had been Provenzano's right-hand man in Palermo and his greater experience won him the respect of the older generation of bosses as they pursued Provenzano's policy of keeping as low as possible while strengthening their power network.",
+    "seg_text": "Police said Lo <SEG:9> Piccolo had the upper hand <SEG:1> because he had <SEG:8> been Provenzano's right-hand man in Palermo <SEG:3> and his greater experience won him the respect of the <SEG:7> older generation of bosses <SEG:2> as they pursued <SEG:4> Provenzano's policy of keeping <SEG:5> as low as possible <SEG:6> while strengthening their power network.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "For example, “learning” and “socialization” are suggested as important motivations for Internet use (James et al., 1995).",
+    "seg_text": "For example, “learning” and “socialization” <SEG:1> are suggested as important motivations <SEG:2> for Internet use (James et al., 1995).",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "General James Ewing would take 700 militia across the river at Trenton Ferry, seize the bridge over the Assunpink Creek and prevent any enemy troops from escaping.",
+    "seg_text": "General James Ewing would take 700 militia <SEG:5> across the river <SEG:3> at Trenton Ferry, <SEG:2> seize the bridge <SEG:4> over the Assunpink Creek <SEG:1> and prevent any enemy troops from escaping.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "Technology offers the solution with virtual field trips. Students can look at museum artifacts, visit an aquarium, or admire beautiful art while sitting with their class.",
+    "seg_text": "Technology offers the solution <SEG:5> with virtual field trips. <SEG:1> Students can look at museum artifacts, <SEG:2> visit an aquarium, <SEG:3> or admire beautiful art <SEG:4> while sitting with their class.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Jardín de la Unión. This space was built as the atrium for a 17th-century convent, of which the Templo de San Diego is the sole surviving building.",
+    "seg_text": "Jardín de la Unión. <SEG:1> This space was built <SEG:2> as the atrium <SEG:4> for a 17th-century convent, <SEG:3> of the Templo de San Diego is the <SEG:5> sole surviving building.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "Jardín de la Unión. This space was built as the atrium for a 17th-century convent, of which the Templo de San Diego is the sole surviving building.",
+    "seg_text": "Jardín de la Unión. <SEG:1> This space was built <SEG:2> as the atrium <SEG:4> for a 17th-century convent, <SEG:3> of the Templo de San Diego is the <SEG:5> sole surviving building.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 3개 필요",
+    "text": "The Sundarbans cover an area of 3,850 km², of which about one-third is covered in water/marsh areas.",
+    "seg_text": "The Sundarbans cover an area of 3,850 <SEG:1> km², of which about one-third is covered in water/marsh areas.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Winter sports are most popular in the Northern regions, with Italians competing in international games and Olympic events.",
+    "seg_text": "Winter sports are most popular <SEG:1> in the Northern regions, <SEG:2> with Italians competing in international games <SEG:3> and Olympic events.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Coffee is one of the world's most traded commodities, and you can probably find many types in your home region.",
+    "seg_text": "Coffee is one of the world's <SEG:3> most traded commodities, <SEG:1> and you can probably find many types <SEG:2> in your home region.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Most of the temples do have an Annual festival starting from November end to Mid of May, which varies according to each temple's annual calendar.",
+    "seg_text": "Most of the temples do <SEG:4> have an Annual festival <SEG:3> starting from November end to Mid of May, <SEG:1> which varies according to each <SEG:2> temple's annual calendar.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "The AI ​​system is now often used in the fields of economics, medicine, engineering and the military, as has been built in several home computer and video game software applications.",
+    "seg_text": "The AI system <SEG:7> is now often used in the fields <SEG:2> of economics, medicine, <SEG:3> engineering and the military, <SEG:1> as has been built <SEG:4> in several home <SEG:5> computer and video <SEG:6> game software applications.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Hindi and Urdu are similar in vocabulary but different in script; in everyday conversations, speakers of both languages can usually understand each other.",
+    "seg_text": "Hindi and Urdu are similar in vocabulary <SEG:2> but different in script; <SEG:1> in everyday conversations, <SEG:3> speakers of both languages <SEG:4> can usually understand each other.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 8개 필요",
+    "text": "Mysticism can be distinguished from other forms of religious belief and worship by its emphasis on the direct personal experience of a unique state of consciousness, particularly those of a peaceful, insightful, blissful, or even ecstatic character.",
+    "seg_text": "Mysticism can be distinguished from other forms of religious belief and worship <SEG:1> by its emphasis <SEG:3> on the direct personal <SEG:4> experience of a unique <SEG:5> state of consciousness, particularly those <SEG:6> of a peaceful, <SEG:2> insightful, blissful, or <SEG:7> even ecstatic character.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "This type of manager has difficulty making unpopular decisions, performing disciplinary action, performance evaluations, assigning responsibility, and holding people accountable.",
+    "seg_text": "This type of manager <SEG:3> has difficulty making unpopular decisions, <SEG:1> performing disciplinary action, performance evaluations, <SEG:2> assigning responsibility, and holding people accountable.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 8개 필요",
+    "text": "These bosses had been reined in by Provenzano when he put an end to the Riina-driven war against the state that claimed the lives of Mafia crusaders Giovanni Falcone and Paolo Borsellino in 1992.\"",
+    "seg_text": "These bosses had <SEG:7> been reined in by Provenzano <SEG:2> when he put an end <SEG:1> to the Riina-driven war <SEG:3> against the state <SEG:4> that claimed the lives <SEG:5> of Mafia crusaders <SEG:6> Giovanni Falcone and Paolo Borsellino in 1992.\"",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "After the fire, the fortress was preserved and protected, remaining to be one of Bhutan's most sensational attractions.",
+    "seg_text": "After the fire, <SEG:2> the fortress was <SEG:3> preserved and protected, <SEG:1> remaining to be one of Bhutan's most sensational attractions.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 8개 필요",
+    "text": "Germany was a common enemy in World War 2, leading to cooperation between the USSR and USA. With the end of the war the clashes of system, process and culture led to the countries falling out.",
+    "seg_text": "Germany was a common enemy <SEG:5> in World War 2, <SEG:4> leading to cooperation <SEG:6> between the USSR and USA. <SEG:1> With the end of the war <SEG:3> the clashes of system, <SEG:7> process and culture <SEG:2> led to the countries falling out.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "The tourist season for the hill stations generally peaks during the Indian summer.",
+    "seg_text": "The tourist season for the hill stations generally peaks <SEG:1> during the Indian summer.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "The tiger is in the same group (Genus Panthera) as lions, leopards, and jaguars. These four cats are the only ones who can roar.",
+    "seg_text": "The tiger is in the same group (Genus Panthera) <SEG:3> as lions, leopards, and jaguars. <SEG:1> These four cats <SEG:4> are the only ones <SEG:2> who can roar.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "Though it is widely used, especially among non-Romani, the word \"Gypsy\" is often considered offensive because of its associations with negative stereotypes and inaccurate perceptions of Romani people.",
+    "seg_text": "Though it is widely used, <SEG:5> especially among non-Romani, <SEG:4> the word \"Gypsy\" <SEG:2> is often considered offensive <SEG:1> because of its associations <SEG:3> with negative stereotypes and inaccurate perceptions of Romani people.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "Yet, Spanish is also widely used in public transport and other facilities.",
+    "seg_text": "Yet, Spanish is also widely used <SEG:1> in public transport and other facilities.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Edgar Veguilla received arm and jaw wounds while Kristoffer Schneider was left requiring reconstructive surgery for his face.",
+    "seg_text": "Edgar Veguilla received arm and jaw wounds <SEG:2> while Kristoffer Schneider <SEG:3> was left requiring reconstructive surgery <SEG:1> for his face.",
+    "first_pass": true
+  }
+]

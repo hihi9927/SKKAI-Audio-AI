@@ -1,0 +1,19 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "sections_reported": [
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "changelog": [
+    "When to Segment: clarified that coordinated participant lists and similar coordination sites should still be marked as candidates but should not be considered safe until the conjunction and the second conjunct (or equivalent) are visible — this preserves generous candidacy while reducing high-confidence premature splits on 'X and Y' patterns.",
+    "Priority Rules: added two explicit top-rank safety checks (a comma-safety barrier and a head-arrival barrier). These rules prevent any comma-site or pre-prefix candidate from being assigned the single top confidence unless clear clause-closing or head material is present, directly addressing the audit's over-trust of commas and frequent 'head not yet arrived' mistakes.",
+    "Decision Procedure: made the ranking step operationally enforce the two safety checks: after initial ordering by usual signals, demote any candidate that fails a top-rank safety check so it cannot occupy rank 1; this is a minimal, systematic change that keeps candidates but prevents the most damaging top-ranked mistakes."
+  ],
+  "size_budget": 18491,
+  "over_budget": false
+}

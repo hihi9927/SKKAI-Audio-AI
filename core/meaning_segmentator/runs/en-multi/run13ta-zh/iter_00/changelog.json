@@ -1,0 +1,19 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Never Segment]",
+    "[Priority Rules]"
+  ],
+  "sections_reported": [
+    "[When to Segment]",
+    "[Never Segment]",
+    "[Priority Rules]"
+  ],
+  "changelog": [
+    "Merged the critic's candidate rules into the segmentation policy: forbid splitting a titled/person name from its finite verb and forbid cutting inside participial modifiers (moved these to [Never Segment] because they are dangerous in all budgets).",
+    "Demoted and described other risky comma/verb locations in [Priority Rules]: ethnonym/demonym + locative/appositive, coordinated predicates with a shared postmodifier (for/than), and verbs that take an immediate prepositional complement — these are allowed as candidates only with low rank.",
+    "Clarified [When to Segment] to reference these merged rules so the candidacy test is informed about these surface signals while keeping marking generous and ranking conservative."
+  ],
+  "size_budget": 18355,
+  "over_budget": false
+}

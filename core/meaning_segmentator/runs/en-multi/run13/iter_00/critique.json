@@ -1,0 +1,249 @@
+{
+  "cases": [
+    {
+      "id": "en_us_120",
+      "error_type": "placement",
+      "span": "a vicious battle between American",
+      "evidence": "Piece ended before the coordinated partner and head noun, producing wrong participant/role.",
+      "cause": "wrong participant",
+      "proposed_rule": "Do not finalize the identity or role of a coordinated participant (\"between X and Y\") or attach modifiers to it until the coordinating phrase and the second participant plus the head noun are seen.",
+      "example_pair": {
+        "input": "The game is based on the Second Battle of Fallujah, a vicious battle between American and Iraqi forces.",
+        "output": "The game is based on the Second Battle of Fallujah, <SEG:1> a vicious battle between American and Iraqi forces.<SEG:2>"
+      }
+    },
+    {
+      "id": "en_us_268",
+      "error_type": "placement",
+      "span": "because it is the home",
+      "evidence": "Translated 'home' as a literal house before its complement (AOL) arrived, causing wrong lexical choice.",
+      "cause": "other",
+      "proposed_rule": "When a word like 'home' can take a following complement ('of/to/for ...'), delay choosing a language-specific lexicalization until that complement appears; otherwise render neutrally.",
+      "example_pair": {
+        "input": "The case was prosecuted in Virginia because it is the home to the leading internet service provider AOL, the company who instigated the charges.",
+        "output": "The case was prosecuted in Virginia because it is the home to the leading internet service provider AOL, <SEG:1> the company who instigated the charges.<SEG:2>"
+      }
+    },
+    {
+      "id": "en_us_61",
+      "error_type": "placement",
+      "span": "and taking the",
+      "evidence": "Boundary cut before the object of 'taking', causing the verb sense to be rendered incorrectly (e.g., 'take medicine').",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Delay emitting ambiguous verbs (e.g., 'take', 'have') or final verb senses until their direct object or disambiguating complement appears.",
+      "example_pair": {
+        "input": "Apple CEO Steve Jobs unveiled the device by walking onto the stage and taking the iPhone out of his jeans pocket.",
+        "output": "Apple CEO Steve Jobs unveiled the device by walking onto the stage and taking the iPhone out of his jeans pocket.<SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_565",
+      "error_type": "placement",
+      "span": "Only the effects of catastrophizing,",
+      "evidence": "Committed to a polarity ('only') before the contrasting phrase 'not depression and fear' arrived, reversing meaning.",
+      "cause": "polarity not yet settled",
+      "proposed_rule": "Delay committing to exclusive/contrastive scope ('only', 'not only', 'only when', etc.) until the following contrastive or negating phrase (e.g., 'not X', 'rather than X') is seen.",
+      "example_pair": {
+        "input": "Only the effects of catastrophizing, not depression and fear was conditional of regular weekly structured PA sessions.",
+        "output": "Only the effects of catastrophizing, not depression and fear <SEG:1> was conditional of regular weekly structured PA sessions.<SEG:2>"
+      }
+    },
+    {
+      "id": "en_us_123",
+      "error_type": "priority",
+      "span": "The United States embassy",
+      "evidence": "Boundaries around commas/locatives were ranked too high; early cuts produced wrong country/location attachments.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Lower confidence for boundaries immediately before or after commas when the following phrase is a locative or restrictive modifier; prefer to wait for the locative phrase before adding country-specific locative morphology or host names.",
+      "example_pair": {
+        "input": "The United States embassy located in Nairobi, Kenya has issued a warning that \"extremists from Somalia\" are planning to launch suicide bomb attacks in Kenya and Ethiopia.",
+        "output": "The United States embassy located in Nairobi, Kenya <SEG:1> has issued a warning that \"extremists from Somalia\" are planning to launch suicide bomb attacks in Kenya and Ethiopia.<SEG:2>"
+      }
+    },
+    {
+      "id": "en_us_1380",
+      "error_type": "placement",
+      "span": "to be a",
+      "evidence": "Translated 'to be a' before the head noun 'part', causing incorrect existential reading instead of 'part of the temples'.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Don't render copular constructions with an article ('to be a/an/the') before the following noun head or postmodifier appears; wait for the head noun to determine article/structure.",
+      "example_pair": {
+        "input": "Sometimes special pyramid shaped towers, called ziggurats, were built to be a part of the temples.",
+        "output": "Sometimes special pyramid shaped towers, called ziggurats, were built to be part of the temples.<SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_687",
+      "error_type": "placement",
+      "span": "it from the coffin",
+      "evidence": "Pronoun was rendered without its attaching verb phrase, causing wrong agent/role assignment (saying it was removed instead of removed from).",
+      "cause": "referent lost",
+      "proposed_rule": "If a pronoun attaches to a preceding infinitive or participial verb phrase, wait for the pronoun plus its complements before finalizing clause structure to preserve correct attachment.",
+      "example_pair": {
+        "input": "Anyone interested in seeing evidence of the damage to the mummy done during attempts to remove it from the coffin will be disappointed as only the head and shoulders are visible.",
+        "output": "Anyone interested in seeing evidence of the damage to the mummy done during attempts to remove it from the coffin <SEG:1> will be disappointed as only the head and shoulders are visible.<SEG:2>"
+      }
+    },
+    {
+      "id": "en_us_416",
+      "error_type": "placement",
+      "span": "about relations of the sides",
+      "evidence": "Noun phrase emitted before its postmodifier, producing an incorrect lexical choice for the head ('parts' vs 'sides').",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Delay translating noun phrases whose correct head selection depends on an immediately following postmodifier; wait for postmodifiers (e.g., 'of X') before choosing the lexical head.",
+      "example_pair": {
+        "input": "Another famous Greek is a mathematician Pythagoras, mostly known for his famous theorem about relations of the sides of right triangles.",
+        "output": "Another famous Greek is a mathematician Pythagoras, mostly known for his famous theorem about relations of the sides of right triangles.<SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_368",
+      "error_type": "placement",
+      "span": "called arteries and comes",
+      "evidence": "Partial chunk forced a wrong assignment of direction/participant (saying arteries bring blood back), because the disambiguating 'called X' phrase wasn't complete.",
+      "cause": "wrong participant",
+      "proposed_rule": "Do not finalize the direction/target of a clause or attach actions to a participant until the full identifying phrase (e.g., 'called X', full prepositional phrase) is present.",
+      "example_pair": {
+        "input": "Blood goes away from the heart in tubes called arteries and comes back to the heart in tubes called veins.",
+        "output": "Blood goes away from the heart in tubes called arteries and comes back to the heart in tubes called veins.<SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_1349",
+      "error_type": "placement",
+      "span": "are being met",
+      "evidence": "Verb phrase sense was committed before the following 'by'-complement arrived, yielding an incorrect or incomplete render.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Delay committing to a verb's final sense or result when a following complement (e.g., 'by'-phrases) can change frame; wait for complements before finalizing.",
+      "example_pair": {
+        "input": "Efforts to search for the crash site are being met by bad weather and harsh terrain.",
+        "output": "Efforts to search for the crash site are being met by bad weather and harsh terrain.<SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_164",
+      "error_type": "placement",
+      "span": "on its way to",
+      "evidence": "Destination was committed before the location noun arrived, producing an incorrect destination.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not commit to a destination or add location-specific morphology until the full locative noun phrase has been seen.",
+      "example_pair": {
+        "input": "An Avenger class mine countermeasures ship, the ship was on its way to Puerto Princesa in Palawan.",
+        "output": "An Avenger class mine countermeasures ship, the ship was on its way to Puerto Princesa in Palawan.<SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_990",
+      "error_type": "placement",
+      "span": "but flow down the mountain",
+      "evidence": "Finite verb was emitted without confirming subject number/agreement, causing singular/plural mismatch in target.",
+      "cause": "other",
+      "proposed_rule": "When a finite verb follows coordination or punctuation that might separate clauses, delay emitting the verb until subject number/agreement is confirmed from nearby nouns or until minimal disambiguating words arrive.",
+      "example_pair": {
+        "input": "The glaciers are not stable, but flow down the mountain. This will cause cracks, crevasses, which may be obscured by snow bridges.",
+        "output": "The glaciers are not stable, but flow down the mountain. <SEG:1> This will cause cracks, crevasses, which may be obscured by snow bridges.<SEG:2>"
+      }
+    }
+  ],
+  "summary": "Most failures are placement errors: boundaries cut before a disambiguating head, complement, or coordinated partner, forcing wrong participant, polarity or lexical choices. The prompt also over-trusts comma-adjacent positions; add priority logic that lowers confidence for comma-boundaries when the following phrase is a locative, coordinator, or complement that can change attachment or lexical selection.",
+  "aggregate": {
+    "dominant_error": null,
+    "dominant_basis": "No corpus rate identifies a dominant failure. Read the cases and `judge_distribution` for WHICH mechanism to fix — do not infer a rate from `case_label_counts`, those cases were selected for being the worst.",
+    "measured_rates": {
+      "coverage": {
+        "n": 0,
+        "of_n": 40,
+        "rate": 0.0,
+        "of": "all sentences scored — a true corpus rate",
+        "meaning": "sentences where the tightest budget asked for boundaries the prompt never marked, so pieces are missing outright"
+      },
+      "premature_among_judged": {
+        "n": 32,
+        "of_n": 50,
+        "rate": 0.64,
+        "of": "boundaries judged this iteration, selected as the WORST by measured contradiction — NOT a corpus rate, do not compare it against `coverage`"
+      }
+    },
+    "case_label_counts": {
+      "counts": {
+        "placement": 11,
+        "priority": 1
+      },
+      "of_n": 12,
+      "of": "the selected worst cases — NOT a rate"
+    },
+    "stuck_hint": "",
+    "priority_audit": [
+      {
+        "feature": "뒤 구두점 ','",
+        "n": 15,
+        "rank_percentile": 0.374,
+        "contradiction": 0.1825,
+        "over_trust": 0.2579
+      },
+      {
+        "feature": "상대위치 1/3",
+        "n": 53,
+        "rank_percentile": 0.581,
+        "contradiction": 0.1874,
+        "over_trust": 0.035
+      },
+      {
+        "feature": "상대위치 0/3",
+        "n": 66,
+        "rank_percentile": 0.594,
+        "contradiction": 0.1462,
+        "over_trust": 0.0155
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 140,
+        "rank_percentile": 0.663,
+        "contradiction": 0.1734,
+        "over_trust": -0.0529
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 46,
+        "rank_percentile": 0.674,
+        "contradiction": 0.1784,
+        "over_trust": -0.0655
+      }
+    ],
+    "judge_distribution": {
+      "n_boundaries_judged": 50,
+      "verdicts": {
+        "mistranslated": 23,
+        "safe": 18,
+        "premature": 9
+      },
+      "n_with_cause": 32,
+      "causes": {
+        "other": {
+          "n": 13,
+          "share": 0.406
+        },
+        "head not yet arrived": {
+          "n": 10,
+          "share": 0.312
+        },
+        "wrong participant": {
+          "n": 5,
+          "share": 0.156
+        },
+        "mistranslated": {
+          "n": 3,
+          "share": 0.094
+        },
+        "polarity not yet settled": {
+          "n": 1,
+          "share": 0.031
+        }
+      }
+    },
+    "max_missing_boundaries": 0.0,
+    "rank_lift": 0.15035,
+    "rank_lift_t": 3.68,
+    "summary": "Most failures are placement errors: boundaries cut before a disambiguating head, complement, or coordinated partner, forcing wrong participant, polarity or lexical choices. The prompt also over-trusts comma-adjacent positions; add priority logic that lowers confidence for comma-boundaries when the following phrase is a locative, coordinator, or complement that can change attachment or lexical selection."
+  }
+}

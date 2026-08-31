@@ -1,0 +1,34 @@
+{
+  "source_language": "Korean",
+  "word_order": "SOV, evidenced by verb-final structure and postpositions like '야' and '가지고' that follow their arguments",
+  "register": "spontaneous speech, characterized by repetition, hesitation, and incomplete clauses",
+  "fillers_and_hesitations": [
+    "어",
+    "근데",
+    "그냥",
+    "뭔가",
+    "아"
+  ],
+  "discourse_markers": [
+    "그래서",
+    "근데",
+    "그냥",
+    "그걸"
+  ],
+  "clause_boundary_signals": [
+    "가지고",
+    "야",
+    "아"
+  ],
+  "non_boundary_traps": [
+    "그냥",
+    "뭔가",
+    "아"
+  ],
+  "unstable_prefix_signals": [
+    "그냥",
+    "뭔가",
+    "그걸"
+  ],
+  "notes_for_prompt_writer": "Treat repeated particles like '그냥' and '뭔가' as potential segmentation points but be cautious—these often precede clause-level content that may extend the current clause. Use '가지고' as a strong boundary signal, but note it can be used in non-clausal constructions. Avoid splitting before '아' or '야' unless they are clearly final particles. Prioritize preserving syntactic units that include postpositions and connectives."
+}

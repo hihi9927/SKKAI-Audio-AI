@@ -1,0 +1,20 @@
+===== oss120-16k / effort=medium / 예산16000 / timeout2400 / batch6 / 20문장 =====
+Mon Aug 31 03:07:44 PM KST 2026
+{
+ "model": "oss120-16k",
+ "prompt": "core/meaning_segmentator/runs/en-multi/run13/best_prompt.txt",
+ "n": 20,
+ "wall_sec": 1763.0,
+ "format_pass": 1.0,
+ "first_pass": 0.9,
+ "text_preserved": 1.0,
+ "mean_boundaries": 2.9,
+ "mean_required": 2.6,
+ "coverage_met": 1.0,
+ "calls": 6,
+ "completion_tokens": 35140,
+ "cost": 0.0
+}
+LABELDONE
+Mon Aug 31 03:43:23 PM KST 2026
+OSSDONE

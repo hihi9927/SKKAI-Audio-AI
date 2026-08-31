@@ -1,0 +1,13 @@
+{
+  "sections_changed": [
+    "[Priority Rules]"
+  ],
+  "sections_reported": [
+    "[Priority Rules]"
+  ],
+  "changelog": [
+    "Merged the four critic candidate rules into [Priority Rules] as surface-decidable 'safety demotions' that lower confidence (do not ban) for: very-short left NPs ending in a title/name/pronoun, single pronoun/auxiliary left pieces before a lexical verb, verb-before-PP cuts, and ethnonym/demonym cuts before comma-appositives or locative PPs within ~4 tokens; this expresses all four ideas concisely and as ranking guidance rather than prohibitions."
+  ],
+  "size_budget": 18355,
+  "over_budget": false
+}

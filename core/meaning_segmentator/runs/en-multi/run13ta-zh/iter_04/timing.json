@@ -1,0 +1,25 @@
+{
+  "total_sec": 1187.88,
+  "stages": [
+    {
+      "stage": "train_eval",
+      "sec": 89.52,
+      "at_sec": 0.0
+    },
+    {
+      "stage": "judge",
+      "sec": 23.09,
+      "at_sec": 89.52
+    },
+    {
+      "stage": "rank_audit",
+      "sec": 0.01,
+      "at_sec": 112.62
+    },
+    {
+      "stage": "dev_eval",
+      "sec": 1075.26,
+      "at_sec": 112.62
+    }
+  ]
+}

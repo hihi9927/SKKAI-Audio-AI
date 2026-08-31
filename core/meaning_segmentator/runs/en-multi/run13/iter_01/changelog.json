@@ -1,0 +1,19 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "sections_reported": [
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "changelog": [
+    "When to Segment: added a short, explicit list of recurring risky surface patterns (preposition-led coordinations; exclusives followed by contrast/negation; ambiguous verbs without their object; noun + locative/postmodifier; symmetric 'called ... and called ...' parallels; verb+pronoun+PP sequences). This records the candidate_rules succinctly and keeps them as candidates rather than forbidding them.",
+    "Priority Rules: kept the existing confidence tiers but added a concise 'Specific demotion signals' subsection that merges all candidate_rules into ranked risk factors to be applied when ordering candidates (prefer boundary after conjunction/second coordinated noun, wait for contrast after exclusives, require object for ambiguous verbs, prefer after full locative/postmodifier, keep 'called ...' parallels intact, wait for pronoun+PP to appear).",
+    "Decision Procedure: made ranking prescriptive by describing how to convert the demotion signals into an ordered confidence ranking (compute a simple risk score by accumulating demotion factors, then sort candidates). This implements the candidate_rules operationally so risky positions remain candidates but are ranked lower."
+  ],
+  "size_budget": 18491,
+  "over_budget": false
+}

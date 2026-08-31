@@ -1,0 +1,19 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "sections_reported": [
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "changelog": [
+    "When to Segment: clarified that the system remains permissive about noun/verb-adjacent candidates but added concise, surface-decidable signals to flag specific risky patterns (Capitalized + 'class', name + immediate parenthetical, gerund + short prepositional complement, 'to' + verb + immediate object, 'for how many' and isolated 4-digit-year commas). Reason: the critic's measured cases show these split points often produce premature/incorrect commitments in Japanese.",
+    "Priority Rules: added narrowly-targeted demotion bullets for the above risky patterns and framed them explicitly as demotions (lower rank), not forbids. Reason: keep candidates available for the deterministic budget while preventing them from being top-ranked.",
+    "Decision Procedure: kept a generous candidate-marking step but changed the ranking step to apply the targeted demotions via a 1–4 token surface lookahead and to treat matched patterns as strongly demoted (ranked near the bottom) rather than removed. Reason: previous edits that moved similar positions into hard forbids worsened results; demotion preserves options while reducing contradiction risk."
+  ],
+  "size_budget": 24158,
+  "over_budget": false
+}
