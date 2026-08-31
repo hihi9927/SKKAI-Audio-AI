@@ -211,6 +211,101 @@ v2 는 20초 간격 단발 요청도 막히므로 속도 제한이 아니라 쿼
 `empty_cache()` 후 1건씩 재시도로 안정화.
 
 
+## 아랍어 ASR — 요르단 구어 vs MSA — 2026-08-31
+
+`HANDOFF_arabic.md` 의 미완 항목 1~4 를 끝냈다. AST 트랙(BLEU/COMET)이 아니라 **WER 전용**
+이다 — Casablanca 는 `transcription` 한 컬럼뿐이라 번역 참조가 없다.
+
+측정: `asr_eval_arabic.py`, 모델 `Qwen/Qwen3-ASR-1.7B`(베이스), vLLM, `--language Arabic` 고정.
+RTX 4090 24GB, `gpu_memory_utilization 0.7`. 두 런 모두 감지 언어 100% Arabic.
+
+| | 발화 | 오디오 | WER raw | WER 정규화 | CER raw | CER 정규화 |
+|---|---|---|---|---|---|---|
+| Casablanca 요르단 (구어) | 848 | 0.98h | 46.66% | **40.96%** | 14.88% | 12.85% |
+| FLEURS `ar_eg` (MSA) | 283 | 0.88h | 15.02% | **9.77%** | 5.12% | 3.95% |
+
+**격차 = 방언 열화 폭: 정규화 WER 31.2%p (4.2배).** raw 기준으로도 31.6%p 다.
+정규화(타슈킬 제거·알레프 통일·`ة→ه`·`ى→ي`)가 양쪽 다 5~6%p 를 깎으므로 표기 변이가
+아니라 **음향·어휘의 실제 열화**다. 규모(0.98h vs 0.88h)가 비슷해 그대로 비교했다.
+
+MSA 9.77% 는 실사용 가능한 수준이지만 요르단 구어 40.96% 는 아니다. 다만 Casablanca 는
+TV 드라마 연기 구어라 낭독체 대비 난이도가 높은 쪽이므로, 이 값을 "아랍어 회화 일반"의
+상한으로 읽으면 안 된다.
+
+### dot-commit 은 아랍어에서 정상 발동한다 — 참조가 아니라 모델 출력을 봐야 한다
+
+핸드오프의 16 발화 예비 측정을 848 전체로 확인했다. **결론이 유지된다.**
+
+| | `.` | `،` | `؟` | `:` | `!` | 종결부호로 끝난 발화 |
+|---|---|---|---|---|---|---|
+| Casablanca 참조 | 2 | 249 | 122 | 1 | 137 | — |
+| Casablanca 모델 출력 | **728** | 108 | 97 | 0 | 0 | 767/848 (90.4%) |
+| FLEURS 참조 | 323 | 242 | 1 | 15 | 1 | — |
+| FLEURS 모델 출력 | **320** | 172 | 0 | 2 | 0 | 283/283 (100%) |
+
+참조는 ASCII 마침표를 사실상 안 쓰지만(848행 중 2회) **모델은 728회 찍는다.** dot-commit 을
+굴리는 것은 참조가 아니라 모델 출력이므로, "아랍어는 `.` 을 안 쓰니 dot-commit 이 죽는다"는
+추론은 틀렸다. 아랍어에서도 정상 발동한다.
+
+### `؟` 패치 효과 — 구어에서만 유의미하다
+
+`sentence_boundary.py` / `streaming_websocket_server_dualbase.py` 에 `؟`(U+061F)·`۔`(U+06D4)를
+추가한 효과를 위 가설 출력에 그대로 재보면:
+
+| | dot-commit 경계 패치 전 | 패치 후 | 증가 |
+|---|---|---|---|
+| Casablanca 요르단 | 727 | 824 | **+97 (+13.3%)** |
+| FLEURS `ar_eg` | 315 | 315 | +0 |
+
+Casablanca 에서 **69 발화(8.1%)가 `؟` 로 끝난다.** 패치 전에는 이들이 dot-commit 으로
+나가지 못하고 finish/timeout 커밋으로 밀렸다. MSA 에서는 모델이 `؟` 를 아예 안 찍어
+효과가 0 이다.
+
+즉 핸드오프가 "우선순위 낮음"으로 본 것보다 **회화체에서는 값이 크다.** 반대로 MSA 낭독체만
+다룬다면 없어도 된다. 패치는 적용했다(커밋 `1bae6fc`) — 라틴/CJK/약어(`Mr.`)/소수점(3.14)
+회귀 없음을 확인했다.
+
+### 재현
+
+`HANDOFF_arabic.md` 재현 절차와 두 가지가 다르다.
+
+- **환경**: 이 머신(`skkai`)에는 `speech_ai` conda env 가 없다. `PYTHONPATH= .venv/bin/python`
+  으로 실행한다(ROS PYTHONPATH 간섭 때문에 비우는 것이 필수).
+- **`gpu_memory_utilization`**: 핸드오프의 `0.2` 는 GB10(통합메모리 121GB, 0.2≈24GB) 기준이다.
+  24GB 4090 에서 0.2 는 4.9GB 로 1.7B fp16(3.87GB) + KV 에 모자란다. **0.7 을 쓴다**(KV 11.46GB).
+
+```bash
+PYTHONPATH= .venv/bin/python evaluation/ast/build_manifest_casablanca.py \
+    --casablanca-root ~/datasets/casablanca --dialect Jordan --split test \
+    --out evaluation/ast/manifests/casablanca_jordan_test.jsonl
+
+PYTHONPATH= .venv/bin/python evaluation/ast/build_manifest_fleurs.py \
+    --fleurs-root ~/datasets/fleurs --src ar_eg --tgt ar_eg --split test \
+    --out evaluation/ast/manifests/fleurs_ar_test.jsonl
+
+for m in casablanca_jordan_test fleurs_ar_test; do
+  PYTHONPATH= .venv/bin/python evaluation/ast/asr_eval_arabic.py \
+      --manifest evaluation/ast/manifests/$m.jsonl \
+      --out evaluation/ast/results/asr_ar/$m.json \
+      --batch-size 32 --backend-kwargs '{"gpu_memory_utilization": 0.7}'
+done
+```
+
+추론은 각각 17초 / 13초다(모델 로드 제외). 핸드오프의 "transformers 백엔드는 7.4시간" 경고는
+vLLM 기본값을 쓰는 한 해당 없다.
+
+**FLEURS TSV 따옴표 버그는 `ar_eg` 에 해당하지 않는다.** 기본 파싱과 `QUOTE_NONE` 이 둘 다
+428행으로 같고, 3행이 리터럴 `"` 유지 여부만 다르다(행 삼킴 없음). 따라서
+`build_manifest_fleurs.py` 는 손대지 않았다 — 수정하면 기존 AST 매니페스트가 바뀌므로
+여전히 사용자 판단 대기다.
+
+### 남은 것
+
+- 모바일 클라이언트가 아직 `ar` 을 못 고른다(`languages.ts` 5개 언어). TTS `BCP47` 맵에도
+  `ar` 이 없어 `toBCP47` 가 raw `'ar'` 을 흘린다. RTL 대응은 별개 UI 작업이다.
+- Casablanca 는 **CC-BY-NC-ND-4.0** 이다. 측정 전용이라 무관하지만 학습·재배포로 가면 다시 확인.
+
+
 ## 통합 표 — 두 데이터셋, 같은 자로 — 2026-08-28
 
 > **⚠ 이 절의 숫자는 2026-08-31 개정으로 대체됐다.** seg 지연은 audio_end 역추적
