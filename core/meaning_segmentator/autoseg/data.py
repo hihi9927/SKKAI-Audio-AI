@@ -95,6 +95,36 @@ def _load_ast_manifest(path: Path, text_field: str = "src_text",
     return out
 
 
+def target_texts(dataset: str) -> tuple[dict[str, str], str | None]:
+    """매니페스트의 정답 번역을 `{id: tgt_text}` 로. **`--target-aware` 전용.**
+
+    반환의 두 번째 값은 매니페스트가 담고 있는 타깃 언어 코드다 — 호출부가 요청한
+    타깃과 **같은지 반드시 확인해야 한다**. 매니페스트 하나에는 타깃이 하나뿐이라
+    (`fleurs_nway_en-de_multi_loop405` 는 전부 `de`), 다른 타깃을 요청하면 표본이 없다.
+
+    **채점에는 절대 쓰지 않는다.** `_load_ast_manifest` 주석대로 목적함수는 참조 없는
+    QE 와 번역기 출력 기반 NLI 다. 여기서 정답 번역을 읽는 것은 **타깃 언어를 프로파일
+    하는 표본**으로 쓰기 위해서이고, 그래서 호출부가 train 분할로만 제한한다 — dev/test
+    의 정답이 프롬프트에 들어가면 그것이 곧 누출이다.
+    """
+    man = _manifest_path(dataset)
+    if man is None:
+        return {}, None
+    out: dict[str, str] = {}
+    code = None
+    with man.open(encoding="utf-8") as f:
+        for i, line in enumerate(f):
+            line = line.strip()
+            if not line:
+                continue
+            e = json.loads(line)
+            t = (e.get("tgt_text") or "").strip()
+            code = code or (e.get("tgt_lang") or None)
+            if t:
+                out[str(e.get("utt_id", i))] = t
+    return out, code
+
+
 # **FLEURS 트랙은 로더 함수가 아니라 매니페스트 경로로 등록한다.** 예전에는 트랙마다
 # 함수가 하나씩 있었는데(en-de, en-ko, de/ja/zh-en) 전부 `_load_ast_manifest(경로)` 에
 # 경로만 다른 래퍼였다. 경로로 두면 함수 5개가 사라지고 **새 언어를 추가할 때 코드를
@@ -127,6 +157,18 @@ MANIFESTS = {
     # **2.521 어절/초** → `min_gap 3`, 격자 `[4,6,12]`. 같은 코퍼스 test 스플릿에서
     # 추정했던 2.879 보다 12% 느리다 — 스플릿 간 차이이므로 대리 추정을 쓰지 않는다.
     "fleurs-en-multi": _AST / "fleurs_nway_en-de_multi_loop405.jsonl",
+    # **같은 405문장에 타깃만 바꾼 판.** `--target-aware` 는 타깃 프로파일을 매니페스트의
+    # 정답 번역으로 만드는데(`target_texts`), en-de 판으로 ja/zh 를 돌리면 코드가 안 맞아
+    # 프로파일이 모델 사전지식으로 떨어진다. 채점은 참조 없는 QE 라 영향이 없지만
+    # prompt_v0 가 타깃별로 다른 근거에서 나오면 de 와 나란히 못 놓는다.
+    #
+    # `build_manifest_fleurs_text.py` 를 en-de 를 만든 것과 **같은 인자**로 다시 돌려
+    # 뽑았다 (`--order-from ..._clean500_order.json --skip 500 --n 405`). 재생성한 en-de 가
+    # 기존 파일과 바이트 동일하고 ja/zh 는 utt_id·순서까지 같다 — 분할이 안 움직인다.
+    # `_unittimes.json` 은 en-de 것을 복사했다: 소스가 같은 en 문장이라 강제정렬 결과가
+    # 같고, 실제로 `min_gap 3` / 격자 `[4,6,12]` 이 그대로 유도된다.
+    "fleurs-en-multi-ja": _AST / "fleurs_nway_en-ja_multi_loop405.jsonl",
+    "fleurs-en-multi-zh": _AST / "fleurs_nway_en-zh_multi_loop405.jsonl",
 }
 
 # 파일 포맷이 고유한 것만 로더 함수로 남는다. 나머지는 위 MANIFESTS.

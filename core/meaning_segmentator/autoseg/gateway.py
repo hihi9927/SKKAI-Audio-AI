@@ -441,6 +441,19 @@ class Gateway:
         try:
             return parse_json_loose(raw)
         except (ValueError, json.JSONDecodeError) as e:
+            # **잘린 출력은 복구 대상이 아니다.** 아래 복구 호출은 깨진 JSON 을 되돌려
+            # "문법만 고쳐라"라고 시키는데, 예산을 다 써서 잘린 출력은 뒤 내용 자체가
+            # 없으므로 고칠 수가 없다. 게다가 복구 예산(8000)이 원본(16000~32000)보다
+            # 작아 재생산도 불가능하다 — 실측에서 원본과 복구가 **같은 실패**를 반복하고
+            # 런이 죽었다 (로컬 Qwen, profiler 가 16,000 토큰을 다 쓰고 JSON 을 안 닫음).
+            # 잘렸을 때는 같은 요청을 간결 제약과 함께 다시 던지는 것이 유일한 수다.
+            if _looks_truncated(raw):
+                retried = self.chat(
+                    system + _BREVITY_SUFFIX, user,
+                    **{**kw, "json_mode": True,
+                       "purpose": f"{kw.get('purpose', 'other')}:brevity_retry"},
+                )
+                return parse_json_loose(retried)
             repaired = self.chat(
                 "You repair malformed JSON. Return ONLY the corrected JSON object. "
                 "Preserve all content; fix only syntax (unescaped quotes, missing commas, "
@@ -465,6 +478,23 @@ class Gateway:
 
 
 _FENCE = re.compile(r"^\s*```(?:json)?\s*|\s*```\s*$", re.MULTILINE)
+
+
+# 출력이 예산을 다 써서 잘렸는지 본다. 완결된 JSON 객체는 `}` 로 끝나고 중괄호가
+# 맞는다 — 문자열 안의 중괄호까지 세지는 않으므로 완벽하지는 않지만, 여기서 필요한
+# 것은 "명백히 안 닫힌 출력"의 판별뿐이다.
+def _looks_truncated(raw: str) -> bool:
+    t = _FENCE.sub("", raw or "").strip()
+    if not t:
+        return True
+    return not t.endswith(("}", "]")) or t.count("{") > t.count("}")
+
+
+# 잘린 재시도에 붙이는 제약. 필드를 짧게 강제해야 예산 안에서 JSON 이 닫힌다.
+_BREVITY_SUFFIX = (
+    "\n\nHARD LIMIT: keep every field value under 25 words. Do not quote source "
+    "sentences. Do not add fields beyond those requested. Close the JSON object."
+)
 
 
 def parse_json_loose(raw: str) -> dict:

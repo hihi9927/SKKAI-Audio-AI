@@ -1319,3 +1319,110 @@ class LocalTranslator:
         with self._cv:
             self._stop = True
             self._cv.notify_all()
+
+
+# ── 원격 LLM 번역기 ──────────────────────────────────────────────────────
+
+# **왜 또 하나인가.** `LocalTranslator` 는 `AutoModelForSeq2SeqLM` 전용이다 (madlad·nllb).
+# MT 전용 디코더 모델(Seed-X 계열)은 causal LM 이고 타깃 지정이 접두 토큰이 아니라
+# 프롬프트 규약이라 그 클래스에 들어가지 않는다. 그리고 in-process `generate` 대신
+# vLLM 의 연속 배칭에 맡기는 편이 GB10 에서 훨씬 빠르므로, HTTP 로 분리한다.
+#
+# **`LocalTranslator` 의 마이크로 배칭 스레드가 여기엔 없다.** 배칭은 서버가 한다 —
+# 클라이언트는 `workers` 만큼 동시에 던지면 된다.
+#
+# 문맥 번역은 쓰지 않는다 (`use_context=False`). 이유는 `LocalTranslator` 와 같다.
+def lang_display_name(code: str) -> str:
+    """언어 코드 -> 영어 표기 이름 (`ko` -> `Korean`). `to_lang_code` 의 역방향.
+
+    Seed-X 류 프롬프트가 코드가 아니라 이름을 요구하는데, 호출부는 코드만 들고
+    있어서 필요하다. 표를 코드에 박지 않는 이유는 `to_lang_code` 와 같다.
+    """
+    import langcodes                      # 22MB 데이터라 지연 로드
+    try:
+        return langcodes.Language.get(code).display_name("en")
+    except Exception:                      # noqa: BLE001
+        return code
+
+
+REMOTE_MT_TEMPLATES = {
+    # Seed-X 계열. base 모델이라 chat 이 아니라 completion 이고, 타깃은 끝의 `<xx>` 다.
+    "seedx": "Translate the following {src_name} sentence into {tgt_name}:\n{text} <{tgt_code}>",
+}
+
+
+@dataclass
+class RemoteMTTranslator:
+    """OpenAI 호환 `/v1/completions` 를 쓰는 MT 전용 모델 번역기.
+
+    공개 인터페이스는 `GoogleTranslator` 와 같아서 호출부(`evaluate`)가 그대로 쓴다.
+    """
+
+    tgt_code: str
+    cache: JsonCache | None = None
+    base_url: str = "http://localhost:8010/v1"
+    model: str = "seed-x"
+    template: str = "seedx"
+    src_name: str = "Korean"
+    tgt_name: str = "English"
+    workers: int = 64
+    max_tokens: int = 192
+    timeout: float = 300.0
+    max_retries: int = 5
+    calls: int = 0
+    use_context: bool = False
+    context_line_mismatches: int = 0
+    # 캐시 키 접두. 모델 이름을 담아야 모델 교체 시 옛 번역을 맞고 같은 자로 쟀다고
+    # 착각하지 않는다 — gtx/v2 를 나눈 것과 같은 이유다.
+    backend: str = ""
+    _client: httpx.Client = field(init=False, repr=False, default=None)
+    _lock: threading.Lock = field(init=False, repr=False, default_factory=threading.Lock)
+
+    def __post_init__(self):
+        if self.template not in REMOTE_MT_TEMPLATES:
+            raise ValueError(f"모르는 템플릿: {self.template!r}. "
+                             f"{sorted(REMOTE_MT_TEMPLATES)} 중 하나여야 한다")
+        # 호출부(`make_translator`)는 코드만 들고 있고 이름이 없다. 프롬프트는 이름을
+        # 요구하므로 코드에서 되짚는다 — `to_lang_code` 의 역방향이다.
+        self.tgt_name = self.tgt_name or lang_display_name(self.tgt_code)
+        self.backend = self.backend or f"remote:{self.model}"
+        self._client = httpx.Client(
+            timeout=self.timeout, base_url=self.base_url.rstrip("/"),
+            limits=httpx.Limits(max_connections=self.workers,
+                                max_keepalive_connections=self.workers))
+
+    def close(self) -> None:
+        if self._client is not None:
+            self._client.close()
+
+    def _prompt(self, text: str) -> str:
+        return REMOTE_MT_TEMPLATES[self.template].format(
+            src_name=self.src_name, tgt_name=self.tgt_name,
+            tgt_code=self.tgt_code, text=text)
+
+    def _raw(self, text: str) -> str:
+        """재시도 포함 번역 1회. **첫 줄만 취한다** — base 모델은 뒤에 다음 예시를
+        이어 생성하는 일이 있어서, 개행 뒤를 그대로 두면 번역문이 오염된다."""
+        last: Exception | None = None
+        for attempt in range(self.max_retries):
+            try:
+                r = self._client.post("/completions", json={
+                    "model": self.model, "prompt": self._prompt(text),
+                    "temperature": 0, "max_tokens": self.max_tokens})
+                r.raise_for_status()
+                out = r.json()["choices"][0]["text"]
+                with self._lock:
+                    self.calls += 1
+                return out.strip().split("\n")[0].strip()
+            except Exception as e:                      # noqa: BLE001
+                last = e
+            time.sleep(min(BACKOFF_BASE ** attempt, BACKOFF_MAX))
+        raise RuntimeError(f"원격 번역 실패({self.max_retries}회 재시도, "
+                           f"model={self.model}): {last}")
+
+    # ── 공개 인터페이스 — GoogleTranslator 와 동일 ───────────────────────
+    _call = GoogleTranslator._call
+    full = GoogleTranslator.full
+    full_uncached = GoogleTranslator.full_uncached
+    streaming_segments = GoogleTranslator.streaming_segments
+    seg_batch = GoogleTranslator.seg_batch

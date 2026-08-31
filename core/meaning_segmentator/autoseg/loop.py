@@ -26,7 +26,8 @@ from . import agents, data, metrics, noise_floor
 from .gateway import BudgetExceeded, Gateway
 from .pipeline import (GoogleTranslator, JsonCache, blocks_scoring,
                        coverage_need, normalize_tags, round_half_up, segment_batch,
-                       LocalTranslator, LOCAL_MT_DEFAULT,
+                       LocalTranslator, LOCAL_MT_DEFAULT, RemoteMTTranslator,
+                       REMOTE_MT_TEMPLATES,
                        shuffle_priorities, split_segments, to_lang_code, truncate,
                        unit_count, validate)
 
@@ -987,10 +988,26 @@ def main() -> int:
     # 품질 실측(100문장·5타깃, CometKiwi): google 0.8712 / madlad-3b 0.8554.
     p.add_argument("--local-mt-model", default=LOCAL_MT_DEFAULT,
                    help="--translate-backend local 일 때 쓸 HF seq2seq 번역 모델")
-    p.add_argument("--translate-backend", default="local", choices=["gtx", "v2", "local"],
+    p.add_argument("--translate-backend", default="local",
+                   choices=["gtx", "v2", "local", "remote"],
                    help="번역 백엔드. 기본 local (--local-mt-model). v2 는 Cloud "
-                        "Translation, gtx 는 무료 엔드포인트. **백엔드마다 번역문이 "
+                        "Translation, gtx 는 무료 엔드포인트, remote 는 OpenAI 호환 "
+                        "서버의 MT 전용 모델 (--remote-mt-*). **백엔드마다 번역문이 "
                         "다르다** — 섞어 비교 금지 (캐시 키와 translator_id 에 들어간다)")
+    # **원격 MT.** `local` 은 seq2seq 전용이라 Seed-X 류 causal MT 모델이 못 들어간다.
+    # vLLM 이 연속 배칭을 하므로 in-process `generate` 보다 GB10 에서 빠르다.
+    p.add_argument("--remote-mt-url", default="http://localhost:8010/v1",
+                   help="--translate-backend remote 일 때 OpenAI 호환 엔드포인트")
+    p.add_argument("--remote-mt-model", default="seed-x",
+                   help="--translate-backend remote 일 때 서버에 등록된 모델 이름")
+    p.add_argument("--remote-mt-template", default="seedx",
+                   choices=sorted(REMOTE_MT_TEMPLATES),
+                   help="원격 MT 모델의 프롬프트 규약")
+    # **`--workers` 를 쓰면 안 된다.** 그 값은 LLM 호출 동시성이라 8 인데, 번역은
+    # 서버가 연속 배칭을 하므로 훨씬 많이 던져야 GPU 가 찬다. 실측(GB10, Seed-X,
+    # 6어절 청크): 8 → 32 → 128 로 올릴수록 처리량이 붙고 그 위로는 포화한다.
+    p.add_argument("--remote-mt-workers", type=int, default=64,
+                   help="원격 MT 동시 요청 수. LLM 용 --workers 와 별개다")
     p.add_argument("--tgt-code", default=None)
     # **목적함수를 다언어로.** 분절은 타깃 무관이라 비용의 90% 가 그대로다 (loop 상단 주석).
     # 소스 언어는 자동 제외한다.
@@ -1264,7 +1281,24 @@ def main() -> int:
             profile = json.loads(profile_path.read_text(encoding="utf-8"))
         else:
             samples = [s.text for s in splits["train"][:20]]
-            profile = profiler.profile(samples, pair_tgt)
+            # **타깃 표본은 train 분할에서만 뽑는다.** FLEURS 매니페스트는 n-way 라
+            # 같은 문장의 정답 번역을 들고 있어 타깃 언어를 **측정으로** 프로파일할 수
+            # 있다. dev/test 의 정답을 쓰면 그것이 곧 평가 분할 누출이므로 train 만 본다
+            # (`AUTOSEG_SIMPLIFY.md` 목표 4). 채점에는 여전히 안 쓴다 — 목적함수는
+            # 참조 없는 QE 와 번역기 출력 NLI 그대로다.
+            target_pairs = None
+            if pair_tgt:
+                tgt_by_id, man_code = data.target_texts(args.dataset)
+                want_code = to_lang_code(pair_tgt)
+                if tgt_by_id and man_code and man_code.split("-")[0] == want_code.split("-")[0]:
+                    target_pairs = [(x.text, tgt_by_id[x.id])
+                                    for x in splits["train"][:20] if x.id in tgt_by_id]
+                    log(f"[target-aware] 타깃 표본 {len(target_pairs)}쌍 (train 분할, "
+                        f"매니페스트 tgt_lang={man_code}) — 타깃 프로파일을 측정으로 만든다")
+                else:
+                    log(f"[target-aware] 매니페스트에 {pair_tgt}({want_code}) 정답 번역이 "
+                        f"없다 (tgt_lang={man_code}) — 타깃 프로파일은 모델 사전지식으로 간다")
+            profile = profiler.profile(samples, pair_tgt, target_pairs)
             profile_path.write_text(json.dumps(profile, ensure_ascii=False, indent=2),
                                     encoding="utf-8")
 
@@ -1289,6 +1323,11 @@ def main() -> int:
             if args.translate_backend == "local":
                 return LocalTranslator(tgt_code=code, cache=cache,
                                        model_id=args.local_mt_model)
+            if args.translate_backend == "remote":
+                return RemoteMTTranslator(
+                    tgt_code=code, cache=cache, base_url=args.remote_mt_url,
+                    model=args.remote_mt_model, template=args.remote_mt_template,
+                    src_name=args.src_lang, workers=args.remote_mt_workers)
             return GoogleTranslator(
                 tgt_code=code, cache=cache, workers=min(args.workers, 4),
                 use_context=not args.no_google_context,
@@ -1298,11 +1337,14 @@ def main() -> int:
         # **백엔드가 id 에 들어간다.** gtx 와 v2 의 번역문은 같지 않다 (기존 캐시 18건
         # 재번역 대조에서 일치 0/18). id 에 안 남기면 다른 자로 잰 점수가 조용히 섞인다.
         # 로컬 모델도 같은 이유로 모델 이름이 들어간다.
-        translator_id = (
-            f"local:{args.local_mt_model}:{translator.tgt_code}:ctx=False"
-            if args.translate_backend == "local"
-            else f"google:{translator.backend}:{translator.tgt_code}"
-                 f":ctx={translator.use_context}")
+        if args.translate_backend == "local":
+            translator_id = f"local:{args.local_mt_model}:{translator.tgt_code}:ctx=False"
+        elif args.translate_backend == "remote":
+            translator_id = (f"remote:{args.remote_mt_model}:{args.remote_mt_template}"
+                             f":{translator.tgt_code}:ctx=False")
+        else:
+            translator_id = (f"google:{translator.backend}:{translator.tgt_code}"
+                             f":ctx={translator.use_context}")
         log(f"[translator] {translator_id} (대표 타깃 {rep_tgt})")
         log(f"[targets] {len(targets)}개: {', '.join(targets)}  "
             f"(목적함수 = 타깃별 z-정규화 effective 의 평균)")
@@ -2244,7 +2286,7 @@ def main() -> int:
     finally:
         seg_cache.flush()
         tr_cache.flush()
-        if isinstance(translator, (GoogleTranslator, LocalTranslator)):
+        if isinstance(translator, (GoogleTranslator, LocalTranslator, RemoteMTTranslator)):
             translator.close()
         if judge_gw is not None:
             judge_gw.close()

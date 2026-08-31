@@ -276,6 +276,13 @@ def _writer_policy(tgt: str | None) -> str:
             f"articles, verb placement, agreement) wherever that is what actually makes a "
             f"boundary risky. State what {tgt} forces: \"once this is emitted, {tgt} word "
             f"order can no longer place the verb\".\n"
+            # **오라클 조건.** 기본 경로의 "언어 지식은 측정으로만" 원칙을 이 분기에서만
+            # 명시적으로 해제한다. 해제를 적어 두지 않으면 작성기가 다타깃 지시문 쪽으로
+            # 스스로 물러나 타깃 근거를 회피한다 — 그러면 비교군이 성립하지 않는다.
+            f"You are given a `target_language_profile` in the language profile. Draw on it "
+            f"and on everything else you know about {tgt} FREELY; you are not restricted to "
+            f"what was observed in the source sample. Target-side grammatical knowledge is "
+            f"the intended basis for the rules here.\n"
             + _run_time_caveat(tgt))
 
 
@@ -319,6 +326,49 @@ def profiler_system(tgt: str | None) -> str:
     assert PROFILER_SYSTEM.count(anchor) == 1
     return PROFILER_SYSTEM.replace(
         anchor, f"translation.\n\n{note}\n\nDo NOT report anything that can be COUNTED")
+
+
+# ── 타깃 언어 프로파일 (--target-aware 전용) ─────────────────────────────
+#
+# **다타깃 경로에는 존재하지 않는다.** `Profiler.profile` 이 `target_language` 를 받았을
+# 때만 호출되고, 결과는 프로파일 dict 의 `target_language_profile` 키로만 들어간다.
+# `pair_tgt=None` 이면 키가 아예 안 생기므로 프롬프트 바이트가 종전과 같다.
+#
+# **왜 소스 프로파일과 따로 부르나.** 소스 프로파일은 "샘플에서 관측한 것만 적어라"가
+# 원칙이다(`PROFILER_SYSTEM`). 타깃은 샘플이 없다 — 넘길 수 있는 것은 모델이 이미 아는
+# 지식뿐이라 근거의 성격이 다르다. 같은 호출에 섞으면 관측과 지식이 한 JSON 에 뒤섞여
+# "언어 지식은 측정으로만" 원칙의 위반 범위를 추적할 수 없게 된다. 이 실험은 그 편향을
+# **일부러 사는** 비교군이므로, 산 것이 어디까지인지 파일에 남아야 한다.
+def target_profiler_system(tgt: str, paired: bool = False) -> str:
+    return (
+        f"You are a computational linguist. Describe {tgt} as a TRANSLATION TARGET for a "
+        f"real-time (streaming) speech translation system.\n\n"
+        f"The system emits a source sentence in pieces. Once a piece is translated into "
+        f"{tgt} and shown to a listener, it CANNOT be taken back. Your job is to say what "
+        f"about {tgt} makes an early commitment dangerous.\n\n"
+        + (f"You are shown REAL source->{tgt} sentence pairs below. Ground every statement "
+           f"in what those pairs actually show; cite the pair number where you can. You may "
+           f"also draw on what you know about {tgt}, but measured evidence wins.\n\n"
+           if paired else
+           f"This is an ORACLE profile: you may draw freely on everything you know about "
+           f"{tgt} grammar. You are NOT limited to what is observable in a source sample.\n\n")
+        + f"Return ONLY a JSON object with exactly these keys:\n"
+        f'  "target_language": "{tgt}"\n'
+        f'  "word_order": "basic constituent order, and where it is rigid vs free"\n'
+        f'  "verb_placement": "where the verb lands, and what that forces a translator to '
+        f'defer"\n'
+        f'  "late_commitment_forced_by": ["phenomena that cannot be rendered until later '
+        f'source material arrives (agreement, case, gender, classifiers, honorifics, '
+        f'negation scope, separable particles, ...)"]\n'
+        f'  "reordering_vs_source": "how far {tgt} order typically departs from the source '
+        f'order, and which constituents move"\n'
+        f'  "safe_boundary_signals": ["source-side positions after which a {tgt} rendering '
+        f'is usually already settled"]\n'
+        f'  "unsafe_boundary_signals": ["source-side positions after which a {tgt} '
+        f'rendering would likely need revision"]\n\n'
+        f"Keep every value under 40 words. Both signal lists must be phrased so they can be "
+        f"recognised in the SOURCE text alone — the segmenter never sees {tgt} at run time."
+    )
 
 
 PROFILER_SYSTEM = """You are a computational linguist preparing a meaning-based segmentation
@@ -473,7 +523,8 @@ Return ONLY the prompt text. No commentary, no code fences."""
 class Profiler:
     gw: Gateway
 
-    def profile(self, samples: list[str], target_language: str | None = None) -> dict:
+    def profile(self, samples: list[str], target_language: str | None = None,
+                target_pairs: list[tuple[str, str]] | None = None) -> dict:
         """소스 언어를 프로파일한다. `target_language` 는 **`--target-aware` 에서만** 쓴다.
 
         기본(`None`)에서 안 쓰는 이유: 분절은 소스 쪽 문제라는 것이 설계 전제인데, 타깃
@@ -492,8 +543,41 @@ class Profiler:
             + f"Source sentences ({len(samples)} samples):\n"
             + "\n".join(f"{i+1}. {s}" for i, s in enumerate(samples))
         )
-        return self.gw.chat_json(profiler_system(tgt), user,
+        prof = self.gw.chat_json(profiler_system(tgt), user,
                                  max_tokens=PROFILER_MAX_TOKENS, purpose="profiler")
+        # 타깃 인지 모드에서만 타깃 언어 자체를 한 번 더 프로파일해 **키 하나로** 붙인다.
+        # 하류(작성기·Critic·PE)는 프로파일 dict 을 통째로 JSON 직렬화해 넘기므로
+        # 배선을 더 건드릴 필요가 없고, 기본 경로에는 이 키가 생기지 않는다.
+        if tgt:
+            prof["target_language_profile"] = self.target_profile(tgt, target_pairs)
+        return prof
+
+    def target_profile(self, target_language: str,
+                       pairs: list[tuple[str, str]] | None = None) -> dict:
+        """타깃 언어 프로파일. **`--target-aware` 에서만 호출된다.**
+
+        `pairs` 는 `(소스, 정답 번역)` 짝이다. 주면 **측정 기반**, 없으면 모델 사전
+        지식 기반(오라클)이다. 어느 쪽이었는지 `evidence` 키로 산출물에 남긴다 —
+        둘은 근거의 성격이 달라서 나중에 구분이 안 되면 결과를 읽을 수 없다.
+
+        **`pairs` 는 train 분할에서만 와야 한다.** dev/test 의 정답 번역이 여기 들어가면
+        그대로 프롬프트에 실려 평가 분할이 누출된다 (`data.target_texts` 주석).
+        """
+        paired = bool(pairs)
+        if paired:
+            body = "\n\n".join(
+                f"{i+1}. SOURCE: {src}\n   {target_language.upper()}: {tgt}"
+                for i, (src, tgt) in enumerate(pairs))
+            user = (f"Real source -> {target_language} pairs ({len(pairs)}):\n\n{body}\n\n"
+                    f"Profile {target_language} as described, grounded in these pairs.")
+        else:
+            user = f"Profile {target_language} as described."
+        prof = self.gw.chat_json(
+            target_profiler_system(target_language, paired), user,
+            max_tokens=PROFILER_MAX_TOKENS, purpose="target_profiler")
+        prof["evidence"] = (f"measured: {len(pairs)} parallel pairs (train split)"
+                            if paired else "model prior knowledge (no target sample)")
+        return prof
 
     def initial_prompt(self, profile: dict, target_language: str | None, spaced: bool,
                        min_t: int = 3, min_gap: int = 0,
