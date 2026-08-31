@@ -1,0 +1,44 @@
+[
+  {
+    "id": "de_de_41",
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "\"John Grant von WNED Buffalo (Reading Rainbows Heimatstation) sagte: \"\"Reading Rainbow hat Kindern beigebracht, warum sie lesen sollten, ... die Liebe zum Lesen - [die Show] hat Kinder dazu ermutigt, ein Buch in die Hand zu nehmen und zu lesen.\"\"\"",
+    "seg_text": "\"John Grant von WNED Buffalo (Reading Rainbows Heimatstation) sagte: <SEG:2> \"\"Reading Rainbow hat <SEG:5> Kindern beigebracht, warum <SEG:6> sie lesen sollten,... <SEG:3> die Liebe zum Lesen - <SEG:4> [die Show] hat <SEG:7> Kinder dazu ermutigt, <SEG:1> ein Buch in <SEG:8> die Hand zu <SEG:9> nehmen und zu lesen.\"\"\"\""
+  },
+  {
+    "id": "de_de_938",
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "In einigen föderal organisierten Ländern, wie den Vereinigten Staaten und Kanada, wird die Einkommenssteuer sowohl auf föderaler wie auch lokaler Ebene erhoben. Daher können sich die Steuerraten und -gruppen von Region zu Region unterscheiden.",
+    "seg_text": "In einigen föderal organisierten <SEG:10> Ländern, wie den <SEG:9> Vereinigten Staaten und <SEG:8> Kanada, wird die <SEG:7> Einkommenssteuer sowohl auf <SEG:6> föderaler wie auch <SEG:5> lokaler Ebene erhoben. <SEG:1> Daher können sich <SEG:4> die Steuerraten und- <SEG:3> gruppen von Region <SEG:2> zu Region unterscheiden."
+  },
+  {
+    "id": "de_de_1154",
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Obwohl Winfrey bei ihrem Abschied Tränen vergoss, versicherte sie ihren Fans, dass sie zurückkommen werde.",
+    "seg_text": "Obwohl Winfrey bei ihrem Abschied Tränen vergoss, <SEG:2> versicherte sie ihren Fans, <SEG:1> dass sie zurückkommen werde."
+  },
+  {
+    "id": "de_de_1514",
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Als die Kämpfe nach dem Transport der Verwundeten ins Krankenhaus aufhörten, blieben etwa 40 der übrigen Insassen auf dem Hof ​​und weigerten sich, in ihre Zellen zurückzukehren.",
+    "seg_text": "Als die Kämpfe nach dem <SEG:7> Transport der Verwundeten <SEG:6> ins Krankenhaus aufhörten, <SEG:1> blieben etwa 40 <SEG:5> der übrigen Insassen <SEG:4> auf dem Hof ​​ <SEG:2> und weigerten sich, <SEG:3> in ihre Zellen zurückzukehren."
+  },
+  {
+    "id": "de_de_569",
+    "rule": "too_few_tags",
+    "detail": "경계 10개 — 최소 11개 필요",
+    "text": "Die verschiedenen Konstruktionen verfügen über verschiedene Fähigkeiten, sind empfänglich für verschiedene Wellenlängen und haben unterschiedliche Sehschärfen. Zudem erfordern sie unterschiedliche Arten der Verarbeitung des Aufgenommenen zu einem sinnvollen Eindruck, und die mit der jeweiligen Konstruktionsart einhergehende Augenzahl, die für ein optimales Funkionieren notwendig ist, ist unterschiedlich.",
+    "seg_text": "Die verschiedenen Konstruktionen <SEG:2> verfügen über verschiedene <SEG:3> Fähigkeiten, sind empfänglich <SEG:4> für verschiedene Wellenlängen <SEG:1> und haben unterschiedliche <SEG:5> Sehschärfen. Zudem erfordern <SEG:6> sie unterschiedliche Arten der <SEG:7> Verarbeitung des Aufgenommenen zu einem <SEG:8> sinnvollen Eindruck, und die mit <SEG:9> der jeweiligen Konstruktionsart einhergehende <SEG:10> Augenzahl, die für ein optimales Funkionieren notwendig ist, ist unterschiedlich."
+  },
+  {
+    "id": "de_de_947",
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Die Weißmeer-Ostsee-Wasserstraße verknüpft das Nordpolarmeer mit dem Baltischen Meer über den Onegasee, den Ladogasee und Sankt Petersburg, zumeist über Flüsse und Seen.",
+    "seg_text": "Die Weißmeer-Ostsee-Wasserstraße verknüpft das Nordpolarmeer <SEG:2> mit dem Baltischen Meer <SEG:1> über den Onegasee, <SEG:3> den Ladogasee und Sankt Petersburg, zumeist <SEG:4> über Flüsse und Seen."
+  }
+]
