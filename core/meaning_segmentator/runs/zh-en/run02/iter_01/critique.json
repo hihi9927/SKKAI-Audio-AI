@@ -1,0 +1,214 @@
+{
+  "cases": [
+    {
+      "id": "cmn_hans_cn_1547",
+      "error_type": "placement",
+      "span": "日本广播协会 (NHK)",
+      "evidence": "Emitted 'National Broadcasting Company' before surrounding context; wrong org name.",
+      "cause": "other",
+      "proposed_rule": "Do not finalize an organisation's English lexicalisation from Chinese characters alone; if a parenthetical or common name is present, either copy the parenthetical or delay rendering until the clause after the name is seen.",
+      "example_pair": {
+        "input": "日本广播协会 (NHK) 还报道说，",
+        "output": "日本广播协会 (NHK) 还报道说， <SEG:1> 位于新泻县的… <SEG:2>"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_194",
+      "error_type": "placement",
+      "span": "总冠军七次后于 2006 年",
+      "evidence": "Emitted temporal modifier scope as if it modified entire clause, producing 'seven-time champion since 2006'.",
+      "cause": "modifier scope",
+      "proposed_rule": "Delay attaching dates/’after’/temporal modifiers until the main verb or head noun that they scope over has been observed.",
+      "example_pair": {
+        "input": "在赢得一级方程式 总冠军七次后于 2006 年 退役的",
+        "output": "在赢得一级方程式总冠军七次后于 2006 年 退役的 <SEG:1> 舒马赫， <SEG:2>"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_388",
+      "error_type": "placement",
+      "span": "意思是“",
+      "evidence": "Finalized gloss of quoted title before the explanatory head ('用于') and full quoted phrase arrived.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "When a '意思是/means' or quoted-definition follows, wait for the full quoted phrase or the explanatory head before emitting a gloss or interpretation.",
+      "example_pair": {
+        "input": "……意思是“用于教导",
+        "output": "……意思是“用于教导人民的正确发音”。 <SEG:1>"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_309",
+      "error_type": "placement",
+      "span": "担任 全日本柔道联盟训练委员会主席",
+      "evidence": "Committed to a specific role/head ('head coach') before the head noun '主席' was seen; wrong role wording.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not commit to a specific role/title translation until the head noun (e.g. 主席/主任) is present; use neutral phrasing or delay segmentation.",
+      "example_pair": {
+        "input": "在去世前担任 全日本柔道联盟训练委员会 主席",
+        "output": "在去世前担任全日本柔道联盟训练委员会主席。 <SEG:1>"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_934",
+      "error_type": "placement",
+      "span": "你需要一份你希望就读的学校的",
+      "evidence": "Emitted a head noun ('certificate') before the true head '录取通知书' arrived; produced incorrect noun.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "When a possessive/genitive marker (e.g. 的) or a modifier precedes, wait for the head noun before producing the NP translation or placing a boundary.",
+      "example_pair": {
+        "input": "你需要一份你希望就读的学校的",
+        "output": "你需要一份你希望就读的学校的 <SEG:1> 录取通知书， <SEG:2>"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_725",
+      "error_type": "placement",
+      "span": "一座 17 世纪",
+      "evidence": "Emitted '17th-century house' before the head noun (e.g. '修道院的中庭') — wrong building type.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "If a fragment ends with an incomplete NP such as a numeral+century ('17 世纪 ...'), delay the boundary until the following head noun appears.",
+      "example_pair": {
+        "input": "这里曾是一座 17 世纪",
+        "output": "这里曾是一座 17 世纪 修道院的中庭， <SEG:1>"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_1535",
+      "error_type": "placement",
+      "span": "使空中交通管制员能够更精确地定位飞机",
+      "evidence": "Translated agent incorrectly ('pilots were able to...') because the compound agent '空中交通管制员' was split before its head completed.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Avoid segmenting inside or before compound agent/occupation words; wait for the compound head completion before emitting an agent translation.",
+      "example_pair": {
+        "input": "而不是老旧的地面雷达技术， 使空中交通管制员能够",
+        "output": "而不是老旧的地面雷达技术， <SEG:1> 使空中交通管制员能够更精确地定位飞机。 <SEG:2>"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_1454",
+      "error_type": "placement",
+      "span": "这档节目是一档“带有全新震撼极客风格",
+      "evidence": "Finalized program-type translation before head '老式广播剧' arrived, producing wrong classification.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "When a modifier phrase precedes the noun (e.g. '带有...风格 的 老式 广播剧'), wait for the head noun before finalizing the item/type translation.",
+      "example_pair": {
+        "input": "这档节目是一档“带有全新震撼极客风格",
+        "output": "这档节目是一档“带有全新震撼极客风格 的 老式广播剧！” <SEG:1>"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_800",
+      "error_type": "reference_suspect",
+      "span": "驼鹿（也被称为麋鹿）",
+      "evidence": "Oracle and emitted translations disagree on species name; measured contradictions suggest oracle may be wrong.",
+      "cause": "other",
+      "proposed_rule": "When a named-entity or species has ambiguous common names, prefer copying the source name or using a neutral term until verified; treat oracle entity renderings as suspect if they conflict with the source.",
+      "example_pair": {
+        "input": "驼鹿（也被称为麋鹿）",
+        "output": "驼鹿（也被称为麋鹿） <SEG:1> 天生不具攻击性， <SEG:2>"
+      }
+    }
+  ],
+  "summary": "Most high-contrast failures are placement errors: the prompt lets boundaries that force the model to finalize heads, titles, names, dates or agent nouns before the disambiguating head or explanatory phrase arrives. Rank/priority appears less important here (rank_lift is small); fixing segmentation decisions that prevent premature lexical commitment (especially around possessives 的, modifiers before heads, quoted meanings, parentheticals, and century/date phrases) should deliver the largest gain.",
+  "aggregate": {
+    "dominant_error": null,
+    "dominant_basis": "No corpus rate identifies a dominant failure. Read the cases and `judge_distribution` for WHICH mechanism to fix — do not infer a rate from `case_label_counts`, those cases were selected for being the worst.",
+    "measured_rates": {
+      "coverage": {
+        "n": 7,
+        "of_n": 40,
+        "rate": 0.175,
+        "of": "all sentences scored — a true corpus rate",
+        "meaning": "sentences where the tightest budget asked for boundaries the prompt never marked, so pieces are missing outright"
+      },
+      "premature_among_judged": {
+        "n": 32,
+        "of_n": 50,
+        "rate": 0.64,
+        "of": "boundaries judged this iteration, selected as the WORST by measured contradiction — NOT a corpus rate, do not compare it against `coverage`"
+      }
+    },
+    "case_label_counts": {
+      "counts": {
+        "placement": 8,
+        "reference_suspect": 1
+      },
+      "of_n": 9,
+      "of": "the selected worst cases — NOT a rate"
+    },
+    "stuck_hint": "",
+    "priority_audit": [
+      {
+        "feature": "뒤 구두점 '，'",
+        "n": 40,
+        "rank_percentile": 0.354,
+        "contradiction": 0.1936,
+        "over_trust": 0.2355
+      },
+      {
+        "feature": "상대위치 1/3",
+        "n": 51,
+        "rank_percentile": 0.6,
+        "contradiction": 0.2365,
+        "over_trust": 0.0194
+      },
+      {
+        "feature": "상대위치 0/3",
+        "n": 69,
+        "rank_percentile": 0.62,
+        "contradiction": 0.2191,
+        "over_trust": -0.003
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 42,
+        "rank_percentile": 0.634,
+        "contradiction": 0.1871,
+        "over_trust": -0.0144
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 103,
+        "rank_percentile": 0.762,
+        "contradiction": 0.2083,
+        "over_trust": -0.1394
+      }
+    ],
+    "judge_distribution": {
+      "n_boundaries_judged": 50,
+      "verdicts": {
+        "mistranslated": 28,
+        "safe": 13,
+        "reference_suspect": 5,
+        "premature": 4
+      },
+      "n_with_cause": 32,
+      "causes": {
+        "other": {
+          "n": 17,
+          "share": 0.531
+        },
+        "head not yet arrived": {
+          "n": 12,
+          "share": 0.375
+        },
+        "mistranslated": {
+          "n": 1,
+          "share": 0.031
+        },
+        "modifier scope": {
+          "n": 1,
+          "share": 0.031
+        },
+        "referent lost": {
+          "n": 1,
+          "share": 0.031
+        }
+      }
+    },
+    "max_missing_boundaries": 0.2632,
+    "rank_lift": 0.08421,
+    "rank_lift_t": 1.52,
+    "summary": "Most high-contrast failures are placement errors: the prompt lets boundaries that force the model to finalize heads, titles, names, dates or agent nouns before the disambiguating head or explanatory phrase arrives. Rank/priority appears less important here (rank_lift is small); fixing segmentation decisions that prevent premature lexical commitment (especially around possessives 的, modifiers before heads, quoted meanings, parentheticals, and century/date phrases) should deliver the largest gain."
+  }
+}

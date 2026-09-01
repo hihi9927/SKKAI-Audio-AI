@@ -45,11 +45,23 @@
 | [en-multi-run13ta-de](en-multi-run13ta-de) | en → de | `fleurs-en-multi` | German (`--target-aware`) | 3 / [4,6,12] | 완료 | $11.87 |
 | [en-multi-run13ta-ja](en-multi-run13ta-ja) | en → ja | `fleurs-en-multi-ja` | Japanese (`--target-aware`) | 3 / [4,6,12] | 완료 | $18.07 |
 | [en-multi-run13ta-zh](en-multi-run13ta-zh) | en → zh | `fleurs-en-multi` ⚠ | Chinese (`--target-aware`) | 3 / [4,6,12] | 완료 | $15.28 |
-| [de-en-run](de-en-run) | de → 5개 | `fleurs-de-en` | 다중 (대표 English) | 3 / [4,6,12] | 완료 — iter 0~5, **iter_05 채택** | $16.86 |
-| [ja-en-run](ja-en-run) | ja → 5개 | `fleurs-ja-en` | 다중 (대표 English) | 7 / [9,14,27] | **예산 초과 중단** — iter 0~1 완료, iter_02 도중 사망 | $25.01 |
-| [zh-en-run](zh-en-run) | zh → 5개 | `fleurs-zh-en` | 다중 (대표 English) | 6 / [8,12,24] | 실행 중 (iter_03) — 같은 벽 예상 | 예산 $25 |
+| [de-en-run](de-en-run) | de → 5개 | `fleurs-de-en` | 다중 (대표 English) | 3 / [4,6,12] | 완료 — **iter_05 채택** | $17.61 |
+| [ja-en-run](ja-en-run) | ja → 5개 | `fleurs-ja-en` | 다중 (대표 English) | 7 / [9,14,27] | 완료(재개 1회) — **iter_03 채택** | $42.40 |
+| [zh-en-run](zh-en-run) | zh → 5개 | `fleurs-zh-en` | 다중 (대표 English) | 6 / [8,12,24] | 완료(재개 1회) — **채택 없음(iter_00 유지)** | $26.38 |
 
-run13 계열 4런 합계 **$55.94**. run02 세 트랙은 순차로 돌고 트랙당 상한이 $25 다. 링크 이름에는 런 번호를 안 붙였다 (`de-en-run` → `../runs/de-en/run02`) — 트랙당
+run13 계열 4런 합계 **$55.94**, x2en 세 트랙 합계 **$86.39**. 트랙당 상한 $25 로 출발했으나
+ja/zh 가 그 벽에 걸려 `--resume` 으로 한 번씩 더 돌렸다 (ja +$17.39, zh +$1.38).
+
+## 주 작동점 요약 (최종 test)
+
+| 트랙 | 주 T | effective | eff p10 | adequacy | contradiction | laal_words | 부족 경계 | 실제 개정 평가 |
+|---|---|---|---|---|---|---|---|---|
+| de-en | 6 | 0.6319 | 0.4250 | 0.7673 | 0.0999 | 4.06 | 0.00 | 4회 |
+| ja-en | 14 | 0.6118 | 0.3854 | 0.7818 | 0.1713 | 9.96 | 0.02 | 3회 |
+| zh-en | 12 | 0.6198 | 0.3985 | 0.7917 | 0.1476 | 8.70 | 0.00 | 3회 |
+
+**언어 간 절대값 비교는 하지 말 것** — 단위가 다르다 (de 어절, ja/zh 글자). 같은 언어 안에서
+T 방향과 baseline(mechanical_8) 대비만 읽는다. 링크 이름에는 런 번호를 안 붙였다 (`de-en-run` → `../runs/de-en/run02`) — 트랙당
 최신 런 하나만 가리키는 자리이고, 실제 번호는 링크가 가리키는 경로와 `config.json` 에 있다.
 `logs/` 쪽 이름은 `runs/` 의 실제 파일명 그대로 둔다.
 
@@ -58,9 +70,10 @@ run13 계열 4런 합계 **$55.94**. run02 세 트랙은 순차로 돌고 트랙
 
 ## ⚠ x2en 세 트랙은 이터레이션 수가 다르다 — 나란히 읽을 때 반드시 적을 것
 
-de-en 은 6이터를 다 돌았지만 ja-en 은 2, zh-en 은 4에서 예산 상한에 걸려 멈췄다.
-**프롬프트 품질 차이가 아니라 예산이 끊은 지점의 차이다.** 개정 기회를 덜 받은 트랙이
-불리하게 보이는 것은 당연하므로, 트랙 간 절대 비교는 하지 말 것.
+세 트랙 모두 이터를 다 채웠지만 **실제로 평가된 개정본 수는 de 4 / ja 3 / zh 3 이다.**
+ja-en `iter_04` 와 zh-en `iter_04` 가 직전 프롬프트를 그대로 다시 평가한 중복 슬롯이기
+때문이다 (아래 "재개가 슬롯을 먹는 자리" 참조). 개정 기회를 덜 받은 트랙이 불리하게
+보이는 것은 당연하므로, 트랙 간 절대 비교는 하지 말 것.
 
 원인은 `segment_retry` 다. 트랙별 1차 포맷 통과율과 재시도 비중:
 
@@ -83,6 +96,26 @@ ja/zh 는 띄어쓰기가 없어 **어절이 아니라 글자를 센다.** 그�
 (`gateway.py:39`), gpt-5-mini 기본값은 사고 켜짐이다 (콜당 10~17k). run13 도 같은 설정이라
 비교 가능성은 깨지지 않았지만, 비용을 줄이려면 이게 첫 손잡이다 — 대신 run13 과 나란히
 못 읽게 된다.
+
+### 재개가 슬롯을 먹는 자리 — `next_prompt.txt` 가 stale 로 남는다
+
+**예산 가드가 개정 단계에서 터지면 `next_prompt.txt` 가 갱신되지 않은 채 남고, 나중에
+`--resume` 하면 그 stale 프롬프트를 새 이터레이션으로 다시 평가한다.** zh-en 이 정확히
+그랬다 — 체인이 iter_03 의 후보 예열 중 `[stop] 예열 중 예산 초과` 로 죽었고,
+`iter_03/prompt.txt` = `iter_04/prompt.txt` = `next_prompt.txt` 가 같은 md5 다. 그래서
+iter_04 의 모든 수치가 iter_03 과 소수점까지 동일하다 (train 0.5990 / dev 0.6094 /
+Δ -0.01469 / 변경 220).
+
+`loop.py:1716` 의 "개정본을 잃었다" 경고는 `prompt == best` 일 때만 뜬다. stale 프롬프트는
+best 가 아니라 **직전에 기각된 개정본**이라 이 경고를 안 통과하고 조용히 넘어간다.
+
+ja-en `iter_04` 도 결과는 같지만 원인이 다르다 — 이쪽은 PE 가 정상적으로 돌았는데
+분절이 한 문장도 안 바뀌었다 (`[iter 4] 분절이 한 문장도 안 바뀌었다`).
+
+**대응**: 재개 직후 `[resume] 평가할 프롬프트 ... <- next_prompt.txt` 줄이 나오면
+`md5sum iter_$((N-1))/prompt.txt next_prompt.txt` 로 같은지 확인할 것. 같으면 그 이터는
+헛돈다 — `--iterations` 를 하나 올려 보전하거나, 개정 단계에서 죽은 것을 알고 있으면
+`next_prompt.txt` 를 지워 best 폴백으로 보내는 편이 낫다 (어차피 같은 값이다).
 
 ### 멈춘 트랙을 이어 돌리는 법
 

@@ -1,0 +1,25 @@
+{
+  "sections_changed": [
+    "[Core Principles]",
+    "[When to Segment]",
+    "[Never Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "sections_reported": [
+    "[Core Principles]",
+    "[When to Segment]",
+    "[Never Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "changelog": [
+    "Clarified Core Principles to emphasise avoiding premature commitments to heads/agents/polarity and to prefer surface cues that delay commitment.",
+    " tightened When to Segment: added concrete surface cues to avoid cutting before case/nominalizing particles, name-internal delimiters, numeral+counter sequences, and inside quoted strings; preserved permissive marking but highlighted risky positions.",
+    "Expanded Never Segment with absolute prohibitions for splits that always produce unrenderable fragments: between a noun and its case/genitive/nominalizer particle (e.g., の/が/は/を/に/で/と/へ/から/より/まで/こと), inside quoted strings (between 「 and 」), immediately after name-internal delimiter '・', and between a numeral and its counter (e.g., 2台).",
+    "Adjusted Priority Rules to demote boundaries immediately after 、 and at very early relative positions (roughly the first third of the sentence) unless the preceding span is a sentence-final predicate or a fully closed clause; added explicit high-priority preferences that delay committing to polarity, numeric quantifiers, personal names, and technical low-frequency terms until disambiguating tokens appear.",
+    "Refined Decision Procedure to require explicit check for disambiguating tokens (case particles, closing quote, counters, verb/predicate endings) before assigning high confidence; preserved the two-step candidate-then-ranking workflow and the instruction to be generous in marking."
+  ],
+  "size_budget": 16385,
+  "over_budget": false
+}

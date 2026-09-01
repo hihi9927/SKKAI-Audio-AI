@@ -1,0 +1,16 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Priority Rules]"
+  ],
+  "sections_reported": [
+    "[When to Segment]",
+    "[Priority Rules]"
+  ],
+  "changelog": [
+    "When to Segment: added concrete surface-driven guidance implementing the critic's candidate_rules as permissive candidates that should be ranked low rather than forbidden — quoted-term+explanation, ASCII-acronym parentheticals, temporal modifiers + verbs, 的/modifier tails, century/numeric modifiers, adjectives before head, role nouns/transliterations, and agentive suffixes are now explicit signals to wait for the head/closing token when possible.",
+    "Priority Rules: merged the candidate_rules into the ranking hierarchy by listing each risky pattern as a demotion signal (lower confidence) rather than an absolute ban. Also strengthened the comma-adjacent lowering rule: only promote comma cuts when the left side is a closed clause, finite verb, copyable proper name, or ends with a closing bracket/quote."
+  ],
+  "size_budget": 17361,
+  "over_budget": false
+}

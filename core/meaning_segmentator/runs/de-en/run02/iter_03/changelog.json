@@ -1,0 +1,22 @@
+{
+  "sections_changed": [
+    "[Core Principles]",
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "sections_reported": [
+    "[Core Principles]",
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "changelog": [
+    "Core Principles: tightened the definition of a 'safe' cut by positively requiring a coherent predicate (a finite verb and its local arguments) in the preceding stretch for top confidence; emphasised preferring clause-complete prefixes rather than enumerating many separate risky patterns.",
+    "When to Segment: simplified and focused surface signals. Added a concise list of immediate-followers that commonly disambiguate (e.g., subordinators, relative introducers, explanatory introducers, 'zu' infinitive marker, predicative 'als') and instructed explicitly to treat boundaries before those tokens as candidates but lower-confidence unless the preceding span already contains a full predicate and its likely complements.",
+    "Priority Rules: reworked ranking to be driven by a positive test for clause-completeness (subject + finite verb + required local arguments) for high confidence. Moved comma/apposition risks into a narrow, testable rule (comma followed by explanatory/relative introducer => demote). Kept the policy to include risky candidates but rank them low rather than forbidding them.",
+    "Decision Procedure: made candidacy pass unchanged in spirit but tightened the risk-ranking pass to apply the clause-completeness check before assigning top ranks and to explicitly demote candidates that separate a head from an immediately following disambiguator token (subordinator, relative introducer, 'zu', 'als', explanatory 'was'/'das' after comma). Kept uniqueness and enumerated ranking requirement; preserved the instruction to preserve locally coherent prefixes as candidates (they may be ranked mid instead of suppressed)."
+  ],
+  "size_budget": 19244,
+  "over_budget": false
+}

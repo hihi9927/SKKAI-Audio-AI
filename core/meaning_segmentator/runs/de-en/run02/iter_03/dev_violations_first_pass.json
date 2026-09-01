@@ -1,0 +1,408 @@
+[
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Wenn Sie eine Drohne benutzen, sollten Sie schon weit im Voraus überprüfen, was Sie filmen dürfen und welche Genehmigungen oder zusätzlichen Lizenzen erforderlich sind.",
+    "seg_text": "Wenn Sie eine Drohne benutzen, <SEG:2> sollten Sie schon weit im Voraus überprüfen, <SEG:1> was Sie filmen <SEG:3> dürfen und welche Genehmigungen oder zusätzlichen <SEG:4> Lizenzen erforderlich sind.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "\"Tommy Dreamer sagte: \"\"Luna war die erste Königin der Extreme. Meine erste Managerin. Luna starb in der Nacht der zwei Monde. Sehr einzigartig, genau wie sie. Eine starke Frau.\"\"\"",
+    "seg_text": "\"Tommy Dreamer sagte: <SEG:5> \"\"Luna war die erste Königin der Extreme. <SEG:1> Meine erste Managerin. <SEG:2> Luna starb in <SEG:6> der Nacht der zwei Monde. <SEG:3> Sehr einzigartig, genau wie sie. <SEG:4> Eine starke Frau.\"\"\"\"",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "Piquet Jr. wurde nach dem Ungarischen Grand Prix in 2009 gefeuert.",
+    "seg_text": "Piquet Jr. wurde nach dem Ungarischen Grand Prix <SEG:1> in 2009 gefeuert.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Der unbemannte Mondorbiter Chandrayaan-1 stieß seine Mondaufprallsonde (MIP) ab, die mit 1,5 Kilometern pro Sekunde (3.000 Meilen pro Stunde) über die Oberfläche des Mondes raste und in der Nähe des Mond-Südpols erfolgreich abstürzte.",
+    "seg_text": "Der unbemannte Mondorbiter Chandrayaan-1 <SEG:4> stieß seine Mondaufprallsonde <SEG:3> (MIP) ab, die mit <SEG:5> 1,5 Kilometern pro Sekunde <SEG:2> (3.000 Meilen pro Stunde) pro <SEG:6> über die Oberfläche des Mondes <SEG:1> raste und in der Nähe des Mond-Südpols erfolgreich abstürzte.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "Der unbemannte Mondorbiter Chandrayaan-1 stieß seine Mondaufprallsonde (MIP) ab, die mit 1,5 Kilometern pro Sekunde (3.000 Meilen pro Stunde) über die Oberfläche des Mondes raste und in der Nähe des Mond-Südpols erfolgreich abstürzte.",
+    "seg_text": "Der unbemannte Mondorbiter Chandrayaan-1 <SEG:4> stieß seine Mondaufprallsonde <SEG:3> (MIP) ab, die mit <SEG:5> 1,5 Kilometern pro Sekunde <SEG:2> (3.000 Meilen pro Stunde) pro <SEG:6> über die Oberfläche des Mondes <SEG:1> raste und in der Nähe des Mond-Südpols erfolgreich abstürzte.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "\"John Grant von WNED Buffalo (Reading Rainbows Heimatstation) sagte: \"\"Reading Rainbow hat Kindern beigebracht, warum sie lesen sollten, ... die Liebe zum Lesen - [die Show] hat Kinder dazu ermutigt, ein Buch in die Hand zu nehmen und zu lesen.\"\"\"",
+    "seg_text": "\"John Grant von WNED Buffalo (Reading Rainbows Heimatstation) sagte: <SEG:1> \"\"Reading Rainbow hat <SEG:5> Kindern beigebracht, warum <SEG:6> sie lesen sollten,... <SEG:3> die Liebe zum Lesen - [die Show] <SEG:4> hat Kinder dazu ermutigt, <SEG:2> ein Buch in <SEG:7> die Hand zu nehmen und zu lesen.\"\"\"",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 9개 필요",
+    "text": "\"John Grant von WNED Buffalo (Reading Rainbows Heimatstation) sagte: \"\"Reading Rainbow hat Kindern beigebracht, warum sie lesen sollten, ... die Liebe zum Lesen - [die Show] hat Kinder dazu ermutigt, ein Buch in die Hand zu nehmen und zu lesen.\"\"\"",
+    "seg_text": "\"John Grant von WNED Buffalo (Reading Rainbows Heimatstation) sagte: <SEG:1> \"\"Reading Rainbow hat <SEG:5> Kindern beigebracht, warum <SEG:6> sie lesen sollten,... <SEG:3> die Liebe zum Lesen - [die Show] <SEG:4> hat Kinder dazu ermutigt, <SEG:2> ein Buch in <SEG:7> die Hand zu nehmen und zu lesen.\"\"\"",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Wissenschaftler denken, dass Ozelote Tiere zum Fressen (Beute) mit ihrem Geruchssinn verfolgen und aufspüren. Sie schnuppern danach, wo sie sich am Boden aufgehalten haben.",
+    "seg_text": "Wissenschaftler denken, dass Ozelote Tiere zum Fressen (Beute) <SEG:3> mit ihrem Geruchssinn verfolgen und aufspüren. <SEG:1> Sie schnuppern danach, <SEG:2> wo sie sich <SEG:4> am Boden aufgehalten haben.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Infrarotbilder zeigen Temperaturunterschiede zwischen Nacht und Tag, die darauf hinweisen, dass es sich dabei wahrscheinlich um Höhlen handelt.",
+    "seg_text": "Infrarotbilder zeigen Temperaturunterschiede <SEG:3> zwischen Nacht und Tag, <SEG:2> die darauf hinweisen, <SEG:1> dass es sich dabei wahrscheinlich <SEG:4> um Höhlen handeln.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "Von einem Zyklus bestimmte Verhaltensweisen, die nicht nur Reaktionen auf Zeichen von äußeren Zyklen sind, sind bei den meisten Lebewesen bekannt, auch bei Bakterien, Pilzen, Pflanzen und Tieren.",
+    "seg_text": "Von einem Zyklus bestimmte Verhaltensweisen, <SEG:3> die nicht nur Reaktionen <SEG:5> auf Zeichen von äußeren Zyklen sind, <SEG:2> sind bei den meisten Lebewesen bekannt, <SEG:1> auch bei Bakterien, <SEG:4> Pilzen, Pflanzen und Tieren.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "Es greift auf satellitenbasierte Technologie statt der älteren Technologie auf der Basis von Bodenradar zurück, um den Fluglotsen die präzisere Lokalisierung von Flugzeugen zu ermöglichen und die Piloten mit genaueren Informationen zu versorgen.",
+    "seg_text": "Es greift auf satellitenbasierte Technologie <SEG:4> statt der älteren Technologie <SEG:5> auf der Basis von Bodenradar zurück, <SEG:1> um den Fluglotsen die präzisere <SEG:3> Lokalisierung von Flugzeugen <SEG:2> zu ermöglichen und die Piloten <SEG:6> mit genaueren Informationen zu versorgen.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Eine der Scheiben brach schließlich und dann begannen sie, durch das Fenster zu steigen,“ sagte der Überlebende Franciszek Kowal.",
+    "seg_text": "Eine der Scheiben brach <SEG:2> schließlich und dann begannen sie, <SEG:3> durch das Fenster zu steigen,“ <SEG:1> sagte der Überlebende Franciszek Kowal.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "Dadurch dreht sich der Schlittschuhläufer. Wenn sich die Schlittschuhe nach rechts neigen, dreht sich der Schlittschuhläufer nach rechts, wenn sich die Schlittschuhe nach links neigen, dreht sich der Schlittschuhläufer nach links.",
+    "seg_text": "Dadurch dreht sich der Schlittschuhläufer. <SEG:1> Wenn sich die Schlittschuhe <SEG:4> nach rechts neigen, <SEG:2> dreht sich der Schlittschuhläufer <SEG:3> nach rechts, wenn sich die Schlittschuhe <SEG:5> nach links neigen, <SEG:6> dreht sich der Schlittschuhläufer nach links.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Falls Sie mit einem Laptop oder einem Tablet reisen, legen Sie eine Kopie im Speicher oder auf der Festplatte an (die ohne Internet verfügbar ist).",
+    "seg_text": "Falls Sie mit einem Laptop oder einem Tablet reisen, <SEG:1> legen Sie eine Kopie <SEG:2> im Speicher oder <SEG:3> auf der Festplatte <SEG:4> an (die ohne Internet verfügbar ist).",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Die Waffe von Uka hatte eine Ladehemmung, als er auf den Kopf eines fünften Mannes zielte. Schneider leitet seitdem unter chronischen Schmerzen, ist auf einem Auge erblindet, und ihm fehlt ein Teil seines Schädels. Sein Gesicht musste mit Hilfe von Titan rekonstruiert werden.",
+    "seg_text": "Die Waffe von Uka <SEG:6> hatte eine Ladehemmung, <SEG:3> als er auf den Kopf <SEG:7> eines fünften Mannes zielte. <SEG:1> Schneider leitet seitdem <SEG:8> unter chronischen Schmerzen, <SEG:5> ist auf einem Auge erblindet, <SEG:4> und ihm fehlt ein Teil seines Schädels. <SEG:2> Sein Gesicht musste <SEG:9> mit Hilfe von von <SEG:10> Titan rekonstruiert werden.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 8개 필요",
+    "text": "Stardust wird einen neuen Allzeitrekord als das  schnellste Raumfahrzeug aufstellen, das je zur Erde zurückgekehrt ist. Damit bricht es den bisherigen Rekord, der im Mai 1969 bei der Rückkehr des Apollo X-Kommandomoduls aufgestellt wurde.",
+    "seg_text": "Stardust wird einen neuen <SEG:4> Allzeitrekord als das schnellste Raumfahrzeug aufstellen, <SEG:2> das je zur Erde zurückgekehrt ist. <SEG:1> Damit bricht es den bisherigen Rekord, <SEG:3> der im Mai <SEG:5> 1969 bei der <SEG:6> Rückkehr des Apollo X-Kommandomoduls aufgestellt wurde.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "Hochwertige Markenfassungen, die in solchen Gebieten erhältlich sind, können zwei Probleme aufweisen - einige sind vielleicht Fälschungen, die echten, importierten sind vielleicht teurer als im eigenen Land.",
+    "seg_text": "Hochwertige Markenfassungen, die in solchen Gebieten erhältlich sind, <SEG:1> können zwei Probleme <SEG:2> aufweisen - einige <SEG:5> sind vielleicht Fälschungen, <SEG:3> die echten, importierten <SEG:4> sind vielleicht teurer als im eigenen Land.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Einige Mittelformat-Filmkameras verwenden ein Format von 6 x 6 cm, genauer gesagt, ein 56 x 56 mm großes Negativ.",
+    "seg_text": "Einige Mittelformat-Filmkameras verwenden <SEG:2> ein Format von 6 x 6 cm, <SEG:1> genauer gesagt, ein 56 x 56 <SEG:3> mm großes Negativ.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "So mancher stabile, fähige Reisende ist schon von der Andersartigkeit des Reisens in den Entwicklungsländern überwältigt worden, wo sich die vielen kleinen kulturellen Unterschiede schnell summieren können.",
+    "seg_text": "So mancher stabile, fähige Reisende <SEG:5> ist schon von der Andersartigkeit <SEG:3> des Reisens in den Entwicklungsländern überwältigt worden, <SEG:1> wo sich die vielen <SEG:4> kleinen kulturellen Unterschiede <SEG:2> schnell summieren können.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 8개 필요",
+    "text": "Mehr über die Funktionsweise von Flugzeugen und die Abläufe während eines Fluges zu erfahren, kann manchen helfen, die Angst zu überwinden, die mit dem Unbekannten oder mit dem Gefühl, keine Kontrolle zu haben, zusammenhängt.",
+    "seg_text": "Mehr über die Funktionsweise <SEG:6> von Flugzeugen und die Abläufe <SEG:5> während eines Fluges zu erfahren, <SEG:1> kann manchen helfen, <SEG:2> die Angst zu überwinden, <SEG:3> die mit dem Unbekannten oder mit dem Gefühl, <SEG:4> keine Kontrolle zu haben, zusammenhängt.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Sie befindet sich bis zur Anklageerhebung und Verhandlung in Untersuchungshaft, doch Aussagen von Augenzeugen könnten verfälscht sein, da ihr Bild weithin veröffentlicht wurde.",
+    "seg_text": "Sie befindet sich <SEG:2> bis zur Anklageerhebung und Verhandlung in Untersuchungshaft, <SEG:1> doch Aussagen von Augenzeugen <SEG:3> könnten verfälscht sein, <SEG:4> da ihr Bild weithin veröffentlicht wurde.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Am 24 September 1759 unterzeichnete Arthur Guinness einen 9000-jährigen Pachtvertrag für die St. James' Gate Brewery in Dublin, Irland.",
+    "seg_text": "Am 24 September 1759 <SEG:2> unterzeichnete Arthur Guinness einen 9000-jährigen Pachtvertrag <SEG:1> für die St. James' Gate Brewery <SEG:3> in Dublin, Irland.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 9개 필요",
+    "text": "Die neuseeländische Polizei hatte wegen der geringen Höhe von Black Beauty Schwierigkeiten, die Geschwindigkeit Reids mit ihren Radarpistolen zu erfassen, und es gelang ihr nur ein einziges Mal, die Geschwindigkeit zu messen, als Reid auf 160 km/h abbremste.",
+    "seg_text": "Die neuseeländische Polizei <SEG:6> hatte wegen der geringen Höhe von Black Beauty <SEG:5> Schwierigkeiten, die Geschwindigkeit Reids <SEG:4> mit ihren Radarpistolen zu erfassen, <SEG:1> und es gelang ihr nur ein einziges Mal, <SEG:3> die Geschwindigkeit zu messen, <SEG:2> als Reid auf 160 km/h abbremste.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Menschen können durch das Einatmen von betroffenem Wasser beeinträchtigt werden, das durch Wind und Wellen in die Luft gerät.",
+    "seg_text": "Menschen können durch das Einatmen <SEG:2> von betroffenem Wasser beeinträchtigt werden, <SEG:1> das durch Wind und Wellen <SEG:3> in die Luft gerät.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Nach einer Woche voller Verluste in der Zwischenwahl erzählte Bush dem Publikum von der Ausweitung des Handels in Asien.",
+    "seg_text": "Nach einer Woche voller Verluste <SEG:2> in der Zwischenwahl erzählte <SEG:1> Bush dem Publikum <SEG:3> von der Ausweitung des Handels in Asien.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Trinken Sie alkoholische Getränke in Maßen. Alkohol wirkt sich auf jeden anders aus und es ist sehr wichtig, die eigene Grenze zu kennen.",
+    "seg_text": "Trinken Sie alkoholische Getränke in Maßen. <SEG:1> Alkohol wirkt sich <SEG:4> auf jeden anders aus <SEG:2> und es ist <SEG:3> sehr eigene zu kennen.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Trinken Sie alkoholische Getränke in Maßen. Alkohol wirkt sich auf jeden anders aus und es ist sehr wichtig, die eigene Grenze zu kennen.",
+    "seg_text": "Trinken Sie alkoholische Getränke in Maßen. <SEG:1> Alkohol wirkt sich <SEG:4> auf jeden anders aus <SEG:2> und es ist <SEG:3> sehr eigene zu kennen.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Der Amazonas ist der zweitlängste und der wasserreichste Fluss der Erde. Er führt mehr als achtmal so wie Wasser wie der zweitgrößte Strom.",
+    "seg_text": "Der Amazonas ist der zweitlängste <SEG:3> und der wasserreichste <SEG:2> Fluss der Erde. <SEG:1> Er führt mehr als achtmal so wie <SEG:4> Wasser wie der zweitgrößte Strom.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 11개 필요",
+    "text": "Touren sind für größere Gruppen billiger. Sollten Sie alleine oder lediglich mit einem Freund bzw. einer Freundin unterwegs sein, dann sollten Sie sich mit anderen zusammentun und versuchen, eine Gruppe von vier bis sechs Personen zu gründen, um einen für die einzelne Person günstigeren Tarif zu erhalten.",
+    "seg_text": "Touren sind für größere Gruppen billiger. <SEG:1> Sollten Sie alleine oder lediglich mit einem <SEG:5> Freund bzw. einer Freundin unterwegs sein, <SEG:4> dann sollten Sie sich mit anderen zusammentun <SEG:3> und versuchen, eine Gruppe von vier bis sechs Personen <SEG:2> zu gründen, um einen für die einzelne Person günstigeren Tarif zu erhalten.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Er machte eine Ausbildung als Entbindungsarzt und nahm 1959 seine Arbeit im National Women's Hospital in Auckland auf.",
+    "seg_text": "Er machte eine Ausbildung als Entbindungsarzt <SEG:2> und nahm 1959 seine Arbeit <SEG:1> im National Women's Hospital <SEG:3> in Auckland auf.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 8개 필요",
+    "text": "Mutationen können verschiedenste Auswirkungen haben, je nachdem, um welche Art von Mutation es sich handelt, welche Bedeutung das betreffende Stück genetischen Materials hat und ob es sich bei den betreffenden Zellen um Keimbahnzellen handelt.",
+    "seg_text": "Mutationen können verschiedenste Auswirkungen <SEG:5> haben, je nachdem, <SEG:7> um welche Art von Mutation <SEG:4> es sich handelt, <SEG:1> welche Bedeutung das <SEG:6> betreffende Stück genetischen Materials <SEG:2> hat und ob es sich bei den betreffenden Zellen <SEG:3> um Keimbahnzellen handelt.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Dies bestätigt nicht nur, dass zumindest einige Dinosaurier Federn hatten, eine Theorie, die bereits weit verbreitet ist, sondern liefert auch Details, die Fossilien im Allgemeinen nicht liefern können, wie etwa Farbe und dreidimensionale Anordnung.",
+    "seg_text": "Dies bestätigt nicht <SEG:4> nur, je nachdem, <SEG:5> dass zumindest einige <SEG:1> Dinosaurier Federn hatten, <SEG:2> eine Theorie, die bereits weit verbreitet ist, <SEG:3> sondern liefert auch Details, <SEG:6> die Fossilien im Allgemeinen <SEG:7> nicht liefern können, wie etwa Farbe und dreidimensionale Anordnung.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 8개 필요",
+    "text": "Dies bestätigt nicht nur, dass zumindest einige Dinosaurier Federn hatten, eine Theorie, die bereits weit verbreitet ist, sondern liefert auch Details, die Fossilien im Allgemeinen nicht liefern können, wie etwa Farbe und dreidimensionale Anordnung.",
+    "seg_text": "Dies bestätigt nicht <SEG:4> nur, je nachdem, <SEG:5> dass zumindest einige <SEG:1> Dinosaurier Federn hatten, <SEG:2> eine Theorie, die bereits weit verbreitet ist, <SEG:3> sondern liefert auch Details, <SEG:6> die Fossilien im Allgemeinen <SEG:7> nicht liefern können, wie etwa Farbe und dreidimensionale Anordnung.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Wenn kein Bügeleisen verfügbar ist oder man keine gebügelten Socken tragen will, kann man versuchen, einen Föhn zu verwenden, falls einer vorhanden ist.",
+    "seg_text": "Wenn kein Bügeleisen <SEG:5> verfügbar ist oder man <SEG:4> keine gebügelten Socken tragen will, <SEG:1> kann man versuchen <SEG:3> einen Föhn zu verwenden, <SEG:2> falls einer vorhanden ist.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "Die große Pyramide wurde dem Pharao Cheops zu Ehren erbaut und viele der kleineren Pyramiden, Grabmale und Tempel wurden zu Ehren von Cheops Ehefrauen und Familienmitgliedern errichtet.",
+    "seg_text": "Die große Pyramide <SEG:3> wurde dem Pharao Cheops zu Ehren erbaut <SEG:1> und viele der kleineren <SEG:4> Pyramiden, Grabmale und Tempel <SEG:2> wurden zu Ehren von Cheops <SEG:5> Ehefrauen und Familienmitgliedern errichtet.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "Computer werden heutzutage verwendet, um Bilder und Videos zu manipulieren.",
+    "seg_text": "Computer werden heutzutage verwendet, <SEG:1> um Bilder und Videos zu manipulieren.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Als die Kämpfe nach dem Transport der Verwundeten ins Krankenhaus aufhörten, blieben etwa 40 der übrigen Insassen auf dem Hof ​​und weigerten sich, in ihre Zellen zurückzukehren.",
+    "seg_text": "Als die Kämpfe <SEG:6> nach dem Transport der Verwundeten <SEG:4> ins Krankenhaus aufhörten, <SEG:1> blieben etwa 40 der übrigen Insassen <SEG:3> auf dem Hof <SEG:2> und weigerten sich, <SEG:5> in ihre Zellen zurückzukehren.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Versteinerte Handknochen, deren Alter zwei bis drei Millionen Jahre beträgt, weisen diese Veränderung der Spezialisierung der Hand vom Fortbewegungsmittel zum Greifwerkzeug auf.",
+    "seg_text": "Versteinerte Handknochen, deren Alter <SEG:4> zwei bis drei Millionen Jahre beträgt, <SEG:1> weisen diese Veränderung <SEG:3> der Spezialisierung der Hand vom Fortbewegungsmittel <SEG:2> zum Greifwerkzeug auf.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Bobek, in der kroatischen Hauptstadt Zagreb geboren, wurde schnell bekannt, während er für Partizan Belgrade spielte.",
+    "seg_text": "Bobek, in der kroatischen Hauptstadt Zagreb geboren, <SEG:1> wurde schnell bekannt, <SEG:2> während er für Partizan Belgrade spielte.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 7개 필요",
+    "text": "Der Gesetzesvorschlag sieht vor, dass im Bundesstaat Kalifornien verkaufte Videospiele mit einem Aufkleber mit der Zahl „18“ versehen werden und der Verkauf an Minderjährige mit einer Geldbuße von 1000 $ bestraft wird.",
+    "seg_text": "Der Gesetzesvorschlag sieht vor, <SEG:5> dass im Bundesstaat Kalifornien verkaufte <SEG:4> Videospiele mit einem Aufkleber <SEG:2> mit der Zahl „18“ versehen werden <SEG:1> und der Verkauf <SEG:3> an Minderjährige mit einer Geldbuße von 1000 $ bestraft wird.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Es gibt Bedenken, dass Patienten trotz milder verlaufender Grippesymptome andere Menschen anstecken könnten, wenn sie ihrem normalen Tagesablauf nachgehen.",
+    "seg_text": "Es gibt Bedenken, <SEG:2> dass Patienten trotz milder verlaufender Grippesymptome <SEG:3> andere Menschen anstecken könnten, <SEG:1> wenn sie ihrem normalen Tagesablauf nachgehen.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 9개 — 최소 11개 필요",
+    "text": "Die verschiedenen Konstruktionen verfügen über verschiedene Fähigkeiten, sind empfänglich für verschiedene Wellenlängen und haben unterschiedliche Sehschärfen. Zudem erfordern sie unterschiedliche Arten der Verarbeitung des Aufgenommenen zu einem sinnvollen Eindruck, und die mit der jeweiligen Konstruktionsart einhergehende Augenzahl, die für ein optimales Funkionieren notwendig ist, ist unterschiedlich.",
+    "seg_text": "Die verschiedenen Konstruktionen <SEG:9> verfügen über verschiedene Fähigkeiten, <SEG:3> sind empfänglich für verschiedene Wellenlängen <SEG:4> und haben unterschiedliche Sehschärfen. <SEG:1> Zudem erfordern sie unterschiedliche Arten <SEG:5> der Verarbeitung des Aufgenommenen <SEG:6> zu einem sinnvollen Eindruck, <SEG:2> und die mit der jeweiligen Konstruktionsart einhergehende Augenzahl, <SEG:7> die für ein optimales Funkionieren <SEG:8> notwendig ist, ist unterschiedlich.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Versuchen Sie mit so vielen Leuten wie möglich zu sprechen. Nach einer Weile kennt Sie jeder und Sie werden Tipps erhalten, welches Boot jemanden sucht.",
+    "seg_text": "Versuchen Sie mit so vielen Leuten wie möglich zu sprechen. <SEG:1> Nach einer Weile <SEG:2> kennt Sie jeder <SEG:3> und Sie werden Tipps erhalten, <SEG:4> welches Boot jemanden sucht.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Wenn man einen formell angelegten Garten besucht und „Proben“ sammelt, wird man ebenfalls ohne Diskussion hinausgeworfen.",
+    "seg_text": "Wenn man einen formell angelegten Garten besucht <SEG:2> und „Proben“ sammelt, <SEG:1> wird man ebenfalls ohne Diskussion hinausgeworfen.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 5개 필요",
+    "text": "Virtuelle Exkursionen stellen eine technische Lösung dar. Die Schüler können vom Klassenzimmer aus Museumsstücke betrachten, ein Aquarium besuchen oder schöne Kunstwerke bewundern.",
+    "seg_text": "Virtuelle Exkursionen stellen eine <SEG:3> technische Lösung dar. <SEG:1> Die Schüler können vom Klassenzimmer aus Museumsstücke <SEG:2> betrachten, ein Aquarium besuchen oder schöne Kunstwerke bewundern.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Es hatte eine schwächere Armee und eine schwächere Marine, obwohl man erst kurz vor Beginn des Krieges vier neue Schiffe gebaut hatte.",
+    "seg_text": "Es hatte eine schwächere Armee <SEG:2> und eine schwächere Marine, <SEG:1> obwohl man erst <SEG:3> kurz vor Beginn des Krieges <SEG:4> vier neue Schiffe gebaut hatte.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Augen können auf vielerlei Weisen aufgebaut sein, deren Komplexität sich mit den Erfordernissen der Lebensform unterscheidet.",
+    "seg_text": "Augen können auf vielerlei Weisen aufgebaut sein, <SEG:1> deren Komplexität sich mit den Erfordernissen <SEG:2> der Lebensform unterscheidet.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Beim Menschen ist die Hand kürzer als der Fuß, wobei die Phalangen gerader sind.",
+    "seg_text": "Beim Menschen ist die Hand kürzer <SEG:2> als der Fuß, <SEG:1> wobei die Phalangen gerader sind.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Die meisten Bezirke werden durch kleine japanische Coasterbusse befahren, die gemütlich und stabil sind.x",
+    "seg_text": "Die meisten Bezirke werden <SEG:2> durch kleine japanische Coasterbusse <SEG:1> befahren, die gemütlich und stabil sind.x",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "Historiker haben die Politik des FBI aus früherer Zeit kritisiert, seine Ressourcen in der Absicht, die Erfolgsquote der Behörde zu steigern, auf einfach zu lösende Fälle, insbesondere auf Fälle von Autodiebstahl, zu konzentrieren.",
+    "seg_text": "Historiker haben die Politik des FBI <SEG:4> aus früherer Zeit <SEG:5> kritisiert, seine Ressourcen <SEG:3> in der Absicht, <SEG:1> die Erfolgsquote der Behörde <SEG:2> zu steigern, auf <SEG:6> einfach zu lösende Fälle, insbesondere auf Fälle von Autodiebstahl, zu konzentrieren.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "In anderen Teilen der Welt, in denen die bakteriologische Fauna neu für Sie ist, werden Sie jedoch viel eher auf Probleme stoßen.",
+    "seg_text": "In anderen Teilen <SEG:2> der Welt, in denen die bakteriologische Fauna neu <SEG:4> für Sie ist, <SEG:1> werden Sie jedoch viel <SEG:3> eher auf Probleme stoßen.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "\"\"\"Es wird sich wie Wasser verhalten. Es ist genauso durchsichtig wie Wasser.\"",
+    "seg_text": "\"\"\"Es wird sich wie Wasser verhalten. <SEG:1> Es ist genauso durchsichtig wie Wasser.\"",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Die Sichtweite kann auch durch fallenden oder umherwehenden Schnee oder durch Kondensation oder Eis auf den Fahrzeugfenstern beeinträchtigt werden.x",
+    "seg_text": "Die Sichtweite kann auch <SEG:3> durch fallenden oder umherwehenden Schnee <SEG:1> oder durch Kondensation <SEG:2> oder Eis auf den Fahrzeugfenstern beeinträchtigt werden.x",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Im Gegensatz dazu sind tierische Nahrungsquellen (Ameisen, Termiten, Eier) nicht nur leicht verdaulich, sondern liefern auch große Mengen von Eiweißen, die alle essentiellen Aminosäuren enthalten.",
+    "seg_text": "Im Gegensatz dazu <SEG:4> sind tierische Nahrungsquellen (Ameisen, Termiten, Eier) <SEG:3> nicht nur leicht verdaulich, <SEG:1> sondern liefern auch große Mengen von Eiweißen, <SEG:2> die alle essentiellen Aminosäuren enthalten.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Das ist der Fall, wenn Menschen zum Entspannen und Vergnügen an einen Ort gehen, der sich stark von ihrem normalen Alltagsleben unterscheidet.",
+    "seg_text": "Das ist der Fall, <SEG:1> wenn Menschen zum Entspannen <SEG:3> und Vergnügen an einen Ort <SEG:2> gehen, der sich <SEG:4> stark von ihrem normalen Alltagsleben unterscheidet.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 8개 필요",
+    "text": "Sein Status nahm im Laufe des zwölften Jahrhunderts ab, was vor allem darauf zurückzuführen war, dass die Kreuzritter mit Geschenken wie Seide und Gewürzen zurückgekehrt waren, die als wertvoller als das Angebot der byzantinischen Märkte erachtet wurden.",
+    "seg_text": "Sein Status nahm <SEG:7> im Laufe des zwölften Jahrhunderts ab, <SEG:1> was vor allem darauf zurückzuführen war, <SEG:2> dass die Kreuzritter <SEG:4> mit Geschenken wie Seide <SEG:5> und Gewürzen zurückgekehrt waren, <SEG:3> die als wertvoller <SEG:6> als das Angebot der byzantinischen Märkte erachtet wurden.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Tiere sind überall auf der Erde zu finden. Sie wühlen sich durch den Erdboden, schwimmen in den Ozeanen und fliegen in der Luft.",
+    "seg_text": "Tiere sind überall <SEG:4> auf der Erde zu finden. <SEG:1> Sie wühlen sich durch den Erdboden, <SEG:3> schwimmen in den Ozeanen <SEG:2> und fliegen in der Luft.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "Jeden Morgen verlassen Menschen kleine Provinzstädte mit dem Auto, um zu ihrem Arbeitsplatz zu fahren und werden von anderen passiert, deren Arbeitsstelle an dem Ort ist, den sie gerade verlassen haben.",
+    "seg_text": "Jeden Morgen verlassen <SEG:6> Menschen kleine Provinzstädte <SEG:5> mit dem Auto, <SEG:2> um zu ihrem Arbeitsplatz zu fahren <SEG:3> und werden von anderen passiert, <SEG:1> deren Arbeitsstelle an dem Ort ist, <SEG:4> den sie gerade verlassen haben.",
+    "first_pass": true
+  }
+]

@@ -1,0 +1,187 @@
+{
+  "cases": [
+    {
+      "id": "de_de_632",
+      "error_type": "placement",
+      "span": "die Absichten anderer zu verstehen",
+      "evidence": "Piece finalized attachment as 'intentions to understand others' instead of 'intentions OF others to understand...'",
+      "cause": "modifier scope",
+      "proposed_rule": "If a noun can take an immediate possessor or an infinitival complement, do not finalize attachment before that following word arrives; rank such comma/space cuts lower.",
+      "example_pair": {
+        "input": "Neben diesen Fähigkeiten ist es entscheidend, die Absichten anderer zu verstehen. Es ermöglicht uns, mögliche Zweideutigkeiten physischer Handlungen auszuräumen.",
+        "output": "Neben diesen Fähigkeiten ist es entscheidend, die Absichten <SEG:1> anderer zu verstehen. <SEG:2> Es ermöglicht uns, mögliche Zweideutigkeiten physischer Handlungen auszuräumen."
+      }
+    },
+    {
+      "id": "de_de_869",
+      "error_type": "placement",
+      "span": "mit westlicher Prägung und Qualität",
+      "evidence": "Cut before 'und Qualität' led to literal 'western embossing' instead of neutral 'Western feel/character'.",
+      "cause": "other",
+      "proposed_rule": "When an adjective+noun chunk can express a figurative quality (Prägung / Färbung / Charakter), avoid finalizing a literal noun sense until any coordinating modifier (e.g., 'und ...') or clarifying noun arrives; prefer a neutral term if forced.",
+      "example_pair": {
+        "input": "Vor allem in den ersten Tagen sollten Sie erwägen, Hotels, Essen und Dienstleistungen mit westlicher Prägung und Qualität in Anspruch zu nehmen, um die Akklimatisierung zu erleichtern.",
+        "output": "Vor allem in den ersten Tagen sollten Sie erwägen, Hotels, Essen und Dienstleistungen mit westlicher Prägung und Qualität <SEG:1> in Anspruch zu nehmen, um die Akklimatisierung zu erleichtern."
+      }
+    },
+    {
+      "id": "de_de_471",
+      "error_type": "placement",
+      "span": "streben, die nationale Souveränität",
+      "evidence": "Boundary before the infinitive/complement caused wrong object rendering ('consolidate national sovereignty').",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not finalize a verb phrase or its object when the main governing infinitive/verb or its complement may follow (e.g., constructions with 'zu'/'aufrechtzuerhalten'); delay or lower rank for cuts that separate a governing verb from its infinitive/complement.",
+      "example_pair": {
+        "input": "Das Kräftegleichgewicht war ein System, in dem die europäischen Nationen danach strebten, die nationale Souveränität aller europäischen Staaten aufrechtzuerhalten,",
+        "output": "Das Kräftegleichgewicht war ein System, in dem die europäischen Nationen danach strebten, die nationale Souveränität aller europäischen Staaten aufrechtzuerhalten, <SEG:1>"
+      }
+    },
+    {
+      "id": "de_de_1037",
+      "error_type": "placement",
+      "span": "deuteten die Messungen des Meeresspiegels darauf hin,",
+      "evidence": "Tense/aspect of reporting verb was fixed before subordinate 'dass' clause arrived, causing tense mismatch.",
+      "cause": "polarity not yet settled",
+      "proposed_rule": "For reporting verbs or phrase heads that commonly introduce subordinate 'dass'/'that' clauses, avoid finalizing tense/aspect until the subordinate clause arrives; rank the boundary lower when 'darauf hin,' or similar precedes 'dass'.",
+      "example_pair": {
+        "input": "Laut dem aktuellen Bulletin deuteten die Messungen des Meeresspiegels darauf hin, dass ein Tsunami ausgelöst wurde. In der Nähe von Pago Pago und Niue wurde eine eindeutige Tsunami-Aktivität aufgezeichnet.",
+        "output": "Laut dem aktuellen Bulletin deuteten die Messungen des Meeresspiegels darauf hin, dass ein Tsunami ausgelöst wurde. <SEG:1> In der Nähe von Pago Pago und Niue wurde eine eindeutige Tsunami-Aktivität aufgezeichnet."
+      }
+    },
+    {
+      "id": "de_de_1454",
+      "error_type": "placement",
+      "span": "beschreibt die Show als „Radiotheater",
+      "evidence": "Committed to a categorical label before predicative marker 'als' and the remainder of the quoted description; led to wrong noun sense.",
+      "cause": "modifier scope",
+      "proposed_rule": "Delay committing to a categorical/predicative label when the source uses a marker like 'als' introducing a descriptive phrase or quotation; rank cuts before the predicative marker lower.",
+      "example_pair": {
+        "input": "Die Website des Senders beschreibt die Show als „Radiotheater alter Schule mit einer neuen und unheimlichen schrägen Interpretation!“",
+        "output": "Die Website des Senders beschreibt die Show als „Radiotheater alter Schule mit einer neuen und unheimlichen schrägen Interpretation!“ <SEG:1>"
+      }
+    },
+    {
+      "id": "de_de_967",
+      "error_type": "priority",
+      "span": "Cinque Terre, was soviel bedeutet",
+      "evidence": "Boundary after the comma before an explanatory 'was' was ranked relatively high despite high contradiction from later disambiguating context ('Länder' sense).",
+      "cause": "other",
+      "proposed_rule": "Demote boundaries that occur immediately after a comma when the following token is an explanatory/relative introducer (e.g., 'was','which','that') or when the comma signals apposition, because the following clause often disambiguates lexical sense.",
+      "example_pair": {
+        "input": "Cinque Terre, was soviel bedeutet wie Fünf Länder, umfasst die fünf kleinen Küstendörfer Riomaggiore, Manarola, Corniglia, Vernazza und Monterosso in der italienischen Region Ligurien.",
+        "output": "Cinque Terre, was soviel bedeutet wie Fünf Länder, <SEG:1> umfasst die fünf kleinen Küstendörfer Riomaggiore, Manarola, Corniglia, Vernazza und Monterosso <SEG:2> in der italienischen Region Ligurien."
+      }
+    },
+    {
+      "id": "de_de_339",
+      "error_type": "reference_suspect",
+      "span": "Während seiner Aufwärmrunde stürzte Lenz",
+      "evidence": "Local translation gave an unambiguous time ('during his warm-up lap') that the oracle contradicted; human judge flagged the oracle as suspect.",
+      "cause": "other",
+      "proposed_rule": "When a local prefix yields a coherent, unambiguous translation but the oracle contradicts it, prefer preserving the local rendering and mark the case as reference_suspect rather than suppressing the boundary.",
+      "example_pair": {
+        "input": "Während seiner Aufwärmrunde stürzte Lenz von seinem Motorrad und wurde dann von seinem Rennkollegen Xavier Zayat überfahren.",
+        "output": "Während seiner Aufwärmrunde stürzte Lenz von seinem Motorrad <SEG:1> und wurde dann von seinem Rennkollegen Xavier Zayat überfahren. <SEG:2>"
+      }
+    }
+  ],
+  "summary": "Most failures are placement mistakes where the prompt lets boundaries separate heads from their complements (possessors, predicative 'als', infinitives, 'dass' clauses, relative/explanatory clauses), producing wrong attachments or lexical choices. A secondary problem is over‑trusting comma breaks that introduce apposition/explanations. Also flag instances where the oracle contradicts a coherent local rendering as reference_suspect and preserve the local translation.",
+  "aggregate": {
+    "dominant_error": null,
+    "dominant_basis": "No corpus rate identifies a dominant failure. Read the cases and `judge_distribution` for WHICH mechanism to fix — do not infer a rate from `case_label_counts`, those cases were selected for being the worst.",
+    "measured_rates": {
+      "coverage": {
+        "n": 0,
+        "of_n": 40,
+        "rate": 0.0,
+        "of": "all sentences scored — a true corpus rate",
+        "meaning": "sentences where the tightest budget asked for boundaries the prompt never marked, so pieces are missing outright"
+      },
+      "premature_among_judged": {
+        "n": 18,
+        "of_n": 50,
+        "rate": 0.36,
+        "of": "boundaries judged this iteration, selected as the WORST by measured contradiction — NOT a corpus rate, do not compare it against `coverage`"
+      }
+    },
+    "case_label_counts": {
+      "counts": {
+        "placement": 5,
+        "priority": 1,
+        "reference_suspect": 1
+      },
+      "of_n": 7,
+      "of": "the selected worst cases — NOT a rate"
+    },
+    "stuck_hint": "직전 개정이 [When to Segment], [Priority Rules], [Decision Procedure] 를 고쳤는데 채택에 실패했다. 같은 섹션을 같은 방식으로 다시 고치지 말 것 — 다른 섹션을 보거나 같은 섹션이라도 반대 방향(금지 추가가 아니라 완화)을 검토할 것",
+    "priority_audit": [
+      {
+        "feature": "뒤 구두점 ','",
+        "n": 34,
+        "rank_percentile": 0.41,
+        "contradiction": 0.0539,
+        "over_trust": 0.1146
+      },
+      {
+        "feature": "상대위치 1/3",
+        "n": 49,
+        "rank_percentile": 0.524,
+        "contradiction": 0.1011,
+        "over_trust": 0.0882
+      },
+      {
+        "feature": "상대위치 0/3",
+        "n": 59,
+        "rank_percentile": 0.623,
+        "contradiction": 0.0816,
+        "over_trust": -0.0173
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 41,
+        "rank_percentile": 0.671,
+        "contradiction": 0.0937,
+        "over_trust": -0.069
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 104,
+        "rank_percentile": 0.7,
+        "contradiction": 0.097,
+        "over_trust": -0.1017
+      }
+    ],
+    "judge_distribution": {
+      "n_boundaries_judged": 50,
+      "verdicts": {
+        "safe": 29,
+        "mistranslated": 17,
+        "reference_suspect": 3,
+        "premature": 1
+      },
+      "n_with_cause": 18,
+      "causes": {
+        "other": {
+          "n": 14,
+          "share": 0.778
+        },
+        "wrong participant": {
+          "n": 2,
+          "share": 0.111
+        },
+        "head not yet arrived": {
+          "n": 1,
+          "share": 0.056
+        },
+        "modifier scope": {
+          "n": 1,
+          "share": 0.056
+        }
+      }
+    },
+    "max_missing_boundaries": 0.0,
+    "rank_lift": 0.09492,
+    "rank_lift_t": 3.1,
+    "summary": "Most failures are placement mistakes where the prompt lets boundaries separate heads from their complements (possessors, predicative 'als', infinitives, 'dass' clauses, relative/explanatory clauses), producing wrong attachments or lexical choices. A secondary problem is over‑trusting comma breaks that introduce apposition/explanations. Also flag instances where the oracle contradicts a coherent local rendering as reference_suspect and preserve the local translation."
+  }
+}

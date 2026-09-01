@@ -1,0 +1,21 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "sections_reported": [
+    "[When to Segment]",
+    "[Never Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "changelog": [
+    "[When to Segment]: Clarified that positions which end on modifiers (e.g. 的), numerals+century, open quotes after 意思是, parenthetical/parenthesis openings, organisation names immediately followed by an acronym, and other incomplete-head signals should be marked as candidates but treated as risky until the head or closing token appears — this reduces premature lexical commitment while preserving candidates.",
+    "[Never Segment]: Removed any added blanket ban on splitting inside compound agent/occupation words; kept only absolute, corpus-wide forbids (punctuation attachment, breaking dates/numerals, cutting mid-parenthetical/quote, start/end). This relaxes an over-broad prohibition that previously prevented useful candidates.",
+    "[Priority Rules]: Added explicit ranking guidance to demote (but not forbid) boundaries that would finalize entity lexicalisations, titles/roles, dates/temporal modifiers, or NP heads when such items are likely completed by following tokens; promote boundaries only after main predicates, head nouns, or closing quote/parenthesis appear.",
+    "[Decision Procedure]: Added a lightweight post-ranking re-evaluation pass that detects candidates that terminate in open modifiers (的), open quotes/parentheses, numerals+世纪/date fragments, reporting/compliment- expecting verbs, or unstable prepositional/comparative prefixes and pushes them to the bottom of the ranking rather than removing them."
+  ],
+  "size_budget": 17361,
+  "over_budget": false
+}

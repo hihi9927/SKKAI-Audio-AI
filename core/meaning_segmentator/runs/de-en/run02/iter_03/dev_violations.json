@@ -1,0 +1,37 @@
+[
+  {
+    "id": "de_de_1264",
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "\"Tommy Dreamer sagte: \"\"Luna war die erste Königin der Extreme. Meine erste Managerin. Luna starb in der Nacht der zwei Monde. Sehr einzigartig, genau wie sie. Eine starke Frau.\"\"\"",
+    "seg_text": "\"Tommy Dreamer sagte: <SEG:5> \"\"Luna war die <SEG:8> erste Königin der Extreme. <SEG:1> Meine erste Managerin. <SEG:2> Luna starb in der <SEG:7> Nacht der zwei <SEG:6> Monde. Sehr einzigartig, <SEG:4> genau wie sie. <SEG:3> Eine starke Frau.\"\"\"\""
+  },
+  {
+    "id": "de_de_1012",
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Infrarotbilder zeigen Temperaturunterschiede zwischen Nacht und Tag, die darauf hinweisen, dass es sich dabei wahrscheinlich um Höhlen handelt.",
+    "seg_text": "Infrarotbilder zeigen Temperaturunterschiede <SEG:1> zwischen Nacht und <SEG:4> Tag, die darauf <SEG:2> hinweisen, dass es sich dabei wahrscheinlich <SEG:3> um Höhlen handeln."
+  },
+  {
+    "id": "de_de_1514",
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Als die Kämpfe nach dem Transport der Verwundeten ins Krankenhaus aufhörten, blieben etwa 40 der übrigen Insassen auf dem Hof ​​und weigerten sich, in ihre Zellen zurückzukehren.",
+    "seg_text": "Als die Kämpfe <SEG:7> nach dem Transport <SEG:6> der Verwundeten ins Krankenhaus aufhörten, <SEG:2> blieben etwa 40 <SEG:4> der übrigen Insassen <SEG:3> auf dem Hof <SEG:1> und weigerten sich, <SEG:5> in ihre Zellen zurückzukehren."
+  },
+  {
+    "id": "de_de_569",
+    "rule": "too_few_tags",
+    "detail": "경계 9개 — 최소 11개 필요",
+    "text": "Die verschiedenen Konstruktionen verfügen über verschiedene Fähigkeiten, sind empfänglich für verschiedene Wellenlängen und haben unterschiedliche Sehschärfen. Zudem erfordern sie unterschiedliche Arten der Verarbeitung des Aufgenommenen zu einem sinnvollen Eindruck, und die mit der jeweiligen Konstruktionsart einhergehende Augenzahl, die für ein optimales Funkionieren notwendig ist, ist unterschiedlich.",
+    "seg_text": "Die verschiedenen Konstruktionen verfügen <SEG:5> über verschiedene Fähigkeiten, <SEG:6> sind empfänglich für verschiedene Wellenlängen <SEG:9> und haben unterschiedliche Sehschärfen. <SEG:1> Zudem erfordern sie <SEG:8> unterschiedliche Arten der Verarbeitung des Aufgenommenen <SEG:3> zu einem sinnvollen Eindruck, <SEG:7> und die mit der jeweiligen Konstruktionsart einhergehende Augenzahl, <SEG:2> die für ein optimales Funkionieren <SEG:4> notwendig ist, ist unterschiedlich."
+  },
+  {
+    "id": "de_de_519",
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Beim Menschen ist die Hand kürzer als der Fuß, wobei die Phalangen gerader sind.",
+    "seg_text": "Beim Menschen ist die Hand <SEG:2> kürzer als der Fuß, <SEG:1> wobei die Phalangen gerader sind."
+  }
+]

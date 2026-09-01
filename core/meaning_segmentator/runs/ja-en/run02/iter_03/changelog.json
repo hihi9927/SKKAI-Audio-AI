@@ -1,0 +1,17 @@
+{
+  "sections_changed": [],
+  "sections_reported": [
+    "[Core Principles]",
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "changelog": [
+    "Core Principles: strengthened the 'avoid premature commitment' rule to explicitly delay finalizing noun phrases, prenominal/genitive modifiers, enumerations, subject-only fragments (～が), adverbials, temporal/scope modifiers, verb clusters, agent/person/tense assignments and polarity until disambiguating heads/predicates/counters/negators/list-closers appear.",
+    "When to Segment: merged measured candidate rules into the disambiguator list and added explicit surface indicators to flag prenominal modifiers, incomplete enumerations, subject-only fragments, temporal/adverbial modifiers, and verb-cluster splits as risky (lower confidence) positions unless a clear disambiguator has already appeared.",
+    "Priority Rules: consolidated multiple candidate_rules into the demotions/special cautions: strongly demote (but do not forbid) cuts that would finalize quantity/extent before counters/quantifiers, separate modifiers from their heads, split enumerations or name lists, assert existence/polarity from a subject-only fragment, or break verb-complement chains; prefer promoting only when a clear disambiguator or sealed clause is present.",
+    "Decision Procedure: added explicit candidate-flagging for trailing prenominal modifiers, incomplete name/enumeration lists, subject-only ～が fragments, temporal/adverbial modifiers, and verb-cluster/object splits; require these flagged candidates to be demoted unless an explicit disambiguator (predicate/negation, counter, case particle completing a noun, closing quote, or list-close token) is already present before promotion to high confidence."
+  ],
+  "size_budget": 16385,
+  "over_budget": true
+}
