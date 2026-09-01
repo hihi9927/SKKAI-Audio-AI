@@ -45,18 +45,56 @@
 | [en-multi-run13ta-de](en-multi-run13ta-de) | en → de | `fleurs-en-multi` | German (`--target-aware`) | 3 / [4,6,12] | 완료 | $11.87 |
 | [en-multi-run13ta-ja](en-multi-run13ta-ja) | en → ja | `fleurs-en-multi-ja` | Japanese (`--target-aware`) | 3 / [4,6,12] | 완료 | $18.07 |
 | [en-multi-run13ta-zh](en-multi-run13ta-zh) | en → zh | `fleurs-en-multi` ⚠ | Chinese (`--target-aware`) | 3 / [4,6,12] | 완료 | $15.28 |
-| [de-en-run](de-en-run) | de → 5개 | `fleurs-de-en` | 다중 (대표 English) | 3 / [4,6,12] | 실행 중 | 예산 $25 |
-| [ja-en-run](ja-en-run) | ja → 5개 | `fleurs-ja-en` | 다중 (대표 English) | 7 / [9,14,27] | 대기 | 예산 $25 |
-| [zh-en-run](zh-en-run) | zh → 5개 | `fleurs-zh-en` | 다중 (대표 English) | 6 / [8,12,24] | 대기 | 예산 $25 |
+| [de-en-run](de-en-run) | de → 5개 | `fleurs-de-en` | 다중 (대표 English) | 3 / [4,6,12] | 완료 — iter 0~5, **iter_05 채택** | $16.86 |
+| [ja-en-run](ja-en-run) | ja → 5개 | `fleurs-ja-en` | 다중 (대표 English) | 7 / [9,14,27] | **예산 초과 중단** — iter 0~1 완료, iter_02 도중 사망 | $25.01 |
+| [zh-en-run](zh-en-run) | zh → 5개 | `fleurs-zh-en` | 다중 (대표 English) | 6 / [8,12,24] | 실행 중 (iter_03) — 같은 벽 예상 | 예산 $25 |
 
-run13 계열 4런 합계 **$55.94**. run02 세 트랙은 순차로 돌고 트랙당 상한이 $25 다.
-`ja-en-run` / `zh-en-run` 링크는 그 트랙이 시작하기 전까지 **끊어진 링크**로 보인다 —
-정상이다. 링크 이름에는 런 번호를 안 붙였다 (`de-en-run` → `../runs/de-en/run02`) — 트랙당
+run13 계열 4런 합계 **$55.94**. run02 세 트랙은 순차로 돌고 트랙당 상한이 $25 다. 링크 이름에는 런 번호를 안 붙였다 (`de-en-run` → `../runs/de-en/run02`) — 트랙당
 최신 런 하나만 가리키는 자리이고, 실제 번호는 링크가 가리키는 경로와 `config.json` 에 있다.
 `logs/` 쪽 이름은 `runs/` 의 실제 파일명 그대로 둔다.
 
 `ja`/`zh` 의 min_gap 이 큰 것은 언어 특성이 아니라 **단위가 다르기 때문**이다. 띄어쓰기가
 없는 언어는 어절이 아니라 문자를 세므로 초당 단위 수가 크다 (de 2.40 / ja 5.74 / zh 4.73).
+
+## ⚠ x2en 세 트랙은 이터레이션 수가 다르다 — 나란히 읽을 때 반드시 적을 것
+
+de-en 은 6이터를 다 돌았지만 ja-en 은 2, zh-en 은 4에서 예산 상한에 걸려 멈췄다.
+**프롬프트 품질 차이가 아니라 예산이 끊은 지점의 차이다.** 개정 기회를 덜 받은 트랙이
+불리하게 보이는 것은 당연하므로, 트랙 간 절대 비교는 하지 말 것.
+
+원인은 `segment_retry` 다. 트랙별 1차 포맷 통과율과 재시도 비중:
+
+| 트랙 | 1차 통과율 | 재시도 비중 | 이터당 단가 |
+|---|---|---|---|
+| de-en | 0.90 → 0.81 | $5.83 / $14.25 (41%) | ~$3.5 |
+| ja-en | 0.50 → **0.07** | $10.65 (68%) | ~$9.8 |
+| zh-en | 0.28 | $10.38 (59%) | ~$6.5 |
+
+ja/zh 는 띄어쓰기가 없어 **어절이 아니라 글자를 센다.** 그래서 요구 경계 수가 많고
+지배적 위반이 `too_few_tags` 다 (ja iter_02: 41건 중 33건). 재시도 1콜이 사고 토큰
+10~11k 를 태운다.
+
+여기에 겹친 것이 **목적함수가 재시도 비용을 못 본다**는 점이다. ja-en iter_01 이 채택한
+개정본은 1차 통과율을 0.50 → 0.07 로 무너뜨렸는데 dev Δ 가 +0.036 이라 채택됐고, 그
+채택이 이터 단가를 $5.86 → $9.77 로 올려 iter_02 에서 벽에 부딪혔다. 루프는 점수를 돈으로
+사고 있다는 사실을 모른다.
+
+`--seg-reasoning-effort none` 은 "사고 끔"이 아니라 **파라미터를 빼라(= 모델 기본값)** 이고
+(`gateway.py:39`), gpt-5-mini 기본값은 사고 켜짐이다 (콜당 10~17k). run13 도 같은 설정이라
+비교 가능성은 깨지지 않았지만, 비용을 줄이려면 이게 첫 손잡이다 — 대신 run13 과 나란히
+못 읽게 된다.
+
+### 멈춘 트랙을 이어 돌리는 법
+
+예산 가드는 프로세스마다 0 에서 시작하므로 `--budget` 을 새로 주면 그만큼 더 돈다.
+`tools/autoseg_x2en/run_chain.sh` 를 다시 돌리면 `history.json` 을 보고 알아서
+`--resume` 을 붙인다. ja-en 은 `iter_02/prompt.txt` 가 남아 있어 개정본을 안 잃었고,
+분절 캐시에 죽은 iter_02 가 이미 낸 호출이 들어 있어 재개분이 그만큼 싸다.
+
+최종 test 곡선만 필요하면 `tools/autoseg_x2en/finalize.sh` 가
+`--final-only` 로 채운다. **`--final-only` 는 `history.json` / `best_prompt.txt` /
+`config.json` 을 안 건드리므로** (`loop.py:1358`, `1727`) 곡선을 먼저 뽑아 두고 나중에
+`--resume` 으로 이터를 더 돌아도 충돌하지 않는다.
 
 ## ⚠ run13ta-zh 는 나머지 둘과 같은 자가 아니다
 
