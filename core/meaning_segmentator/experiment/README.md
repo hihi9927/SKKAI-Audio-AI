@@ -91,10 +91,15 @@ ja/zh 는 띄어쓰기가 없어 **어절이 아니라 글자를 센다.** 그�
 `--resume` 을 붙인다. ja-en 은 `iter_02/prompt.txt` 가 남아 있어 개정본을 안 잃었고,
 분절 캐시에 죽은 iter_02 가 이미 낸 호출이 들어 있어 재개분이 그만큼 싸다.
 
-최종 test 곡선만 필요하면 `tools/autoseg_x2en/finalize.sh` 가
-`--final-only` 로 채운다. **`--final-only` 는 `history.json` / `best_prompt.txt` /
-`config.json` 을 안 건드리므로** (`loop.py:1358`, `1727`) 곡선을 먼저 뽑아 두고 나중에
-`--resume` 으로 이터를 더 돌아도 충돌하지 않는다.
+`tools/autoseg_x2en/resume_rest.sh` 는 체인이 끝나기를 기다렸다가 멈춘 트랙을
+`--resume` 으로 끝까지 돌린다 (ja $45 / zh $30 상한 — 폭주 가드이지 목표액이 아니다).
+`--iterations 5` 는 그대로라 세 트랙이 "iter_00 + 실제 개정 4회" 로 맞춰진다.
+이터를 이미 다 채운 트랙이면 `loop.py` 가 `start_it >= args.iterations` 로 최종 평가만
+돌므로, 이 스크립트 하나가 `--final-only` 까지 겸한다.
+
+최종 곡선만 급하면 `--final-only` 를 직접 줘도 된다. **그 경로는 `history.json` /
+`best_prompt.txt` / `config.json` 을 안 건드리므로** (`loop.py:1358`, `1727`) 곡선을 먼저
+뽑아 두고 나중에 `--resume` 으로 이터를 더 돌아도 충돌하지 않는다.
 
 ## ⚠ run13ta-zh 는 나머지 둘과 같은 자가 아니다
 
