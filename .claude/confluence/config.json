@@ -9,7 +9,16 @@
   },
   "jira": {
     "server": "System Jira",
-    "server_id": "b9361972-a45d-348c-a7ea-7d370b8e2606"
+    "server_id": "b9361972-a45d-348c-a7ea-7d370b8e2606",
+    "base_url": "https://stity.atlassian.net",
+    "default_project": "STITY",
+    "fallback_issuetype": "범용",
+    "type_by_major": {
+      "시연 대비": "시연대비",
+      "시연대비": "시연대비",
+      "미래지향연구": "미래지향연구",
+      "기존개선": "기존개선"
+    }
   },
   "major_categories": [
     "시연 대비",
