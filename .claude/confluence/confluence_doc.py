@@ -14,6 +14,7 @@ import json
 import os
 import re
 import sys
+import uuid
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -122,6 +123,45 @@ def jira_macro(key: str) -> str:
             '</ac:structured-macro>')
 
 
+class Jira:
+    """계획의 세분화된 업무를 이슈로 만든다. Confluence 와 같은 토큰을 쓴다."""
+
+    def __init__(self, email: str, token: str):
+        self.base = CONFIG["jira"]["base_url"]
+        self.client = httpx.Client(auth=(email, token), timeout=30.0,
+                                   headers={"Accept": "application/json"})
+
+    def _check(self, r: httpx.Response) -> dict:
+        if r.status_code >= 400:
+            sys.exit(f"Jira API 실패 {r.status_code}: {r.text[:600]}")
+        return r.json() if r.content else {}
+
+    def find_by_summary(self, project: str, summary: str) -> str | None:
+        """같은 요약의 이슈가 이미 있으면 그 키를 준다. 두 번 돌려도 중복이 안 생기게."""
+        jql = f'project="{project}" and summary~"\\"{summary}\\"" order by created desc'
+        r = self.client.get(f"{self.base}/rest/api/3/search/jql",
+                            params={"jql": jql, "maxResults": 5, "fields": "summary"})
+        for issue in self._check(r).get("issues", []):
+            if issue["fields"]["summary"].strip() == summary.strip():
+                return issue["key"]
+        return None
+
+    def create(self, project: str, issuetype: str, summary: str, description: str = "") -> str:
+        fields = {
+            "project": {"key": project},
+            "issuetype": {"name": issuetype},
+            "summary": summary,
+        }
+        if description:
+            fields["description"] = {
+                "type": "doc", "version": 1,
+                "content": [{"type": "paragraph",
+                             "content": [{"type": "text", "text": description}]}],
+            }
+        r = self.client.post(f"{self.base}/rest/api/3/issue", json={"fields": fields})
+        return self._check(r)["key"]
+
+
 def cell(value, kind: str) -> str:
     """JSON 의 값 하나를 storage 형식 칸 내용으로 바꾼다."""
     if kind == "list":
@@ -168,11 +208,12 @@ def headings(root: ET.Element) -> list[str]:
             for lv in ("h1", "h2", "h3", "h4") for h in root.iter(lv)]
 
 
-def render(template: str, fields: dict, jira: str | None) -> tuple[str, list[str]]:
+def render(template: str, fields: dict, jira_keys: list[str]) -> tuple[str, list[str]]:
     """가이드 본문을 틀로 삼아 값을 끼워 넣는다.
 
     표의 왼쪽 항목 이름으로 짝을 맞춘다. 값이 없는 칸은 가이드의 예시 문구를 그대로
     두면 안 되므로 비운다. Jira 매크로는 키만 갈아끼운다.
+    Jira 매크로는 넘겨받은 이슈 키 개수만큼 복제한다.
     반환값의 두 번째는 JSON 에 값이 없어서 비워둔 항목 목록이다.
     """
     root = parse_storage(template)
@@ -205,16 +246,84 @@ def render(template: str, fields: dict, jira: str | None) -> tuple[str, list[str
     if first_heading:
         body = body[first_heading.start():]
 
-    # Jira 매크로의 이슈 키 교체 (매크로 자체가 가이드에 있을 때만)
-    if jira:
-        body = re.sub(r'(<ac:parameter ac:name="key">)[^<]*(</ac:parameter>)',
-                      lambda m: m.group(1) + esc(jira) + m.group(2), body)
-    return body, missing
+    return expand_jira(body, jira_keys), missing
+
+
+MACRO_RE = re.compile(r'<ac:structured-macro\s+ac:name="jira".*?</ac:structured-macro>', re.S)
+
+
+def expand_jira(body: str, keys: list[str]) -> str:
+    """가이드의 Jira 매크로 하나를 이슈 개수만큼 복제한다.
+
+    키가 없으면 매크로를 지운다. 가이드의 예시 키(STITY-7)가 그대로 남으면
+    엉뚱한 이슈가 문서에 붙는다.
+    """
+    m = MACRO_RE.search(body)
+    if not m:
+        return body
+    if not keys:
+        return MACRO_RE.sub(lambda _: "", body, count=1)
+    template = m.group(0)
+    copies = []
+    for key in keys:
+        one = re.sub(r'(<ac:parameter ac:name="key">)[^<]*(</ac:parameter>)',
+                     lambda mm: mm.group(1) + esc(key) + mm.group(2), template)
+        one = re.sub(r'ac:(local-id|macro-id)="[^"]*"',
+                     lambda mm: f'ac:{mm.group(1)}="{uuid.uuid4()}"', one)
+        copies.append(one)
+    return MACRO_RE.sub(lambda _: " ".join(copies), body, count=1)
 
 
 def slug(s: str) -> str:
     """Confluence 라벨은 공백을 못 쓴다."""
     return str(s).replace(" ", "")
+
+
+def resolve_jira(spec, fields: dict, major: str, dry_run: bool) -> tuple[list[str], list[str]]:
+    """문서에 붙일 Jira 이슈 키를 정한다.
+
+    spec 이 문자열이면 기존 이슈 하나를 그대로 쓴다. 객체면 create_from 이 가리키는
+    항목의 목록 하나하나를 이슈로 만들고, keys 로 준 기존 이슈를 뒤에 덧붙인다.
+    같은 요약의 이슈가 이미 있으면 새로 만들지 않고 재사용한다.
+    """
+    if not spec:
+        return [], []
+    if isinstance(spec, str):
+        return [spec], []
+
+    keys = list(spec.get("keys", []))
+    source = spec.get("create_from")
+    if not source:
+        return keys, []
+
+    items = (fields.get(source) or {}).get("value") or []
+    if not items:
+        sys.exit(f"jira.create_from 이 가리키는 '{source}' 항목에 값이 없다.")
+
+    project = spec.get("project") or CONFIG["jira"]["default_project"]
+    # 대범주와 Jira 업무 유형을 같은 값으로 맞춘다. 아직 그 유형이 프로젝트에 없으면
+    # 이슈 생성이 400 으로 막히므로, 없을 때 쓸 유형을 config 에 따로 둔다.
+    issuetype = (spec.get("issuetype")
+                 or CONFIG["jira"]["type_by_major"].get(major)
+                 or (fields.get("업무 카테고리") or {}).get("value")
+                 or CONFIG["jira"]["fallback_issuetype"])
+    note = spec.get("description", "")
+
+    made, new_keys = [], []
+    jira = None if dry_run else Jira(*load_env())
+    for item in items:
+        if dry_run:
+            made.append(f"[{project}/{issuetype}] {item}")
+            continue
+        existing = jira.find_by_summary(project, item)
+        if existing:
+            new_keys.append(existing)
+            made.append(f"{existing}  (이미 있어서 재사용) {item}")
+        else:
+            key = jira.create(project, issuetype, item, note)  # 유형이 없으면 여기서 멈춘다
+            new_keys.append(key)
+            made.append(f"{key}  (새로 만듦) {item}")
+    return new_keys + keys, made
 
 
 def main() -> None:
@@ -255,7 +364,14 @@ def main() -> None:
     folder_title = f'{d["round"]}차 업무 분담'
 
     template = cf.get_storage(CONFIG["guide"][kind])
-    body, missing = render(template, d.get("fields", {}), d.get("jira"))
+    fields = d.get("fields", {})
+    jira_keys, planned = resolve_jira(d.get("jira"), fields, d["major"], args.dry_run)
+    if planned:
+        head = "만들 이슈 (dry-run 이라 아직 안 만듦)" if args.dry_run else "만든 이슈"
+        print(f"{head}:")
+        for line in planned:
+            print(f"  {line}")
+    body, missing = render(template, fields, jira_keys)
 
     unused = [k for k in d.get("fields", {}) if k not in row_labels(parse_storage(template))]
     if unused:
