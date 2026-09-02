@@ -275,10 +275,15 @@ def render(template: str, fields: dict, jira_keys: list[str]) -> tuple[str, list
 
 
 MACRO_RE = re.compile(r'<ac:structured-macro\s+ac:name="jira".*?</ac:structured-macro>', re.S)
+# 매크로를 품고 있는 문단째로 잡는다. 문단 안에서 매크로만 바꾸면 이슈들이
+# 한 줄에 나란히 붙어버려서, 번호 목록으로 갈아끼우려면 문단을 통째로 걷어내야 한다.
+MACRO_PARA_RE = re.compile(
+    r'<p[^>]*>(?:(?!</p>).)*?<ac:structured-macro\s+ac:name="jira".*?</ac:structured-macro>'
+    r'(?:(?!</p>).)*?</p>', re.S)
 
 
 def expand_jira(body: str, keys: list[str]) -> str:
-    """가이드의 Jira 매크로 하나를 이슈 개수만큼 복제한다.
+    """가이드의 Jira 매크로 하나를 이슈 개수만큼 복제해 번호 목록으로 만든다.
 
     키가 없으면 매크로를 지운다. 가이드의 예시 키(STITY-7)가 그대로 남으면
     엉뚱한 이슈가 문서에 붙는다.
@@ -286,17 +291,21 @@ def expand_jira(body: str, keys: list[str]) -> str:
     m = MACRO_RE.search(body)
     if not m:
         return body
+
+    target_re = MACRO_PARA_RE if MACRO_PARA_RE.search(body) else MACRO_RE
     if not keys:
-        return MACRO_RE.sub(lambda _: "", body, count=1)
+        return target_re.sub(lambda _: "", body, count=1)
+
     template = m.group(0)
-    copies = []
+    items = []
     for key in keys:
         one = re.sub(r'(<ac:parameter ac:name="key">)[^<]*(</ac:parameter>)',
                      lambda mm: mm.group(1) + esc(key) + mm.group(2), template)
         one = re.sub(r'ac:(local-id|macro-id)="[^"]*"',
                      lambda mm: f'ac:{mm.group(1)}="{uuid.uuid4()}"', one)
-        copies.append(one)
-    return MACRO_RE.sub(lambda _: " ".join(copies), body, count=1)
+        items.append(f"<li><p>{one}</p></li>")
+    listed = '<ol start="1">' + "".join(items) + "</ol>"
+    return target_re.sub(lambda _: listed, body, count=1)
 
 
 def slug(s: str) -> str:
