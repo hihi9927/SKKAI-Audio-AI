@@ -361,4 +361,4 @@ ssh <host_alias> "cat <remote_dir>/evaluation/LibriSpeech/paper_result/ASR/mode<
 - SEG / VAD / finish 커밋 비율
 
 같은 model+scope 아래 다른 run이 있으면 나란히 비교.
-결과 요약 후 `/notion-summary`나 `/git-sync` 실행할지 물어봐줘.
+결과 요약 후 `/confluence-report`나 `/git-sync` 실행할지 물어봐줘.
