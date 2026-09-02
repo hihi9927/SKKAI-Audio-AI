@@ -146,12 +146,37 @@ class Jira:
                 return issue["key"]
         return None
 
-    def create(self, project: str, issuetype: str, summary: str, description: str = "") -> str:
+    def assignable(self, project: str) -> list[dict]:
+        r = self.client.get(f"{self.base}/rest/api/3/user/assignable/search",
+                            params={"project": project, "maxResults": 50})
+        return [u for u in self._check(r) if u.get("active")]
+
+    def account_id(self, project: str, who: str) -> str:
+        """사람 이름을 accountId 로 바꾼다.
+
+        표시 이름이 계정 아이디인 사람이 있어 부분 검색은 못 믿는다. 배정 가능한
+        사람 목록에서 정확히 일치하는 이름만 받는다. accountId 를 직접 줘도 된다.
+        """
+        if ":" in who:
+            return who
+        users = self.assignable(project)
+        hits = [u for u in users if u.get("displayName", "").strip() == who.strip()]
+        if len(hits) == 1:
+            return hits[0]["accountId"]
+        names = ", ".join(u.get("displayName", "?") for u in users)
+        if not hits:
+            sys.exit(f"'{who}' 라는 담당자를 찾지 못했다. 배정 가능한 사람: {names}")
+        sys.exit(f"'{who}' 가 여러 명이다. accountId 로 직접 지정할 것: {names}")
+
+    def create(self, project: str, issuetype: str, summary: str, description: str = "",
+               assignee_id: str | None = None) -> str:
         fields = {
             "project": {"key": project},
             "issuetype": {"name": issuetype},
             "summary": summary,
         }
+        if assignee_id:
+            fields["assignee"] = {"accountId": assignee_id}
         if description:
             fields["description"] = {
                 "type": "doc", "version": 1,
@@ -309,20 +334,29 @@ def resolve_jira(spec, fields: dict, major: str, dry_run: bool) -> tuple[list[st
                  or CONFIG["jira"]["fallback_issuetype"])
     note = spec.get("description", "")
 
+    default_who = spec.get("assignee")
+    by_item = spec.get("assignee_by_item", {})
+
     made, new_keys = [], []
     jira = None if dry_run else Jira(*load_env())
+    cache: dict[str, str] = {}
     for item in items:
+        who = by_item.get(item, default_who)
+        label = f" -> {who}" if who else " -> (담당자 없음)"
         if dry_run:
-            made.append(f"[{project}/{issuetype}] {item}")
+            made.append(f"[{project}/{issuetype}] {item}{label}")
             continue
         existing = jira.find_by_summary(project, item)
         if existing:
             new_keys.append(existing)
-            made.append(f"{existing}  (이미 있어서 재사용) {item}")
-        else:
-            key = jira.create(project, issuetype, item, note)  # 유형이 없으면 여기서 멈춘다
-            new_keys.append(key)
-            made.append(f"{key}  (새로 만듦) {item}")
+            made.append(f"{existing}  (이미 있어서 재사용, 담당자는 건드리지 않음) {item}")
+            continue
+        if who and who not in cache:
+            cache[who] = jira.account_id(project, who)
+        key = jira.create(project, issuetype, item, note,
+                          cache.get(who) if who else None)  # 유형이 없으면 여기서 멈춘다
+        new_keys.append(key)
+        made.append(f"{key}  (새로 만듦){label} {item}")
     return new_keys + keys, made
 
 
@@ -332,8 +366,17 @@ def main() -> None:
     ap.add_argument("--json", help="문서 내용을 담은 JSON 파일")
     ap.add_argument("--show-format", choices=sorted(CONFIG["guide"]),
                     help="가이드에서 현재 형식(항목 이름)만 읽어 출력. JSON 을 짜기 전에 먼저 볼 것")
+    ap.add_argument("--list-users", action="store_true",
+                    help="Jira 이슈 담당자로 지정할 수 있는 사람 목록을 출력")
     ap.add_argument("--dry-run", action="store_true", help="올리지 않고 제목·라벨·본문만 출력")
     args = ap.parse_args()
+
+    if args.list_users:
+        project = CONFIG["jira"]["default_project"]
+        print(f"{project} 이슈에 배정 가능한 사람 (이 이름을 그대로 assignee 에 쓸 것):")
+        for u in Jira(*load_env()).assignable(project):
+            print(f"  - {u['displayName']}")
+        return
 
     cf = Confluence(*load_env())
 
