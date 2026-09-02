@@ -82,6 +82,8 @@ curl -s -u "$ATLASSIAN_EMAIL:$ATLASSIAN_API_TOKEN" -H "Accept: application/json"
 "jira": {
   "project": "STITY",
   "create_from": "업무 세분화 내용",
+  "assignee": "정다현",
+  "assignee_by_item": {"아랍어 파인튜닝 데이터 준비": "진형주"},
   "keys": ["STITY-6"]
 }
 ```
@@ -91,7 +93,26 @@ curl -s -u "$ATLASSIAN_EMAIL:$ATLASSIAN_API_TOKEN" -H "Accept: application/json"
 | `project` | 생략하면 `STITY` |
 | `create_from` | 이 항목의 목록 하나하나를 이슈로 만든다. 보통 `업무 세분화 내용` |
 | `issuetype` | 생략하면 **대범주와 같은 이름의 유형**을 쓴다 (`시연 대비` → `시연대비`). 그 유형이 프로젝트에 없으면 이슈 생성이 막히니, 없을 땐 `"범용"` 처럼 직접 지정 |
+| `assignee` | 이슈 담당자. **사용자에게 물어봐서 채운다** — 추측하지 말 것 |
+| `assignee_by_item` | 항목마다 담당자가 다를 때. 키는 항목 문자열 그대로 |
 | `keys` | 이미 있는 이슈를 덧붙일 때. 생략 가능 |
+
+### 담당자 정하기
+
+담당자는 **반드시 사용자에게 물어봐줘.** 세분화한 업무 목록을 보여주고, 전부 같은 사람인지
+항목마다 다른지 확인해줘. 비워두면 담당자 없이 이슈가 만들어진다.
+
+쓸 수 있는 이름은 이 명령으로 확인한다:
+
+```bash
+PYTHONPATH= .venv/bin/python .claude/confluence/confluence_doc.py --list-users
+```
+
+**표시 이름을 정확히 그대로 써야 한다.** 일부 팀원은 표시 이름이 실명이 아니라 계정 아이디다
+(`gyuyeon05`, `0147qkr` 등). 사용자가 실명으로 말하면 목록을 보여주고 어느 계정인지 골라달라고 해줘.
+없는 이름을 넣으면 이슈를 만들기 전에 멈추고 후보 목록을 보여준다.
+
+이미 있는 이슈를 재사용할 때는 **담당자를 건드리지 않는다.** 남이 바꿔둔 배정을 덮지 않기 위해서다.
 
 이슈를 새로 만들지 않고 기존 것만 붙이려면 문자열 하나로 줘도 된다: `"jira": "STITY-7"`.
 
