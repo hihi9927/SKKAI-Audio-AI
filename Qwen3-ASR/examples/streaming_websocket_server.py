@@ -537,17 +537,35 @@ async def _translate_gtx(
     return translated, detected_lang
 
 
+# 로컬 번역기(NLLB). --local-translation 으로 켜며, 켜져 있으면 Google 경로 대신
+# 이 인스턴스를 쓴다. 모든 번역 호출이 google_translate_async 를 지나므로
+# 여기 한 곳만 갈아끼우면 컨텍스트 번역·평가 서버까지 함께 적용된다.
+LOCAL_TRANSLATOR = None
+
+
+def set_local_translator(translator) -> None:
+    global LOCAL_TRANSLATOR
+    LOCAL_TRANSLATOR = translator
+
+
 async def google_translate_async(
-    session: aiohttp.ClientSession, text: str, target_lang: str
+    session: aiohttp.ClientSession, text: str, target_lang: str,
+    source_lang: Optional[str] = None,
 ) -> tuple[str, str]:
     """Async Google Translate call.
     Returns: (translated_text, detected_source_lang_code)
 
     키가 있으면 v2, 없으면 gtx. 일시적 실패(429/타임아웃)를 한 번 흡수하되, 실시간
     자막이라 오래 붙들 수 없으므로 재시도는 1회 · 0.4초로 끊는다.
+
+    --local-translation 으로 로컬 번역기가 켜져 있으면 외부 호출 없이 그걸 쓴다.
+    source_lang 은 ASR 이 감지한 소스 언어 코드로, 로컬 번역기에만 쓰인다
+    (Google 은 소스를 스스로 감지한다).
     """
     if not text.strip() or not target_lang:
         return "", ""
+    if LOCAL_TRANSLATOR is not None:
+        return await LOCAL_TRANSLATOR.translate(text, target_lang, source_lang)
     call = _translate_v2 if GOOGLE_TRANSLATE_API_KEY else _translate_gtx
     last_err: Optional[Exception] = None
     for attempt in range(2):
@@ -2327,10 +2345,13 @@ class Qwen3ASRStreamingHandler:
             (translation, detected_lang, extra)
             extra: 서브클래스가 _emit_final_payload 에 전달할 임의 데이터.
         """
+        # 로컬 번역기는 소스 언어를 스스로 감지하지 않으므로 ASR 이 판정한 언어를
+        # 같이 넘긴다. Google 경로에서는 이 인자가 무시된다.
+        source_lang = lang_to_code(self._slot(self.active_slot).get("last_text_lang", ""))
         translation, detected_lang = await google_translate_async(
-            self.http_session, text, target_lang
+            self.http_session, text, target_lang, source_lang
         )
-        return translation, detected_lang, {}
+        return translation, detected_lang or source_lang, {}
 
     def _maybe_fix_direction(self, detected: str, used_target: str) -> Optional[str]:
         """양방향(non-auto) 모드에서 감지된 소스 언어가 번역 target과 같으면(= 같은 언어로
@@ -2905,6 +2926,18 @@ def parse_args():
         help="Server port",
     )
     parser.add_argument(
+        "--local-translation", action="store_true",
+        help="번역을 로컬 NLLB-200 모델로 처리한다. 외부 호출이 없어 gtx 429 에 안 걸린다.",
+    )
+    parser.add_argument(
+        "--local-translation-model", type=str, default="facebook/nllb-200-distilled-600M",
+        help="로컬 번역 모델 이름 또는 경로",
+    )
+    parser.add_argument(
+        "--local-translation-device", type=str, default=None,
+        help="로컬 번역 모델을 올릴 장치 (cuda / cpu). 미지정 시 자동",
+    )
+    parser.add_argument(
         "--no-idle-shutdown", action="store_true",
         help="Disable idle shutdown (use this when running tests)",
     )
@@ -3048,6 +3081,19 @@ def main():
     args = parse_args()
     _configure_logging(use_json=args.log_json, log_file=args.log_file)
     set_google_translate_api_key(args.google_api_key)
+
+    if args.local_translation:
+        try:
+            from core.local_translator import NLLBTranslator
+            _local = NLLBTranslator(
+                model_name=args.local_translation_model,
+                device=args.local_translation_device,
+            )
+            _local.load()   # 첫 번역에서 로딩 지연이 나지 않게 미리 올린다
+            set_local_translator(_local)
+            logger.info(f"Local translator enabled ({args.local_translation_model})")
+        except Exception as e:
+            logger.warning(f"Local translator 초기화 실패 — Google Translate 로 폴백: {e!r}")
 
     config = StreamingConfig(
         model_path=args.model,
