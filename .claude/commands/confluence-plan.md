@@ -28,6 +28,9 @@ PYTHONPATH= .venv/bin/python .claude/confluence/confluence_doc.py --show-format 
 | `round` | 몇 차 업무 분담인지. 숫자만 (예: `1`) |
 | `major` | 대범주 — **시연 대비 / 미래지향연구 / 기존개선** 중 하나 |
 | `minor` | 소범주 — 해당 차수 업무 분담 페이지에 쓰인 표현이 있으면 그대로 |
+
+세분화한 업무 하나하나의 **문구는 나중에 보고 문서 제목에 그대로 들어간다**(보고 제목은
+`[n차][대범주][소범주][세분화 업무명] 보고 문서`). 나중에 알아볼 수 있게 적어줘.
 | `jira` | 이슈 처리 방법. 아래 4번 참고 |
 
 대범주·소범주가 헷갈리면 해당 차수의 업무 분담 페이지를 먼저 읽고 거기 `[대범주] [소범주]` 표기를
@@ -65,8 +68,7 @@ curl -s -u "$ATLASSIAN_EMAIL:$ATLASSIAN_API_TOKEN" -H "Accept: application/json"
     "작성자": {"type": "text", "value": "정다현"},
     "업무 카테고리": {"type": "text", "value": "범용"},
     "목표 기한": {"type": "text", "value": "2026-09-07"},
-    "업무 세분화 내용": {"type": "list", "value": ["아랍어 DOT commit 기준 정리", "파인튜닝 데이터 준비"]},
-    "업무 내용 정리 링크": {"type": "links", "value": []}
+    "업무 세분화 내용": {"type": "list", "value": ["아랍어 DOT commit 기준 정리", "파인튜닝 데이터 준비"]}
   }
 }
 ```

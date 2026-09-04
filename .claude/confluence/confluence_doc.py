@@ -187,6 +187,115 @@ class Jira:
         return self._check(r)["key"]
 
 
+INLINE_RE = re.compile(r"`[^`]+`|\*\*[^*]+\*\*")
+LIST_RE = re.compile(r"^(\s*)([-*+]|\d+[.)])\s+(.*)$")
+HEADING_RE = re.compile(r"^(#{1,6})\s+(.*)$")
+
+
+def inline(text: str) -> str:
+    """줄 안의 `코드` 와 **굵게** 만 살린다. 나머지는 그대로 escape."""
+    out, pos = [], 0
+    for m in INLINE_RE.finditer(text):
+        out.append(esc(text[pos:m.start()]))
+        tok = m.group(0)
+        if tok.startswith("`"):
+            out.append(f"<code>{esc(tok[1:-1])}</code>")
+        else:
+            out.append(f"<strong>{esc(tok[2:-2])}</strong>")
+        pos = m.end()
+    out.append(esc(text[pos:]))
+    return "".join(out)
+
+
+def code_macro(text: str, lang: str = "") -> str:
+    param = f'<ac:parameter ac:name="language">{esc(lang)}</ac:parameter>' if lang else ""
+    return ('<ac:structured-macro ac:name="code" ac:schema-version="1">' + param +
+            f"<ac:plain-text-body>{esc(text)}</ac:plain-text-body>"
+            "</ac:structured-macro>")
+
+
+def build_list(items: list[tuple[int, bool, str]], idx: int, depth: int) -> tuple[str, int]:
+    """(들여쓰기 깊이, 번호목록 여부, 글) 목록을 <ul>/<ol> 로 접는다. 중첩도 살린다."""
+    ordered = items[idx][1]
+    tag = "ol" if ordered else "ul"
+    parts = ['<ol start="1">' if ordered else "<ul>"]
+    while idx < len(items):
+        d, o, text = items[idx]
+        if d < depth or (d == depth and o != ordered):
+            break
+        if d > depth:
+            sub, idx = build_list(items, idx, d)
+            parts[-1] = parts[-1][: -len("</li>")] + sub + "</li>"
+            continue
+        parts.append(f"<li><p>{inline(text)}</p></li>")
+        idx += 1
+    parts.append(f"</{tag}>")
+    return "".join(parts), idx
+
+
+def take_list(lines: list[str], i: int) -> tuple[str, int]:
+    items = []
+    while i < len(lines):
+        m = LIST_RE.match(lines[i])
+        if not m:
+            break
+        items.append((len(m.group(1)) // 2, m.group(2)[0] not in "-*+", m.group(3).strip()))
+        i += 1
+    return build_list(items, 0, items[0][0])[0], i
+
+
+def markdown(text: str) -> str:
+    """md 로 쓴 업무 내용을 storage 형식으로 바꾼다.
+
+    소제목(#), 목록(- / 1.), 코드블록(```), 문단, 인라인 `코드`·**굵게** 를 지원한다.
+    표나 링크 문법은 지원하지 않는다 — 링크는 links/pagelink 칸을 쓴다.
+    """
+    lines = str(text or "").replace("\r\n", "\n").split("\n")
+    out: list[str] = []
+    para: list[str] = []
+
+    def flush():
+        if para:
+            out.append(f"<p>{inline(' '.join(para))}</p>")
+            para.clear()
+
+    i = 0
+    while i < len(lines):
+        line, stripped = lines[i], lines[i].strip()
+        if not stripped:
+            flush()
+            i += 1
+            continue
+        m = HEADING_RE.match(stripped)
+        if m:
+            flush()
+            # 가이드의 절 제목이 h3 이라 칸 안의 소제목은 그 아래 단계부터 쓴다.
+            lv = min(len(m.group(1)) + 3, 6)
+            out.append(f"<h{lv}>{inline(m.group(2))}</h{lv}>")
+            i += 1
+            continue
+        if stripped.startswith("```"):
+            flush()
+            lang = stripped[3:].strip()
+            i += 1
+            buf = []
+            while i < len(lines) and not lines[i].strip().startswith("```"):
+                buf.append(lines[i])
+                i += 1
+            out.append(code_macro("\n".join(buf), lang))
+            i += 1
+            continue
+        if LIST_RE.match(line):
+            flush()
+            block, i = take_list(lines, i)
+            out.append(block)
+            continue
+        para.append(stripped)
+        i += 1
+    flush()
+    return "".join(out) or "<p />"
+
+
 def cell(value, kind: str) -> str:
     """JSON 의 값 하나를 storage 형식 칸 내용으로 바꾼다."""
     if kind == "list":
@@ -201,6 +310,8 @@ def cell(value, kind: str) -> str:
             f"<li><p>{page_link(v)}</p></li>" for v in value) + "</ol>"
     if kind == "pagelink":
         return f"<p>{page_link(value)}</p>" if value else "<p />"
+    if kind == "markdown":
+        return markdown(value)
     if kind == "jira":
         return f"<p>{jira_macro(value)}</p>" if value else "<p />"
     return f"<p>{esc(value)}</p>"
@@ -411,7 +522,14 @@ def main() -> None:
             sys.exit(f"필수 항목 누락: {field}")
 
     kind_ko = "계획" if kind == "plan" else "보고"
-    title = f'[{d["round"]}차][{d["major"]}][{d["minor"]}] {kind_ko} 문서'
+    # 가이드의 제목 형식이 종류마다 다르다. 보고 문서에만 세분화 업무명이 한 칸 더 붙는다.
+    parts = [f'{d["round"]}차', d["major"], d["minor"]]
+    if kind == "report":
+        if not d.get("task"):
+            sys.exit("보고 문서에는 세분화 업무명(task)이 필요하다.\n"
+                     "가이드 제목 형식: [n차][대범주][소범주][세분화 업무명] 보고 문서")
+        parts.append(d["task"])
+    title = "".join(f"[{p}]" for p in parts) + f" {kind_ko} 문서"
     labels = [kind_ko, f'{d["round"]}차', slug(d["major"]), slug(d["minor"])]
     folder_title = f'{d["round"]}차 업무 분담'
 
