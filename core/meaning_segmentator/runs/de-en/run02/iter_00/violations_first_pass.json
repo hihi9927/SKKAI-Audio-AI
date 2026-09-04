@@ -1,0 +1,30 @@
+[
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "Bei der Indus-Tal-Zivilisation handelt es sich um eine bronzezeitliche Zivilisation im nordwestlichen indischen Subkontinent, die den größten Teil des heutigen Pakistan und einige Regionen im Nordwesten Indiens sowie im Nordosten Afghanistans umfasste.",
+    "seg_text": "Bei der Indus-Tal-Zivilisation <SEG:4> handelt es sich <SEG:5> um eine bronzezeitliche Zivilisation <SEG:2> im nordwestlichen indischen Subkontinent, <SEG:1> die den größten Teil des heutigen Pakistan <SEG:3> und einige Regionen <SEG:6> im Nordwesten Indiens sowie im Nordosten Afghanistans umfasste.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Sie sagten auch in einer Stellungnahme: „Die Mannschaft arbeitet momentan an der Entscheidung, was die beste Methode ist, das Schiff sicher zu bergen.“",
+    "seg_text": "Sie sagten auch in einer Stellungnahme: <SEG:2> „Die Mannschaft arbeitet <SEG:1> momentan an der Entscheidung, <SEG:3> was die beste Methode ist, <SEG:4> das Schiff sicher zu bergen.“",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Cinque Terre, was soviel bedeutet wie Fünf Länder, umfasst die fünf kleinen Küstendörfer Riomaggiore, Manarola, Corniglia, Vernazza und Monterosso in der italienischen Region Ligurien.",
+    "seg_text": "Cinque Terre, was soviel bedeutet <SEG:2> wie Fünf Länder, <SEG:1> umfasst die fünf kleinen Küstendörfer <SEG:4> Riomaggiore, Manarola, Corniglia, <SEG:3> Vernazza und Monterosso in der italienischen Region Ligurien.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Im Landesinneren Nordindiens und Pakistans wird Joghurt üblicherweise in Currys verwendet; in Südindien und einigen anderen Küstenregionen des Subkontinents wird üblicherweise Kokosmilch verwendet.",
+    "seg_text": "Im Landesinneren Nordindiens und Pakistans <SEG:2> wird Joghurt üblicherweise <SEG:4> in Currys verwendet; <SEG:1> in Südindien und einigen anderen Küstenregionen <SEG:3> des Subkontinents wird üblicherweise Kokosmilch verwendet.",
+    "first_pass": true
+  }
+]

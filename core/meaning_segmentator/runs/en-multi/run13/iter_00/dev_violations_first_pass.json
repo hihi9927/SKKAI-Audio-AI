@@ -1,0 +1,191 @@
+[
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "The governor also stated, \"Today, we learned that some school aged children have been identified as having had contact with the patient.\"",
+    "seg_text": "The governor also stated, <SEG:1> \"Today, we learned that some school aged children <SEG:3> have been identified <SEG:2> as having had contact <SEG:4> with the patient.\"",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Perry specifically said, \"There are few places in the world better equipped to meet the challenge that is posed in this case.\"",
+    "seg_text": "Perry specifically said, <SEG:1> \"There are few <SEG:4> places in the <SEG:5> world better equipped <SEG:3> to meet the <SEG:2> challenge that is posed in this case.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "No major injuries were reported, but at least five people on scene at the time of the explosion were treated for symptoms of shock.",
+    "seg_text": "No major injuries were reported, <SEG:1> but at least five <SEG:3> people on scene at the time <SEG:4> of the explosion <SEG:2> were treated for symptoms of shock.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "\"It's going to behave like water. It's transparent just the way water is.",
+    "seg_text": "\"It's going to behave like water. <SEG:1> It's transparent just the way water is.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "This way, you will tire yourself out as little as possible. Remember there's no need to hit the keys with a lot of force for extra volume like on the piano.",
+    "seg_text": "This way, you <SEG:6> will tire yourself <SEG:5> out as little as possible. <SEG:1> Remember there's no <SEG:4> need to hit the keys <SEG:2> with a lot of force <SEG:3> for extra volume like on the piano.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "The advice assumes that travellers do not steal, trespass, participate in the illegal market, beg, or otherwise exploit other people for their own gain.",
+    "seg_text": "The advice assumes that <SEG:4> travellers do not steal, <SEG:2> trespass, participate in the <SEG:3> illegal market, beg, or otherwise exploit other people <SEG:1> for their own gain.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "However, this does not come cheap: as rough rules of thumb, you can expect to pay up to four times the normal economy fare for business, and eleven times for first class!",
+    "seg_text": "However, this does not come cheap: <SEG:2> as rough rules of <SEG:6> thumb, you can expect <SEG:5> to pay up to four times the normal <SEG:3> economy fare for business, <SEG:1> and eleven times <SEG:4> for first class!",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "While immigration check is usually absent or a formality when you arrive in your homeland, customs control can be a hassle.",
+    "seg_text": "While immigration check is usually absent <SEG:3> or a formality <SEG:2> when you arrive in your homeland, <SEG:1> customs control can be a hassle.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 9개 — 최소 10개 필요",
+    "text": "The feathers' structure suggests that they were not used in flight but rather for temperature regulation or display. The researchers suggested that, even though this is the tail of a young dinosaur, the sample shows adult plumage and not a chick's down.",
+    "seg_text": "The feathers' structure <SEG:4> suggests that they <SEG:8> were not used <SEG:5> in flight but rather for temperature <SEG:6> regulation or display. <SEG:1> The researchers suggested that, <SEG:9> even though this is <SEG:7> the tail of a young dinosaur, <SEG:3> the sample shows <SEG:2> adult plumage and not a chick's down.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "In the 16th century Paraguay, formerly called \"The Giant Province of the Indies\", was born as a result of the encounter of Spanish conquerors with the native indigenous groups.",
+    "seg_text": "In the 16th century <SEG:2> Paraguay, formerly called \"The Giant Province of the Indies\", <SEG:1> was born as <SEG:5> a result of <SEG:4> the encounter of <SEG:3> Spanish conquerors with the native indigenous groups.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "CafeNet El Sol offers a reservation service for a fee of US$30, or $10 for one-day passes; details on their Corcovado page.",
+    "seg_text": "CafeNet El Sol offers a reservation <SEG:3> service for a <SEG:4> fee of US$30, <SEG:1> or $10 for one-day passes; <SEG:2> details on their Corcovado page.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Schumacher who retired in 2006 after winning the Formula 1 championship seven times, was due to replace the injured Felipe Massa.",
+    "seg_text": "Schumacher who retired in 2006 <SEG:2> after winning the <SEG:3> Formula 1 championship seven times, <SEG:1> was due to replace the injured Felipe Massa.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Born in the Croatian capital, Zagreb, Bobek gained fame while playing for Partizan Belgrade.",
+    "seg_text": "Born in the Croatian capital, Zagreb, <SEG:1> Bobek gained fame while playing <SEG:2> for Partizan Belgrade.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "As soon as you get out of the current, swimming back is no more difficult than normally.",
+    "seg_text": "As soon as you get out <SEG:2> of the current, <SEG:1> swimming back is no more difficult than normally.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "Danius said, \"Right now we are doing nothing. I have called and sent emails to his closest collaborator and received very friendly replies. For now, that is certainly enough.\"",
+    "seg_text": "Danius said, \"Right now we are doing nothing. <SEG:1> I have called <SEG:2> and sent emails <SEG:5> to his closest collaborator <SEG:3> and received very friendly replies. <SEG:4> For now, that is certainly enough.\"",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "The northern part or Sentinel Range has Antarctica's highest mountains, the Vinson Massif, peaking at 4892 m Mount Vinson.",
+    "seg_text": "The northern part or Sentinel Range <SEG:3> has Antarctica's highest mountains, <SEG:1> the Vinson Massif, <SEG:2> peaking at 4892 m Mount Vinson.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 8개 — 최소 9개 필요",
+    "text": "While you may not need a visa for short visits to certain countries as a tourist or for business, going there as an international student generally requires a longer stay than going there just as a casual tourist.",
+    "seg_text": "While you may <SEG:8> not need a visa <SEG:4> for short visits to <SEG:6> certain countries as a tourist <SEG:2> or for business, <SEG:1> going there as an international student generally <SEG:5> requires a longer stay <SEG:7> than going there just as <SEG:3> a casual tourist.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "But the consumer market on laptop computer will be radically varied and changed after ASUS was awarded in the 2007 Taiwan Sustainable Award by Executive Yuan of the Republic of China.",
+    "seg_text": "But the consumer market <SEG:1> on laptop computer <SEG:3> will be radically <SEG:4> varied and changed <SEG:2> after ASUS was <SEG:6> awarded in the 2007 Taiwan Sustainable <SEG:5> Award by Executive Yuan of the Republic of China.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "The death toll is at least 15, a figure which is expected to rise.",
+    "seg_text": "The death toll <SEG:2> is at least 15, <SEG:1> a figure which is expected to rise.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Others are alleged to have been brought up by animals; some are said to have lived in the wild on their own.",
+    "seg_text": "Others are alleged to <SEG:4> have been brought up by animals; <SEG:1> some are said to <SEG:3> have lived in the wild <SEG:2> on their own.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Most of the temples do have an Annual festival starting from November end to Mid of May, which varies according to each temple's annual calendar.",
+    "seg_text": "Most of the temples <SEG:3> do have an Annual festival <SEG:2> starting from November end <SEG:4> to Mid of May, <SEG:1> which varies according to each temple's annual calendar.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "The idea of skiing is very old — cave paintings depicting skiers date back as far as 5000 BC!",
+    "seg_text": "The idea of skiing <SEG:3> is very old — <SEG:1> cave paintings depicting skiers date <SEG:2> back as far as 5000 BC!",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Humans have been making and using lenses for magnification for thousands and thousands of years.",
+    "seg_text": "Humans have been making <SEG:2> and using lenses <SEG:1> for magnification for thousands and thousands of years.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "The AI ​​system is now often used in the fields of economics, medicine, engineering and the military, as has been built in several home computer and video game software applications.",
+    "seg_text": "The AI system is now <SEG:4> often used in <SEG:5> the fields of economics, <SEG:2> medicine, engineering and the military, <SEG:1> as has been built <SEG:3> in several home <SEG:6> computer and video <SEG:7> game software applications.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Siminoff said sales boosted after his 2013 appearance in a Shark Tank episode where the show panel declined funding the startup.",
+    "seg_text": "Siminoff said sales boosted <SEG:3> after his 2013 appearance <SEG:2> in a Shark Tank episode <SEG:1> where the show panel declined funding the startup.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "Mutations can have a variety of different effects depending on the type of mutation, the significance of the piece of genetic material affected and whether the cells affected are germ-line cells.",
+    "seg_text": "Mutations can have a variety <SEG:5> of different effects <SEG:4> depending on the type of mutation, <SEG:1> the significance of <SEG:6> the piece of genetic material affected <SEG:2> and whether the cells <SEG:3> affected are germ-line cells.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Eighteen percent of Venezuelans are unemployed, and most of those who are employed work in the informal economy.",
+    "seg_text": "Eighteen percent of Venezuelans are unemployed, <SEG:1> and most of <SEG:3> those who are employed work <SEG:2> in the informal economy.",
+    "first_pass": true
+  }
+]

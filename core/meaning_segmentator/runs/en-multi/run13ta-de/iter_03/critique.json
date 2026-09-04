@@ -1,0 +1,176 @@
+{
+  "cases": [
+    {
+      "id": "en_us_120",
+      "error_type": "placement",
+      "span": "between American",
+      "evidence": "emitted wrong participant ('Kurds' vs 'Iraqi')",
+      "cause": "wrong participant",
+      "proposed_rule": "If a candidate cut would finalize a participant inside a coordinated phrase introduced by 'between' or 'among' (e.g. 'between X and Y' or 'between X, Y and Z'), rank that boundary low until the conjunction ('and', ',') and the following noun(s) have appeared.",
+      "example_pair": {
+        "input": "The game is based on the Second Battle of Fallujah, a vicious battle between American and Iraqi forces.",
+        "output": "The game is based on the Second Battle of Fallujah, <SEG:1> a vicious battle between American and Iraqi forces."
+      }
+    },
+    {
+      "id": "en_us_491",
+      "error_type": "placement",
+      "span": "sent in tanks",
+      "evidence": "translated as unidiomatic 'Versendet in Tanks' due to missing complement",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not promote a cut immediately after a verb when within the next 3 tokens a preposition, particle or infinitival 'to' continues the verb phrase; wait for the verb's particle/object before finalizing verb translation.",
+      "example_pair": {
+        "input": "Although in the end, Krushchev sent in tanks to restore order, he did give way to some economic demands and agreed to appoint the popular Wladyslaw Gomulka as the new prime minister.",
+        "output": "Although in the end, Krushchev sent in tanks to restore order, <SEG:1> he did give way to some economic demands and agreed to appoint the popular Wladyslaw Gomulka as the new prime minister."
+      }
+    },
+    {
+      "id": "en_us_1349",
+      "error_type": "placement",
+      "span": "are being met",
+      "evidence": "verb rendered as wrong sense ('werden erfüllt') before 'by' phrase arrived",
+      "cause": "other",
+      "proposed_rule": "When a passive/progressive verb sequence ('is/are being ...') is followed within 3 tokens by an oblique 'by' phrase, rank a cut low so the 'by' phrase can determine the correct passive translation.",
+      "example_pair": {
+        "input": "Efforts to search for the crash site are being met by bad weather and harsh terrain.",
+        "output": "Efforts to search for the crash site are being met by bad weather and harsh terrain. <SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_1604",
+      "error_type": "placement",
+      "span": "As NSA",
+      "evidence": "rendered as 'NSA agent' instead of the intended office/title",
+      "cause": "other",
+      "proposed_rule": "If a cut would finalize a preposed role phrase beginning with 'As' followed by an uppercase title/abbreviation, rank it low until the following verb or appositive clarifies the intended office/title.",
+      "example_pair": {
+        "input": "As NSA, he assisted Carter in diplomatically handling world affairs, such as the Camp David Accords, 1978; normalizing US–China relations thought the late 1970s; the Iranian Revolution, which led to the Iran hostage crisis, 1979; and the Soviet invasion in Afghanistan, 1979.",
+        "output": "As NSA, he assisted Carter in diplomatically handling world affairs, <SEG:1> such as the Camp David Accords, 1978; normalizing US–China relations thought the late 1970s; the Iranian Revolution, which led to the Iran hostage crisis, 1979; and the Soviet invasion in Afghanistan, 1979."
+      }
+    },
+    {
+      "id": "en_us_565",
+      "error_type": "placement",
+      "span": "Only the effects of catastrophizing,",
+      "evidence": "negation/contrast attached to wrong head (scope misassigned)",
+      "cause": "modifier scope",
+      "proposed_rule": "When a candidate cut follows a contrastive/limiter phrase ('Only', 'not', 'rather than', etc.), rank it low until the main verb and its object arrive so negation/contrast scope is preserved.",
+      "example_pair": {
+        "input": "Only the effects of catastrophizing, not depression and fear was conditional of regular weekly structured PA sessions.",
+        "output": "Only the effects of catastrophizing, not depression and fear, was conditional of regular weekly structured PA sessions. <SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_1000",
+      "error_type": "placement",
+      "span": "suspect an alleged Daesh",
+      "evidence": "object and 'of responsibility for...' came later causing bad German word order",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Avoid high-ranked cuts inside predicates where a verb like 'suspect', 'consider', 'accuse' is followed within 3 tokens by 'of'/'for' or a responsibility/role phrase; wait for the complement that determines German order.",
+      "example_pair": {
+        "input": "Police said they suspect an alleged Daesh (ISIL) militant of responsibility for the attack.",
+        "output": "Police said they suspect an alleged Daesh (ISIL) militant of responsibility for the attack. <SEG:1>"
+      }
+    }
+  ],
+  "summary": "Most measured failures are placement errors: the prompt lets high-confidence cuts appear after commas or after verbs/role phrases that still need the next few tokens to decide German word choice or scope (participants, verb particles, 'by' obliques, 'As <TITLE>', contrast markers). Rather than banning candidacy, add narrow, surface-only signals that lower the rank of comma/verb-boundary candidates when a short (≤3-token) continuation would determine participant identity, verb selection, oblique 'by' phrases, or negation scope — and supplement these with a small lexically-triggered list of high‑risk verbs (e.g. suspect, send, meet, assist, appoint) so the ranking penalises truly risky cuts without removing defensible options.",
+  "aggregate": {
+    "dominant_error": null,
+    "dominant_basis": "No corpus rate identifies a dominant failure. Read the cases and `judge_distribution` for WHICH mechanism to fix — do not infer a rate from `case_label_counts`, those cases were selected for being the worst.",
+    "measured_rates": {
+      "coverage": {
+        "n": 0,
+        "of_n": 40,
+        "rate": 0.0,
+        "of": "all sentences scored — a true corpus rate",
+        "meaning": "sentences where the tightest budget asked for boundaries the prompt never marked, so pieces are missing outright"
+      },
+      "premature_among_judged": {
+        "n": 9,
+        "of_n": 10,
+        "rate": 0.9,
+        "of": "boundaries judged this iteration, selected as the WORST by measured contradiction — NOT a corpus rate, do not compare it against `coverage`"
+      }
+    },
+    "case_label_counts": {
+      "counts": {
+        "placement": 6
+      },
+      "of_n": 6,
+      "of": "the selected worst cases — NOT a rate"
+    },
+    "stuck_hint": "직전 개정이 [Core Principles], [When to Segment], [Priority Rules], [Decision Procedure] 를 고쳤는데 채택에 실패했다. 같은 섹션을 같은 방식으로 다시 고치지 말 것 — 다른 섹션을 보거나 같은 섹션이라도 반대 방향(금지 추가가 아니라 완화)을 검토할 것",
+    "priority_audit": [
+      {
+        "feature": "뒤 구두점 ','",
+        "n": 15,
+        "rank_percentile": 0.373,
+        "contradiction": 0.1758,
+        "over_trust": 0.2085
+      },
+      {
+        "feature": "상대위치 1/3",
+        "n": 53,
+        "rank_percentile": 0.604,
+        "contradiction": 0.2069,
+        "over_trust": 0.0083
+      },
+      {
+        "feature": "상대위치 0/3",
+        "n": 66,
+        "rank_percentile": 0.607,
+        "contradiction": 0.1793,
+        "over_trust": 0.0041
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 46,
+        "rank_percentile": 0.628,
+        "contradiction": 0.2281,
+        "over_trust": -0.0181
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 137,
+        "rank_percentile": 0.663,
+        "contradiction": 0.1982,
+        "over_trust": -0.0496
+      }
+    ],
+    "judge_distribution": {
+      "n_boundaries_judged": 10,
+      "verdicts": {
+        "mistranslated": 8,
+        "safe": 1,
+        "premature": 1
+      },
+      "n_with_cause": 9,
+      "causes": {
+        "other": {
+          "n": 4,
+          "share": 0.444
+        },
+        "wrong participant": {
+          "n": 2,
+          "share": 0.222
+        },
+        "mistranslated": {
+          "n": 1,
+          "share": 0.111
+        },
+        "modifier scope": {
+          "n": 1,
+          "share": 0.111
+        },
+        "head not yet arrived": {
+          "n": 1,
+          "share": 0.111
+        }
+      }
+    },
+    "max_missing_boundaries": 0.0,
+    "rank_lift": 0.15347,
+    "rank_lift_t": 3.55,
+    "summary": "Most measured failures are placement errors: the prompt lets high-confidence cuts appear after commas or after verbs/role phrases that still need the next few tokens to decide German word choice or scope (participants, verb particles, 'by' obliques, 'As <TITLE>', contrast markers). Rather than banning candidacy, add narrow, surface-only signals that lower the rank of comma/verb-boundary candidates when a short (≤3-token) continuation would determine participant identity, verb selection, oblique 'by' phrases, or negation scope — and supplement these with a small lexically-triggered list of high‑risk verbs (e.g. suspect, send, meet, assist, appoint) so the ranking penalises truly risky cuts without removing defensible options."
+  }
+}

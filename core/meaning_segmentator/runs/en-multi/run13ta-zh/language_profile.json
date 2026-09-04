@@ -1,0 +1,97 @@
+{
+  "source_language": "English",
+  "word_order": "SVO | Subject-Verb-Object order seen throughout (e.g. \"The game is based ...\", \"Blood goes away from the heart ...\", \"Arthur Guinness signed ...\").",
+  "register": "Mostly written, formal expository (encyclopedic/news style) with occasional instructions (safety/advice); not spontaneous conversational speech.",
+  "fillers_and_hesitations": [
+    "uh",
+    "um",
+    "well",
+    "you know"
+  ],
+  "discourse_markers": [
+    "and",
+    "but",
+    "or",
+    "so",
+    "then",
+    "although",
+    "although in the end",
+    "as",
+    "when",
+    "such as",
+    "especially",
+    "which",
+    "that"
+  ],
+  "clause_boundary_signals": [
+    "and",
+    "but",
+    "or",
+    "so",
+    "then",
+    "although",
+    "as",
+    "when",
+    "which",
+    "that",
+    "such as",
+    "especially",
+    "called",
+    "(",
+    "—",
+    ";"
+  ],
+  "non_boundary_traps": [
+    "commas inside appositives or enumerations (e.g. \"Korean, Thai, Indian, and Japanese\" or \"The comments, live on television, ...\")",
+    "parenthetical abbreviations and alternate names in parentheses (e.g. \"Daesh (ISIL)\")",
+    "commas after introductory adverbials (e.g. \"Although in the end,\")",
+    "commas between adjectives or prepositional modifiers (e.g. \"shorter than the foot, with straighter phalanges\")"
+  ],
+  "unstable_prefix_signals": [
+    "which — marks a relative clause or non-restrictive comment that attaches to the preceding noun phrase; translating before seeing the clause risks wrong structure/attachment in Chinese",
+    "that — introduces a clausal complement or restrictive clause; early split often prevents proper Chinese clause restructuring",
+    "called — often begins a postnominal naming/appositive phrase (\"...towers, called ziggurats,\") which should usually stay with the noun",
+    "such as / especially / including — introduce examples or sublists; the scope of the examples (and whether to render as examples or as part of the head noun) is unresolved until the list completes",
+    "left parenthesis '(' — signals an immediate appositive/alternate name or abbreviation that affects how the preceding token should be rendered",
+    "comma immediately followed by a noun phrase and another comma (apposition pattern \", NP, \") — indicates the preceding NP has an appositive that must be attached",
+    "semicolon ';' used to separate complex list items — indicates a continued coordinated structure whose full translation depends on later items",
+    "dash/em dash '—' or hyphen used to introduce an imperative or sudden clause — the relation to the preceding fragment is often revision-prone"
+  ],
+  "target_transfer_hazards": [
+    "parenthetical aliases/abbreviations like \"(ISIL)\" or any '(' opening — the Chinese rendering (use both names, one name, or a parenthetical translation) cannot be decided until the parenthesis content is seen",
+    "relative pronouns 'which' / 'that' — Chinese relative clause placement/marker choice depends on the full relative clause that follows",
+    "postnominal 'called' phrases — whether to render as apposition or integrated name depends on the following token(s)",
+    "comma-separated enumerations (list items separated by commas) and semicolon-separated lists — you cannot finalize punctuation/connector choices in Chinese until you know whether the list continues or ends",
+    "appositive pattern \", NP,\" — whether to translate as an aside/apposition or as part of the main NP is unresolved until the closing comma/phrase appears",
+    "dashes introducing new clauses or imperatives — the role (explanation, emphasis, instruction) is only clear once the dash-bound material is seen"
+  ],
+  "notes_for_prompt_writer": "Keep default segmentation after simple finite clauses (SVO main clauses) but avoid splitting immediately after nouns or verbs when any of the unstable_prefix_signals appear. Treat parentheses, 'called', 'which/that' relative markers, 'such as' and comma/semicolon-separated lists as signals to delay emitting a segment until the whole apposition/relative/listing material is available. For Chinese output, prefer to keep a head noun together with its postnominal modifiers (appositives, relative clauses, 'called' phrases) in the same translation unit.",
+  "target_language_profile": {
+    "target_language": "Chinese",
+    "word_order": "Basic SVO. Modifiers (adjectives, quantifiers, relative clauses) generally precede nouns. Topic-comment structures common; some fronting permitted but core constituent order relatively rigid.",
+    "verb_placement": "Verb follows subject, precedes object. Aspect/resultative complements and particles are post-verbal, so aspect, resultatives, serial verbs and object/topic choice must often be deferred.",
+    "late_commitment_forced_by": [
+      "postnominal relative clauses in source (Chinese places relative clause before the noun)",
+      "aspectual information and resultative complements that appear after main verb or later clauses",
+      "serial or multi-verb predicates whose internal structure appears later",
+      "numeral + noun when classifier choice depends on the specific noun",
+      "attachment ambiguities (which clause/adverbial attaches to which verb) changing topicalization or word order",
+      "scope of negation, modals, or tense auxiliaries revealed later in sentence"
+    ],
+    "reordering_vs_source": "Frequent reordering: source postnominal relatives → pre-nominal, modifiers move before noun, adverbials often earlier, objects may topicalize to sentence-initial position, prepositional semantics often become pre-verbal coverb phrases.",
+    "safe_boundary_signals": [
+      "sentence-final punctuation (period/question/exclamation)",
+      "source provides main verb plus all auxiliaries/complements and clause termination",
+      "head noun plus any following relative clause or modifiers already completed",
+      "explicit numeral followed immediately by the noun (classifier choice known)"
+    ],
+    "unsafe_boundary_signals": [
+      "after hearing only the subject but no verb or auxiliaries",
+      "after a noun that may be followed by a relative pronoun/clause (e.g., 'the book' before 'that/which/who')",
+      "after a numeral without the following noun (classifier choice unknown)",
+      "after prepositional/subordinating conjunctions when attachment target unclear",
+      "after main verb but before clause-final particles or resultatives that alter aspect"
+    ],
+    "evidence": "model prior knowledge (no target sample)"
+  }
+}

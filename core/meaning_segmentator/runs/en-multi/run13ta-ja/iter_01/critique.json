@@ -1,0 +1,180 @@
+{
+  "cases": [
+    {
+      "id": "en_us_164",
+      "error_type": "placement",
+      "span": "ship, the ship",
+      "evidence": "Emitted a pronoun/tense before the verb and destination arrived; translator invented 'it will come'.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not mark a cut that would emit a definite or co‑referring NP (e.g. 'the X' / pronoun) before the main verb or its complements (destination/PP) appear.",
+      "example_pair": {
+        "input": "ship, the ship was on its way to X",
+        "output": "ship, the ship was on its way to X <SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_565",
+      "error_type": "placement",
+      "span": "regular weekly structured",
+      "evidence": "Translated modifiers ('weekly') before the head noun, producing nonsense ('weekly magazine').",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Never cut between stacked modifiers and their head noun; if tokens like 'weekly','regular','structured' precede a nearby noun, delay the boundary until that noun appears.",
+      "example_pair": {
+        "input": "regular weekly structured PA sessions",
+        "output": "regular weekly structured PA sessions <SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_1000",
+      "error_type": "priority",
+      "span": "suspect an alleged Daesh (ISIL) militant",
+      "evidence": "Cut after reporting verb allowed a mistranslation of entity type/number ('militant' → group).",
+      "cause": "other",
+      "proposed_rule": "Lower confidence for boundaries immediately after reporting verbs (said/suspect/believe/report) when followed within 1–4 tokens by an article ('a/an/the') or a parenthetical '(', since entity type/qualifier follows.",
+      "example_pair": {
+        "input": "they suspect an alleged Daesh (ISIL) militant",
+        "output": "they suspect an alleged Daesh (ISIL) militant <SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_857",
+      "error_type": "placement",
+      "span": "Carrying for others -",
+      "evidence": "Rendered 'for others' as carrying people rather than others' luggage (wrong participant).",
+      "cause": "wrong participant",
+      "proposed_rule": "Do not cut immediately after 'for' when the phrase is 'for X' (e.g. 'for others'); delay until the noun/possessed item or dash-subclause arrives to disambiguate possession vs beneficiary.",
+      "example_pair": {
+        "input": "Carrying for others - Never let your bags",
+        "output": "Carrying for others - Never let your bags <SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_491",
+      "error_type": "placement",
+      "span": "he did give way",
+      "evidence": "Committed to a transfer/compromise verb meaning before seeing its object ('to some economic demands'), yielding wrong verb choice.",
+      "cause": "other",
+      "proposed_rule": "Avoid cutting immediately after verbs of transfer/compromise (give, give way, give in, hand over) when a 'to' prepositional object or its NP is pending; wait for the 'to' phrase.",
+      "example_pair": {
+        "input": "he did give way to some demands",
+        "output": "he did give way to some demands <SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_929",
+      "error_type": "placement",
+      "span": "is only rarely booked",
+      "evidence": "Auxiliary + passive separated from participle; passive voice/argument structure lost and translation degraded.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not mark a boundary between a copula/auxiliary (is/was/are) and a following past participle (V‑ed); keep auxiliary+participle together until the verb phrase is complete.",
+      "example_pair": {
+        "input": "air travel is only rarely booked",
+        "output": "air travel is only rarely booked <SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_471",
+      "error_type": "placement",
+      "span": "sought to maintain",
+      "evidence": "Split the verb phrase from its object ('the national sovereignty'), causing loss of the object and mistranslation.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not cut between verbs like 'seek(s)/sought to' and their following noun‑phrase object; wait for the object NP ('the ...') to appear before emitting the verb phrase.",
+      "example_pair": {
+        "input": "sought to maintain national sovereignty",
+        "output": "sought to maintain national sovereignty <SEG:1>"
+      }
+    }
+  ],
+  "summary": "The prompt still allows early cuts that force the translator to guess a missing head, object, or participant, producing pronouns, wrong noun types, or incorrect voice. Two levers will help: (1) placement rules that forbid cuts that separate auxiliaries/verbs/modifiers from their immediate heads/objects, and (2) a priority rule that demotes cuts after reporting verbs when an article or parenthetical qualifier follows. Together these reduce risky top‑rank picks without banning all comma cuts.",
+  "aggregate": {
+    "dominant_error": null,
+    "dominant_basis": "No corpus rate identifies a dominant failure. Read the cases and `judge_distribution` for WHICH mechanism to fix — do not infer a rate from `case_label_counts`, those cases were selected for being the worst.",
+    "measured_rates": {
+      "coverage": {
+        "n": 0,
+        "of_n": 40,
+        "rate": 0.0,
+        "of": "all sentences scored — a true corpus rate",
+        "meaning": "sentences where the tightest budget asked for boundaries the prompt never marked, so pieces are missing outright"
+      },
+      "premature_among_judged": {
+        "n": 5,
+        "of_n": 10,
+        "rate": 0.5,
+        "of": "boundaries judged this iteration, selected as the WORST by measured contradiction — NOT a corpus rate, do not compare it against `coverage`"
+      }
+    },
+    "case_label_counts": {
+      "counts": {
+        "placement": 6,
+        "priority": 1
+      },
+      "of_n": 7,
+      "of": "the selected worst cases — NOT a rate"
+    },
+    "stuck_hint": "",
+    "priority_audit": [
+      {
+        "feature": "뒤 구두점 ','",
+        "n": 18,
+        "rank_percentile": 0.412,
+        "contradiction": 0.0789,
+        "over_trust": 0.184
+      },
+      {
+        "feature": "상대위치 1/3",
+        "n": 53,
+        "rank_percentile": 0.579,
+        "contradiction": 0.0969,
+        "over_trust": 0.0373
+      },
+      {
+        "feature": "상대위치 0/3",
+        "n": 66,
+        "rank_percentile": 0.585,
+        "contradiction": 0.0427,
+        "over_trust": 0.0136
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 135,
+        "rank_percentile": 0.667,
+        "contradiction": 0.0914,
+        "over_trust": -0.0584
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 46,
+        "rank_percentile": 0.69,
+        "contradiction": 0.1358,
+        "over_trust": -0.1223
+      }
+    ],
+    "judge_distribution": {
+      "n_boundaries_judged": 10,
+      "verdicts": {
+        "safe": 5,
+        "mistranslated": 5
+      },
+      "n_with_cause": 5,
+      "causes": {
+        "other": {
+          "n": 3,
+          "share": 0.6
+        },
+        "head not yet arrived": {
+          "n": 1,
+          "share": 0.2
+        },
+        "wrong participant": {
+          "n": 1,
+          "share": 0.2
+        }
+      }
+    },
+    "max_missing_boundaries": 0.0,
+    "rank_lift": 0.09058,
+    "rank_lift_t": 2.37,
+    "summary": "The prompt still allows early cuts that force the translator to guess a missing head, object, or participant, producing pronouns, wrong noun types, or incorrect voice. Two levers will help: (1) placement rules that forbid cuts that separate auxiliaries/verbs/modifiers from their immediate heads/objects, and (2) a priority rule that demotes cuts after reporting verbs when an article or parenthetical qualifier follows. Together these reduce risky top‑rank picks without banning all comma cuts."
+  }
+}

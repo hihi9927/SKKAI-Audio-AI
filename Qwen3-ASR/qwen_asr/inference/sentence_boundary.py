@@ -20,10 +20,14 @@ _ABBREV_LOOKBEHIND = r"(?<!Mr)(?<!Mrs)(?<!Dr)(?<!St)(?<!Jr)(?<!Sr)(?<!vs)(?<!No)
 CLOSERS = r"[\"'”’»›\)\]\}]*"
 
 # 소수점(3.14)은 마침표 뒤에 공백이 없어 자연히 제외됨 — 별도 처리 불필요.
+#
+# \u061f = 아랍어 물음표, \u06d4 = 우르두식 마침표. 아랍어는 CJK 와 달리 부호 뒤에
+# 공백을 쓰므로 `[。？！]` 분기가 아니라 공백/문자열끝을 요구하는 라틴 분기에 넣는다.
+# 아랍어 마침표는 어느 방언이든 ASCII `.` 이라 별도 추가가 필요 없다.
 DOT_COMMIT_BOUNDARY_RE = re.compile(
     r"(?:"
     rf"{_ABBREV_LOOKBEHIND}\.{CLOSERS}(?:\s+|$)"
-    rf"|[?!]{CLOSERS}(?:\s+|$)"
+    rf"|[?!\u061f\u06d4]{CLOSERS}(?:\s+|$)"
     rf"|[。？！]{CLOSERS}"
     r"|<SEG>"
     r")"
@@ -36,7 +40,8 @@ DOT_COMMIT_BOUNDARY_RE = re.compile(
 # `... own men!` + `"`). 앞 조각이 dedup 등으로 폐기되면 그 따옴표만 살아남아
 # 한 글자짜리 커밋이 나갔다 (실측: dev-clean 5694-64029-0020이 finish 커밋).
 SENTENCE_SPLIT_RE = re.compile(
-    rf"[^.!?。！？]*[.!?。！？]+{CLOSERS}\s*|[^.!?。！？]+$"
+    rf"[^.!?。！？\u061f\u06d4]*[.!?。！？\u061f\u06d4]+{CLOSERS}\s*"
+    rf"|[^.!?。！？\u061f\u06d4]+$"
 )
 
 

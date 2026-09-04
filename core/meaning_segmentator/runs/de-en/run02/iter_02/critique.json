@@ -1,0 +1,175 @@
+{
+  "cases": [
+    {
+      "id": "de_de_632",
+      "error_type": "placement",
+      "span": "die Absichten",
+      "evidence": "piece ended before the genitive/infinitival complement; translation tied 'intentions' to wrong participant",
+      "cause": "wrong participant",
+      "proposed_rule": "Avoid high-confidence boundaries that split a noun from an immediately following possessor/genitive or an infinitival complement (e.g. 'NOUN + anderer' or 'NOUN + zu-INF'); rank those cuts lower so the complement survives when possible.",
+      "example_pair": {
+        "input": "Neben diesen Fähigkeiten ist es entscheidend, die Absichten anderer zu verstehen.",
+        "output": "Neben diesen Fähigkeiten ist es entscheidend, die Absichten anderer zu verstehen. <SEG:1>"
+      }
+    },
+    {
+      "id": "de_de_471",
+      "error_type": "placement",
+      "span": "die nationale Souveränität",
+      "evidence": "translation finalized object before the governing infinitive 'aufrechtzuerhalten' arrived; caused wrong verb-object attachment",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not give top rank to boundaries that cut between an object/noun phrase and a following clause or clause-final infinitive; prefer boundaries after the infinitive or lower their confidence.",
+      "example_pair": {
+        "input": "Das Kräftegleichgewicht war ein System, in dem die europäischen Nationen danach strebten, die nationale Souveränität aller europäischen Staaten aufrechtzuerhalten,",
+        "output": "Das Kräftegleichgewicht war ein System, in dem die europäischen Nationen danach strebten, die nationale Souveränität aller europäischen Staaten aufrechtzuerhalten, <SEG:1>"
+      }
+    },
+    {
+      "id": "de_de_869",
+      "error_type": "placement",
+      "span": "mit westlicher Prägung",
+      "evidence": "boundary left 'mit westlicher Prägung' isolated and system chose literal 'western embossing' instead of 'Western feel/character' when modifier 'und Qualität' followed",
+      "cause": "other",
+      "proposed_rule": "Penalize high-confidence cuts inside coordinated descriptive noun phrases of the form 'mit ADJ NOUN und NOUN' where the first noun is figurative; treat the combined phrase as one unit (lower boundary rank) or mark a candidate as low-confidence.",
+      "example_pair": {
+        "input": "Hotels, Essen und Dienstleistungen mit westlicher Prägung und Qualität in Anspruch zu nehmen,",
+        "output": "Hotels, Essen und Dienstleistungen mit westlicher Prägung und Qualität in Anspruch zu nehmen, <SEG:1>"
+      }
+    },
+    {
+      "id": "de_de_967",
+      "error_type": "priority",
+      "span": "Cinque Terre, was soviel bedeutet",
+      "evidence": "commas introducing explanatory/appositive clause were given relatively high rank; resulted in premature lexical choice for 'Länder' before disambiguating context",
+      "cause": "other",
+      "proposed_rule": "When a boundary follows a proper name + comma that introduces an explanatory clause ('was','which','that'), lower its confidence unless the comma clearly closes a list; i.e. penalize 'comma + explanatory pronoun' candidates in priority.",
+      "example_pair": {
+        "input": "Cinque Terre, was soviel bedeutet wie Fünf Länder, umfasst die fünf kleinen Küstendörfer ...",
+        "output": "Cinque Terre, was soviel bedeutet wie Fünf Länder, <SEG:1> umfasst die fünf kleinen Küstendörfer <SEG:2> ..."
+      }
+    },
+    {
+      "id": "de_de_488",
+      "error_type": "priority",
+      "span": "Der Guru ist",
+      "evidence": "boundaries around predicate phrase and following relative/contrast clause were ranked so a cut occurred before complements, leading some translations to drop key nouns or change modality",
+      "cause": "other",
+      "proposed_rule": "Lower confidence for boundaries that cut immediately after a short predicate ('ist', 'hat') when a relative or completive clause ('die...', 'die ... darstellt', 'doch ...') follows; prefer keeping predicate+complement together.",
+      "example_pair": {
+        "input": "Der Guru ist ein grundlegender Aspekt aller indischen Religionen, doch im Sikhismus hat er eine Bedeutung eingenommen, die den Kern des Sikh-Glaubens darstellt.",
+        "output": "Der Guru ist ein grundlegender Aspekt aller indischen Religionen, doch im Sikhismus hat er eine Bedeutung eingenommen, die den Kern des Sikh-Glaubens darstellt. <SEG:1>"
+      }
+    },
+    {
+      "id": "de_de_339",
+      "error_type": "reference_suspect",
+      "span": "Während seiner Aufwärmrunde",
+      "evidence": "oracle translation disagrees with unambiguous local rendering (timing of accident); human judgement flagged the oracle as suspect",
+      "cause": "other",
+      "proposed_rule": "If the local source phrasing yields an unambiguous, coherent rendering that conflicts with the oracle, mark the item as reference_suspect and preserve the local translation rather than demoting the boundary.",
+      "example_pair": {
+        "input": "Während seiner Aufwärmrunde stürzte Lenz von seinem Motorrad und wurde dann von seinem Rennkollegen Xavier Zayat überfahren.",
+        "output": "Während seiner Aufwärmrunde stürzte Lenz von seinem Motorrad und wurde dann von seinem Rennkollegen Xavier Zayat überfahren. <SEG:1>"
+      }
+    }
+  ],
+  "summary": "Two systematic issues dominate: the model over-trusts boundaries adjacent to commas (especially before explanatory/appositive clauses and coordinated modifiers) and it places high-confidence cuts that split nouns from the complements that determine participant, head, or lexical sense. Also, when the oracle contradicts an otherwise unambiguous local rendering, flag it as reference_suspect and preserve the local translation rather than treating the boundary as wrong.",
+  "aggregate": {
+    "dominant_error": null,
+    "dominant_basis": "No corpus rate identifies a dominant failure. Read the cases and `judge_distribution` for WHICH mechanism to fix — do not infer a rate from `case_label_counts`, those cases were selected for being the worst.",
+    "measured_rates": {
+      "coverage": {
+        "n": 0,
+        "of_n": 40,
+        "rate": 0.0,
+        "of": "all sentences scored — a true corpus rate",
+        "meaning": "sentences where the tightest budget asked for boundaries the prompt never marked, so pieces are missing outright"
+      },
+      "premature_among_judged": {
+        "n": 18,
+        "of_n": 50,
+        "rate": 0.36,
+        "of": "boundaries judged this iteration, selected as the WORST by measured contradiction — NOT a corpus rate, do not compare it against `coverage`"
+      }
+    },
+    "case_label_counts": {
+      "counts": {
+        "placement": 3,
+        "priority": 2,
+        "reference_suspect": 1
+      },
+      "of_n": 6,
+      "of": "the selected worst cases — NOT a rate"
+    },
+    "stuck_hint": "",
+    "priority_audit": [
+      {
+        "feature": "뒤 구두점 ','",
+        "n": 34,
+        "rank_percentile": 0.41,
+        "contradiction": 0.0539,
+        "over_trust": 0.1146
+      },
+      {
+        "feature": "상대위치 1/3",
+        "n": 49,
+        "rank_percentile": 0.524,
+        "contradiction": 0.1011,
+        "over_trust": 0.0882
+      },
+      {
+        "feature": "상대위치 0/3",
+        "n": 59,
+        "rank_percentile": 0.623,
+        "contradiction": 0.0816,
+        "over_trust": -0.0173
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 41,
+        "rank_percentile": 0.671,
+        "contradiction": 0.0937,
+        "over_trust": -0.069
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 104,
+        "rank_percentile": 0.7,
+        "contradiction": 0.097,
+        "over_trust": -0.1017
+      }
+    ],
+    "judge_distribution": {
+      "n_boundaries_judged": 50,
+      "verdicts": {
+        "safe": 29,
+        "mistranslated": 17,
+        "reference_suspect": 3,
+        "premature": 1
+      },
+      "n_with_cause": 18,
+      "causes": {
+        "other": {
+          "n": 14,
+          "share": 0.778
+        },
+        "wrong participant": {
+          "n": 2,
+          "share": 0.111
+        },
+        "head not yet arrived": {
+          "n": 1,
+          "share": 0.056
+        },
+        "modifier scope": {
+          "n": 1,
+          "share": 0.056
+        }
+      }
+    },
+    "max_missing_boundaries": 0.0,
+    "rank_lift": 0.09492,
+    "rank_lift_t": 3.1,
+    "summary": "Two systematic issues dominate: the model over-trusts boundaries adjacent to commas (especially before explanatory/appositive clauses and coordinated modifiers) and it places high-confidence cuts that split nouns from the complements that determine participant, head, or lexical sense. Also, when the oracle contradicts an otherwise unambiguous local rendering, flag it as reference_suspect and preserve the local translation rather than treating the boundary as wrong."
+  }
+}

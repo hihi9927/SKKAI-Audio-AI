@@ -1,0 +1,19 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "sections_reported": [
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "changelog": [
+    "When to Segment: merged candidate rules into concrete surface-form signals and added guidance to treat openings of subordinate clauses, temporal adjuncts, scope-limiters, appositives and naming phrases as signs to wait for their heads or complements.",
+    "Priority Rules: added a single, general demotion principle to place low confidence on any candidate that would finalise a predicate, head noun, polarity or modifier scope before disambiguating material (verbs, head nouns, coordinated items, negation complements, appositives) arrives; listed common surface tokens that typically trigger this demotion.",
+    "Decision Procedure: kept the two-step mark-then-rank flow but required that marking include extra low-ranked candidates when a sentence contains more than one parenthetical/appositive or multiple locative phrases so that the format constraint (>=4 tags in such cases) can be satisfied by the deterministic stage."
+  ],
+  "size_budget": 13759,
+  "over_budget": false
+}

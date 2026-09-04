@@ -1161,7 +1161,7 @@ class Qwen3ASRStreamingHandler:
                 match = re.search(
                     r"(?:"
                     r"(?<!Mr)(?<!Mrs)(?<!Dr)(?<!St)(?<!Jr)(?<!Sr)(?<!vs)(?<!No)\.\s+(?=\S)"
-                    r"|[?!]\s+(?=\S)"
+                    r"|[?!\u061f\u06d4]\s+(?=\S)"
                     r"|[\u3002\uff1f\uff01](?=\S)"
                     r"|<SEG>"
                     r")",

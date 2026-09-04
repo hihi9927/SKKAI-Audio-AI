@@ -1,0 +1,122 @@
+{
+  "source_language": "English",
+  "word_order": "SVO | English in the sample uses Subject–Verb–Object (e.g. 'The game (S) is based (V) on the Second Battle (O)'; 'Arthur Guinness signed (V) a 9,000 year lease (O)').",
+  "register": "edited written prose — encyclopedic / Wikipedia-style and newsy factual sentences (formal, well-formed clauses rather than spontaneous speech).",
+  "fillers_and_hesitations": [
+    "um",
+    "uh",
+    "well",
+    "you know",
+    "I mean"
+  ],
+  "discourse_markers": [
+    "and",
+    "or",
+    "but",
+    "so",
+    "although",
+    "because",
+    "when",
+    "if",
+    "as",
+    "since",
+    "while",
+    "therefore",
+    "however",
+    "such as",
+    "including",
+    "pending"
+  ],
+  "clause_boundary_signals": [
+    "and",
+    "but",
+    "or",
+    "so",
+    "because",
+    "although",
+    "when",
+    "if",
+    "as",
+    "since",
+    "while",
+    "that",
+    "which",
+    "who",
+    "where",
+    "whether"
+  ],
+  "non_boundary_traps": [
+    "called",
+    "named",
+    "such as",
+    "including",
+    "i.e.",
+    "e.g.",
+    "parenthetical acronyms/expansions like '(ISIL)'",
+    "abbreviations with periods (e.g. 'St.', 'Mr.', 'Dr.')",
+    "appositive commas (noun, appositive, ... )"
+  ],
+  "unstable_prefix_signals": [
+    "that",
+    "which",
+    "who",
+    "whom",
+    "whose",
+    "where",
+    "when",
+    "if",
+    "whether",
+    "because",
+    "although",
+    "as",
+    "since",
+    "while",
+    "pending",
+    "whoever",
+    "whichever"
+  ],
+  "target_transfer_hazards": [
+    "that",
+    "which",
+    "who/whom/whose",
+    "where",
+    "when",
+    "if",
+    "whether",
+    "because",
+    "although",
+    "as",
+    "since",
+    "while",
+    "pending",
+    "called",
+    "such as",
+    "including",
+    "parenthetical acronym patterns like '(' followed by an abbreviation then ')'"
+  ],
+  "notes_for_prompt_writer": "This source is formal, well-formed English: most sentences are complete clauses, so waiting to close a clause costs little naturalness. For German, avoid emitting segments immediately after subordinators or relative pronouns (the items listed under unstable_prefix_signals/target_transfer_hazards) because German moves the finite verb to the clause end and translation choices (word order, tense/auxiliary placement) remain unsettled until the subordinate/relative clause finishes. Treat appositives, 'called/named', lists after 'such as/including', and parenthetical acronyms as non-boundaries — do not split there. Prefer splitting after the end of main clauses or at coordinating conjunctions only when the main clause is complete.",
+  "target_language_profile": {
+    "target_language": "German",
+    "word_order": "Main clauses: V2 (S V O); subordinate and relative clauses: verb-final. DP internal order is fairly rigid; adverbials/fronting can vary (pairs 12, 6, 18, 1).",
+    "verb_placement": "Finite verb appears second in main clauses; in subordinate/relative/infinitival contexts the verb/participle/particle appears clause-final — force deferring finite verb and particle output (pairs 12, 6, 11, 18).",
+    "late_commitment_forced_by": [
+      "finite verb position (V2 vs verb-final) (pairs 6, 18)",
+      "separable particles / phrasal-verb particles (e.g., zurück, hinunter) (pairs 12, 2)",
+      "participles/perfect auxiliaries placement (pairs 6, 16)",
+      "case/gender for articles and adjective endings (pairs 1, 9, 3)",
+      "relative/subordinate clause boundaries that change word order (pairs 6, 11)"
+    ],
+    "reordering_vs_source": "German often defers verbs/particles to clause end, places complements before final verbs, and attaches relative clauses post-nominal, causing long-distance reordering (pairs 11, 6, 12, 18).",
+    "safe_boundary_signals": [
+      "sentence/clause-final punctuation (., ;) — clause structure settled (pairs 1, 12)",
+      "closing comma that ends a subordinate/relative clause in source (pair 6, 11)",
+      "a following finite verb or conjunction, signalling prior NP ended (pair 12)"
+    ],
+    "unsafe_boundary_signals": [
+      "before a subordinate/relative marker ('that','which','although','who') — verb-final may be required (pairs 6, 18)",
+      "before the English phrasal verb particle appears ('back','away','down') — separable particle placement unknown (pairs 12, 2)",
+      "before the head noun appears to determine gender/case for articles/adjectives (pairs 1, 9)"
+    ],
+    "evidence": "measured: 20 parallel pairs (train split)"
+  }
+}

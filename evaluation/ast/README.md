@@ -66,8 +66,10 @@ python evaluation/ast/build_manifest_fleurs.py \
     --out evaluation/ast/manifests/fleurs_en-de_test.jsonl --verify-audio
 
 # 2) 서버 (터미널 1)
+#    카드를 다른 작업과 나눠 쓰면 --gpu-memory-utilization 을 반드시 낮출 것 (아래 참조)
 python evaluation/streaming_websocket_server_ast.py \
-    --model models/Qwen3-ASR-1.7B-en-silence-c80-merged --no-idle-shutdown
+    --model models/Qwen3-ASR-1.7B-en-silence-c80-merged --no-idle-shutdown \
+    --gpu-memory-utilization 0.5
 
 # 3) 클라이언트 (터미널 2)
 python evaluation/ast/test_ast.py \
@@ -81,6 +83,24 @@ bash evaluation/LibriSpeech/paper_result/ASR/scripts/stop_server.sh 8765
 
 en→de test 전체는 346발화 / 0.95시간 오디오 → 실시간 페이싱 기준 **약 63분**.
 `--limit` 으로 서브셋, `--tag` 재사용으로 중단 지점부터 재개.
+
+### GPU 를 혼자 쓰는 게 아니면 `--gpu-memory-utilization` 을 낮춰라
+
+vLLM 기본값은 **0.8** 이고, 이건 "모델이 필요한 양"이 아니라 **"남는 걸 다 잡아둔다"** 는
+뜻이다. 24GB 카드에서 19.2GB 를 선점한다 — 1.7B 모델이 실제로 쓰는 양과 무관하다.
+
+실제 사고 (2026-08-28 00:21): `repro110` ASR 서버(EngineCore pid 149462)가 19.28GiB 를
+잡은 상태에서, 같은 카드에서 4시간째 돌던 autoseg 루프(CometKiwi + NLI, 4.1GB)가 16MiB
+할당에 실패해 CUDA OOM 으로 죽었다. 남은 여유가 9.5MiB 였다.
+
+```
+0.5  →  12GB.  1.7B·max_len 4096·스트리밍(배치 1)에는 충분하고 12GB 를 비워 둔다
+0.8  →  19GB.  카드를 혼자 쓸 때만
+```
+
+`run_acl6060.sh` / `run_covost2.sh` / `run_three_axes.sh` 는 **기본 0.5** 로 돈다.
+`GPU_UTIL=0.8 bash run_acl6060.sh ...` 로 올릴 수 있다. 임시 스크립트를 손으로 쓸 때도
+이 인자를 빼먹지 말 것 — 위 사고가 정확히 그렇게 났다.
 
 ## 지표
 

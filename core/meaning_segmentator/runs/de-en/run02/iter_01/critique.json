@@ -1,0 +1,246 @@
+{
+  "cases": [
+    {
+      "id": "de_de_637",
+      "error_type": "placement",
+      "span": "die Basis für den Einsatz",
+      "evidence": "piece ended before functional modifier 'als Hilfsmittel' arrived; later piece contradicted or omitted function",
+      "cause": "modifier scope",
+      "proposed_rule": "Do not finalize a noun phrase that is followed by a functional/comparative modifier (e.g., 'als ...', 'as ...') until that modifier and its complements have arrived.",
+      "example_pair": {
+        "input": "Im Jahr 1970 entdeckte der Arzt und Forscher Raymond Damadian die Basis für den Einsatz der Magnetresonanztomografie als Hilfsmittel für die medizinische Diagnose.",
+        "output": "Im Jahr 1970 entdeckte der Arzt und Forscher Raymond Damadian die Basis für den Einsatz der Magnetresonanztomografie als Hilfsmittel für die medizinische Diagnose. <SEG:1>"
+      }
+    },
+    {
+      "id": "de_de_869",
+      "error_type": "placement",
+      "span": "mit westlicher Prägung",
+      "evidence": "segment separated 'mit westlicher Prägung' from 'und Qualität', producing a literal/odd noun choice ('embossing')",
+      "cause": "other",
+      "proposed_rule": "When a prepositional phrase contains a figurative noun and is followed by coordinating modifiers, wait for the coordinating modifier ('und ...') before final lexical choice; prefer neutral renderings ('character/feel') if forced earlier.",
+      "example_pair": {
+        "input": "Vor allem in den ersten Tagen sollten Sie erwägen, Hotels, Essen und Dienstleistungen mit westlicher Prägung und Qualität in Anspruch zu nehmen, um die Akklimatisierung zu erleichtern.",
+        "output": "Vor allem in den ersten Tagen sollten Sie erwägen, Hotels, Essen und Dienstleistungen mit westlicher Prägung und Qualität in Anspruch zu nehmen, um die Akklimatisierung zu erleichtern. <SEG:1>"
+      }
+    },
+    {
+      "id": "de_de_471",
+      "error_type": "placement",
+      "span": "strebten, die nationale Souveränität",
+      "evidence": "emitted verb phrase before the infinitival complement 'aufrechtzuerhalten' arrived; translated 'sought to consolidate' instead of 'sought to maintain'",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not finalize a verb phrase or its object when an infinitival complement or governing verb is likely to follow; wait for the infinitive or complement before committing aspect/lexical choice.",
+      "example_pair": {
+        "input": "Das Kräftegleichgewicht war ein System, in dem die europäischen Nationen danach strebten, die nationale Souveränität aller europäischen Staaten aufrechtzuerhalten,",
+        "output": "Das Kräftegleichgewicht war ein System, in dem die europäischen Nationen danach strebten, die nationale Souveränität aller europäischen Staaten aufrechtzuerhalten. <SEG:1>"
+      }
+    },
+    {
+      "id": "de_de_632",
+      "error_type": "placement",
+      "span": "die Absichten anderer zu verstehen",
+      "evidence": "boundary split the noun and its possessor/complement; translation attached 'to understand' wrongly and mis-assigned participant",
+      "cause": "wrong participant",
+      "proposed_rule": "When a noun is followed by a genitive/possessor or an infinitival complement, delay attachment decisions (possessor/argument) until that following element is seen.",
+      "example_pair": {
+        "input": "Neben diesen Fähigkeiten ist es entscheidend, die Absichten anderer zu verstehen. Es ermöglicht uns, mögliche Zweideutigkeiten physischer Handlungen auszuräumen.",
+        "output": "Neben diesen Fähigkeiten ist es entscheidend, die Absichten anderer zu verstehen. <SEG:1> Es ermöglicht uns, mögliche Zweideutigkeiten physischer Handlungen auszuräumen. <SEG:2>"
+      }
+    },
+    {
+      "id": "de_de_1037",
+      "error_type": "placement",
+      "span": "deuteten die Messungen des Meeresspiegels darauf hin",
+      "evidence": "translated reporting verb aspect/tense before subordinate 'dass' clause; tense/aspect choice conflicted with subordinate content",
+      "cause": "other",
+      "proposed_rule": "Delay finalizing tense/aspect for reporting or evidential verbs until any following 'that'/'dass' subordinate clause is available.",
+      "example_pair": {
+        "input": "Laut dem aktuellen Bulletin deuteten die Messungen des Meeresspiegels darauf hin, dass ein Tsunami ausgelöst wurde.",
+        "output": "Laut dem aktuellen Bulletin deuteten die Messungen des Meeresspiegels darauf hin, dass ein Tsunami ausgelöst wurde. <SEG:1>"
+      }
+    },
+    {
+      "id": "de_de_1454",
+      "error_type": "placement",
+      "span": "beschreibt die Show als",
+      "evidence": "piece ended before predicative marker and description; committing to a category (wrong noun sense) prematurely",
+      "cause": "other",
+      "proposed_rule": "Do not commit to a categorical label or noun sense when a predicative marker ('als', 'described as') and its postnominal description are imminent; wait for the predicative complement.",
+      "example_pair": {
+        "input": "Die Website des Senders beschreibt die Show als „Radiotheater alter Schule mit einer neuen und unheimlichen schrägen Interpretation!“",
+        "output": "Die Website des Senders beschreibt die Show als „Radiotheater alter Schule mit einer neuen und unheimlichen schrägen Interpretation!“ <SEG:1>"
+      }
+    },
+    {
+      "id": "de_de_967",
+      "error_type": "placement",
+      "span": "was soviel bedeutet wie Fünf Länder",
+      "evidence": "committed to a specific lexical sense ('countries') before disambiguating context from the remainder of the clause",
+      "cause": "other",
+      "proposed_rule": "Delay committing to a specific sense of an ambiguous noun when a parenthetical/explanatory clause follows; prefer literal 'which means ...' renderings only after disambiguating context.",
+      "example_pair": {
+        "input": "Cinque Terre, was soviel bedeutet wie Fünf Länder, umfasst die fünf kleinen Küstendörfer Riomaggiore, Manarola, Corniglia, Vernazza und Monterosso in der italienischen Region Ligurien.",
+        "output": "Cinque Terre, was soviel bedeutet wie Fünf Länder, umfasst die fünf kleinen Küstendörfer Riomaggiore, Manarola, Corniglia, Vernazza und Monterosso in der italienischen Region Ligurien. <SEG:1>"
+      }
+    },
+    {
+      "id": "de_de_934",
+      "error_type": "placement",
+      "span": "an der Sie studieren möchten",
+      "evidence": "relative clause attachment was finalized prematurely producing wrong actor/choice interpretation ('you choose the university')",
+      "cause": "other",
+      "proposed_rule": "Delay finalizing agent/selection interpretations when a preposed noun is followed by a relative clause; wait for the relative clause to resolve attachment.",
+      "example_pair": {
+        "input": "Für die meisten Ländern brauchen Sie ein schriftliches Angebot von der Einrichtung, an der Sie studieren möchten, und zudem einen Nachweis, dass Sie über die nötigen Mittel verfügen, um sich zumindest in Ihrem ersten Studienjahr über Wasser zu halten.",
+        "output": "Für die meisten Ländern brauchen Sie ein schriftliches Angebot von der Einrichtung, an der Sie studieren möchten, und zudem einen Nachweis, dass Sie über die nötigen Mittel verfügen, um sich zumindest in Ihrem ersten Studienjahr über Wasser zu halten. <SEG:1>"
+      }
+    },
+    {
+      "id": "de_de_488",
+      "error_type": "placement",
+      "span": "Der Guru ist ein grundlegender Aspekt",
+      "evidence": "predicate finalized before its complement/relative clause; resulted in dropped noun ('Aspect') or wrong clause modality",
+      "cause": "other",
+      "proposed_rule": "Do not finalize a predicate phrase when a complement or relative clause that completes its meaning may follow; wait for that complement to avoid dropping important nouns or changing modality.",
+      "example_pair": {
+        "input": "Sikhs nennen ihre Religion Gurmat, was auf Pandschabi „Weg des Gurus“ bedeutet. Der Guru ist ein grundlegender Aspekt aller indischen Religionen, doch im Sikhismus hat er eine Bedeutung eingenommen, die den Kern des Sikh-Glaubens darstellt.",
+        "output": "Sikhs nennen ihre Religion Gurmat, was auf Pandschabi „Weg des Gurus“ bedeutet. Der Guru ist ein grundlegender Aspekt aller indischen Religionen, doch im Sikhismus hat er eine Bedeutung eingenommen, die den Kern des Sikh-Glaubens darstellt. <SEG:1>"
+      }
+    },
+    {
+      "id": "de_de_109",
+      "error_type": "placement",
+      "span": "ähnlich wie eine Sternschuppe aussehen",
+      "evidence": "committed to an exact noun rendering before the relative clause 'die am Himmel fliegt', producing a wrong lexical choice",
+      "cause": "other",
+      "proposed_rule": "Avoid final lexical commitment for a content noun when a restrictive relative clause follows; wait for the modifier to disambiguate meaning.",
+      "example_pair": {
+        "input": "Die Kapsel wird ähnlich wie eine Sternschuppe aussehen, die am Himmel fliegt.",
+        "output": "Die Kapsel wird ähnlich wie eine Sternschuppe aussehen, die am Himmel fliegt. <SEG:1>"
+      }
+    },
+    {
+      "id": "de_de_264",
+      "error_type": "placement",
+      "span": "Der Kommissar sagte:",
+      "evidence": "boundary at reporting clause permitted early commitment to quoted material or frame before full quote; early piece had high contradiction measure",
+      "cause": "other",
+      "proposed_rule": "When a reporting verb or clause is immediately followed by quoted or subordinate content, avoid finalizing the report frame until the quoted/subordinate clause begins.",
+      "example_pair": {
+        "input": "Der Kommissar sagte: „Wir haben uns noch nicht auf Herkunftsregeln und Zollkonditionen einigen können, aber der Rahmen, den wir entwickelt haben, reicht bereits aus, um am 1. Juli 2020 mit dem Handel zu beginnen.“",
+        "output": "Der Kommissar sagte: „Wir haben uns noch nicht auf Herkunftsregeln und Zollkonditionen einigen können, aber der Rahmen, den wir entwickelt haben, reicht bereits aus, um am 1. Juli 2020 mit dem Handel zu beginnen.“ <SEG:1>"
+      }
+    },
+    {
+      "id": "de_de_339",
+      "error_type": "reference_suspect",
+      "span": "Während seiner Aufwärmrunde",
+      "evidence": "oracle translation contradicts an unambiguous local rendering (timing of accident) — measured contradiction probably reflects reference mismatch, not a segmentation error",
+      "cause": "other",
+      "proposed_rule": "If the local emitted translation is coherent and grammatical but later contradicted by the oracle, mark the oracle as suspect and preserve the local rendering rather than penalizing the boundary.",
+      "example_pair": {
+        "input": "Während seiner Aufwärmrunde stürzte Lenz von seinem Motorrad und wurde dann von seinem Rennkollegen Xavier Zayat überfahren.",
+        "output": "Während seiner Aufwärmrunde stürzte Lenz von seinem Motorrad und wurde dann von seinem Rennkollegen Xavier Zayat überfahren. <SEG:1>"
+      }
+    }
+  ],
+  "summary": "Coverage is fine; failures are dominated by premature cuts that force final lexical/attachment/tamping decisions before disambiguating material arrives. The prompt over-trusts boundaries that split noun phrases, predicative 'als' constructions, reporting verbs with 'dass' clauses, and relative clauses—so add placement rules that delay finalization until obvious complements, coordinators, or subordinate markers appear. Also treat oracle contradictions that conflict with clear local readings as reference_suspect rather than segmentation errors.",
+  "aggregate": {
+    "dominant_error": null,
+    "dominant_basis": "No corpus rate identifies a dominant failure. Read the cases and `judge_distribution` for WHICH mechanism to fix — do not infer a rate from `case_label_counts`, those cases were selected for being the worst.",
+    "measured_rates": {
+      "coverage": {
+        "n": 0,
+        "of_n": 40,
+        "rate": 0.0,
+        "of": "all sentences scored — a true corpus rate",
+        "meaning": "sentences where the tightest budget asked for boundaries the prompt never marked, so pieces are missing outright"
+      },
+      "premature_among_judged": {
+        "n": 18,
+        "of_n": 50,
+        "rate": 0.36,
+        "of": "boundaries judged this iteration, selected as the WORST by measured contradiction — NOT a corpus rate, do not compare it against `coverage`"
+      }
+    },
+    "case_label_counts": {
+      "counts": {
+        "placement": 11,
+        "reference_suspect": 1
+      },
+      "of_n": 12,
+      "of": "the selected worst cases — NOT a rate"
+    },
+    "stuck_hint": "",
+    "priority_audit": [
+      {
+        "feature": "뒤 구두점 ','",
+        "n": 34,
+        "rank_percentile": 0.41,
+        "contradiction": 0.0539,
+        "over_trust": 0.1146
+      },
+      {
+        "feature": "상대위치 1/3",
+        "n": 49,
+        "rank_percentile": 0.524,
+        "contradiction": 0.1011,
+        "over_trust": 0.0882
+      },
+      {
+        "feature": "상대위치 0/3",
+        "n": 59,
+        "rank_percentile": 0.623,
+        "contradiction": 0.0816,
+        "over_trust": -0.0173
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 41,
+        "rank_percentile": 0.671,
+        "contradiction": 0.0937,
+        "over_trust": -0.069
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 104,
+        "rank_percentile": 0.7,
+        "contradiction": 0.097,
+        "over_trust": -0.1017
+      }
+    ],
+    "judge_distribution": {
+      "n_boundaries_judged": 50,
+      "verdicts": {
+        "safe": 29,
+        "mistranslated": 17,
+        "reference_suspect": 3,
+        "premature": 1
+      },
+      "n_with_cause": 18,
+      "causes": {
+        "other": {
+          "n": 14,
+          "share": 0.778
+        },
+        "wrong participant": {
+          "n": 2,
+          "share": 0.111
+        },
+        "head not yet arrived": {
+          "n": 1,
+          "share": 0.056
+        },
+        "modifier scope": {
+          "n": 1,
+          "share": 0.056
+        }
+      }
+    },
+    "max_missing_boundaries": 0.0,
+    "rank_lift": 0.09492,
+    "rank_lift_t": 3.1,
+    "summary": "Coverage is fine; failures are dominated by premature cuts that force final lexical/attachment/tamping decisions before disambiguating material arrives. The prompt over-trusts boundaries that split noun phrases, predicative 'als' constructions, reporting verbs with 'dass' clauses, and relative clauses—so add placement rules that delay finalization until obvious complements, coordinators, or subordinate markers appear. Also treat oracle contradictions that conflict with clear local readings as reference_suspect rather than segmentation errors."
+  }
+}

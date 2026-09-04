@@ -1,0 +1,72 @@
+[
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Fluke wrote that the efforts by some to drown out women from speaking out about women’s health were unsuccessful.",
+    "seg_text": "Fluke wrote that <SEG:3> the efforts by some <SEG:2> to drown out women <SEG:1> from speaking out about women’s health were unsuccessful.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "It warns No one can guarantee that any course of action in Iraq at this point will stop sectarian warfare, growing violence, or a slide toward chaos.",
+    "seg_text": "It warns No one <SEG:6> can guarantee any course <SEG:3> of action in Iraq <SEG:2> at this point <SEG:1> will stop sectarian <SEG:5> warfare, growing violence, <SEG:4> or a slide toward chaos.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "Please remember that you are essentially visiting a mass grave site, as well as a site that has an almost incalculable meaning to a significant portion of the world's population.",
+    "seg_text": "Please remember that you are <SEG:4> essentially visiting a mass grave site, <SEG:1> as well as a <SEG:5> site that has <SEG:3> an almost incalculable meaning <SEG:2> to a significant portion <SEG:6> of the world's population.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 3개 필요",
+    "text": "In addition to the crushing ice, extreme weather conditions have been hampering rescue efforts.",
+    "seg_text": "In addition to the crushing ice, <SEG:1> extreme weather conditions have been hampering rescue efforts.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "Some cross country running during the winter, combined with gymnasium work for the upper part of the body, is the best preparation for the running season.",
+    "seg_text": "Some cross country running <SEG:4> during the winter, <SEG:3> combined with gymnasium work <SEG:2> for the upper part <SEG:5> of the body, <SEG:1> is the best preparation for the running season.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "Germany code-named the attack “Operation Sealion”. Most of the British Army's heavy weapons and supplies had been lost when it evacuated from Dunkirk, so the army was fairly weak.",
+    "seg_text": "Germany code-named the attack “Operation Sealion”. <SEG:1> Most of the British Army's <SEG:5> heavy weapons and supplies <SEG:4> had been lost <SEG:2> when it evacuated <SEG:3> from Dunkirk, so the army was fairly weak.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 3개 필요",
+    "text": "Pre-modern observatories are usually obsolete today, and remain as museums, or sites of education.",
+    "seg_text": "Pre-modern observatories are usually obsolete <SEG:1> today, and remain as museums, or sites of education.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "We will never overhaul a car, build a fountain in our backyard, travel to Peru to examine ancient ruins, or remodel our neighbour's house.",
+    "seg_text": "We will never overhaul <SEG:3> a car, build a fountain in our backyard, <SEG:2> travel to Peru to <SEG:4> examine ancient ruins, <SEG:1> or remodel our neighbour's house.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Research has found that females are two times more likely to have MS then males.",
+    "seg_text": "Research has found <SEG:2> that females are two times more <SEG:1> likely to have MS then males.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "A doctor who worked at Children's Hospital of Pittsburgh, Pennsylvania will be charged with aggravated murder after her mother was found dead in the trunk of her car Wednesday, authorities in Ohio say.",
+    "seg_text": "A doctor who worked at Children's Hospital <SEG:6> of Pittsburgh, Pennsylvania <SEG:3> will be charged with aggravated murder <SEG:1> after her mother was found dead <SEG:5> in the trunk <SEG:4> of her car Wednesday, <SEG:2> authorities in Ohio say.",
+    "first_pass": true
+  }
+]

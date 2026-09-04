@@ -213,8 +213,26 @@ async def stream_one(ws, audio, *, chunk_size_ms, send_interval_ms, target_lang,
                 "audio_end_sec": data.get("audioEndSec"),
                 "fsl_sec": data.get("fsl_sec"),
                 "trans_sec": data.get("trans_sec"),
+                # 번역 호출 계측 (AST 서버의 trans_guard). 구버전 서버면 None.
+                "trans_calls": data.get("transCalls"),
+                "trans_retries": data.get("transRetries"),
+                "trans_failed": data.get("transFailed"),
                 "emit_elapsed_sec": data.get("emitElapsedSec"),
                 "recv_elapsed_sec": recv_elapsed,
+                # audio_end 진단 계측 (AST 서버). 구버전 서버면 None.
+                # payload_at_audio_sec 은 payload 가 만들어진 시점의 오디오 위치이고,
+                # seg_info_age_sec 이 크면 묵은 감지 타임스탬프로 새 텍스트를 찍은 것이다.
+                "payload_at_audio_sec": data.get("payloadAtAudioSec"),
+                "payload_original_len": data.get("payloadOriginalLen"),
+                "seg_info_audio_sec": data.get("segInfoAudioSec"),
+                "seg_info_age_sec": data.get("segInfoAgeSec"),
+                "seg_info_token_idx": data.get("segInfoTokenIdx"),
+                "seg_info_chunk_start": data.get("segInfoChunkStart"),
+                "slot_audio_accum_sec": data.get("slotAudioAccumSec"),
+                "span_start_sec": data.get("spanStartSec"),
+                "span_sec": data.get("spanSec"),
+                "span_ratio": data.get("spanRatio"),
+                "rest_len": data.get("restLen"),
             })
 
     await asyncio.gather(_send(), _recv())
@@ -270,6 +288,22 @@ def score_utterance(item, segments, args, warned):
 
     fsl_vals = [s["fsl_sec"] * 1000.0 for s in ordered if s.get("fsl_sec") is not None]
 
+    # first token latency — 오디오 송신 시작부터 **첫 final 이 도착할 때까지**의
+    # 실시간 경과. 사용자가 아무것도 못 보고 기다리는 구간이다. LAAL 과 달리 세그먼트
+    # 전체가 아니라 첫 출력 하나만 보므로, 커밋이 잦은 정책(static)이 유리하다.
+    # 번역이 빈 세그먼트도 "출력이 나온" 것으로 세지 않는다 — 화면에 뜨는 게 없다.
+    ftl_ms = None
+    for seg in ordered:
+        if seg["translation"] and seg.get("recv_elapsed_sec") is not None:
+            ftl_ms = float(seg["recv_elapsed_sec"]) * 1000.0
+            break
+
+    # 번역 호출 계측. transCalls 는 재시도를 포함한 실제 HTTP 요청 수이고,
+    # 커밋 수(n_segments)와 다르면 재시도가 있었다는 뜻이다.
+    calls = [s["trans_calls"] for s in ordered if s.get("trans_calls") is not None]
+    retries = [s["trans_retries"] for s in ordered if s.get("trans_retries") is not None]
+    n_failed = sum(1 for s in ordered if s.get("trans_failed"))
+
     return {
         "utt_id": item["utt_id"],
         "talk_id": item.get("talk_id", ""),
@@ -283,10 +317,35 @@ def score_utterance(item, segments, args, warned):
         "laal_uncapped_ms": M.laal_for_utterance(nocap_pairs, src_ms, ref, args.laal_unit),
         "sentence_bleu": M.sentence_bleu_score(hyp, ref, args.bleu_tokenize),
         "mean_fsl_ms": mean(fsl_vals) if fsl_vals else None,
+        "first_token_latency_ms": ftl_ms,
         "n_segments": len(ordered),
+        # 커밋 수 = 정책이 요청한 번역 횟수. 재시도까지 포함한 실제 요청은 n_trans_calls.
+        "n_trans_calls": sum(calls) if calls else None,
+        "n_trans_retries": sum(retries) if retries else None,
+        "n_trans_failed": n_failed,
         "commit_reasons": [s["commit_reason"] for s in ordered],
         "segments": ordered,
     }
+
+
+def _pct(values, q):
+    """None 을 걸러낸 뒤 백분위수. 값이 하나도 없으면 None."""
+    vals = sorted(v for v in values if v is not None)
+    if not vals:
+        return None
+    if len(vals) == 1:
+        return round(float(vals[0]), 1)
+    pos = (len(vals) - 1) * q / 100.0
+    lo = int(pos)
+    hi = min(lo + 1, len(vals) - 1)
+    frac = pos - lo
+    return round(float(vals[lo] * (1 - frac) + vals[hi] * frac), 1)
+
+
+def _sum_or_none(values):
+    """전부 None 이면 None(구버전 서버라 계측이 없는 경우), 아니면 합."""
+    vals = [v for v in values if v is not None]
+    return sum(vals) if vals else None
 
 
 def summarize(rows, args):
@@ -353,6 +412,28 @@ def summarize(rows, args):
         "laal_ca_minus_uncapped_ms": (
             (laal_ca - laal_nocap) if (laal_nocap is not None and laal_ca is not None) else None
         ),
+        # first token latency — 첫 출력까지의 체감 대기. 발화 단위 평균/중앙/p90.
+        "first_token_latency_ms": M.mean_or_none(
+            r.get("first_token_latency_ms") for r in rows),
+        "median_first_token_latency_ms": _pct(
+            [r.get("first_token_latency_ms") for r in rows], 50),
+        "p90_first_token_latency_ms": _pct(
+            [r.get("first_token_latency_ms") for r in rows], 90),
+        "n_no_output": sum(1 for r in rows if r.get("first_token_latency_ms") is None),
+        # 번역 호출 — 정책의 비용. commits 는 커밋 수(=정책이 요청한 번역 횟수),
+        # calls 는 재시도를 포함한 실제 HTTP 요청 수다. 둘이 다르면 재시도가 있었다.
+        "n_commits": sum(r["n_segments"] for r in rows),
+        "n_trans_calls": _sum_or_none(r.get("n_trans_calls") for r in rows),
+        "n_trans_retries": _sum_or_none(r.get("n_trans_retries") for r in rows),
+        # 0 이 아니면 그 런의 BLEU/COMET 은 의심해야 한다 — 실패한 번역은 빈 문자열로
+        # 돌아와 "정책이 아무 말도 못 만든 커밋"과 구분되지 않는다.
+        "n_trans_failed": sum(r.get("n_trans_failed", 0) or 0 for r in rows),
+        "n_utt_with_trans_failure": sum(1 for r in rows if r.get("n_trans_failed")),
+        "commits_per_audio_min": (
+            round(sum(r["n_segments"] for r in rows)
+                  / (sum(r["src_duration_ms"] for r in rows) / 60000.0), 3)
+            if rows and sum(r["src_duration_ms"] for r in rows) > 0 else None
+        ),
         "n_utterances": len(rows),
         "n_empty_hypotheses": len(rows) - len(scored),
         # 발화 경계를 넘어 늦게 도착해 이번 발화에서 제외한 final 수.
@@ -399,14 +480,17 @@ def load_done_rows(run_dir: Path) -> list[dict]:
         return []
 
 
-def save_results(run_dir: Path, rows, args):
+def save_results(run_dir: Path, rows, args, server_config=None):
     run_dir.mkdir(parents=True, exist_ok=True)
     summary = summarize(rows, args)
     with open(run_dir / "metric.json", "w", encoding="utf-8") as f:
         json.dump({"summary": summary, "rows": rows}, f, ensure_ascii=False, indent=2)
     with open(run_dir / "meta.json", "w", encoding="utf-8") as f:
         json.dump(
-            {"args": vars(args), "finished_at": datetime.now().isoformat()},
+            {"args": vars(args),
+             # 서버가 hello 로 알려준 디코딩 설정. 재현에 필요하다.
+             "server_config": server_config,
+             "finished_at": datetime.now().isoformat()},
             f, ensure_ascii=False, indent=2, default=str,
         )
     if args.description:
@@ -414,13 +498,20 @@ def save_results(run_dir: Path, rows, args):
     return summary
 
 
-def print_summary(summary):
+def print_summary(summary, expected=None):
     def fmt(v, unit="", nd=2):
         return f"{v:.{nd}f}{unit}" if isinstance(v, (int, float)) else "n/a"
 
     logger.info("=" * 62)
     logger.info("발화 %s개 (빈 가설 %s / 경계 넘은 final %s)", summary["n_utterances"],
                 summary["n_empty_hypotheses"], summary.get("n_foreign_finals", 0))
+    # 워커가 죽어도 지금까지는 **정상 종료처럼 보였다.** 그러면 발화가 빠진 채로 표에
+    # 들어가고, 축마다 발화 수가 달라 비교 자체가 성립하지 않게 된다(실측: ACL dev
+    # seg 축이 5발표 중 4발표만 처리했는데 로그는 조용했다). 크게 운다.
+    if expected is not None and summary["n_utterances"] != expected:
+        logger.error("!!! 발화 유실: manifest %s개 중 %s개만 처리됨 — "
+                     "이 결과는 다른 축과 비교할 수 없다. 워커 사망 로그를 확인할 것",
+                     expected, summary["n_utterances"])
     logger.info("LAAL      : %s", fmt(summary["laal_ms"], " ms", 1))
     logger.info("LAAL_CA   : %s", fmt(summary["laal_ca_ms"], " ms", 1))
     logger.info("검산(fsl 있는 %s/%s 세그먼트): 수신−결정 %s vs FSL %s  잔차 %s (최대 %s)",
@@ -431,6 +522,19 @@ def print_summary(summary):
                 fmt(summary["max_abs_seg_fsl_residual_ms"], " ms", 1))
     logger.info("BLEU      : %s", fmt(summary["bleu"]))
     logger.info("  signature: %s", summary["bleu_signature"])
+    logger.info("FTL       : %s (중앙 %s / p90 %s, 출력없음 %s발화)",
+                fmt(summary["first_token_latency_ms"], " ms", 1),
+                fmt(summary["median_first_token_latency_ms"], " ms", 1),
+                fmt(summary["p90_first_token_latency_ms"], " ms", 1),
+                summary["n_no_output"])
+    logger.info("번역 호출 : 커밋 %s / 요청 %s / 재시도 %s / 오디오1분당 %s",
+                summary["n_commits"], summary["n_trans_calls"],
+                summary["n_trans_retries"], summary["commits_per_audio_min"])
+    if summary["n_trans_failed"]:
+        logger.error("번역 실패 : %s건 (%s발화) — 이 런의 BLEU/COMET 은 신뢰할 수 없다",
+                     summary["n_trans_failed"], summary["n_utt_with_trans_failure"])
+    else:
+        logger.info("번역 실패 : 0건")
     logger.info("커밋 사유 : %s", summary["commit_reason_counts"])
     logger.info("=" * 62)
 
@@ -442,9 +546,21 @@ async def _worker(wid, url, queue, rows, lock, args, warned, run_dir, state, n_t
     워커의 실시간 페이싱이 밀려서 LAAL_CA 가 측정 대상이 아닌 이유로 늘어난다.
     """
     try:
-        async with websockets.connect(url, max_size=None, ping_interval=20,
-                                      ping_timeout=60, close_timeout=10) as ws:
-            await recv_type(ws, "hello", timeout=60)
+        # 장문에서는 핑 타임아웃이 **연결을 죽인다.** 12분짜리 발표를 5병렬로 물리면
+        # 서버가 밀려 60초 안에 pong 을 못 보내고, 클라이언트가 1011 로 끊어 그 발화가
+        # 통째로 결과에서 사라진다(실측: ACL dev seg 축에서 발표 1개 유실).
+        # 지연 측정에는 영향이 없으므로 장문에서는 넉넉히 준다.
+        async with websockets.connect(url, max_size=None,
+                                      ping_interval=args.ws_ping_interval,
+                                      ping_timeout=args.ws_ping_timeout,
+                                      close_timeout=10) as ws:
+            hello = await recv_type(ws, "hello", timeout=60)
+            # 서버의 디코딩 설정(모델·청크·커밋 정책·VAD…)은 여기서만 알 수 있다.
+            # 안 남기면 나중에 "이 점이 어느 설정이었나"를 못 되짚는다 — 지연-품질
+            # 곡선처럼 점마다 설정이 다른 실험에서는 치명적이다.
+            cfg = hello.get("serverConfig")
+            if cfg and state.get("server_config") is None:
+                state["server_config"] = cfg
             while True:
                 try:
                     item = queue.get_nowait()
@@ -486,7 +602,8 @@ async def _worker(wid, url, queue, rows, lock, args, warned, run_dir, state, n_t
                             f"{row['sentence_bleu']:.1f}" if row["sentence_bleu"] is not None else "n/a",
                         )
                     if args.save_every and n % args.save_every == 0:
-                        await asyncio.to_thread(save_results, run_dir, list(rows), args)
+                        await asyncio.to_thread(save_results, run_dir, list(rows), args,
+                                                state.get("server_config"))
     except Exception as exc:
         logger.error("워커 w%02d 종료: %s", wid, exc)
 
@@ -505,7 +622,7 @@ async def run(args):
     logger.info("manifest %s개 / 완료 %s개 / 이번 실행 %s개 / 클라이언트 %s개 → %s",
                 len(items), len(done), len(todo), args.clients, run_dir)
     if not todo:
-        print_summary(save_results(run_dir, rows, args))
+        print_summary(save_results(run_dir, rows, args), len(items))
         return 0
 
     warned = {"decision": False}
@@ -515,7 +632,7 @@ async def run(args):
         queue.put_nowait(it)
 
     lock = asyncio.Lock()
-    state = {"done": 0, "audio_sec": 0.0, "foreign": 0}
+    state = {"done": 0, "audio_sec": 0.0, "foreign": 0, "server_config": None}
     t_start = time.perf_counter()
 
     n_clients = max(1, min(args.clients, len(todo)))
@@ -525,13 +642,13 @@ async def run(args):
     ])
 
     wall = time.perf_counter() - t_start
-    summary = save_results(run_dir, rows, args)
+    summary = save_results(run_dir, rows, args, state.get("server_config"))
     # 처리량: 실시간 페이싱이므로 1클라이언트의 상한이 1.0배속이다. 16병렬이 16배속에
     # 가까우면 서버가 병목이 아니라는 뜻이고, 크게 못 미치면 GPU/번역에서 밀린 것이다.
     logger.info("소요 %.1f분 | 오디오 %.2f시간 | 실시간 대비 %.1f배속 (클라이언트 %d개)",
                 wall / 60.0, state["audio_sec"] / 3600.0,
                 state["audio_sec"] / wall if wall > 0 else 0.0, n_clients)
-    print_summary(summary)
+    print_summary(summary, len(items))
     logger.info("결과: %s", run_dir / "metric.json")
     return 0
 
@@ -551,6 +668,10 @@ def main():
     p.add_argument("--fresh-start", action="store_true")
     p.add_argument("--save-every", type=int, default=20,
                    help="N개마다 중간 저장 (0이면 끝에만)")
+    p.add_argument("--ws-ping-interval", type=float, default=20.0,
+                   help="WebSocket 핑 간격(초). 0 이면 핑 비활성")
+    p.add_argument("--ws-ping-timeout", type=float, default=60.0,
+                   help="pong 대기 한도(초). 장문+병렬에서는 넉넉히 줘야 연결이 안 죽는다")
     p.add_argument("--clients", type=int, default=1,
                    help="동시 WebSocket 연결 수. 각 연결이 큐에서 발화를 하나씩 가져간다")
     p.add_argument("--log-every", type=int, default=10,

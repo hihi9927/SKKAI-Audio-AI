@@ -1,0 +1,164 @@
+{
+  "cases": [
+    {
+      "id": "en_us_120",
+      "error_type": "placement",
+      "span": "between American and Iraqi forces",
+      "evidence": "Piece ended after 'American' and translator committed to the wrong second participant (Kurds).",
+      "cause": "wrong participant",
+      "proposed_rule": "If a prepositional participant phrase begins with 'between' or 'among', do not finalize (rank top) a boundary that cuts off the first conjunct before the coordinating 'and' or the following noun phrase arrives.",
+      "example_pair": {
+        "input": "The game is based on the Second Battle of Fallujah, a vicious battle between American and Iraqi forces.",
+        "output": "The game is based <SEG:1> on the Second Battle of Fallujah, a vicious battle between American and Iraqi forces."
+      }
+    },
+    {
+      "id": "en_us_491",
+      "error_type": "placement",
+      "span": "sent in tanks to restore order",
+      "evidence": "Boundary split the verb phrase; translator chose an inappropriate verb form ('Versendet') without the object/particle context.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not put a top-ranked boundary immediately after a main verb when within the next 3–4 tokens there is an object/PP or the infinitival 'to' (i.e. incomplete verb phrase); lower confidence for such cuts.",
+      "example_pair": {
+        "input": "Although in the end, Krushchev sent in tanks to restore order, he did give way to some economic demands and agreed to appoint the popular Wladyslaw Gomulka as the new prime minister.",
+        "output": "Although in the end, Krushchev sent in tanks to restore order, <SEG:1> he did give way to some economic demands and agreed to appoint the popular Wladyslaw Gomulka as the new prime minister."
+      }
+    },
+    {
+      "id": "en_us_1349",
+      "error_type": "placement",
+      "span": "are being met by bad weather",
+      "evidence": "Segment ended on the passive predicate before the 'by' phrase, producing a wrong active/fulfilled sense ('werden erfüllt').",
+      "cause": "other",
+      "proposed_rule": "When seeing periphrastic passive patterns ('is/are being' / 'is/are being met'), avoid finalizing the predicate before a following 'by' oblique arrives; treat such candidates as low confidence.",
+      "example_pair": {
+        "input": "Efforts to search for the crash site are being met by bad weather and harsh terrain.",
+        "output": "Efforts to search for the crash site are being met by bad weather and harsh terrain <SEG:1>."
+      }
+    },
+    {
+      "id": "en_us_1604",
+      "error_type": "placement",
+      "span": "As NSA, he assisted",
+      "evidence": "Early segmentation led the translator to render 'As NSA' as a different, incorrect role (agent vs. chief).",
+      "cause": "mistranslated",
+      "proposed_rule": "If a sentence begins with 'As <TITLE>' or similar preposed role phrase, do not finalize the role translation (do not rank that cut top) until the following verb or appositive clarifies the official title or scope.",
+      "example_pair": {
+        "input": "As NSA, he assisted Carter in diplomatically handling world affairs, such as the Camp David Accords, 1978; normalizing US–China relations thought the late 1970s; the Iranian Revolution, which led to the Iran hostage crisis, 1979; and the Soviet invasion in Afghanistan, 1979.",
+        "output": "As NSA, he assisted Carter in diplomatically handling world affairs, <SEG:1> such as the Camp David Accords, 1978; normalizing US–China relations thought the late 1970s; the Iranian Revolution, which led to the Iran hostage crisis, 1979; and the Soviet invasion in Afghanistan, 1979."
+      }
+    },
+    {
+      "id": "en_us_565",
+      "error_type": "placement",
+      "span": "Only the effects of catastrophizing, not depression and fear",
+      "evidence": "Segmentation placed the contrast before the main predicate, causing the negation/contrast to attach to the wrong scope in translation.",
+      "cause": "modifier scope",
+      "proposed_rule": "When contrastive markers ('Only', 'not', 'rather than') separate noun phrases, avoid making a top-ranked cut before the main verb so the negation/contrast scope can be resolved with the predicate.",
+      "example_pair": {
+        "input": "Only the effects of catastrophizing, not depression and fear was conditional of regular weekly structured PA sessions.",
+        "output": "Only the effects of catastrophizing, not depression and fear was conditional of regular weekly structured PA sessions <SEG:1>."
+      }
+    }
+  ],
+  "summary": "Most measured failures are placement errors: the prompt allows boundaries that cut ongoing noun- or verb-phrases (coordinated participants, incomplete verb phrases, passive + 'by', preposed role phrases, contrastive scopes), forcing wrong lexical choices. Rather than broadly banning these endings, require the segmenter to demote (never top-rank) candidates that would leave an expected conjunct, object, 'by' oblique, infinitival/complement, or main verb unresolved within the next ~3–4 source tokens; also treat cuts after commas specially when they precede these patterns (audit feature '뒤 구두점 \",\"').",
+  "aggregate": {
+    "dominant_error": null,
+    "dominant_basis": "No corpus rate identifies a dominant failure. Read the cases and `judge_distribution` for WHICH mechanism to fix — do not infer a rate from `case_label_counts`, those cases were selected for being the worst.",
+    "measured_rates": {
+      "coverage": {
+        "n": 0,
+        "of_n": 40,
+        "rate": 0.0,
+        "of": "all sentences scored — a true corpus rate",
+        "meaning": "sentences where the tightest budget asked for boundaries the prompt never marked, so pieces are missing outright"
+      },
+      "premature_among_judged": {
+        "n": 9,
+        "of_n": 10,
+        "rate": 0.9,
+        "of": "boundaries judged this iteration, selected as the WORST by measured contradiction — NOT a corpus rate, do not compare it against `coverage`"
+      }
+    },
+    "case_label_counts": {
+      "counts": {
+        "placement": 5
+      },
+      "of_n": 5,
+      "of": "the selected worst cases — NOT a rate"
+    },
+    "stuck_hint": "직전 개정이 [Core Principles], [When to Segment], [Priority Rules], [Decision Procedure] 를 고쳤는데 채택에 실패했다. 같은 섹션을 같은 방식으로 다시 고치지 말 것 — 다른 섹션을 보거나 같은 섹션이라도 반대 방향(금지 추가가 아니라 완화)을 검토할 것",
+    "priority_audit": [
+      {
+        "feature": "뒤 구두점 ','",
+        "n": 15,
+        "rank_percentile": 0.373,
+        "contradiction": 0.1758,
+        "over_trust": 0.2085
+      },
+      {
+        "feature": "상대위치 1/3",
+        "n": 53,
+        "rank_percentile": 0.604,
+        "contradiction": 0.2069,
+        "over_trust": 0.0083
+      },
+      {
+        "feature": "상대위치 0/3",
+        "n": 66,
+        "rank_percentile": 0.607,
+        "contradiction": 0.1793,
+        "over_trust": 0.0041
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 46,
+        "rank_percentile": 0.628,
+        "contradiction": 0.2281,
+        "over_trust": -0.0181
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 137,
+        "rank_percentile": 0.663,
+        "contradiction": 0.1982,
+        "over_trust": -0.0496
+      }
+    ],
+    "judge_distribution": {
+      "n_boundaries_judged": 10,
+      "verdicts": {
+        "mistranslated": 8,
+        "safe": 1,
+        "premature": 1
+      },
+      "n_with_cause": 9,
+      "causes": {
+        "other": {
+          "n": 4,
+          "share": 0.444
+        },
+        "wrong participant": {
+          "n": 2,
+          "share": 0.222
+        },
+        "mistranslated": {
+          "n": 1,
+          "share": 0.111
+        },
+        "modifier scope": {
+          "n": 1,
+          "share": 0.111
+        },
+        "head not yet arrived": {
+          "n": 1,
+          "share": 0.111
+        }
+      }
+    },
+    "max_missing_boundaries": 0.0,
+    "rank_lift": 0.15347,
+    "rank_lift_t": 3.55,
+    "summary": "Most measured failures are placement errors: the prompt allows boundaries that cut ongoing noun- or verb-phrases (coordinated participants, incomplete verb phrases, passive + 'by', preposed role phrases, contrastive scopes), forcing wrong lexical choices. Rather than broadly banning these endings, require the segmenter to demote (never top-rank) candidates that would leave an expected conjunct, object, 'by' oblique, infinitival/complement, or main verb unresolved within the next ~3–4 source tokens; also treat cuts after commas specially when they precede these patterns (audit feature '뒤 구두점 \",\"')."
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "sections_changed": [
+    "[Core Principles]",
+    "[When to Segment]",
+    "[Never Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "sections_reported": [
+    "[Core Principles]",
+    "[When to Segment]",
+    "[Never Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "changelog": [
+    "Core Principles: emphasised that cuts must never split single orthographic/lexical units (compounds, names, numeral+counter sequences, open quotes) and clarified that such positions are not acceptable candidates.",
+    "When to Segment: strengthened surface cues delaying high confidence (wait for clause-final predicate, negation, counter, closing quote) and listed more explicit indicators that the preceding text still needs disambiguation.",
+    "Never Segment: added absolute prohibitions for cutting inside continuous lexical units, between numeral and counter, inside open quotes, and immediately after name-internal delimiter; made the list explicit and concise so implementers never propose these positions.",
+    "Priority Rules: demoted early-in-sentence and comma-adjacent cuts more strongly, and required explicit disambiguators (predicate ending, counter, closing quote, negation) before a candidate can be given high confidence.",
+    "Decision Procedure: tightened the two-step workflow with an explicit automatic-demotion/removal step for candidates that would split tokens or precede imminent disambiguators, and required promotion to high ranks only when a safe disambiguator or sealed clause is present."
+  ],
+  "size_budget": 16385,
+  "over_budget": false
+}

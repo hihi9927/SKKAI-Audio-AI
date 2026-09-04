@@ -1,0 +1,23 @@
+{
+  "sections_changed": [
+    "[Core Principles]",
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]",
+    "[Examples — Do NOT Segment]"
+  ],
+  "sections_reported": [
+    "[Core Principles]",
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "changelog": [
+    "Core Principles: added a concise injunction to withhold finalising predicates/heads or attachments until disambiguating heads, appositives or complements appear, to address premature commitments.",
+    "When to Segment: merged all candidate_rules into concrete surface-form signals and guidance (temporal adjuncts, scope-limiters like 'only/just', auxiliaries/adverbs like 'still', 'taking the', appositives/naming phrases, subordinate-openers such as 'in which/that/where') and added the special-case instruction to emit at least four candidate boundaries when a sentence contains multiple parentheticals/appositives or multiple locative phrases.",
+    "Priority Rules: strengthened ranking guidance to demote boundaries that would finalise a head, verb, polarity, modifier scope or appositive before their disambiguating material arrives; grouped similar rules to avoid duplication and made them explicit about which surface forms should be ranked lower.",
+    "Decision Procedure: added a deterministic post-marking check that ensures the '>=4 tags when multiple parentheticals/locatives present' requirement is met by adding low-ranked candidates if necessary, and clarified that candidates are still marked generously but ranked to reflect the risks from the new surface-form signals."
+  ],
+  "size_budget": 13759,
+  "over_budget": true
+}

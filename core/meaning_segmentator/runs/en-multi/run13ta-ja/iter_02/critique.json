@@ -1,0 +1,196 @@
+{
+  "cases": [
+    {
+      "id": "en_us_164",
+      "error_type": "placement",
+      "span": "An Avenger class",
+      "evidence": "Translated 'Avenger class' as a battleship before the head noun arrived (contradiction 0.9917).",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not place a boundary immediately after an \"X class\" label (token 'class'); wait until the following head noun (e.g., 'ship','vessel') is visible, or mark such boundaries low-confidence.",
+      "example_pair": {
+        "input": "An Avenger class mine countermeasures ship, the ship was on its way to Puerto Princesa in Palawan.",
+        "output": "An Avenger class mine countermeasures ship, <SEG:1> the ship was <SEG:2> on its way to <SEG:3> Puerto Princesa in Palawan."
+      }
+    },
+    {
+      "id": "en_us_1000",
+      "error_type": "placement",
+      "span": "Daesh (ISIL)",
+      "evidence": "Named entity split around parentheses led to wrong rendering of 'Daesh' (contradiction 0.9183).",
+      "cause": "other",
+      "proposed_rule": "Avoid boundaries inside or immediately before/after a named entity that contains a parenthetical '('…')'; wait until the parenthetical closes before segmenting or rank these boundaries low.",
+      "example_pair": {
+        "input": "Police said they suspect an alleged Daesh (ISIL) militant of responsibility for the attack.",
+        "output": "Police said they suspect an alleged Daesh (ISIL) militant <SEG:1> of responsibility for the attack."
+      }
+    },
+    {
+      "id": "en_us_46",
+      "error_type": "priority",
+      "span": "1759,",
+      "evidence": "Segment ending at the year led to premature era-conversion in Japanese (contradiction 0.182).",
+      "cause": "other",
+      "proposed_rule": "Treat boundaries immediately after full numeric dates (e.g., 'September 24, 1759,') as low-confidence; do not let them be top-ranked because year-to-era conversions need more context.",
+      "example_pair": {
+        "input": "On September 24, 1759, Arthur Guinness signed a 9,000 year lease for the St James' Gate Brewery in Dublin, Ireland.",
+        "output": "On September 24, 1759, Arthur Guinness signed <SEG:1> a 9,000 year lease <SEG:2> for the St James' Gate Brewery in Dublin, Ireland."
+      }
+    },
+    {
+      "id": "en_us_857",
+      "error_type": "placement",
+      "span": "Carrying for others -",
+      "evidence": "Fragment 'Carrying for others' was rendered as carrying people rather than others' bags (wrong participant, contradiction 0.4825).",
+      "cause": "wrong participant",
+      "proposed_rule": "Do not place a boundary after a gerund/verb phrase that lacks an explicit object (e.g., V-ing phrase like 'Carrying for others'); wait for the following noun phrase that identifies the patient/object.",
+      "example_pair": {
+        "input": "Carrying for others - Never let your bags out of your sight, especially when you are crossing international borders.",
+        "output": "Carrying for others - Never let your bags out of your sight, especially when you are crossing international borders. <SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_417",
+      "error_type": "placement",
+      "span": "between the second",
+      "evidence": "Segment within a 'between X and Y' range caused invention of unrelated content (contradiction 0.2153).",
+      "cause": "other",
+      "proposed_rule": "Avoid placing a boundary inside paired/range expressions (e.g., 'between X and Y'); wait for the coordinating 'and Y' endpoint before splitting.",
+      "example_pair": {
+        "input": "It is estimated to be between the second and fourth most commonly spoken language in the world.",
+        "output": "It is estimated to be between the second and fourth most commonly spoken language in the world. <SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_687",
+      "error_type": "placement",
+      "span": "remove it from the coffin",
+      "evidence": "Cut before/around verb-object caused a mistranslation of the verb phrase (contradiction 0.2084).",
+      "cause": "mistranslated",
+      "proposed_rule": "Never place a boundary between a verb and its immediate object (including pronouns like 'it'); wait until the object phrase completes before segmenting.",
+      "example_pair": {
+        "input": "Anyone interested in seeing evidence of the damage to the mummy done during attempts to remove it from the coffin will be disappointed as only the head and shoulders are visible.",
+        "output": "Anyone interested in seeing evidence of the damage to the mummy done during attempts to remove it from the coffin <SEG:1> will be disappointed <SEG:2> as only the head and shoulders are visible."
+      }
+    },
+    {
+      "id": "en_us_654",
+      "error_type": "placement",
+      "span": "the native inhabitants",
+      "evidence": "Splits around the coordinated location labels ('Inuit in Canada and Kalaalleq ... in Greenland') caused label-location scope errors (low adequacy).",
+      "cause": "modifier scope",
+      "proposed_rule": "Do not segment inside coordinated 'X in A and Y in B' name-location patterns; wait until both name and its location disambiguator are visible before splitting.",
+      "example_pair": {
+        "input": "The native inhabitants of Greenland call themselves Inuit in Canada and Kalaalleq (plural Kalaallit), a Greenlander, in Greenland.",
+        "output": "The native inhabitants of Greenland call themselves Inuit in Canada and Kalaalleq (plural Kalaallit), a Greenlander, in Greenland. <SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_104",
+      "error_type": "placement",
+      "span": "the first time",
+      "evidence": "Segmenting before the 'that' clause risked detaching 'the first time' from its clause, lowering adequacy.",
+      "cause": "modifier scope",
+      "proposed_rule": "Avoid boundaries between 'the first time' (or similar nominal-time heads) and an immediately following 'that' clause; treat 'the first time that ...' as a unit.",
+      "example_pair": {
+        "input": "The comments, live on television, were the first time that senior Iranian sources have admitted that the sanctions are having any effect.",
+        "output": "The comments, live on television, were the first time that senior Iranian sources have admitted that the sanctions are having any effect. <SEG:1>"
+      }
+    }
+  ],
+  "summary": "The segmenter is overconfident in short, pre-head fragments (e.g., 'X class', gerund phrases, dates, named entities with parentheses) and often cuts before heads, objects, or clause endpoints. Many high-contrast failures come from segmenting inside parentheticals, comparative ranges, or before noun/object heads; lower the priority or forbid boundaries in those surface-pattern conditions. The ranking audit also shows commas are over-trusted, so prefer lowering confidence for comma-adjacent cuts when they meet the above risky patterns.",
+  "aggregate": {
+    "dominant_error": null,
+    "dominant_basis": "No corpus rate identifies a dominant failure. Read the cases and `judge_distribution` for WHICH mechanism to fix — do not infer a rate from `case_label_counts`, those cases were selected for being the worst.",
+    "measured_rates": {
+      "coverage": {
+        "n": 0,
+        "of_n": 40,
+        "rate": 0.0,
+        "of": "all sentences scored — a true corpus rate",
+        "meaning": "sentences where the tightest budget asked for boundaries the prompt never marked, so pieces are missing outright"
+      },
+      "premature_among_judged": {
+        "n": 7,
+        "of_n": 10,
+        "rate": 0.7,
+        "of": "boundaries judged this iteration, selected as the WORST by measured contradiction — NOT a corpus rate, do not compare it against `coverage`"
+      }
+    },
+    "case_label_counts": {
+      "counts": {
+        "placement": 7,
+        "priority": 1
+      },
+      "of_n": 8,
+      "of": "the selected worst cases — NOT a rate"
+    },
+    "stuck_hint": "",
+    "priority_audit": [
+      {
+        "feature": "뒤 구두점 ','",
+        "n": 15,
+        "rank_percentile": 0.338,
+        "contradiction": 0.1137,
+        "over_trust": 0.3544
+      },
+      {
+        "feature": "상대위치 1/3",
+        "n": 53,
+        "rank_percentile": 0.566,
+        "contradiction": 0.1054,
+        "over_trust": 0.0553
+      },
+      {
+        "feature": "상대위치 0/3",
+        "n": 66,
+        "rank_percentile": 0.605,
+        "contradiction": 0.0627,
+        "over_trust": 0.0049
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 140,
+        "rank_percentile": 0.659,
+        "contradiction": 0.0823,
+        "over_trust": -0.0443
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 46,
+        "rank_percentile": 0.675,
+        "contradiction": 0.1039,
+        "over_trust": -0.0745
+      }
+    ],
+    "judge_distribution": {
+      "n_boundaries_judged": 10,
+      "verdicts": {
+        "mistranslated": 7,
+        "safe": 3
+      },
+      "n_with_cause": 7,
+      "causes": {
+        "other": {
+          "n": 3,
+          "share": 0.429
+        },
+        "head not yet arrived": {
+          "n": 2,
+          "share": 0.286
+        },
+        "wrong participant": {
+          "n": 1,
+          "share": 0.143
+        },
+        "mistranslated": {
+          "n": 1,
+          "share": 0.143
+        }
+      }
+    },
+    "max_missing_boundaries": 0.0,
+    "rank_lift": 0.06617,
+    "rank_lift_t": 1.99,
+    "summary": "The segmenter is overconfident in short, pre-head fragments (e.g., 'X class', gerund phrases, dates, named entities with parentheses) and often cuts before heads, objects, or clause endpoints. Many high-contrast failures come from segmenting inside parentheticals, comparative ranges, or before noun/object heads; lower the priority or forbid boundaries in those surface-pattern conditions. The ranking audit also shows commas are over-trusted, so prefer lowering confidence for comma-adjacent cuts when they meet the above risky patterns."
+  }
+}

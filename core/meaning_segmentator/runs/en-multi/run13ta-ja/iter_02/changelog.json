@@ -1,0 +1,20 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Never Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "sections_reported": [
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "changelog": [
+    "Merged the critic's candidate_rules into [When to Segment] as concise, surface-decidable checks that flag risky patterns ('class' labels, parenthetical name/acronym spans, numeric dates, gerund-without-object, 'between X and Y' ranges, coordinated name+location patterns, 'the first time that ...') so these positions are treated as risky candidates rather than blindly trusted.",
+    "Added narrowly-targeted demotions in [Priority Rules] (low-confidence tier) to lower rank for boundaries matching the above risky patterns (parenthetical-adjacent names, 'class' labels, date-year commas, V-ing with likely pending object, 'between ... and ...' ranges, 'the first time' + that-clause), while preserving candidacy.",
+    "Updated [Decision Procedure] ranking step to check these surface patterns with a local 1–6 token lookahead and either demote or (where the pattern is unambiguous and always unsafe) forbid the candidate; specifically moved the verb+immediate-object split and coordinated 'X in A and Y in B' name-location fragmentation into [Never Segment] as positions that must not be marked."
+  ],
+  "size_budget": 24158,
+  "over_budget": false
+}

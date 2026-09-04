@@ -1,0 +1,23 @@
+[
+  {
+    "id": "en_us_1356",
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "A person working in a garage near where the accident occurred said: \"There were children waiting to cross the road and they were all screaming and crying.\"",
+    "seg_text": "A person working <SEG:6> in a garage <SEG:3> near the accident occurred said: <SEG:1> \"There were children <SEG:5> waiting to cross the road <SEG:2> and they were all <SEG:4> screaming and crying.\""
+  },
+  {
+    "id": "en_us_1467",
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "In 1884, Tesla moved to the United States of America to accept a job with the Edison Company in New York City.",
+    "seg_text": "In 1884, Tesla moved <SEG:2> to the United States of America <SEG:1> to accept a <SEG:3> job with the Edison Company in <SEG:4> New York City."
+  },
+  {
+    "id": "en_us_12",
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "Nadal's head to head record against the Canadian is 7–2.",
+    "seg_text": "Nadal's head to head record <SEG:1> against the Canadian is 7–2."
+  }
+]

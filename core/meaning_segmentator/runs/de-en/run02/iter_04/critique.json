@@ -1,0 +1,222 @@
+{
+  "cases": [
+    {
+      "id": "de_de_637",
+      "error_type": "placement",
+      "span": "für den Einsatz",
+      "evidence": "piece omitted or weakened the 'als Hilfsmittel' function phrase",
+      "cause": "other",
+      "proposed_rule": "Avoid cutting inside purpose/function prepositional phrases (e.g. 'für den Einsatz ... als X'); if forced to cut, emit the following fragment conservatively as 'as a [tool/aid]' to preserve the function.",
+      "example_pair": {
+        "input": "Im Jahr 1970 entdeckte der Arzt und Forscher Raymond Damadian die Basis für den Einsatz der Magnetresonanztomografie als Hilfsmittel für die medizinische Diagnose.",
+        "output": "Im Jahr 1970 <SEG:1> entdeckte der Arzt und Forscher Raymond Damadian die Basis für den Einsatz der Magnetresonanztomografie als Hilfsmittel <SEG:2> für die medizinische Diagnose."
+      }
+    },
+    {
+      "id": "de_de_869",
+      "error_type": "placement",
+      "span": "mit westlicher Prägung",
+      "evidence": "literal single-word renderings ('embossing') produced instead of figurative sense",
+      "cause": "other",
+      "proposed_rule": "When a prepositional phrase with a figurative noun (e.g. 'Prägung') follows 'mit', prefer paraphrase ('with a Western character/feel') if the disambiguating modifier may follow or if cut occurs.",
+      "example_pair": {
+        "input": "Vor allem in den ersten Tagen sollten Sie erwägen, Hotels, Essen und Dienstleistungen mit westlicher Prägung und Qualität in Anspruch zu nehmen, um die Akklimatisierung zu erleichtern.",
+        "output": "Vor allem in den ersten Tagen <SEG:1> sollten Sie erwägen, Hotels, Essen und Dienstleistungen mit westlicher Prägung und Qualität <SEG:2> in Anspruch zu nehmen, um die Akklimatisierung zu erleichtern."
+      }
+    },
+    {
+      "id": "de_de_471",
+      "error_type": "placement",
+      "span": "strebten, die nationale Souveränität",
+      "evidence": "emitted a finalized verb/object ('consolidate') before the infinitival purpose 'aufrechtzuerhalten' arrived",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not finalize verbs of aiming/striving or their objects when an infinitival or purpose clause can follow; wait for the infinitive/complement or rank the boundary lower.",
+      "example_pair": {
+        "input": "Das Kräftegleichgewicht war ein System, in dem die europäischen Nationen danach strebten, die nationale Souveränität aller europäischen Staaten aufrechtzuerhalten,",
+        "output": "Das Kräftegleichgewicht war <SEG:1> ein System, in dem die europäischen Nationen danach strebten, die nationale Souveränität aller europäischen Staaten aufrechtzuerhalten <SEG:2>,"
+      }
+    },
+    {
+      "id": "de_de_632",
+      "error_type": "placement",
+      "span": "die Absichten anderer",
+      "evidence": "attached 'to understand' to the wrong participant ('intentions to understand others')",
+      "cause": "wrong participant",
+      "proposed_rule": "When a noun may take an immediate possessor/genitive or an infinitival complement, delay attachment decisions until the possessor/complement appears; if forced to cut, render attachment neutrally (e.g. 'the intentions of others').",
+      "example_pair": {
+        "input": "Neben diesen Fähigkeiten ist es entscheidend, die Absichten anderer zu verstehen. Es ermöglicht uns, mögliche Zweideutigkeiten physischer Handlungen auszuräumen.",
+        "output": "Neben diesen Fähigkeiten ist es entscheidend, die Absichten anderer zu verstehen <SEG:1>. <SEG:2> Es ermöglicht uns, mögliche Zweideutigkeiten physischer Handlungen auszuräumen."
+      }
+    },
+    {
+      "id": "de_de_1037",
+      "error_type": "placement",
+      "span": "deuteten die Messungen des Meeresspiegels darauf hin",
+      "evidence": "tense/aspect of reporting verb finalised before subordinate 'dass' clause arrived",
+      "cause": "other",
+      "proposed_rule": "For reporting verbs that introduce subordinate 'that'/content clauses, avoid finalizing tense/aspect or choose a neutral reporting phrasing until the subordinate clause is available.",
+      "example_pair": {
+        "input": "Laut dem aktuellen Bulletin deuteten die Messungen des Meeresspiegels darauf hin, dass ein Tsunami ausgelöst wurde. In der Nähe von Pago Pago und Niue wurde eine eindeutige Tsunami-Aktivität aufgezeichnet.",
+        "output": "Laut dem aktuellen Bulletin deuteten die Messungen des Meeresspiegels darauf hin, dass ein Tsunami ausgelöst wurde <SEG:1>. <SEG:2> In der Nähe von Pago Pago und Niue wurde eine eindeutige Tsunami-Aktivität aufgezeichnet."
+      }
+    },
+    {
+      "id": "de_de_1454",
+      "error_type": "placement",
+      "span": "beschreibt die Show als",
+      "evidence": "committed to an incorrect categorical label before the predicative 'als' complement",
+      "cause": "other",
+      "proposed_rule": "Do not commit to a category label before the predicative marker and its complement; postpone the label or render as 'describes the show as' without specifying the type until the complement arrives.",
+      "example_pair": {
+        "input": "Die Website des Senders beschreibt die Show als „Radiotheater alter Schule mit einer neuen und unheimlichen schrägen Interpretation!“",
+        "output": "Die Website des Senders beschreibt die Show als „Radiotheater alter Schule mit einer neuen und unheimlichen schrägen Interpretation!“ <SEG:1>"
+      }
+    },
+    {
+      "id": "de_de_967",
+      "error_type": "placement",
+      "span": "was soviel bedeutet wie Fünf Länder",
+      "evidence": "committed to wrong sense ('countries') for 'Länder' before the main clause clarified meaning",
+      "cause": "other",
+      "proposed_rule": "Delay disambiguation of an explanatory appositive's ambiguous word until the continuation clarifies sense; if forced, prefer literal or neutral renderings (e.g. keep the gloss 'Five Lands').",
+      "example_pair": {
+        "input": "Cinque Terre, was soviel bedeutet wie Fünf Länder, umfasst die fünf kleinen Küstendörfer Riomaggiore, Manarola, Corniglia, Vernazza und Monterosso in der italienischen Region Ligurien.",
+        "output": "Cinque Terre, was soviel bedeutet wie Fünf Länder, <SEG:1> umfasst die fünf kleinen Küstendörfer Riomaggiore, Manarola, Corniglia, Vernazza und Monterosso <SEG:2> in der italienischen Region Ligurien."
+      }
+    },
+    {
+      "id": "de_de_109",
+      "error_type": "placement",
+      "span": "ähnlich wie eine Sternschuppe aussehen",
+      "evidence": "chose an incorrect lexical referent ('star scale') before relative clause 'die am Himmel fliegt' arrived",
+      "cause": "other",
+      "proposed_rule": "When a simile or comparative may be completed by a relative clause, avoid fixing a rare or technical noun sense; if cut, render the simile with a common paraphrase ('like a shooting star') until the relativizer arrives.",
+      "example_pair": {
+        "input": "Die Kapsel wird ähnlich wie eine Sternschuppe aussehen, die am Himmel fliegt.",
+        "output": "Die Kapsel wird ähnlich wie eine Sternschuppe aussehen, die am Himmel fliegt <SEG:1>."
+      }
+    },
+    {
+      "id": "de_de_264",
+      "error_type": "reference_suspect",
+      "span": "Der Kommissar sagte:",
+      "evidence": "high measured contradiction but human judgements treated the emitted prefix as coherent; oracle may disagree",
+      "cause": "other",
+      "proposed_rule": "When a locally coherent reporting clause or quoted prefix is produced and contradicts the whole-sentence oracle, treat the boundary as 'reference_suspect' rather than automatically demoting or changing the local rendering.",
+      "example_pair": {
+        "input": "Der Kommissar sagte: „Wir haben uns noch nicht auf Herkunftsregeln und Zollkonditionen einigen können, aber der Rahmen, den wir entwickelt haben, reicht bereits aus, um am 1. Juli 2020 mit dem Handel zu beginnen.“",
+        "output": "Der Kommissar sagte: <SEG:1> „Wir haben uns noch nicht auf Herkunftsregeln und Zollkonditionen einigen können, aber der Rahmen, den wir entwickelt haben, reicht bereits aus, um am 1. Juli 2020 mit dem Handel zu beginnen.“"
+      }
+    },
+    {
+      "id": "de_de_339",
+      "error_type": "reference_suspect",
+      "span": "Während seiner Aufwärmrunde",
+      "evidence": "oracle and local rendering disagree on event timing; local prefix is grammatical and plausible",
+      "cause": "other",
+      "proposed_rule": "If a local prefix yields an unambiguous, grammatical rendering that conflicts with the oracle's later reanalysis, flag that boundary as 'reference_suspect' and preserve the local rendering instead of penalizing it.",
+      "example_pair": {
+        "input": "Während seiner Aufwärmrunde stürzte Lenz von seinem Motorrad und wurde dann von seinem Rennkollegen Xavier Zayat überfahren.",
+        "output": "Während seiner Aufwärmrunde <SEG:1> stürzte Lenz von seinem Motorrad und wurde dann von seinem Rennkollegen Xavier Zayat überfahren."
+      }
+    }
+  ],
+  "summary": "Coverage is fine; most failures come from cuts that force premature lexical or functional commitments inside PPs, appositives, similes, reporting clauses, or before infinitival/relative complements. Several measured contradictions are actually oracle disagreements (reference_suspect). Fixes should avoid finalizing sense/grammar when a disambiguating complement may follow (prefer neutral/paraphrase renderings if forced) and treat coherent local prefixes that conflict with the oracle as reference_suspect rather than demoting them.",
+  "aggregate": {
+    "dominant_error": null,
+    "dominant_basis": "No corpus rate identifies a dominant failure. Read the cases and `judge_distribution` for WHICH mechanism to fix — do not infer a rate from `case_label_counts`, those cases were selected for being the worst.",
+    "measured_rates": {
+      "coverage": {
+        "n": 0,
+        "of_n": 40,
+        "rate": 0.0,
+        "of": "all sentences scored — a true corpus rate",
+        "meaning": "sentences where the tightest budget asked for boundaries the prompt never marked, so pieces are missing outright"
+      },
+      "premature_among_judged": {
+        "n": 18,
+        "of_n": 50,
+        "rate": 0.36,
+        "of": "boundaries judged this iteration, selected as the WORST by measured contradiction — NOT a corpus rate, do not compare it against `coverage`"
+      }
+    },
+    "case_label_counts": {
+      "counts": {
+        "placement": 8,
+        "reference_suspect": 2
+      },
+      "of_n": 10,
+      "of": "the selected worst cases — NOT a rate"
+    },
+    "stuck_hint": "직전 개정이 [Core Principles], [When to Segment], [Priority Rules], [Decision Procedure] 를 고쳤는데 채택에 실패했다. 같은 섹션을 같은 방식으로 다시 고치지 말 것 — 다른 섹션을 보거나 같은 섹션이라도 반대 방향(금지 추가가 아니라 완화)을 검토할 것",
+    "priority_audit": [
+      {
+        "feature": "뒤 구두점 ','",
+        "n": 34,
+        "rank_percentile": 0.41,
+        "contradiction": 0.0539,
+        "over_trust": 0.1146
+      },
+      {
+        "feature": "상대위치 1/3",
+        "n": 49,
+        "rank_percentile": 0.524,
+        "contradiction": 0.1011,
+        "over_trust": 0.0882
+      },
+      {
+        "feature": "상대위치 0/3",
+        "n": 59,
+        "rank_percentile": 0.623,
+        "contradiction": 0.0816,
+        "over_trust": -0.0173
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 41,
+        "rank_percentile": 0.671,
+        "contradiction": 0.0937,
+        "over_trust": -0.069
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 104,
+        "rank_percentile": 0.7,
+        "contradiction": 0.097,
+        "over_trust": -0.1017
+      }
+    ],
+    "judge_distribution": {
+      "n_boundaries_judged": 50,
+      "verdicts": {
+        "safe": 29,
+        "mistranslated": 17,
+        "reference_suspect": 3,
+        "premature": 1
+      },
+      "n_with_cause": 18,
+      "causes": {
+        "other": {
+          "n": 14,
+          "share": 0.778
+        },
+        "wrong participant": {
+          "n": 2,
+          "share": 0.111
+        },
+        "head not yet arrived": {
+          "n": 1,
+          "share": 0.056
+        },
+        "modifier scope": {
+          "n": 1,
+          "share": 0.056
+        }
+      }
+    },
+    "max_missing_boundaries": 0.0,
+    "rank_lift": 0.09492,
+    "rank_lift_t": 3.1,
+    "summary": "Coverage is fine; most failures come from cuts that force premature lexical or functional commitments inside PPs, appositives, similes, reporting clauses, or before infinitival/relative complements. Several measured contradictions are actually oracle disagreements (reference_suspect). Fixes should avoid finalizing sense/grammar when a disambiguating complement may follow (prefer neutral/paraphrase renderings if forced) and treat coherent local prefixes that conflict with the oracle as reference_suspect rather than demoting them."
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "sections_changed": [
+    "[Core Principles]",
+    "[Examples — Segment]",
+    "[Examples — Do NOT Segment]"
+  ],
+  "sections_reported": [
+    "[Core Principles]",
+    "[Examples — Segment]",
+    "[Examples — Do NOT Segment]"
+  ],
+  "changelog": [
+    "Strengthened [Core Principles] with concise, surface-form guidance about the common mechanisms that cause premature boundaries (coordinated participant lists, locative/complementive nouns, ambiguous verbs lacking objects, exclusives like 'only' with contrast, pronouns inside verb phrases, and noun heads awaiting 'of'/'relative' postmodifiers). This gives the model clear, language-surface cues to lower confidence without changing candidate marking or adding categorical bans.",
+    "Replaced two example items (one in the 'Segment' set and one in the 'Do NOT Segment' set) to illustrate the specific risky patterns (coordinated participants and ambiguous verb/object situations). The new examples show how to mark candidates generously but rank risky splits lower or avoid them when they would break needed complements."
+  ],
+  "size_budget": 18491,
+  "over_budget": false
+}

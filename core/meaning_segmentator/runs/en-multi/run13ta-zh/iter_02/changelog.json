@@ -1,0 +1,17 @@
+{
+  "sections_changed": [
+    "[Core Principles]",
+    "[Decision Procedure]"
+  ],
+  "sections_reported": [
+    "[Core Principles]",
+    "[Decision Procedure]"
+  ],
+  "changelog": [
+    "Strengthened Core Principles with a compact, surface-form heuristic advising the model to MARK risky positions but to demote them in confidence rather than ban them; motivates why verb-object isolation and demonym+locative/appositive cuts are risky for Chinese.",
+    "Added an explicit post-ranking 'safety demotion' step to Decision Procedure that (a) detects surface-decidable patterns that previously caused premature/mistranslated boundaries (object-isolating cuts, demonym/ethnonym cuts before PPs/appositives, and comma-cuts followed by PPs or coordinating conjunctions) and (b) pushes those candidates to lower confidence while keeping them as candidates.",
+    "Kept [When to Segment], [Priority Rules] and [Output Rules] text unchanged to avoid repeating earlier rejected edits; the new approach operates as an extra conservative reordering stage rather than banning or rewording the priority list."
+  ],
+  "size_budget": 18355,
+  "over_budget": false
+}

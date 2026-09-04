@@ -1,0 +1,37 @@
+[
+  {
+    "id": "de_de_41",
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "\"John Grant von WNED Buffalo (Reading Rainbows Heimatstation) sagte: \"\"Reading Rainbow hat Kindern beigebracht, warum sie lesen sollten, ... die Liebe zum Lesen - [die Show] hat Kinder dazu ermutigt, ein Buch in die Hand zu nehmen und zu lesen.\"\"\"",
+    "seg_text": "\"John Grant von WNED <SEG:9> Buffalo (Reading Rainbows <SEG:6> Heimatstation) sagte: \"\"Reading <SEG:8> Rainbow hat Kindern <SEG:3> beigebracht, warum sie <SEG:7> lesen sollten, ... <SEG:1> die Liebe zum <SEG:5> Lesen - [die <SEG:4> Show] hat Kinder <SEG:2> dazu ermutigt, ein <SEG:10> Buch in die Hand zu nehmen und zu lesen.\"\"\"\""
+  },
+  {
+    "id": "de_de_1414",
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 8개 필요",
+    "text": "Wenn es komplett von Tieren aufgezogen wurde, zeigt das wilde Kind Verhaltensweisen (im Rahmen seiner körperlichen Möglichkeiten), die fast komplett in Übereinstimmung mit denen seines spezifischen Pflegetiers sind, wie z.B. dessen Angst oder Gleichgültigkeit gegenüber Menschen.",
+    "seg_text": "Wenn es komplett von Tieren aufgezogen wurde, <SEG:1> zeigt das wilde Kind Verhaltensweisen <SEG:4> (im Rahmen seiner körperlichen Möglichkeiten), <SEG:3> die fast komplett in Übereinstimmung <SEG:5> mit denen seines spezifischen Pflegetiers sind, <SEG:2> wie z.B. dessen Angst oder <SEG:6> Gleichgültigkeit gegenüber Menschen."
+  },
+  {
+    "id": "de_de_1031",
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "\"Aufgrund des Clusters/Gruppe von Inseln wurde Japan, wird Japan geografisch häufig als \"\"Archipel\"\" bezeichnet.\"",
+    "seg_text": "Aufgrund des Clusters/Gruppe <SEG:2> von Inseln wurde Japan, <SEG:1> wird Japan geografisch häufig <SEG:3> als \"\"Archipel\"\" bezeichnet."
+  },
+  {
+    "id": "de_de_1514",
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Als die Kämpfe nach dem Transport der Verwundeten ins Krankenhaus aufhörten, blieben etwa 40 der übrigen Insassen auf dem Hof ​​und weigerten sich, in ihre Zellen zurückzukehren.",
+    "seg_text": "Als die Kämpfe <SEG:6> nach dem Transport der Verwundeten <SEG:5> ins Krankenhaus aufhörten, <SEG:1> blieben etwa 40 <SEG:4> der übrigen Insassen <SEG:2> auf dem Hof ​​ <SEG:3> und weigerten sich, <SEG:7> in ihre Zellen zurückzukehren."
+  },
+  {
+    "id": "de_de_569",
+    "rule": "too_few_tags",
+    "detail": "경계 10개 — 최소 11개 필요",
+    "text": "Die verschiedenen Konstruktionen verfügen über verschiedene Fähigkeiten, sind empfänglich für verschiedene Wellenlängen und haben unterschiedliche Sehschärfen. Zudem erfordern sie unterschiedliche Arten der Verarbeitung des Aufgenommenen zu einem sinnvollen Eindruck, und die mit der jeweiligen Konstruktionsart einhergehende Augenzahl, die für ein optimales Funkionieren notwendig ist, ist unterschiedlich.",
+    "seg_text": "Die verschiedenen Konstruktionen <SEG:6> verfügen über verschiedene Fähigkeiten, <SEG:1> sind empfänglich für verschiedene <SEG:5> Wellenlängen und haben unterschiedliche <SEG:4> Sehschärfen. Zudem erfordern sie <SEG:2> unterschiedliche Arten der Verarbeitung <SEG:3> des Aufgenommenen zu einem sinnvollen Eindruck, und die <SEG:7> mit der jeweiligen Konstruktionsart <SEG:8> einhergehende Augenzahl, die <SEG:9> für ein optimales Funkionieren notwendig <SEG:10> ist, ist unterschiedlich."
+  }
+]

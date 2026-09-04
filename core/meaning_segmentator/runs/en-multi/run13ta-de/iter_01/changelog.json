@@ -1,0 +1,22 @@
+{
+  "sections_changed": [
+    "[Core Principles]",
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "sections_reported": [
+    "[Core Principles]",
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "changelog": [
+    "Clarified core principle: prefer promoting safe, high-confidence boundaries rather than broadly demoting risky ones; rank adjustments should be narrow, local, and use short lookahead.",
+    "Made candidacy rules explicitly generous and surface-only; moved all lookahead checks into the ranking pass and limited them to 2–3 tokens to avoid over-demotion.",
+    "Added positive promotion signals: explicit conditions that raise a candidate to top rank when a clause is clearly complete and no short complement/subordinator follows.",
+    "Replaced blanket low/high demotions with targeted, lightweight ranking downgrades for specific risky surface patterns (verb+complement, 'between/among' participant lists, 'As TITLE' preposed roles, passive 'by' obliques, contrastive limiters), only when those patterns appear within a short lookahead window."
+  ],
+  "size_budget": 20313,
+  "over_budget": false
+}

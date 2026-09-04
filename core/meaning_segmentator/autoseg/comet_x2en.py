@@ -72,6 +72,17 @@ def main() -> int:
             e = json.loads(line)
             man[e["utt_id"]] = e["tgt_text"]
         durs = load_durations(FLEURS_DIR[lang])
+        # **강제정렬 실측 타임스탬프가 있으면 쓴다.** 없으면 `laal_ms` 가 발화 내 균일
+        # 속도 보간으로 물러난다 — 강세·휴지 때문에 실제와 어긋나는 옛 방식이다.
+        # 산출: baselines/build_unittimes.py (Qwen3-ForcedAligner, 비영어 소스 지원)
+        ut_path = mp.with_name(mp.stem + "_unittimes.json")
+        unittimes = {}
+        if ut_path.exists():
+            unittimes = {k: v["word_end_ms"]
+                         for k, v in json.loads(ut_path.read_text(encoding="utf-8")).items()}
+            print(f"[{lang}] 강제정렬 타임스탬프 {len(unittimes)}건 사용 ({ut_path.name})")
+        else:
+            print(f"[{lang}] 강제정렬 타임스탬프 없음 — 균일 속도 보간으로 계산")
         spaced = SPACED_SRC[lang]
         conds: dict[str, dict] = {}
 
@@ -93,7 +104,9 @@ def main() -> int:
                 hyp = " ".join(x for x in pt if x)
                 c = conds.setdefault(f"T{T}", {"laal": [], "pairs": []})
                 c["pairs"].append((r["text"], hyp, ref))
-                v = laal_ms(ps, pt, d or 0.0, ref, spaced, "word") if d else None
+                v = (laal_ms(ps, pt, d or 0.0, ref, spaced, "word",
+                            word_end_ms=unittimes.get(r["id"]))
+                     if d else None)
                 if v is not None:
                     c["laal"].append(v)
 

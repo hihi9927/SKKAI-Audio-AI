@@ -1,0 +1,19 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "sections_reported": [
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "changelog": [
+    "Merged critic-suggested candidate rules into [When to Segment]: added a single integrated surface-check that prevents (or forces very low ranking of) boundaries that would emit an NP/appositive, stacked modifiers, entity NP qualifiers/parentheticals, 'for X' adjuncts that need disambiguation, or verbs that require a following object/complement before the main predicate is seen. This implements all five candidate_rules while keeping the guideline concise and surface-decidable.",
+    "Updated [Priority Rules] to fold the new NP/verb-complement risks into the existing noun/modal ranks: explicitly demote or prohibit cuts that split modifiers from their head, cut inside qualified/entity NPs, cut after 'for X' where a following noun/clause disambiguates possession/persons, or cut immediately after verbs that commonly take an object or a prepositional complement; kept these positions allowed only at very low confidence or omitted when clearly unsafe.",
+    "Revised [Decision Procedure] candidate-marking step to perform the new surface checks before accepting noun- or verb-adjacent candidates: if a candidate would emit an NP/appositive before the clause's main verb or complements, or would split modifiers from their head, or occurs inside an entity NP with determiners/qualifiers/parenthetical names, or follows a prepositional adjunct like 'for' whose following material disambiguates possession vs persons, or follows a verb that typically takes an object/prepositional complement, then do not mark it (or mark it only as a last-resort low-ranked candidate). This enforces the critic's measured fixes deterministically and keeps marking conservative where contradictions were observed."
+  ],
+  "size_budget": 24158,
+  "over_budget": false
+}

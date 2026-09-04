@@ -95,7 +95,9 @@ PYTHONPATH= .venv/bin/python .claude/confluence/confluence_doc.py --json <경로
 PYTHONPATH= .venv/bin/python .claude/confluence/confluence_doc.py --json <경로>/report.json
 ```
 
-동작 규칙은 계획 스킬과 같다 — 폴더 자동 생성, 같은 제목이면 멈춤, 비워둔 칸은 경고.
+동작 규칙은 계획 스킬과 같다 — 폴더 자동 생성, 비워둔 칸은 경고, 같은 제목이 이미 있으면
+마지막 태그(보고 문서는 세분화 업무명) 옆에 `[2]` 처럼 번호를 붙여 새 문서로 만든다
+(`seq` 로 직접 지정, `--no-autonumber` 로 끔).
 
 ## 5. 마무리
 

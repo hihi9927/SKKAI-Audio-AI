@@ -1,0 +1,65 @@
+{
+  "source_language": "German",
+  "word_order": "other, because the sample shows verb‑second (V2) in main clauses (finite verb in second position, e.g. 'Die Glühbirne muss ...') and verb‑final (SOV) in subordinate clauses introduced by subordinators (e.g. '..., dass ... ernennen').",
+  "register": "formal written informational / encyclopedic (Wikipedia-style) prose, edited rather than spontaneous speech",
+  "fillers_and_hesitations": [
+    "äh",
+    "ähm",
+    "hm",
+    "also",
+    "na ja"
+  ],
+  "discourse_markers": [
+    "dass",
+    "obwohl",
+    "während",
+    "und",
+    "aber",
+    "zudem",
+    "als",
+    "bezüglich",
+    "neben",
+    "auch",
+    "ob"
+  ],
+  "clause_boundary_signals": [
+    "dass",
+    "obwohl",
+    "während",
+    "als",
+    "wenn",
+    "weil",
+    "nachdem",
+    "ob",
+    "da",
+    "damit",
+    "deren",
+    "die",
+    "der",
+    "das",
+    "welche",
+    "wo",
+    "bezüglich",
+    "neben",
+    "Innerhalb"
+  ],
+  "non_boundary_traps": [
+    "Inc.",
+    "Zahlen mit Punkt (z. B. '20.' als Datumsteil)",
+    "Bindestrich‑Komposita (z. B. 'Indus-Tal-Zivilisation', 'PBS-Spezial')",
+    "und (kann Koordination innerhalb einer NP sein)",
+    "von / zu (präpositionale Phrasen, nicht Satzende)"
+  ],
+  "unstable_prefix_signals": [
+    "Es ist",
+    "dass",
+    "obwohl",
+    "während",
+    "bezüglich",
+    "Innerhalb",
+    "Neben",
+    "als",
+    "wenn"
+  ],
+  "notes_for_prompt_writer": "Delay finalizing a segment when you encounter subordinating conjunctions or relative pronouns: German subordinate clauses are typically verb‑final and will overturn a premature split. Abbreviations with dots (e.g. 'Inc.') and day numbers with a dot (e.g. '20.') should not be treated as sentence/clause end. For coordinating conjunctions ('und', 'aber') only split when both sides contain their own finite verb (i.e. two independent clauses); otherwise keep the noun/phrase together. Hyphenated compounds and sequences of capitalized nouns are single lexical units and should not be split."
+}

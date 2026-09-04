@@ -1,0 +1,58 @@
+[
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "She said, \"There is no intelligence to suggest that an attack is expected imminently.",
+    "seg_text": "She said, \" There is <SEG:2> no intelligence to suggest <SEG:1> that an attack <SEG:3> is expected imminently.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "Its status declined during the twelfth century mainly due to the fact that Crusaders had returned bearing gifts such as silks and spices that were valued more than what Byzantine markets offered.",
+    "seg_text": "Its status declined <SEG:2> during the twelfth century <SEG:3> mainly due to the fact <SEG:5> that Crusaders had returned <SEG:1> bearing gifts such as silks and spices <SEG:4> that were valued <SEG:6> more than what Byzantine markets offered.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "Given how remote many of the pueblos are, you won't be able to find a significant amount of nightlife without traveling to Albuquerque or Santa Fe.",
+    "seg_text": "Given how remote many of the pueblos are, <SEG:1> you won't be able <SEG:4> to find a significant <SEG:5> amount of nightlife <SEG:2> without traveling to Albuquerque <SEG:3> or Santa Fe.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Most people book their place well in advance (as the boats are usually full during the high season).",
+    "seg_text": "Most people book their place <SEG:1> well in advance ( <SEG:4> as the boats <SEG:3> are usually full <SEG:2> during the high season).",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "Some cross country running during the winter, combined with gymnasium work for the upper part of the body, is the best preparation for the running season.",
+    "seg_text": "Some cross country running during the winter, <SEG:1> combined with gymnasium work <SEG:2> for the upper <SEG:4> part of the <SEG:5> body, is the best preparation <SEG:3> for the running season.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "People were hitting the panes with chairs, but the windows were unbreakable.",
+    "seg_text": "People were hitting the panes with chairs, <SEG:1> but the windows were unbreakable.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "If you booked your flights and accommodation for 2020 before the postponement was announced, you may have a tricky situation.",
+    "seg_text": "If you booked your flights and <SEG:3> accommodation for 2020 <SEG:2> before the postponement was announced, <SEG:1> you may have a tricky situation.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "International sanctions have meant that new aircraft cannot be purchased.",
+    "seg_text": "International sanctions have meant that new aircraft <SEG:1> cannot be purchased.",
+    "first_pass": true
+  }
+]

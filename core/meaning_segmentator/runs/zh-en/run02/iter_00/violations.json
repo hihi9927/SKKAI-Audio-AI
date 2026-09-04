@@ -1,0 +1,72 @@
+[
+  {
+    "id": "cmn_hans_cn_100",
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "消防指挥系统的例行测试引发了一场电力故障，故障使得安全阀开启，导致原油于格里利堡（Fort Greely）第 9 泵站附近溢出。",
+    "seg_text": "消防指挥系统 <SEG:6> 的例行测试引 <SEG:4> 发了一场电力 <SEG:2> 故障使得安全阀开 <SEG:5> 启导致原油于格里利 <SEG:3> 堡（Fort Greely） <SEG:1> 第 9 泵站附近溢出。"
+  },
+  {
+    "id": "cmn_hans_cn_100",
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "消防指挥系统的例行测试引发了一场电力故障，故障使得安全阀开启，导致原油于格里利堡（Fort Greely）第 9 泵站附近溢出。",
+    "seg_text": "消防指挥系统 <SEG:6> 的例行测试引 <SEG:4> 发了一场电力 <SEG:2> 故障使得安全阀开 <SEG:5> 启导致原油于格里利 <SEG:3> 堡（Fort Greely） <SEG:1> 第 9 泵站附近溢出。"
+  },
+  {
+    "id": "cmn_hans_cn_1236",
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 5개 필요",
+    "text": "有些场地免费提供酒精饮料。然而，醉酒会削弱人的判断能力，所有优秀的赌徒都知道保持清醒的重要性。",
+    "seg_text": "有些场地免费提供酒精饮料。 <SEG:2> 然而，醉酒会削弱 <SEG:3> 人的判断能力， <SEG:1> 所有优秀的赌徒都知道保持清醒的重要性。"
+  },
+  {
+    "id": "cmn_hans_cn_1547",
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "日本广播协会 (NHK) 还报道说，位于新泻县的柏崎刈羽 (Kashiwazaki Kariwa) 核电站运行正常。",
+    "seg_text": "日本广播协会(NHK) <SEG:1> 还报道说，位 <SEG:3> 于新泻县的柏 <SEG:4> 崎刈羽 (Kashiwa <SEG:5> zaki Kariwa) <SEG:2> 核电站运行正常。"
+  },
+  {
+    "id": "cmn_hans_cn_194",
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 9개 필요",
+    "text": "在赢得一级方程式赛车锦标赛 (Formula 1) 总冠军七次后于 2006 年退役的名将舒马赫 (Schumacher)，将接替受伤的菲利佩·马萨 (Felipe Massa)。",
+    "seg_text": "在赢得一级方程式 <SEG:6> 赛车锦标赛 (Formula 1) <SEG:2> 总冠军七次后于 2006 年 <SEG:3> 退役的名将舒马赫 (Schumacher)， <SEG:1> 将接替受伤的 <SEG:4> 菲利佩·马萨 <SEG:5> (Felipe Massa)。"
+  },
+  {
+    "id": "cmn_hans_cn_737",
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "可以直接从希门尼斯港 (Puerto Jiménez) 的公园管理处获得入园许可，但不能使用信用卡",
+    "seg_text": "可以直接从希门尼斯港 <SEG:4> (Puerto Jiménez) <SEG:3> 的公园管理处 <SEG:2> 获得入园许可， <SEG:1> 但不能使用信用卡"
+  },
+  {
+    "id": "cmn_hans_cn_725",
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "联盟花园 (Jardín de la Unión)。这里曾是一座 17 世纪修道院的中庭，其中的圣地亚哥圣殿是唯一现存的建筑。",
+    "seg_text": "联盟花园 (Jardín de la Unión)。 <SEG:1> 这里曾是一座17 世纪 <SEG:3> 修道院的中庭， <SEG:2> 其中的圣地亚 <SEG:5> 哥圣殿是唯一 <SEG:4> 现存的建筑。"
+  },
+  {
+    "id": "cmn_hans_cn_28",
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "巴滕位列 2008 年全美最富有 400 人榜单第 190 位，预计其财富达到约 23 亿美元。",
+    "seg_text": "巴滕位列 2008 年 <SEG:1> 全美最富有400 人榜 <SEG:2> 单第 190位，预计其 <SEG:3> 财富达到约23 亿美元。"
+  },
+  {
+    "id": "cmn_hans_cn_1585",
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "随着时间的推移，新的种群开始适应新的环境，它们开始变得与其他种群越来越不相似了。",
+    "seg_text": "随着时间的推移， <SEG:2> 新的种群开始 <SEG:3> 适应新的环境， <SEG:1> 它们开始变得 <SEG:4> 与其他种群越来 <SEG:5> 越来越不相似了。"
+  },
+  {
+    "id": "cmn_hans_cn_672",
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "因此，如果启程日期为 5 月，野地露营许可证将在 1 月 1 日发放。",
+    "seg_text": "因此，如果启程日期为 5 月， <SEG:1> 野地露营许可证 <SEG:2> 将在 1 月 1 日发放。"
+  }
+]

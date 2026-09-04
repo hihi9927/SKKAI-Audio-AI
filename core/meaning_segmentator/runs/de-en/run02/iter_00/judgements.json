@@ -1,0 +1,665 @@
+[
+  {
+    "id": "de_de_637",
+    "boundary": 2,
+    "contradiction": 0.9979,
+    "seg_text": "Im Jahr 1970 entdeckte der Arzt und Forscher Raymond Damadian <SEG:1> die Basis für den Einsatz <SEG:2> der Magnetresonanztomografie als Hilfsmittel <SEG:3> für die medizinische Diagnose.",
+    "verdict": "safe",
+    "conflict": null,
+    "cause": null,
+    "shift": null,
+    "generalized_rule": null,
+    "target": "English"
+  },
+  {
+    "id": "de_de_264",
+    "boundary": 0,
+    "contradiction": 0.9888,
+    "seg_text": "Der Kommissar sagte: <SEG:2> „Wir haben uns noch nicht auf Herkunftsregeln und Zollkonditionen einigen können, <SEG:1> aber der Rahmen, <SEG:4> den wir entwickelt haben, <SEG:3> reicht bereits aus, <SEG:5> um am 1. Juli 2020 mit dem Handel zu beginnen.“",
+    "verdict": "safe",
+    "conflict": null,
+    "cause": null,
+    "shift": null,
+    "generalized_rule": null,
+    "target": "English"
+  },
+  {
+    "id": "de_de_339",
+    "boundary": 1,
+    "contradiction": 0.9781,
+    "seg_text": "Während seiner Aufwärmrunde <SEG:2> stürzte Lenz von seinem Motorrad <SEG:1> und wurde dann von seinem Rennkollegen Xavier Zayat überfahren.",
+    "verdict": "safe",
+    "conflict": null,
+    "cause": null,
+    "shift": null,
+    "generalized_rule": null,
+    "target": "English"
+  },
+  {
+    "id": "de_de_339",
+    "boundary": 0,
+    "contradiction": 0.9021,
+    "seg_text": "Während seiner Aufwärmrunde <SEG:2> stürzte Lenz von seinem Motorrad <SEG:1> und wurde dann von seinem Rennkollegen Xavier Zayat überfahren.",
+    "verdict": "safe",
+    "conflict": null,
+    "cause": null,
+    "shift": null,
+    "generalized_rule": null,
+    "target": "English"
+  },
+  {
+    "id": "de_de_869",
+    "boundary": 3,
+    "contradiction": 0.6669,
+    "seg_text": "Vor allem in den ersten Tagen <SEG:2> sollten Sie erwägen, <SEG:1> Hotels, Essen und Dienstleistungen <SEG:4> mit westlicher Prägung <SEG:3> und Qualität in Anspruch zu nehmen, um die Akklimatisierung zu erleichtern.",
+    "verdict": "mistranslated",
+    "conflict": "renders 'westlicher Prägung' as 'western embossing' instead of 'Western feel'",
+    "cause": "other",
+    "shift": {
+      "units": 2,
+      "to_after": "und Qualität"
+    },
+    "generalized_rule": "Avoid literal translations of figurative nouns; when unsure wait for nearby modifiers or choose a neutral rendering like 'feel/character' rather than a literal physical sense.",
+    "target": "English"
+  },
+  {
+    "id": "de_de_1166",
+    "boundary": 2,
+    "contradiction": 0.1844,
+    "seg_text": "Im Landesinneren Nordindiens <SEG:2> und Pakistans wird Joghurt üblicherweise in Currys verwendet; in Südindien <SEG:3> und einigen anderen Küstenregionen des Subkontinents <SEG:1> wird üblicherweise Kokosmilch verwendet.",
+    "verdict": "safe",
+    "conflict": null,
+    "cause": null,
+    "shift": null,
+    "generalized_rule": null,
+    "target": "English"
+  },
+  {
+    "id": "de_de_1166",
+    "boundary": 1,
+    "contradiction": 0.1157,
+    "seg_text": "Im Landesinneren Nordindiens <SEG:2> und Pakistans wird Joghurt üblicherweise in Currys verwendet; in Südindien <SEG:3> und einigen anderen Küstenregionen des Subkontinents <SEG:1> wird üblicherweise Kokosmilch verwendet.",
+    "verdict": "safe",
+    "conflict": null,
+    "cause": null,
+    "shift": null,
+    "generalized_rule": null,
+    "target": "English"
+  },
+  {
+    "id": "de_de_471",
+    "boundary": 1,
+    "contradiction": 0.0848,
+    "seg_text": "Das Kräftegleichgewicht war <SEG:1> ein System, in dem die europäischen Nationen danach strebten, die nationale Souveränität <SEG:2> aller europäischen Staaten aufrechtzuerhalten,",
+    "verdict": "mistranslated",
+    "conflict": "sought to consolidate national sovereignty",
+    "cause": "head not yet arrived",
+    "shift": {
+      "units": 4,
+      "to_after": "aufrechtzuerhalten"
+    },
+    "generalized_rule": "Don't finalize a verb or its object until the governing verb/infinitive arrives.",
+    "target": "English"
+  },
+  {
+    "id": "de_de_632",
+    "boundary": 1,
+    "contradiction": 0.0801,
+    "seg_text": "Neben diesen Fähigkeiten ist es entscheidend, die Absichten <SEG:2> anderer zu verstehen. <SEG:1> Es ermöglicht uns, mögliche Zweideutigkeiten physischer Handlungen auszuräumen.",
+    "verdict": "mistranslated",
+    "conflict": "intentions to understand others",
+    "cause": "wrong participant",
+    "shift": {
+      "units": 1,
+      "to_after": "die Absichten anderer"
+    },
+    "generalized_rule": "Don't finalize possession/participant roles until following genitives or nearby arguments have arrived.",
+    "target": "English"
+  },
+  {
+    "id": "de_de_491",
+    "boundary": 1,
+    "contradiction": 0.0513,
+    "seg_text": "Obwohl Kruschtschow schließlich Panzer schickte, <SEG:4> um die Ordnung wiederherzustellen, <SEG:2> gab er einigen wirtschaftlichen Forderungen nach <SEG:1> und willigte ein, <SEG:3> den beliebten Wladyslaw Gomulka zum neuen Premierminister zu ernennen.",
+    "verdict": "safe",
+    "conflict": null,
+    "cause": null,
+    "shift": null,
+    "generalized_rule": null,
+    "target": "English"
+  },
+  {
+    "id": "de_de_967",
+    "boundary": 0,
+    "contradiction": 0.9994,
+    "seg_text": "Cinque Terre, was soviel bedeutet wie Fünf Länder, <SEG:2> umfasst die fünf kleinen Küstendörfer <SEG:1> Riomaggiore, Manarola, Corniglia, Vernazza und Monterosso <SEG:3> in der italienischen Region Ligurien.",
+    "verdict": "safe",
+    "conflict": null,
+    "cause": null,
+    "shift": null,
+    "generalized_rule": null,
+    "target": "Korean"
+  },
+  {
+    "id": "de_de_967",
+    "boundary": 1,
+    "contradiction": 0.999,
+    "seg_text": "Cinque Terre, was soviel bedeutet wie Fünf Länder, <SEG:2> umfasst die fünf kleinen Küstendörfer <SEG:1> Riomaggiore, Manarola, Corniglia, Vernazza und Monterosso <SEG:3> in der italienischen Region Ligurien.",
+    "verdict": "safe",
+    "conflict": null,
+    "cause": null,
+    "shift": null,
+    "generalized_rule": null,
+    "target": "Korean"
+  },
+  {
+    "id": "de_de_967",
+    "boundary": 2,
+    "contradiction": 0.9986,
+    "seg_text": "Cinque Terre, was soviel bedeutet wie Fünf Länder, <SEG:2> umfasst die fünf kleinen Küstendörfer <SEG:1> Riomaggiore, Manarola, Corniglia, Vernazza und Monterosso <SEG:3> in der italienischen Region Ligurien.",
+    "verdict": "safe",
+    "conflict": null,
+    "cause": null,
+    "shift": null,
+    "generalized_rule": null,
+    "target": "Korean"
+  },
+  {
+    "id": "de_de_120",
+    "boundary": 0,
+    "contradiction": 0.9985,
+    "seg_text": "Das Spiel basiert auf der zweiten Schlacht von Falludscha, <SEG:1> einem brutalen Gefecht <SEG:2> zwischen amerikanischen und irakischen Streitkräften.",
+    "verdict": "reference_suspect",
+    "conflict": "the game is based on the second Battle of Fallujah",
+    "cause": "other",
+    "shift": {
+      "units": 0,
+      "to_after": "der zweiten Schlacht von Falludscha"
+    },
+    "generalized_rule": "When the oracle disagrees with explicit lexical facts (ordinals, numbers, names), treat the reference as suspect and don't adopt its contradiction.",
+    "target": "Korean"
+  },
+  {
+    "id": "de_de_488",
+    "boundary": 0,
+    "contradiction": 0.9964,
+    "seg_text": "Sikhs nennen ihre Religion Gurmat, was auf Pandschabi „Weg des Gurus“ bedeutet. <SEG:1> Der Guru ist ein grundlegender Aspekt <SEG:5> aller indischen Religionen, <SEG:3> doch im Sikhismus <SEG:4> hat er eine Bedeutung eingenommen, <SEG:2> die den Kern des Sikh-Glaubens darstellt.",
+    "verdict": "safe",
+    "conflict": null,
+    "cause": null,
+    "shift": null,
+    "generalized_rule": null,
+    "target": "Korean"
+  },
+  {
+    "id": "de_de_1454",
+    "boundary": 0,
+    "contradiction": 0.9963,
+    "seg_text": "Die Website des Senders beschreibt die Show <SEG:1> als „Radiotheater alter Schule <SEG:2> mit einer neuen und unheimlichen schrägen Interpretation!“",
+    "verdict": "mistranslated",
+    "conflict": "asserts the show is a TV drama",
+    "cause": "other",
+    "shift": {
+      "units": 1,
+      "to_after": "als"
+    },
+    "generalized_rule": "Delay committing to a categorical label until the predicative marker (e.g., 'als'/'is described as') and its description are available.",
+    "target": "Korean"
+  },
+  {
+    "id": "de_de_120",
+    "boundary": 1,
+    "contradiction": 0.9958,
+    "seg_text": "Das Spiel basiert auf der zweiten Schlacht von Falludscha, <SEG:1> einem brutalen Gefecht <SEG:2> zwischen amerikanischen und irakischen Streitkräften.",
+    "verdict": "reference_suspect",
+    "conflict": "oracle calls it the first battle (source says second)",
+    "cause": "other",
+    "shift": {
+      "units": 0,
+      "to_after": "einem brutalen Gefecht"
+    },
+    "generalized_rule": "If the oracle's facts (e.g., ordinal 'first' vs 'second') contradict the source, mark the reference as suspect rather than penalizing the streaming output.",
+    "target": "Korean"
+  },
+  {
+    "id": "de_de_339",
+    "boundary": 0,
+    "contradiction": 0.9813,
+    "seg_text": "Während seiner Aufwärmrunde <SEG:2> stürzte Lenz von seinem Motorrad <SEG:1> und wurde dann von seinem Rennkollegen Xavier Zayat überfahren.",
+    "verdict": "reference_suspect",
+    "conflict": "says it happened during warm-up, oracle says after the race",
+    "cause": null,
+    "shift": {
+      "units": 0,
+      "to_after": "Während seiner Aufwärmrunde"
+    },
+    "generalized_rule": "If the oracle contradicts an unambiguous local rendering, flag the reference as suspect and keep the local translation.",
+    "target": "Korean"
+  },
+  {
+    "id": "de_de_71",
+    "boundary": 1,
+    "contradiction": 0.9812,
+    "seg_text": "Die Managementfirma der Band, <SEG:3> HK Management Inc., <SEG:2> gab keinen anfänglichen Grund an, <SEG:4> als sie am 20. September absagte, <SEG:1> machte aber bereits am nächsten Tag logistische Gründe dafür verantwortlich.",
+    "verdict": "safe",
+    "conflict": null,
+    "cause": null,
+    "shift": null,
+    "generalized_rule": null,
+    "target": "Korean"
+  },
+  {
+    "id": "de_de_488",
+    "boundary": 3,
+    "contradiction": 0.9498,
+    "seg_text": "Sikhs nennen ihre Religion Gurmat, was auf Pandschabi „Weg des Gurus“ bedeutet. <SEG:1> Der Guru ist ein grundlegender Aspekt <SEG:5> aller indischen Religionen, <SEG:3> doch im Sikhismus <SEG:4> hat er eine Bedeutung eingenommen, <SEG:2> die den Kern des Sikh-Glaubens darstellt.",
+    "verdict": "safe",
+    "conflict": null,
+    "cause": null,
+    "shift": null,
+    "generalized_rule": null,
+    "target": "Korean"
+  },
+  {
+    "id": "de_de_264",
+    "boundary": 0,
+    "contradiction": 0.9985,
+    "seg_text": "Der Kommissar sagte: <SEG:2> „Wir haben uns noch nicht auf Herkunftsregeln und Zollkonditionen einigen können, <SEG:1> aber der Rahmen, <SEG:4> den wir entwickelt haben, <SEG:3> reicht bereits aus, <SEG:5> um am 1. Juli 2020 mit dem Handel zu beginnen.“",
+    "verdict": "safe",
+    "conflict": null,
+    "cause": null,
+    "shift": null,
+    "generalized_rule": null,
+    "target": "Japanese"
+  },
+  {
+    "id": "de_de_967",
+    "boundary": 0,
+    "contradiction": 0.9977,
+    "seg_text": "Cinque Terre, was soviel bedeutet wie Fünf Länder, <SEG:2> umfasst die fünf kleinen Küstendörfer <SEG:1> Riomaggiore, Manarola, Corniglia, Vernazza und Monterosso <SEG:3> in der italienischen Region Ligurien.",
+    "verdict": "mistranslated",
+    "conflict": "asserts 'means five countries'",
+    "cause": "other",
+    "shift": {
+      "units": 5,
+      "to_after": "umfasst die fünf kleinen Küstendörfer"
+    },
+    "generalized_rule": "Delay committing to a specific lexical sense for an ambiguous word (e.g., 'Länder') until subsequent disambiguating context arrives.",
+    "target": "Japanese"
+  },
+  {
+    "id": "de_de_967",
+    "boundary": 2,
+    "contradiction": 0.9948,
+    "seg_text": "Cinque Terre, was soviel bedeutet wie Fünf Länder, <SEG:2> umfasst die fünf kleinen Küstendörfer <SEG:1> Riomaggiore, Manarola, Corniglia, Vernazza und Monterosso <SEG:3> in der italienischen Region Ligurien.",
+    "verdict": "safe",
+    "conflict": null,
+    "cause": null,
+    "shift": null,
+    "generalized_rule": null,
+    "target": "Japanese"
+  },
+  {
+    "id": "de_de_264",
+    "boundary": 1,
+    "contradiction": 0.9947,
+    "seg_text": "Der Kommissar sagte: <SEG:2> „Wir haben uns noch nicht auf Herkunftsregeln und Zollkonditionen einigen können, <SEG:1> aber der Rahmen, <SEG:4> den wir entwickelt haben, <SEG:3> reicht bereits aus, <SEG:5> um am 1. Juli 2020 mit dem Handel zu beginnen.“",
+    "verdict": "safe",
+    "conflict": null,
+    "cause": null,
+    "shift": null,
+    "generalized_rule": null,
+    "target": "Japanese"
+  },
+  {
+    "id": "de_de_71",
+    "boundary": 1,
+    "contradiction": 0.9905,
+    "seg_text": "Die Managementfirma der Band, <SEG:3> HK Management Inc., <SEG:2> gab keinen anfänglichen Grund an, <SEG:4> als sie am 20. September absagte, <SEG:1> machte aber bereits am nächsten Tag logistische Gründe dafür verantwortlich.",
+    "verdict": "safe",
+    "conflict": null,
+    "cause": null,
+    "shift": null,
+    "generalized_rule": null,
+    "target": "Japanese"
+  },
+  {
+    "id": "de_de_967",
+    "boundary": 1,
+    "contradiction": 0.988,
+    "seg_text": "Cinque Terre, was soviel bedeutet wie Fünf Länder, <SEG:2> umfasst die fünf kleinen Küstendörfer <SEG:1> Riomaggiore, Manarola, Corniglia, Vernazza und Monterosso <SEG:3> in der italienischen Region Ligurien.",
+    "verdict": "safe",
+    "conflict": null,
+    "cause": null,
+    "shift": null,
+    "generalized_rule": null,
+    "target": "Japanese"
+  },
+  {
+    "id": "de_de_1544",
+    "boundary": 2,
+    "contradiction": 0.9854,
+    "seg_text": "Insekten waren die ersten Tiere, <SEG:2> die den Himmel erobertern. <SEG:1> Ihre Fähigkeit zu fliegen <SEG:3> half ihnen, Feinden leichter auszuweichen und effizienter Nahrung und Geschlechtspartner zu finden.",
+    "verdict": "mistranslated",
+    "conflict": "says insects are 'strong attackers' instead of 'conquered the sky'",
+    "cause": "other",
+    "shift": {
+      "units": 1,
+      "to_after": "half ihnen,"
+    },
+    "generalized_rule": "Don't commit to a lexical rendering of a clause until its full predicate/complement is available.",
+    "target": "Japanese"
+  },
+  {
+    "id": "de_de_1544",
+    "boundary": 1,
+    "contradiction": 0.9819,
+    "seg_text": "Insekten waren die ersten Tiere, <SEG:2> die den Himmel erobertern. <SEG:1> Ihre Fähigkeit zu fliegen <SEG:3> half ihnen, Feinden leichter auszuweichen und effizienter Nahrung und Geschlechtspartner zu finden.",
+    "verdict": "mistranslated",
+    "conflict": "asserts 'strong attackers' instead of 'conquered the sky'",
+    "cause": "other",
+    "shift": {
+      "units": 2,
+      "to_after": "Ihre Fähigkeit"
+    },
+    "generalized_rule": "Delay committing a translation for ambiguous verbs/relative clauses until enough following context arrives to disambiguate.",
+    "target": "Japanese"
+  },
+  {
+    "id": "de_de_264",
+    "boundary": 2,
+    "contradiction": 0.9742,
+    "seg_text": "Der Kommissar sagte: <SEG:2> „Wir haben uns noch nicht auf Herkunftsregeln und Zollkonditionen einigen können, <SEG:1> aber der Rahmen, <SEG:4> den wir entwickelt haben, <SEG:3> reicht bereits aus, <SEG:5> um am 1. Juli 2020 mit dem Handel zu beginnen.“",
+    "verdict": "safe",
+    "conflict": null,
+    "cause": null,
+    "shift": null,
+    "generalized_rule": null,
+    "target": "Japanese"
+  },
+  {
+    "id": "de_de_934",
+    "boundary": 3,
+    "contradiction": 0.971,
+    "seg_text": "Für die meisten Ländern <SEG:6> brauchen Sie ein schriftliches Angebot <SEG:5> von der Einrichtung, <SEG:3> an der Sie studieren möchten, <SEG:2> und zudem einen Nachweis, <SEG:4> dass Sie über die nötigen Mittel verfügen, <SEG:1> um sich zumindest in Ihrem ersten Studienjahr über Wasser zu halten.",
+    "verdict": "mistranslated",
+    "conflict": "says 'you choose the university'",
+    "cause": "other",
+    "shift": {
+      "units": 3,
+      "to_after": "und zudem einen Nachweis"
+    },
+    "generalized_rule": "Delay committing to a lexical choice for relative clauses or noun attachments; wait for nearby context before finalizing verbs/nouns.",
+    "target": "Japanese"
+  },
+  {
+    "id": "de_de_488",
+    "boundary": 0,
+    "contradiction": 0.9994,
+    "seg_text": "Sikhs nennen ihre Religion Gurmat, was auf Pandschabi „Weg des Gurus“ bedeutet. <SEG:1> Der Guru ist ein grundlegender Aspekt <SEG:5> aller indischen Religionen, <SEG:3> doch im Sikhismus <SEG:4> hat er eine Bedeutung eingenommen, <SEG:2> die den Kern des Sikh-Glaubens darstellt.",
+    "verdict": "safe",
+    "conflict": null,
+    "cause": null,
+    "shift": null,
+    "generalized_rule": null,
+    "target": "Chinese"
+  },
+  {
+    "id": "de_de_1454",
+    "boundary": 1,
+    "contradiction": 0.9993,
+    "seg_text": "Die Website des Senders beschreibt die Show <SEG:1> als „Radiotheater alter Schule <SEG:2> mit einer neuen und unheimlichen schrägen Interpretation!“",
+    "verdict": "mistranslated",
+    "conflict": "describes it as an old schoolhouse",
+    "cause": "other",
+    "shift": {
+      "units": 7,
+      "to_after": "Interpretation"
+    },
+    "generalized_rule": "Do not commit to a specific noun sense (e.g., 'Schule') in isolation; wait for the rest of the quoted phrase or head noun before emitting.",
+    "target": "Chinese"
+  },
+  {
+    "id": "de_de_1544",
+    "boundary": 1,
+    "contradiction": 0.9981,
+    "seg_text": "Insekten waren die ersten Tiere, <SEG:2> die den Himmel erobertern. <SEG:1> Ihre Fähigkeit zu fliegen <SEG:3> half ihnen, Feinden leichter auszuweichen und effizienter Nahrung und Geschlechtspartner zu finden.",
+    "verdict": "mistranslated",
+    "conflict": "labels them 'attackers'.",
+    "cause": "other",
+    "shift": {
+      "units": 4,
+      "to_after": "Ihre Fähigkeit zu fliegen"
+    },
+    "generalized_rule": "Delay committing to a specific lexical sense for descriptive relative clauses until nearby context confirms the intended meaning.",
+    "target": "Chinese"
+  },
+  {
+    "id": "de_de_488",
+    "boundary": 1,
+    "contradiction": 0.9976,
+    "seg_text": "Sikhs nennen ihre Religion Gurmat, was auf Pandschabi „Weg des Gurus“ bedeutet. <SEG:1> Der Guru ist ein grundlegender Aspekt <SEG:5> aller indischen Religionen, <SEG:3> doch im Sikhismus <SEG:4> hat er eine Bedeutung eingenommen, <SEG:2> die den Kern des Sikh-Glaubens darstellt.",
+    "verdict": "safe",
+    "conflict": null,
+    "cause": null,
+    "shift": null,
+    "generalized_rule": null,
+    "target": "Chinese"
+  },
+  {
+    "id": "de_de_488",
+    "boundary": 3,
+    "contradiction": 0.9976,
+    "seg_text": "Sikhs nennen ihre Religion Gurmat, was auf Pandschabi „Weg des Gurus“ bedeutet. <SEG:1> Der Guru ist ein grundlegender Aspekt <SEG:5> aller indischen Religionen, <SEG:3> doch im Sikhismus <SEG:4> hat er eine Bedeutung eingenommen, <SEG:2> die den Kern des Sikh-Glaubens darstellt.",
+    "verdict": "safe",
+    "conflict": null,
+    "cause": null,
+    "shift": null,
+    "generalized_rule": null,
+    "target": "Chinese"
+  },
+  {
+    "id": "de_de_488",
+    "boundary": 2,
+    "contradiction": 0.9975,
+    "seg_text": "Sikhs nennen ihre Religion Gurmat, was auf Pandschabi „Weg des Gurus“ bedeutet. <SEG:1> Der Guru ist ein grundlegender Aspekt <SEG:5> aller indischen Religionen, <SEG:3> doch im Sikhismus <SEG:4> hat er eine Bedeutung eingenommen, <SEG:2> die den Kern des Sikh-Glaubens darstellt.",
+    "verdict": "mistranslated",
+    "conflict": "omits 'aspect' (Aspekt)",
+    "cause": "other",
+    "shift": {
+      "units": 1,
+      "to_after": "doch"
+    },
+    "generalized_rule": "Delay finalizing a predicate phrase until its head/complement is seen to avoid dropping key nouns.",
+    "target": "Chinese"
+  },
+  {
+    "id": "de_de_637",
+    "boundary": 2,
+    "contradiction": 0.9964,
+    "seg_text": "Im Jahr 1970 entdeckte der Arzt und Forscher Raymond Damadian <SEG:1> die Basis für den Einsatz <SEG:2> der Magnetresonanztomografie als Hilfsmittel <SEG:3> für die medizinische Diagnose.",
+    "verdict": "safe",
+    "conflict": null,
+    "cause": null,
+    "shift": null,
+    "generalized_rule": null,
+    "target": "Chinese"
+  },
+  {
+    "id": "de_de_1544",
+    "boundary": 2,
+    "contradiction": 0.9962,
+    "seg_text": "Insekten waren die ersten Tiere, <SEG:2> die den Himmel erobertern. <SEG:1> Ihre Fähigkeit zu fliegen <SEG:3> half ihnen, Feinden leichter auszuweichen und effizienter Nahrung und Geschlechtspartner zu finden.",
+    "verdict": "mistranslated",
+    "conflict": "says 'your ability to fly' instead of 'their ability to fly'",
+    "cause": "wrong participant",
+    "shift": {
+      "units": 2,
+      "to_after": "half ihnen,"
+    },
+    "generalized_rule": "Don't commit to a possessor; wait until the verb or following noun confirms who 'their/your' refers to.",
+    "target": "Chinese"
+  },
+  {
+    "id": "de_de_488",
+    "boundary": 4,
+    "contradiction": 0.9781,
+    "seg_text": "Sikhs nennen ihre Religion Gurmat, was auf Pandschabi „Weg des Gurus“ bedeutet. <SEG:1> Der Guru ist ein grundlegender Aspekt <SEG:5> aller indischen Religionen, <SEG:3> doch im Sikhismus <SEG:4> hat er eine Bedeutung eingenommen, <SEG:2> die den Kern des Sikh-Glaubens darstellt.",
+    "verdict": "mistranslated",
+    "conflict": "renders 'has assumed a meaning' as a question 'whether it has reached some kind of meaning'",
+    "cause": "other",
+    "shift": {
+      "units": 6,
+      "to_after": "die den Kern des Sikh-Glaubens darstellt."
+    },
+    "generalized_rule": "Don't choose interrogative/uncertain wording or add modality for a verb phrase until any following complement or relative clause that completes its meaning has arrived.",
+    "target": "Chinese"
+  },
+  {
+    "id": "de_de_109",
+    "boundary": 0,
+    "contradiction": 0.9771,
+    "seg_text": "Die Kapsel wird ähnlich wie eine Sternschuppe aussehen, <SEG:1> die am Himmel fliegt.",
+    "verdict": "mistranslated",
+    "conflict": "capsule looks like a star-disk",
+    "cause": "other",
+    "shift": {
+      "units": 4,
+      "to_after": "die am Himmel fliegt"
+    },
+    "generalized_rule": "Don't commit to an exact lexical rendering of a content noun if a nearby postmodifier or following clause could disambiguate; wait for that context before emitting.",
+    "target": "Chinese"
+  },
+  {
+    "id": "de_de_264",
+    "boundary": 0,
+    "contradiction": 0.9951,
+    "seg_text": "Der Kommissar sagte: <SEG:2> „Wir haben uns noch nicht auf Herkunftsregeln und Zollkonditionen einigen können, <SEG:1> aber der Rahmen, <SEG:4> den wir entwickelt haben, <SEG:3> reicht bereits aus, <SEG:5> um am 1. Juli 2020 mit dem Handel zu beginnen.“",
+    "verdict": "safe",
+    "conflict": null,
+    "cause": null,
+    "shift": null,
+    "generalized_rule": null,
+    "target": "Spanish"
+  },
+  {
+    "id": "de_de_21",
+    "boundary": 1,
+    "contradiction": 0.9884,
+    "seg_text": "Hsieh deutete während der Wahl <SEG:2> an, dass Ma während einer Krisenzeit <SEG:1> aus dem Land fliehen könnte.",
+    "verdict": "safe",
+    "conflict": null,
+    "cause": null,
+    "shift": null,
+    "generalized_rule": null,
+    "target": "Spanish"
+  },
+  {
+    "id": "de_de_632",
+    "boundary": 1,
+    "contradiction": 0.9502,
+    "seg_text": "Neben diesen Fähigkeiten ist es entscheidend, die Absichten <SEG:2> anderer zu verstehen. <SEG:1> Es ermöglicht uns, mögliche Zweideutigkeiten physischer Handlungen auszuräumen.",
+    "verdict": "premature",
+    "conflict": "the intentions are to understand others",
+    "cause": "modifier scope",
+    "shift": {
+      "units": 1,
+      "to_after": "anderer"
+    },
+    "generalized_rule": "When a noun can take a following possessor or infinitival complement, wait for that following word before committing attachment.",
+    "target": "Spanish"
+  },
+  {
+    "id": "de_de_1037",
+    "boundary": 0,
+    "contradiction": 0.2219,
+    "seg_text": "Laut dem aktuellen Bulletin deuteten die Messungen des Meeresspiegels darauf hin, <SEG:2> dass ein Tsunami ausgelöst wurde. <SEG:1> In der Nähe von Pago Pago <SEG:4> und Niue wurde <SEG:3> eine eindeutige Tsunami-Aktivität aufgezeichnet.",
+    "verdict": "mistranslated",
+    "conflict": "las mediciones indican que",
+    "cause": "other",
+    "shift": {
+      "units": 5,
+      "to_after": "dass ein Tsunami ausgelöst wurde"
+    },
+    "generalized_rule": "Preserve source tense for reporting verbs; delay finalizing tense/aspect until the subordinate 'that' clause is received.",
+    "target": "Spanish"
+  },
+  {
+    "id": "de_de_1628",
+    "boundary": 1,
+    "contradiction": 0.2108,
+    "seg_text": "Handgefertigte Produkte könnten als „antik“ bezeichnet werden, <SEG:1> obwohl sie jünger als ähnliche Erzeugnisse <SEG:2> aus Massenproduktion sind.",
+    "verdict": "safe",
+    "conflict": null,
+    "cause": null,
+    "shift": null,
+    "generalized_rule": null,
+    "target": "Spanish"
+  },
+  {
+    "id": "de_de_637",
+    "boundary": 2,
+    "contradiction": 0.2071,
+    "seg_text": "Im Jahr 1970 entdeckte der Arzt und Forscher Raymond Damadian <SEG:1> die Basis für den Einsatz <SEG:2> der Magnetresonanztomografie als Hilfsmittel <SEG:3> für die medizinische Diagnose.",
+    "verdict": "mistranslated",
+    "conflict": "omits 'as a tool' (como herramienta)",
+    "cause": "other",
+    "shift": {
+      "units": 4,
+      "to_after": "für die medizinische Diagnose."
+    },
+    "generalized_rule": "Do not finalize translation of a noun phrase that includes functional modifiers ('als ...', 'como ...') until any following complements that specify the function have arrived.",
+    "target": "Spanish"
+  },
+  {
+    "id": "de_de_1247",
+    "boundary": 0,
+    "contradiction": 0.153,
+    "seg_text": "Zum Beispiel sind amerikanische Bürger <SEG:2> im Nahen Osten möglicherweise mit anderen Situationen konfrontiert <SEG:1> als Europäer oder Araber.",
+    "verdict": "safe",
+    "conflict": null,
+    "cause": null,
+    "shift": null,
+    "generalized_rule": null,
+    "target": "Spanish"
+  },
+  {
+    "id": "de_de_339",
+    "boundary": 1,
+    "contradiction": 0.1478,
+    "seg_text": "Während seiner Aufwärmrunde <SEG:2> stürzte Lenz von seinem Motorrad <SEG:1> und wurde dann von seinem Rennkollegen Xavier Zayat überfahren.",
+    "verdict": "safe",
+    "conflict": null,
+    "cause": null,
+    "shift": null,
+    "generalized_rule": null,
+    "target": "Spanish"
+  },
+  {
+    "id": "de_de_1166",
+    "boundary": 1,
+    "contradiction": 0.1126,
+    "seg_text": "Im Landesinneren Nordindiens <SEG:2> und Pakistans wird Joghurt üblicherweise in Currys verwendet; in Südindien <SEG:3> und einigen anderen Küstenregionen des Subkontinents <SEG:1> wird üblicherweise Kokosmilch verwendet.",
+    "verdict": "safe",
+    "conflict": null,
+    "cause": null,
+    "shift": null,
+    "generalized_rule": null,
+    "target": "Spanish"
+  },
+  {
+    "id": "de_de_1544",
+    "boundary": 2,
+    "contradiction": 0.1017,
+    "seg_text": "Insekten waren die ersten Tiere, <SEG:2> die den Himmel erobertern. <SEG:1> Ihre Fähigkeit zu fliegen <SEG:3> half ihnen, Feinden leichter auszuweichen und effizienter Nahrung und Geschlechtspartner zu finden.",
+    "verdict": "mistranslated",
+    "conflict": "they invade the sky",
+    "cause": "other",
+    "shift": {
+      "units": 2,
+      "to_after": "half ihnen,"
+    },
+    "generalized_rule": "Delay committing to lexical tone or forceful wording (exclamations, invade vs. conquer); if the verb or complement is ambiguous, wait for the clause head or render conservatively.",
+    "target": "Spanish"
+  }
+]

@@ -1,0 +1,22 @@
+{
+  "sections_changed": [
+    "[Core Principles]",
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "sections_reported": [
+    "[Core Principles]",
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "changelog": [
+    "Core Principles: added guidance to preserve locally coherent renderings and treat later contradictions as suspect, so the model does not over‑penalize boundaries that produced grammatical prefixes.",
+    "When to Segment: merged candidate_rules into the surface-signal list: added explicit signals and handling for predicative 'als' constructions, infinitival complements, genitives/possessors, relative clauses, reporting verbs followed by 'dass'/quotes, parenthetical/explanatory clauses, and figurative prepositional phrases with coordinating modifiers; instruct to treat these positions as candidates but to delay finalization (i.e., rank lower) until complements arrive when possible.",
+    "Priority Rules: clarified ranking for the newly added risky patterns — positions before predicative markers, infinitives, genitives/possessors, relative clauses, and reporting/quoted content should be assigned lower confidence (or, if marked, placed below cuts that wait for the complement); include guidance to prefer neutral/undetermined lexical renderings if forced to cut early.",
+    "Decision Procedure: updated the RISK RANKING PASS to require explicit lowering of rank for candidates that precede disambiguating complements (predicative 'als', infinitives, possessors, relatives, quoted/subordinate content) and to preserve locally coherent prefixes rather than assuming they are wrong when later contradiction appears."
+  ],
+  "size_budget": 19244,
+  "over_budget": false
+}

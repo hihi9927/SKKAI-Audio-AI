@@ -1,0 +1,16 @@
+{
+  "sections_changed": [
+    "[Examples — Segment]",
+    "[Examples — Do NOT Segment]"
+  ],
+  "sections_reported": [
+    "[Examples — Segment]",
+    "[Examples — Do NOT Segment]"
+  ],
+  "changelog": [
+    "Replaced and expanded the example sets to include targeted cases from the critic: (1) reporting verbs with subordinate 'dass' clauses, (2) verbs followed by infinitival/purpose complements, and (3) locally coherent quoted/reporting prefixes (reference_suspect). This teaches the model the intended safe placements without reworking the core rules that were previously rejected.",
+    "Added a Do-NOT-SEGMENT example illustrating purpose/function prepositional phrases (e.g., 'für den Einsatz ... als Hilfsmittel') to show that such spans should be preserved as a single renderable stretch when appropriate."
+  ],
+  "size_budget": 19244,
+  "over_budget": false
+}

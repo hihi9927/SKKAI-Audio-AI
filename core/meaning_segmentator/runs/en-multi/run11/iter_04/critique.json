@@ -1,0 +1,258 @@
+{
+  "cases": [
+    {
+      "id": "en_us_151",
+      "error_type": "placement",
+      "span": "Virgin Group",
+      "evidence": "emitted 'had a bid' before seeing 'rejected', causing wrong agent/voice",
+      "cause": "wrong participant",
+      "proposed_rule": "Do not finalize subject/voice until the main verb that disambiguates agent or passive/active has been observed.",
+      "example_pair": {
+        "input": "Sir Richard Branson's Virgin Group had a bid for the bank rejected prior to the bank’s nationalisation.",
+        "output": "Sir Richard Branson's Virgin Group had a bid for the bank rejected <SEG:1> prior to the bank’s nationalisation."
+      }
+    },
+    {
+      "id": "en_us_268",
+      "error_type": "placement",
+      "span": "because it is the home",
+      "evidence": "emitted modifier ('home') before its head 'internet service provider AOL', producing 'home' attached to wrong noun",
+      "cause": "modifier scope",
+      "proposed_rule": "Delay emitting adjectives/nominal modifiers until the noun (head) they modify appears so scope is unambiguous.",
+      "example_pair": {
+        "input": "The case was prosecuted in Virginia because it is the home to the leading internet service provider AOL, the company who instigated the charges.",
+        "output": "The case was prosecuted in Virginia because it is the home to the leading internet service provider AOL, the company who instigated the charges.<SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_476",
+      "error_type": "placement",
+      "span": "Herostratus' name",
+      "evidence": "committed to affirmative assertion before negation 'never' arrived, reversing meaning",
+      "cause": "polarity not yet settled",
+      "proposed_rule": "Do not commit to affirmative/negative polarity for a predicate until following negation or polarity markers (e.g., 'never', 'not', concessives) are observed.",
+      "example_pair": {
+        "input": "According to the story, his motivation was fame at any cost. The Ephesians, outraged, announced that Herostratus' name never be recorded.",
+        "output": "According to the story, his motivation was fame at any cost. The Ephesians, outraged, announced that Herostratus' name never be recorded.<SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_1349",
+      "error_type": "placement",
+      "span": "are being met",
+      "evidence": "emitted affirmative predicate ('are being met') before seeing 'by ...' agent/instrument that reverses sense",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Wait to finalize a verb's sense or polarity when post‑verbal oblique phrases (e.g., 'by ...', 'with ...') that can alter meaning are still unread.",
+      "example_pair": {
+        "input": "Efforts to search for the crash site are being met by bad weather and harsh terrain.",
+        "output": "Efforts to search for the crash site are being met by bad weather and harsh terrain.<SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_123",
+      "error_type": "placement",
+      "span": "The United States embassy",
+      "evidence": "emitted host/location wording before 'located in Nairobi, Kenya', causing insertion of wrong host-country/building type",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Avoid committing to a host/location phrasing (or inserting a specific building type) for 'the X embassy' until any postnominal locative modifiers arrive; keep a neutral wording until location is known.",
+      "example_pair": {
+        "input": "The United States embassy located in Nairobi, Kenya has issued a warning that \"extremists from Somalia\" are planning to launch suicide bomb attacks in Kenya and Ethiopia.",
+        "output": "The United States embassy located in Nairobi, Kenya <SEG:1> has issued a warning that \"extremists from Somalia\" are planning to launch suicide bomb attacks in Kenya and Ethiopia."
+      }
+    },
+    {
+      "id": "en_us_687",
+      "error_type": "placement",
+      "span": "remove it from the coffin",
+      "evidence": "emitted modifiers and pronoun 'it' before verb/object arrived, causing wrong attachment and pronoun resolution",
+      "cause": "referent lost",
+      "proposed_rule": "Delay emitting pronouns or translating a verb phrase until the verb and its object/pronoun (and nearby modifiers) have been seen so antecedents and voice are resolvable.",
+      "example_pair": {
+        "input": "Anyone interested in seeing evidence of the damage to the mummy done during attempts to remove it from the coffin will be disappointed as only the head and shoulders are visible.",
+        "output": "Anyone interested in seeing evidence of the damage to the mummy done during attempts to remove it from the coffin <SEG:1> will be disappointed as only the head and shoulders are visible."
+      }
+    },
+    {
+      "id": "en_us_368",
+      "error_type": "placement",
+      "span": "to the heart",
+      "evidence": "finalized host noun ('heart') without its following prepositional modifier, producing 'heart is called veins' errors",
+      "cause": "modifier scope",
+      "proposed_rule": "Do not finalize/clamp the translation of a host noun when a following prepositional or relative modifier could attach; wait for the postmodifier.",
+      "example_pair": {
+        "input": "Blood goes away from the heart in tubes called arteries and comes back to the heart in tubes called veins. The smallest tubes are called capillaries.",
+        "output": "Blood goes away from the heart in tubes called arteries and comes back to the heart in tubes called veins.<SEG:1> The smallest tubes are called capillaries."
+      }
+    },
+    {
+      "id": "en_us_1278",
+      "error_type": "placement",
+      "span": "To understand the Templars",
+      "evidence": "specified creator/agent in relative clause early, producing incorrect attachment of 'creation' agent",
+      "cause": "wrong participant",
+      "proposed_rule": "Delay specifying agents/creators introduced by or resolved in a following relative clause until the head noun and its postmodifiers are available.",
+      "example_pair": {
+        "input": "To understand the Templars one must understand the context that prompted the creation of the order.",
+        "output": "To understand the Templars one must understand the context that prompted the creation of the order.<SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_857",
+      "error_type": "placement",
+      "span": "Carrying for others -",
+      "evidence": "translated 'others' as people (carrying people) before the head noun 'your bags' arrived",
+      "cause": "wrong participant",
+      "proposed_rule": "Do not commit to the patient/possessor interpretation of vague terms like 'others' until the head noun that disambiguates (e.g., 'bags') is read.",
+      "example_pair": {
+        "input": "Carrying for others - Never let your bags out of your sight, especially when you are crossing international borders.",
+        "output": "Carrying for others - Never let your bags out of your sight, especially when you are crossing international borders.<SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_1604",
+      "error_type": "placement",
+      "span": "thought the late 1970s",
+      "evidence": "translated 'through the late 1970s' as 'thought...' by cutting inside temporal prepositional phrase",
+      "cause": "other",
+      "proposed_rule": "Hold short temporal/prepositional adverbials (e.g., 'through', 'during') until their complement appears; translate them together with their noun phrase.",
+      "example_pair": {
+        "input": "As NSA, he assisted Carter in diplomatically handling world affairs, such as the Camp David Accords, 1978; normalizing US–China relations through the late 1970s; the Iranian Revolution, which led to the Iran hostage crisis, 1979; and the Soviet invasion in Afghanistan, 1979.",
+        "output": "As NSA, he assisted Carter in diplomatically handling world affairs, such as the Camp David Accords, 1978; normalizing US–China relations through the late 1970s; the Iranian Revolution, which led to the Iran hostage crisis, 1979; and the Soviet invasion in Afghanistan, 1979.<SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_990",
+      "error_type": "placement",
+      "span": "but flow down the mountain",
+      "evidence": "emitted verb phrase before confirming subject-number and coordinated noun phrases, causing agreement and duplication errors",
+      "cause": "other",
+      "proposed_rule": "Avoid emitting a fully conjugated verb until subject number/agreement is unambiguous; also wait for full coordinated noun phrases (and modifiers) before selecting distinct lexical equivalents.",
+      "example_pair": {
+        "input": "The glaciers are not stable, but flow down the mountain. This will cause cracks, crevasses, which may be obscured by snow bridges.",
+        "output": "The glaciers are not stable, but flow down the mountain. This will cause cracks, crevasses, which may be obscured by snow bridges.<SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_1380",
+      "error_type": "placement",
+      "span": "pyramid shaped towers",
+      "evidence": "split multiword adjectival compound ('pyramid shaped') from head, risking wrong attachment or degraded fluency",
+      "cause": "modifier scope",
+      "proposed_rule": "Keep multiword adjectival compounds and their head noun together (do not cut inside hyphenated or compound modifiers) so the modifier's attachment is clear.",
+      "example_pair": {
+        "input": "Sometimes special pyramid shaped towers, called ziggurats, were built to be a part of the temples.",
+        "output": "Sometimes special pyramid-shaped towers, called ziggurats, were built to be a part of the temples.<SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_973",
+      "error_type": "format_violation",
+      "span": "경계 6개 — 최소 7개 필요",
+      "evidence": "segmentation failed the minimum-tag requirement (too_few_tags)",
+      "cause": "other",
+      "proposed_rule": "If the sentence length or punctuation implies many units, add conservative low-confidence boundaries at safe breakpoints (commas, semicolons, conjunctions) so minimum tag counts are reachable.",
+      "example_pair": {
+        "input": "Nevertheless, all French-speaking Belgians and Swiss would have learned standard French in school, so they would be able to understand you even if you used the standard French numbering system.",
+        "output": "Nevertheless, <SEG:1> all French-speaking Belgians and Swiss <SEG:2> would have learned standard French in school, <SEG:3> so they would be able to understand you even if you used the standard French numbering system.<SEG:4>"
+      }
+    },
+    {
+      "id": "en_us_1591",
+      "error_type": "format_violation",
+      "span": "text modified by model",
+      "evidence": "model altered source text when inserting tags (rule 'text_modified') instead of inserting tags only",
+      "cause": "other",
+      "proposed_rule": "Do not rewrite or delete source words; insert segmentation tags only between original tokens and preserve punctuation and order exactly.",
+      "example_pair": {
+        "input": "Former House Speaker Newt Gingrich, Texas governor Rick Perry, and Congresswoman Michele Bachmann finished in fourth, fifth, and sixth place, respectively.",
+        "output": "Former House Speaker Newt Gingrich, <SEG:1> Texas governor Rick Perry, <SEG:2> and Congresswoman Michele Bachmann <SEG:3> finished in fourth, fifth, and sixth place, respectively."
+      }
+    }
+  ],
+  "summary": "Most failures are placement errors where the model cuts and emits before disambiguating material (main verb, locatives, negation, or noun heads) arrives, leading to wrong agents, polarity flips, modifier-scope mistakes and pronoun misresolution. The prompt should bias low confidence (later ranks) for boundaries that fall after commas or early relative/adverbial markers and introduce explicit rules to hold short prepositional/temporal/adjectival fragments until their complements appear.",
+  "aggregate": {
+    "dominant_error": "placement",
+    "error_counts": {
+      "placement": 12,
+      "format_violation": 2
+    },
+    "stuck_hint": "직전 개정이 [When to Segment], [Priority Rules], [Decision Procedure] 를 고쳤는데 채택에 실패했다. 같은 섹션을 같은 방식으로 다시 고치지 말 것 — 다른 섹션을 보거나 같은 섹션이라도 반대 방향(금지 추가가 아니라 완화)을 검토할 것",
+    "priority_audit": [
+      {
+        "feature": "뒤 구두점 ','",
+        "n": 20,
+        "rank_percentile": 0.414,
+        "contradiction": 0.1591,
+        "over_trust": 0.1536
+      },
+      {
+        "feature": "상대위치 1/3",
+        "n": 53,
+        "rank_percentile": 0.539,
+        "contradiction": 0.2328,
+        "over_trust": 0.0831
+      },
+      {
+        "feature": "상대위치 0/3",
+        "n": 66,
+        "rank_percentile": 0.572,
+        "contradiction": 0.1416,
+        "over_trust": 0.0276
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 133,
+        "rank_percentile": 0.674,
+        "contradiction": 0.2202,
+        "over_trust": -0.066
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 46,
+        "rank_percentile": 0.754,
+        "contradiction": 0.2662,
+        "over_trust": -0.184
+      }
+    ],
+    "judge_distribution": {
+      "n_boundaries_judged": 50,
+      "verdicts": {
+        "mistranslated": 23,
+        "safe": 21,
+        "premature": 5,
+        "reference_suspect": 1
+      },
+      "n_with_cause": 28,
+      "causes": {
+        "other": {
+          "n": 12,
+          "share": 0.429
+        },
+        "head not yet arrived": {
+          "n": 6,
+          "share": 0.214
+        },
+        "wrong participant": {
+          "n": 4,
+          "share": 0.143
+        },
+        "modifier scope": {
+          "n": 3,
+          "share": 0.107
+        },
+        "polarity not yet settled": {
+          "n": 2,
+          "share": 0.071
+        },
+        "mistranslated": {
+          "n": 1,
+          "share": 0.036
+        }
+      }
+    },
+    "max_missing_boundaries": 0.0,
+    "rank_lift": 0.13827,
+    "rank_lift_t": 2.99,
+    "summary": "Most failures are placement errors where the model cuts and emits before disambiguating material (main verb, locatives, negation, or noun heads) arrives, leading to wrong agents, polarity flips, modifier-scope mistakes and pronoun misresolution. The prompt should bias low confidence (later ranks) for boundaries that fall after commas or early relative/adverbial markers and introduce explicit rules to hold short prepositional/temporal/adjectival fragments until their complements appear."
+  }
+}

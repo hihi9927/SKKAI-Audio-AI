@@ -1,0 +1,155 @@
+{
+  "cases": [
+    {
+      "id": "en_us_164",
+      "error_type": "placement",
+      "span": "ship, the ship",
+      "evidence": "Emitter produced a pronoun/tense ('それは もうすぐ来る') before destination arrived; contradicted by rest.",
+      "cause": "referent lost",
+      "proposed_rule": "Never cut after an NP/appositive that leaves the main verb or its complements (destination, temporal adjunct) unseen; wait until the verb and its complements appear before segmenting.",
+      "example_pair": {
+        "input": "An Avenger class mine countermeasures ship, the ship was on its way to Puerto Princesa in Palawan.",
+        "output": "An Avenger class mine countermeasures ship, the ship was on its way <SEG:1> to Puerto Princesa in Palawan."
+      }
+    },
+    {
+      "id": "en_us_565",
+      "error_type": "placement",
+      "span": "regular weekly structured PA",
+      "evidence": "'weekly' was rendered as a magazine before the head noun arrived ('週刊誌'); modifier translated out of context.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not place a boundary between modifiers (adjectives/adverbs like 'regular', 'weekly', 'structured') and the following noun; delay translating modifiers until the head noun is visible.",
+      "example_pair": {
+        "input": "Only the effects of catastrophizing, not depression and fear was conditional of regular weekly structured PA sessions.",
+        "output": "Only the effects of catastrophizing, not depression and fear was conditional of regular weekly structured PA sessions <SEG:1>."
+      }
+    },
+    {
+      "id": "en_us_1000",
+      "error_type": "placement",
+      "span": "an alleged Daesh (ISIL) militant",
+      "evidence": "Rendered 'militant' as a group ('武装勢力') after the cut; entity type/number and qualifier ('alleged') lost.",
+      "cause": "other",
+      "proposed_rule": "Avoid segmenting inside entity NPs that contain determiners/qualifiers or parenthetical names; wait for the NP head and its qualifiers so entity type and number are preserved.",
+      "example_pair": {
+        "input": "Police said they suspect an alleged Daesh (ISIL) militant of responsibility for the attack.",
+        "output": "Police said they suspect an alleged Daesh (ISIL) militant of responsibility for the attack <SEG:1>."
+      }
+    },
+    {
+      "id": "en_us_857",
+      "error_type": "placement",
+      "span": "Carrying for others -",
+      "evidence": "Phrase translated as 'carrying people' instead of 'carrying others' possessions' when cut before the following noun phrase; participant confused.",
+      "cause": "wrong participant",
+      "proposed_rule": "Delay segmenting after prepositional adjuncts like 'for X' (or 'for others') when the following noun or clause that disambiguates possession vs. persons is not yet visible.",
+      "example_pair": {
+        "input": "Carrying for others - Never let your bags out of your sight, especially when you are crossing international borders.",
+        "output": "Carrying for others - Never let your bags out of your sight, especially when you are crossing international borders <SEG:1>."
+      }
+    },
+    {
+      "id": "en_us_491",
+      "error_type": "placement",
+      "span": "he did give way",
+      "evidence": "Translated as a generic transfer ('handed things over') before object/complement arrived; verb sense depends on its complement.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not segment immediately after verbs that commonly take a following object or prepositional complement (e.g. 'give way', 'hand over', 'agree to'); wait for the object/complement to appear or mark such boundaries low-confidence.",
+      "example_pair": {
+        "input": "Although in the end, Krushchev sent in tanks to restore order, he did give way to some economic demands and agreed to appoint the popular Wladyslaw Gomulka as the new prime minister.",
+        "output": "Although in the end, Krushchev sent in tanks to restore order, he did give way to some economic demands and agreed to appoint the popular Wladyslaw Gomulka as the new prime minister <SEG:1>."
+      }
+    }
+  ],
+  "summary": "Most harmful cuts happen inside noun phrases or before verb complements: modifiers, appositives, determiners/qualifiers and prepositional complements are being segmented off too early and the translator guesses wrong. Also the ranker over-trusts punctuation-adjacent cuts (commas/appositives); demote boundaries that coincide with commas when they leave NP heads, verb complements, or disambiguating nouns unseen.",
+  "aggregate": {
+    "dominant_error": null,
+    "dominant_basis": "No corpus rate identifies a dominant failure. Read the cases and `judge_distribution` for WHICH mechanism to fix — do not infer a rate from `case_label_counts`, those cases were selected for being the worst.",
+    "measured_rates": {
+      "coverage": {
+        "n": 0,
+        "of_n": 40,
+        "rate": 0.0,
+        "of": "all sentences scored — a true corpus rate",
+        "meaning": "sentences where the tightest budget asked for boundaries the prompt never marked, so pieces are missing outright"
+      },
+      "premature_among_judged": {
+        "n": 5,
+        "of_n": 10,
+        "rate": 0.5,
+        "of": "boundaries judged this iteration, selected as the WORST by measured contradiction — NOT a corpus rate, do not compare it against `coverage`"
+      }
+    },
+    "case_label_counts": {
+      "counts": {
+        "placement": 5
+      },
+      "of_n": 5,
+      "of": "the selected worst cases — NOT a rate"
+    },
+    "stuck_hint": "",
+    "priority_audit": [
+      {
+        "feature": "뒤 구두점 ','",
+        "n": 18,
+        "rank_percentile": 0.412,
+        "contradiction": 0.0789,
+        "over_trust": 0.184
+      },
+      {
+        "feature": "상대위치 1/3",
+        "n": 53,
+        "rank_percentile": 0.579,
+        "contradiction": 0.0969,
+        "over_trust": 0.0373
+      },
+      {
+        "feature": "상대위치 0/3",
+        "n": 66,
+        "rank_percentile": 0.585,
+        "contradiction": 0.0427,
+        "over_trust": 0.0136
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 135,
+        "rank_percentile": 0.667,
+        "contradiction": 0.0914,
+        "over_trust": -0.0584
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 46,
+        "rank_percentile": 0.69,
+        "contradiction": 0.1358,
+        "over_trust": -0.1223
+      }
+    ],
+    "judge_distribution": {
+      "n_boundaries_judged": 10,
+      "verdicts": {
+        "safe": 5,
+        "mistranslated": 5
+      },
+      "n_with_cause": 5,
+      "causes": {
+        "other": {
+          "n": 3,
+          "share": 0.6
+        },
+        "head not yet arrived": {
+          "n": 1,
+          "share": 0.2
+        },
+        "wrong participant": {
+          "n": 1,
+          "share": 0.2
+        }
+      }
+    },
+    "max_missing_boundaries": 0.0,
+    "rank_lift": 0.09058,
+    "rank_lift_t": 2.37,
+    "summary": "Most harmful cuts happen inside noun phrases or before verb complements: modifiers, appositives, determiners/qualifiers and prepositional complements are being segmented off too early and the translator guesses wrong. Also the ranker over-trusts punctuation-adjacent cuts (commas/appositives); demote boundaries that coincide with commas when they leave NP heads, verb complements, or disambiguating nouns unseen."
+  }
+}

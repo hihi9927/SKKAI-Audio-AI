@@ -1,0 +1,16 @@
+[
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "The game is based on the Second Battle of Fallujah, a vicious battle between American and Iraqi forces.",
+    "seg_text": "The game is <SEG:2> based on the Second Battle of Fallujah, <SEG:1> a vicious battle <SEG:3> between American and Iraqi forces.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 6개 필요",
+    "text": "Downhill skiing as a sport goes back to at least the 17th century, and in 1861 the first recreational ski club was opened by Norwegians in Australia.",
+    "seg_text": "Downhill skiing as a sport goes back <SEG:3> to at least the 17th century, <SEG:2> and in 1861 <SEG:4> the first recreational ski club <SEG:1> was opened by Norwegians in Australia.",
+    "first_pass": true
+  }
+]

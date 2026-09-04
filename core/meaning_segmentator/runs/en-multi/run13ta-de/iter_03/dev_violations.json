@@ -1,0 +1,16 @@
+[
+  {
+    "id": "en_us_170",
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Perry specifically said, \"There are few places in the world better equipped to meet the challenge that is posed in this case.\"",
+    "seg_text": "Perry specifically said, <SEG:1> \"There are few <SEG:6> places in the <SEG:5> world better equipped <SEG:4> to meet the <SEG:3> challenge that is <SEG:2> posed in this case."
+  },
+  {
+    "id": "en_us_252",
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "The death toll is at least 15, a figure which is expected to rise.",
+    "seg_text": "The death toll <SEG:2> is at least 15, a figure <SEG:1> which is expected to rise."
+  }
+]

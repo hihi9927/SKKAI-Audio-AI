@@ -1,0 +1,48 @@
+{
+  "source_language": "Chinese (Mandarin, written)",
+  "word_order": "SVO | Examples like “消防指挥系统的例行测试 引发 了一场电力故障” (主语—动词—宾语) show canonical SVO order in the sample.",
+  "register": "written, formal informational text (news reports, encyclopedic/technical descriptions, web copy).",
+  "fillers_and_hesitations": [],
+  "discourse_markers": [
+    "然而",
+    "与...相比",
+    "以及",
+    "根据...描述",
+    "报道(说)",
+    "继续说道",
+    "意思是",
+    "请随意"
+  ],
+  "clause_boundary_signals": [
+    "导致",
+    "引发(了)?",
+    "使(得)?",
+    "在...时",
+    "包括",
+    "是 (copula introducing a predicate noun phrase)",
+    "根据...描述",
+    "报道(说)",
+    "继续说道"
+  ],
+  "non_boundary_traps": [
+    "的 (attributive/nominalizer; inside NP, not a clause end)",
+    "和",
+    "与",
+    "及",
+    "包括...（列表内部）",
+    "数字/日期短语 (例如 “1759 年 9 月 24 日”)",
+    "括号、引号内的内容 (parentheticals/quotes are often embedded, not clause-final)"
+  ],
+  "unstable_prefix_signals": [
+    "在",
+    "根据",
+    "是",
+    "包括",
+    "导致",
+    "使得",
+    "引发",
+    "报道(说)",
+    "继续说道"
+  ],
+  "notes_for_prompt_writer": "Treat verbs like 导致/引发/使得 and reporting verbs (报道、说道) as clause heads that usually require their following object/complement before finalizing a segment. Avoid splitting immediately after nominal modifiers marked by 的, and do not finalize on simple coordinators (和/与/及) or inside parentheticals/quoted descriptions. Wait for the end of a prepositional or temporal phrase starting with 在, a list introduced by 包括, or a comparative phrase 与...相比 before emitting a translation unit."
+}

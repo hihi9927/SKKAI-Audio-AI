@@ -1,0 +1,219 @@
+[
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "The outbreak has prompted the Indian government to undertake such measures as deployment of pig catchers in seriously affected areas, distributing thousands of mosquito curtains and spraying pesticides.",
+    "seg_text": "The outbreak has prompted <SEG:5> the Indian government to undertake such measures <SEG:2> as deployment of pig catchers <SEG:3> in seriously affected areas, <SEG:1> distributing thousands of mosquito curtains <SEG:4> and spraying pesticides.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Architecture is concerned with the design and construction of buildings. The architecture of a place is often a tourist attraction in its own right.",
+    "seg_text": "Architecture is concerned with the design and construction <SEG:3> of buildings. The architecture <SEG:4> of a place is <SEG:2> often a tourist attraction <SEG:1> in its own right.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "If using a drone, check well in advance as to what you are allowed to film and what permits or additional licensing are required.",
+    "seg_text": "If using a drone, <SEG:1> check well in advance <SEG:3> as to what you <SEG:4> are allowed to film <SEG:2> and what permits or additional licensing are required.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "This is common practice elsewhere in the UK but Scottish justice works differently and courts have viewed publication of photos as potentially prejudicial.",
+    "seg_text": "This is common practice elsewhere in the UK <SEG:2> but Scottish justice works differently <SEG:1> and courts have viewed <SEG:4> publication of photos <SEG:3> as potentially prejudicial.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "One of the panes finally broke, and they started to get out by the window,\" said survivor Franciszek Kowal.",
+    "seg_text": "One of the panes finally broke, <SEG:4> and they started <SEG:3> to get out <SEG:2> by the window, <SEG:1> said survivor Franciszek Kowal.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "If you visit Greenland during cold seasons (considering that the further north you go, the colder it will be), it is essential to bring warm enough clothing.",
+    "seg_text": "If you visit <SEG:5> Greenland during cold seasons <SEG:3> (considering that the further north you go, <SEG:4> the colder it will be), <SEG:2> it is essential <SEG:1> to bring warm enough clothing.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Majorcan cuisine, like that of similar zones in the Mediterranean, is based on bread, vegetables and meat (specially pork), and uses olive oil throughout.",
+    "seg_text": "Majorcan cuisine, like that of similar zones <SEG:4> in the Mediterranean, <SEG:2> is based on bread, <SEG:3> vegetables and meat <SEG:1> (specially pork), and uses olive oil throughout.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Lodin also said officials decided to cancel the runoff in order to save Afghans the expense and security risk of another election.",
+    "seg_text": "Lodin also said officials decided <SEG:4> to cancel the runoff <SEG:1> in order to save <SEG:3> Afghans the expense and security <SEG:2> risk of another election.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "In the 16th century Paraguay, formerly called \"The Giant Province of the Indies\", was born as a result of the encounter of Spanish conquerors with the native indigenous groups.",
+    "seg_text": "In the 16th <SEG:3> century Paraguay, formerly <SEG:5> called \"The Giant <SEG:4> Province of the Indies\", was born <SEG:1> as a result <SEG:2> of the encounter of Spanish conquerors with the native indigenous groups.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "While authorities are unsure of the credibility of the threat, the Maryland Transportaion Authority made the closure with the urging of the FBI.",
+    "seg_text": "While authorities are unsure <SEG:4> of the credibility of <SEG:3> the threat, the Maryland <SEG:2> Transportaion Authority made <SEG:1> the closure with the urging of the FBI.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "When the fighting ceased after the wounded were transported to the hospital, about 40 of the other remaining inmates stayed in the yard and refused to return to their cells.",
+    "seg_text": "When the fighting ceased <SEG:6> after the wounded were transported <SEG:5> to the hospital, <SEG:1> about 40 of the other remaining inmates <SEG:3> stayed in the yard <SEG:2> and refused to return <SEG:4> to their cells.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Personal VPN (virtual private network) providers are an excellent way of circumventing both political censorship and commercial IP-geofiltering.",
+    "seg_text": "Personal VPN (virtual private network) providers <SEG:1> are an excellent <SEG:3> way of circumventing both political censorship <SEG:2> and commercial IP-geofiltering.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Doctors began to be recruited by Emperor Augustus and even formed the first Roman Medical Corps for use in the aftermath of battles.",
+    "seg_text": "Doctors began to be recruited <SEG:3> by Emperor Augustus <SEG:1> and even formed <SEG:4> the first Roman Medical Corps <SEG:2> for use in the aftermath of battles.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Yesterday, the post office released their apology to citizens and the media after discovering that the boy had hidden more than 600 postal documents, including 429 New Year postcards, which weren't delivered to their intended recipients.",
+    "seg_text": "Yesterday, the post office their <SEG:7> apology to citizens <SEG:6> and the media <SEG:1> after discovering that the boy <SEG:5> had hidden more <SEG:4> than 600 postal documents, including 429 <SEG:3> New Year postcards, <SEG:2> which weren't delivered to their intended recipients.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 8개 필요",
+    "text": "Yesterday, the post office released their apology to citizens and the media after discovering that the boy had hidden more than 600 postal documents, including 429 New Year postcards, which weren't delivered to their intended recipients.",
+    "seg_text": "Yesterday, the post office their <SEG:7> apology to citizens <SEG:6> and the media <SEG:1> after discovering that the boy <SEG:5> had hidden more <SEG:4> than 600 postal documents, including 429 <SEG:3> New Year postcards, <SEG:2> which weren't delivered to their intended recipients.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "However, a nationwide road network is not economically viable for just a handful of cars, so new methods of production are developed to reduce the cost of car ownership.",
+    "seg_text": "However, a nationwide road network <SEG:4> is not economically viable <SEG:2> for just a handful of cars, <SEG:1> so new methods of <SEG:5> production are developed <SEG:3> to reduce the cost of car ownership.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "The station maintained its attitude, despite the loss of a gyroscope earlier in the space station mission, until the end of the spacewalk.",
+    "seg_text": "The station maintained its attitude, <SEG:1> despite the loss of a gyroscope <SEG:3> earlier in the space station mission, <SEG:2> until the end <SEG:4> of the spacewalk.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "The Indus Valley Civilization was a Bronze Age civilisation in the northwest Indian subcontinent encompassing most of modern-day Pakistan and some regions in northwest India and northeast Afghanistan.",
+    "seg_text": "The Indus Valley <SEG:5> Civilization was a Bronze <SEG:4> Age civilisation in the <SEG:2> northwest Indian subcontinent encompassing most of modern-day Pakistan <SEG:1> and some regions in <SEG:3> northwest India and northeast Afghanistan.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "This includes waiting in line, as drug-sniffing dogs could be used at any time without notice.",
+    "seg_text": "This includes waiting in line, <SEG:1> as drug-sniffing dogs could <SEG:2> be used at any time without notice.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "While you may not need a visa for short visits to certain countries as a tourist or for business, going there as an international student generally requires a longer stay than going there just as a casual tourist.",
+    "seg_text": "While you may <SEG:9> not need a <SEG:8> visa for short <SEG:7> visits to certain <SEG:6> countries as a <SEG:1> tourist or for business, <SEG:5> going there as an <SEG:2> international student generally <SEG:4> requires a longer stay <SEG:3> than going there just as a casual <SEG: ? >",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "Jardín de la Unión. This space was built as the atrium for a 17th-century convent, of which the Templo de San Diego is the sole surviving building.",
+    "seg_text": "Jardín de la Unión. <SEG:1> This space was <SEG:5> built as the atrium <SEG:3> for a 17th-century convent, <SEG:2> of which the Templo de San Diego <SEG:4> is the sole surviving building.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "At the time, nearly 100 residents were evacuated from the area.",
+    "seg_text": "At the time, nearly 100 residents were evacuated <SEG:1> from the area.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "The sign was not physically damaged; the modification was done using black tarpaulins decorated with signs of peace and heart to alter the \"O\" to read lowercase \"e\".",
+    "seg_text": "The sign was not physically damaged; <SEG:1> the modification was done using black tarpaulins <SEG:3> decorated with signs <SEG:4> of peace and heart <SEG:2> to alter the \"O\" <SEG:5> to read lowercase \"e\".",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "I lost my sister and her friend, and on my way there were two disabled people in wheelchairs, people just jumping over and pushing them,\" Armand Versace said.",
+    "seg_text": "I lost my sister <SEG:3> and her friend, <SEG:4> and on my way there <SEG:5> were two disabled <SEG:6> people in wheelchairs, <SEG:2> people just jumping over and pushing them, <SEG:1> Armand Versace said.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "The AI ​​system is now often used in the fields of economics, medicine, engineering and the military, as has been built in several home computer and video game software applications.",
+    "seg_text": "The AI system <SEG:7> is now often <SEG:6> used in the fields <SEG:3> of economics, medicine, <SEG:4> engineering and the military, <SEG:1> as has been built <SEG:2> in several home <SEG:5> computer and video game software applications.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Every corner store is filled with a confusing array of pre-paid phone cards that can be used from pay phones or ordinary telephones.",
+    "seg_text": "Every corner store is <SEG:4> filled with a <SEG:3> confusing array of pre-paid <SEG:2> phone cards that can be <SEG:1> used from pay phones or ordinary telephones.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Mutations can have a variety of different effects depending on the type of mutation, the significance of the piece of genetic material affected and whether the cells affected are germ-line cells.",
+    "seg_text": "Mutations can have <SEG:6> a variety of different effects <SEG:1> depending on the type of mutation, <SEG:2> the significance of the piece <SEG:3> of genetic material <SEG:4> affected and whether <SEG:5> the cells affected <SEG:??> are germ-line cells.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "Mutations can have a variety of different effects depending on the type of mutation, the significance of the piece of genetic material affected and whether the cells affected are germ-line cells.",
+    "seg_text": "Mutations can have <SEG:6> a variety of different effects <SEG:1> depending on the type of mutation, <SEG:2> the significance of the piece <SEG:3> of genetic material <SEG:4> affected and whether <SEG:5> the cells affected <SEG:??> are germ-line cells.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "The great pyramid was created to honor the Pharaoh Khufu, and many of the smaller pyramids, tombs, and temples were built to honor Khufu's wives and family members.",
+    "seg_text": "The great pyramid <SEG:3> was created to honor the Pharaoh Khufu, <SEG:1> and many of the <SEG:4> smaller pyramids, tombs, and temples were built <SEG:2> to honor Khufu's wives <SEG:5> and family members.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "For example visiting castles in the Loire Valley, the Rhine valley or taking a cruise to interesting cites on the Danube or boating along the Erie Canal.",
+    "seg_text": "For example visiting castles <SEG:1> in the Loire Valley, <SEG:2> the Rhine valley or <SEG:3> taking a cruise to <SEG:4> interesting cites on the Danube or <SEG:5> boating along the Erie Canal.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "The tiger is in the same group (Genus Panthera) as lions, leopards, and jaguars. These four cats are the only ones who can roar.",
+    "seg_text": "The tiger is in the <SEG:4> same group (Genus Panthera) <SEG:1> as lions, leopards, and jaguars. <SEG:2> These four cats are the only ones <SEG:3> who can roar.",
+    "first_pass": true
+  }
+]

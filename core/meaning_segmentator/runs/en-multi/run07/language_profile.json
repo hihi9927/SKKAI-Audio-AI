@@ -1,0 +1,59 @@
+{
+  "source_language": "English",
+  "word_order": "SVO | Samples consistently show subject + finite verb + object/complement order (e.g. 'The game is based...', 'Police said they suspect...').",
+  "register": "encyclopedic / formal informational prose (Wikipedia-style articles: factual, edited, non-spontaneous).",
+  "fillers_and_hesitations": [],
+  "discourse_markers": [
+    "and",
+    "but",
+    "or",
+    "because",
+    "although",
+    "when",
+    "as",
+    "such as",
+    "especially",
+    "that",
+    "which",
+    "who",
+    "pending"
+  ],
+  "clause_boundary_signals": [
+    "and",
+    "but",
+    "or",
+    "because",
+    "although",
+    "when",
+    "as",
+    "that",
+    "which",
+    "who",
+    "such as",
+    "pending",
+    "so (implicit)"
+  ],
+  "non_boundary_traps": [
+    "which",
+    "that",
+    "who",
+    "called",
+    "such as",
+    "pending",
+    "as (in subordinate/role phrases)",
+    "parenthetical acronyms or names (e.g. ISIL, St )",
+    "enumeration introducers (e.g. 'such as')"
+  ],
+  "unstable_prefix_signals": [
+    "which",
+    "that",
+    "who",
+    "called",
+    "such as",
+    "as",
+    "pending",
+    "seeing",
+    "in (when followed by temporal/place phrases)"
+  ],
+  "notes_for_prompt_writer": "Source sentences are edited, information-dense and frequently contain nested relative clauses, appositions and comma-delimited parentheticals. Prefer to hold segmentation when you encounter relative/complementizer tokens (which/that/who), appositive markers (called, such as, pending, as) or an initial prepositional/date phrase, since they often attach to the preceding noun. You can split more aggressively at coordinating conjunctions joining independent clauses (and, but, or) but verify the preceding clause is truly independent and not part of an appositive or enumerative list."
+}

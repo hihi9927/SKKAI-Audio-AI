@@ -1,0 +1,22 @@
+{
+  "sections_changed": [
+    "[Core Principles]",
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "sections_reported": [
+    "[Core Principles]",
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "changelog": [
+    "Core Principles: Shifted emphasis from demoting risky cuts to actively promoting clearly safe cuts; make risk signals lightweight and local so fewer good boundaries are suppressed.",
+    "When to Segment: Tightened when commas count as safe (require explicit clause closure or coordinating join) and added precise surface tests for short lookahead checks that identify the few high-risk patterns from the critic (coordinated participants after 'between/among', incomplete verb phrases with an immediate object/infinitival marker, passive + 'by', preposed role phrases 'As <TITLE>', contrastive markers). These are used only to avoid promoting a candidate, not to ban candidacy.",
+    "Priority Rules: Replaced coarse rank buckets with a simple additive scoring procedure: start with a promotion for clause closure, add points for independent corroborating signals, subtract small penalty points for local risk signals (within 2–3 tokens). This makes rank decisions decidable from surface form and avoids broad over-demotion.",
+    "Decision Procedure: Make candidacy maximally generous (surface-only) and move all short lookahead checks into the scoring step; require a strict sorted ranking output but explain tie-breaking and how penalties are small so risky cuts remain available as low-ranked options."
+  ],
+  "size_budget": 20313,
+  "over_budget": false
+}

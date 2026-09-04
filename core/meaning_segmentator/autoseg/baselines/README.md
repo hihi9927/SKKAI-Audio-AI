@@ -85,7 +85,7 @@ wav2vec2 CTC 와 교차검증했고 **조건 LAAL 이 최대 22.3ms 차이**로 
 
 `syntax` 가 쓰는 `en_core_web_trf` 는 `spacy-transformers` 를 요구하고, 그것이
 **`transformers<4.50` 을 강제해 레포 핀(4.57.6)을 깬다.** 한 번 이 사고가 있었다.
-반드시 격리 venv 에서만 돌릴 것 — `scratchpad/spacyenv` (system-site-packages 로 생성).
+반드시 격리 venv 에서만 돌릴 것 — `~/.venvs/spacyenv` (레포 밖 완전 격리. `core/meaning_segmentator/tools/covost2_chain/15_spacy_env.sh` 가 만든다).
 
 `bleu_eval` 은 `metrics_ast._bleu_metric` 의 `lru_cache` 에 의존한다. 이걸 되돌리면
 `ja-mecab` 이 호출마다 MeCab Tagger 를 만들어 ipadic 4파일을 mmap 하고, 1.6만 회에서
