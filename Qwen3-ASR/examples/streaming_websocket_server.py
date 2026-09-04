@@ -12,7 +12,9 @@ Client protocol (WhisperLiveKit app compatible):
     1. Connect to WebSocket
     2. Send JSON: {"type": "start", "lang": "auto", "polish": true, "translate": true}
     3. Send binary audio chunks (PCM s16le, 16kHz, mono)
-    4. Receive JSON: {"type": "partial", ...} or {"type": "final", ...}
+    4. Receive JSON: {"type": "partial", "text", "language", "seq"}  (미확정 가설, 통째 교체.
+       text 가 빈 문자열이면 화면을 비우라는 신호)
+       또는 {"type": "final", "start", "end", "original", "translation", "language", "commitReason"}
     5. Send JSON: {"type": "stop"} or {"type": "finish"} to end session
 """
 
@@ -120,6 +122,8 @@ logger = logging.getLogger(__name__)
 SAMPLING_RATE = 16000
 MAX_AUDIO_ACCUM_SEC = 90.0          # audio_accum 강제 리셋 임계값 (초)
 MAX_SEED_COMMITTED_SENTENCES = 1    # 강제 리셋 시 seed_text에 포함할 직전 committed 문장 수
+PARTIAL_MIN_INTERVAL_SEC = 0.12     # partial(미확정 가설) 전송 최소 간격 (초)
+
 # VADIterator 설정
 VAD_THRESHOLD = 0.5
 VAD_MIN_SILENCE_MS = 800       # 발화 종료 판정까지 필요한 침묵 길이
@@ -663,6 +667,11 @@ class Qwen3ASRStreamingHandler:
         self.stream_slots: dict[str, dict] = {}
         self.vad_last_speech_start_sample: int = 0  # 마지막 VAD speech_start 글로벌 샘플 위치
 
+        # partial(토큰 단위 미확정 가설) 스트리밍 상태
+        self._last_partial_text: Optional[str] = None
+        self._last_partial_time: float = 0.0
+        self._partial_seq: int = 0
+
         # ── silero-vad 초기화 (VADIterator 사용) ──
         # 서버에서 미리 로드한 vad_model_bytes로 클라이언트마다 독립 인스턴스 생성.
         self.vad_enabled = False
@@ -690,6 +699,10 @@ class Qwen3ASRStreamingHandler:
     async def send_message(self, msg_type: str, **kwargs):
         """JSON 메시지 전송"""
         message = {"type": msg_type, **kwargs}
+        if msg_type == "final":
+            # 방금 확정된 구간은 더 이상 미확정이 아니다. partial 캐시를 무효화해 두면
+            # 다음 _emit_partial이 같은 문자열이더라도 반드시 다시 나간다.
+            self._last_partial_text = None
         try:
             await self.websocket.send(json.dumps(message, ensure_ascii=False))
             self.log.debug(f"Sent: {msg_type}")
@@ -707,6 +720,9 @@ class Qwen3ASRStreamingHandler:
         self.state = self.stream_slots[self.active_slot]["state"]
         self.segment_start_time = 0.0
         self.current_time = 0.0
+        self._last_partial_text = None
+        self._last_partial_time = 0.0
+        self._partial_seq = 0
         self.log.info("Streaming state initialized")
 
         # reset VAD
@@ -951,6 +967,49 @@ class Qwen3ASRStreamingHandler:
             return ""
         return re.sub(r'\s+', ' ', uncommitted_raw.replace("<SEG>", "")).strip()
 
+    async def _emit_partial(self, slot_key: Optional[str] = None, force: bool = False) -> None:
+        """미확정 구간(아직 커밋되지 않은 텍스트)을 partial 메시지로 전송.
+
+        보내는 문자열은 항상 통째로 교체할 전체 텍스트다. 모델이 unfixed_token_num
+        만큼 롤백 후 재디코딩하므로 꼬리 토큰은 확정이 아니고, append 방식으로는
+        정합성을 못 맞춘다.
+
+        빈 문자열은 "화면을 비우라"는 신호로 그대로 전송한다.
+        """
+        now = time.perf_counter()
+        # 시간 게이트를 먼저 본다. _slot_uncommitted_display 는 difflib 비교까지
+        # 도는 계산이라, 매 토큰 돌리면 디코딩 루프에 그대로 얹힌다.
+        if not force and now - self._last_partial_time < PARTIAL_MIN_INTERVAL_SEC:
+            return
+        text = self._slot_uncommitted_display(slot_key)
+        # 디코딩 중에는 빈 문자열을 보내지 않는다. 청크마다 <asr_text> 직후 잠깐
+        # 텍스트가 비는 순간이 있어, 그대로 흘리면 청크 경계마다 화면이 한 번
+        # 깜빡인다. 화면 비우기는 커밋/리셋 뒤 force 경로에서만 내보낸다.
+        if not text and not force:
+            return
+        prev = self._last_partial_text
+        if not force and prev and text != prev and prev.startswith(text):
+            # 재디코딩 램프업. 청크마다 롤백 후 처음부터 다시 디코딩하므로 직전
+            # 텍스트의 앞부분만 나오는 순간이 있다(예: 'I really like.' -> 'I').
+            # 그대로 흘리면 화면이 줄었다 늘었다 한다. 진짜 수정(prefix 가 아닌
+            # 다른 텍스트)은 이 조건에 안 걸리고, 이 억제로 화면이 뒤처지더라도
+            # 청크 끝 force 재동기화가 한 청크 안에 바로잡는다.
+            return
+        if text == prev:
+            # 안 보내더라도 시계는 전진시킨다. 안 그러면 텍스트가 멈춰 있는 동안
+            # 매 토큰 위 계산을 다시 돌게 된다.
+            self._last_partial_time = now
+            return
+        self._last_partial_text = text
+        self._last_partial_time = now
+        self._partial_seq += 1
+        await self.send_message(
+            "partial",
+            text=text,
+            language=self._slot(slot_key).get("last_text_lang", ""),
+            seq=self._partial_seq,
+        )
+
     def _build_forced_reset_seed(self, slot_key: str, remaining: str) -> str:
         """강제 리셋용 seed_text: 마지막 N committed 문장 + remaining"""
         slot = self._slot(slot_key)
@@ -985,6 +1044,13 @@ class Qwen3ASRStreamingHandler:
             # 마지막 문장도 finish까지 안 기다리고 dot으로 즉시 커밋되게 함.
             await self._process_slot_updates(slot_key)
 
+        async def _on_partial(_):
+            # 화면에 뜨는 건 active 슬롯의 텍스트뿐이다. standby 슬롯 가설을
+            # 흘리면 두 개가 번갈아 덮어써서 화면이 튄다.
+            if slot_key is not None and slot_key != self.active_slot:
+                return
+            await self._emit_partial(slot_key)
+
         async with self.asr_lock:
             lora_request = self._get_lora_request(slot["state"])
 
@@ -995,6 +1061,7 @@ class Qwen3ASRStreamingHandler:
             await self.asr.streaming_transcribe(
                 chunk, slot["state"], lora_request=lora_request, on_seg=_on_seg,
                 on_dot=_on_dot if self.enable_dot_commit else None,
+                on_partial=_on_partial,
             )
         finally:
             self._in_generate_loop = False
@@ -1030,6 +1097,7 @@ class Qwen3ASRStreamingHandler:
                 self.state = self.stream_slots[self.active_slot]["state"]
             async with self.asr_lock:
                 self.asr_processed_cursor = self.sample_cursor
+            await self._emit_partial(slot_key, force=True)
             return
 
         _committed_text_snapshot = await self._process_slot_updates(slot_key, chunk_end=True)
@@ -1125,6 +1193,10 @@ class Qwen3ASRStreamingHandler:
                     self.log.info(
                         f"[COMMIT-PENDING] slot={slot_key} remaining={remaining!r}"
                     )
+
+        # 커밋/슬롯 리셋이 끝난 실제 상태로 화면을 재동기화한다. 리셋이 일어났으면
+        # 미확정 구간이 비어 빈 문자열이 나가고, 클라이언트의 유령 텍스트가 지워진다.
+        await self._emit_partial(slot_key, force=True)
 
         async with self.asr_lock:
             self.asr_processed_cursor = self.sample_cursor
@@ -2228,6 +2300,17 @@ class Qwen3ASRStreamingHandler:
         # (실측: 6128-63241-0006 등 6건이 빈 전사).
         await self._drain_deferred_commits()
         await self.flush_uncommitted(force=True, reason="finish", slot_key=self.active_slot)
+        # 스트림이 끝났으니 클라이언트에 남은 미확정 말풍선을 지운다.
+        await self._send_partial_clear()
+
+    async def _send_partial_clear(self) -> None:
+        """미확정 말풍선을 비우라는 신호(빈 문자열 partial)를 무조건 보낸다."""
+        if self._last_partial_text == "":
+            return
+        self._last_partial_text = ""
+        self._last_partial_time = time.perf_counter()
+        self._partial_seq += 1
+        await self.send_message("partial", text="", language="", seq=self._partial_seq)
 
     # ── 서브클래스 훅 ──────────────────────────────────────────────────────────
 

@@ -350,8 +350,8 @@ const LangPickerSheet = ({
   );
 };
 
-const BubbleItem = ({ entry, myLangCode, targetLangCode }: {
-  entry: TranscriptionEntry; myLangCode: string; targetLangCode: string;
+const BubbleItem = ({ entry, myLangCode, targetLangCode, dim }: {
+  entry: TranscriptionEntry; myLangCode: string; targetLangCode: string; dim?: boolean;
 }) => {
   const isMine = entry.language === myLangCode;
   const isPeer = entry.language === targetLangCode;
@@ -373,7 +373,11 @@ const BubbleItem = ({ entry, myLangCode, targetLangCode }: {
 
   return (
     <Animated.View style={[S.bubbleRow, isMine && S.bubbleRowMine, {
-      opacity: slideAnim,
+      // dim = 아직 확정되지 않은 partial. 애니메이션 opacity와 겹치면 안 되므로
+      // 스타일을 덧씌우지 않고 interpolate 목표값을 낮춘다.
+      opacity: dim
+        ? slideAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 0.55] })
+        : slideAnim,
       transform: [{ translateY: slideAnim.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }) }],
     }]}>
       <View style={[S.avatar, { backgroundColor: clr.avatar }]}>
@@ -423,6 +427,8 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
   const [menuPage, setMenuPage] = useState<null | 'privacy' | 'terms' | 'delete' | 'about'>(null);
 
   const [transcriptions, setTranscriptions] = useState<TranscriptionEntry[]>([]);
+  // 서버가 토큰 단위로 흘려주는 미확정 전사. final 이 오면 사라진다.
+  const [livePartial, setLivePartial] = useState<{ text: string; language: string } | null>(null);
   const [isInitializing, setIsInitializing] = useState(false);
   const [sessionError, setSessionError] = useState('');
   const [serverCapacity, setServerCapacity] = useState<{ active: number; max: number } | null>(null);
@@ -611,8 +617,19 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
 
   // ── Message listener ─────────────────────────────────────────────────────────
   const handleMessageRef = useRef((msg: any) => {
+    // partial 분기는 아래 !text 검사보다 먼저 와야 한다.
+    // 빈 text 자체가 "화면을 비우라"는 신호라 여기서 걸러지면 안 된다.
+    if (msg.type === 'partial') {
+      const partialText = (msg.text || '').trim();
+      setLivePartial(
+        partialText ? { text: partialText, language: langToCode(msg.language || 'auto') } : null
+      );
+      return;
+    }
     const text = (msg.original || '').trim();
     if (!text || msg.type !== 'final') return;
+    // 이 구간은 확정됐다. 서버의 빈 partial 을 기다리지 않고 바로 지운다.
+    setLivePartial(null);
     const lang = langToCode(msg.language || 'auto');
     const serverTrans = (msg.translation || '').trim();
     addTranscription(lang, text, serverTrans || undefined);
@@ -642,7 +659,7 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
   // ── Auto-scroll ───────────────────────────────────────────────────────────────
   useEffect(() => {
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: false }), 50);
-  }, [transcriptions.length]);
+  }, [transcriptions.length, livePartial?.text]);
 
   // ── TTS ───────────────────────────────────────────────────────────────────────
   // mode-1: speaker, TTS for all languages
@@ -733,6 +750,7 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
     ];
     setShowSetup(false);
     setTranscriptions([]);
+    setLivePartial(null);
     sessionStateRef.current = 'recording';
     setSessionState('recording');
     DEMO_SCRIPT.forEach((line, i) => {
@@ -800,6 +818,7 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
   const doStop = async () => {
     wasAutoSuspendedRef.current = false;
     stopTTS();
+    setLivePartial(null);
     await stopRecording();
     sessionStateRef.current = 'paused';
     setSessionState('paused');
@@ -847,6 +866,7 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
           await stopRecording();
           disconnect();
           setTranscriptions([]);
+          setLivePartial(null);
           releaseAudioMode();
           sessionStateRef.current = 'idle';
           setSessionState('idle');
@@ -882,6 +902,7 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
 
   const ui = UI_STRINGS[myLang.code] ?? UI_STRINGS.en;
   const isIdle = sessionState === 'idle';
+  const hasFeedContent = transcriptions.length > 0 || livePartial !== null;
   const isRecording = sessionState === 'recording';
   const isPaused = sessionState === 'paused';
   const modeObj = CONVERSATION_MODES.find(m => m.id === modeId) ?? CONVERSATION_MODES[0];
@@ -1038,7 +1059,7 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
         style={S.convArea}
         contentContainerStyle={[
           S.convContent,
-          (isIdle || transcriptions.length === 0) && S.convContentFlex,
+          (isIdle || !hasFeedContent) && S.convContentFlex,
         ]}
       >
         {isIdle && (
@@ -1077,7 +1098,7 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
           </View>
         )}
 
-        {!isIdle && transcriptions.length === 0 && (
+        {!isIdle && !hasFeedContent && (
           <View style={S.idleWrap}>
             <LinearGradient
               colors={['rgba(122,144,48,0.1)', 'rgba(6,182,212,0.1)']}
@@ -1094,6 +1115,24 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
         {transcriptions.map(entry => (
           <BubbleItem key={entry.id} entry={entry} myLangCode={myLang.code} targetLangCode={targetLang.code} />
         ))}
+
+        {/* 미확정 전사. 번역이 없으므로 BubbleItem 이 원문을 메인 자리에 띄운다.
+            키가 고정이라 등장 애니메이션은 최초 한 번만 돈다. */}
+        {livePartial && (
+          <BubbleItem
+            key="__partial__"
+            entry={{
+              id: '__partial__',
+              language: livePartial.language,
+              text: livePartial.text,
+              translatedText: '',
+              timestamp: 0,
+            }}
+            myLangCode={myLang.code}
+            targetLangCode={targetLang.code}
+            dim
+          />
+        )}
       </ScrollView>
 
       {/* ── Recording bar ── */}
