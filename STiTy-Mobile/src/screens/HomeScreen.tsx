@@ -389,9 +389,13 @@ const BubbleItem = ({ entry, myLangCode, targetLangCode }: {
           borderBottomLeftRadius: isMine ? 18 : 4,
         },
       ]}>
-        <Text style={[S.bubbleMain, { color: clr.text }]}>{entry.text}</Text>
+        {/* 번역이 메인, 전사(원문)가 서브. 번역이 아직 도착하지 않았으면
+            원문을 메인 자리에 임시로 보여 주고, 도착하면 아래로 내려간다. */}
+        <Text style={[S.bubbleMain, { color: clr.text }]}>
+          {entry.translatedText || entry.text}
+        </Text>
         {!!entry.translatedText && (
-          <Text style={[S.bubbleSub, { color: clr.subText }]}>{entry.translatedText}</Text>
+          <Text style={[S.bubbleSub, { color: clr.subText }]}>{entry.text}</Text>
         )}
       </View>
     </Animated.View>
