@@ -274,6 +274,8 @@ def render(template: str, fields: dict, jira_keys: list[str]) -> tuple[str, list
     return expand_jira(body, jira_keys), missing
 
 
+MAX_SEQ = 50
+
 MACRO_RE = re.compile(r'<ac:structured-macro\s+ac:name="jira".*?</ac:structured-macro>', re.S)
 # 매크로를 품고 있는 문단째로 잡는다. 문단 안에서 매크로만 바꾸면 이슈들이
 # 한 줄에 나란히 붙어버려서, 번호 목록으로 갈아끼우려면 문단을 통째로 걷어내야 한다.
@@ -306,6 +308,33 @@ def expand_jira(body: str, keys: list[str]) -> str:
         items.append(f"<li><p>{one}</p></li>")
     listed = '<ol start="1">' + "".join(items) + "</ol>"
     return target_re.sub(lambda _: listed, body, count=1)
+
+
+def build_title(d: dict, kind_ko: str, seq: int | None) -> str:
+    """제목을 만든다. 같은 태그가 이미 있으면 소범주 옆에 [2], [3] 을 붙인다."""
+    tail = f"[{seq}]" if seq else ""
+    return f'[{d["round"]}차][{d["major"]}][{d["minor"]}]{tail} {kind_ko} 문서'
+
+
+def resolve_title(cf: "Confluence", d: dict, kind_ko: str, autonumber: bool) -> str:
+    """쓸 수 있는 제목을 고른다.
+
+    JSON 에 seq 를 주면 그 번호를 그대로 쓴다. 안 주면 같은 제목이 이미 있는지 보고
+    비어 있는 다음 번호를 찾는다. 번호가 붙는 자리는 소범주 태그 바로 옆이다.
+    """
+    seq = d.get("seq")
+    if seq:
+        return build_title(d, kind_ko, int(seq))
+
+    title = build_title(d, kind_ko, None)
+    if not autonumber or not cf.find_page(title):
+        return title
+
+    for n in range(2, MAX_SEQ + 1):
+        candidate = build_title(d, kind_ko, n)
+        if not cf.find_page(candidate):
+            return candidate
+    sys.exit(f"같은 태그의 문서가 {MAX_SEQ} 개를 넘었다. seq 로 직접 번호를 지정할 것.")
 
 
 def slug(s: str) -> str:
@@ -378,6 +407,8 @@ def main() -> None:
     ap.add_argument("--list-users", action="store_true",
                     help="Jira 이슈 담당자로 지정할 수 있는 사람 목록을 출력")
     ap.add_argument("--dry-run", action="store_true", help="올리지 않고 제목·라벨·본문만 출력")
+    ap.add_argument("--no-autonumber", action="store_true",
+                    help="같은 제목이 있어도 번호를 붙이지 않고 그냥 멈춘다")
     args = ap.parse_args()
 
     if args.list_users:
@@ -411,7 +442,7 @@ def main() -> None:
             sys.exit(f"필수 항목 누락: {field}")
 
     kind_ko = "계획" if kind == "plan" else "보고"
-    title = f'[{d["round"]}차][{d["major"]}][{d["minor"]}] {kind_ko} 문서'
+    title = resolve_title(cf, d, kind_ko, autonumber=not args.no_autonumber)
     labels = [kind_ko, f'{d["round"]}차', slug(d["major"]), slug(d["minor"])]
     folder_title = f'{d["round"]}차 업무 분담'
 
@@ -432,6 +463,9 @@ def main() -> None:
         print(f"경고: 값이 없어 비워둔 항목 — {', '.join(missing)}", file=sys.stderr)
 
     if args.dry_run:
+        base = build_title(d, kind_ko, None)
+        if title != base:
+            print(f"참고  : '{base}' 가 이미 있어 번호를 붙였다")
         print(f"제목  : {title}")
         print(f"폴더  : {folder_title} (없으면 생성)")
         print(f"라벨  : {labels}")

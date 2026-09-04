@@ -133,8 +133,11 @@ class _CometBase:
         torch.cuda.empty_cache()
 
     def _predict(self, batch: list[dict]) -> list[float]:
+        # num_workers=0 — DataLoader 워커를 안 띄우고 메인 프로세스에서 돈다.
+        # 워커를 쓰면 "DataLoader worker exited unexpectedly" 로 런이 통째로 죽는다
+        # (2026-09-02 mg1 COMET, BLEU 는 다 끝난 뒤라 16분을 날렸다).
         out = self.load().predict(batch, batch_size=self.batch_size, gpus=self.gpus,
-                                  progress_bar=False)
+                                  progress_bar=False, num_workers=0)
         return [float(s) for s in out.scores]
 
 

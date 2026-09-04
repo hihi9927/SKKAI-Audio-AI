@@ -1000,6 +1000,8 @@ def main() -> int:
     # vLLM 이 연속 배칭을 하므로 in-process `generate` 보다 GB10 에서 빠르다.
     p.add_argument("--remote-mt-url", default="http://localhost:8010/v1",
                    help="--translate-backend remote 일 때 OpenAI 호환 엔드포인트")
+    p.add_argument("--google-key-env", default="GOOGLE_TRANSLATE_API_KEY",
+                   help="v2 API 키를 읽을 환경변수/.env 키 이름. 계정을 갈아끼울 때 쓴다")
     p.add_argument("--remote-mt-model", default="seed-x",
                    help="--translate-backend remote 일 때 서버에 등록된 모델 이름")
     p.add_argument("--remote-mt-template", default="seedx",
@@ -1333,7 +1335,7 @@ def main() -> int:
             return GoogleTranslator(
                 tgt_code=code, cache=cache, workers=min(args.workers, 4),
                 use_context=not args.no_google_context,
-                backend=args.translate_backend)
+                backend=args.translate_backend, key_env=args.google_key_env)
 
         translator = make_translator(rep_code, tr_cache)
         # **백엔드가 id 에 들어간다.** gtx 와 v2 의 번역문은 같지 않다 (기존 캐시 18건

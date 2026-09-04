@@ -32,9 +32,18 @@ from pathlib import Path
 import numpy as np
 import soundfile as sf
 
-# 세 언어가 같은 영어 오디오를 공유한다는 전제를 여기서 검증한다.
-CONFIGS = ["en_de", "en_ja", "en_zh-CN"]
-AUDIO_CONFIG = "en_de"   # 길이·화자 정보를 읽어올 기준 (오디오는 세 config 이 동일)
+# **en 소스의 기본값.** en→de/ja/zh 는 같은 영어 오디오를 공유하므로 id 를 한 번만
+# 고르면 세 언어가 자동으로 매칭된다. `--configs` / `--audio-config` 로 바꿀 수 있다.
+#
+# **X→en 은 이 전제가 성립하지 않는다.** de_en / ja_en / zh-CN_en 은 소스 언어가 서로
+# 달라 오디오도 화자도 겹치지 않는다. 그래서 언어마다 따로 돌린다:
+#
+#     --configs de_en --audio-config de_en --max-nonlatin 1.0
+#
+# `--max-nonlatin 1.0` 이 필요한 이유 — `nonlatin_ratio` 는 "원문이 영어가 아닌" 행을
+# 걸러내려고 만든 것이라, 원문이 일본어·중국어인 X→en 에서는 **후보를 전멸시킨다**.
+DEFAULT_CONFIGS = ["en_de", "en_ja", "en_zh-CN"]
+DEFAULT_AUDIO_CONFIG = "en_de"
 
 # CoVoST2 test 에는 정제 과정에서 지우려다 남은 행이 15,531 중 14개(0.09%) 있다.
 # 번역 필드가 통째로 `[TO REMOVE]` / `TO REMOVE` 이거나, 원문이 영어가 아니다
@@ -96,30 +105,38 @@ def read_meta(root: Path, config: str, split: str, with_audio: bool) -> dict[str
 def select(args) -> int:
     root = Path(args.covost_root).expanduser().resolve()
 
+    configs = [c.strip() for c in args.configs.split(",") if c.strip()]
+    audio_config = args.audio_config or configs[0]
+    if audio_config not in configs:
+        print(f"--audio-config {audio_config} 가 --configs 에 없습니다", file=sys.stderr)
+        return 2
+
     print(f"parquet 로드: {root}")
     meta = {}
-    for cfg in CONFIGS:
-        meta[cfg] = read_meta(root, cfg, args.split, with_audio=(cfg == AUDIO_CONFIG))
+    for cfg in configs:
+        meta[cfg] = read_meta(root, cfg, args.split, with_audio=(cfg == audio_config))
         print(f"  {cfg:10s} {len(meta[cfg]):,}행")
 
-    # ── 세 언어 공통 & 번역이 실제로 있는 발화만 후보로 ────────────────────────
-    common = set(meta[CONFIGS[0]])
-    for cfg in CONFIGS[1:]:
+    # ── 모든 config 공통 & 번역이 실제로 있는 발화만 후보로 ────────────────────
+    # config 이 하나면 교집합은 그 config 자신이다 (X→en 경로).
+    common = set(meta[configs[0]])
+    for cfg in configs[1:]:
         common &= set(meta[cfg])
-    print(f"\n세 언어 공통 id: {len(common):,}")
+    print(f"\n{'공통 id' if len(configs) > 1 else 'id'}: {len(common):,}")
 
-    base = meta[AUDIO_CONFIG]
+    base = meta[audio_config]
     pool = []
     drop = Counter()
     for uid in sorted(common):
         if not base[uid]["sentence"]:
             drop["원문 없음"] += 1; continue
-        if any(not meta[c][uid]["translation"] for c in CONFIGS):
+        if any(not meta[c][uid]["translation"] for c in configs):
             drop["번역 없음(한 언어 이상)"] += 1; continue
         if is_placeholder(base[uid]["sentence"]) or any(
-                is_placeholder(meta[c][uid]["translation"]) for c in CONFIGS):
+                is_placeholder(meta[c][uid]["translation"]) for c in configs):
             drop["[TO REMOVE] 플레이스홀더"] += 1; continue
-        if nonlatin_ratio(base[uid]["sentence"]) > args.max_nonlatin:
+        # `--max-nonlatin 1.0` 이면 이 검사는 통째로 꺼진다 (비영어 소스).
+        if args.max_nonlatin < 1.0 and nonlatin_ratio(base[uid]["sentence"]) > args.max_nonlatin:
             drop["원문이 영어가 아님"] += 1; continue
         dur = base[uid]["duration"]
         if dur is None:
@@ -175,9 +192,18 @@ def select(args) -> int:
                 and per_speaker[x[2]] < args.max_per_speaker]
         rng.shuffle(rest)
         need = args.n - len(chosen)
-        for uid, d, cid in rest[:need]:
-            chosen.append((uid, d, cid)); per_speaker[cid] += 1
-        print(f"  층화 후 부족분 {need}개를 후보 전체에서 무작위 보충")
+        # **상한은 담으면서 다시 본다.** `rest` 를 만들 때 한 번 거른 것으로 끝내면,
+        # 같은 화자의 클립 둘이 나란히 통과해 상한을 넘긴다 (실측: 상한 1 인데 2개,
+        # 상한 4 인데 5개). 층화 통과분이 목표를 채우면 이 분기가 아예 안 돌기 때문에
+        # en 소스(후보 15,510, 상한 1)에서는 드러나지 않았다.
+        added = 0
+        for uid, d, cid in rest:
+            if added >= need:
+                break
+            if per_speaker[cid] >= args.max_per_speaker:
+                continue
+            chosen.append((uid, d, cid)); per_speaker[cid] += 1; added += 1
+        print(f"  층화 후 부족분 {added}/{need}개를 후보 전체에서 무작위 보충")
 
     chosen.sort(key=lambda x: x[0])
     sel_dur = np.array([d for _, d, _ in chosen])
@@ -196,8 +222,8 @@ def select(args) -> int:
         "provenance": {
             "dataset": "fixie-ai/covost2",
             "split": args.split,
-            "configs": CONFIGS,
-            "audio_config": AUDIO_CONFIG,
+            "configs": configs,
+            "audio_config": audio_config,
             "n_requested": args.n,
             "n_selected": len(chosen),
             "seed": args.seed,
@@ -208,7 +234,7 @@ def select(args) -> int:
             "min_duration": args.min_duration,
             "max_duration": args.max_duration,
             "pool_size": len(pool),
-            "pool_total_rows": len(meta[AUDIO_CONFIG]),
+            "pool_total_rows": len(meta[audio_config]),
             "dropped": dict(drop),
             "selected_audio_hours": round(float(sel_dur.sum()) / 3600, 4),
             "selected_duration_stats": {
@@ -242,6 +268,11 @@ def main():
                    help="원문의 비라틴 문자 비율이 이 값을 넘으면 영어가 아닌 것으로 보고 제외")
     p.add_argument("--min-duration", type=float, default=1.0)
     p.add_argument("--max-duration", type=float, default=30.0)
+    p.add_argument("--configs", default=",".join(DEFAULT_CONFIGS),
+                   help="쉼표로 구분한 config 목록. 둘 이상이면 id 교집합만 쓴다 "
+                        "(같은 오디오를 공유하는 en→X 경로). X→en 은 하나만 준다")
+    p.add_argument("--audio-config", default=None,
+                   help="길이·화자를 읽어올 config. 기본은 --configs 의 첫 번째")
     p.add_argument("--out", required=True)
     sys.exit(select(p.parse_args()))
 

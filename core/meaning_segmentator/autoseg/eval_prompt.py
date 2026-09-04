@@ -24,7 +24,8 @@ from . import data, metrics
 from . import gateway
 from .gateway import Gateway
 from .loop import _cell, evaluate, target_is_spaced
-from .pipeline import parse_translator_id, GoogleTranslator, JsonCache, to_lang_code
+from .pipeline import (add_translate_args, parse_translator_id, GoogleTranslator,
+                       JsonCache, to_lang_code)
 
 _HERE = Path(__file__).resolve().parent
 
@@ -43,6 +44,7 @@ def main() -> int:
     p.add_argument("--min-gap", type=int, default=None, help="미지정 시 기준 런에서 상속")
     p.add_argument("--model", default="gpt-5-mini")
     gateway.add_provider_args(p)
+    add_translate_args(p)
     # 비교군도 루프와 같은 사고량으로 재야 표에 나란히 놓을 수 있다 (기준 런 config 의
     # seg_reasoning_effort 를 상속하고, 없으면 루프 기본값 low).
     # 후보 풀 하한을 곡선 격자와 **분리**한다. 검증기는 `round(어절/t_floor)−1` 개를
@@ -120,9 +122,9 @@ def main() -> int:
     if not cf.exists() and (run_dir / "cache" / "translate.json").exists():
         cf = run_dir / "cache" / "translate.json"
     tr_cache = JsonCache(cf)
-    translator = GoogleTranslator(tgt_code=code, cache=tr_cache,
-                                  workers=min(args.workers, 4),
-                                  use_context=ctx, backend=backend)
+    translator = GoogleTranslator.from_args(args, tgt_code=code, cache=tr_cache,
+                                            workers=min(args.workers, 4),
+                                            use_context=ctx, backend=backend)
     tr_id = (f"google:{translator.backend}:{code}:ctx={ctx}")
 
     adequacy = metrics.make_adequacy_backend(

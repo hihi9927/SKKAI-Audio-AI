@@ -10,7 +10,7 @@
 
 - `../autoseg/loop.py:1230` 이 `runs/<pair_id>/<run_id>` 를 하드코딩한다. 옮기면 새 런이
   다시 `runs/` 에 떨어져 구조가 반쪽이 된다 — 코드에 `--runs-root` 를 먼저 내야 한다.
-- `tools/covost2_label/*.sh` 7개가 `runs/en-multi/run13/best_prompt.txt` 를 가리키고,
+- `core/meaning_segmentator/tools/covost2_chain/*.sh` 가 `runs/en-multi/run13/best_prompt_mg1.txt` 를 가리키고,
   `MULTI2EN_DATASET.md` 가 `runs/...` 경로로 런을 인용한다.
 - `{de,ja,zh}-en/run02` 는 **지금 돌고 있다.** 쓰는 중인 디렉토리는 못 옮긴다.
 
@@ -120,11 +120,11 @@ ja-en `iter_04` 도 결과는 같지만 원인이 다르다 — 이쪽은 PE 가
 ### 멈춘 트랙을 이어 돌리는 법
 
 예산 가드는 프로세스마다 0 에서 시작하므로 `--budget` 을 새로 주면 그만큼 더 돈다.
-`tools/autoseg_x2en/run_chain.sh` 를 다시 돌리면 `history.json` 을 보고 알아서
+`core/meaning_segmentator/tools/autoseg_x2en/run_chain.sh` 를 다시 돌리면 `history.json` 을 보고 알아서
 `--resume` 을 붙인다. ja-en 은 `iter_02/prompt.txt` 가 남아 있어 개정본을 안 잃었고,
 분절 캐시에 죽은 iter_02 가 이미 낸 호출이 들어 있어 재개분이 그만큼 싸다.
 
-`tools/autoseg_x2en/resume_rest.sh` 는 체인이 끝나기를 기다렸다가 멈춘 트랙을
+`core/meaning_segmentator/tools/autoseg_x2en/resume_rest.sh` 는 체인이 끝나기를 기다렸다가 멈춘 트랙을
 `--resume` 으로 끝까지 돌린다 (ja $45 / zh $30 상한 — 폭주 가드이지 목표액이 아니다).
 `--iterations 5` 는 그대로라 세 트랙이 "iter_00 + 실제 개정 4회" 로 맞춰진다.
 이터를 이미 다 채운 트랙이면 `loop.py` 가 `start_it >= args.iterations` 로 최종 평가만
@@ -149,6 +149,12 @@ ja-en `iter_04` 도 결과는 같지만 원인이 다르다 — 이쪽은 PE 가
 채점은 참조 없는 QE 라 점수 자체는 오염되지 않지만, **prompt_v0 가 다른 근거에서 나왔으므로
 de/ja 와 나란히 놓고 "타깃별 차이"라고 읽으면 안 된다.** zh 를 같은 자로 맞추려면
 `--dataset fleurs-en-multi-zh` 로 재실행해야 한다.
+
+## 실험 환경 (하드웨어·버전)
+
+기계·GPU·패키지 버전·모델 설정은 [ENVIRONMENT.md](ENVIRONMENT.md) 에 따로 있다.
+**run13 계열과 x2en 세 트랙은 서로 다른 기계에서 돌았다** (GB10 / RTX 4090) — 그 문서
+§0 을 먼저 볼 것.
 
 ## 상태 보기
 

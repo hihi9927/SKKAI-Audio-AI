@@ -59,6 +59,37 @@ import soundfile as sf
 SAMPLING_RATE = 16000
 
 
+def csv_unescape(t: str) -> str:
+    """`sentence` 필드의 **CSV 이스케이프를 되돌린다**. 정규화가 아니라 복원이다.
+
+    업스트림 parquet(`fixie-ai/covost2`)의 `sentence` 는 CSV 필드를 파싱하지 않은 채로
+    들어 있다 — 필드 전체가 따옴표로 감싸이고 내부 따옴표는 두 번씩 적힌 상태다:
+
+        parquet: '"A ""chanson"", by contrast, is a folk or popular song."'
+        복원후 : 'A "chanson", by contrast, is a folk or popular song.'
+
+    en_de test 15,531건 실측: 감싸진 것 19.1%, 겹따옴표 포함 5.1%. 이걸 그대로 쓰면
+    분절기가 따옴표를 지우거나 옮겨 `text_modified` 로 떨어진다 (n3000 라벨링 실측:
+    위반 28건 중 26건이 이 원인).
+
+    **따옴표를 없애는 것이 아니다.** 복원 후 큰따옴표를 가진 문장은 5.8% 남는데, 그건
+    진짜 인용이다 — Qwen3-ASR 출력도 3.9%, FLEURS 도 7.9% 가 큰따옴표를 갖는다.
+    지우면 오히려 도메인이 어긋난다.
+
+    **`translation` 에는 쓰지 않는다.** 세 config 모두 겹따옴표가 0.00% 라 CSV
+    이스케이프된 적이 없다 (감싸진 것도 en_zh-CN 의 1건뿐이고, 겹따옴표가 없으므로
+    그건 진짜 인용이다). 거기 적용하면 멀쩡한 인용부호를 벗긴다.
+
+    감싸기만 있고 내부 겹따옴표가 없는 경우는 원리상 "필드 전체가 CSV 로 감싸인 것"과
+    "문장 전체가 인용문인 것"을 구분할 수 없다. 19.1% 라는 비율이 후자로는 설명되지
+    않으므로(Common Voice 문장은 단문이다) CSV 로 본다.
+    """
+    t = (t or "").strip()
+    if len(t) > 1 and t[0] == '"' and t[-1] == '"':
+        return t[1:-1].replace('""', '"').strip()
+    return t
+
+
 def load_rows(root: Path, config: str, split: str) -> list[dict]:
     """parquet 샤드를 읽어 행 목록으로. 오디오 바이트는 그대로 들고 온다."""
     import pyarrow.parquet as pq
@@ -73,7 +104,10 @@ def load_rows(root: Path, config: str, split: str) -> list[dict]:
     rows: list[dict] = []
     for f in files:
         t = pq.read_table(f, columns=["client_id", "audio", "sentence", "translation", "id"])
-        rows.extend(t.to_pylist())
+        chunk = t.to_pylist()
+        for r in chunk:
+            r["sentence"] = csv_unescape(r["sentence"])
+        rows.extend(chunk)
         del t
     return rows
 

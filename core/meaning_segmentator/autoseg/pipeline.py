@@ -21,7 +21,7 @@ from pathlib import Path
 
 import httpx
 
-from .gateway import Gateway
+from .gateway import Gateway, load_api_key
 
 # 태그는 **순위를 달고 나온다** — `<SEG:1>` 이 가장 확실한 경계다.
 # 순위가 있어야 사후 절단(Truncator)으로 지연 노브를 돌릴 수 있다: 경계를 빼기만
@@ -956,9 +956,41 @@ BACKOFF_MAX = 30
 RETRY_STATUS = (429, 500, 502, 503, 504)
 
 
-def google_api_key() -> str:
-    """`GOOGLE_TRANSLATE_API_KEY`. 프로덕션 서버·AST 평가 트랙과 같은 이름을 쓴다."""
-    return os.environ.get("GOOGLE_TRANSLATE_API_KEY", "").strip()
+# 번역 백엔드는 **명시로 고른다.** `auto` 는 종전 동작(키가 있으면 v2, 없으면 gtx)이지만,
+# 그 규칙은 키를 읽는 경로가 조용히 실패하면 gtx 로 떨어진다 — 실제로 그랬다(아래).
+TRANSLATE_PROVIDERS = ("auto", "gtx", "v2")
+
+
+def google_api_key(key_env: str = "GOOGLE_TRANSLATE_API_KEY") -> str:
+    """번역 API 키. **환경변수 > 레포 루트 `.env`**, 없으면 빈 문자열.
+
+    종전에는 `os.environ` 만 봤다. 그런데 이 레포는 키를 `.env` 에 두고 게이트웨이는
+    `gateway.load_api_key` 로 거기까지 읽는다 — 번역기만 안 읽었다. 그 결과
+    `GoogleTranslator.__post_init__` 의 `backend = "v2" if key else "gtx"` 가 **항상
+    gtx 로 떨어져**, `.env` 에 멀쩡한 키가 있는데도 v2 는 한 번도 안 쓰였다.
+    셸에서 export 하지 않는 한 드러나지 않는 종류의 실패다.
+
+    키가 없어도 예외를 던지지 않는다 — gtx 는 키가 필요없고, 없음 자체가 `auto` 의
+    정상 입력이다. `v2` 를 **명시**했는데 키가 없을 때만 생성자가 막는다.
+    """
+    try:
+        return load_api_key(key_env).strip()
+    except RuntimeError:
+        return ""
+
+
+def add_translate_args(p, default: str = "auto") -> None:
+    """`--translate-provider` / `--google-key-env`. 번역기를 만드는 CLI 는 전부 이걸 쓴다.
+
+    게이트웨이의 `gateway.add_provider_args` 와 같은 역할이다 — 인자 이름과 기본값이
+    스크립트마다 갈라지지 않게 한 곳에서 붙인다.
+    """
+    p.add_argument("--translate-provider", default=default, choices=TRANSLATE_PROVIDERS,
+                   help="번역 백엔드. gtx=비공식 무료(차단되기 쉽다), "
+                        "v2=Cloud Translation Basic(API 키 필요), "
+                        f"auto=키가 있으면 v2 없으면 gtx. 기본 {default}")
+    p.add_argument("--google-key-env", default="GOOGLE_TRANSLATE_API_KEY",
+                   help="API 키를 읽을 환경변수/.env 키 이름. 계정을 갈아끼울 때 쓴다")
 
 
 def to_lang_code(name: str) -> str:
@@ -1032,9 +1064,12 @@ class GoogleTranslator:
     timeout: float = 30.0
     max_retries: int = 5
     calls: int = 0
-    # 미지정이면 키 유무로 정한다 — 키가 있으면 v2, 없으면 gtx. 프로덕션 서버와 같은 규칙.
+    # **요청값과 해석값을 나눈다.** `backend` 는 해석된 결과("gtx"/"v2")로, 캐시 키와
+    # `translator_id` 에 들어가 런 간 비교가 섞이지 않게 한다. `None`/`"auto"` 를 주면
+    # 키 유무로 정한다 (프로덕션 서버와 같은 규칙). `"v2"`/`"gtx"` 는 명시 지정이다.
     backend: str | None = None
     api_key: str = ""
+    key_env: str = "GOOGLE_TRANSLATE_API_KEY"
     # 컨텍스트 번역은 앞 조각들을 개행으로 붙여 보내고 마지막 줄만 취한다. gtx 가
     # 줄을 합치면 마지막 줄이 엉뚱한 것이 되어 조각 번역이 조용히 오염된다 —
     # 발생 건수를 세서 런 끝에 경고한다.
@@ -1043,16 +1078,45 @@ class GoogleTranslator:
     _lock: threading.Lock = field(init=False, repr=False, default_factory=threading.Lock)
 
     def __post_init__(self):
-        self.api_key = self.api_key or google_api_key()
-        if self.backend is None:
+        self.api_key = self.api_key or google_api_key(self.key_env)
+        if self.backend in (None, "auto"):
             self.backend = "v2" if self.api_key else "gtx"
+        if self.backend not in ("gtx", "v2"):
+            raise ValueError(f"모르는 번역 백엔드: {self.backend!r} "
+                             f"(사용 가능: {TRANSLATE_PROVIDERS})")
+        # **명시했는데 키가 없으면 조용히 gtx 로 떨어뜨리지 않는다.** 그 폴백이야말로
+        # v2 를 쓰고 있다고 믿으면서 gtx 로 재게 만드는 경로다.
         if self.backend == "v2" and not self.api_key:
-            raise ValueError("backend='v2' 인데 GOOGLE_TRANSLATE_API_KEY 가 없습니다")
+            raise ValueError(
+                f"backend='v2' 인데 {self.key_env} 를 찾을 수 없습니다 — "
+                f"환경변수나 레포 루트 .env 에 넣거나 --google-key-env 로 이름을 지정하세요")
         self._client = httpx.Client(
             timeout=self.timeout,
             limits=httpx.Limits(max_connections=self.workers,
                                 max_keepalive_connections=self.workers),
         )
+
+    @classmethod
+    def from_args(cls, args, **kw) -> "GoogleTranslator":
+        """`add_translate_args` 로 받은 인자를 그대로 넘겨 만든다.
+
+        호출자가 `backend=` 를 함께 주면(런 config 에서 상속한 경우) **명시한 provider 가
+        이긴다** — 다만 둘이 다르면 경고한다. 상속값을 말없이 덮으면 "그 런과 같은 축"이
+        아닌 점수를 같은 표에 놓게 된다.
+        """
+        want = getattr(args, "translate_provider", "auto")
+        inherited = kw.pop("backend", None)
+        if want == "auto":
+            backend = inherited
+        else:
+            if inherited not in (None, "auto") and inherited != want:
+                print(f"[translate] 경고: 런이 기록한 백엔드 {inherited!r} 를 "
+                      f"--translate-provider {want!r} 로 덮어씁니다 — "
+                      f"그 런의 캐시는 재사용되지 않고 점수도 같은 축이 아닙니다")
+            backend = want
+        return cls(backend=backend,
+                   key_env=getattr(args, "google_key_env", "GOOGLE_TRANSLATE_API_KEY"),
+                   **kw)
 
     def close(self) -> None:
         if self._client is not None:

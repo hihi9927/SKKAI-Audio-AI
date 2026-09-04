@@ -36,8 +36,14 @@ def main() -> int:
     p.add_argument("--split", default="test")
     p.add_argument("--manifest-tag", default="clean500")
     p.add_argument("--dataset", default="fleurs", choices=["fleurs", "covost2"])
+    p.add_argument("--src", default="en",
+                   help="소스 언어. CoVoST2 는 X→en 매니페스트도 있어서 이걸 안 주면 "
+                        "`covost2_en-<tgt>_…` 만 찾는다 (`bleu_eval --src` 와 같은 값)")
     p.add_argument("--model", default="Unbabel/wmt22-comet-da")
     p.add_argument("--batch-size", type=int, default=64)
+    p.add_argument("--only-missing", action="store_true",
+                   help="`comet` 값이 이미 있는 조건은 건너뛴다. 조건 몇 개만 추가로 "
+                        "넣었을 때 전체 재채점(타깃당 ~6분)을 피한다")
     args = p.parse_args()
 
     run_dir = _HERE.parents[1] / "runs" / args.run_id
@@ -49,7 +55,7 @@ def main() -> int:
     else:
         # 제안 라벨이 아직 없으면 매니페스트 순서를 따른다 — `bleu_eval` 과 같은 규칙이라
         # 조건별 `hyps` 의 인덱스가 어긋나지 않는다.
-        ents = _ds.get(args.dataset).entries(args.manifest_tag, args.targets[0])
+        ents = _ds.get(args.dataset, **({'src': args.src} if args.dataset == 'covost2' else {})).entries(args.manifest_tag, args.targets[0])
         ids = list(ents)
         srcs_by_id = {k: e.src for k, e in ents.items()}
 
@@ -60,7 +66,7 @@ def main() -> int:
         path = out_dir / f"{tgt}.json"
         blob = json.loads(path.read_text(encoding="utf-8"))
         refs_map = {k: e.ref for k, e
-                    in _ds.get(args.dataset).entries(args.manifest_tag, tgt).items()}
+                    in _ds.get(args.dataset, **({'src': args.src} if args.dataset == 'covost2' else {})).entries(args.manifest_tag, tgt).items()}
         keep = [i for i in ids if i in refs_map]
         srcs = [srcs_by_id[i] for i in keep]
         refs = [refs_map[i] for i in keep]
@@ -68,6 +74,8 @@ def main() -> int:
         scored = 0
         t0 = time.time()
         for name, cell in blob["conditions"].items():
+            if args.only_missing and cell.get("comet") is not None:
+                continue
             hyps = cell.get("hyps")
             if not hyps or len(hyps) != len(refs):
                 print(f"  [{tgt}] {name}: hyps {len(hyps or [])} != refs {len(refs)} — 건너뜀")
