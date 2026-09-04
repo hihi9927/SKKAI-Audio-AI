@@ -206,3 +206,10 @@ core/meaning_segmentator/runs/**/test_judgements.json
 # DailyTalk en t2 파인튜닝 산출물 (checkpoint 24GB + merged 4.4GB)
 Qwen3-ASR/finetuning/finetuning-out-en-dailytalk-t2/
 Qwen3-ASR/finetuning/merged-en-dailytalk-t2-ck320/
+
+# CoVoST2 평가 산출물 (402MB). bleu/*.json 하나가 45MB 라 저장소에 담지 않는다.
+# 재현에 필요한 것은 tools/covost2_chain/ 스크립트와 evaluation/ast/manifests/ 매니페스트다.
+# 결과 요약(report.md, X2EN_OURS.md)만 추적한다 — 위 autoseg 루프 규칙과 같은 방침.
+core/meaning_segmentator/runs/covost2/**
+!core/meaning_segmentator/runs/covost2/**/
+!core/meaning_segmentator/runs/covost2/**/*.md
