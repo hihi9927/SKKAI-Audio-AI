@@ -1,0 +1,108 @@
+{
+  "source_language": "English",
+  "word_order": "SVO | Most sample clauses show Subject–Verb–Object order (e.g. 'The game is based...', 'Blood goes away from the heart...'), with postposed modifiers and many relative/subordinate clauses.",
+  "register": "Written expository / encyclopedic/news style (formal, edited prose like encyclopedia or newswire rather than spontaneous speech).",
+  "fillers_and_hesitations": [
+    "um",
+    "uh",
+    "er",
+    "well",
+    "you know",
+    "I mean",
+    "like"
+  ],
+  "discourse_markers": [
+    "and",
+    "but",
+    "or",
+    "although",
+    "because",
+    "when",
+    "while",
+    "however",
+    "therefore",
+    "such as",
+    "for example",
+    "also",
+    "as",
+    "on (as in 'On September...')"
+  ],
+  "clause_boundary_signals": [
+    "and",
+    "but",
+    "although",
+    "because",
+    "when",
+    "while",
+    "if",
+    "so",
+    "however",
+    "therefore",
+    "then",
+    "as (subordinator)",
+    "such as",
+    "for (subordinator)"
+  ],
+  "non_boundary_traps": [
+    "called",
+    "known as",
+    "named",
+    "such as",
+    "including",
+    "e.g.",
+    "i.e.",
+    ", a ",
+    "parenthetical parentheses ( … )",
+    "comma-separated lists (e.g. 'Korean, Thai, Indian, and Japanese')",
+    "appositive patterns (noun, a ... , ...)"
+  ],
+  "unstable_prefix_signals": [
+    "which",
+    "that",
+    "who",
+    "whom",
+    "whose",
+    "where",
+    "when",
+    "called",
+    "known as",
+    "such as",
+    "including",
+    "in",
+    "on",
+    "at",
+    "for",
+    "between",
+    "of",
+    ", a ",
+    "(",
+    "-"
+  ],
+  "notes_for_prompt_writer": "Do not emit a translation unit immediately after a head noun if the next token is one of the unstable_prefix_signals above — English relative pronouns, 'called'/appositive markers and prepositions commonly add modifiers that Japanese must place before the noun. Commas are unreliable boundaries: they frequently introduce appositives or lists rather than sentence-final breaks. Prefer splitting at clear clause-connectors like coordinating conjunctions that start independent clauses, and only split after nouns when no relative/subordinate marker or preposition follows.",
+  "target_language_profile": {
+    "target_language": "Japanese",
+    "word_order": "Basic SOV: modifiers and relative clauses precede heads; topic-fronting common (は). Verb-finality is rigid; topical/adverbial ordering has some freedom (see 1,9,11,12).",
+    "verb_placement": "Main verb and predicate land clause-final, so tense/aspect/modality/negation and clause closure must be deferred until the verb appears (see 2,6,15).",
+    "late_commitment_forced_by": [
+      "main predicate/verb (tense, aspect, voice) (see 2,15)",
+      "polarity/negation scope and contrastive 'but' (see 2)",
+      "epistemic modality/hedges (may/might/possible) (see 2)",
+      "relative-clause attachment and prenominal modifier placement (see 2,9,11)",
+      "case/particle choice and topic vs subject marking (は/が/を) (see 1,12,13)",
+      "coordination/list attachment and semicolon/comma scope (see 15)",
+      "subordinators and 'pending'/'when' attachments (temporal clauses) (see 8,11)"
+    ],
+    "reordering_vs_source": "Large reordering: verbs move to sentence end; English postnominal modifiers become prenominal; topics/adverbials often fronted. Noun-modifier order flips relative to English (see 1,9,11).",
+    "safe_boundary_signals": [
+      "sentence-final punctuation (period, question mark) — clause can be rendered (see 2,6)",
+      "explicit finite/main verb that closes the clause in source (see 6,15)"
+    ],
+    "unsafe_boundary_signals": [
+      "noun immediately followed by relative pronoun ('which/who/that') or comma + clause (see 2,9)",
+      "modal verbs ('may','might','could') indicating later scope (see 2)",
+      "subordinating words like 'pending','when','as','because' that attach later (see 8,11)",
+      "comma/semicolon lists where attachment of items is unresolved (see 15)"
+    ],
+    "evidence": "measured: 20 parallel pairs (train split)"
+  }
+}

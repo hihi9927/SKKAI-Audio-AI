@@ -1,0 +1,51 @@
+{
+  "source_language": "English",
+  "word_order": "SVO — main clauses in the sample show Subject then Verb then Object/Complement (e.g. \"Arthur Guinness signed...\", \"Blood goes away from the heart\").",
+  "register": "edited, informational/encyclopedic prose (Wikipedia-style entries and factual descriptions).",
+  "fillers_and_hesitations": [],
+  "discourse_markers": [
+    "and",
+    "but",
+    "although",
+    "as",
+    "which",
+    "because",
+    "when",
+    "such as",
+    "also",
+    "especially",
+    "pending",
+    "seeing"
+  ],
+  "clause_boundary_signals": [
+    "but",
+    "although",
+    "as",
+    "which",
+    "because",
+    "when",
+    "and",
+    "such as",
+    "seeing"
+  ],
+  "non_boundary_traps": [
+    "called",
+    "parenthetical abbreviations (e.g. (ISIL))",
+    "initial temporal/location phrases (e.g. 'On September 24, 1759')",
+    "appositive noun phrases (e.g. 'a vicious battle between...')",
+    "enumeration commas inside lists (e.g. 'Korean, Thai, Indian, and Japanese')",
+    "dashes/hyphens used for headings or emphasis"
+  ],
+  "unstable_prefix_signals": [
+    "between",
+    "and (inside ranges or lists)",
+    "such as",
+    "called",
+    "pending",
+    "especially",
+    "because",
+    "which",
+    "On (initial temporal/location adjunct)"
+  ],
+  "notes_for_prompt_writer": "Prefer to keep relative and subordinate material (words starting with 'which', 'that', 'who', 'because', 'although') attached to the preceding unit. Do not finalize units inside enumerations, numeric ranges ('between ... and ...'), dates or parenthetical abbreviations; these routinely extend the current unit. Treat appositives introduced by 'called' or parenthetical material as non-boundary material. The text is edited, informational prose — expect formal connectives and many embedded modifiers rather than spoken hesitations."
+}

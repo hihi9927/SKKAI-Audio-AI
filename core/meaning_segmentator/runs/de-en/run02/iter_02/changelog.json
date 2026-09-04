@@ -1,0 +1,19 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "sections_reported": [
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "changelog": [
+    "When to Segment: integrated the candidate_rules by naming specific risky surface patterns (noun + immediate possessor/genitive, noun + zu‑Inf, object followed by clause/infinitive, coordinated descriptive noun phrases, proper-name + comma + explanatory pronoun, short predicate followed by relative/completive clause) and instructing that these positions be included as candidates but treated as unstable.",
+    "Priority Rules: added explicit lower-confidence categories for the patterns above so cuts that separate a head from its immediate complement or split coordinated descriptive noun phrases are ranked below safer clause breaks; this implements the critic's penalty-without-forbidding approach.",
+    "Decision Procedure: added handling for 'reference_suspect' cases: if a local prefix yields an unambiguous, coherent rendering that conflicts with the oracle, preserve the local rendering (flag as reference_suspect) rather than demoting the boundary; removed an explicit restatement about unique numeric tag assignment to avoid duplicating the frozen Output Rules."
+  ],
+  "size_budget": 19244,
+  "over_budget": false
+}

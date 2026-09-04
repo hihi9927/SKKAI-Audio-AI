@@ -1,0 +1,58 @@
+[
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "She said, \"There is no intelligence to suggest that an attack is expected imminently.",
+    "seg_text": "She said, \"There is no intelligence <SEG:1> to suggest that an attack <SEG:2> is expected imminently.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "This is matched by Norway, Sweden and New Zealand, but otherwise quite unique (e.g. in the Netherlands the figure is one to forty).",
+    "seg_text": "This is matched <SEG:3> by Norway, Sweden and New Zealand, <SEG:1> but otherwise quite <SEG:2> unique (e.g. in the Netherlands <SEG:4> the figure is one to forty).",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Authorities speculate that this indicates that containers holding uranium fuel at the site may have ruptured and are leaking.",
+    "seg_text": "Authorities speculate that this indicates that containers holding uranium fuel <SEG:3> at the site <SEG:2> may have ruptured <SEG:1> and are leaking.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "The Amazon River is the second longest and the biggest river on Earth. It carries more than 8 times as much water as the second biggest river.",
+    "seg_text": "The Amazon River is <SEG:5> the second longest <SEG:3> and the biggest <SEG:2> river on Earth. <SEG:1> It carries more than 8 <SEG:4> times as much water as the second biggest river.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Japans holds nearly 7,000 islands (the biggest being Honshu), making Japan the 7th largest island in the world!",
+    "seg_text": "Japans holds nearly 7,000 <SEG:3> islands (the biggest being Honshu), <SEG:1> making Japan the 7th largest island <SEG:2> in the world!",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Some roads have been damaged, railway service interrupted in the affected areas, and the Noto Airport in Ishikawa prefecture remains closed.",
+    "seg_text": "Some roads have been damaged, <SEG:2> railway service interrupted <SEG:3> in the affected areas, <SEG:1> and the Noto Airport in Ishikawa prefecture remains closed.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Over multiple centuries, the Roman empire led to great gains in the field of medicine and formed much of the knowledge we know today.",
+    "seg_text": "Over multiple centuries, <SEG:1> the Roman empire <SEG:2> led to great gains <SEG:3> in the field of medicine <SEG:4> and formed much of the knowledge we know today.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "The 100-metre ship was en route to pick up its usual fertiliser cargo and initially officials feared the vessel could spill a load.",
+    "seg_text": "The 100-metre ship was en route <SEG:3> to pick up its usual fertiliser cargo <SEG:1> and initially officials feared <SEG:2> the vessel could <SEG:4> spill a load.",
+    "first_pass": true
+  }
+]

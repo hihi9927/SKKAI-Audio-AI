@@ -1,0 +1,19 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "sections_reported": [
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "changelog": [
+    "Merged the critic's candidate rules into surface-level segmentation guidance: do not treat the first-conjunct cut, verb-complement cuts, auxiliary+oblique splits, 'As <TITLE>' role splits, and contrastive/limiter splits as high-confidence — instead rank them low (or lowest) so they survive candidacy but are chosen last by the deterministic truncator. Rationale: these patterns caused wrong-participant, head-not-yet-arrived and scope errors; demoting them preserves options while preventing premature commits.",
+    "Expanded the 'main clause / coordinating conjunction' and 'after finite verbs' guidance in [When to Segment] to explicitly detect the 4-token and 3-token lookahead windows demanded by the measured failure cases, so the rule is decidable from the source surface form.",
+    "Added explicit ranking instructions in [Priority Rules] and precise handling in [Decision Procedure] to ensure candidates matching these risky patterns are assigned the lowest confidence ranks during the ranking pass rather than being absolutely forbidden during candidacy."
+  ],
+  "size_budget": 20313,
+  "over_budget": false
+}

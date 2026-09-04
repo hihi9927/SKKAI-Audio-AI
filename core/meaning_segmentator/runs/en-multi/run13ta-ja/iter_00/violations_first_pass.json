@@ -1,0 +1,30 @@
+[
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 5개 필요",
+    "text": "The glaciers are not stable, but flow down the mountain. This will cause cracks, crevasses, which may be obscured by snow bridges.",
+    "seg_text": "The glaciers are not stable, <SEG:1> but flow down <SEG:3> the mountain. This will cause cracks, <SEG:2> crevasses, which may be obscured by snow bridges.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 9개 — 최소 10개 필요",
+    "text": "As NSA, he assisted Carter in diplomatically handling world affairs, such as the Camp David Accords, 1978; normalizing US–China relations thought the late 1970s; the Iranian Revolution, which led to the Iran hostage crisis, 1979; and the Soviet invasion in Afghanistan, 1979.",
+    "seg_text": "As NSA, he <SEG:9> assisted Carter in <SEG:8> diplomatically handling world affairs, <SEG:4> such as the Camp David Accords, <SEG:2> 1978; normalizing US–China <SEG:5> relations thought the late 1970s; <SEG:1> the Iranian Revolution, <SEG:3> which led to the Iran <SEG:6> hostage crisis, 1979; and the Soviet <SEG:7> invasion in Afghanistan, 1979.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "Although in the end, Krushchev sent in tanks to restore order, he did give way to some economic demands and agreed to appoint the popular Wladyslaw Gomulka as the new prime minister.",
+    "seg_text": "Although in the end, <SEG:2> Krushchev sent in <SEG:5> tanks to restore <SEG:1> order, he did give <SEG:6> way to some economic <SEG:3> demands and agreed to appoint the popular Wladyslaw <SEG:4> Gomulka as the new prime minister.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "The case was prosecuted in Virginia because it is the home to the leading internet service provider AOL, the company who instigated the charges.",
+    "seg_text": "The case was prosecuted in Virginia <SEG:2> because it is the home <SEG:3> to the leading <SEG:4> internet service provider <SEG:1> AOL, the company who instigated the charges.",
+    "first_pass": true
+  }
+]

@@ -1,0 +1,17 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Output Rules]"
+  ],
+  "sections_reported": [
+    "[When to Segment]",
+    "[Priority Rules]"
+  ],
+  "changelog": [
+    "Merged the critic's four candidate rules into [Priority Rules] as demotions: boundaries that end on a bare object NP after a preceding personal name/title, boundaries that end on an ethnonym/demonym before a locative PP or comma-set appositive, boundaries splitting coordinated verb phrases that share a following PP/comparative, and boundaries that cut inside non-finite participial modifiers are all allowed but ranked lower.",
+    "Clarified [When to Segment] to instruct the model to still mark these positions as candidates (do not ban) while delegating them to lower confidence per the Priority Rules."
+  ],
+  "size_budget": 18355,
+  "over_budget": false
+}

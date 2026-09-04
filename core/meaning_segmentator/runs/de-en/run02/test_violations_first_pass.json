@@ -1,0 +1,142 @@
+[
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Mitunter ist der ursprüngliche Auslöser die Sonne, die den Schnee erwärmt, bisweilen ist es weiterer Schneefall, mitunter andere Naturereignisse, häufig ein Mensch.",
+    "seg_text": "Mitunter ist der ursprüngliche Auslöser <SEG:2> die Sonne, die den Schnee erwärmt, <SEG:1> bisweilen ist es <SEG:3> weiterer Schneefall, mitunter <SEG:4> andere Naturereignisse, häufig ein Mensch.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Fluke schrieb, dass die Anstrengungen einiger, Frauen, die über die Gesundheit von Frauen sprechen wollten, zu übertönen, nicht erfolgreich waren.",
+    "seg_text": "Fluke schrieb, dass die Anstrengungen einiger, <SEG:3> Frauen, die über die Gesundheit von Frauen <SEG:2> sprechen wollten, zu übertönen, <SEG:1> nicht erfolgreich waren.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Achtzehn Prozent der Venezolaner sind arbeitslos und die meisten Beschäftigten arbeiten in der Schattenwirtschaft.",
+    "seg_text": "Achtzehn Prozent der Venezolaner sind arbeitslos <SEG:1> und die meisten Beschäftigten arbeiten <SEG:2> in der Schattenwirtschaft.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Es gibt unterschiedliche Schätzungen darüber, wie viele Menschen Hindi sprechen. Man schätzt, dass Hindi die zweit- bis viertmeist gesprochene Sprache der Welt ist.",
+    "seg_text": "Es gibt unterschiedliche Schätzungen darüber, <SEG:2> wie viele Menschen Hindi sprechen. <SEG:1> Man schätzt, dass <SEG:5> Hindi die zweit- bis bis <SEG:4> viertmeist gesprochene Sprache <SEG:3> der Welt ist.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 6개 필요",
+    "text": "Mit weniger REM-Phasen pro Nacht wird der Zustand, in dem Sie echten Schlaf erleben und sich Ihr Körper erholt, so selten, dass es zum Problem wird.",
+    "seg_text": "Mit weniger REM-Phasen pro <SEG:3> Nacht wird der Zustand, <SEG:2> in dem Sie echten Schlaf erleben <SEG:1> und sich Ihr Körper erholt, <SEG:4> so selten, dass es zum Problem wird.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Es gibt eine Menge sozialer und politischer Effekte wie die Nutzung des metrischen Systems, eine Abwendung vom Absolutismus hin zum Republikanismus und Nationalismus sowie der Glaube, dass das Land dem Volk gehört und nicht einem Herrscher allein.",
+    "seg_text": "Es gibt eine Menge <SEG:5> sozialer und politischer Effekte <SEG:2> wie die Nutzung des metrischen Systems, <SEG:3> eine Abwendung vom <SEG:7> Absolutismus hin zum Republikanismus <SEG:4> und Nationalismus sowie <SEG:6> der Glaube, dass das Land gehört <SEG:1> und nicht einem Herrscher allein.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 8개 필요",
+    "text": "Es gibt eine Menge sozialer und politischer Effekte wie die Nutzung des metrischen Systems, eine Abwendung vom Absolutismus hin zum Republikanismus und Nationalismus sowie der Glaube, dass das Land dem Volk gehört und nicht einem Herrscher allein.",
+    "seg_text": "Es gibt eine Menge <SEG:5> sozialer und politischer Effekte <SEG:2> wie die Nutzung des metrischen Systems, <SEG:3> eine Abwendung vom <SEG:7> Absolutismus hin zum Republikanismus <SEG:4> und Nationalismus sowie <SEG:6> der Glaube, dass das Land gehört <SEG:1> und nicht einem Herrscher allein.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 5개 필요",
+    "text": "Oberflächenspannung entsteht, weil sich die Wassermoleküle an der Wasseroberfläche stärker gegenseitig anziehen, als dass sie von den darüber befindlichen Luftmolekülen angezogen werden.",
+    "seg_text": "Oberflächenspannung entsteht, weil sich die Wassermoleküle <SEG:3> an der Wasseroberfläche <SEG:2> stärker gegenseitig anziehen, <SEG:1> als dass sie von den darüber befindlichen Luftmolekülen angezogen werden.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 6개 필요",
+    "text": "Es gibt viele Theorien über die Ursprünge von Sanskrit. Eine davon ist über die Einwanderung der Arier aus dem Westen nach Indien, die ihre Sprache mitbrachten.",
+    "seg_text": "Es gibt viele Theorien <SEG:4> über die Ursprünge von Sanskrit. <SEG:1> Eine davon ist <SEG:3> über die Einwanderung der Arier aus dem Westen nach Indien, <SEG:2> die ihre Sprache mitbrachten.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 4개 필요",
+    "text": "Somit steht am 1. Januar eine Genehmigung für das Hinterland für ein beliebiges Startdatum im Mai zur Verfügung.",
+    "seg_text": "Somit steht am 1. Januar <SEG:1> eine Genehmigung für das Hinterland <SEG:2> für ein beliebiges Startdatum im Mai zur Verfügung.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 6개 필요",
+    "text": "Aber die Royal Navy war trotzdem noch viel stärker als die deutsche Marine („Kriegsmarine“) und hätte jede Invasionsflotte, die über den englischen Kanal geschickt worden wäre, zerstören können.",
+    "seg_text": "Aber die Royal Navy war trotzdem noch viel stärker <SEG:2> als die deutsche Marine („Kriegsmarine“) <SEG:1> und hätte jede Invasionsflotte, <SEG:3> die über den englischen Kanal geschickt worden wäre, zerstören können.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Die Behörden spekulieren, dass dies darauf hindeutet, dass Behälter mit Uran-Kraftstoff am Standort gerissen sein könnten und eventuell undicht sind.",
+    "seg_text": "Die Behörden spekulieren, <SEG:3> dass dies darauf hindeutet, <SEG:2> dass Behälter mit Uran-Kraftstoff am Standort gerissen sein könnten <SEG:1> und eventuell undicht sind.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 3개 필요",
+    "text": "Gold kann zu verschiedensten Formen verarbeitet werden. Es kann in winzige Formen gerollt werden.",
+    "seg_text": "Gold kann zu verschiedensten Formen verarbeitet werden. <SEG:1> Es kann in winzige Formen gerollt werden.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 8개 필요",
+    "text": "Kinder mit ADHS haben Schwierigkeiten, sich auf Dinge wie Schularbeiten zu konzentrieren, aber sie können sich auf Dinge konzentrieren, die ihnen Spaß machen, wie etwa Spielen, ihre Lieblingszeichentrickserie zu schauen oder Sätze ohne Zeichensetzung zu schreiben.",
+    "seg_text": "Kinder mit ADHS haben Schwierigkeiten, <SEG:3> sich auf Dinge wie Schularbeiten zu konzentrieren, <SEG:1> aber sie können <SEG:7> sich auf Dinge konzentrieren, <SEG:2> die ihnen Spaß machen, <SEG:4> wie etwa Spielen, <SEG:5> ihre Lieblingszeichentrickserie zu schauen <SEG:6> oder Sätze ohne Zeichensetzung zu schreiben.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Dieses Problem wird immer unbedeutender, da die Linsenhersteller bei der Linsenproduktion höhere Standards erreichen.",
+    "seg_text": "Dieses Problem wird immer unbedeutender, <SEG:1> da die Linsenhersteller <SEG:2> bei der Linsenproduktion höhere Standards erreichen.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Diese Veranstaltungen gehen zumeist über drei bis sechs Monate und werden an Orten abgehalten, die mindestens 50 Hektar umfassen.",
+    "seg_text": "Diese Veranstaltungen gehen zumeist <SEG:3> über drei bis sechs Monate <SEG:1> und werden an Orten <SEG:2> abgehalten, die mindestens 50 Hektar umfassen.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Sie sahen wie Räume aus. Er war der erste Mensch, der tote Zellen beobachtete.",
+    "seg_text": "Sie sahen wie Räume aus. <SEG:2> Er war der erste Mensch, <SEG:1> der tote Zellen beobachtete.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "Zur Zeit ist nicht bekannt, welche Vorwürfe erhoben werden oder was die Behörden zu dem Jungen geführt hat, aber vor dem Bundesgericht hat ein Jugendverfahren begonnen.",
+    "seg_text": "Zur Zeit ist nicht bekannt, <SEG:3> welche Vorwürfe erhoben werden <SEG:2> oder was die Behörden <SEG:5> zu dem Jungen geführt hat, <SEG:1> aber vor dem Bundesgericht <SEG:4> hat ein Jugendverfahren begonnen.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Saito war nicht nur ehemaliger Olympiasieger und Weltmeister, sondern bis zu seinem Tod auch der Vorsitzende der Trainingskommission des All Japan Judoverbandes.",
+    "seg_text": "Saito war nicht nur ehemaliger Olympiasieger und Weltmeister, <SEG:1> sondern bis zu seinem Tod <SEG:3> auch der Vorsitzende <SEG:2> der Trainingskommission des <SEG:4> All Japan Judoverbandes.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Einige Spielstätten bieten alkoholische Getränke kostenfrei an. Trunkenheit beeinträchtigt jedoch das Urteilsvermögen, und allen guten Spielern ist klar, wie wichtig es ist, nüchtern zu bleiben.",
+    "seg_text": "Einige Spielstätten bieten alkoholische Getränke kostenfrei an. <SEG:1> Trunkenheit beeinträchtigt jedoch das Urteilsvermögen, <SEG:2> und allen guten Spielern ist klar, <SEG:3> wie wichtig es ist, <SEG:4> nüchtern zu bleiben.",
+    "first_pass": true
+  }
+]

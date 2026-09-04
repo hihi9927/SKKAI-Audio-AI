@@ -1,0 +1,177 @@
+{
+  "cases": [
+    {
+      "id": "en_us_120",
+      "error_type": "placement",
+      "span": "between American <SEG:2> and Iraqi",
+      "evidence": "Translator committed to the first conjunct ('Americans') before 'and Iraqi forces' arrived; piece later contradicted participants.",
+      "cause": "wrong participant",
+      "proposed_rule": "Do not emit a high-confidence boundary inside a 'between X and Y' participant phrase; wait until the coordinating 'and' + following participant or the final noun appears within the next 4 tokens.",
+      "example_pair": {
+        "input": "The game is based on the Second Battle of Fallujah, a vicious battle between American and Iraqi forces.",
+        "output": "The game is based on the Second Battle of Fallujah, <SEG:1> a vicious battle between American and Iraqi forces."
+      }
+    },
+    {
+      "id": "en_us_491",
+      "error_type": "placement",
+      "span": "sent in tanks <SEG:2> to restore",
+      "evidence": "Verb phrase was cut before its complement; translator chose wrong verb form and word order.",
+      "cause": "other",
+      "proposed_rule": "Avoid high-confidence cuts between a verb (any form) and an immediately following particle/prepositional or infinitival complement (e.g., 'sent in ...', 'give way to ...', 'agree to ...') when that complement begins within the next 3 tokens.",
+      "example_pair": {
+        "input": "Although in the end, Krushchev sent in tanks to restore order, he did give way to some economic demands and agreed to appoint the popular Wladyslaw Gomulka as the new prime minister.",
+        "output": "Although in the end, Krushchev sent in tanks to restore order, <SEG:1> he did give way to some economic demands and agreed to appoint the popular Wladyslaw Gomulka as the new prime minister."
+      }
+    },
+    {
+      "id": "en_us_1349",
+      "error_type": "placement",
+      "span": "are being met <SEG:1> by bad",
+      "evidence": "Predicate 'are being met' was translated before the oblique 'by ...' phrase arrived, yielding an incorrect or odd verb choice.",
+      "cause": "other",
+      "proposed_rule": "Do not finalise the translation of passive/impersonal predicates (e.g., 'are being met', 'is being shown') until an immediately following 'by'/'with' oblique phrase or other agent/causer appears within the next 4 tokens.",
+      "example_pair": {
+        "input": "Efforts to search for the crash site are being met by bad weather and harsh terrain.",
+        "output": "Efforts to search for the crash site are being met by bad weather and harsh terrain.<SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_1604",
+      "error_type": "placement",
+      "span": "As NSA, <SEG:9> he assisted",
+      "evidence": "Abbreviation 'As NSA' was expanded/translated before the verb or clarifying title arrived, producing wrong role wording ('agent' vs 'chief').",
+      "cause": "mistranslated",
+      "proposed_rule": "When a short title/abbreviation appears in a preposed phrase ('As X,' / 'As X') do not emit a high-confidence boundary until the following verb or an appositive clarifies the role (look ahead up to 3 tokens).",
+      "example_pair": {
+        "input": "As NSA, he assisted Carter in diplomatically handling world affairs, such as the Camp David Accords, 1978; normalizing US–China relations through the late 1970s; the Iranian Revolution, which led to the Iran hostage crisis, 1979; and the Soviet invasion in Afghanistan, 1979.",
+        "output": "As NSA, he assisted Carter in diplomatically handling world affairs, <SEG:1> such as the Camp David Accords, 1978; normalizing US–China relations through the late 1970s; the Iranian Revolution, which led to the Iran hostage crisis, 1979; and the Soviet invasion in Afghanistan, 1979."
+      }
+    },
+    {
+      "id": "en_us_565",
+      "error_type": "placement",
+      "span": "not depression and fear <SEG:3> was",
+      "evidence": "Contrastive phrase 'not depression and fear' was separated from the main predicate, causing negation/scope to attach incorrectly.",
+      "cause": "modifier scope",
+      "proposed_rule": "Do not place a high-confidence boundary between contrastive/limiter items (e.g., 'not X and Y', 'only X, not Y') and the main predicate when the verb appears later; wait for the main verb within the next 4 tokens.",
+      "example_pair": {
+        "input": "Only the effects of catastrophizing, not depression and fear was conditional of regular weekly structured PA sessions.",
+        "output": "Only the effects of catastrophizing, not depression and fear was conditional of regular weekly structured PA sessions.<SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_687",
+      "error_type": "priority",
+      "span": "Anyone interested in <SEG:7> seeing evidence",
+      "evidence": "Measurement flagged a high contradiction after an early cut but human judgement called it 'safe' — measurement disagreement suggests this boundary should not be automatically downgraded.",
+      "cause": "other",
+      "proposed_rule": "",
+      "example_pair": {
+        "input": "Anyone interested in seeing evidence of the damage to the mummy done during attempts to remove it from the coffin will be disappointed as only the head and shoulders are visible.",
+        "output": "Anyone interested in seeing evidence of the damage to the mummy done during attempts to remove it from the coffin <SEG:1> will be disappointed as only the head and shoulders are visible."
+      }
+    }
+  ],
+  "summary": "Most high-contradiction failures are placement errors: the prompt lets boundaries cut verb phrases, passive predicates, contrast scopes, participant conjunctions, and ambiguous title phrases before disambiguating words arrive. The segmenter also over-trusts comma-adjacent cuts; add surface lookahead conditions (3–4 tokens) that delay high-confidence boundaries when the next tokens are coordinating participants, infinitival/prepositional complements ('to', 'by', 'in'), or short uppercase titles. Do not eliminate candidacy — only lower confidence for these risky surface patterns so safer punctuation/clause boundaries are chosen first.",
+  "aggregate": {
+    "dominant_error": null,
+    "dominant_basis": "No corpus rate identifies a dominant failure. Read the cases and `judge_distribution` for WHICH mechanism to fix — do not infer a rate from `case_label_counts`, those cases were selected for being the worst.",
+    "measured_rates": {
+      "coverage": {
+        "n": 0,
+        "of_n": 40,
+        "rate": 0.0,
+        "of": "all sentences scored — a true corpus rate",
+        "meaning": "sentences where the tightest budget asked for boundaries the prompt never marked, so pieces are missing outright"
+      },
+      "premature_among_judged": {
+        "n": 9,
+        "of_n": 10,
+        "rate": 0.9,
+        "of": "boundaries judged this iteration, selected as the WORST by measured contradiction — NOT a corpus rate, do not compare it against `coverage`"
+      }
+    },
+    "case_label_counts": {
+      "counts": {
+        "placement": 5,
+        "priority": 1
+      },
+      "of_n": 6,
+      "of": "the selected worst cases — NOT a rate"
+    },
+    "stuck_hint": "",
+    "priority_audit": [
+      {
+        "feature": "뒤 구두점 ','",
+        "n": 15,
+        "rank_percentile": 0.373,
+        "contradiction": 0.1758,
+        "over_trust": 0.2085
+      },
+      {
+        "feature": "상대위치 1/3",
+        "n": 53,
+        "rank_percentile": 0.604,
+        "contradiction": 0.2069,
+        "over_trust": 0.0083
+      },
+      {
+        "feature": "상대위치 0/3",
+        "n": 66,
+        "rank_percentile": 0.607,
+        "contradiction": 0.1793,
+        "over_trust": 0.0041
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 46,
+        "rank_percentile": 0.628,
+        "contradiction": 0.2281,
+        "over_trust": -0.0181
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 137,
+        "rank_percentile": 0.663,
+        "contradiction": 0.1982,
+        "over_trust": -0.0496
+      }
+    ],
+    "judge_distribution": {
+      "n_boundaries_judged": 10,
+      "verdicts": {
+        "mistranslated": 8,
+        "safe": 1,
+        "premature": 1
+      },
+      "n_with_cause": 9,
+      "causes": {
+        "other": {
+          "n": 4,
+          "share": 0.444
+        },
+        "wrong participant": {
+          "n": 2,
+          "share": 0.222
+        },
+        "mistranslated": {
+          "n": 1,
+          "share": 0.111
+        },
+        "modifier scope": {
+          "n": 1,
+          "share": 0.111
+        },
+        "head not yet arrived": {
+          "n": 1,
+          "share": 0.111
+        }
+      }
+    },
+    "max_missing_boundaries": 0.0,
+    "rank_lift": 0.15347,
+    "rank_lift_t": 3.55,
+    "summary": "Most high-contradiction failures are placement errors: the prompt lets boundaries cut verb phrases, passive predicates, contrast scopes, participant conjunctions, and ambiguous title phrases before disambiguating words arrive. The segmenter also over-trusts comma-adjacent cuts; add surface lookahead conditions (3–4 tokens) that delay high-confidence boundaries when the next tokens are coordinating participants, infinitival/prepositional complements ('to', 'by', 'in'), or short uppercase titles. Do not eliminate candidacy — only lower confidence for these risky surface patterns so safer punctuation/clause boundaries are chosen first."
+  }
+}

@@ -1,0 +1,286 @@
+{
+  "cases": [
+    {
+      "id": "ja_jp_1103",
+      "error_type": "format_violation",
+      "span": "ウカの武器は5人目の男の頭に向けられて失敗した。",
+      "evidence": "Tags inserted inside words and original text altered; tag indices scrambled.",
+      "cause": "text modified / tags misplaced",
+      "proposed_rule": "When inserting <SEG:n> markers, never delete, split or reorder source characters — place tags only between existing tokens/characters and keep the original text exactly.",
+      "example_pair": {
+        "input": "ウカの武器は5人目の男の頭に向けられて失敗した。シュナイダーには痛みがあり、片目は失明し、頭蓋骨の一部が欠損し、顔はチタンで再建されている。",
+        "output": "ウカの武器は5人目の男の頭に向けられて失敗した。 <SEG:1> シュナイダーには痛みがあり、 <SEG:2> 片目は失明し、 <SEG:3> 頭蓋骨の一部が欠損し、 <SEG:4> 顔はチタンで再建されている。"
+      }
+    },
+    {
+      "id": "ja_jp_492",
+      "error_type": "format_violation",
+      "span": "インダス渓谷文明は、北西インド亜大陸の青銅器時代の文明で、",
+      "evidence": "Too few/ misplaced tags; tags split noun phrases and moved clause order.",
+      "cause": "tag placement / text modification",
+      "proposed_rule": "Insert tags only at whole-token boundaries (between words or punctuation), never inside noun phrases or reorder fragments; preserve source token order.",
+      "example_pair": {
+        "input": "インダス渓谷文明は、北西インド亜大陸の青銅器時代の文明で、現代のパキスタンの大部分とインド北西部と北東アフガニスタンの一部の地域を包含していました。",
+        "output": "インダス渓谷文明は、北西インド亜大陸の青銅器時代の文明で、 <SEG:1> 現代のパキスタンの大部分とインド北西部と北東アフガニスタンの一部の地域を包含していました。"
+      }
+    },
+    {
+      "id": "ja_jp_1108",
+      "error_type": "format_violation",
+      "span": "連合軍とアフガニスタン軍が当該区域に進入して現地の安全を確保し、",
+      "evidence": "Source tokens were split (アフガニスタン split) and tags inserted mid-token.",
+      "cause": "tag insertion inside tokens",
+      "proposed_rule": "Never split multi-character tokens (names/compounds); place tags only between complete tokens or after punctuation, preserving original token integrity.",
+      "example_pair": {
+        "input": "連合軍とアフガニスタン軍が当該区域に進入して現地の安全を確保し、支援のために連合軍のその他の航空機も派遣されています。",
+        "output": "連合軍とアフガニスタン軍が当該区域に進入して現地の安全を確保し、 <SEG:1> 支援のために連合軍のその他の航空機も派遣されています。"
+      }
+    },
+    {
+      "id": "ja_jp_339",
+      "error_type": "format_violation",
+      "span": "レンツはウォームアップ中にバイクから転落し、",
+      "evidence": "Produced too few tags and placed tags inside/around name fragments; output invalid per format checker.",
+      "cause": "insufficient/incorrect tagging",
+      "proposed_rule": "Ensure required tag count and place tags only between clauses; do not merge clause boundaries or omit tags — always preserve tag tokens and original text.",
+      "example_pair": {
+        "input": "レンツはウォームアップ中にバイクから転落し、仲間のザビエル・ザヤットに追突された。",
+        "output": "レンツはウォームアップ中にバイクから転落し、 <SEG:1> 仲間のザビエル・ザヤットに追突された。"
+      }
+    },
+    {
+      "id": "ja_jp_1309",
+      "error_type": "format_violation",
+      "span": "具体的には、昨日のスーパーGで女子スタンディングクラスでアンナ・ヨシェムセンが9位に終わったオランダや、",
+      "evidence": "Tags split words (女子 split) and produced fewer-than-required tags; words were fragmented.",
+      "cause": "tagging inside words / too few tags",
+      "proposed_rule": "Do not insert tags inside grapheme/word boundaries (kana/kanji clusters); always attach tags between words or after punctuation and keep counts intact.",
+      "example_pair": {
+        "input": "具体的には、昨日のスーパーGで女子スタンディングクラスでアンナ・ヨシェムセンが9位に終わったオランダや、同じイベントでカチャ・サーリネンが10位に終わったフィンランドなどです。",
+        "output": "具体的には、昨日のスーパーGで女子スタンディングクラスでアンナ・ヨシェムセンが9位に終わったオランダや、 <SEG:1> 同じイベントでカチャ・サーリネンが10位に終わったフィンランドなどです。"
+      }
+    },
+    {
+      "id": "ja_jp_119",
+      "error_type": "placement",
+      "span": "ゲームメーカーのコナミは本日、",
+      "evidence": "Segments emitted before the clause-final verb and negation, causing invented events ('launched a new game').",
+      "cause": "polarity not yet settled / head not yet arrived",
+      "proposed_rule": "Do not cut immediately before clause-final verbs, quoted titles, or polarity-bearing predicates; wait for the main verb/negation (e.g. 'リリースしないことを明言しました') before producing an independent predication.",
+      "example_pair": {
+        "input": "ゲームメーカーのコナミは本日、日本の新聞で、「Six Days in Fallujah」というゲームをリリースしないことを明言しました。",
+        "output": "ゲームメーカーのコナミは本日、日本の新聞で、「Six Days in Fallujah」というゲームをリリースしないことを明言しました。 <SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_1560",
+      "error_type": "placement",
+      "span": "流れから抜け出れば、泳いで戻るのは",
+      "evidence": "Boundary before sentence-final negation produced opposite polarity ('you won't swim back').",
+      "cause": "polarity not yet settled",
+      "proposed_rule": "Delay segmentation that would emit an ability/possibility judgment until sentence-final degree/negation words (e.g. 'それほど難しくありません') are seen.",
+      "example_pair": {
+        "input": "流れから抜け出れば、泳いで戻るのはそれほど難しくありません。",
+        "output": "流れから抜け出れば、泳いで戻るのはそれほど難しくありません。 <SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_1220",
+      "error_type": "placement",
+      "span": "1956年にスウェーデンに移住したスワニアは、",
+      "evidence": "Partial modifier emitted as a fact (invented wrong country/year) before the full modifying clause completed.",
+      "cause": "head not yet arrived / other",
+      "proposed_rule": "Do not finalize concrete factual claims (dates, places) or render full attributive clauses until the entire modifying phrase (including its head/verb) is available.",
+      "example_pair": {
+        "input": "1956年にスウェーデンに移住したスワニアは、3年後にスウェーデン郵便局で働き始め、その主任彫版工となりました。",
+        "output": "1956年にスウェーデンに移住したスワニアは、3年後にスウェーデン郵便局で働き始め、 <SEG:1> その主任彫版工となりました。"
+      }
+    },
+    {
+      "id": "ja_jp_1176",
+      "error_type": "placement",
+      "span": "社会の基準から外れて軽視されていると感じている同好の士が集まって、",
+      "evidence": "Segmenting after dependent phrase led to misassigned agent/participant and wrong predicate.",
+      "cause": "head not yet arrived / wrong participant",
+      "proposed_rule": "Avoid boundaries immediately after dependent modifiers or case particles (e.g. 'から','の'); wait for the clause-final predicate to determine participant roles.",
+      "example_pair": {
+        "input": "サブカルチャーは、社会の基準から外れて軽視されていると感じている同好の士が集まって、自分らしさを養えるようにする文化です。",
+        "output": "サブカルチャーは、社会の基準から外れて軽視されていると感じている同好の士が集まって、自分らしさを養えるようにする文化です。 <SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_959",
+      "error_type": "placement",
+      "span": "南半球の3つの海洋すべてを横断する便を就航している航空会社はありません（",
+      "evidence": "Emitted affirmative existence before sentence-final negation 'ありません', causing polarity reversal.",
+      "cause": "polarity not yet settled",
+      "proposed_rule": "Do not emit existence/affirmative predicates for noun clauses that may be negated; wait for sentence-final polarity markers like 'ない/ありません' before producing existence claims.",
+      "example_pair": {
+        "input": "南半球の3つの海洋すべてを横断する便を就航している航空会社はありません（スカイチームはいずれの海洋を横断する便も就航していません）。",
+        "output": "南半球の3つの海洋すべてを横断する便を就航している航空会社はありません（スカイチームはいずれの海洋を横断する便も就航していません）。"
+      }
+    },
+    {
+      "id": "ja_jp_967",
+      "error_type": "placement",
+      "span": "チンクエ・テッレは「5つの土地」を意味し、",
+      "evidence": "Quoted phrase / compound was translated prematurely ('earth'/'土地' misrendered) before closing quote/list finished.",
+      "cause": "other / head not yet arrived",
+      "proposed_rule": "Delay translating quoted phrases, compounds or partially-seen proper names until the closing quote or full list/name is available to avoid misinterpretation.",
+      "example_pair": {
+        "input": "イタリアのリグーリア州にあるチンクエ・テッレは「5つの土地」を意味し、オマッジョーレ、マナローラ、コルニリア、ヴェルナッツァ、モンテロッソという5つの小さな村が寄り添うようにできた沿岸沿いの地域です。",
+        "output": "イタリアのリグーリア州にあるチンクエ・テッレは「5つの土地」を意味し、 <SEG:1> オマッジョーレ、マナローラ、コルニリア、ヴェルナッツァ、モンテロッソという5つの小さな村が寄り添うようにできた沿岸沿いの地域です。"
+      }
+    },
+    {
+      "id": "ja_jp_1287",
+      "error_type": "placement",
+      "span": "という伝説の埋葬地であるヘブロン方面に北上するバスも",
+      "evidence": "Fragment emitted as standalone sentence or with unrelated discourse because clause head not awaited; produced unrelated negation/response.",
+      "cause": "other / head not yet arrived",
+      "proposed_rule": "Do not emit standalone discourse or sentence-level moves from a clause fragment; wait for the noun/verb head that completes a modifier like 'という…である' before producing a sentence-level utterance.",
+      "example_pair": {
+        "input": "また、聖書の家長アブラハム、イサク、ヤコブ、そして彼らの妻たちが埋められているという伝説の埋葬地であるヘブロン方面に北上するバスも何本かあります。",
+        "output": "また、聖書の家長アブラハム、イサク、ヤコブ、そして彼らの妻たちが埋められているという伝説の埋葬地であるヘブロン方面に北上するバスも何本かあります。"
+      }
+    },
+    {
+      "id": "ja_jp_1273",
+      "error_type": "placement",
+      "span": "「ブラックボックス」のフライトレコーダー2台を回収したと報じました。",
+      "evidence": "Boundaries split the compound 'フライトレコーダー' and quantity, causing wrong number/head in emitted text.",
+      "cause": "head not yet arrived / partial word",
+      "proposed_rule": "Never place a boundary inside a compound word or between a head noun and its quantity; wait until the full noun+quantity token sequence has arrived.",
+      "example_pair": {
+        "input": "新華社は、政府の調査員が水曜日に「ブラックボックス」のフライトレコーダー2台を回収したと報じました。",
+        "output": "新華社は、政府の調査員が水曜日に「ブラックボックス」のフライトレコーダー2台を回収したと報じました。 <SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_1414",
+      "error_type": "placement",
+      "span": "人間以外の動物に育てられて成長した野生児は、",
+      "evidence": "Chunking long relative/modifier clause early leads to partial/garbled translations downstream (low adequacy).",
+      "cause": "head not yet arrived / modifier scope",
+      "proposed_rule": "Avoid segmenting inside long relative clauses or complex modifier chains; wait for the clause-final verb or parenthetical closing before emitting the modifier as a separate piece.",
+      "example_pair": {
+        "input": "人間以外の動物に育てられて成長した野生児は、人間を恐れたり、人間に無関心であるなど、その動物とほとんど同じような行動を（物理的な範囲内）を示します。",
+        "output": "人間以外の動物に育てられて成長した野生児は、人間を恐れたり、人間に無関心であるなど、その動物とほとんど同じような行動を（物理的な範囲内）を示します。"
+      }
+    },
+    {
+      "id": "ja_jp_1153",
+      "error_type": "placement",
+      "span": "生理学や行動で観察されるリズムの多くは、",
+      "evidence": "Words and compound terms were split (リズム, 内因性) producing garbled piece-level translations.",
+      "cause": "head not yet arrived / partial word",
+      "proposed_rule": "Do not insert boundaries that split lexical items (compounds or multi-syllable words); wait for entire lexical token before tagging.",
+      "example_pair": {
+        "input": "生理学や行動で観察されるリズムの多くは、内因性周期の存在と体内時計を通して刻まれるしくみに決定的に依存していることが多いのです。",
+        "output": "生理学や行動で観察されるリズムの多くは、内因性周期の存在と体内時計を通して刻まれるしくみに決定的に依存していることが多いのです。 <SEG:1>"
+      }
+    }
+  ],
+  "summary": "The prompt systematically segments too early: it often cuts before clause-final verbs, negations, quantities, or closing quotes, causing polarity flips, wrong participants and invented facts. It also inserts tags inside tokens/compounds or splits names and quoted phrases. Primary fixes: delay boundaries until clause heads/negation/closing-quote/quantity tokens arrive, and forbid inserting tags inside tokens (place tags only between whole tokens). Additionally, demote comma ('、')-adjacent boundaries when they precede dependent fragments or partial compounds.",
+  "aggregate": {
+    "dominant_error": null,
+    "dominant_basis": "No corpus rate identifies a dominant failure. Read the cases and `judge_distribution` for WHICH mechanism to fix — do not infer a rate from `case_label_counts`, those cases were selected for being the worst.",
+    "measured_rates": {
+      "coverage": {
+        "n": 4,
+        "of_n": 40,
+        "rate": 0.1,
+        "of": "all sentences scored — a true corpus rate",
+        "meaning": "sentences where the tightest budget asked for boundaries the prompt never marked, so pieces are missing outright"
+      },
+      "premature_among_judged": {
+        "n": 51,
+        "of_n": 60,
+        "rate": 0.85,
+        "of": "boundaries judged this iteration, selected as the WORST by measured contradiction — NOT a corpus rate, do not compare it against `coverage`"
+      }
+    },
+    "case_label_counts": {
+      "counts": {
+        "format_violation": 5,
+        "placement": 10
+      },
+      "of_n": 15,
+      "of": "the selected worst cases — NOT a rate"
+    },
+    "stuck_hint": "",
+    "priority_audit": [
+      {
+        "feature": "뒤 구두점 '、'",
+        "n": 38,
+        "rank_percentile": 0.378,
+        "contradiction": 0.2215,
+        "over_trust": 0.1825
+      },
+      {
+        "feature": "상대위치 1/3",
+        "n": 62,
+        "rank_percentile": 0.518,
+        "contradiction": 0.2875,
+        "over_trust": 0.0808
+      },
+      {
+        "feature": "상대위치 0/3",
+        "n": 73,
+        "rank_percentile": 0.624,
+        "contradiction": 0.1945,
+        "over_trust": -0.0255
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 54,
+        "rank_percentile": 0.627,
+        "contradiction": 0.3057,
+        "over_trust": -0.0445
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 146,
+        "rank_percentile": 0.658,
+        "contradiction": 0.2575,
+        "over_trust": -0.0678
+      }
+    ],
+    "judge_distribution": {
+      "n_boundaries_judged": 60,
+      "verdicts": {
+        "mistranslated": 43,
+        "premature": 8,
+        "safe": 7,
+        "reference_suspect": 2
+      },
+      "n_with_cause": 51,
+      "causes": {
+        "other": {
+          "n": 26,
+          "share": 0.51
+        },
+        "head not yet arrived": {
+          "n": 14,
+          "share": 0.275
+        },
+        "polarity not yet settled": {
+          "n": 8,
+          "share": 0.157
+        },
+        "wrong participant": {
+          "n": 2,
+          "share": 0.039
+        },
+        "mistranslated": {
+          "n": 1,
+          "share": 0.02
+        }
+      }
+    },
+    "max_missing_boundaries": 0.1795,
+    "rank_lift": 0.06892,
+    "rank_lift_t": 1.24,
+    "summary": "The prompt systematically segments too early: it often cuts before clause-final verbs, negations, quantities, or closing quotes, causing polarity flips, wrong participants and invented facts. It also inserts tags inside tokens/compounds or splits names and quoted phrases. Primary fixes: delay boundaries until clause heads/negation/closing-quote/quantity tokens arrive, and forbid inserting tags inside tokens (place tags only between whole tokens). Additionally, demote comma ('、')-adjacent boundaries when they precede dependent fragments or partial compounds."
+  }
+}

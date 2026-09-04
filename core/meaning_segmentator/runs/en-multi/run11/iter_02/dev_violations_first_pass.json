@@ -1,0 +1,289 @@
+[
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "The game is played on grass, and the grass around the hole is mown shorter and called the green.",
+    "seg_text": "The game is played on grass, <SEG:1> and the grass around the hole <SEG:3> is mown shorter <SEG:2> and called the green.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "A person working in a garage near where the accident occurred said: \"There were children waiting to cross the road and they were all screaming and crying.\"",
+    "seg_text": "A person working in a garage <SEG:3> near where the accident occurred <SEG:1> said: \"There were children <SEG:2> waiting to cross <SEG:4> the road and they were all <SEG:5> screaming and crying.\"",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "The light bulb then needs replacing. It is necessary to be careful in replacing the light bulb.",
+    "seg_text": "The light bulb then needs replacing. <SEG:1> It is necessary <SEG:2> to be careful in replacing the light bulb.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "One of the panes finally broke, and they started to get out by the window,\" said survivor Franciszek Kowal.",
+    "seg_text": "One of the panes finally broke, <SEG:1> and they started to get out <SEG:3> by the window, <SEG:2> \" said survivor Franciszek Kowal.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "One of the panes finally broke, and they started to get out by the window,\" said survivor Franciszek Kowal.",
+    "seg_text": "One of the panes finally broke, <SEG:1> and they started to get out <SEG:3> by the window, <SEG:2> \" said survivor Franciszek Kowal.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Scientists have suspected Enceladus as geologically active and a possible source of Saturn's icy E ring.",
+    "seg_text": "Scientists have suspected <SEG:1> Enceladus as geologically active <SEG:2> and a possible source of Saturn's icy E ring.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "However, this does not come cheap: as rough rules of thumb, you can expect to pay up to four times the normal economy fare for business, and eleven times for first class!",
+    "seg_text": "However, this does not come cheap: <SEG:2> as rough rules of thumb, <SEG:3> you can expect to pay <SEG:4> up to four times <SEG:5> the normal economy fare for business, <SEG:1> and eleven times <SEG:6> for first class!",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "However, the discovery of his tomb in 1922 made him a celebrity. While many tombs of the past were robbed, this tomb was left virtually undisturbed.",
+    "seg_text": "However, the discovery <SEG:4> of his tomb in 1922 <SEG:3> made him a celebrity. <SEG:1> While many tombs of the past were robbed, <SEG:2> this tomb was <SEG:5> left virtually undisturbed.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "European Turkey (eastern Thrace or Rumelia in the Balkan peninsula) includes 3% of the country.",
+    "seg_text": "European Turkey (eastern Thrace or Rumelia <SEG:2> in the Balkan peninsula) includes <SEG:1> 3% of the country.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "The U.N. also hopes to finalize a fund to help countries affected by global warming to cope with the impacts.",
+    "seg_text": "The U.N. also hopes <SEG:2> to finalize a fund <SEG:1> to help countries affected <SEG:3> by global warming to cope with the impacts.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 4개 필요",
+    "text": "While immigration check is usually absent or a formality when you arrive in your homeland, customs control can be a hassle.",
+    "seg_text": "While immigration check is usually absent or a formality <SEG:1> when you arrive in your homeland, <SEG:2> customs control can be a hassle.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 9개 — 최소 10개 필요",
+    "text": "The feathers' structure suggests that they were not used in flight but rather for temperature regulation or display. The researchers suggested that, even though this is the tail of a young dinosaur, the sample shows adult plumage and not a chick's down.",
+    "seg_text": "The feathers' structure suggests <SEG:4> that they were <SEG:5> not used in <SEG:6> flight but rather for temperature regulation or display. <SEG:1> The researchers suggested <SEG:3> that, even though <SEG:7> this is the <SEG:8> tail of a young <SEG:9> dinosaur, the sample shows <SEG:2> adult plumage and not a chick's down.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Lodin also said officials decided to cancel the runoff in order to save Afghans the expense and security risk of another election.",
+    "seg_text": "Lodin also said officials <SEG:4> decided to cancel the runoff <SEG:1> in order to save Afghans the <SEG:3> expense and security <SEG:2> risk of another election.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "For those unfamiliar with medical jargon, the words infectious and contagious have distinct meanings.",
+    "seg_text": "For those unfamiliar with medical jargon, <SEG:2> the words infectious and contagious <SEG:1> have distinct meanings.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 7개 필요",
+    "text": "When the fighting ceased after the wounded were transported to the hospital, about 40 of the other remaining inmates stayed in the yard and refused to return to their cells.",
+    "seg_text": "When the fighting ceased <SEG:3> after the wounded were transported to the hospital, <SEG:1> about 40 of the other remaining inmates stayed in the yard <SEG:2> and refused to return <SEG:4> to their cells.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "While on his warm-up lap, Lenz fell off his bike, and was then struck by fellow racer Xavier Zayat.",
+    "seg_text": "While on his warm-up lap, <SEG:2> Lenz fell off his bike, <SEG:1> and was then struck <SEG:3> by fellow racer Xavier Zayat.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 3개 필요",
+    "text": "If visiting a formally arranged garden, collecting \"specimens\" is also going to get you ejected, without discussion.",
+    "seg_text": "If visiting a formally arranged garden, collecting \"specimens\" <SEG:1> is also going to get you ejected, without discussion.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 6개 필요",
+    "text": "However, a nationwide road network is not economically viable for just a handful of cars, so new methods of production are developed to reduce the cost of car ownership.",
+    "seg_text": "However, a nationwide road network is not economically viable <SEG:2> for just a handful of cars, <SEG:1> so new methods of production are developed <SEG:3> to reduce the cost <SEG:4> of car ownership.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Born in the Croatian capital, Zagreb, Bobek gained fame while playing for Partizan Belgrade.",
+    "seg_text": "Born in the Croatian capital, Zagreb, <SEG:2> Bobek gained fame <SEG:1> while playing for Partizan Belgrade.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "The best indication of internal poisoning may be the presence of an open container of medication or toxic household chemicals.",
+    "seg_text": "The best indication of internal poisoning <SEG:2> may be the presence <SEG:1> of an open container <SEG:3> of medication or toxic household chemicals.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "Danius said, \"Right now we are doing nothing. I have called and sent emails to his closest collaborator and received very friendly replies. For now, that is certainly enough.\"",
+    "seg_text": "Danius said, \"Right now we are doing nothing. <SEG:2> I have called <SEG:5> and sent emails <SEG:4> to his closest collaborator <SEG:3> and received very friendly replies. <SEG:1> For now, that is certainly enough.\"",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "The station maintained its attitude, despite the loss of a gyroscope earlier in the space station mission, until the end of the spacewalk.",
+    "seg_text": "The station maintained its attitude, <SEG:2> despite the loss <SEG:4> of a gyroscope <SEG:3> earlier in the space station mission, <SEG:1> until the end of the spacewalk.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 10개 — 최소 11개 필요",
+    "text": "Police said Lo Piccolo had the upper hand because he had been Provenzano's right-hand man in Palermo and his greater experience won him the respect of the older generation of bosses as they pursued Provenzano's policy of keeping as low as possible while strengthening their power network.",
+    "seg_text": "Police said Lo Piccolo had the upper hand <SEG:3> because he had been Provenzano's right-hand <SEG:9> man in Palermo <SEG:2> and his greater experience <SEG:5> won him the respect <SEG:4> of the older generation of bosses <SEG:1> as they pursued <SEG:6> Provenzano's policy of <SEG:7> keeping as low <SEG:8> as possible while strengthening <SEG:10> their power network.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "Bird flu, or more formally avian influenza, can infect both birds and mammals.",
+    "seg_text": "Bird flu, or more formally avian influenza, <SEG:1> can infect both birds and mammals.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "As of the night of August 9, the eye of Morakot was about seventy kilometres away from the Chinese province of Fujian.",
+    "seg_text": "As of the night <SEG:4> of August 9, <SEG:2> the eye of Morakot <SEG:3> was about seventy kilometres <SEG:1> away from the Chinese province of Fujian.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "On Wednesday, the United States' National Basketball Association (NBA) suspended its professional basketball season due to concerns regarding COVID-19.",
+    "seg_text": "On Wednesday, the United States' National Basketball Association (NBA) <SEG:1> suspended its professional <SEG:2> basketball season due <SEG:3> to concerns regarding COVID-19.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "There are also a few buses going north to Hebron, the traditional burial place of the Biblical patriarchs Abraham, Isaac, Jacob, and their wives.",
+    "seg_text": "There are also a few buses <SEG:3> going north to Hebron, <SEG:1> the traditional burial place <SEG:2> of the Biblical patriarchs <SEG:4> Abraham, Jacob, Isaac, and their wives.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "There are also a few buses going north to Hebron, the traditional burial place of the Biblical patriarchs Abraham, Isaac, Jacob, and their wives.",
+    "seg_text": "There are also a few buses <SEG:3> going north to Hebron, <SEG:1> the traditional burial place <SEG:2> of the Biblical patriarchs <SEG:4> Abraham, Jacob, Isaac, and their wives.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Most of the temples do have an Annual festival starting from November end to Mid of May, which varies according to each temple's annual calendar.",
+    "seg_text": "Most of the temples <SEG:3> do have an Annual festival <SEG:1> starting from November end <SEG:4> to Mid of May, <SEG:2> which varies according to each temple's annual calendar.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "I lost my sister and her friend, and on my way there were two disabled people in wheelchairs, people just jumping over and pushing them,\" Armand Versace said.",
+    "seg_text": "I lost my sister <SEG:1> and her friend, <SEG:4> and on my way there <SEG:5> were two disabled people in wheelchairs, <SEG:2> people just jumping over <SEG:6> and pushing them, <SEG:3> Armand Versace said.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 8개 필요",
+    "text": "When the capsule gets to Earth and enters the atmosphere, at about 5am (eastern time), it is expected to put on quite a light show for folks in Northern California, Oregon, Nevada, and Utah.",
+    "seg_text": "When the capsule gets to Earth <SEG:5> and enters the atmosphere, <SEG:1> at about 5am (eastern time), <SEG:2> it is expected <SEG:6> to put on <SEG:7> quite a light show <SEG:3> for folks in Northern California, <SEG:4> Oregon, Nevada, and Utah.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Maybe one day, your great grandchildren will be standing atop an alien world wondering about their ancient ancestors?",
+    "seg_text": "Maybe one day, <SEG:1> your great grandchildren will be standing <SEG:2> atop an alien <SEG:3> world wondering about their ancient ancestors?",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 5개 필요",
+    "text": "British pounds will generally be accepted anywhere in the islands and within Stanley credit cards and United States dollars are also often accepted.",
+    "seg_text": "British pounds will generally be accepted anywhere in the islands <SEG:1> and within Stanley <SEG:3> credit cards and United States dollars <SEG:2> are also often accepted.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Stars give off light and heat because of the energy made when hydrogen atoms are merged (or fused) together to form heavier elements.",
+    "seg_text": "Stars give off light and heat <SEG:1> because of the energy <SEG:3> made when hydrogen atoms are <SEG:4> merged (or fused) together <SEG:2> to form heavier elements.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "The great pyramid was created to honor the Pharaoh Khufu, and many of the smaller pyramids, tombs, and temples were built to honor Khufu's wives and family members.",
+    "seg_text": "The great pyramid was created <SEG:3> to honor the Pharaoh Khufu, <SEG:1> and many of the smaller <SEG:4> pyramids, tombs, and temples <SEG:2> were built to honor Khufu's <SEG:5> wives and family members.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 4개 필요",
+    "text": "Eighteen percent of Venezuelans are unemployed, and most of those who are employed work in the informal economy.",
+    "seg_text": "Eighteen percent of Venezuelans are unemployed, <SEG:1> and most of those who are employed <SEG:2> work in the informal economy.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "For the first time, last year China exported more cars than Germany and surpassed the United States as the biggest market for this industry.",
+    "seg_text": "For the first time, last year <SEG:2> China exported more cars <SEG:4> than Germany surpassed the United States <SEG:1> as the biggest market <SEG:3> for this industry.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "For the first time, last year China exported more cars than Germany and surpassed the United States as the biggest market for this industry.",
+    "seg_text": "For the first time, last year <SEG:2> China exported more cars <SEG:4> than Germany surpassed the United States <SEG:1> as the biggest market <SEG:3> for this industry.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 8개 필요",
+    "text": "Germany was a common enemy in World War 2, leading to cooperation between the USSR and USA. With the end of the war the clashes of system, process and culture led to the countries falling out.",
+    "seg_text": "Germany was a common enemy in <SEG:6> World War 2, <SEG:1> leading to cooperation <SEG:2> between the USSR <SEG:4> and USA. With <SEG:7> the end of the <SEG:5> war the clashes of system, <SEG:3> process and culture led to the countries falling out.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "In the winter, enjoy some of the best skiing in North America, and in the summer try some authentic mountain biking.",
+    "seg_text": "In the winter, <SEG:1> enjoy some of the best skiing in North America, <SEG:2> and in the summer <SEG:3> try some authentic mountain biking.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "Try to talk to as many people as possible. After a while everyone will know you and will give you hints as to which boat is looking for someone.",
+    "seg_text": "Try to talk to as many people as possible. <SEG:1> After a while <SEG:3> everyone will know you <SEG:2> and will give you hints <SEG:4> as to which boat is <SEG:5> looking for someone.",
+    "first_pass": true
+  }
+]

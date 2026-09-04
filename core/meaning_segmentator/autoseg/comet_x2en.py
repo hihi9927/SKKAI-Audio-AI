@@ -33,7 +33,25 @@ def main() -> int:
 
     import sys
     sys.path.insert(0, str(_REPO))
-    from core.meaning_segmentator.autoseg.bleu_eval import load_durations, laal_ms
+    # `laal_ms` 만 빌린다. `load_durations` 는 bleu_eval 의 데이터셋 추상화 리팩터
+    # (커밋 bccce00) 로 사라졌으므로 여기서 직접 읽는다 — 소스 언어가 en 이 아니라
+    # 어차피 언어별 디렉토리를 지정해야 한다.
+    from core.meaning_segmentator.autoseg.bleu_eval import laal_ms
+
+    def load_durations(lang_dir: str) -> dict[str, float]:
+        """FLEURS TSV 6번 열(샘플 수) → 발화 길이 ms. 화자별 녹음이 여러 개라 중앙값."""
+        base = Path.home() / "datasets" / "fleurs" / "data" / lang_dir
+        by_id: dict[str, list[float]] = {}
+        for split in ("train", "dev", "test"):
+            f = base / f"{split}.tsv"
+            if not f.exists():
+                continue
+            with f.open(encoding="utf-8") as fh:
+                for line in fh:
+                    c = line.rstrip("\n").split("\t")
+                    if len(c) >= 6 and c[5].isdigit():
+                        by_id.setdefault(c[0], []).append(int(c[5]) / 16000.0 * 1000.0)
+        return {k: statistics.median(v) for k, v in by_id.items()}
 
     out_path = Path(args.out)
     if args.report_only and out_path.exists():
@@ -54,6 +72,17 @@ def main() -> int:
             e = json.loads(line)
             man[e["utt_id"]] = e["tgt_text"]
         durs = load_durations(FLEURS_DIR[lang])
+        # **강제정렬 실측 타임스탬프가 있으면 쓴다.** 없으면 `laal_ms` 가 발화 내 균일
+        # 속도 보간으로 물러난다 — 강세·휴지 때문에 실제와 어긋나는 옛 방식이다.
+        # 산출: baselines/build_unittimes.py (Qwen3-ForcedAligner, 비영어 소스 지원)
+        ut_path = mp.with_name(mp.stem + "_unittimes.json")
+        unittimes = {}
+        if ut_path.exists():
+            unittimes = {k: v["word_end_ms"]
+                         for k, v in json.loads(ut_path.read_text(encoding="utf-8")).items()}
+            print(f"[{lang}] 강제정렬 타임스탬프 {len(unittimes)}건 사용 ({ut_path.name})")
+        else:
+            print(f"[{lang}] 강제정렬 타임스탬프 없음 — 균일 속도 보간으로 계산")
         spaced = SPACED_SRC[lang]
         conds: dict[str, dict] = {}
 
@@ -75,7 +104,9 @@ def main() -> int:
                 hyp = " ".join(x for x in pt if x)
                 c = conds.setdefault(f"T{T}", {"laal": [], "pairs": []})
                 c["pairs"].append((r["text"], hyp, ref))
-                v = laal_ms(ps, pt, d or 0.0, ref, spaced, "word") if d else None
+                v = (laal_ms(ps, pt, d or 0.0, ref, spaced, "word",
+                            word_end_ms=unittimes.get(r["id"]))
+                     if d else None)
                 if v is not None:
                     c["laal"].append(v)
 
@@ -90,6 +121,20 @@ def main() -> int:
                 index.append((lang, name))
                 rows_all.append({"src": src, "mt": mt, "ref": ref})
         print(f"[{lang}] {rel}: 조건 {len(conds)}개, 채점 {sum(len(c['pairs']) for c in conds.values())}건")
+
+    # **BLEU 도 같이 낸다.** 타깃이 셋 다 영어라 토크나이저가 `13a` 로 동일하므로
+    # en→X 트랙과 달리 **언어 간 절대 BLEU 비교가 성립한다**.
+    import sacrebleu
+    bleu = sacrebleu.metrics.BLEU(tokenize="13a")
+    chrf = sacrebleu.metrics.CHRF(char_order=6, word_order=0, beta=2)
+    by_cond: dict[tuple, list[int]] = {}
+    for i, (lang, name) in enumerate(index):
+        by_cond.setdefault((lang, name), []).append(i)
+    for (lang, name), idxs in by_cond.items():
+        hyps = [rows_all[i]["mt"] for i in idxs]
+        refs = [rows_all[i]["ref"] for i in idxs]
+        report[lang][name]["bleu"] = round(bleu.corpus_score(hyps, [refs]).score, 2)
+        report[lang][name]["chrf2"] = round(chrf.corpus_score(hyps, [refs]).score, 2)
 
     from comet import download_model, load_from_checkpoint
     model = load_from_checkpoint(download_model(args.model))

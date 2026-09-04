@@ -31,7 +31,9 @@ import sacrebleu
 from . import data, metrics
 from .baselines import coarsen
 from .baselines import datasets as _ds
-from .pipeline import GoogleTranslator, JsonCache, split_segments, to_lang_code
+from .pipeline import (GoogleTranslator, JsonCache, LocalTranslator,
+                       LOCAL_MT_DEFAULT, RemoteMTTranslator, add_translate_args,
+                       parse_translator_id, split_segments, to_lang_code)
 
 _HERE = Path(__file__).resolve().parent
 _REPO_ROOT = _HERE.parents[2]
@@ -40,16 +42,20 @@ sys.path.insert(0, str(_REPO_ROOT))
 from evaluation.ast import metrics_ast as M  # noqa: E402
 
 # gtx 타깃 코드는 파이프라인 규칙을 따르고(zh → zh-CN), 토크나이저는 sacrebleu 규칙을 따른다.
-TGT_NAME = {"de": "German", "ja": "Japanese", "zh": "Chinese", "ko": "Korean", "es": "Spanish"}
-SPACED = {"de": True, "es": True, "ja": False, "zh": False, "ko": True}
+# **`en` 이 여기 있어야 한다** — X→en 트랙(de/ja/zh→en)의 타깃이 영어인데 빠져 있어서
+# `TGT_NAME[tgt]` 가 KeyError 로 죽었다.
+TGT_NAME = {"en": "English", "de": "German", "ja": "Japanese", "zh": "Chinese",
+            "ko": "Korean", "es": "Spanish"}
+SPACED = {"en": True, "de": True, "es": True, "ja": False, "zh": False, "ko": True}
 
 
-def load_refs(tag: str, tgt: str, dataset: str = "fleurs") -> dict[str, str]:
-    return {k: e.ref for k, e in _ds.get(dataset).entries(tag, tgt).items()}
+def load_refs(tag: str, tgt: str, dataset: str = "fleurs",
+              src: str = "en") -> dict[str, str]:
+    return {k: e.ref for k, e in dataset_spec(dataset, src).entries(tag, tgt).items()}
 
 
-def load_wordtimes(tag: str, source: str,
-                   dataset: str = "fleurs") -> dict[str, list[float]]:
+def load_wordtimes(tag: str, source: str, dataset: str = "fleurs",
+                   src: str = "en") -> dict[str, list[float]]:
     """조회 키 → 어절 종료 시각(ms). 강제정렬 산출물.
 
     `interp` 는 타임스탬프 없이 발화 내 균일 발화속도로 보간하던 옛 방식이다 —
@@ -58,7 +64,7 @@ def load_wordtimes(tag: str, source: str,
     """
     if source == "interp":
         return {}
-    path = _ds.get(dataset).wordtimes_path(tag, source)
+    path = dataset_spec(dataset, src).wordtimes_path(tag, source)
     blob = json.loads(path.read_text(encoding="utf-8"))
     return {k: v["word_end_ms"] for k, v in blob.items()}
 
@@ -135,8 +141,39 @@ def paired_bootstrap(hyp_a: list[str], hyp_b: list[str], refs: list[str],
             "p_sign_flip": round(n_cross / n_boot, 4)}
 
 
+def make_translator(args, cfg: dict, code: str, cache: JsonCache):
+    """`--translate-engine` 에 따라 번역기를 만든다. 세 클래스의 공개 인터페이스는 같다.
+
+    **`google` 만이 외부 API 다.** gtx(비공식)는 IP 단위로 429 를 맞고, v2 는 무료
+    한도(월 50만 자)를 넘으면 403 이다. 이 스크립트가 요구하는 양은 조건 20개 × 타깃
+    3개 기준 200만 자를 넘으므로, 한도가 막히면 `local` 로 돌리는 것이 유일한 선택이다.
+
+    **번역기가 바뀌면 점수 축도 바뀐다.** madlad400 과 Google 의 번역문은 같지 않으므로
+    캐시 키(`backend`)와 리포트의 `translator` 에 모델 이름이 들어간다 — 섞어 비교 금지.
+    """
+    if args.translate_engine == "local":
+        return LocalTranslator(tgt_code=code, cache=cache,
+                               model_id=args.local_mt_model,
+                               device=args.mt_device, batch=args.mt_batch)
+    if args.translate_engine == "remote":
+        return RemoteMTTranslator(tgt_code=code, cache=cache,
+                                  base_url=args.remote_mt_url,
+                                  model=args.remote_mt_model,
+                                  template=args.remote_mt_template,
+                                  src_name=args.src_lang,
+                                  workers=args.remote_mt_workers)
+    # **백엔드를 런 config 에서 상속한다.** 종전에는 아무것도 안 넘겨 `auto` 였는데,
+    # 그 시절 `google_api_key` 가 `.env` 를 안 읽어 결과적으로 늘 gtx 였다. 이제
+    # auto 가 v2 로 해석되므로, 상속을 명시하지 않으면 옛 런과 다른 자로 재게 된다.
+    inherited, _, _ = parse_translator_id(cfg.get("translator_id") or "", code)
+    return GoogleTranslator.from_args(args, tgt_code=code, cache=cache,
+                                      workers=args.workers, use_context=True,
+                                      backend=inherited)
+
+
 def build_conditions(rows: list[dict], t_grid: list[int], spaced: bool,
-                     mech_every: int, has_auto: bool = True) -> dict[str, list[dict]]:
+                     mech_every: int, has_auto: bool = True,
+                     no_greedy: bool = False) -> dict[str, list[dict]]:
     """조건 이름 → 문장별 {seg_text, pieces}. pieces 가 1개면 무분절과 같다."""
     out: dict[str, list[dict]] = {}
     out["unsegmented"] = [{"seg_text": r["text"], "pieces": [r["text"]]} for r in rows]
@@ -149,7 +186,7 @@ def build_conditions(rows: list[dict], t_grid: list[int], spaced: bool,
                 cond.append({"seg_text": cell["seg_text"],
                              "pieces": cell["pieces_src"]})
             out[f"auto_T{T}"] = cond
-    for T in (t_grid if has_auto else []):
+    for T in (t_grid if (has_auto and not no_greedy) else []):
         cond = []
         for r in rows:
             all_pieces = split_segments(r["seg_text"]) or [r["text"]]
@@ -164,14 +201,26 @@ def build_conditions(rows: list[dict], t_grid: list[int], spaced: bool,
     return out
 
 
+def dataset_spec(name: str, src: str):
+    """**FLEURS 는 `src` 인자를 안 받는다.** n-way 평행 코퍼스라 소스가 `lang_dir` 로
+    정해지기 때문이다. CoVoST2 만 `covost2_{src}-{tgt}_{tag}.jsonl` 를 찾느라 필요하다.
+    구분 없이 넘기면 `--dataset fleurs` 가 TypeError 로 죽는다."""
+    return _ds.get(name, **({"src": src} if name == "covost2" else {}))
+
+
 def load_baseline_conditions(run_dir: Path, policies: list[str], tgt: str,
                              split: str, rows: list[dict], t_grid: list[int],
-                             spaced: bool) -> dict[str, list[dict]]:
+                             spaced: bool,
+                             native_only: tuple[str, ...] = ()) -> dict[str, list[dict]]:
     """`baselines/` 산출을 조건으로 읽는다. 타깃별 파일이 없으면 타깃 독립본을 쓴다.
 
     causal_align·mu_prefix 는 **타깃마다 분절이 다르다** (정렬 대상 / NMT 가 타깃별이다).
     자동 분절·기계 분절과 달리 `k` 가 타깃 간에 같지 않은 이유가 이것이고, 그 자체가
     Table 1a "외부 의존" 열이 재려는 비용이다.
+
+    `native_only` 에 든 정책은 **`coarsen` T 격자를 안 만든다.** 그 정책 자기 노브를
+    스윕해 라벨을 여러 벌 만들어 둔 경우 (AlignAtt 의 `f` 처럼) 우리 T 를 덧씌우면
+    노브가 두 겹이 되어 무슨 축인지 알 수 없게 된다.
     """
     out: dict[str, list[dict]] = {}
     for pol in policies:
@@ -189,6 +238,8 @@ def load_baseline_conditions(run_dir: Path, policies: list[str], tgt: str,
                              f"(예: {missing[:3]}) — build 를 같은 --limit 없이 다시 돌릴 것")
         base = [by_id[r["id"]] or [r["text"]] for r in rows]
         out[pol] = [{"seg_text": " <SEG> ".join(x), "pieces": x} for x in base]
+        if pol in native_only:
+            continue
         for T in t_grid:                     # 정책 경계의 부분집합으로 지연을 옮긴다
             cond = []
             for x in base:
@@ -207,20 +258,56 @@ def main() -> int:
     p.add_argument("--manifest-tag", default="clean500")
     p.add_argument("--dataset", default="fleurs", choices=["fleurs", "covost2"],
                    help="매니페스트·발화 길이·오디오를 어디서 읽을지")
+    p.add_argument("--src", default="en",
+                   help="소스 언어 코드. 매니페스트 이름 covost2_{src}-{tgt}_{tag}.jsonl "
+                        "과 정렬 파일 이름에 쓴다. X→en 트랙은 de/ja/zh 를 준다")
     p.add_argument("--src-spaced", type=int, default=1,
                    help="measured_profile.json 이 없을 때 쓸 소스 띄어쓰기 여부")
     p.add_argument("--t-grid", type=int, nargs="+", default=[4, 6, 8, 12])
     p.add_argument("--mech-every", type=int, default=8)
-    p.add_argument("--workers", type=int, default=4, help="gtx 는 비공식 엔드포인트 — 낮게 둔다")
-    p.add_argument("--bootstrap", type=int, default=1000)
+    p.add_argument("--workers", type=int, default=4,
+                   help="문장 단위 병렬도. **기본 4 는 gtx 무료 엔드포인트의 rate limit "
+                        "때문에 정한 값이다** — 로컬 GPU 번역기(`--translate-engine local`)"
+                        "에서는 배치를 못 채워 GPU 가 논다. 그쪽은 16~24 로 올릴 것")
+    p.add_argument("--no-auto-greedy", action="store_true",
+                   help="`auto_greedy_T*`(순위를 빼고 등간격 절단한 대조)를 안 만든다. "
+                        "번역량의 13% 를 차지한다")
+    p.add_argument("--bootstrap", type=int, default=1000,
+                   help="paired bootstrap 재표집 횟수. **0 이면 아예 안 돌린다** — "
+                        "COMET 만 볼 때 쓴다")
+    p.add_argument("--no-sentence-bleu", action="store_true",
+                   help="조건별 문장 BLEU 평균을 안 낸다. corpus BLEU·chrF2 는 그대로 "
+                        "나온다 (한 번만 토크나이즈하므로 싸다)")
     p.add_argument("--conditions", nargs="+", default=None, help="미지정 시 전부")
     p.add_argument("--wordtimes", default="qwen", choices=["qwen", "ctc", "interp"],
                    help="지연 시각의 출처. 기본 `qwen` — Table 3/4 가 Qwen3-ASR 를 쓰므로 "
                         "지연축을 같은 자로 재고, 비영어 소스로 확장할 때도 쓸 수 있다. "
                         "`ctc`(wav2vec2, 영어 전용)는 독립 교차검증용이며 조건 LAAL 이 "
                         "22ms 이내로 일치한다. `interp` 는 타임스탬프 없던 옛 방식")
+    add_translate_args(p)
+    p.add_argument("--translate-engine", default="google",
+                   choices=["google", "local", "remote"],
+                   help="번역기 종류. google=Cloud/gtx(--translate-provider 로 세분), "
+                        "local=로컬 seq2seq(--local-mt-model), "
+                        "remote=OpenAI 호환 서버의 MT 모델(--remote-mt-*). "
+                        "**번역기가 다르면 점수 축이 다르다** — 섞어 비교 금지")
+    p.add_argument("--local-mt-model", default=LOCAL_MT_DEFAULT,
+                   help="--translate-engine local 일 때 쓸 seq2seq 모델")
+    p.add_argument("--mt-device", default="cuda")
+    p.add_argument("--mt-batch", type=int, default=48,
+                   help="로컬 MT 마이크로 배치 크기")
+    p.add_argument("--remote-mt-url", default="http://localhost:8010/v1")
+    p.add_argument("--remote-mt-model", default="seed-x")
+    p.add_argument("--remote-mt-template", default="seedx")
+    p.add_argument("--remote-mt-workers", type=int, default=64)
+    p.add_argument("--src-lang", default="English",
+                   help="--translate-engine remote 일 때 프롬프트에 넣을 소스 언어명")
     p.add_argument("--baselines", nargs="+", default=[],
                    help="baselines/ 산출을 조건으로 추가 (punct causal_align mu_prefix)")
+    p.add_argument("--baselines-native", nargs="+", default=[],
+                   help="이 정책들은 coarsen T 격자를 만들지 않고 라벨 그대로 점 하나만 "
+                        "낸다. 정책 자기 노브를 스윕한 라벨들(alignatt_f4 …)에 쓴다 — "
+                        "`--baselines` 에도 같이 적어야 파일을 읽는다")
     args = p.parse_args()
 
     run_dir = _HERE.parent / "runs" / args.run_id
@@ -238,12 +325,14 @@ def main() -> int:
         rows = json.loads(ev_path.read_text(encoding="utf-8"))["rows"]
         print(f"분절 출처: {ev_path.name} ({len(rows)}문장), 소스 띄어쓰기 {spaced}")
     else:
-        ents = _ds.get(args.dataset).entries(args.manifest_tag, args.targets[0])
+        ents = dataset_spec(args.dataset, args.src).entries(args.manifest_tag,
+                                                             args.targets[0])
         rows = [{"id": k, "text": e.src} for k, e in ents.items()]
         print(f"⚠ {ev_path.name} 없음 — 비교군만 평가한다 "
               f"({len(rows)}문장, 소스 띄어쓰기 {spaced})")
 
-    conds = build_conditions(rows, args.t_grid, spaced, args.mech_every, has_auto)
+    conds = build_conditions(rows, args.t_grid, spaced, args.mech_every, has_auto,
+                             no_greedy=args.no_auto_greedy)
 
     out_dir = run_dir / "bleu"
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -253,9 +342,10 @@ def main() -> int:
         code = to_lang_code(TGT_NAME[tgt])
         tgt_spaced = SPACED[tgt]
         tokenize = M.resolve_tokenize(tgt)
-        man = _ds.get(args.dataset).entries(args.manifest_tag, tgt)
+        man = dataset_spec(args.dataset, args.src).entries(args.manifest_tag, tgt)
         refs_map = {k: e.ref for k, e in man.items()}
-        wtimes = load_wordtimes(args.manifest_tag, args.wordtimes, args.dataset)
+        wtimes = load_wordtimes(args.manifest_tag, args.wordtimes, args.dataset,
+                                src=args.src)
         tgt_unit = "word" if tgt_spaced else "char"
         ids = [r["id"] for r in rows]
         missing = [i for i in ids if i not in refs_map]
@@ -266,13 +356,13 @@ def main() -> int:
 
         conds_t = dict(conds)
         conds_t.update(load_baseline_conditions(
-            run_dir, args.baselines, tgt, args.split, rows, args.t_grid, spaced))
+            run_dir, args.baselines, tgt, args.split, rows, args.t_grid, spaced,
+            native_only=tuple(args.baselines_native)))
         if args.conditions:
             conds_t = {k: v for k, v in conds_t.items() if k in args.conditions}
 
         cache = JsonCache(run_dir / "cache" / f"translate_{code}.json")
-        tr = GoogleTranslator(tgt_code=code, cache=cache, workers=args.workers,
-                              use_context=True)
+        tr = make_translator(args, cfg, code, cache)
         full_trans = tr.full([rows[i]["text"] for i in keep])
         per_cond = {}
         try:
@@ -307,9 +397,12 @@ def main() -> int:
                     "bleu": round(bleu, 3) if bleu is not None else None,
                     "bleu_signature": sig,
                     "chrf2": round(corpus_chrf2(hyps, refs), 3),
-                    "mean_sentence_bleu": round(statistics.mean(
-                        M.sentence_bleu_score(h, r, tokenize) or 0.0
-                        for h, r in zip(hyps, refs)), 3),
+                    # 문장별 BLEU 는 조건×문장 전수라 제일 비싸다 (15,430×73×3타깃).
+                    # COMET 만 볼 때는 `--no-sentence-bleu` 로 끈다.
+                    "mean_sentence_bleu": (None if args.no_sentence_bleu else
+                                           round(statistics.mean(
+                                               M.sentence_bleu_score(h, r, tokenize) or 0.0
+                                               for h, r in zip(hyps, refs)), 3)),
                     "k": round(statistics.mean(ks), 2),
                     "laal_words": round(statistics.mean(laal), 2),
                     "laal_ms": (round(statistics.mean(laal_ms_vals), 1)
@@ -333,24 +426,27 @@ def main() -> int:
             if base and cell["bleu"] is not None and base["bleu"]:
                 cell["retention_bleu"] = round(cell["bleu"] / base["bleu"], 4)
                 cell["retention_chrf2"] = round(cell["chrf2"] / base["chrf2"], 4)
-            if name != "unsegmented" and base:
+            if name != "unsegmented" and base and args.bootstrap > 0:
                 cell["paired_vs_unseg"] = paired_bootstrap(
                     cell["hyps"], base["hyps"], refs, tokenize, args.bootstrap)
         if f"mechanical_{args.mech_every}" in per_cond:
             mech = per_cond[f"mechanical_{args.mech_every}"]
             for name, cell in per_cond.items():
-                if name.startswith("auto_"):
+                if name.startswith("auto_") and args.bootstrap > 0:
                     cell["paired_vs_mech"] = paired_bootstrap(
                         cell["hyps"], mech["hyps"], refs, tokenize, args.bootstrap)
 
+        # **번역기를 실제 값으로 남긴다.** 종전에는 `f"google:{code}:ctx=True"` 로
+        # 박혀 있었다 — 엔진을 바꿔도 리포트는 google 이라고 말하므로, 다른 번역기로
+        # 잰 곡선을 같은 그림에 겹쳐 놓고도 알아챌 방법이 없다.
         report[tgt] = {"tokenize": tokenize, "n": len(refs),
-                       "translator": f"google:{code}:ctx=True",
+                       "translator": f"{tr.backend}:{code}:ctx={tr.use_context}",
                        "context_line_mismatches": tr.context_line_mismatches,
                        "conditions": per_cond}
         (out_dir / f"{tgt}.json").write_text(
             json.dumps(report[tgt], ensure_ascii=False, indent=2), encoding="utf-8")
-        print(f"[{tgt}] gtx 컨텍스트 줄수 불일치 {tr.context_line_mismatches}건 "
-              f"→ {out_dir / f'{tgt}.json'}")
+        print(f"[{tgt}] {tr.backend} / 컨텍스트 줄수 불일치 "
+              f"{tr.context_line_mismatches}건 → {out_dir / f'{tgt}.json'}")
 
     write_report(out_dir / "report.md", report, args, cfg)
     print(f"\n{(out_dir / 'report.md')}")
@@ -358,11 +454,18 @@ def main() -> int:
 
 
 def write_report(path: Path, report: dict, args, cfg) -> None:
+    # **번역기·소스 언어를 실제 값으로 적는다.** 종전에는 "번역기 gtx(컨텍스트)" 와
+    # "en→{tgt}" 가 문자열에 박혀 있었다 — X→en 런에서 제목이 `en→en` 으로 나오고,
+    # madlad 로 잰 표가 스스로를 gtx 라고 말했다. 리포트만 보고는 알아챌 방법이 없다.
+    trs = sorted({b.get("translator", "?") for b in report.values()})
+    tr_txt = trs[0] if len(trs) == 1 else " / ".join(trs)
+    tgt_txt = "·".join(report) or "—"
     L = [f"# 분절 조건별 참조 기반 BLEU — {args.run_id}", "",
-         f"- 분절: `{args.label}` / 번역기 gtx(컨텍스트) / 부트스트랩 {args.bootstrap}회",
+         f"- 분절: `{args.label}` / 번역기 `{tr_txt}` / 부트스트랩 {args.bootstrap}회",
          "- **언어 간 절대 BLEU 비교 금지** — 토크나이저가 다르다. 언어를 가로지르는 판독은 "
          "`retention`(자기 무분절 대비)과 `chrF2` 로 한다.",
-         "- 타깃 de·ja·zh 는 프롬프트 최적화 시 목적함수에 포함됐던 언어다 (미출현 타깃 아님).",
+         f"- 소스 {args.src} → 타깃 {tgt_txt}. 이 타깃들은 프롬프트 최적화 시 목적함수에 "
+         "포함됐던 언어다 (미출현 타깃 아님).",
          "- `k`(조각 수)는 자동·기계 분절에서는 세 타깃이 **같은 분절**을 쓰므로 동일하다. "
          "단 `causal_align`·`mu_prefix` 는 타깃별 자원(정렬 대상·NMT)에 의존하므로 타깃마다 다르다. "
          "`laal_words` 는 정의상 "
@@ -374,7 +477,8 @@ def write_report(path: Path, report: dict, args, cfg) -> None:
          "- `*_T*` 비교군 점은 정책의 경계 **부분집합**이다 (좌→우 탐욕). 제안 `auto_T*` 만 "
          "LLM 순위로 남길 경계를 고르므로, 순위 이득을 뺀 대조는 `auto_greedy_T*` 다.", ""]
     for tgt, blob in report.items():
-        L += [f"## en→{tgt} (n={blob['n']}, tok:{blob['tokenize']})", "",
+        L += [f"## {args.src}→{tgt} (n={blob['n']}, tok:{blob['tokenize']}, "
+              f"번역기 `{blob.get('translator', '?')}`)", "",
               "| 조건 | k | laal_ms ↓ | laal_words ↓ | BLEU ↑ | chrF2 | retention(BLEU) | Δ vs unseg [95% CI] |",
               "|---|---|---|---|---|---|---|---|"]
         for name, c in blob["conditions"].items():

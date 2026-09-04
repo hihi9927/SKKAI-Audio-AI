@@ -1,0 +1,30 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Never Segment]",
+    "[Priority Rules]",
+    "[Examples — Segment]",
+    "[Examples — Do NOT Segment]"
+  ],
+  "sections_reported": [
+    "[When to Segment]",
+    "[Never Segment]",
+    "[Priority Rules]",
+    "[Examples — Segment]",
+    "[Examples — Do NOT Segment]"
+  ],
+  "changelog": [
+    "Rewrote [When to Segment] rule 4 to explicitly forbid boundaries inside incomplete coordinate structures (X and Y, X or Y) until ALL coordinates and the closing conjunction have arrived.",
+    "Added new [When to Segment] rule 4a: 'After a prepositional phrase object arrives, if the phrase completes a noun phrase.' This permits boundaries after full NP closes, preventing early cuts before preposition objects.",
+    "Added new [When to Segment] rule 4b: 'After a negation, reversal, or exclusive marker (not, only, without, rejected, etc.) that settles polarity or scope of the preceding claim.'",
+    "Rewrote [Never Segment] rule 6 to forbid boundaries: (a) inside coordinate structures before the final coordinate arrives; (b) after a noun heading a prepositional phrase, before the preposition's object; (c) before negations, exclusive markers, or scope-limiting modifiers that reverse or restrict the preceding assertion.",
+    "Added [Never Segment] rule 7: 'Before a relative clause or causal modifier that immediately follows a noun phrase, if the modifier is not yet complete.'",
+    "Added [Never Segment] rule 8: 'After a passive voice verb, before the agent phrase (by-phrase) arrives, unless the agent is absent from the source.'",
+    "Rewrote [Priority Rules] to demote boundaries at relative position 0/3 (early in sentence) and after commas that precede incomplete coordinate structures or polarity reversals to lowest confidence (rank 11–12).",
+    "Ranked boundaries after COMPLETE coordinate structures and after polarity-settled clauses (negation/reversal/exclusive marker fully visible) as highest confidence (rank 1–2).",
+    "Added [Examples — Segment] showing safe cuts after complete coordinates, after negations, and after prepositional phrase objects.",
+    "Added [Examples — Do NOT Segment] showing unsafe cuts inside coordinates, before negations, and before preposition objects."
+  ],
+  "size_budget": 19516,
+  "over_budget": false
+}

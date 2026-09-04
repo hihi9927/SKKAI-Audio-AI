@@ -1,0 +1,277 @@
+{
+  "cases": [
+    {
+      "id": "ja_jp_1103",
+      "error_type": "placement",
+      "span": "頭蓋骨のの",
+      "evidence": "Boundary splits a noun+particle, causing fragmentary renderings (\"I'm sure it's the skull\").",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Never place a boundary inside a noun phrase or between a noun and its genitive/possessive particle; wait for the particle or the head noun to complete.",
+      "example_pair": {
+        "input": "ウカの武器は5人目の男の頭に向けられて失敗した。シュナイダーには痛みがあり、片目は失明し、頭蓋骨の一部が欠損し、顔はチタンで再建されている。",
+        "output": "ウカの武器は5人目の男の頭に向けられて失敗した。<SEG:1> シュナイダーには痛みがあり、片目は失明し、頭蓋骨の一部が欠損し、顔はチタンで再建されている。<SEG:2>"
+      }
+    },
+    {
+      "id": "ja_jp_959",
+      "error_type": "placement",
+      "span": "便を就航している",
+      "evidence": "Emitted predicate without the actor → 'I'm on the flight' vs. 'no airline operates'.",
+      "cause": "wrong participant",
+      "proposed_rule": "Delay emitting a predicate that requires an agent until the noun phrase that supplies the actor (subject) has appeared; otherwise use neutral, non-agentive wording.",
+      "example_pair": {
+        "input": "南半球の3つの海洋すべてを横断する便を就航している航空会社はありません（スカイチームはいずれの海洋を横断する便も就航していません）。",
+        "output": "南半球の3つの海洋すべてを横断する便を就航している航空会社はありません。<SEG:1> （スカイチームはいずれの海洋を横断する便も就航していません。）<SEG:2>"
+      }
+    },
+    {
+      "id": "ja_jp_1108",
+      "error_type": "placement",
+      "span": "連合軍とアフガニスタン軍",
+      "evidence": "Split inside coordinated clause led to hallucinated predicate / repetition.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Avoid cutting between coordinated subject phrases and their governing verb/verb complex; wait for the clause's main predicate to appear.",
+      "example_pair": {
+        "input": "連合軍とアフガニスタン軍が当該区域に進入して現地の安全を確保し、支援のために連合軍のその他の航空機も派遣されています。",
+        "output": "連合軍とアフガニスタン軍が当該区域に進入して現地の安全を確保し、<SEG:1> 支援のために連合軍のその他の航空機も派遣されています。<SEG:2>"
+      }
+    },
+    {
+      "id": "ja_jp_869",
+      "error_type": "placement",
+      "span": "欧風の高級なホテルや食事、サービスに",
+      "evidence": "Noun phrase was rendered with added modality/ability (asserts inability) before predicate arrived.",
+      "cause": "other",
+      "proposed_rule": "When a segment is a noun phrase lacking its predicate, translate it literally and avoid adding modals/judgments until the verb/predicate appears.",
+      "example_pair": {
+        "input": "特に、最初の数日間は、慣れるために、欧風の高級なホテルや食事、サービスにお金をかけることを検討してみてはいかがでしょうか。",
+        "output": "特に、最初の数日間は、慣れるために、欧風の高級なホテルや食事、サービスにお金をかけることを検討してみてはいかがでしょうか。<SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_1560",
+      "error_type": "placement",
+      "span": "流れから抜け出れば、",
+      "evidence": "Committed polarity prematurely: emitted affirmative/ability before clause-final negation/degree ('それほど難しくありません').",
+      "cause": "polarity not yet settled",
+      "proposed_rule": "Delay committing to affirmative/negative polarity or ability judgments until clause‑final negation or degree adverbials (e.g., ない／ありません／それほど) are seen.",
+      "example_pair": {
+        "input": "流れから抜け出れば、泳いで戻るのはそれほど難しくありません。",
+        "output": "流れから抜け出れば、泳いで戻るのはそれほど難しくありません。<SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_1414",
+      "error_type": "placement",
+      "span": "人間以外の動物に育てられて",
+      "evidence": "Emitted topic/noun as full predication before verb/case marker, producing wrong agent/predicate assignments.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not render a topic or noun phrase as a complete predication before its verb or case marker (を/に/たり) appears; wait for the following predicate/object.",
+      "example_pair": {
+        "input": "人間以外の動物に育てられて成長した野生児は、人間を恐れたり、人間に無関心であるなど、その動物とほとんど同じような行動を（物理的な範囲内）を示します。",
+        "output": "人間以外の動物に育てられて成長した野生児は、<SEG:1> 人間を恐れたり、人間に無関心であるなど、<SEG:2> その動物とほとんど同じような行動を示します。<SEG:3>"
+      }
+    },
+    {
+      "id": "ja_jp_1287",
+      "error_type": "placement",
+      "span": "という伝説の埋葬地である",
+      "evidence": "Translated descriptive clause prematurely and hallucinated cultural facts about the place.",
+      "cause": "other",
+      "proposed_rule": "Delay translating descriptive 'という…' clauses until the following proper name/place token arrives; otherwise render the clause literally without inventing specifics.",
+      "example_pair": {
+        "input": "また、聖書の家長アブラハム、イサク、ヤコブ、そして彼らの妻たちが埋められているという伝説の埋葬地であるヘブロン方面に北上するバスも何本かあります。",
+        "output": "また、聖書の家長アブラハム、イサク、ヤコブ、そして彼らの妻たちが埋められているという伝説の埋葬地であるヘブロン方面に北上するバスも何本かあります。<SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_1309",
+      "error_type": "placement",
+      "span": "アンナ・",
+      "evidence": "Emitted partial person name and then guessed a different celebrity (Kournikova); name component arrived later.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not finalize (emit) a personal name or translate a name token until the full name token (all name components) has arrived.",
+      "example_pair": {
+        "input": "具体的には、昨日のスーパーGで女子スタンディングクラスでアンナ・ヨシェムセンが9位に終わったオランダや、同じイベントでカチャ・サーリネンが10位に終わったフィンランドなどです。",
+        "output": "具体的には、昨日のスーパーGで女子スタンディングクラスでアンナ・ヨシェムセンが9位に終わったオランダや、同じイベントでカチャ・サーリネンが10位に終わったフィンランドなどです。<SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_1273",
+      "error_type": "placement",
+      "span": "「ブラックボックス」",
+      "evidence": "Committed to singular 'a black box' before numeric '2台' arrived.",
+      "cause": "modifier scope",
+      "proposed_rule": "Delay committing to number/quantifiers for a noun until following numeric/quantifying words or counters have appeared.",
+      "example_pair": {
+        "input": "新華社は、政府の調査員が水曜日に「ブラックボックス」のフライトレコーダー2台を回収したと報じました。",
+        "output": "新華社は、政府の調査員が水曜日に「ブラックボックス」のフライトレコーダー2台を回収したと報じました。<SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_1192",
+      "error_type": "placement",
+      "span": "ファースト クラスは11倍",
+      "evidence": "Emitted 'ファースト' alone as 'first' before head 'クラス' → fragmentary, wrong role.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not finalize a modifier or shorthand token until its head noun (e.g., 'クラス') has arrived; wait for the head to avoid guessing its role.",
+      "example_pair": {
+        "input": "しかし、決して安くはありません。通常のエコノミークラスで支払う料金に比べて、ビジネスクラスは4倍、ファーストクラスは11倍というのが大まかな目安です。",
+        "output": "しかし、決して安くはありません。<SEG:1> 通常のエコノミークラスで支払う料金に比べて、ビジネスクラスは4倍、ファーストクラスは11倍というのが大まかな目安です。<SEG:2>"
+      }
+    },
+    {
+      "id": "ja_jp_119",
+      "error_type": "placement",
+      "span": "「Six Days in",
+      "evidence": "Cut inside a quoted title, causing the locative to attach incorrectly to the title.",
+      "cause": "modifier scope",
+      "proposed_rule": "Do not cut inside quoted titles or attach preceding locative/modifiers to an unfinished quoted string; wait for the title head/closing quote.",
+      "example_pair": {
+        "input": "ゲームメーカーのコナミは本日、日本の新聞で、「Six Days in Fallujah」というゲームをリリースしないことを明言しました。",
+        "output": "ゲームメーカーのコナミは本日、日本の新聞で、「Six Days in Fallujah」というゲームをリリースしないことを明言しました。<SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_339",
+      "error_type": "placement",
+      "span": "バイクから転落し、仲間の",
+      "evidence": "Committed to an ambiguous vehicle term and omitted teammate relation; role determined only after name/verb arrived.",
+      "cause": "other",
+      "proposed_rule": "Avoid committing to ambiguous lexical choices (e.g., vehicle type) or emitting a name before its governing particle/verb that establishes role (e.g., 仲間の…に); wait for disambiguating tokens.",
+      "example_pair": {
+        "input": "レンツはウォームアップ中にバイクから転落し、仲間のザビエル・ザヤットに追突された。",
+        "output": "レンツはウォームアップ中にバイクから転落し、仲間のザビエル・ザヤットに追突された。<SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_1275",
+      "error_type": "placement",
+      "span": "アリ、シロアリ、卵）",
+      "evidence": "Translated 'シロアリ' as wrong species ('blue ants') before confirming canonical term; low-frequency lexical error.",
+      "cause": "other",
+      "proposed_rule": "Avoid finalizing low-frequency or ambiguous species/technical terms until adjacent tokens (closing paren, particle, or predicate) provide disambiguation.",
+      "example_pair": {
+        "input": "一方、動物性食物（アリ、シロアリ、卵）は消化しやすいうえに、必須アミノ酸をすべて含む良質なタンパク質源です。",
+        "output": "一方、動物性食物（アリ、シロアリ、卵）は消化しやすいうえに、必須アミノ酸をすべて含む良質なタンパク質源です。<SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_1176",
+      "error_type": "placement",
+      "span": "サブカルチャーは、社会の基準から外れて",
+      "evidence": "Partial emission turned topic into global negative assertion, losing the 'culture where like‑minded people gather' frame.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not render a topical noun phrase as a standalone global assertion when a following relative clause or verb will reframe it; wait for the clause that defines its role.",
+      "example_pair": {
+        "input": "サブカルチャーは、社会の基準から外れて軽視されていると感じている同好の士が集まって、自分らしさを養えるようにする文化です。",
+        "output": "サブカルチャーは、社会の基準から外れて軽視されていると感じている同好の士が集まって、<SEG:1> 自分らしさを養えるようにする文化です。<SEG:2>"
+      }
+    }
+  ],
+  "summary": "Most failures are placement errors: boundaries cut before verbs, case markers, name components, numeric/counter words, or closing punctuation, forcing the translator to guess heads, participants, polarity, or technical terms. Rank/prioritisation also over-trusts some early positions (e.g. near the first third and after '、'), so add priority rules that demote boundaries immediately after '、' and at unstable relative positions while enforcing the placement conditions above.",
+  "aggregate": {
+    "dominant_error": null,
+    "dominant_basis": "No corpus rate identifies a dominant failure. Read the cases and `judge_distribution` for WHICH mechanism to fix — do not infer a rate from `case_label_counts`, those cases were selected for being the worst.",
+    "measured_rates": {
+      "coverage": {
+        "n": 2,
+        "of_n": 40,
+        "rate": 0.05,
+        "of": "all sentences scored — a true corpus rate",
+        "meaning": "sentences where the tightest budget asked for boundaries the prompt never marked, so pieces are missing outright"
+      },
+      "premature_among_judged": {
+        "n": 48,
+        "of_n": 60,
+        "rate": 0.8,
+        "of": "boundaries judged this iteration, selected as the WORST by measured contradiction — NOT a corpus rate, do not compare it against `coverage`"
+      }
+    },
+    "case_label_counts": {
+      "counts": {
+        "placement": 14
+      },
+      "of_n": 14,
+      "of": "the selected worst cases — NOT a rate"
+    },
+    "stuck_hint": "",
+    "priority_audit": [
+      {
+        "feature": "상대위치 1/3",
+        "n": 62,
+        "rank_percentile": 0.495,
+        "contradiction": 0.2644,
+        "over_trust": 0.1027
+      },
+      {
+        "feature": "뒤 구두점 '、'",
+        "n": 31,
+        "rank_percentile": 0.461,
+        "contradiction": 0.1343,
+        "over_trust": 0.0712
+      },
+      {
+        "feature": "상대위치 0/3",
+        "n": 77,
+        "rank_percentile": 0.623,
+        "contradiction": 0.1745,
+        "over_trust": -0.0251
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 151,
+        "rank_percentile": 0.627,
+        "contradiction": 0.2588,
+        "over_trust": -0.0423
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 54,
+        "rank_percentile": 0.646,
+        "contradiction": 0.3032,
+        "over_trust": -0.073
+      }
+    ],
+    "judge_distribution": {
+      "n_boundaries_judged": 60,
+      "verdicts": {
+        "mistranslated": 39,
+        "premature": 9,
+        "safe": 8,
+        "reference_suspect": 4
+      },
+      "n_with_cause": 48,
+      "causes": {
+        "other": {
+          "n": 20,
+          "share": 0.417
+        },
+        "head not yet arrived": {
+          "n": 15,
+          "share": 0.312
+        },
+        "wrong participant": {
+          "n": 7,
+          "share": 0.146
+        },
+        "modifier scope": {
+          "n": 3,
+          "share": 0.062
+        },
+        "polarity not yet settled": {
+          "n": 2,
+          "share": 0.042
+        },
+        "mistranslated": {
+          "n": 1,
+          "share": 0.021
+        }
+      }
+    },
+    "max_missing_boundaries": 0.0769,
+    "rank_lift": 0.01651,
+    "rank_lift_t": 0.32,
+    "summary": "Most failures are placement errors: boundaries cut before verbs, case markers, name components, numeric/counter words, or closing punctuation, forcing the translator to guess heads, participants, polarity, or technical terms. Rank/prioritisation also over-trusts some early positions (e.g. near the first third and after '、'), so add priority rules that demote boundaries immediately after '、' and at unstable relative positions while enforcing the placement conditions above."
+  }
+}

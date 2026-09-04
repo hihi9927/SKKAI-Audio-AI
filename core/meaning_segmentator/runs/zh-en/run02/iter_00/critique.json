@@ -1,0 +1,239 @@
+{
+  "cases": [
+    {
+      "id": "cmn_hans_cn_1547",
+      "error_type": "placement",
+      "span": "日本广播协会 (NHK)",
+      "evidence": "Emitted an English organization name ('National Broadcasting Company') from characters alone.",
+      "cause": "other",
+      "proposed_rule": "Do not infer or finalize an organisation's English name from its Chinese characters or parenthetical abbreviation; either copy the original/parenthesis or wait for an established English form.",
+      "example_pair": {
+        "input": "日本广播协会 (NHK) 还报道说，位于新泻县的柏崎刈羽 (Kashiwazaki Kariwa) 核电站运行正常。",
+        "output": "日本广播协会 (NHK) 还报道说， <SEG:1> 位于新泻县的柏崎刈羽 (Kashiwazaki Kariwa) <SEG:2> 核电站运行正常。"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_194",
+      "error_type": "placement",
+      "span": "总冠军七次后于 2006 年退役的",
+      "evidence": "Boundary caused the temporal modifier to attach to the wrong head (suggests 'since 2006' or wrong scope).",
+      "cause": "modifier scope",
+      "proposed_rule": "Delay committing temporal modifiers (dates, 'after', 'since') until the clause's main head (verb or noun) that they modify is visible.",
+      "example_pair": {
+        "input": "在赢得一级方程式赛车锦标赛 (Formula 1) 总冠军七次后于 2006 年退役的名将舒马赫，将接替受伤的菲利佩·马萨。",
+        "output": "在赢得一级方程式赛车锦标赛 (Formula 1) 总冠军七次后于 2006 年退役的名将舒马赫， <SEG:1> 将接替受伤的菲利佩·马萨 (Felipe Massa)。"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_388",
+      "error_type": "placement",
+      "span": "“训民正音”，意思是“",
+      "evidence": "Produced a gloss/interpretation of the quoted title before the explanatory head arrived, causing many wrong renderings.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "When a quoted term is followed by an explanatory marker (e.g. 意思是 / 'means'), do not emit a gloss or final lexical choice until the full explanation (closing quote and head) has appeared.",
+      "example_pair": {
+        "input": "他最初将韩语字母发音表命名为“训民正音”，意思是“用于教导人民的正确发音”。",
+        "output": "他最初将韩语字母发音表命名为“训民正音”，意思是“用于教导人民的正确发音”。 <SEG:1>"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_309",
+      "error_type": "placement",
+      "span": "在去世前担任全日本柔道联盟训练委员会主席",
+      "evidence": "Emitted a specific role/head ('head coach') before the head noun '主席' or full name were available; also emitted an incorrect name transliteration.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Delay emitting specific role/head-noun translations and personal-name transliterations until the full name token and the head noun (e.g. 主席) are visible; use neutral phrasing if necessary.",
+      "example_pair": {
+        "input": "作为前奥运冠军和世界冠军的齐藤仁，在去世前担任全日本柔道联盟训练委员会主席。",
+        "output": "作为前奥运冠军和世界冠军的齐藤仁， <SEG:1> 在去世前担任全日本柔道联盟训练委员会主席。"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_934",
+      "error_type": "placement",
+      "span": "你需要一份你希望就读的学校的 录取通知书",
+      "evidence": "Boundary split inside a possessive modifier (…学校的…) and caused the model to invent a head noun ('certificate') prematurely.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "When a genitive/possessive marker (e.g. 的) precedes the head, wait for the head noun before emitting the NP translation; avoid supplying an English head early.",
+      "example_pair": {
+        "input": "在大多数国家，你需要一份你希望就读的学校的录取通知书，以及证明你有至少第一年课程所需资金的文件。",
+        "output": "在大多数国家， <SEG:1> 你需要一份你希望就读的学校的录取通知书， <SEG:2> 以及证明你有至少第一年课程所需资金的文件。"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_846",
+      "error_type": "placement",
+      "span": "成熟的 涂鸦艺术家、涂鸦活动",
+      "evidence": "Splitting before the head caused the adjective to be attached to a single noun (singular) incorrectly.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not finalize number/articles or scope of adjectives/determiners until the head noun(s) in the coordination are seen; keep modifier+head together.",
+      "example_pair": {
+        "input": "然而，如今已经有了成熟的涂鸦艺术家、涂鸦活动和“合法”涂鸦墙。在这种背景下创作的涂鸦绘画往往更类似于艺术品，而非难以辨认的标签。",
+        "output": "然而，如今已经有了成熟的涂鸦艺术家、涂鸦活动和“合法”涂鸦墙。 <SEG:1> 在这种背景下创作的涂鸦绘画往往更类似于艺术品，而非难以辨认的标签。"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_725",
+      "error_type": "placement",
+      "span": "这里曾是一座 17 世纪 修道院的中庭",
+      "evidence": "Boundary emitted a specific building-type ('house'/'castle') before the NP head '中庭' arrived and also altered a proper name.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not emit a concrete head-noun (building type, role, object) when the following words (e.g. after a century phrase) may contain the true head; preserve proper names until confirmed.",
+      "example_pair": {
+        "input": "联盟花园 (Jardín de la Unión)。这里曾是一座 17 世纪修道院的中庭，其中的圣地亚哥圣殿是唯一现存的建筑。",
+        "output": "联盟花园 (Jardín de la Unión)。 <SEG:1> 这里曾是一座 17 世纪修道院的中庭， <SEG:2> 其中的圣地亚哥圣殿是唯一现存的建筑。"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_1535",
+      "error_type": "placement",
+      "span": "空中交通管制员",
+      "evidence": "Boundary split a compound agent word (管制 + 员) and caused the translator to render the agent incorrectly ('pilots').",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Never insert a boundary inside a compound agent/occupation word; wait for the complete agent token (e.g. ...员) before emitting agent translations.",
+      "example_pair": {
+        "input": "它使用卫星技术，而不是老旧的地面雷达技术，使空中交通管制员能够更精确地定位飞机，并向飞行员提供更准确的信息。",
+        "output": "它使用卫星技术，而不是老旧的地面雷达技术， <SEG:1> 使空中交通管制员能够更精确地定位飞机， <SEG:2> 并向飞行员提供更准确的信息。"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_1454",
+      "error_type": "placement",
+      "span": "这档节目是一档“带有全新震撼极客风格的老式广播剧",
+      "evidence": "Emitted an incorrect genre/item translation before the modifier head noun arrived, causing wrong lexical choices.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "When a modifier phrase precedes its head (including quoted modifiers), wait for the head noun to finalize the item/type translation.",
+      "example_pair": {
+        "input": "根据该电台的网站描述，这档节目是一档“带有全新震撼极客风格的老式广播剧！”",
+        "output": "根据该电台的网站描述， <SEG:1> 这档节目是一档“带有全新震撼极客风格的老式广播剧！” <SEG:2>"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_800",
+      "error_type": "reference_suspect",
+      "span": "驼鹿（也被称为麋鹿）",
+      "evidence": "Oracle translation disagrees on species name; measured contradictions flag the reference as suspect.",
+      "cause": "other",
+      "proposed_rule": "When a named-entity/species translation conflicts with downstream evidence or yields high contradiction, treat the oracle as suspect: preserve source names or use a neutral term until disambiguation.",
+      "example_pair": {
+        "input": "驼鹿（也被称为麋鹿）天生不具攻击性，但如果感觉到威胁它们也会自卫。",
+        "output": "驼鹿（也被称为麋鹿） <SEG:1> 天生不具攻击性， <SEG:2> 但如果感觉到威胁它们也会自卫。"
+      }
+    },
+    {
+      "id": "priority_overtrust_commas",
+      "error_type": "priority",
+      "span": "，",
+      "evidence": "Ranking audit shows the model over-trusts boundaries at commas (feature '뒤 구두점 '，'') despite high contradiction at those sites.",
+      "cause": "other",
+      "proposed_rule": "Lower confidence (rank) for candidate boundaries immediately following a comma when the next tokens begin a modifier, parenthesis, quoted phrase, possessive 的, date/number, or a compound head — prefer keeping the segment until the head token appears.",
+      "example_pair": {
+        "input": "在大多数国家，你需要一份你希望就读的学校的录取通知书，以及证明你有至少第一年课程所需资金的文件。",
+        "output": "在大多数国家， <SEG:1> 你需要一份你希望就读的学校的录取通知书， <SEG:2> 以及证明你有至少第一年课程所需资金的文件。"
+      }
+    }
+  ],
+  "summary": "Most measured failures are placement errors: the prompt marks boundaries that force the translator to finalize heads, names, quoted glosses or temporal modifiers too early. The ranking also over-trusts comma-adjacent breaks; demote comma-sited candidates when they precede modifiers, parentheses, quotes, possessives, dates/numbers, or compound heads. Apply 'wait-for-head' rules and preserve names/parentheticals to prevent these premature commits.",
+  "aggregate": {
+    "dominant_error": null,
+    "dominant_basis": "No corpus rate identifies a dominant failure. Read the cases and `judge_distribution` for WHICH mechanism to fix — do not infer a rate from `case_label_counts`, those cases were selected for being the worst.",
+    "measured_rates": {
+      "coverage": {
+        "n": 7,
+        "of_n": 40,
+        "rate": 0.175,
+        "of": "all sentences scored — a true corpus rate",
+        "meaning": "sentences where the tightest budget asked for boundaries the prompt never marked, so pieces are missing outright"
+      },
+      "premature_among_judged": {
+        "n": 32,
+        "of_n": 50,
+        "rate": 0.64,
+        "of": "boundaries judged this iteration, selected as the WORST by measured contradiction — NOT a corpus rate, do not compare it against `coverage`"
+      }
+    },
+    "case_label_counts": {
+      "counts": {
+        "placement": 9,
+        "reference_suspect": 1,
+        "priority": 1
+      },
+      "of_n": 11,
+      "of": "the selected worst cases — NOT a rate"
+    },
+    "stuck_hint": "",
+    "priority_audit": [
+      {
+        "feature": "뒤 구두점 '，'",
+        "n": 40,
+        "rank_percentile": 0.354,
+        "contradiction": 0.1936,
+        "over_trust": 0.2355
+      },
+      {
+        "feature": "상대위치 1/3",
+        "n": 51,
+        "rank_percentile": 0.6,
+        "contradiction": 0.2365,
+        "over_trust": 0.0194
+      },
+      {
+        "feature": "상대위치 0/3",
+        "n": 69,
+        "rank_percentile": 0.62,
+        "contradiction": 0.2191,
+        "over_trust": -0.003
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 42,
+        "rank_percentile": 0.634,
+        "contradiction": 0.1871,
+        "over_trust": -0.0144
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 103,
+        "rank_percentile": 0.762,
+        "contradiction": 0.2083,
+        "over_trust": -0.1394
+      }
+    ],
+    "judge_distribution": {
+      "n_boundaries_judged": 50,
+      "verdicts": {
+        "mistranslated": 28,
+        "safe": 13,
+        "reference_suspect": 5,
+        "premature": 4
+      },
+      "n_with_cause": 32,
+      "causes": {
+        "other": {
+          "n": 17,
+          "share": 0.531
+        },
+        "head not yet arrived": {
+          "n": 12,
+          "share": 0.375
+        },
+        "mistranslated": {
+          "n": 1,
+          "share": 0.031
+        },
+        "modifier scope": {
+          "n": 1,
+          "share": 0.031
+        },
+        "referent lost": {
+          "n": 1,
+          "share": 0.031
+        }
+      }
+    },
+    "max_missing_boundaries": 0.2632,
+    "rank_lift": 0.08421,
+    "rank_lift_t": 1.52,
+    "summary": "Most measured failures are placement errors: the prompt marks boundaries that force the translator to finalize heads, names, quoted glosses or temporal modifiers too early. The ranking also over-trusts comma-adjacent breaks; demote comma-sited candidates when they precede modifiers, parentheses, quotes, possessives, dates/numbers, or compound heads. Apply 'wait-for-head' rules and preserve names/parentheticals to prevent these premature commits."
+  }
+}

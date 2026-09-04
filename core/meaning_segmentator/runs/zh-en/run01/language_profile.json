@@ -1,0 +1,73 @@
+{
+  "source_language": "Chinese (Mandarin, Simplified)",
+  "source_code": "zh",
+  "uses_spaces_between_words": false,
+  "word_order": "SVO — sentences show subjects followed by verbs then objects (e.g. “这部...电影获得了...提名”, “他接受过产科医生培训” ).",
+  "head_final": false,
+  "punctuation_present": "always — sample sentences consistently use Chinese punctuation (。 ， ； ： ？ ！) and brackets/quotes.",
+  "trailing_punctuation": [
+    "。",
+    "，",
+    "；",
+    "：",
+    "？",
+    "！",
+    ")",
+    "）",
+    "]",
+    "}",
+    "”",
+    "\"",
+    "'"
+  ],
+  "register": "edited written prose (news/encyclopedic / encyclopaedic-style articles)",
+  "fillers_and_hesitations": [
+    "嗯",
+    "啊",
+    "呃",
+    "那个",
+    "就是",
+    "然后",
+    "这个"
+  ],
+  "discourse_markers": [
+    "例如",
+    "尽管",
+    "这样一来",
+    "作为",
+    "有关",
+    "如果",
+    "对于"
+  ],
+  "clause_boundary_signals": [
+    "，",
+    "。",
+    "；",
+    "：",
+    "并且",
+    "但是",
+    "尽管",
+    "如果",
+    "例如",
+    "这样一来",
+    "作为"
+  ],
+  "non_boundary_traps": [
+    "（",
+    "）",
+    "(",
+    ")",
+    "·",
+    "（作者，1995） style citations/parenthetical commas",
+    "英文缩写和拉丁字母内的句点/逗号"
+  ],
+  "unstable_prefix_signals": [
+    "如果",
+    "尽管",
+    "在",
+    "作为",
+    "对于",
+    "有关"
+  ],
+  "notes_for_prompt_writer": "Prefer splitting at full stops (。), semicolons (；) and at commas (，) when they introduce a new independent clause or a coordinating conjunction (并且/但是). Never begin a segment with closing punctuation or a closing bracket/quote; keep closing brackets/quotes attached to the preceding segment. Do not split inside parenthetical citations or named-entity sequences (e.g. person names joined by ·, parentheses containing English names or dates); treat subordinating markers (如果, 尽管, 在, 作为, 对于) as unstable prefixes and wait for the main clause punctuation or a clear verb phrase before emitting a segment."
+}

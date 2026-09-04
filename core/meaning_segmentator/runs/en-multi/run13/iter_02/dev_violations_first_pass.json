@@ -1,0 +1,177 @@
+[
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "No major injuries were reported, but at least five people on scene at the time of the explosion were treated for symptoms of shock.",
+    "seg_text": "No major injuries were reported, <SEG:1> but at least five <SEG:4> people on scene <SEG:3> at the time of the explosion <SEG:2> were treated for symptoms of shock.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "A person working in a garage near where the accident occurred said: \"There were children waiting to cross the road and they were all screaming and crying.\"",
+    "seg_text": "A person working in a garage <SEG:3> near where the accident occurred <SEG:1> said: \"There were <SEG:4> children waiting to cross the road <SEG:2> and they were all <SEG:5> screaming and crying.\"",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "However, this does not come cheap: as rough rules of thumb, you can expect to pay up to four times the normal economy fare for business, and eleven times for first class!",
+    "seg_text": "However, this does <SEG:6> not come cheap: <SEG:1> as rough rules of thumb, <SEG:2> you can expect to pay <SEG:5> up to four times <SEG:4> the normal economy fare <SEG:3> for business, eleven <SEG:7> times for first class!",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "One of the panes finally broke, and they started to get out by the window,\" said survivor Franciszek Kowal.",
+    "seg_text": "One of the panes finally broke, <SEG:1> and they started <SEG:4> to get out <SEG:3> by the window, <SEG:2> said survivor Franciszek Kowal.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 9개 — 최소 10개 필요",
+    "text": "The feathers' structure suggests that they were not used in flight but rather for temperature regulation or display. The researchers suggested that, even though this is the tail of a young dinosaur, the sample shows adult plumage and not a chick's down.",
+    "seg_text": "The feathers' structure <SEG:4> suggests that they were <SEG:6> not used in flight <SEG:3> but rather for temperature <SEG:5> regulation or display. <SEG:1> The researchers suggested that, <SEG:7> even though this is the tail <SEG:8> of a young dinosaur, <SEG:2> the sample shows adult <SEG:9> plumage and not a chick's down.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Personal VPN (virtual private network) providers are an excellent way of circumventing both political censorship and commercial IP-geofiltering.",
+    "seg_text": "Personal VPN (virtual private network) providers <SEG:1> are an excellent <SEG:2> way of circumventing both political censorship <SEG:3> and commercial IP-geofiltering.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Schumacher who retired in 2006 after winning the Formula 1 championship seven times, was due to replace the injured Felipe Massa.",
+    "seg_text": "Schumacher who retired in <SEG:3> 2006 after winning the Formula 1 championship <SEG:1> seven times, was due to replace <SEG:2> the injured Felipe Massa.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "The strain of bird flu lethal to humans, H5N1, has been confirmed to have infected a dead wild duck, found on Monday, in marshland near Lyon in the east of France.",
+    "seg_text": "The strain of bird <SEG:5> flu lethal to humans, <SEG:1> H5N1, has been confirmed <SEG:2> to have infected a <SEG:6> dead wild duck, found <SEG:4> on Monday, in marshland <SEG:3> near Lyon in the east of France.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 5개 필요",
+    "text": "This means you can visit the historic city for a couple of full days while returning and sleeping on the ship at night.",
+    "seg_text": "This means you can visit the historic <SEG:1> city for a couple <SEG:2> of full days <SEG:3> while returning and sleeping on the ship at night.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "The station maintained its attitude, despite the loss of a gyroscope earlier in the space station mission, until the end of the spacewalk.",
+    "seg_text": "The station maintained its attitude, <SEG:1> despite the loss of a gyroscope <SEG:3> earlier in the space station mission, <SEG:2> until the end <SEG:4> of the spacewalk.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 10개 — 최소 11개 필요",
+    "text": "Police said Lo Piccolo had the upper hand because he had been Provenzano's right-hand man in Palermo and his greater experience won him the respect of the older generation of bosses as they pursued Provenzano's policy of keeping as low as possible while strengthening their power network.",
+    "seg_text": "Police said Lo Piccolo <SEG:3> had the upper hand <SEG:1> because he had been <SEG:7> Provenzano's right-hand man <SEG:4> in Palermo and <SEG:6> his greater experience <SEG:2> won him the respect <SEG:9> of the older generation of <SEG:10> bosses as they <SEG:8> pursued Provenzano's policy <SEG:5> of keeping as low as possible while strengthening their power network.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "The death toll is at least 15, a figure which is expected to rise.",
+    "seg_text": "The death toll <SEG:2> is at least 15, <SEG:1> a figure which is expected to rise.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "Due to the long distance from the continent mammals were unable to make the journey making the giant tortoise the primary grazing animal in the Galapagos.",
+    "seg_text": "Due to the long distance <SEG:4> from the continent <SEG:3> mammals were unable to make the journey <SEG:1> making the giant tortoise <SEG:5> the primary grazing animal <SEG:2> in the Galapagos.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "I expect to return to all my duties on Monday,\" Arias said in a statement.",
+    "seg_text": "I expect to return <SEG:3> to all my duties <SEG:2> on Monday, Arias said <SEG:1> in a statement.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "So if you were standing by the shoreline, you would be able to see down to whatever pebbles or gunk that was on the bottom.",
+    "seg_text": "So if you were <SEG:4> standing by the shoreline, <SEG:1> you would be able to see down to whatever pebbles <SEG:2> or gunk that <SEG:3> was on the bottom.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "This type of manager has difficulty making unpopular decisions, performing disciplinary action, performance evaluations, assigning responsibility, and holding people accountable.",
+    "seg_text": "This type of manager has difficulty making unpopular decisions, <SEG:2> performing disciplinary action, <SEG:3> performance evaluations, assigning responsibility, <SEG:1> and holding people accountable.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "Mutations can have a variety of different effects depending on the type of mutation, the significance of the piece of genetic material affected and whether the cells affected are germ-line cells.",
+    "seg_text": "Mutations can have a variety of different effects <SEG:1> depending on the <SEG:6> type of mutation, <SEG:2> the significance of <SEG:5> the piece of genetic <SEG:4> material affected and whether the cells affected <SEG:3> are germ-line cells.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "Israel demands an ongoing military presence in the valley for ten years once an agreement is signed while the PA agrees to leave such presence only for five years.",
+    "seg_text": "Israel demands an ongoing military presence <SEG:2> in the valley for ten years <SEG:1> once an agreement <SEG:4> is signed while the PA agrees <SEG:3> to leave such <SEG:5> presence only for five years.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "To finish, Turkish dance group Fire of Anatolia performed the show \"Troy\".",
+    "seg_text": "To finish, Turkish dance group Fire of Anatolia <SEG:1> performed the show \"Troy\".",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "During the summer, also watch out for the Nordic mosquitoes. Although they do not transmit any diseases, they can be irritating.",
+    "seg_text": "During the summer, <SEG:3> also watch out for the Nordic mosquitoes. <SEG:1> Although they do not transmit any diseases, <SEG:2> they can be irritating.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Fred currently has winds of 105 miles per hour (165 km/h) and is moving towards the northwest.",
+    "seg_text": "Fred currently has winds <SEG:2> of 105 miles per hour (165 km/h) <SEG:1> and is moving towards the northwest.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Eighteen percent of Venezuelans are unemployed, and most of those who are employed work in the informal economy.",
+    "seg_text": "Eighteen percent of Venezuelans are unemployed, <SEG:1> and most of <SEG:3> those who are <SEG:2> employed work in the informal economy.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "For some, understanding something about how aircraft work and what happens during a flight may help to overcome a fear which is based on the unknown or on not being in control.",
+    "seg_text": "For some, understanding something <SEG:4> about how aircraft work <SEG:2> and what happens during a flight <SEG:1> may help to <SEG:5> overcome a fear <SEG:3> which is based on the unknown <SEG:6> or on not being in control.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 8개 필요",
+    "text": "Germany was a common enemy in World War 2, leading to cooperation between the USSR and USA. With the end of the war the clashes of system, process and culture led to the countries falling out.",
+    "seg_text": "Germany was a common enemy <SEG:4> in World War 2, <SEG:2> leading to cooperation between <SEG:6> the USSR and USA. <SEG:1> With the end of the war the clashes <SEG:3> of system, process and <SEG:7> culture led to the <SEG:5> countries falling out.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "Yet, Spanish is also widely used in public transport and other facilities.",
+    "seg_text": "Yet, Spanish is also widely used <SEG:1> in public transport and other facilities.",
+    "first_pass": true
+  }
+]

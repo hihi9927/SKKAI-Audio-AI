@@ -1,0 +1,19 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "sections_reported": [
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "changelog": [
+    "Implemented the critic's candidate_rules as narrow, surface-only ranking signals (3-token lookahead) merged into the existing Priority Rules so each pattern is stated once and ranked low rather than banned — preserves generous candidacy while addressing measured placement errors.",
+    "Clarified When to Segment to point out that certain comma positions (e.g., after 'between/among') are not automatically safe and should be treated cautiously; kept candidacy permissive but signalled where ranking will demote.",
+    "Updated Decision Procedure to require that all short (≤3-token) continuation checks are applied only during the ranking pass, that they impose small demotions (never bans), and that clause-final punctuation or a clearly closed subordinate clause overrides those demotions."
+  ],
+  "size_budget": 20313,
+  "over_budget": false
+}

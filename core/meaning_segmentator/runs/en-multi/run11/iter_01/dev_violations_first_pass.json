@@ -1,0 +1,156 @@
+[
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "\"It's going to behave like water. It's transparent just the way water is.",
+    "seg_text": "\"It's going to behave like water. <SEG:1> It's transparent just the way water is.\"",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "\"It's going to behave like water. It's transparent just the way water is.",
+    "seg_text": "\"It's going to behave like water. <SEG:1> It's transparent just the way water is.\"",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "The walls and roofs of ice caves can collapse and cracks can get closed.",
+    "seg_text": "The walls and roofs <SEG:2> of ice caves can collapse <SEG:1> and cracks can get closed.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "One of the panes finally broke, and they started to get out by the window,\" said survivor Franciszek Kowal.",
+    "seg_text": "One of the panes <SEG:3> finally broke, and <SEG:4> they started to get out <SEG:2> by the window, <SEG:1> said survivor Franciszek Kowal.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 8개 필요",
+    "text": "In the beginning of the war they mostly travelled on top of the sea, but as radar began developing and becoming more accurate the submarines were forced to go under water to avoid being seen.",
+    "seg_text": "In the beginning <SEG:7> of the war <SEG:3> they mostly travelled <SEG:4> on top of the sea, <SEG:1> but as radar began developing <SEG:5> and becoming more accurate the submarines were forced <SEG:6> to go under water <SEG:2> to avoid being seen.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "As the inter-district buses are often full, it is advisable to purchase a ticket a few days in advance.",
+    "seg_text": "As the inter-district buses are often full, <SEG:2> it is advisable <SEG:1> to purchase a ticket <SEG:3> a few days in advance.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "For those unfamiliar with medical jargon, the words infectious and contagious have distinct meanings.",
+    "seg_text": "For those unfamiliar with medical jargon, <SEG:1> the words infectious and contagious <SEG:2> have distinct meanings.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "The Broadcasting Services Act provides for the regulation of Internet content, however to be considered Internet content, it must physically reside on a server.",
+    "seg_text": "The Broadcasting Services Act <SEG:4> provides for the regulation of Internet content, <SEG:1> however to be considered Internet content, <SEG:3> it must physically reside <SEG:2> on a server.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 4개 필요",
+    "text": "At home, due to this constant exposure to the local germs, odds are very high that you're already immune to them.",
+    "seg_text": "At home, due to this constant exposure to the local germs, <SEG:2> odds are very high <SEG:1> that you're already immune to them.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Last month a presidential commission recommended the prior CEP's resignation as part of a package of measures to move the country towards new elections.",
+    "seg_text": "Last month a presidential commission recommended <SEG:4> the prior CEP's resignation <SEG:1> as part of a package of measures <SEG:2> to move the country <SEG:3> towards new elections.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "If visiting a formally arranged garden, collecting \"specimens\" is also going to get you ejected, without discussion.",
+    "seg_text": "If visiting a formally arranged garden, <SEG:1> collecting \"specimens\" is also going <SEG:2> to get you ejected, without discussion.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Many a stable, capable traveler has been overcome by the newness of developing world travel, where many little cultural adjustments can add up quickly.",
+    "seg_text": "Many a stable, capable traveler <SEG:5> has been overcome <SEG:4> by the newness <SEG:3> of developing world travel, <SEG:1> many little cultural adjustments <SEG:2> can add up quickly.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "In some countries or types of stores there is at least one on-site restaurant, often a rather informal one with affordable prices.",
+    "seg_text": "In some countries <SEG:4> or types of stores <SEG:1> there is at least one on-site <SEG:3> restaurant, often a rather informal one <SEG:2> with affordable prices.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 8개 필요",
+    "text": "Yesterday, the post office released their apology to citizens and the media after discovering that the boy had hidden more than 600 postal documents, including 429 New Year postcards, which weren't delivered to their intended recipients.",
+    "seg_text": "Yesterday, the post office <SEG:6> released their apology <SEG:5> to citizens and the media <SEG:3> after discovering that the boy had hidden <SEG:4> more than 600 postal documents, <SEG:1> including 429 New Year postcards, <SEG:2> which weren't delivered <SEG:7> to their intended recipients.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "For example, “learning” and “socialization” are suggested as important motivations for Internet use (James et al., 1995).",
+    "seg_text": "For example, “learning” <SEG:2> and “socialization” are suggested as important motivations for Internet <SEG:1> use (James et al., 1995).",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Science’s main goal is to figure out the way the world works through the scientific method. This method in fact guides most scientific research.",
+    "seg_text": "Science’s main goal is to figure out <SEG:4> the way the world <SEG:2> works through the scientific method. <SEG:1> This method in fact <SEG:3> guides most scientific research.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "I lost my sister and her friend, and on my way there were two disabled people in wheelchairs, people just jumping over and pushing them,\" Armand Versace said.",
+    "seg_text": "I lost my sister <SEG:3> and her friend, <SEG:2> and on my way <SEG:4> there were two disabled <SEG:5> people in wheelchairs, people just jumping over and pushing <SEG:1> them,\" Armand Versace said.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "The idea of skiing is very old — cave paintings depicting skiers date back as far as 5000 BC!",
+    "seg_text": "The idea of skiing <SEG:3> is very old — <SEG:1> cave paintings depicting skiers date back <SEG:2> as far as 5000 BC!",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Cells are so basic and critical to the study of life, in fact, that they are often referred to as \"the building blocks of life\".",
+    "seg_text": "Cells are so basic <SEG:2> and critical to the study of life, <SEG:1> in fact, that they are often <SEG:3> referred to as <SEG:4> \"the building blocks of life\".",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "Squash, karate and roller sports tried to get onto the Olympic program as well as baseball and softball, which were voted out of the Olympic Games in 2005.",
+    "seg_text": "Squash, karate and roller sports <SEG:2> tried to get onto <SEG:4> the Olympic program <SEG:1> as well as baseball and softball, <SEG:3> which were voted <SEG:5> out of the Olympic Games in 2005.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "After the fire, the fortress was preserved and protected, remaining to be one of Bhutan's most sensational attractions.",
+    "seg_text": "After the fire, <SEG:1> the fortress was preserved and protected, <SEG:2> remaining to be one of Bhutan's <SEG:3> most sensational attractions.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "The luminosity and rotation are used together to determine a star's Rossby number, which is related to plasma flow.",
+    "seg_text": "The luminosity and rotation are used together to determine <SEG:2> a star's Rossby number, <SEG:1> which is related <SEG:3> to plasma flow.",
+    "first_pass": true
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Priority Rules]"
+  ],
+  "sections_reported": [
+    "[When to Segment]",
+    "[Priority Rules]"
+  ],
+  "changelog": [
+    "Revised [When to Segment] to instruct delaying cuts when the next token is likely the NP head or disambiguating complement (numeric unit, 'of' complement, 'for' phrase, prepositional location/target, low-frequency head, or colon-introduced list), and to call out coordinated 'between A and B', indefinites like 'any', and polarity-resolving verbs/modals as cases to wait for.",
+    "Revised [Priority Rules] to rank positions before likely NP heads/objects/units, 'for'/'of' complements, prepositional targets, low-frequency disambiguating heads, 'between ... and' conjuncts, colon-introduced lists, and polarity-resolving verbs/modals lower (i.e., as risky candidates), consolidating overlapping candidate_rules into concise ranking guidance."
+  ],
+  "size_budget": 14652,
+  "over_budget": false
+}

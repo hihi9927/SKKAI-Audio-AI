@@ -43,9 +43,12 @@ class DatasetSpec:
     def entries(self, tag: str, tgt: str) -> dict[str, Entry]:
         raise NotImplementedError
 
+    # 소스 언어 코드. 매니페스트·정렬 파일 이름에 들어간다. 기본 `en` 은 종전 동작이다.
+    src = "en"
+
     def wordtimes_path(self, tag: str, source: str) -> Path:
         suffix = "" if source == "ctc" else f"_{source}"
-        return MANIFEST_DIR / f"{self.name}_en_{tag}_wordtimes{suffix}.json"
+        return MANIFEST_DIR / f"{self.name}_{self.src}_{tag}_wordtimes{suffix}.json"
 
 
 class Fleurs(DatasetSpec):
@@ -98,12 +101,20 @@ class Fleurs(DatasetSpec):
 
 
 class CoVoST2(DatasetSpec):
-    """길이·오디오 경로를 매니페스트가 직접 들고 있다. 발화 하나 = 파일 하나."""
+    """길이·오디오 경로를 매니페스트가 직접 들고 있다. 발화 하나 = 파일 하나.
+
+    **소스 언어가 `en` 만은 아니다.** en→{de,ja,zh} 와 {de,ja,zh}→en 이 둘 다 있고,
+    파일 이름이 `covost2_{src}-{tgt}_{tag}.jsonl` 로 대칭이다. 종전에는 `en-` 이
+    이름에 박혀 있어서 X→en 매니페스트를 아예 못 찾았다 (`--src` 로 바꾼다).
+    """
 
     name = "covost2"
 
+    def __init__(self, src: str = "en"):
+        self.src = src
+
     def manifest(self, tag: str, tgt: str) -> Path:
-        return MANIFEST_DIR / f"covost2_en-{tgt}_{tag}.jsonl"
+        return MANIFEST_DIR / f"covost2_{self.src}-{tgt}_{tag}.jsonl"
 
     def entries(self, tag: str, tgt: str) -> dict[str, Entry]:
         out: dict[str, Entry] = {}

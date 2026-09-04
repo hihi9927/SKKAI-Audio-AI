@@ -1,0 +1,23 @@
+[
+  {
+    "id": "en_us_237",
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "\"It's going to behave like water. It's transparent just the way water is.",
+    "seg_text": "\"It's going to behave like water. <SEG:1> It's transparent just the way water is."
+  },
+  {
+    "id": "en_us_1258",
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Last month a presidential commission recommended the prior CEP's resignation as part of a package of measures to move the country towards new elections.",
+    "seg_text": "Last month a presidential commission <SEG:2> recommended the prior CEP's resignation <SEG:1> as part of a package of measures <SEG:3> to move the country <SEG:4> towards new elections."
+  },
+  {
+    "id": "en_us_1608",
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "I lost my sister and her friend, and on my way there were two disabled people in wheelchairs, people just jumping over and pushing them,\" Armand Versace said.",
+    "seg_text": "I lost my sister <SEG:4> and her friend, <SEG:1> and on my way there <SEG:5> were two disabled <SEG:6> people in wheelchairs, <SEG:2> people just jumping <SEG:7> over and pushing them, <SEG:3> Armand Versace said."
+  }
+]

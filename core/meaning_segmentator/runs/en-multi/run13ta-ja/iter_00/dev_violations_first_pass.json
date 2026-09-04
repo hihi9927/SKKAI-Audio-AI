@@ -1,0 +1,303 @@
+[
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Although in theory they can take place annually (so long as they are in different countries), in practice they are not.",
+    "seg_text": "Although in theory <SEG:3> they can take place <SEG:2> annually (so long as they are in different countries), <SEG:1> in practice they are not.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 6개 필요",
+    "text": "However, the discovery of his tomb in 1922 made him a celebrity. While many tombs of the past were robbed, this tomb was left virtually undisturbed.",
+    "seg_text": "However, the discovery <SEG:3> of his tomb in 1922 made <SEG:4> him a celebrity. <SEG:1> While many tombs of the past were robbed, <SEG:2> this tomb was left virtually undisturbed.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "People with this type of thinking have logical thinking, are able to memorize patterns, solve problems and work on scientific tests.",
+    "seg_text": "People with this type of thinking <SEG:2> have logical thinking, <SEG:1> are able to memorize patterns, <SEG:3> solve problems and work on scientific tests.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Had the Allies failed, Germany probably would have been able to conquer Britain as it had the rest of Europe.",
+    "seg_text": "Had the Allies failed, <SEG:1> Germany probably would have been able <SEG:2> to conquer Britain <SEG:3> as it had the rest of Europe.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "It is not known at this time what charges will be laid or what led authorities to the boy but juvenile proceedings have begun in federal court.",
+    "seg_text": "It is not known <SEG:5> at this time <SEG:4> what charges will be laid <SEG:3> or what led authorities to the boy <SEG:2> but juvenile proceedings have begun <SEG:1> in federal court.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "In 1884, Tesla moved to the United States of America to accept a job with the Edison Company in New York City.",
+    "seg_text": "In 1884, Tesla <SEG:2> moved to the United <SEG:3> States of America <SEG:1> to accept a <SEG:4> job with the Edison Company in New York City.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "The games kicked off at 10:00am with great weather and apart from mid morning drizzle which quickly cleared up, it was a perfect day for 7's rugby.",
+    "seg_text": "The games kicked off at 10:00am <SEG:2> with great weather <SEG:3> and apart from mid <SEG:4> morning drizzle which <SEG:5> quickly cleared up, <SEG:1> it was a perfect day for 7's rugby.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "The feathers' structure suggests that they were not used in flight but rather for temperature regulation or display. The researchers suggested that, even though this is the tail of a young dinosaur, the sample shows adult plumage and not a chick's down.",
+    "seg_text": "The feathers' structure suggests that, they were not used in flight <SEG:2> but rather for temperature <SEG:3> regulation or display. <SEG:1> The researchers suggested that, <SEG:6> even though this is the tail of a young dinosaur, <SEG:5> the sample shows adult <SEG:4> plumage and not <SEG:7> a chick's down.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 10개 필요",
+    "text": "The feathers' structure suggests that they were not used in flight but rather for temperature regulation or display. The researchers suggested that, even though this is the tail of a young dinosaur, the sample shows adult plumage and not a chick's down.",
+    "seg_text": "The feathers' structure suggests that, they were not used in flight <SEG:2> but rather for temperature <SEG:3> regulation or display. <SEG:1> The researchers suggested that, <SEG:6> even though this is the tail of a young dinosaur, <SEG:5> the sample shows adult <SEG:4> plumage and not <SEG:7> a chick's down.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "Leslie Aun, a spokesperson for the Komen Foundation, said the organization adopted a new rule that does not allow grants or funding to be awarded to organizations that are under legal investigation.",
+    "seg_text": "Leslie Aun, a spokesperson for the Komen Foundation, <SEG:1> said the organization adopted <SEG:2> a new rule <SEG:6> that does not <SEG:5> allow grants or funding <SEG:3> to be awarded <SEG:4> to organizations that are under legal investigation.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "Like some other experts, he is skeptical about whether diabetes can be cured, noting that these findings have no relevance to people who already have Type 1 diabetes.",
+    "seg_text": "Like some other experts, <SEG:2> he is skeptical <SEG:3> about whether diabetes can be cured, <SEG:1> noting that these findings <SEG:4> have no relevance to people <SEG:5> who already have Type 1 diabetes.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "As the inter-district buses are often full, it is advisable to purchase a ticket a few days in advance.",
+    "seg_text": "As the inter-district buses <SEG:3> are often full, <SEG:1> it is advisable to purchase <SEG:2> a ticket a few days in advance.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "While on his warm-up lap, Lenz fell off his bike, and was then struck by fellow racer Xavier Zayat.",
+    "seg_text": "While on his warm-up lap, <SEG:2> Lenz fell off his bike, <SEG:1> and was then struck <SEG:3> by fellow racer Xavier Zayat.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 3개 필요",
+    "text": "If visiting a formally arranged garden, collecting \"specimens\" is also going to get you ejected, without discussion.",
+    "seg_text": "If visiting a formally arranged garden, collecting \"specimens\" <SEG:1> is also going to get you ejected, without discussion.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 6개 필요",
+    "text": "However, a nationwide road network is not economically viable for just a handful of cars, so new methods of production are developed to reduce the cost of car ownership.",
+    "seg_text": "However, a nationwide road network is not economically viable <SEG:1> for just a handful of cars, <SEG:3> so new methods of production are developed <SEG:2> to reduce the cost of car ownership.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Born in the Croatian capital, Zagreb, Bobek gained fame while playing for Partizan Belgrade.",
+    "seg_text": "Born in the Croatian capital, Zagreb, <SEG:2> Bobek gained fame <SEG:1> while playing for Partizan Belgrade.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "The best indication of internal poisoning may be the presence of an open container of medication or toxic household chemicals.",
+    "seg_text": "The best indication of internal poisoning <SEG:2> may be the presence <SEG:1> of an open container of medication <SEG:3> or toxic household chemicals.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 7개 필요",
+    "text": "When the fighting ceased after the wounded were transported to the hospital, about 40 of the other remaining inmates stayed in the yard and refused to return to their cells.",
+    "seg_text": "When the fighting ceased <SEG:4> after the wounded were transported <SEG:3> to the hospital, <SEG:1> about 40 of the other remaining inmates <SEG:5> stayed in the yard <SEG:2> and refused to return to their cells.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "The presenter, who was arrested at the scene, denied the attack and claimed he used the pole to protect himself from bottles being thrown at him by up to thirty people.",
+    "seg_text": "The presenter, who was <SEG:6> arrested at the scene, <SEG:3> denied the attack <SEG:1> and claimed he used the pole <SEG:2> to protect himself <SEG:4> from bottles being thrown <SEG:5> at him by up to thirty people.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 8개 필요",
+    "text": "Yesterday, the post office released their apology to citizens and the media after discovering that the boy had hidden more than 600 postal documents, including 429 New Year postcards, which weren't delivered to their intended recipients.",
+    "seg_text": "Yesterday, the post office released <SEG:6> their apology to citizens <SEG:5> and the media <SEG:1> after discovering that the boy had hidden <SEG:4> more than 600 postal documents, <SEG:2> including 429 New Year postcards, <SEG:7> which weren't delivered <SEG:3> to their intended recipients.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "Although its physical state may change, its chemical state remains the same.",
+    "seg_text": "Although its physical state may change, <SEG:1> its chemical state remains the same.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 8개 필요",
+    "text": "Roberts flatly refused to say about when he believes life begins, an important question when considering the ethics of abortion, saying that it would be unethical to comment on the specifics of likely cases.",
+    "seg_text": "Roberts flatly refused <SEG:2> to say about <SEG:6> when he believes <SEG:3> life begins, an important question when <SEG:7> considering the ethics <SEG:4> of abortion, saying that it would <SEG:5> be unethical to comment on the specifics <SEG:1> of likely cases.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 8개 — 최소 9개 필요",
+    "text": "While you may not need a visa for short visits to certain countries as a tourist or for business, going there as an international student generally requires a longer stay than going there just as a casual tourist.",
+    "seg_text": "While you may not need a visa <SEG:3> for short visits <SEG:7> to certain countries <SEG:4> as a tourist <SEG:6> or for business, <SEG:1> going there as an international student generally requires <SEG:2> a longer stay <SEG:5> than going there <SEG:8> just as a casual tourist.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 11개 필요",
+    "text": "Police said Lo Piccolo had the upper hand because he had been Provenzano's right-hand man in Palermo and his greater experience won him the respect of the older generation of bosses as they pursued Provenzano's policy of keeping as low as possible while strengthening their power network.",
+    "seg_text": "Police said Lo Piccolo had the upper hand <SEG:7> because he had been Provenzano's right-hand man <SEG:6> in Palermo and his greater experience <SEG:5> won him the respect <SEG:4> of the older generation <SEG:3> of bosses as they pursued <SEG:2> Provenzano's policy of keeping as low as possible <SEG:1> while strengthening their power network.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "The death toll is at least 15, a figure which is expected to rise.",
+    "seg_text": "The death toll is <SEG:2> at least 15, <SEG:1> a figure which is expected to rise.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "He even suggests that such abilities in interpreting human behavior may be shared by animals such as domestic dogs.",
+    "seg_text": "He even suggests <SEG:3> that such abilities in interpreting human behavior <SEG:2> may be shared <SEG:1> by animals such as domestic dogs.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 7개 필요",
+    "text": "But the consumer market on laptop computer will be radically varied and changed after ASUS was awarded in the 2007 Taiwan Sustainable Award by Executive Yuan of the Republic of China.",
+    "seg_text": "But the consumer market on laptop computer <SEG:5> will be radically varied <SEG:4> and changed after ASUS was awarded <SEG:3> in the 2007 Taiwan Sustainable Award <SEG:2> by Executive Yuan <SEG:1> of the Republic of China.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "In many countries with such a law, local hotels will handle the registration (make sure to ask).",
+    "seg_text": "In many countries with such a law, <SEG:2> local hotels will handle the registration <SEG:1> (make sure to ask).",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "General James Ewing would take 700 militia across the river at Trenton Ferry, seize the bridge over the Assunpink Creek and prevent any enemy troops from escaping.",
+    "seg_text": "General James Ewing <SEG:5> would take 700 militia <SEG:3> across the river <SEG:4> at Trenton Ferry, <SEG:1> seize the bridge over the Assunpink Creek <SEG:2> and prevent any enemy troops from escaping.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Please treat the site with all of the dignity, solemnity and respect it deserves. Do not make jokes about the Holocaust or Nazis.",
+    "seg_text": "Please treat the site <SEG:4> with all of the dignity, <SEG:3> solemnity and respect it deserves. <SEG:1> Do not make jokes <SEG:2> about the Holocaust or Nazis.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 5개 필요",
+    "text": "The most important factor of this mindset is: there is only one correct answer. You only think of two answers, namely right or wrong.",
+    "seg_text": "The most important factor of this mindset is: <SEG:2> there is only one correct answer. <SEG:1> You only think of two answers, <SEG:3> namely right or wrong.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "800 miles of the Trans-Alaska Pipeline System were closed down following a spill of thousands of barrels of crude oil south of Fairbanks, Alaska.",
+    "seg_text": "800 miles of the Trans-Alaska Pipeline <SEG:2> System were closed down <SEG:1> following a spill of thousands of <SEG:4> barrels of crude oil south <SEG:3> of Fairbanks, Alaska.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "For example, one might say that the motor car necessarily leads to the development of roads.",
+    "seg_text": "For example, one might say <SEG:1> that the motor car <SEG:2> necessarily leads to the development of roads.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "The idea of skiing is very old — cave paintings depicting skiers date back as far as 5000 BC!",
+    "seg_text": "The idea of skiing is very <SEG:3> old — cave paintings <SEG:2> depicting skiers date <SEG:1> back as far as 5000 BC!",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "The AI ​​system is now often used in the fields of economics, medicine, engineering and the military, as has been built in several home computer and video game software applications.",
+    "seg_text": "The AI system is <SEG:5> now often used <SEG:4> in the fields of economics, <SEG:3> medicine, engineering and the military, <SEG:1> as has been built <SEG:2> in several home <SEG:6> computer and video <SEG:7> game software applications.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Humans have been making and using lenses for magnification for thousands and thousands of years.",
+    "seg_text": "Humans have been making <SEG:2> and using lenses <SEG:1> for magnification for thousands and thousands of years.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 8개 필요",
+    "text": "When the capsule gets to Earth and enters the atmosphere, at about 5am (eastern time), it is expected to put on quite a light show for folks in Northern California, Oregon, Nevada, and Utah.",
+    "seg_text": "When the capsule <SEG:6> gets to Earth <SEG:5> and enters the atmosphere, <SEG:1> at about 5am (eastern time), <SEG:2> it is expected to put on quite <SEG:7> a light show <SEG:3> for folks in Northern California, <SEG:4> Oregon, Nevada, and Utah.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "For over a thousand years the Christian religion had bound European states together despite differences in language and customs. I",
+    "seg_text": "For over a thousand years <SEG:2> the Christian religion had bound European states <SEG:1> together despite differences in language <SEG:3> and customs. I",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "The ministry responded by calling Apple's postponement of the report \"truly regrettable.\"",
+    "seg_text": "The ministry responded <SEG:1> by calling Apple's postponement of the report \"truly regrettable.\"",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Stars give off light and heat because of the energy made when hydrogen atoms are merged (or fused) together to form heavier elements.",
+    "seg_text": "Stars give off light <SEG:2> and heat because of the energy <SEG:1> made when hydrogen atoms are merged <SEG:4> (or fused) together <SEG:3> to form heavier elements.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "If you have additional travel time, check to see how your total fare quote to Africa compares with a round-the-world fare.",
+    "seg_text": "If you have additional travel time, <SEG:1> check to see <SEG:3> how your total fare quote to Africa <SEG:2> compares with a round-the-world fare.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Jonny Reid, co-driver for the A1GP New Zealand team, today made history by driving the fastest over the 48-year-old Auckland Harbour Bridge, New Zealand, legally.",
+    "seg_text": "Jonny Reid, co-driver for the A1GP <SEG:3> New Zealand team, today <SEG:2> made history by driving <SEG:4> the 48-year-old Auckland Harbour Bridge, <SEG:1> New Zealand, legally.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Jonny Reid, co-driver for the A1GP New Zealand team, today made history by driving the fastest over the 48-year-old Auckland Harbour Bridge, New Zealand, legally.",
+    "seg_text": "Jonny Reid, co-driver for the A1GP <SEG:3> New Zealand team, today <SEG:2> made history by driving <SEG:4> the 48-year-old Auckland Harbour Bridge, <SEG:1> New Zealand, legally.",
+    "first_pass": true
+  }
+]

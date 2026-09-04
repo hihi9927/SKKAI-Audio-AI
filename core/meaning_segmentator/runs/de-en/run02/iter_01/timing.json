@@ -1,0 +1,40 @@
+{
+  "total_sec": 1248.17,
+  "stages": [
+    {
+      "stage": "train_eval",
+      "sec": 47.89,
+      "at_sec": 0.0
+    },
+    {
+      "stage": "judge",
+      "sec": 144.29,
+      "at_sec": 47.89
+    },
+    {
+      "stage": "rank_audit",
+      "sec": 0.01,
+      "at_sec": 192.17
+    },
+    {
+      "stage": "dev_eval",
+      "sec": 90.92,
+      "at_sec": 192.18
+    },
+    {
+      "stage": "critic",
+      "sec": 57.23,
+      "at_sec": 283.1
+    },
+    {
+      "stage": "prompt_engineer",
+      "sec": 248.96,
+      "at_sec": 340.34
+    },
+    {
+      "stage": "select_prompt",
+      "sec": 658.87,
+      "at_sec": 589.3
+    }
+  ]
+}

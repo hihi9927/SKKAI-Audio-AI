@@ -1,0 +1,19 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Never Segment]",
+    "[Priority Rules]"
+  ],
+  "sections_reported": [
+    "[When to Segment]",
+    "[Never Segment]",
+    "[Priority Rules]"
+  ],
+  "changelog": [
+    "When to Segment: added guidance to preserve quoted terms until their explanatory head appears, to delay committing temporal modifiers until their modified head is visible, and to avoid forcing name/parenthetical finalization prematurely — implements the critic's 'wait-for-head' and quoted-gloss rules.",
+    "Never Segment: added an explicit prohibition on inserting a boundary inside a compound agent/occupation word (e.g. splitting before or inside ...员) because that always produces unrenderable fragments.",
+    "Priority Rules: merged the candidate_rules into the ranking hierarchy: demote/don't finalize boundaries that would force premature transliteration/translation of names or parentheticals, delay boundaries after possessive 的 or modifier phrases until the head noun, avoid finalizing temporal modifiers or century phrases before the head, keep modifier+head (including coordinated heads) together, treat named-entity/species ambiguity as a signal to preserve source form or rank the boundary low, and explicitly lower ranks for comma-adjacent candidates when the following tokens start a modifier, parenthesis, quote, possessive 的, date/number, or a compound head."
+  ],
+  "size_budget": 17361,
+  "over_budget": false
+}

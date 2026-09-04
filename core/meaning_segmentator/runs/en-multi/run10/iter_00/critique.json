@@ -1,0 +1,225 @@
+{
+  "cases": [
+    {
+      "id": "en_us_361",
+      "error_type": "placement",
+      "span": "in reality",
+      "evidence": "Translated 'in reality' alone and inverted meaning before the noun 'photons' arrived.",
+      "cause": "other",
+      "proposed_rule": "Do not emit contrastive/hedging adverbials (e.g. 'in reality', 'in fact', 'of course') on their own; wait until the following noun/clause that they contrast is available.",
+      "example_pair": {
+        "input": "The next picture shows the atoms emitting photons. Of course, in reality photons are a lot smaller than those in the picture.",
+        "output": "The next picture <SEG:3> shows the atoms emitting photons. <SEG:1> Of course, in reality photons are a lot <SEG:4> smaller than those in the picture."
+      }
+    },
+    {
+      "id": "en_us_268",
+      "error_type": "placement",
+      "span": "leading internet service provider",
+      "evidence": "Rendered the qualifier ('leading') before the named entity, producing an incorrect superlative scope.",
+      "cause": "other",
+      "proposed_rule": "Delay translating scope-sensitive qualifiers or superlatives (e.g. 'leading', 'world's largest') until the named entity appears.",
+      "example_pair": {
+        "input": "The case was prosecuted in Virginia because it is the home to the leading internet service provider AOL, the company who instigated the charges.",
+        "output": "The case was prosecuted in Virginia <SEG:1> because it is the home to the leading internet service provider AOL, <SEG:3> the company who instigated the charges."
+      }
+    },
+    {
+      "id": "en_us_703",
+      "error_type": "placement",
+      "span": "to prove the length",
+      "evidence": "Emitted the noun phrase before the verb/modal, causing omission or wrong ticket requirement.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Delay finalizing noun-phrase renderings when their governing verb/modal (e.g. 'is needed') or purpose clause follows; emit after the main predicate arrives.",
+      "example_pair": {
+        "input": "Your passport must be valid for at least 6 months beyond your travel dates. A round/onward trip ticket is needed to prove the length of your stay.",
+        "output": "Your passport must be valid for at least <SEG:2> 6 months beyond your travel dates. <SEG:1> A round/onward trip ticket is needed to prove the length of your stay."
+      }
+    },
+    {
+      "id": "en_us_1447",
+      "error_type": "placement",
+      "span": "South",
+      "evidence": "Translated directional modifier ('South') before seeing 'African', producing wrong locale or generic 'south'.",
+      "cause": "modifier scope",
+      "proposed_rule": "Do not render directional or national modifiers (e.g. 'South', 'North') in isolation when they may form a compound (e.g. 'South African'); wait for the following word.",
+      "example_pair": {
+        "input": "Dr. Tony Moll discovered the Extremely Drug Resistant Tuberculosis (XDR-TB) in the South African region KwaZulu-Natal.",
+        "output": "Dr. Tony Moll discovered the Extremely Drug Resistant Tuberculosis (XDR-TB) in the South African region KwaZulu-Natal <SEG:1>."
+      }
+    },
+    {
+      "id": "en_us_164",
+      "error_type": "placement",
+      "span": "Puerto",
+      "evidence": "Committed to a place name before the completing word 'Princesa', producing wrong toponym.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Never finalize or expand a partial toponym; wait for the following word(s) that complete the place name before emitting.",
+      "example_pair": {
+        "input": "An Avenger class mine countermeasures ship, the ship was on its way to Puerto Princesa in Palawan.",
+        "output": "An Avenger class mine countermeasures ship, <SEG:1> the ship was on its way to Puerto Princesa in Palawan."
+      }
+    },
+    {
+      "id": "en_us_331",
+      "error_type": "placement",
+      "span": "No one else has ever",
+      "evidence": "Emitted the predicate before the comparative 'than Bobek' arrived, risking inversion of meaning.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Delay emitting the main predicate or completed verb phrase when a comparative or 'than'-phrase follows; wait for the comparator to arrive.",
+      "example_pair": {
+        "input": "No one else has ever made more appearances or scored more goals for the club than Bobek.",
+        "output": "No one else has ever made more appearances or scored more goals for the club than Bobek <SEG:1>."
+      }
+    },
+    {
+      "id": "en_us_368",
+      "error_type": "placement",
+      "span": "The smallest tubes",
+      "evidence": "Asserted classification before the predicate 'are called capillaries' arrived, attaching modifier to wrong head.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not assert identity/classification (e.g. 'the X are Y') until the copular/predicate phrase (e.g. 'are called ...') is available.",
+      "example_pair": {
+        "input": "Blood goes away from the heart in tubes called arteries and comes back to the heart in tubes called veins. The smallest tubes are called capillaries.",
+        "output": "Blood goes away from the heart in tubes called arteries and comes back to the heart in tubes called veins. <SEG:1> The smallest tubes are called capillaries."
+      }
+    },
+    {
+      "id": "en_us_1349",
+      "error_type": "placement",
+      "span": "Efforts to search",
+      "evidence": "Chose a lexical head (e.g. 'resistance') before seeing the noun phrase naming the cause, creating wrong render.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Avoid selecting a specific lexical head for a noun phrase until its complement or cause (e.g. 'by bad weather') is seen; wait for the following words.",
+      "example_pair": {
+        "input": "Efforts to search for the crash site are being met by bad weather and harsh terrain.",
+        "output": "Efforts to search for the crash site are being met by bad weather and harsh terrain <SEG:1>."
+      }
+    },
+    {
+      "id": "en_us_687",
+      "error_type": "placement",
+      "span": "evidence of the damage to the mummy",
+      "evidence": "Broke a long complex noun phrase into fragments, causing incomplete or repeated renderings and low adequacy.",
+      "cause": "modifier scope",
+      "proposed_rule": "Avoid segmenting inside long, postmodified noun phrases; wait for the noun and its postmodifiers (e.g. 'done during...') before emitting.",
+      "example_pair": {
+        "input": "Anyone interested in seeing evidence of the damage to the mummy done during attempts to remove it from the coffin will be disappointed as only the head and shoulders are visible.",
+        "output": "Anyone interested in seeing evidence of the damage to the mummy done during attempts to remove it from the coffin will be disappointed <SEG:1> as only the head and shoulders are visible."
+      }
+    },
+    {
+      "id": "en_us_46",
+      "error_type": "placement",
+      "span": "St James' Gate Brewery",
+      "evidence": "Split a multiword proper name across boundaries, causing partial emission like just the person name or verb without object.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not cut inside multiword proper names or institutional titles; wait until the full name (and its locative) has arrived.",
+      "example_pair": {
+        "input": "On September 24, 1759, Arthur Guinness signed a 9,000 year lease for the St James' Gate Brewery in Dublin, Ireland.",
+        "output": "On September 24, 1759, Arthur Guinness signed a 9,000 year lease for the St James' Gate Brewery in Dublin, Ireland <SEG:1>."
+      }
+    },
+    {
+      "id": "en_us_1428",
+      "error_type": "placement",
+      "span": "Downhill skiing as a sport",
+      "evidence": "Segmented the clause early so a predicate was emitted as a standalone sentence ('is a sport'), producing unnatural pieces.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Avoid separating introductory noun-phrases (e.g. 'X as a sport') from their predicates; keep them together until the verb phrase appears.",
+      "example_pair": {
+        "input": "Downhill skiing as a sport goes back to at least the 17th century, and in 1861 the first recreational ski club was opened by Norwegians in Australia.",
+        "output": "Downhill skiing as a sport goes back to at least the 17th century, <SEG:1> and in 1861 the first recreational ski club was opened by Norwegians in Australia."
+      }
+    },
+    {
+      "id": "en_us_171",
+      "error_type": "format_violation",
+      "span": "that some school aged children",
+      "evidence": "Model altered the original text when inserting tags (rewrote phrasing), violating 'don't change source' rule.",
+      "cause": "other",
+      "proposed_rule": "When inserting segmentation tags, never rewrite, reword, or delete source characters — only insert tags at boundaries.",
+      "example_pair": {
+        "input": "The governor also stated, \"Today, we learned that some school aged children have been identified as having had contact with the patient.\"",
+        "output": "The governor also stated, <SEG:2> \"Today, we learned <SEG:1> that some school aged children have <SEG:4> been identified as <SEG:3> having had contact <SEG:6> with the patient.\""
+      }
+    }
+  ],
+  "summary": "Most failures come from cutting before disambiguating heads or modifiers: directional/national modifiers, toponyms, long noun phrases, comparatives and purpose clauses. The prompt should bias boundaries low whenever a modifier, named entity, comparator or governing verb/modal is still unread; enforce rules that delay emitting scope-sensitive words (features: modifiers, proper names, comparators, adverbials).",
+  "aggregate": {
+    "dominant_error": "placement",
+    "error_counts": {
+      "placement": 11,
+      "format_violation": 1
+    },
+    "stuck_hint": "",
+    "priority_audit": [
+      {
+        "feature": "상대위치 1/3",
+        "n": 53,
+        "rank_percentile": 0.558,
+        "contradiction": 0.1182,
+        "over_trust": 0.0751
+      },
+      {
+        "feature": "상대위치 0/3",
+        "n": 66,
+        "rank_percentile": 0.603,
+        "contradiction": 0.084,
+        "over_trust": 0.009
+      },
+      {
+        "feature": "뒤 구두점 ','",
+        "n": 17,
+        "rank_percentile": 0.408,
+        "contradiction": 0.0,
+        "over_trust": 0.0
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 139,
+        "rank_percentile": 0.645,
+        "contradiction": 0.0948,
+        "over_trust": -0.0367
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 46,
+        "rank_percentile": 0.688,
+        "contradiction": 0.0493,
+        "over_trust": -0.0436
+      }
+    ],
+    "judge_distribution": {
+      "n_boundaries_judged": 50,
+      "verdicts": {
+        "safe": 36,
+        "mistranslated": 7,
+        "premature": 7
+      },
+      "n_with_cause": 14,
+      "causes": {
+        "head not yet arrived": {
+          "n": 8,
+          "share": 0.571
+        },
+        "other": {
+          "n": 3,
+          "share": 0.214
+        },
+        "modifier scope": {
+          "n": 2,
+          "share": 0.143
+        },
+        "mistranslated": {
+          "n": 1,
+          "share": 0.071
+        }
+      }
+    },
+    "max_missing_boundaries": 0.0,
+    "rank_lift": 0.16416,
+    "rank_lift_t": 3.69,
+    "summary": "Most failures come from cutting before disambiguating heads or modifiers: directional/national modifiers, toponyms, long noun phrases, comparatives and purpose clauses. The prompt should bias boundaries low whenever a modifier, named entity, comparator or governing verb/modal is still unread; enforce rules that delay emitting scope-sensitive words (features: modifiers, proper names, comparators, adverbials)."
+  }
+}

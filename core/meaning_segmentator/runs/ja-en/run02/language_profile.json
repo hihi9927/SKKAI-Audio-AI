@@ -1,0 +1,49 @@
+{
+  "source_language": "Japanese",
+  "word_order": "SOV | Verbs and verbal predicates consistently appear at the end of clauses/sentences (e.g., 働き始め、その主任彫版工となりました; 回収したと報じました).",
+  "register": "written news/encyclopedic prose (formal, edited informative text such as news reports or encyclopedia/Wikipedia-style articles)",
+  "fillers_and_hesitations": [
+    "あの",
+    "ええと",
+    "えーと",
+    "まあ",
+    "その",
+    "え",
+    "つまり"
+  ],
+  "discourse_markers": [
+    "また",
+    "一方",
+    "さらに",
+    "ところで",
+    "つまり",
+    "によると",
+    "によれば",
+    "として",
+    "という",
+    "ため(に)"
+  ],
+  "clause_boundary_signals": [
+    "ます／ました／です／だ (sentence-final polite/plain predicates)",
+    "〜となりました／〜なりました (resultative copula endings)",
+    "と報じました／と述べました／と主張して (quotative + reporting verb)",
+    "〜し (end of clause in a list when it is the last predicate it also closes)",
+    "〜て (連用形/て形 when followed by sentence-final predicate it may join; when used sentence-final it marks continuation only rarely)"
+  ],
+  "non_boundary_traps": [
+    "の (genitive/nominalizer inside noun phrases)",
+    "という (noun-modifier or name-quotative inside NPs)",
+    "と (quotative/conditional/coordination — often appears inside clauses)",
+    "て (conjunctive て-form: looks like an ending but usually connects to following clause)",
+    "し (listing/contrastive connective that may not end the overall predicate)",
+    "た (past-tense verb form when it is a modifier before a noun: relative clause)"
+  ],
+  "unstable_prefix_signals": [
+    "て (verb て-form — signals continuation; do not split immediately after it)",
+    "し (conjunctive し — often continues or completes a list of predicates)",
+    "と (quotative/conditional: the clause may continue with a reporting verb or conditional result)",
+    "という (can be a clause-final quote marker or a noun-modifying phrase; subsequent words can change its role)",
+    "の／こと (nominalizers that often lead into further explanation)"
+  ],
+  "notes_for_prompt_writer": "Prefer emitting segments at sentence-final predicates (polite/plain endings like ます/た/だ/です) and before major discourse-openers such as また／一方. Avoid splitting immediately after connective suffixes and particles (て／し／と／の／という／ため) because they commonly continue the clause or convert it into a modifier. Treat quoted titles or quoted clauses as single units until a clear reporting verb or sentence-final predicate follows."
+}

@@ -1,0 +1,23 @@
+[
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "The native inhabitants of Greenland call themselves Inuit in Canada and Kalaalleq (plural Kalaallit), a Greenlander, in Greenland.",
+    "seg_text": "The native inhabitants of Greenland <SEG:1> call themselves Inuit <SEG:2> in Canada and Kalaalleq <SEG:3> (plural Kalaallit), a Greenlander, in Greenland.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "Although in the end, Krushchev sent in tanks to restore order, he did give way to some economic demands and agreed to appoint the popular Wladyslaw Gomulka as the new prime minister.",
+    "seg_text": "Although in the end, <SEG:2> Krushchev sent in tanks <SEG:5> to restore order, <SEG:1> he did give way <SEG:6> to some economic demands <SEG:3> and agreed to appoint the popular Wladyslaw Gomulka <SEG:4> as the new prime minister.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "The Northern Rock bank had been nationalised in 2008 following the revelation that the company had received emergency support from the UK Government.",
+    "seg_text": "The Northern Rock bank <SEG:2> had been nationalised in 2008 <SEG:1> following the revelation <SEG:4> that the company had received emergency support <SEG:3> from the UK Government.",
+    "first_pass": true
+  }
+]

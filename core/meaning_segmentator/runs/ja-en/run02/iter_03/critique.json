@@ -1,0 +1,313 @@
+{
+  "cases": [
+    {
+      "id": "ja_jp_492",
+      "error_type": "placement",
+      "span": "現代のパキスタンの大部分と",
+      "evidence": "Segment cut inside a quantified NP; translation dropped “most of”.",
+      "cause": "other",
+      "proposed_rule": "Do not finalize a noun-phrase translation while a quantity/extent phrase may still follow; wait for quantifiers or the clause predicate before cutting.",
+      "example_pair": {
+        "input": "インダス渓谷文明は、北西インド亜大陸の青銅器時代の文明で、現代のパキスタンの大部分とインド北西部と北東アフガニスタンの一部の地域を包含していました。",
+        "output": "インダス渓谷文明は、北西インド亜大陸の青銅器時代の文明で、現代のパキスタンの大部分とインド北西部と北東アフガニスタンの一部の地域を <SEG:1> 包含していました。"
+      }
+    },
+    {
+      "id": "ja_jp_1273",
+      "error_type": "placement",
+      "span": "「ブラックボックス」の フライトレコーダー",
+      "evidence": "Genitive modifier emitted before head noun arrived -> wrong attachment.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not emit genitive or prenominal modifiers (〜の etc.) as a finished chunk; wait for the head noun to avoid incorrect modifier attachment.",
+      "example_pair": {
+        "input": "新華社は、政府の調査員が水曜日に「ブラックボックス」のフライトレコーダー2台を回収したと報じました。",
+        "output": "新華社は、政府の調査員が水曜日に「ブラックボックス」のフライトレコーダー2台を回収したと <SEG:1> 報じました。"
+      }
+    },
+    {
+      "id": "ja_jp_967",
+      "error_type": "placement",
+      "span": "オマッジョーレ、マナローラ、コルニリア、",
+      "evidence": "Cut inside enumerated proper‑name list produced fragmented, incoherent pieces.",
+      "cause": "modifier scope",
+      "proposed_rule": "Avoid placing boundaries inside enumerations or name lists; wait for the list to close (comma + concluding word like 'という'/'が'/'など' or the main predicate).",
+      "example_pair": {
+        "input": "イタリアのリグーリア州にあるチンクエ・テッレは「5つの土地」を意味し、オマッジョーレ、マナローラ、コルニリア、ヴェルナッツァ、モンテロッソという5つの小さな村が寄り添うようにできた沿岸沿いの地域です。",
+        "output": "イタリアのリグーリア州にあるチンクエ・テッレは「5つの土地」を意味し、オマッジョーレ、マナローラ、コルニリア、ヴェルナッツァ、モンテロッソという5つの小さな村が寄り添うようにできた沿岸沿いの地域です。 <SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_85",
+      "error_type": "placement",
+      "span": "砕氷に加えて、",
+      "evidence": "Initial fragment asserted existence/agent before clause polarity/predicate arrived (high contradiction).",
+      "cause": "polarity not yet settled",
+      "proposed_rule": "Do not emit an affirmative clause or subject when a connective (e.g. 'に加えて','しかし') ends the fragment; wait for the following predicate or clause end that can set polarity.",
+      "example_pair": {
+        "input": "砕氷に加えて、極端な気象条件が救助活動を妨げています。",
+        "output": "砕氷に加えて、極端な気象条件が救助活動を妨げています。 <SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_144",
+      "error_type": "placement",
+      "span": "予想していたよりもずっと以前に",
+      "evidence": "Cut separated time adverbial from the main predicate, producing awkward partial assertions.",
+      "cause": "modifier scope",
+      "proposed_rule": "Do not cut between temporal/modifier phrases and the main predicate they modify; wait for the verb or clause-final nominaliser before segmenting.",
+      "example_pair": {
+        "input": "この化石によれば、分子レベルでの証拠から、予想していたよりもずっと以前に分裂が起きていたことになります。",
+        "output": "この化石によれば、分子レベルでの証拠から、予想していたよりもずっと以前に分裂が起きていたことになります。 <SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_480",
+      "error_type": "placement",
+      "span": "ピアノのように 音量を出すために",
+      "evidence": "Fragments asserted opposite polarity and turned NP into an action before verb; many high contradictions.",
+      "cause": "polarity not yet settled",
+      "proposed_rule": "Do not finalize clause polarity or render noun phrases as predicates before seeing negation/modality or the main verb; wait for the predicate or negative/modal markers (e.g. ～ない, ～こと).",
+      "example_pair": {
+        "input": "そうすることで、疲れがたまりにくくなります。ピアノのように音量を出すために力を入れて鍵盤を叩く必要はないことを覚えておいてください。",
+        "output": "そうすることで、疲れがたまりにくくなります。ピアノのように音量を出すために力を入れて鍵盤を叩く必要はないことを覚えておいてください。 <SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_1547",
+      "error_type": "placement",
+      "span": "柏崎刈羽原発が",
+      "evidence": "Subject emitted as a complete claim leading to catastrophic false assertion before predicate arrived.",
+      "cause": "other",
+      "proposed_rule": "Do not assert a state or catastrophic event when only the subject is present (～が); wait for the verb/state phrase (e.g. 稼働している／停止している) or the reporting verb before committing.",
+      "example_pair": {
+        "input": "また、NHKは新潟県の柏崎刈羽原発が正常に稼働していると報道していました。",
+        "output": "また、NHKは新潟県の柏崎刈羽原発が正常に稼働していると報道していました。 <SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_869",
+      "error_type": "placement",
+      "span": "慣れるために、欧風の高級なホテル",
+      "evidence": "Adverbial/modifier emitted and attached incorrectly; later modal flips scope/polarity.",
+      "cause": "modifier scope",
+      "proposed_rule": "Delay rendering adverbials and scope-bearing modifiers until the verb or modal that they modify is visible, so they are attached to the correct head.",
+      "example_pair": {
+        "input": "特に、最初の数日間は、慣れるために、欧風の高級なホテルや食事、サービスにお金をかけることを検討してみてはいかがでしょうか。",
+        "output": "特に、最初の数日間は、慣れるために、欧風の高級なホテルや食事、サービスにお金をかけることを検討してみてはいかがでしょうか。 <SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_1287",
+      "error_type": "placement",
+      "span": "という伝説の埋葬地である",
+      "evidence": "Partial rendering invented unrelated facts in descriptive clause (severe contradiction).",
+      "cause": "other",
+      "proposed_rule": "Do not invent or canonically normalise facts from an incomplete descriptive clause; defer factualizing descriptive clauses until the place/head noun and clause predicate are present.",
+      "example_pair": {
+        "input": "また、聖書の家長アブラハム、イサク、ヤコブ、そして彼らの妻たちが埋められているという伝説の埋葬地であるヘブロン方面に北上するバスも何本かあります。",
+        "output": "また、聖書の家長アブラハム、イサク、ヤコブ、そして彼らの妻たちが埋められているという伝説の埋葬地であるヘブロン方面に北上するバスも何本かあります。 <SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_119",
+      "error_type": "placement",
+      "span": "「Six Days in Fallujah」というゲームを",
+      "evidence": "Cut before clause-final negation/verb, produced wrong predicate (played vs. will not release).",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not generate a clause's predicate or action before the clause‑final verb or negation has arrived; wait to decide release/deny/affirmation until the verb is visible.",
+      "example_pair": {
+        "input": "ゲームメーカーのコナミは本日、日本の新聞で、「Six Days in Fallujah」というゲームをリリースしないことを明言しました。",
+        "output": "ゲームメーカーのコナミは本日、日本の新聞で、「Six Days in Fallujah」というゲームをリリースしないことを明言しました。 <SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_547",
+      "error_type": "placement",
+      "span": "民兵700人を連れて川を渡り、",
+      "evidence": "Agent and tense assigned prematurely; actions rendered as commands and agent misattributed.",
+      "cause": "wrong participant",
+      "proposed_rule": "Delay committing to agent reference, tense/mood and participant number until the clause's main predicate and aspect markers are present.",
+      "example_pair": {
+        "input": "ジェームズ・ユーイング将軍は、トレントン軽巡洋艦で民兵700人を連れて川を渡り、アサンピンク・クリークにかかる橋を奪取し、敵軍の逃亡を阻止しました。",
+        "output": "ジェームズ・ユーイング将軍は、トレントン軽巡洋艦で民兵700人を連れて川を渡り、アサンピンク・クリークにかかる橋を奪取し、敵軍の逃亡を阻止しました。 <SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_959",
+      "error_type": "placement",
+      "span": "航空会社はありません（",
+      "evidence": "Affirmative/existence asserted before sentence-final negation; named entity mistranslated when partial.",
+      "cause": "polarity not yet settled",
+      "proposed_rule": "Don't emit existential/affirmative claims before sentence-final negation or the main predicate; also defer full translation or normalization of brand/alliance names until the full name or disambiguating context is present.",
+      "example_pair": {
+        "input": "南半球の3つの海洋すべてを横断する便を就航している航空会社はありません（スカイチームはいずれの海洋を横断する便も就航していません）。",
+        "output": "南半球の3つの海洋すべてを横断する便を就航している航空会社はありません（スカイチームはいずれの海洋を横断する便も就航していません）。 <SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_1220",
+      "error_type": "placement",
+      "span": "移住したスワニアは、",
+      "evidence": "Partial piece introduced first‑person or wrong subject interpretation before confirming who acts.",
+      "cause": "wrong participant",
+      "proposed_rule": "Do not introduce or change grammatical person (I/you/he/she) in a partial segment; wait for explicit subject confirmation or repeat the proper name before generating person-specific predicates.",
+      "example_pair": {
+        "input": "1956年にスウェーデンに移住したスワニアは、3年後にスウェーデン郵便局で働き始め、その主任彫版工となりました。",
+        "output": "1956年にスウェーデンに移住したスワニアは、3年後にスウェーデン郵便局で働き始め、その主任彫版工となりました。 <SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_487",
+      "error_type": "placement",
+      "span": "自らの信仰をヒンドゥー教とは",
+      "evidence": "Identity asserted before contrastive predicate arrived; produced 'Sikhs are Hindus'.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Wait for the main predicate after contrastive markers (e.g. 'とは','ながらも') before asserting identity or equivalence.",
+      "example_pair": {
+        "input": "シーク教徒たちは、ヒンドゥー教のルーツや伝統を尊重しながらも、自らの信仰をヒンドゥー教とは別個の宗教と見なしてます。",
+        "output": "シーク教徒たちは、ヒンドゥー教のルーツや伝統を尊重しながらも、自らの信仰をヒンドゥー教とは別個の宗教と見なしてます。 <SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_1309",
+      "error_type": "placement",
+      "span": "カチャ・サーリネンが 10位に終わった",
+      "evidence": "Partial segment caused wrong participant/person (emitted 'I finished' instead of 'she/Finland finished').",
+      "cause": "wrong participant",
+      "proposed_rule": "Delay emitting person-specific verb forms or subjects until the agent is unambiguous; avoid defaulting to first‑person in partial clauses.",
+      "example_pair": {
+        "input": "具体的には、昨日のスーパーGで女子スタンディングクラスでアンナ・ヨシェムセンが9位に終わったオランダや、同じイベントでカチャ・サーリネンが10位に終わったフィンランドなどです。",
+        "output": "具体的には、昨日のスーパーGで女子スタンディングクラスでアンナ・ヨシェムセンが9位に終わったオランダや、同じイベントでカチャ・サーリネンが10位に終わったフィンランドなどです。 <SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_146",
+      "error_type": "placement",
+      "span": "自らの ペースでIM市場を 動かし、開拓することができました。",
+      "evidence": "Verb cluster/object split produced incoherent intermediate pieces and low adequacy.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Avoid cutting between verb clusters and their objects or between verbs that form a single complementation chain; wait for the clause-final predicate or complementiser.",
+      "example_pair": {
+        "input": "AOLはこれまで米国内で広く利用されてきたため、自らのペースでIM市場を動かし、開拓することができました。",
+        "output": "AOLはこれまで米国内で広く利用されてきたため、自らのペースでIM市場を動かし、開拓することができました。 <SEG:1>"
+      }
+    },
+    {
+      "id": "ja_jp_1153",
+      "error_type": "placement",
+      "span": "観察されるリズムの多くは、内因性周期の存在",
+      "evidence": "Modifiers emitted before head caused incorrect assertions (translation added negation/intent not in source).",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not emit modifiers or preposed dependent phrases as standalone assertions; wait for the head noun/verb that determines their scope and polarity.",
+      "example_pair": {
+        "input": "生理学や行動で観察されるリズムの多くは、内因性周期の存在と体内時計を通して刻まれるしくみに決定的に依存していることが多いのです。",
+        "output": "生理学や行動で観察されるリズムの多くは、内因性周期の存在と体内時計を通して刻まれるしくみに決定的に依存していることが多いのです。 <SEG:1>"
+      }
+    }
+  ],
+  "summary": "Most failures are placement errors: the prompt often marks boundaries that cut off before heads, quantifiers, clause-final negation/modals, or enumerations, causing wrong attachments, wrong agents, or reversed polarity. The ranking offers little corrective power (rank_lift≈0), so fix segment-placement conditions (wait-for-head/quantifier/negator/list-end and defer translating named entities) rather than reordering confidences.",
+  "aggregate": {
+    "dominant_error": null,
+    "dominant_basis": "No corpus rate identifies a dominant failure. Read the cases and `judge_distribution` for WHICH mechanism to fix — do not infer a rate from `case_label_counts`, those cases were selected for being the worst.",
+    "measured_rates": {
+      "coverage": {
+        "n": 13,
+        "of_n": 40,
+        "rate": 0.325,
+        "of": "all sentences scored — a true corpus rate",
+        "meaning": "sentences where the tightest budget asked for boundaries the prompt never marked, so pieces are missing outright"
+      },
+      "premature_among_judged": {
+        "n": 41,
+        "of_n": 60,
+        "rate": 0.683,
+        "of": "boundaries judged this iteration, selected as the WORST by measured contradiction — NOT a corpus rate, do not compare it against `coverage`"
+      }
+    },
+    "case_label_counts": {
+      "counts": {
+        "placement": 17
+      },
+      "of_n": 17,
+      "of": "the selected worst cases — NOT a rate"
+    },
+    "stuck_hint": "",
+    "priority_audit": [
+      {
+        "feature": "상대위치 1/3",
+        "n": 59,
+        "rank_percentile": 0.472,
+        "contradiction": 0.2066,
+        "over_trust": 0.1288
+      },
+      {
+        "feature": "뒤 구두점 '、'",
+        "n": 42,
+        "rank_percentile": 0.448,
+        "contradiction": 0.114,
+        "over_trust": 0.0847
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 48,
+        "rank_percentile": 0.592,
+        "contradiction": 0.2541,
+        "over_trust": 0.0022
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 129,
+        "rank_percentile": 0.651,
+        "contradiction": 0.2099,
+        "over_trust": -0.0613
+      },
+      {
+        "feature": "상대위치 0/3",
+        "n": 69,
+        "rank_percentile": 0.699,
+        "contradiction": 0.1466,
+        "over_trust": -0.0791
+      }
+    ],
+    "judge_distribution": {
+      "n_boundaries_judged": 60,
+      "verdicts": {
+        "mistranslated": 27,
+        "safe": 18,
+        "premature": 14,
+        "reference_suspect": 1
+      },
+      "n_with_cause": 41,
+      "causes": {
+        "other": {
+          "n": 11,
+          "share": 0.268
+        },
+        "head not yet arrived": {
+          "n": 11,
+          "share": 0.268
+        },
+        "polarity not yet settled": {
+          "n": 11,
+          "share": 0.268
+        },
+        "wrong participant": {
+          "n": 5,
+          "share": 0.122
+        },
+        "modifier scope": {
+          "n": 2,
+          "share": 0.049
+        },
+        "mistranslated": {
+          "n": 1,
+          "share": 0.024
+        }
+      }
+    },
+    "max_missing_boundaries": 0.475,
+    "rank_lift": 0.00435,
+    "rank_lift_t": 0.08,
+    "summary": "Most failures are placement errors: the prompt often marks boundaries that cut off before heads, quantifiers, clause-final negation/modals, or enumerations, causing wrong attachments, wrong agents, or reversed polarity. The ranking offers little corrective power (rank_lift≈0), so fix segment-placement conditions (wait-for-head/quantifier/negator/list-end and defer translating named entities) rather than reordering confidences."
+  }
+}

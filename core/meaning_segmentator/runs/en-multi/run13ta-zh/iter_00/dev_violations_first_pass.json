@@ -1,0 +1,198 @@
+[
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Perry specifically said, \"There are few places in the world better equipped to meet the challenge that is posed in this case.\"",
+    "seg_text": "Perry specifically said, <SEG:1> \"There are few places in the world <SEG:2> better equipped to <SEG:4> meet the challenge <SEG:3> that is posed <SEG:5> in this case.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "The walls and roofs of ice caves can collapse and cracks can get closed.",
+    "seg_text": "The walls and roofs <SEG:2> of ice caves can collapse <SEG:1> and cracks can get closed.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "If you visit Greenland during cold seasons (considering that the further north you go, the colder it will be), it is essential to bring warm enough clothing.",
+    "seg_text": "If you visit Greenland during cold <SEG:5> seasons (considering that the further north you <SEG:4> go, the colder <SEG:3> it will be), <SEG:1> it is essential <SEG:2> to bring warm enough clothing.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "However, this does not come cheap: as rough rules of thumb, you can expect to pay up to four times the normal economy fare for business, and eleven times for first class!",
+    "seg_text": "However, this does not come cheap: <SEG:2> as rough rules of thumb, of <SEG:7> thumb, you can expect <SEG:6> to pay up to <SEG:5> four times the normal <SEG:4> economy fare for business, <SEG:1> and eleven times <SEG:3> for first class!",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 9개 — 최소 10개 필요",
+    "text": "The feathers' structure suggests that they were not used in flight but rather for temperature regulation or display. The researchers suggested that, even though this is the tail of a young dinosaur, the sample shows adult plumage and not a chick's down.",
+    "seg_text": "The feathers' structure <SEG:8> suggests that they were not <SEG:2> used in flight but rather for temperature regulation <SEG:1> or display. The researchers suggested <SEG:3> that, even though this is the <SEG:7> tail of a <SEG:6> young dinosaur, the <SEG:4> sample shows adult <SEG:5> plumage and not <SEG:9> a chick's down.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Last month a presidential commission recommended the prior CEP's resignation as part of a package of measures to move the country towards new elections.",
+    "seg_text": "Last month a presidential commission recommended <SEG:3> the prior CEP's resignation as <SEG:2> part of a package <SEG:1> of measures to <SEG:4> move the country towards new elections.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "As soon as you get out of the current, swimming back is no more difficult than normally.",
+    "seg_text": "As soon as <SEG:2> you get out of the current, <SEG:1> swimming back is no more difficult than normally.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "Part of its charm is the lack of visible corporate development. Paths, trains and boats connect the villages, and cars cannot reach them from the outside.",
+    "seg_text": "Part of its charm is <SEG:4> the lack of visible corporate development. <SEG:1> Paths, trains and boats <SEG:5> connect the villages, <SEG:2> and cars cannot reach them <SEG:3> from the outside.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "This means you can visit the historic city for a couple of full days while returning and sleeping on the ship at night.",
+    "seg_text": "This means you can visit <SEG:2> the historic city <SEG:3> for a couple of full days <SEG:1> while returning and <SEG:4> sleeping on the ship at night.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Police said Lo Piccolo had the upper hand because he had been Provenzano's right-hand man in Palermo and his greater experience won him the respect of the older generation of bosses as they pursued Provenzano's policy of keeping as low as possible while strengthening their power network.",
+    "seg_text": "Police said Lo Piccolo <SEG:6> had the upper hand <SEG:1> because he had been <SEG:7> Provenzano's right-hand man in <SEG:8> Palermo and his greater <SEG:4> experience won him the respect <SEG:9> of the older <SEG:3> generation of bosses as they pursued Provenzano's policy <SEG:2> keeping as low <SEG:10> as possible while strengthening <SEG:5> their power network.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 10개 — 최소 11개 필요",
+    "text": "Police said Lo Piccolo had the upper hand because he had been Provenzano's right-hand man in Palermo and his greater experience won him the respect of the older generation of bosses as they pursued Provenzano's policy of keeping as low as possible while strengthening their power network.",
+    "seg_text": "Police said Lo Piccolo <SEG:6> had the upper hand <SEG:1> because he had been <SEG:7> Provenzano's right-hand man in <SEG:8> Palermo and his greater <SEG:4> experience won him the respect <SEG:9> of the older <SEG:3> generation of bosses as they pursued Provenzano's policy <SEG:2> keeping as low <SEG:10> as possible while strengthening <SEG:5> their power network.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "Bird flu, or more formally avian influenza, can infect both birds and mammals.",
+    "seg_text": "Bird flu, or more formally avian influenza, <SEG:1> can infect both birds and mammals.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "For example, “learning” and “socialization” are suggested as important motivations for Internet use (James et al., 1995).",
+    "seg_text": "For example, “learning” and “socialization” <SEG:2> are suggested as important motivations <SEG:1> for Internet use (James et al., 1995).",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "Squash, karate and roller sports tried to get onto the Olympic program as well as baseball and softball, which were voted out of the Olympic Games in 2005.",
+    "seg_text": "Squash, karate and roller sports <SEG:5> tried to get onto the Olympic program <SEG:1> as well as baseball and softball, <SEG:2> which were voted <SEG:3> out of the Olympic <SEG:4> Games in 2005.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "For instance, they didn't have corn, nor tomatoes, nor potatoes, nor cocoa, and no ancient Roman ever tasted a turkey.",
+    "seg_text": "For instance, they didn't have corn, <SEG:2> nor tomatoes, nor potatoes, nor cocoa, <SEG:1> and no ancient Roman <SEG:3> ever tasted a turkey.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "I lost my sister and her friend, and on my way there were two disabled people in wheelchairs, people just jumping over and pushing them,\" Armand Versace said.",
+    "seg_text": "\"I lost my sister <SEG:4> and her friend, <SEG:1> and on my way <SEG:5> there were two disabled people <SEG:2> in wheelchairs, people <SEG:6> just jumping over and pushing them,\" <SEG:3> Armand Versace said.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "The idea of skiing is very old — cave paintings depicting skiers date back as far as 5000 BC!",
+    "seg_text": "The idea of <SEG:3> skiing is very old — cave paintings <SEG:2> depicting skiers date <SEG:1> back as far as 5000 BC!",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Cells are so basic and critical to the study of life, in fact, that they are often referred to as \"the building blocks of life\".",
+    "seg_text": "Cells are so basic and critical <SEG:2> to the study of life, <SEG:1> in fact, that they are often <SEG:3> referred to as <SEG:4> \"the building blocks of life\".",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "For example, one might say that the motor car necessarily leads to the development of roads.",
+    "seg_text": "For example, one might say <SEG:2> that the motor car <SEG:1> necessarily leads to the development of roads.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "The AI ​​system is now often used in the fields of economics, medicine, engineering and the military, as has been built in several home computer and video game software applications.",
+    "seg_text": "The AI system <SEG:6> is now often used <SEG:5> in the fields <SEG:3> of economics, medicine, engineering <SEG:4> and the military, <SEG:1> as has been built <SEG:2> in several home computer and video <SEG:7> game software applications.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Humans have been making and using lenses for magnification for thousands and thousands of years.",
+    "seg_text": "Humans have been making <SEG:2> and using lenses <SEG:1> for magnification for thousands and thousands of years.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Siminoff said sales boosted after his 2013 appearance in a Shark Tank episode where the show panel declined funding the startup.",
+    "seg_text": "Siminoff said sales boosted <SEG:1> after his 2013 appearance <SEG:2> in a Shark Tank episode <SEG:3> where the show panel declined funding the startup.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "These bosses had been reined in by Provenzano when he put an end to the Riina-driven war against the state that claimed the lives of Mafia crusaders Giovanni Falcone and Paolo Borsellino in 1992.\"",
+    "seg_text": "These bosses had been reined in <SEG:2> by Provenzano when he put <SEG:7> an end to the Riina-driven war <SEG:1> against the state <SEG:3> that claimed the <SEG:6> lives of Mafia <SEG:5> crusaders Giovanni Falcone <SEG:4> and Paolo Borsellino in 1992.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 8개 필요",
+    "text": "These bosses had been reined in by Provenzano when he put an end to the Riina-driven war against the state that claimed the lives of Mafia crusaders Giovanni Falcone and Paolo Borsellino in 1992.\"",
+    "seg_text": "These bosses had been reined in <SEG:2> by Provenzano when he put <SEG:7> an end to the Riina-driven war <SEG:1> against the state <SEG:3> that claimed the <SEG:6> lives of Mafia <SEG:5> crusaders Giovanni Falcone <SEG:4> and Paolo Borsellino in 1992.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "For over a thousand years the Christian religion had bound European states together despite differences in language and customs. I",
+    "seg_text": "For over a thousand years <SEG:2> the Christian religion <SEG:3> had bound European states together <SEG:1> despite differences in language and customs. I",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "Mutations can have a variety of different effects depending on the type of mutation, the significance of the piece of genetic material affected and whether the cells affected are germ-line cells.",
+    "seg_text": "Mutations can have <SEG:4> a variety of different effects <SEG:1> depending on the type of mutation, <SEG:3> the significance of <SEG:5> the piece of <SEG:6> genetic material affected <SEG:2> and whether the cells affected are germ-line cells.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Because of their success with submarines, after the war Germans aren't trusted to have many of them.",
+    "seg_text": "Because of their success with submarines, <SEG:1> after the war <SEG:2> Germans aren't trusted to have many of them.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 8개 필요",
+    "text": "Germany was a common enemy in World War 2, leading to cooperation between the USSR and USA. With the end of the war the clashes of system, process and culture led to the countries falling out.",
+    "seg_text": "Germany was a common enemy <SEG:2> in World War 2, <SEG:3> leading to cooperation <SEG:5> between the USSR and USA. <SEG:1> With the end of the war <SEG:4> the clashes of system, process and culture <SEG:6> led to the <SEG:7> countries falling out.",
+    "first_pass": true
+  }
+]

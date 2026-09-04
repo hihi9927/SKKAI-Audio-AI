@@ -56,13 +56,57 @@ def load_refs(tag: str, tgt: str, dataset: str = "fleurs") -> dict[str, str]:
     return {k: e.ref for k, e in _ds.get(dataset).entries(tag, tgt).items()}
 
 
-def run_policy(policy: str, rows: list[dict], tgt: str, args) -> list[dict]:
+class Checkpoint:
+    """진행분을 줄 단위로 흘려 쓴다.
+
+    `alignatt` 가 CUDA `unspecified launch failure` 로 두 번 죽었다 (2026-09-03,
+    8,125/15,430 와 12,175/15,430 지점). 종전에는 **끝에 한 번만** 파일을 써서 그때까지의
+    한 시간이 통째로 날아갔다. 여기서는 100건마다 `<out>.partial.jsonl` 에 append 하고,
+    `--resume` 이 그걸 읽어 남은 것만 돌린다.
+    """
+
+    def __init__(self, path: Path, every: int = 100):
+        self.f = path.open("a", encoding="utf-8")
+        self.every, self.n = every, 0
+
+    def write(self, row: dict) -> None:
+        self.f.write(json.dumps(row, ensure_ascii=False) + "\n")
+        self.n += 1
+        if self.n % self.every == 0:
+            self.f.flush()
+
+    def close(self) -> None:
+        self.f.flush()
+        self.f.close()
+
+
+def load_partial(path: Path) -> list[dict]:
+    if not path.exists():
+        return []
+    out = []
+    for line in path.open(encoding="utf-8"):
+        line = line.strip()
+        if line:
+            try:
+                out.append(json.loads(line))
+            except json.JSONDecodeError:      # 죽는 순간 잘린 마지막 줄
+                pass
+    return out
+
+
+def run_policy(policy: str, rows: list[dict], tgt: str, args,
+               ckpt: "Checkpoint | None" = None) -> list[dict]:
     out: list[dict] = []
     t0 = time.time()
 
+    def add(row: dict) -> None:
+        out.append(row)
+        if ckpt is not None:
+            ckpt.write(row)
+
     if policy == "punct":
         for r in rows:
-            out.append({**r, "pieces": punct.segment(r["text"])})
+            add({**r, "pieces": punct.segment(r["text"])})
 
     elif policy == "causal_align":
         refs = load_refs(args.manifest_tag, tgt, args.dataset)
@@ -72,9 +116,9 @@ def run_policy(policy: str, rows: list[dict], tgt: str, args) -> list[dict]:
             ref = refs.get(r["id"])
             if not ref:
                 skipped += 1
-                out.append({**r, "pieces": [r["text"]], "no_ref": True})
+                add({**r, "pieces": [r["text"]], "no_ref": True})
                 continue
-            out.append({**r, "pieces": aligner.segment(r["text"], ref, tgt)})
+            add({**r, "pieces": aligner.segment(r["text"], ref, tgt)})
             if (i + 1) % 100 == 0:
                 print(f"  [{tgt}] {i + 1}/{len(rows)}  {time.time() - t0:.0f}s", flush=True)
         if skipped:
@@ -86,7 +130,7 @@ def run_policy(policy: str, rows: list[dict], tgt: str, args) -> list[dict]:
         nmt = Nmt(src="en", tgt=tgt, device=args.device)
         for i, r in enumerate(rows):
             pieces = mu_prefix.segment(nmt, r["text"], SPACED[tgt], args.n_cands)
-            out.append({**r, "pieces": pieces})
+            add({**r, "pieces": pieces})
             if (i + 1) % 25 == 0:
                 el = time.time() - t0
                 eta = el / (i + 1) * (len(rows) - i - 1)
@@ -95,7 +139,7 @@ def run_policy(policy: str, rows: list[dict], tgt: str, args) -> list[dict]:
     elif policy == "syntax":
         seg = syntax_sasst.SyntaxSegmenter(max_chunk=args.max_chunk)
         for r in rows:
-            out.append({**r, "pieces": seg.segment(r["text"])})
+            add({**r, "pieces": seg.segment(r["text"])})
 
     elif policy == "alignatt":
         from core.meaning_segmentator.autoseg.baselines.nmt import Nmt
@@ -103,7 +147,7 @@ def run_policy(policy: str, rows: list[dict], tgt: str, args) -> list[dict]:
         nmt = Nmt(src="en", tgt=tgt, device=args.device,
                   attentions=True, attn_layer=args.attn_layer)
         for i, r in enumerate(rows):
-            out.append({**r, "pieces": alignatt.segment(nmt, r["text"], args.f)})
+            add({**r, "pieces": alignatt.segment(nmt, r["text"], args.f)})
             if (i + 1) % 25 == 0:
                 el = time.time() - t0
                 eta = el / (i + 1) * (len(rows) - i - 1)
@@ -136,6 +180,13 @@ def main() -> int:
     p.add_argument("--attn-layer", type=int, default=5, help="AlignAtt 정렬 층")
     p.add_argument("--max-chunk", type=int, default=7, help="SASST 최대 청크 어절")
     p.add_argument("--limit", type=int, default=0, help="스모크용 앞 N 문장")
+    p.add_argument("--resume", action="store_true",
+                   help="`<out>.partial.jsonl` 을 읽어 **이미 끝난 문장은 건너뛴다.** "
+                        "CUDA 오류로 죽은 뒤 이어 돌릴 때 쓴다")
+    p.add_argument("--out-name", default=None,
+                   help="산출 파일 stem (기본: 정책 이름). 같은 정책을 노브만 바꿔 "
+                        "여러 벌 만들 때 쓴다 — 예: --policy alignatt --f 4 "
+                        "--out-name alignatt_f4. `bleu_eval --baselines` 가 이 이름을 읽는다")
     args = p.parse_args()
 
     run_dir = _HERE.parents[1] / "runs" / args.run_id
@@ -149,14 +200,35 @@ def main() -> int:
     # punct 는 타깃 독립이라 한 번만 낸다.
     targets = ["all"] if args.policy in ("punct", "syntax") else args.targets
     for tgt in targets:
-        print(f"[{args.policy}] en→{tgt}, {len(rows)}문장")
-        res = run_policy(args.policy, rows, tgt if tgt != "all" else "de", args)
-        path = out_dir / f"{args.policy}_{tgt}_{args.split}.json"
+        stem = args.out_name or args.policy
+        path = out_dir / f"{stem}_{tgt}_{args.split}.json"
+        part = path.with_suffix(".partial.jsonl")
+
+        done = load_partial(part) if args.resume else []
+        if not args.resume and part.exists():
+            part.unlink()                      # 이어 돌리는 게 아니면 이전 잔해를 지운다
+        done_ids = {r["id"] for r in done}
+        todo = [r for r in rows if r["id"] not in done_ids]
+        print(f"[{args.policy}] en→{tgt}, {len(rows)}문장"
+              + (f" (이어서: 완료 {len(done)}, 남은 {len(todo)})" if done else ""))
+
+        ckpt = Checkpoint(part)
+        try:
+            res = run_policy(args.policy, todo, tgt if tgt != "all" else "de", args, ckpt)
+        finally:
+            ckpt.close()
+
+        # 원래 순서로 되돌린다 — 소비자(`bleu_eval`)는 id 로 찾지만 산출물은 읽는 사람도 본다.
+        order = {r["id"]: i for i, r in enumerate(rows)}
+        res = sorted(done + res, key=lambda r: order.get(r["id"], 1 << 30))
         path.write_text(json.dumps(
             {"policy": args.policy, "tgt": tgt, "split": args.split,
              "n_cands": args.n_cands if args.policy == "mu_prefix" else None,
+             "f": args.f if args.policy == "alignatt" else None,
+             "attn_layer": args.attn_layer if args.policy == "alignatt" else None,
              "rows": res}, ensure_ascii=False, indent=2), encoding="utf-8")
-        print(f"  → {path}")
+        part.unlink(missing_ok=True)       # 최종본이 나왔으니 진행분은 버린다
+        print(f"  → {path} ({len(res)}행)")
     return 0
 
 

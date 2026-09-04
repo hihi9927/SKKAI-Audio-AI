@@ -1,0 +1,181 @@
+{
+  "cases": [
+    {
+      "id": "en_us_929",
+      "error_type": "placement",
+      "span": "is only rarely booked <SEG:2>",
+      "evidence": "Emitted a negated/quantified claim before trailing modifier changed scope.",
+      "cause": "modifier scope",
+      "proposed_rule": "Do not finalize polarity/quantifiers/adverbs (e.g. 'only rarely') before any following modifiers or subordinate phrases that can change their scope; mark such comma- or adverb-adjacent boundaries with low confidence.",
+      "example_pair": {
+        "input": "Nowadays air travel is only rarely booked...",
+        "output": "Nowadays air travel is only rarely booked directly through the airline without first searching and comparing prices. <SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_1428",
+      "error_type": "placement",
+      "span": "the first recreational <SEG:4>",
+      "evidence": "Generated a predicate/noun sense before the head noun arrived, producing 'recreational ski' instead of 'ski club'.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "When only modifiers/determiners have been seen, delay generating the predicate or finalizing the noun phrase until the head noun arrives; treat boundaries immediately after modifiers as low-confidence.",
+      "example_pair": {
+        "input": "Downhill skiing as a sport goes back to at least the...",
+        "output": "Downhill skiing as a sport goes back to at least the 17th century, and in 1861 the first recreational ski club was opened by Norwegians in Australia. <SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_990",
+      "error_type": "placement",
+      "span": "flow down the mountain",
+      "evidence": "Chose a directional/local preposition without adjacent context and produced the wrong locative ('along' vs 'down').",
+      "cause": "other",
+      "proposed_rule": "Avoid finalizing directional/locative choices when the clause's complement or nearby prepositional phrase is not yet visible; lower boundary confidence before locative complements.",
+      "example_pair": {
+        "input": "The glaciers are not stable, but flow down the...",
+        "output": "The glaciers are not stable, but flow down the mountain. This will cause cracks, crevasses, which may be obscured by snow bridges. <SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_687",
+      "error_type": "placement",
+      "span": "Anyone interested in seeing <SEG:8>",
+      "evidence": "Turned an incomplete NP into a speech act / call-to-action before the clause predicate arrived.",
+      "cause": "other",
+      "proposed_rule": "Do not introduce new speech acts, imperatives, or offers when only a noun phrase or modifiers are present; wait for the clause head or verb before producing sentence-level acts.",
+      "example_pair": {
+        "input": "Anyone interested in seeing evidence of the damage to the...",
+        "output": "Anyone interested in seeing evidence of the damage to the mummy done during attempts to remove it from the coffin will be disappointed as only the head and shoulders are visible. <SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_361",
+      "error_type": "placement",
+      "span": "those <SEG:3> in the picture",
+      "evidence": "Resolved 'those' before the disambiguating modifier arrived, producing wrong antecedent (photons vs atoms).",
+      "cause": "referent lost",
+      "proposed_rule": "Delay resolving demonstratives/pronouns when a following modifier (e.g. 'in the picture') can disambiguate antecedent; assign low confidence to boundaries immediately before such modifiers.",
+      "example_pair": {
+        "input": "The next picture shows the atoms emitting photons. Of course, in reality photons are a lot smaller than those in the picture.",
+        "output": "The next picture shows the atoms emitting photons. Of course, in reality photons are a lot smaller than those in the picture. <SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_368",
+      "error_type": "placement",
+      "span": "in tubes called veins. <SEG:1>",
+      "evidence": "Emitted clause before a modifier that could attach to either clause, causing the modifier to be attached to the wrong verb/subject.",
+      "cause": "modifier scope",
+      "proposed_rule": "If a modifier (e.g. 'in tubes called X') can plausibly attach to either the preceding or following clause, delay the boundary until the disambiguating phrase appears; mark such ambiguous-attachment boundaries with low confidence.",
+      "example_pair": {
+        "input": "Blood goes away from the heart in tubes called arteries and comes back to the heart in tubes called veins.",
+        "output": "Blood goes away from the heart in tubes called arteries and comes back to the heart in tubes called veins. <SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_654",
+      "error_type": "placement",
+      "span": "Kalaalleq <SEG:1> (plural",
+      "evidence": "Committed to a transliteration/label and an attachment before the parenthetical/appositive and final locative arrived, reversing location scope.",
+      "cause": "modifier scope",
+      "proposed_rule": "Delay finalizing proper names, transliterations, or attaching descriptive labels when an immediately following parenthesis/appositive or trailing locative ('in X') can alter meaning; lower confidence at boundaries before parentheticals or final locatives.",
+      "example_pair": {
+        "input": "The native inhabitants of Greenland call themselves Inuit in Canada and Kalaalleq (plural Kalaallit), a Greenlander, in Greenland.",
+        "output": "The native inhabitants of Greenland call themselves Inuit in Canada and Kalaalleq (plural Kalaallit), a Greenlander, in Greenland. <SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_1380",
+      "error_type": "priority",
+      "span": "towers, called ziggurats, <SEG:2>",
+      "evidence": "Low adequacy at tight budget though no high contradiction — likely a safe boundary was ranked too highly (comma/appositive boundary) and survived under T.",
+      "cause": "other",
+      "proposed_rule": "Treat boundaries immediately after commas introducing parentheticals/appositives (feature '뒤 구두점 \",\"') as lower-priority unless the following token is an unambiguous finite verb; rank such comma-adjacent boundaries lower so they survive only under relaxed latency.",
+      "example_pair": {
+        "input": "Sometimes special pyramid shaped towers, called ziggurats, were built to be a part of the temples.",
+        "output": "Sometimes special pyramid shaped towers, called ziggurats, were built to be a part of the temples. <SEG:1>"
+      }
+    }
+  ],
+  "summary": "The segmenter repeatedly cuts before heads, scope-bearing modifiers, parentheticals, and disambiguating modifiers (causing polarity, head-choice and referent errors). It also over-trusts comma/appositive boundaries — lower their rank unless the following token makes the clause-headed decision clear.",
+  "aggregate": {
+    "dominant_error": "placement",
+    "error_counts": {
+      "placement": 7,
+      "priority": 1
+    },
+    "stuck_hint": "",
+    "priority_audit": [
+      {
+        "feature": "뒤 구두점 ','",
+        "n": 13,
+        "rank_percentile": 0.376,
+        "contradiction": 0.1591,
+        "over_trust": 0.3708
+      },
+      {
+        "feature": "상대위치 1/3",
+        "n": 53,
+        "rank_percentile": 0.586,
+        "contradiction": 0.1084,
+        "over_trust": 0.0278
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 46,
+        "rank_percentile": 0.616,
+        "contradiction": 0.0805,
+        "over_trust": -0.0027
+      },
+      {
+        "feature": "상대위치 0/3",
+        "n": 66,
+        "rank_percentile": 0.631,
+        "contradiction": 0.1102,
+        "over_trust": -0.0201
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 140,
+        "rank_percentile": 0.66,
+        "contradiction": 0.1037,
+        "over_trust": -0.049
+      }
+    ],
+    "judge_distribution": {
+      "n_boundaries_judged": 50,
+      "verdicts": {
+        "safe": 30,
+        "mistranslated": 14,
+        "premature": 6
+      },
+      "n_with_cause": 20,
+      "causes": {
+        "other": {
+          "n": 7,
+          "share": 0.35
+        },
+        "head not yet arrived": {
+          "n": 6,
+          "share": 0.3
+        },
+        "modifier scope": {
+          "n": 4,
+          "share": 0.2
+        },
+        "referent lost": {
+          "n": 2,
+          "share": 0.1
+        },
+        "mistranslated": {
+          "n": 1,
+          "share": 0.05
+        }
+      }
+    },
+    "max_missing_boundaries": 0.0,
+    "rank_lift": 0.07748,
+    "rank_lift_t": 1.74,
+    "summary": "The segmenter repeatedly cuts before heads, scope-bearing modifiers, parentheticals, and disambiguating modifiers (causing polarity, head-choice and referent errors). It also over-trusts comma/appositive boundaries — lower their rank unless the following token makes the clause-headed decision clear."
+  }
+}

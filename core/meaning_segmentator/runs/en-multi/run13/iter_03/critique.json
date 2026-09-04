@@ -1,0 +1,189 @@
+{
+  "cases": [
+    {
+      "id": "en_us_120",
+      "error_type": "placement",
+      "span": "between American <SEG:2> and Iraqi",
+      "evidence": "Boundary cut before 'and Iraqi forces' allowed translator to commit the first participant alone and choose the wrong second country.",
+      "cause": "wrong participant",
+      "proposed_rule": "Do not finalize a coordinated participant ('X and Y', 'between X and Y') until the conjunction and the second conjunct have been received; rank such comma/conjunction splits low.",
+      "example_pair": {
+        "input": "The game is based on the Second Battle of Fallujah, a vicious battle between American and Iraqi forces.",
+        "output": "The game is based on the Second Battle of Fallujah, a vicious battle between American and Iraqi forces<SEG:1>."
+      }
+    },
+    {
+      "id": "en_us_61",
+      "error_type": "placement",
+      "span": "and taking the <SEG:3> iPhone",
+      "evidence": "Cut before the object 'iPhone' forced the verb 'taking' to be rendered in a wrong sense ('take medicine').",
+      "cause": "head not yet arrived",
+      "proposed_rule": "When a highly polysemous verb (e.g. 'take', 'get', 'make') appears, wait for its direct object/noun phrase before giving a high-rank boundary.",
+      "example_pair": {
+        "input": "Apple CEO Steve Jobs unveiled the device by walking onto the stage and taking the iPhone out of his jeans pocket.",
+        "output": "Apple CEO Steve Jobs unveiled the device by walking onto the stage and taking the iPhone out of his jeans pocket<SEG:1>."
+      }
+    },
+    {
+      "id": "en_us_565",
+      "error_type": "placement",
+      "span": "Only the effects of catastrophizing, <SEG:1> not depression",
+      "evidence": "Emitted 'Only the effects...' before the contrast 'not depression' arrived, reversing the intended exclusive scope.",
+      "cause": "polarity not yet settled",
+      "proposed_rule": "Delay committing to exclusives ('only', 'not only', 'rather than') until the following contrasting items or negation/contrast phrase are observed; rank these boundaries low.",
+      "example_pair": {
+        "input": "Only the effects of catastrophizing, not depression and fear was conditional of regular weekly structured PA sessions.",
+        "output": "Only the effects of catastrophizing, not depression and fear was conditional of regular weekly structured PA sessions<SEG:1>."
+      }
+    },
+    {
+      "id": "en_us_123",
+      "error_type": "placement",
+      "span": "The United States embassy <SEG:3> located in Nairobi",
+      "evidence": "Boundary before the locative phrase led to committing an incorrect host-country locative in several translations.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not emit or mark a top-ranked boundary that finalizes an entity's host/location (e.g. 'the embassy in X') until any following locative PP ('in X', 'located in...') has been seen; demote such boundaries at commas.",
+      "example_pair": {
+        "input": "The United States embassy located in Nairobi, Kenya has issued a warning that \"extremists from Somalia\" are planning to launch suicide bomb attacks in Kenya and Ethiopia.",
+        "output": "The United States embassy located in Nairobi, Kenya has issued a warning that \"extremists from Somalia\" are planning to launch suicide bomb attacks in Kenya and Ethiopia<SEG:1>."
+      }
+    },
+    {
+      "id": "en_us_687",
+      "error_type": "placement",
+      "span": "remove <SEG:4> it from the coffin",
+      "evidence": "Cut inside the verb phrase separated the pronoun from its verb+PP, causing the pronoun to be attached to the wrong clause/agent in translation.",
+      "cause": "wrong participant",
+      "proposed_rule": "When a pronoun immediately follows or attaches to an infinitival/verb phrase, wait for the pronoun plus its complements (PP, object) before finalizing a boundary; rank such splits low.",
+      "example_pair": {
+        "input": "Anyone interested in seeing evidence of the damage to the mummy done during attempts to remove it from the coffin will be disappointed as only the head and shoulders are visible.",
+        "output": "Anyone interested in seeing evidence of the damage to the mummy done during attempts to remove it from the coffin<SEG:1> will be disappointed as only the head and shoulders are visible."
+      }
+    },
+    {
+      "id": "en_us_1380",
+      "error_type": "placement",
+      "span": "to be a <SEG:2> part of the temples",
+      "evidence": "Emitting 'to be a' before the noun head led to a wrong, incomplete rendering ('to be one') in some translations.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Avoid finalizing copula + article sequences ('to be a/an the') before the following noun head appears; rank boundaries that split 'a'/'an' from its head low.",
+      "example_pair": {
+        "input": "Sometimes special pyramid shaped towers, called ziggurats, were built to be a part of the temples.",
+        "output": "Sometimes special pyramid shaped towers, called ziggurats, were built to be a part of the temples<SEG:1>."
+      }
+    },
+    {
+      "id": "comma_priority",
+      "error_type": "priority",
+      "span": "뒤 구두점 ','",
+      "evidence": "Audit: comma positions are over-trusted (low rank percentile but high contradiction). Many high-contradiction boundaries sit at or adjacent to commas.",
+      "cause": "other",
+      "proposed_rule": "Never allow a comma-site candidate to be top-ranked unless the token after the comma is a finite verb or a closing clause marker; otherwise force all comma-site candidates at least one rank below any candidate that completes an NP head or the main verb.",
+      "example_pair": {
+        "input": "Sometimes special pyramid shaped towers, called ziggurats, were built to be a part of the temples.",
+        "output": "Sometimes special pyramid shaped towers, called ziggurats, were built to be a part of the temples<SEG:1>."
+      }
+    }
+  ],
+  "summary": "Most failures are placement errors: the prompt produces high-confidence boundaries before disambiguating material (second conjuncts, verb objects, locative phrases, pronoun+PP, or noun heads). The ranking also over-trusts comma positions — enforce a strict barrier that prevents comma-boundaries from being top-ranked unless the following token clearly closes a clause. These two changes (delay on disambiguating complements + hard cap on comma top-rank) target the dominant 'head not yet arrived' and 'wrong participant' contradictions without removing candidates.",
+  "aggregate": {
+    "dominant_error": null,
+    "dominant_basis": "No corpus rate identifies a dominant failure. Read the cases and `judge_distribution` for WHICH mechanism to fix — do not infer a rate from `case_label_counts`, those cases were selected for being the worst.",
+    "measured_rates": {
+      "coverage": {
+        "n": 0,
+        "of_n": 40,
+        "rate": 0.0,
+        "of": "all sentences scored — a true corpus rate",
+        "meaning": "sentences where the tightest budget asked for boundaries the prompt never marked, so pieces are missing outright"
+      },
+      "premature_among_judged": {
+        "n": 32,
+        "of_n": 50,
+        "rate": 0.64,
+        "of": "boundaries judged this iteration, selected as the WORST by measured contradiction — NOT a corpus rate, do not compare it against `coverage`"
+      }
+    },
+    "case_label_counts": {
+      "counts": {
+        "placement": 6,
+        "priority": 1
+      },
+      "of_n": 7,
+      "of": "the selected worst cases — NOT a rate"
+    },
+    "stuck_hint": "직전 개정이 [Core Principles], [Examples — Segment], [Examples — Do NOT Segment] 를 고쳤는데 채택에 실패했다. 같은 섹션을 같은 방식으로 다시 고치지 말 것 — 다른 섹션을 보거나 같은 섹션이라도 반대 방향(금지 추가가 아니라 완화)을 검토할 것",
+    "priority_audit": [
+      {
+        "feature": "뒤 구두점 ','",
+        "n": 15,
+        "rank_percentile": 0.374,
+        "contradiction": 0.1825,
+        "over_trust": 0.2579
+      },
+      {
+        "feature": "상대위치 1/3",
+        "n": 53,
+        "rank_percentile": 0.581,
+        "contradiction": 0.1874,
+        "over_trust": 0.035
+      },
+      {
+        "feature": "상대위치 0/3",
+        "n": 66,
+        "rank_percentile": 0.594,
+        "contradiction": 0.1462,
+        "over_trust": 0.0155
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 140,
+        "rank_percentile": 0.663,
+        "contradiction": 0.1734,
+        "over_trust": -0.0529
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 46,
+        "rank_percentile": 0.674,
+        "contradiction": 0.1784,
+        "over_trust": -0.0655
+      }
+    ],
+    "judge_distribution": {
+      "n_boundaries_judged": 50,
+      "verdicts": {
+        "mistranslated": 23,
+        "safe": 18,
+        "premature": 9
+      },
+      "n_with_cause": 32,
+      "causes": {
+        "other": {
+          "n": 13,
+          "share": 0.406
+        },
+        "head not yet arrived": {
+          "n": 10,
+          "share": 0.312
+        },
+        "wrong participant": {
+          "n": 5,
+          "share": 0.156
+        },
+        "mistranslated": {
+          "n": 3,
+          "share": 0.094
+        },
+        "polarity not yet settled": {
+          "n": 1,
+          "share": 0.031
+        }
+      }
+    },
+    "max_missing_boundaries": 0.0,
+    "rank_lift": 0.15035,
+    "rank_lift_t": 3.68,
+    "summary": "Most failures are placement errors: the prompt produces high-confidence boundaries before disambiguating material (second conjuncts, verb objects, locative phrases, pronoun+PP, or noun heads). The ranking also over-trusts comma positions — enforce a strict barrier that prevents comma-boundaries from being top-ranked unless the following token clearly closes a clause. These two changes (delay on disambiguating complements + hard cap on comma top-rank) target the dominant 'head not yet arrived' and 'wrong participant' contradictions without removing candidates."
+  }
+}

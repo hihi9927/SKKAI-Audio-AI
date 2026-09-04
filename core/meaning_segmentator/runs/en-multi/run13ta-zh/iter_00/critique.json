@@ -1,0 +1,176 @@
+{
+  "cases": [
+    {
+      "id": "en_us_1447",
+      "error_type": "placement",
+      "span": "Dr. Tony Moll discovered the Extremely",
+      "evidence": "Second piece emitted the disease name alone, making the sentence read as if Tony Moll IS XDR‑TB (judged 'mistranslated').",
+      "cause": "other",
+      "proposed_rule": "Never end a piece immediately after a person title/name when the next word is a finite verb of the same clause; keep subject + clause predicate together.",
+      "example_pair": {
+        "input": "Dr. Tony Moll discovered the Extremely Drug Resistant Tuberculosis (XDR-TB) in the South African region KwaZulu-Natal.",
+        "output": "Dr. Tony Moll discovered the Extremely Drug Resistant Tuberculosis (XDR-TB) <SEG:1> in the South African region KwaZulu-Natal."
+      }
+    },
+    {
+      "id": "en_us_654",
+      "error_type": "placement",
+      "span": "Inuit in Canada and Kalaalleq",
+      "evidence": "Boundary after 'Inuit' detached the locative/appositive and inverted modifier scope (judged 'premature').",
+      "cause": "modifier scope",
+      "proposed_rule": "Do not propose a boundary immediately after an ethnonym/demonym when it is followed by a locative prepositional phrase ('in ...') or an appositive/coordination ('and', comma) that assigns local scope; keep the noun + its locative/appositive together.",
+      "example_pair": {
+        "input": "The native inhabitants of Greenland call themselves Inuit in Canada and Kalaalleq (plural Kalaallit), a Greenlander, in Greenland.",
+        "output": "The native inhabitants of Greenland call themselves Inuit in Canada and Kalaalleq (plural Kalaallit), a Greenlander, in Greenland. <SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_1428",
+      "error_type": "placement",
+      "span": "goes back to at least the 17th",
+      "evidence": "Automatic contradiction metric was very high for several mid‑clause cuts but human judgements labelled them 'safe' (measurement false positives).",
+      "cause": null,
+      "proposed_rule": "",
+      "example_pair": {
+        "input": "Downhill skiing as a sport goes back to at least the 17th century, and in 1861 the first recreational ski club was opened by Norwegians in Australia.",
+        "output": "Downhill skiing as a sport goes back to at least the 17th century, <SEG:1> and in 1861 the first recreational ski club was opened by Norwegians in Australia."
+      }
+    },
+    {
+      "id": "en_us_331",
+      "error_type": "placement",
+      "span": "made more appearances or scored more goals",
+      "evidence": "Segmenting before the shared postmodifier 'for the club' caused the translator to attach the modifier wrongly and produce low adequacy.",
+      "cause": "modifier scope",
+      "proposed_rule": "Avoid segmenting between coordinated predicates and a following shared postmodifier/comparative ('for ...', 'than ...'); keep the coordinated verb phrase plus its shared complement in the same piece.",
+      "example_pair": {
+        "input": "No one else has ever made more appearances or scored more goals for the club than Bobek.",
+        "output": "No one else has ever made more appearances or scored more goals for the club <SEG:1> than Bobek."
+      }
+    },
+    {
+      "id": "en_us_368",
+      "error_type": "placement",
+      "span": "comes back to the heart in tubes called veins",
+      "evidence": "Multiple cuts broke parallel clause predicates and separated verbs from their complements, triggering high contradiction scores.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not cut inside a clause that contains a verb plus an immediately following prepositional complement (e.g. 'comes back to ...'); keep each verb with its complement, and avoid slicing parallel coordinated clauses apart.",
+      "example_pair": {
+        "input": "Blood goes away from the heart in tubes called arteries and comes back to the heart in tubes called veins.",
+        "output": "Blood goes away from the heart in tubes called arteries <SEG:1> and comes back to the heart in tubes called veins. <SEG:2>"
+      }
+    },
+    {
+      "id": "en_us_540",
+      "error_type": "placement",
+      "span": "The Colonists, seeing this activity, had also",
+      "evidence": "Cut inside the participial modifier ('seeing this activity') separated the modifier from its head and produced an incoherent translation piece (low adequacy).",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Never place a boundary inside a participial modifier or between a participle phrase and the noun it modifies; keep the whole participial phrase with its head noun or with the main clause predicate.",
+      "example_pair": {
+        "input": "The Colonists, seeing this activity, had also called for reinforcements.",
+        "output": "The Colonists, seeing this activity, had also called for reinforcements. <SEG:1>"
+      }
+    },
+    {
+      "id": "en_us_1000",
+      "error_type": "placement",
+      "span": "suspect an alleged Daesh (ISIL) militant",
+      "evidence": "Automatic contradiction flagged the first cut high, but human judgement marked it 'safe'—no reliable placement failure identified.",
+      "cause": null,
+      "proposed_rule": "",
+      "example_pair": {
+        "input": "Police said they suspect an alleged Daesh (ISIL) militant of responsibility for the attack.",
+        "output": "Police said they suspect an alleged Daesh (ISIL) militant of responsibility for the attack. <SEG:1>"
+      }
+    }
+  ],
+  "summary": "The prompt systematically places high‑confidence boundaries at commas and in mid‑clause positions that separate subjects from predicates, participial modifiers, coordinated predicates, or shared postmodifiers — producing mistranslation or low adequacy. Fixes: (1) placement rules that forbid cuts that split a person/title from its verb, split participial modifiers from their head, or split coordinated predicates from their shared complements; (2) demote comma‑position boundaries when the comma introduces an appositive, locative 'in ...', or coordination so these risky comma cuts fall lower in the ranking. Cases labelled 'safe' reflect measurement false positives and do not require new rules.",
+  "aggregate": {
+    "dominant_error": null,
+    "dominant_basis": "No corpus rate identifies a dominant failure. Read the cases and `judge_distribution` for WHICH mechanism to fix — do not infer a rate from `case_label_counts`, those cases were selected for being the worst.",
+    "measured_rates": {
+      "coverage": {
+        "n": 0,
+        "of_n": 40,
+        "rate": 0.0,
+        "of": "all sentences scored — a true corpus rate",
+        "meaning": "sentences where the tightest budget asked for boundaries the prompt never marked, so pieces are missing outright"
+      },
+      "premature_among_judged": {
+        "n": 2,
+        "of_n": 10,
+        "rate": 0.2,
+        "of": "boundaries judged this iteration, selected as the WORST by measured contradiction — NOT a corpus rate, do not compare it against `coverage`"
+      }
+    },
+    "case_label_counts": {
+      "counts": {
+        "placement": 7
+      },
+      "of_n": 7,
+      "of": "the selected worst cases — NOT a rate"
+    },
+    "stuck_hint": "",
+    "priority_audit": [
+      {
+        "feature": "뒤 구두점 ','",
+        "n": 18,
+        "rank_percentile": 0.372,
+        "contradiction": 0.1206,
+        "over_trust": 0.2249
+      },
+      {
+        "feature": "상대위치 1/3",
+        "n": 53,
+        "rank_percentile": 0.529,
+        "contradiction": 0.1449,
+        "over_trust": 0.093
+      },
+      {
+        "feature": "상대위치 0/3",
+        "n": 66,
+        "rank_percentile": 0.624,
+        "contradiction": 0.0785,
+        "over_trust": -0.007
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 135,
+        "rank_percentile": 0.674,
+        "contradiction": 0.1198,
+        "over_trust": -0.0573
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 46,
+        "rank_percentile": 0.691,
+        "contradiction": 0.1831,
+        "over_trust": -0.1117
+      }
+    ],
+    "judge_distribution": {
+      "n_boundaries_judged": 10,
+      "verdicts": {
+        "safe": 8,
+        "mistranslated": 1,
+        "premature": 1
+      },
+      "n_with_cause": 2,
+      "causes": {
+        "other": {
+          "n": 1,
+          "share": 0.5
+        },
+        "modifier scope": {
+          "n": 1,
+          "share": 0.5
+        }
+      }
+    },
+    "max_missing_boundaries": 0.0,
+    "rank_lift": 0.16252,
+    "rank_lift_t": 2.94,
+    "summary": "The prompt systematically places high‑confidence boundaries at commas and in mid‑clause positions that separate subjects from predicates, participial modifiers, coordinated predicates, or shared postmodifiers — producing mistranslation or low adequacy. Fixes: (1) placement rules that forbid cuts that split a person/title from its verb, split participial modifiers from their head, or split coordinated predicates from their shared complements; (2) demote comma‑position boundaries when the comma introduces an appositive, locative 'in ...', or coordination so these risky comma cuts fall lower in the ranking. Cases labelled 'safe' reflect measurement false positives and do not require new rules."
+  }
+}

@@ -1,0 +1,23 @@
+[
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "The original population hasn't changed at all, they still need the same adaptations as before.",
+    "seg_text": "The original population hasn't changed <SEG:1> at all, they still <SEG:2> need the same adaptations as before.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "San Francisco is also one of the best places in the nation for other Asian cuisine: Korean, Thai, Indian, and Japanese.",
+    "seg_text": "San Francisco is also one <SEG:3> of the best places <SEG:1> in the nation for other Asian <SEG:2> cuisine: Korean, Thai, Indian, and Japanese.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "No one else has ever made more appearances or scored more goals for the club than Bobek.",
+    "seg_text": "No one else has ever made more appearances <SEG:1> or scored more goals <SEG:2> for the club than Bobek.",
+    "first_pass": true
+  }
+]

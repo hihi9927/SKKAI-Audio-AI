@@ -1,0 +1,27 @@
+{
+  "sections_changed": [
+    "[Core Principles]",
+    "[When to Segment]",
+    "[Never Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]",
+    "[Examples — Segment]",
+    "[Examples — Do NOT Segment]"
+  ],
+  "sections_reported": [
+    "[Core Principles]",
+    "[When to Segment]",
+    "[Never Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "changelog": [
+    "Core Principles: Added an explicit instruction to avoid committing to agents/polarity/heads until clause-final disambiguators appear — to prevent premature assertions seen in critic cases.",
+    "When to Segment: Strengthened surface-cue guidance to treat noun phrases, names, numerals, and quoted strings as risky until their disambiguators (case particles, counters, closing quote, verb/predicate endings, name components) appear; made these positions candidates but lower-confidence.",
+    "Never Segment: Added absolute prohibition against splitting a noun and an immediately following numeral/counter sequence, and clarified not to split when that would produce a bare, unrenderable fragment that needs a following predicate.",
+    "Priority Rules: Deprioritised boundaries right after the Japanese comma '、' more strongly and lowered confidence for very-early boundaries unless sealed; added explicit high-risk categories (numeric quantifiers, partial names, quoted fragments) to be ranked last unless disambiguator present.",
+    "Decision Procedure: Made the two-step workflow explicit and added concrete disambiguator checks (case particles, closing quote, name delimiter, numeral/counter, sentence-final predicate) that automatically push a candidate into a lower-confidence bucket; required explicit cautious handling when a cut would finalize an agent, polarity, or head."
+  ],
+  "size_budget": 16385,
+  "over_budget": true
+}

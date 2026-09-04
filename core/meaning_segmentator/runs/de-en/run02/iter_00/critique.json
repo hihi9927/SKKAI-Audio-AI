@@ -1,0 +1,222 @@
+{
+  "cases": [
+    {
+      "id": "de_de_632",
+      "error_type": "placement",
+      "span": "die Absichten anderer",
+      "evidence": "Boundary split 'die Absichten' from 'anderer', causing wrong participant attachment and scope errors",
+      "cause": "modifier scope",
+      "proposed_rule": "When a noun can take a following possessor or an infinitival complement, do not finalize attachment or translate the noun phrase until the following possessor/complement word(s) are visible.",
+      "example_pair": {
+        "input": "Neben diesen Fähigkeiten ist es entscheidend, die Absichten anderer zu verstehen. Es ermöglicht uns, mögliche Zweideutigkeiten physischer Handlungen auszuräumen.",
+        "output": "Neben diesen Fähigkeiten ist es entscheidend, die Absichten anderer <SEG:1> zu verstehen. <SEG:2> Es ermöglicht uns, mögliche Zweideutigkeiten physischer Handlungen auszuräumen."
+      }
+    },
+    {
+      "id": "de_de_471",
+      "error_type": "placement",
+      "span": "stre bten, die nationale Souveränität",
+      "evidence": "Boundary finalized the verb phrase before the infinitive 'aufrechtzuerhalten', causing wrong verb-object realization",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not finalize a verb or its object when an infinitival complement or governing verb is pending; wait until the infinitive or final verb arrives.",
+      "example_pair": {
+        "input": "Das Kräftegleichgewicht war ein System, in dem die europäischen Nationen danach strebten, die nationale Souveränität aller europäischen Staaten aufrechtzuerhalten,",
+        "output": "Das Kräftegleichgewicht war <SEG:1> ein System, in dem die europäischen Nationen danach strebten, die nationale Souveränität aller europäischen Staaten <SEG:2> aufrechtzuerhalten,"
+      }
+    },
+    {
+      "id": "de_de_869",
+      "error_type": "placement",
+      "span": "mit westlicher Prägung",
+      "evidence": "Emitter produced literal 'western embossing' because modifier was cut off from noun head, yielding unnatural literalization",
+      "cause": "other",
+      "proposed_rule": "When a figurative modifier precedes or follows a noun, postpone committing to a literal lexical choice until the head noun and nearby quality words are available; prefer neutral renditions like 'feel/character' if unsure.",
+      "example_pair": {
+        "input": "Vor allem in den ersten Tagen sollten Sie erwägen, Hotels, Essen und Dienstleistungen mit westlicher Prägung und Qualität in Anspruch zu nehmen, um die Akklimatisierung zu erleichtern.",
+        "output": "Vor allem in den ersten Tagen <SEG:1> sollten Sie erwägen, <SEG:2> Hotels, Essen und Dienstleistungen mit westlicher Prägung und Qualität <SEG:3> in Anspruch zu nehmen, um die Akklimatisierung zu erleichtern."
+      }
+    },
+    {
+      "id": "de_de_1454",
+      "error_type": "placement",
+      "span": "beschreibt die Show als",
+      "evidence": "Boundary or early emission committed to a label before the predicative 'als' and its description arrived, producing wrong categorical renderings",
+      "cause": "other",
+      "proposed_rule": "Delay committing to a categorical label or noun sense until the predicative marker (e.g., 'als'/'described as') and its full descriptive phrase are present.",
+      "example_pair": {
+        "input": "Die Website des Senders beschreibt die Show als „Radiotheater alter Schule mit einer neuen und unheimlichen schrägen Interpretation!“",
+        "output": "Die Website des Senders beschreibt die Show als „Radiotheater alter Schule mit einer neuen und unheimlichen schrägen Interpretation!“ <SEG:1>"
+      }
+    },
+    {
+      "id": "de_de_339",
+      "error_type": "reference_suspect",
+      "span": "Während seiner Aufwärmrunde",
+      "evidence": "Oracle translation contradicted a clear local temporal reading; measured contradiction flagged but human judge found oracle likely wrong",
+      "cause": "other",
+      "proposed_rule": "If the local, unambiguous rendering yields a consistent translation but the oracle disagrees, mark the reference as suspect and retain the locally supported translation rather than changing segmentation to match the oracle.",
+      "example_pair": {
+        "input": "Während seiner Aufwärmrunde stürzte Lenz von seinem Motorrad und wurde dann von seinem Rennkollegen Xavier Zayat überfahren.",
+        "output": "Während seiner Aufwärmrunde <SEG:1> stürzte Lenz von seinem Motorrad <SEG:2> und wurde dann von seinem Rennkollegen Xavier Zayat überfahren."
+      }
+    },
+    {
+      "id": "de_de_637",
+      "error_type": "placement",
+      "span": "als Hilfsmittel",
+      "evidence": "Translation omitted functional phrase 'as a tool' because piece boundaries separated the functional modifier from its host phrase",
+      "cause": "other",
+      "proposed_rule": "Do not finalize translation of noun phrases containing functional modifiers ('als ...', 'como ...') until following complements that specify the function have been observed.",
+      "example_pair": {
+        "input": "Im Jahr 1970 entdeckte der Arzt und Forscher Raymond Damadian die Basis für den Einsatz der Magnetresonanztomografie als Hilfsmittel für die medizinische Diagnose.",
+        "output": "Im Jahr 1970 entdeckte der Arzt und Forscher Raymond Damadian die Basis für den Einsatz der Magnetresonanztomografie als Hilfsmittel für die medizinische Diagnose. <SEG:1>"
+      }
+    },
+    {
+      "id": "de_de_1037",
+      "error_type": "placement",
+      "span": "deuteten die Messungen des Meeresspiegels",
+      "evidence": "Boundary finalized reporting-verb aspect before subordinate 'dass' clause, causing tense/aspect mismatch in translation",
+      "cause": "other",
+      "proposed_rule": "For reporting or perception verbs that introduce a subordinate 'that' clause, delay finalizing tense/aspect until the subordinate clause appears.",
+      "example_pair": {
+        "input": "Laut dem aktuellen Bulletin deuteten die Messungen des Meeresspiegels darauf hin, dass ein Tsunami ausgelöst wurde. In der Nähe von Pago Pago und Niue wurde eine eindeutige Tsunami-Aktivität aufgezeichnet.",
+        "output": "Laut dem aktuellen Bulletin deuteten die Messungen des Meeresspiegels darauf hin, dass ein Tsunami ausgelöst wurde <SEG:1>. In der Nähe von Pago Pago und Niue wurde eine eindeutige Tsunami-Aktivität aufgezeichnet."
+      }
+    },
+    {
+      "id": "de_de_934",
+      "error_type": "placement",
+      "span": "von der Einrichtung, an der Sie studieren möchten,",
+      "evidence": "Boundary split relative clause and its head, producing an incorrect selection/attachment in translation",
+      "cause": "other",
+      "proposed_rule": "Avoid finalizing attachments or choosing specific lexical realizations when a relative clause or nearby prepositional modifier is pending; wait for the relative clause to complete.",
+      "example_pair": {
+        "input": "Für die meisten Ländern brauchen Sie ein schriftliches Angebot von der Einrichtung, an der Sie studieren möchten, und zudem einen Nachweis, dass Sie über die nötigen Mittel verfügen, um sich zumindest in Ihrem ersten Studienjahr über Wasser zu halten.",
+        "output": "Für die meisten Ländern <SEG:1> brauchen Sie ein schriftliches Angebot von der Einrichtung, an der Sie studieren möchten, <SEG:2> und zudem einen Nachweis, dass Sie über die nötigen Mittel verfügen, <SEG:3> um sich zumindest in Ihrem ersten Studienjahr über Wasser zu halten."
+      }
+    },
+    {
+      "id": "de_de_109",
+      "error_type": "placement",
+      "span": "ähnlich wie eine Sternschuppe aussehen",
+      "evidence": "Boundary produced an isolated noun rendering before the restrictive relative clause, leading to wrong lexical choice for the noun",
+      "cause": "other",
+      "proposed_rule": "Do not commit to a specific lexical rendering of a content noun when a nearby postmodifier or restrictive clause could disambiguate; delay until the modifier or clause is visible.",
+      "example_pair": {
+        "input": "Die Kapsel wird ähnlich wie eine Sternschuppe aussehen, die am Himmel fliegt.",
+        "output": "Die Kapsel wird ähnlich wie eine Sternschuppe aussehen, die am Himmel fliegt. <SEG:1>"
+      }
+    },
+    {
+      "id": "de_de_488",
+      "error_type": "placement",
+      "span": "der Guru ist ein grundlegender Aspekt",
+      "evidence": "Boundaries caused predicate and complement to split; translations dropped or altered key nouns and added uncertainty because complements were emitted later",
+      "cause": "other",
+      "proposed_rule": "Delay finalizing predicate phrases until their head/complement (including relative clauses) is available, to avoid dropping nouns or introducing unwanted modality.",
+      "example_pair": {
+        "input": "Sikhs nennen ihre Religion Gurmat, was auf Pandschabi „Weg des Gurus“ bedeutet. Der Guru ist ein grundlegender Aspekt aller indischen Religionen, doch im Sikhismus hat er eine Bedeutung eingenommen, die den Kern des Sikh-Glaubens darstellt.",
+        "output": "Sikhs nennen ihre Religion Gurmat, was auf Pandschabi „Weg des Gurus“ bedeutet. <SEG:1> Der Guru ist ein grundlegender Aspekt aller indischen Religionen, doch im Sikhismus hat er eine Bedeutung eingenommen, die den Kern des Sikh-Glaubens darstellt. <SEG:2>"
+      }
+    }
+  ],
+  "summary": "Most failures are placement errors: the prompt marks boundaries that cut off modifiers, relative clauses, predicative markers and infinitives, forcing premature lexical choices or wrong attachments. A secondary issue is ranking overconfidence for punctuation-based positions (commas); demote comma-based candidates when they precede subordinate clauses or postmodifiers so risky comma cuts are kept lower-ranked.",
+  "aggregate": {
+    "dominant_error": null,
+    "dominant_basis": "No corpus rate identifies a dominant failure. Read the cases and `judge_distribution` for WHICH mechanism to fix — do not infer a rate from `case_label_counts`, those cases were selected for being the worst.",
+    "measured_rates": {
+      "coverage": {
+        "n": 0,
+        "of_n": 40,
+        "rate": 0.0,
+        "of": "all sentences scored — a true corpus rate",
+        "meaning": "sentences where the tightest budget asked for boundaries the prompt never marked, so pieces are missing outright"
+      },
+      "premature_among_judged": {
+        "n": 18,
+        "of_n": 50,
+        "rate": 0.36,
+        "of": "boundaries judged this iteration, selected as the WORST by measured contradiction — NOT a corpus rate, do not compare it against `coverage`"
+      }
+    },
+    "case_label_counts": {
+      "counts": {
+        "placement": 9,
+        "reference_suspect": 1
+      },
+      "of_n": 10,
+      "of": "the selected worst cases — NOT a rate"
+    },
+    "stuck_hint": "",
+    "priority_audit": [
+      {
+        "feature": "뒤 구두점 ','",
+        "n": 34,
+        "rank_percentile": 0.41,
+        "contradiction": 0.0539,
+        "over_trust": 0.1146
+      },
+      {
+        "feature": "상대위치 1/3",
+        "n": 49,
+        "rank_percentile": 0.524,
+        "contradiction": 0.1011,
+        "over_trust": 0.0882
+      },
+      {
+        "feature": "상대위치 0/3",
+        "n": 59,
+        "rank_percentile": 0.623,
+        "contradiction": 0.0816,
+        "over_trust": -0.0173
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 41,
+        "rank_percentile": 0.671,
+        "contradiction": 0.0937,
+        "over_trust": -0.069
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 104,
+        "rank_percentile": 0.7,
+        "contradiction": 0.097,
+        "over_trust": -0.1017
+      }
+    ],
+    "judge_distribution": {
+      "n_boundaries_judged": 50,
+      "verdicts": {
+        "safe": 29,
+        "mistranslated": 17,
+        "reference_suspect": 3,
+        "premature": 1
+      },
+      "n_with_cause": 18,
+      "causes": {
+        "other": {
+          "n": 14,
+          "share": 0.778
+        },
+        "wrong participant": {
+          "n": 2,
+          "share": 0.111
+        },
+        "head not yet arrived": {
+          "n": 1,
+          "share": 0.056
+        },
+        "modifier scope": {
+          "n": 1,
+          "share": 0.056
+        }
+      }
+    },
+    "max_missing_boundaries": 0.0,
+    "rank_lift": 0.09492,
+    "rank_lift_t": 3.1,
+    "summary": "Most failures are placement errors: the prompt marks boundaries that cut off modifiers, relative clauses, predicative markers and infinitives, forcing premature lexical choices or wrong attachments. A secondary issue is ranking overconfidence for punctuation-based positions (commas); demote comma-based candidates when they precede subordinate clauses or postmodifiers so risky comma cuts are kept lower-ranked."
+  }
+}

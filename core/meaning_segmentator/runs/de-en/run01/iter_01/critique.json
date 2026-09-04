@@ -1,0 +1,121 @@
+{
+  "cases": [
+    {
+      "id": "de_de_1376",
+      "error_type": "format_violation",
+      "span": "Ryan Gosling und Emma Stone",
+      "evidence": "tag indices violate minimum numeric gap rule (gap_too_small)",
+      "cause": "tag-number spacing too small / noncompliant indexing",
+      "proposed_rule": "Assign segment ranks so numeric labels respect the minimum required index gap (e.g. ensure adjacent labeled boundaries differ by ≥N), independent of textual order.",
+      "example_pair": {
+        "input": "Der Film mit Ryan Gosling und Emma Stone",
+        "output": "Der Film mit Ryan Gosling <SEG:4> und Emma Stone <SEG:1> hat Nominierungen <SEG:7> in allen Hauptkategorien <SEG:10> erhalten."
+      }
+    },
+    {
+      "id": "de_de_649",
+      "error_type": "placement",
+      "span": "ein Auto überholen",
+      "evidence": "first emitted chunk chose the wrong sense of 'überholen' (overtake vs overhaul)",
+      "cause": "lexical sense ambiguous until object/continuation arrives",
+      "proposed_rule": "Do not place a high-confidence boundary immediately before or inside a verb phrase whose lexical sense depends on a following object or disambiguating modifier; rank such boundaries low.",
+      "example_pair": {
+        "input": "Wir werden niemals ein Auto überholen,",
+        "output": "Wir werden niemals ein Auto überholen, <SEG:1> einen Brunnen in unserem Hinterhof bauen, <SEG:4> nach Peru reisen, um antike Ruinen zu untersuchen, <SEG:7> oder das Haus unseres Nachbarn umgestalten."
+      }
+    },
+    {
+      "id": "de_de_214",
+      "error_type": "placement",
+      "span": "fast 100 Bewohner",
+      "evidence": "first piece translated as existence ('there were') instead of passive evacuation ('were evacuated')",
+      "cause": "head verb/participial predicate had not arrived",
+      "proposed_rule": "Avoid high-confidence boundaries between a quantified/subject NP and its main verb or participle (especially passive constructions); wait for the main predicate before committing.",
+      "example_pair": {
+        "input": "Damals wurden fast 100 Bewohner aus dem",
+        "output": "Damals wurden fast 100 Bewohner aus dem Gebiet evakuiert <SEG:1>."
+      }
+    },
+    {
+      "id": "de_de_337",
+      "error_type": "placement",
+      "span": "bot das türkische Tanzensemble",
+      "evidence": "emission committed to predicate without its object/particle, producing wrong participant assignment",
+      "cause": "separable/transitive verb or object not yet arrived",
+      "proposed_rule": "Do not rank boundaries highly that separate a transitive verb (or separable-prefix construction) from its object or separable particle; wait for the object/particle to appear.",
+      "example_pair": {
+        "input": "Abschließend bot das türkische Tanzensemble",
+        "output": "„Abschließend bot das türkische Tanzensemble Feuer von Anatolien die Vorführung \"Troja\" dar.<SEG:1>\""
+      }
+    },
+    {
+      "id": "de_de_348",
+      "error_type": "placement",
+      "span": "durch das Fenster zu steigen",
+      "evidence": "splitting before the infinitive 'zu steigen' separated verb cluster, yielding 'to rise'/wrong predicate ordering",
+      "cause": "infinitive/complement (zu + verb) had not arrived; verb cluster broken",
+      "proposed_rule": "Rank boundaries low when they would separate a verb of motion/auxiliary from its 'zu' infinitive or other tightly bound complement; keep verb+infinitive together.",
+      "example_pair": {
+        "input": "Eine der Scheiben brach schließlich und dann",
+        "output": "Eine der Scheiben brach schließlich und dann begannen sie, durch das Fenster zu steigen, <SEG:1> sagte der Überlebende Franciszek Kowal."
+      }
+    },
+    {
+      "id": "de_de_275",
+      "error_type": "placement",
+      "span": "an Organisationen vergeben würden",
+      "evidence": "mid-clause boundary caused earlier chunk to be interpreted as a universal ban; later relative clause ('gegen die...') changes scope",
+      "cause": "post-nominal relative clause / modifier that scopes the predicate had not arrived",
+      "proposed_rule": "Avoid high-confidence boundaries between a noun phrase and a following relative or restrictive clause; keep NP + its post‑nominal modifiers in the same chunk or rank such boundaries low.",
+      "example_pair": {
+        "input": "Leslie Aun, eine Sprecherin der Komen-Stiftung,",
+        "output": "Leslie Aun, eine Sprecherin der Komen-Stiftung, <SEG:1> sagte, dass die Organisation eine neue Regel übernommen habe, die nicht zulasse, dass Zuschüsse oder Finanzmittel an Organisationen vergeben würden, gegen die ein gerichtliches Ermittlungsverfahren laufe."
+      }
+    }
+  ],
+  "summary": "The prompt consistently overconfidently ranks boundaries that split verbs from their dependents (objects, separable particles, 'zu' infinitives) or that separate noun phrases from post‑nominal modifiers/relative clauses, producing lexical-sense and predicate errors. It also fails to enforce the numeric spacing rule for segment labels, causing format violations. Reduce priority for boundaries after commas and at early relative positions when they would break these core syntactic units.",
+  "aggregate": {
+    "dominant_error": "placement",
+    "error_counts": {
+      "format_violation": 1,
+      "placement": 5
+    },
+    "focus": "format",
+    "focus_reason": "format_pass_rate 0.9667 < 1.0",
+    "priority_audit": [
+      {
+        "feature": "뒤 구두점 ','",
+        "n": 16,
+        "rank_percentile": 0.575,
+        "contradiction": 0.21,
+        "over_trust": 0.0606
+      },
+      {
+        "feature": "상대위치 1/3",
+        "n": 10,
+        "rank_percentile": 0.585,
+        "contradiction": 0.1027,
+        "over_trust": 0.0231
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 12,
+        "rank_percentile": 0.65,
+        "contradiction": 0.1029,
+        "over_trust": -0.019
+      },
+      {
+        "feature": "상대위치 0/3",
+        "n": 12,
+        "rank_percentile": 0.75,
+        "contradiction": 0.1516,
+        "over_trust": -0.1237
+      }
+    ],
+    "max_missing_boundaries": 0.0,
+    "max_premature_rate": 0.1111,
+    "rank_lift": null,
+    "rank_lift_t": null,
+    "summary": "The prompt consistently overconfidently ranks boundaries that split verbs from their dependents (objects, separable particles, 'zu' infinitives) or that separate noun phrases from post‑nominal modifiers/relative clauses, producing lexical-sense and predicate errors. It also fails to enforce the numeric spacing rule for segment labels, causing format violations. Reduce priority for boundaries after commas and at early relative positions when they would break these core syntactic units."
+  }
+}

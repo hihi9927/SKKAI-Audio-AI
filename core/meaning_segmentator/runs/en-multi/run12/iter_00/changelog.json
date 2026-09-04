@@ -1,0 +1,23 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Never Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]",
+    "[Examples — Segment]",
+    "[Examples — Do NOT Segment]"
+  ],
+  "sections_reported": [
+    "[When to Segment]",
+    "[Never Segment]",
+    "[Priority Rules]"
+  ],
+  "changelog": [
+    "Added prohibitions on incomplete coordinate structures, prepositional phrases, and polarity-reversing elements to [Never Segment] to prevent premature emission of participants, heads, and affirmative claims.",
+    "Consolidated 11 candidate rules into 6 unified prohibitions covering: (1) coordinate structures, (2) prepositional phrase complements, (3) polarity reversals and negations, (4) scope modifiers on participles and gerunds, (5) exclusive constructions, (6) passive voice without agent.",
+    "Reordered [When to Segment] to deprioritize early-sentence boundaries and emphasize completion of dependent structures before marking.",
+    "Adjusted [Priority Rules] to rank boundaries after complete coordinate structures and polarity-settled clauses highest, and boundaries before unresolved modifiers lowest."
+  ],
+  "size_budget": 19516,
+  "over_budget": false
+}

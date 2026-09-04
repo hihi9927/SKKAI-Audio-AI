@@ -1,0 +1,23 @@
+[
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Although in the end, Krushchev sent in tanks to restore order, he did give way to some economic demands and agreed to appoint the popular Wladyslaw Gomulka as the new prime minister.",
+    "seg_text": "Although in the end, <SEG:6> Krushchev sent in <SEG:5> tanks to restore order, <SEG:1> he did give way <SEG:4> to some economic demands <SEG:2> and agreed to appoint <SEG:3> the popular Wladyslaw Gomulka.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "Although in the end, Krushchev sent in tanks to restore order, he did give way to some economic demands and agreed to appoint the popular Wladyslaw Gomulka as the new prime minister.",
+    "seg_text": "Although in the end, <SEG:6> Krushchev sent in <SEG:5> tanks to restore order, <SEG:1> he did give way <SEG:4> to some economic demands <SEG:2> and agreed to appoint <SEG:3> the popular Wladyslaw Gomulka.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Carrying for others - Never let your bags out of your sight, especially when you are crossing international borders.",
+    "seg_text": "Carrying for others- <SEG:3> Never let your bags <SEG:2> out of your sight, <SEG:1> especially when you are <SEG:4> crossing international borders.",
+    "first_pass": true
+  }
+]

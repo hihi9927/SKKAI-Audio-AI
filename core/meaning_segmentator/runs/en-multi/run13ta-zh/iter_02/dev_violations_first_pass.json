@@ -1,0 +1,177 @@
+[
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "The governor also stated, \"Today, we learned that some school aged children have been identified as having had contact with the patient.\"",
+    "seg_text": "The governor also stated, <SEG:1> \"Today, we learned that <SEG:3> some school aged children <SEG:4> have been identified <SEG:2> as having had contact <SEG:5> with the patient.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "A person working in a garage near where the accident occurred said: \"There were children waiting to cross the road and they were all screaming and crying.\"",
+    "seg_text": "A person working in a garage <SEG:3> near where the accident occurred <SEG:1> said: \"There were children <SEG:5> waiting to cross the road <SEG:2> and they were all <SEG:4> screaming and crying.\"",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "If you visit Greenland during cold seasons (considering that the further north you go, the colder it will be), it is essential to bring warm enough clothing.",
+    "seg_text": "If you visit <SEG:2> Greenland during cold <SEG:3> seasons (considering that the further north <SEG:4> you go, the <SEG:5> colder it will be), <SEG:1> it is essential to bring warm enough clothing.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "The light bulb then needs replacing. It is necessary to be careful in replacing the light bulb.",
+    "seg_text": "The light bulb then needs replacing. <SEG:1> It is necessary to be careful <SEG:2> in replacing the light bulb.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "The Sun doesn't have a crust like the Earth that you can stand on. The whole Sun is made out of gases, fire, and plasma.",
+    "seg_text": "The Sun doesn't have a crust <SEG:2> like the Earth <SEG:4> that you can stand on. <SEG:1> The whole Sun is made <SEG:3> out of gases, fire, and plasma.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Born in the Croatian capital, Zagreb, Bobek gained fame while playing for Partizan Belgrade.",
+    "seg_text": "Born in the Croatian capital, Zagreb, <SEG:1> Bobek gained fame <SEG:2> while playing for Partizan Belgrade.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "The best indication of internal poisoning may be the presence of an open container of medication or toxic household chemicals.",
+    "seg_text": "The best indication of internal poisoning <SEG:3> may be the presence <SEG:2> of an open container <SEG:1> of medication or toxic household chemicals.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Doctors began to be recruited by Emperor Augustus and even formed the first Roman Medical Corps for use in the aftermath of battles.",
+    "seg_text": "Doctors began to <SEG:4> be recruited by Emperor Augustus <SEG:2> and even formed <SEG:3> the first Roman Medical Corps <SEG:1> for use in the aftermath of battles.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "Although its physical state may change, its chemical state remains the same.",
+    "seg_text": "Although its physical state may change, <SEG:1> its chemical state remains the same.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "Danius said, \"Right now we are doing nothing. I have called and sent emails to his closest collaborator and received very friendly replies. For now, that is certainly enough.\"",
+    "seg_text": "Danius said, \"Right <SEG:4> now we are doing nothing. <SEG:2> I have called and sent emails to <SEG:3> his closest collaborator and <SEG:5> received very friendly replies. <SEG:1> For now, that is certainly enough.\"",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "In many countries with such a law, local hotels will handle the registration (make sure to ask).",
+    "seg_text": "In many countries <SEG:2> with such a law, local hotels <SEG:1> will handle the registration (make sure to ask).",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "They begin as funnels descending from storm clouds, and become \"tornadoes\" when they touch the ground.",
+    "seg_text": "They begin as <SEG:2> funnels descending from storm clouds, <SEG:1> and become \"tornadoes\" when they touch the ground.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "There are many theories to how Sanskrit came into existence. One of them is about an Aryan migration from the west into India who brought their language with them.",
+    "seg_text": "There are many theories <SEG:4> to how Sanskrit came into existence. <SEG:1> One of them is <SEG:5> about an Aryan migration <SEG:3> from the west into India <SEG:2> who brought their language with them.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "I lost my sister and her friend, and on my way there were two disabled people in wheelchairs, people just jumping over and pushing them,\" Armand Versace said.",
+    "seg_text": "I lost my sister <SEG:2> and her friend, <SEG:3> and on my way <SEG:5> there were two disabled people <SEG:1> in wheelchairs, people just jumping <SEG:6> over and pushing them, <SEG:4> Armand Versace said.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Especially in your initial days, consider splurging on Western-style and -quality hotels, food, and services to help acclimatize.",
+    "seg_text": "Especially in your initial days, <SEG:2> consider splurging on <SEG:3> Western-style and -quality hotels, <SEG:1> food, and services to help acclimatize.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "This type of manager has difficulty making unpopular decisions, performing disciplinary action, performance evaluations, assigning responsibility, and holding people accountable.",
+    "seg_text": "This type of manager <SEG:3> has difficulty making unpopular decisions, <SEG:1> performing disciplinary action, performance evaluations, <SEG:2> assigning responsibility, and holding people accountable.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "These bosses had been reined in by Provenzano when he put an end to the Riina-driven war against the state that claimed the lives of Mafia crusaders Giovanni Falcone and Paolo Borsellino in 1992.\"",
+    "seg_text": "These bosses had been reined in by Provenzano <SEG:1> when he put an end <SEG:6> to the Riina-driven war <SEG:5> against the state <SEG:2> that claimed the lives <SEG:4> of Mafia crusaders <SEG:3> Giovanni Falcone and Paolo Borsellino in 1992.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 8개 필요",
+    "text": "These bosses had been reined in by Provenzano when he put an end to the Riina-driven war against the state that claimed the lives of Mafia crusaders Giovanni Falcone and Paolo Borsellino in 1992.\"",
+    "seg_text": "These bosses had been reined in by Provenzano <SEG:1> when he put an end <SEG:6> to the Riina-driven war <SEG:5> against the state <SEG:2> that claimed the lives <SEG:4> of Mafia crusaders <SEG:3> Giovanni Falcone and Paolo Borsellino in 1992.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "Mutations can have a variety of different effects depending on the type of mutation, the significance of the piece of genetic material affected and whether the cells affected are germ-line cells.",
+    "seg_text": "Mutations can have <SEG:6> a variety of different effects <SEG:2> depending on the type <SEG:3> of mutation, the significance <SEG:4> of the piece <SEG:5> of genetic material <SEG:1> affected and whether the cells affected are germ-line cells.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 4개 필요",
+    "text": "No airline alliance covers all three ocean crossings in the Southern Hemisphere (and SkyTeam covers none of the crossings).",
+    "seg_text": "No airline alliance <SEG:2> covers all three ocean crossings in the Southern Hemisphere <SEG:1> (and SkyTeam covers none of the crossings).",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "While visiting the monasteries, women are required to wear skirts covering the knees and have their shoulders covered, too.",
+    "seg_text": "While visiting the monasteries, <SEG:3> women are required <SEG:2> to wear skirts covering the knees <SEG:1> and have their shoulders covered, too.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "The amount and thickness of the pack ice, according to Pittman, is the worst it has been for sealers in the past 15 years.",
+    "seg_text": "The amount and thickness <SEG:4> of the pack ice, <SEG:2> according to Pittman, <SEG:1> is the worst it has been for sealers <SEG:3> in the past 15 years.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "British pounds will generally be accepted anywhere in the islands and within Stanley credit cards and United States dollars are also often accepted.",
+    "seg_text": "British pounds will generally be accepted <SEG:2> anywhere in the islands <SEG:1> and within Stanley <SEG:4> credit cards and United States dollars <SEG:3> are also often accepted.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "To finish, Turkish dance group Fire of Anatolia performed the show \"Troy\".",
+    "seg_text": "To finish, Turkish dance group Fire of Anatolia performed <SEG:1> the show \"Troy\".",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 0개 — 최소 1개 필요",
+    "text": "The pilot was identified as Squadron Leader Dilokrit Pattavee.",
+    "seg_text": "The pilot was identified as Squadron Leader Dilokrit Pattavee.",
+    "first_pass": true
+  }
+]

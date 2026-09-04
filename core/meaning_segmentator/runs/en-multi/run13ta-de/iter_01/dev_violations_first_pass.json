@@ -1,0 +1,163 @@
+[
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "No major injuries were reported, but at least five people on scene at the time of the explosion were treated for symptoms of shock.",
+    "seg_text": "No major injuries <SEG:3> were reported, but at least five people <SEG:2> on scene at the time <SEG:1> of the explosion were <SEG:4> treated for symptoms of shock.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "A person working in a garage near where the accident occurred said: \"There were children waiting to cross the road and they were all screaming and crying.\"",
+    "seg_text": "A person working <SEG:5> in a garage <SEG:3> near where the accident occurred said: <SEG:2> \"There were children waiting <SEG:4> to cross the road <SEG:1> and they were all screaming and crying.\"",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Majorcan cuisine, like that of similar zones in the Mediterranean, is based on bread, vegetables and meat (specially pork), and uses olive oil throughout.",
+    "seg_text": "Majorcan cuisine, like that <SEG:4> of similar zones in the Mediterranean, <SEG:1> is based on bread, <SEG:2> vegetables and meat (specially pork), <SEG:3> and uses olive oil throughout.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "The Sun doesn't have a crust like the Earth that you can stand on. The whole Sun is made out of gases, fire, and plasma.",
+    "seg_text": "The Sun doesn't have a crust <SEG:4> like the Earth <SEG:5> that you can stand on. <SEG:1> The whole Sun <SEG:3> is made out of gases, <SEG:2> of fire, and plasma.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "In 1884, Tesla moved to the United States of America to accept a job with the Edison Company in New York City.",
+    "seg_text": "In 1884, Tesla moved <SEG:4> to the United States of America <SEG:1> to accept a job <SEG:2> with the Edison Company <SEG:3> in New York City.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "When the fighting ceased after the wounded were transported to the hospital, about 40 of the other remaining inmates stayed in the yard and refused to return to their cells.",
+    "seg_text": "When the fighting ceased <SEG:4> after the wounded were <SEG:6> transported to the hospital, <SEG:1> about 40 of the other remaining inmates <SEG:3> stayed in the yard <SEG:2> and refused to return <SEG:5> to their cells.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Born in the Croatian capital, Zagreb, Bobek gained fame while playing for Partizan Belgrade.",
+    "seg_text": "Born in the Croatian capital, Zagreb, <SEG:1> Bobek gained fame <SEG:2> while playing for Partizan Belgrade.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 8개 필요",
+    "text": "Roberts flatly refused to say about when he believes life begins, an important question when considering the ethics of abortion, saying that it would be unethical to comment on the specifics of likely cases.",
+    "seg_text": "Roberts flatly refused <SEG:6> to say about when he <SEG:5> believes life begins, <SEG:1> an important question <SEG:4> when considering the ethics of abortion, <SEG:2> saying that it would <SEG:7> be unethical to comment on the specifics <SEG:3> of likely cases.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "The report showed test scores had increased implausibly fast, and alleged the school internally detected problems but didn't act on the findings.",
+    "seg_text": "The report showed <SEG:2> test scores had increased implausibly <SEG:3> fast, and alleged <SEG:4> the school internally detected problems <SEG:1> but didn't act on the findings.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "Bird flu, or more formally avian influenza, can infect both birds and mammals.",
+    "seg_text": "Bird flu, or more formally avian influenza, <SEG:1> can infect both birds and mammals.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 10개 — 최소 11개 필요",
+    "text": "Police said Lo Piccolo had the upper hand because he had been Provenzano's right-hand man in Palermo and his greater experience won him the respect of the older generation of bosses as they pursued Provenzano's policy of keeping as low as possible while strengthening their power network.",
+    "seg_text": "Police said Lo Piccolo had <SEG:9> the upper hand because <SEG:10> he had been Provenzano's <SEG:8> right-hand man in Palermo <SEG:7> and his greater experience won him the respect <SEG:6> of the older generation <SEG:5> of bosses as they <SEG:4> pursued Provenzano's policy of <SEG:3> keeping as low <SEG:2> as possible while strengthening <SEG:1> their power network.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Coffee is one of the world's most traded commodities, and you can probably find many types in your home region.",
+    "seg_text": "Coffee is one of the world's <SEG:2> most traded commodities, <SEG:1> and you can probably <SEG:3> find many types in your home region.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Squash, karate and roller sports tried to get onto the Olympic program as well as baseball and softball, which were voted out of the Olympic Games in 2005.",
+    "seg_text": "Squash, karate and roller sports <SEG:2> tried to get onto <SEG:3> the Olympic program <SEG:1> as baseball and softball, <SEG:5> which were voted out of <SEG:4> the Olympic Games in 2005.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "Squash, karate and roller sports tried to get onto the Olympic program as well as baseball and softball, which were voted out of the Olympic Games in 2005.",
+    "seg_text": "Squash, karate and roller sports <SEG:2> tried to get onto <SEG:3> the Olympic program <SEG:1> as baseball and softball, <SEG:5> which were voted out of <SEG:4> the Olympic Games in 2005.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "These telescopes used a combination of two lenses to make distant objects appear both nearer and larger.",
+    "seg_text": "These telescopes used a combination <SEG:1> of two lenses to make <SEG:2> distant objects appear both nearer and larger.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "He emailed students at the local university and received an overwhelming number of offers for free accommodation.",
+    "seg_text": "He emailed students at the local university <SEG:1> and received an overwhelming number of offers <SEG:2> for free accommodation.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "The AI ​​system is now often used in the fields of economics, medicine, engineering and the military, as has been built in several home computer and video game software applications.",
+    "seg_text": "The AI ​​system <SEG:2> is now often <SEG:3> used in the <SEG:4> fields of economics, <SEG:1> medicine, engineering and <SEG:5> the military, as has been <SEG:6> built in several home computer and video game software applications.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "In the year 1970, Raymond Damadian, a medical doctor and research scientist, discovered the basis for using magnetic resonance imaging as a tool for medical diagnosis.",
+    "seg_text": "In the year 1970, <SEG:3> Raymond Damadian, a medical <SEG:5> doctor and research scientist, <SEG:1> discovered the basis for using magnetic resonance <SEG:4> imaging as a tool <SEG:2> for medical diagnosis.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Siminoff said sales boosted after his 2013 appearance in a Shark Tank episode where the show panel declined funding the startup.",
+    "seg_text": "Siminoff said sales boosted <SEG:2> after his 2013 appearance in a Shark Tank episode <SEG:1> where the show panel <SEG:3> declined funding the startup.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Maybe one day, your great grandchildren will be standing atop an alien world wondering about their ancient ancestors?",
+    "seg_text": "Maybe one day, <SEG:1> your great grandchildren will <SEG:2> be standing atop <SEG:3> an alien world wondering about their ancient ancestors?",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "This type of manager has difficulty making unpopular decisions, performing disciplinary action, performance evaluations, assigning responsibility, and holding people accountable.",
+    "seg_text": "This type of manager <SEG:3> has difficulty making unpopular decisions, <SEG:1> performing disciplinary action, <SEG:2> performance evaluations, assigning responsibility, and holding people accountable.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "These bosses had been reined in by Provenzano when he put an end to the Riina-driven war against the state that claimed the lives of Mafia crusaders Giovanni Falcone and Paolo Borsellino in 1992.\"",
+    "seg_text": "These bosses had been reined in by Provenzano <SEG:6> when he put an <SEG:7> end to the Riina-driven <SEG:5> war against the <SEG:8> state that claimed <SEG:4> the lives of <SEG:3> Mafia crusaders Giovanni <SEG:1> Falcone and Paolo <SEG:2> Borsellino in 1992.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "For some, understanding something about how aircraft work and what happens during a flight may help to overcome a fear which is based on the unknown or on not being in control.",
+    "seg_text": "For some, understanding something <SEG:3> about how aircraft work <SEG:1> and what happens during <SEG:5> a flight may help <SEG:4> to overcome a fear <SEG:2> which is based on the unknown <SEG:6> or on not being in control.",
+    "first_pass": true
+  }
+]

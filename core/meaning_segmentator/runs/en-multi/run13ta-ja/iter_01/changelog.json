@@ -1,0 +1,22 @@
+{
+  "sections_changed": [
+    "[Core Principles]",
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "sections_reported": [
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]",
+    "[Core Principles]"
+  ],
+  "changelog": [
+    "Relaxed candidate marking and emphasised generous marking in [Core Principles] so the system marks more defensible positions (avoids over‑pruning), because missing candidates cannot be recovered by ranking.",
+    "Clarified [When to Segment] to keep the original positive safe cues but removed any wording that would act like a hard prohibition; instead the guidance now explicitly allows noun/verb-adjacent cuts but defers safety to ranking.",
+    "Updated [Priority Rules] to add a small set of narrowly-targeted, surface-decidable demotions (reporting verbs followed within 1–4 tokens by an article/parenthesis; boundaries that would end with a determiner or pronoun without a closed clause; auxiliary + participle splits; 'for' immediately followed by a noun/pronoun) — these are demotions, not bans, so risky positions are ranked low rather than omitted.",
+    "Simplified [Decision Procedure] to mark candidates very generously, then rank using a local 1–4 token lookahead for the above demotion signals; this follows the critic's suggestion but avoids forbidding candidates so the deterministic budget can choose safely."
+  ],
+  "size_budget": 24158,
+  "over_budget": false
+}

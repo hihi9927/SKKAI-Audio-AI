@@ -1,0 +1,190 @@
+{
+  "cases": [
+    {
+      "id": "en_us_120",
+      "error_type": "priority",
+      "span": "between American and Iraqi",
+      "evidence": "Boundary produced a piece that named the first coordinated participant before 'and Iraqi forces', leading translators to pick the wrong second participant.",
+      "cause": "wrong participant",
+      "proposed_rule": "Lower confidence for boundaries that split a preposition-led coordination (e.g. 'between X and Y', 'from X to Y'); prefer boundaries after the coordinating conjunction or after the second coordinated noun.",
+      "example_pair": {
+        "input": "The game is based on the Second Battle of Fallujah, a vicious battle between American and Iraqi forces.",
+        "output": "The game is based on the Second Battle of Fallujah, a vicious battle between American and Iraqi forces <SEG:1>."
+      }
+    },
+    {
+      "id": "en_us_565",
+      "error_type": "placement",
+      "span": "Only the effects of catastrophizing,",
+      "evidence": "Emitted piece committed to 'Only ...' interpretation before the contrasted 'not depression and fear' arrived, reversing scope.",
+      "cause": "polarity not yet settled",
+      "proposed_rule": "Do not assign high confidence to boundaries that end a span beginning with exclusives (only/merely/solely) until any immediately following contrastive/negation phrase (e.g. 'not ...', 'but ...') is seen.",
+      "example_pair": {
+        "input": "Only the effects of catastrophizing, not depression and fear was conditional of regular weekly structured PA sessions.",
+        "output": "Only the effects of catastrophizing, not depression and fear <SEG:1> was conditional of regular weekly structured PA sessions."
+      }
+    },
+    {
+      "id": "en_us_61",
+      "error_type": "placement",
+      "span": "and taking the",
+      "evidence": "Boundary fell after 'taking the' so the verb 'take' was rendered with the wrong sense (e.g. 'take medicine') before object 'iPhone' arrived.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Avoid high-ranked boundaries immediately after ambiguous or polysemous verbs (take, make, get, etc.) unless their direct object/head noun is present in the same piece.",
+      "example_pair": {
+        "input": "Apple CEO Steve Jobs unveiled the device by walking onto the stage and taking the iPhone out of his jeans pocket.",
+        "output": "Apple CEO Steve Jobs unveiled the device by walking onto the stage and taking the iPhone out of his jeans pocket <SEG:1>."
+      }
+    },
+    {
+      "id": "en_us_123",
+      "error_type": "priority",
+      "span": "The United States embassy",
+      "evidence": "Boundaries allowed the translator to commit a locative or entity type before the 'located in Nairobi, Kenya' postmodifier arrived, producing wrong host country or inventing 'hotel'.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Demote boundaries that separate a noun from a following locative/postmodifier phrase (e.g. 'located in X', 'in Y'); prefer boundaries after the full locative phrase.",
+      "example_pair": {
+        "input": "The United States embassy located in Nairobi, Kenya has issued a warning that \"extremists from Somalia\" are planning to launch suicide bomb attacks in Kenya and Ethiopia.",
+        "output": "The United States embassy located in Nairobi, Kenya <SEG:1> has issued a warning that \"extremists from Somalia\" are planning to launch suicide bomb attacks in Kenya and Ethiopia."
+      }
+    },
+    {
+      "id": "en_us_368",
+      "error_type": "placement",
+      "span": "called arteries and comes",
+      "evidence": "Piece split the parallel 'called arteries' / 'called veins' structure and caused direction/participant confusion (arteries/veins swapped).",
+      "cause": "other",
+      "proposed_rule": "Lower confidence for boundaries that split symmetric 'called X ... and called Y' or immediately-postmodified parallel phrases; prefer emitting after each full 'called ...' phrase to keep parallels intact.",
+      "example_pair": {
+        "input": "Blood goes away from the heart in tubes called arteries and comes back to the heart in tubes called veins.",
+        "output": "Blood goes away from the heart in tubes called arteries and comes back to the heart in tubes called veins <SEG:1>."
+      }
+    },
+    {
+      "id": "en_us_687",
+      "error_type": "placement",
+      "span": "remove it from the coffin",
+      "evidence": "Boundary cut inside the verb+pronoun+PP sequence so the pronoun attached to the wrong clause, producing 'it was removed' instead of 'remove it from the coffin'.",
+      "cause": "wrong participant",
+      "proposed_rule": "Avoid high-ranked boundaries that split a verb together with its pronominal object plus immediate complements; wait for the pronoun and its prepositional complements to appear as a unit.",
+      "example_pair": {
+        "input": "Anyone interested in seeing evidence of the damage to the mummy done during attempts to remove it from the coffin will be disappointed as only the head and shoulders are visible.",
+        "output": "Anyone interested in seeing evidence of the damage to the mummy done during attempts to remove it from the coffin <SEG:1> will be disappointed as only the head and shoulders are visible."
+      }
+    },
+    {
+      "id": "en_us_170",
+      "error_type": "format_violation",
+      "span": "Perry specifically said, \"There are",
+      "evidence": "Model edited the quoted text when tags were inserted (source text was rewritten rather than left verbatim).",
+      "cause": "other",
+      "proposed_rule": "When inserting segmentation tags, do not alter, paraphrase or normalize the original text; insert tags as isolated tokens with one surrounding space and preserve all original characters and punctuation exactly.",
+      "example_pair": {
+        "input": "Perry specifically said, \"There are few places in the world better equipped to meet the challenge that is posed in this case.\"",
+        "output": "Perry specifically said, \"There are few places in the world better equipped to meet the challenge that is posed in this case.\" <SEG:1>"
+      }
+    }
+  ],
+  "summary": "Two failures dominate: (1) the prompt over‑trusts comma and mid‑phrase positions, letting high‑rank boundaries split coordinated, locative or postmodified noun phrases and causing wrong participants/locations; (2) it permits boundaries that fall before disambiguating heads (objects, pronouns, 'called' complements) or before contrast markers, producing premature commitments. Fixes should lower confidence for comma‑adjacent boundaries that precede short modifier fragments, preposition‑led coordinations, ambiguous verbs, or verb+pronoun+PP sequences, and ensure tags never rewrite the source.",
+  "aggregate": {
+    "dominant_error": null,
+    "dominant_basis": "No corpus rate identifies a dominant failure. Read the cases and `judge_distribution` for WHICH mechanism to fix — do not infer a rate from `case_label_counts`, those cases were selected for being the worst.",
+    "measured_rates": {
+      "coverage": {
+        "n": 0,
+        "of_n": 40,
+        "rate": 0.0,
+        "of": "all sentences scored — a true corpus rate",
+        "meaning": "sentences where the tightest budget asked for boundaries the prompt never marked, so pieces are missing outright"
+      },
+      "premature_among_judged": {
+        "n": 32,
+        "of_n": 50,
+        "rate": 0.64,
+        "of": "boundaries judged this iteration, selected as the WORST by measured contradiction — NOT a corpus rate, do not compare it against `coverage`"
+      }
+    },
+    "case_label_counts": {
+      "counts": {
+        "priority": 2,
+        "placement": 4,
+        "format_violation": 1
+      },
+      "of_n": 7,
+      "of": "the selected worst cases — NOT a rate"
+    },
+    "stuck_hint": "",
+    "priority_audit": [
+      {
+        "feature": "뒤 구두점 ','",
+        "n": 15,
+        "rank_percentile": 0.374,
+        "contradiction": 0.1825,
+        "over_trust": 0.2579
+      },
+      {
+        "feature": "상대위치 1/3",
+        "n": 53,
+        "rank_percentile": 0.581,
+        "contradiction": 0.1874,
+        "over_trust": 0.035
+      },
+      {
+        "feature": "상대위치 0/3",
+        "n": 66,
+        "rank_percentile": 0.594,
+        "contradiction": 0.1462,
+        "over_trust": 0.0155
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 140,
+        "rank_percentile": 0.663,
+        "contradiction": 0.1734,
+        "over_trust": -0.0529
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 46,
+        "rank_percentile": 0.674,
+        "contradiction": 0.1784,
+        "over_trust": -0.0655
+      }
+    ],
+    "judge_distribution": {
+      "n_boundaries_judged": 50,
+      "verdicts": {
+        "mistranslated": 23,
+        "safe": 18,
+        "premature": 9
+      },
+      "n_with_cause": 32,
+      "causes": {
+        "other": {
+          "n": 13,
+          "share": 0.406
+        },
+        "head not yet arrived": {
+          "n": 10,
+          "share": 0.312
+        },
+        "wrong participant": {
+          "n": 5,
+          "share": 0.156
+        },
+        "mistranslated": {
+          "n": 3,
+          "share": 0.094
+        },
+        "polarity not yet settled": {
+          "n": 1,
+          "share": 0.031
+        }
+      }
+    },
+    "max_missing_boundaries": 0.0,
+    "rank_lift": 0.15035,
+    "rank_lift_t": 3.68,
+    "summary": "Two failures dominate: (1) the prompt over‑trusts comma and mid‑phrase positions, letting high‑rank boundaries split coordinated, locative or postmodified noun phrases and causing wrong participants/locations; (2) it permits boundaries that fall before disambiguating heads (objects, pronouns, 'called' complements) or before contrast markers, producing premature commitments. Fixes should lower confidence for comma‑adjacent boundaries that precede short modifier fragments, preposition‑led coordinations, ambiguous verbs, or verb+pronoun+PP sequences, and ensure tags never rewrite the source."
+  }
+}

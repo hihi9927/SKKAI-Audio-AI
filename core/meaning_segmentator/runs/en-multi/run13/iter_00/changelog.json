@@ -1,0 +1,17 @@
+{
+  "sections_changed": [
+    "[When to Segment]",
+    "[Priority Rules]",
+    "[Decision Procedure]"
+  ],
+  "sections_reported": [
+    "[When to Segment]",
+    "[Priority Rules]"
+  ],
+  "changelog": [
+    "Merged critic candidate rules into [When to Segment]: added a concise 'Cautions and exceptions' list that groups coordination, complement-taking words, ambiguous verbs, exclusive/contrastive scope markers, copular + article constructions, pronoun attachments to verbals, postmodifier-dependent noun heads, 'called'/identifying phrases, destination/locative phrases, and complements that change verb frame as reasons to wait or rank lower. This implements all candidate_rules without adding new prohibitions.",
+    "Refined [Priority Rules]: added an explicit instruction to lower confidence for boundaries immediately before or after commas when the following phrase is a locative or restrictive modifier, and clarified lower-ranking guidance for ambiguous verbs, agreement-sensitive finite verbs after coordination/punctuation, and other cases where complements determine final sense. This organizes the critic suggestions into the ranking system rather than forbidding positions."
+  ],
+  "size_budget": 18491,
+  "over_budget": false
+}

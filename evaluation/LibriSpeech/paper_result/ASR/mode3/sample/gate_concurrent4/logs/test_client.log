@@ -1,0 +1,18 @@
+INFO	결과 → evaluation/LibriSpeech/paper_result/ASR/mode3/sample/gate_concurrent4
+INFO	====================================================================
+INFO	챕터 4개 · 파일 391개 · 오디오 2223s (0.62h)
+INFO	클라이언트 4명 · trailing silence 8.0s/파일
+INFO	예상 makespan 1588s (이상 1338s, 효율 84%)
+INFO	====================================================================
+INFO	서버 config: {"model": "Qwen/Qwen3-ASR-1.7B", "chunk_size_sec": 2.0, "enforce_eager": false, "enable_dot_commit": true, "always_commit": false, "no_vad": true, "enable_gpt_translation": false, "translation_model": "gpt-5.4-mini", "context_window": 5, "enable_correction": false, "correction_model": "gpt-5.4-mini"}
+WARNING	[w03] 빈 전사: 8280-266249-0000
+WARNING	[w01] 빈 전사: 1688-142285-0000
+WARNING	[w00] 빈 전사: 5764-299665-0000
+ERROR	[w01] 1688-142285-0001 처리 실패: 
+ERROR	[w00] 5764-299665-0001 처리 실패: 
+INFO	[w01] 챕터 1688-142285 완료 (117s, 파일 96개, 남은 챕터 0)
+INFO	[w00] 챕터 5764-299665 완료 (120s, 파일 98개, 남은 챕터 0)
+WARNING	[w03] 빈 전사: 8280-266249-0001
+WARNING	[w02] 빈 전사: 3528-168669-0010
+ERROR	[w02] 3528-168669-0011 처리 실패: 
+INFO	[w02] 챕터 3528-168669 완료 (414s, 파일 131개, 남은 챕터 0)

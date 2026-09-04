@@ -1,0 +1,723 @@
+[
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "来自水牛城 WNED 电台（“阅读彩虹”节目的主电台）的约翰·格兰特 (John Grant) 说：“阅读彩虹教会了孩子们为什么要阅读，……还有对阅读的热爱——（该节目）鼓励孩子们拿起书来潜心阅读。”",
+    "seg_text": "来自水牛城 WNED 电 <SEG:4> 台（“阅读彩虹” <SEG:3> 节目的主电台）的 <SEG:5> 约翰·格兰特 (John Gra <SEG:8> nt) 说：“阅 <SEG:7> 读彩虹教会了孩子 <SEG:6> 们为什么要阅读，…… <SEG:1> 还有对阅读的热 <SEG:9> 爱——（该节目） <SEG:2> 鼓励孩子们拿起 <SEG:10> 书来潜心阅读。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 10개 — 최소 11개 필요",
+    "text": "来自水牛城 WNED 电台（“阅读彩虹”节目的主电台）的约翰·格兰特 (John Grant) 说：“阅读彩虹教会了孩子们为什么要阅读，……还有对阅读的热爱——（该节目）鼓励孩子们拿起书来潜心阅读。”",
+    "seg_text": "来自水牛城 WNED 电 <SEG:4> 台（“阅读彩虹” <SEG:3> 节目的主电台）的 <SEG:5> 约翰·格兰特 (John Gra <SEG:8> nt) 说：“阅 <SEG:7> 读彩虹教会了孩子 <SEG:6> 们为什么要阅读，…… <SEG:1> 还有对阅读的热 <SEG:9> 爱——（该节目） <SEG:2> 鼓励孩子们拿起 <SEG:10> 书来潜心阅读。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 8개 — 최소 12개 필요",
+    "text": "五渔村（Cinque Terre），原意为五块土地，由位于意大利利古里亚（Liguria）地区的五座沿海小村庄 Riomaggiore、Manarola、Corniglia、Vernazza 和 Monterosso 组成。",
+    "seg_text": "五渔村（Cinque Terre）， <SEG:4> 原意为五块土地， <SEG:1> 由位于意大利利古里亚（Liguria）地区 <SEG:2> 的五座沿海小村庄 <SEG:3> Riomaggiore、 <SEG:7> Manarola、 <SEG:8> Corniglia、 <SEG:5> Vernazza <SEG:6> 和Monterosso组成。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "如果你表现出一点基本的礼貌，巴黎人粗鲁的表现很快就会消失无踪。",
+    "seg_text": "如果你表现出一点基本的礼貌， <SEG:2> 巴黎人粗鲁的表现很快 <SEG:1> 就会消失无踪。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 5개 필요",
+    "text": "大多数寺庙都有一年一度的节日，从十一月底开始，到五月中旬结束，每个寺庙的节日时间各不相同。",
+    "seg_text": "大多数寺庙都有一年一度的节日， <SEG:2> 从十一月底开始， <SEG:1> 到五月中旬结束， <SEG:3> 每个寺庙的节日时间各不相同。",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "中央密苏里大学 (University of Central Missouri) 的数学家、计算机科学教授柯蒂斯·库珀 (Curtis Cooper) 于 1 月 25 日发现了迄今为止最大的已知素数。",
+    "seg_text": "中央密苏里大学 <SEG:8> 学 (University <SEG:7> of Central <SEG:6> Missouri) <SEG:1> 的数学家、计算机科学教授 <SEG:4> 柯蒂斯·库珀 <SEG:5> (Curtis Cooper) <SEG:2> 于 1 月 25 日 <SEG:3> 发现了迄今为止最大的已知素数。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 8개 — 최소 10개 필요",
+    "text": "中央密苏里大学 (University of Central Missouri) 的数学家、计算机科学教授柯蒂斯·库珀 (Curtis Cooper) 于 1 月 25 日发现了迄今为止最大的已知素数。",
+    "seg_text": "中央密苏里大学 <SEG:8> 学 (University <SEG:7> of Central <SEG:6> Missouri) <SEG:1> 的数学家、计算机科学教授 <SEG:4> 柯蒂斯·库珀 <SEG:5> (Curtis Cooper) <SEG:2> 于 1 月 25 日 <SEG:3> 发现了迄今为止最大的已知素数。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "托尼·莫尔博士在南非夸祖鲁-纳塔尔省发现了这种广泛耐药结核病 (XDR-TB)。",
+    "seg_text": "托尼·莫尔博士 <SEG:3> 在南非夸祖鲁-纳塔尔省 <SEG:2> 发现了这种广泛耐药结核病 <SEG:1> (XDR-TB)。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 9개 — 최소 11개 필요",
+    "text": "塔马基大道 (Tamaki Drive) 海滩位于怀特玛塔港 (Waitemata Harbour)，就在奥克兰中部的米森湾 (Mission Bay) 和圣赫里尔斯 (St Heliers) 的高档郊区。",
+    "seg_text": "塔马基大道(Tamak <SEG:9> i Drive) 海滩 <SEG:3> 位于怀特玛塔港 <SEG:1> (Waitemata <SEG:6> Harbour)， <SEG:8> 就在奥克兰中部的米森湾 <SEG:5> (MissionBay) <SEG:2> 和圣赫里尔斯 <SEG:7> (StHeliers) <SEG:4> 的高档郊区。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "尚未做手术的变性者在通过扫描仪时，不得不透露自己的隐私，并且无法保障自身尊严。",
+    "seg_text": "尚未做手术的变性者 <SEG:3> 在通过扫描仪时， <SEG:1> 不得不透露自己的 <SEG:2> 隐私，并且无法保障自身尊严。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "1970 年，医学博士兼研究科学家雷蒙德·达马迪安 (Raymond Damadian) 发现了使用磁共振成像作为医学诊断工具的基础原理。",
+    "seg_text": "1970 年， <SEG:2> 医学博士兼研究科学家 <SEG:3> 雷蒙德·达马迪安 <SEG:4> (Raymond Damadian) <SEG:1> 发现了使用磁共振成像作为 <SEG:6> 医学诊断工具 <SEG:5> 的基础原理。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 7개 필요",
+    "text": "在赛道上热身时，伦茨 (Lenz) 从自行车上摔了下来，然后被跟在后面的赛车手泽维尔·扎亚特 (Xavier Zayat) 撞到。",
+    "seg_text": "在赛道上热身时，伦茨 <SEG:4> (Lenz) <SEG:1> 从自行车上摔了下来，然 <SEG:5> 后被跟在后面 <SEG:2> 的赛车手泽维 <SEG:3> 尔·扎亚特(Xavier Zayat) 撞到。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "在 18 世纪的最后几年，越南人也入侵了柬埔寨。",
+    "seg_text": "在 18 世纪的最后几年， <SEG:1> 越南人也入侵了柬埔寨。",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "无论是出于必要、还是为了换换生活方式、挑战自我，如果你想花最少的钱看世界，有些办法可以帮你做到。",
+    "seg_text": "无论是出于必要、或 <SEG:5> 者为了换换生 <SEG:4> 活方式、挑战 <SEG:3> 自我， 如果你 <SEG:2> 想花最少的钱 <SEG:1> 看世界，有些办法可以帮你做到。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 6개 필요",
+    "text": "这是亨利·路易斯·盖茨 (Henry Louis Gates) 在美国公共广播公司的《非洲世界的奇迹》特别节目中的重要一站。",
+    "seg_text": "这是亨利·路易斯·盖茨 <SEG:4> (Henry Louis Gates) <SEG:1> 在美国公共广播公司的 <SEG:3> 《非洲世界的奇迹》特别节目中 <SEG:2> 的重要一站。",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "冰川并不是稳定的，而会从山上流下来。这会导致出现裂缝和冰裂隙，而这些裂隙可能会被雪桥掩盖。",
+    "seg_text": "冰川并不是稳定的， <SEG:5> 而会从山上流下来。 <SEG:1> 这会导致出现 <SEG:3> 裂缝和冰裂隙， <SEG:2> 而这些裂缝可能会 <SEG:4> 被雪桥掩盖。",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "他教过的一个学生说，老师“会在课堂上使用俚语，在笔记里教授约会技巧，就像是学生的朋友一样。\"",
+    "seg_text": "他教过的一个学生说， <SEG:1> 老师“会在课堂上使用俚语， <SEG:2> 在笔记里教授约会技巧， <SEG:3> 就像是学生的朋友一样.\"",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 5개 필요",
+    "text": "他教过的一个学生说，老师“会在课堂上使用俚语，在笔记里教授约会技巧，就像是学生的朋友一样。\"",
+    "seg_text": "他教过的一个学生说， <SEG:1> 老师“会在课堂上使用俚语， <SEG:2> 在笔记里教授约会技巧， <SEG:3> 就像是学生的朋友一样.\"",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 8개 — 최소 9개 필요",
+    "text": "由于“黑美人”的底盘过低，新西兰警方没法用测速雷达枪来检测里德先生的车速。警方唯一一次成功检测到里德先生的车速，是在他将车速降到 160 公里/小时的时候。",
+    "seg_text": "由于“黑美人” <SEG:8> 的底盘过低， <SEG:2> 新西兰警方没法 <SEG:6> 用测速雷达枪来 <SEG:5> 检测里德先生的车速。 <SEG:1> 警方唯一一次成功 <SEG:7> 检测到里德先生的车速， <SEG:3> 是在他将车速降到 <SEG:4> 160 公里/小时的时候。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "坐落于犹太山丘 （Judean Hills） 上的这座古城，引人入胜的历史长达几千年之久。",
+    "seg_text": "坐落于犹太山丘 <SEG:3> （Judean Hills） <SEG:2> 上的这座古城， <SEG:1> 引人入胜的历史长达几千年之久。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 8개 필요",
+    "text": "无人驾驶月球轨道飞行器月船一号发射了月球撞击探测器，该探测器以每秒 1.5 公里(每小时 3000 英里) 的速度掠过月球表面，并在月球南极附近成功硬着陆",
+    "seg_text": "无人驾驶月球轨道飞行器 <SEG:5> 月船一号发射了 <SEG:7> 月球撞击探测器， <SEG:1> 该探测器以每秒1.5 公里 <SEG:4> (每小时 3000 英里) <SEG:3> 的速度掠过月球表面， <SEG:2> 并在月球南极 <SEG:6> 附近成功硬着陆",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "确保知晓可以携带什么，不能携带什么，并申报任何超出法律允许的物件。",
+    "seg_text": "确保知晓可以携带什么， <SEG:1> 不能携带什么， <SEG:2> 并申报任何超出法律允许的物件。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 5개 필요",
+    "text": "来自英国的生物学家罗伯特·胡克 (Robert Hooke) 用显微镜看到了软木塞中藏有一些小方块。",
+    "seg_text": "来自英国的生物学家 <SEG:2> 罗伯特·胡克 (Robert Hooke) <SEG:1> 用显微镜看到了 <SEG:3> 软木塞中藏有一些小方块。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "苹果公司的首席执行官史蒂夫·乔布斯走上舞台，从他的牛仔裤口袋里掏出 iPhone，揭开了这款设备的神秘面纱。",
+    "seg_text": "苹果公司的首席执行官史蒂夫·乔 <SEG:5> 布斯走上舞台， <SEG:2> 从他的牛仔裤口袋里掏出 <SEG:4> iPhone， <SEG:1> 揭开了这款设备 <SEG:3> 的神秘面纱。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 0개 — 최소 1개 필요",
+    "text": "大多数电视节目都是为娱乐大众而制作的。",
+    "seg_text": "大多数电视节目都是为娱乐大众而制作的。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "7 月 8 日，约翰·尼克松 (John Nixon) 在独立大厅的院子里首次公开宣读了这份文件。",
+    "seg_text": "7 月 8 日，约翰·尼克松 (John Nixon) <SEG:1> 在独立大厅的院子里 <SEG:2> 首次公开宣读 <SEG:3> 了这份文件。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 8개 필요",
+    "text": "其中的许多作者后来对乔恩·斯图尔特 (Jon Stewart) 和史蒂芬·科尔伯特 (Stephen Colbert) 的新闻恶搞节目产生了巨大影响。",
+    "seg_text": "其中的许多作者 <SEG:4> 后来对乔恩·斯图尔特 (Jon Stewart) <SEG:3> 和史蒂芬·科尔伯特 (Stephen Colbert) <SEG:1> 的新闻恶搞节目 <SEG:2> 产生了巨大影响。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 3개 필요",
+    "text": "在经过一周的中期选举失利后，布什向听众讲述了亚洲贸易扩张的形势。",
+    "seg_text": "在经过一周的中期选举失利后， <SEG:1> 布什向听众讲述了亚洲贸易扩张的形势。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 4개 필요",
+    "text": "中长跑是一项花费相对低廉的运动；然而参与者对所需的几件装备却有很多误解。",
+    "seg_text": "中长跑是一项花费相对低廉的运动； <SEG:1> 然而参与者对所需的几件装备 <SEG:2> 却有很多误解。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 6개 필요",
+    "text": "该标志没有受到实际损坏；这一改动是用装饰着和平与爱心标志的黑色防水油布将字母 “O” 改成了可读性强的小写 “e”完成的。",
+    "seg_text": "该标志没有受到实际损坏； <SEG:1> 这一改动是用装饰着和平与爱心标志的黑色防水油布 <SEG:2> 将字母 “O” 改成了可读性强的小写 “e” 完成的。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 0개 — 최소 1개 필요",
+    "text": "当时，该地区有近 100 名居民被疏散。",
+    "seg_text": "当时，该地区有近 100 名居民被疏散。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "出于该原因，你在电视上看到的画面边框，包括顶部、底部和侧边，都被裁剪了。",
+    "seg_text": "出于该原因， <SEG:3> 你在电视上看到的画面边框， <SEG:1> 包括顶部、底部和侧边， <SEG:2> 都被裁剪了。",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "据故事情节所写，此人愿不惜一切代价出人头地。愤慨的以弗所人宣布黑若斯达特斯（Herostratus）之名罄竹难书。",
+    "seg_text": "据故事情节所写， <SEG:2> 此人愿不惜一切 <SEG:5> 代价出人头地。 <SEG:1> 愤慨的以弗所人 <SEG:3> 宣布黑若斯达特斯 <SEG:6> 特斯（Herostratus） <SEG:4> 之名罄竹难书。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "南半球没有一家航空联盟的航线能横跨全部三个大洋（天合联盟甚至没有跨洋航线）。",
+    "seg_text": "南半球没有一 <SEG:3> 家航空联盟的 <SEG:1> 航线能横跨全部三个大洋 <SEG:2> （天合联盟甚至没有跨洋航线）。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 9개 필요",
+    "text": "科曼基金会 (Komen Foundation) 发言人莱斯利·昂恩 (Leslie Aun) 表示，该组织采用了一项新规定，不允许向正在接受法律调查的组织提供资助或资金。",
+    "seg_text": "科曼基金会 (Komen Foundation) <SEG:5> 发言人莱斯利·昂恩 (Leslie Aun)表示， <SEG:1> 该组织采用了 <SEG:4> 一项新规定， <SEG:2> 不允许向正在接受法律调查的组织 <SEG:3> 提供资助或资金。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 3개 필요",
+    "text": "早些时候，中国通讯社新华社报道了一架飞机已被劫持的新闻。",
+    "seg_text": "早些时候，中国通讯社新华社报道了 <SEG:1> 一架飞机已被劫持的新闻。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 4개 필요",
+    "text": "这些项目的持续时间通常从三到六个月不等，而且是在不小于 50 公顷的场地里举行。",
+    "seg_text": "这些项目的持续时间通常从三到六个月不等， <SEG:1> 而且是在不小于 50 公顷的场地里举行。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "斯塔克(Stark) 的士兵沿着殖民者阵地北端的防御围栏站位。",
+    "seg_text": "斯塔克(Stark) <SEG:2> 的士兵沿着殖民者 <SEG:1> 阵地北端的防御围栏站位。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 8개 필요",
+    "text": "在加拿大，格陵兰岛的土著居民称自己为因纽特人，在格陵兰岛则称自己为 Kalaalleq（复数为 Kalaallit），也就是“格陵兰人”的意思。",
+    "seg_text": "在加拿大，格陵 <SEG:7> 兰岛的土著居 <SEG:6> 民称自己为因 <SEG:5> 纽特人，在格 <SEG:4> 陵兰岛则称自己为 Kal <SEG:3> aalleq <SEG:2> （复数为 Kalaallit）， <SEG:1> 也就是“格陵兰人”的意思。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "多国政府要求入境游客或离境居民接种一系列疾病疫苗。",
+    "seg_text": "多国政府要求入境游客或离境居民 <SEG:1> 接种一系列疾病疫苗。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "咖喱饭菜既可以是“干”的，也可以是“湿”的，干湿情况取决于水量多少。",
+    "seg_text": "咖喱饭菜既可以是“干”的， <SEG:2> 也可以是“湿”的， <SEG:1> 干湿情况取决于水量多少。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "研究者观察到的许多生理节律和行为节律很大程度上往往取决于通过生物钟而产生的内生周期及其存在。",
+    "seg_text": "研究者观察到 <SEG:3> 的许多生理节律和行为节律 <SEG:1> 很大程度上往往取 <SEG:4> 决于通过生物钟 <SEG:2> 而产生的内生周期及其存在。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "历史学家批判了联邦调查局的过往政策，这种政策会把资源集中到容易破获的案件上，尤以偷车案件居多，目的只在于提高该机构的成功破案率。",
+    "seg_text": "历史学家批判了联邦调查局 <SEG:4> 的过往政策， <SEG:3> 这种政策会把 <SEG:5> 资源集中到容易 <SEG:6> 破获的案件上， <SEG:1> 尤以偷车案件居多， <SEG:2> 目的只在于提高该机构的成功破案率。",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "在几个世纪里，罗马帝国在医学领域取得了巨大成果，构成了我们今天所知晓的大部分知识。",
+    "seg_text": "在几个世纪里，罗马帝国 <SEG:3> 在医学领域取得了 <SEG:4> 了巨大成果， <SEG:1> 构成了我们今天所知晓 <SEG:2> 的大部分知识。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 8개 필요",
+    "text": "乐队的经纪公司是香港管理公司（HK management Inc.），该公司在 9 月 20 日最初取消演出活动时并未给出原因，转天却将之归咎于后勤保障原因。",
+    "seg_text": "乐队的经纪公司是香港管理公司 <SEG:6> （HK management Inc.）， <SEG:2> 该公司在 9 月 <SEG:4> 20 日最初取消演出活动 <SEG:3> 时并未给出原因， <SEG:1> 转天却将之归 <SEG:5> 咎于后勤保障原因。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "土耳其位于欧洲的部分（地处巴尔干半岛的东色雷斯或鲁米利亚）占其国土面积的 3％。",
+    "seg_text": "土耳其位于欧洲的部分 <SEG:2> （地处巴尔干半岛 <SEG:3> 的东色雷斯或鲁米利亚）占 <SEG:1> 其国土面积的 3％。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "这是一艘复仇者级别的反水雷舰，正在前往巴拉望的普林塞萨港的途中。",
+    "seg_text": "这是一艘复仇 <SEG:2> 者级别的反水雷舰， <SEG:1> 正在前往巴拉望的普林塞萨港的途中。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "她被拘留，等待起诉和审判；但是任何目击者的证据都可能受到负面影响，因为她的形象已被广泛发布。",
+    "seg_text": "她被拘留，等待起诉和审判； <SEG:1> 但是任何目击者的证据 <SEG:3> 都可能受到负面影响， <SEG:2> 因为她的形象 <SEG:4> 已被广泛发布。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "与大型车不同，你可能已经很熟悉驾驶自己的车，也知道它的局限。",
+    "seg_text": "与大型车不同， <SEG:1> 你可能已经很熟悉驾驶自己的车， <SEG:2> 也知道它的局限。",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "“幸运的是我没有发生什么事，但我看到了可怕的一幕，人们试着打破窗户逃出去。",
+    "seg_text": "“幸运的是我 <SEG:4> 没有发生什么 <SEG:3> 事，但我看到了 <SEG:2> 可怕的一幕， <SEG:1> 人们试着打破窗户逃出去.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 6개 필요",
+    "text": "对一些人来说，如果要克服因未知事物或不可控制的状况而产生的恐惧，了解飞机的工作原理和飞行的程序可能会有帮助。",
+    "seg_text": "对一些人来说， <SEG:2> 如果要克服因未知事物或不可控制的状况而产生的恐惧， <SEG:1> 了解飞机的工作原理 <SEG:3> 和飞行的程序 <SEG:4> 可能会有帮助。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "例如，中东地区的美国公民可能面临与欧洲人或阿拉伯人的不同境遇。",
+    "seg_text": "例如，中东地区的美国公民可能 <SEG:1> 面临与欧洲人 <SEG:2> 或阿拉伯人的不同境遇。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 8개 필요",
+    "text": "印度河流域文明是青铜时代的文明，位于印度西北部次大陆，覆盖的区域包括了现代巴基斯坦的大部分地区，以及印度西北部和阿富汗东北部的一些地区。",
+    "seg_text": "印度河流域文明是青铜 <SEG:6> 时代的文明， <SEG:3> 位于印度西北部次大陆， <SEG:2> 覆盖的区域包括了 <SEG:5> 现代巴基斯坦 <SEG:4> 的大部分地区， <SEG:1> 以及印度西北 <SEG:7> 部和阿富汗东北部的一些地区。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 3개 필요",
+    "text": "作为压轴，土耳其舞蹈团”安纳托利亚之火“表演了节目《特洛伊》。",
+    "seg_text": "作为压轴，土耳其舞蹈团”安纳托利亚之火“ <SEG:1> 表演了节目《特洛伊》。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 3개 필요",
+    "text": "据报道，人类感染禽流感的病例不到 一千例，但其中有一些病例是致命的。",
+    "seg_text": "据报道，人类感染禽流感的病例不到 一千例， <SEG:1> 但其中有一些病例是致命的。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 7개 필요",
+    "text": "汤米·追梦儿说：“露娜是首位至尊女王，我的第一任经理人。露娜在双月之夜去世。这样的夜晚就像她本人一样特别。她是个坚强的女人。”",
+    "seg_text": "汤米·追梦儿说： <SEG:5> “露娜是首位至尊女王， <SEG:1> 我的第一任经理人。 <SEG:4> 露娜在双月之夜去世。 <SEG:2> 这样的夜晚就像她本人一样特别。 <SEG:3> 她是个坚强的女人。”",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "如果你过桥或沿着瀑布附近蜿蜒的小径走，肯定会被弄湿。",
+    "seg_text": "如果你过桥或沿着瀑布附近蜿蜒的小径走， <SEG:1> 肯定会被弄湿。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 3개 필요",
+    "text": "对那些喜欢户外活动的人来说，必然会徒步登上 Sea to Sky。",
+    "seg_text": "对那些喜欢户外活动的人来说， <SEG:1> 必然会徒步登上 Sea to Sky。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 5개 필요",
+    "text": "但皇家海军还是比德国海军（“Kriegsmarine”）强得多，可以摧毁任何跨越英吉利海峡的入侵舰队。",
+    "seg_text": "但皇家海军还是比 <SEG:2> 德国海军（“Kriegsmarine”）强得多， <SEG:1> 可以摧毁任何跨越英吉利海峡的入侵舰队。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "自给农业，是为了生产仅能满足农业者及其家人所需的食物而进行的农业活动。",
+    "seg_text": "自给农业，是为了生产 <SEG:2> 仅能满足农业者 <SEG:1> 及其家人所需的食物而进行的农业活动。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "例如，“学习”和“交际”被认为是使用互联网的重要动机（詹姆斯等，1995）。",
+    "seg_text": "例如，“学习”和“交际” <SEG:1> 被认为是使用 <SEG:2> 互联网的重要动机（詹姆斯 <SEG:3> 等，1995）。",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "达尼厄斯说道：“目前我们保持按兵不动。我给他关系最好的合作者打过电话并发送了电子邮件，而且收到了对方非常友好的回复。就目前而言，这足够了。”",
+    "seg_text": "达尼厄斯说道：“目前我们保持按兵不动。 <SEG:1> 我给他关系最好的合作者打过 <SEG:5> 过电话并发送了电子邮件， <SEG:2> 而且收到了对方非常友好的回复。 <SEG:4> 就目前而言， <SEG:3> 这足够了。”",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 8개 필요",
+    "text": "达尼厄斯说道：“目前我们保持按兵不动。我给他关系最好的合作者打过电话并发送了电子邮件，而且收到了对方非常友好的回复。就目前而言，这足够了。”",
+    "seg_text": "达尼厄斯说道：“目前我们保持按兵不动。 <SEG:1> 我给他关系最好的合作者打过 <SEG:5> 过电话并发送了电子邮件， <SEG:2> 而且收到了对方非常友好的回复。 <SEG:4> 就目前而言， <SEG:3> 这足够了。”",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "清晨在家享受香浓咖啡，夜晚则泡上令人放松的甘菊茶。",
+    "seg_text": "清晨在家享受香浓咖啡， <SEG:1> 夜晚则泡上令人放松的甘菊茶。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "鉴于成员的年龄、种族、阶级、位置以及/或性别差异，亚文化可能会各具特色。",
+    "seg_text": "鉴于成员的年龄、 <SEG:3> 种族、阶级、 <SEG:2> 位置以及/或性别差异， <SEG:1> 亚文化可能会各具特色。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "以色列要求协议签订后，在山谷中部署十年的军事力量，而巴勒斯坦民族权力机构只同意保留五年。",
+    "seg_text": "以色列要求协议签订后， <SEG:3> 在山谷中部署十年 <SEG:1> 的军事力量， <SEG:2> 而巴勒斯坦民族 <SEG:4> 权力机构只同意保留五年。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 8개 — 최소 9개 필요",
+    "text": "白令海峡经由奥内加湖（Lake Onega）、拉多加湖（Lake Ladoga）和圣彼得堡（Saint Petersburg）连接北冰洋和波罗的海，连接处多数是河流和湖泊。",
+    "seg_text": "白令海峡经由 <SEG:8> 奥内加湖（Lak <SEG:7> e Onega）、 <SEG:5> 拉多加湖（Lak <SEG:6> e Ladoga） <SEG:4> 和圣彼得堡（Saint Pe <SEG:3> tersburg） <SEG:1> 连接北冰洋和波罗的海， <SEG:2> 连接处多数是河流和湖泊。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "在这些地区买到的高端品牌镜架可能存在两个问题：有些可能是山寨货，而且正品进口镜架可能比在国内购买要贵。",
+    "seg_text": "在这些地区买到的高端品牌镜架 <SEG:3> 可能存在两个问题： <SEG:2> 有些可能是山寨货， <SEG:1> 而且正品进口 <SEG:4> 镜架可能比在国内购买要贵。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "小皮奎特在 2009 年匈牙利大奖赛之后被解雇。",
+    "seg_text": "小皮奎特在2009 年 <SEG:1> 匈牙利大奖赛之后被解雇。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 8개 필요",
+    "text": "15 世纪 80 年代，在黑斯廷斯勋爵（Lord Hastings）开始建造这座城堡的时候，这个国家还相对和平，只需要防御一小群四处游荡的抢掠者。",
+    "seg_text": "15 世纪 80 年代， <SEG:2> 在黑斯廷斯勋爵 <SEG:4> （Lord Hastings） <SEG:3> 开始建造这座 <SEG:5> 城堡的时候， <SEG:1> 这个国家还相对 <SEG:6> 和平，只需要防御一小群 <SEG:7> 四处游荡的抢掠者。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "对于那些不熟悉医学术语的人来说，”传染性”和“触染性”这两个词的含义截然不同。",
+    "seg_text": "对于那些不熟悉医学术语的 <SEG:3> 人来说，”传染性” <SEG:1> 和“触染性” <SEG:2> 这两个词的含义截然不同。",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "今天，A1GP 新西兰队副驾驶约翰·里德 (Jonny Reid) 在合法驾驶的情况下，成为在有 48 年历史的新西兰奥克兰海港大桥上行驶最快的人，从而创造了历史。",
+    "seg_text": "今天，A1GP <SEG:8> 新西兰队副驾 <SEG:7> 驶约翰·里德 <SEG:6> (Jonny Reid) <SEG:2> 在合法驾驶的情况下， <SEG:1> 成为在有 48 <SEG:3> 年历史的新西兰奥克兰 <SEG:4> 海港大桥上行驶 <SEG:5> 最快的人，创造了历史。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 8개 — 최소 9개 필요",
+    "text": "今天，A1GP 新西兰队副驾驶约翰·里德 (Jonny Reid) 在合法驾驶的情况下，成为在有 48 年历史的新西兰奥克兰海港大桥上行驶最快的人，从而创造了历史。",
+    "seg_text": "今天，A1GP <SEG:8> 新西兰队副驾 <SEG:7> 驶约翰·里德 <SEG:6> (Jonny Reid) <SEG:2> 在合法驾驶的情况下， <SEG:1> 成为在有 48 <SEG:3> 年历史的新西兰奥克兰 <SEG:4> 海港大桥上行驶 <SEG:5> 最快的人，创造了历史。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 8개 — 최소 9개 필요",
+    "text": "锡克教徒把自己的宗教称为 Gurmat，在旁遮普语中是“古鲁（导师）之路”的意思。古鲁是所有印度宗教的基本组成部分，但在锡克教中地位特别高，成为了锡克教信仰的核心。",
+    "seg_text": "锡克教徒把自 <SEG:8> 己的宗教称为Gurma <SEG:7> t，在旁遮普 <SEG:6> 语中是“古鲁（导师）之路” <SEG:1> 的意思。古鲁 <SEG:2> 是所有印度宗 <SEG:5> 教的基本组成 <SEG:4> 部分，但在锡 <SEG:3> 克教中地位特别高，成为了锡克教信仰的核心。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 4개 필요",
+    "text": "无人看管的袋子不仅是窃贼的目标，还会被当成炸弹威胁，引起当局的警惕和关注。",
+    "seg_text": "无人看管的袋子不仅是窃贼的目标， <SEG:1> 还会被当成炸弹威胁， <SEG:2> 引起当局的警惕和关注。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 5개 필요",
+    "text": "由于在 2007 年次贷危机期间遭到曝光，北岩银行 (Northern Rock) 曾请求政府提供援助。",
+    "seg_text": "由于在 2007 年 <SEG:3> 次贷危机期间遭到曝光， <SEG:1> 北岩银行 (Northern Rock) <SEG:2> 曾请求政府提供援助。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "如果连拍照都不允许的话，就更不用想拍摄视频了。",
+    "seg_text": "如果连拍照都不允许的话， <SEG:1> 就更不用想拍摄视频了。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 4개 필요",
+    "text": "亚马逊河是世界上第二长，也是最大的河流。 它的水量是第二大河流的 8 倍以上。",
+    "seg_text": "亚马逊河是世界上第二长， <SEG:2> 也是最大的河流。 <SEG:1> 它的水量是第二大河流的 8 倍以上。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 6개 필요",
+    "text": "具体说来，比利时和瑞士讲的法语在数字系统上有一些细微的特殊性，与法国讲的法语不同，一些单词的发音也略有不同。",
+    "seg_text": "具体说来，比利时和瑞士讲的法语在数字系统上有一些细微的特殊性， <SEG:1> 与法国讲的法语不同， <SEG:2> 一些单词的发音也略有不同。",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "这次电视直播是伊朗高层消息人士首次承认制裁产生的影响正在显现。",
+    "seg_text": "这次电视直播是伊朗高层消息人士首次承认制裁产生的影响正在显现。 <SEG:1> (This sentence contains a single clause.)",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 3개 필요",
+    "text": "这次电视直播是伊朗高层消息人士首次承认制裁产生的影响正在显现。",
+    "seg_text": "这次电视直播是伊朗高层消息人士首次承认制裁产生的影响正在显现。 <SEG:1> (This sentence contains a single clause.)",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 3개 필요",
+    "text": "该国陆军和海军都比较弱，尽管他们在战争开始前不久建造了四艘新舰船。",
+    "seg_text": "该国陆军和海军都比较弱， <SEG:1> 尽管他们在战争开始前不久建造了四艘新舰船。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "许多情绪稳定、能力较强的旅客都曾被在发展中国家旅行的新问题所吓倒，在那里，需要迅速适应接踵而至的许多细微文化差异。",
+    "seg_text": "许多情绪稳定、能力较强的旅客 <SEG:2> 都曾被在发展中 <SEG:3> 国家旅行的新问题所吓倒， <SEG:1> 在那里，需要迅速适应接踵 <SEG:4> 而至的许多细 <SEG:5> 微文化差异。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "上弓通常会发出更加柔和的声音，而下弓则会发出更强烈、更为坚定的声响。",
+    "seg_text": "上弓通常会发出 <SEG:2> 更加柔和的声音， <SEG:1> 而下弓则会发出更强烈、更为坚定的声响。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 8개 필요",
+    "text": "纳米比亚（Namibian）总统和议会选举的最后结果表明，现任总统希菲克普耶·波汉巴（Hifikepunye Pohamba）以巨大的优势再次当选。",
+    "seg_text": "纳米比亚（Namibian） <SEG:3> 总统和议会选举的最后结果表明， <SEG:1> 现任总统希菲克普耶·波汉巴（Hifikepunye Pohamba） <SEG:2> 以巨大的优势再次当选。",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "共享资源管理员亚当·库尔登 (Adam Cuerden) 上个月在接受维基新闻 (Wikinews) 采访时表达了他对删除相关内容的不满。",
+    "seg_text": "共享资源理员亚当·库尔 <SEG:4> 登 (Adam Cuerden) <SEG:2> 上个月在受接维基新闻 (Wikinews) <SEG:1> 采访时表达了他对删除相关 <SEG:3> 内容的不满。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 7개 필요",
+    "text": "共享资源管理员亚当·库尔登 (Adam Cuerden) 上个月在接受维基新闻 (Wikinews) 采访时表达了他对删除相关内容的不满。",
+    "seg_text": "共享资源理员亚当·库尔 <SEG:4> 登 (Adam Cuerden) <SEG:2> 上个月在受接维基新闻 (Wikinews) <SEG:1> 采访时表达了他对删除相关 <SEG:3> 内容的不满。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 8개 필요",
+    "text": "旅游对人数较多的旅行团来说比较便宜。如果你独自一人或只有一个朋友同行，不妨试着认识其他人，组建 4 到 6 人的旅行团，这样可以获得更优惠的人均价格。",
+    "seg_text": "旅游对人数较多的旅行团来说比较便宜。 <SEG:1> 如果你独自一人或只有一个朋友同行， <SEG:4> 不妨试着认识其他人，组建 <SEG:2> 4 到 6 人的旅行团， <SEG:3> 这样可以获得更优惠的人均价格。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 4개 필요",
+    "text": "出于对新冠疫情的担忧，美国国家篮球协会 (NBA) 周三暂停了职业篮球赛季。",
+    "seg_text": "出于对新冠疫情的担忧， <SEG:2> 美国国家篮球协会 (NBA) <SEG:1> 周三暂停了职业篮球赛季。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "另一个著名的希腊人是数学家毕达哥拉斯，他最有名的成就是提出了关于直角三角形各边关系的著名定理。",
+    "seg_text": "另一个著名的希腊人 <SEG:4> 是数学家毕达哥拉斯， <SEG:1> 他最有名的成就是提出了 <SEG:2> 关于直角三角形各边关系 <SEG:3> 的著名定理。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "这一艺术活动也是布加勒斯特市政厅发起的宣传活动的组成部分之一，旨在重新塑造罗马尼亚首都，打造出富有创意、多姿多彩的大都市形象。",
+    "seg_text": "这一艺术活动也是布加勒斯特市政厅 <SEG:3> 发起的宣传活动的 <SEG:6> 组成部分之一， <SEG:1> 旨在重新塑造 <SEG:4> 罗马尼亚首都， <SEG:2> 打造出富有创意、 <SEG:5> 多姿多彩的大都市形象。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "高耸于马丘比丘北端的这座陡峭的山峰，常常会成为许多遗址照片的背景。",
+    "seg_text": "高耸于马丘比丘北端的这座 <SEG:2> 陡峭的山峰， <SEG:1> 常常会成为许多遗址照片的背景。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 6개 필요",
+    "text": "当然，要成为一流的半英里跑步选手（在两分钟内跑完），就必须要有足够快的速度，并且要不惜一切代价地培养耐力。",
+    "seg_text": "当然，要成为一流的 <SEG:3> 半英里跑步选手（在两分钟内跑完）， <SEG:1> 就必须要有足够快的速度， <SEG:2> 并且要不惜一切代价 <SEG:4> 地培养耐力。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "一些中画幅胶片相机使用 6x6cm 的画幅，更准确地说，是 56x56mm 的底片。",
+    "seg_text": "一些中画幅胶片相机 <SEG:2> 使用 6x6cm的画幅， <SEG:1> 更准确地说， <SEG:3> 是 56x56mm的底片。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 5개 필요",
+    "text": "马鲁基多尔 (Maroochydore) 随后在预决赛中击败了卡布尔彻 (Caboolture)。",
+    "seg_text": "马鲁基多尔(Maroochydore) <SEG:3> 随后在预决赛中 <SEG:2> 击败了卡布尔彻 <SEG:1> (Caboolture)。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "在这些官员的陪同下，他向德克萨斯州的公民保证，政府正在采取措施来保护公众的安全。",
+    "seg_text": "在这些官员的陪同下， <SEG:1> 他向德克萨斯州的公民保证， <SEG:2> 政府正在采取措施 <SEG:3> 来保护公众的安全。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 6개 필요",
+    "text": "这部由瑞恩·高斯林 (Ryan Gosling) 和艾玛·斯通 (Emma Stone) 主演的电影获得了各大奖项的提名。",
+    "seg_text": "这部由瑞恩·高斯林 (Ryan Gosling) <SEG:2> 和艾玛·斯通 (Emma Stone)主演的电影 <SEG:1> 获得了各大奖项的提名。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "但不管他有没有发现，爱斯基摩人当时已经在那里生活了。",
+    "seg_text": "但不管他有没有发现， <SEG:1> 爱斯基摩人当时已经在那里生活了。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 5개 필요",
+    "text": "这款游戏以第二次费卢杰（Fallujah）战役为背景，这是美军和伊拉克军队之间的一场恶战。",
+    "seg_text": "这款游戏以第二次费卢杰（Fallujah）战役为背景， <SEG:1> 这是美军和伊拉克军队之间的一场恶战。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 6개 필요",
+    "text": "不过，所有说法语的比利时人和瑞士人都会在学校里学习标准法语，所以即使您使用标准的法国度量系统，他们也能听得懂。",
+    "seg_text": "不过，所有说法语的比利时人和瑞士人都会在学校里学习标准法语， <SEG:1> 所以即使您使用标准的法国度量系统， <SEG:2> 他们也能听得懂。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 0개 — 최소 1개 필요",
+    "text": "也有含少量非金属元素（例如碳）的合金。",
+    "seg_text": "也有含少量非金属元素（例如碳）的合金。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 4개 필요",
+    "text": "科学家认为，美洲豹猫是通过气味和嗅探猎物在地面上的踪迹来跟踪和寻找要捕食的动物的。",
+    "seg_text": "科学家认为， <SEG:1> 美洲豹猫是通过气味和嗅探猎物在地面上的踪迹来跟踪和寻找要捕食的动物的。",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "特派员表示：“我们尚未就原产地规则和关税协定达成一致，但我们现有的框架足以满足 2020 年 7 月 1 日开始贸易的需要。”",
+    "seg_text": "特派员表示：“ <SEG:4> 我们尚未就原产地规则 <SEG:5> 和关税协定达成一致， <SEG:1> 但我们现有的框架 <SEG:3> 足以满足 2020 年7 月 1 日 <SEG:2> 开始贸易的需要。”",
+    "first_pass": true
+  }
+]

@@ -1,0 +1,44 @@
+[
+  {
+    "id": "de_de_1264",
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "\"Tommy Dreamer sagte: \"\"Luna war die erste Königin der Extreme. Meine erste Managerin. Luna starb in der Nacht der zwei Monde. Sehr einzigartig, genau wie sie. Eine starke Frau.\"\"\"",
+    "seg_text": "\"Tommy Dreamer sagte: <SEG:1> \"\"Luna war die erste <SEG:7> Königin der Extreme. <SEG:2> Meine erste Managerin. <SEG:3> Luna starb in der Nacht <SEG:6> der zwei Monde. <SEG:4> Sehr einzigartig, genau wie sie. <SEG:5> Eine starke Frau.\"\"\"\""
+  },
+  {
+    "id": "de_de_41",
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "\"John Grant von WNED Buffalo (Reading Rainbows Heimatstation) sagte: \"\"Reading Rainbow hat Kindern beigebracht, warum sie lesen sollten, ... die Liebe zum Lesen - [die Show] hat Kinder dazu ermutigt, ein Buch in die Hand zu nehmen und zu lesen.\"\"\"",
+    "seg_text": "\"John Grant von WNED <SEG:10> Buffalo (Reading Rainbows <SEG:9> Heimatstation) sagte: \"\"Reading <SEG:3> Rainbow hat Kindern <SEG:4> beigebracht, warum sie <SEG:8> lesen sollten, ... <SEG:1> die Liebe zum <SEG:5> Lesen - [die <SEG:7> Show] hat Kinder <SEG:6> dazu ermutigt, ein <SEG:2> Buch in die Hand zu nehmen und zu lesen.\"\""
+  },
+  {
+    "id": "de_de_1352",
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 8개 필요",
+    "text": "Mehr über die Funktionsweise von Flugzeugen und die Abläufe während eines Fluges zu erfahren, kann manchen helfen, die Angst zu überwinden, die mit dem Unbekannten oder mit dem Gefühl, keine Kontrolle zu haben, zusammenhängt.",
+    "seg_text": "Mehr über die Funktionsweise von Flugzeugen <SEG:7> und die Abläufe <SEG:6> während eines Fluges zu erfahren, <SEG:2> kann manchen helfen, <SEG:3> die Angst zu überwinden, <SEG:1> die mit dem Unbekannten <SEG:5> oder mit dem Gefühl, <SEG:4> keine Kontrolle zu haben, zusammenhängt."
+  },
+  {
+    "id": "de_de_50",
+    "rule": "too_few_tags",
+    "detail": "경계 8개 — 최소 9개 필요",
+    "text": "Die neuseeländische Polizei hatte wegen der geringen Höhe von Black Beauty Schwierigkeiten, die Geschwindigkeit Reids mit ihren Radarpistolen zu erfassen, und es gelang ihr nur ein einziges Mal, die Geschwindigkeit zu messen, als Reid auf 160 km/h abbremste.",
+    "seg_text": "Die neuseeländische Polizei <SEG:6> hatte wegen der geringen Höhe <SEG:5> von Black Beauty Schwierigkeiten, <SEG:4> die Geschwindigkeit Reids <SEG:7> mit ihren Radarpistolen zu erfassen, <SEG:3> und es gelang ihr <SEG:8> nur ein einziges Mal, <SEG:2> die Geschwindigkeit zu messen, <SEG:1> als Reid auf 160 km/h abbremste."
+  },
+  {
+    "id": "de_de_1416",
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Mutationen können verschiedenste Auswirkungen haben, je nachdem, um welche Art von Mutation es sich handelt, welche Bedeutung das betreffende Stück genetischen Materials hat und ob es sich bei den betreffenden Zellen um Keimbahnzellen handelt.",
+    "seg_text": "Mutationen können verschiedenste Auswirkungen haben, <SEG:2> je nachdem, um welche <SEG:8> Art von Mutation <SEG:7> es sich handelt, <SEG:1> welche Bedeutung das <SEG:6> betreffende Stück genetischen <SEG:5> Materials hat und <SEG:4> ob es sich bei den Zellen <SEG:3> um Keimbahnzellen handelt."
+  },
+  {
+    "id": "de_de_1514",
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Als die Kämpfe nach dem Transport der Verwundeten ins Krankenhaus aufhörten, blieben etwa 40 der übrigen Insassen auf dem Hof ​​und weigerten sich, in ihre Zellen zurückzukehren.",
+    "seg_text": "Als die Kämpfe nach dem Transport der Verwundeten <SEG:6> ins Krankenhaus aufhörten, <SEG:1> blieben etwa 40 <SEG:5> der übrigen Insassen <SEG:2> auf dem Hof <SEG:3> und weigerten sich, <SEG:4> in ihre Zellen zurückzukehren."
+  }
+]

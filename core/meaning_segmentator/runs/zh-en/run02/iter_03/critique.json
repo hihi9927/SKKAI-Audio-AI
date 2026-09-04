@@ -1,0 +1,214 @@
+{
+  "cases": [
+    {
+      "id": "cmn_hans_cn_1547",
+      "error_type": "placement",
+      "span": "日本广播协会 (NHK)",
+      "evidence": "Boundary separated Chinese name from its ASCII parenthetical causing wrong expansion ('NHK' guessed as 'National Broadcasting Company').",
+      "cause": "other",
+      "proposed_rule": "Never split a Chinese organisation name from an immediately following Latin-letter parenthetical (e.g. X (ABC)); keep the whole name+parenthesis in one segment.",
+      "example_pair": {
+        "input": "日本广播协会 (NHK) 还报道说，位于新泻县的柏崎刈羽 (Kashiwazaki Kariwa) 核电站运行正常。",
+        "output": "日本广播协会 (NHK) <SEG:1> 还报道说，位于新泻县的柏崎刈羽 (Kashiwazaki Kariwa) <SEG:2> 核电站运行正常。"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_388",
+      "error_type": "placement",
+      "span": "“训民正音”",
+      "evidence": "Segment ended before the explanatory head, so the title's gloss was emitted prematurely and mistranslated.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not cut inside or immediately before a quoted title/term when an explanatory clause ('意思是' / 'means') follows; include the quoted phrase and its explanation in the same segment.",
+      "example_pair": {
+        "input": "他最初将韩语字母发音表命名为“训民正音”，意思是“用于教导人民的正确发音”。",
+        "output": "他最初将韩语字母发音表命名为“训民正音”，意思是“用于教导人民的正确发音”。 <SEG:1>"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_309",
+      "error_type": "placement",
+      "span": "齐藤仁， 在去世前",
+      "evidence": "Boundary placed before the role/head word; translator committed to a specific role and wrong transliteration because full name and role were split.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Avoid cutting that isolates a personal name from its immediately following appositive/role phrase; keep full name plus the following role/head in one segment.",
+      "example_pair": {
+        "input": "作为前奥运冠军和世界冠军的齐藤仁，在去世前担任全日本柔道联盟训练委员会主席。",
+        "output": "作为前奥运冠军和世界冠军的齐藤仁，<SEG:1> 在去世前担任全日本柔道联盟训练委员会主席。"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_194",
+      "error_type": "placement",
+      "span": "七次后于 2006 年 退役的",
+      "evidence": "Cut left the temporal modifier detached from the verb it scoped over, causing the translator to misattach the date to the wrong predicate.",
+      "cause": "modifier scope",
+      "proposed_rule": "Do not cut between temporal modifiers/dates and the predicate or noun they modify; wait for the governing verb/noun before emitting the modifier's attachment.",
+      "example_pair": {
+        "input": "在赢得一级方程式赛车锦标赛 (Formula 1) 总冠军七次后于 2006 年退役的名将舒马赫，将接替受伤的菲利佩·马萨。",
+        "output": "在赢得一级方程式赛车锦标赛 (Formula 1) 总冠军七次后于 2006 年退役的名将舒马赫，<SEG:1> 将接替受伤的菲利佩·马萨。"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_934",
+      "error_type": "placement",
+      "span": "你需要一份你希望就读的学校的",
+      "evidence": "Boundary ended inside a possessive-modifier sequence (…的) before the head noun '录取通知书', producing a wrong headnoun in translation.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Never place a boundary that ends a modifier or possessive marker (e.g. segments ending with 的 or equivalent) before the noun head; include the head noun in the same segment.",
+      "example_pair": {
+        "input": "在大多数国家，你需要一份你希望就读的学校的录取通知书，以及证明你有至少第一年课程所需资金的文件。",
+        "output": "在大多数国家，<SEG:1> 你需要一份你希望就读的学校的录取通知书，<SEG:2> 以及证明你有至少第一年课程所需资金的文件。"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_725",
+      "error_type": "placement",
+      "span": "一座 17 世纪 修道院的中庭",
+      "evidence": "Segment cut after the century phrase leaving the head (中庭) for the next segment; translator guessed 'house' instead of 'courtyard'.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not cut immediately after century/number phrases when they are modifiers of a noun phrase; wait for the noun head to avoid choosing the wrong building-type/head noun.",
+      "example_pair": {
+        "input": "联盟花园 (Jardín de la Unión)。这里曾是一座 17 世纪修道院的中庭，其中的圣地亚哥圣殿是唯一现存的建筑。",
+        "output": "联盟花园 (Jardín de la Unión)。<SEG:1> 这里曾是一座 17 世纪修道院的中庭，<SEG:2> 其中的圣地亚哥圣殿是唯一现存的建筑。"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_1535",
+      "error_type": "placement",
+      "span": "空中交通管制员",
+      "evidence": "Boundary split a compound agent noun so the translator emitted 'the pilots were able…' instead of 'air traffic controllers'.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Never split inside common compound agent/occupation nouns (e.g. terms ending with 员); keep the whole compound in one segment to preserve agent identity.",
+      "example_pair": {
+        "input": "它使用卫星技术，而不是老旧的地面雷达技术，使空中交通管制员能够更精确地定位飞机，并向飞行员提供更准确的信息。",
+        "output": "它使用卫星技术，而不是老旧的地面雷达技术，<SEG:1> 使空中交通管制员能够更精确地定位飞机，<SEG:2> 并向飞行员提供更准确的信息。"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_800",
+      "error_type": "reference_suspect",
+      "span": "驼鹿（也被称为麋鹿）",
+      "evidence": "Oracle translations disagree on species name; model emitted a species label before parenthetical disambiguation, producing inconsistent species names.",
+      "cause": "other",
+      "proposed_rule": "When the source gives a parenthetical synonym/alternate name (e.g. '也被称为'), copy or preserve the source forms (do not finalize a lexical species name) or delay lexicalisation until the parenthetical is included.",
+      "example_pair": {
+        "input": "驼鹿（也被称为麋鹿）天生不具攻击性，但如果感觉到威胁它们也会自卫。",
+        "output": "驼鹿（也被称为麋鹿）<SEG:1> 天生不具攻击性，<SEG:2> 但如果感觉到威胁它们也会自卫。"
+      }
+    },
+    {
+      "id": "cmn_hans_cn_846",
+      "error_type": "placement",
+      "span": "成熟的 涂鸦艺术家、",
+      "evidence": "Cut before the head noun forced the translator to choose singular/plural and articles prematurely ('a single mature artist'), causing number/qualification errors.",
+      "cause": "head not yet arrived",
+      "proposed_rule": "Do not finalize number/articles/adjective agreement when the head noun has not yet appeared; keep adjective/determiner and noun head together in one segment.",
+      "example_pair": {
+        "input": "然而，如今已经有了成熟的涂鸦艺术家、涂鸦活动和“合法”涂鸦墙。在这种背景下创作的涂鸦绘画往往更类似于艺术品，而非难以辨认的标签。",
+        "output": "然而，如今已经有了成熟的涂鸦艺术家、涂鸦活动和“合法”涂鸦墙。<SEG:1> 在这种背景下创作的涂鸦绘画往往更类似于艺术品，而非难以辨认的标签。"
+      }
+    }
+  ],
+  "summary": "Most high-contradiction failures come from boundaries that force early lexical commitment (names, quoted titles, possessive '的', century/number modifiers, agent compounds) or split parenthetical acronyms. The prompt should forbid splitting these specific, high-risk surface patterns (org+ASCII parenthetical, quoted-term + its explanation, agentive suffixes, modifier+head with 的 or century numerals) rather than relying on coarse comma heuristics or weak demotion. Also treat parenthetical 'also called' sequences as reference‑suspicious and delay lexicalisation.",
+  "aggregate": {
+    "dominant_error": null,
+    "dominant_basis": "No corpus rate identifies a dominant failure. Read the cases and `judge_distribution` for WHICH mechanism to fix — do not infer a rate from `case_label_counts`, those cases were selected for being the worst.",
+    "measured_rates": {
+      "coverage": {
+        "n": 7,
+        "of_n": 40,
+        "rate": 0.175,
+        "of": "all sentences scored — a true corpus rate",
+        "meaning": "sentences where the tightest budget asked for boundaries the prompt never marked, so pieces are missing outright"
+      },
+      "premature_among_judged": {
+        "n": 32,
+        "of_n": 50,
+        "rate": 0.64,
+        "of": "boundaries judged this iteration, selected as the WORST by measured contradiction — NOT a corpus rate, do not compare it against `coverage`"
+      }
+    },
+    "case_label_counts": {
+      "counts": {
+        "placement": 8,
+        "reference_suspect": 1
+      },
+      "of_n": 9,
+      "of": "the selected worst cases — NOT a rate"
+    },
+    "stuck_hint": "직전 개정이 [When to Segment], [Priority Rules] 를 고쳤는데 채택에 실패했다. 같은 섹션을 같은 방식으로 다시 고치지 말 것 — 다른 섹션을 보거나 같은 섹션이라도 반대 방향(금지 추가가 아니라 완화)을 검토할 것",
+    "priority_audit": [
+      {
+        "feature": "뒤 구두점 '，'",
+        "n": 40,
+        "rank_percentile": 0.354,
+        "contradiction": 0.1936,
+        "over_trust": 0.2355
+      },
+      {
+        "feature": "상대위치 1/3",
+        "n": 51,
+        "rank_percentile": 0.6,
+        "contradiction": 0.2365,
+        "over_trust": 0.0194
+      },
+      {
+        "feature": "상대위치 0/3",
+        "n": 69,
+        "rank_percentile": 0.62,
+        "contradiction": 0.2191,
+        "over_trust": -0.003
+      },
+      {
+        "feature": "상대위치 2/3",
+        "n": 42,
+        "rank_percentile": 0.634,
+        "contradiction": 0.1871,
+        "over_trust": -0.0144
+      },
+      {
+        "feature": "구두점 없음",
+        "n": 103,
+        "rank_percentile": 0.762,
+        "contradiction": 0.2083,
+        "over_trust": -0.1394
+      }
+    ],
+    "judge_distribution": {
+      "n_boundaries_judged": 50,
+      "verdicts": {
+        "mistranslated": 28,
+        "safe": 13,
+        "reference_suspect": 5,
+        "premature": 4
+      },
+      "n_with_cause": 32,
+      "causes": {
+        "other": {
+          "n": 17,
+          "share": 0.531
+        },
+        "head not yet arrived": {
+          "n": 12,
+          "share": 0.375
+        },
+        "mistranslated": {
+          "n": 1,
+          "share": 0.031
+        },
+        "modifier scope": {
+          "n": 1,
+          "share": 0.031
+        },
+        "referent lost": {
+          "n": 1,
+          "share": 0.031
+        }
+      }
+    },
+    "max_missing_boundaries": 0.2632,
+    "rank_lift": 0.08421,
+    "rank_lift_t": 1.52,
+    "summary": "Most high-contradiction failures come from boundaries that force early lexical commitment (names, quoted titles, possessive '的', century/number modifiers, agent compounds) or split parenthetical acronyms. The prompt should forbid splitting these specific, high-risk surface patterns (org+ASCII parenthetical, quoted-term + its explanation, agentive suffixes, modifier+head with 的 or century numerals) rather than relying on coarse comma heuristics or weak demotion. Also treat parenthetical 'also called' sequences as reference‑suspicious and delay lexicalisation."
+  }
+}

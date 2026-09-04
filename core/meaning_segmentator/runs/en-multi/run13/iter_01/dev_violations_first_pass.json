@@ -1,0 +1,261 @@
+[
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "The game is played on grass, and the grass around the hole is mown shorter and called the green.",
+    "seg_text": "The game is played <SEG:3> on grass, and the grass around the hole <SEG:1> is mown shorter <SEG:2> and called the green.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "Cinque Terre, which means Five Lands, comprises the five small coastal villages of Riomaggiore, Manarola, Corniglia, Vernazza and Monterosso located in the Italian region of Liguria.",
+    "seg_text": "Cinque Terre, which means Five Lands, <SEG:1> comprises the five small <SEG:5> coastal villages of <SEG:4> Riomaggiore, Manarola, Corniglia, <SEG:3> Vernazza and Monterosso <SEG:2> located in the Italian region of Liguria.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Periodic rhythms, which are not simply responses to external periodic cues, have been documented for most living beings, including bacteria, fungi, plants, and animals.",
+    "seg_text": "Periodic rhythms, which are not <SEG:4> simply responses to external periodic cues, <SEG:1> have been documented <SEG:2> for most living beings, including bacteria, <SEG:3> fungi, plants, and animals.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "If you visit Greenland during cold seasons (considering that the further north you go, the colder it will be), it is essential to bring warm enough clothing.",
+    "seg_text": "If you visit Greenland <SEG:3> during cold seasons <SEG:1> (considering that the further north you go, <SEG:2> the colder it will <SEG:5> be), it is <SEG:4> essential to bring warm enough clothing.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "The light bulb then needs replacing. It is necessary to be careful in replacing the light bulb.",
+    "seg_text": "The light bulb then needs replacing. <SEG:1> It is necessary to be careful in replacing <SEG:2> the light bulb.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Not all were supportive of the inclusion of the women’s ranks.",
+    "seg_text": "Not all were supportive <SEG:1> of the women’s ranks.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "Not all were supportive of the inclusion of the women’s ranks.",
+    "seg_text": "Not all were supportive <SEG:1> of the women’s ranks.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 5개 필요",
+    "text": "The Broadcasting Services Act provides for the regulation of Internet content, however to be considered Internet content, it must physically reside on a server.",
+    "seg_text": "The Broadcasting Services Act provides <SEG:2> for the regulation of Internet content, <SEG:1> however to be considered Internet content, it must physically reside <SEG:3> on a server.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "In the 16th century Paraguay, formerly called \"The Giant Province of the Indies\", was born as a result of the encounter of Spanish conquerors with the native indigenous groups.",
+    "seg_text": "In the 16th century <SEG:3> Paraguay, formerly called \"The <SEG:5> Giant Province of the Indies\", <SEG:1> was born as a result <SEG:4> of the encounter of Spanish <SEG:2> conquerors with the native indigenous groups.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "While authorities are unsure of the credibility of the threat, the Maryland Transportaion Authority made the closure with the urging of the FBI.",
+    "seg_text": "While authorities are unsure <SEG:4> of the credibility of the threat, <SEG:1> the Maryland Transportaion Authority <SEG:2> made the closure <SEG:3> with the urging of the FBI.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "At home, due to this constant exposure to the local germs, odds are very high that you're already immune to them.",
+    "seg_text": "At home, due to this <SEG:2> constant exposure to the local germs, odds <SEG:1> are very high that you're <SEG:3> already immune to them.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 9개 — 최소 10개 필요",
+    "text": "The feathers' structure suggests that they were not used in flight but rather for temperature regulation or display. The researchers suggested that, even though this is the tail of a young dinosaur, the sample shows adult plumage and not a chick's down.",
+    "seg_text": "The feathers' structure <SEG:4> suggests that they were <SEG:8> not used in flight <SEG:3> but rather for temperature <SEG:6> regulation or display. <SEG:1> The researchers suggested that, <SEG:5> even though this is the tail <SEG:7> of a young dinosaur, the sample <SEG:9> shows adult plumage <SEG:2> and not a chick's down.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "When the fighting ceased after the wounded were transported to the hospital, about 40 of the other remaining inmates stayed in the yard and refused to return to their cells.",
+    "seg_text": "When the fighting ceased <SEG:4> after the wounded were <SEG:5> transported to the hospital, <SEG:2> about 40 of the <SEG:6> other remaining inmates <SEG:3> stayed in the yard <SEG:1> and refused to return to their cells.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 5개 — 최소 6개 필요",
+    "text": "However, a nationwide road network is not economically viable for just a handful of cars, so new methods of production are developed to reduce the cost of car ownership.",
+    "seg_text": "However, a nationwide road network <SEG:3> is not economically viable <SEG:2> for just a handful of cars, <SEG:1> so new methods <SEG:4> of production are <SEG:5> developed to reduce the cost of car ownership.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Schumacher who retired in 2006 after winning the Formula 1 championship seven times, was due to replace the injured Felipe Massa.",
+    "seg_text": "Schumacher who retired <SEG:2> in 2006 after <SEG:3> winning the Formula 1 championship seven times, <SEG:1> was due to replace the injured Felipe Massa.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 8개 필요",
+    "text": "Roberts flatly refused to say about when he believes life begins, an important question when considering the ethics of abortion, saying that it would be unethical to comment on the specifics of likely cases.",
+    "seg_text": "Roberts flatly refused to <SEG:7> say about when he <SEG:3> believes life begins, an <SEG:6> important question when considering <SEG:4> the ethics of abortion, <SEG:1> saying that it would be unethical <SEG:2> to comment on the specifics <SEG:5> of likely cases.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "The death toll is at least 15, a figure which is expected to rise.",
+    "seg_text": "The death toll <SEG:2> is at least 15, <SEG:1> a figure which is expected to rise.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 2개 필요",
+    "text": "Bird flu, or more formally avian influenza, can infect both birds and mammals.",
+    "seg_text": "Bird flu, or more formally avian influenza, <SEG:1> can infect both birds and mammals.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "As of the night of August 9, the eye of Morakot was about seventy kilometres away from the Chinese province of Fujian.",
+    "seg_text": "As of the night <SEG:3> of August 9, the eye <SEG:2> of Morakot was about seventy kilometres <SEG:1> away from the Chinese <SEG:4> province of Fujian.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "For instance, they didn't have corn, nor tomatoes, nor potatoes, nor cocoa, and no ancient Roman ever tasted a turkey.",
+    "seg_text": "For instance, they didn't have corn, <SEG:2> nor tomatoes, nor potatoes, nor cocoa, <SEG:1> and no ancient Roman <SEG:3> ever tasted a turkey.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "For example, one might say that the motor car necessarily leads to the development of roads.",
+    "seg_text": "For example, one might say <SEG:1> that the motor car necessarily leads <SEG:2> to the development of roads.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "He emailed students at the local university and received an overwhelming number of offers for free accommodation.",
+    "seg_text": "He emailed students at the local university <SEG:1> and received an overwhelming number <SEG:2> of offers for free accommodation.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "I expect to return to all my duties on Monday,\" Arias said in a statement.",
+    "seg_text": "I expect to return <SEG:3> to all my duties <SEG:1> on Monday, Arias <SEG:2> said in a statement.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "So if you were standing by the shoreline, you would be able to see down to whatever pebbles or gunk that was on the bottom.",
+    "seg_text": "So if you were standing <SEG:4> by the shoreline, <SEG:1> you would be able to see <SEG:3> down to whatever pebbles <SEG:2> or gunk that was on the bottom.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Hindi and Urdu are similar in vocabulary but different in script; in everyday conversations, speakers of both languages can usually understand each other.",
+    "seg_text": "Hindi and Urdu are <SEG:4> similar in vocabulary but <SEG:3> different in script; <SEG:1> in everyday conversations, speakers of both languages can usually <SEG:2> understand each other.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Especially in your initial days, consider splurging on Western-style and -quality hotels, food, and services to help acclimatize.",
+    "seg_text": "Especially in your initial days, <SEG:1> consider splurging on Western-style and -quality hotels, <SEG:2> food, and services <SEG:3> to help acclimatize.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "But the Royal Navy was still much stronger than the German Navy (“Kriegsmarine”) and could have destroyed any invasion fleet sent across the English Channel.",
+    "seg_text": "But the Royal Navy was still <SEG:4> much stronger than the German Navy (“Kriegsmarine”) <SEG:1> and could have destroyed <SEG:3> any invasion fleet <SEG:2> sent across the English Channel.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 1개 — 최소 3개 필요",
+    "text": "For those who enjoy outdoor activities, a trek up the Sea to Sky corridor is essential.",
+    "seg_text": "For those who enjoy outdoor activities, <SEG:1> a trek up the Sea to Sky corridor is essential.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Siminoff said sales boosted after his 2013 appearance in a Shark Tank episode where the show panel declined funding the startup.",
+    "seg_text": "Siminoff said sales boosted <SEG:3> after his 2013 appearance in a Shark Tank episode <SEG:1> where the show panel <SEG:2> declined funding the startup.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 8개 필요",
+    "text": "Mysticism can be distinguished from other forms of religious belief and worship by its emphasis on the direct personal experience of a unique state of consciousness, particularly those of a peaceful, insightful, blissful, or even ecstatic character.",
+    "seg_text": "Mysticism can be distinguished <SEG:4> from other forms of religious belief and worship <SEG:2> by its emphasis on the <SEG:5> direct personal experience <SEG:3> of a unique state of consciousness, <SEG:1> particularly those of a peaceful, <SEG:6> insightful, blissful, or even ecstatic character.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 2개 — 최소 3개 필요",
+    "text": "Dark energy is a completely invisible force that is constantly acting upon the universe.",
+    "seg_text": "Dark energy is a completely invisible force <SEG:1> that is constantly acting <SEG:2> upon the universe.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 6개 — 최소 7개 필요",
+    "text": "Mutations can have a variety of different effects depending on the type of mutation, the significance of the piece of genetic material affected and whether the cells affected are germ-line cells.",
+    "seg_text": "Mutations can have <SEG:6> a variety of different effects <SEG:1> depending on the <SEG:5> type of mutation, <SEG:2> the significance of <SEG:4> the piece of genetic material <SEG:3> affected and whether the cells affected are germ-line cells.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Stars give off light and heat because of the energy made when hydrogen atoms are merged (or fused) together to form heavier elements.",
+    "seg_text": "Stars give off light and heat <SEG:1> because of the energy made <SEG:2> when hydrogen atoms are merged <SEG:3> (or fused) together <SEG:4> to form heavier elements.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 3개 — 최소 4개 필요",
+    "text": "Eighteen percent of Venezuelans are unemployed, and most of those who are employed work in the informal economy.",
+    "seg_text": "Eighteen percent of Venezuelans are unemployed, <SEG:1> and most of <SEG:3> those who are employed work <SEG:2> in the informal economy.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 7개 — 최소 8개 필요",
+    "text": "Germany was a common enemy in World War 2, leading to cooperation between the USSR and USA. With the end of the war the clashes of system, process and culture led to the countries falling out.",
+    "seg_text": "Germany was a common enemy <SEG:5> in World War 2, <SEG:2> leading to cooperation <SEG:4> between the USSR and USA. <SEG:1> With the end of the war <SEG:3> the clashes of system, <SEG:6> process and culture led to <SEG:7> the countries falling out.",
+    "first_pass": true
+  },
+  {
+    "rule": "text_modified",
+    "detail": "태그를 제거한 결과가 원문과 다름 (모델이 텍스트를 고쳐 씀)",
+    "text": "Jonny Reid, co-driver for the A1GP New Zealand team, today made history by driving the fastest over the 48-year-old Auckland Harbour Bridge, New Zealand, legally.",
+    "seg_text": "Jonny Reid, co-driver for the A1GP <SEG:3> New Zealand team, today <SEG:2> made history by driving <SEG:4> the 48-year-old Auckland Harbour Bridge, <SEG:1> New Zealand, legally.",
+    "first_pass": true
+  },
+  {
+    "rule": "too_few_tags",
+    "detail": "경계 4개 — 최소 5개 필요",
+    "text": "Jonny Reid, co-driver for the A1GP New Zealand team, today made history by driving the fastest over the 48-year-old Auckland Harbour Bridge, New Zealand, legally.",
+    "seg_text": "Jonny Reid, co-driver for the A1GP <SEG:3> New Zealand team, today <SEG:2> made history by driving <SEG:4> the 48-year-old Auckland Harbour Bridge, <SEG:1> New Zealand, legally.",
+    "first_pass": true
+  }
+]
