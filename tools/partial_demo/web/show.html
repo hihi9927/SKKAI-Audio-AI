@@ -87,6 +87,8 @@
          border-radius:999px; padding:7px 14px; }
   .ctl:hover { color:#fff; border-color:rgba(255,255,255,.3); }
   .ctl.on { color:#000; background:#e8e8e8; border-color:#e8e8e8; }
+  .pairLabel { font-size:11px; font-weight:700; letter-spacing:2px; color:#666;
+               text-transform:uppercase; padding-right:6px; }
   .ctl:disabled { opacity:.35; cursor:default; }
   .hint { position:absolute; left:16px; bottom:10px; font-size:11px; color:#4a4a4a;
           transition:opacity .4s ease; }
@@ -101,6 +103,9 @@
   <div class="ctlGroup">
     <button class="ctl on" id="btnTag">1 · 언어 태그</button>
     <button class="ctl" id="btnLane">2 · 언어별 칸</button>
+  </div>
+  <div class="ctlGroup">
+    <span class="pairLabel" id="pairLabel"></span>
   </div>
   <div class="ctlGroup">
     <button class="ctl" data-wav="en">EN</button>
@@ -132,8 +137,13 @@ const MAX_DEPTH_TAG = ANCHOR_CENTER ? 3 : 4, MAX_DEPTH_LANE = 3;
 const maxDepth = () => (M.layout === 'lane' ? MAX_DEPTH_LANE : MAX_DEPTH_TAG);
 const FIRM_MS = 140;                          // 확정될 때 흐림을 걷는 시간
 
-const SRC_LANG = Q.get('src') || 'auto';      // 다국어 입력이면 auto
-const TGT_LANG = Q.get('tgt') || 'ko';
+// 서버는 임의 다국어가 아니라 "내 언어 <-> 상대 언어" 쌍으로 번역 방향을 정한다.
+// 감지 언어가 src 면 tgt 으로, 그 밖이면(제3언어 포함) src 로 되돌린다.
+// src 를 auto 로 두면 그 판단이 죽고 무엇이든 tgt 으로만 번역해서, 한국어 발화에
+// tgt=ko 를 걸면 번역이 원문 그대로 나온다. 그래서 기본을 ko <-> en 으로 둔다.
+//   ko 발화 -> en,  en 발화 -> ko,  ja 등 제3언어 -> ko
+const SRC_LANG = Q.get('src') || 'ko';
+const TGT_LANG = Q.get('tgt') || 'en';
 
 const WS_URL = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
 const SR = 16000, FRAME_MS = 100;
@@ -161,6 +171,7 @@ const pending = document.getElementById('pending');
 const controls = document.getElementById('controls');
 const btnTag = document.getElementById('btnTag'), btnLane = document.getElementById('btnLane');
 const btnMic = document.getElementById('btnMic');
+document.getElementById('pairLabel').textContent = `${SRC_LANG} ↔ ${TGT_LANG}`;
 const wavBtns = [...document.querySelectorAll('[data-wav]')];
 const btnStop = document.getElementById('btnStop');
 
@@ -541,8 +552,7 @@ async function start(kind, wavLang) {
   resetFeed();
   stopFlag = false; running = true;
   syncButtons();
-  const srcLang = kind === 'wav' ? (Q.get('src') || wavLang) : SRC_LANG;
-  try { await openWs(srcLang); }
+  try { await openWs(SRC_LANG); }
   catch (e) { console.warn('연결 실패 — 서버가 떠 있는지 확인'); running = false; syncButtons(); return; }
   if (kind === 'wav') await streamWav(wavLang); else await streamMic();
 }

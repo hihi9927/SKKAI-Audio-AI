@@ -73,8 +73,34 @@ tmux new-session -d -s partialweb  -c . "python -u tools/partial_demo/demo_proxy
 | `1` | 한 칸에 모아 쓰고 문장 앞에 언어 태그를 붙인다. 태그 색이 언어마다 다르다 |
 | `2` | 언어별로 칸을 나눠 세로로 배치한다. 칸은 언어가 처음 나온 순서로 생긴다 |
 
-`R` 은 화면 초기화. `EN`/`JA`/`KO` 버튼은 해당 언어의 테스트 음성을 흘린다(그 언어를
-핸드셰이크에 실어 보낸다). `마이크` 는 `src` 설정(기본 `auto`)을 쓴다.
+`R` 은 화면 초기화. `EN`/`JA`/`KO` 버튼은 해당 언어의 테스트 음성을 흘린다.
+음성 언어와 무관하게 세션 언어쌍(`src`/`tgt`)은 그대로 쓴다 — 아래 참고.
+
+### 번역 방향은 언어쌍이다
+
+서버는 임의 다국어가 아니라 **"내 언어(`lang`) ↔ 상대 언어(`targetLang`)"** 쌍으로
+방향을 정한다(`_correct_and_translate`).
+
+| 상황 | 번역 목표 |
+|---|---|
+| `lang=auto` | 무조건 `targetLang` |
+| 감지 언어 == `lang` | `targetLang` |
+| 감지 언어가 그 밖(제3언어 포함) | **`lang`** |
+
+그래서 `lang=auto` 로 두면 안 된다. `targetLang=ko` 인데 한국어를 말하면 번역이
+원문 그대로 나온다. 기본값을 `src=ko`, `tgt=en` 으로 둔 이유다.
+
+| 발화 | 번역 |
+|---|---|
+| 한국어 | 영어 |
+| 영어 | 한국어 |
+| 일본어·그 밖 | 한국어 |
+
+ASR 자체의 언어 제한은 별개다. `--no-restrict-languages` 로 띄우면 `lang` 을 구체
+언어로 줘도 인식은 제한되지 않는다(`_new_stream_slot` 의 `restrict_languages` 분기).
+`lang` 은 번역 방향 결정에만 쓰인다.
+
+번역이 원문과 같으면 아래 줄에 겹쳐 쓰지 않는다.
 
 동작 값은 쿼리 스트링으로 덮어쓴다 — 시연장에서 값만 바꿔 다시 열면 된다.
 
@@ -84,7 +110,8 @@ tmux new-session -d -s partialweb  -c . "python -u tools/partial_demo/demo_proxy
 | `hold` | `2600` | 확정 문장이 머무는 최소 시간(ms) |
 | `holdmin` | `900` | 밀렸을 때 줄일 수 있는 하한(ms) |
 | `type` | `1300` | 한 덩어리를 다 타이핑하는 목표 시간(ms) |
-| `src` / `tgt` | `auto` / `ko` | `start` 핸드셰이크의 입력/목표 언어 |
+| `src` / `tgt` | `ko` / `en` | 내 언어 / 상대 언어. 위 표대로 방향이 갈린다 |
+| `anchor` | (없음) | `center` 면 최신 문장이 화면 세로 한가운데 뜬다 |
 
 ### ASR 없이 화면만 보기
 
