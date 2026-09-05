@@ -2,3 +2,5 @@
 *.log
 # LibriSpeech 에서 만든 테스트 음성 (make_test_wav.py 로 재생성 가능)
 web/*.wav
+# 테스트 음성의 참조 전사 (make_demo_wavs.py 가 wav 와 함께 만든다)
+web/*.txt

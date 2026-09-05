@@ -72,7 +72,8 @@ def process_request(connection, request):
     path = request.path.split("?")[0]
     if path in ("", "/"):
         path = "/show.html"
-    if path == "/partial_test.wav" and not (ROOT / "partial_test.wav").is_file():
+    name = path.lstrip("/")
+    if name.startswith("partial_test") and name.endswith(".wav") and not (ROOT / name).is_file():
         return Response(200, "OK", Headers({"Content-Type": "audio/wav",
                                             "Content-Length": str(len(SILENT_WAV))}), SILENT_WAV)
     target = (ROOT / path.lstrip("/")).resolve()

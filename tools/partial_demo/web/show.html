@@ -14,15 +14,17 @@
      한 줄씩 아래에서 올라온다. 확정된 줄은 위로 밀리며 깊이만큼 흐려진다. */
   .stage { position:absolute; inset:0; display:flex; flex-direction:column;
            padding:5vh 6vw 12vh; gap:0; }
-  .stage.tag  { justify-content:flex-end; }
+  /* 태그 배치는 아래 절반을 비워 최신 줄이 화면 세로 한가운데 오게 한다.
+     새 줄이 그 자리에 뜨고 앞선 줄은 위로 밀린다. */
+  .stage.tag  { justify-content:flex-end; padding-bottom:50vh; }
   .stage.lane { justify-content:stretch; gap:0; }
 
   .feed { display:flex; flex-direction:column; justify-content:flex-end;
-          overflow:hidden; min-height:0; }
+          align-items:center; overflow:hidden; min-height:0; }
   .stage.tag  > .feed { flex:1; }
   /* 칸은 아래쪽에 붙는다. 라벨이 내용에서 멀어지면 어느 칸인지 읽기 어렵다. */
   .stage.lane > .lane { flex:1; min-height:0; display:flex; flex-direction:column;
-                        justify-content:flex-end;
+                        justify-content:center; align-items:center;
                         border-top:1px solid rgba(255,255,255,.09); padding:1.6vh 0 1.2vh; }
   .stage.lane > .lane:first-child { border-top:0; }
   .laneLabel { flex:0 0 auto; font-size:11px; font-weight:800; letter-spacing:3px;
@@ -31,7 +33,7 @@
 
   /* ── 한 줄 ────────────────────────────────────────────────────────────── */
   /* 기준 크기는 .line 이 갖는다. 태그와 원문은 여기에 비례한다. */
-  .line { font-size:clamp(21px, 2.9vw, 40px);
+  .line { font-size:clamp(21px, 2.9vw, 40px); max-width:min(1100px, 88vw);
           display:flex; align-items:baseline; gap:.45em; padding:.3em 0;
           opacity:0; transform:translateY(12px);
           transition:opacity .45s ease, transform .45s ease; }
@@ -51,7 +53,7 @@
              border:1px solid currentColor; opacity:.95; white-space:nowrap; }
   .stage.lane .tagChip { display:none; }
 
-  .body { min-width:0; color:#f2f2f2; }
+  .body { min-width:0; color:#f2f2f2; text-align:center; }
   .main { display:block; font-weight:600; line-height:1.32; letter-spacing:-.01em; }
   .sub  { display:block; font-size:.4em; margin-top:.4em; opacity:.55; font-weight:400;
           line-height:1.35; }
@@ -62,7 +64,9 @@
 
   /* ── 발화 감지 표시 (디코딩 결과가 오기 전) ───────────────────────────── */
   .pending { position:absolute; left:0; right:0; bottom:5.5vh; display:flex;
-             justify-content:center; pointer-events:none; }
+             justify-content:center; pointer-events:none;
+             transition:bottom .3s ease; }
+  .stage.tag ~ .pending { bottom:42vh; }
   .pending[hidden] { display:none; }
   .pendingDot { padding:.5em 1.2em; border-radius:999px; font-size:20px; font-weight:800;
                 letter-spacing:4px; line-height:1; color:#cfcfcf;
@@ -97,12 +101,14 @@
     <button class="ctl" id="btnLane">2 · 언어별 칸</button>
   </div>
   <div class="ctlGroup">
-    <button class="ctl" id="btnWav">테스트 음성</button>
+    <button class="ctl" data-wav="en">EN</button>
+    <button class="ctl" data-wav="ja">JA</button>
+    <button class="ctl" data-wav="ko">KO</button>
     <button class="ctl" id="btnMic">마이크</button>
     <button class="ctl" id="btnStop" disabled>정지</button>
   </div>
 </div>
-<div class="hint" id="hint">1/2 배치 전환 · R 초기화</div>
+<div class="hint" id="hint">EN/JA/KO 테스트 음성 · 1/2 배치 전환 · R 초기화</div>
 
 <script>
 // ── 설정 ──────────────────────────────────────────────────────────────────────
@@ -117,8 +123,9 @@ const HOLD_MS = num('hold', 2600);
 const HOLD_MIN_MS = num('holdmin', 900);      // 밀렸을 때 줄일 수 있는 하한
 const TYPE_BUDGET_MS = num('type', 1300);     // 한 덩어리를 다 뿌리는 목표 시간
 const TYPE_MIN_MS = 10, TYPE_MAX_MS = 45;
-// 화면에 남기는 줄 수(맨 아래부터). 칸 배치는 칸 높이가 낮아 한 줄 덜 둔다.
-const MAX_DEPTH_TAG = 4, MAX_DEPTH_LANE = 3;
+// 화면에 남기는 줄 수(맨 아래부터). 최신 줄이 화면 세로 한가운데 오므로 위로
+// 남길 수 있는 줄은 두 개뿐이다. 더 두면 위가 잘린다.
+const MAX_DEPTH_TAG = 3, MAX_DEPTH_LANE = 3;
 const maxDepth = () => (M.layout === 'lane' ? MAX_DEPTH_LANE : MAX_DEPTH_TAG);
 const FIRM_MS = 140;                          // 확정될 때 흐림을 걷는 시간
 
@@ -150,7 +157,8 @@ const stage = document.getElementById('stage');
 const pending = document.getElementById('pending');
 const controls = document.getElementById('controls');
 const btnTag = document.getElementById('btnTag'), btnLane = document.getElementById('btnLane');
-const btnWav = document.getElementById('btnWav'), btnMic = document.getElementById('btnMic');
+const btnMic = document.getElementById('btnMic');
+const wavBtns = [...document.querySelectorAll('[data-wav]')];
 const btnStop = document.getElementById('btnStop');
 
 // ── 상태 ──────────────────────────────────────────────────────────────────────
@@ -497,7 +505,7 @@ function hasSpeechEnergyFloat(f) {
 const idleForPending = () => !M.active && !holding();
 
 // ── 전송 ──────────────────────────────────────────────────────────────────────
-async function openWs() {
+async function openWs(srcLang) {
   ws = new WebSocket(WS_URL);
   ws.binaryType = 'arraybuffer';
   await new Promise((res, rej) => {
@@ -507,7 +515,7 @@ async function openWs() {
   ws.onmessage = e => { if (typeof e.data === 'string') onMessage(JSON.parse(e.data)); };
   ws.onclose = () => { running = false; setPending(false); cleanupMic(); syncButtons(); };
   await new Promise(r => setTimeout(r, 100));      // hello
-  ws.send(JSON.stringify({ type: 'start', lang: SRC_LANG, targetLang: TGT_LANG, displayMode: 'mode-1' }));
+  ws.send(JSON.stringify({ type: 'start', lang: srcLang, targetLang: TGT_LANG, displayMode: 'mode-1' }));
 }
 
 function cleanupMic() {
@@ -523,17 +531,23 @@ function doStop() {
   syncButtons();
 }
 
-async function start(kind) {
+async function start(kind, wavLang) {
   resetFeed();
   stopFlag = false; running = true;
   syncButtons();
-  try { await openWs(); }
+  const srcLang = kind === 'wav' ? (Q.get('src') || wavLang) : SRC_LANG;
+  try { await openWs(srcLang); }
   catch (e) { console.warn('연결 실패 — 서버가 떠 있는지 확인'); running = false; syncButtons(); return; }
-  if (kind === 'wav') await streamWav(); else await streamMic();
+  if (kind === 'wav') await streamWav(wavLang); else await streamMic();
 }
 
-async function streamWav() {
-  const buf = await (await fetch('partial_test.wav')).arrayBuffer();
+async function streamWav(lang) {
+  const res = await fetch(`partial_test_${lang}.wav`);
+  if (!res.ok) {
+    console.warn(`partial_test_${lang}.wav 없음 — make_demo_wavs.py 로 만들어라`);
+    running = false; syncButtons(); return;
+  }
+  const buf = await res.arrayBuffer();
   const dv = new DataView(buf);
   let off = 12, dataOff = 44, dataLen = buf.byteLength - 44;
   while (off < buf.byteLength - 8) {
@@ -597,14 +611,16 @@ function paintAll() {
 }
 
 function syncButtons() {
-  btnWav.disabled = running;
+  for (const b of wavBtns) b.disabled = running;
   btnMic.disabled = running;
   btnStop.disabled = !running;
 }
 
 btnTag.onclick = () => setLayout('tag');
 btnLane.onclick = () => setLayout('lane');
-btnWav.onclick = () => start('wav');
+for (const b of document.querySelectorAll('[data-wav]')) {
+  b.onclick = () => start('wav', b.dataset.wav);
+}
 btnMic.onclick = () => start('mic');
 btnStop.onclick = doStop;
 
