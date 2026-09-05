@@ -137,9 +137,12 @@ const ANCHOR_CENTER = Q.get('anchor') === 'center';
 const MAX_DEPTH_TAG = ANCHOR_CENTER ? 3 : 4, MAX_DEPTH_LANE = 3;
 const maxDepth = () => (M.layout === 'lane' ? MAX_DEPTH_LANE : MAX_DEPTH_TAG);
 const FIRM_MS = 140;                          // 확정될 때 흐림을 걷는 시간
-// 전사를 다 친 뒤 번역으로 넘어가기까지 두는 시간. 서버가 partial 을 final 직전에야
-// 주는 경우(선행 0.1초)에도 전사가 읽힐 만큼은 머물게 한다.
+// 전사를 다 친 뒤 번역으로 넘어가기까지 두는 시간. order=strict 에서만 쓴다.
 const TRANSCRIPT_HOLD_MS = num('trans', 500);
+// 기본은 지연 우선이다. final 이 오면 전사를 끝까지 기다리지 않고 곧바로 확정한다.
+// 전사가 사라지는 것은 아니다 — 번역이 큰 글씨로 올라오고 원문이 그 아래 작은 줄로
+// 남는다. order=strict 면 전사를 완주시킨 뒤 trans 만큼 두고 번역으로 넘어간다.
+const ORDER_STRICT = Q.get('order') === 'strict';
 
 // 서버는 임의 다국어가 아니라 "내 언어 <-> 상대 언어" 쌍으로 번역 방향을 정한다.
 // 감지 언어가 src 면 tgt 으로, 그 밖이면(제3언어 포함) src 로 되돌린다.
@@ -421,13 +424,20 @@ function commitFinal(f) {
     setPending(true);
     return;
   }
-  presentFinal(f);
+  emitFinal(f);
 }
 
-// 화면 순서는 언제나 "전사 먼저, 번역 나중" 이다.
+// 지연 우선이면 바로 확정하고, strict 면 전사를 완주시킨 뒤 확정한다.
+function emitFinal(f) {
+  if (ORDER_STRICT) { presentFinal(f); return; }
+  cancelTyping();
+  setPending(false);
+  firmUp(f);
+}
+
+// order=strict 전용. 원문을 끝까지 친 뒤에야 번역으로 넘어간다.
 // 서버가 partial 없이 곧바로 final 을 주든(선행 0.1초), 유지 시간에 밀려 대기열로
-// 들어왔든, 원문을 끝까지 친 뒤에야 번역으로 넘어간다. 전에는 두 경우 모두 전사를
-// 건너뛰고 번역부터 떠서, 무엇이 인식됐는지 볼 수 없었다.
+// 들어왔든 순서가 지켜지는 대신, 전사를 다 치는 만큼 번역이 늦게 뜬다.
 function presentFinal(f) {
   setPending(false);
   pendingFinal = f;
@@ -485,7 +495,7 @@ function release() {
   if (queued.length) {
     const f = queued.shift();
     holdUntil = 0;
-    presentFinal(f);                     // 밀려 있던 것도 전사부터 보여 준다
+    emitFinal(f);
     return;
   }
   if (buffered) {

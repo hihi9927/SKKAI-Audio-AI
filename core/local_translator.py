@@ -69,8 +69,14 @@ class NLLBTranslator:
         model_name: str = DEFAULT_MODEL,
         device: Optional[str] = None,
         max_new_tokens: int = 200,
-        num_beams: int = 1,
+        num_beams: int = 4,
     ):
+        # greedy(num_beams=1) 는 짧은 문장에서 EOS 를 일찍 내고 오역한다. 실측:
+        #   ヘブライ人一家はほとんど都会で暮らしていました。
+        #     beams=1 -> "이 두 사람은"                         (끊기고 오역)
+        #     beams=4 -> "히브리 가족들은 대부분 도시에 살고 있었습니다."
+        # 비용은 문장당 45ms -> 60ms 로, 파이프라인 전체 지연에서 무시할 수준이다.
+        # min_new_tokens 로 길이를 강제하는 건 해법이 아니다 — 헛소리를 이어 붙인다.
         self.model_name = model_name
         self.max_new_tokens = max_new_tokens
         self.num_beams = num_beams
