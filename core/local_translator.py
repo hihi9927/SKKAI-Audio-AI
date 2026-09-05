@@ -70,6 +70,7 @@ class NLLBTranslator:
         device: Optional[str] = None,
         max_new_tokens: int = 200,
         num_beams: int = 4,
+        no_repeat_ngram_size: int = 3,
     ):
         # greedy(num_beams=1) 는 짧은 문장에서 EOS 를 일찍 내고 오역한다. 실측:
         #   ヘブライ人一家はほとんど都会で暮らしていました。
@@ -77,9 +78,16 @@ class NLLBTranslator:
         #     beams=4 -> "히브리 가족들은 대부분 도시에 살고 있었습니다."
         # 비용은 문장당 45ms -> 60ms 로, 파이프라인 전체 지연에서 무시할 수준이다.
         # min_new_tokens 로 길이를 강제하는 건 해법이 아니다 — 헛소리를 이어 붙인다.
+        #
+        # no_repeat_ngram_size 는 반복 루프를 막는다. 짧고 반복적인 입력에서 터진다:
+        #   "아니, 아니."  ->  "No, no, no, no, no, ..." 가 상한까지 이어졌다.
+        #   3 을 주면      ->  "No, no, not at all."
+        # 정당한 반복은 살아남는다("네 네 네." -> "Yeah, yeah, yeah."). 다른 문장의
+        # 결과는 바뀌지 않았고 속도 차이도 없다.
         self.model_name = model_name
         self.max_new_tokens = max_new_tokens
         self.num_beams = num_beams
+        self.no_repeat_ngram_size = no_repeat_ngram_size
         self._device = device
         self._tokenizer = None
         self._model = None
@@ -128,15 +136,19 @@ class NLLBTranslator:
         with self._lock:
             tok, model = self._tokenizer, self._model
             tok.src_lang = src
-            inputs = tok(text, return_tensors="pt", truncation=True, max_length=512)
-            inputs = {k: v.to(self._device) for k, v in inputs.items()}
+            encoded = tok(text, return_tensors="pt", truncation=True, max_length=512)
+            n_in = encoded["input_ids"].shape[1]
+            inputs = {k: v.to(self._device) for k, v in encoded.items()}
             bos = tok.convert_tokens_to_ids(tgt)
+            # 출력 길이를 입력에 비례해 묶는다. 반복이 새어 나가도 상한까지 가지 않는다.
+            max_new = min(self.max_new_tokens, max(24, n_in * 3))
             with torch.inference_mode():
                 out = model.generate(
                     **inputs,
                     forced_bos_token_id=bos,
-                    max_new_tokens=self.max_new_tokens,
+                    max_new_tokens=max_new,
                     num_beams=self.num_beams,
+                    no_repeat_ngram_size=self.no_repeat_ngram_size,
                 )
             return tok.batch_decode(out, skip_special_tokens=True)[0].strip()
 
