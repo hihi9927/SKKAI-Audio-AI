@@ -15,6 +15,7 @@
   en, ja  FLEURS dev — 낭독체라 문장이 또렷하고 구두점이 있는 원문 전사가 붙는다
   ko      KsponSpeech sample_data/eval_clean — FLEURS ko_kr 에는 오디오가 없다.
           대화체라 낭독체인 나머지 둘과 결은 다르다
+  mix     위 셋을 ko/en/ja 순으로 번갈아 이어 붙인 것. 언어별 칸 배치를 볼 때 쓴다
 """
 from __future__ import annotations
 
@@ -105,8 +106,27 @@ def load_kspon(n: int, max_sec: float) -> list[tuple[np.ndarray, str]]:
     return out
 
 
+def load_one(lang: str, n: int, max_sec: float) -> list[tuple[np.ndarray, str]]:
+    return load_kspon(n, max_sec) if lang == "ko" else load_fleurs(lang, n, max_sec)
+
+
+def load_mix(n: int, max_sec: float) -> list[tuple[np.ndarray, str]]:
+    """ko / en / ja 를 번갈아 이어 붙인다.
+
+    언어별 칸 배치(show.html 의 배치 2)는 한 언어만 들어오면 칸이 하나뿐이라
+    확인이 안 된다. 화자가 언어를 바꿔 가며 말하는 상황을 대신한다.
+    """
+    per = {lang: load_one(lang, n, max_sec) for lang in ("ko", "en", "ja")}
+    out = []
+    for i in range(n):
+        for lang in ("ko", "en", "ja"):
+            audio, text = per[lang][i]
+            out.append((audio, f"[{lang}] {text}"))
+    return out
+
+
 def build(lang: str, n: int, gap: float, lead: float, max_sec: float) -> None:
-    items = load_kspon(n, max_sec) if lang == "ko" else load_fleurs(lang, n, max_sec)
+    items = load_mix(n, max_sec) if lang == "mix" else load_one(lang, n, max_sec)
 
     silence = np.zeros(int(SR * gap), dtype="float32")
     chunks = [np.zeros(int(SR * lead), dtype="float32")]
@@ -136,14 +156,14 @@ def build(lang: str, n: int, gap: float, lead: float, max_sec: float) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--lang", choices=["en", "ja", "ko", "all"], default="all")
+    ap.add_argument("--lang", choices=["en", "ja", "ko", "mix", "all"], default="all")
     ap.add_argument("--n", type=int, default=3, help="이어 붙일 발화 수")
     ap.add_argument("--gap", type=float, default=1.2, help="발화 사이 침묵(초)")
     ap.add_argument("--lead", type=float, default=0.3, help="맨 앞 침묵(초)")
     ap.add_argument("--max-sec", type=float, default=12.0, help="발화 하나의 최대 길이(초)")
     a = ap.parse_args()
 
-    for lang in (["en", "ja", "ko"] if a.lang == "all" else [a.lang]):
+    for lang in (["en", "ja", "ko", "mix"] if a.lang == "all" else [a.lang]):
         build(lang, a.n, a.gap, a.lead, a.max_sec)
 
 

@@ -76,7 +76,9 @@ tmux new-session -d -s partialweb  -c . "python -u tools/partial_demo/demo_proxy
 | `1` | 한 칸에 모아 쓰고 문장 앞에 언어 태그를 붙인다. 태그 색이 언어마다 다르다 |
 | `2` | 언어별로 칸을 나눠 세로로 배치한다. 칸은 언어가 처음 나온 순서로 생긴다 |
 
-`R` 은 화면 초기화. `EN`/`JA`/`KO` 버튼은 해당 언어의 테스트 음성을 흘린다.
+`R` 은 화면 초기화. `EN`/`JA`/`KO`/`MIX` 버튼은 해당 테스트 음성을 흘린다.
+`MIX` 는 ko/en/ja 를 번갈아 붙인 것이라 **언어별 칸 배치를 확인할 때 쓴다** — 한 언어만
+들어오면 칸이 하나뿐이라 배치 2 가 배치 1 과 구분되지 않는다.
 음성 언어와 무관하게 세션 언어쌍(`src`/`tgt`)은 그대로 쓴다 — 아래 참고.
 
 `🔊 소리`(또는 `S` 키)를 켜면 테스트 음성을 스피커로도 재생한다. 소리와 자막을 같이 보면
@@ -162,6 +164,7 @@ python tools/partial_demo/make_demo_wavs.py --lang ja --n 4
 |---|---|---|
 | en, ja | FLEURS dev (`/home/mobility/datasets/fleurs/data/{en_us,ja_jp}`) | 낭독체. 구두점 있는 원문 전사가 붙는다 |
 | ko | KsponSpeech `sample_data/eval_clean` | FLEURS `ko_kr` 에는 오디오가 없다. 대화체라 나머지 둘과 결이 다르다 |
+| mix | 위 셋을 ko/en/ja 순으로 번갈아 | 언어별 칸 배치 확인용 |
 
 FLEURS TSV 는 본문에 따옴표가 그대로 들어 있어 `csv.QUOTE_NONE` 으로 읽는다.
 기본 파서로 읽으면 여러 행이 한 필드로 붙어 수천 어절짜리 잔해가 섞인다.
