@@ -26,7 +26,7 @@ SERIES = [
     ("auto_greedy",  BLUE,   "--", "s", "…same boundaries, no ranking"),
     ("causal_align", AQUA,   "-",  "o", "Causal align (TransLLaMa)"),
     ("alignatt",     ORANGE, "-",  "o", "AlignAtt (Papi 2023)"),
-    ("syntax",       VIOLET, "-",  "o", "Syntactic chunks (SASST-style)"),
+    ("syntax",       VIOLET, "-",  "o", "SASST"),
 ]
 OUT_OF_BAND = [
     ("mu_prefix", "s", "Prefix-match MU (Zhang 2020)"),
@@ -96,7 +96,7 @@ for ax, (tgt, _, _) in zip(axes, LANG):
                     color=INK2, fontsize=7.5, ha="left", va="bottom",
                     arrowprops=dict(arrowstyle="->", color=INK2, lw=1))
 
-    ax.set_xlabel("LAAL (ms of source audio)  ←  lower is better")
+    ax.set_xlabel("LAAL (ms of source audio)")
     ax.set_title(f"en→{tgt}", loc="left", fontsize=11, fontweight="bold", pad=8)
     ax.set_ylim(YLO, YHI)
     xmax = max(c["laal_ms"] for n, c in C.items()
@@ -151,7 +151,7 @@ for ax, (key, name) in zip(axes, (("retention_bleu", "BLEU"),
                     fontsize=7.5, color=INK2, zorder=6)
         ax.annotate(f"T={T}", xy=(x, b + 0.012), ha="center", va="bottom",
                     fontsize=7.5, color=INK2, zorder=6)
-    ax.set_xlabel("LAAL (ms of source audio)  ←  lower latency is better")
+    ax.set_xlabel("LAAL (ms of source audio)")
     ax.set_title(f"retention by {name}", loc="left", fontsize=11,
                  fontweight="bold", pad=8)
     ax.set_ylim(0.44, 1.06)
