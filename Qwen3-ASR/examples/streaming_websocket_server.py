@@ -487,11 +487,22 @@ V2_URL = "https://translation.googleapis.com/language/translate/v2"
 GOOGLE_TRANSLATE_API_KEY: str = os.environ.get("GOOGLE_TRANSLATE_API_KEY", "").strip()
 
 
-def set_google_translate_api_key(key: Optional[str]) -> None:
+def set_google_translate_api_key(key: Optional[str], local_translation: bool = False) -> None:
+    """Google 번역 키를 반영하고 실제로 어떤 번역 경로를 타는지 한 줄 남긴다.
+
+    `local_translation` 이 True 면 모든 번역이 로컬 모델로 가므로(google_translate_async
+    가 LOCAL_TRANSLATOR 를 먼저 본다) 키가 없다고 경고하지 않는다. 경고를 그대로 두면
+    실제로는 쓰지 않는 gtx 를 쓰는 것처럼 읽혀 원인 추적을 헷갈리게 한다.
+    """
     global GOOGLE_TRANSLATE_API_KEY
     if key:
         GOOGLE_TRANSLATE_API_KEY = key.strip()
-    if GOOGLE_TRANSLATE_API_KEY:
+    if local_translation:
+        logger.info(
+            "[translate] 로컬 번역 모델 사용 (--local-translation) — Google 경로는 "
+            "로컬 번역기 초기화가 실패했을 때만 폴백으로 쓴다"
+        )
+    elif GOOGLE_TRANSLATE_API_KEY:
         logger.info("[translate] Cloud Translation v2 사용 (API 키 감지)")
     else:
         logger.warning(
@@ -3080,12 +3091,13 @@ def parse_args():
 def main():
     args = parse_args()
     _configure_logging(use_json=args.log_json, log_file=args.log_file)
-    set_google_translate_api_key(args.google_api_key)
+    set_google_translate_api_key(args.google_api_key, local_translation=args.local_translation)
 
     if args.local_translation:
         try:
-            from core.local_translator import NLLBTranslator
-            _local = NLLBTranslator(
+            from core.local_translator import make_translator
+            # 모델 이름으로 백엔드를 고른다 — madlad 가 들어가면 MADLAD, 아니면 NLLB.
+            _local = make_translator(
                 model_name=args.local_translation_model,
                 device=args.local_translation_device,
             )
@@ -3094,6 +3106,9 @@ def main():
             logger.info(f"Local translator enabled ({args.local_translation_model})")
         except Exception as e:
             logger.warning(f"Local translator 초기화 실패 — Google Translate 로 폴백: {e!r}")
+            # 폴백이 실제로 걸렸으니 이제 Google 경로가 진짜 경로다. 위에서 건너뛴
+            # 키 유무 안내를 여기서 다시 남긴다.
+            set_google_translate_api_key(None, local_translation=False)
 
     config = StreamingConfig(
         model_path=args.model,

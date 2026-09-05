@@ -191,6 +191,25 @@ python tools/partial_demo/partial_ws_client.py \
 NLLB-200-distilled-600M 을 로컬 GPU 에 올려 번역하므로 외부 호출이 없고, API 키 없이
 쓰던 무료 gtx 엔드포인트의 429 를 안 만난다.
 
+번역기는 `--local-translation-model` 로 고른다. 이름에 `madlad` 가 들어가면 MADLAD,
+아니면 NLLB 로 취급한다(`core/local_translator.py` 의 `make_translator`).
+`run_server.sh` 는 `TRANSLATION_MODEL` 환경변수로 받는다.
+
+RTX 4090 실측 (num_beams=4, 시연 문장 9개):
+
+| 모델 | 지연 중앙값 | GPU | 비고 |
+|---|---|---|---|
+| `facebook/nllb-200-distilled-600M` | 54ms | 1.2GB | doorbell 을 놓치고 "문벨" 로 옮긴다 |
+| `facebook/nllb-200-distilled-1.3B` | 91ms | 2.6GB | doorbell 은 살리나 여전히 "문벨" |
+| **`google/madlad400-3b-mt`** (기본) | 195ms | ~6GB | "초인종". 문장이 가장 자연스럽다 |
+
+MADLAD 를 쓰려면 ASR 쪽 `--gpu-memory-utilization` 을 낮춰 자리를 비워야 한다.
+`0.42` 면 ASR 이 12GB 를 쓰고(KV 캐시 4.88GB, 45,696 토큰) 12.5GB 가 남는다.
+시연은 동시 접속이 한 명이라 KV 캐시가 줄어도 문제되지 않는다.
+
+MADLAD 는 소스 언어를 지정하지 않고 타깃만 `<2ko>` 처럼 앞에 붙인다. 그래서 ASR 이
+언어를 잘못 감지해도 NLLB 만큼 크게 망가지지 않는다.
+
 `num_beams` 는 4 다. greedy(1) 로 두면 짧은 문장에서 EOS 를 일찍 내고 오역한다.
 
 ```
@@ -202,3 +221,14 @@ NLLB-200-distilled-600M 을 로컬 GPU 에 올려 번역하므로 외부 호출�
 문장당 45ms → 60ms 로 15ms 더 든다. 파이프라인 전체 지연에서 무시할 수준이다.
 `min_new_tokens` 로 길이를 강제하는 건 해법이 아니다 — 헛소리를 이어 붙인다
 (`이 두 사람은 모두 이 도시에서 살고 있었습니다.`).
+
+`no_repeat_ngram_size` 는 3 이다. 짧고 반복적인 입력에서 반복 루프가 터진다.
+
+```
+아니, 아니.
+  없을 때 -> No, no, no, no, no, ... (상한까지)
+  3 을 주면 -> No, no, not at all.
+```
+
+정당한 반복은 살아남는다 (`네 네 네.` → `Yeah, yeah, yeah.`). 출력 길이도 입력에
+비례해 묶어(`max(24, 입력토큰*3)`) 반복이 새어 나가도 멀리 못 간다.
