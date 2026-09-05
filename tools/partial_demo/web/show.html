@@ -14,9 +14,10 @@
      한 줄씩 아래에서 올라온다. 확정된 줄은 위로 밀리며 깊이만큼 흐려진다. */
   .stage { position:absolute; inset:0; display:flex; flex-direction:column;
            padding:5vh 6vw 12vh; gap:0; }
-  /* 태그 배치는 아래 절반을 비워 최신 줄이 화면 세로 한가운데 오게 한다.
-     새 줄이 그 자리에 뜨고 앞선 줄은 위로 밀린다. */
-  .stage.tag  { justify-content:flex-end; padding-bottom:50vh; }
+  /* 최신 줄은 아래에 붙고 앞선 줄이 위로 밀린다.
+     anchor=center 면 아래 절반을 비워 최신 줄을 화면 세로 한가운데로 올린다. */
+  .stage.tag  { justify-content:flex-end; }
+  body.anchorCenter .stage.tag { padding-bottom:50vh; }
   .stage.lane { justify-content:stretch; gap:0; }
 
   .feed { display:flex; flex-direction:column; justify-content:flex-end;
@@ -24,9 +25,10 @@
   .stage.tag  > .feed { flex:1; }
   /* 칸은 아래쪽에 붙는다. 라벨이 내용에서 멀어지면 어느 칸인지 읽기 어렵다. */
   .stage.lane > .lane { flex:1; min-height:0; display:flex; flex-direction:column;
-                        justify-content:center; align-items:center;
+                        justify-content:flex-end; align-items:center;
                         border-top:1px solid rgba(255,255,255,.09); padding:1.6vh 0 1.2vh; }
   .stage.lane > .lane:first-child { border-top:0; }
+  body.anchorCenter .stage.lane > .lane { justify-content:center; }
   .laneLabel { flex:0 0 auto; font-size:11px; font-weight:800; letter-spacing:3px;
                text-transform:uppercase; opacity:.7; padding-bottom:.5vh; }
   .lane > .feed { flex:0 1 auto; }
@@ -66,7 +68,7 @@
   .pending { position:absolute; left:0; right:0; bottom:5.5vh; display:flex;
              justify-content:center; pointer-events:none;
              transition:bottom .3s ease; }
-  .stage.tag ~ .pending { bottom:42vh; }
+  body.anchorCenter .stage.tag ~ .pending { bottom:42vh; }
   .pending[hidden] { display:none; }
   .pendingDot { padding:.5em 1.2em; border-radius:999px; font-size:20px; font-weight:800;
                 letter-spacing:4px; line-height:1; color:#cfcfcf;
@@ -123,9 +125,10 @@ const HOLD_MS = num('hold', 2600);
 const HOLD_MIN_MS = num('holdmin', 900);      // 밀렸을 때 줄일 수 있는 하한
 const TYPE_BUDGET_MS = num('type', 1300);     // 한 덩어리를 다 뿌리는 목표 시간
 const TYPE_MIN_MS = 10, TYPE_MAX_MS = 45;
-// 화면에 남기는 줄 수(맨 아래부터). 최신 줄이 화면 세로 한가운데 오므로 위로
-// 남길 수 있는 줄은 두 개뿐이다. 더 두면 위가 잘린다.
-const MAX_DEPTH_TAG = 3, MAX_DEPTH_LANE = 3;
+// 화면에 남기는 줄 수(맨 아래부터). anchor=center 는 최신 줄이 화면 한가운데
+// 오므로 위로 남길 수 있는 줄이 두 개뿐이다 — 더 두면 위가 잘린다.
+const ANCHOR_CENTER = Q.get('anchor') === 'center';
+const MAX_DEPTH_TAG = ANCHOR_CENTER ? 3 : 4, MAX_DEPTH_LANE = 3;
 const maxDepth = () => (M.layout === 'lane' ? MAX_DEPTH_LANE : MAX_DEPTH_TAG);
 const FIRM_MS = 140;                          // 확정될 때 흐림을 걷는 시간
 
@@ -638,6 +641,8 @@ function pokeControls() {
 }
 addEventListener('mousemove', pokeControls);
 addEventListener('keydown', pokeControls);
+
+if (ANCHOR_CENTER) document.body.classList.add('anchorCenter');
 
 const saved = localStorage.getItem('stity_show_layout');
 if (!Q.get('layout') && (saved === 'tag' || saved === 'lane')) M.layout = saved;
