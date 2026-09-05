@@ -34,6 +34,31 @@ interface TranscriptionEntry {
   timestamp: number;
 }
 
+const SPEECH_RMS_THRESHOLD = 0.018;
+const SPEECH_PEAK_THRESHOLD = 0.08;
+
+const hasSpeechEnergy = (audioData: ArrayBuffer): boolean => {
+  const view = new DataView(audioData);
+  if (view.byteLength < 2) return false;
+
+  let sumSquares = 0;
+  let peak = 0;
+  let count = 0;
+  const step = 8; // Sample every 4 int16 frames to keep this cheap on the UI thread.
+
+  for (let offset = 0; offset + 1 < view.byteLength; offset += step) {
+    const sample = view.getInt16(offset, true) / 32768;
+    const abs = Math.abs(sample);
+    sumSquares += sample * sample;
+    peak = Math.max(peak, abs);
+    count += 1;
+  }
+
+  if (count === 0) return false;
+  const rms = Math.sqrt(sumSquares / count);
+  return rms >= SPEECH_RMS_THRESHOLD && peak >= SPEECH_PEAK_THRESHOLD;
+};
+
 // ─── UI string localizations ──────────────────────────────────────────────────
 const UI_STRINGS: Record<string, {
   peerLanguage: string; mode: string;
@@ -406,6 +431,14 @@ const BubbleItem = ({ entry, myLangCode, targetLangCode, dim }: {
   );
 };
 
+const CenterPendingIndicator = () => (
+  <View pointerEvents="none" style={S.centerPendingWrap}>
+    <View style={S.centerPendingBubble}>
+      <Text style={S.centerPendingText}>•••</Text>
+    </View>
+  </View>
+);
+
 // ─── Main screen ──────────────────────────────────────────────────────────────
 export const HomeScreen: React.FC<{ navigation: any }> = () => {
   const insets = useSafeAreaInsets();
@@ -429,6 +462,7 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
   const [transcriptions, setTranscriptions] = useState<TranscriptionEntry[]>([]);
   // 서버가 토큰 단위로 흘려주는 미확정 전사. final 이 오면 사라진다.
   const [livePartial, setLivePartial] = useState<{ text: string; language: string } | null>(null);
+  const [speechPending, setSpeechPending] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
   const [sessionError, setSessionError] = useState('');
   const [serverCapacity, setServerCapacity] = useState<{ active: number; max: number } | null>(null);
@@ -462,6 +496,8 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
   const sendAudioRef = useRef(sendAudio);
   const sendMessageRef = useRef(sendMessage);
   const serverStatusRef = useRef(serverStatus);
+  const livePartialRef = useRef(livePartial);
+  const speechPendingRef = useRef(speechPending);
 
   useEffect(() => { isConnectedRef.current = isConnected; }, [isConnected]);
   useEffect(() => { sendAudioRef.current = sendAudio; }, [sendAudio]);
@@ -475,12 +511,18 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
   useEffect(() => { myLangRef.current = myLang; }, [myLang]);
   useEffect(() => { targetLangRef.current = targetLang; }, [targetLang]);
   useEffect(() => { sessionStateRef.current = sessionState; }, [sessionState]);
+  useEffect(() => { livePartialRef.current = livePartial; }, [livePartial]);
+  useEffect(() => { speechPendingRef.current = speechPending; }, [speechPending]);
 
   const wasAutoSuspendedRef = useRef(false);
 
   const { startRecording, stopRecording } = useAudioRecording({
     onAudioData: (audioData) => {
       if (isConnectedRef.current && sessionStateRef.current === 'recording') {
+        if (!livePartialRef.current && hasSpeechEnergy(audioData)) {
+          speechPendingRef.current = true;
+          setSpeechPending(true);
+        }
         sendAudioRef.current(audioData);
       }
     },
@@ -621,14 +663,20 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
     // 빈 text 자체가 "화면을 비우라"는 신호라 여기서 걸러지면 안 된다.
     if (msg.type === 'partial') {
       const partialText = (msg.text || '').trim();
+      speechPendingRef.current = false;
+      setSpeechPending(false);
+      livePartialRef.current = partialText ? { text: partialText, language: langToCode(msg.language || 'auto') } : null;
       setLivePartial(
-        partialText ? { text: partialText, language: langToCode(msg.language || 'auto') } : null
+        livePartialRef.current
       );
       return;
     }
     const text = (msg.original || '').trim();
     if (!text || msg.type !== 'final') return;
     // 이 구간은 확정됐다. 서버의 빈 partial 을 기다리지 않고 바로 지운다.
+    speechPendingRef.current = false;
+    setSpeechPending(false);
+    livePartialRef.current = null;
     setLivePartial(null);
     const lang = langToCode(msg.language || 'auto');
     const serverTrans = (msg.translation || '').trim();
@@ -659,7 +707,7 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
   // ── Auto-scroll ───────────────────────────────────────────────────────────────
   useEffect(() => {
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: false }), 50);
-  }, [transcriptions.length, livePartial?.text]);
+  }, [transcriptions.length, livePartial?.text, speechPending]);
 
   // ── TTS ───────────────────────────────────────────────────────────────────────
   // mode-1: speaker, TTS for all languages
@@ -750,7 +798,10 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
     ];
     setShowSetup(false);
     setTranscriptions([]);
+    livePartialRef.current = null;
     setLivePartial(null);
+    speechPendingRef.current = false;
+    setSpeechPending(false);
     sessionStateRef.current = 'recording';
     setSessionState('recording');
     DEMO_SCRIPT.forEach((line, i) => {
@@ -795,6 +846,8 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
         const ok = await probeServer(serverStatusRef.current === 'error');
         if (!ok) throw new Error(s.connectionFailed);
       }
+      speechPendingRef.current = false;
+      setSpeechPending(false);
       try {
         await connect({ lang: myLang.code, targetLang: targetLang.code, speed });
       } catch {
@@ -818,6 +871,9 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
   const doStop = async () => {
     wasAutoSuspendedRef.current = false;
     stopTTS();
+    speechPendingRef.current = false;
+    setSpeechPending(false);
+    livePartialRef.current = null;
     setLivePartial(null);
     await stopRecording();
     sessionStateRef.current = 'paused';
@@ -866,6 +922,9 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
           await stopRecording();
           disconnect();
           setTranscriptions([]);
+          speechPendingRef.current = false;
+          setSpeechPending(false);
+          livePartialRef.current = null;
           setLivePartial(null);
           releaseAudioMode();
           sessionStateRef.current = 'idle';
@@ -1134,6 +1193,8 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
           />
         )}
       </ScrollView>
+
+      {speechPending && !livePartial && <CenterPendingIndicator />}
 
       {/* ── Recording bar ── */}
       {isRecording && <RecordingBar label={ui.listening} />}
@@ -1456,6 +1517,9 @@ const S = StyleSheet.create({
   bubble: { maxWidth: '72%', paddingVertical: 10, paddingHorizontal: 14, borderRadius: 18 },
   bubbleMain: { fontSize: 15, fontWeight: '600', color: '#fff', lineHeight: 21 },
   bubbleSub: { fontSize: 11, color: 'rgba(255,255,255,0.65)', marginTop: 3 },
+  centerPendingWrap: { position: 'absolute', left: 0, right: 0, bottom: 178, alignItems: 'center' },
+  centerPendingBubble: { minWidth: 58, alignItems: 'center', paddingVertical: 8, paddingHorizontal: 18, borderRadius: 999, backgroundColor: 'rgba(122,144,48,0.10)', borderWidth: 1, borderColor: 'rgba(122,144,48,0.24)' },
+  centerPendingText: { color: '#7A9030', fontSize: 18, lineHeight: 20, fontWeight: '800', letterSpacing: 2 },
 
   // Recording bar
   recBar: { flexDirection: 'row', alignItems: 'center', marginHorizontal: 16, marginBottom: 8, backgroundColor: 'rgba(96,128,200,0.07)', borderRadius: 16, paddingVertical: 12, paddingHorizontal: 16, gap: 10 },
