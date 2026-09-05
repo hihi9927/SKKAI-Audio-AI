@@ -400,8 +400,11 @@ function commitFinal(f) {
   setPending(false);
   if (!M.active) openActive(f.language);
   M.active.lang = f.language;
-  M.active.main = f.translation || f.original;
-  M.active.sub = f.translation ? f.original : '';
+  // 입력 언어와 목표 언어가 같으면 서버가 원문을 그대로 돌려준다.
+  // 그걸 그대로 두면 같은 문장이 두 줄로 겹쳐 보인다.
+  const trans = f.translation && f.translation !== f.original ? f.translation : '';
+  M.active.main = trans || f.original;
+  M.active.sub = trans ? f.original : '';
   const done = M.active;
   M.lines.push(done);
   M.active = null;
