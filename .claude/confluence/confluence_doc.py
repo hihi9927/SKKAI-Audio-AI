@@ -57,18 +57,28 @@ class Confluence:
             sys.exit(f"Confluence API 실패 {r.status_code}: {r.text[:600]}")
         return r.json() if r.content else {}
 
-    def find_folder(self, title: str) -> str | None:
-        """폴더 이름은 스페이스 안에서 유일하므로 전체에서 찾는다.
+    def find_folder(self, title: str, parent_id: str | None = None) -> str | None:
+        """폴더를 찾는다. parent_id 를 주면 그 아래에서만 찾는다.
 
-        부모 아래만 뒤지면, 같은 이름이 다른 자리에 있을 때 생성이 400 으로 막힌다.
+        차수 폴더('1차 업무 분담')는 이름이 스페이스에서 유일하므로 전체에서 찾아도
+        된다. 반면 '계획 문서' / '보고 문서' 는 차수마다 같은 이름으로 반복되므로
+        부모를 좁히지 않으면 다른 차수의 폴더를 집는다.
         """
+        cql = f'space={CONFIG["space_key"]} and type=folder'
+        if parent_id:
+            cql += f" and parent={parent_id}"
         r = self.client.get(f"{self.base}/rest/api/search", params={
-            "cql": f'space={CONFIG["space_key"]} and type=folder', "limit": 100,
+            "cql": cql, "limit": 100,
         })
         for item in self._check(r).get("results", []):
             if item.get("title") == title:
                 return item["content"]["id"]
         return None
+
+    def resolve_folder(self, parent_id: str, title: str) -> str:
+        """부모 아래에서 폴더를 찾고 없으면 만든다."""
+        return self.find_folder(title, parent_id=parent_id) or \
+            self.create_folder(parent_id, title)
 
     def create_folder(self, parent_id: str, title: str) -> str:
         r = self.client.post(f"{self.base}/api/v2/folders", json={
@@ -565,7 +575,11 @@ def main() -> None:
                  "가이드 제목 형식: [n차][대범주][소범주][세분화 업무명] 보고 문서")
     title = resolve_title(cf, d, kind_ko, autonumber=not args.no_autonumber)
     labels = [kind_ko, f'{d["round"]}차', slug(d["major"]), slug(d["minor"])]
-    folder_title = f'{d["round"]}차 업무 분담'
+    # 문서는 두 단계 아래에 들어간다 — 문서 정리 > <n>차 업무 분담 > 계획|보고 문서.
+    # 차수 폴더에 계획과 보고를 섞어 두면 늘어날수록 찾기 어렵다.
+    round_folder = f'{d["round"]}차 업무 분담'
+    kind_folder = f"{kind_ko} 문서"
+    folder_path = f"{round_folder} > {kind_folder}"
 
     template = cf.get_storage(CONFIG["guide"][kind])
     fields = d.get("fields", {})
@@ -588,7 +602,7 @@ def main() -> None:
         if title != base:
             print(f"참고  : '{base}' 가 이미 있어 번호를 붙였다")
         print(f"제목  : {title}")
-        print(f"폴더  : {folder_title} (없으면 생성)")
+        print(f"폴더  : {folder_path} (없으면 생성)")
         print(f"라벨  : {labels}")
         print(f"본문  : {len(body)}자")
         print(body)
@@ -598,13 +612,14 @@ def main() -> None:
         sys.exit(f"같은 제목의 페이지가 이미 있다: {title}\n"
                  "덮어쓰지 않는다. 제목을 바꾸거나 기존 페이지를 직접 수정할 것.")
 
-    folder_id = cf.find_folder(folder_title) or cf.create_folder(
-        CONFIG["docs_folder_id"], folder_title)
+    round_id = cf.find_folder(round_folder) or cf.create_folder(
+        CONFIG["docs_folder_id"], round_folder)
+    folder_id = cf.resolve_folder(round_id, kind_folder)
     page = cf.create_page(folder_id, title, body)
     cf.add_labels(page["id"], labels)
 
     print(f"만들어짐: {title}")
-    print(f"폴더    : {folder_title} ({folder_id})")
+    print(f"폴더    : {folder_path} ({folder_id})")
     print(f"라벨    : {', '.join(labels)}")
     print(f"주소    : {CONFIG['base_url'] + page['_links']['webui']}")
 
