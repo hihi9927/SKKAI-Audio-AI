@@ -40,10 +40,13 @@
           opacity:0; transform:translateY(12px);
           transition:opacity .45s ease, transform .45s ease; }
   .stage.lane .line { font-size:clamp(17px, 2.0vw, 28px); }
-  .line.d0 { opacity:1;   transform:none; }
-  .line.d1 { opacity:.46; transform:none; }
-  .line.d2 { opacity:.26; transform:none; }
-  .line.d3 { opacity:.13; transform:none; }
+  /* 앞선 문장도 흐리지 않다. 밀려 올라가도 계속 읽히므로 최신 문장을 붙잡아 둘
+     이유가 없다 — 그래서 hold 가 기본 0 이고 문장이 곧바로 뜬다.
+     fade=1 을 주면 깊이만큼 흐려지는 대신 hold 로 붙잡아 둬야 읽을 수 있다. */
+  .line.d0, .line.d1, .line.d2, .line.d3 { opacity:1; transform:none; }
+  body.fade .line.d1 { opacity:.46; }
+  body.fade .line.d2 { opacity:.26; }
+  body.fade .line.d3 { opacity:.13; }
   /* 아직 확정되지 않은 줄. 전사는 원문이라 확정 번역과 같은 크기로 둘 이유가 없다.
      작게 흐리게 흘리다가, 확정되면 d0 로 올라가며 번역이 큰 글씨로 자리를 잡는다. */
   .line.live { opacity:.62; transform:none; }
@@ -124,11 +127,20 @@
 // 모두 쿼리 스트링으로 덮어쓸 수 있다. 시연장에서 값만 바꿔 다시 열면 된다.
 //   show.html?layout=lane&hold=3200&src=auto&tgt=ko
 const Q = new URLSearchParams(location.search);
-const num = (k, d) => { const v = Number(Q.get(k)); return Number.isFinite(v) && v > 0 ? v : d; };
+const num = (k, d) => {
+  if (!Q.has(k)) return d;
+  const v = Number(Q.get(k));
+  return Number.isFinite(v) && v >= 0 ? v : d;   // 0 도 유효한 값이다(hold=0 등)
+};
+
+// 앞선 문장을 흐리게 할 것인가. 흐리게 하면 밀려 올라간 문장을 못 읽으므로,
+// 최신 문장을 hold 만큼 붙잡아 둬야 한다. 그 붙잡는 시간이 곧 지연이다.
+// 기본은 흐리게 하지 않고 hold 도 두지 않는다 — 문장이 오는 대로 바로 뜬다.
+const FADE = Q.get('fade') === '1' || Q.get('fade') === 'on';
 
 // 확정된 문장이 맨 아래(최대 밝기)에 머무는 최소 시간. 이 시간이 지나야 다음 줄이
 // 시작된다. 그동안 들어온 partial 은 버퍼에 쌓였다가 이어서 타이핑된다.
-const HOLD_MS = num('hold', 2600);
+const HOLD_MS = num('hold', FADE ? 2600 : 0);
 const HOLD_MIN_MS = num('holdmin', 900);      // 밀렸을 때 줄일 수 있는 하한
 const TYPE_BUDGET_MS = num('type', 1300);     // 한 덩어리를 다 뿌리는 목표 시간
 const TYPE_MIN_MS = 10, TYPE_MAX_MS = 45;
@@ -218,7 +230,8 @@ let speechPending = false;
 // ── 페이싱 계산 ───────────────────────────────────────────────────────────────
 // 밀린 만큼 유지 시간과 타자 시간을 함께 줄인다. 그래야 실시간에서 뒤처지지 않는다.
 const backlog = () => queued.length + (buffered ? 1 : 0);
-const effHold = () => Math.max(HOLD_MIN_MS, HOLD_MS / (1 + backlog()));
+// hold 가 0 이면 하한도 적용하지 않는다. 붙잡지 않겠다는 뜻이므로.
+const effHold = () => (HOLD_MS <= 0 ? 0 : Math.max(HOLD_MIN_MS, HOLD_MS / (1 + backlog())));
 const effTypeBudget = () => Math.max(220, TYPE_BUDGET_MS / (1 + backlog()));
 
 // ── 렌더 ──────────────────────────────────────────────────────────────────────
@@ -726,6 +739,7 @@ addEventListener('mousemove', pokeControls);
 addEventListener('keydown', pokeControls);
 
 if (ANCHOR_CENTER) document.body.classList.add('anchorCenter');
+if (FADE) document.body.classList.add('fade');
 setSound(soundOn);
 
 const saved = localStorage.getItem('stity_show_layout');
