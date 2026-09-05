@@ -10,7 +10,8 @@
 
   /* 실기기 비율에 맞춘 프레임. 안쪽은 HomeScreen 스타일 그대로 옮겼다. */
   .phone { width:420px; max-width:100%; margin:0 auto; min-height:100vh; background:#fff;
-           display:flex; flex-direction:column; box-shadow:0 0 40px rgba(0,0,0,.10); }
+           display:flex; flex-direction:column; box-shadow:0 0 40px rgba(0,0,0,.10);
+           position:relative; }
 
   /* Header */
   .header { display:flex; align-items:center; justify-content:space-between;
@@ -49,7 +50,7 @@
   .bubbleRow { display:flex; padding:5px 16px; gap:8px; align-items:flex-end;
                opacity:1; transition:opacity .28s ease; }
   .bubbleRow.mine { flex-direction:row-reverse; }
-  .bubbleRow.partial { opacity:.5; }
+  .bubbleRow.partial { opacity:.55; }
   .bubbleMain, .bubbleSub { transition:opacity .14s ease; }
   .caret { display:inline-block; width:2px; height:1em; margin-left:1px;
            background:currentColor; opacity:.55; vertical-align:-2px;
@@ -57,7 +58,9 @@
   @keyframes blink { 0%,50%{opacity:.55} 51%,100%{opacity:0} }
   .avatar { width:28px; height:28px; border-radius:14px; display:flex; align-items:center;
             justify-content:center; flex-shrink:0; font-size:8px; font-weight:700; }
-  .bubble { max-width:72%; padding:10px 14px; border-radius:18px; }
+  .bubble { max-width:72%; padding:10px 14px; border-radius:18px;
+            border-bottom-left-radius:4px; }
+  .bubbleRow.mine .bubble { border-bottom-left-radius:18px; border-bottom-right-radius:4px; }
   .bubbleMain { font-size:15px; font-weight:600; line-height:21px; }
   .bubbleSub { font-size:11px; margin-top:3px; }
   .tag { font-size:9.5px; color:#c3c6cc; padding:0 16px 4px 52px; }
@@ -83,6 +86,15 @@
   .btnOutlineCyan { border-color:#6080C8; color:#6080C8; }
   .btnStop { background:#fff0f0; color:#ef4444; border:0; }
   .btnGhost { flex:0 0 52px; background:#f5f5f5; color:#999; border:0; }
+
+  /* 디코딩 결과가 오기 전, 음성이 잡히고 있음을 알리는 중앙 하단 표시 */
+  .centerPendingWrap { position:absolute; left:0; right:0; bottom:178px; display:flex;
+                       justify-content:center; pointer-events:none; }
+  .centerPendingWrap[hidden] { display:none; }
+  .centerPendingBubble { min-width:58px; padding:8px 18px; border-radius:999px;
+                         background:rgba(122,144,48,.10); border:1px solid rgba(122,144,48,.24);
+                         color:#7A9030; font-size:18px; line-height:20px; font-weight:800;
+                         letter-spacing:2px; text-align:center; }
 
   /* 디자인 밖: 개발용 로그 */
   .devlog { width:420px; max-width:100%; margin:16px auto 40px; }
@@ -129,6 +141,10 @@
 
   <div class="convArea center" id="conv"></div>
 
+  <div class="centerPendingWrap" id="pendingSlot" hidden>
+    <div class="centerPendingBubble">•••</div>
+  </div>
+
   <div id="recBarSlot"></div>
 
   <div class="bottomBar" id="bottomBar"></div>
@@ -153,16 +169,36 @@ const TYPE_MIN_MS = 10, TYPE_MAX_MS = 45;
 const LANG_COLORS = {
   en:{bubble:'#6080C8',avatar:'#9BB4D4'}, ko:{bubble:'#7A9030',avatar:'#A8B870'},
   ja:{bubble:'#C87060',avatar:'#E0A898'}, zh:{bubble:'#9060C8',avatar:'#B898E0'},
-  es:{bubble:'#C8A030',avatar:'#E0C878'},
+  es:{bubble:'#C8A030',avatar:'#E0C878'}, fr:{bubble:'#308898',avatar:'#78B8C8'},
+  id:{bubble:'#30A070',avatar:'#70C0A0'}, vi:{bubble:'#B85050',avatar:'#E09080'},
+  th:{bubble:'#5080C0',avatar:'#88B0E0'}, de:{bubble:'#C09050',avatar:'#E0C080'},
 };
-const NAME_TO_CODE = { Korean:'ko', English:'en', Japanese:'ja', Chinese:'zh', Spanish:'es' };
+const NAME_TO_CODE = {
+  Korean:'ko', English:'en', Japanese:'ja', Chinese:'zh',
+  Indonesian:'id', Vietnamese:'vi', Thai:'th',
+  French:'fr', German:'de', Spanish:'es',
+};
 const langToCode = l => NAME_TO_CODE[l] || (l || 'en').toLowerCase().slice(0, 2);
+
+// 말풍선 색은 언어색이 아니라 "누가 말했나"로 먼저 갈린다 — 앱 BubbleItem 과 같다.
+// 내 말은 파랑, 상대 말은 회색 바탕에 검은 글씨, 그 밖의 언어만 언어색을 쓴다.
+function bubbleColors(lang) {
+  if (lang === MY_LANG) {
+    return { bubble:'#6080C8', avatar:'#9BB4D4', text:'#fff', sub:'rgba(255,255,255,0.65)' };
+  }
+  if (lang === PEER_LANG) {
+    return { bubble:'#f2f2f2', avatar:'#E8E0A0', text:'#1a1a1a', sub:'#aaa' };
+  }
+  const c = LANG_COLORS[lang] || { bubble:'#909090', avatar:'#B8B8B8' };
+  return { ...c, text:'#fff', sub:'rgba(255,255,255,0.65)' };
+}
 
 const conv = document.getElementById('conv');
 const raw = document.getElementById('raw');
 const recSlot = document.getElementById('recBarSlot');
 const bottomBar = document.getElementById('bottomBar');
 const dot = document.getElementById('dot'), dotRing = document.getElementById('dotRing');
+const pendingSlot = document.getElementById('pendingSlot');
 
 let ws = null, t0 = 0, stopFlag = false;
 let state = 'idle';                 // idle | recording
@@ -170,6 +206,44 @@ let micCtx = null, micStream = null;
 let hasContent = false;             // 말풍선이 하나라도 있는가
 let bubble = null;                  // 현재 살아있는 말풍선 핸들 (partial -> final 로 이어서 씀)
 let typeTarget = '', typeShown = '', typeTimer = null;
+let speechPending = false;          // 소리는 들어갔는데 아직 partial 이 안 온 상태
+
+// 앱 HomeScreen 의 hasSpeechEnergy 와 같은 임계값. 디코딩 결과가 오기 전에
+// "소리는 들어가고 있다"만 보여 주는 용도라 정밀할 필요는 없다.
+const SPEECH_RMS_THRESHOLD = 0.018;
+const SPEECH_PEAK_THRESHOLD = 0.08;
+
+const energyOk = (sumSquares, peak, count) =>
+  count > 0 &&
+  Math.sqrt(sumSquares / count) >= SPEECH_RMS_THRESHOLD &&
+  peak >= SPEECH_PEAK_THRESHOLD;
+
+// s16le 바이트 조각. int16 네 개마다 하나만 본다.
+function hasSpeechEnergyPcm16(bytes) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  if (view.byteLength < 2) return false;
+  let sumSquares = 0, peak = 0, count = 0;
+  for (let off = 0; off + 1 < view.byteLength; off += 8) {
+    const v = view.getInt16(off, true) / 32768;
+    sumSquares += v * v; peak = Math.max(peak, Math.abs(v)); count++;
+  }
+  return energyOk(sumSquares, peak, count);
+}
+
+function hasSpeechEnergyFloat(f) {
+  let sumSquares = 0, peak = 0, count = 0;
+  for (let i = 0; i < f.length; i += 4) {
+    const v = f[i];
+    sumSquares += v * v; peak = Math.max(peak, Math.abs(v)); count++;
+  }
+  return energyOk(sumSquares, peak, count);
+}
+
+function setPending(on) {
+  if (speechPending === on) return;
+  speechPending = on;
+  pendingSlot.hidden = !on;
+}
 
 const logLine = s => { raw.textContent += s + "\n"; raw.scrollTop = raw.scrollHeight; };
 const nearBottom = () => conv.scrollHeight - conv.scrollTop - conv.clientHeight < 60;
@@ -219,7 +293,7 @@ function renderEmpty() {
 // 다시 그리지 않으므로 화면이 튀지 않는다.
 function createBubble(lang) {
   if (!hasContent) { conv.innerHTML = ''; conv.classList.remove('center'); hasContent = true; }
-  const c = LANG_COLORS[lang] || { bubble:'#909090', avatar:'#B8B8B8' };
+  const c = bubbleColors(lang);
   const mine = lang === MY_LANG;
 
   const row = document.createElement('div');
@@ -237,11 +311,11 @@ function createBubble(lang) {
 
   const main = document.createElement('div');
   main.className = 'bubbleMain';
-  main.style.color = '#fff';
+  main.style.color = c.text;
 
   const sub = document.createElement('div');
   sub.className = 'bubbleSub';
-  sub.style.color = 'rgba(255,255,255,0.65)';
+  sub.style.color = c.sub;
   sub.hidden = true;
 
   box.appendChild(main); box.appendChild(sub);
@@ -256,13 +330,15 @@ function createBubble(lang) {
 
 function recolor(b, lang) {
   if (b.lang === lang) return;
-  const c = LANG_COLORS[lang] || { bubble:'#909090', avatar:'#B8B8B8' };
+  const c = bubbleColors(lang);
   const mine = lang === MY_LANG;
   b.row.classList.toggle('mine', mine);
   b.av.style.background = c.avatar;
   b.av.style.color = mine ? '#fff' : '#7A9030';
   b.av.textContent = (lang || '?').toUpperCase();
   b.box.style.background = c.bubble;
+  b.main.style.color = c.text;
+  b.sub.style.color = c.sub;
   b.lang = lang;
 }
 
@@ -304,6 +380,7 @@ function startTyping() {
 }
 
 function setPartial(text, lang) {
+  setPending(false);
   if (!text) { clearPartial(); return; }
   if (!bubble) {
     bubble = createBubble(lang);
@@ -319,6 +396,7 @@ function setPartial(text, lang) {
 }
 
 function clearPartial() {
+  setPending(false);
   stopTyping();
   if (bubble) { bubble.row.remove(); bubble.tag.remove(); bubble = null; }
   typeTarget = typeShown = '';
@@ -327,6 +405,7 @@ function clearPartial() {
 
 // final 은 새 말풍선을 만들지 않는다. 흐리게 떠 있던 그 노드를 그대로 확정시킨다.
 function commitFinal(f) {
+  setPending(false);
   stopTyping();
   if (!bubble) { bubble = createBubble(f.language); }
   recolor(bubble, f.language);
@@ -427,6 +506,7 @@ function doStop() {
 
 function doClear() {
   stopTyping();
+  setPending(false);
   bubble = null; typeTarget = typeShown = ''; hasContent = false;
   raw.textContent = '';
   state = 'idle'; renderChrome(); renderEmpty();
@@ -434,6 +514,7 @@ function doClear() {
 
 async function start(kind) {
   stopTyping();
+  setPending(false);
   bubble = null; typeTarget = typeShown = ''; hasContent = false;
   raw.textContent = ''; stopFlag = false;
   state = 'recording'; renderChrome(); renderEmpty();
@@ -457,7 +538,9 @@ async function streamWav() {
   const started = performance.now();
   for (let i = 0; i < pcm.length && !stopFlag; i += frameBytes) {
     if (!ws || ws.readyState !== 1) break;
-    ws.send(pcm.slice(i, Math.min(i + frameBytes, pcm.length)));
+    const frame = pcm.slice(i, Math.min(i + frameBytes, pcm.length));
+    if (!bubble && hasSpeechEnergyPcm16(frame)) setPending(true);
+    ws.send(frame);
     const wait = started + (i + frameBytes) / 2 / SR * 1000 - performance.now();
     if (wait > 0) await new Promise(r => setTimeout(r, wait));
   }
@@ -476,6 +559,7 @@ async function streamMic() {
   node.onaudioprocess = e => {
     if (!ws || ws.readyState !== 1 || stopFlag) return;
     const f = e.inputBuffer.getChannelData(0);
+    if (!bubble && hasSpeechEnergyFloat(f)) setPending(true);
     const out = new Int16Array(f.length);
     for (let i = 0; i < f.length; i++) out[i] = Math.max(-1, Math.min(1, f[i])) * 32767;
     ws.send(out.buffer);
