@@ -111,11 +111,12 @@
     <button class="ctl" data-wav="en">EN</button>
     <button class="ctl" data-wav="ja">JA</button>
     <button class="ctl" data-wav="ko">KO</button>
+    <button class="ctl" id="btnSound">🔊 소리</button>
     <button class="ctl" id="btnMic">마이크</button>
     <button class="ctl" id="btnStop" disabled>정지</button>
   </div>
 </div>
-<div class="hint" id="hint">EN/JA/KO 테스트 음성 · 1/2 배치 전환 · R 초기화</div>
+<div class="hint" id="hint">EN/JA/KO 테스트 음성 · S 소리 · 1/2 배치 전환 · R 초기화</div>
 
 <script>
 // ── 설정 ──────────────────────────────────────────────────────────────────────
@@ -136,6 +137,9 @@ const ANCHOR_CENTER = Q.get('anchor') === 'center';
 const MAX_DEPTH_TAG = ANCHOR_CENTER ? 3 : 4, MAX_DEPTH_LANE = 3;
 const maxDepth = () => (M.layout === 'lane' ? MAX_DEPTH_LANE : MAX_DEPTH_TAG);
 const FIRM_MS = 140;                          // 확정될 때 흐림을 걷는 시간
+// 전사를 다 친 뒤 번역으로 넘어가기까지 두는 시간. 서버가 partial 을 final 직전에야
+// 주는 경우(선행 0.1초)에도 전사가 읽힐 만큼은 머물게 한다.
+const TRANSCRIPT_HOLD_MS = num('trans', 500);
 
 // 서버는 임의 다국어가 아니라 "내 언어 <-> 상대 언어" 쌍으로 번역 방향을 정한다.
 // 감지 언어가 src 면 tgt 으로, 그 밖이면(제3언어 포함) src 로 되돌린다.
@@ -171,6 +175,7 @@ const pending = document.getElementById('pending');
 const controls = document.getElementById('controls');
 const btnTag = document.getElementById('btnTag'), btnLane = document.getElementById('btnLane');
 const btnMic = document.getElementById('btnMic');
+const btnSound = document.getElementById('btnSound');
 document.getElementById('pairLabel').textContent = `${SRC_LANG} ↔ ${TGT_LANG}`;
 const wavBtns = [...document.querySelectorAll('[data-wav]')];
 const btnStop = document.getElementById('btnStop');
@@ -187,6 +192,11 @@ const laneOrder = [];        // 칸 배치에서 언어가 처음 나온 순서
 
 let ws = null, stopFlag = false, running = false;
 let micCtx = null, micStream = null;
+// 테스트 음성을 스피커로도 들려준다. 소리와 자막을 같이 보면 얼마나 빨리 뜨는지
+// 체감할 수 있다. 전송과 같은 시점에 재생하므로 대략 맞물린다.
+let soundOn = localStorage.getItem('stity_show_sound') === '1';
+const player = new Audio();
+player.preload = 'auto';
 
 // 타자
 let typeTarget = '', typeShown = '', typeTimer = null, typeBudget = TYPE_BUDGET_MS;
@@ -195,6 +205,8 @@ let typeDone = null;          // 타자가 끝나면 부를 콜백
 // 페이싱
 let holdUntil = 0;           // 이 시각까지는 새 줄을 시작하지 않는다
 let holdTimer = null;
+let pendingFinal = null;     // 전사를 마저 보여 준 뒤 확정할 문장
+let firmTimer = null;
 let queued = [];             // hold 중 도착한 final 들
 let buffered = null;         // hold 중 도착한 최신 partial {text, lang}
 let speechPending = false;
@@ -366,6 +378,8 @@ function setPending(on) {
 }
 
 const holding = () => performance.now() < holdUntil;
+// 확정 대기 중이거나 유지 중. 둘 다 새 줄을 시작하면 안 되는 상태다.
+const busy = () => holding() || pendingFinal !== null;
 
 function openActive(lang) {
   M.seq += 1;
@@ -375,7 +389,7 @@ function openActive(lang) {
 }
 
 function setPartial(text, lang) {
-  if (holding()) {                       // 앞 문장이 아직 머무는 중 — 모아 둔다
+  if (busy()) {                          // 앞 문장이 아직 머무는 중 — 모아 둔다
     buffered = text ? { text, lang } : null;
     setPending(!!text);
     return;
@@ -401,14 +415,42 @@ function dropActive() {
 }
 
 function commitFinal(f) {
-  if (holding()) {                       // 순서를 지켜 대기열로
+  if (busy()) {                          // 순서를 지켜 대기열로
     queued.push(f);
     buffered = null;
     setPending(true);
     return;
   }
-  cancelTyping();
+  presentFinal(f);
+}
+
+// 화면 순서는 언제나 "전사 먼저, 번역 나중" 이다.
+// 서버가 partial 없이 곧바로 final 을 주든(선행 0.1초), 유지 시간에 밀려 대기열로
+// 들어왔든, 원문을 끝까지 친 뒤에야 번역으로 넘어간다. 전에는 두 경우 모두 전사를
+// 건너뛰고 번역부터 떠서, 무엇이 인식됐는지 볼 수 없었다.
+function presentFinal(f) {
   setPending(false);
+  pendingFinal = f;
+  if (!M.active) openActive(f.language);
+  M.active.lang = f.language;
+  render();
+  typeTarget = f.original;
+  // 이미 보여 준 글자가 확정 원문과 어긋나면 공통 앞부분까지 되감는다.
+  const keep = commonPrefixLen(typeShown, typeTarget);
+  if (keep < typeShown.length) typeShown = typeTarget.slice(0, keep);
+  typeBudget = effTypeBudget();
+  typeDone = () => {
+    if (firmTimer) clearTimeout(firmTimer);
+    firmTimer = setTimeout(() => firmUp(f), TRANSCRIPT_HOLD_MS);
+  };
+  startTyping();
+}
+
+// 전사가 다 찍혔다. 번역으로 갈아 끼우고 흐림을 걷는다.
+function firmUp(f) {
+  firmTimer = null;
+  pendingFinal = null;
+  cancelTyping();
   if (!M.active) openActive(f.language);
   M.active.lang = f.language;
   // 입력 언어와 목표 언어가 같으면 서버가 원문을 그대로 돌려준다.
@@ -443,14 +485,7 @@ function release() {
   if (queued.length) {
     const f = queued.shift();
     holdUntil = 0;
-    // 이미 확정된 문장이지만 그냥 튀어나오면 흐름이 끊긴다.
-    // 짧아진 예산으로 한 번 흘린 뒤에 확정시킨다.
-    setPending(false);
-    openActive(f.language);
-    typeTarget = f.translation || f.original;
-    typeBudget = effTypeBudget();
-    typeDone = () => commitFinal(f);
-    startTyping();
+    presentFinal(f);                     // 밀려 있던 것도 전사부터 보여 준다
     return;
   }
   if (buffered) {
@@ -481,6 +516,8 @@ function onMessage(m) {
 function resetFeed() {
   cancelTyping();
   if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+  if (firmTimer) { clearTimeout(firmTimer); firmTimer = null; }
+  pendingFinal = null;
   holdUntil = 0; queued = []; buffered = null;
   setPending(false);
   M.lines = []; M.active = null;
@@ -530,7 +567,7 @@ async function openWs(srcLang) {
     ws.onerror = () => rej(new Error('연결 실패'));
   });
   ws.onmessage = e => { if (typeof e.data === 'string') onMessage(JSON.parse(e.data)); };
-  ws.onclose = () => { running = false; setPending(false); cleanupMic(); syncButtons(); };
+  ws.onclose = () => { running = false; setPending(false); cleanupMic(); stopSound(); syncButtons(); };
   await new Promise(r => setTimeout(r, 100));      // hello
   ws.send(JSON.stringify({ type: 'start', lang: srcLang, targetLang: TGT_LANG, displayMode: 'mode-1' }));
 }
@@ -543,12 +580,19 @@ function cleanupMic() {
 function doStop() {
   stopFlag = true;
   running = false;
+  stopSound();
   if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: 'finish' }));
   cleanupMic();
   syncButtons();
 }
 
+function stopSound() {
+  player.pause();
+  try { player.currentTime = 0; } catch (e) { /* src 가 아직 없으면 무시 */ }
+}
+
 async function start(kind, wavLang) {
+  stopSound();
   resetFeed();
   stopFlag = false; running = true;
   syncButtons();
@@ -564,6 +608,11 @@ async function streamWav(lang) {
     running = false; syncButtons(); return;
   }
   const buf = await res.arrayBuffer();
+  if (soundOn) {
+    player.src = `partial_test_${lang}.wav`;
+    player.currentTime = 0;
+    player.play().catch(() => console.warn('자동 재생이 막혔다 — 화면을 한 번 클릭하고 다시'));
+  }
   const dv = new DataView(buf);
   let off = 12, dataOff = 44, dataLen = buf.byteLength - 44;
   while (off < buf.byteLength - 8) {
@@ -632,6 +681,15 @@ function syncButtons() {
   btnStop.disabled = !running;
 }
 
+function setSound(on) {
+  soundOn = on;
+  localStorage.setItem('stity_show_sound', on ? '1' : '0');
+  btnSound.classList.toggle('on', on);
+  btnSound.textContent = on ? '🔊 소리' : '🔇 소리';
+  if (!on) stopSound();
+}
+
+btnSound.onclick = () => setSound(!soundOn);
 btnTag.onclick = () => setLayout('tag');
 btnLane.onclick = () => setLayout('lane');
 for (const b of document.querySelectorAll('[data-wav]')) {
@@ -644,6 +702,7 @@ addEventListener('keydown', e => {
   if (e.key === '1') setLayout('tag');
   else if (e.key === '2') setLayout('lane');
   else if (e.key === 'r' || e.key === 'R') resetFeed();
+  else if (e.key === 's' || e.key === 'S') setSound(!soundOn);
 });
 
 let hideTimer = null;
@@ -656,6 +715,7 @@ addEventListener('mousemove', pokeControls);
 addEventListener('keydown', pokeControls);
 
 if (ANCHOR_CENTER) document.body.classList.add('anchorCenter');
+setSound(soundOn);
 
 const saved = localStorage.getItem('stity_show_layout');
 if (!Q.get('layout') && (saved === 'tag' || saved === 'lane')) M.layout = saved;
