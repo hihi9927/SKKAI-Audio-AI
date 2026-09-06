@@ -50,8 +50,8 @@ def _parse_hms_time(value: str) -> Optional[float]:
 
 
 class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
-    def __init__(self, websocket, asr_model, config, pairing_hub, http_session=None, vad_model_bytes=None, corrector=None, gpt_translator=None):
-        super().__init__(websocket, asr_model, config, pairing_hub, vad_model_bytes=vad_model_bytes, corrector=corrector, gpt_translator=gpt_translator)
+    def __init__(self, websocket, asr_model, config, http_session=None, vad_model_bytes=None, corrector=None, gpt_translator=None):
+        super().__init__(websocket, asr_model, config, vad_model_bytes=vad_model_bytes, corrector=corrector, gpt_translator=gpt_translator)
         self._shared_http_session = http_session
         self.stream_start_perf = time.perf_counter()
         self.next_segment_id = 1
@@ -688,48 +688,9 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
                             self.init_streaming_state()
                             self.running = True
 
-                        elif msg_type == "pair_host":
-                            room_id = (data.get("roomId") or "").strip()
-                            my_lang = (data.get("myLang") or "").strip()
-                            target_lang = (data.get("targetLang") or "").strip()
-                            mode = (data.get("mode") or "mode-2").strip()
-                            if not room_id or not my_lang or not target_lang:
-                                await self.send_message(
-                                    "pair_error",
-                                    roomId=room_id,
-                                    message="invalid_pair_host_payload",
-                                )
-                            else:
-                                await self.pairing_hub.register_host(
-                                    self.websocket, room_id, my_lang, target_lang, mode
-                                )
-
-                        elif msg_type == "pair_join":
-                            room_id = (data.get("roomId") or "").strip()
-                            guest_my_lang = (data.get("myLang") or "").strip()
-                            if not room_id:
-                                await self.send_message(
-                                    "pair_error",
-                                    roomId=room_id,
-                                    message="missing_room_id",
-                                )
-                            elif not guest_my_lang:
-                                await self.send_message(
-                                    "pair_error",
-                                    roomId=room_id,
-                                    message="missing_guest_my_lang",
-                                )
-                            else:
-                                await self.pairing_hub.join_room(
-                                    self.websocket, room_id, guest_my_lang
-                                )
-
                         elif msg_type == "log":
                             # Evaluation mode does not persist separate log files.
                             pass
-
-                        elif msg_type == "pair_leave":
-                            await self.pairing_hub.leave(self.websocket)
 
                     except json.JSONDecodeError:
                         logger.warning("Invalid JSON: %s", message[:100])
@@ -752,7 +713,6 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
                 except Exception:
                     pass
                 self.http_session = None
-            await self.pairing_hub.leave(self.websocket)
             logger.info("Connection closed")
 
 
@@ -778,7 +738,7 @@ class FSLStreamingServer(base_server.Qwen3ASRStreamingServer):
             logger.info("Client connected (%s)", self.active_connections)
 
         try:
-            handler = FSLStreamingHandler(websocket, self.asr, self.config, self.pairing_hub, http_session=self._http_session, vad_model_bytes=self.vad_model_bytes, corrector=self.corrector, gpt_translator=self.gpt_translator)
+            handler = FSLStreamingHandler(websocket, self.asr, self.config, http_session=self._http_session, vad_model_bytes=self.vad_model_bytes, corrector=self.corrector, gpt_translator=self.gpt_translator)
             await handler.handle()
         finally:
             async with self.connection_lock:

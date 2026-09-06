@@ -51,6 +51,5 @@ PYTHONPATH=$PWD/Qwen3-ASR python Qwen3-ASR/tests/test_final_residual_commit.py
 시작하면 AttributeError 로 먼저 깨진다.
 
 `tests/test_streaming_architecture.py` 는 성격이 다르다. 실제로 뜬 서버에 붙는 통합
-테스트이고(`QWEN3_TEST_AUTO_SERVER=1` 로 직접 띄우게 할 수도 있다), 검사하는 것은
-start/ready/finish 흐름과 페어링 프로토콜 둘뿐이다. 페어링은 지금 어느 클라이언트도
-쓰지 않는다 — 서버에서 걷어낼 때 이 테스트도 함께 정리해야 한다.
+테스트이고(`QWEN3_TEST_AUTO_SERVER=1` 로 직접 띄우게 할 수도 있다), start/ready/finish
+흐름을 검사한다.

@@ -394,116 +394,6 @@ class AudioRecorder:
             self._wav.close()
 
 
-class PairingHub:
-    """Lightweight in-memory signaling hub for 2-earphone room pairing."""
-
-    def __init__(self):
-        self._lock = asyncio.Lock()
-        self._rooms: dict[str, dict[str, Any]] = {}
-        self._ws_to_room: dict[Any, str] = {}
-
-    async def _safe_send(self, websocket, payload: dict[str, Any]) -> None:
-        try:
-            await websocket.send(json.dumps(payload, ensure_ascii=False))
-        except Exception as e:
-            logger.warning(f"[pairing] send failed: {e}")
-
-    async def _detach_locked(self, websocket, notify_peer: bool) -> None:
-        room_id = self._ws_to_room.pop(websocket, None)
-        if not room_id:
-            return
-
-        room = self._rooms.get(room_id)
-        if not room:
-            return
-
-        peer = None
-        if room.get("host_ws") is websocket:
-            room["host_ws"] = None
-            room["host_cfg"] = None
-            peer = room.get("guest_ws")
-        elif room.get("guest_ws") is websocket:
-            room["guest_ws"] = None
-            peer = room.get("host_ws")
-
-        if notify_peer and peer is not None:
-            await self._safe_send(peer, {"type": "pair_peer_left", "roomId": room_id})
-
-        if room.get("host_ws") is None and room.get("guest_ws") is None:
-            self._rooms.pop(room_id, None)
-
-    async def register_host(
-        self, websocket, room_id: str, my_lang: str, target_lang: str, mode: str
-    ) -> None:
-        async with self._lock:
-            await self._detach_locked(websocket, notify_peer=False)
-            room = self._rooms.setdefault(room_id, {"host_ws": None, "guest_ws": None, "host_cfg": None})
-            room["host_ws"] = websocket
-            room["host_cfg"] = {
-                "myLang": my_lang,
-                "targetLang": target_lang,
-                "mode": mode or "mode-2",
-            }
-            self._ws_to_room[websocket] = room_id
-
-        await self._safe_send(websocket, {"type": "pair_hosted", "roomId": room_id})
-        logger.info(f"[pairing] host registered room={room_id} my={my_lang} target={target_lang}")
-
-    async def join_room(self, websocket, room_id: str, guest_my_lang: str) -> None:
-        async with self._lock:
-            await self._detach_locked(websocket, notify_peer=False)
-            room = self._rooms.get(room_id)
-            if not room or room.get("host_ws") is None or room.get("host_cfg") is None:
-                await self._safe_send(
-                    websocket,
-                    {"type": "pair_error", "roomId": room_id, "message": "room_not_found"},
-                )
-                return
-
-            prev_guest = room.get("guest_ws")
-            if prev_guest is not None and prev_guest is not websocket:
-                self._ws_to_room.pop(prev_guest, None)
-                await self._safe_send(
-                    prev_guest,
-                    {"type": "pair_error", "roomId": room_id, "message": "replaced_by_new_guest"},
-                )
-
-            room["guest_ws"] = websocket
-            self._ws_to_room[websocket] = room_id
-
-            host_ws = room["host_ws"]
-            host_cfg = room["host_cfg"]
-            host_my_lang = host_cfg["myLang"]
-
-        host_payload = {
-            "type": "pair_connected",
-            "roomId": room_id,
-            "role": "host",
-            "mode": host_cfg["mode"],
-            "myLang": host_my_lang,
-            "targetLang": guest_my_lang,
-        }
-        guest_payload = {
-            "type": "pair_connected",
-            "roomId": room_id,
-            "role": "guest",
-            "mode": host_cfg["mode"],
-            "myLang": guest_my_lang,
-            "targetLang": host_my_lang,
-        }
-        await asyncio.gather(
-            self._safe_send(host_ws, host_payload),
-            self._safe_send(websocket, guest_payload),
-        )
-        logger.info(
-            f"[pairing] connected room={room_id} host_my={host_my_lang} guest_my={guest_my_lang}"
-        )
-
-    async def leave(self, websocket) -> None:
-        async with self._lock:
-            await self._detach_locked(websocket, notify_peer=True)
-
-
 # ── 번역 백엔드 ────────────────────────────────────────────────────────────────
 # gtx 는 구글 번역 위젯이 쓰는 비공식 엔드포인트다. 키 없이 공짜로 되지만 할당량이
 # 문서화돼 있지 않고, 호출이 몰리면 429 와 함께 HTML 차단 페이지를 돌려준다. 그러면
@@ -660,7 +550,6 @@ class Qwen3ASRStreamingHandler:
         websocket,
         asr_model: Qwen3ASRModel,
         config: StreamingConfig,
-        pairing_hub: PairingHub,
         get_streaming_id=None,
         lora_request_en=None,
         lora_request_ko=None,
@@ -673,7 +562,6 @@ class Qwen3ASRStreamingHandler:
         self.log = _ClientAdapter(logger, {"cid": "-"})
         self.asr = asr_model
         self.config = config
-        self.pairing_hub = pairing_hub
         self.lora_request_en = lora_request_en
         self.lora_request_ko = lora_request_ko
         self.state = None
@@ -2787,42 +2675,6 @@ class Qwen3ASRStreamingHandler:
                             self.init_streaming_state()
                             self.running = True
 
-                        elif msg_type == "pair_host":
-                            room_id = (data.get("roomId") or "").strip()
-                            my_lang = (data.get("myLang") or "").strip()
-                            target_lang = (data.get("targetLang") or "").strip()
-                            mode = (data.get("mode") or "mode-2").strip()
-                            if not room_id or not my_lang or not target_lang:
-                                await self.send_message(
-                                    "pair_error",
-                                    roomId=room_id,
-                                    message="invalid_pair_host_payload",
-                                )
-                            else:
-                                await self.pairing_hub.register_host(
-                                    self.websocket, room_id, my_lang, target_lang, mode
-                                )
-
-                        elif msg_type == "pair_join":
-                            room_id = (data.get("roomId") or "").strip()
-                            guest_my_lang = (data.get("myLang") or "").strip()
-                            if not room_id:
-                                await self.send_message(
-                                    "pair_error",
-                                    roomId=room_id,
-                                    message="missing_room_id",
-                                )
-                            elif not guest_my_lang:
-                                await self.send_message(
-                                    "pair_error",
-                                    roomId=room_id,
-                                    message="missing_guest_my_lang",
-                                )
-                            else:
-                                await self.pairing_hub.join_room(
-                                    self.websocket, room_id, guest_my_lang
-                                )
-
                         elif msg_type == "log":
                             time = data.get("time", "")
                             text = data.get("text", "")
@@ -2842,9 +2694,6 @@ class Qwen3ASRStreamingHandler:
                                     start=start,
                                     end=end,
                                 )
-
-                        elif msg_type == "pair_leave":
-                            await self.pairing_hub.leave(self.websocket)
 
                     except json.JSONDecodeError:
                         self.log.warning(f"Invalid JSON: {message[:100]}")
@@ -2866,7 +2715,6 @@ class Qwen3ASRStreamingHandler:
             if self.recorder is not None:
                 self.recorder.close()
                 self.recorder = None
-            await self.pairing_hub.leave(self.websocket)
             self.log.info("Connection closed")
 
 
@@ -2882,7 +2730,6 @@ class Qwen3ASRStreamingServer:
         self.vad_model_bytes: Optional[bytes] = None
         self.corrector: Optional["GPTCorrector"] = None
         self.gpt_translator: Optional["GPTTranslator"] = None
-        self.pairing_hub = PairingHub()
         self.idle_task = None
         self.active_connections = 0
         self._streaming_counter = 0
@@ -3012,7 +2859,7 @@ class Qwen3ASRStreamingServer:
 
         try:
             handler = Qwen3ASRStreamingHandler(
-                websocket, self.asr, self.config, self.pairing_hub,
+                websocket, self.asr, self.config,
                 get_streaming_id=self.next_streaming_id,
                 lora_request_en=self.lora_request_en,
                 lora_request_ko=self.lora_request_ko,

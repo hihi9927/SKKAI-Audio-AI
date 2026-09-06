@@ -173,37 +173,6 @@ async def run_protocol_smoke(ws_url):
 
         await ws.send(json.dumps({'type': 'stop'}))
 
-    room_id = f'test-room-{int(time.time())}'
-    async with websockets.connect(ws_url, ping_interval=None, ping_timeout=None) as host_ws, \
-               websockets.connect(ws_url, ping_interval=None, ping_timeout=None) as guest_ws:
-
-        await recv_type(host_ws, 'hello', timeout=8)
-        await recv_type(guest_ws, 'hello', timeout=8)
-
-        await host_ws.send(json.dumps({
-            'type': 'pair_host',
-            'roomId': room_id,
-            'myLang': 'ko',
-            'targetLang': 'en',
-            'mode': 'mode-2',
-        }))
-        await recv_type(host_ws, 'pair_hosted', timeout=8)
-
-        await guest_ws.send(json.dumps({
-            'type': 'pair_join',
-            'roomId': room_id,
-            'myLang': 'en',
-        }))
-
-        guest_connected = await recv_type(guest_ws, 'pair_connected', timeout=8)
-        host_connected = await recv_type(host_ws, 'pair_connected', timeout=8)
-
-        if guest_connected.get('role') != 'guest' or host_connected.get('role') != 'host':
-            raise AssertionError('pair_connected role mismatch')
-
-        await guest_ws.send(json.dumps({'type': 'pair_leave'}))
-        await recv_type(host_ws, 'pair_peer_left', timeout=8)
-
     logger.info('Protocol smoke test passed.')
 
 

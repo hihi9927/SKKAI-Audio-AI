@@ -647,7 +647,6 @@ class ASTStreamingServer(fsl_server.FSLStreamingServer):
                 websocket,
                 self.asr,
                 self.config,
-                self.pairing_hub,
                 http_session=self._http_session,
                 vad_model_bytes=self.vad_model_bytes,
                 corrector=self.corrector,

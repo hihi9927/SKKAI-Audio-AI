@@ -170,39 +170,5 @@ class Qwen3ProtocolIntegrationTests(unittest.IsolatedAsyncioTestCase):
 
             await ws.send(json.dumps({'type': 'stop'}))
 
-    async def test_pairing_protocol(self):
-        room_id = f'integration-room-{int(time.time())}'
-
-        async with websockets.connect(DEFAULT_SERVER_URL, ping_interval=None, ping_timeout=None) as host_ws, \
-                   websockets.connect(DEFAULT_SERVER_URL, ping_interval=None, ping_timeout=None) as guest_ws:
-
-            await _recv_type(host_ws, 'hello', timeout=8)
-            await _recv_type(guest_ws, 'hello', timeout=8)
-
-            await host_ws.send(json.dumps({
-                'type': 'pair_host',
-                'roomId': room_id,
-                'myLang': 'ko',
-                'targetLang': 'en',
-                'mode': 'mode-2',
-            }))
-            await _recv_type(host_ws, 'pair_hosted', timeout=8)
-
-            await guest_ws.send(json.dumps({
-                'type': 'pair_join',
-                'roomId': room_id,
-                'myLang': 'en',
-            }))
-
-            guest_connected = await _recv_type(guest_ws, 'pair_connected', timeout=8)
-            host_connected = await _recv_type(host_ws, 'pair_connected', timeout=8)
-
-            self.assertEqual(guest_connected.get('role'), 'guest')
-            self.assertEqual(host_connected.get('role'), 'host')
-
-            await guest_ws.send(json.dumps({'type': 'pair_leave'}))
-            await _recv_type(host_ws, 'pair_peer_left', timeout=8)
-
-
 if __name__ == '__main__':
     unittest.main(verbosity=2)

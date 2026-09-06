@@ -355,9 +355,6 @@ React Native 0.81 + Expo 54 (managed), TypeScript strict. Path alias `@/*` → `
 | `start` | `lang`, `targetLang`, `displayMode`, `langMap`? | Begin streaming (`lang` = code or `"auto"`) |
 | `config` | `langMap`, `lang`?, `targetLang`? | Change translation direction mid-stream (no restart) |
 | `stop` / `finish` | — | End and close / flush final segment but stay open |
-| `pair_host` | `roomId`, `myLang`, `targetLang`, `mode` | Create pairing room |
-| `pair_join` | `roomId`, `myLang` | Join as guest |
-| `pair_leave` | — | Exit pairing |
 | `log` / `tts_log` | — | Client-side telemetry appended to server logs |
 
 ### Server → Client
@@ -368,7 +365,6 @@ React Native 0.81 + Expo 54 (managed), TypeScript strict. Path alias `@/*` → `
 | `ready` | `message` | Streaming initialized |
 | `config_ok` | `lang`, `targetLang`, `langMap` | Echo of the applied `config` |
 | `final` | `start`, `end`, `original`, `translation`, `language`, `commitReason` | Committed segment |
-| `pair_hosted` / `pair_connected` / `pair_peer_left` / `pair_error` | `roomId`, … | Pairing lifecycle |
 
 `langMap` maps a **detected** language code to its translation target (`{"ko":"en","ja":"ko"}`).
 When present it wins over the `lang` ↔ `targetLang` pair rule in `_correct_and_translate`, so three or
@@ -386,7 +382,7 @@ The eval server adds timing fields to `final` (`segmentId`, `audioStartSec`, `au
 Datasets under `evaluation/`: LibriSpeech (en); DailyTalk, KsponSpeech (ko); plus the separate AST track in
 `ast/` (FLEURS, en→de/ko/ja/zh/es, scored by LAAL and BLEU).
 
-Earlier benchmarks in other languages are no longer in the tree; their measured numbers are kept in
+Measured numbers for earlier benchmarks in other languages are kept in
 [evaluation/ARCHIVED_DATASETS_METRICS.md](evaluation/ARCHIVED_DATASETS_METRICS.md).
 
 Commit-policy modes compared in `evaluation/LibriSpeech/paper_result/ASR/`: **mode2** = always-commit, **mode3** = dot-commit with confirm gate, **mode4** = en-finetuned weights with SEG-only commit.
