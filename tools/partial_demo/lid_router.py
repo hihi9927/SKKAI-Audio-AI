@@ -165,3 +165,130 @@ class Session:
 
     def timed_out(self) -> bool:
         return self.seconds >= self.router.max_wait_sec
+
+
+# ── 흐르는 스트림에 대한 연속 판정 ────────────────────────────────────────────
+# 스트림당 한 번 판정하는 Session 과 달리, 이쪽은 오디오가 흐르는 내내 VAD 로
+# 발화 구간을 찾아 구간마다 언어를 남긴다. 두 ASR 서버에 오디오를 동시에 보내
+# 놓고 어느 쪽 결과를 쓸지 고를 때 쓴다.
+#
+# **왜 발화 구간마다인가.** 라우팅을 스트림당 한 번만 하면 화자가 도중에 언어를
+# 바꿔도 모델이 안 바뀐다. 실제로 한국어 모델 세션에 영어를 말했더니
+# '헬로 나이스 미트 유.' 처럼 한글로 받아썼다. 구간마다 판정을 남겨 두면
+# 그 구간의 결과를 낸 서버만 통과시킬 수 있다.
+
+class VerdictTracker:
+    """오디오를 받아 두고 발화 구간마다 언어 판정을 쌓는다.
+
+    판정은 (구간 시작 초, 구간 끝 초 또는 None, 언어) 로 남는다. 끝이 None 이면
+    아직 말하는 중이라는 뜻이다. 구간이 닫히면 같은 항목을 확정값으로 갱신한다.
+
+    버퍼는 최근 `keep_sec` 만큼만 들고 있는다. VAD 를 매번 전체에 돌리면 길이의
+    제곱으로 늘어난다. 잘라낸 만큼은 `_offset` 에 누적해 절대 시각을 유지한다.
+    """
+
+    def __init__(self, router: "LidRouter", keep_sec: float = 20.0,
+                 step_sec: float = 0.4):
+        self.router = router
+        self.keep_sec = keep_sec
+        self.step_sec = step_sec
+        self._buf = np.zeros(0, dtype=np.float32)
+        self._offset = 0.0          # 잘라낸 앞부분의 길이(초)
+        self._audio_sec = 0.0       # 지금까지 받은 전체 오디오 길이(초)
+        self._last_run = -1.0
+        self.verdicts: list[list] = []   # [시작초, 끝초 또는 None, 언어]
+
+    @property
+    def audio_sec(self) -> float:
+        return self._audio_sec
+
+    def feed(self, pcm_bytes: bytes) -> None:
+        x = np.frombuffer(pcm_bytes, dtype="<i2").astype(np.float32) / 32768.0
+        self._buf = np.concatenate([self._buf, x])
+        self._audio_sec += len(x) / SR
+        keep = int(SR * self.keep_sec)
+        if len(self._buf) > keep:
+            drop = len(self._buf) - keep
+            self._offset += drop / SR
+            self._buf = self._buf[drop:]
+
+    def _segments_sync(self):
+        from silero_vad import get_speech_timestamps
+
+        with self.router._gpu_lock:
+            ts = get_speech_timestamps(self.router._torch.from_numpy(self._buf),
+                                       self.router.vad, sampling_rate=SR)
+        out = []
+        for t in ts:
+            start = self._offset + t["start"] / SR
+            end = self._offset + t["end"] / SR
+            # 버퍼 끝에 붙어 있으면 아직 말하는 중으로 본다.
+            closed = (len(self._buf) - t["end"]) >= SR * 0.3
+            out.append((start, end, closed))
+        return out
+
+    def _classify_span(self, start: float, end: float) -> Optional[str]:
+        a = int((start - self._offset) * SR)
+        b = int((end - self._offset) * SR)
+        span = self._buf[max(0, a):max(0, b)]
+        if len(span) < SR * 0.2:
+            return None
+        span = span[: int(SR * self.router.window_sec)]
+        with self.router._gpu_lock:
+            return self.router._classify(span)
+
+    # 0.5초 창 정확도가 whisper-base 기준 82.5% 다. 그보다 짧은 조각의 판정은
+    # 못 믿는다 — 실제로 한국어 발화 앞머리 0.4초가 en 으로 잘못 찍혔다.
+    MIN_SPEECH_SEC = 0.5
+
+    def _find_overlap(self, start: float, end: float):
+        """이미 있는 판정 중 이 구간과 겹치는 것.
+
+        시작점으로 맞추면 안 된다 — 오디오가 쌓이면서 silero 가 같은 발화의 경계를
+        조금씩 다르게 잡아, 한 발화가 매번 새 항목으로 쌓인다. 실제로 발화 4개짜리
+        스트림에서 판정이 29개까지 늘었다. 겹침으로 보면 하나로 모인다.
+        """
+        for v in self.verdicts:
+            v_end = v[1] if v[1] is not None else self._audio_sec
+            if start < v_end and v[0] < end:
+                return v
+        return None
+
+    def _update_sync(self) -> None:
+        for start, end, closed in self._segments_sync():
+            if (end - start) <= self.MIN_SPEECH_SEC:
+                continue          # 숨소리·잡음 조각. 여기서 나온 판정은 못 믿는다.
+            existing = self._find_overlap(start, end)
+            if existing is not None and existing[1] is not None:
+                continue                      # 이미 확정된 구간
+            # 창을 채웠거나 구간이 닫혔을 때만 판정한다. 그 전에는 근거가 모자란다.
+            if not closed and (end - start) < self.router.window_sec:
+                continue
+            lang = self._classify_span(start, end)
+            if lang is None:
+                continue
+            if existing is None:
+                self.verdicts.append([start, end if closed else None, lang])
+            else:
+                existing[0] = min(existing[0], start)
+                existing[1] = end if closed else None
+                existing[2] = lang
+        self.verdicts.sort(key=lambda v: v[0])
+
+    async def update(self) -> None:
+        """새 오디오가 `step_sec` 만큼 쌓였을 때만 실제로 돌린다."""
+        if self._audio_sec - self._last_run < self.step_sec:
+            return
+        self._last_run = self._audio_sec
+        await asyncio.to_thread(self._update_sync)
+
+    def lang_at(self, t: Optional[float]) -> Optional[str]:
+        """시각 t 에 유효한 판정. t 가 None 이면 가장 최근 판정."""
+        if not self.verdicts:
+            return None
+        if t is None:
+            return self.verdicts[-1][2]
+        # t 보다 앞에서 시작한 구간 중 가장 늦은 것. 커밋은 발화보다 뒤에 오므로
+        # 약간의 여유를 둔다.
+        picked = [v for v in self.verdicts if v[0] <= t + 0.5]
+        return (picked[-1] if picked else self.verdicts[0])[2]

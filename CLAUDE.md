@@ -120,6 +120,30 @@ catches up faster than realtime, and the first commit boundary lands later than 
 stall — once VAD sees the speech segment close, the router classifies what it has instead of waiting out
 `--lid-max-wait` (a 0.6s "그렇지." routes at 1.6s).
 
+**`--dual` decides per utterance instead of per stream.** `--lid` picks one server when the stream opens,
+so a speaker who switches language mid-stream keeps the wrong model — the ko finetune writes English as
+`헬로 나이스 미트 유.`, and the en finetune reports Korean as `en` so the translation comes back unchanged.
+`--dual` sends the same audio to every server in the route table and lets `VerdictTracker` keep judging as
+audio arrives, forwarding only the messages from the server that owns the language of that span.
+
+**Select on the audio, never on the transcript.** Picking by script (Hangul vs Latin) breaks exactly where
+it matters: when the ko model renders English in Hangul, its output *looks* Korean, so both servers' output
+passes and the client sees the utterance twice. Judging the audio itself is independent of what either
+model wrote. In a single stream alternating ko/en/ko/en, all eight committed segments came from the right
+model with no duplicates.
+
+Two guards keep the verdict list honest. Segments are matched by **overlap**, not by start time — silero
+re-cuts the same utterance slightly differently as audio accumulates, which grew a 4-utterance stream to 29
+verdicts before the fix and 10 after. And spans of 0.5s or less are not judged at all, since that is where
+accuracy falls to 82.5%; a 0.4s sliver at the head of a Korean utterance had been coming back `en`.
+
+`--vad-min-silence` sets how much silence ends an utterance (default 800ms). Measured against 400ms on the
+same audio: English segmentation identical (13), Korean **less** fragmented at 400 (16 → 14), latency within
+0.05s either way, and en→ko chrF/BLEU identical at 34.0/13.9. Nothing recommends the change, so 800 stands.
+Note the flag matters beyond the VAD itself — `_retry_vad_short_utterance` trims its tail by
+`VAD_MIN_SILENCE_MS - 100ms`, a value that used to be hardcoded to 0.7s and would have cut 300ms of real
+speech at 400ms. `--dual` routing does not depend on this setting at all: the proxy runs its own VAD.
+
 **`PYTHONPATH` matters in a worktree.** `pip install -e ./Qwen3-ASR` pins `qwen_asr` to whichever
 worktree it was installed from, so a second worktree's server silently imports the *other* tree's
 package. The symptom is a type error rather than an import error, e.g.

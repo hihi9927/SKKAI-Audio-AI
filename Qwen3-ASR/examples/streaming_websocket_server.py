@@ -126,7 +126,10 @@ PARTIAL_MIN_INTERVAL_SEC = 0.12     # partial(미확정 가설) 전송 최소 �
 
 # VADIterator 설정
 VAD_THRESHOLD = 0.5
-VAD_MIN_SILENCE_MS = 800       # 발화 종료 판정까지 필요한 침묵 길이
+# 발화 종료 판정까지 필요한 침묵 길이. --vad-min-silence 로 덮어쓴다.
+# 짧게 잡을수록 발화가 자주 끊겨 slot 이 자주 초기화되고(언어 전환이 빨리 풀린다)
+# 문장은 잘게 쪼개진다. 길게 잡으면 그 반대다.
+VAD_MIN_SILENCE_MS = 800
 VAD_SPEECH_PAD_MS = 160        # 발화 경계에 추가하는 패딩
 VAD_WINDOW_SIZE_SAMPLES = 512  # 16kHz 기준 silero 권장 윈도우 크기
 
@@ -2508,7 +2511,11 @@ class Qwen3ASRStreamingHandler:
         """finish_streaming이 빈 결과를 반환했을 때, VAD 구간 기준으로 오디오를 트림하여 재시도.
 
         앞: VAD speech_start - 200ms 패딩
-        뒤: VAD 종료 감지 시점 - 700ms (VAD_MIN_SILENCE_MS 800ms - 100ms 여유)
+        뒤: VAD 종료 감지 시점 - (VAD_MIN_SILENCE_MS - 100ms 여유)
+
+        뒤쪽 여유를 상수에서 뽑는 이유: 종전에는 0.7 초가 박혀 있었는데 그건
+        VAD_MIN_SILENCE_MS 가 800 일 때의 값이다. 침묵 기준을 400 으로 내리면
+        아직 안 지난 300ms 를 더 잘라내 발화 끝이 날아간다.
         """
         slot = self._slot(slot_key)
         state = slot["state"]
@@ -2519,7 +2526,8 @@ class Qwen3ASRStreamingHandler:
         slot_anchor_samples = int(slot["audio_anchor_sec"] * SAMPLING_RATE)
         speech_start = self.vad_last_speech_start_sample - slot_anchor_samples - int(0.2 * SAMPLING_RATE)
         speech_start = max(0, speech_start)
-        speech_end = full_audio.shape[0] - int(0.7 * SAMPLING_RATE)
+        tail_trim = max(0.0, (VAD_MIN_SILENCE_MS - 100) / 1000.0)
+        speech_end = full_audio.shape[0] - int(tail_trim * SAMPLING_RATE)
 
         if speech_end <= speech_start:
             self.log.info(f"[VAD-RETRY] slot={slot_key} skip: empty range start={speech_start} end={speech_end}")
@@ -3002,6 +3010,13 @@ def parse_args():
         help="Max new tokens per chunk (32은 긴 발화 truncation 유발 → 128)",
     )
     parser.add_argument(
+        "--vad-min-silence", type=int, default=VAD_MIN_SILENCE_MS,
+        help=(
+            "발화 종료 판정까지 필요한 침묵 길이(ms). 짧을수록 발화가 자주 "
+            f"끊겨 언어 전환이 빨리 풀리지만 문장이 잘게 쪼개진다 (기본 {VAD_MIN_SILENCE_MS})"
+        ),
+    )
+    parser.add_argument(
         "--chunk-size", type=float, default=2.0,
         help="Chunk size in seconds",
     )
@@ -3176,6 +3191,11 @@ def parse_args():
 def main():
     args = parse_args()
     _configure_logging(use_json=args.log_json, log_file=args.log_file)
+
+    # VADIterator 생성과 꼬리 트림이 모두 이 전역을 읽으므로 여기서 한 번 덮는다.
+    if args.vad_min_silence != VAD_MIN_SILENCE_MS:
+        globals()["VAD_MIN_SILENCE_MS"] = args.vad_min_silence
+        logger.info(f"VAD min silence: {args.vad_min_silence}ms")
     set_google_translate_api_key(
         args.google_api_key,
         local_translation=args.local_translation or bool(args.local_translation_url),
