@@ -57,7 +57,8 @@ DUAL = False          # --dual. 모든 서버에 보내고 발화마다 고른�
 REST_UPSTREAM = None  # --rest. 라우팅 표에 없는 언어를 맡는 서버(보통 베이스라인).
 REST_KEY = "*"        # 그 서버를 가리키는 이름
 TRANSLATE_URL = None  # --translate-url. 번역 방향을 바로잡을 때 쓴다.
-LANG_HINT = False     # --lang-hint. 판정 언어를 서버에 알려 디코딩을 못박는다.
+LANG_HINT = False     # --lang-hint. 판정 언어를 서버에 알린다.
+LANG_HINT_FORCE = False  # --lang-hint-force. 바이어스 대신 force_language 로.
 DEFAULT_UPSTREAM = "ws://127.0.0.1:8766"
 PORT = 8080
 LID = None            # LidRouter. --lid 를 켰을 때만 채워진다.
@@ -351,7 +352,8 @@ async def run_dual(client, start_raw, pending_binary):
                 hinted[key] = v[2]
                 try:
                     await ups[target].send(json.dumps(
-                        {"type": "lang_hint", "lang": v[2], "fromSec": v[0]}))
+                        {"type": "lang_hint", "lang": v[2], "fromSec": v[0],
+                         "force": LANG_HINT_FORCE}))
                 except Exception as e:
                     print(f"lang_hint 실패: {e!r}", flush=True)
 
@@ -551,8 +553,8 @@ async def main():
     if TRANSLATE_URL:
         print(f"  번역 방향 교정: {TRANSLATE_URL}", flush=True)
     if LANG_HINT:
-        print("  판정 언어를 서버에 통보(lang_hint) — 디코딩 언어 고정 + 슬롯 자르기",
-              flush=True)
+        how = "force_language" if LANG_HINT_FORCE else "로짓 바이어스"
+        print(f"  판정 언어를 서버에 통보(lang_hint) — {how} + 슬롯 자르기", flush=True)
     async with serve(handler, "0.0.0.0", PORT, process_request=process_request,
                      ping_interval=None, max_size=None):
         await asyncio.Future()
@@ -582,8 +584,13 @@ if __name__ == "__main__":
                     help="이만큼 들어도 판정이 안 서면 start.lang 규칙으로 되돌아간다")
     ap.add_argument("--lid-device", default="cuda")
     ap.add_argument("--lang-hint", action="store_true",
-                    help="판정 언어를 lang_hint 로 서버에 보내 디코딩 언어를 못박고 "
-                         "슬롯을 자르게 한다. 서버가 이 메시지를 알아야 한다")
+                    help="판정 언어를 lang_hint 로 서버에 보낸다. 서버는 그 언어만 "
+                         "허용(로짓 바이어스)하고 슬롯을 잘라 앞 언어의 프리픽스를 "
+                         "비운다. 서버가 이 메시지를 알아야 한다")
+    ap.add_argument("--lang-hint-force", action="store_true",
+                    help="lang_hint 를 바이어스 대신 force_language 로 적용한다. "
+                         "프롬프트에 언어를 박아 넣는 방식이라 출력 형식이 바뀌고 "
+                         "커밋 판정이 달라진다 — 실측에서 짧은 발화가 뭉개졌다")
     ap.add_argument("--translate-url", default=None,
                     help="단독 번역 서버 주소(예: http://127.0.0.1:8770). 주면 ASR "
                          "서버가 언어를 잘못 신고해 번역 방향이 뒤집힌 final 을 "
@@ -603,7 +610,8 @@ if __name__ == "__main__":
 
     DUAL = args.dual
     TRANSLATE_URL = args.translate_url
-    LANG_HINT = args.lang_hint
+    LANG_HINT = args.lang_hint or args.lang_hint_force
+    LANG_HINT_FORCE = args.lang_hint_force
     if args.lid or args.dual:
         sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
         from lid_router import LidRouter

@@ -692,6 +692,9 @@ class Qwen3ASRStreamingHandler:
         # 스페인어를 ko 로 보고 한글로 받아쓰는 식이다. 오디오를 보고 판정한 쪽이
         # 있으면 그 값으로 못박는 편이 낫다.
         self.forced_language: Optional[str] = None
+        # lang_hint 로 좁힌 허용 언어(정규 이름 하나). force 를 안 쓰는 기본 경로다 —
+        # 로짓 바이어스는 언어 이름 토큰만 건드리므로 출력 형식이 안 바뀐다.
+        self.hinted_language: Optional[str] = None
 
         # 타임스탬프 추적
         self.segment_start_time = 0.0
@@ -828,6 +831,11 @@ class Qwen3ASRStreamingHandler:
                         langs.append(tgt_name)
             if langs:
                 allowed_languages = langs
+        # lang_hint 가 왔으면 그 하나로 더 조인다. langMap 이 넓어도(제3언어를
+        # 둘 이상 고른 경우) 판정된 언어만 남는다. restrict_languages 를 껐어도
+        # 밖에서 준 판정은 존중한다.
+        if self.hinted_language:
+            allowed_languages = [self.hinted_language]
 
         # lang_hint 가 있으면 프롬프트에 "language X<asr_text>" 로 박아 디코딩
         # 언어를 못박는다. 이때 allowed_languages 의 로짓 바이어스는 적용되지
@@ -866,7 +874,8 @@ class Qwen3ASRStreamingHandler:
         self.stream_slots[slot_key] = self._new_stream_slot(seed_text=seed_text, context=context)
 
     async def _apply_lang_hint(self, code: Optional[str],
-                               from_sec: Optional[float] = None) -> None:
+                               from_sec: Optional[float] = None,
+                               force: bool = False) -> None:
         """밖에서 판정한 언어로 디코딩 언어를 못박고, 활성 슬롯을 잘라 낸다.
 
         **못박기만 해서는 모자란다.** force_language 를 바꿔도 슬롯의 누적 텍스트가
@@ -880,10 +889,21 @@ class Qwen3ASRStreamingHandler:
         SEG 커밋 경로가 carry_audio 로 같은 문제를 피하고 있다.
         """
         name = lang_code_to_name(code) if code else None
-        if not name or name == self.forced_language:
+        cur = self.forced_language if force else self.hinted_language
+        if not name or name == cur:
             return
-        prev = self.forced_language
-        self.forced_language = name
+        prev = cur
+        # **기본은 바이어스다.** force_language 는 프롬프트에 언어를 박아 넣어
+        # 모델이 언어 이름을 아예 생성하지 않게 하는데, 그러면 출력 형식이 바뀌어
+        # (language 접두 없이 본문만) 커밋·SEG 판정이 달라진다. 실측에서 짧은
+        # 맞장구가 뭉개졌다. 바이어스는 언어 이름 토큰만 -100 으로 막으므로 형식이
+        # 그대로다. 어느 쪽도 본문 글자까지 강제하지는 못한다 — 태그만 고정한다.
+        if force:
+            self.forced_language = name
+            self.hinted_language = None
+        else:
+            self.hinted_language = name
+            self.forced_language = None
 
         slot_key = self.active_slot
         old_state = self._slot(slot_key)["state"]
@@ -914,6 +934,7 @@ class Qwen3ASRStreamingHandler:
             self.state = new_slot["state"]
         self.log.info(
             f"[LANG-HINT] slot={slot_key} {prev or '-'} -> {name} "
+            f"mode={'force' if force else 'bias'} "
             f"from={from_sec} "
             f"carry={0 if carry is None else round(carry.shape[0] / SAMPLING_RATE, 2)}s "
             f"tail={0 if tail is None else round(tail.shape[0] / SAMPLING_RATE, 2)}s"
@@ -2736,7 +2757,8 @@ class Qwen3ASRStreamingHandler:
 
                         elif msg_type == "lang_hint":
                             await self._apply_lang_hint(
-                                data.get("lang"), data.get("fromSec"))
+                                data.get("lang"), data.get("fromSec"),
+                                force=bool(data.get("force")))
                         elif msg_type == "config":
                             # 시연 중 번역 방향을 바꾼다. 스트림은 그대로 둔다 —
                             # 다음에 확정되는 문장부터 새 설정으로 번역된다.

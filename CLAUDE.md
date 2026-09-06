@@ -278,12 +278,27 @@ and moves the audio from `fromSec` into the fresh slot. **Move `state.buffer` to
 verdict it is routinely empty while the whole utterance sits in the buffer. Carrying only the accumulator
 turned `Esto parece tener sentido…` into `de tener sentido…`.
 
-Measured against the same ko/en/es stream, forcing wins on some segments and loses on others: `아우랜더` became
-`아 우린 또` (what was actually said) and a sentence stopped being split in two, but the short backchannels
-`어.` / `그지.` collapsed into `아니,` and two junk fragments appeared. The cause is structural — the server
-applies `if state.allowed_languages and not state.force_language`, so forcing *replaces* the logit bias
-rather than adding to it, and the output format changes (text only, no `language X` prefix), which shifts the
-commit logic. Worth enabling for languages outside the finetunes; not yet worth it for ko/en.
+**The hint should narrow the bias, not force the prompt.** Both only pin the language *tag* — neither
+constrains the transcript's own characters, so a Spanish tag can still be followed by Hangul. But they differ in
+what else they disturb. Forcing writes `language X<asr_text>` into the prompt, so the model never generates a
+language name at all: the logit bias has nothing left to act on (hence the server's
+`if state.allowed_languages and not state.force_language`), and the output arrives without the `language X`
+prefix, which shifts the commit and SEG logic that reads that string. Biasing to a single language leaves the
+format untouched and simply tightens what the current per-server pool already does.
+
+Measured on the same ko/en/es stream:
+
+| segment | hint off | **bias** | force |
+|---|---|---|---|
+| ko #1 | split into two | **one sentence** | one sentence + junk `그리고 그거` |
+| en | `burgundy` | **`Burgundy`** | `Burgundy` |
+| ko #2 | `아우랜더` | `아우랜더` | `아 우린 또` (what was said) |
+| ko #3 | `어.` / `그지.` | **`어.` / `그지.`** | collapsed to `아니,` |
+| junk fragments | 0 | **0** | 2 |
+
+Bias keeps everything the off case got right and fixes the split sentence and the capitalisation; force trades
+two junk fragments and a lost backchannel for one better line. So `--lang-hint` biases by default and
+`--lang-hint-force` is the opt-in.
 
 `--vad-min-silence` sets how much silence ends an utterance (default 800ms). Measured against 400ms on the
 same audio: English segmentation identical (13), Korean **less** fragmented at 400 (16 → 14), latency within
