@@ -123,6 +123,8 @@ models/
 # (git이 제외된 디렉토리로 들어가지 않는다). 코드를 추가로 넣으려면 add -f를 쓸 것.
 #
 # 오디오와 과거 벤치마크 결과는 git에 없다. 로컬 디스크에만 있다.
+# 2026-09-06: 아래 7종은 디렉토리째 삭제했다. 규칙은 남겨 둔다 — 누가 데이터를 다시 내려받아도
+# 오디오·결과가 자동으로 막히게 하기 위해서다. 지난 실행 지표는 evaluation/ARCHIVED_DATASETS_METRICS.md.
 evaluation/AMI/
 evaluation/AliMeeting/
 evaluation/KokoroSpeech/

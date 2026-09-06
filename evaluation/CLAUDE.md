@@ -23,21 +23,18 @@ LibriSpeech만 클라이언트가 `servers/` 아래에 있다 (`servers/test_qwe
 | 디렉토리 | 언어 | 주요 메트릭 | 특이사항 |
 |---|---|---|---|
 | `LibriSpeech/` | 영어 | WER + FSL 타이밍 | 주 벤치마크, 평가 서버가 여기 있음 |
-| `AMI/` | 영어 | WER | 다화자 회의 코퍼스 |
 | `DailyTalk/` | 한국어 | CER | 대화 음성 |
 | `KsponSpeech/` | 한국어 | CER | 자유발화 |
-| `KtelSpeech/` | 한국어 | CER | 전화 품질 음성 |
-| `KokoroSpeech/` | 일본어 | CER | 단문 낭독 클립(tiny=308개), 파이프 구분 메타데이터 |
-| `ReazonSpeech/` | 일본어 | CER | 단문 독립 클립, CSV 레이블 |
-| `AliMeeting/` | 중국어 | CER | 다화자 회의, 화자별 TextGrid 레이블 |
-| `(zh)RAMC/` | 중국어 | CER | 단문 발화 11,793개 / 화자 20명, TSV 레이블 |
-| `(es)CIEMPIESS/` | 스페인어 | WER | 1,000개 단문 클립, 4개 서브셋(train/read/fm/description) |
-| `smartturn/` | — | VAD F1/지연 | SmartTurn VAD 실험 (독립 트랙) |
 | `ast/` | en→de/ko/ja/zh/es | **LAAL + BLEU** | AST 트랙. 데이터는 FLEURS(리포 밖 `~/datasets/fleurs`), 서버는 `streaming_websocket_server_ast.py`, 데이터셋은 manifest로 교체 (독립 트랙) |
 
 ## 데이터 추적 정책
 
-오디오는 git에 없다. `AMI/`, `AliMeeting/`, `KokoroSpeech/`, `KtelSpeech/`, `ReazonSpeech/`, `(es)CIEMPIESS/`, `(zh)RAMC/`는 `.gitignore`로 통째 제외되어 있고, 테스트 스크립트와 레이블만 force-add로 추적한다. 새 파일을 커밋하려면 `git add -f`가 필요하다.
+오디오는 git에 없다. 결과 디렉토리(`results/`)도 마찬가지다 — 로컬 디스크에만 남는다.
+
+2026-09-06 에 AMI, KtelSpeech, AliMeeting, (zh)RAMC, (es)CIEMPIESS, KokoroSpeech, ReazonSpeech, smartturn 을
+지웠다. 결과가 git에 없었으므로 그 런들은 복구할 수 없고, 요약 지표만 @ARCHIVED_DATASETS_METRICS.md 에 남겼다.
+테스트 클라이언트 스크립트는 삭제 커밋 이전 이력에 있다. 지금 남은 데이터셋은 LibriSpeech, DailyTalk,
+KsponSpeech, ast 넷이다.
 
 ## 결과 디렉토리 구조
 

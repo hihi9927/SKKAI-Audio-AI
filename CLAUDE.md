@@ -48,8 +48,6 @@ Translation is **Google Translate by default** (`translate.googleapis.com` gtx e
 | `--local-translation` | Loads a local seq2seq translator (`core/local_translator.py`) **into this process** — `--local-translation-model` picks MADLAD (`google/madlad400-3b-mt`) or NLLB |
 | `--local-translation-url` | Calls a standalone translation server over HTTP instead of loading a model here (see below). Wins over `--local-translation` — giving a URL means "do not load a model in this process" |
 
-Pipeline dataclasses: [core/types.py](core/types.py) (`AudioSegment → RecognizedToken → CommittedSentence → ValidatedSentence → TranslationResult`). Abstract interfaces: [core/modules.py](core/modules.py) — signatures only, no implementations.
-
 ### Running several servers on one GPU
 
 Every translation call goes through `google_translate_async`, which delegates to the object set by
@@ -321,7 +319,6 @@ package. The symptom is a type error rather than an import error, e.g.
 | `core/llm_corrector/gpt_corrector.py` | `GPTCorrector` — correction only, async with retry/backoff (`--correction`) |
 | `core/local_translator.py` | Local seq2seq translators (MADLAD / NLLB) plus `RemoteTranslator`, the HTTP client for the standalone server |
 | `tools/local_translation_server.py` | Standalone translation server — loads the model once, serves `POST /translate` and `GET /health` |
-| `core/types.py` / `core/modules.py` | Dataclasses / abstract base classes |
 | `core/meaning_segmentator/utils/` | Research scripts: GPT `<SEG>` marking, context translation, COMET eval |
 | `core/research/` | CIF & context-scoring experiments (not on the runtime path) |
 | `Qwen3-ASR/examples/streaming_websocket_server.py` | Production WebSocket server |
@@ -385,7 +382,13 @@ The eval server adds timing fields to `final` (`segmentId`, `audioStartSec`, `au
 
 ## Evaluation
 
-Datasets under `evaluation/`: LibriSpeech, AMI (en); DailyTalk, KsponSpeech, KtelSpeech (ko); KokoroSpeech, ReazonSpeech (ja); AliMeeting, (zh)RAMC (zh); (es)CIEMPIESS (es); plus the standalone `smartturn/` VAD track.
+Datasets under `evaluation/`: LibriSpeech (en); DailyTalk, KsponSpeech (ko); plus the separate AST track in
+`ast/` (FLEURS, en→de/ko/ja/zh/es, scored by LAAL and BLEU).
+
+The other benchmarks — AMI, KtelSpeech, AliMeeting, (zh)RAMC, (es)CIEMPIESS, KokoroSpeech, ReazonSpeech and
+the `smartturn/` VAD track — were deleted on 2026-09-06. Their results were never in git, so only the summary
+metrics survive, in [evaluation/ARCHIVED_DATASETS_METRICS.md](evaluation/ARCHIVED_DATASETS_METRICS.md); the
+test clients are recoverable from history before that commit.
 
 Commit-policy modes compared in `evaluation/LibriSpeech/paper_result/ASR/`: **mode2** = always-commit, **mode3** = dot-commit with confirm gate, **mode4** = en-finetuned weights with SEG-only commit.
 
