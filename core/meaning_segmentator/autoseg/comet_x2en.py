@@ -191,7 +191,7 @@ def plot(blob: dict, out_path: Path) -> None:
                     transform=ax.get_yaxis_transform(), ha="right", va="bottom",
                     color=COLOR[lang], fontsize=7.5)
 
-    ax.set_xlabel("LAAL (ms of source audio)  ←  lower latency is better")
+    ax.set_xlabel("LAAL (ms of source audio)")
     ax.set_ylabel(f"COMET  ({blob['model'].split('/')[-1]}, gold en reference)")
     ax.legend(frameon=False, loc="lower right", fontsize=8.5)
     fig.text(0.01, 0.975, "Quality–latency on {de, zh, ja} → en",

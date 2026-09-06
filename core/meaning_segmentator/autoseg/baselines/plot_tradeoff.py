@@ -36,7 +36,7 @@ SERIES = [
     ("auto",         BLUE,    "-",  "o", "Multi-agent loop (ours)"),
     ("causal_align", AQUA,    "-",  "s", "Causal align (TransLLaMa)"),
     ("alignatt",     ORANGE,  "-",  "^", "AlignAtt (Papi 2023)"),
-    ("syntax",       VIOLET,  "-",  "D", "Syntactic chunks (SASST-style)"),
+    ("syntax",       VIOLET,  "-",  "D", "SASST"),
     ("mu_prefix",    MAGENTA, "-",  "v", "Prefix-match MU (Zhang 2020)"),
 ]
 # **`punct` 는 곡선이 아니라 점 하나다.** `coarsen` 은 경계를 *지우기만* 하므로 정책이
@@ -291,7 +291,7 @@ for ax, tgt in zip(axes, TARGETS):
                 ax.plot([fr + dx - 0.007, fr + dx + 0.007], [-0.013, 0.013],
                         transform=ax.transAxes, color=INK2, lw=1.1,
                         clip_on=False, zorder=10)
-    ax.set_xlabel("LAAL (ms of source audio)  ←  lower latency is better",
+    ax.set_xlabel("LAAL (ms of source audio)",
                   labelpad=6)
     ylab = (f"BLEU  (en→{tgt}, {blobs[tgt]['tokenize']})" if M == "bleu"
             else f"COMET  (en→{tgt}, wmt22-comet-da)")
