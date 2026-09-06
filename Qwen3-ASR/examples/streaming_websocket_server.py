@@ -12,7 +12,9 @@ Client protocol (WhisperLiveKit app compatible):
     1. Connect to WebSocket
     2. Send JSON: {"type": "start", "lang": "auto", "polish": true, "translate": true}
     3. Send binary audio chunks (PCM s16le, 16kHz, mono)
-    4. Receive JSON: {"type": "partial", ...} or {"type": "final", ...}
+    4. Receive JSON: {"type": "partial", "text", "language", "seq"}  (미확정 가설, 통째 교체.
+       text 가 빈 문자열이면 화면을 비우라는 신호)
+       또는 {"type": "final", "start", "end", "original", "translation", "language", "commitReason"}
     5. Send JSON: {"type": "stop"} or {"type": "finish"} to end session
 """
 
@@ -120,9 +122,14 @@ logger = logging.getLogger(__name__)
 SAMPLING_RATE = 16000
 MAX_AUDIO_ACCUM_SEC = 90.0          # audio_accum 강제 리셋 임계값 (초)
 MAX_SEED_COMMITTED_SENTENCES = 1    # 강제 리셋 시 seed_text에 포함할 직전 committed 문장 수
+PARTIAL_MIN_INTERVAL_SEC = 0.12     # partial(미확정 가설) 전송 최소 간격 (초)
+
 # VADIterator 설정
 VAD_THRESHOLD = 0.5
-VAD_MIN_SILENCE_MS = 800       # 발화 종료 판정까지 필요한 침묵 길이
+# 발화 종료 판정까지 필요한 침묵 길이. --vad-min-silence 로 덮어쓴다.
+# 짧게 잡을수록 발화가 자주 끊겨 slot 이 자주 초기화되고(언어 전환이 빨리 풀린다)
+# 문장은 잘게 쪼개진다. 길게 잡으면 그 반대다.
+VAD_MIN_SILENCE_MS = 800
 VAD_SPEECH_PAD_MS = 160        # 발화 경계에 추가하는 패딩
 VAD_WINDOW_SIZE_SAMPLES = 512  # 16kHz 기준 silero 권장 윈도우 크기
 
@@ -276,6 +283,37 @@ def lang_code_to_name(code: str) -> Optional[str]:
     if not code or code == "auto":
         return None
     return LANG_CODE_TO_NAME.get(code)
+
+
+def _norm_lang_code(value: object) -> str:
+    """언어 코드로 정규화. 이름("Korean")으로 와도 받는다. 모르면 빈 문자열."""
+    if not isinstance(value, str):
+        return ""
+    v = value.strip()
+    if not v or v == "auto":
+        return ""
+    if v in LANG_CODE_TO_NAME:
+        return v
+    return lang_to_code(v)
+
+
+def parse_lang_map(raw: object) -> dict[str, str]:
+    """{"ko": "en", "ja": "ko"} 형태의 감지 언어별 번역 목표를 정규화한다.
+
+    "내 언어 <-> 상대 언어" 쌍으로는 세 언어 이상을 각각 다른 곳으로 보낼 수 없다.
+    이 매핑이 있으면 감지 언어를 키로 목표를 바로 고른다(_correct_and_translate).
+    자기 자신으로 가는 항목과 모르는 코드는 버린다.
+    """
+    if not isinstance(raw, dict):
+        return {}
+    out: dict[str, str] = {}
+    for k, v in raw.items():
+        src = _norm_lang_code(k)
+        dst = _norm_lang_code(v)
+        if not src or not dst or src == dst:
+            continue
+        out[src] = dst
+    return out
 
 
 class SessionLogger:
@@ -483,11 +521,22 @@ V2_URL = "https://translation.googleapis.com/language/translate/v2"
 GOOGLE_TRANSLATE_API_KEY: str = os.environ.get("GOOGLE_TRANSLATE_API_KEY", "").strip()
 
 
-def set_google_translate_api_key(key: Optional[str]) -> None:
+def set_google_translate_api_key(key: Optional[str], local_translation: bool = False) -> None:
+    """Google 번역 키를 반영하고 실제로 어떤 번역 경로를 타는지 한 줄 남긴다.
+
+    `local_translation` 이 True 면 모든 번역이 로컬 모델로 가므로(google_translate_async
+    가 LOCAL_TRANSLATOR 를 먼저 본다) 키가 없다고 경고하지 않는다. 경고를 그대로 두면
+    실제로는 쓰지 않는 gtx 를 쓰는 것처럼 읽혀 원인 추적을 헷갈리게 한다.
+    """
     global GOOGLE_TRANSLATE_API_KEY
     if key:
         GOOGLE_TRANSLATE_API_KEY = key.strip()
-    if GOOGLE_TRANSLATE_API_KEY:
+    if local_translation:
+        logger.info(
+            "[translate] 로컬 번역 모델 사용 (--local-translation) — Google 경로는 "
+            "로컬 번역기 초기화가 실패했을 때만 폴백으로 쓴다"
+        )
+    elif GOOGLE_TRANSLATE_API_KEY:
         logger.info("[translate] Cloud Translation v2 사용 (API 키 감지)")
     else:
         logger.warning(
@@ -533,17 +582,35 @@ async def _translate_gtx(
     return translated, detected_lang
 
 
+# 로컬 번역기(NLLB). --local-translation 으로 켜며, 켜져 있으면 Google 경로 대신
+# 이 인스턴스를 쓴다. 모든 번역 호출이 google_translate_async 를 지나므로
+# 여기 한 곳만 갈아끼우면 컨텍스트 번역·평가 서버까지 함께 적용된다.
+LOCAL_TRANSLATOR = None
+
+
+def set_local_translator(translator) -> None:
+    global LOCAL_TRANSLATOR
+    LOCAL_TRANSLATOR = translator
+
+
 async def google_translate_async(
-    session: aiohttp.ClientSession, text: str, target_lang: str
+    session: aiohttp.ClientSession, text: str, target_lang: str,
+    source_lang: Optional[str] = None,
 ) -> tuple[str, str]:
     """Async Google Translate call.
     Returns: (translated_text, detected_source_lang_code)
 
     키가 있으면 v2, 없으면 gtx. 일시적 실패(429/타임아웃)를 한 번 흡수하되, 실시간
     자막이라 오래 붙들 수 없으므로 재시도는 1회 · 0.4초로 끊는다.
+
+    --local-translation 으로 로컬 번역기가 켜져 있으면 외부 호출 없이 그걸 쓴다.
+    source_lang 은 ASR 이 감지한 소스 언어 코드로, 로컬 번역기에만 쓰인다
+    (Google 은 소스를 스스로 감지한다).
     """
     if not text.strip() or not target_lang:
         return "", ""
+    if LOCAL_TRANSLATOR is not None:
+        return await LOCAL_TRANSLATOR.translate(text, target_lang, source_lang)
     call = _translate_v2 if GOOGLE_TRANSLATE_API_KEY else _translate_gtx
     last_err: Optional[Exception] = None
     for attempt in range(2):
@@ -617,6 +684,17 @@ class Qwen3ASRStreamingHandler:
         # 클라이언트 옵션
         self.client_lang = "auto"
         self.client_target_lang = ""
+        # 감지 언어별 번역 목표. 비어 있으면 기존 "내 언어 <-> 상대 언어" 쌍으로 돈다.
+        self.client_lang_map: dict[str, str] = {}
+
+        # 밖에서 지정한 디코딩 언어(정규 이름, 예: "Spanish"). lang_hint 로 들어온다.
+        # 파인튜닝 모델은 자기 언어 밖에서 언어 태그부터 틀린다 — 베이스라인이
+        # 스페인어를 ko 로 보고 한글로 받아쓰는 식이다. 오디오를 보고 판정한 쪽이
+        # 있으면 그 값으로 못박는 편이 낫다.
+        self.forced_language: Optional[str] = None
+        # lang_hint 로 좁힌 허용 언어(정규 이름 하나). force 를 안 쓰는 기본 경로다 —
+        # 로짓 바이어스는 언어 이름 토큰만 건드리므로 출력 형식이 안 바뀐다.
+        self.hinted_language: Optional[str] = None
 
         # 타임스탬프 추적
         self.segment_start_time = 0.0
@@ -663,6 +741,11 @@ class Qwen3ASRStreamingHandler:
         self.stream_slots: dict[str, dict] = {}
         self.vad_last_speech_start_sample: int = 0  # 마지막 VAD speech_start 글로벌 샘플 위치
 
+        # partial(토큰 단위 미확정 가설) 스트리밍 상태
+        self._last_partial_text: Optional[str] = None
+        self._last_partial_time: float = 0.0
+        self._partial_seq: int = 0
+
         # ── silero-vad 초기화 (VADIterator 사용) ──
         # 서버에서 미리 로드한 vad_model_bytes로 클라이언트마다 독립 인스턴스 생성.
         self.vad_enabled = False
@@ -690,6 +773,10 @@ class Qwen3ASRStreamingHandler:
     async def send_message(self, msg_type: str, **kwargs):
         """JSON 메시지 전송"""
         message = {"type": msg_type, **kwargs}
+        if msg_type == "final":
+            # 방금 확정된 구간은 더 이상 미확정이 아니다. partial 캐시를 무효화해 두면
+            # 다음 _emit_partial이 같은 문자열이더라도 반드시 다시 나간다.
+            self._last_partial_text = None
         try:
             await self.websocket.send(json.dumps(message, ensure_ascii=False))
             self.log.debug(f"Sent: {msg_type}")
@@ -707,6 +794,9 @@ class Qwen3ASRStreamingHandler:
         self.state = self.stream_slots[self.active_slot]["state"]
         self.segment_start_time = 0.0
         self.current_time = 0.0
+        self._last_partial_text = None
+        self._last_partial_time = 0.0
+        self._partial_seq = 0
         self.log.info("Streaming state initialized")
 
         # reset VAD
@@ -721,23 +811,41 @@ class Qwen3ASRStreamingHandler:
 
     def _new_stream_slot(self, seed_text: str = "", context: str = "") -> dict:
         allowed_languages = None
-        if self.config.restrict_languages and self.client_lang and self.client_lang != "auto":
+        if self.config.restrict_languages:
             langs = []
-            src_name = lang_code_to_name(self.client_lang)
-            if src_name:
-                langs.append(src_name)
-            if self.client_target_lang:
-                tgt_name = lang_code_to_name(self.client_target_lang)
-                if tgt_name and tgt_name not in langs:
-                    langs.append(tgt_name)
+            if self.client_lang_map:
+                # langMap 의 키가 곧 "말할 언어"다. 목표 언어는 출력일 뿐이므로 열지 않는다 —
+                # 넣으면 쓰지도 않을 언어까지 허용해 ASR 오감지를 늘린다.
+                # 슬롯을 만들 때 계산하므로, 시연 중 매핑을 바꾸면 다음 커밋부터 반영된다.
+                for code in self.client_lang_map:
+                    name = lang_code_to_name(code)
+                    if name and name not in langs:
+                        langs.append(name)
+            elif self.client_lang and self.client_lang != "auto":
+                src_name = lang_code_to_name(self.client_lang)
+                if src_name:
+                    langs.append(src_name)
+                if self.client_target_lang:
+                    tgt_name = lang_code_to_name(self.client_target_lang)
+                    if tgt_name and tgt_name not in langs:
+                        langs.append(tgt_name)
             if langs:
                 allowed_languages = langs
+        # lang_hint 가 왔으면 그 하나로 더 조인다. langMap 이 넓어도(제3언어를
+        # 둘 이상 고른 경우) 판정된 언어만 남는다. restrict_languages 를 껐어도
+        # 밖에서 준 판정은 존중한다.
+        if self.hinted_language:
+            allowed_languages = [self.hinted_language]
 
+        # lang_hint 가 있으면 프롬프트에 "language X<asr_text>" 로 박아 디코딩
+        # 언어를 못박는다. 이때 allowed_languages 의 로짓 바이어스는 적용되지
+        # 않는다(둘 중 하나만 걸린다).
         state = self.asr.init_streaming_state(
             unfixed_chunk_num=self.config.unfixed_chunk_num,
             unfixed_token_num=self.config.unfixed_token_num,
             chunk_size_sec=self.config.chunk_size_sec,
             allowed_languages=allowed_languages,
+            language=self.forced_language,
             context=context,
         )
         # [Fix 2] SEG 커밋 후 remaining 텍스트를 새 슬롯에 이식:
@@ -764,6 +872,73 @@ class Qwen3ASRStreamingHandler:
 
     def _reset_stream_slot(self, slot_key: str, seed_text: str = "", context: str = ""):
         self.stream_slots[slot_key] = self._new_stream_slot(seed_text=seed_text, context=context)
+
+    async def _apply_lang_hint(self, code: Optional[str],
+                               from_sec: Optional[float] = None,
+                               force: bool = False) -> None:
+        """밖에서 판정한 언어로 디코딩 언어를 못박고, 활성 슬롯을 잘라 낸다.
+
+        **못박기만 해서는 모자란다.** force_language 를 바꿔도 슬롯의 누적 텍스트가
+        프롬프트 프리픽스에 그대로 남아, 모델은 "앞 언어로 쓰인 문장을 이어 쓰되
+        새 언어로" 라는 모순된 지시를 받는다. 그래서 슬롯을 새로 만들어 프리픽스를
+        비운다.
+
+        `from_sec` 는 새 언어 발화가 시작된 오디오 시각이다. 그 지점부터의 오디오를
+        새 슬롯에 옮겨 담는다. 안 옮기면 판정이 서기까지의 앞부분(보통 0.5~1초)이
+        통째로 날아가고, 뒤따르는 VAD 도 침묵 구간을 잃어 발화 끝을 못 잡는다 —
+        SEG 커밋 경로가 carry_audio 로 같은 문제를 피하고 있다.
+        """
+        name = lang_code_to_name(code) if code else None
+        cur = self.forced_language if force else self.hinted_language
+        if not name or name == cur:
+            return
+        prev = cur
+        # **기본은 바이어스다.** force_language 는 프롬프트에 언어를 박아 넣어
+        # 모델이 언어 이름을 아예 생성하지 않게 하는데, 그러면 출력 형식이 바뀌어
+        # (language 접두 없이 본문만) 커밋·SEG 판정이 달라진다. 실측에서 짧은
+        # 맞장구가 뭉개졌다. 바이어스는 언어 이름 토큰만 -100 으로 막으므로 형식이
+        # 그대로다. 어느 쪽도 본문 글자까지 강제하지는 못한다 — 태그만 고정한다.
+        if force:
+            self.forced_language = name
+            self.hinted_language = None
+        else:
+            self.hinted_language = name
+            self.forced_language = None
+
+        slot_key = self.active_slot
+        old_state = self._slot(slot_key)["state"]
+        anchor = self._slot(slot_key)["audio_anchor_sec"]
+        accum = old_state.audio_accum
+        # **buffer 도 같이 옮겨야 한다.** audio_accum 은 청크로 소비된 오디오만
+        # 담고, 아직 한 청크를 못 채운 꼬리는 buffer 에 있다. accum 만 보고
+        # 자르면 그 꼬리가 통째로 날아간다 — 판정 직후라 accum 이 아예 비어
+        # 있는 일도 흔해서, 실제로 발화 앞부분('Esto parece')이 사라졌다.
+        tail = old_state.buffer
+        carry = None
+        if accum is not None and accum.shape[0] > 0:
+            offset = 0
+            if from_sec is not None:
+                offset = int(max(0.0, float(from_sec) - anchor) * SAMPLING_RATE)
+            if offset < accum.shape[0]:
+                carry = accum[offset:].copy()
+
+        self._reset_stream_slot(slot_key)
+        new_slot = self._slot(slot_key)
+        if carry is not None and carry.shape[0] > 0:
+            new_slot["state"].audio_accum = carry
+            new_slot["audio_anchor_sec"] = (
+                float(from_sec) if from_sec is not None else anchor)
+        if tail is not None and tail.shape[0] > 0:
+            new_slot["state"].buffer = tail.copy()
+        if slot_key == self.active_slot:
+            self.state = new_slot["state"]
+        self.log.info(
+            f"[LANG-HINT] slot={slot_key} {prev or '-'} -> {name} "
+            f"mode={'force' if force else 'bias'} "
+            f"from={from_sec} "
+            f"carry={0 if carry is None else round(carry.shape[0] / SAMPLING_RATE, 2)}s "
+            f"tail={0 if tail is None else round(tail.shape[0] / SAMPLING_RATE, 2)}s"
+        )
 
     def _slot(self, slot_key: Optional[str] = None) -> dict:
         key = slot_key or self.active_slot
@@ -951,6 +1126,49 @@ class Qwen3ASRStreamingHandler:
             return ""
         return re.sub(r'\s+', ' ', uncommitted_raw.replace("<SEG>", "")).strip()
 
+    async def _emit_partial(self, slot_key: Optional[str] = None, force: bool = False) -> None:
+        """미확정 구간(아직 커밋되지 않은 텍스트)을 partial 메시지로 전송.
+
+        보내는 문자열은 항상 통째로 교체할 전체 텍스트다. 모델이 unfixed_token_num
+        만큼 롤백 후 재디코딩하므로 꼬리 토큰은 확정이 아니고, append 방식으로는
+        정합성을 못 맞춘다.
+
+        빈 문자열은 "화면을 비우라"는 신호로 그대로 전송한다.
+        """
+        now = time.perf_counter()
+        # 시간 게이트를 먼저 본다. _slot_uncommitted_display 는 difflib 비교까지
+        # 도는 계산이라, 매 토큰 돌리면 디코딩 루프에 그대로 얹힌다.
+        if not force and now - self._last_partial_time < PARTIAL_MIN_INTERVAL_SEC:
+            return
+        text = self._slot_uncommitted_display(slot_key)
+        # 디코딩 중에는 빈 문자열을 보내지 않는다. 청크마다 <asr_text> 직후 잠깐
+        # 텍스트가 비는 순간이 있어, 그대로 흘리면 청크 경계마다 화면이 한 번
+        # 깜빡인다. 화면 비우기는 커밋/리셋 뒤 force 경로에서만 내보낸다.
+        if not text and not force:
+            return
+        prev = self._last_partial_text
+        if not force and prev and text != prev and prev.startswith(text):
+            # 재디코딩 램프업. 청크마다 롤백 후 처음부터 다시 디코딩하므로 직전
+            # 텍스트의 앞부분만 나오는 순간이 있다(예: 'I really like.' -> 'I').
+            # 그대로 흘리면 화면이 줄었다 늘었다 한다. 진짜 수정(prefix 가 아닌
+            # 다른 텍스트)은 이 조건에 안 걸리고, 이 억제로 화면이 뒤처지더라도
+            # 청크 끝 force 재동기화가 한 청크 안에 바로잡는다.
+            return
+        if text == prev:
+            # 안 보내더라도 시계는 전진시킨다. 안 그러면 텍스트가 멈춰 있는 동안
+            # 매 토큰 위 계산을 다시 돌게 된다.
+            self._last_partial_time = now
+            return
+        self._last_partial_text = text
+        self._last_partial_time = now
+        self._partial_seq += 1
+        await self.send_message(
+            "partial",
+            text=text,
+            language=self._slot(slot_key).get("last_text_lang", ""),
+            seq=self._partial_seq,
+        )
+
     def _build_forced_reset_seed(self, slot_key: str, remaining: str) -> str:
         """강제 리셋용 seed_text: 마지막 N committed 문장 + remaining"""
         slot = self._slot(slot_key)
@@ -985,6 +1203,13 @@ class Qwen3ASRStreamingHandler:
             # 마지막 문장도 finish까지 안 기다리고 dot으로 즉시 커밋되게 함.
             await self._process_slot_updates(slot_key)
 
+        async def _on_partial(_):
+            # 화면에 뜨는 건 active 슬롯의 텍스트뿐이다. standby 슬롯 가설을
+            # 흘리면 두 개가 번갈아 덮어써서 화면이 튄다.
+            if slot_key is not None and slot_key != self.active_slot:
+                return
+            await self._emit_partial(slot_key)
+
         async with self.asr_lock:
             lora_request = self._get_lora_request(slot["state"])
 
@@ -995,6 +1220,7 @@ class Qwen3ASRStreamingHandler:
             await self.asr.streaming_transcribe(
                 chunk, slot["state"], lora_request=lora_request, on_seg=_on_seg,
                 on_dot=_on_dot if self.enable_dot_commit else None,
+                on_partial=_on_partial,
             )
         finally:
             self._in_generate_loop = False
@@ -1030,6 +1256,7 @@ class Qwen3ASRStreamingHandler:
                 self.state = self.stream_slots[self.active_slot]["state"]
             async with self.asr_lock:
                 self.asr_processed_cursor = self.sample_cursor
+            await self._emit_partial(slot_key, force=True)
             return
 
         _committed_text_snapshot = await self._process_slot_updates(slot_key, chunk_end=True)
@@ -1125,6 +1352,10 @@ class Qwen3ASRStreamingHandler:
                     self.log.info(
                         f"[COMMIT-PENDING] slot={slot_key} remaining={remaining!r}"
                     )
+
+        # 커밋/슬롯 리셋이 끝난 실제 상태로 화면을 재동기화한다. 리셋이 일어났으면
+        # 미확정 구간이 비어 빈 문자열이 나가고, 클라이언트의 유령 텍스트가 지워진다.
+        await self._emit_partial(slot_key, force=True)
 
         async with self.asr_lock:
             self.asr_processed_cursor = self.sample_cursor
@@ -2228,6 +2459,17 @@ class Qwen3ASRStreamingHandler:
         # (실측: 6128-63241-0006 등 6건이 빈 전사).
         await self._drain_deferred_commits()
         await self.flush_uncommitted(force=True, reason="finish", slot_key=self.active_slot)
+        # 스트림이 끝났으니 클라이언트에 남은 미확정 말풍선을 지운다.
+        await self._send_partial_clear()
+
+    async def _send_partial_clear(self) -> None:
+        """미확정 말풍선을 비우라는 신호(빈 문자열 partial)를 무조건 보낸다."""
+        if self._last_partial_text == "":
+            return
+        self._last_partial_text = ""
+        self._last_partial_time = time.perf_counter()
+        self._partial_seq += 1
+        await self.send_message("partial", text="", language="", seq=self._partial_seq)
 
     # ── 서브클래스 훅 ──────────────────────────────────────────────────────────
 
@@ -2244,10 +2486,13 @@ class Qwen3ASRStreamingHandler:
             (translation, detected_lang, extra)
             extra: 서브클래스가 _emit_final_payload 에 전달할 임의 데이터.
         """
+        # 로컬 번역기는 소스 언어를 스스로 감지하지 않으므로 ASR 이 판정한 언어를
+        # 같이 넘긴다. Google 경로에서는 이 인자가 무시된다.
+        source_lang = lang_to_code(self._slot(self.active_slot).get("last_text_lang", ""))
         translation, detected_lang = await google_translate_async(
-            self.http_session, text, target_lang
+            self.http_session, text, target_lang, source_lang
         )
-        return translation, detected_lang, {}
+        return translation, detected_lang or source_lang, {}
 
     def _maybe_fix_direction(self, detected: str, used_target: str) -> Optional[str]:
         """양방향(non-auto) 모드에서 감지된 소스 언어가 번역 target과 같으면(= 같은 언어로
@@ -2257,7 +2502,15 @@ class Qwen3ASRStreamingHandler:
         안 넘어가 방향이 틀어진 경우를, 번역 후 신뢰 가능한 감지 결과로 자가교정한다.
         client_lang/client_target_lang/detected는 모두 언어 코드(예: 'en','ko').
         """
-        if not detected or not self.client_lang or self.client_lang == "auto":
+        if not detected:
+            return None
+        if self.client_lang_map:
+            # 매핑이 있으면 방향은 감지 언어가 정한다. 목표가 다르면 그쪽으로 한 번 더.
+            mapped = self.client_lang_map.get(detected)
+            if mapped and mapped != used_target:
+                return mapped
+            return None
+        if not self.client_lang or self.client_lang == "auto":
             return None
         if self.client_lang == self.client_target_lang:
             return None
@@ -2286,7 +2539,11 @@ class Qwen3ASRStreamingHandler:
             src_code = await self.gpt_translator.detect_language(text)
 
         # 번역 방향 결정: ASR 감지 언어 기준, 1회 번역
-        if not self.client_lang or self.client_lang == "auto":
+        # 언어별 목표(langMap)가 지정돼 있으면 그게 먼저다. 항목이 없으면 쌍 규칙으로 돈다.
+        mapped_target = self.client_lang_map.get(src_code) if src_code else ""
+        if mapped_target:
+            target = mapped_target
+        elif not self.client_lang or self.client_lang == "auto":
             target = self.client_target_lang        # 방향 모름 → targetLang으로
         elif src_code == self.client_lang:
             target = self.client_target_lang        # 내 언어 감지 → 상대 언어로
@@ -2339,7 +2596,11 @@ class Qwen3ASRStreamingHandler:
         """finish_streaming이 빈 결과를 반환했을 때, VAD 구간 기준으로 오디오를 트림하여 재시도.
 
         앞: VAD speech_start - 200ms 패딩
-        뒤: VAD 종료 감지 시점 - 700ms (VAD_MIN_SILENCE_MS 800ms - 100ms 여유)
+        뒤: VAD 종료 감지 시점 - (VAD_MIN_SILENCE_MS - 100ms 여유)
+
+        뒤쪽 여유를 상수에서 뽑는 이유: 종전에는 0.7 초가 박혀 있었는데 그건
+        VAD_MIN_SILENCE_MS 가 800 일 때의 값이다. 침묵 기준을 400 으로 내리면
+        아직 안 지난 300ms 를 더 잘라내 발화 끝이 날아간다.
         """
         slot = self._slot(slot_key)
         state = slot["state"]
@@ -2350,7 +2611,8 @@ class Qwen3ASRStreamingHandler:
         slot_anchor_samples = int(slot["audio_anchor_sec"] * SAMPLING_RATE)
         speech_start = self.vad_last_speech_start_sample - slot_anchor_samples - int(0.2 * SAMPLING_RATE)
         speech_start = max(0, speech_start)
-        speech_end = full_audio.shape[0] - int(0.7 * SAMPLING_RATE)
+        tail_trim = max(0.0, (VAD_MIN_SILENCE_MS - 100) / 1000.0)
+        speech_end = full_audio.shape[0] - int(tail_trim * SAMPLING_RATE)
 
         if speech_end <= speech_start:
             self.log.info(f"[VAD-RETRY] slot={slot_key} skip: empty range start={speech_start} end={speech_end}")
@@ -2478,10 +2740,12 @@ class Qwen3ASRStreamingHandler:
                                 )
                             self.client_lang = data.get("lang", "auto")
                             self.client_target_lang = data.get("targetLang", "")
+                            self.client_lang_map = parse_lang_map(data.get("langMap"))
                             self.use_correction = data.get("speed", "accurate") != "fast"
                             self.log.info(
                                 f"Received start: lang={self.client_lang}, "
                                 f"targetLang={self.client_target_lang}, "
+                                f"langMap={self.client_lang_map or '-'}, "
                                 f"speed={data.get('speed', 'accurate')}"
                             )
 
@@ -2489,6 +2753,31 @@ class Qwen3ASRStreamingHandler:
                             self.running = True
                             await self.send_message(
                                 "ready", message="Ready to receive audio"
+                            )
+
+                        elif msg_type == "lang_hint":
+                            await self._apply_lang_hint(
+                                data.get("lang"), data.get("fromSec"),
+                                force=bool(data.get("force")))
+                        elif msg_type == "config":
+                            # 시연 중 번역 방향을 바꾼다. 스트림은 그대로 둔다 —
+                            # 다음에 확정되는 문장부터 새 설정으로 번역된다.
+                            if "langMap" in data:
+                                self.client_lang_map = parse_lang_map(data.get("langMap"))
+                            if data.get("lang"):
+                                self.client_lang = data["lang"]
+                            if data.get("targetLang"):
+                                self.client_target_lang = data["targetLang"]
+                            self.log.info(
+                                f"Received config: lang={self.client_lang}, "
+                                f"targetLang={self.client_target_lang}, "
+                                f"langMap={self.client_lang_map or '-'}"
+                            )
+                            await self.send_message(
+                                "config_ok",
+                                lang=self.client_lang,
+                                targetLang=self.client_target_lang,
+                                langMap=self.client_lang_map,
                             )
 
                         elif msg_type in ("stop", "finish"):
@@ -2810,6 +3099,13 @@ def parse_args():
         help="Max new tokens per chunk (32은 긴 발화 truncation 유발 → 128)",
     )
     parser.add_argument(
+        "--vad-min-silence", type=int, default=VAD_MIN_SILENCE_MS,
+        help=(
+            "발화 종료 판정까지 필요한 침묵 길이(ms). 짧을수록 발화가 자주 "
+            f"끊겨 언어 전환이 빨리 풀리지만 문장이 잘게 쪼개진다 (기본 {VAD_MIN_SILENCE_MS})"
+        ),
+    )
+    parser.add_argument(
         "--chunk-size", type=float, default=2.0,
         help="Chunk size in seconds",
     )
@@ -2820,6 +3116,26 @@ def parse_args():
     parser.add_argument(
         "--port", type=int, default=8765,
         help="Server port",
+    )
+    parser.add_argument(
+        "--local-translation", action="store_true",
+        help="번역을 로컬 NLLB-200 모델로 처리한다. 외부 호출이 없어 gtx 429 에 안 걸린다.",
+    )
+    parser.add_argument(
+        "--local-translation-model", type=str, default="facebook/nllb-200-distilled-600M",
+        help="로컬 번역 모델 이름 또는 경로",
+    )
+    parser.add_argument(
+        "--local-translation-device", type=str, default=None,
+        help="로컬 번역 모델을 올릴 장치 (cuda / cpu). 미지정 시 자동",
+    )
+    parser.add_argument(
+        "--local-translation-url", type=str, default=None,
+        help=(
+            "단독 번역 서버(tools/local_translation_server.py) 주소. 주면 이 "
+            "프로세스에 번역 모델을 올리지 않고 HTTP 로 부른다 — ASR 서버를 "
+            "여러 개 띄울 때 번역 모델이 복제되는 걸 막는다. 예: http://127.0.0.1:8770"
+        ),
     )
     parser.add_argument(
         "--no-idle-shutdown", action="store_true",
@@ -2964,7 +3280,39 @@ def parse_args():
 def main():
     args = parse_args()
     _configure_logging(use_json=args.log_json, log_file=args.log_file)
-    set_google_translate_api_key(args.google_api_key)
+
+    # VADIterator 생성과 꼬리 트림이 모두 이 전역을 읽으므로 여기서 한 번 덮는다.
+    if args.vad_min_silence != VAD_MIN_SILENCE_MS:
+        globals()["VAD_MIN_SILENCE_MS"] = args.vad_min_silence
+        logger.info(f"VAD min silence: {args.vad_min_silence}ms")
+    set_google_translate_api_key(
+        args.google_api_key,
+        local_translation=args.local_translation or bool(args.local_translation_url),
+    )
+
+    if args.local_translation_url:
+        # 원격이 먼저다. 주소를 준 건 "이 프로세스에 모델을 올리지 말라"는 뜻이므로
+        # --local-translation 이 함께 켜져 있어도 모델을 올리지 않는다.
+        from core.local_translator import RemoteTranslator
+
+        set_local_translator(RemoteTranslator(args.local_translation_url))
+        logger.info(f"Remote translator enabled ({args.local_translation_url})")
+    elif args.local_translation:
+        try:
+            from core.local_translator import make_translator
+            # 모델 이름으로 백엔드를 고른다 — madlad 가 들어가면 MADLAD, 아니면 NLLB.
+            _local = make_translator(
+                model_name=args.local_translation_model,
+                device=args.local_translation_device,
+            )
+            _local.load()   # 첫 번역에서 로딩 지연이 나지 않게 미리 올린다
+            set_local_translator(_local)
+            logger.info(f"Local translator enabled ({args.local_translation_model})")
+        except Exception as e:
+            logger.warning(f"Local translator 초기화 실패 — Google Translate 로 폴백: {e!r}")
+            # 폴백이 실제로 걸렸으니 이제 Google 경로가 진짜 경로다. 위에서 건너뛴
+            # 키 유무 안내를 여기서 다시 남긴다.
+            set_google_translate_api_key(None, local_translation=False)
 
     config = StreamingConfig(
         model_path=args.model,

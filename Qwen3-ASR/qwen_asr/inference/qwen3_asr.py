@@ -38,6 +38,7 @@ AutoProcessor.register(Qwen3ASRConfig, Qwen3ASRProcessor)
 
 from .qwen3_forced_aligner import Qwen3ForcedAligner
 from .utils import (
+    _ASR_TEXT_TAG,
     MAX_ASR_INPUT_SECONDS,
     MAX_FORCE_ALIGN_INPUT_SECONDS,
     SAMPLE_RATE,
@@ -755,7 +756,7 @@ class Qwen3ASRModel:
                 return ""
             end_idx -= 1
 
-    async def streaming_transcribe(self, pcm16k: np.ndarray, state: ASRStreamingState, lora_request=None, on_seg=None, on_dot=None) -> ASRStreamingState:
+    async def streaming_transcribe(self, pcm16k: np.ndarray, state: ASRStreamingState, lora_request=None, on_seg=None, on_dot=None, on_partial=None) -> ASRStreamingState:
         """
         Streaming ASR decode step.
 
@@ -862,6 +863,16 @@ class Qwen3ASRModel:
                         state.text = cut
                         _hallucination_aborted = True
                         break
+                    if on_partial and (state.force_language or _ASR_TEXT_TAG in raw_partial):
+                        # 매 토큰 갱신되는 미확정 가설. 반복 환각 컷 이후에 호출해야
+                        # 잘려나갈 텍스트를 밖으로 흘리지 않는다. 전송 여부(스로틀)는
+                        # 콜백 쪽에서 판단한다.
+                        #
+                        # <asr_text> 태그가 나오기 전에는 모델이 아직 "language English"
+                        # 같은 메타 헤더를 뱉는 중이고, parse_asr_output 은 태그가 없으면
+                        # 그 헤더를 전사로 되돌려준다. 그대로 흘리면 화면에 'language' 가
+                        # 깜빡인다. 언어를 강제한 경우에는 헤더 자체가 없다.
+                        await on_partial(state)
                     if on_seg:
                         seg_count = txt_p.count("<SEG>")
                         while seg_count > prev_seg_count:

@@ -1,0 +1,573 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>STiTy — partial 스트리밍</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#e9ebef; color:#1a1a1a;
+         font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif; }
+
+  /* 실기기 비율에 맞춘 프레임. 안쪽은 HomeScreen 스타일 그대로 옮겼다. */
+  .phone { width:420px; max-width:100%; margin:0 auto; min-height:100vh; background:#fff;
+           display:flex; flex-direction:column; box-shadow:0 0 40px rgba(0,0,0,.10);
+           position:relative; }
+
+  /* Header */
+  .header { display:flex; align-items:center; justify-content:space-between;
+            padding:14px 20px 2px; position:relative; }
+  .headerLogoWrap { position:absolute; left:0; right:0; text-align:center; pointer-events:none; }
+  .logo { font-size:28px; font-weight:900; letter-spacing:-1px; }
+  .headerRight { display:flex; align-items:center; gap:10px; margin-left:auto; }
+  .iconBtn { padding:4px; background:none; border:0; cursor:pointer; line-height:0; }
+  .dotWrap { width:20px; height:20px; display:flex; align-items:center; justify-content:center;
+             position:relative; }
+  .dotRing { position:absolute; width:20px; height:20px; border-radius:10px; background:#22c55e;
+             opacity:.3; }
+  .dotRing.on { animation:ring 1.5s ease-in-out infinite; }
+  @keyframes ring { 0%,100%{opacity:.3} 50%{opacity:.06} }
+  .dot { width:8px; height:8px; border-radius:4px; background:#ccc; }
+  .dot.on { background:#22c55e; }
+
+  /* Session chips */
+  .chips { display:flex; padding:12px 20px 2px; align-items:center; gap:6px; flex-wrap:wrap; }
+  .chip { border-radius:100px; padding:3px 10px; font-size:11px; font-weight:600; }
+  .chipSep { font-size:11px; color:#aaa; }
+
+  /* Conversation */
+  .convArea { flex:1; overflow-y:auto; padding:12px 0; display:flex; flex-direction:column; }
+  .convArea.center { justify-content:center; }
+  .idleWrap { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+              padding:40px 0; gap:12px; }
+  .idleTxt { font-size:13px; color:#bbb; text-align:center; }
+  .micIconWrap { width:56px; height:56px; border-radius:28px; display:flex; align-items:center;
+                 justify-content:center;
+                 background:linear-gradient(135deg, rgba(122,144,48,.1), rgba(6,182,212,.1)); }
+
+  /* Bubbles */
+  /* 새로 붙는 말풍선이 통째로 켜지는(점등) 애니메이션은 쓰지 않는다.
+     partial 은 흐리게 떠 있다가 final 에서 같은 노드 그대로 진해진다. */
+  .bubbleRow { display:flex; padding:5px 16px; gap:8px; align-items:flex-end;
+               opacity:1; transition:opacity .28s ease; }
+  .bubbleRow.mine { flex-direction:row-reverse; }
+  .bubbleRow.partial { opacity:.55; }
+  .bubbleMain, .bubbleSub { transition:opacity .14s ease; }
+  .caret { display:inline-block; width:2px; height:1em; margin-left:1px;
+           background:currentColor; opacity:.55; vertical-align:-2px;
+           animation:blink 1s steps(1) infinite; }
+  @keyframes blink { 0%,50%{opacity:.55} 51%,100%{opacity:0} }
+  .avatar { width:28px; height:28px; border-radius:14px; display:flex; align-items:center;
+            justify-content:center; flex-shrink:0; font-size:8px; font-weight:700; }
+  .bubble { max-width:72%; padding:10px 14px; border-radius:18px;
+            border-bottom-left-radius:4px; }
+  .bubbleRow.mine .bubble { border-bottom-left-radius:18px; border-bottom-right-radius:4px; }
+  .bubbleMain { font-size:15px; font-weight:600; line-height:21px; }
+  .bubbleSub { font-size:11px; margin-top:3px; }
+  .tag { font-size:9.5px; color:#c3c6cc; padding:0 16px 4px 52px; }
+  .bubbleRow.mine + .tag { text-align:right; padding:0 52px 4px 16px; }
+
+  /* Recording bar */
+  .recBar { display:flex; align-items:center; margin:0 16px 8px; background:rgba(96,128,200,.07);
+            border-radius:16px; padding:12px 16px; gap:10px; }
+  .recDot { width:10px; height:10px; border-radius:5px; background:#ef4444; }
+  .recLabel { flex:1; font-size:12px; font-weight:600; color:#6080C8; }
+  .waveRow { display:flex; align-items:center; gap:3px; height:14px; }
+  .waveBar { width:3px; border-radius:2px; background:#6080C8; height:3px;
+             animation:wave .8s ease-in-out infinite; }
+  @keyframes wave { 0%,100%{height:3px} 50%{height:14px} }
+
+  /* Bottom bar */
+  .bottomBar { display:flex; padding:10px 20px 28px; gap:10px; }
+  .btn { flex:1; height:52px; border-radius:100px; display:flex; align-items:center;
+         justify-content:center; font-size:15px; font-weight:600; cursor:pointer;
+         background:#fff; border:2px solid transparent; font-family:inherit; }
+  .btn:disabled { opacity:.45; cursor:default; }
+  .btnOutline { border-color:#7A9030; color:#7A9030; }
+  .btnOutlineCyan { border-color:#6080C8; color:#6080C8; }
+  .btnStop { background:#fff0f0; color:#ef4444; border:0; }
+  .btnGhost { flex:0 0 52px; background:#f5f5f5; color:#999; border:0; }
+
+  /* 디코딩 결과가 오기 전, 음성이 잡히고 있음을 알리는 중앙 하단 표시 */
+  .centerPendingWrap { position:absolute; left:0; right:0; bottom:178px; display:flex;
+                       justify-content:center; pointer-events:none; }
+  .centerPendingWrap[hidden] { display:none; }
+  .centerPendingBubble { min-width:58px; padding:8px 18px; border-radius:999px;
+                         background:rgba(122,144,48,.10); border:1px solid rgba(122,144,48,.24);
+                         color:#7A9030; font-size:18px; line-height:20px; font-weight:800;
+                         letter-spacing:2px; text-align:center; }
+
+  /* 디자인 밖: 개발용 로그 */
+  .devlog { width:420px; max-width:100%; margin:16px auto 40px; }
+  .devlog summary { cursor:pointer; font-size:12px; color:#8a8f98; padding:6px 4px; }
+  .devlog pre { background:#fff; border:1px solid #dfe2e7; border-radius:10px; padding:10px;
+                font-size:11px; max-height:240px; overflow:auto; margin:0; }
+</style>
+
+<div class="phone">
+  <div class="header">
+    <button class="iconBtn" title="메뉴">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="1.8"
+           stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <div class="headerLogoWrap">
+      <span class="logo"><span style="color:#6080C8">ST</span><span style="color:#9BB4D4">i</span><span style="color:#7A9030">T</span><span style="color:#E8E0A0">y</span></span>
+    </div>
+    <div class="headerRight">
+      <button class="iconBtn" title="설정">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.8">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>
+        </svg>
+      </button>
+      <div class="dotWrap">
+        <div class="dotRing" id="dotRing" hidden></div>
+        <div class="dot" id="dot"></div>
+      </div>
+      <button class="iconBtn" title="TTS">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7A9030" stroke-width="1.8"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="chips">
+    <span class="chip" style="background:#f0f4e8;color:#7A9030">English</span>
+    <span class="chipSep">↔</span>
+    <span class="chip" style="background:#eaf2fb;color:#6080C8">Korean</span>
+    <span class="chip" style="background:#f0f0f0;color:#777">Speaker</span>
+  </div>
+
+  <div class="convArea center" id="conv"></div>
+
+  <div class="centerPendingWrap" id="pendingSlot" hidden>
+    <div class="centerPendingBubble">•••</div>
+  </div>
+
+  <div id="recBarSlot"></div>
+
+  <div class="bottomBar" id="bottomBar"></div>
+</div>
+
+<div class="devlog">
+  <details>
+    <summary>개발용 원시 메시지 로그</summary>
+    <pre id="raw"></pre>
+  </details>
+</div>
+
+<script>
+const WS_URL = (location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/ws";
+const SR = 16000, FRAME_MS = 100;
+const MY_LANG = 'en', PEER_LANG = 'ko';
+
+// 타이핑 연출 파라미터. 한 덩어리로 도착한 partial 을 등간격으로 흘린다.
+const TYPE_BUDGET_MS = 1300;   // 다음 partial 이 오기 전에 다 뿌릴 목표 시간
+const TYPE_MIN_MS = 10, TYPE_MAX_MS = 45;
+
+const LANG_COLORS = {
+  en:{bubble:'#6080C8',avatar:'#9BB4D4'}, ko:{bubble:'#7A9030',avatar:'#A8B870'},
+  ja:{bubble:'#C87060',avatar:'#E0A898'}, zh:{bubble:'#9060C8',avatar:'#B898E0'},
+  es:{bubble:'#C8A030',avatar:'#E0C878'}, fr:{bubble:'#308898',avatar:'#78B8C8'},
+  id:{bubble:'#30A070',avatar:'#70C0A0'}, vi:{bubble:'#B85050',avatar:'#E09080'},
+  th:{bubble:'#5080C0',avatar:'#88B0E0'}, de:{bubble:'#C09050',avatar:'#E0C080'},
+};
+const NAME_TO_CODE = {
+  Korean:'ko', English:'en', Japanese:'ja', Chinese:'zh',
+  Indonesian:'id', Vietnamese:'vi', Thai:'th',
+  French:'fr', German:'de', Spanish:'es',
+};
+const langToCode = l => NAME_TO_CODE[l] || (l || 'en').toLowerCase().slice(0, 2);
+
+// 말풍선 색은 언어색이 아니라 "누가 말했나"로 먼저 갈린다 — 앱 BubbleItem 과 같다.
+// 내 말은 파랑, 상대 말은 회색 바탕에 검은 글씨, 그 밖의 언어만 언어색을 쓴다.
+function bubbleColors(lang) {
+  if (lang === MY_LANG) {
+    return { bubble:'#6080C8', avatar:'#9BB4D4', text:'#fff', sub:'rgba(255,255,255,0.65)' };
+  }
+  if (lang === PEER_LANG) {
+    return { bubble:'#f2f2f2', avatar:'#E8E0A0', text:'#1a1a1a', sub:'#aaa' };
+  }
+  const c = LANG_COLORS[lang] || { bubble:'#909090', avatar:'#B8B8B8' };
+  return { ...c, text:'#fff', sub:'rgba(255,255,255,0.65)' };
+}
+
+const conv = document.getElementById('conv');
+const raw = document.getElementById('raw');
+const recSlot = document.getElementById('recBarSlot');
+const bottomBar = document.getElementById('bottomBar');
+const dot = document.getElementById('dot'), dotRing = document.getElementById('dotRing');
+const pendingSlot = document.getElementById('pendingSlot');
+
+let ws = null, t0 = 0, stopFlag = false;
+let state = 'idle';                 // idle | recording
+let micCtx = null, micStream = null;
+let hasContent = false;             // 말풍선이 하나라도 있는가
+let bubble = null;                  // 현재 살아있는 말풍선 핸들 (partial -> final 로 이어서 씀)
+let typeTarget = '', typeShown = '', typeTimer = null;
+let speechPending = false;          // 소리는 들어갔는데 아직 partial 이 안 온 상태
+
+// 앱 HomeScreen 의 hasSpeechEnergy 와 같은 임계값. 디코딩 결과가 오기 전에
+// "소리는 들어가고 있다"만 보여 주는 용도라 정밀할 필요는 없다.
+const SPEECH_RMS_THRESHOLD = 0.018;
+const SPEECH_PEAK_THRESHOLD = 0.08;
+
+const energyOk = (sumSquares, peak, count) =>
+  count > 0 &&
+  Math.sqrt(sumSquares / count) >= SPEECH_RMS_THRESHOLD &&
+  peak >= SPEECH_PEAK_THRESHOLD;
+
+// s16le 바이트 조각. int16 네 개마다 하나만 본다.
+function hasSpeechEnergyPcm16(bytes) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  if (view.byteLength < 2) return false;
+  let sumSquares = 0, peak = 0, count = 0;
+  for (let off = 0; off + 1 < view.byteLength; off += 8) {
+    const v = view.getInt16(off, true) / 32768;
+    sumSquares += v * v; peak = Math.max(peak, Math.abs(v)); count++;
+  }
+  return energyOk(sumSquares, peak, count);
+}
+
+function hasSpeechEnergyFloat(f) {
+  let sumSquares = 0, peak = 0, count = 0;
+  for (let i = 0; i < f.length; i += 4) {
+    const v = f[i];
+    sumSquares += v * v; peak = Math.max(peak, Math.abs(v)); count++;
+  }
+  return energyOk(sumSquares, peak, count);
+}
+
+function setPending(on) {
+  if (speechPending === on) return;
+  speechPending = on;
+  pendingSlot.hidden = !on;
+}
+
+const logLine = s => { raw.textContent += s + "\n"; raw.scrollTop = raw.scrollHeight; };
+const nearBottom = () => conv.scrollHeight - conv.scrollTop - conv.clientHeight < 60;
+const keepBottom = () => { conv.scrollTop = conv.scrollHeight; };
+
+// ── 아이들 일러스트 (HomeScreen 의 SpeakerIllustration) ────────────────────────
+const SPEAKER_SVG = `
+<svg width="150" height="125" viewBox="0 0 180 150">
+  <circle cx="90" cy="82" r="62" fill="#E8E0A0" opacity="0.3"/>
+  <ellipse cx="90" cy="132" rx="58" ry="7" fill="#7A9030" opacity="0.22"/>
+  <rect x="84" y="70" width="12" height="28" rx="2.5" fill="#1a1a1a"/>
+  <rect x="85.4" y="74" width="9.2" height="20" rx="1" fill="#6080C8"/>
+  <rect x="87.5" y="71.8" width="5" height="1.2" rx="0.6" fill="#555"/>
+  <path d="M87 84 Q88.5 81 90 84 Q91.5 87 93 84" stroke="#E8E0A0" stroke-width="1" fill="none" stroke-linecap="round"/>
+  <path d="M80 76 Q75 84 80 92" stroke="#6080C8" stroke-width="1.4" fill="none" stroke-linecap="round" opacity="0.75"/>
+  <path d="M75 72 Q67 84 75 96" stroke="#6080C8" stroke-width="1.4" fill="none" stroke-linecap="round" opacity="0.4"/>
+  <path d="M100 76 Q105 84 100 92" stroke="#6080C8" stroke-width="1.4" fill="none" stroke-linecap="round" opacity="0.75"/>
+  <path d="M105 72 Q113 84 105 96" stroke="#6080C8" stroke-width="1.4" fill="none" stroke-linecap="round" opacity="0.4"/>
+  <ellipse cx="55" cy="114" rx="14" ry="15" fill="#9BB4D4"/>
+  <circle cx="55" cy="92" r="13" fill="#E8E0A0"/>
+  <circle cx="59" cy="92" r="1.5" fill="#6080C8"/><circle cx="64" cy="92" r="1.5" fill="#6080C8"/>
+  <path d="M58 97 Q61 99 64 97" stroke="#6080C8" stroke-width="1.3" stroke-linecap="round" fill="none"/>
+  <ellipse cx="125" cy="114" rx="14" ry="15" fill="#6080C8"/>
+  <circle cx="125" cy="92" r="13" fill="#E8E0A0"/>
+  <circle cx="116" cy="92" r="1.5" fill="#7A9030"/><circle cx="121" cy="92" r="1.5" fill="#7A9030"/>
+  <path d="M116 97 Q119 99 122 97" stroke="#7A9030" stroke-width="1.3" stroke-linecap="round" fill="none"/>
+</svg>`;
+
+const MIC_SVG = `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#7A9030"
+  stroke-width="1.8" stroke-linecap="round"><rect x="9" y="2" width="6" height="11" rx="3"/>
+  <path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v4"/></svg>`;
+
+// ── 빈 화면 ───────────────────────────────────────────────────────────────────
+function renderEmpty() {
+  conv.innerHTML = '';
+  conv.classList.add('center');
+  const w = document.createElement('div');
+  w.className = 'idleWrap';
+  w.innerHTML = state === 'idle'
+    ? SPEAKER_SVG + '<div class="idleTxt">Configure and tap Start</div>'
+    : `<div class="micIconWrap">${MIC_SVG}</div><div class="idleTxt">Start speaking</div>`;
+  conv.appendChild(w);
+}
+
+// ── 말풍선 노드 ───────────────────────────────────────────────────────────────
+// 한 번 만든 노드를 partial 내내 재사용하고, final 이 와도 같은 노드를 그대로 쓴다.
+// 다시 그리지 않으므로 화면이 튀지 않는다.
+function createBubble(lang) {
+  if (!hasContent) { conv.innerHTML = ''; conv.classList.remove('center'); hasContent = true; }
+  const c = bubbleColors(lang);
+  const mine = lang === MY_LANG;
+
+  const row = document.createElement('div');
+  row.className = 'bubbleRow partial' + (mine ? ' mine' : '');
+
+  const av = document.createElement('div');
+  av.className = 'avatar';
+  av.style.background = c.avatar;
+  av.style.color = mine ? '#fff' : '#7A9030';
+  av.textContent = (lang || '?').toUpperCase();
+
+  const box = document.createElement('div');
+  box.className = 'bubble';
+  box.style.background = c.bubble;
+
+  const main = document.createElement('div');
+  main.className = 'bubbleMain';
+  main.style.color = c.text;
+
+  const sub = document.createElement('div');
+  sub.className = 'bubbleSub';
+  sub.style.color = c.sub;
+  sub.hidden = true;
+
+  box.appendChild(main); box.appendChild(sub);
+  row.appendChild(av); row.appendChild(box);
+
+  const tag = document.createElement('div');
+  tag.className = 'tag';
+
+  conv.appendChild(row); conv.appendChild(tag);
+  return { row, av, box, main, sub, tag, lang };
+}
+
+function recolor(b, lang) {
+  if (b.lang === lang) return;
+  const c = bubbleColors(lang);
+  const mine = lang === MY_LANG;
+  b.row.classList.toggle('mine', mine);
+  b.av.style.background = c.avatar;
+  b.av.style.color = mine ? '#fff' : '#7A9030';
+  b.av.textContent = (lang || '?').toUpperCase();
+  b.box.style.background = c.bubble;
+  b.main.style.color = c.text;
+  b.sub.style.color = c.sub;
+  b.lang = lang;
+}
+
+// ── 타이핑 ────────────────────────────────────────────────────────────────────
+function commonPrefixLen(a, b) {
+  const n = Math.min(a.length, b.length);
+  let i = 0;
+  while (i < n && a[i] === b[i]) i++;
+  return i;
+}
+
+function paintTyping() {
+  if (!bubble) return;
+  bubble.main.textContent = typeShown;
+  if (typeShown !== typeTarget) {
+    const caret = document.createElement('span');
+    caret.className = 'caret';
+    bubble.main.appendChild(caret);
+  }
+}
+
+function stopTyping() {
+  if (typeTimer) { clearInterval(typeTimer); typeTimer = null; }
+}
+
+function startTyping() {
+  stopTyping();
+  const backlog = typeTarget.length - typeShown.length;
+  if (backlog <= 0) { paintTyping(); return; }
+  // 이번 덩어리를 다 뿌릴 때까지 간격을 고정한다 = 등간격 타자.
+  const delay = Math.min(TYPE_MAX_MS, Math.max(TYPE_MIN_MS, TYPE_BUDGET_MS / backlog));
+  typeTimer = setInterval(() => {
+    if (typeShown.length >= typeTarget.length) { stopTyping(); paintTyping(); return; }
+    typeShown = typeTarget.slice(0, typeShown.length + 1);
+    const stick = nearBottom();
+    paintTyping();
+    if (stick) keepBottom();
+  }, delay);
+}
+
+function setPartial(text, lang) {
+  setPending(false);
+  if (!text) { clearPartial(); return; }
+  if (!bubble) {
+    bubble = createBubble(lang);
+    typeShown = '';
+  } else {
+    recolor(bubble, lang);
+  }
+  // 모델이 뒤를 고쳐 쓰면(롤백 재디코딩) 보이던 글자를 공통 앞부분까지 되감는다.
+  const keep = commonPrefixLen(typeShown, text);
+  if (keep < typeShown.length) typeShown = text.slice(0, keep);
+  typeTarget = text;
+  startTyping();
+}
+
+function clearPartial() {
+  setPending(false);
+  stopTyping();
+  if (bubble) { bubble.row.remove(); bubble.tag.remove(); bubble = null; }
+  typeTarget = typeShown = '';
+  if (!conv.querySelector('.bubbleRow')) { hasContent = false; renderEmpty(); }
+}
+
+// final 은 새 말풍선을 만들지 않는다. 흐리게 떠 있던 그 노드를 그대로 확정시킨다.
+function commitFinal(f) {
+  setPending(false);
+  stopTyping();
+  if (!bubble) { bubble = createBubble(f.language); }
+  recolor(bubble, f.language);
+
+  // 아래 setTimeout 이 돌 때쯤이면 bubble 은 이미 다음 partial 을 가리킬 수 있다.
+  // 확정시킬 노드를 지역 변수로 붙잡아 둔다.
+  const b = bubble;
+  const stick = nearBottom();
+  b.main.style.opacity = '0';
+  b.sub.style.opacity = '0';
+  setTimeout(() => {
+    b.main.textContent = f.translation || f.original;
+    if (f.translation) { b.sub.textContent = f.original; b.sub.hidden = false; }
+    b.main.style.opacity = '1';
+    b.sub.style.opacity = '1';
+    if (stick) keepBottom();
+  }, 140);
+
+  b.row.classList.remove('partial');
+  b.tag.textContent = `final · ${f.commitReason} · +${f.t.toFixed(2)}s`;
+  bubble = null;                 // 다음 partial 은 새 말풍선에서 시작
+  typeTarget = typeShown = '';
+}
+
+function renderChrome() {
+  const rec = state === 'recording';
+  dot.classList.toggle('on', rec);
+  dotRing.hidden = !rec;
+  dotRing.classList.toggle('on', rec);
+
+  recSlot.innerHTML = rec
+    ? `<div class="recBar"><div class="recDot"></div><div class="recLabel">Listening...</div>
+         <div class="waveRow">${[0,100,200,300,400,300,200,100,0]
+           .map(d => `<div class="waveBar" style="animation-delay:${d}ms"></div>`).join('')}</div>
+       </div>`
+    : '';
+
+  bottomBar.innerHTML = '';
+  if (rec) {
+    const stop = mk('button', 'btn btnStop', 'Stop'); stop.onclick = doStop;
+    const x = mk('button', 'btn btnGhost', '✕'); x.onclick = doClear;
+    bottomBar.append(stop, x);
+  } else {
+    const wav = mk('button', 'btn btnOutline', '테스트 음성'); wav.onclick = () => start('wav');
+    const mic = mk('button', 'btn btnOutlineCyan', '마이크'); mic.onclick = () => start('mic');
+    bottomBar.append(wav, mic);
+  }
+}
+
+function mk(tag, cls, text) {
+  const el = document.createElement(tag);
+  el.className = cls; el.textContent = text;
+  return el;
+}
+
+// ── 메시지 ────────────────────────────────────────────────────────────────────
+function onMessage(m) {
+  const t = (performance.now() - t0) / 1000;
+  logLine(`[${t.toFixed(2)}s] ` + JSON.stringify(m));
+  if (m.type === 'partial') {
+    // 빈 text 는 화면을 비우라는 신호
+    setPartial((m.text || '').trim(), langToCode(m.language || 'en'));
+  } else if (m.type === 'final') {
+    commitFinal({
+      original: m.original,
+      translation: (m.translation || '').trim(),
+      language: langToCode(m.language || 'en'),
+      commitReason: m.commitReason,
+      t,
+    });
+  }
+}
+
+async function openWs() {
+  ws = new WebSocket(WS_URL);
+  ws.binaryType = 'arraybuffer';
+  t0 = performance.now();
+  await new Promise((res, rej) => {
+    ws.onopen = res;
+    ws.onerror = () => rej(new Error('연결 실패'));
+  });
+  ws.onmessage = e => { if (typeof e.data === 'string') onMessage(JSON.parse(e.data)); };
+  ws.onclose = () => { state = 'idle'; clearPartial(); cleanupMic(); renderChrome(); };
+  await new Promise(r => setTimeout(r, 100));   // hello
+  ws.send(JSON.stringify({ type: 'start', lang: MY_LANG, targetLang: PEER_LANG, displayMode: 'mode-1' }));
+}
+
+function cleanupMic() {
+  if (micStream) { micStream.getTracks().forEach(t => t.stop()); micStream = null; }
+  if (micCtx) { micCtx.close(); micCtx = null; }
+}
+
+function doStop() {
+  stopFlag = true;
+  if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: 'finish' }));
+  cleanupMic();
+}
+
+function doClear() {
+  stopTyping();
+  setPending(false);
+  bubble = null; typeTarget = typeShown = ''; hasContent = false;
+  raw.textContent = '';
+  state = 'idle'; renderChrome(); renderEmpty();
+}
+
+async function start(kind) {
+  stopTyping();
+  setPending(false);
+  bubble = null; typeTarget = typeShown = ''; hasContent = false;
+  raw.textContent = ''; stopFlag = false;
+  state = 'recording'; renderChrome(); renderEmpty();
+  try { await openWs(); }
+  catch (e) { logLine('연결 실패 — 서버가 떠 있는지 확인'); state = 'idle'; renderChrome(); renderEmpty(); return; }
+  if (kind === 'wav') await streamWav(); else await streamMic();
+}
+
+async function streamWav() {
+  const buf = await (await fetch('partial_test.wav')).arrayBuffer();
+  const dv = new DataView(buf);
+  let off = 12, dataOff = 44, dataLen = buf.byteLength - 44;
+  while (off < buf.byteLength - 8) {
+    const id = String.fromCharCode(dv.getUint8(off), dv.getUint8(off+1), dv.getUint8(off+2), dv.getUint8(off+3));
+    const sz = dv.getUint32(off + 4, true);
+    if (id === 'data') { dataOff = off + 8; dataLen = sz; break; }
+    off += 8 + sz + (sz % 2);
+  }
+  const pcm = new Uint8Array(buf, dataOff, dataLen);
+  const frameBytes = SR * FRAME_MS / 1000 * 2;
+  const started = performance.now();
+  for (let i = 0; i < pcm.length && !stopFlag; i += frameBytes) {
+    if (!ws || ws.readyState !== 1) break;
+    const frame = pcm.slice(i, Math.min(i + frameBytes, pcm.length));
+    if (!bubble && hasSpeechEnergyPcm16(frame)) setPending(true);
+    ws.send(frame);
+    const wait = started + (i + frameBytes) / 2 / SR * 1000 - performance.now();
+    if (wait > 0) await new Promise(r => setTimeout(r, wait));
+  }
+  if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: 'finish' }));
+  setTimeout(() => { if (ws && ws.readyState === 1) ws.close(); }, 8000);
+}
+
+async function streamMic() {
+  try {
+    micStream = await navigator.mediaDevices.getUserMedia({
+      audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true } });
+  } catch (e) { logLine('마이크 권한 거부'); doClear(); return; }
+  micCtx = new AudioContext({ sampleRate: SR });
+  const src = micCtx.createMediaStreamSource(micStream);
+  const node = micCtx.createScriptProcessor(2048, 1, 1);
+  node.onaudioprocess = e => {
+    if (!ws || ws.readyState !== 1 || stopFlag) return;
+    const f = e.inputBuffer.getChannelData(0);
+    if (!bubble && hasSpeechEnergyFloat(f)) setPending(true);
+    const out = new Int16Array(f.length);
+    for (let i = 0; i < f.length; i++) out[i] = Math.max(-1, Math.min(1, f[i])) * 32767;
+    ws.send(out.buffer);
+  };
+  src.connect(node); node.connect(micCtx.destination);
+  logLine(`마이크 전송 중 (${micCtx.sampleRate}Hz) — 영어로 말해 보세요`);
+}
+
+renderChrome();
+renderEmpty();
+</script>

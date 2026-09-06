@@ -1,0 +1,1038 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>STiTy — 시연</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { height:100%; }
+  body { margin:0; background:#000; color:#f2f2f2; overflow:hidden;
+         font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",
+              "Helvetica Neue",sans-serif; }
+
+  /* ── 무대 ─────────────────────────────────────────────────────────────────
+     한 줄씩 아래에서 올라온다. 확정된 줄은 위로 밀리며 깊이만큼 흐려진다. */
+  .stage { position:absolute; inset:0; display:flex; flex-direction:column;
+           padding:5vh 6vw 12vh; gap:0; }
+  /* 최신 줄은 아래에 붙고 앞선 줄이 위로 밀린다.
+     anchor=center 면 아래 절반을 비워 최신 줄을 화면 세로 한가운데로 올린다. */
+  .stage.tag  { justify-content:flex-end; }
+  body.anchorCenter .stage.tag { padding-bottom:50vh; }
+  .stage.lane { justify-content:stretch; gap:0; }
+
+  .feed { display:flex; flex-direction:column; justify-content:flex-end;
+          align-items:center; overflow:hidden; min-height:0; }
+  .stage.tag  > .feed { flex:1; }
+  /* 칸은 아래쪽에 붙는다. 라벨이 내용에서 멀어지면 어느 칸인지 읽기 어렵다. */
+  .stage.lane > .lane { flex:1; min-height:0; display:flex; flex-direction:column;
+                        justify-content:flex-end; align-items:center;
+                        border-top:1px solid rgba(255,255,255,.09); padding:1.6vh 0 1.2vh; }
+  .stage.lane > .lane:first-child { border-top:0; }
+  body.anchorCenter .stage.lane > .lane { justify-content:center; }
+  .laneLabel { flex:0 0 auto; font-size:11px; font-weight:800; letter-spacing:3px;
+               text-transform:uppercase; opacity:.7; padding-bottom:.5vh; }
+  .lane > .feed { flex:0 1 auto; }
+
+  /* ── 한 줄 ────────────────────────────────────────────────────────────── */
+  /* 기준 크기는 .line 이 갖는다. 태그와 원문은 여기에 비례한다. */
+  .line { font-size:clamp(21px, 2.9vw, 40px); max-width:min(1100px, 88vw);
+          display:flex; align-items:baseline; gap:.45em; padding:.3em 0;
+          opacity:0; transform:translateY(12px);
+          transition:opacity .45s ease, transform .45s ease; }
+  .stage.lane .line { font-size:clamp(17px, 2.0vw, 28px); }
+  /* 앞선 문장도 흐리지 않다. 밀려 올라가도 계속 읽히므로 최신 문장을 붙잡아 둘
+     이유가 없다 — 그래서 hold 가 기본 0 이고 문장이 곧바로 뜬다.
+     fade=1 을 주면 깊이만큼 흐려지는 대신 hold 로 붙잡아 둬야 읽을 수 있다. */
+  /* 표시 문장 개수를 설정에서 늘릴 수 있으므로 깊이 클래스도 그만큼 둔다.
+     여기 없는 깊이는 .line 의 opacity:0 이 그대로 남아 줄이 안 보인다. */
+  .line.d0, .line.d1, .line.d2, .line.d3,
+  .line.d4, .line.d5, .line.d6, .line.d7 { opacity:1; transform:none; }
+  body.fade .line.d1 { opacity:.46; }
+  body.fade .line.d2 { opacity:.26; }
+  body.fade .line.d3 { opacity:.13; }
+  body.fade .line.d4 { opacity:.09; }
+  body.fade .line.d5 { opacity:.06; }
+  body.fade .line.d6 { opacity:.04; }
+  body.fade .line.d7 { opacity:.03; }
+  /* 아직 확정되지 않은 줄. 전사는 원문이라 확정 번역과 같은 크기로 둘 이유가 없다.
+     작게 흐리게 흘리다가, 확정되면 d0 로 올라가며 번역이 큰 글씨로 자리를 잡는다. */
+  .line.live { opacity:.62; transform:none; }
+  .line.live .main { font-size:.4em; font-weight:400; letter-spacing:0; line-height:1.35; }
+  .line.live .tagChip { font-size:.24em; }
+
+  .tagChip { flex:0 0 auto; font-size:.3em; font-weight:800; letter-spacing:2px;
+             padding:.4em .8em; border-radius:999px; text-transform:uppercase;
+             border:1px solid currentColor; opacity:.95; white-space:nowrap; }
+  .stage.lane .tagChip { display:none; }
+
+  .body { min-width:0; color:#f2f2f2; text-align:center; }
+  .main { display:block; font-weight:600; line-height:1.32; letter-spacing:-.01em; }
+  .sub  { display:block; font-size:.4em; margin-top:.4em; opacity:.55; font-weight:400;
+          line-height:1.35; }
+  .caret { display:inline-block; width:.06em; height:.95em; margin-left:.06em;
+           background:currentColor; vertical-align:-.09em;
+           animation:blink 1s steps(1) infinite; }
+  @keyframes blink { 0%,50%{opacity:.85} 51%,100%{opacity:0} }
+
+  /* ── 발화 감지 표시 (디코딩 결과가 오기 전) ───────────────────────────── */
+  .pending { position:absolute; left:0; right:0; bottom:5.5vh; display:flex;
+             justify-content:center; pointer-events:none;
+             transition:bottom .3s ease; }
+  body.anchorCenter .stage.tag ~ .pending { bottom:42vh; }
+  .pending[hidden] { display:none; }
+  .pendingDot { padding:.5em 1.2em; border-radius:999px; font-size:20px; font-weight:800;
+                letter-spacing:4px; line-height:1; color:#cfcfcf;
+                background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14);
+                animation:breathe 1.6s ease-in-out infinite; }
+  @keyframes breathe { 0%,100%{opacity:.45} 50%{opacity:1} }
+
+  /* ── 조작부. 마우스를 멈추면 사라진다 ─────────────────────────────────── */
+  .controls { position:absolute; top:0; left:0; right:0; display:flex; gap:8px;
+              padding:14px 16px; justify-content:flex-end; align-items:center;
+              opacity:1; transition:opacity .4s ease; }
+  .controls.hidden { opacity:0; pointer-events:none; }
+  .ctlGroup { display:flex; gap:6px; }
+  .ctl { font:inherit; font-size:12px; font-weight:600; color:#bbb; cursor:pointer;
+         background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14);
+         border-radius:999px; padding:7px 14px; }
+  .ctl:hover { color:#fff; border-color:rgba(255,255,255,.3); }
+  .ctl.on { color:#000; background:#e8e8e8; border-color:#e8e8e8; }
+  .pairLabel { font-size:11px; font-weight:700; letter-spacing:2px; color:#666;
+               text-transform:uppercase; padding-right:6px; }
+  .ctl:disabled { opacity:.35; cursor:default; }
+  .hint { position:absolute; left:16px; bottom:10px; font-size:11px; color:#4a4a4a;
+          transition:opacity .4s ease; }
+  .controls.hidden ~ .hint { opacity:0; }
+
+  /* ── 설정 패널 ────────────────────────────────────────────────────────────
+     시연 중에 열어 바로 바꾼다. 조작부와 같이 떠 있으면 자막을 가리므로 접어 둔다. */
+  .panel { position:absolute; top:56px; right:16px; width:280px; z-index:5;
+           background:rgba(18,18,18,.96); border:1px solid rgba(255,255,255,.16);
+           border-radius:14px; padding:14px 16px 16px;
+           box-shadow:0 18px 40px rgba(0,0,0,.6); }
+  .panel[hidden] { display:none; }
+  .panelTitle { font-size:11px; font-weight:800; letter-spacing:2px; color:#777;
+                text-transform:uppercase; margin:2px 0 10px; }
+  .panelTitle + .panelTitle { margin-top:16px; }
+  .row { display:flex; align-items:center; justify-content:space-between; gap:10px;
+         padding:3px 0; }
+  .rowLabel { font-size:13px; font-weight:700; letter-spacing:1px; text-transform:uppercase; }
+  .panel select { font:inherit; font-size:12px; color:#eee; background:#242424;
+                  border:1px solid rgba(255,255,255,.18); border-radius:8px;
+                  padding:5px 8px; min-width:130px; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .chip { font:inherit; font-size:12px; font-weight:700; letter-spacing:1px;
+          text-transform:uppercase; cursor:pointer; color:#888;
+          background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.14);
+          border-radius:999px; padding:5px 12px; }
+  /* 켜진 칩은 그 언어 색으로 칠한다. 아래 목표 목록의 라벨 색과 같아 짝이 보인다. */
+  .chip.on { color:#111; font-weight:800; }
+  .panelNote { font-size:11px; color:#6a6a6a; line-height:1.45; margin-top:12px; }
+</style>
+
+<div class="stage tag" id="stage"></div>
+
+<div class="pending" id="pending" hidden><div class="pendingDot">•••</div></div>
+
+<div class="controls" id="controls">
+  <div class="ctlGroup">
+    <button class="ctl on" id="btnTag">1 · 언어 태그</button>
+    <button class="ctl" id="btnLane">2 · 언어별 칸</button>
+  </div>
+  <div class="ctlGroup">
+    <span class="pairLabel" id="pairLabel"></span>
+  </div>
+  <div class="ctlGroup">
+    <button class="ctl" data-wav="en">EN</button>
+    <button class="ctl" data-wav="ja">JA</button>
+    <button class="ctl" data-wav="ko">KO</button>
+    <button class="ctl" data-wav="mix">MIX</button>
+    <button class="ctl" id="btnSound">🔊 소리</button>
+    <button class="ctl" id="btnMic">마이크</button>
+    <button class="ctl" id="btnStop" disabled>정지</button>
+    <button class="ctl" id="btnPanel">⚙ 설정</button>
+  </div>
+</div>
+
+<div class="panel" id="panel" hidden>
+  <div class="panelTitle">표시 문장 개수</div>
+  <div class="row">
+    <span class="rowLabel">줄 수</span>
+    <select id="selDepth"></select>
+  </div>
+  <div class="panelTitle">사용할 소스 언어</div>
+  <div class="chips" id="srcChips"></div>
+  <div class="panelTitle">소스 언어별 번역 목표</div>
+  <div id="langRows"></div>
+  <div class="panelNote" id="panelNote"></div>
+</div>
+
+<div class="hint" id="hint">EN/JA/KO/MIX 테스트 음성 · S 소리 · 1/2 배치 전환 · R 초기화 · C 설정</div>
+
+<script>
+// ── 설정 ──────────────────────────────────────────────────────────────────────
+// 모두 쿼리 스트링으로 덮어쓸 수 있다. 시연장에서 값만 바꿔 다시 열면 된다.
+//   show.html?layout=lane&hold=3200&src=auto&tgt=ko
+const Q = new URLSearchParams(location.search);
+const num = (k, d) => {
+  if (!Q.has(k)) return d;
+  const v = Number(Q.get(k));
+  return Number.isFinite(v) && v >= 0 ? v : d;   // 0 도 유효한 값이다(hold=0 등)
+};
+
+// 앞선 문장을 흐리게 할 것인가. 흐리게 하면 밀려 올라간 문장을 못 읽으므로,
+// 최신 문장을 hold 만큼 붙잡아 둬야 한다. 그 붙잡는 시간이 곧 지연이다.
+// 기본은 흐리게 하지 않고 hold 도 두지 않는다 — 문장이 오는 대로 바로 뜬다.
+const FADE = Q.get('fade') === '1' || Q.get('fade') === 'on';
+
+// 확정된 문장이 맨 아래(최대 밝기)에 머무는 최소 시간. 이 시간이 지나야 다음 줄이
+// 시작된다. 그동안 들어온 partial 은 버퍼에 쌓였다가 이어서 타이핑된다.
+const HOLD_MS = num('hold', FADE ? 2600 : 0);
+const HOLD_MIN_MS = num('holdmin', 900);      // 밀렸을 때 줄일 수 있는 하한
+const TYPE_BUDGET_MS = num('type', 1300);     // 한 덩어리를 다 뿌리는 목표 시간
+const TYPE_MIN_MS = 10, TYPE_MAX_MS = 45;
+// 화면에 남기는 줄 수(맨 아래부터). anchor=center 는 최신 줄이 화면 한가운데
+// 오므로 위로 남길 수 있는 줄이 두 개뿐이다 — 더 두면 위가 잘린다.
+const ANCHOR_CENTER = Q.get('anchor') === 'center';
+const MAX_DEPTH_TAG = ANCHOR_CENTER ? 3 : 4, MAX_DEPTH_LANE = 3;
+const DEPTH_MAX = 8;                          // CSS 의 .d0~.d7 만큼만 보인다
+// 설정 패널에서 고른 줄 수. 0 이면 배치별 기본값(위 둘)을 그대로 쓴다.
+// ?depth=N 이 있으면 그게 이기고, 없으면 지난 선택(localStorage)을 잇는다.
+let depthPick = 0;
+const maxDepth = () => depthPick || (M.layout === 'lane' ? MAX_DEPTH_LANE : MAX_DEPTH_TAG);
+const FIRM_MS = 140;                          // 확정될 때 흐림을 걷는 시간
+// 전사를 다 친 뒤 번역으로 넘어가기까지 두는 시간. order=strict 에서만 쓴다.
+const TRANSCRIPT_HOLD_MS = num('trans', 500);
+// 기본은 지연 우선이다. final 이 오면 전사를 끝까지 기다리지 않고 곧바로 확정한다.
+// 전사가 사라지는 것은 아니다 — 번역이 큰 글씨로 올라오고 원문이 그 아래 작은 줄로
+// 남는다. order=strict 면 전사를 완주시킨 뒤 trans 만큼 두고 번역으로 넘어간다.
+const ORDER_STRICT = Q.get('order') === 'strict';
+
+// 서버는 임의 다국어가 아니라 "내 언어 <-> 상대 언어" 쌍으로 번역 방향을 정한다.
+// 감지 언어가 src 면 tgt 으로, 그 밖이면(제3언어 포함) src 로 되돌린다.
+// src 를 auto 로 두면 그 판단이 죽고 무엇이든 tgt 으로만 번역해서, 한국어 발화에
+// tgt=ko 를 걸면 번역이 원문 그대로 나온다. 그래서 기본을 ko <-> en 으로 둔다.
+//   ko 발화 -> en,  en 발화 -> ko,  ja 등 제3언어 -> ko
+const SRC_LANG = Q.get('src') || 'ko';
+const TGT_LANG = Q.get('tgt') || 'en';
+
+// 쌍 규칙은 세 언어 이상을 각각 다른 곳으로 보내지 못한다(ja 는 무조건 src 로 되돌아간다).
+// 그래서 감지 언어별 목표를 따로 준다 — 서버가 langMap 을 받으면 쌍 규칙보다 먼저 본다.
+// 설정 패널에서 고른 값이 곧바로 config 메시지로 나가므로 재연결하지 않아도 된다.
+const UI_LANGS = ['ko', 'en', 'ja', 'zh', 'es'];   // 앱 languages.ts 와 같은 집합
+const LANG_LABELS = { ko:'한국어', en:'English', ja:'日本語', zh:'中文', es:'Español' };
+// 목표 언어는 소스 언어마다 기억해 둔다. 소스를 껐다 켜도 고르던 값이 그대로 돌아온다.
+const DEFAULT_TARGETS = { ko:'en', en:'ko', ja:'ko', zh:'ko', es:'ko' };
+// 말할 언어. 이게 곧 ASR 허용 언어이기도 하다 — 넓힐수록 오감지가 는다.
+// 기본값은 테스트 음성이 있는 셋(EN/JA/KO, MIX 는 이 셋을 섞은 것)이다.
+const DEFAULT_SRC_LANGS = ['ko', 'en', 'ja'];
+
+// 아는 언어끼리, 자기 자신이 아닌 것만 남긴다. 저장된 값이 낡았어도 여기서 걸러진다.
+function sanitizeMap(obj) {
+  const out = {};
+  if (!obj || typeof obj !== 'object') return out;
+  for (const [a, b] of Object.entries(obj)) {
+    if (UI_LANGS.includes(a) && UI_LANGS.includes(b) && a !== b) out[a] = b;
+  }
+  return out;
+}
+
+// ?map=ko:en,ja:ko 형태로 덮어쓴다.
+function parseMapParam(raw) {
+  const out = {};
+  for (const pair of (raw || '').split(',')) {
+    const [a, b] = pair.split(':').map(s => (s || '').trim().toLowerCase());
+    if (a && b) out[a] = b;
+  }
+  return sanitizeMap(out);
+}
+
+// ?langs=ko,en 형태. 아는 언어만, UI_LANGS 순서로 정렬해 남긴다.
+function parseLangsParam(raw) {
+  if (raw === null || raw === undefined) return null;
+  const picked = (raw || '').split(',').map(s => s.trim().toLowerCase());
+  const out = UI_LANGS.filter(c => picked.includes(c));
+  return out.length ? out : null;
+}
+
+let srcLangs = [...DEFAULT_SRC_LANGS];             // 켜 둔 소스 언어
+let targets = { ...DEFAULT_TARGETS };              // 소스 언어별 목표(꺼진 것도 기억)
+let langMap = {};                                  // 서버로 나가는 것 = 켠 것만
+
+// 서버에 보낼 매핑을 다시 만든다. 목표가 자기 자신이면 서버가 버리므로 여기서 막는다.
+function refreshLangMap() {
+  langMap = {};
+  for (const src of srcLangs) {
+    const tgt = targets[src];
+    if (tgt && tgt !== src) langMap[src] = tgt;
+  }
+}
+
+const WS_URL = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
+const SR = 16000, FRAME_MS = 100;
+
+// 검은 바탕에서 읽히도록 밝힌 팔레트. 앱 HomeScreen 의 LANG_COLORS 와 같은 언어 집합이다.
+const LANG_COLORS = {
+  en:'#7FA8FF', ko:'#A8D45A', ja:'#FF9A80', zh:'#C08CFF', es:'#FFD166',
+  fr:'#5AD1E0', id:'#4FD8A0', vi:'#FF8080', th:'#7FB6FF', de:'#FFC061',
+};
+const NAME_TO_CODE = {
+  Korean:'ko', English:'en', Japanese:'ja', Chinese:'zh',
+  Indonesian:'id', Vietnamese:'vi', Thai:'th',
+  French:'fr', German:'de', Spanish:'es',
+};
+const langToCode = l => NAME_TO_CODE[l] || (l || 'en').toLowerCase().slice(0, 2);
+const colorOf = code => LANG_COLORS[code] || '#c8c8c8';
+
+// 앱 HomeScreen 의 hasSpeechEnergy 와 같은 임계값.
+const SPEECH_RMS_THRESHOLD = 0.018;
+const SPEECH_PEAK_THRESHOLD = 0.08;
+
+// ── DOM ───────────────────────────────────────────────────────────────────────
+const stage = document.getElementById('stage');
+const pending = document.getElementById('pending');
+const controls = document.getElementById('controls');
+const btnTag = document.getElementById('btnTag'), btnLane = document.getElementById('btnLane');
+const btnMic = document.getElementById('btnMic');
+const btnSound = document.getElementById('btnSound');
+document.getElementById('pairLabel').textContent = `${SRC_LANG} ↔ ${TGT_LANG}`;
+const wavBtns = [...document.querySelectorAll('[data-wav]')];
+const btnStop = document.getElementById('btnStop');
+const btnPanel = document.getElementById('btnPanel');
+const panel = document.getElementById('panel');
+const selDepth = document.getElementById('selDepth');
+const srcChips = document.getElementById('srcChips');
+const langRows = document.getElementById('langRows');
+const panelNote = document.getElementById('panelNote');
+
+// ── 상태 ──────────────────────────────────────────────────────────────────────
+const M = {
+  layout: Q.get('layout') === 'lane' ? 'lane' : 'tag',
+  lines: [],          // 확정된 줄 {id, lang, main, sub}
+  active: null,       // 타이핑 중인 줄 {id, lang, main, sub}
+  seq: 0,
+};
+const nodes = new Map();     // id -> .line 엘리먼트
+const laneOrder = [];        // 칸 배치에서 언어가 처음 나온 순서
+
+let ws = null, stopFlag = false, running = false;
+let micCtx = null, micStream = null;
+// 테스트 음성을 스피커로도 들려준다. 소리와 자막을 같이 들으면 자막이 얼마나 늦게
+// 뜨는지 체감할 수 있다.
+//
+// <audio src=...> 로 틀면 그 순간 네트워크 재요청과 디코딩이 일어나 몇백 ms 늦는다.
+// 그러면 체감 지연에 재생 지연이 섞여 들어가 눈금이 틀어진다. 그래서 이미 받아 둔
+// 버퍼를 WebAudio 로 **미리 디코딩해 두고**, 첫 프레임을 보내는 바로 그 순간에 튼다.
+let soundOn = localStorage.getItem('stity_show_sound') === '1';
+let playCtx = null;          // 재생용 AudioContext (마이크용과 별개)
+let playSrc = null;          // 지금 울리고 있는 소스
+
+// 타자
+let typeTarget = '', typeShown = '', typeTimer = null, typeBudget = TYPE_BUDGET_MS;
+let typeDone = null;          // 타자가 끝나면 부를 콜백
+
+// 페이싱
+let holdUntil = 0;           // 이 시각까지는 새 줄을 시작하지 않는다
+let holdTimer = null;
+let pendingFinal = null;     // 전사를 마저 보여 준 뒤 확정할 문장
+let firmTimer = null;
+let queued = [];             // hold 중 도착한 final 들
+let buffered = null;         // hold 중 도착한 최신 partial {text, lang}
+let speechPending = false;
+
+// ── 페이싱 계산 ───────────────────────────────────────────────────────────────
+// 밀린 만큼 유지 시간과 타자 시간을 함께 줄인다. 그래야 실시간에서 뒤처지지 않는다.
+const backlog = () => queued.length + (buffered ? 1 : 0);
+// hold 가 0 이면 하한도 적용하지 않는다. 붙잡지 않겠다는 뜻이므로.
+const effHold = () => (HOLD_MS <= 0 ? 0 : Math.max(HOLD_MIN_MS, HOLD_MS / (1 + backlog())));
+const effTypeBudget = () => Math.max(220, TYPE_BUDGET_MS / (1 + backlog()));
+
+// ── 렌더 ──────────────────────────────────────────────────────────────────────
+function ensureContainers() {
+  stage.className = 'stage ' + M.layout;
+  if (M.layout === 'tag') {
+    if (!stage.querySelector(':scope > .feed')) {
+      stage.innerHTML = '';
+      const f = document.createElement('div');
+      f.className = 'feed';
+      stage.appendChild(f);
+    }
+    return;
+  }
+  // 칸 배치: 언어가 처음 나온 순서대로 세로로 쌓는다.
+  const want = laneOrder.slice();
+  const have = [...stage.querySelectorAll(':scope > .lane')].map(e => e.dataset.lang);
+  if (want.join() === have.join()) return;
+  stage.innerHTML = '';
+  for (const code of want) {
+    const lane = document.createElement('div');
+    lane.className = 'lane';
+    lane.dataset.lang = code;
+    lane.style.color = colorOf(code);
+    const label = document.createElement('div');
+    label.className = 'laneLabel';
+    label.textContent = code;
+    const feed = document.createElement('div');
+    feed.className = 'feed';
+    lane.appendChild(label); lane.appendChild(feed);
+    stage.appendChild(lane);
+  }
+}
+
+function feedFor(lang) {
+  if (M.layout === 'tag') return stage.querySelector(':scope > .feed');
+  const lane = stage.querySelector(`:scope > .lane[data-lang="${lang}"]`);
+  return lane ? lane.querySelector('.feed') : null;
+}
+
+function nodeFor(item) {
+  let el = nodes.get(item.id);
+  if (el) return el;
+  el = document.createElement('div');
+  el.className = 'line';
+  el.style.color = colorOf(item.lang);
+  el.innerHTML = '<span class="tagChip"></span>'
+               + '<span class="body"><span class="main"></span><span class="sub"></span></span>';
+  el.querySelector('.tagChip').textContent = item.lang;
+  nodes.set(item.id, el);
+  return el;
+}
+
+function paintItem(item, { caret = false } = {}) {
+  const el = nodeFor(item);
+  const main = el.querySelector('.main');
+  const sub = el.querySelector('.sub');
+  main.textContent = item.main;
+  if (caret) main.appendChild(document.createElement('span')).className = 'caret';
+  sub.textContent = item.sub || '';
+  sub.hidden = !item.sub;
+  el.style.color = colorOf(item.lang);
+  el.querySelector('.tagChip').textContent = item.lang;
+}
+
+// 맨 아래부터 깊이를 매겨 흐리기. 칸 배치에서는 칸마다 따로 센다.
+function render() {
+  if (M.layout === 'lane') {
+    for (const l of [...M.lines, ...(M.active ? [M.active] : [])]) {
+      if (!laneOrder.includes(l.lang)) laneOrder.push(l.lang);
+    }
+  }
+  ensureContainers();
+
+  const all = [...M.lines, ...(M.active ? [M.active] : [])];
+  const buckets = new Map();
+  for (const item of all) {
+    const key = M.layout === 'tag' ? '*' : item.lang;
+    if (!buckets.has(key)) buckets.set(key, []);
+    buckets.get(key).push(item);
+  }
+
+  const alive = new Set();
+  for (const [key, items] of buckets) {
+    const feed = key === '*' ? feedFor(null) : feedFor(key);
+    if (!feed) continue;
+    const shown = items.slice(-maxDepth());
+    shown.forEach((item, i) => {
+      const el = nodeFor(item);
+      if (el.parentNode !== feed) feed.appendChild(el);
+      alive.add(item.id);
+      const depth = shown.length - 1 - i;   // 0 = 맨 아래
+      const live = item === M.active;
+      // 새로 붙은 줄은 다음 프레임에 클래스를 줘야 등장 전환이 돈다.
+      // 그 사이 다시 render 가 돌 수 있으므로 최신 값을 노드에 적어 두고 읽는다.
+      el.dataset.cls = 'line' + (live ? ' live' : ` d${Math.min(depth, maxDepth() - 1)}`);
+      if (!el.dataset.mounted) {
+        el.dataset.mounted = '1';
+        requestAnimationFrame(() => { el.className = el.dataset.cls; });
+      } else {
+        el.className = el.dataset.cls;
+      }
+    });
+  }
+
+  for (const [id, el] of nodes) {
+    if (alive.has(id)) continue;
+    el.remove();
+    nodes.delete(id);
+  }
+  if (M.lines.length > 40) M.lines.splice(0, M.lines.length - 40);
+}
+
+// ── 타자 ──────────────────────────────────────────────────────────────────────
+function commonPrefixLen(a, b) {
+  const n = Math.min(a.length, b.length);
+  let i = 0;
+  while (i < n && a[i] === b[i]) i++;
+  return i;
+}
+
+function stopTyping() {
+  if (typeTimer) { clearInterval(typeTimer); typeTimer = null; }
+}
+
+function cancelTyping() {
+  stopTyping();
+  typeDone = null;
+}
+
+function startTyping() {
+  stopTyping();
+  const backlogChars = typeTarget.length - typeShown.length;
+  if (backlogChars <= 0) { paintActive(); finishTyping(); return; }
+  const delay = Math.min(TYPE_MAX_MS, Math.max(TYPE_MIN_MS, typeBudget / backlogChars));
+  typeTimer = setInterval(() => {
+    if (typeShown.length >= typeTarget.length) { stopTyping(); paintActive(); finishTyping(); return; }
+    typeShown = typeTarget.slice(0, typeShown.length + 1);
+    paintActive();
+  }, delay);
+}
+
+// 다 친 뒤에 할 일. 밀려 있던 final 을 흘려 보여 준 다음 확정시킬 때 쓴다.
+function finishTyping() {
+  const cb = typeDone;
+  typeDone = null;
+  if (cb) cb();
+}
+
+function paintActive() {
+  if (!M.active) return;
+  M.active.main = typeShown;
+  paintItem(M.active, { caret: typeShown !== typeTarget });
+}
+
+// ── 파이프라인 ────────────────────────────────────────────────────────────────
+function setPending(on) {
+  if (speechPending === on) return;
+  speechPending = on;
+  pending.hidden = !on;
+}
+
+const holding = () => performance.now() < holdUntil;
+// 확정 대기 중이거나 유지 중. 둘 다 새 줄을 시작하면 안 되는 상태다.
+const busy = () => holding() || pendingFinal !== null;
+
+function openActive(lang) {
+  M.seq += 1;
+  M.active = { id: 'a' + M.seq, lang, main: '', sub: '' };
+  typeShown = '';
+  render();
+}
+
+function setPartial(text, lang) {
+  if (busy()) {                          // 앞 문장이 아직 머무는 중 — 모아 둔다
+    buffered = text ? { text, lang } : null;
+    setPending(!!text);
+    return;
+  }
+  if (!text) { dropActive(); return; }
+  setPending(false);
+  if (!M.active) openActive(lang);
+  else if (M.active.lang !== lang) { M.active.lang = lang; render(); }
+  // 모델이 뒤를 고쳐 쓰면(롤백 재디코딩) 보이던 글자를 공통 앞부분까지 되감는다.
+  const keep = commonPrefixLen(typeShown, text);
+  if (keep < typeShown.length) typeShown = text.slice(0, keep);
+  typeTarget = text;
+  typeBudget = effTypeBudget();
+  typeDone = null;
+  startTyping();
+}
+
+function dropActive() {
+  cancelTyping();
+  M.active = null;
+  typeTarget = typeShown = '';
+  render();
+}
+
+function commitFinal(f) {
+  if (busy()) {                          // 순서를 지켜 대기열로
+    queued.push(f);
+    buffered = null;
+    setPending(true);
+    return;
+  }
+  emitFinal(f);
+}
+
+// 지연 우선이면 바로 확정하고, strict 면 전사를 완주시킨 뒤 확정한다.
+function emitFinal(f) {
+  if (ORDER_STRICT) { presentFinal(f); return; }
+  cancelTyping();
+  setPending(false);
+  firmUp(f);
+}
+
+// order=strict 전용. 원문을 끝까지 친 뒤에야 번역으로 넘어간다.
+// 서버가 partial 없이 곧바로 final 을 주든(선행 0.1초), 유지 시간에 밀려 대기열로
+// 들어왔든 순서가 지켜지는 대신, 전사를 다 치는 만큼 번역이 늦게 뜬다.
+function presentFinal(f) {
+  setPending(false);
+  pendingFinal = f;
+  if (!M.active) openActive(f.language);
+  M.active.lang = f.language;
+  render();
+  typeTarget = f.original;
+  // 이미 보여 준 글자가 확정 원문과 어긋나면 공통 앞부분까지 되감는다.
+  const keep = commonPrefixLen(typeShown, typeTarget);
+  if (keep < typeShown.length) typeShown = typeTarget.slice(0, keep);
+  typeBudget = effTypeBudget();
+  typeDone = () => {
+    if (firmTimer) clearTimeout(firmTimer);
+    firmTimer = setTimeout(() => firmUp(f), TRANSCRIPT_HOLD_MS);
+  };
+  startTyping();
+}
+
+// 전사가 다 찍혔다. 번역으로 갈아 끼우고 흐림을 걷는다.
+function firmUp(f) {
+  firmTimer = null;
+  pendingFinal = null;
+  cancelTyping();
+  if (!M.active) openActive(f.language);
+  M.active.lang = f.language;
+  // 입력 언어와 목표 언어가 같으면 서버가 원문을 그대로 돌려준다.
+  // 그걸 그대로 두면 같은 문장이 두 줄로 겹쳐 보인다.
+  const trans = f.translation && f.translation !== f.original ? f.translation : '';
+  M.active.main = trans || f.original;
+  M.active.sub = trans ? f.original : '';
+  const done = M.active;
+  M.lines.push(done);
+  M.active = null;
+  typeTarget = typeShown = '';
+  paintItem(done);
+  render();
+  // 확정 순간 흐림이 걷힌다. render 가 이미 d0 를 줬으므로 전환만 맞춰 준다.
+  const el = nodeFor(done);
+  el.style.transitionDuration = `${FIRM_MS}ms, ${FIRM_MS}ms`;
+  setTimeout(() => { el.style.transitionDuration = ''; }, FIRM_MS);
+
+  holdUntil = performance.now() + effHold();
+  scheduleRelease();
+}
+
+function scheduleRelease() {
+  if (holdTimer) clearTimeout(holdTimer);
+  const wait = Math.max(0, holdUntil - performance.now());
+  holdTimer = setTimeout(release, wait + 10);
+}
+
+// 유지 시간이 끝났다. 밀려 있던 것부터 순서대로 내보낸다.
+function release() {
+  holdTimer = null;
+  if (queued.length) {
+    const f = queued.shift();
+    holdUntil = 0;
+    emitFinal(f);
+    return;
+  }
+  if (buffered) {
+    const { text, lang } = buffered;
+    buffered = null;
+    holdUntil = 0;
+    setPartial(text, lang);
+    return;
+  }
+  holdUntil = 0;
+  setPending(false);
+}
+
+function onMessage(m) {
+  if (m.type === 'partial') {
+    setPartial((m.text || '').trim(), langToCode(m.language || SRC_LANG));
+  } else if (m.type === 'final') {
+    const original = (m.original || '').trim();
+    if (!original) return;
+    commitFinal({
+      original,
+      translation: (m.translation || '').trim(),
+      language: langToCode(m.language || SRC_LANG),
+    });
+  }
+}
+
+function resetFeed() {
+  cancelTyping();
+  if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+  if (firmTimer) { clearTimeout(firmTimer); firmTimer = null; }
+  pendingFinal = null;
+  holdUntil = 0; queued = []; buffered = null;
+  setPending(false);
+  M.lines = []; M.active = null;
+  typeTarget = typeShown = '';
+  for (const [, el] of nodes) el.remove();
+  nodes.clear();
+  laneOrder.length = 0;
+  stage.innerHTML = '';
+  render();
+}
+
+// ── 음성 에너지 ───────────────────────────────────────────────────────────────
+const energyOk = (sumSquares, peak, count) =>
+  count > 0 &&
+  Math.sqrt(sumSquares / count) >= SPEECH_RMS_THRESHOLD &&
+  peak >= SPEECH_PEAK_THRESHOLD;
+
+function hasSpeechEnergyPcm16(bytes) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  if (view.byteLength < 2) return false;
+  let sumSquares = 0, peak = 0, count = 0;
+  for (let off = 0; off + 1 < view.byteLength; off += 8) {
+    const v = view.getInt16(off, true) / 32768;
+    sumSquares += v * v; peak = Math.max(peak, Math.abs(v)); count++;
+  }
+  return energyOk(sumSquares, peak, count);
+}
+
+function hasSpeechEnergyFloat(f) {
+  let sumSquares = 0, peak = 0, count = 0;
+  for (let i = 0; i < f.length; i += 4) {
+    const v = f[i];
+    sumSquares += v * v; peak = Math.max(peak, Math.abs(v)); count++;
+  }
+  return energyOk(sumSquares, peak, count);
+}
+
+// 아직 아무것도 안 뜬 상태에서만 ••• 를 띄운다.
+const idleForPending = () => !M.active && !holding();
+
+// ── 전송 ──────────────────────────────────────────────────────────────────────
+async function openWs(srcLang) {
+  ws = new WebSocket(WS_URL);
+  ws.binaryType = 'arraybuffer';
+  await new Promise((res, rej) => {
+    ws.onopen = res;
+    ws.onerror = () => rej(new Error('연결 실패'));
+  });
+  ws.onmessage = e => { if (typeof e.data === 'string') onMessage(JSON.parse(e.data)); };
+  ws.onclose = () => { running = false; setPending(false); cleanupMic(); stopSound(); syncButtons(); };
+  await new Promise(r => setTimeout(r, 100));      // hello
+  ws.send(JSON.stringify({
+    type: 'start', lang: srcLang, targetLang: TGT_LANG, displayMode: 'mode-1',
+    langMap,                                       // 감지 언어별 번역 목표
+  }));
+}
+
+// 흐르는 중에 번역 목표를 바꾼다. 스트림은 그대로 두고 다음 확정 문장부터 반영된다.
+// 연결 전이면 보낼 곳이 없다 — 다음 start 가 같은 값을 싣고 나간다.
+function sendConfig() {
+  if (!ws || ws.readyState !== 1) return;
+  ws.send(JSON.stringify({ type: 'config', langMap }));
+}
+
+function cleanupMic() {
+  if (micStream) { micStream.getTracks().forEach(t => t.stop()); micStream = null; }
+  if (micCtx) { micCtx.close(); micCtx = null; }
+}
+
+function doStop() {
+  stopFlag = true;
+  running = false;
+  stopSound();
+  if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: 'finish' }));
+  cleanupMic();
+  syncButtons();
+}
+
+async function preparePlayback(buf) {
+  if (!soundOn) return null;
+  try {
+    if (!playCtx) playCtx = new AudioContext();
+    if (playCtx.state === 'suspended') await playCtx.resume();
+    return await playCtx.decodeAudioData(buf.slice(0));
+  } catch (e) {
+    console.warn('테스트 음성 디코딩 실패 — 소리 없이 진행한다', e);
+    return null;
+  }
+}
+
+function startPlayback(decoded) {
+  if (!decoded || !playCtx) return;
+  stopSound();
+  playSrc = playCtx.createBufferSource();
+  playSrc.buffer = decoded;
+  playSrc.connect(playCtx.destination);
+  playSrc.start();
+}
+
+function stopSound() {
+  if (!playSrc) return;
+  try { playSrc.stop(); } catch (e) { /* 이미 끝났으면 무시 */ }
+  playSrc.disconnect();
+  playSrc = null;
+}
+
+async function start(kind, wavLang) {
+  stopSound();
+  resetFeed();
+  stopFlag = false; running = true;
+  syncButtons();
+  try { await openWs(SRC_LANG); }
+  catch (e) { console.warn('연결 실패 — 서버가 떠 있는지 확인'); running = false; syncButtons(); return; }
+  if (kind === 'wav') await streamWav(wavLang); else await streamMic();
+}
+
+async function streamWav(lang) {
+  const res = await fetch(`partial_test_${lang}.wav`);
+  if (!res.ok) {
+    console.warn(`partial_test_${lang}.wav 없음 — make_demo_wavs.py 로 만들어라`);
+    running = false; syncButtons(); return;
+  }
+  const buf = await res.arrayBuffer();
+  // 전송 루프에 들어가기 전에 디코딩을 끝내 둔다. decodeAudioData 는 넘긴 버퍼를
+  // 가져가 버리므로(detach) 복사본을 준다 — 아래 PCM 파싱이 원본을 계속 써야 한다.
+  const decoded = await preparePlayback(buf);
+  const dv = new DataView(buf);
+  let off = 12, dataOff = 44, dataLen = buf.byteLength - 44;
+  while (off < buf.byteLength - 8) {
+    const id = String.fromCharCode(dv.getUint8(off), dv.getUint8(off+1), dv.getUint8(off+2), dv.getUint8(off+3));
+    const sz = dv.getUint32(off + 4, true);
+    if (id === 'data') { dataOff = off + 8; dataLen = sz; break; }
+    off += 8 + sz + (sz % 2);
+  }
+  const pcm = new Uint8Array(buf, dataOff, dataLen);
+  const frameBytes = SR * FRAME_MS / 1000 * 2;
+  startPlayback(decoded);                // 첫 프레임과 같은 순간에 소리가 나간다
+  const started = performance.now();
+  for (let i = 0; i < pcm.length && !stopFlag; i += frameBytes) {
+    if (!ws || ws.readyState !== 1) break;
+    const frame = pcm.slice(i, Math.min(i + frameBytes, pcm.length));
+    if (idleForPending() && hasSpeechEnergyPcm16(frame)) setPending(true);
+    ws.send(frame);
+    const wait = started + (i + frameBytes) / 2 / SR * 1000 - performance.now();
+    if (wait > 0) await new Promise(r => setTimeout(r, wait));
+  }
+  if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: 'finish' }));
+  setTimeout(() => { if (ws && ws.readyState === 1) ws.close(); }, 8000);
+}
+
+async function streamMic() {
+  try {
+    micStream = await navigator.mediaDevices.getUserMedia({
+      audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true } });
+  } catch (e) { console.warn('마이크 권한 거부'); running = false; syncButtons(); return; }
+  micCtx = new AudioContext({ sampleRate: SR });
+  const src = micCtx.createMediaStreamSource(micStream);
+  const node = micCtx.createScriptProcessor(2048, 1, 1);
+  node.onaudioprocess = e => {
+    if (!ws || ws.readyState !== 1 || stopFlag) return;
+    const f = e.inputBuffer.getChannelData(0);
+    if (idleForPending() && hasSpeechEnergyFloat(f)) setPending(true);
+    const out = new Int16Array(f.length);
+    for (let i = 0; i < f.length; i++) out[i] = Math.max(-1, Math.min(1, f[i])) * 32767;
+    ws.send(out.buffer);
+  };
+  src.connect(node); node.connect(micCtx.destination);
+}
+
+// ── 조작부 ────────────────────────────────────────────────────────────────────
+function setLayout(next) {
+  if (M.layout === next) return;
+  M.layout = next;
+  localStorage.setItem('stity_show_layout', next);
+  btnTag.classList.toggle('on', next === 'tag');
+  btnLane.classList.toggle('on', next === 'lane');
+  // 배치가 바뀌면 담는 그릇이 달라진다. 노드를 버리고 모델에서 다시 그린다.
+  for (const [, el] of nodes) el.remove();
+  nodes.clear();
+  stage.innerHTML = '';
+  render();
+  paintAll();
+  updateNote();      // 자동 줄 수는 배치마다 다르다
+}
+
+function paintAll() {
+  for (const item of M.lines) paintItem(item);
+  if (M.active) paintActive();
+}
+
+function syncButtons() {
+  for (const b of wavBtns) b.disabled = running;
+  btnMic.disabled = running;
+  btnStop.disabled = !running;
+}
+
+function setSound(on) {
+  soundOn = on;
+  localStorage.setItem('stity_show_sound', on ? '1' : '0');
+  btnSound.classList.toggle('on', on);
+  btnSound.textContent = on ? '🔊 소리' : '🔇 소리';
+  if (!on) stopSound();
+}
+
+// ── 설정 패널 ─────────────────────────────────────────────────────────────────
+// 줄 수는 화면만 바꾸므로 그 자리에서 다시 그린다. 번역 목표는 서버가 정하므로
+// config 메시지로 보낸다 — 스트림을 끊지 않으니 흐르는 중에 바꿔도 된다.
+function setDepth(n) {
+  depthPick = n;
+  if (n) localStorage.setItem('stity_show_depth', String(n));
+  else localStorage.removeItem('stity_show_depth');
+  // 줄 수가 늘면 지웠던 노드를 되살려야 한다. 배치 전환과 같은 처리다.
+  for (const [, el] of nodes) el.remove();
+  nodes.clear();
+  stage.innerHTML = '';
+  render();
+  paintAll();
+  updateNote();
+}
+
+function saveLangs() {
+  localStorage.setItem('stity_show_srclangs', JSON.stringify(srcLangs));
+  localStorage.setItem('stity_show_targets', JSON.stringify(targets));
+}
+
+// 소스 언어를 켜고 끈다. 하나도 없으면 서버가 매핑 없이 쌍 규칙으로 돌아가 버리므로
+// 마지막 하나는 끄지 못하게 막는다.
+function toggleSrc(code) {
+  const on = srcLangs.includes(code);
+  if (on && srcLangs.length === 1) return;
+  srcLangs = on ? srcLangs.filter(c => c !== code)
+                : UI_LANGS.filter(c => c === code || srcLangs.includes(c));
+  refreshLangMap();
+  saveLangs();
+  sendConfig();
+  buildPanel();
+}
+
+function setLangTarget(src, tgt) {
+  if (targets[src] === tgt) return;
+  targets[src] = tgt;
+  refreshLangMap();
+  saveLangs();
+  sendConfig();
+  updateNote();
+}
+
+function updateNote() {
+  const auto = M.layout === 'lane' ? MAX_DEPTH_LANE : MAX_DEPTH_TAG;
+  const pairs = srcLangs.map(c => `${c}→${targets[c]}`).join(' · ');
+  panelNote.textContent =
+    `자동 = 지금 배치 기준 ${auto}줄. 켠 소스 언어가 곧 ASR 이 열어 두는 언어다 — ${pairs}. `
+    + `번역 방향은 흐르는 중에 바꿔도 다음 확정 문장부터 바로 듣지만, `
+    + `ASR 쪽 허용 언어는 다음 커밋부터 반영된다.`;
+}
+
+function buildPanel() {
+  selDepth.innerHTML = '';
+  const auto = document.createElement('option');
+  auto.value = '0';
+  auto.textContent = '자동 (배치 기본)';
+  selDepth.appendChild(auto);
+  for (let n = 1; n <= DEPTH_MAX; n++) {
+    const o = document.createElement('option');
+    o.value = String(n);
+    o.textContent = `${n}줄`;
+    selDepth.appendChild(o);
+  }
+  selDepth.value = String(depthPick);
+  selDepth.onchange = () => setDepth(Number(selDepth.value) || 0);
+
+  srcChips.innerHTML = '';
+  for (const code of UI_LANGS) {
+    const on = srcLangs.includes(code);
+    const chip = document.createElement('button');
+    chip.className = 'chip' + (on ? ' on' : '');
+    chip.textContent = code;
+    chip.title = LANG_LABELS[code];
+    if (on) { chip.style.background = colorOf(code); chip.style.borderColor = colorOf(code); }
+    chip.onclick = () => toggleSrc(code);
+    srcChips.appendChild(chip);
+  }
+
+  // 목표는 켠 소스 언어에만 물어본다. 끈 언어의 선택은 targets 에 남아 있다가
+  // 다시 켜면 그대로 돌아온다.
+  langRows.innerHTML = '';
+  for (const src of srcLangs) {
+    const row = document.createElement('div');
+    row.className = 'row';
+    const label = document.createElement('span');
+    label.className = 'rowLabel';
+    label.textContent = `${src} →`;
+    label.style.color = colorOf(src);
+    const sel = document.createElement('select');
+    for (const tgt of UI_LANGS) {
+      if (tgt === src) continue;            // 자기 자신으로는 번역하지 않는다
+      const o = document.createElement('option');
+      o.value = tgt;
+      o.textContent = `${LANG_LABELS[tgt]} (${tgt})`;
+      sel.appendChild(o);
+    }
+    sel.value = targets[src];
+    sel.onchange = () => setLangTarget(src, sel.value);
+    row.appendChild(label);
+    row.appendChild(sel);
+    langRows.appendChild(row);
+  }
+  updateNote();
+}
+
+function togglePanel(on) {
+  const next = on === undefined ? panel.hidden : on;
+  panel.hidden = !next;
+  btnPanel.classList.toggle('on', next);
+}
+
+btnPanel.onclick = () => togglePanel();
+btnSound.onclick = () => setSound(!soundOn);
+btnTag.onclick = () => setLayout('tag');
+btnLane.onclick = () => setLayout('lane');
+for (const b of document.querySelectorAll('[data-wav]')) {
+  b.onclick = () => start('wav', b.dataset.wav);
+}
+btnMic.onclick = () => start('mic');
+btnStop.onclick = doStop;
+
+addEventListener('keydown', e => {
+  // 셀렉트 박스를 고르는 중이면 단축키가 가로채지 않게 둔다.
+  if (e.target && e.target.tagName === 'SELECT') return;
+  if (e.key === '1') setLayout('tag');
+  else if (e.key === '2') setLayout('lane');
+  else if (e.key === 'r' || e.key === 'R') resetFeed();
+  else if (e.key === 's' || e.key === 'S') setSound(!soundOn);
+  else if (e.key === 'c' || e.key === 'C') togglePanel();
+});
+
+let hideTimer = null;
+function pokeControls() {
+  controls.classList.remove('hidden');
+  if (hideTimer) clearTimeout(hideTimer);
+  hideTimer = setTimeout(() => controls.classList.add('hidden'), 3000);
+}
+addEventListener('mousemove', pokeControls);
+addEventListener('keydown', pokeControls);
+
+if (ANCHOR_CENTER) document.body.classList.add('anchorCenter');
+if (FADE) document.body.classList.add('fade');
+setSound(soundOn);
+
+const saved = localStorage.getItem('stity_show_layout');
+if (!Q.get('layout') && (saved === 'tag' || saved === 'lane')) M.layout = saved;
+btnTag.classList.toggle('on', M.layout === 'tag');
+btnLane.classList.toggle('on', M.layout === 'lane');
+
+// 설정 복원: 기본값 < 지난 선택(localStorage) < 쿼리스트링
+const readJson = key => {
+  try { return JSON.parse(localStorage.getItem(key) || 'null'); }
+  catch (e) { return null; }
+};
+const qMap = parseMapParam(Q.get('map'));
+targets = { ...DEFAULT_TARGETS, ...sanitizeMap(readJson('stity_show_targets')), ...qMap };
+
+// 소스 언어: ?langs 가 먼저, 없으면 ?map 의 키, 없으면 지난 선택, 없으면 기본값.
+const storedLangs = parseLangsParam((readJson('stity_show_srclangs') || []).join(','));
+srcLangs = parseLangsParam(Q.get('langs'))
+        || (Object.keys(qMap).length ? UI_LANGS.filter(c => c in qMap) : null)
+        || storedLangs
+        || [...DEFAULT_SRC_LANGS];
+refreshLangMap();
+
+if (Q.has('depth')) {
+  depthPick = Math.min(DEPTH_MAX, Math.max(0, Math.round(num('depth', 0))));
+} else {
+  const d = Number(localStorage.getItem('stity_show_depth'));
+  if (Number.isFinite(d) && d >= 1 && d <= DEPTH_MAX) depthPick = d;
+}
+buildPanel();
+render();
+syncButtons();
+pokeControls();
+</script>

@@ -32,7 +32,91 @@ interface TranscriptionEntry {
   text: string;
   translatedText: string;
   timestamp: number;
+  // 직전까지 partial 로 흐리게 떠 있던 문장인가. 맞으면 등장 애니메이션을 건너뛴다.
+  fromPartial?: boolean;
 }
+
+// ─── partial 타자 연출 ─────────────────────────────────────────────────────────
+// tools/partial_demo/web/index.html 과 같은 파라미터. 한 덩어리로 도착한 partial 을
+// 다음 덩어리가 오기 전에 다 뿌리는 것을 목표로 간격을 잡는다 = 등간격 타자.
+const TYPE_BUDGET_MS = 1300;
+const TYPE_MIN_MS = 10;
+const TYPE_MAX_MS = 45;
+// 확정 전 말풍선의 흐림 정도. 데모의 .bubbleRow.partial 과 같은 값이어야 한다.
+const PARTIAL_OPACITY = 0.55;
+// partial 이 final 로 확정될 때 흐림을 걷는 시간.
+const FIRM_MS = 140;
+
+const commonPrefixLen = (a: string, b: string): number => {
+  const n = Math.min(a.length, b.length);
+  let i = 0;
+  while (i < n && a[i] === b[i]) i += 1;
+  return i;
+};
+
+// target 이 바뀔 때마다 한 글자씩 흘려 보여 준다. 모델이 뒤를 고쳐 쓰면
+// (롤백 재디코딩) 이미 보여 준 글자를 공통 앞부분까지 되감고 거기서 이어 친다.
+const useTypewriter = (target: string) => {
+  const [shown, setShown] = useState('');
+  const shownRef = useRef('');
+  const targetRef = useRef('');
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const stop = () => {
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+  };
+
+  useEffect(() => {
+    targetRef.current = target;
+    if (!target) { stop(); shownRef.current = ''; setShown(''); return; }
+
+    const keep = commonPrefixLen(shownRef.current, target);
+    if (keep < shownRef.current.length) {
+      shownRef.current = target.slice(0, keep);
+      setShown(shownRef.current);
+    }
+
+    stop();
+    const backlog = target.length - shownRef.current.length;
+    if (backlog <= 0) return;
+    const delay = Math.min(TYPE_MAX_MS, Math.max(TYPE_MIN_MS, TYPE_BUDGET_MS / backlog));
+    timerRef.current = setInterval(() => {
+      if (shownRef.current.length >= targetRef.current.length) { stop(); return; }
+      shownRef.current = targetRef.current.slice(0, shownRef.current.length + 1);
+      setShown(shownRef.current);
+    }, delay);
+    return stop;
+  }, [target]);
+
+  useEffect(() => stop, []);
+
+  return { shown, typing: shown.length < target.length };
+};
+
+const SPEECH_RMS_THRESHOLD = 0.018;
+const SPEECH_PEAK_THRESHOLD = 0.08;
+
+const hasSpeechEnergy = (audioData: ArrayBuffer): boolean => {
+  const view = new DataView(audioData);
+  if (view.byteLength < 2) return false;
+
+  let sumSquares = 0;
+  let peak = 0;
+  let count = 0;
+  const step = 8; // Sample every 4 int16 frames to keep this cheap on the UI thread.
+
+  for (let offset = 0; offset + 1 < view.byteLength; offset += step) {
+    const sample = view.getInt16(offset, true) / 32768;
+    const abs = Math.abs(sample);
+    sumSquares += sample * sample;
+    peak = Math.max(peak, abs);
+    count += 1;
+  }
+
+  if (count === 0) return false;
+  const rms = Math.sqrt(sumSquares / count);
+  return rms >= SPEECH_RMS_THRESHOLD && peak >= SPEECH_PEAK_THRESHOLD;
+};
 
 // ─── UI string localizations ──────────────────────────────────────────────────
 const UI_STRINGS: Record<string, {
@@ -350,8 +434,24 @@ const LangPickerSheet = ({
   );
 };
 
-const BubbleItem = ({ entry, myLangCode, targetLangCode }: {
+// 타자 중임을 알리는 깜빡이는 커서. 데모의 .caret 과 같이 부드러운 페이드가 아니라
+// 켜짐/꺼짐만 오간다(steps(1)).
+const BlinkCaret = ({ color }: { color: string }) => {
+  const blink = useRef(new Animated.Value(PARTIAL_OPACITY)).current;
+  useEffect(() => {
+    const loop = Animated.loop(Animated.sequence([
+      Animated.timing(blink, { toValue: 0, duration: 0, delay: 500, useNativeDriver: false }),
+      Animated.timing(blink, { toValue: PARTIAL_OPACITY, duration: 0, delay: 500, useNativeDriver: false }),
+    ]));
+    loop.start();
+    return () => loop.stop();
+  }, []);
+  return <Animated.Text style={{ color, opacity: blink }}>▌</Animated.Text>;
+};
+
+const BubbleItem = ({ entry, myLangCode, targetLangCode, dim, instant, caret }: {
   entry: TranscriptionEntry; myLangCode: string; targetLangCode: string;
+  dim?: boolean; instant?: boolean; caret?: boolean;
 }) => {
   const isMine = entry.language === myLangCode;
   const isPeer = entry.language === targetLangCode;
@@ -361,9 +461,19 @@ const BubbleItem = ({ entry, myLangCode, targetLangCode }: {
     ? { bubble: '#f2f2f2', avatar: '#E8E0A0', text: '#1a1a1a', subText: '#aaa' }
     : { ...getLangColor(entry.language), text: '#fff', subText: 'rgba(255,255,255,0.65)' };
 
-  const slideAnim = useRef(new Animated.Value(0)).current;
+  // appear = 아래에서 밀려 올라오는 등장. firm = partial 흐림을 걷어 확정시키는 전환.
+  // instant 면 이미 partial 로 그 자리에 떠 있던 문장이므로 등장을 다시 돌리지 않는다.
+  // 데모가 같은 노드를 재사용해 화면이 튀지 않게 하는 것과 같은 효과다.
+  const appear = useRef(new Animated.Value(instant ? 1 : 0)).current;
+  const firm = useRef(new Animated.Value(instant ? 0 : 1)).current;
   useEffect(() => {
-    Animated.timing(slideAnim, {
+    if (instant) {
+      Animated.timing(firm, {
+        toValue: 1, duration: FIRM_MS, useNativeDriver: true,
+      }).start();
+      return;
+    }
+    Animated.timing(appear, {
       toValue: 1,
       duration: 300,
       easing: Easing.bezier(0.4, 0, 0.2, 1),
@@ -371,10 +481,22 @@ const BubbleItem = ({ entry, myLangCode, targetLangCode }: {
     }).start();
   }, []);
 
+  // dim = 아직 확정되지 않은 partial. 애니메이션 opacity와 겹치면 안 되므로
+  // 스타일을 덧씌우지 않고 interpolate 목표값을 낮춘다.
+  const rowOpacity = instant
+    ? firm.interpolate({ inputRange: [0, 1], outputRange: [PARTIAL_OPACITY, 1] })
+    : dim
+    ? appear.interpolate({ inputRange: [0, 1], outputRange: [0, PARTIAL_OPACITY] })
+    : appear;
+
   return (
     <Animated.View style={[S.bubbleRow, isMine && S.bubbleRowMine, {
-      opacity: slideAnim,
-      transform: [{ translateY: slideAnim.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }) }],
+      opacity: rowOpacity,
+      transform: [{
+        translateY: instant
+          ? 0
+          : appear.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }),
+      }],
     }]}>
       <View style={[S.avatar, { backgroundColor: clr.avatar }]}>
         <Text style={[S.avatarTxt, { color: isMine ? '#fff' : '#7A9030' }]}>
@@ -389,14 +511,31 @@ const BubbleItem = ({ entry, myLangCode, targetLangCode }: {
           borderBottomLeftRadius: isMine ? 18 : 4,
         },
       ]}>
-        <Text style={[S.bubbleMain, { color: clr.text }]}>{entry.text}</Text>
-        {!!entry.translatedText && (
-          <Text style={[S.bubbleSub, { color: clr.subText }]}>{entry.translatedText}</Text>
-        )}
+        {/* 번역이 메인, 전사(원문)가 서브. 번역이 아직 도착하지 않았으면
+            원문을 메인 자리에 임시로 보여 주고, 도착하면 아래로 내려간다.
+            instant 면 흐린 partial 텍스트가 그 자리에서 확정 텍스트로 바뀌는
+            것이므로, 글자만 따로 한 번 더 페이드해 교체를 감춘다. */}
+        <Animated.View style={{ opacity: instant ? firm : 1 }}>
+          <Text style={[S.bubbleMain, { color: clr.text }]}>
+            {entry.translatedText || entry.text}
+            {caret && <BlinkCaret color={clr.text} />}
+          </Text>
+          {!!entry.translatedText && (
+            <Text style={[S.bubbleSub, { color: clr.subText }]}>{entry.text}</Text>
+          )}
+        </Animated.View>
       </View>
     </Animated.View>
   );
 };
+
+const CenterPendingIndicator = () => (
+  <View pointerEvents="none" style={S.centerPendingWrap}>
+    <View style={S.centerPendingBubble}>
+      <Text style={S.centerPendingText}>•••</Text>
+    </View>
+  </View>
+);
 
 // ─── Main screen ──────────────────────────────────────────────────────────────
 export const HomeScreen: React.FC<{ navigation: any }> = () => {
@@ -419,6 +558,11 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
   const [menuPage, setMenuPage] = useState<null | 'privacy' | 'terms' | 'delete' | 'about'>(null);
 
   const [transcriptions, setTranscriptions] = useState<TranscriptionEntry[]>([]);
+  // 서버가 토큰 단위로 흘려주는 미확정 전사. final 이 오면 사라진다.
+  const [livePartial, setLivePartial] = useState<{ text: string; language: string } | null>(null);
+  // 서버는 한 덩어리로 주지만 화면에는 한 글자씩 흘린다.
+  const { shown: partialShown, typing: partialTyping } = useTypewriter(livePartial?.text ?? '');
+  const [speechPending, setSpeechPending] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
   const [sessionError, setSessionError] = useState('');
   const [serverCapacity, setServerCapacity] = useState<{ active: number; max: number } | null>(null);
@@ -452,6 +596,8 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
   const sendAudioRef = useRef(sendAudio);
   const sendMessageRef = useRef(sendMessage);
   const serverStatusRef = useRef(serverStatus);
+  const livePartialRef = useRef(livePartial);
+  const speechPendingRef = useRef(speechPending);
 
   useEffect(() => { isConnectedRef.current = isConnected; }, [isConnected]);
   useEffect(() => { sendAudioRef.current = sendAudio; }, [sendAudio]);
@@ -465,12 +611,18 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
   useEffect(() => { myLangRef.current = myLang; }, [myLang]);
   useEffect(() => { targetLangRef.current = targetLang; }, [targetLang]);
   useEffect(() => { sessionStateRef.current = sessionState; }, [sessionState]);
+  useEffect(() => { livePartialRef.current = livePartial; }, [livePartial]);
+  useEffect(() => { speechPendingRef.current = speechPending; }, [speechPending]);
 
   const wasAutoSuspendedRef = useRef(false);
 
   const { startRecording, stopRecording } = useAudioRecording({
     onAudioData: (audioData) => {
       if (isConnectedRef.current && sessionStateRef.current === 'recording') {
+        if (!livePartialRef.current && hasSpeechEnergy(audioData)) {
+          speechPendingRef.current = true;
+          setSpeechPending(true);
+        }
         sendAudioRef.current(audioData);
       }
     },
@@ -607,11 +759,30 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
 
   // ── Message listener ─────────────────────────────────────────────────────────
   const handleMessageRef = useRef((msg: any) => {
+    // partial 분기는 아래 !text 검사보다 먼저 와야 한다.
+    // 빈 text 자체가 "화면을 비우라"는 신호라 여기서 걸러지면 안 된다.
+    if (msg.type === 'partial') {
+      const partialText = (msg.text || '').trim();
+      speechPendingRef.current = false;
+      setSpeechPending(false);
+      livePartialRef.current = partialText ? { text: partialText, language: langToCode(msg.language || 'auto') } : null;
+      setLivePartial(
+        livePartialRef.current
+      );
+      return;
+    }
     const text = (msg.original || '').trim();
     if (!text || msg.type !== 'final') return;
+    // 이 구간은 확정됐다. 서버의 빈 partial 을 기다리지 않고 바로 지운다.
+    // 흐리게 떠 있던 말풍선이 있었다면 그 자리를 그대로 이어받는다.
+    const wasPartial = livePartialRef.current !== null;
+    speechPendingRef.current = false;
+    setSpeechPending(false);
+    livePartialRef.current = null;
+    setLivePartial(null);
     const lang = langToCode(msg.language || 'auto');
     const serverTrans = (msg.translation || '').trim();
-    addTranscription(lang, text, serverTrans || undefined);
+    addTranscription(lang, text, serverTrans || undefined, wasPartial);
   });
 
   useEffect(() => {
@@ -638,7 +809,7 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
   // ── Auto-scroll ───────────────────────────────────────────────────────────────
   useEffect(() => {
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: false }), 50);
-  }, [transcriptions.length]);
+  }, [transcriptions.length, partialShown, speechPending]);
 
   // ── TTS ───────────────────────────────────────────────────────────────────────
   // mode-1: speaker, TTS for all languages
@@ -691,10 +862,10 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
   const getTransTarget = (detectedLang: string) =>
     detectedLang === myLangRef.current.code ? targetLangRef.current.code : myLangRef.current.code;
 
-  const addTranscription = (lang: string, text: string, serverTrans?: string) => {
+  const addTranscription = (lang: string, text: string, serverTrans?: string, fromPartial?: boolean) => {
     entryIdRef.current += 1;
     const id = String(entryIdRef.current);
-    setTranscriptions(prev => [...prev, { id, language: lang, text, translatedText: serverTrans ?? '', timestamp: Date.now() }]);
+    setTranscriptions(prev => [...prev, { id, language: lang, text, translatedText: serverTrans ?? '', timestamp: Date.now(), fromPartial }]);
     if (serverTrans) {
       if (shouldPlayTTS(lang)) speakTranslation(serverTrans, getTTSTarget(lang));
       return;
@@ -729,6 +900,10 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
     ];
     setShowSetup(false);
     setTranscriptions([]);
+    livePartialRef.current = null;
+    setLivePartial(null);
+    speechPendingRef.current = false;
+    setSpeechPending(false);
     sessionStateRef.current = 'recording';
     setSessionState('recording');
     DEMO_SCRIPT.forEach((line, i) => {
@@ -773,6 +948,8 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
         const ok = await probeServer(serverStatusRef.current === 'error');
         if (!ok) throw new Error(s.connectionFailed);
       }
+      speechPendingRef.current = false;
+      setSpeechPending(false);
       try {
         await connect({ lang: myLang.code, targetLang: targetLang.code, speed });
       } catch {
@@ -796,6 +973,10 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
   const doStop = async () => {
     wasAutoSuspendedRef.current = false;
     stopTTS();
+    speechPendingRef.current = false;
+    setSpeechPending(false);
+    livePartialRef.current = null;
+    setLivePartial(null);
     await stopRecording();
     sessionStateRef.current = 'paused';
     setSessionState('paused');
@@ -843,6 +1024,10 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
           await stopRecording();
           disconnect();
           setTranscriptions([]);
+          speechPendingRef.current = false;
+          setSpeechPending(false);
+          livePartialRef.current = null;
+          setLivePartial(null);
           releaseAudioMode();
           sessionStateRef.current = 'idle';
           setSessionState('idle');
@@ -878,6 +1063,7 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
 
   const ui = UI_STRINGS[myLang.code] ?? UI_STRINGS.en;
   const isIdle = sessionState === 'idle';
+  const hasFeedContent = transcriptions.length > 0 || livePartial !== null;
   const isRecording = sessionState === 'recording';
   const isPaused = sessionState === 'paused';
   const modeObj = CONVERSATION_MODES.find(m => m.id === modeId) ?? CONVERSATION_MODES[0];
@@ -1034,7 +1220,7 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
         style={S.convArea}
         contentContainerStyle={[
           S.convContent,
-          (isIdle || transcriptions.length === 0) && S.convContentFlex,
+          (isIdle || !hasFeedContent) && S.convContentFlex,
         ]}
       >
         {isIdle && (
@@ -1073,7 +1259,7 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
           </View>
         )}
 
-        {!isIdle && transcriptions.length === 0 && (
+        {!isIdle && !hasFeedContent && (
           <View style={S.idleWrap}>
             <LinearGradient
               colors={['rgba(122,144,48,0.1)', 'rgba(6,182,212,0.1)']}
@@ -1088,9 +1274,36 @@ export const HomeScreen: React.FC<{ navigation: any }> = () => {
         )}
 
         {transcriptions.map(entry => (
-          <BubbleItem key={entry.id} entry={entry} myLangCode={myLang.code} targetLangCode={targetLang.code} />
+          <BubbleItem
+            key={entry.id}
+            entry={entry}
+            myLangCode={myLang.code}
+            targetLangCode={targetLang.code}
+            instant={entry.fromPartial}
+          />
         ))}
+
+        {/* 미확정 전사. 번역이 없으므로 BubbleItem 이 원문을 메인 자리에 띄운다.
+            키가 고정이라 등장 애니메이션은 최초 한 번만 돈다. */}
+        {livePartial && (
+          <BubbleItem
+            key="__partial__"
+            entry={{
+              id: '__partial__',
+              language: livePartial.language,
+              text: partialShown,
+              translatedText: '',
+              timestamp: 0,
+            }}
+            myLangCode={myLang.code}
+            targetLangCode={targetLang.code}
+            dim
+            caret={partialTyping}
+          />
+        )}
       </ScrollView>
+
+      {speechPending && !livePartial && <CenterPendingIndicator />}
 
       {/* ── Recording bar ── */}
       {isRecording && <RecordingBar label={ui.listening} />}
@@ -1413,6 +1626,9 @@ const S = StyleSheet.create({
   bubble: { maxWidth: '72%', paddingVertical: 10, paddingHorizontal: 14, borderRadius: 18 },
   bubbleMain: { fontSize: 15, fontWeight: '600', color: '#fff', lineHeight: 21 },
   bubbleSub: { fontSize: 11, color: 'rgba(255,255,255,0.65)', marginTop: 3 },
+  centerPendingWrap: { position: 'absolute', left: 0, right: 0, bottom: 178, alignItems: 'center' },
+  centerPendingBubble: { minWidth: 58, alignItems: 'center', paddingVertical: 8, paddingHorizontal: 18, borderRadius: 999, backgroundColor: 'rgba(122,144,48,0.10)', borderWidth: 1, borderColor: 'rgba(122,144,48,0.24)' },
+  centerPendingText: { color: '#7A9030', fontSize: 18, lineHeight: 20, fontWeight: '800', letterSpacing: 2 },
 
   // Recording bar
   recBar: { flexDirection: 'row', alignItems: 'center', marginHorizontal: 16, marginBottom: 8, backgroundColor: 'rgba(96,128,200,0.07)', borderRadius: 16, paddingVertical: 12, paddingHorizontal: 16, gap: 10 },
