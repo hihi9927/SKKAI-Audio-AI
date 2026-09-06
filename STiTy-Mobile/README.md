@@ -12,30 +12,30 @@ npm run android           # 또는 npm run ios
 
 ## 서버 연결
 
-`src/hooks/useWebSocket.ts` 상단의 `SERVER_URL` 상수를 환경에 맞게 수정합니다.
+`src/context/WebSocketContext.tsx` 상단의 `RUNPOD_SERVER_URL` 상수를 환경에 맞게 수정합니다.
+`getServerUrl()` 이 이 값을 쓰되, 웹에서 `EXPO_PUBLIC_USE_LOCAL_ASR=1` 이면 현재 호스트의
+`/asr` 로 붙습니다.
 
 ```typescript
-const SERVER_URL = 'wss://<host>';       // ngrok / RunPod proxy
+const RUNPOD_SERVER_URL = 'wss://<host>';   // ngrok / RunPod proxy
 // LAN: 'ws://192.168.x.x:8001'
 ```
 
 ## 구조
 
 ```
-App.tsx                          # 진입점 + 네비게이션
+App.tsx                          # 진입점 + 네비게이션 (등록된 화면은 HomeScreen 하나)
 src/
 ├── screens/
-│   ├── HomeScreen.tsx           # 언어 · 대화 모드 선택
-│   └── ConversationScreen.tsx   # 실시간 번역 피드 (연결 상태도 여기서 표시)
-├── context/WebSocketContext.tsx # 화면 간 공유되는 WS 세션
+│   └── HomeScreen.tsx           # 언어 · 대화 모드 선택 + 실시간 번역 피드 + 설정/약관
+├── context/WebSocketContext.tsx # WS 세션 전부 — 소켓 수명주기 · 메시지 파싱 · RUNPOD_SERVER_URL
 ├── hooks/
-│   ├── useWebSocket.ts          # 소켓 수명주기 · 메시지 파싱 · SERVER_URL
 │   └── useAudioRecording.ts     # 오디오 녹음 (.web.ts 웹 변형 있음)
-├── components/                  # GradientText · GradientButton · LanguageSelector · TranslationItem
-├── utils/                       # audioRouting · serverUtils · tts (.web.ts 변형)
+├── utils/
+│   ├── audioRouting.ts          # 대화 모드별 출력 라우팅
+│   └── tts.ts                   # 음성 합성 (.web.ts 웹 변형 있음)
 └── constants/
-    ├── languages.ts             # 지원 언어 + 대화 모드
-    └── theme.ts                 # 색상 · 타이포 토큰
+    └── languages.ts             # 지원 언어(LANGUAGES) + 대화 모드(CONVERSATION_MODES)
 ```
 
 ## 언어 · 대화 모드
@@ -43,9 +43,11 @@ src/
 - 지원 언어: `ko` `ja` `zh` `es` `en` (`src/constants/languages.ts`)
 - 대화 모드: `mode-1` 스피커 출력 · `mode-2` 한쪽만 이어폰 · `mode-3` 양쪽 이어폰
 
-## 디자인 토큰
+## 색상
 
-그라데이션 Purple `#8B5CF6` → Blue `#3B82F6` → Cyan `#06B6D4`. 언어 레이블 색도 같은 3색을 재사용합니다 (`theme.ts`).
+공용 테마 모듈은 없습니다. 언어별 말풍선·아바타 색은 `HomeScreen.tsx` 의 `LANG_COLORS`
+에 인라인으로 있고(en/ko/ja/zh/es/fr/id/vi/th/de), 표에 없는 코드는 회색 `#909090` 으로
+떨어집니다.
 
 ## 오디오
 

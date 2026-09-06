@@ -579,7 +579,7 @@ if __name__ == "__main__":
     ap.add_argument("--lid-model", default="openai/whisper-base")
     ap.add_argument("--lid-window", type=float, default=1.0,
                     help="발화 시작 후 몇 초를 듣고 판정할지. 실측 정확도 "
-                         "1.0s=92.8%%, 2.0s=100%% (whisper-base)")
+                         "1.0s=96.9%%, 2.0s=98.7%% (whisper-base, ko/en/es 226클립)")
     ap.add_argument("--lid-max-wait", type=float, default=5.0,
                     help="이만큼 들어도 판정이 안 서면 start.lang 규칙으로 되돌아간다")
     ap.add_argument("--lid-device", default="cuda")
