@@ -6,7 +6,7 @@
 7.1GiB 라 24GiB GPU 에서는 ASR 두 개와 함께 올릴 수 없다. 번역기를 한 번만 올려
 두고 ASR 서버들은 `--local-translation-url` 로 이 서버를 부른다.
 
-    python tools/local_translation_server.py --port 8770 \
+    python STiTy-Mobile/demo-web/local_translation_server.py --port 8770 \
         --model google/madlad400-3b-mt
 
     POST /translate  {"text": ..., "target": "ko", "source": "en"}
@@ -22,7 +22,7 @@ from pathlib import Path
 
 from aiohttp import web
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from core.translator.local_translator import make_translator  # noqa: E402
 

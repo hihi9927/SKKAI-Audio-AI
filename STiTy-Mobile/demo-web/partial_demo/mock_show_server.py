@@ -1,6 +1,6 @@
 """시연 페이지(show.html) 리허설용 목 서버. ASR·GPU 없이 화면만 확인한다.
 
-    python tools/partial_demo/mock_show_server.py [포트] [--loop]
+    python STiTy-Mobile/demo-web/partial_demo/mock_show_server.py [포트] [--loop]
 
 정적 파일은 web/ 에서 그대로 내주고, /ws 로 붙으면 아래 대본을 실제 발화 속도에
 가깝게 흘려 보낸다. 페이지에서 "테스트 음성" 을 누르면 시작된다(무음 wav 를

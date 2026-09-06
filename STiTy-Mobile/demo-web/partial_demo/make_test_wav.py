@@ -16,7 +16,7 @@ LEAD_SEC = 0.3
 
 # LibriSpeech 오디오는 저장소에 없다(gitignore). 워크트리에서 돌릴 때는 데이터가 있는
 # 원본 저장소 경로를 세 번째 인자로 넘긴다.
-DEFAULT_ROOT = "../../evaluation/LibriSpeech/LibriSpeech/test-other"
+DEFAULT_ROOT = "../../../evaluation/LibriSpeech/LibriSpeech/test-other"
 
 out = sys.argv[1]
 n_want = int(sys.argv[2]) if len(sys.argv) > 2 else 3

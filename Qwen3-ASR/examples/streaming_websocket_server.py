@@ -3132,7 +3132,7 @@ def parse_args():
     parser.add_argument(
         "--local-translation-url", type=str, default=None,
         help=(
-            "단독 번역 서버(tools/local_translation_server.py) 주소. 주면 이 "
+            "단독 번역 서버(STiTy-Mobile/demo-web/local_translation_server.py) 주소. 주면 이 "
             "프로세스에 번역 모델을 올리지 않고 HTTP 로 부른다 — ASR 서버를 "
             "여러 개 띄울 때 번역 모델이 복제되는 걸 막는다. 예: http://127.0.0.1:8770"
         ),

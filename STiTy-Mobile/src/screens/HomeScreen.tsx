@@ -37,7 +37,7 @@ interface TranscriptionEntry {
 }
 
 // ─── partial 타자 연출 ─────────────────────────────────────────────────────────
-// tools/partial_demo/web/index.html 과 같은 파라미터. 한 덩어리로 도착한 partial 을
+// STiTy-Mobile/demo-web/partial_demo/web/index.html 과 같은 파라미터. 한 덩어리로 도착한 partial 을
 // 다음 덩어리가 오기 전에 다 뿌리는 것을 목표로 간격을 잡는다 = 등간격 타자.
 const TYPE_BUDGET_MS = 1300;
 const TYPE_MIN_MS = 10;

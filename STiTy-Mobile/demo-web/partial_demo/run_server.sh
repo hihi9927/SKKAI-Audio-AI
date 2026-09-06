@@ -5,7 +5,7 @@
 # PYTHONPATH 로 이 워크트리를 앞에 세워야 여기서 고친 코드가 쓰인다.
 set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO="$(cd "$HERE/../.." && pwd)"
+REPO="$(cd "$HERE/../../.." && pwd)"
 
 : "${PYTHON:=/home/mobility/STiTy/.venv/bin/python}"
 : "${PORT:=8766}"

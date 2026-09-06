@@ -1,7 +1,7 @@
 """시연용 테스트 음성을 언어별로 만든다 (en / ja / ko).
 
-    python tools/partial_demo/make_demo_wavs.py            # 세 언어 모두
-    python tools/partial_demo/make_demo_wavs.py --lang ja --n 4
+    python STiTy-Mobile/demo-web/partial_demo/make_demo_wavs.py            # 세 언어 모두
+    python STiTy-Mobile/demo-web/partial_demo/make_demo_wavs.py --lang ja --n 4
 
 발화 사이에 침묵을 넣는다. VAD 커밋과 슬롯 리셋을 실제로 태워, 문장이 하나씩
 확정되며 화면에 쌓이는 모습을 보기 위해서다. 침묵이 없으면 한 덩어리로 붙어
@@ -30,7 +30,7 @@ import soundfile as sf
 
 HERE = pathlib.Path(__file__).resolve().parent
 WEB = HERE / "web"
-REPO = HERE.parent.parent
+REPO = HERE.parents[2]
 
 FLEURS = pathlib.Path("/home/mobility/datasets/fleurs/data")
 KSPON = REPO / "evaluation/KsponSpeech"

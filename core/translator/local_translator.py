@@ -236,7 +236,7 @@ def make_translator(model_name: str = DEFAULT_MODEL, **kwargs) -> _Seq2SeqTransl
 # set_local_translator 에 그대로 꽂힌다.
 
 class RemoteTranslator:
-    """단독 번역 서버(tools/local_translation_server.py)를 HTTP 로 부르는 클라이언트."""
+    """단독 번역 서버(STiTy-Mobile/demo-web/local_translation_server.py)를 HTTP 로 부르는 클라이언트."""
 
     def __init__(self, url: str, timeout: float = 20.0):
         self.url = url.rstrip("/") + "/translate"

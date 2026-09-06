@@ -61,7 +61,7 @@ in 24 GiB.
 
 ```bash
 # 1) translator once (about 7.1 GiB)
-python tools/local_translation_server.py --port 8770 --model google/madlad400-3b-mt
+python STiTy-Mobile/demo-web/local_translation_server.py --port 8770 --model google/madlad400-3b-mt
 
 # 2) one ASR server per language, each pointing at it
 PYTHONPATH=$PWD/Qwen3-ASR python Qwen3-ASR/examples/streaming_websocket_server.py \
@@ -77,7 +77,7 @@ Measured on a 24564 MiB RTX 4090 with Qwen3-ASR-1.7B finetuned weights:
 
 | Process | `--gpu-memory-utilization` | VRAM |
 |---|---|---|
-| `tools/local_translation_server.py` (madlad400-3b, fp16) | — | 7172 MiB |
+| `STiTy-Mobile/demo-web/local_translation_server.py` (madlad400-3b, fp16) | — | 7172 MiB |
 | ASR (ko finetuned) | 0.25 | 6214 MiB — 3.87 GiB weights, 0.89 GiB KV cache (8288 tokens) |
 | ASR (en finetuned) | 0.25 | 6214 MiB |
 | **total** | | **19729 / 24564 MiB**, about 4.8 GiB spare |
@@ -86,13 +86,13 @@ Measured on a 24564 MiB RTX 4090 with Qwen3-ASR-1.7B finetuned weights:
 Going the other way, 0.55 gave one ASR server 13596 MiB and left no room for a second one.
 
 One server is one model, and nothing in the pipeline picks a model by language — the client chooses
-by which port it connects to. [tools/partial_demo/demo_proxy.py](tools/partial_demo/demo_proxy.py) does
+by which port it connects to. [STiTy-Mobile/demo-web/partial_demo/demo_proxy.py](STiTy-Mobile/demo-web/partial_demo/demo_proxy.py) does
 that choosing for the web demo: it holds the upstream connection until the client's first `start`
 arrives, routes on `start.lang` (falling back to a single-key `langMap`, then to `--default`), and sends
 the `hello` itself so the handshake order the client expects is unchanged.
 
 ```bash
-python tools/partial_demo/demo_proxy.py 8080 --route ko=8766,en=8767 --default 8766
+python STiTy-Mobile/demo-web/partial_demo/demo_proxy.py 8080 --route ko=8766,en=8767 --default 8766
 ```
 
 The route is fixed for the life of the stream — `start.lang` *is* the model choice. A later `config`
@@ -102,7 +102,7 @@ languages gets one model for all of them; per-utterance model switching needs a 
 **`--lid` routes on the voice, not on what the client declared.** VAD finds where speech starts, then
 whisper-base classifies the next `--lid-window` seconds, and that answer picks the upstream — so one
 microphone carrying two languages still reaches the right model.
-[tools/partial_demo/lid_router.py](tools/partial_demo/lid_router.py) holds the model and the measured
+[STiTy-Mobile/demo-web/partial_demo/lid_router.py](STiTy-Mobile/demo-web/partial_demo/lid_router.py) holds the model and the measured
 numbers behind those choices; the two that decide the design:
 
 - **VAD first, always.** Feeding leading silence to a language classifier does not merely add noise, it
@@ -211,7 +211,7 @@ comes back tagged `ko` — so `--rest` points at a baseline Qwen3-ASR that takes
 table:
 
 ```bash
-python tools/partial_demo/demo_proxy.py 8080 \
+python STiTy-Mobile/demo-web/partial_demo/demo_proxy.py 8080 \
   --route ko=8766,en=8767 --default 8766 --rest 8768 --dual
 ```
 
@@ -318,7 +318,7 @@ package. The symptom is a type error rather than an import error, e.g.
 | `core/translator/correct_and_trans.py` | `GPTTranslator` — correction + translation in one call (`--gpt-translation`) |
 | `core/translator/gpt_corrector.py` | `GPTCorrector` — correction only, async with retry/backoff (`--correction`) |
 | `core/translator/local_translator.py` | Local seq2seq translators (MADLAD / NLLB) plus `RemoteTranslator`, the HTTP client for the standalone server |
-| `tools/local_translation_server.py` | Standalone translation server — loads the model once, serves `POST /translate` and `GET /health` |
+| `STiTy-Mobile/demo-web/local_translation_server.py` | Standalone translation server — loads the model once, serves `POST /translate` and `GET /health` |
 | `core/meaning_segmentator/utils/` | Research scripts: GPT `<SEG>` marking, context translation, COMET eval |
 | `core/research/` | CIF & context-scoring experiments (not on the runtime path) |
 | `Qwen3-ASR/examples/streaming_websocket_server.py` | Production WebSocket server |

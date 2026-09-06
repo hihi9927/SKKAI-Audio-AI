@@ -8,7 +8,7 @@
 `show.html` 은 검은 바탕에 자막만 띄우는 **시연용**이다.
 
 ```
-tools/partial_demo/
+STiTy-Mobile/demo-web/partial_demo/
 ├── run_server.sh          ASR 서버 기동 (워크트리 코드 + 로컬 번역)
 ├── demo_proxy.py          페이지와 WebSocket 을 한 포트로 묶는 프록시
 ├── web/index.html         개발 검증용 페이지 (앱 화면 그대로)
@@ -26,11 +26,11 @@ tools/partial_demo/
 
 ```bash
 cd /path/to/repo
-tmux new-session -d -s partialtest -c . "bash tools/partial_demo/run_server.sh"
-tmux new-session -d -s partialweb  -c . "python -u tools/partial_demo/demo_proxy.py 8080"
+tmux new-session -d -s partialtest -c . "bash STiTy-Mobile/demo-web/partial_demo/run_server.sh"
+tmux new-session -d -s partialweb  -c . "python -u STiTy-Mobile/demo-web/partial_demo/demo_proxy.py 8080"
 ```
 
-서버가 뜨는 데 2~3분 걸린다. `tools/partial_demo/server.log` 에 `Warmup complete` 가 찍히면 준비된 것이다.
+서버가 뜨는 데 2~3분 걸린다. `STiTy-Mobile/demo-web/partial_demo/server.log` 에 `Warmup complete` 가 찍히면 준비된 것이다.
 
 그다음 <http://localhost:8080> (개발 검증용) 또는 <http://localhost:8080/show.html>
 (시연용) 을 연다. 원격 개발이면 **8080 하나만** 포워딩하면 된다 — 페이지가 같은 포트의
@@ -167,7 +167,7 @@ GPU 없이 배치와 페이싱만 볼 때 쓴다. 대본을 실제 발화 속도
 
 ```bash
 tmux new-session -d -s showmock -c . \
-  "python -u tools/partial_demo/mock_show_server.py 8090 --loop"
+  "python -u STiTy-Mobile/demo-web/partial_demo/mock_show_server.py 8090 --loop"
 ```
 
 <http://localhost:8090/show.html> 를 열고 `EN`/`JA`/`KO` 중 아무거나 누르면 시작한다
@@ -178,7 +178,7 @@ tmux new-session -d -s showmock -c . \
 LibriSpeech 오디오는 저장소에 없다. 데이터가 있는 경로를 넘긴다.
 
 ```bash
-python tools/partial_demo/make_test_wav.py tools/partial_demo/web/partial_test.wav 3 \
+python STiTy-Mobile/demo-web/partial_demo/make_test_wav.py STiTy-Mobile/demo-web/partial_demo/web/partial_test.wav 3 \
   /path/to/evaluation/LibriSpeech/LibriSpeech/test-other
 ```
 
@@ -188,8 +188,8 @@ python tools/partial_demo/make_test_wav.py tools/partial_demo/web/partial_test.w
 시연용(`show.html`)은 언어별 파일을 따로 쓴다. 경로가 스크립트 안에 박혀 있어 인자 없이 돈다.
 
 ```bash
-python tools/partial_demo/make_demo_wavs.py                 # en, ja, ko 모두
-python tools/partial_demo/make_demo_wavs.py --lang ja --n 4
+python STiTy-Mobile/demo-web/partial_demo/make_demo_wavs.py                 # en, ja, ko 모두
+python STiTy-Mobile/demo-web/partial_demo/make_demo_wavs.py --lang ja --n 4
 ```
 
 `web/partial_test_<lang>.wav` 와, 무엇이 나와야 하는지 대조할 `web/partial_test_<lang>.txt`
@@ -210,11 +210,11 @@ FLEURS TSV 는 본문에 따옴표가 그대로 들어 있어 `csv.QUOTE_NONE` �
 빈 `partial` 인지, `seq` 가 단조 증가하는지, 메타 헤더(`language ...`)가 새지 않는지 판정한다.
 
 ```bash
-python tools/partial_demo/partial_ws_client.py \
-  --url ws://127.0.0.1:8766 --wav tools/partial_demo/web/partial_test.wav
+python STiTy-Mobile/demo-web/partial_demo/partial_ws_client.py \
+  --url ws://127.0.0.1:8766 --wav STiTy-Mobile/demo-web/partial_demo/web/partial_test.wav
 
 # 무음만 넣었을 때 partial/final 이 안 나오는지
-python tools/partial_demo/partial_ws_client.py \
+python STiTy-Mobile/demo-web/partial_demo/partial_ws_client.py \
   --url ws://127.0.0.1:8766 --wav silence.wav --expect-silence
 ```
 
