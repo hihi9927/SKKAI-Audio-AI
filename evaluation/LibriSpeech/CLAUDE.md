@@ -31,7 +31,8 @@ python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \
 - `run_concurrent_chapters.py` — 챕터를 N개 클라이언트로 나눠 동시 실행. **현재 주 경로**이고
   `--num-clients` / `--model` / `--scope` / `--tag` 를 받는다.
 - `run_concurrent_benchmark.py`, `run_multi_speaker_full.py` — 동시 1~10명 스윕. 인자가 없어 파일
-  상단 상수를 고쳐야 하고 `PROJECT_ROOT = Path("/home/ubuntu/STiTy")` 가 박혀 있다.
+  상단 상수를 고쳐야 한다. `PROJECT_ROOT` 는 파일 위치에서 유도되고, 인터프리터는 기본이
+  현재 `sys.executable` 이며 `EVAL_PYTHON` / `EVAL_BIN_DIR` 로 덮어쓴다.
 
 ## 논문 측정 — mode2 / 3 / 4
 

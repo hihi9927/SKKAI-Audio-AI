@@ -262,7 +262,8 @@ def train(args):
     dtype  = torch.bfloat16
 
     if args.ckpt_dir is None:
-        args.ckpt_dir = f"/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/research/cif/checkpoints/{args.mode}/one_seg"
+        # <repo>/core/research/cif/checkpoints/<mode>/one_seg
+        args.ckpt_dir = str(Path(__file__).resolve().parents[2] / "checkpoints" / args.mode / "one_seg")
 
     if args.mode == "encoder":
         print(f"Loading encoder from {args.model} …")

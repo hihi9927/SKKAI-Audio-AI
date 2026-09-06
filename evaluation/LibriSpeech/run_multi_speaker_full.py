@@ -10,7 +10,7 @@ multi_speaker_test 전체 재실행 (올바른 설계)
   ...
   run_10: 10명 각각 × 548파일 (동시)
 
-실행 위치: /home/ubuntu/STiTy
+실행 위치: 리포지토리 루트
   python evaluation/LibriSpeech/run_multi_speaker_full.py
 """
 
@@ -27,16 +27,16 @@ from pathlib import Path
 
 # ── 설정 ──────────────────────────────────────────────────────────────────────
 
-PROJECT_ROOT  = Path("/home/ubuntu/STiTy")
+PROJECT_ROOT  = Path(__file__).resolve().parents[2]   # <repo>/evaluation/LibriSpeech/<this file>
 LIBRISPEECH   = PROJECT_ROOT / "evaluation/LibriSpeech"
 SERVER_SCRIPT = LIBRISPEECH / "servers/streaming_websocket_server_fsl.py"
 TEST_SCRIPT   = LIBRISPEECH / "servers/test_qwen3_librispeech.py"
 TEST_DIR      = LIBRISPEECH / "test-other"
 RESULTS_DIR   = LIBRISPEECH / "results/finetuned(1.0.1)/multi_speaker_test"
 TEST_RESULTS_ROOT = LIBRISPEECH / "results/finetuned(1.0.1)/full"
-MODEL         = PROJECT_ROOT / "Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged"
-PYTHON        = "/home/ubuntu/miniconda3/envs/qwen3-asr/bin/python"
-CONDA_BIN     = "/home/ubuntu/miniconda3/envs/qwen3-asr/bin"
+MODEL         = PROJECT_ROOT / "models/Qwen3-ASR-1.7B-en-dailytalk-seg"
+PYTHON        = os.environ.get("EVAL_PYTHON", sys.executable)
+CONDA_BIN     = os.environ.get("EVAL_BIN_DIR", str(Path(PYTHON).parent))
 
 PORT       = 8765
 NUM_FILES  = 548

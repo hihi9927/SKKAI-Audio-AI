@@ -11,7 +11,7 @@ TAG=full
 
 build_man () {   # <config> <출력 타깃 이름>
   echo "===== 매니페스트 $1 $(ts) ====="
-  /home/mobility/STiTy/.venv/bin/python -u evaluation/ast/build_manifest_covost2.py \
+  "$REPO/.venv/bin/python" -u evaluation/ast/build_manifest_covost2.py \
     --covost-root ~/datasets/covost2 --config $1 --split test --mode single \
     --audio-cache ~/datasets/covost2_single \
     --out $M/covost2_en-$2_$TAG.jsonl 2>&1 | tail -6
@@ -28,7 +28,7 @@ done
 
 # 강제정렬 — 소스가 영어 하나뿐이라 한 번만 돌린다. **.venv 를 써야 한다** (qwen_asr).
 echo "===== 강제정렬 $(ts) ====="
-/home/mobility/STiTy/.venv/bin/python -u -m core.meaning_segmentator.autoseg.baselines.build_unittimes \
+"$REPO/.venv/bin/python" -u -m core.meaning_segmentator.autoseg.baselines.build_unittimes \
   --lang en --manifest $M/covost2_en-de_$TAG.jsonl \
   --out $M/covost2_en-de_${TAG}_unittimes.json --batch 8 \
   > $R/logs_full_align.log 2>&1

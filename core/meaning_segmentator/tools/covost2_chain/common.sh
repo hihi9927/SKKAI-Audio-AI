@@ -1,9 +1,10 @@
 # 모든 체인이 공유하는 준비. tmux 서버는 예전 환경을 물고 있어서 키가 없다 —
 # 여기서 .env 를 직접 읽는다. (2026-09-02 세션 동반 사망 사고 이후 규칙)
-cd /home/mobility/STiTy || exit 1
+REPO="${REPO:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)}"
+cd "$REPO" || exit 1
 set -a; . ./.env 2>/dev/null; set +a
-export PYTHONPATH=/home/mobility/STiTy
-PY=/home/mobility/STiTy/.venv-autoseg/bin/python
+export PYTHONPATH="$REPO"
+PY="$REPO/.venv-autoseg/bin/python"
 R=core/meaning_segmentator/experiment/artifacts/covost2
 ST=$R/_status
 mkdir -p "$ST"

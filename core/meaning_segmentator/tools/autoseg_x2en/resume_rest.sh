@@ -10,7 +10,8 @@
 #
 # --fresh 는 쓰지 않는다. 재개 여부는 history.json 유무로 판단한다.
 set -u
-cd /home/mobility/STiTy || exit 1
+REPO="${REPO:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)}"
+cd "$REPO" || exit 1
 export PYTHONPATH=.
 PY=.venv-autoseg/bin/python
 RUNS=core/meaning_segmentator/experiment/artifacts

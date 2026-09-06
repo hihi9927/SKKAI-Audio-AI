@@ -27,10 +27,10 @@ JOBS
 run_one () {
   pol=$1; tgt=$2
   echo "  [$(date '+%H:%M:%S')] 시작 $pol/$tgt"
-  /home/mobility/STiTy/.venv-autoseg/bin/python -u -m core.meaning_segmentator.autoseg.baselines.build \
+  "$PY" -u -m core.meaning_segmentator.autoseg.baselines.build \
     --run-id covost2/full --dataset covost2 --manifest-tag full \
     --label auto_run13_mg1 --split test --policy $pol --targets $tgt \
-    > /home/mobility/STiTy/core/meaning_segmentator/experiment/artifacts/covost2/full/logs/baselines/${pol}_${tgt}.log 2>&1
+    > "$REPO"/core/meaning_segmentator/experiment/artifacts/covost2/full/logs/baselines/${pol}_${tgt}.log 2>&1
   rc=$?
   echo "  [$(date '+%H:%M:%S')] 종료 $pol/$tgt exit=$rc"
   return $rc

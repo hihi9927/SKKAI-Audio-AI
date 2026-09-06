@@ -26,7 +26,7 @@ echo "  exit=$?"; sed -n '/^{/,/^}/p' $N/logs/smoke_mg1.log
 # 게이트: 형식이 깨지거나 경계가 안 늘면 본런에 $10 을 태우지 않는다
 $PY - <<'PYGATE' || { echo "!! 게이트 불통과 — 본런 중단"; mark relabel_mg1.failed "smoke gate"; exit 1; }
 import json, sys, re
-t = open("/home/mobility/STiTy/core/meaning_segmentator/experiment/artifacts/covost2/n3000/logs/smoke_mg1.log").read()
+t = open("core/meaning_segmentator/experiment/artifacts/covost2/n3000/logs/smoke_mg1.log").read()
 m = re.search(r"\{.*\}", t, re.S)
 if not m:
     print("  요약 JSON 없음"); sys.exit(1)

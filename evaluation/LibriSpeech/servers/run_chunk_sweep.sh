@@ -12,7 +12,8 @@ TEST_SCRIPT="$SCRIPT_DIR/test_qwen3_librispeech.py"
 SERVER_SCRIPT="$SCRIPT_DIR/streaming_websocket_server_fsl.py"
 
 # ── 기본값 ────────────────────────────────────────────────────────────────────
-SERVER_MODEL="/home/ubuntu/STiTy/Qwen3-ASR/finetuning/finetuning_silence/Qwen3-ASR-1.7B-en-merged-silence"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+SERVER_MODEL="${SERVER_MODEL:-$REPO_ROOT/models/Qwen3-ASR-1.7B-en-silence-c80-merged}"
 MODEL_TAG="finetuned_silence(1.0.3)"
 SCOPE="chunk_size_test"
 LIMIT="548"

@@ -32,7 +32,7 @@ echo "  exit=$?"; sed -n '/^{/,/^}/p' $F/logs/smoke_full.log
 # 게이트: 형식이 깨지면 $38 을 태우지 않는다. 기준은 3000 런과 같다.
 $PY - <<'PYGATE' || { echo "!! 게이트 불통과 — 본런 중단"; mark full_label.failed "smoke gate"; exit 1; }
 import json, re, sys
-t = open("/home/mobility/STiTy/core/meaning_segmentator/experiment/artifacts/covost2/full/logs/smoke_full.log").read()
+t = open("core/meaning_segmentator/experiment/artifacts/covost2/full/logs/smoke_full.log").read()
 m = re.search(r"\{.*\}", t, re.S)
 if not m:
     print("  요약 JSON 없음"); sys.exit(1)

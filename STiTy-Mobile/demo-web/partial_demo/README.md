@@ -197,7 +197,7 @@ python STiTy-Mobile/demo-web/partial_demo/make_demo_wavs.py --lang ja --n 4
 
 | 언어 | 출처 | 비고 |
 |---|---|---|
-| en, ja | FLEURS dev (`/home/mobility/datasets/fleurs/data/{en_us,ja_jp}`) | 낭독체. 구두점 있는 원문 전사가 붙는다 |
+| en, ja | FLEURS dev (`$FLEURS_ROOT/{en_us,ja_jp}`, 기본 `~/datasets/fleurs/data`) | 낭독체. 구두점 있는 원문 전사가 붙는다 |
 | ko | KsponSpeech `sample_data/eval_clean` | FLEURS `ko_kr` 에는 오디오가 없다. 대화체라 나머지 둘과 결이 다르다 |
 | mix | 위 셋을 ko/en/ja 순으로 번갈아 | 언어별 칸 배치 확인용 |
 

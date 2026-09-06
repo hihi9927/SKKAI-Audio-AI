@@ -15,8 +15,10 @@ FSL (VAD/finish): final_decode_sec + trans_sec = fsl_sec
   : (회색)  : seg_audio_sec — SEG 감지 당시 청크 경계
 
 사용법:
-  python export_fsl_ftl_plots.py --json /home/ubuntu/STiTy/evaluation/LibriSpeech/servers/results/fsl/test/test_other_fsl_test.json \\
-      --audio-root /home/ubuntu/STiTy/evaluation/LibriSpeech/LibriSpeech/test-other \\
+  # 리포 루트에서
+  python evaluation/LibriSpeech/utils/export_fsl_ftl_plots.py \\
+      --json evaluation/LibriSpeech/servers/results/fsl/test/test_other_fsl_test.json \\
+      --audio-root evaluation/LibriSpeech/LibriSpeech/test-other \\
       --max-files 50 --out-dir output_plots
 
   python export_fsl_ftl_plots.py --json results/qwen3_test_other_fsl.json \\

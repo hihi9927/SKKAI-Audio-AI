@@ -4,7 +4,7 @@ import sounddevice as sd
 import sys
 from pathlib import Path
 
-PCM_DIR = Path(r"/home/skkai/Documents/00_skkai_session/01_2026/02_speech/STiTy/evaluation/KsponSpeech/data/KsponSpeech_0001")
+PCM_DIR = Path(__file__).resolve().parents[1] / "data" / "KsponSpeech_0001"
 
 arg = sys.argv[1]
 if arg.isdigit():

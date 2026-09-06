@@ -10,7 +10,8 @@
 #
 # 한 트랙이 죽어도 다음 트랙은 계속 간다 — 트랙끼리는 독립이다.
 set -u
-cd /home/mobility/STiTy || exit 1
+REPO="${REPO:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)}"
+cd "$REPO" || exit 1
 
 RUNS=core/meaning_segmentator/experiment/artifacts
 # PYTHONPATH 를 "." 로 **덮어쓴다**. 이 머신은 ROS humble 이 PYTHONPATH 에 끼어 있고

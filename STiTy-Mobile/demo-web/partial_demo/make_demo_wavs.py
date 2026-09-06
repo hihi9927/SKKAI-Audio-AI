@@ -22,6 +22,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
 import pathlib
 import sys
 
@@ -32,7 +33,8 @@ HERE = pathlib.Path(__file__).resolve().parent
 WEB = HERE / "web"
 REPO = HERE.parents[2]
 
-FLEURS = pathlib.Path("/home/mobility/datasets/fleurs/data")
+# 리포 밖 데이터셋 — FLEURS_ROOT 로 덮어쓴다
+FLEURS = pathlib.Path(os.environ.get("FLEURS_ROOT", "~/datasets/fleurs/data")).expanduser()
 KSPON = REPO / "evaluation/KsponSpeech"
 
 SR = 16000

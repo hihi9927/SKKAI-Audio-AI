@@ -213,7 +213,7 @@ python evaluation/LibriSpeech/run_concurrent_chapters.py \
   --num-clients 16 --model mode2 --scope full --tag c16_run01
 ```
 
-> **주의:** `run_concurrent_benchmark.py`와 `run_multi_speaker_full.py`는 `PROJECT_ROOT = Path("/home/ubuntu/STiTy")`가 하드코딩되어 있습니다. 다른 머신에서는 파일 상단 상수를 고쳐야 합니다.
+> **주의:** `run_concurrent_benchmark.py`와 `run_multi_speaker_full.py`는 인자를 받지 않아 파일 상단 상수를 고쳐야 합니다. 경로는 파일 위치에서 유도되므로 머신이 바뀌어도 그대로 돌아가고, 다른 인터프리터를 쓰려면 `EVAL_PYTHON`(그리고 필요하면 `EVAL_BIN_DIR`)을 지정합니다.
 
 ---
 

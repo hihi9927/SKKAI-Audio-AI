@@ -11,7 +11,7 @@ wait_for spacyenv.done
 $V/bin/pip install -q numpy 2>/dev/null
 
 echo "===== syntax 스모크 20문장 $(ts) ====="
-PYTHONPATH=/home/mobility/STiTy $V/bin/python -m core.meaning_segmentator.autoseg.baselines.build \
+PYTHONPATH="$REPO" $V/bin/python -m core.meaning_segmentator.autoseg.baselines.build \
   --run-id covost2/full --dataset covost2 --manifest-tag full \
   --label auto_run13_mg1 --split test --policy syntax --targets de --limit 20 \
   > $F/logs/baselines/syntax_smoke.log 2>&1
@@ -19,7 +19,7 @@ rc=$?; tail -4 $F/logs/baselines/syntax_smoke.log
 [ $rc -eq 0 ] || { echo "!! 스모크 실패 — syntax 건너뜀"; mark syntax_full.failed "smoke exit=$rc"; exit 1; }
 
 echo "===== syntax 본런 15,430문장 $(ts) ====="
-PYTHONPATH=/home/mobility/STiTy $V/bin/python -u -m core.meaning_segmentator.autoseg.baselines.build \
+PYTHONPATH="$REPO" $V/bin/python -u -m core.meaning_segmentator.autoseg.baselines.build \
   --run-id covost2/full --dataset covost2 --manifest-tag full \
   --label auto_run13_mg1 --split test --policy syntax --targets de \
   > $F/logs/baselines/syntax.log 2>&1

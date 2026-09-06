@@ -15,7 +15,7 @@ rc=$?; echo "  COMET exit=$rc $(ts)"; grep -E "조건 채점" $F/logs/comet_full
 $PY - <<'PYCHK'
 import json
 for t in ("zh","de","ja"):
-    c=json.load(open(f"/home/mobility/STiTy/core/meaning_segmentator/experiment/artifacts/covost2/full/bleu/{t}.json"))["conditions"]
+    c=json.load(open(f"core/meaning_segmentator/experiment/artifacts/covost2/full/bleu/{t}.json"))["conditions"]
     n=sum(1 for v in c.values() if v.get("comet") is not None)
     print(f"  {t}: comet 값 있는 조건 {n}/{len(c)}")
 PYCHK

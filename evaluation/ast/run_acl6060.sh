@@ -22,7 +22,7 @@
 
 set -u
 
-REPO="/home/mobility/STiTy"
+REPO="${REPO:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 PY="$REPO/.venv/bin/python"
 STOP="$REPO/evaluation/LibriSpeech/paper_result/ASR/scripts/stop_server.sh"
 PORT=8765
