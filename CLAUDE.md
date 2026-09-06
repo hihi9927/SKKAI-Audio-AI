@@ -87,7 +87,8 @@ React Native 0.81 + Expo 54 (managed), TypeScript strict. Path alias `@/*` → `
 
 | `type` | Key fields | Purpose |
 |---|---|---|
-| `start` | `lang`, `targetLang`, `displayMode` | Begin streaming (`lang` = code or `"auto"`) |
+| `start` | `lang`, `targetLang`, `displayMode`, `langMap`? | Begin streaming (`lang` = code or `"auto"`) |
+| `config` | `langMap`, `lang`?, `targetLang`? | Change translation direction mid-stream (no restart) |
 | `stop` / `finish` | — | End and close / flush final segment but stay open |
 | `pair_host` | `roomId`, `myLang`, `targetLang`, `mode` | Create pairing room |
 | `pair_join` | `roomId`, `myLang` | Join as guest |
@@ -100,8 +101,16 @@ React Native 0.81 + Expo 54 (managed), TypeScript strict. Path alias `@/*` → `
 |---|---|---|
 | `hello` | `message` (eval server adds `serverConfig`) | Connected |
 | `ready` | `message` | Streaming initialized |
+| `config_ok` | `lang`, `targetLang`, `langMap` | Echo of the applied `config` |
 | `final` | `start`, `end`, `original`, `translation`, `language`, `commitReason` | Committed segment |
 | `pair_hosted` / `pair_connected` / `pair_peer_left` / `pair_error` | `roomId`, … | Pairing lifecycle |
+
+`langMap` maps a **detected** language code to its translation target (`{"ko":"en","ja":"ko"}`).
+When present it wins over the `lang` ↔ `targetLang` pair rule in `_correct_and_translate`, so three or
+more languages can each go somewhere different. Unknown or identity entries are dropped. Its **keys** —
+the source languages — also replace the pair as the ASR `allowed_languages` set (targets are output only,
+so they are not opened). That set is computed per stream slot, so a mid-stream `config` change switches
+translation direction at once but reaches ASR only from the next commit on.
 
 `commitReason`: `seg` (SEG token), `vad` (silence), `dot` (sentence-ending punctuation, needs `--enable-dot-commit`), `always` (every chunk, under `--always-commit`), `timeout`, `finish` (stream ended).
 

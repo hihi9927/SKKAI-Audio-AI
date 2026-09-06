@@ -282,6 +282,37 @@ def lang_code_to_name(code: str) -> Optional[str]:
     return LANG_CODE_TO_NAME.get(code)
 
 
+def _norm_lang_code(value: object) -> str:
+    """언어 코드로 정규화. 이름("Korean")으로 와도 받는다. 모르면 빈 문자열."""
+    if not isinstance(value, str):
+        return ""
+    v = value.strip()
+    if not v or v == "auto":
+        return ""
+    if v in LANG_CODE_TO_NAME:
+        return v
+    return lang_to_code(v)
+
+
+def parse_lang_map(raw: object) -> dict[str, str]:
+    """{"ko": "en", "ja": "ko"} 형태의 감지 언어별 번역 목표를 정규화한다.
+
+    "내 언어 <-> 상대 언어" 쌍으로는 세 언어 이상을 각각 다른 곳으로 보낼 수 없다.
+    이 매핑이 있으면 감지 언어를 키로 목표를 바로 고른다(_correct_and_translate).
+    자기 자신으로 가는 항목과 모르는 코드는 버린다.
+    """
+    if not isinstance(raw, dict):
+        return {}
+    out: dict[str, str] = {}
+    for k, v in raw.items():
+        src = _norm_lang_code(k)
+        dst = _norm_lang_code(v)
+        if not src or not dst or src == dst:
+            continue
+        out[src] = dst
+    return out
+
+
 class SessionLogger:
     """앱에서 수신한 로그를 세션별 JSON 파일로 저장"""
 
@@ -650,6 +681,8 @@ class Qwen3ASRStreamingHandler:
         # 클라이언트 옵션
         self.client_lang = "auto"
         self.client_target_lang = ""
+        # 감지 언어별 번역 목표. 비어 있으면 기존 "내 언어 <-> 상대 언어" 쌍으로 돈다.
+        self.client_lang_map: dict[str, str] = {}
 
         # 타임스탬프 추적
         self.segment_start_time = 0.0
@@ -766,15 +799,24 @@ class Qwen3ASRStreamingHandler:
 
     def _new_stream_slot(self, seed_text: str = "", context: str = "") -> dict:
         allowed_languages = None
-        if self.config.restrict_languages and self.client_lang and self.client_lang != "auto":
+        if self.config.restrict_languages:
             langs = []
-            src_name = lang_code_to_name(self.client_lang)
-            if src_name:
-                langs.append(src_name)
-            if self.client_target_lang:
-                tgt_name = lang_code_to_name(self.client_target_lang)
-                if tgt_name and tgt_name not in langs:
-                    langs.append(tgt_name)
+            if self.client_lang_map:
+                # langMap 의 키가 곧 "말할 언어"다. 목표 언어는 출력일 뿐이므로 열지 않는다 —
+                # 넣으면 쓰지도 않을 언어까지 허용해 ASR 오감지를 늘린다.
+                # 슬롯을 만들 때 계산하므로, 시연 중 매핑을 바꾸면 다음 커밋부터 반영된다.
+                for code in self.client_lang_map:
+                    name = lang_code_to_name(code)
+                    if name and name not in langs:
+                        langs.append(name)
+            elif self.client_lang and self.client_lang != "auto":
+                src_name = lang_code_to_name(self.client_lang)
+                if src_name:
+                    langs.append(src_name)
+                if self.client_target_lang:
+                    tgt_name = lang_code_to_name(self.client_target_lang)
+                    if tgt_name and tgt_name not in langs:
+                        langs.append(tgt_name)
             if langs:
                 allowed_languages = langs
 
@@ -2372,7 +2414,15 @@ class Qwen3ASRStreamingHandler:
         안 넘어가 방향이 틀어진 경우를, 번역 후 신뢰 가능한 감지 결과로 자가교정한다.
         client_lang/client_target_lang/detected는 모두 언어 코드(예: 'en','ko').
         """
-        if not detected or not self.client_lang or self.client_lang == "auto":
+        if not detected:
+            return None
+        if self.client_lang_map:
+            # 매핑이 있으면 방향은 감지 언어가 정한다. 목표가 다르면 그쪽으로 한 번 더.
+            mapped = self.client_lang_map.get(detected)
+            if mapped and mapped != used_target:
+                return mapped
+            return None
+        if not self.client_lang or self.client_lang == "auto":
             return None
         if self.client_lang == self.client_target_lang:
             return None
@@ -2401,7 +2451,11 @@ class Qwen3ASRStreamingHandler:
             src_code = await self.gpt_translator.detect_language(text)
 
         # 번역 방향 결정: ASR 감지 언어 기준, 1회 번역
-        if not self.client_lang or self.client_lang == "auto":
+        # 언어별 목표(langMap)가 지정돼 있으면 그게 먼저다. 항목이 없으면 쌍 규칙으로 돈다.
+        mapped_target = self.client_lang_map.get(src_code) if src_code else ""
+        if mapped_target:
+            target = mapped_target
+        elif not self.client_lang or self.client_lang == "auto":
             target = self.client_target_lang        # 방향 모름 → targetLang으로
         elif src_code == self.client_lang:
             target = self.client_target_lang        # 내 언어 감지 → 상대 언어로
@@ -2593,10 +2647,12 @@ class Qwen3ASRStreamingHandler:
                                 )
                             self.client_lang = data.get("lang", "auto")
                             self.client_target_lang = data.get("targetLang", "")
+                            self.client_lang_map = parse_lang_map(data.get("langMap"))
                             self.use_correction = data.get("speed", "accurate") != "fast"
                             self.log.info(
                                 f"Received start: lang={self.client_lang}, "
                                 f"targetLang={self.client_target_lang}, "
+                                f"langMap={self.client_lang_map or '-'}, "
                                 f"speed={data.get('speed', 'accurate')}"
                             )
 
@@ -2604,6 +2660,27 @@ class Qwen3ASRStreamingHandler:
                             self.running = True
                             await self.send_message(
                                 "ready", message="Ready to receive audio"
+                            )
+
+                        elif msg_type == "config":
+                            # 시연 중 번역 방향을 바꾼다. 스트림은 그대로 둔다 —
+                            # 다음에 확정되는 문장부터 새 설정으로 번역된다.
+                            if "langMap" in data:
+                                self.client_lang_map = parse_lang_map(data.get("langMap"))
+                            if data.get("lang"):
+                                self.client_lang = data["lang"]
+                            if data.get("targetLang"):
+                                self.client_target_lang = data["targetLang"]
+                            self.log.info(
+                                f"Received config: lang={self.client_lang}, "
+                                f"targetLang={self.client_target_lang}, "
+                                f"langMap={self.client_lang_map or '-'}"
+                            )
+                            await self.send_message(
+                                "config_ok",
+                                lang=self.client_lang,
+                                targetLang=self.client_target_lang,
+                                langMap=self.client_lang_map,
                             )
 
                         elif msg_type in ("stop", "finish"):

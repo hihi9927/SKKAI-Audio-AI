@@ -43,10 +43,17 @@
   /* 앞선 문장도 흐리지 않다. 밀려 올라가도 계속 읽히므로 최신 문장을 붙잡아 둘
      이유가 없다 — 그래서 hold 가 기본 0 이고 문장이 곧바로 뜬다.
      fade=1 을 주면 깊이만큼 흐려지는 대신 hold 로 붙잡아 둬야 읽을 수 있다. */
-  .line.d0, .line.d1, .line.d2, .line.d3 { opacity:1; transform:none; }
+  /* 표시 문장 개수를 설정에서 늘릴 수 있으므로 깊이 클래스도 그만큼 둔다.
+     여기 없는 깊이는 .line 의 opacity:0 이 그대로 남아 줄이 안 보인다. */
+  .line.d0, .line.d1, .line.d2, .line.d3,
+  .line.d4, .line.d5, .line.d6, .line.d7 { opacity:1; transform:none; }
   body.fade .line.d1 { opacity:.46; }
   body.fade .line.d2 { opacity:.26; }
   body.fade .line.d3 { opacity:.13; }
+  body.fade .line.d4 { opacity:.09; }
+  body.fade .line.d5 { opacity:.06; }
+  body.fade .line.d6 { opacity:.04; }
+  body.fade .line.d7 { opacity:.03; }
   /* 아직 확정되지 않은 줄. 전사는 원문이라 확정 번역과 같은 크기로 둘 이유가 없다.
      작게 흐리게 흘리다가, 확정되면 d0 로 올라가며 번역이 큰 글씨로 자리를 잡는다. */
   .line.live { opacity:.62; transform:none; }
@@ -96,6 +103,31 @@
   .hint { position:absolute; left:16px; bottom:10px; font-size:11px; color:#4a4a4a;
           transition:opacity .4s ease; }
   .controls.hidden ~ .hint { opacity:0; }
+
+  /* ── 설정 패널 ────────────────────────────────────────────────────────────
+     시연 중에 열어 바로 바꾼다. 조작부와 같이 떠 있으면 자막을 가리므로 접어 둔다. */
+  .panel { position:absolute; top:56px; right:16px; width:280px; z-index:5;
+           background:rgba(18,18,18,.96); border:1px solid rgba(255,255,255,.16);
+           border-radius:14px; padding:14px 16px 16px;
+           box-shadow:0 18px 40px rgba(0,0,0,.6); }
+  .panel[hidden] { display:none; }
+  .panelTitle { font-size:11px; font-weight:800; letter-spacing:2px; color:#777;
+                text-transform:uppercase; margin:2px 0 10px; }
+  .panelTitle + .panelTitle { margin-top:16px; }
+  .row { display:flex; align-items:center; justify-content:space-between; gap:10px;
+         padding:3px 0; }
+  .rowLabel { font-size:13px; font-weight:700; letter-spacing:1px; text-transform:uppercase; }
+  .panel select { font:inherit; font-size:12px; color:#eee; background:#242424;
+                  border:1px solid rgba(255,255,255,.18); border-radius:8px;
+                  padding:5px 8px; min-width:130px; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .chip { font:inherit; font-size:12px; font-weight:700; letter-spacing:1px;
+          text-transform:uppercase; cursor:pointer; color:#888;
+          background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.14);
+          border-radius:999px; padding:5px 12px; }
+  /* 켜진 칩은 그 언어 색으로 칠한다. 아래 목표 목록의 라벨 색과 같아 짝이 보인다. */
+  .chip.on { color:#111; font-weight:800; }
+  .panelNote { font-size:11px; color:#6a6a6a; line-height:1.45; margin-top:12px; }
 </style>
 
 <div class="stage tag" id="stage"></div>
@@ -118,9 +150,24 @@
     <button class="ctl" id="btnSound">🔊 소리</button>
     <button class="ctl" id="btnMic">마이크</button>
     <button class="ctl" id="btnStop" disabled>정지</button>
+    <button class="ctl" id="btnPanel">⚙ 설정</button>
   </div>
 </div>
-<div class="hint" id="hint">EN/JA/KO/MIX 테스트 음성 · S 소리 · 1/2 배치 전환 · R 초기화</div>
+
+<div class="panel" id="panel" hidden>
+  <div class="panelTitle">표시 문장 개수</div>
+  <div class="row">
+    <span class="rowLabel">줄 수</span>
+    <select id="selDepth"></select>
+  </div>
+  <div class="panelTitle">사용할 소스 언어</div>
+  <div class="chips" id="srcChips"></div>
+  <div class="panelTitle">소스 언어별 번역 목표</div>
+  <div id="langRows"></div>
+  <div class="panelNote" id="panelNote"></div>
+</div>
+
+<div class="hint" id="hint">EN/JA/KO/MIX 테스트 음성 · S 소리 · 1/2 배치 전환 · R 초기화 · C 설정</div>
 
 <script>
 // ── 설정 ──────────────────────────────────────────────────────────────────────
@@ -148,7 +195,11 @@ const TYPE_MIN_MS = 10, TYPE_MAX_MS = 45;
 // 오므로 위로 남길 수 있는 줄이 두 개뿐이다 — 더 두면 위가 잘린다.
 const ANCHOR_CENTER = Q.get('anchor') === 'center';
 const MAX_DEPTH_TAG = ANCHOR_CENTER ? 3 : 4, MAX_DEPTH_LANE = 3;
-const maxDepth = () => (M.layout === 'lane' ? MAX_DEPTH_LANE : MAX_DEPTH_TAG);
+const DEPTH_MAX = 8;                          // CSS 의 .d0~.d7 만큼만 보인다
+// 설정 패널에서 고른 줄 수. 0 이면 배치별 기본값(위 둘)을 그대로 쓴다.
+// ?depth=N 이 있으면 그게 이기고, 없으면 지난 선택(localStorage)을 잇는다.
+let depthPick = 0;
+const maxDepth = () => depthPick || (M.layout === 'lane' ? MAX_DEPTH_LANE : MAX_DEPTH_TAG);
 const FIRM_MS = 140;                          // 확정될 때 흐림을 걷는 시간
 // 전사를 다 친 뒤 번역으로 넘어가기까지 두는 시간. order=strict 에서만 쓴다.
 const TRANSCRIPT_HOLD_MS = num('trans', 500);
@@ -164,6 +215,58 @@ const ORDER_STRICT = Q.get('order') === 'strict';
 //   ko 발화 -> en,  en 발화 -> ko,  ja 등 제3언어 -> ko
 const SRC_LANG = Q.get('src') || 'ko';
 const TGT_LANG = Q.get('tgt') || 'en';
+
+// 쌍 규칙은 세 언어 이상을 각각 다른 곳으로 보내지 못한다(ja 는 무조건 src 로 되돌아간다).
+// 그래서 감지 언어별 목표를 따로 준다 — 서버가 langMap 을 받으면 쌍 규칙보다 먼저 본다.
+// 설정 패널에서 고른 값이 곧바로 config 메시지로 나가므로 재연결하지 않아도 된다.
+const UI_LANGS = ['ko', 'en', 'ja', 'zh', 'es'];   // 앱 languages.ts 와 같은 집합
+const LANG_LABELS = { ko:'한국어', en:'English', ja:'日本語', zh:'中文', es:'Español' };
+// 목표 언어는 소스 언어마다 기억해 둔다. 소스를 껐다 켜도 고르던 값이 그대로 돌아온다.
+const DEFAULT_TARGETS = { ko:'en', en:'ko', ja:'ko', zh:'ko', es:'ko' };
+// 말할 언어. 이게 곧 ASR 허용 언어이기도 하다 — 넓힐수록 오감지가 는다.
+// 기본값은 테스트 음성이 있는 셋(EN/JA/KO, MIX 는 이 셋을 섞은 것)이다.
+const DEFAULT_SRC_LANGS = ['ko', 'en', 'ja'];
+
+// 아는 언어끼리, 자기 자신이 아닌 것만 남긴다. 저장된 값이 낡았어도 여기서 걸러진다.
+function sanitizeMap(obj) {
+  const out = {};
+  if (!obj || typeof obj !== 'object') return out;
+  for (const [a, b] of Object.entries(obj)) {
+    if (UI_LANGS.includes(a) && UI_LANGS.includes(b) && a !== b) out[a] = b;
+  }
+  return out;
+}
+
+// ?map=ko:en,ja:ko 형태로 덮어쓴다.
+function parseMapParam(raw) {
+  const out = {};
+  for (const pair of (raw || '').split(',')) {
+    const [a, b] = pair.split(':').map(s => (s || '').trim().toLowerCase());
+    if (a && b) out[a] = b;
+  }
+  return sanitizeMap(out);
+}
+
+// ?langs=ko,en 형태. 아는 언어만, UI_LANGS 순서로 정렬해 남긴다.
+function parseLangsParam(raw) {
+  if (raw === null || raw === undefined) return null;
+  const picked = (raw || '').split(',').map(s => s.trim().toLowerCase());
+  const out = UI_LANGS.filter(c => picked.includes(c));
+  return out.length ? out : null;
+}
+
+let srcLangs = [...DEFAULT_SRC_LANGS];             // 켜 둔 소스 언어
+let targets = { ...DEFAULT_TARGETS };              // 소스 언어별 목표(꺼진 것도 기억)
+let langMap = {};                                  // 서버로 나가는 것 = 켠 것만
+
+// 서버에 보낼 매핑을 다시 만든다. 목표가 자기 자신이면 서버가 버리므로 여기서 막는다.
+function refreshLangMap() {
+  langMap = {};
+  for (const src of srcLangs) {
+    const tgt = targets[src];
+    if (tgt && tgt !== src) langMap[src] = tgt;
+  }
+}
 
 const WS_URL = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
 const SR = 16000, FRAME_MS = 100;
@@ -195,6 +298,12 @@ const btnSound = document.getElementById('btnSound');
 document.getElementById('pairLabel').textContent = `${SRC_LANG} ↔ ${TGT_LANG}`;
 const wavBtns = [...document.querySelectorAll('[data-wav]')];
 const btnStop = document.getElementById('btnStop');
+const btnPanel = document.getElementById('btnPanel');
+const panel = document.getElementById('panel');
+const selDepth = document.getElementById('selDepth');
+const srcChips = document.getElementById('srcChips');
+const langRows = document.getElementById('langRows');
+const panelNote = document.getElementById('panelNote');
 
 // ── 상태 ──────────────────────────────────────────────────────────────────────
 const M = {
@@ -597,7 +706,17 @@ async function openWs(srcLang) {
   ws.onmessage = e => { if (typeof e.data === 'string') onMessage(JSON.parse(e.data)); };
   ws.onclose = () => { running = false; setPending(false); cleanupMic(); stopSound(); syncButtons(); };
   await new Promise(r => setTimeout(r, 100));      // hello
-  ws.send(JSON.stringify({ type: 'start', lang: srcLang, targetLang: TGT_LANG, displayMode: 'mode-1' }));
+  ws.send(JSON.stringify({
+    type: 'start', lang: srcLang, targetLang: TGT_LANG, displayMode: 'mode-1',
+    langMap,                                       // 감지 언어별 번역 목표
+  }));
+}
+
+// 흐르는 중에 번역 목표를 바꾼다. 스트림은 그대로 두고 다음 확정 문장부터 반영된다.
+// 연결 전이면 보낼 곳이 없다 — 다음 start 가 같은 값을 싣고 나간다.
+function sendConfig() {
+  if (!ws || ws.readyState !== 1) return;
+  ws.send(JSON.stringify({ type: 'config', langMap }));
 }
 
 function cleanupMic() {
@@ -718,6 +837,7 @@ function setLayout(next) {
   stage.innerHTML = '';
   render();
   paintAll();
+  updateNote();      // 자동 줄 수는 배치마다 다르다
 }
 
 function paintAll() {
@@ -739,6 +859,119 @@ function setSound(on) {
   if (!on) stopSound();
 }
 
+// ── 설정 패널 ─────────────────────────────────────────────────────────────────
+// 줄 수는 화면만 바꾸므로 그 자리에서 다시 그린다. 번역 목표는 서버가 정하므로
+// config 메시지로 보낸다 — 스트림을 끊지 않으니 흐르는 중에 바꿔도 된다.
+function setDepth(n) {
+  depthPick = n;
+  if (n) localStorage.setItem('stity_show_depth', String(n));
+  else localStorage.removeItem('stity_show_depth');
+  // 줄 수가 늘면 지웠던 노드를 되살려야 한다. 배치 전환과 같은 처리다.
+  for (const [, el] of nodes) el.remove();
+  nodes.clear();
+  stage.innerHTML = '';
+  render();
+  paintAll();
+  updateNote();
+}
+
+function saveLangs() {
+  localStorage.setItem('stity_show_srclangs', JSON.stringify(srcLangs));
+  localStorage.setItem('stity_show_targets', JSON.stringify(targets));
+}
+
+// 소스 언어를 켜고 끈다. 하나도 없으면 서버가 매핑 없이 쌍 규칙으로 돌아가 버리므로
+// 마지막 하나는 끄지 못하게 막는다.
+function toggleSrc(code) {
+  const on = srcLangs.includes(code);
+  if (on && srcLangs.length === 1) return;
+  srcLangs = on ? srcLangs.filter(c => c !== code)
+                : UI_LANGS.filter(c => c === code || srcLangs.includes(c));
+  refreshLangMap();
+  saveLangs();
+  sendConfig();
+  buildPanel();
+}
+
+function setLangTarget(src, tgt) {
+  if (targets[src] === tgt) return;
+  targets[src] = tgt;
+  refreshLangMap();
+  saveLangs();
+  sendConfig();
+  updateNote();
+}
+
+function updateNote() {
+  const auto = M.layout === 'lane' ? MAX_DEPTH_LANE : MAX_DEPTH_TAG;
+  const pairs = srcLangs.map(c => `${c}→${targets[c]}`).join(' · ');
+  panelNote.textContent =
+    `자동 = 지금 배치 기준 ${auto}줄. 켠 소스 언어가 곧 ASR 이 열어 두는 언어다 — ${pairs}. `
+    + `번역 방향은 흐르는 중에 바꿔도 다음 확정 문장부터 바로 듣지만, `
+    + `ASR 쪽 허용 언어는 다음 커밋부터 반영된다.`;
+}
+
+function buildPanel() {
+  selDepth.innerHTML = '';
+  const auto = document.createElement('option');
+  auto.value = '0';
+  auto.textContent = '자동 (배치 기본)';
+  selDepth.appendChild(auto);
+  for (let n = 1; n <= DEPTH_MAX; n++) {
+    const o = document.createElement('option');
+    o.value = String(n);
+    o.textContent = `${n}줄`;
+    selDepth.appendChild(o);
+  }
+  selDepth.value = String(depthPick);
+  selDepth.onchange = () => setDepth(Number(selDepth.value) || 0);
+
+  srcChips.innerHTML = '';
+  for (const code of UI_LANGS) {
+    const on = srcLangs.includes(code);
+    const chip = document.createElement('button');
+    chip.className = 'chip' + (on ? ' on' : '');
+    chip.textContent = code;
+    chip.title = LANG_LABELS[code];
+    if (on) { chip.style.background = colorOf(code); chip.style.borderColor = colorOf(code); }
+    chip.onclick = () => toggleSrc(code);
+    srcChips.appendChild(chip);
+  }
+
+  // 목표는 켠 소스 언어에만 물어본다. 끈 언어의 선택은 targets 에 남아 있다가
+  // 다시 켜면 그대로 돌아온다.
+  langRows.innerHTML = '';
+  for (const src of srcLangs) {
+    const row = document.createElement('div');
+    row.className = 'row';
+    const label = document.createElement('span');
+    label.className = 'rowLabel';
+    label.textContent = `${src} →`;
+    label.style.color = colorOf(src);
+    const sel = document.createElement('select');
+    for (const tgt of UI_LANGS) {
+      if (tgt === src) continue;            // 자기 자신으로는 번역하지 않는다
+      const o = document.createElement('option');
+      o.value = tgt;
+      o.textContent = `${LANG_LABELS[tgt]} (${tgt})`;
+      sel.appendChild(o);
+    }
+    sel.value = targets[src];
+    sel.onchange = () => setLangTarget(src, sel.value);
+    row.appendChild(label);
+    row.appendChild(sel);
+    langRows.appendChild(row);
+  }
+  updateNote();
+}
+
+function togglePanel(on) {
+  const next = on === undefined ? panel.hidden : on;
+  panel.hidden = !next;
+  btnPanel.classList.toggle('on', next);
+}
+
+btnPanel.onclick = () => togglePanel();
 btnSound.onclick = () => setSound(!soundOn);
 btnTag.onclick = () => setLayout('tag');
 btnLane.onclick = () => setLayout('lane');
@@ -749,10 +982,13 @@ btnMic.onclick = () => start('mic');
 btnStop.onclick = doStop;
 
 addEventListener('keydown', e => {
+  // 셀렉트 박스를 고르는 중이면 단축키가 가로채지 않게 둔다.
+  if (e.target && e.target.tagName === 'SELECT') return;
   if (e.key === '1') setLayout('tag');
   else if (e.key === '2') setLayout('lane');
   else if (e.key === 'r' || e.key === 'R') resetFeed();
   else if (e.key === 's' || e.key === 'S') setSound(!soundOn);
+  else if (e.key === 'c' || e.key === 'C') togglePanel();
 });
 
 let hideTimer = null;
@@ -772,6 +1008,30 @@ const saved = localStorage.getItem('stity_show_layout');
 if (!Q.get('layout') && (saved === 'tag' || saved === 'lane')) M.layout = saved;
 btnTag.classList.toggle('on', M.layout === 'tag');
 btnLane.classList.toggle('on', M.layout === 'lane');
+
+// 설정 복원: 기본값 < 지난 선택(localStorage) < 쿼리스트링
+const readJson = key => {
+  try { return JSON.parse(localStorage.getItem(key) || 'null'); }
+  catch (e) { return null; }
+};
+const qMap = parseMapParam(Q.get('map'));
+targets = { ...DEFAULT_TARGETS, ...sanitizeMap(readJson('stity_show_targets')), ...qMap };
+
+// 소스 언어: ?langs 가 먼저, 없으면 ?map 의 키, 없으면 지난 선택, 없으면 기본값.
+const storedLangs = parseLangsParam((readJson('stity_show_srclangs') || []).join(','));
+srcLangs = parseLangsParam(Q.get('langs'))
+        || (Object.keys(qMap).length ? UI_LANGS.filter(c => c in qMap) : null)
+        || storedLangs
+        || [...DEFAULT_SRC_LANGS];
+refreshLangMap();
+
+if (Q.has('depth')) {
+  depthPick = Math.min(DEPTH_MAX, Math.max(0, Math.round(num('depth', 0))));
+} else {
+  const d = Number(localStorage.getItem('stity_show_depth'));
+  if (Number.isFinite(d) && d >= 1 && d <= DEPTH_MAX) depthPick = d;
+}
+buildPanel();
 render();
 syncButtons();
 pokeControls();
