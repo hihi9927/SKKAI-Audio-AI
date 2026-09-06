@@ -241,6 +241,20 @@ Two seconds is where the gain stops, and it is free: a `final` only arrives afte
 by then the audio exists. `CONFIRM_SEC` re-judges every closed segment on its first 2s and overwrites the
 early guess, and `settled()` now waits for that confirmation rather than the provisional value.
 
+**The client's language selection is the whole pool — do not add the route table back.** An earlier version
+unioned `ROUTES` into the allowed set "so a language with a server always stays available", which quietly
+undid the selection: turning Korean off in the UI still let the LID answer `ko`. Spoken Spanish came back
+`ko`, the baseline and en servers both had `¿Dónde está el baño?` right and were dropped, and the ko server's
+`돈데 스타일 반요.` went out instead. The route table is now only the fallback for a stream that selected
+nothing at all.
+
+Every accuracy figure here is native speech (FLEURS, LibriSpeech, KsponSpeech). **Accented L2 speech is
+unmeasured** and is where this fails in practice — a Korean speaker's Spanish is what surfaced the bug above.
+`--lid-model openai/whisper-small` is the lever if it keeps happening: on the same 226 clips it reads 98.2%
+at 1s and 99.1% at 2s against base's 96.9% / 98.7%, costing 884MiB instead of 656MiB with no measurable
+latency change (the 30s padding dominates either way). The native-speech gain is small; the reason to prefer
+it is accent robustness, which these clips cannot show.
+
 `--vad-min-silence` sets how much silence ends an utterance (default 800ms). Measured against 400ms on the
 same audio: English segmentation identical (13), Korean **less** fragmented at 400 (16 → 14), latency within
 0.05s either way, and en→ko chrF/BLEU identical at 34.0/13.9. Nothing recommends the change, so 800 stands.

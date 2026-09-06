@@ -278,10 +278,15 @@ async def run_dual(client, start_raw, pending_binary):
         _start = {}
     lang_map = _start.get("langMap") if isinstance(_start.get("langMap"), dict) else {}
     target_lang = _start.get("targetLang") or ""
-    # 웹이 고른 소스 언어로 LID 후보를 좁힌다. langMap 이 없으면 start.lang 을 쓰고,
-    # 그것도 auto 면 라우팅 표 전체를 후보로 둔다.
+    # 웹이 고른 소스 언어가 곧 LID 후보다. **여기에 라우팅 표를 더하면 안 된다.**
+    # 종전에는 "서버가 있는 언어는 언제나 후보에 남긴다" 며 ko·en 을 강제로 넣었는데,
+    # 그러면 사용자가 한국어를 꺼도 한국어가 답으로 나올 수 있다. 실제로 스페인어
+    # 발화 '¿Dónde está el baño?' 가 ko 로 판정돼, 정확히 받아쓴 베이스라인과 en
+    # 서버가 버려지고 ko 서버의 '돈데 스타일 반요.' 가 나갔다.
+    # 고른 게 없을 때만(langMap 도 없고 lang 도 auto) 라우팅 표로 되돌아간다.
     allowed = set(lang_map) or {c for c in [_start.get("lang")] if c and c != "auto"}
-    allowed |= set(ROUTES)          # 서버가 있는 언어는 언제나 후보에 남긴다
+    if not allowed:
+        allowed = set(ROUTES)
     tracker = VerdictTracker(LID, allowed=allowed)
     for chunk in pending_binary:
         tracker.feed(chunk)
