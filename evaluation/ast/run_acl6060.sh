@@ -14,7 +14,7 @@
 # 환경변수
 #   AXES           기본 "static punct seg"
 #   CHUNK          기본 2.0
-#   TRANS_BACKEND  기본 v2. `local` 이면 MADLAD-400-3B(greedy)를 같은 GPU 에 올린다 —
+#   TRANS_BACKEND  기본 local — MADLAD-400-3B(greedy)를 같은 GPU 에 올린다 —
 #                  **번역 품질이 달라 v2 로 낸 결과와 같은 표에 올리면 안 된다**
 #   GPU_MEM        vLLM gpu_memory_utilization. local 번역기(6.75GB)와 나눠 쓰려면 0.65
 #   AST_CAP_FREEZE / AST_AUDIO_END_AT_COMMIT   서버 수정 스위치(환경 그대로 상속된다)
@@ -38,7 +38,8 @@ MODEL="$REPO/models/Qwen3-ASR-1.7B-en-dailytalk-seg"
 SPLIT="${1:-dev}"
 AXES="${AXES:-static punct seg}"
 CHUNK="${CHUNK:-2.0}"
-TRANS_BACKEND="${TRANS_BACKEND:-v2}"
+# 구글 두 경로가 다 막혀 로컬 MADLAD 가 기본이다(v2 는 403, gtx 는 429).
+TRANS_BACKEND="${TRANS_BACKEND:-local}"
 # 로컬 번역기 배치. punct/seg 는 커밋이 문장 단위라 길어서, 16 이면 활성값이
 # 커져 OOM 이 난다(실측 2026-08-30: punct/de 에서 OutOfMemoryError 61건).
 TRANS_BATCH="${TRANS_BATCH:-8}"

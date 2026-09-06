@@ -673,10 +673,15 @@ def _install_trans_guard() -> None:
     pre.add_argument("--ast-hide-seg", action="store_true",
                      help="static/punct 축에서 `<SEG>` 를 파싱 단계에서 걷어낸다. AST 축 비교에만 "
                           "필요하고 커밋 정책을 바꾸므로 기본은 꺼짐 — ASR 평가로 쓸 때는 주지 말 것")
-    pre.add_argument("--trans-backend", default="gtx", choices=["v2", "gtx", "local"],
-                     help="gtx=무료 위젯 엔드포인트(기본값, base 서버와 같은 경로. 대량 호출 시 IP 차단), "
-                          "v2=공식 Cloud Translation Basic(API 키 필요), "
-                          "local=MADLAD-400-3B greedy(키 불필요, GPU 8.8GB)")
+    # 기본이 로컬인 이유: **구글 두 경로가 다 막혔다.** v2 키는 403 User Rate Limit
+    # Exceeded 로 죽었고, 무료 gtx 는 이 IP 에서 HTTP 429 를 돌려준다(실측: 호출 10건 전부
+    # 실패). 모델은 첫 번역 호출 때 lazy 로 올라오므로, 번역이 일어나지 않는 실행은 GPU 를
+    # 물지 않는다. 올라오면 fp16 기준 약 7.2GiB 를 쓰니 ASR 서버의
+    # --gpu-memory-utilization 과 합쳐 24GiB 를 넘지 않게 잡을 것.
+    pre.add_argument("--trans-backend", default="local", choices=["v2", "gtx", "local"],
+                     help="local=MADLAD-400-3B greedy(기본값, 키 불필요, 첫 호출 때 GPU 약 7.2GiB), "
+                          "gtx=무료 위젯 엔드포인트(이 IP 에서 429), "
+                          "v2=공식 Cloud Translation Basic(API 키 필요, 현재 403)")
     # 로컬 번역기는 **번역 품질이 다르다**(CometKiwi 0.8712 → 0.8473). v2 로 낸 결과와
     # 같은 표에 올리면 안 되고, 바꾼 시점을 반드시 기록할 것.
     pre.add_argument("--trans-local-model", default="google/madlad400-3b-mt")
@@ -688,12 +693,13 @@ def _install_trans_guard() -> None:
     pre.add_argument("--trans-local-max-new-tokens", type=int, default=192)
     pre.add_argument("--trans-api-key", default=None,
                      help="미지정 시 GOOGLE_TRANSLATE_API_KEY 환경변수를 쓴다")
-    pre.add_argument("--trans-retries", type=int, default=3,
-                     help="번역 총 시도 횟수(첫 시도 포함). 1이면 재시도 없음")
+    pre.add_argument("--trans-retries", type=int, default=None,
+                     help="번역 총 시도 횟수(첫 시도 포함). 1이면 재시도 없음. "
+                          "기본은 gtx 에서 1, 나머지에서 3 — 아래 주석 참조")
     pre.add_argument("--trans-timeout", type=float, default=10.0)
     pre.add_argument("--trans-backoff", type=float, default=0.5,
                      help="재시도 지수 백오프 기준(초)")
-    pre.add_argument("--trans-backoff-429", type=float, default=5.0,
+    pre.add_argument("--trans-backoff-429", type=float, default=None,
                      help="429/403 일 때의 백오프 기준(초). rate-limit 은 더 물러선다")
     pre.add_argument("--trans-alert-rate", type=float, default=0.005,
                      help="번역 실패율이 이 값을 넘으면 CRITICAL 로 경보")
@@ -707,6 +713,19 @@ def _install_trans_guard() -> None:
 
     global HIDE_SEG
     HIDE_SEG = args.ast_hide_seg
+
+    # 재시도 기본값은 백엔드에 따라 다르다. **무료 gtx 는 이 리포의 IP 에서 HTTP 429 를
+    # 돌려주고, 그 재시도 백오프가 커밋 경로를 그대로 막는다.** 실측(LibriSpeech
+    # test-other 5발화, 같은 가중치): 3회 시도 + 429 백오프 5초면 FTL 23.27s /
+    # 모델런타임 28.26s, 재시도를 끄면 4.80s / 0.93s 로 base 서버(5.62s / 1.71s)와
+    # 같아진다. WER 은 세 경우 모두 3.77% 라 **지연만 조용히 나빠진다.**
+    # v2·local 은 429 를 맞지 않으므로 재시도가 품질에 도움이 된다 — 그쪽만 3회로 둔다.
+    if args.trans_retries is None:
+        args.trans_retries = 1 if args.trans_backend == "gtx" else 3
+    if args.trans_backoff_429 is None:
+        args.trans_backoff_429 = 0.0 if args.trans_backend == "gtx" else 5.0
+    logger.info("[TRANS-GUARD] 백엔드 %s — 시도 %d회 / 429 백오프 %.1fs",
+                args.trans_backend, args.trans_retries, args.trans_backoff_429)
     if HIDE_SEG:
         logger.info("[AST-HIDE-SEG] 활성 — static/punct 축에서 `<SEG>` 를 파싱 단계에서 걷어낸다")
 

@@ -62,7 +62,7 @@ run_axis() {
   "$PY" "$REPO/evaluation/streaming_websocket_server_ast.py" \
       --model "$model" --no-vad --chunk-size 2.0 \
       --port "$PORT" --no-idle-shutdown \
-      --ast-hide-seg --trans-backend v2 \
+      --ast-hide-seg --trans-backend "${TRANS_BACKEND:-local}" \
       --gpu-memory-utilization "$GPU_UTIL" "${server_args[@]}" > "$slog" 2>&1 &
   local spid=$!
 

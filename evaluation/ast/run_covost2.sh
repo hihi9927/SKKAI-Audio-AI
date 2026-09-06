@@ -45,7 +45,8 @@ AXES="${AXES:-static punct seg}"
 CHUNK="${CHUNK:-2.0}"
 # 번역 백엔드. `local` 은 MADLAD-400-3B(greedy)를 같은 GPU 에 올린다 —
 # **번역 품질이 달라 v2 로 낸 결과와 같은 표에 올리면 안 된다.**
-TRANS_BACKEND="${TRANS_BACKEND:-v2}"
+# 구글 두 경로가 다 막혀 로컬 MADLAD 가 기본이다(v2 는 403, gtx 는 429).
+TRANS_BACKEND="${TRANS_BACKEND:-local}"
 # 로컬 번역기 배치. 커밋이 긴 축(punct/seg)에서 16 이면 OOM 이 난다
 # (실측 2026-08-30 ACL punct: OutOfMemoryError 61건).
 TRANS_BATCH="${TRANS_BATCH:-8}"
