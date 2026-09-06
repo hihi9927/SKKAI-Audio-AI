@@ -33,12 +33,14 @@ SURFACE, INK, INK_2, MUTED, GRID, AXIS = (
 C_STATIC, C_SEG, C_PUNCT = "#2a78d6", "#eb6834", "#1baf7a"
 
 # 축 → (결과 태그, 표시 이름)
+# 2026-08-31 재측정(수정 3종 + MADLAD-400-3B) 기준이다. 그 이전 Google 번역 런은
+# 절대 점수를 비교할 수 없어 결과째 지웠다.
 TAGS = {
-    "static":    ("20260825_134119", "static 2 s"),
-    "static-c4": ("20260826_030555", "static 4 s"),
-    "static-c6": ("20260826_035304", "static 6 s"),
-    "seg":       ("20260825_134119", "seg (ours)"),
-    "punct":     ("20260825_134119", "punctuation"),
+    "static":    ("20260831_110647", "static 2 s"),
+    "static-c4": ("20260831_133542", "static 4 s"),
+    "static-c6": ("20260831_142513", "static 6 s"),
+    "seg":       ("20260831_110647", "seg (ours)"),
+    "punct":     ("20260831_110647", "punctuation"),
 }
 STATIC_CURVE = ["static", "static-c4", "static-c6"]      # 지연 오름차순
 LANGS = ["de", "ja", "zh"]
