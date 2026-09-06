@@ -31,10 +31,8 @@ python evaluation/KsponSpeech/test_qwen3_kspon.py \
 | `sample_data/KsponSpeech_0001/` | PCM 20개. 참조 없음 — 형식 확인용 표본 |
 | `utils/extract_trn_to_json.py` | 원본 `.trn` → JSON |
 
-`transcribe/train.trn`(87MB)은 2026-09-06 에 지웠다. `.gitignore:56` 에 이미 규칙이 있었는데도
-추적되고 있었다 — **ignore 규칙은 이미 추적 중인 파일에는 걸리지 않는다.** 코드가 실제로 읽는
-것은 파생본 `train.json` / `train2.json` 이고, 원본이 다시 필요하면 AI-Hub 코퍼스에서 받거나
-삭제 커밋 이전 git 이력에서 꺼낸다.
+원본 전사 `transcribe/train.trn`(87MB)은 리포에 두지 않는다(`.gitignore:56`). 코드가 읽는 것은
+파생본 `train.json` / `train2.json` 이다. 원본이 필요하면 AI-Hub 코퍼스에서 받아 아래로 변환한다.
 
 ```bash
 python evaluation/KsponSpeech/utils/extract_trn_to_json.py \
@@ -65,17 +63,8 @@ CER 은 `metric.json` 의 `overall.corpus_cer`, FTL/FSL 은 각각 첫 토큰 �
 가중치 계보: 1.0.3 = `ko-merged-silence`, 1.0.4 = `ko-silence-v3-merged`(ckpt-900),
 1.0.5 = `ko-silence-v4c100-merged`.
 
-## 지운 것 — 2026-09-06
+## `results/` 는 추적하지 않는다
 
-- `transcribe/train.trn` 87MB — 위 참조
-- `results/*/logs/server.log` 19개 57MB — 읽는 코드가 없다
-- `results/verify(*)` 10개 — 3~12발화짜리 디버깅 런(`miss`, `orderfix`, `maxtok128`). 위 표의
-  order-fix 를 잡던 흔적이고, 지표로서의 의미는 없다
-- `transcribe/eval_other.trn`, `transcribe/verify_subset.json` — 참조 0
-- `send_one.py` — 오디오 한 개를 실시간 속도로 서버에 흘려보내 partial/final 을 찍어보던 도구.
-  기본 오디오 경로가 `/home/ubuntu/...` 라는 옛 EC2 절대경로였고 그 아래 `data/` 는 이 트리에
-  없어서, 인자 없이는 어느 머신에서도 돌지 않았다
-
-`results/` 는 `.gitignore` 에 넣고 추적에서 뺐다. 다른 데이터셋과 같은 정책이다 —
-발화 단위 결과(`raw_results`)를 담은 `metric.json` 이 실행마다 수 MB 씩 쌓인다.
-지금 디스크에 있는 `metric.json` / `meta.json` / `description.txt` 는 그대로 두었다.
+`.gitignore` 에 들어 있다 — 발화 단위 결과(`raw_results`)를 담은 `metric.json` 이 실행마다
+수 MB 씩 쌓이고 서버 로그는 그보다 크다. 다른 데이터셋과 같은 정책이고, 지금까지의 수치는
+위 표가 기록이다.

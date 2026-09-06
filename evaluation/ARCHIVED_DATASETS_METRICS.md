@@ -1,8 +1,8 @@
-# 삭제된 평가 데이터셋 지표 아카이브
+# 이전 평가 데이터셋 지표 아카이브
 
-2026-09-06 에 `evaluation/` 에서 AMI, KtelSpeech, AliMeeting, (zh)RAMC, (es)CIEMPIESS, KokoroSpeech, ReazonSpeech, smartturn 을 삭제했다. 데이터·로그·결과 디렉토리는 git 에 없었으므로 복구할 수 없다. **이 문서가 그 실행들에 대해 남은 전부다.**
-
-남긴 것은 각 런의 요약 지표뿐이다. 발화 단위 결과(`raw_results`), 서버 로그, 플롯은 함께 사라졌다. 테스트 클라이언트 스크립트(`test_qwen3_*.py`)와 AMI `words/` XML 은 git 에 추적되어 있었으므로 삭제 커밋 이전 이력에서 복구할 수 있다.
+리포에 더는 없는 데이터셋들(AMI, KtelSpeech, AliMeeting, (zh)RAMC, (es)CIEMPIESS, KokoroSpeech,
+ReazonSpeech, smartturn)로 돌렸던 런의 요약 지표다. 발화 단위 결과와 서버 로그, 플롯은 남아 있지
+않고 여기 표가 그 실행들에 대한 기록의 전부다.
 
 ## 표 읽는 법
 
@@ -167,11 +167,3 @@ SmartTurn V3 턴 검출기를 silero VAD 자리에 끼워 넣는 실험. LibriSp
 | `finetuned_silence(1.0.3)` | 침묵 구간을 넣어 재학습한 가중치 |
 | `silence(1.0.3)` | 위와 같은 가중치, 라벨만 다르게 찍힌 초기 런 |
 | `finetuned_silence_gpt(1.0.4)` | 1.0.3 + GPT 번역 경로 |
-
-
-## 삭제 당시 상태
-
-- 회수한 용량: 약 320MB (AMI 164MB / KtelSpeech 85MB / (zh)RAMC 61MB / DailyTalk 제외 나머지).
-- AMI 164MB 중 162MB 가 `results/` 의 서버 로그였다. 오디오는 이미 리포에 없었다.
-- 남긴 데이터셋: LibriSpeech(주 벤치마크), DailyTalk, KsponSpeech, ast(AST 트랙).
-

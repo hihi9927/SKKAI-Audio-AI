@@ -31,10 +31,8 @@ LibriSpeech만 클라이언트가 `servers/` 아래에 있다 (`servers/test_qwe
 
 오디오는 git에 없다. 결과 디렉토리(`results/`)도 마찬가지다 — 로컬 디스크에만 남는다.
 
-2026-09-06 에 AMI, KtelSpeech, AliMeeting, (zh)RAMC, (es)CIEMPIESS, KokoroSpeech, ReazonSpeech, smartturn 을
-지웠다. 결과가 git에 없었으므로 그 런들은 복구할 수 없고, 요약 지표만 @ARCHIVED_DATASETS_METRICS.md 에 남겼다.
-테스트 클라이언트 스크립트는 삭제 커밋 이전 이력에 있다. 지금 남은 데이터셋은 LibriSpeech, DailyTalk,
-KsponSpeech, ast 넷이다.
+지금 있는 데이터셋은 LibriSpeech, DailyTalk, KsponSpeech, ast 넷이다. 예전에 돌렸던 다른 언어
+벤치마크들의 측정치는 @ARCHIVED_DATASETS_METRICS.md 에 표로 남아 있다.
 
 ## 결과 디렉토리 구조
 

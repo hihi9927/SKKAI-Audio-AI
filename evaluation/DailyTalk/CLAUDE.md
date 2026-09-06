@@ -47,16 +47,16 @@ new_seg_all.json                 랭크 라벨 원본 <SEG:n> — 2,541그룹 / 
 (`INPUT_JSON` / `OUTPUT_JSON`)와 docstring 은 1세대 것이 그대로 남아 있어, 그것만 보고
 돌리면 2세대가 아니라 1세대를 다시 만든다.
 
-## 파생물은 두지 않는다 — 명령으로 되살린다
+## 파생물은 두지 않는다 — 명령으로 만든다
 
-2026-09-06 에 **코드로 다시 만들 수 있는 파일은 전부 지웠다.** 지우기 전에 각각을
-재생성해 원본과 바이트 단위로 같은지 확인했다(전부 일치). 필요할 때 아래를 돌린다.
+**코드로 다시 만들 수 있는 파일은 리포에 두지 않는다.** 아래 명령이 그 파일들을 만든다.
+각 명령의 출력은 결정적이라 몇 번을 돌려도 같은 파일이 나온다.
 
 ```bash
 # 랭크 컷 라벨 (build_splits.py 와 assemble_dailytalk.py 의 기본 입력)
 python evaluation/DailyTalk/utils/rank_to_seg.py                      # → new_seg_all_t2.json
 
-# 예산 컷 라벨 — 9월 5일에 T4 / T4+min-gap2 / T5 세 벌을 만들어 두었었다
+# 예산 컷 라벨
 python evaluation/DailyTalk/utils/rank_to_seg_budget.py -T 4          # → new_seg_all_T4.json
 python evaluation/DailyTalk/utils/rank_to_seg_budget.py -T 4 --min-gap 2
 python evaluation/DailyTalk/utils/rank_to_seg_budget.py -T 5
@@ -84,9 +84,9 @@ test 셋의 절반을 문장 중간에서 자른 스크립트다. 호출자가 �
 python evaluation/DailyTalk/utils/generate_split_test.py --no-resume
 ```
 
-## 남긴 것과 그 이유
+## 리포에 두는 파일
 
-| 파일 | 왜 남기나 |
+| 파일 | 왜 두나 |
 |---|---|
 | `transcribe/new_seg_all.json` | 라벨 원본. 나머지 라벨은 전부 여기서 파생된다 |
 | `transcribe/partial_all.json` | `generate_split_data.py --input partial_input.json --output partial_all.json` 의 산물. 되살리려면 forced aligner(GPU)로 `split_audio/*.wav` 를 다시 써야 한다 |
@@ -95,13 +95,7 @@ python evaluation/DailyTalk/utils/generate_split_test.py --no-resume
 | `results/train2_seg_en.json` | `generate_split_data.py` 의 입력. LLM 라벨 + 구글 번역이라 공짜로 못 만든다 |
 | `results/eval_dailytalk_*.json` (4개) | `core/research/context_scoring/`, `Qwen3-ASR/finetuning/utils/convert_to_jsonl.py` 가 읽는다 |
 
-## 지운 것 — 2026-09-06
+## `results/` 구조 주의
 
-`results/` 는 `{model}/{scope}/{tag}/` 구조였던 적이 없다. LLM 라벨링 실험 JSON 이
-평평하게 쌓인 곳이고, 그 중 참조가 없는 것을 지웠다.
-
-- 라벨러 모델 비교 `toy200_*.json` 8개, 스모크 `smoke_*.json` 3개, `fcl/`(2발화 측정)
-- `dailytalk_p2.json` — train1_val 분할에 라벨·번역을 붙인 것. 참조 없음
-- `transcribe/dailytalk_all.json` — `new_seg_all.json` 에서 `seg_text` 만 뺀 같은 데이터
-- `transcribe/train2(10000).json`, `train1_val(9500+500).json` — 옛 분할. 지금은 `split_assign.json` 이 그 일을 한다
-- CoVoST2 자료 2개(`covost2_sample300_en.json`, `covost2_sample300_llama33_ranked.json`) — AST 트랙 소관이다
+`{model}/{scope}/{tag}/` 구조가 아니다. LLM 라벨링 실험 JSON 이 평평하게 쌓인 곳이고,
+지금 남은 다섯 개는 전부 다른 코드가 읽는 입력이다.

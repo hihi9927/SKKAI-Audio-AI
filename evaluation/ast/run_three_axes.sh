@@ -31,8 +31,7 @@ PORT=8765
 # 카드를 혼자 쓸 때는 `GPU_UTIL=0.8` 로 올리면 된다.
 GPU_UTIL="${GPU_UTIL:-0.5}"
 
-# 기본 manifest 는 2026-09-06 에 지웠다(화자별 이어붙이기 실험은 Google 번역 시대 것이다).
-# 다시 쓰려면 build_manifest_covost2.py 로 재생성한다 — 그 파일 상단 주석에 명령이 있다.
+# 기본 manifest 는 리포에 없다 — build_manifest_covost2.py 로 만든다(그 파일 상단 주석에 명령).
 MANIFEST="${1:-$REPO/evaluation/ast/manifests/covost2_en-de_spk.jsonl}"
 LIMIT="${2:-}"
 

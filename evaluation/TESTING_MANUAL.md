@@ -173,15 +173,6 @@ python evaluation/KsponSpeech/test_qwen3_kspon.py \
 
 ---
 
-### 삭제된 데이터셋
-
-AMI, KtelSpeech, AliMeeting, (zh)RAMC, (es)CIEMPIESS, KokoroSpeech, ReazonSpeech, smartturn 은
-2026-09-06 에 리포에서 지웠다. 실행 방법 문서도 함께 지웠고, 그 데이터셋들로 돌린 런의 요약 지표만
-[ARCHIVED_DATASETS_METRICS.md](ARCHIVED_DATASETS_METRICS.md) 에 남아 있다. 테스트 클라이언트
-스크립트(`test_qwen3_*.py`)는 삭제 커밋 이전 git 이력에서 복구할 수 있다.
-
----
-
 ## 4. 결과 파일 설명
 
 | 파일 | 설명 |

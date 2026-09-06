@@ -385,10 +385,8 @@ The eval server adds timing fields to `final` (`segmentId`, `audioStartSec`, `au
 Datasets under `evaluation/`: LibriSpeech (en); DailyTalk, KsponSpeech (ko); plus the separate AST track in
 `ast/` (FLEURS, en→de/ko/ja/zh/es, scored by LAAL and BLEU).
 
-The other benchmarks — AMI, KtelSpeech, AliMeeting, (zh)RAMC, (es)CIEMPIESS, KokoroSpeech, ReazonSpeech and
-the `smartturn/` VAD track — were deleted on 2026-09-06. Their results were never in git, so only the summary
-metrics survive, in [evaluation/ARCHIVED_DATASETS_METRICS.md](evaluation/ARCHIVED_DATASETS_METRICS.md); the
-test clients are recoverable from history before that commit.
+Earlier benchmarks in other languages are no longer in the tree; their measured numbers are kept in
+[evaluation/ARCHIVED_DATASETS_METRICS.md](evaluation/ARCHIVED_DATASETS_METRICS.md).
 
 Commit-policy modes compared in `evaluation/LibriSpeech/paper_result/ASR/`: **mode2** = always-commit, **mode3** = dot-commit with confirm gate, **mode4** = en-finetuned weights with SEG-only commit.
 
