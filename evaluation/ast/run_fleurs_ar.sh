@@ -66,6 +66,7 @@ run_axis() {
       --model "$MODEL" --no-vad --chunk-size "$CHUNK" \
       --port "$PORT" --no-idle-shutdown \
       --gpu-memory-utilization "$GPU_UTIL" \
+      --ast-hide-seg \
       --trans-backend "$TRANS_BACKEND" \
       --trans-local-batch "$TRANS_BATCH" \
       --trans-stats-out "$LOGDIR/${label}_trans_stats.json" \

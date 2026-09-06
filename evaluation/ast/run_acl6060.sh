@@ -83,6 +83,7 @@ run_axis() {
       --port "$PORT" --no-idle-shutdown \
       --gpu-memory-utilization "$GPU_UTIL" \
       --trans-local-batch "$TRANS_BATCH" \
+      --ast-hide-seg \
       --trans-backend "$TRANS_BACKEND" \
       --trans-stats-out "$LOGDIR/${label}_trans_stats.json" \
       "${server_args[@]}" > "$slog" 2>&1 &

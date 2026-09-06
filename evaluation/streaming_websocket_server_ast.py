@@ -49,6 +49,11 @@ import trans_guard  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
+# `--ast-hide-seg` 로 켠다. 기본이 꺼짐인 이유는 이 서버를 ASR 평가에도 쓰기 위해서다 —
+# 아무 AST 인자도 주지 않으면 FSL 서버와 같게 동작해야 한다. 근거는
+# `ASTStreamingServer._ast_hide_seg_token` 의 docstring 에 있다.
+HIDE_SEG = False
+
 
 class _StartSniffingWS:
     """`start` 메시지의 uttId 만 훔쳐보고 나머지는 그대로 흘려보내는 래퍼.
@@ -483,6 +488,8 @@ class ASTStreamingServer(fsl_server.FSLStreamingServer):
 
         결과적으로 세 축이 **완전히 동일한 ASR 출력**을 공유하고 정책만 갈린다.
         """
+        if not HIDE_SEG:
+            return                      # `--ast-hide-seg` 를 안 줬다 — base 와 같게 둔다
         if not (self.config.always_commit or self.config.enable_dot_commit):
             return                      # seg 축 — 그대로 둔다
         if getattr(self, "_ast_seg_hidden", False):
@@ -664,9 +671,12 @@ def _install_trans_guard() -> None:
     import argparse as _argparse
 
     pre = _argparse.ArgumentParser(add_help=False)
-    pre.add_argument("--trans-backend", default="v2", choices=["v2", "gtx", "local"],
-                     help="v2=공식 Cloud Translation Basic(API 키 필요, 기본값), "
-                          "gtx=무료 위젯 엔드포인트(대량 호출 시 IP 차단됨), "
+    pre.add_argument("--ast-hide-seg", action="store_true",
+                     help="static/punct 축에서 `<SEG>` 를 파싱 단계에서 걷어낸다. AST 축 비교에만 "
+                          "필요하고 커밋 정책을 바꾸므로 기본은 꺼짐 — ASR 평가로 쓸 때는 주지 말 것")
+    pre.add_argument("--trans-backend", default="gtx", choices=["v2", "gtx", "local"],
+                     help="gtx=무료 위젯 엔드포인트(기본값, base 서버와 같은 경로. 대량 호출 시 IP 차단), "
+                          "v2=공식 Cloud Translation Basic(API 키 필요), "
                           "local=MADLAD-400-3B greedy(키 불필요, GPU 8.8GB)")
     # 로컬 번역기는 **번역 품질이 다르다**(CometKiwi 0.8712 → 0.8473). v2 로 낸 결과와
     # 같은 표에 올리면 안 되고, 바꾼 시점을 반드시 기록할 것.
@@ -695,6 +705,11 @@ def _install_trans_guard() -> None:
                      help="번역 통계 JSON 을 쓸 경로. 주기적으로 갱신된다")
     args, remaining = pre.parse_known_args()
     sys.argv = [sys.argv[0]] + remaining
+
+    global HIDE_SEG
+    HIDE_SEG = args.ast_hide_seg
+    if HIDE_SEG:
+        logger.info("[AST-HIDE-SEG] 활성 — static/punct 축에서 `<SEG>` 를 파싱 단계에서 걷어낸다")
 
     # `stop_server.sh` 는 SIGTERM 을 보낸다. 파이썬의 기본 SIGTERM 처리는 프로세스를
     # 즉시 끝내고 **finally 블록을 실행하지 않으므로**, 아래 main() 의 finally 에 있는
