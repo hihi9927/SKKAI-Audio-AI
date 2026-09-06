@@ -7,7 +7,7 @@ GRID="2 3 4 5 6 7 8 10 12"
 STAMP=$(mktemp); touch $STAMP
 
 echo "===== mg1 bleu_eval 시작 $(ts)  격자=$GRID ====="
-$PY -u -m core.meaning_segmentator.autoseg.bleu_eval \
+$PY -u -m core.meaning_segmentator.autoseg.scoring.bleu_eval \
   --run-id covost2/n3000 --label auto_run13_mg1 --split test \
   --dataset covost2 --manifest-tag n3000 --targets de ja zh \
   --t-grid $GRID --src-spaced 1 \
@@ -33,10 +33,10 @@ $PY -u -m core.meaning_segmentator.autoseg.baselines.comet_score \
 echo "  COMET exit=$? $(ts)"; tail -10 $N/comet_mg1.log
 
 echo "===== 그래프 $(ts) ====="
-$PY core/meaning_segmentator/autoseg/baselines/plot_tradeoff.py \
+$PY -m core.meaning_segmentator.autoseg.scoring.plot_tradeoff \
   --run-id covost2/n3000 --targets de ja zh --metric bleu \
   --out tradeoff_covost2_mg1 --title "CoVoST2 en->X test 3000 (min_gap=1)" 2>&1 | tail -4
-$PY core/meaning_segmentator/autoseg/baselines/plot_tradeoff.py \
+$PY -m core.meaning_segmentator.autoseg.scoring.plot_tradeoff \
   --run-id covost2/n3000 --targets de ja zh --metric comet \
   --out tradeoff_covost2_mg1_comet --title "CoVoST2 en->X test 3000 (min_gap=1)" 2>&1 | tail -4
 

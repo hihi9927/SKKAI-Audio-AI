@@ -1,0 +1,50 @@
+분절 출처: auto_run13_mg1_test.json (15430문장), 소스 띄어쓰기 1
+[de] unsegmented        BLEU  40.56  chrF2  65.08  k  1.00  laal  9.13w     2679ms
+[de] auto_T2            BLEU   8.65  chrF2  47.08  k  4.80  laal  1.78w      658ms
+[de] auto_T3            BLEU  16.91  chrF2  53.72  k  3.04  laal  2.61w     1069ms
+[de] auto_T4            BLEU  22.10  chrF2  56.75  k  2.40  laal  3.22w     1320ms
+[de] auto_T6            BLEU  31.30  chrF2  61.23  k  1.59  laal  4.99w     1856ms
+[de] mechanical_8       BLEU   1.55  chrF2  28.16  k  6.88  laal  1.57w     1068ms
+[de] punct              BLEU  36.26  chrF2  63.37  k  1.31  laal  7.31w     2299ms
+[de] punct_T2           BLEU  36.27  chrF2  63.37  k  1.31  laal  7.31w     2299ms
+[de] punct_T3           BLEU  36.29  chrF2  63.37  k  1.31  laal  7.32w     2300ms
+[de] punct_T4           BLEU  36.41  chrF2  63.42  k  1.29  laal  7.33w     2304ms
+[de] punct_T6           BLEU  36.72  chrF2  63.55  k  1.25  laal  7.36w     2319ms
+[de] alignatt           BLEU  11.75  chrF2  46.73  k  5.34  laal  1.96w      728ms
+[de] alignatt_T2        BLEU  11.89  chrF2  48.61  k  4.36  laal  2.10w      811ms
+[de] alignatt_T3        BLEU  14.90  chrF2  51.89  k  3.07  laal  2.44w      963ms
+분절 출처: auto_run13_mg1_test.json (15430문장), 소스 띄어쓰기 1
+[de] unsegmented        BLEU  40.56  chrF2  65.08  k  1.00  laal  9.13w     2679ms
+[de] auto_T2            BLEU   8.65  chrF2  47.08  k  4.80  laal  1.78w      658ms
+[de] auto_T3            BLEU  16.91  chrF2  53.72  k  3.04  laal  2.61w     1069ms
+[de] auto_T4            BLEU  22.10  chrF2  56.75  k  2.40  laal  3.22w     1320ms
+[de] auto_T6            BLEU  31.30  chrF2  61.23  k  1.59  laal  4.99w     1856ms
+[de] mechanical_8       BLEU   1.55  chrF2  28.16  k  6.88  laal  1.57w     1068ms
+[de] punct              BLEU  36.26  chrF2  63.37  k  1.31  laal  7.31w     2299ms
+[de] punct_T2           BLEU  36.27  chrF2  63.37  k  1.31  laal  7.31w     2299ms
+[de] punct_T3           BLEU  36.29  chrF2  63.37  k  1.31  laal  7.32w     2300ms
+[de] punct_T4           BLEU  36.41  chrF2  63.42  k  1.29  laal  7.33w     2304ms
+[de] punct_T6           BLEU  36.72  chrF2  63.55  k  1.25  laal  7.36w     2319ms
+[de] alignatt           BLEU  11.75  chrF2  46.73  k  5.34  laal  1.96w      728ms
+[de] alignatt_T2        BLEU  11.89  chrF2  48.61  k  4.36  laal  2.10w      811ms
+[de] alignatt_T3        BLEU  14.90  chrF2  51.89  k  3.07  laal  2.44w      963ms
+[de] alignatt_T4        BLEU  19.35  chrF2  54.75  k  2.42  laal  2.81w     1166ms
+[de] alignatt_T6        BLEU  24.18  chrF2  57.29  k  1.98  laal  3.24w     1372ms
+[de] mu_prefix          BLEU  18.47  chrF2  51.98  k  3.93  laal  3.13w     1155ms
+[de] mu_prefix_T2       BLEU  18.71  chrF2  53.10  k  3.39  laal  3.23w     1202ms
+[de] mu_prefix_T3       BLEU  21.14  chrF2  55.34  k  2.67  laal  3.45w     1311ms
+[de] mu_prefix_T4       BLEU  24.25  chrF2  57.21  k  2.21  laal  3.71w     1445ms
+[de] mu_prefix_T6       BLEU  27.48  chrF2  58.98  k  1.86  laal  4.01w     1592ms
+[de] causal_align       BLEU   7.18  chrF2  41.87  k  6.53  laal  1.69w      631ms
+[de] causal_align_T2    BLEU   8.84  chrF2  47.25  k  4.37  laal  2.03w      760ms
+[de] causal_align_T3    BLEU  14.13  chrF2  51.73  k  3.08  laal  2.44w      983ms
+[de] causal_align_T4    BLEU  19.36  chrF2  54.91  k  2.45  laal  2.81w     1181ms
+[de] causal_align_T6    BLEU  24.18  chrF2  57.35  k  2.02  laal  3.21w     1376ms
+[de] syntax             BLEU   9.67  chrF2  48.25  k  4.65  laal  1.87w      763ms
+[de] syntax_T2          BLEU  10.46  chrF2  49.48  k  4.17  laal  1.99w      817ms
+[de] syntax_T3          BLEU  14.03  chrF2  52.67  k  3.11  laal  2.33w      987ms
+[de] syntax_T4          BLEU  19.11  chrF2  55.47  k  2.46  laal  2.73w     1187ms
+[de] syntax_T6          BLEU  23.92  chrF2  57.72  k  2.02  laal  3.15w     1388ms
+[de] local:google/madlad400-3b-mt / 컨텍스트 줄수 불일치 0건 → /home/mobility/STiTy/core/meaning_segmentator/runs/covost2/full/bleu/de.json
+
+/home/mobility/STiTy/core/meaning_segmentator/runs/covost2/full/bleu/report.md

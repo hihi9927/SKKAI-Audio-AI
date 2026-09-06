@@ -117,7 +117,9 @@ evaluation/magichub/
 checkpoints/
 
 # Multi-speaker test results (too large for git)
-evaluation/LibriSpeech/results/finetuned(1.0.1)/multi_speaker_test/
+# 결과는 추적하지 않는다 — metric.json 이 발화 단위 결과를 담아 실행당 수 MB 다.
+# 논문 근거인 paper_result/ 만 예외로 추적한다. 지난 수치는 LibriSpeech/CLAUDE.md 의 표에 있다.
+evaluation/LibriSpeech/results/
 
 # Root-level run scripts/logs (may contain API keys)
 /run_*.sh

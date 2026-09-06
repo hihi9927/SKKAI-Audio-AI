@@ -23,7 +23,7 @@ else
 fi
 
 run_tgt () {   # <타깃>
-  $PY -u -m core.meaning_segmentator.autoseg.bleu_eval \
+  $PY -u -m core.meaning_segmentator.autoseg.scoring.bleu_eval \
     --run-id covost2/full --label auto_run13_mg1 --split test \
     --dataset covost2 --manifest-tag full --targets $1 \
     --t-grid $GRID --src-spaced 1 \
@@ -56,7 +56,7 @@ echo "  COMET exit=$? $(ts)"; grep "조건 채점" $F/logs/comet_full.log
 # BLEU 는 안 재기로 했다 (`--bootstrap 0 --no-sentence-bleu`). corpus BLEU 는 한 번만
 # 토크나이즈하면 되므로 그냥 나오지만, 그림은 COMET 판만 뽑는다.
 echo "===== 그래프 (COMET) $(ts) ====="
-$PY core/meaning_segmentator/autoseg/baselines/plot_tradeoff.py \
+$PY -m core.meaning_segmentator.autoseg.scoring.plot_tradeoff \
   --run-id covost2/full --targets zh de ja --metric comet \
   --out tradeoff_covost2_full_comet \
   --title "CoVoST2 en->X test 15430 (min_gap=1)" 2>&1 | tail -2

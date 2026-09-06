@@ -16,7 +16,11 @@ SEGMENTATOR_DIR = PKG_DIR.parent                          # .../core/meaning_seg
 REPO_ROOT = PKG_DIR.parents[2]                            # .../<repo>
 
 # 루프·평가 산출물이 쌓이는 곳. autoseg 밖(형제 디렉토리)이다.
-RUNS_DIR = SEGMENTATOR_DIR / "runs"
+#
+# **종전 `runs/` 에서 옮겼다.** 그 아래 런 ID 구조(`covost2/full`, `en-multi/run13`)는
+# 그대로라 `--run-id` 값은 하나도 안 바뀐다. 논문에 쓰지 않은 예전 런은 이때 지웠으므로,
+# 여기 있는 것은 전부 논문 산출물이거나 그 프롬프트의 출처다.
+RUNS_DIR = SEGMENTATOR_DIR / "experiment" / "artifacts"
 
 # 평가용 매니페스트 (FLEURS n-way, CoVoST2).
 MANIFEST_DIR = REPO_ROOT / "evaluation" / "ast" / "manifests"

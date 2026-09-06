@@ -10,14 +10,14 @@ echo "===== zh 변환 $(ts) ====="
 $PY core/meaning_segmentator/tools/covost2_label/to_prompt_eval.py \
   --labels $R/zh-en_n3000/labels/covost2_zh-en_n3000_run02.jsonl \
   --run-id covost2/zh-en_n3000 --label auto_run02 --min-gap 5 --t-grid 7 11 14 21 \
-  --prompt-file core/meaning_segmentator/runs/zh-en/run02/best_prompt_covost2_mg5.txt 2>&1 | tail -4
+  --prompt-file core/meaning_segmentator/experiment/artifacts/zh-en/run02/best_prompt_covost2_mg5.txt 2>&1 | tail -4
 [ ${PIPESTATUS[0]} -eq 0 ] || { echo "!! zh 변환 실패 — 중단"; mark x2en.failed "zh 변환"; exit 1; }
 
 run () {   # <언어> <n> <격자...>
   L=$1; N=$2; shift 2
   SP=$([ "$L" = de ] && echo 1 || echo 0)
   echo "===== $L->en 번역 $(ts) 격자=$* 띄어쓰기=$SP ====="
-  $PY -u -m core.meaning_segmentator.autoseg.bleu_eval \
+  $PY -u -m core.meaning_segmentator.autoseg.scoring.bleu_eval \
     --run-id covost2/$L-en_n$N --label auto_run02 --split test \
     --dataset covost2 --src $L --manifest-tag n$N --targets en \
     --t-grid $* --src-spaced $SP \

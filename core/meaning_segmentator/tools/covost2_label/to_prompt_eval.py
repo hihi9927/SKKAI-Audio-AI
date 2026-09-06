@@ -17,7 +17,7 @@
 `eval_prompt` 산출물로 착각할 수 있으므로 `null` 로 둔다.
 
     python core/meaning_segmentator/tools/covost2_label/to_prompt_eval.py \
-        --labels core/meaning_segmentator/runs/covost2/n3000/labels/covost2_n3000_run13.jsonl \
+        --labels core/meaning_segmentator/experiment/artifacts/covost2/n3000/labels/covost2_n3000_run13.jsonl \
         --run-id covost2/n3000 --label auto_run13 \
         --min-gap 3 --t-grid 4 6 8 12
 """
@@ -29,7 +29,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from core.meaning_segmentator.autoseg import pipeline as P
+from core.meaning_segmentator.autoseg.runtime import pipeline as P
 from core.meaning_segmentator.autoseg.loop import target_is_spaced
 
 

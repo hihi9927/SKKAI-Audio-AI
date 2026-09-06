@@ -1,8 +1,0 @@
-{
-  "sections_changed": [
-    "[Priority Rules]"
-  ],
-  "changelog": [
-    "[Priority Rules]: reordered/expanded the ranking criteria to fix priority failures — (a) added an explicit balanced-split preference so that among equally-safe endings, the boundary that divides the clause most evenly outranks an earlier or filler-adjacent one; (b) split the old 'discourse markers, rank near bottom' rule into two sharper tiers: filler/discourse-marker-adjacent boundaries that leave most of the clause unsplit are now explicitly ranked BELOW any deeper balanced boundary in the same clause (even if the filler-adjacent one would otherwise qualify for a higher tier), and a separate low tier demotes boundaries that end a bare NP/pronoun repetition before the clause's governing/conditional/reporting/hedging verb has surfaced, since these are the exact patterns the critic flagged as ranked too high. No boundary is removed or moved to Never Segment — only the ordering of confidence criteria changed, per the priority-focused critique."
-  ]
-}

@@ -3,7 +3,7 @@
 N=$R/n3000
 echo "===== en->X bleu_eval 시작 $(ts) ====="
 echo "  (translate_de.json 캐시 48,118건이 남아 있어 de 는 79% 지점부터 이어간다)"
-$PY -u -m core.meaning_segmentator.autoseg.bleu_eval \
+$PY -u -m core.meaning_segmentator.autoseg.scoring.bleu_eval \
   --run-id covost2/n3000 --label auto_run13 --split test \
   --dataset covost2 --manifest-tag n3000 --targets de ja zh \
   --t-grid 4 6 8 12 --src-spaced 1 \
@@ -30,10 +30,10 @@ $PY -u -m core.meaning_segmentator.autoseg.baselines.comet_score \
 echo "  COMET exit=$? $(ts)"; tail -20 $N/comet.log
 
 echo "===== 그래프 $(ts) ====="
-$PY core/meaning_segmentator/autoseg/baselines/plot_tradeoff.py \
+$PY -m core.meaning_segmentator.autoseg.scoring.plot_tradeoff \
   --run-id covost2/n3000 --targets de ja zh --metric bleu \
   --out tradeoff_covost2 --title "CoVoST2 en->X test 3000" 2>&1 | tail -5
-$PY core/meaning_segmentator/autoseg/baselines/plot_tradeoff.py \
+$PY -m core.meaning_segmentator.autoseg.scoring.plot_tradeoff \
   --run-id covost2/n3000 --targets de ja zh --metric comet \
   --out tradeoff_covost2_comet --title "CoVoST2 en->X test 3000" 2>&1 | tail -5
 

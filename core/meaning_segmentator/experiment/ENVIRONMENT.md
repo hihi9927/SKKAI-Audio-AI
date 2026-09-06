@@ -187,7 +187,7 @@ x2en 세 트랙은 순차 실행이라 기계 A 를 **연속 14시간** 점유�
 추정값과 비교해 큰 쪽을 쓴다:
 
 ```bash
-PYTHONPATH=. .venv-autoseg/bin/python -m core.meaning_segmentator.autoseg.cost_report --run-id en-multi/run13
+PYTHONPATH=. .venv-autoseg/bin/python -m core.meaning_segmentator.autoseg.infra.cost_report --run-id en-multi/run13
 ```
 
 ## 8. 재현

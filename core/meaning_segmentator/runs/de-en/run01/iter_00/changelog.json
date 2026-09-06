@@ -1,9 +1,0 @@
-{
-  "sections_changed": [
-    "[Priority Rules]"
-  ],
-  "changelog": [
-    "Added a low-confidence demotion: boundaries that would split a verb from its immediate dependents (object, particle, infinitival complement, or other disambiguating modifier) must be ranked low so we avoid high-confidence cuts that change verb sense."
-  ],
-  "scope_violations": []
-}

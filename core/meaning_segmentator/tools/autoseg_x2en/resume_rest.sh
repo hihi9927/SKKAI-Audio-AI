@@ -13,7 +13,7 @@ set -u
 cd /home/mobility/STiTy || exit 1
 export PYTHONPATH=.
 PY=.venv-autoseg/bin/python
-RUNS=core/meaning_segmentator/runs
+RUNS=core/meaning_segmentator/experiment/artifacts
 LL=$RUNS/x2en_resume.launch.log
 
 echo "[$(date '+%F %T')] 체인 종료 대기" >> $LL

@@ -20,16 +20,16 @@ fi
 $PY - <<'PYCHK'
 import json
 for t in ("de","ja","zh"):
-    c=json.load(open(f"/home/mobility/STiTy/core/meaning_segmentator/runs/covost2/n3000/bleu/{t}.json"))["conditions"]
+    c=json.load(open(f"/home/mobility/STiTy/core/meaning_segmentator/experiment/artifacts/covost2/n3000/bleu/{t}.json"))["conditions"]
     n=sum(1 for v in c.values() if v.get("comet") is not None)
     print(f"  {t}: comet 값 있는 조건 {n}/{len(c)}")
 PYCHK
 
 echo "===== 그래프 $(ts) ====="
-$PY core/meaning_segmentator/autoseg/baselines/plot_tradeoff.py \
+$PY -m core.meaning_segmentator.autoseg.scoring.plot_tradeoff \
   --run-id covost2/n3000 --targets de ja zh --metric bleu \
   --out tradeoff_covost2_mg1 --title "CoVoST2 en->X test 3000 (min_gap=1)" 2>&1 | tail -5
-$PY core/meaning_segmentator/autoseg/baselines/plot_tradeoff.py \
+$PY -m core.meaning_segmentator.autoseg.scoring.plot_tradeoff \
   --run-id covost2/n3000 --targets de ja zh --metric comet \
   --out tradeoff_covost2_mg1_comet --title "CoVoST2 en->X test 3000 (min_gap=1)" 2>&1 | tail -5
 

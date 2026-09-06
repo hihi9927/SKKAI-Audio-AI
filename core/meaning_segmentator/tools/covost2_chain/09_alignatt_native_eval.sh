@@ -15,7 +15,7 @@ cp $N/bleu/de.json $N/bleu/ja.json $N/bleu/zh.json $BK/
 echo "백업 → $BK"
 
 echo "===== 네이티브 조건 bleu_eval $(ts) ====="
-$PY -u -m core.meaning_segmentator.autoseg.bleu_eval \
+$PY -u -m core.meaning_segmentator.autoseg.scoring.bleu_eval \
   --run-id covost2/n3000 --label auto_run13_mg1 --split test \
   --dataset covost2 --manifest-tag n3000 --targets de ja zh \
   --t-grid 2 3 4 5 6 7 8 10 12 --src-spaced 1 \
@@ -47,10 +47,10 @@ echo "  COMET exit=$? $(ts)"; grep -E "^  \[|조건 채점" $N/comet_alignatt_na
 echo "===== 그래프 $(ts) ====="
 for M in bleu comet; do
   S=""; [ $M = comet ] && S=_comet
-  $PY core/meaning_segmentator/autoseg/baselines/plot_tradeoff.py \
+  $PY -m core.meaning_segmentator.autoseg.scoring.plot_tradeoff \
     --run-id covost2/n3000 --targets zh de ja --metric $M \
     --out tradeoff_covost2_mg1$S --title "CoVoST2 en->X test 3000 (min_gap=1)" 2>&1 | tail -2
-  $PY core/meaning_segmentator/autoseg/baselines/plot_tradeoff.py \
+  $PY -m core.meaning_segmentator.autoseg.scoring.plot_tradeoff \
     --run-id covost2/n3000 --targets zh de ja --metric $M --point-labels all \
     --out tradeoff_covost2_mg1${S}_alllabels --title "CoVoST2 en->X test 3000 (min_gap=1)" 2>&1 | tail -2
 done

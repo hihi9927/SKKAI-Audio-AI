@@ -1,0 +1,35 @@
+분절 출처: auto_run13_mg1_test.json (15430문장), 소스 띄어쓰기 1
+[ja] unsegmented        BLEU  25.59  chrF2  33.90  k  1.00  laal  9.13w     2774ms
+[ja] auto_T2            BLEU   8.23  chrF2  19.85  k  4.80  laal  3.60w      776ms
+[ja] auto_T3            BLEU  12.78  chrF2  23.64  k  3.04  laal  4.12w     1232ms
+[ja] auto_T4            BLEU  15.46  chrF2  25.76  k  2.40  laal  4.56w     1484ms
+[ja] auto_T6            BLEU  20.27  chrF2  29.61  k  1.59  laal  5.86w     2003ms
+[ja] mechanical_8       BLEU   1.27  chrF2   9.04  k  6.88  laal  3.54w     1124ms
+[ja] punct              BLEU  23.38  chrF2  32.13  k  1.31  laal  7.66w     2409ms
+[ja] punct_T2           BLEU  23.38  chrF2  32.13  k  1.31  laal  7.66w     2409ms
+[ja] punct_T3           BLEU  23.41  chrF2  32.15  k  1.31  laal  7.66w     2411ms
+[ja] punct_T4           BLEU  23.44  chrF2  32.19  k  1.29  laal  7.67w     2416ms
+[ja] punct_T6           BLEU  23.56  chrF2  32.29  k  1.25  laal  7.68w     2434ms
+[ja] alignatt           BLEU   9.74  chrF2  20.49  k  4.04  laal  4.09w     1071ms
+[ja] alignatt_T2        BLEU  10.04  chrF2  20.89  k  3.77  laal  4.09w     1099ms
+[ja] alignatt_T3        BLEU  11.68  chrF2  22.42  k  2.97  laal  4.14w     1247ms
+[ja] alignatt_T4        BLEU  13.76  chrF2  24.07  k  2.39  laal  4.25w     1434ms
+[ja] alignatt_T6        BLEU  15.87  chrF2  25.66  k  1.96  laal  4.42w     1622ms
+[ja] mu_prefix          BLEU  18.50  chrF2  27.95  k  2.46  laal  6.28w     2003ms
+[ja] mu_prefix_T2       BLEU  18.82  chrF2  28.30  k  2.25  laal  6.30w     2044ms
+[ja] mu_prefix_T3       BLEU  19.45  chrF2  28.89  k  1.95  laal  6.36w     2115ms
+[ja] mu_prefix_T4       BLEU  20.13  chrF2  29.43  k  1.73  laal  6.42w     2188ms
+[ja] mu_prefix_T6       BLEU  20.81  chrF2  29.95  k  1.56  laal  6.50w     2256ms
+[ja] causal_align       BLEU  11.50  chrF2  21.80  k  4.20  laal  4.38w     1127ms
+[ja] causal_align_T2    BLEU  12.62  chrF2  22.91  k  3.58  laal  4.44w     1240ms
+[ja] causal_align_T3    BLEU  14.62  chrF2  24.67  k  2.82  laal  4.54w     1414ms
+[ja] causal_align_T4    BLEU  16.23  chrF2  26.00  k  2.32  laal  4.63w     1580ms
+[ja] causal_align_T6    BLEU  17.86  chrF2  27.40  k  1.94  laal  4.71w     1739ms
+[ja] syntax             BLEU   8.89  chrF2  20.60  k  4.65  laal  3.48w      843ms
+[ja] syntax_T2          BLEU   9.74  chrF2  21.30  k  4.17  laal  3.55w      938ms
+[ja] syntax_T3          BLEU  12.15  chrF2  23.19  k  3.11  laal  3.77w     1174ms
+[ja] syntax_T4          BLEU  14.39  chrF2  24.88  k  2.46  laal  3.99w     1391ms
+[ja] syntax_T6          BLEU  16.43  chrF2  26.42  k  2.02  laal  4.20w     1595ms
+[ja] local:google/madlad400-3b-mt / 컨텍스트 줄수 불일치 0건 → /home/mobility/STiTy/core/meaning_segmentator/runs/covost2/full/bleu/ja.json
+
+/home/mobility/STiTy/core/meaning_segmentator/runs/covost2/full/bleu/report.md

@@ -1,0 +1,14 @@
+분절 출처: auto_run02_test.json (678문장), 소스 띄어쓰기 0
+[en] unsegmented        BLEU  29.26  chrF2  50.66  k  1.00  laal 17.45w     2248ms
+[en] auto_T9            BLEU  15.91  chrF2  42.36  k  1.83  laal  7.87w     1369ms
+[en] auto_T14           BLEU  23.35  chrF2  46.96  k  1.28  laal 12.74w     1869ms
+[en] auto_T18           BLEU  28.29  chrF2  49.72  k  1.09  laal 15.58w     2108ms
+[en] auto_T27           BLEU  29.26  chrF2  50.65  k  1.00  laal 17.41w     2246ms
+[en] auto_greedy_T9     BLEU  15.81  chrF2  42.26  k  1.83  laal  7.87w     1368ms
+[en] auto_greedy_T14    BLEU  17.86  chrF2  43.91  k  1.64  laal  8.26w     1447ms
+[en] auto_greedy_T18    BLEU  17.63  chrF2  43.80  k  1.63  laal  8.30w     1450ms
+[en] auto_greedy_T27    BLEU  17.63  chrF2  43.80  k  1.63  laal  8.30w     1450ms
+[en] mechanical_8       BLEU   8.14  chrF2  35.01  k  2.60  laal  4.62w      951ms
+[en] local:google/madlad400-3b-mt / 컨텍스트 줄수 불일치 0건 → /home/mobility/STiTy/core/meaning_segmentator/runs/covost2/ja-en_n678/bleu/en.json
+
+/home/mobility/STiTy/core/meaning_segmentator/runs/covost2/ja-en_n678/bleu/report.md

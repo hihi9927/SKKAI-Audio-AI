@@ -13,9 +13,9 @@ import argparse, json, re, sys, threading, time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from core.meaning_segmentator.autoseg import gateway
-from core.meaning_segmentator.autoseg.gateway import Gateway
-from core.meaning_segmentator.autoseg import pipeline as P
+from core.meaning_segmentator.autoseg.infra import gateway
+from core.meaning_segmentator.autoseg.infra.gateway import Gateway
+from core.meaning_segmentator.autoseg.runtime import pipeline as P
 from core.meaning_segmentator.autoseg.loop import target_is_spaced
 
 SEG = re.compile(r"<SEG(?::\d+)?>")
@@ -163,7 +163,7 @@ def main() -> int:
         msg = ("프롬프트 문면의 숫자와 인자가 다릅니다 — " + " / ".join(bad)
                + f"\n  프롬프트: {a.prompt}"
                + "\n  프롬프트의 [Output Rules] 를 인자에 맞춰 다시 만들거나 "
-                 "(core.meaning_segmentator.autoseg.agents.output_rules), "
+                 "(core.meaning_segmentator.autoseg.runtime.agents.output_rules), "
                  "인자를 문면에 맞추세요."
                  "\n  의도한 불일치라면 --allow-prompt-mismatch 를 주세요.")
         if not a.allow_prompt_mismatch:
@@ -172,7 +172,7 @@ def main() -> int:
         print(f"[label] 경고(무시함): {msg}", flush=True)
 
     need_fn = lambda t: P.coverage_need(t, a.t_floor, SPACED, a.min_gap)
-    validate_fn = lambda t, out: P.validate("", t, out, SPACED, None, True, need_fn(t))
+    validate_fn = lambda t, out: P.validate("", t, out, SPACED, True, need_fn(t))
     normalize_fn = lambda t, o: P.normalize_tags(o, SPACED, None, min_gap=a.min_gap)
 
     def cost_ticker(gw, every: float = 120.0):

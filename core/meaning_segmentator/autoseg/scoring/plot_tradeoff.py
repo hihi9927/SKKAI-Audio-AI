@@ -109,7 +109,7 @@ _ap = argparse.ArgumentParser(description="품질–지연 곡선")
 _ap.add_argument("--metric", default="bleu", choices=["bleu", "comet"],
                  help="y축 품질 지표. comet 은 `comet_score.py` 를 먼저 돌려야 한다")
 _ap.add_argument("--out", default=None, help="출력 파일 stem (기본: tradeoff[_comet])")
-_ap.add_argument("--run-id", default="en-multi/clean500")
+_ap.add_argument("--run-id", default="covost2/full")
 _ap.add_argument("--targets", nargs="+", default=["de", "ja"])
 _ap.add_argument("--title", default="unseen FLEURS 500")
 _ap.add_argument("--t-grid", nargs="+", type=int, default=None,
@@ -133,7 +133,7 @@ ARGS = _ap.parse_args()
 M = ARGS.metric
 STEM = ARGS.out or ("tradeoff" if M == "bleu" else f"tradeoff_{M}")
 
-d = Path("core/meaning_segmentator/runs") / ARGS.run_id / "bleu"
+d = Path("core/meaning_segmentator/experiment/artifacts") / ARGS.run_id / "bleu"
 TARGETS = ARGS.targets
 blobs = {t: json.loads((d / f"{t}.json").read_text(encoding="utf-8"))
          for t in TARGETS}

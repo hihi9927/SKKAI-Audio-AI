@@ -1,0 +1,44 @@
+분절 출처: auto_run02_test.json (2999문장), 소스 띄어쓰기 0
+[en] unsegmented        BLEU  22.42  chrF2  47.80  k  1.00  laal 17.50w     2865ms
+[en] auto_T7            BLEU  11.35  chrF2  42.02  k  2.51  laal  5.13w     1542ms
+[en] auto_T11           BLEU  17.54  chrF2  45.76  k  1.65  laal  8.61w     2040ms
+[en] auto_T14           BLEU  19.79  chrF2  46.80  k  1.36  laal 11.28w     2322ms
+[en] auto_T21           BLEU  22.35  chrF2  48.01  k  1.06  laal 15.95w     2750ms
+[en] auto_greedy_T7     BLEU  11.21  chrF2  41.86  k  2.53  laal  4.97w     1526ms
+[en] auto_greedy_T11    BLEU  14.33  chrF2  43.92  k  1.93  laal  5.88w     1749ms
+[en] auto_greedy_T14    BLEU  15.00  chrF2  44.31  k  1.82  laal  6.14w     1799ms
+[en] auto_greedy_T21    BLEU  15.13  chrF2  44.37  k  1.80  laal  6.22w     1814ms
+That's 100 lines that end in a tokenized period ('.')
+It looks like you forgot to detokenize your test data, which may hurt your score.
+If you insist your data is detokenized, or don't care, you can suppress this message with the `force` parameter.
+[en] mechanical_8       BLEU   9.04  chrF2  38.69  k  2.62  laal  4.81w     1474ms
+That's 100 lines that end in a tokenized period ('.')
+It looks like you forgot to detokenize your test data, which may hurt your score.
+If you insist your data is detokenized, or don't care, you can suppress this message with the `force` parameter.
+That's 100 lines that end in a tokenized period ('.')
+It looks like you forgot to detokenize your test data, which may hurt your score.
+If you insist your data is detokenized, or don't care, you can suppress this message with the `force` parameter.
+That's 100 lines that end in a tokenized period ('.')
+It looks like you forgot to detokenize your test data, which may hurt your score.
+If you insist your data is detokenized, or don't care, you can suppress this message with the `force` parameter.
+That's 100 lines that end in a tokenized period ('.')
+It looks like you forgot to detokenize your test data, which may hurt your score.
+If you insist your data is detokenized, or don't care, you can suppress this message with the `force` parameter.
+That's 100 lines that end in a tokenized period ('.')
+It looks like you forgot to detokenize your test data, which may hurt your score.
+If you insist your data is detokenized, or don't care, you can suppress this message with the `force` parameter.
+That's 100 lines that end in a tokenized period ('.')
+It looks like you forgot to detokenize your test data, which may hurt your score.
+If you insist your data is detokenized, or don't care, you can suppress this message with the `force` parameter.
+That's 100 lines that end in a tokenized period ('.')
+It looks like you forgot to detokenize your test data, which may hurt your score.
+If you insist your data is detokenized, or don't care, you can suppress this message with the `force` parameter.
+That's 100 lines that end in a tokenized period ('.')
+It looks like you forgot to detokenize your test data, which may hurt your score.
+If you insist your data is detokenized, or don't care, you can suppress this message with the `force` parameter.
+That's 100 lines that end in a tokenized period ('.')
+It looks like you forgot to detokenize your test data, which may hurt your score.
+If you insist your data is detokenized, or don't care, you can suppress this message with the `force` parameter.
+[en] local:google/madlad400-3b-mt / 컨텍스트 줄수 불일치 0건 → /home/mobility/STiTy/core/meaning_segmentator/runs/covost2/zh-en_n3000/bleu/en.json
+
+/home/mobility/STiTy/core/meaning_segmentator/runs/covost2/zh-en_n3000/bleu/report.md

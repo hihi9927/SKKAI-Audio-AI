@@ -13,7 +13,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-RUNS = ROOT / "core/meaning_segmentator/runs/covost2"
+RUNS = ROOT / "core/meaning_segmentator/experiment/artifacts/covost2"
 
 TRACKS = [                      # (디렉토리, 소스, 소스 단위)
     ("de-en_n3000", "de", "어절"),

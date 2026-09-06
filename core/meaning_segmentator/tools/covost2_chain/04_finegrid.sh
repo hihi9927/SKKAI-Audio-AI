@@ -9,7 +9,7 @@ GRID="4 5 6 7 8 10 12"
 STAMP=$(mktemp); touch $STAMP   # 이번 런의 시작 시각 표식
 echo "===== 촘촘 격자 bleu_eval 시작 $(ts)  격자=$GRID ====="
 echo "  번역 캐시 재사용: de 61,194 / ja 57,253 / zh 60,237 — 새 T 값의 조각만 새로 번역된다"
-$PY -u -m core.meaning_segmentator.autoseg.bleu_eval \
+$PY -u -m core.meaning_segmentator.autoseg.scoring.bleu_eval \
   --run-id covost2/n3000 --label auto_run13 --split test \
   --dataset covost2 --manifest-tag n3000 --targets de ja zh \
   --t-grid $GRID --src-spaced 1 \
@@ -43,10 +43,10 @@ $PY -u -m core.meaning_segmentator.autoseg.baselines.comet_score \
 echo "  COMET exit=$? $(ts)"; tail -12 $N/comet_finegrid.log
 
 echo "===== 그래프 $(ts) ====="
-$PY core/meaning_segmentator/autoseg/baselines/plot_tradeoff.py \
+$PY -m core.meaning_segmentator.autoseg.scoring.plot_tradeoff \
   --run-id covost2/n3000 --targets de ja zh --metric bleu \
   --out tradeoff_covost2 --title "CoVoST2 en->X test 3000" 2>&1 | tail -4
-$PY core/meaning_segmentator/autoseg/baselines/plot_tradeoff.py \
+$PY -m core.meaning_segmentator.autoseg.scoring.plot_tradeoff \
   --run-id covost2/n3000 --targets de ja zh --metric comet \
   --out tradeoff_covost2_comet --title "CoVoST2 en->X test 3000" 2>&1 | tail -4
 

@@ -1,20 +1,34 @@
-# experiment — autoseg 프롬프트 루프 실험 모음
+# experiment — 논문 산출물과 그 프롬프트 출처
 
-`en-multi/run13` 계열(영어 소스)과 `{de,ja,zh}-en/run02`(비영어 소스 → 영어)을 한자리에
-모은 **인덱스**다. 두 묶음이 같은 설정으로 돌아 나란히 읽을 수 있다.
+논문에 싣는 수치와, 그 수치를 낸 프롬프트를 만든 루프 런을 한자리에 모았다.
 
-## 이 폴더는 심볼릭 링크다
+## 구조
 
-실제 산출물은 전부 `core/meaning_segmentator/runs/` 아래 그대로 있다. 복사도 이동도
-아니다. 물리적으로 옮기지 않은 이유가 셋이다:
+```
+experiment/
+├── artifacts/            (RUNS_DIR — autoseg 의 `--run-id` 가 여기서 풀린다)
+│   ├── covost2/
+│   │   ├── full/             en→X 논문 결과 + Table 1a 비교군 5종 + 그림
+│   │   ├── de-en_n3000/      X→en 논문 결과
+│   │   ├── ja-en_n678/
+│   │   ├── zh-en_n3000/
+│   │   └── X2EN_OURS.md      X→en 결과 표
+│   ├── en-multi/run13            ← covost2/full 이 쓴 라벨 `auto_run13_mg1` 의 출처
+│   ├── en-multi/run13ta-{de,ja,zh}   언어쌍 전용 프롬프트 비교군
+│   ├── {de,ja,zh}-en/run02       ← X→en 이 쓴 라벨 `auto_run02` 의 출처
+│   ├── x2en_comet.{json,png,pdf}
+│   └── logs/
+├── README.md
+└── ENVIRONMENT.md
+```
 
-- `../autoseg/loop.py:1230` 이 `runs/<pair_id>/<run_id>` 를 하드코딩한다. 옮기면 새 런이
-  다시 `runs/` 에 떨어져 구조가 반쪽이 된다 — 코드에 `--runs-root` 를 먼저 내야 한다.
-- `core/meaning_segmentator/tools/covost2_chain/*.sh` 가 `runs/en-multi/run13/best_prompt_mg1.txt` 를 가리키고,
-  `MULTI2EN_DATASET.md` 가 `runs/...` 경로로 런을 인용한다.
-- `{de,ja,zh}-en/run02` 는 **지금 돌고 있다.** 쓰는 중인 디렉토리는 못 옮긴다.
+**종전 `core/meaning_segmentator/runs/` 를 없애고 여기로 옮겼다.** 논문에 쓰지 않은
+예전 런(clean500, covost2/n3000, run01~run12, smoke, 관문 리포트)은 그때 지웠다 —
+git 히스토리에는 남아 있다. 런 ID 구조(`covost2/full`, `en-multi/run13`)는 그대로라
+`--run-id` 값은 하나도 바뀌지 않았고, 뿌리는 `autoseg/paths.py` 의 `RUNS_DIR` 하나가 정한다.
 
-그래서 링크만 건다. 링크는 `../runs/...` 상대경로라 레포를 통째로 옮겨도 안 깨진다.
+**논문 그림·`bleu/*.json`·`prompt_eval/*.json` 은 git 이 추적하지 않는다** (`.gitignore`).
+추적되는 것은 `report.md` 류뿐이므로, 이 폴더를 지우면 그림은 되살릴 수 없다.
 
 ## 공통 설정
 
@@ -165,7 +179,7 @@ cat core/meaning_segmentator/experiment/logs/*_run02.launch.log        # 시작 
 
 # 끝난 런
 cat core/meaning_segmentator/experiment/en-multi-run13/final_report.md
-PYTHONPATH=. python -m core.meaning_segmentator.autoseg.cost_report --run-id en-multi/run13
+PYTHONPATH=. python -m core.meaning_segmentator.autoseg.infra.cost_report --run-id en-multi/run13
 ```
 
 ## 런을 추가할 때

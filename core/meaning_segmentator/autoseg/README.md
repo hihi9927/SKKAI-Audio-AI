@@ -30,7 +30,7 @@
 | `consistency` | 합본 vs 전체 번역의 **양방향 NLI entailment 의 min** = v1 `Q` 의 어순 무관 후계 | 보고만 |
 | **`rank_lift`** | 경계 **위치는 그대로 두고 순위 번호만 무작위로 섞었을 때** `effective` 가 떨어지는 폭. 순위가 실제로 일하는지를 위치와 분리해 잰다. 크면 `[Priority Rules]` 를 다듬을 값어치가 있고, 0 근처면 문제는 "어디를 찍느냐"지 "어떻게 줄 세우냐"가 아니다 | 진단 (Critic 에게 감) |
 | `rank_contra_gap` | 순위 하위 절반 − 상위 절반의 경계 contra 차. **`rank_lift` 로 대체됐다** — 생존 경계 4개 이상인 문장만 세므로 순위가 실제로 일하는 큰 T 에서 정의역이 사라진다. 보고만 | — |
-| `rank_contra_spearman` | 같은 축의 방향만 보는 보조값. **raw 라 길이 교란 포함** — 음수면 `noise_floor.py --recheck-t` 로 보정 확인 | 진단 |
+| `rank_contra_spearman` | 같은 축의 방향만 보는 보조값. **raw 라 길이 교란 포함** — 음수면 `gates/noise_floor.py --recheck-t` 로 보정 확인 | 진단 |
 
 **A7 판정자는 비율을 만들지 않는다.** 종전 `premature_rate` 는 없앴다 — 판정자는
 `contradiction` 상위 경계에 `cause` / `shift` / `generalized_rule` 만 붙여 Critic 에게
@@ -101,7 +101,7 @@ run03 재집계에서 유일하게 기울기가 살아있는 축이다 (laal 2.0
 실측: 바닥은 hypothesis 길이와 Spearman −0.670 으로 강하게 얽혀 있지만(짧을수록 높다),
 **어떤 covariate 로 10분위 보정해도 산포는 0.1036 → 0.094 로 9% 밖에 안 준다.**
 커버리지 비율(hyp/premise 어절)로 바꿔도 −0.664 로 사실상 동등하니 covariate 교체는
-이득이 없다. 즉 `noise_floor.py` 의 보정은 **앞쪽 경계의 구조적 불리함(편향)** 을 고치는
+이득이 없다. 즉 `gates/noise_floor.py` 의 보정은 **앞쪽 경계의 구조적 불리함(편향)** 을 고치는
 것이지 잡음을 줄이는 것이 아니다.
 
 남은 산포 0.094 가 검출 한계를 정한다 — 경계 1003개에서 표준오차 ≈ 0.094/√1003 ≈
@@ -200,7 +200,10 @@ PYTHONPATH=. python -m core.meaning_segmentator.autoseg.infra.cost_report --run-
 | `--select-n` | `0` (train 전체) | 후보 선별에 쓸 **train** 문장 수. dev 는 채택 판정 전용이라 선별에 안 쓴다. 정확도는 문장 수만 따른다 (1위적중 20문장 36% / 40문장 58% / 60문장 76%) |
 | `--adequacy-backend` | `cometkiwi` | 참조 없는 QE. y축 주지표 |
 | `--consistency-backend` | `nli` | 보고용 가설 검증값. `nli`(양방향 entailment, 어순 무관) / `comet` / `xcomet`. **NLI 모델은 `metrics.NLI_MODEL` 로 고정**돼 있다 (`xlm-roberta-large-xnli-anli`) — 다국어라 타깃별로 바꿀 필요가 없고, 자리마다 모델을 하나로 못박은 것이 런 간 값이 섞이는 것을 막는다 |
-| `--translate-backend` | 자동 | `v2`(공식 Cloud Translation Basic, API 키 필요) / `gtx`(무료 비공식). 미지정 시 `GOOGLE_TRANSLATE_API_KEY` 가 있으면 v2. **두 백엔드의 번역문은 같지 않다** — 기존 gtx 캐시 18건 재번역 대조에서 일치 0/18. `translator_id` 와 캐시 키에 백엔드가 들어가 섞이지는 않지만, **gtx 로 잰 기존 26개 런의 점수는 v2 런과 비교할 수 없다** |
+| `--translate-backend` | `local` | 번역기. `local`(HF seq2seq, `--local-mt-model`, 기본 `google/madlad400-3b-mt`) / `remote`(OpenAI 호환 서버의 MT 전용 모델, `--remote-mt-*`) / `v2`(공식 Cloud Translation Basic, `GOOGLE_TRANSLATE_API_KEY` 필요) / `gtx`(무료 비공식). **백엔드마다 번역문이 다르다** — gtx↔v2 는 기존 캐시 18건 재번역 대조에서 일치 0/18. `translator_id` 와 캐시 키에 백엔드가 들어가 섞이지는 않지만, **다른 백엔드로 잰 점수끼리는 비교할 수 없다** (gtx 로 잰 기존 26개 런이 그렇다) |
+| `--local-mt-model` | `google/madlad400-3b-mt` | `local` 일 때 쓸 HF seq2seq 모델 |
+| `--remote-mt-url` / `--remote-mt-model` / `--remote-mt-template` / `--remote-mt-workers` | — / — / `seedx` / `64` | `remote` 일 때의 엔드포인트·모델·프롬프트 규약·동시 요청 수. 동시 요청은 LLM 용 `--workers` 와 별개다 |
+| `--google-key-env` | `GOOGLE_TRANSLATE_API_KEY` | `v2` 키를 읽을 환경변수/.env 키 이름. 계정을 갈아끼울 때 쓴다 |
 | `--tgt-langs` | 기본 풀 | 목적함수를 다언어로. 분절은 타깃 무관이라 비용의 90% 가 그대로다. 소스 언어는 자동 제외 |
 | `--target-aware` | — | **언어쌍 전용 프롬프트(비교군)**. 타깃 1개 필수. 네 에이전트가 타깃 문법을 근거로 쓸 수 있게 풀고 `check_target_agnostic` 게이트를 끈다. 아래 §언어쌍 전용 비교군 |
 | `--seg-reasoning-effort` | `medium` | 분절 호출 사고량. **비용의 98% 가 여기다** |
@@ -216,6 +219,7 @@ PYTHONPATH=. python -m core.meaning_segmentator.autoseg.infra.cost_report --run-
 | `--fresh` | — | 런 디렉토리를 지우고 처음부터 (캐시도 삭제) |
 | `--resume` | — | 같은 `--run-id` 의 `history.json` 을 이어받아 **중단된 이터레이션부터** 계속한다. 캐시는 남아 있으므로 잃는 것은 루프 상태뿐이고 그건 전부 디스크에 있다 |
 | `--final-only` | — | 이터레이션을 건너뛰고 기존 `best_prompt.txt` 로 최종 test 평가만 |
+| `--allow-broken-coverage` | — | 분절기가 요구 경계 수를 못 채워도 계속한다. **기본은 iter 0 에서 중단** |
 
 크기 인자(`--iterations` 6 / `--train` 30 / `--dev` 60 / `--test` 100)와 나머지(`--workers`, `--train-pool`, `--tgt-code`, `--tgt-spaced`, `--no-google-context`,
 `--comet-batch-size`)는 `--help` 로 볼 것.
@@ -324,7 +328,7 @@ LLM 판단이 들어가는 곳은 `runtime/agents.py` 네 곳뿐이다. 포맷 �
 - 어순·문체·함정처럼 셀 수 없는 것만 `language_profile.json` (LLM 산출) 이 채운다.
 - 의존 파서 같은 **언어별 자원은 쓰지 않는다** ([AUTOSEG_DETAILS.md](AUTOSEG_DETAILS.md) '검토했으나 채택하지 않은 것').
 
-언어 종속이 남아 있는 곳은 `data.py` 의 로더뿐이다 — 파일 포맷과 전처리가 데이터셋 고유다.
+언어 종속이 남아 있는 곳은 `runtime/data.py` 의 로더뿐이다 — 파일 포맷과 전처리가 데이터셋 고유다.
 
 ## 산출물
 
@@ -383,7 +387,7 @@ runs/{pair_id}/{run_id}/
 --dataset evaluation/ast/manifests/fleurs_en-fr_test.jsonl
 ```
 
-자주 쓸 이름은 `data.py` 의 `MANIFESTS` 에 한 줄로 등록한다.
+자주 쓸 이름은 `runtime/data.py` 의 `MANIFESTS` 에 한 줄로 등록한다.
 
 ```python
 MANIFESTS = {
@@ -435,9 +439,11 @@ NLI 는 판정자와 달리 **목적함수에 직접 들어가므로** 관문이
 **확률 순위**인 이유는, argmax 가 `neutral` 로 나와도 순위가 유지되면 임계값 없이 연속 점수로
 쓸 수 있기 때문이다.
 
-판정자 관문의 기준선은 `premature_benign` 이다. **조기 방출 자체는 죄가 아니고 뒤가
-반박할 때만 문제**인데, 이를 구별하지 못하는 판정자는 "짧은 조각은 다 나쁨"으로 퇴화해
-루프를 보수화한다.
+판정자 관문의 기준선은 `expect: safe` 변이들이다 — `benign_incomplete`(무해한 미완성) /
+`benign_reordered`(어순만 다름) / `safe_boundary`. 이들이 `premature_*` 다섯
+(`head` / `modal` / `negation` / `role` / `scope`)과 갈려야 통과다. **조기 방출 자체는 죄가
+아니고 뒤가 반박할 때만 문제**인데, 이를 구별하지 못하는 판정자는 "짧은 조각은 다 나쁨"으로
+퇴화해 루프를 보수화한다.
 
 최종 지표가 아닌데도 관문이 필요한 이유: 판정자는 프롬프트 개선을 **조향**한다.
 지표는 틀리면 숫자로 드러나지만 조향은 조용히 발산한다 — v1 에서 `embed` 백엔드가 부정
@@ -454,14 +460,16 @@ NLI 는 판정자와 달리 **목적함수에 직접 들어가므로** 관문이
   `gateway._post` 는 거부를 플래그로 기억해 떼고 가므로 죽지는 않는다 — 기억하지 않으면
   **매 호출이 400 왕복을 한 번씩 낭비**한다 (run05 실측: POST 493건 = 400 247 + 200 246).
 - 게이트웨이의 thinking 모델(`claude-sonnet-5`, `gpt-5*` 계열)은 **사고 토큰이
-  `max_tokens` 에 함께 잡힌다.** `pipeline.py` 의 `SEG_MAX_TOKENS = 8192` 를 줄이면 긴
-  문장에서 빈 출력이 나오고 포맷 통과율이 1.0 에 도달하지 못한다.
+  `max_tokens` 에 함께 잡힌다.** `runtime/pipeline.py` 의 `SEG_MAX_TOKENS = 32768` 을 줄이면
+  긴 문장에서 빈 출력이 나오고 포맷 통과율이 1.0 에 도달하지 못한다. **상한이지 과금 단위가 아니다** —
+  짧은 문장은 여기 닿지 않으므로 올려도 비용이 늘지 않고, 부족하면 예산을 전부 쓰고 결과가 0 이다
+  (kspon-train p99 54어절 풀에서 8192 로 드러났다).
 - `unbabel-comet` 을 쓰려면 **`setuptools<81` 을 핀해야 한다.** 함께 설치되는
   `torchmetrics 0.10.x` 가 `pkg_resources` 를 import 하는데 setuptools 81+ 에서 제거됐다.
 - **CometKiwi 는 HF 게이트 모델**이다. `huggingface.co` 에서 라이선스에 동의하고
   `hf auth login` 을 먼저 해야 `adequacy` 백엔드가 뜬다 (huggingface_hub 1.x 에서 `huggingface-cli` -> `hf` 로 개명).
-- 조각 번역 호출이 T 격자 크기에 비례한다. 루프 기본 격자를 `3 6` 두 개로 둔 이유가 이것이며,
-  전체 격자는 최종 test 에서만 돈다.
+- 조각 번역 호출이 T 격자 크기에 비례한다. 루프 격자를 최종 격자의 부분집합(3점,
+  `t_floor × {1, 1.5, 3}`)으로 둔 이유가 이것이며, 4점짜리 전체 격자는 최종 test 에서만 돈다.
 - **비용은 사실상 분절 호출의 사고 토큰 하나다** (en-de run01 실측: 총액의 96%,
   출력 중 사고 97.6%, 본문은 콜당 133토큰뿐). 손잡이 우선순위는
   **모델 > `--seg-reasoning-effort` > 그 외**이고, 프롬프트 길이는 무의미하다(입력 76% 캐시).

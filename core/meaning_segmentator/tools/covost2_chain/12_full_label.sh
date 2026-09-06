@@ -6,7 +6,7 @@
 # 선행은 PID 가 아니라 마커 파일로 기다린다 — 세션이 죽으면 PID 가 무의미해진다.
 . core/meaning_segmentator/tools/covost2_chain/common.sh
 F=$R/full
-PROMPT=core/meaning_segmentator/runs/en-multi/run13/best_prompt_mg1.txt
+PROMPT=core/meaning_segmentator/experiment/artifacts/en-multi/run13/best_prompt_mg1.txt
 MAN=evaluation/ast/manifests/covost2_en-de_full.jsonl
 GRID="2 3 4 5 6 7 8 10 12"
 mkdir -p $F/labels $F/logs $F/cache
@@ -32,7 +32,7 @@ echo "  exit=$?"; sed -n '/^{/,/^}/p' $F/logs/smoke_full.log
 # 게이트: 형식이 깨지면 $38 을 태우지 않는다. 기준은 3000 런과 같다.
 $PY - <<'PYGATE' || { echo "!! 게이트 불통과 — 본런 중단"; mark full_label.failed "smoke gate"; exit 1; }
 import json, re, sys
-t = open("/home/mobility/STiTy/core/meaning_segmentator/runs/covost2/full/logs/smoke_full.log").read()
+t = open("/home/mobility/STiTy/core/meaning_segmentator/experiment/artifacts/covost2/full/logs/smoke_full.log").read()
 m = re.search(r"\{.*\}", t, re.S)
 if not m:
     print("  요약 JSON 없음"); sys.exit(1)

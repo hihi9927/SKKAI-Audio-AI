@@ -1,9 +1,0 @@
-{
-  "sections_changed": [
-    "[Priority Rules]"
-  ],
-  "changelog": [
-    "Adjusted [Priority Rules] to explicitly demote boundaries that are likely to leave the preceding text incomplete for German choices (unheaded modifiers, open possessives, auxiliaries/modals without their main verb, verbs likely to form phrasal verbs, named-entity/number fragments). This addresses measured placement errors by lowering confidence for these risky positions rather than forbidding them.",
-    "Lowered priority for sentence-initial NPs when a modal/auxiliary appears within ~3 tokens and for commas that introduce contrastive continuations, so top-ranked boundaries under tight budgets are less likely to be the risky splits observed in the critic data."
-  ]
-}

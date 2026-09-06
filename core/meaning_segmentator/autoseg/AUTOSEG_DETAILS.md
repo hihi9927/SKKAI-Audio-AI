@@ -218,8 +218,8 @@ en-de test 100문장 쌍체 비교:
 
 루프 목적함수는 **참조가 없다**. 논문 표에 올릴 값은 참조 기반 corpus BLEU 이므로,
 어떤 런도 쓰지 않은 문장 위에서 조건들을 같은 번역기로 잰다. 구현은
-[`bleu_eval.py`](bleu_eval.py) · [`comet_eval.py`](comet_eval.py) ·
-[`comet_x2en.py`](comet_x2en.py), 비교군은 [`baselines/`](baselines/).
+[`scoring/bleu_eval.py`](scoring/bleu_eval.py) · [`scoring/comet_eval.py`](scoring/comet_eval.py) ·
+[`scoring/comet_x2en.py`](scoring/comet_x2en.py), 비교군은 [`baselines/`](baselines/).
 
 | 조건 | 정의 | 순위 절단 | 곡선 |
 |---|---|---|---|
@@ -229,7 +229,7 @@ en-de test 100문장 쌍체 비교:
 
 **주장할 수 있는 것**: 상한(무분절)과 하한(기계분절) 사이에서 이 프롬프트가 지연 T 에
 따라 어디에 놓이는가. **주장할 수 없는 것**: 사람이 쓴 프롬프트보다 낫다 (인간 비교군을
-뺐다 — 필요해지면 `eval_prompt.py --no-priority` 로 점 1개를 추가하면 된다).
+뺐다 — 필요해지면 `scoring/eval_prompt.py --no-priority` 로 점 1개를 추가하면 된다).
 
 **번역·연결 규약** — 조각 i 는 앞 조각 **원문**들을 개행으로 붙여 통째 번역한 뒤 마지막
 줄만 취한다. 운영 서버의 `--google-context` 경로와 같고 미래 문맥은 보지 않는다.
@@ -241,8 +241,10 @@ en-de test 100문장 쌍체 비교:
 **BLEU 산출 규약** — `evaluation/ast/metrics_ast.py` 의 `corpus_bleu_score()`.
 토크나이저는 de `13a`, zh `zh`, ja `ja-mecab` 이고 **signature 를 결과에 반드시 남긴다**
 (`ja-mecab` 은 `pip install "sacrebleu[ja]"` 필요. 미설치 시 `char` 폴백이라 표에
-`[fallback:char]` 명시 — 타 논문과 비교 불가). 보조 지표는 chrF2, 유의성은 sacrebleu
-`PairedTest` 로 paired bootstrap (n=1000), 기준선은 `unsegmented` 와 `mechanical_8` 두 벌.
+`[fallback:char]` 명시 — 타 논문과 비교 불가). 보조 지표는 chrF2, 유의성은 `paired_bootstrap()`
+(sacrebleu `PairedTest` 와 **같은 방식**을 직접 구현 — 문장별 n-gram 통계를 한 번만 뽑고 재표집에서는
+합만 낸다. `PairedTest` 를 그대로 부르면 ja-mecab 토크나이즈가 n_boot 배로 반복돼 몇 시간이 된다),
+`--bootstrap` 기본 n=1000, 기준선은 `unsegmented` 와 `mechanical_8`(`--mech-every` 기본 8) 두 벌.
 
 > **언어 간 절대 BLEU 비교 금지** — 토크나이저가 다르다. 언어를 가로지르는 판독은
 > 자기 상한으로 정규화한 `retention = BLEU(auto)/BLEU(unseg)` 로 하고, 토크나이저
@@ -297,7 +299,7 @@ DailyTalk 은 발화 중앙값이 4어절이라 `min_gap` 하에서 **경계를 
 2. **gold 참조 부재.** `adequacy`(참조 없음)와 `consistency`(자기 offline 출력 기준)로
    우회했다. clean500 BLEU/COMET 이 FLEURS gold 로 한 번 교차검증을 해줬지만, 루프
    목적함수 자체를 gold 로 검증한 적은 없다.
-3. **adequacy 조각 관문의 지위가 잠정.** `adequacy_cases.json` 문안이 사람 확정 전이다.
+3. **adequacy 조각 관문의 지위가 잠정.** `gates/adequacy_cases.json` 문안이 사람 확정 전이다.
    국소 탈락 2건(관용구 조각의 복사 편향 — 원문 그대로 반환을 정답 번역보다 높게 준다)에
    **현재 방어가 없다.** 관용구 밀도가 높은 데이터에서 `adequacy` 를 과신하지 말 것.
 4. **비영어 타깃의 `consistency` 백엔드.** 양방향 NLI 는 고유명사 음역 변이를 다른

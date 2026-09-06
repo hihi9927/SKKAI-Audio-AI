@@ -1,0 +1,18 @@
+[label] 소스 ['zh-CN'] / spaced=False / min_gap=5 t_floor=7 / n=30
+[gateway] 경고: 'gpt-5-mini' 가 temperature 를 거부해 기본값으로 돈다 — **분절이 비결정론적이 된다**. Claude 계열은 사고를 켜면 temperature 를 1 로만 받으므로, 결정론이 필요하면 `--seg-reasoning-effort none` 으로 사고를 끌 것.
+{
+ "model": "gpt-5-mini",
+ "prompt": "core/meaning_segmentator/runs/zh-en/run02/best_prompt_covost2_mg5.txt",
+ "n": 30,
+ "wall_sec": 148.2,
+ "format_pass": 1.0,
+ "first_pass": 0.933,
+ "text_preserved": 1.0,
+ "mean_boundaries": 2.03,
+ "mean_required": 1.97,
+ "coverage_met": 1.0,
+ "calls": 7,
+ "completion_tokens": 56193,
+ "cost": 0.1131
+}
+LABELDONE

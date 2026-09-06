@@ -1,0 +1,193 @@
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/torchmetrics/utilities/imports.py:23: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
+Encoder model frozen.
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/core/saving.py:197: Found keys that are not in the model state dict but in the checkpoint: ['encoder.model.embeddings.position_ids']
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [zh] unsegmented          COMET 0.8372  BLEU  40.63  2664ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [zh] auto_T2              COMET 0.6365  BLEU  18.59  801ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [zh] auto_T3              COMET 0.7234  BLEU  27.03  1164ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [zh] auto_T4              COMET 0.7569  BLEU  30.75  1383ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [zh] auto_T6              COMET 0.8051  BLEU  36.42  1868ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [zh] mechanical_8         COMET 0.4030  BLEU   2.78  1253ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [zh] punct                COMET 0.8299  BLEU  39.85  2282ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [zh] punct_T2             COMET 0.8299  BLEU  39.86  2282ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [zh] punct_T3             COMET 0.8301  BLEU  39.87  2283ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [zh] punct_T4             COMET 0.8306  BLEU  39.91  2287ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [zh] punct_T6             COMET 0.8311  BLEU  39.91  2301ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [zh] alignatt             COMET 0.6122  BLEU  15.49  830ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [zh] alignatt_T2          COMET 0.6389  BLEU  18.37  889ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [zh] alignatt_T3          COMET 0.6898  BLEU  23.85  1093ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [zh] alignatt_T4          COMET 0.7157  BLEU  27.07  1266ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [zh] alignatt_T6          COMET 0.7364  BLEU  29.57  1446ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [zh] mu_prefix            COMET 0.6718  BLEU  21.99  1374ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [zh] mu_prefix_T2         COMET 0.7078  BLEU  25.69  1466ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [zh] mu_prefix_T3         COMET 0.7370  BLEU  29.23  1583ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [zh] mu_prefix_T4         COMET 0.7551  BLEU  31.46  1678ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [zh] mu_prefix_T6         COMET 0.7673  BLEU  33.01  1779ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [zh] causal_align         COMET 0.5667  BLEU  12.54  701ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [zh] causal_align_T2      COMET 0.6448  BLEU  19.54  950ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [zh] causal_align_T3      COMET 0.6929  BLEU  24.79  1156ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [zh] causal_align_T4      COMET 0.7221  BLEU  28.11  1316ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [zh] causal_align_T6      COMET 0.7419  BLEU  30.63  1483ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [zh] syntax               COMET 0.6366  BLEU  20.85  853ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [zh] syntax_T2            COMET 0.6626  BLEU  22.46  937ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [zh] syntax_T3            COMET 0.7036  BLEU  25.55  1107ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [zh] syntax_T4            COMET 0.7311  BLEU  28.33  1268ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [zh] syntax_T6            COMET 0.7502  BLEU  31.00  1441ms
+[zh] 31조건 채점, 900s → /home/mobility/STiTy/core/meaning_segmentator/runs/covost2/full/bleu/zh.json
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [de] unsegmented          COMET 0.8830  BLEU  40.56  2679ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [de] auto_T2              COMET 0.5758  BLEU   8.65  658ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [de] auto_T3              COMET 0.6931  BLEU  16.91  1069ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [de] auto_T4              COMET 0.7502  BLEU  22.10  1320ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [de] auto_T6              COMET 0.8300  BLEU  31.30  1856ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [de] mechanical_8         COMET 0.3404  BLEU   1.55  1068ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [de] punct                COMET 0.8643  BLEU  36.26  2299ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [de] punct_T2             COMET 0.8643  BLEU  36.27  2299ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [de] punct_T3             COMET 0.8645  BLEU  36.29  2300ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [de] punct_T4             COMET 0.8651  BLEU  36.41  2304ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [de] punct_T6             COMET 0.8665  BLEU  36.72  2319ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [de] alignatt             COMET 0.6043  BLEU  11.75  728ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [de] alignatt_T2          COMET 0.6118  BLEU  11.89  811ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [de] alignatt_T3          COMET 0.6693  BLEU  14.90  963ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [de] alignatt_T4          COMET 0.7146  BLEU  19.35  1166ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [de] alignatt_T6          COMET 0.7459  BLEU  24.18  1372ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [de] mu_prefix            COMET 0.6679  BLEU  18.47  1155ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [de] mu_prefix_T2         COMET 0.6764  BLEU  18.71  1202ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [de] mu_prefix_T3         COMET 0.7143  BLEU  21.14  1311ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [de] mu_prefix_T4         COMET 0.7459  BLEU  24.25  1445ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [de] mu_prefix_T6         COMET 0.7699  BLEU  27.48  1592ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [de] causal_align         COMET 0.5513  BLEU   7.18  631ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [de] causal_align_T2      COMET 0.5868  BLEU   8.84  760ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [de] causal_align_T3      COMET 0.6665  BLEU  14.13  983ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [de] causal_align_T4      COMET 0.7121  BLEU  19.36  1181ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [de] causal_align_T6      COMET 0.7427  BLEU  24.18  1376ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [de] syntax               COMET 0.5819  BLEU   9.67  763ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [de] syntax_T2            COMET 0.6051  BLEU  10.46  817ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [de] syntax_T3            COMET 0.6692  BLEU  14.03  987ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [de] syntax_T4            COMET 0.7156  BLEU  19.11  1187ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [de] syntax_T6            COMET 0.7484  BLEU  23.92  1388ms
+[de] 31조건 채점, 809s → /home/mobility/STiTy/core/meaning_segmentator/runs/covost2/full/bleu/de.json
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [ja] unsegmented          COMET 0.8843  BLEU  25.59  2774ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [ja] auto_T2              COMET 0.6324  BLEU   8.23  776ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [ja] auto_T3              COMET 0.7330  BLEU  12.78  1232ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [ja] auto_T4              COMET 0.7772  BLEU  15.46  1484ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [ja] auto_T6              COMET 0.8394  BLEU  20.27  2003ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [ja] mechanical_8         COMET 0.4271  BLEU   1.27  1124ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [ja] punct                COMET 0.8692  BLEU  23.38  2409ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [ja] punct_T2             COMET 0.8692  BLEU  23.38  2409ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [ja] punct_T3             COMET 0.8696  BLEU  23.41  2411ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [ja] punct_T4             COMET 0.8701  BLEU  23.44  2416ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [ja] punct_T6             COMET 0.8713  BLEU  23.56  2434ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [ja] alignatt             COMET 0.6697  BLEU   9.74  1071ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [ja] alignatt_T2          COMET 0.6785  BLEU  10.04  1099ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [ja] alignatt_T3          COMET 0.7174  BLEU  11.68  1246ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [ja] alignatt_T4          COMET 0.7539  BLEU  13.76  1433ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [ja] alignatt_T6          COMET 0.7816  BLEU  15.88  1622ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [ja] mu_prefix            COMET 0.7938  BLEU  18.49  2003ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [ja] mu_prefix_T2         COMET 0.8046  BLEU  18.82  2044ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [ja] mu_prefix_T3         COMET 0.8204  BLEU  19.45  2116ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [ja] mu_prefix_T4         COMET 0.8336  BLEU  20.13  2188ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [ja] mu_prefix_T6         COMET 0.8435  BLEU  20.81  2256ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [ja] causal_align         COMET 0.6864  BLEU  11.50  1127ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [ja] causal_align_T2      COMET 0.7139  BLEU  12.62  1240ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [ja] causal_align_T3      COMET 0.7522  BLEU  14.62  1414ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [ja] causal_align_T4      COMET 0.7813  BLEU  16.23  1580ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [ja] causal_align_T6      COMET 0.8037  BLEU  17.86  1739ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [ja] syntax               COMET 0.6456  BLEU   8.89  843ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [ja] syntax_T2            COMET 0.6700  BLEU   9.74  938ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [ja] syntax_T3            COMET 0.7230  BLEU  12.15  1174ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [ja] syntax_T4            COMET 0.7617  BLEU  14.39  1391ms
+/home/mobility/STiTy/.venv-autoseg/lib/python3.10/site-packages/pytorch_lightning/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+  [ja] syntax_T6            COMET 0.7879  BLEU  16.43  1595ms
+[ja] 31조건 채점, 971s → /home/mobility/STiTy/core/meaning_segmentator/runs/covost2/full/bleu/ja.json

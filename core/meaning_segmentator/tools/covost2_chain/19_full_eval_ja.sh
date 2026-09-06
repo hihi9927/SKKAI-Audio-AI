@@ -15,7 +15,7 @@ GRID="2 3 4 6"
 BASE="punct alignatt mu_prefix causal_align syntax"
 
 echo "===== bleu_eval ja (2번째 프로세스) $(ts) ====="
-$PY -u -m core.meaning_segmentator.autoseg.bleu_eval \
+$PY -u -m core.meaning_segmentator.autoseg.scoring.bleu_eval \
   --run-id covost2/full --label auto_run13_mg1 --split test \
   --dataset covost2 --manifest-tag full --targets ja \
   --t-grid $GRID --src-spaced 1 \

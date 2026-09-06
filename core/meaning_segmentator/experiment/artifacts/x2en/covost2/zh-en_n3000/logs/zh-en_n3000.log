@@ -1,0 +1,36 @@
+[label] 소스 ['zh-CN'] / spaced=False / min_gap=5 t_floor=7 / n=2999
+[gateway] 경고: 'gpt-5-mini' 가 temperature 를 거부해 기본값으로 돈다 — **분절이 비결정론적이 된다**. Claude 계열은 사고를 켜면 temperature 를 1 로만 받으므로, 결정론이 필요하면 `--seg-reasoning-effort none` 으로 사고를 끌 것.
+[gateway] 경고: max_tokens=16000 안에서 출력이 끊겼다 (사고 토큰이 전부 소진). 입력 429자
+[gateway] 경고: max_tokens=16000 안에서 출력이 끊겼다 (사고 토큰이 전부 소진). 입력 417자
+[gateway] 경고: max_tokens=16000 안에서 출력이 끊겼다 (사고 토큰이 전부 소진). 입력 434자
+[gateway] 경고: max_tokens=16000 안에서 출력이 끊겼다 (사고 토큰이 전부 소진). 입력 377자
+[gateway] 경고: max_tokens=16000 안에서 출력이 끊겼다 (사고 토큰이 전부 소진). 입력 396자
+[gateway] 경고: max_tokens=16000 안에서 출력이 끊겼다 (사고 토큰이 전부 소진). 입력 400자
+[gateway] 경고: max_tokens=16000 안에서 출력이 끊겼다 (사고 토큰이 전부 소진). 입력 385자
+[gateway] 경고: max_tokens=16000 안에서 출력이 끊겼다 (사고 토큰이 전부 소진). 입력 398자
+[gateway] 경고: max_tokens=16000 안에서 출력이 끊겼다 (사고 토큰이 전부 소진). 입력 390자
+[gateway] 경고: max_tokens=16000 안에서 출력이 끊겼다 (사고 토큰이 전부 소진). 입력 429자
+[gateway] 경고: max_tokens=16000 안에서 출력이 끊겼다 (사고 토큰이 전부 소진). 입력 365자
+[gateway] 경고: max_tokens=16000 안에서 출력이 끊겼다 (사고 토큰이 전부 소진). 입력 409자
+[gateway] 경고: max_tokens=16000 안에서 출력이 끊겼다 (사고 토큰이 전부 소진). 입력 423자
+[gateway] 경고: max_tokens=16000 안에서 출력이 끊겼다 (사고 토큰이 전부 소진). 입력 412자
+[gateway] 경고: max_tokens=16000 안에서 출력이 끊겼다 (사고 토큰이 전부 소진). 입력 418자
+[gateway] 경고: max_tokens=16000 안에서 출력이 끊겼다 (사고 토큰이 전부 소진). 입력 389자
+[gateway] 경고: max_tokens=16000 안에서 출력이 끊겼다 (사고 토큰이 전부 소진). 입력 374자
+[gateway] 경고: max_tokens=16000 안에서 출력이 끊겼다 (사고 토큰이 전부 소진). 입력 550자
+{
+ "model": "gpt-5-mini",
+ "prompt": "core/meaning_segmentator/runs/zh-en/run02/best_prompt.txt",
+ "n": 2999,
+ "wall_sec": 4786.7,
+ "format_pass": 0.964,
+ "first_pass": 0.901,
+ "text_preserved": 0.995,
+ "mean_boundaries": 1.49,
+ "mean_required": 1.51,
+ "coverage_met": 0.968,
+ "calls": 900,
+ "completion_tokens": 6477129,
+ "cost": 13.1737
+}
+LABELDONE

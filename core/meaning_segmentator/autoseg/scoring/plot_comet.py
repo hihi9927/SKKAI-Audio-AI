@@ -10,6 +10,7 @@ B. `crosslang_retention.png` — 이 실험이 실제로 물은 것. 프롬프�
 
 색은 `plot_tradeoff.py` 의 all-pairs 검증 통과본 4종을 그대로 쓴다.
 """
+import argparse
 import json
 
 # **import 하면 안 된다 — 모듈을 읽는 것만으로 그림을 덮어쓴다.** 인자 파싱부터 저장까지
@@ -42,12 +43,26 @@ OUT_OF_BAND = [
     ("punct",     "^", "Punctuation"),
 ]
 LANG = [("de", BLUE, "o"), ("ja", ORANGE, "s"), ("zh", AQUA, "^")]
-T_GRID = [4, 6, 8, 12]
 YLO, YHI = 0.55, 0.95
 
-D = RUNS_DIR / "en-multi" / "clean500" / "bleu"
+# **런을 인자로 받는다.** 종전에는 `en-multi/clean500` 이 박혀 있었는데 그 런을
+# 지우면서 스크립트가 통째로 죽었다. 기본은 논문 en→X 런이다.
+_ap = argparse.ArgumentParser(description="COMET 기준 품질–지연 곡선 + 언어 간 유지율")
+_ap.add_argument("--run-id", default="covost2/full")
+_ARGS = _ap.parse_args()
+D = RUNS_DIR / _ARGS.run_id / "bleu"
 B = {t: json.loads((D / f"{t}.json").read_text(encoding="utf-8"))
      for t, _, _ in LANG}
+
+# **T 격자를 데이터에서 읽는다.** 종전에는 `[4, 6, 8, 12]` 가 박혀 있어 그 격자로 돈
+# 런에서만 동작했다 — covost2/full 은 `[2, 3, 4, 6]` 이라 두 번째 그림이 KeyError 로 죽었다.
+# 세 언어가 **모두** 가진 T 만 쓴다. 하나라도 빠지면 min/max 폭이 언어 수에 따라 달라진다.
+_TS = [set(int(k.split("_T")[1]) for k in B[t]["conditions"] if k.startswith("auto_T"))
+       for t, _, _ in LANG]
+T_GRID = sorted(set.intersection(*_TS)) if _TS else []
+if not T_GRID:
+    raise SystemExit(f"{D} 에 세 언어가 공유하는 auto_T* 조건이 없다")
+print(f"[plot] T 격자 = {T_GRID}")
 
 plt.rcParams.update({
     "font.family": "DejaVu Sans", "font.size": 9,
@@ -133,6 +148,22 @@ fig.savefig(D / "comet_tradeoff.pdf", facecolor=SURFACE)
 print("saved", D / "comet_tradeoff.png")
 
 
+
+def retention(tgt: str, cond: str, key: str) -> float:
+    """유지율 = 그 조건 점수 / 무분절 점수.
+
+    `comet_eval` 이 돌았으면 `retention_comet` 이 셀에 이미 있지만, `bleu_eval` 만 돈
+    런(covost2/full 이 그렇다)에는 `comet` 원점수만 있다. 그럴 때 같은 식으로 여기서
+    계산한다 — 없다고 그림을 통째로 버릴 이유가 없다.
+    """
+    C = B[tgt]["conditions"]
+    if key in C[cond]:
+        return C[cond][key]
+    metric = key.replace("retention_", "")
+    base = C["unsegmented"][metric]
+    return C[cond][metric] / base if base else float("nan")
+
+
 # ── B. 언어 간 안정성 ────────────────────────────────────────────────────────
 fig, axes = plt.subplots(1, 2, figsize=(10.2, 4.6), sharey=True)
 
@@ -142,9 +173,9 @@ for ax, (key, name) in zip(axes, (("retention_bleu", "BLEU"),
     ax.axhline(1.0, color=INK2, lw=1, ls=(0, (4, 3)), zorder=1)
     # 같은 T 라도 타깃마다 실측 laal 이 조금씩 다르다(최대 ~280ms). 폭은 **같은 T** 끼리의
     # 값 차이이고, 그것을 그리는 x 위치로는 세 타깃의 평균 laal 을 쓴다.
-    lo = [min(B[t]["conditions"][f"auto_T{T}"][key] for t, _, _ in LANG)
+    lo = [min(retention(t, f"auto_T{T}", key) for t, _, _ in LANG)
           for T in T_GRID]
-    hi = [max(B[t]["conditions"][f"auto_T{T}"][key] for t, _, _ in LANG)
+    hi = [max(retention(t, f"auto_T{T}", key) for t, _, _ in LANG)
           for T in T_GRID]
     xm = [sum(B[t]["conditions"][f"auto_T{T}"]["laal_ms"] for t, _, _ in LANG) / 3
           for T in T_GRID]
@@ -152,7 +183,7 @@ for ax, (key, name) in zip(axes, (("retention_bleu", "BLEU"),
     for tgt, color, mk in LANG:
         C = B[tgt]["conditions"]
         xs = [C[f"auto_T{T}"]["laal_ms"] for T in T_GRID]
-        ys = [C[f"auto_T{T}"][key] for T in T_GRID]
+        ys = [retention(tgt, f"auto_T{T}", key) for T in T_GRID]
         ax.plot(xs, ys, "-", marker=mk, color=color, lw=2, ms=8,
                 mec=SURFACE, mew=2, zorder=5, label=f"en→{tgt}")
     for T, x, a, b in zip(T_GRID, xm, lo, hi):

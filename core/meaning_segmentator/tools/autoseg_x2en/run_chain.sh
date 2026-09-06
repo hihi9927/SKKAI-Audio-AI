@@ -12,7 +12,7 @@
 set -u
 cd /home/mobility/STiTy || exit 1
 
-RUNS=core/meaning_segmentator/runs
+RUNS=core/meaning_segmentator/experiment/artifacts
 # PYTHONPATH 를 "." 로 **덮어쓴다**. 이 머신은 ROS humble 이 PYTHONPATH 에 끼어 있고
 # 그게 venv 의 site-packages 보다 먼저 검색된다. 비우면 core 패키지를 못 찾으므로
 # 비우는 게 아니라 "." 하나로 갈아끼운다.

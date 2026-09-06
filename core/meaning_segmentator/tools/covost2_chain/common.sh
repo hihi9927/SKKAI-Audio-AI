@@ -4,7 +4,7 @@ cd /home/mobility/STiTy || exit 1
 set -a; . ./.env 2>/dev/null; set +a
 export PYTHONPATH=/home/mobility/STiTy
 PY=/home/mobility/STiTy/.venv-autoseg/bin/python
-R=core/meaning_segmentator/runs/covost2
+R=core/meaning_segmentator/experiment/artifacts/covost2
 ST=$R/_status
 mkdir -p "$ST"
 

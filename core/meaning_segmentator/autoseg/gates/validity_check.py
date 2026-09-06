@@ -41,10 +41,10 @@ BENIGN = "benign_minimal"
 BENIGN_SOFT = "benign_paraphrase"
 ORDER = ["identical", BENIGN, BENIGN_SOFT] + SEVERE + ["unrelated"]
 
-# 양방향 NLI consistency 백엔드 (v2 기본). 케이스에 타깃 언어가 섞여 있으므로
-# (ja-ko-01 은 타깃이 한국어) 다국어 모델을 기본 관문으로 두고, 영어 전용
-# deberta 는 en 타깃 케이스 참고용으로 같이 돌린다 — ja-ko-01 행의 deberta 값은
-# 모델 언어 밖이라 무의미하니 읽지 말 것.
+# 양방향 NLI consistency 백엔드. 케이스에 타깃 언어가 섞여 있어(ja-ko-01 은 타깃이 한국어)
+# 다국어 모델이어야 한다 — 기본은 `nli`(`metrics.NLI_MODEL`, xlm-roberta-large-xnli-anli).
+# **영어 전용 deberta 를 같이 돌리던 경로는 없다** — `make_backend` 는 `nli` 와 COMET
+# 체크포인트만 받는다. 기본 `--backends nli comet`.
 def evaluate_backend(scorer: metrics.QualityBackend, cases: list[dict]) -> dict:
     """케이스별 변이 점수를 낸다. 같은 백엔드 인스턴스를 재사용해 모델을 1회만 로드한다."""
     srcs, hyps, refs, index = [], [], [], []

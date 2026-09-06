@@ -4,7 +4,7 @@
 # 분절은 영어 한 벌이고 de/ja/zh 가 공유하므로 라벨링은 한 번만 하면 된다.
 . core/meaning_segmentator/tools/covost2_chain/common.sh
 N=$R/n3000
-PROMPT=core/meaning_segmentator/runs/en-multi/run13/best_prompt_mg2.txt
+PROMPT=core/meaning_segmentator/experiment/artifacts/en-multi/run13/best_prompt_mg2.txt
 GRID="3 4 5 6 7 8 10 12"
 
 label () {  # <이름> <limit인자> <budget>

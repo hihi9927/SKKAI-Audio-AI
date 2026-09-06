@@ -25,7 +25,7 @@ orchestrators_alive () {
 
 rerun () {   # <타깃>  — 낮춘 설정으로
   say "재실행 $1 (workers 8 / batch 16, 시도 $(( ${tries[$1]} + 1 ))/3)"
-  $PY -u -m core.meaning_segmentator.autoseg.bleu_eval \
+  $PY -u -m core.meaning_segmentator.autoseg.scoring.bleu_eval \
     --run-id covost2/full --label auto_run13_mg1 --split test \
     --dataset covost2 --manifest-tag full --targets $1 \
     --t-grid $GRID --src-spaced 1 \
@@ -42,7 +42,7 @@ finish () {
     --label auto_run13_mg1 --split test --targets zh de ja --only-missing \
     --model Unbabel/wmt22-comet-da --batch-size 32 >> $F/logs/comet_full.log 2>&1
   say "COMET exit=$?"
-  $PY core/meaning_segmentator/autoseg/baselines/plot_tradeoff.py \
+  $PY -m core.meaning_segmentator.autoseg.scoring.plot_tradeoff \
     --run-id covost2/full --targets zh de ja --metric comet \
     --out tradeoff_covost2_full_comet \
     --title "CoVoST2 en->X test 15430 (min_gap=1)" >> $LOG 2>&1

@@ -81,7 +81,7 @@ min_gap  ──▶  t_floor = max(min_gap + 1, ceil(1.25 × min_gap))
 
 ---
 
-### A0 — 데이터 준비 `data.py`
+### A0 — 데이터 준비 `runtime/data.py`
 문장을 읽어서 train/dev/test로 나누고, 코퍼스 특성을 잰다.
 
 ```
@@ -96,7 +96,7 @@ min_gap  ──▶  t_floor = max(min_gap + 1, ceil(1.25 × min_gap))
    - 구두점 목록: 앞 텍스트에 90% 이상 붙어 나오는 문자만
 ```
 
-### A1 — 언어 프로파일 `agents.py` · **LLM 1회**
+### A1 — 언어 프로파일 `runtime/agents.py` · **LLM 1회**
 샘플 20문장을 보여주고 언어 특성을 JSON으로 받아, 첫 프롬프트를 쓴다.
 
 ```
@@ -104,7 +104,7 @@ LLM이 채우는 것: 어순, 절 경계 신호, 함정 표현, 군말, 문체
 측정으로 덮는 것: 띄어쓰기 여부, 구두점 목록  ← LLM 값은 무조건 짐
 ```
 
-### A2+A3 — 분절과 검증 `pipeline.py` · **LLM + 결정론**
+### A2+A3 — 분절과 검증 `runtime/pipeline.py` · **LLM + 결정론**
 
 **둘은 한 함수다.** `segment_batch` 가 부르고, 그 안에서 고치고 검사하고 재시도까지 한다.
 
@@ -180,7 +180,7 @@ minimal     0.11      30/36        3         32콜    $0.0186  (−91%)
 `minimal` 은 원문 훼손이 6건이라 못 쓴다. `low` 는 39% 싸지만 **1차 통과율이 절반**이라
 채점에 들어가는 분절의 상당수가 재시도 산출이 된다 — 점수 영향은 아직 안 쟀다.
 
-### A4 — 절단 `pipeline.py` · **결정론**
+### A4 — 절단 `runtime/pipeline.py` · **결정론**
 노브 T에 맞춰 경계를 골라낸다. 여기가 지연을 정하는 곳.
 
 ```
@@ -195,7 +195,7 @@ minimal     0.11      30/36        3         32콜    $0.0186  (−91%)
 **보장되는 것**: 조각 개수, 평균 조각 크기(산수), 최소 조각 크기(min_gap)
 **보장 안 되는 것**: 최대 조각 크기, 고른 간격
 
-### A5 — 번역 `pipeline.py`
+### A5 — 번역 `runtime/pipeline.py`
 두 종류를 뽑는다.
 
 ```
@@ -251,7 +251,7 @@ nllb-1.3B greedy   adq 0.8245  165 문장/초   VRAM 3.7GB
 | `gtx` | 웹 번역 위젯이 쓰는 **비공식** 엔드포인트 | 없음 |
 | `v2` | 공식 Cloud Translation **Basic** (API 버전 2) | API 키 |
 
-`GOOGLE_TRANSLATE_API_KEY` 가 있으면 v2, 없으면 gtx. `--translate-backend` 로 고정한다.
+Google 경로를 자동 해석할 때(`bleu_eval` 의 `--translate-provider auto`) `GOOGLE_TRANSLATE_API_KEY` 가 있으면 v2, 없으면 gtx 다. **루프 기본값은 이제 `local` 이므로** Google 을 쓰려면 `--translate-backend v2`(또는 `gtx`)로 명시한다.
 
 gtx 는 인증이 없어 Google 이 구분할 수 있는 게 IP 뿐이라, 이 실험이 6일간 30만 건을
 호출해 **IP 단위로 429 를 맞았다**(2026-08-26 현재도 막혀 있다). 429 면 HTML 차단
@@ -277,12 +277,12 @@ v2 : It's February, but I heard the engineering department has an MT in March.
 | 자리 | 모델 | 왜 이것 |
 |---|---|---|
 | 분절·에이전트 | `gpt-5-mini` | `gpt-5.4-mini` 대비 비용 1/3.9 에 품질 차 검출 안 됨 |
-| 번역 | Google Translate (v2) | 운영 서버와 같은 경로. 결정론적이라 번역기 잡음 0 |
+| 번역 | `local` = madlad400-3b greedy (`--local-mt-model`) | 기본값. 조각을 독립 번역해 **결정론적**이라 번역기 잡음 0. Google 경로(`v2`)는 분절이 바뀌면 문맥까지 바뀐다. CometKiwi 0.8712(Google) vs 0.8473(madlad greedy) |
 | adequacy | CometKiwi (`wmt22-cometkiwi-da`) | 참조 없는 QE. **y축 주지표** |
 | contradiction | `xlm-roberta-large-xnli-anli` | 조기 방출 검출. 다국어 large 여야 함 |
 | consistency | 같은 NLI (양방향 함의) | 보고용. 모델을 contradiction 과 공유해 GPU 1벌 |
 
-### A6 — 채점 `metrics.py` · **결정론**
+### A6 — 채점 `runtime/metrics.py` · **결정론**
 ```
 adequacy       조각별 번역 품질(참조 없음). 조각 길이로 가중 평균
 contradiction  경계마다: (전체번역) vs (그때까지 누적 방출)이 모순인가.
@@ -309,7 +309,7 @@ consistency    합본 vs 전체번역 양방향 함의의 min   ← 보고용
 설계가 일부러 피한 것이다. 관문에서 `benign_incomplete` 가 0.025~0.041 → 0.086~0.151 로
 3~4배 올랐다 (premature 0.99 와는 여전히 6배 이상 벌어져 분리는 유지).
 
-### A7 — 판정자 `agents.py` · **LLM**
+### A7 — 판정자 `runtime/agents.py` · **LLM**
 **점수를 안 낸다. 사례에 설명만 붙인다.**
 
 ```
@@ -342,7 +342,7 @@ referent lost             대명사·생략·맨명사를 지시 대상이 오�
 other                     위 어디에도 안 맞는 진짜 모순. conflict 에 적는다
 ```
 
-### A8 — 진단 `agents.py` · **LLM + 결정론**
+### A8 — 진단 `runtime/agents.py` · **LLM + 결정론**
 실패 사례를 모아 말로 정리한다. **무엇을 고칠지는 Critic 이 정한다**
 
 ```
@@ -372,7 +372,7 @@ rank_lift ≈ 0    순위에 정보가 없다 → [Priority Rules] 를 고쳐봐
                  문제는 "어디를 찍느냐" 지 "어떻게 줄 세우냐" 가 아니다
 ```
 
-### A9 — 프롬프트 수정 `agents.py` · **LLM**
+### A9 — 프롬프트 수정 `runtime/agents.py` · **LLM**
 프롬프트를 고친다. 통과해야 하는 관문 3개.
 
 ```
@@ -382,7 +382,7 @@ rank_lift ≈ 0    순위에 정보가 없다 → [Priority Rules] 를 고쳐봐
 ```
 셋 다 통과한 뒤 **분량 예산**을 본다. 넘치면 거부가 아니라 압축이다.
 
-### A10 — 압축 `agents.py` · **LLM**
+### A10 — 압축 `runtime/agents.py` · **LLM**
 ```
 compress()   프롬프트가 분량 예산을 넘으면 줄인다.
              `sections_changed` 를 보호 목록으로 받아 **이번에 넣은 변경은 남기고**

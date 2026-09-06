@@ -12,7 +12,7 @@ echo "  살아있는지 보려면: ls -l /proc/\$(pgrep -f label_covost2|head -1
 # 이전 라벨은 이미 .mismatch68 로 옮겨져 있다 — 다시 mv 하지 않는다.
 $PY -u core/meaning_segmentator/tools/covost2_label/label_covost2.py \
   --provider openai --model gpt-5-mini \
-  --prompt core/meaning_segmentator/runs/zh-en/run02/best_prompt_covost2_mg5.txt \
+  --prompt core/meaning_segmentator/experiment/artifacts/zh-en/run02/best_prompt_covost2_mg5.txt \
   --manifest evaluation/ast/manifests/covost2_zh-en_n3000.jsonl \
   --out $O/labels/covost2_zh-en_n3000_run02.jsonl \
   --cache $O/cache/segment_run02.json \

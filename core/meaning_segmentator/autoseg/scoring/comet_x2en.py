@@ -26,7 +26,7 @@ def main() -> int:
     p.add_argument("--tag", default="multi2en_loop240")
     p.add_argument("--model", default="Unbabel/wmt22-comet-da")
     p.add_argument("--batch-size", type=int, default=32)
-    p.add_argument("--out", default="core/meaning_segmentator/runs/x2en_comet.json")
+    p.add_argument("--out", default="core/meaning_segmentator/experiment/artifacts/x2en_comet.json")
     p.add_argument("--report-only", action="store_true")
     args = p.parse_args()
 
