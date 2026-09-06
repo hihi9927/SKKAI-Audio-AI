@@ -30,7 +30,6 @@ pip install -e "./Qwen3-ASR[vllm]"     # vLLM 포함
 | `qwen_asr/cli/` | CLI 진입점 (qwen-asr-serve 등) |
 | `examples/` | 프로덕션 서버 및 사용 예제 |
 | `finetuning/` | SFT 스크립트 및 병합 유틸리티 |
-| `app/` | Electron/Gradio 데모 앱 (프로덕션 배포와 무관) |
 
 ## 주의사항
 
