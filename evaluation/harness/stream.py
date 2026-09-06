@@ -337,6 +337,7 @@ async def process_batch(
     running_metric=None,
     running_metric_label='WER',
     score_fn=None,
+    metric_key='wer',
 ):
     """파일 목록을 순서대로 서버에 밀어 넣고 결과를 모은다.
 
@@ -484,7 +485,8 @@ async def process_batch(
             'segment_metrics_summary': out.get('segment_metrics_summary') or {},
         })
 
-        save_results_structured(all_results + results, run_dir, policy, score_fn=score_fn)
+        save_results_structured(all_results + results, run_dir, policy, score_fn=score_fn,
+                                metric_key=metric_key)
 
         speaker_rows = [r for r in results if r['speaker_id'] == speaker_id]
         speaker_score = running_metric(speaker_rows)

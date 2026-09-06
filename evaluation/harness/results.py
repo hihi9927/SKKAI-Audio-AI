@@ -65,11 +65,13 @@ def resolve_run_dir(args, default_results_root) -> Path:
     run_dir.mkdir(parents=True, exist_ok=True)
     return run_dir
 
-def build_summary_payload(results, policy, score_fn=None):
+def build_summary_payload(results, policy, score_fn=None, metric_key='wer'):
     """metric.json 의 overall 블록을 만든다.
 
     score_fn 은 (results, policy, emit_summary) → (전체값, 화자별 dict) 를 돌려주는
-    채점 함수다. 기본은 WER — 한국어 데이터셋은 CER 판을 넘긴다.
+    채점 함수다. 기본은 WER — 한국어 데이터셋은 CER 판(`scoring.calculate_cer`)과
+    `metric_key='corpus_cer'` 를 넘긴다. metric_key 는 overall 에 찍히는 이름이라
+    이전 결과 파일과 키가 어긋나지 않게 한다.
     """
     if score_fn is None:
         from .scoring import calculate_wer as score_fn
@@ -111,7 +113,7 @@ def build_summary_payload(results, policy, score_fn=None):
         speaker_commit = _collect_commit_stats(rows)
         folder_stats[speaker_id] = {
             'num_files': len(rows),
-            'wer': folder_wers.get(speaker_id),
+            metric_key: folder_wers.get(speaker_id),
             'first_token_latency': mean(lat) if lat else None,
             'model_runtime': mean(model_runtime) if model_runtime else None,
             'avg_fsl_sec': mean(speaker_fsl) if speaker_fsl else None,
@@ -140,7 +142,7 @@ def build_summary_payload(results, policy, score_fn=None):
         'policy': policy,
         'overall': {
             'num_files': len(results),
-            'wer': wer_value,
+            metric_key: wer_value,
             'first_token_latency': mean(all_lat) if all_lat else None,
             'model_runtime': mean(all_model_runtime) if all_model_runtime else None,
             'avg_fsl_sec': mean(all_fsl) if all_fsl else None,
@@ -155,11 +157,11 @@ def build_summary_payload(results, policy, score_fn=None):
         'folders': folder_stats,
     }
 
-def save_results_structured(results, run_dir, policy, score_fn=None):
+def save_results_structured(results, run_dir, policy, score_fn=None, metric_key='wer'):
     run_dir = Path(run_dir)
     (run_dir / 'plots').mkdir(parents=True, exist_ok=True)
 
-    summary = build_summary_payload(results, policy, score_fn=score_fn)
+    summary = build_summary_payload(results, policy, score_fn=score_fn, metric_key=metric_key)
     metric_data = {
         'overall': summary.get('overall'),
         'folders': summary.get('folders'),

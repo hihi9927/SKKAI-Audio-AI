@@ -116,3 +116,31 @@ def compute_corpus_cer(rows):
     if total_len == 0:
         return None
     return total_err / total_len
+
+
+def calculate_cer(results, policy=None, emit_summary=True):
+    """`calculate_wer` 과 같은 모양의 CER 판. 화자별 dict 도 같이 돌려준다."""
+    overall = compute_corpus_cer(results)
+    if overall is None:
+        logger.warning('No valid rows for CER.')
+        return None, {}
+
+    by_speaker = {}
+    for r in results:
+        by_speaker.setdefault(r.get('speaker_id', 'all'), []).append(r)
+    folder_cers = {sid: compute_corpus_cer(rows) for sid, rows in by_speaker.items()}
+
+    if emit_summary:
+        lats = [r['first_token_latency'] for r in results if r.get('first_token_latency') is not None]
+        runtimes = [r['model_runtime'] for r in results if r.get('model_runtime') is not None]
+        policy_label = f' - BACKEND POLICY {policy}' if policy is not None else ''
+        logger.info('\n%s', '=' * 70)
+        logger.info('RESULTS SUMMARY%s', policy_label)
+        logger.info('%s', '=' * 70)
+        logger.info('Total files processed: %s', len(results))
+        logger.info('Corpus CER: %.2f%%', overall * 100)
+        logger.info('Average First Token Latency: %.3fs', mean(lats) if lats else 0.0)
+        logger.info('Average Model Runtime: %.3fs', mean(runtimes) if runtimes else 0.0)
+        logger.info('%s\n', '=' * 70)
+
+    return overall, folder_cers

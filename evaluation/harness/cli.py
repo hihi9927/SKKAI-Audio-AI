@@ -87,7 +87,8 @@ def build_parser(description, *, default_server_script, trailing_silence_ms=8000
 
 
 def run(args, *, files, dataset_root, load_audio, score_fn=None, group_key=None,
-        running_metric=None, running_metric_label='WER', smoke_lang='auto'):
+        running_metric=None, running_metric_label='WER', smoke_lang='auto',
+        metric_key='wer'):
     """서버를 준비하고 배치를 돌린 뒤 결과를 저장한다."""
     score_fn = score_fn or calculate_wer
 
@@ -161,6 +162,7 @@ def run(args, *, files, dataset_root, load_audio, score_fn=None, group_key=None,
                 running_metric=running_metric,
                 running_metric_label=running_metric_label,
                 score_fn=score_fn,
+                metric_key=metric_key,
             )
         )
         if args.calculate_wer and results:
