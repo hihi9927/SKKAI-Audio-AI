@@ -304,10 +304,31 @@ async def run_dual(client, start_raw, pending_binary):
               f"| LID 후보 {sorted(allowed)}", flush=True)
 
         async def pump_client():
+            nonlocal lang_map, target_lang
             async for msg in client:
                 if isinstance(msg, (bytes, bytearray)):
                     tracker.feed(bytes(msg))
                     await tracker.update()
+                else:
+                    # **흐르는 중에 언어를 바꾸면 LID 후보도 따라가야 한다.**
+                    # 서버는 config 를 받아 로짓 바이어스를 갈지만(다음 슬롯부터),
+                    # 프록시는 start 만 보고 후보를 정해 두면 그대로 굳는다. 시연 중
+                    # 언어를 켜고 끄면 ASR 만 따라가고 판정은 안 따라가는 셈이다.
+                    try:
+                        data = json.loads(msg)
+                    except Exception:
+                        data = None
+                    if isinstance(data, dict) and data.get("type") == "config":
+                        if isinstance(data.get("langMap"), dict):
+                            lang_map = data["langMap"]
+                        if data.get("targetLang"):
+                            target_lang = data["targetLang"]
+                        new_allowed = set(lang_map) or {
+                            c for c in [data.get("lang")] if c and c != "auto"}
+                        if new_allowed and new_allowed != tracker.allowed:
+                            print(f"config: LID 후보 {sorted(tracker.allowed)} -> "
+                                  f"{sorted(new_allowed)}", flush=True)
+                            tracker.allowed = new_allowed
                 for up in ups.values():
                     await up.send(msg)
 
