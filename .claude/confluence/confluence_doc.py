@@ -235,11 +235,37 @@ def inline(text: str) -> str:
     return "".join(out)
 
 
+# 코드 블록 본문을 잠시 담아 두는 자리. 아래 두 가지가 겹쳐서 이렇게 돌아간다.
+#
+#  1. Confluence 는 CDATA 없는 `ac:plain-text-body` 를 통째로 버린다. 이스케이프만
+#     해서 넣으면 빈 매크로(`<ac:structured-macro ... />`)로 저장돼 문서에 빈 칸만
+#     남는다.
+#  2. 그런데 render() 가 조립한 XHTML 을 ElementTree 로 파싱·재직렬화하는데, ET 는
+#     CDATA 를 보존하지 않고 일반 텍스트로 풀어 버린다. 그래서 code_macro 에서
+#     CDATA 를 넣어 봐야 최종 산출물에는 안 남는다.
+#
+# 그래서 직렬화까지는 표식만 들고 가고, 다 끝난 문자열에서 CDATA 로 바꾼다.
+_CODE_BODIES: list[str] = []
+CODE_MARK_RE = re.compile(r"@@CODEBLOCK(\d+)@@")
+
+
 def code_macro(text: str, lang: str = "") -> str:
     param = f'<ac:parameter ac:name="language">{esc(lang)}</ac:parameter>' if lang else ""
+    _CODE_BODIES.append(str(text or ""))
+    # 표식은 XML 에 넣을 수 있는 문자여야 한다. NUL 을 쓰면 ElementTree 가
+    # 파싱 단계에서 버린다.
+    mark = f"@@CODEBLOCK{len(_CODE_BODIES) - 1}@@"
     return ('<ac:structured-macro ac:name="code" ac:schema-version="1">' + param +
-            f"<ac:plain-text-body>{esc(text)}</ac:plain-text-body>"
+            f"<ac:plain-text-body>{mark}</ac:plain-text-body>"
             "</ac:structured-macro>")
+
+
+def restore_code_bodies(body: str) -> str:
+    """표식을 실제 코드 본문(CDATA)으로 되돌린다. 직렬화가 끝난 뒤에 부른다."""
+    def sub(m):
+        raw = _CODE_BODIES[int(m.group(1))]
+        return "<![CDATA[" + raw.replace("]]>", "]]]]><![CDATA[>") + "]]>"
+    return CODE_MARK_RE.sub(sub, body)
 
 
 def build_list(items: list[tuple[int, bool, str]], idx: int, depth: int) -> tuple[str, int]:
@@ -459,7 +485,7 @@ def render(template: str, fields: dict, jira_keys: list[str]) -> tuple[str, list
     if first_heading:
         body = body[first_heading.start():]
 
-    return expand_jira(body, jira_keys), missing
+    return restore_code_bodies(expand_jira(body, jira_keys)), missing
 
 
 MAX_SEQ = 50
