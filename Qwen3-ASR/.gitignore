@@ -22,3 +22,7 @@ wheels/
 .vscode/
 venv/
 env/
+
+# 서버 런타임 로그. examples/streaming_websocket_server.py 가 여기에 쓴다
+# (asr_server.log, 세션 JSON, --record-audio 의 WAV).
+logs/

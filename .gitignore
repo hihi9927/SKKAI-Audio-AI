@@ -124,19 +124,14 @@ evaluation/LibriSpeech/results/
 # Root-level run scripts/logs (may contain API keys)
 /run_*.sh
 /run_*.log
-# ASR session logs (runtime data)
-logs/asr_logs/
-# ASR recorded audio (runtime data, --record-audio)
-logs/asr_audio/
 
 # Runtime logs / temp outputs
 .codegraph/
 build_output*.txt
 pkg_log.txt
-logs/*.log
-logs/*.tar.gz
-logs/*.png
-logs/session_*.json
+# 서버 로그는 Qwen3-ASR/logs/ 로 옮겼다(Qwen3-ASR/.gitignore 가 담당). 루트의
+# logs/ 에는 그 이전 실행 기록만 남아 있고 추적하는 파일은 없다.
+logs/
 
 # 100h 데이터셋 빌드 — 모델/오디오/학습출력 (대용량)
 Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-ko-merged-silence/

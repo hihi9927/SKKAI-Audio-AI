@@ -73,7 +73,7 @@ except ImportError:
     _SILERO_VAD_AVAILABLE = False
 
 _SERVER_DIR = os.path.dirname(os.path.abspath(__file__))
-_LOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../logs/asr_server.log")
+_LOG_FILE = os.path.join(_SERVER_DIR, "../logs/asr_server.log")
 
 
 _BASELINE_MODEL_IDS = {
@@ -319,7 +319,7 @@ def parse_lang_map(raw: object) -> dict[str, str]:
 class SessionLogger:
     """앱에서 수신한 로그를 세션별 JSON 파일로 저장"""
 
-    def __init__(self, client_id: int = 0, logs_dir: str = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../logs/asr_logs")):
+    def __init__(self, client_id: int = 0, logs_dir: str = os.path.join(_SERVER_DIR, "../logs/asr_logs")):
         os.makedirs(logs_dir, exist_ok=True)
         ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
         self.client_id = client_id
@@ -365,9 +365,7 @@ class AudioRecorder:
         session_log_path: str,
         client_id: int = 0,
         sample_rate: int = SAMPLING_RATE,
-        audio_dir: str = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "../../logs/asr_audio"
-        ),
+        audio_dir: str = os.path.join(_SERVER_DIR, "../logs/asr_audio"),
     ):
         os.makedirs(audio_dir, exist_ok=True)
         stem = os.path.splitext(os.path.basename(session_log_path))[0]
@@ -3255,7 +3253,7 @@ def parse_args():
     )
     parser.add_argument(
         "--record-audio", action="store_true",
-        help="수신 오디오를 세션별 WAV(logs/asr_audio/session_{ts}.wav)로 저장 — "
+        help="수신 오디오를 세션별 WAV(Qwen3-ASR/logs/asr_audio/session_{ts}.wav)로 저장 — "
              "세션 로그와 동일 타임스탬프로 매칭됨 (기본값: 비활성화)",
     )
     parser.add_argument(
