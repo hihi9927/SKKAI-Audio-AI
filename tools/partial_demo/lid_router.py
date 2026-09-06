@@ -96,7 +96,20 @@ class LidRouter:
         closed = len(ts) > 1 or (len(audio) - first["end"]) >= SR * 0.3
         return first["start"], first["end"], closed
 
-    def _classify(self, audio: np.ndarray, with_conf: bool = False):
+    def _lang_token_ids(self, allowed=None) -> list:
+        """argmax 를 볼 토큰 집합.
+
+        **후보를 좁히면 엉뚱한 언어로 새는 걸 막는다.** 전체 100여 개 언어에서 고르면
+        한국어 발화가 zh·tr·ja 로 찍히는 일이 생기는데, 이 파이프라인에는 그 언어를
+        맡을 서버가 없다. 웹이 고른 소스 언어(langMap 의 키)만 남기면 애초에 그
+        선택지가 사라진다. 실측 오답 12건 중 7건이 표에 없는 언어였다.
+        """
+        if not allowed:
+            return list(self.lang_ids)
+        ids = [i for i, code in self.lang_ids.items() if code in allowed]
+        return ids or list(self.lang_ids)
+
+    def _classify(self, audio: np.ndarray, with_conf: bool = False, allowed=None):
         """언어 코드. `with_conf` 면 (언어, 확신도) 를 준다.
 
         확신도는 언어 토큰들 안에서만 정규화한 확률이다. argmax 만 쓰면 짧은 창을
@@ -117,11 +130,18 @@ class LidRouter:
         dec = torch.tensor([[self.sot]], device=self.device)
         with torch.inference_mode():
             logits = self.model(feats, decoder_input_ids=dec).logits[0, -1]
-        ids = list(self.lang_ids)
-        sub = logits[ids].float()
-        probs = torch.softmax(sub, dim=-1)
-        k = int(torch.argmax(probs))
-        lang = self.lang_ids[ids[k]]
+        # **고르는 건 좁히되, 확신도는 전체 언어 기준으로 잰다.**
+        # 후보 안에서 softmax 를 다시 하면 확률이 몰려 임계값의 의미가 달라진다.
+        # 실측(창 0.5초, 임계 0.8 에서 그 부분집합의 정확도):
+        #     전체 언어  100%  /  5개 언어  97.1%  /  ko·en 둘  95.5%
+        # 후보 수마다 임계를 다시 잡아야 하는 셈이라 취약하다. 전체 분포에서 잰
+        # 확률을 쓰면 EARLY_STEPS 의 보정값이 후보 수와 무관하게 유지된다.
+        all_ids = list(self.lang_ids)
+        probs = torch.softmax(logits[all_ids].float(), dim=-1)
+        pick_ids = self._lang_token_ids(allowed)
+        pos = [all_ids.index(i) for i in pick_ids]
+        k = pos[int(torch.argmax(probs[pos]))]
+        lang = self.lang_ids[all_ids[k]]
         return (lang, float(probs[k])) if with_conf else lang
 
     def _decide_sync(self, audio: np.ndarray, flush: bool = False):
@@ -207,8 +227,10 @@ class VerdictTracker:
     """
 
     def __init__(self, router: "LidRouter", keep_sec: float = 20.0,
-                 step_sec: float = 0.4):
+                 step_sec: float = 0.4, allowed=None):
         self.router = router
+        # 이 스트림에서 나올 수 있는 언어. 클라이언트가 고른 소스 언어를 받는다.
+        self.allowed = set(allowed or ())
         self.keep_sec = keep_sec
         self.step_sec = step_sec
         self._buf = np.zeros(0, dtype=np.float32)
@@ -271,10 +293,11 @@ class VerdictTracker:
                     if secs > avail or secs >= self.router.window_sec:
                         continue
                     lang, conf = self.router._classify(
-                        span[: int(SR * secs)], with_conf=True)
+                        span[: int(SR * secs)], with_conf=True, allowed=self.allowed)
                     if conf >= need:
                         return lang, secs
-            lang = self.router._classify(span[: int(SR * self.router.window_sec)])
+            lang = self.router._classify(span[: int(SR * self.router.window_sec)],
+                                         allowed=self.allowed)
         return lang, min(avail, self.router.window_sec)
 
     # 0.5초 창 정확도가 whisper-base 기준 82.5% 다. 그보다 짧은 조각의 판정은
@@ -322,9 +345,9 @@ class VerdictTracker:
             # 다만 라우팅 표에 없는 언어로 나왔으면 잠그지 않는다 — 한국어 발화가
             # 0.5초 만에 zh 로 확정돼 그대로 굳는 일이 실제로 있었다. 그런 값은
             # 더 들으면 바뀔 여지를 남긴다.
+            known = self.allowed or self.router.known_langs
             locked = (used is not None and used < self.router.window_sec
-                      and (not self.router.known_langs
-                           or lang in self.router.known_langs))
+                      and (not known or lang in known))
             if existing is None:
                 self.verdicts.append([start, end if closed else None, lang, locked])
                 logger.debug(f"[verdict] {start:.1f}s {lang} ({used:.2f}s 듣고"

@@ -54,6 +54,8 @@ from websockets.http11 import Response
 ROOT = pathlib.Path(__file__).resolve().parent / "web"
 ROUTES: dict[str, str] = {}
 DUAL = False          # --dual. 모든 서버에 보내고 발화마다 고른다.
+REST_UPSTREAM = None  # --rest. 라우팅 표에 없는 언어를 맡는 서버(보통 베이스라인).
+REST_KEY = "*"        # 그 서버를 가리키는 이름
 TRANSLATE_URL = None  # --translate-url. 번역 방향을 바로잡을 때 쓴다.
 DEFAULT_UPSTREAM = "ws://127.0.0.1:8766"
 PORT = 8080
@@ -253,30 +255,48 @@ async def run_dual(client, start_raw, pending_binary):
     """
     from lid_router import VerdictTracker
 
-    langs = list(ROUTES)                       # 예: ["ko", "en"]
+    # 붙을 서버들. 언어 코드로 된 것들에 더해, --rest 가 있으면 "*" 로 하나 더.
+    servers = dict(ROUTES)
+    if REST_UPSTREAM:
+        servers[REST_KEY] = REST_UPSTREAM
+    langs = list(servers)
     primary = langs[0]
-    # 기본 서버가 맡은 언어. 판정이 표에 없는 언어로 나왔을 때 이쪽으로 돌린다.
-    fallback = next((l for l in langs if ROUTES[l] == DEFAULT_UPSTREAM), primary)
+    # 판정이 아무 데도 안 맞을 때. rest 가 있으면 그쪽, 없으면 기본 서버의 언어.
+    fallback = REST_KEY if REST_UPSTREAM else next(
+        (l for l in ROUTES if ROUTES[l] == DEFAULT_UPSTREAM), primary)
+
+    def route_of(verdict):
+        """판정 언어를 붙을 서버 이름으로 바꾼다."""
+        if verdict is None:
+            return None
+        if verdict in ROUTES:
+            return verdict
+        return fallback
     try:
         _start = json.loads(start_raw)
     except Exception:
         _start = {}
     lang_map = _start.get("langMap") if isinstance(_start.get("langMap"), dict) else {}
     target_lang = _start.get("targetLang") or ""
-    tracker = VerdictTracker(LID)
+    # 웹이 고른 소스 언어로 LID 후보를 좁힌다. langMap 이 없으면 start.lang 을 쓰고,
+    # 그것도 auto 면 라우팅 표 전체를 후보로 둔다.
+    allowed = set(lang_map) or {c for c in [_start.get("lang")] if c and c != "auto"}
+    allowed |= set(ROUTES)          # 서버가 있는 언어는 언제나 후보에 남긴다
+    tracker = VerdictTracker(LID, allowed=allowed)
     for chunk in pending_binary:
         tracker.feed(chunk)
 
     ups = {}
     try:
         for lang in langs:
-            ups[lang] = await websockets.connect(ROUTES[lang], ping_interval=None,
+            ups[lang] = await websockets.connect(servers[lang], ping_interval=None,
                                                  max_size=None)
             await ups[lang].recv()             # 위쪽 hello 는 프록시가 이미 보냈다
             await ups[lang].send(start_raw)
             for chunk in pending_binary:
                 await ups[lang].send(chunk)
-        print(f"dual -> {', '.join(f'{k}:{ROUTES[k]}' for k in langs)}", flush=True)
+        print(f"dual -> {', '.join(f'{k}:{servers[k]}' for k in langs)} "
+              f"| LID 후보 {sorted(allowed)}", flush=True)
 
         async def pump_client():
             async for msg in client:
@@ -311,22 +331,22 @@ async def run_dual(client, start_raw, pending_binary):
                 if kind == "final":
                     waited = await wait_for_verdict(tracker, b)
                     span = (group_start, b)
-                    pick = tracker.lang_for_range(*span)
-                    # ko/en 두 대만 띄워 두었는데 판정이 zh·ja 로 나오는 일이 있다.
-                    # 그대로 두면 어느 서버도 안 맞아 발화가 통째로 사라진다.
-                    if pick is not None and pick not in ROUTES:
-                        pick = fallback
+                    # 판정 언어를 서버 이름으로 바꾼다. ko/en 밖의 언어는 --rest
+                    # (베이스라인) 로 간다. 그대로 두면 어느 서버도 안 맞아 발화가
+                    # 통째로 사라진다.
+                    pick = route_of(tracker.lang_for_range(*span))
                     if waited > 0.05:
                         print(f"wait {waited:.2f}s for end={b} ({lang})", flush=True)
                     if b is not None and b > group_start:
                         # 같은 경계에서 여러 final 이 나오면 같은 구간을 공유한다.
                         group_start = b
                 else:
-                    pick = tracker.lang_at(None)
+                    pick = route_of(tracker.lang_at(None))
                 if pick == lang:
                     if kind == "final":
+                        verdict_lang = tracker.lang_for_range(*span)
                         data, fixed = await fix_direction(
-                            data, pick, lang_map, target_lang)
+                            data, verdict_lang, lang_map, target_lang)
                         if fixed:
                             print(f"fix dir end={b} {lang}: "
                                   f"{(data.get('original') or '')[:30]!r} -> "
@@ -435,7 +455,9 @@ async def main():
     print(f"serving {ROOT} on http://0.0.0.0:{PORT}", flush=True)
     for lang, target in ROUTES.items():
         print(f"  {lang} -> {target}", flush=True)
-    print(f"  그 밖 -> {DEFAULT_UPSTREAM}", flush=True)
+    if REST_UPSTREAM:
+        print(f"  그 밖 언어 -> {REST_UPSTREAM} (베이스라인)", flush=True)
+    print(f"  판정 실패 -> {DEFAULT_UPSTREAM}", flush=True)
     if LID is not None:
         mode = "양쪽 동시 전송 후 발화별 선택" if DUAL else "스트림당 1회 라우팅"
         print(f"  음성 판정: {LID.model_name}, 창 {LID.window_sec}s — {mode}", flush=True)
@@ -453,6 +475,10 @@ if __name__ == "__main__":
                     help="언어별 ASR 서버. 예: ko=8766,en=8767")
     ap.add_argument("--default", dest="default_upstream", default="8766",
                     help="라우팅 표에 없을 때 쓸 서버 (포트 또는 ws:// 주소)")
+    ap.add_argument("--rest", default=None,
+                    help="라우팅 표에 없는 언어를 맡을 서버 (포트 또는 ws:// 주소). "
+                         "파인튜닝 모델은 자기 언어 밖에서 언어 태그부터 틀리므로, "
+                         "스페인어 같은 제3언어는 베이스라인으로 보낸다")
     ap.add_argument("--lid", action="store_true",
                     help="start.lang 대신 음성으로 언어를 판정해 라우팅한다")
     ap.add_argument("--dual", action="store_true",
@@ -478,6 +504,9 @@ if __name__ == "__main__":
     ROUTES = parse_routes(args.route)
     DEFAULT_UPSTREAM = (args.default_upstream if "://" in args.default_upstream
                         else f"ws://127.0.0.1:{args.default_upstream}")
+    if args.rest:
+        REST_UPSTREAM = (args.rest if "://" in args.rest
+                         else f"ws://127.0.0.1:{args.rest}")
 
     DUAL = args.dual
     TRANSLATE_URL = args.translate_url

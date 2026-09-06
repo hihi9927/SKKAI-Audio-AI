@@ -198,6 +198,33 @@ there. And a verdict outside the route table must fall back to the default serve
 nothing: `zh` matched neither the ko nor the en upstream, so both copies were dropped and the utterance
 vanished from the transcript entirely.
 
+**Narrow what the LID may answer, but not how its confidence is measured.** Restricting the argmax to the
+source languages the client actually selected (`start.langMap` keys, union the route table) removes the
+answers nothing can serve — leaking Korean to `zh` or `tr` was 7 of the 12 errors. On the 166 clips that lifts
+the staged rule from 92.8% to **97.0%** at the same median 0.70s of audio, and every remaining error is a
+ko↔en confusion. What must *not* change is the confidence scale: re-softmaxing inside the narrowed set
+concentrates the probabilities, so the same threshold means different things as the pool shrinks — at a 0.5s
+window and a 0.8 threshold the surviving subset scored 100% over all languages, 97.1% over five, 95.5% over
+just ko and en. Taking the argmax within the allowed set while reading its probability off the *full*
+distribution keeps `EARLY_STEPS` calibrated no matter how many languages the client picked.
+
+**A third server for everything else.** The finetunes mislabel languages they were not tuned for — Spanish
+comes back tagged `ko` — so `--rest` points at a baseline Qwen3-ASR that takes any verdict outside the route
+table:
+
+```bash
+python tools/partial_demo/demo_proxy.py 8080 \
+  --route ko=8766,en=8767 --default 8766 --rest 8768 --dual
+```
+
+Three ASR servers fit on the 24GiB card only if the translator shrinks. Measured: ko 6214MiB + en 6214MiB +
+baseline 6830MiB + whisper-base 656MiB leaves no room for madlad400-3b's 7304MiB — the total overshoots by
+213MiB, and dropping every server to `--gpu-memory-utilization 0.21` to compensate fails outright with
+`Available KV cache memory: -0.05 GiB` (KV reaches zero at about 0.213, so 0.23 is the practical floor).
+Running the translation server on `facebook/nllb-200-distilled-600M` instead costs 1570MiB and the whole set
+lands at **21624 / 24564 MiB**. That trade is a memory decision, not a quality one: the repo's own CometKiwi
+numbers are 0.8712 for Google and 0.8554 for madlad-3b, and NLLB-600M has never been measured here.
+
 `--vad-min-silence` sets how much silence ends an utterance (default 800ms). Measured against 400ms on the
 same audio: English segmentation identical (13), Korean **less** fragmented at 400 (16 → 14), latency within
 0.05s either way, and en→ko chrF/BLEU identical at 34.0/13.9. Nothing recommends the change, so 800 stands.
