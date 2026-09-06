@@ -1,9 +1,9 @@
 # coding=utf-8
 """ASR 교정 + 번역을 단일 GPT API 호출로 처리하는 모듈.
 
-프롬프트 설계는 core/meaning_segmentator/utils/gpt_trans.py의
-SEG_SYSTEM_PROMPT / SEG_CONTEXT_SYSTEM_PROMPT를 기반으로,
-멀티언어 지원 + ASR 교정 스텝을 추가한 형태.
+프롬프트는 두 벌이다 — 첫 세그먼트용(컨텍스트 없음)과 이어지는 세그먼트용(앞 조각의
+원문·번역을 컨텍스트로 받음). 조각을 독립 번역하면 용어와 문체가 조각마다 흔들리므로,
+확정된 앞부분을 보여 주고 그에 맞추게 한다.
 """
 
 import asyncio
@@ -22,7 +22,7 @@ _LANG_CODE_TO_NAME: dict[str, str] = {
     "ti": "Tibetan",
 }
 
-# gpt_trans.py SEG_SYSTEM_PROMPT 기반 — 컨텍스트 없을 때 (첫 세그먼트)
+# 컨텍스트 없을 때 (첫 세그먼트)
 _SYSTEM_PROMPT_NO_CONTEXT = """\
 You are an expert ASR corrector and spoken-language translator specializing in conversational speech.
 Perform two steps and respond with JSON only.
@@ -45,7 +45,7 @@ Step 3 — Detect the source language (output as "detected_lang"):
 JSON format: {{"corrected": "<corrected original>", "translation": "<{target_name} translation>", "detected_lang": "<ISO 639-1 code>"}}\
 """
 
-# gpt_trans.py SEG_CONTEXT_SYSTEM_PROMPT 기반 — 이전 세그먼트 컨텍스트 있을 때
+# 이전 세그먼트 컨텍스트 있을 때
 _SYSTEM_PROMPT_WITH_CONTEXT = """\
 You are an expert ASR corrector and spoken-language translator specializing in conversational speech.
 You will receive already-confirmed preceding segment translations as context, then a new segment to correct and translate.
@@ -80,7 +80,7 @@ class GPTTranslator:
     하나로 줄인다. JSON 응답으로 교정된 원문과 번역문을 함께 반환.
 
     context 파라미터로 이전 세그먼트의 (original, translation) 쌍을 넘기면
-    일관된 용어·문체로 번역한다 (gpt_trans.py SEG_CONTEXT_SYSTEM_PROMPT 방식).
+    일관된 용어·문체로 번역한다 (컨텍스트용 프롬프트로 전환된다).
 
     Usage:
         translator = GPTTranslator(model="gpt-5.4-mini")

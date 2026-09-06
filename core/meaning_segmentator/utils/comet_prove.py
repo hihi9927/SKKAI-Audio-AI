@@ -1,5 +1,16 @@
-"""
-seg 단위 번역 vs 전체 번역 COMET 비교 스크립트
+"""분절이 번역을 흔들었는지 본다 — **참조 없는 자기일관성 점검**.
+
+`autoseg/scoring/comet_eval.py` 와 헷갈리지 말 것. 이름이 같아 혼동돼서 갈랐다.
+
+|  | 이 스크립트 | `autoseg/scoring/comet_eval.py` |
+|---|---|---|
+| reference | **같은 번역기의 무분절 번역** (`*_full_trans`) | 골드 참조 (FLEURS/CoVoST2 매니페스트) |
+| 재는 것 | 잘라 번역한 게 통째로 번역한 것과 같은가 | 정답 대비 번역 품질 |
+| 번역 | 필드가 없으면 직접 번역한다 (deep_translator) | 안 한다 (`bleu_eval` 산출 재사용) |
+
+참조가 기계 번역이므로 점수가 높아도 "번역이 정확하다"가 아니라 "분절이 결과를 안
+흔들었다"는 뜻이다. 무분절 번역이 틀렸으면 그 틀림까지 정답으로 친다 — 논문 수치로
+쓰지 말고, 라벨링 데이터 품질 점검에만 쓸 것.
 
 - reference : --field 접두어에 맞는 full 번역 필드 (gdt_full_trans / gpt_full_trans)
 - hypothesis: --field 로 지정한 번역 필드 (기본: gdt_seg_trans)
