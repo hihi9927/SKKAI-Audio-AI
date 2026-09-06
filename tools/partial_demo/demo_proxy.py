@@ -265,6 +265,32 @@ async def run_dual(client, start_raw, pending_binary):
     fallback = REST_KEY if REST_UPSTREAM else next(
         (l for l in ROUTES if ROUTES[l] == DEFAULT_UPSTREAM), primary)
 
+    def narrow(msg_obj, server):
+        """서버마다 자기가 맡은 언어만 담은 start/config 를 만든다.
+
+        **서버는 langMap 의 키로 ASR 허용 언어(로짓 바이어스)를 정한다.** 웹에서
+        ko·en·es 를 고르면 세 서버가 모두 셋을 허용받아, 맡지도 않은 언어를 답으로
+        낼 수 있다. 실제로 베이스라인이 스페인어 'Me llamo Daniel' 을 ko 로 보고
+        '메야모 다니엘.' 이라고 한글로 받아썼다. 원문과 번역이 같은 한글이 되어
+        화면에는 같은 줄이 두 번 뜬다.
+
+        ko 서버에는 ko 만, en 서버에는 en 만, --rest 에는 그 밖 언어만 남겨
+        보낸다. 남길 게 없으면(예: 웹에서 ko·en 만 골랐는데 --rest 몫이 없음)
+        원본을 그대로 보낸다 — 빈 langMap 을 주면 제한이 아예 풀린다.
+        """
+        lm = msg_obj.get("langMap")
+        if not isinstance(lm, dict) or not lm:
+            return None
+        if server == REST_KEY:
+            keys = [k for k in lm if k not in ROUTES]
+        else:
+            keys = [k for k in lm if k == server]
+        if not keys or len(keys) == len(lm):
+            return None
+        out = dict(msg_obj)
+        out["langMap"] = {k: lm[k] for k in keys}
+        return json.dumps(out, ensure_ascii=False)
+
     def route_of(verdict):
         """판정 언어를 붙을 서버 이름으로 바꾼다."""
         if verdict is None:
@@ -297,7 +323,7 @@ async def run_dual(client, start_raw, pending_binary):
             ups[lang] = await websockets.connect(servers[lang], ping_interval=None,
                                                  max_size=None)
             await ups[lang].recv()             # 위쪽 hello 는 프록시가 이미 보냈다
-            await ups[lang].send(start_raw)
+            await ups[lang].send(narrow(_start, lang) or start_raw)
             for chunk in pending_binary:
                 await ups[lang].send(chunk)
         print(f"dual -> {', '.join(f'{k}:{servers[k]}' for k in langs)} "
@@ -306,6 +332,7 @@ async def run_dual(client, start_raw, pending_binary):
         async def pump_client():
             nonlocal lang_map, target_lang
             async for msg in client:
+                data = None
                 if isinstance(msg, (bytes, bytearray)):
                     tracker.feed(bytes(msg))
                     await tracker.update()
@@ -329,8 +356,13 @@ async def run_dual(client, start_raw, pending_binary):
                             print(f"config: LID 후보 {sorted(tracker.allowed)} -> "
                                   f"{sorted(new_allowed)}", flush=True)
                             tracker.allowed = new_allowed
-                for up in ups.values():
-                    await up.send(msg)
+                for _lang, up in ups.items():
+                    if (not isinstance(msg, (bytes, bytearray))
+                            and isinstance(data, dict)
+                            and data.get("type") in ("start", "config")):
+                        await up.send(narrow(data, _lang) or msg)
+                    else:
+                        await up.send(msg)
 
         async def pump_upstream(lang):
             # 이 서버가 마지막으로 확정한 오디오 지점. 다음 final 의 시작점으로 쓴다 —

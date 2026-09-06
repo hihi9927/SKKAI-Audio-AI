@@ -255,6 +255,21 @@ at 1s and 99.1% at 2s against base's 96.9% / 98.7%, costing 884MiB instead of 65
 latency change (the 30s padding dominates either way). The native-speech gain is small; the reason to prefer
 it is accent robustness, which these clips cannot show.
 
+**Narrow each upstream to the language it actually serves.** The ASR server turns `langMap`'s keys into a
+`-100` logit bias on every other language name, so whatever the client selects, *every* server is allowed to
+answer with it. With ko/en/es selected the baseline answered `ko` for spoken Spanish and wrote
+`메야모 다니엘.` in Hangul — and because the proxy then re-translated that Hangul into Korean, the original
+and the translation were the same string and the line appeared twice on screen. The proxy now rewrites
+`start` and `config` per upstream: `{ko: en}` to the ko server, `{en: ko}` to the en server, and everything
+outside the route table to `--rest`. A single allowed language makes the bias equivalent to forcing.
+
+Equivalent, but not identical — `force_language` writes `language X<asr_text>` into the prompt and skips
+detection entirely, while the bias still lets the model choose within what is left. The two coincide only
+while each server ends up with exactly one language; select two non-ko/en sources and the baseline is back to
+guessing between them. Forcing per utterance would need the verdict to reach the server, and forcing alone
+would not be enough anyway: the slot's accumulated text stays in the prefix, so the model would be told to
+continue an English sentence in Spanish. The slot has to be cut at the same time.
+
 `--vad-min-silence` sets how much silence ends an utterance (default 800ms). Measured against 400ms on the
 same audio: English segmentation identical (13), Korean **less** fragmented at 400 (16 → 14), latency within
 0.05s either way, and en→ko chrF/BLEU identical at 34.0/13.9. Nothing recommends the change, so 800 stands.
