@@ -2,12 +2,9 @@
 import asyncio
 import os
 import re
-from dataclasses import replace
 from typing import Optional
 
 from openai import AsyncOpenAI
-
-from ..types import CommittedSentence
 
 
 _SYSTEM_PROMPT_KO = """\
@@ -60,8 +57,7 @@ _SYSTEM_PROMPTS: dict[str, str] = {
 class GPTCorrector:
     """ASR 전사 결과를 GPT API로 후보정하는 모듈.
 
-    파이프라인에서 CommitPolicy → StabilityFilter 사이에 위치.
-    CommittedSentence를 받아 text만 교정한 새 CommittedSentence를 반환.
+    서버는 correct_text() 로 문자열을 직접 넘긴다.
     """
 
     def __init__(
@@ -79,16 +75,6 @@ class GPTCorrector:
         self._client = AsyncOpenAI(api_key=key)
         self._model = model
         self._max_retries = max_retries
-
-    async def correct(self, sentence: CommittedSentence) -> CommittedSentence:
-        """CommittedSentence를 받아 텍스트만 후보정한 CommittedSentence를 반환.
-
-        텍스트가 변경되지 않았으면 동일 객체를 그대로 반환.
-        """
-        corrected = await self._call_api(sentence.text, sentence.language)
-        if corrected == sentence.text:
-            return sentence
-        return replace(sentence, text=corrected)
 
     async def correct_text(self, text: str, language: str = "ko") -> str:
         """텍스트 문자열을 직접 받아 후보정된 텍스트를 반환 (단독 사용용)."""
