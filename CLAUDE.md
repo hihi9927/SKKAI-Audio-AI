@@ -270,6 +270,21 @@ guessing between them. Forcing per utterance would need the verdict to reach the
 would not be enough anyway: the slot's accumulated text stays in the prefix, so the model would be told to
 continue an English sentence in Spanish. The slot has to be cut at the same time.
 
+`--lang-hint` does exactly that, and is **off by default** because the trade is not one-sided. The proxy
+sends `{"type": "lang_hint", "lang": "es", "fromSec": 13.1}` to whichever upstream owns a new verdict;
+`_apply_lang_hint` sets `forced_language`, cuts the active slot so the previous language leaves the prefix,
+and moves the audio from `fromSec` into the fresh slot. **Move `state.buffer` too, not just
+`state.audio_accum`** — the accumulator only holds audio already consumed into chunks, and right after a
+verdict it is routinely empty while the whole utterance sits in the buffer. Carrying only the accumulator
+turned `Esto parece tener sentido…` into `de tener sentido…`.
+
+Measured against the same ko/en/es stream, forcing wins on some segments and loses on others: `아우랜더` became
+`아 우린 또` (what was actually said) and a sentence stopped being split in two, but the short backchannels
+`어.` / `그지.` collapsed into `아니,` and two junk fragments appeared. The cause is structural — the server
+applies `if state.allowed_languages and not state.force_language`, so forcing *replaces* the logit bias
+rather than adding to it, and the output format changes (text only, no `language X` prefix), which shifts the
+commit logic. Worth enabling for languages outside the finetunes; not yet worth it for ko/en.
+
 `--vad-min-silence` sets how much silence ends an utterance (default 800ms). Measured against 400ms on the
 same audio: English segmentation identical (13), Korean **less** fragmented at 400 (16 → 14), latency within
 0.05s either way, and en→ko chrF/BLEU identical at 34.0/13.9. Nothing recommends the change, so 800 stands.

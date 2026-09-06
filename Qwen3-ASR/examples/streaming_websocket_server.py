@@ -687,6 +687,12 @@ class Qwen3ASRStreamingHandler:
         # 감지 언어별 번역 목표. 비어 있으면 기존 "내 언어 <-> 상대 언어" 쌍으로 돈다.
         self.client_lang_map: dict[str, str] = {}
 
+        # 밖에서 지정한 디코딩 언어(정규 이름, 예: "Spanish"). lang_hint 로 들어온다.
+        # 파인튜닝 모델은 자기 언어 밖에서 언어 태그부터 틀린다 — 베이스라인이
+        # 스페인어를 ko 로 보고 한글로 받아쓰는 식이다. 오디오를 보고 판정한 쪽이
+        # 있으면 그 값으로 못박는 편이 낫다.
+        self.forced_language: Optional[str] = None
+
         # 타임스탬프 추적
         self.segment_start_time = 0.0
         self.current_time = 0.0
@@ -823,11 +829,15 @@ class Qwen3ASRStreamingHandler:
             if langs:
                 allowed_languages = langs
 
+        # lang_hint 가 있으면 프롬프트에 "language X<asr_text>" 로 박아 디코딩
+        # 언어를 못박는다. 이때 allowed_languages 의 로짓 바이어스는 적용되지
+        # 않는다(둘 중 하나만 걸린다).
         state = self.asr.init_streaming_state(
             unfixed_chunk_num=self.config.unfixed_chunk_num,
             unfixed_token_num=self.config.unfixed_token_num,
             chunk_size_sec=self.config.chunk_size_sec,
             allowed_languages=allowed_languages,
+            language=self.forced_language,
             context=context,
         )
         # [Fix 2] SEG 커밋 후 remaining 텍스트를 새 슬롯에 이식:
@@ -854,6 +864,60 @@ class Qwen3ASRStreamingHandler:
 
     def _reset_stream_slot(self, slot_key: str, seed_text: str = "", context: str = ""):
         self.stream_slots[slot_key] = self._new_stream_slot(seed_text=seed_text, context=context)
+
+    async def _apply_lang_hint(self, code: Optional[str],
+                               from_sec: Optional[float] = None) -> None:
+        """밖에서 판정한 언어로 디코딩 언어를 못박고, 활성 슬롯을 잘라 낸다.
+
+        **못박기만 해서는 모자란다.** force_language 를 바꿔도 슬롯의 누적 텍스트가
+        프롬프트 프리픽스에 그대로 남아, 모델은 "앞 언어로 쓰인 문장을 이어 쓰되
+        새 언어로" 라는 모순된 지시를 받는다. 그래서 슬롯을 새로 만들어 프리픽스를
+        비운다.
+
+        `from_sec` 는 새 언어 발화가 시작된 오디오 시각이다. 그 지점부터의 오디오를
+        새 슬롯에 옮겨 담는다. 안 옮기면 판정이 서기까지의 앞부분(보통 0.5~1초)이
+        통째로 날아가고, 뒤따르는 VAD 도 침묵 구간을 잃어 발화 끝을 못 잡는다 —
+        SEG 커밋 경로가 carry_audio 로 같은 문제를 피하고 있다.
+        """
+        name = lang_code_to_name(code) if code else None
+        if not name or name == self.forced_language:
+            return
+        prev = self.forced_language
+        self.forced_language = name
+
+        slot_key = self.active_slot
+        old_state = self._slot(slot_key)["state"]
+        anchor = self._slot(slot_key)["audio_anchor_sec"]
+        accum = old_state.audio_accum
+        # **buffer 도 같이 옮겨야 한다.** audio_accum 은 청크로 소비된 오디오만
+        # 담고, 아직 한 청크를 못 채운 꼬리는 buffer 에 있다. accum 만 보고
+        # 자르면 그 꼬리가 통째로 날아간다 — 판정 직후라 accum 이 아예 비어
+        # 있는 일도 흔해서, 실제로 발화 앞부분('Esto parece')이 사라졌다.
+        tail = old_state.buffer
+        carry = None
+        if accum is not None and accum.shape[0] > 0:
+            offset = 0
+            if from_sec is not None:
+                offset = int(max(0.0, float(from_sec) - anchor) * SAMPLING_RATE)
+            if offset < accum.shape[0]:
+                carry = accum[offset:].copy()
+
+        self._reset_stream_slot(slot_key)
+        new_slot = self._slot(slot_key)
+        if carry is not None and carry.shape[0] > 0:
+            new_slot["state"].audio_accum = carry
+            new_slot["audio_anchor_sec"] = (
+                float(from_sec) if from_sec is not None else anchor)
+        if tail is not None and tail.shape[0] > 0:
+            new_slot["state"].buffer = tail.copy()
+        if slot_key == self.active_slot:
+            self.state = new_slot["state"]
+        self.log.info(
+            f"[LANG-HINT] slot={slot_key} {prev or '-'} -> {name} "
+            f"from={from_sec} "
+            f"carry={0 if carry is None else round(carry.shape[0] / SAMPLING_RATE, 2)}s "
+            f"tail={0 if tail is None else round(tail.shape[0] / SAMPLING_RATE, 2)}s"
+        )
 
     def _slot(self, slot_key: Optional[str] = None) -> dict:
         key = slot_key or self.active_slot
@@ -2670,6 +2734,9 @@ class Qwen3ASRStreamingHandler:
                                 "ready", message="Ready to receive audio"
                             )
 
+                        elif msg_type == "lang_hint":
+                            await self._apply_lang_hint(
+                                data.get("lang"), data.get("fromSec"))
                         elif msg_type == "config":
                             # 시연 중 번역 방향을 바꾼다. 스트림은 그대로 둔다 —
                             # 다음에 확정되는 문장부터 새 설정으로 번역된다.

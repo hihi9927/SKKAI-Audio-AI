@@ -57,6 +57,7 @@ DUAL = False          # --dual. 모든 서버에 보내고 발화마다 고른�
 REST_UPSTREAM = None  # --rest. 라우팅 표에 없는 언어를 맡는 서버(보통 베이스라인).
 REST_KEY = "*"        # 그 서버를 가리키는 이름
 TRANSLATE_URL = None  # --translate-url. 번역 방향을 바로잡을 때 쓴다.
+LANG_HINT = False     # --lang-hint. 판정 언어를 서버에 알려 디코딩을 못박는다.
 DEFAULT_UPSTREAM = "ws://127.0.0.1:8766"
 PORT = 8080
 LID = None            # LidRouter. --lid 를 켰을 때만 채워진다.
@@ -329,6 +330,31 @@ async def run_dual(client, start_raw, pending_binary):
         print(f"dual -> {', '.join(f'{k}:{servers[k]}' for k in langs)} "
               f"| LID 후보 {sorted(allowed)}", flush=True)
 
+        # 서버에 이미 알린 판정. 같은 구간을 두 번 알리지 않으려고 들고 있는다.
+        hinted: dict = {}
+
+        async def push_hints():
+            """새로 선 판정을 담당 서버에 알린다.
+
+            **모델을 고르는 것만으로는 모자란다.** 베이스라인이 스페인어를 ko 로 보고
+            한글로 받아쓰는 것처럼, 담당 서버가 스스로 언어를 틀릴 수 있다. 판정은
+            오디오를 보고 낸 값이므로 그걸로 못박게 한다. 구간 시작 시각을 같이 보내
+            서버가 그 지점부터의 오디오를 새 슬롯에 옮겨 담게 한다.
+            """
+            for v in tracker.verdicts:
+                key = round(v[0], 1)
+                if hinted.get(key) == v[2]:
+                    continue
+                target = route_of(v[2])
+                if target is None or target not in ups:
+                    continue
+                hinted[key] = v[2]
+                try:
+                    await ups[target].send(json.dumps(
+                        {"type": "lang_hint", "lang": v[2], "fromSec": v[0]}))
+                except Exception as e:
+                    print(f"lang_hint 실패: {e!r}", flush=True)
+
         async def pump_client():
             nonlocal lang_map, target_lang
             async for msg in client:
@@ -336,6 +362,8 @@ async def run_dual(client, start_raw, pending_binary):
                 if isinstance(msg, (bytes, bytearray)):
                     tracker.feed(bytes(msg))
                     await tracker.update()
+                    if LANG_HINT:
+                        await push_hints()
                 else:
                     # **흐르는 중에 언어를 바꾸면 LID 후보도 따라가야 한다.**
                     # 서버는 config 를 받아 로짓 바이어스를 갈지만(다음 슬롯부터),
@@ -522,6 +550,9 @@ async def main():
         print(f"  음성 판정: {LID.model_name}, 창 {LID.window_sec}s — {mode}", flush=True)
     if TRANSLATE_URL:
         print(f"  번역 방향 교정: {TRANSLATE_URL}", flush=True)
+    if LANG_HINT:
+        print("  판정 언어를 서버에 통보(lang_hint) — 디코딩 언어 고정 + 슬롯 자르기",
+              flush=True)
     async with serve(handler, "0.0.0.0", PORT, process_request=process_request,
                      ping_interval=None, max_size=None):
         await asyncio.Future()
@@ -550,6 +581,9 @@ if __name__ == "__main__":
     ap.add_argument("--lid-max-wait", type=float, default=5.0,
                     help="이만큼 들어도 판정이 안 서면 start.lang 규칙으로 되돌아간다")
     ap.add_argument("--lid-device", default="cuda")
+    ap.add_argument("--lang-hint", action="store_true",
+                    help="판정 언어를 lang_hint 로 서버에 보내 디코딩 언어를 못박고 "
+                         "슬롯을 자르게 한다. 서버가 이 메시지를 알아야 한다")
     ap.add_argument("--translate-url", default=None,
                     help="단독 번역 서버 주소(예: http://127.0.0.1:8770). 주면 ASR "
                          "서버가 언어를 잘못 신고해 번역 방향이 뒤집힌 final 을 "
@@ -569,6 +603,7 @@ if __name__ == "__main__":
 
     DUAL = args.dual
     TRANSLATE_URL = args.translate_url
+    LANG_HINT = args.lang_hint
     if args.lid or args.dual:
         sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
         from lid_router import LidRouter
