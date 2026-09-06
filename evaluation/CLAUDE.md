@@ -25,6 +25,24 @@ python evaluation/{Dataset}/test_qwen3_{dataset}.py \
 
 LibriSpeech만 클라이언트가 `servers/` 아래에 있다 (`servers/test_qwen3_librispeech.py`). 나머지는 데이터셋 디렉토리 바로 아래.
 
+## 클라이언트는 어댑터다 — 공통 로직은 `harness/`
+
+서버 기동·프로토콜 스모크·청크 전송·final 수집·커밋 통계·결과 저장·resume 은 전부
+@harness/ 에 있다. 데이터셋 클라이언트가 하는 일은 셋뿐이다.
+
+| 넘기는 것 | 무엇 |
+|---|---|
+| `files` | `[{file_id, path, reference, speaker_id?}, ...]` — 목록 만드는 방법만 데이터셋마다 다르다 |
+| `load_audio` | `harness.audio.load_soundfile`(flac/wav) 또는 `load_raw_pcm`(헤더 없는 PCM) |
+| `score_fn` | `harness.scoring.calculate_wer`(영어) 또는 `calculate_cer`(한국어) |
+
+`group_key` 로 연결을 언제 새로 맺을지도 고른다. LibriSpeech 는 챕터 단위, DailyTalk 은
+대화 단위로 연결을 유지하고, KsponSpeech 는 클립마다 새로 맺는다(무관한 클립이라 앞
+발화의 문맥이 넘어오면 오염이다).
+
+새 데이터셋을 붙이려면 `find_audio_files` 를 쓰고 `cli.build_parser` + `cli.run` 을
+부르면 된다 — 클라이언트 하나가 100~140줄이다.
+
 ## 데이터셋별 디렉토리
 
 | 디렉토리 | 언어 | 주요 메트릭 | 특이사항 |
