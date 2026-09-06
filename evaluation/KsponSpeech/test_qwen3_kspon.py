@@ -38,8 +38,8 @@ STiTy_ROOT = SCRIPT_DIR.parent.parent
 MODEL_MAP = {
     "baseline":         "Qwen/Qwen3-ASR-1.7B",
     "baseline(1.0.0)":  "Qwen/Qwen3-ASR-1.7B",
-    "finetuned":         str(STiTy_ROOT / "Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged"),
-    "finetuned(1.0.1)":  str(STiTy_ROOT / "Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged"),
+    "finetuned":         str(STiTy_ROOT / "models/Qwen3-ASR-1.7B-en-dailytalk-seg"),
+    "finetuned(1.0.1)":  str(STiTy_ROOT / "models/Qwen3-ASR-1.7B-en-dailytalk-seg"),
 }
 
 DEFAULT_DATA_JSON   = SCRIPT_DIR / "transcribe" / "eval_clean_1000.json"

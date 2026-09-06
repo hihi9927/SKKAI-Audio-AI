@@ -88,10 +88,10 @@ python evaluation/streaming_websocket_server_ast.py \
   --log-file "evaluation/LibriSpeech/results/finetuned(1.0.1)/sample/run_01/logs/server.log"
 ```
 
-> **파인튜닝 가중치 경로:** 현재 저장소의 가중치는 `models/Qwen3-ASR-1.7B-en-silence-c80-merged`(영어)와
-> `models/Qwen3-ASR-1.7B-ko-silence-v4c900-merged`(한국어)입니다.
-> 테스트 스크립트의 `--model "finetuned(1.0.1)"` 별칭은 아직 존재하지 않는 예전 경로
-> (`Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged`)로 매핑되어 있으므로, 서버에는 위처럼 실제 경로를 직접 넘기세요.
+> **파인튜닝 가중치 경로:** 현재 저장소의 가중치는 `models/Qwen3-ASR-1.7B-en-silence-c80-merged`(영어),
+> `models/Qwen3-ASR-1.7B-ko-silence-v4c900-merged`(한국어), `models/Qwen3-ASR-1.7B-en-dailytalk-seg`(영어, DailyTalk SEG) 셋입니다.
+> 테스트 스크립트의 `--model "finetuned(1.0.1)"` 별칭은 `models/Qwen3-ASR-1.7B-en-dailytalk-seg` 로 매핑됩니다 —
+> 다른 가중치로 서버를 띄우려면 위처럼 실제 경로를 직접 넘기세요.
 
 > **`--log-file` 경로 규칙:** `evaluation/{Dataset}/results/{model}/{scope}/{tag}/logs/server.log`  
 > 서버를 먼저 시작하고, 테스트 스크립트에서 동일한 `--model`, `--scope`, `--tag` 조합을 사용하면 같은 폴더에 결과가 모입니다.  

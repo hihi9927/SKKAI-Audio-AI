@@ -7,8 +7,8 @@ upstream(QwenLM/Qwen3-ASR) 코드를 STiTy 리포가 **직접 추적**한다. gi
 - **프로덕션 서버**: `examples/streaming_websocket_server.py` — 모바일 앱이 연결하는 WebSocket 서버
 - **평가 서버**: `evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py`가 이 파일을 래핑하고,
   실제로 띄우는 것은 그것을 다시 상속한 `evaluation/streaming_websocket_server_ast.py` 다
-- **파인튜닝**: `finetuning/qwen3_asr_sft.py` (SFT) + `finetuning/utils/` (병합). 병합된 가중치는 여기 두지 않고 리포 루트 `models/`에 있다 — `models/Qwen3-ASR-1.7B-{en,ko}-silence-*-merged`.
-  평가 스크립트의 `finetuned` 별칭은 아직 `finetuning/Qwen3-ASR-1.7B-en-merged`(현재 없음)로 매핑되어 있으므로 서버에는 `--model models/...` 실제 경로를 직접 넘길 것.
+- **파인튜닝**: `finetuning/qwen3_asr_sft.py` (SFT) + `finetuning/utils/` (병합). 병합된 가중치는 여기 두지 않고 리포 루트 `models/`에 있다 — `models/Qwen3-ASR-1.7B-{en,ko}-silence-*-merged` 와 `models/Qwen3-ASR-1.7B-en-dailytalk-seg`.
+  평가 스크립트의 `finetuned` 별칭은 `models/Qwen3-ASR-1.7B-en-dailytalk-seg` 로 매핑된다. 다른 가중치를 쓰려면 서버에 `--model models/...` 실제 경로를 직접 넘길 것.
 
 ## upstream 동기화 규칙
 

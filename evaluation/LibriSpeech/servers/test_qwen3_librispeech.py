@@ -40,8 +40,8 @@ STiTy_ROOT = SCRIPT_DIR.parent.parent.parent  # STiTy 저장소 루트
 MODEL_MAP = {
     "baseline":        "Qwen/Qwen3-ASR-1.7B",
     "baseline(1.0.0)": "Qwen/Qwen3-ASR-1.7B",
-    "finetuned":        str(STiTy_ROOT / "Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged"),
-    "finetuned(1.0.1)": str(STiTy_ROOT / "Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged"),
+    "finetuned":        str(STiTy_ROOT / "models/Qwen3-ASR-1.7B-en-dailytalk-seg"),
+    "finetuned(1.0.1)": str(STiTy_ROOT / "models/Qwen3-ASR-1.7B-en-dailytalk-seg"),
 }
 DEFAULT_TEST_DIR = PROJECT_ROOT / "LibriSpeech" / "test-other"
 DEFAULT_OUTPUT = SCRIPT_DIR / "results" / "fsl" / "test" / "test_other_fsl_test.json"

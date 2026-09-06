@@ -341,7 +341,7 @@ React Native 0.81 + Expo 54 (managed), TypeScript strict. Path alias `@/*` → `
 
 - **Backend deps** (`Qwen3-ASR/pyproject.toml`): `transformers==4.57.6`, `accelerate`, `librosa`, `gradio`, `flask`; optional `vllm==0.14.0`. Eval extras in `evaluation/LibriSpeech/requirements.txt` (`websockets`, `jiwer`, …); `openai` is imported by `core/` but not pinned there.
 - **LLM model:** default `gpt-5.4-mini` in both `correct_and_trans.py` and `gpt_corrector.py`.
-- **Finetuned weights:** `models/Qwen3-ASR-1.7B-{en,ko}-silence-*-merged/` (eval scripts still reference the older `Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged` path, which is not present).
+- **Finetuned weights:** `models/Qwen3-ASR-1.7B-{en,ko}-silence-*-merged/` plus `models/Qwen3-ASR-1.7B-en-dailytalk-seg/`, which is what the eval scripts' `finetuned` / `finetuned(1.0.1)` aliases resolve to.
 
 ## WebSocket Message Protocol
 

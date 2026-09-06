@@ -189,14 +189,14 @@ python evaluation/streaming_websocket_server_ast.py \
 # 현재 저장소에는 어댑터가 없으므로 사용 전 경로부터 확인할 것.
 ```
 
-> **가중치 경로:** 저장소에 실제로 있는 병합 가중치는 `models/Qwen3-ASR-1.7B-en-silence-c80-merged`와
-> `models/Qwen3-ASR-1.7B-ko-silence-v4c900-merged` 두 개뿐이다.
-> 테스트 스크립트의 `finetuned` / `finetuned(1.0.1)` 별칭은 존재하지 않는 예전 경로
-> (`Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-merged`)를 가리키므로, 서버에는 항상 실제 경로를 직접 넘긴다.
+> **가중치 경로:** 저장소에 있는 가중치는 `models/Qwen3-ASR-1.7B-en-silence-c80-merged`,
+> `models/Qwen3-ASR-1.7B-ko-silence-v4c900-merged`, `models/Qwen3-ASR-1.7B-en-dailytalk-seg` 셋이다.
+> 테스트 스크립트의 `finetuned` / `finetuned(1.0.1)` 별칭은 `en-dailytalk-seg` 를 가리킨다 —
+> 다른 가중치로 돌리려면 서버에 실제 경로를 직접 넘긴다.
 
 태그를 지정하지 않은 경우 `--log-file` 생략.
 
-**Paper mode 서버 명령 (2-1에서 E/paper mode 선택 시, 위 명령 대신 사용):**
+**Paper mode 서버 명령 (2-1에서 C/paper mode 선택 시, 위 명령 대신 사용):**
 
 ```bash
 bash evaluation/LibriSpeech/paper_result/ASR/scripts/serve_mode<N>.sh <scope> <tag>
