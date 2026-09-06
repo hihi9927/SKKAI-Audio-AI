@@ -7,7 +7,6 @@ weights/
 # StreamLAAL 평가용 venv (161MB)
 .venv-streamlaal/
 .DS_Store
-/APP_Design/
 *.pt
 !*cif.pt
 *.pth
@@ -28,27 +27,7 @@ weights/
 # Node.js dependencies
 node_modules/
 
-# Electron build output
-*.exe
-*.dll
-*.pak
-*.dat
-*.bin
-locales/
-resources/
-LICENSE.electron.txt
-LICENSES.chromium.html
-node_modules/
-
-**/node_modules/
-
 **/nul
-
-# React Native / Expo build output
-STiTy-Mobile/android/
-STiTy-Mobile/ios/
-STiTy-Mobile/dist/
-STiTy-Mobile/.expo/
 
 # Dataset
 evaluation/KsponSpeech/data/
@@ -83,8 +62,8 @@ Qwen3-ASR/finetuning/finetuning-out-en-silence/**
 Qwen3-ASR/finetuning/finetuning-out-ko-silence/**
 Qwen3-ASR/finetuning/checkpoint-420/
 Qwen3-ASR/finetuning/data/silence_generated/
-research/cif/causal_results/**/cache/
-research/cif/causal_results/**/*.pkl
+core/research/cif/causal_results/**/cache/
+core/research/cif/causal_results/**/*.pkl
 
 # 파인튜닝 가중치 파일 예외 허용
 !Qwen3-ASR/finetuning/finetuning-out-en-plus/runs/
@@ -135,7 +114,6 @@ evaluation/(zh)RAMC/
 evaluation/magichub/
 
 
-core/cif/checkpoints/
 checkpoints/
 
 # Multi-speaker test results (too large for git)
@@ -163,9 +141,7 @@ Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-ko-merged-silence/
 Qwen3-ASR/finetuning/data/KSponSpeech/eval_audio/
 Qwen3-ASR/finetuning/data/KSponSpeech/eval_split_audio/
 Qwen3-ASR/finetuning/finetuning-out-ko-silence-v2/
-Qwen3-ASR/finetuning/finetuning-out-ko-silence-v2/**
 Qwen3-ASR/finetuning/finetuning-out-ko-silence-v3/
-Qwen3-ASR/finetuning/finetuning-out-ko-silence-v3/**
 Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-ko-silence-v2-merged/
 Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-ko-silence-v3-merged/
 
@@ -184,7 +160,6 @@ evaluation/KsponSpeech/results/
 
 # 파인튜닝 merge 모델 및 v4 학습 체크포인트 (대용량)
 Qwen3-ASR/finetuning/finetuning-out-ko-silence-v4/
-Qwen3-ASR/finetuning/finetuning-out-ko-silence-v4/**
 Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-en-silence-c80-merged/
 Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-ko-silence-v4c100-merged/
 Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-ko-silence-v4c900-merged/
@@ -192,27 +167,21 @@ Qwen3-ASR/finetuning/Qwen3-ASR-1.7B-ko-silence-v4c900-merged/
 # Claude Code local permission overrides (per-machine, not shared)
 .claude/settings.local.json
 
-# KSponSpeech 데이터 백업본 (원본 .jsonl 이미 무시됨)
-Qwen3-ASR/finetuning/data/KSponSpeech/*.jsonl.bak
-
 # DailyTalk t2 학습 체크포인트 / merge 모델 (대용량: 24G + 4.4G)
 Qwen3-ASR/finetuning/finetuning-out-en-dailytalk-t2/
-Qwen3-ASR/finetuning/finetuning-out-en-dailytalk-t2/**
 Qwen3-ASR/finetuning/merged-en-dailytalk-t2-ck320/
 # autoseg 루프 산출물 (프롬프트/리포트만 추적, 캐시·중간 rows 제외)
-core/meaning_segmentator/runs/**/cache/
-core/meaning_segmentator/runs/**/*_rows.json
+# 종전 `runs/` 에서 `experiment/artifacts/` 로 옮겼다.
+core/meaning_segmentator/experiment/artifacts/**/cache/
+core/meaning_segmentator/experiment/artifacts/**/*_rows.json
 # 경계별 판정 원본. 리포트(final_report.md)와 curve.json 만 추적한다
-core/meaning_segmentator/runs/**/judgements.json
-core/meaning_segmentator/runs/**/test_judgements.json
-
-# DailyTalk en t2 파인튜닝 산출물 (checkpoint 24GB + merged 4.4GB)
-Qwen3-ASR/finetuning/finetuning-out-en-dailytalk-t2/
-Qwen3-ASR/finetuning/merged-en-dailytalk-t2-ck320/
+core/meaning_segmentator/experiment/artifacts/**/judgements.json
+core/meaning_segmentator/experiment/artifacts/**/test_judgements.json
 
 # CoVoST2 평가 산출물 (402MB). bleu/*.json 하나가 45MB 라 저장소에 담지 않는다.
-# 재현에 필요한 것은 tools/covost2_chain/ 스크립트와 evaluation/ast/manifests/ 매니페스트다.
+# 재현에 필요한 것은 core/meaning_segmentator/tools/covost2_chain/ 스크립트다. 매니페스트는
+# 리포 밖 절대경로를 담아 evaluation/ast/.gitignore 가 *.jsonl 을 막는다(파생 *.json 은 추적).
 # 결과 요약(report.md, X2EN_OURS.md)만 추적한다 — 위 autoseg 루프 규칙과 같은 방침.
-core/meaning_segmentator/runs/covost2/**
-!core/meaning_segmentator/runs/covost2/**/
-!core/meaning_segmentator/runs/covost2/**/*.md
+core/meaning_segmentator/experiment/artifacts/covost2/**
+!core/meaning_segmentator/experiment/artifacts/covost2/**/
+!core/meaning_segmentator/experiment/artifacts/covost2/**/*.md
