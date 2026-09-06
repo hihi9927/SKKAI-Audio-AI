@@ -294,8 +294,9 @@ TV 드라마 연기 구어라 낭독체 대비 난이도가 높은 쪽이므로,
 
 ### `؟` 패치 효과 — 구어에서만 유의미하다
 
-`sentence_boundary.py` / `streaming_websocket_server_dualbase.py` 에 `؟`(U+061F)·`۔`(U+06D4)를
-추가한 효과를 위 가설 출력에 그대로 재보면:
+`sentence_boundary.py` 에 `؟`(U+061F)·`۔`(U+06D4)를 추가한 효과를
+(당시엔 `streaming_websocket_server_dualbase.py` 의 인라인 복제본에도 함께 넣었다. 그 서버는
+2026-09-06 에 삭제됐다.) 위 가설 출력에 그대로 재보면:
 
 | | dot-commit 경계 패치 전 | 패치 후 | 증가 |
 |---|---|---|---|
