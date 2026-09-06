@@ -18,8 +18,7 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSMicrophoneUsageDescription": "This app needs access to microphone for real-time speech translation.",
-        "NSCameraUsageDescription": "This app needs access to camera to scan partner QR codes for 2-earphone pairing."
+        "NSMicrophoneUsageDescription": "This app needs access to microphone for real-time speech translation."
       }
     },
     "android": {
@@ -30,8 +29,7 @@
       },
       "permissions": [
         "android.permission.RECORD_AUDIO",
-        "android.permission.MODIFY_AUDIO_SETTINGS",
-        "android.permission.CAMERA"
+        "android.permission.MODIFY_AUDIO_SETTINGS"
       ],
       "package": "com.anonymous.stitymobile"
     },
@@ -39,10 +37,6 @@
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
-    "plugins": [
-      "expo-av",
-      "expo-camera"
-    ],
     "extra": {
       "eas": {
         "projectId": "f6665f8c-6ce3-44e1-b7b0-8138884849c6"

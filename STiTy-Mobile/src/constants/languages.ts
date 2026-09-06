@@ -19,18 +19,3 @@ export const CONVERSATION_MODES = [
   { id: 'mode-2', name: 'Earphone only', description: 'One person wears an earphone and hears the peer\'s translations', earphones: 1 },
   { id: 'mode-3', name: 'Both', description: 'Both users wear earphones and hear all translations', earphones: 2 },
 ];
-
-export const getLanguageByCode = (code: string): Language | undefined => {
-  return LANGUAGES.find(lang => lang.code === code);
-};
-
-/** 기본 표시: 자국어 이름(code) */
-export const formatLanguageDisplay = (lang: Language): string => {
-  return `${lang.nativeName}(${lang.code})`;
-};
-
-/** 나의 언어 기준으로 표시: 예) myLang=ko, target=en → 영어(en) */
-export const formatLanguageAs = (lang: Language, asLangCode: string): string => {
-  const translated = lang.translations[asLangCode] || lang.nativeName;
-  return `${translated}(${lang.code})`;
-};

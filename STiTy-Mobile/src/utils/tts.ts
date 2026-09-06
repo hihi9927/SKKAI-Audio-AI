@@ -9,7 +9,7 @@ const BCP47: Record<string, string> = {
   id: 'id-ID', vi: 'vi-VN', th: 'th-TH', es: 'es-ES', fr: 'fr-FR', de: 'de-DE',
 };
 
-export const toBCP47 = (code: string): string => BCP47[code] ?? code;
+const toBCP47 = (code: string): string => BCP47[code] ?? code;
 
 let engineReady = false;
 

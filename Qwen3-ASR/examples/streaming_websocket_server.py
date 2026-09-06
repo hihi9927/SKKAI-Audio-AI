@@ -706,7 +706,6 @@ class Qwen3ASRStreamingHandler:
         self.recorder: Optional[AudioRecorder] = None
         self.corrector = corrector
         self.gpt_translator = gpt_translator
-        self.use_correction = True  # overridden per-session by start message speed field
         # 번역 컨텍스트: 최근 N 세그먼트의 (corrected_original, translation) 보관
         _ctx = (gpt_translator.max_context if gpt_translator
                 else config.context_window if config.google_context
@@ -2571,7 +2570,7 @@ class Qwen3ASRStreamingHandler:
             return corrected, translation, src_code or gpt_detected, {}
 
         # Google Translate 경로
-        if self.corrector and self.use_correction:
+        if self.corrector:
             text = await self.corrector.correct_text(text, current_lang)
         if self.config.google_context and self._segment_history:
             context_originals = [orig for orig, _, l in self._segment_history if not src_code or l == src_code]
@@ -2741,12 +2740,10 @@ class Qwen3ASRStreamingHandler:
                             self.client_lang = data.get("lang", "auto")
                             self.client_target_lang = data.get("targetLang", "")
                             self.client_lang_map = parse_lang_map(data.get("langMap"))
-                            self.use_correction = data.get("speed", "accurate") != "fast"
                             self.log.info(
                                 f"Received start: lang={self.client_lang}, "
                                 f"targetLang={self.client_target_lang}, "
-                                f"langMap={self.client_lang_map or '-'}, "
-                                f"speed={data.get('speed', 'accurate')}"
+                                f"langMap={self.client_lang_map or '-'}"
                             )
 
                             self.init_streaming_state()

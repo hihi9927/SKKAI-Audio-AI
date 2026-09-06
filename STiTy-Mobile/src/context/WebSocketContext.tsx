@@ -4,14 +4,12 @@ import { Platform } from 'react-native';
 interface WebSocketConfig {
   lang: string;
   targetLang?: string;
-  speed?: 'fast' | 'accurate';
 }
 
-export type ServerStatus = 'idle' | 'ec2-starting' | 'connecting' | 'ready' | 'error';
+export type ServerStatus = 'idle' | 'connecting' | 'ready' | 'error';
 
 interface WebSocketContextType {
   isConnected: boolean;
-  lastMessage: any;
   error: string | null;
   serverStatus: ServerStatus;
   connect: (config: WebSocketConfig) => Promise<void>;
@@ -50,7 +48,6 @@ const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isConnected, setIsConnected] = useState(false);
-  const [lastMessage, setLastMessage] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [serverStatus, setServerStatus] = useState<ServerStatus>('idle');
   const wsRef = useRef<WebSocket | null>(null);
@@ -318,7 +315,6 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                   lang: config.lang,
                   targetLang: config.targetLang || '',
                   translate: !!config.targetLang,
-                  speed: config.speed ?? 'fast',
                 })
               );
               startHeartbeat();
@@ -326,7 +322,6 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
               return;
             }
 
-            setLastMessage(data);
             listenersRef.current.forEach(listener => listener(data));
           } catch (e) {
             console.error('Failed to parse message:', e);
@@ -373,7 +368,6 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       wsRef.current = null;
     }
     setIsConnected(false);
-    setLastMessage(null);
     setError(null);
     if (serverStatusRef.current === 'ready') {
       startKeepAlive();
@@ -427,7 +421,6 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     <WebSocketContext.Provider
       value={{
         isConnected,
-        lastMessage,
         error,
         serverStatus,
         connect,
