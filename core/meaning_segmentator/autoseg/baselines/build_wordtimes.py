@@ -13,31 +13,15 @@
 from __future__ import annotations
 
 import argparse
-import csv
 import json
 import sys
 import time
-from pathlib import Path
 
-_HERE = Path(__file__).resolve().parent
-_REPO_ROOT = _HERE.parents[3]
-sys.path.insert(0, str(_REPO_ROOT))
+from ..paths import REPO_ROOT
+sys.path.insert(0, str(REPO_ROOT))
 
 from core.meaning_segmentator.autoseg.baselines import datasets as _ds  # noqa: E402
 from core.meaning_segmentator.autoseg.baselines.align_audio import Aligner  # noqa: E402
-
-
-def load_tsv(base: Path, split: str) -> dict[str, list[tuple[str, int]]]:
-    """id → [(wav, 샘플수)]. TSV 는 따옴표 이스케이프가 없어 QUOTE_NONE 필수."""
-    out: dict[str, list[tuple[str, int]]] = {}
-    f = base / f"{split}.tsv"
-    if not f.exists():
-        return out
-    with f.open(encoding="utf-8") as fh:
-        for c in csv.reader(fh, delimiter="\t", quoting=csv.QUOTE_NONE):
-            if len(c) >= 6 and c[5].isdigit():
-                out.setdefault(c[0], []).append((c[1], int(c[5])))
-    return out
 
 
 def main() -> int:
@@ -45,13 +29,11 @@ def main() -> int:
     p.add_argument("--tag", default="clean500")
     p.add_argument("--dataset", default="fleurs", choices=["fleurs", "covost2"])
     p.add_argument("--ref-tgt", default="de", help="매니페스트를 고르기 위한 타깃 (소스는 동일)")
-    p.add_argument("--lang-dir", default="en_us")
     p.add_argument("--device", default="cuda")
     p.add_argument("--limit", type=int, default=0)
     args = p.parse_args()
 
     jobs = _ds.alignment_jobs(args.dataset, args.tag, args.ref_tgt, args.limit)
-    man_dir = _ds.MANIFEST_DIR
     al = Aligner(device=args.device)
 
     out: dict[str, dict] = {}

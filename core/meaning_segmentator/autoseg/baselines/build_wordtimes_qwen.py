@@ -12,35 +12,20 @@ Qwen 은 어절이 아니라 자체 토큰 단위로 span 을 내므로, 문자 
 from __future__ import annotations
 
 import argparse
-import csv
 import json
 import re
 import sys
 import time
-from pathlib import Path
 
 import torch
 
-_HERE = Path(__file__).resolve().parent
-_REPO_ROOT = _HERE.parents[3]
-sys.path.insert(0, str(_REPO_ROOT))
+from ..paths import REPO_ROOT
+sys.path.insert(0, str(REPO_ROOT))
 
 from core.meaning_segmentator.autoseg.baselines import datasets as _ds  # noqa: E402
 
 ALIGNER = "Qwen/Qwen3-ForcedAligner-0.6B"
 _WS = re.compile(r"\s+")
-
-
-def load_tsv(base: Path, split: str) -> dict[str, list[tuple[str, int]]]:
-    out: dict[str, list[tuple[str, int]]] = {}
-    f = base / f"{split}.tsv"
-    if not f.exists():
-        return out
-    with f.open(encoding="utf-8") as fh:
-        for c in csv.reader(fh, delimiter="\t", quoting=csv.QUOTE_NONE):
-            if len(c) >= 6 and c[5].isdigit():
-                out.setdefault(c[0], []).append((c[1], int(c[5])))
-    return out
 
 
 def to_word_ends(items, text: str, dur_s: float) -> list[float]:
@@ -85,7 +70,6 @@ def main() -> int:
     p.add_argument("--tag", default="clean500")
     p.add_argument("--dataset", default="fleurs", choices=["fleurs", "covost2"])
     p.add_argument("--ref-tgt", default="de", help="매니페스트를 고르기 위한 타깃")
-    p.add_argument("--lang-dir", default="en_us")
     p.add_argument("--batch", type=int, default=8)
     p.add_argument("--limit", type=int, default=0)
     args = p.parse_args()

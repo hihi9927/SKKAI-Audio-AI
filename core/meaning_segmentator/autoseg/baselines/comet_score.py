@@ -18,13 +18,11 @@ import argparse
 import json
 import sys
 import time
-from pathlib import Path
 
-_HERE = Path(__file__).resolve().parent
-_REPO_ROOT = _HERE.parents[3]
-sys.path.insert(0, str(_REPO_ROOT))
+from ..paths import REPO_ROOT, RUNS_DIR
+sys.path.insert(0, str(REPO_ROOT))
 
-from core.meaning_segmentator.autoseg import metrics  # noqa: E402
+from core.meaning_segmentator.autoseg.runtime import metrics  # noqa: E402
 from core.meaning_segmentator.autoseg.baselines import datasets as _ds  # noqa: E402
 
 
@@ -46,7 +44,7 @@ def main() -> int:
                         "넣었을 때 전체 재채점(타깃당 ~6분)을 피한다")
     args = p.parse_args()
 
-    run_dir = _HERE.parents[1] / "runs" / args.run_id
+    run_dir = RUNS_DIR / args.run_id
     ev_path = run_dir / "prompt_eval" / f"{args.label}_{args.split}.json"
     if ev_path.exists():
         ev = json.loads(ev_path.read_text(encoding="utf-8"))

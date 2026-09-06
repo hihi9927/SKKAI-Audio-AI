@@ -18,14 +18,12 @@ import json
 import statistics
 from dataclasses import dataclass
 from pathlib import Path
+from ..paths import MANIFEST_DIR
 
-_REPO_ROOT = Path(__file__).resolve().parents[4]
-MANIFEST_DIR = _REPO_ROOT / "evaluation" / "ast" / "manifests"
 
 
 @dataclass
 class Entry:
-    utt_id: str
     src: str
     ref: str
     key: str                 # 길이·타임스탬프 조회 키
@@ -95,7 +93,7 @@ class Fleurs(DatasetSpec):
                     name, n, split = recs[len(recs) // 2]
                     dur = statistics.median(r[1] for r in recs) / 16000 * 1000
                     wav = self.base / "audio" / split / name
-                out[e["utt_id"]] = Entry(e["utt_id"], e["src_text"], e["tgt_text"],
+                out[e["utt_id"]] = Entry(e["src_text"], e["tgt_text"],
                                          tid, dur, wav, e.get("fleurs_split"))
         return out
 
@@ -122,7 +120,7 @@ class CoVoST2(DatasetSpec):
             for line in f:
                 e = json.loads(line)
                 out[e["utt_id"]] = Entry(
-                    e["utt_id"], e["src_text"], e["tgt_text"], e["utt_id"],
+                    e["src_text"], e["tgt_text"], e["utt_id"],
                     float(e["duration"]) * 1000, Path(e["wav"]), None)
         return out
 

@@ -18,9 +18,8 @@ import sys
 import time
 from pathlib import Path
 
-_HERE = Path(__file__).resolve().parent
-_REPO_ROOT = _HERE.parents[3]
-sys.path.insert(0, str(_REPO_ROOT))
+from ..paths import REPO_ROOT, RUNS_DIR
+sys.path.insert(0, str(REPO_ROOT))
 
 from core.meaning_segmentator.autoseg.baselines import (  # noqa: E402
     alignatt, causal_align, mu_prefix, punct, syntax_sasst)
@@ -189,7 +188,7 @@ def main() -> int:
                         "--out-name alignatt_f4. `bleu_eval --baselines` 가 이 이름을 읽는다")
     args = p.parse_args()
 
-    run_dir = _HERE.parents[1] / "runs" / args.run_id
+    run_dir = RUNS_DIR / args.run_id
     rows = load_rows(run_dir, args.label, args.split,
                      args.dataset, args.manifest_tag, args.targets[0])
     if args.limit:

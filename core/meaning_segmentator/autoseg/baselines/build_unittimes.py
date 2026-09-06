@@ -27,9 +27,9 @@ import time
 from pathlib import Path
 
 import torch
+from ..paths import MANIFEST_DIR, REPO_ROOT
 
-_REPO = Path(__file__).resolve().parents[4]
-sys.path.insert(0, str(_REPO))
+sys.path.insert(0, str(REPO_ROOT))
 
 ALIGNER = "Qwen/Qwen3-ForcedAligner-0.6B"
 _WS = re.compile(r"\s+")
@@ -147,7 +147,7 @@ def main() -> int:
 
     langdir, langname, spaced = LANGS[args.lang]
     base = Path.home() / "datasets" / "fleurs" / "data" / langdir
-    man = Path(args.manifest or (_REPO / "evaluation" / "ast" / "manifests"
+    man = Path(args.manifest or (MANIFEST_DIR
                / f"fleurs_nway_{args.lang}-en_multi2en_loop240.jsonl"))
     dest = Path(args.out or (man.with_name(man.stem + "_unittimes.json")))
 

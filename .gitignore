@@ -178,8 +178,10 @@ Qwen3-ASR/finetuning/data/KSponSpeech/*.jsonl.bak
 evaluation/KsponSpeech/dataset_100h/seg/
 evaluation/KsponSpeech/dataset_100h/split/
 evaluation/KsponSpeech/dataset_100h/inputs/
-evaluation/KsponSpeech/results/prev/
-evaluation/KsponSpeech/results/seg_tuning/
+# 2026-09-06: 결과 전체를 뺀다. metric.json 이 발화 단위 결과를 담아 실행당 수 MB 이고
+# 서버 로그는 그보다 크다. 다른 데이터셋과 같은 정책이며, 지난 수치는
+# evaluation/KsponSpeech/CLAUDE.md 의 표에 남겼다.
+evaluation/KsponSpeech/results/
 
 # 파인튜닝 merge 모델 및 v4 학습 체크포인트 (대용량)
 Qwen3-ASR/finetuning/finetuning-out-ko-silence-v4/

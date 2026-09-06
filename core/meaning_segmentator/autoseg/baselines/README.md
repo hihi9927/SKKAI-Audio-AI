@@ -27,9 +27,9 @@ $B --policy mu_prefix    --targets de ja
 .venv/bin/python -m core.meaning_segmentator.autoseg.baselines.build \
     --run-id en-multi/clean500 --policy syntax        # ← 격리 venv (아래 주의)
 
-python3 -m core.meaning_segmentator.autoseg.bleu_eval --run-id en-multi/clean500 \
+python3 -m core.meaning_segmentator.autoseg.scoring.bleu_eval --run-id en-multi/clean500 \
     --targets de ja zh --baselines punct syntax causal_align alignatt mu_prefix
-python3 core/meaning_segmentator/autoseg/baselines/plot_tradeoff.py
+python3 -m core.meaning_segmentator.autoseg.scoring.plot_tradeoff   # 작도는 scoring/ 으로 옮겼다
 ```
 
 산출: `runs/<run-id>/baselines/<policy>_<tgt>_<split>.json`
@@ -44,10 +44,10 @@ python3 core/meaning_segmentator/autoseg/baselines/plot_tradeoff.py
 | `mu_prefix.py` | Zhang 2020 Algorithm 1 |
 | `nmt.py` | NLLB-600M — 강제 디코딩 · beam 후보 · 교차어텐션 |
 | `__init__.py` | `coarsen()` — 정책 경계의 부분집합으로 T 격자에 올린다 |
+| `build_unittimes.py` | 단위(어절/글자) 단위 타임스탬프 빌더 |
 | `build.py` | 라벨 생성 CLI |
 | `align_audio.py` / `build_wordtimes.py` | wav2vec2 CTC 강제정렬 (교차검증용) |
 | `build_wordtimes_qwen.py` | Qwen3-ForcedAligner (기본) |
-| `plot_tradeoff.py` | 품질–지연 곡선 |
 
 ## 원논문과 다른 점 — 표 각주로 옮길 것
 

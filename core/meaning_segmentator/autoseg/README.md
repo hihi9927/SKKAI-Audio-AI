@@ -141,16 +141,16 @@ run03 재집계에서 유일하게 기울기가 살아있는 축이다 (laal 2.0
 #   (huggingface_hub 1.x 에서 huggingface-cli -> hf 로 개명됨)
 
 # 0) 판정자 관문 — 판정자 모델/프롬프트를 바꿨다면 여기부터
-PYTHONPATH=. python -m core.meaning_segmentator.autoseg.judge_check --repeats 3
+PYTHONPATH=. python -m core.meaning_segmentator.autoseg.gates.judge_check --repeats 3
 
 # 1) 지표 타당도 — consistency 백엔드를 바꿨다면
-PYTHONPATH=. python -m core.meaning_segmentator.autoseg.validity_check --backends nli comet
+PYTHONPATH=. python -m core.meaning_segmentator.autoseg.gates.validity_check --backends nli comet
 
 # 1b) adequacy 조각 게이트 — adequacy 백엔드를 바꿨다면
-PYTHONPATH=. python -m core.meaning_segmentator.autoseg.adequacy_check
+PYTHONPATH=. python -m core.meaning_segmentator.autoseg.gates.adequacy_check
 
 # 1c) contradiction 잡음 바닥 + 순위 정렬 재검 (기존 런 재활용, 번역 호출 0)
-PYTHONPATH=. python -m core.meaning_segmentator.autoseg.noise_floor \
+PYTHONPATH=. python -m core.meaning_segmentator.autoseg.gates.noise_floor \
     --run-id ko-en/run03 --split test --recheck-t 2
 
 # 2) 루프
@@ -162,20 +162,20 @@ PYTHONPATH=. python -m core.meaning_segmentator.autoseg.loop \
 #    중단된 런을 이어서 (분절·번역 캐시는 남아 있고 루프 상태만 복원한다)
 PYTHONPATH=. python -m core.meaning_segmentator.autoseg.loop ... --run-id run13 --resume
 
-# 3) 비교군을 같은 자로 평가 (사람 프롬프트는 순위 태그가 없으므로 --no-priority)
-PYTHONPATH=. python -m core.meaning_segmentator.autoseg.eval_prompt \
-    --prompt core/meaning_segmentator/autoseg/human_prompts/ko_human_current.txt \
+# 3) 비교군 프롬프트를 같은 자로 평가 (순위 태그가 없는 프롬프트는 --no-priority)
+PYTHONPATH=. python -m core.meaning_segmentator.autoseg.scoring.eval_prompt \
+    --prompt <프롬프트 파일>.txt \
     --run-id ko-en/run13 --split test --label human_current --no-priority
 
 # 4) 참조 기반 평가 — BLEU/chrF2, 그 다음 COMET (번역은 재사용, 추가 비용 없음)
-PYTHONPATH=. python -m core.meaning_segmentator.autoseg.bleu_eval \
+PYTHONPATH=. python -m core.meaning_segmentator.autoseg.scoring.bleu_eval \
     --run-id en-multi/clean500 --targets de ja zh \
     --baselines punct syntax causal_align alignatt mu_prefix
-PYTHONPATH=. python -m core.meaning_segmentator.autoseg.comet_eval \
+PYTHONPATH=. python -m core.meaning_segmentator.autoseg.scoring.comet_eval \
     --run-id en-multi/clean500 --targets de ja zh
 
 # 5) 런 하나가 실제로 쓴 비용 (기록 + 캐시 증분 역산)
-PYTHONPATH=. python -m core.meaning_segmentator.autoseg.cost_report --run-id en-multi/run07
+PYTHONPATH=. python -m core.meaning_segmentator.autoseg.infra.cost_report --run-id en-multi/run07
 ```
 
 주요 옵션:
@@ -251,7 +251,7 @@ PYTHONPATH=. python -m core.meaning_segmentator.autoseg.loop \
 
 ```bash
 for L in agnostic:runs/en-multi/run09/best_prompt.txt aware:runs/en-de-aware/run01/best_prompt.txt; do
-  PYTHONPATH=. python -m core.meaning_segmentator.autoseg.eval_prompt \
+  PYTHONPATH=. python -m core.meaning_segmentator.autoseg.scoring.eval_prompt \
       --run-id en-multi/run09 --tgt-lang German --split test \
       --prompt "${L#*:}" --label "${L%%:*}_de"
 done
@@ -268,35 +268,50 @@ done
 
 ## 구성
 
+```
+autoseg/
+├── loop.py        A11 Loop Controller — 진입점
+├── paths.py       REPO_ROOT / RUNS_DIR / MANIFEST_DIR (깊이 산술 금지)
+├── runtime/       루프가 매 반복 쓰는 것
+├── infra/         LLM 호출과 비용
+├── gates/         루프 밖 1회성 타당도 관문 + 케이스 JSON
+├── scoring/       참조 기반 평가와 논문 그림
+└── baselines/     Table 1a 비교군 정책 + 강제정렬 타임스탬프 빌더
+```
+
+**경로를 파일 깊이로 세지 않는다.** 저장소 루트와 `runs/` 는 `paths.py` 한 곳에서만
+정한다 — 종전에는 19개 파일이 각자 `parents[N]` 을 세었고 N 이 2·3·4 로 갈려서, 파일을
+옮기면 `ImportError` 가 아니라 *산출물이 엉뚱한 데 쌓이는* 방식으로 조용히 어긋났다.
+
 | 파일 | 역할 | LLM |
 |---|---|---|
-| `gateway.py` | Letsur AI Gateway 클라이언트, 재시도, 비용 집계, 예산 가드, JSON 복구 | — |
-| `data.py` | A0 Data Preparer — 정규화, 층화 분할, **측정 프로파일** | — |
-| `pipeline.py` | A2 Segmenter / A3 Validator / **A4 Truncator** / A5 Google 번역 + 캐시 | 분절만 |
-| `metrics.py` | A6 Scorer — `adequacy`(QE) / `contradiction`(NLI) / `effective` / `consistency` / `laal_words` / `score` + Critic 에게 넘기는 지표 용어집(`GLOSSARY`) | — |
-| `agents.py` | A1 Profiler / **A7 Judge** / A8 Critic / A9 Prompt Engineer / A10 Compressor | ● |
+| `infra/gateway.py` | Letsur AI Gateway 클라이언트, 재시도, 비용 집계, 예산 가드, JSON 복구 | — |
+| `runtime/data.py` | A0 Data Preparer — 정규화, 층화 분할, **측정 프로파일** | — |
+| `runtime/pipeline.py` | A2 Segmenter / A3 Validator / **A4 Truncator** / A5 Google 번역 + 캐시 | 분절만 |
+| `runtime/metrics.py` | A6 Scorer — `adequacy`(QE) / `contradiction`(NLI) / `effective` / `consistency` / `laal_words` / `score` + Critic 에게 넘기는 지표 용어집(`GLOSSARY`) | — |
+| `runtime/agents.py` | A1 Profiler / **A7 Judge** / A8 Critic / A9 Prompt Engineer / A10 Compressor | ● |
 | `loop.py` | A11 Loop Controller — T 격자 평가, 채택·롤백·중단, 곡선·비교군·리포트 | — |
-| `tracing.py` | 호출마다 용도(`purpose`) 라벨. `Usage.by_purpose` 는 항상, LangSmith 는 키가 있을 때만. 키가 없으면 통째로 no-op | — |
+| `infra/tracing.py` | 호출마다 용도(`purpose`) 라벨. `Usage.by_purpose` 는 항상, LangSmith 는 키가 있을 때만. 키가 없으면 통째로 no-op | — |
 
 루프 밖에서 도는 것들:
 
 | 파일 | 역할 | LLM |
 |---|---|---|
-| `eval_prompt.py` | 임의 프롬프트 1개를 루프와 동일 지표로 평가. `bleu_eval` 이 읽는 `prompt_eval/` 산출도 여기서 나온다 | 분절만 |
-| `validity_check.py` | consistency 백엔드 타당도 게이트 — 오류 주입 후 순위 확인 | — |
-| `adequacy_check.py` | **adequacy 백엔드 조각 입력 게이트** — QE 가 조각에서도 오류 순위를 지키는지 | — |
-| `noise_floor.py` | **contradiction 잡음 바닥 측정** — full 번역 자기-prefix 의 NLI base rate. `--recheck-t` 로 바닥 보정 순위 정렬도 재계산. 루프도 이 모듈을 쓴다 | — |
-| `judge_check.py` | **판정자 + NLI 타당도 게이트** (`--skip-judge` 로 NLI 만 검사 가능) | ● |
-| `bleu_eval.py` | 참조 기반 corpus BLEU / chrF2 + 쌍체 부트스트랩 + ms LAAL. 조건은 `unsegmented` / `auto @T` / `mechanical_8` / 비교군 | — |
-| `comet_eval.py` | `bleu_eval` 이 남긴 번역을 재사용한 COMET (재번역·API 비용 0) | — |
-| `comet_x2en.py` | {de,zh,ja}→en 런의 품질–지연 곡선. 세 트랙 타깃이 모두 영어라 비교가 깨끗하다 | — |
-| `cost_report.py` | 런 하나가 실제로 쓴 LLM 비용. 크래시한 실행은 캐시 증분으로 역산 — 그 차이가 "기록되지 않은 지출" | — |
+| `scoring/eval_prompt.py` | 임의 프롬프트 1개를 루프와 동일 지표로 평가. `bleu_eval` 이 읽는 `prompt_eval/` 산출도 여기서 나온다 | 분절만 |
+| `gates/validity_check.py` | consistency 백엔드 타당도 게이트 — 오류 주입 후 순위 확인 | — |
+| `gates/adequacy_check.py` | **adequacy 백엔드 조각 입력 게이트** — QE 가 조각에서도 오류 순위를 지키는지 | — |
+| `gates/noise_floor.py` | **contradiction 잡음 바닥 측정** — full 번역 자기-prefix 의 NLI base rate. `--recheck-t` 로 바닥 보정 순위 정렬도 재계산. 루프도 이 모듈을 쓴다 | — |
+| `gates/judge_check.py` | **판정자 + NLI 타당도 게이트** (`--skip-judge` 로 NLI 만 검사 가능) | ● |
+| `scoring/bleu_eval.py` | 참조 기반 corpus BLEU / chrF2 + 쌍체 부트스트랩 + ms LAAL. 조건은 `unsegmented` / `auto @T` / `mechanical_8` / 비교군 | — |
+| `scoring/comet_eval.py` | `bleu_eval` 이 남긴 번역을 재사용한 COMET (재번역·API 비용 0) | — |
+| `scoring/comet_x2en.py` | {de,zh,ja}→en 런의 품질–지연 곡선. 세 트랙 타깃이 모두 영어라 비교가 깨끗하다 | — |
+| `infra/cost_report.py` | 런 하나가 실제로 쓴 LLM 비용. 크래시한 실행은 캐시 증분으로 역산 — 그 차이가 "기록되지 않은 지출" | — |
 | `baselines/` | Table 1a 타 정책 구현 (`punct` / `syntax` / `causal_align` / `alignatt` / `mu_prefix`) + 강제정렬 타임스탬프 빌더. [baselines/README.md](baselines/README.md) | — |
-| `validity_cases.json` / `premature_cases.json` | 고정 케이스. **사람이 작성**, LLM 생성 아님 | — |
-| `adequacy_cases.json` | 조각 오류 주입 케이스 — 실제 발화 조각 기반. 문안은 사람 확정 전 (잠정) | — |
-| `human_prompts/` | 사람 작성 한국어 프롬프트 3종 (비교군) | — |
+| `scoring/plot_tradeoff.py` / `scoring/plot_comet.py` | 품질–지연 곡선. **import 하면 그림을 덮어쓴다** — `-m` 으로만 실행 | — |
+| `gates/validity_cases.json` / `gates/premature_cases.json` | 고정 케이스. **사람이 작성**, LLM 생성 아님 | — |
+| `gates/adequacy_cases.json` | 조각 오류 주입 케이스 — 실제 발화 조각 기반. 문안은 사람 확정 전 (잠정) | — |
 
-LLM 판단이 들어가는 곳은 `agents.py` 네 곳뿐이다. 포맷 검증, 절단, 점수, 채택 판정, 재시도는
+LLM 판단이 들어가는 곳은 `runtime/agents.py` 네 곳뿐이다. 포맷 검증, 절단, 점수, 채택 판정, 재시도는
 전부 결정론적 코드다.
 
 ### 언어 무관성
@@ -385,10 +400,10 @@ MANIFESTS = {
 
 | | 대상 | 통과 조건 |
 |---|---|---|
-| `validity_check.py` | consistency 백엔드 (`nli-mdeberta`/`nli-deberta`/`comet`/…) | 심각한 의미 오류 점수 < `benign_minimal` |
-| `adequacy_check.py` | **adequacy 백엔드 (QE 조각 채점)** | 조각 케이스마다 심각한 오류 < `benign_minimal` |
-| `judge_check.py` | 판정자 (모델 + 프롬프트) | `safe`/`not-safe` 오분류 0건 **+ 반복 실행 동일** |
-| `judge_check.py --skip-judge` | **NLI contradiction 백엔드** | 케이스마다 `min(premature) > max(safe)` |
+| `gates/validity_check.py` | consistency 백엔드 (`nli` / `comet` / `xcomet`) | 심각한 의미 오류 점수 < `benign_minimal` |
+| `gates/adequacy_check.py` | **adequacy 백엔드 (QE 조각 채점)** | 조각 케이스마다 심각한 오류 < `benign_minimal` |
+| `gates/judge_check.py` | 판정자 (모델 + 프롬프트) | `safe`/`not-safe` 오분류 0건 **+ 반복 실행 동일** |
+| `gates/judge_check.py --skip-judge` | **NLI contradiction 백엔드** | 케이스마다 `min(premature) > max(safe)` |
 
 adequacy 관문 실측 (`runs/adequacy_validity/`): 부정 뒤집힘·의미 변경·무관 문장은 전
 케이스 정상 검출. 위반 2건은 관용구 조각("밀려 썼던") 하나에 국한 — 특히 **source_echo

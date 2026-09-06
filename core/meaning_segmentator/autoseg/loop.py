@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import copy
 import json
+import math
 import random
 import statistics
 from concurrent.futures import ThreadPoolExecutor
@@ -20,19 +21,19 @@ import shutil
 import sys
 import time
 from dataclasses import dataclass
-from pathlib import Path
 
-from . import agents, data, metrics, noise_floor
-from . import gateway
-from .gateway import BudgetExceeded, Gateway
-from .pipeline import (GoogleTranslator, JsonCache, blocks_scoring,
+from .runtime import agents, data, metrics
+from .gates import noise_floor
+from .infra import gateway
+from .infra.gateway import BudgetExceeded, Gateway
+from .runtime.pipeline import (GoogleTranslator, JsonCache, blocks_scoring,
                        coverage_need, normalize_tags, round_half_up, segment_batch,
                        LocalTranslator, LOCAL_MT_DEFAULT, RemoteMTTranslator,
                        REMOTE_MT_TEMPLATES,
                        shuffle_priorities, split_segments, to_lang_code, truncate,
                        unit_count, validate)
+from .paths import RUNS_DIR
 
-_HERE = Path(__file__).resolve().parent
 
 # 타깃 언어의 표기 체계 — LAAL 의 목표측 토큰 수를 세는 단위를 정한다.
 _UNSPACED_TARGETS = {"japanese", "chinese", "thai", "ja", "zh", "th"}
@@ -71,7 +72,6 @@ class ScoredSplit:
     pieces_tgt: list[list[str]]          # 조각 번역
     pieces_contra: list[list[float]]     # 경계별 모순 확률. 마지막 원소는 항상 0.0
     # 병기 지표 — 같은 NLI 호출에서 나온 `1 − entailment`. 목적함수에는 안 들어간다.
-    pieces_contra_ent: list[list[float]]
     effective_ent: list[float | None]
     contradiction_ent: list[float | None]
     effective: list[float | None]
@@ -450,7 +450,6 @@ def score_split(seg_texts: list[str], texts: list[str], full: list[str],
         pieces_src=chunk_lists,
         pieces_tgt=[list(p) for p in pieces],
         pieces_contra=contra_rows,
-        pieces_contra_ent=contra_ent_rows,
         effective_ent=effective_ent_rows,
         contradiction_ent=contradiction_ent_rows,
         effective=effective_rows,
@@ -526,7 +525,7 @@ def evaluate(
 
     seg_texts, first_pass = segment_batch(
         gw, prompt, texts, cache=seg_cache, workers=workers,
-        validate_fn=lambda t, out: validate("", t, out, spaced, trailing_punct,
+        validate_fn=lambda t, out: validate("", t, out, spaced,
                                             require_priority, need(t)),
         normalize_fn=_norm,
         need_fn=need,
@@ -539,7 +538,7 @@ def evaluate(
     valid_flags: list[bool] = []
     scored_flags: list[bool] = []
     for s, seg in zip(sentences, seg_texts):
-        vs = validate(s.id, s.text, seg, spaced, trailing_punct, require_priority,
+        vs = validate(s.id, s.text, seg, spaced, require_priority,
                       need(s.text))
         valid_flags.append(not vs)
         scored_flags.append(not blocks_scoring(vs))
@@ -847,7 +846,7 @@ def derive_min_gap(units_per_sec: float) -> int:
 def derive_t_floor(min_gap: int) -> int:
     """격자 바닥이자 마킹 밀도 기준. 포화 바닥과 마킹 한계 중 **큰 쪽**."""
     mg = max(0, min_gap)
-    return max(2, mg + 1, -(-125 * mg // 100))        # ceil(1.25 * mg)
+    return max(2, mg + 1, math.ceil(MARK_SPACING_RATIO * mg))
 
 
 def derive_t_grids(min_gap: int) -> tuple[list[int], list[int]]:
@@ -1229,7 +1228,7 @@ def main() -> int:
 
     run_id = args.run_id or time.strftime("%Y%m%d-%H%M%S")
     pair_id = args.pair_id or f"{args.src_lang}-{args.tgt_lang}".lower().replace(" ", "_")
-    run_dir = _HERE.parent / "runs" / pair_id / run_id
+    run_dir = RUNS_DIR / pair_id / run_id
     if args.fresh and run_dir.exists():
         shutil.rmtree(run_dir)
     # **재개 전제는 먼저 본다.** 아래에서 CometKiwi·NLI 를 GPU 에 올리는 데 몇 분이
@@ -1462,7 +1461,7 @@ def main() -> int:
                         ) if not args.no_coverage_rule else (lambda t: None)
                 segment_batch(
                     gw, pr, texts, cache=seg_cache, workers=args.workers,
-                    validate_fn=lambda t, out: validate("", t, out, spaced, trailing_punct,
+                    validate_fn=lambda t, out: validate("", t, out, spaced,
                                                         True, need(t)),
                     normalize_fn=lambda t, o: normalize_tags(o, spaced, trailing_punct,
                                                              min_gap=args.min_gap),
@@ -1576,7 +1575,7 @@ def main() -> int:
                     continue
                 candidates.append(cand)
             if not candidates:
-                log(f"[stop] prompt_v0 가 골격 미달만 반복 — 모델/max_tokens 확인")
+                log("[stop] prompt_v0 가 골격 미달만 반복 — 모델/max_tokens 확인")
                 return 2
 
             for k, cand in enumerate(candidates):
@@ -2349,9 +2348,9 @@ def build_report(args, run_dir, profile, measured, history, best, test_m, test_v
         f"- 노브: 목표 조각 크기 T. 루프 격자 {t_grid}, 최종 격자 {final_grid}, 주 작동점 T={main_t}",
         f"- 언어 프로파일: {profile.get('source_language')}, 어순 {profile.get('word_order')} / "
         f"측정: 공백비율 {measured['space_ratio']}, 문말 부호 {measured['trailing_punctuation']}",
-        f"- score = T 격자 평균 **effective** = `adequacy × (1 − contradiction)` "
-        f"(가중치·임계값 없음). 채택 판정은 **쌍체 비교**",
-        f"- contradiction 백엔드: "
+        "- score = T 격자 평균 **effective** = `adequacy × (1 − contradiction)` "
+        "(가중치·임계값 없음). 채택 판정은 **쌍체 비교**",
+        "- contradiction 백엔드: "
         + ("없음 (조기 방출이 벌받지 않음)" if args.no_contradiction
            else f"**xlmr-anli** (`{metrics.NLI_MODEL}`)"),
         f"- 채택된 프롬프트: iter_{best['version']:02d}",
