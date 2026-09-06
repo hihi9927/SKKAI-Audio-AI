@@ -105,6 +105,24 @@ class Confluence:
         })
         return self._check(r)
 
+    def update_page(self, page_id: str, title: str, body: str) -> dict:
+        """기존 페이지의 본문을 갈아끼운다.
+
+        Confluence 는 버전 번호를 낙관적 잠금으로 쓴다. 지금 버전을 읽어 +1 해서
+        보내야 하고, 그 사이 남이 고쳤으면 409 로 막힌다 — 남의 수정을 조용히
+        덮어쓰지 않게 하는 장치이므로 강제로 뚫지 않는다.
+        """
+        r = self.client.get(f"{self.base}/api/v2/pages/{page_id}",
+                            params={"body-format": "storage"})
+        current = self._check(r)
+        r = self.client.put(f"{self.base}/api/v2/pages/{page_id}", json={
+            "id": page_id, "status": "current", "title": title,
+            "body": {"representation": "storage", "value": body},
+            "version": {"number": current["version"]["number"] + 1,
+                        "message": "confluence_doc.py --update"},
+        })
+        return self._check(r)
+
     def add_labels(self, page_id: str, labels: list[str]) -> None:
         if not labels:
             return
@@ -243,6 +261,47 @@ def build_list(items: list[tuple[int, bool, str]], idx: int, depth: int) -> tupl
     return "".join(parts), idx
 
 
+TABLE_SEP_RE = re.compile(r"^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$")
+
+
+def split_row(line: str) -> list[str]:
+    """`| a | b |` 를 칸 목록으로 쪼갠다. 양끝 파이프는 있어도 없어도 된다."""
+    body = line.strip()
+    if body.startswith("|"):
+        body = body[1:]
+    if body.endswith("|"):
+        body = body[:-1]
+    return [c.strip() for c in body.split("|")]
+
+
+def is_table_start(lines: list[str], i: int) -> bool:
+    """머리글 줄 다음에 구분선(`|---|---|`)이 와야 표로 본다."""
+    return (lines[i].strip().startswith("|")
+            and i + 1 < len(lines) and TABLE_SEP_RE.match(lines[i + 1]) is not None)
+
+
+def take_table(lines: list[str], i: int) -> tuple[str, int]:
+    header = split_row(lines[i])
+    i += 2                                   # 머리글 + 구분선
+    rows = []
+    while i < len(lines) and lines[i].strip().startswith("|"):
+        rows.append(split_row(lines[i]))
+        i += 1
+    ncol = len(header)
+
+    def pad(cells):
+        return (cells + [""] * ncol)[:ncol]   # 칸 수가 어긋나도 표가 깨지지 않게 맞춘다
+
+    parts = ['<table data-layout="default"><tbody><tr>']
+    parts += [f"<th><p>{inline(c)}</p></th>" for c in pad(header)]
+    parts.append("</tr>")
+    for r in rows:
+        parts.append("<tr>" + "".join(
+            f"<td><p>{inline(c)}</p></td>" for c in pad(r)) + "</tr>")
+    parts.append("</tbody></table>")
+    return "".join(parts), i
+
+
 def take_list(lines: list[str], i: int) -> tuple[str, int]:
     items = []
     while i < len(lines):
@@ -257,8 +316,11 @@ def take_list(lines: list[str], i: int) -> tuple[str, int]:
 def markdown(text: str) -> str:
     """md 로 쓴 업무 내용을 storage 형식으로 바꾼다.
 
-    소제목(#), 목록(- / 1.), 코드블록(```), 문단, 인라인 `코드`·**굵게** 를 지원한다.
-    표나 링크 문법은 지원하지 않는다 — 링크는 links/pagelink 칸을 쓴다.
+    소제목(#), 목록(- / 1.), 표(| a | b |), 코드블록(```), 문단, 인라인 `코드`·**굵게**
+    를 지원한다. 링크 문법은 지원하지 않는다 — 링크는 links/pagelink 칸을 쓴다.
+
+    표는 머리글 줄 다음에 구분선(`|---|---|`)이 와야 표로 인식한다. 칸 수가 줄마다
+    어긋나면 머리글 기준으로 맞춘다.
     """
     lines = str(text or "").replace("\r\n", "\n").split("\n")
     out: list[str] = []
@@ -294,6 +356,11 @@ def markdown(text: str) -> str:
                 i += 1
             out.append(code_macro("\n".join(buf), lang))
             i += 1
+            continue
+        if is_table_start(lines, i):
+            flush()
+            block, i = take_table(lines, i)
+            out.append(block)
             continue
         if LIST_RE.match(line):
             flush()
@@ -535,6 +602,8 @@ def main() -> None:
     ap.add_argument("--list-users", action="store_true",
                     help="Jira 이슈 담당자로 지정할 수 있는 사람 목록을 출력")
     ap.add_argument("--dry-run", action="store_true", help="올리지 않고 제목·라벨·본문만 출력")
+    ap.add_argument("--update", action="store_true",
+                    help="같은 제목의 문서가 이미 있으면 번호를 붙이지 않고 본문을 갱신한다")
     ap.add_argument("--no-autonumber", action="store_true",
                     help="같은 제목이 있어도 번호를 붙이지 않고 그냥 멈춘다")
     args = ap.parse_args()
@@ -573,7 +642,10 @@ def main() -> None:
     if kind == "report" and not d.get("task"):
         sys.exit("보고 문서에는 세분화 업무명(task)이 필요하다.\n"
                  "가이드 제목 형식: [n차][대범주][소범주][세분화 업무명] 보고 문서")
-    title = resolve_title(cf, d, kind_ko, autonumber=not args.no_autonumber)
+    # --update 는 있는 문서를 고치는 것이므로 번호를 붙이면 안 된다. seq 를 준
+    # 경우에는 그 번호의 문서를 고친다.
+    title = resolve_title(cf, d, kind_ko,
+                          autonumber=not (args.no_autonumber or args.update))
     labels = [kind_ko, f'{d["round"]}차', slug(d["major"]), slug(d["minor"])]
     # 문서는 두 단계 아래에 들어간다 — 문서 정리 > <n>차 업무 분담 > 계획|보고 문서.
     # 차수 폴더에 계획과 보고를 섞어 두면 늘어날수록 찾기 어렵다.
@@ -602,15 +674,29 @@ def main() -> None:
         if title != base:
             print(f"참고  : '{base}' 가 이미 있어 번호를 붙였다")
         print(f"제목  : {title}")
+        existing = cf.find_page(title)
+        if args.update:
+            print(f"동작  : {'갱신 ' + existing if existing else '없어서 새로 생성'}")
         print(f"폴더  : {folder_path} (없으면 생성)")
         print(f"라벨  : {labels}")
         print(f"본문  : {len(body)}자")
         print(body)
         return
 
-    if cf.find_page(title):
+    existing = cf.find_page(title)
+    if existing and not args.update:
         sys.exit(f"같은 제목의 페이지가 이미 있다: {title}\n"
-                 "덮어쓰지 않는다. 제목을 바꾸거나 기존 페이지를 직접 수정할 것.")
+                 "덮어쓰지 않는다. --update 로 갱신하거나 제목을 바꿀 것.")
+
+    if existing:
+        page = cf.update_page(existing, title, body)
+        cf.add_labels(existing, labels)       # 라벨은 중복 추가해도 그대로다
+        print(f"갱신됨: {title}")
+        print(f"버전  : {page['version']['number']}")
+        print(f"라벨  : {', '.join(labels)}")
+        print(f"주소  : {CONFIG['base_url']}/spaces/{CONFIG['space_key']}"
+              f"/pages/{existing}")
+        return
 
     round_id = cf.find_folder(round_folder) or cf.create_folder(
         CONFIG["docs_folder_id"], round_folder)
