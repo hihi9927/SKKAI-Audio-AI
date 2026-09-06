@@ -42,16 +42,16 @@ Translation is **Google Translate by default** (`translate.googleapis.com` gtx e
 
 | Flag | Effect |
 |---|---|
-| `--gpt-translation` | `core/correct_and_trans.py` `GPTTranslator` — correction + translation in one call, `--context-window` sentences of history (default 5) |
-| `--correction` | `core/llm_corrector/gpt_corrector.py` `GPTCorrector` — correction only, translation still Google |
+| `--gpt-translation` | `core/translator/correct_and_trans.py` `GPTTranslator` — correction + translation in one call, `--context-window` sentences of history (default 5) |
+| `--correction` | `core/translator/gpt_corrector.py` `GPTCorrector` — correction only, translation still Google |
 | `--google-context` | Keeps Google Translate but feeds it prior sentences as context |
-| `--local-translation` | Loads a local seq2seq translator (`core/local_translator.py`) **into this process** — `--local-translation-model` picks MADLAD (`google/madlad400-3b-mt`) or NLLB |
+| `--local-translation` | Loads a local seq2seq translator (`core/translator/local_translator.py`) **into this process** — `--local-translation-model` picks MADLAD (`google/madlad400-3b-mt`) or NLLB |
 | `--local-translation-url` | Calls a standalone translation server over HTTP instead of loading a model here (see below). Wins over `--local-translation` — giving a URL means "do not load a model in this process" |
 
 ### Running several servers on one GPU
 
 Every translation call goes through `google_translate_async`, which delegates to the object set by
-`set_local_translator`. `RemoteTranslator` in [core/local_translator.py](core/local_translator.py)
+`set_local_translator`. `RemoteTranslator` in [core/translator/local_translator.py](core/translator/local_translator.py)
 implements the same `translate(text, target, source) -> (translation, source_code)` interface over
 HTTP, so `--local-translation-url` swaps it in at that one seam.
 
@@ -315,9 +315,9 @@ package. The symptom is a type error rather than an import error, e.g.
 
 | File | Role |
 |---|---|
-| `core/correct_and_trans.py` | `GPTTranslator` — correction + translation in one call (`--gpt-translation`) |
-| `core/llm_corrector/gpt_corrector.py` | `GPTCorrector` — correction only, async with retry/backoff (`--correction`) |
-| `core/local_translator.py` | Local seq2seq translators (MADLAD / NLLB) plus `RemoteTranslator`, the HTTP client for the standalone server |
+| `core/translator/correct_and_trans.py` | `GPTTranslator` — correction + translation in one call (`--gpt-translation`) |
+| `core/translator/gpt_corrector.py` | `GPTCorrector` — correction only, async with retry/backoff (`--correction`) |
+| `core/translator/local_translator.py` | Local seq2seq translators (MADLAD / NLLB) plus `RemoteTranslator`, the HTTP client for the standalone server |
 | `tools/local_translation_server.py` | Standalone translation server — loads the model once, serves `POST /translate` and `GET /health` |
 | `core/meaning_segmentator/utils/` | Research scripts: GPT `<SEG>` marking, context translation, COMET eval |
 | `core/research/` | CIF & context-scoring experiments (not on the runtime path) |

@@ -24,7 +24,7 @@ from aiohttp import web
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from core.local_translator import make_translator  # noqa: E402
+from core.translator.local_translator import make_translator  # noqa: E402
 
 logger = logging.getLogger("local-translation-server")
 

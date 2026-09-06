@@ -57,8 +57,8 @@ from qwen_asr.inference.sentence_boundary import (
 try:
     import sys as _sys
     _sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
-    from core.llm_corrector import GPTCorrector
-    from core.correct_and_trans import GPTTranslator
+    from core.translator import GPTCorrector
+    from core.translator import GPTTranslator
     _CORRECTOR_AVAILABLE = True
 except Exception:
     _CORRECTOR_AVAILABLE = False
@@ -2988,7 +2988,7 @@ class Qwen3ASRStreamingServer:
 
         if self.config.enable_gpt_translation:
             if not _CORRECTOR_AVAILABLE:
-                logger.warning("GPT translator requested but core.llm_corrector import failed — falling back to Google Translate")
+                logger.warning("GPT translator requested but core.translator import failed — falling back to Google Translate")
             elif not (self.config.api_key or os.environ.get("OPENAI_API_KEY")):
                 logger.warning("GPT translator requested but OPENAI_API_KEY not set — falling back to Google Translate")
             else:
@@ -3000,7 +3000,7 @@ class Qwen3ASRStreamingServer:
                 logger.info(f"GPT translator enabled (model={self.config.translation_model})")
         elif self.config.enable_correction:
             if not _CORRECTOR_AVAILABLE:
-                logger.warning("GPT corrector requested but core.llm_corrector import failed — correction disabled")
+                logger.warning("GPT corrector requested but core.translator import failed — correction disabled")
             elif not (self.config.api_key or os.environ.get("OPENAI_API_KEY")):
                 logger.warning("GPT corrector requested but OPENAI_API_KEY not set — correction disabled")
             else:
@@ -3293,13 +3293,13 @@ def main():
     if args.local_translation_url:
         # 원격이 먼저다. 주소를 준 건 "이 프로세스에 모델을 올리지 말라"는 뜻이므로
         # --local-translation 이 함께 켜져 있어도 모델을 올리지 않는다.
-        from core.local_translator import RemoteTranslator
+        from core.translator.local_translator import RemoteTranslator
 
         set_local_translator(RemoteTranslator(args.local_translation_url))
         logger.info(f"Remote translator enabled ({args.local_translation_url})")
     elif args.local_translation:
         try:
-            from core.local_translator import make_translator
+            from core.translator.local_translator import make_translator
             # 모델 이름으로 백엔드를 고른다 — madlad 가 들어가면 MADLAD, 아니면 NLLB.
             _local = make_translator(
                 model_name=args.local_translation_model,

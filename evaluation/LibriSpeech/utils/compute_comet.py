@@ -61,7 +61,7 @@ async def translate_files_with_context(
     파이프라인의 GPTTranslator + _segment_history 방식과 동일한 환경으로 번역.
     파일 간 병렬, 파일 내 세그먼트는 순차 처리.
     """
-    from core.correct_and_trans import GPTTranslator
+    from core.translator import GPTTranslator
 
     translator = GPTTranslator(api_key=api_key, model=model, max_context=max_context)
     src_lang_name = _LANG_NAMES.get(src_lang, src_lang)

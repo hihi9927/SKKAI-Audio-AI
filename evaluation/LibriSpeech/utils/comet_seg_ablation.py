@@ -272,7 +272,7 @@ async def translate_segmented_files(
     pbar: Optional[tqdm] = None,
 ) -> list[str]:
     """각 파일의 segments를 context 유지하며 순차 번역 후 concat."""
-    from core.correct_and_trans import GPTTranslator
+    from core.translator import GPTTranslator
 
     translator = GPTTranslator(api_key=api_key, model=model, max_context=max_context)
     src_lang_name = _LANG_NAMES.get(src_lang, src_lang)

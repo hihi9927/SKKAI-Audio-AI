@@ -220,12 +220,12 @@ python tools/partial_demo/partial_ws_client.py \
 
 ## 번역
 
-`run_server.sh` 는 `--local-translation` 으로 띄운다. `core/local_translator.py` 의
+`run_server.sh` 는 `--local-translation` 으로 띄운다. `core/translator/local_translator.py` 의
 NLLB-200-distilled-600M 을 로컬 GPU 에 올려 번역하므로 외부 호출이 없고, API 키 없이
 쓰던 무료 gtx 엔드포인트의 429 를 안 만난다.
 
 번역기는 `--local-translation-model` 로 고른다. 이름에 `madlad` 가 들어가면 MADLAD,
-아니면 NLLB 로 취급한다(`core/local_translator.py` 의 `make_translator`).
+아니면 NLLB 로 취급한다(`core/translator/local_translator.py` 의 `make_translator`).
 `run_server.sh` 는 `TRANSLATION_MODEL` 환경변수로 받는다.
 
 RTX 4090 실측 (num_beams=4, 시연 문장 9개):

@@ -1,13 +1,12 @@
 # core/
 
-파이프라인 추상화 + LLM 교정/번역 레이어. 서버 코드는 포함하지 않는다.
+번역 레이어 + 분절 연구 코드. 서버 코드는 포함하지 않는다.
 
 | 경로 | 역할 |
 |---|---|
-| @types.py | 파이프라인 각 단계 데이터클래스 (`AudioSegment` → `TranslationResult`) |
-| @modules.py | 추상 베이스 클래스 시그니처 (구현 없음) |
-| `correct_and_trans.py` | `GPTTranslator` — 교정 + 번역 단일 GPT 호출. 서버 `--gpt-translation`으로 활성화 |
-| `llm_corrector/gpt_corrector.py` | `GPTCorrector` — 교정만. 서버 `--correction`으로 활성화 |
+| `translator/correct_and_trans.py` | `GPTTranslator` — 교정 + 번역 단일 GPT 호출. 서버 `--gpt-translation`으로 활성화 |
+| `translator/gpt_corrector.py` | `GPTCorrector` — 교정만. 서버 `--correction`으로 활성화 |
+| `translator/local_translator.py` | 로컬 seq2seq 번역기(MADLAD/NLLB)와, 독립 번역 서버를 부르는 HTTP 클라이언트 `RemoteTranslator` |
 | `meaning_segmentator/utils/` | 의미 분절 연구 스크립트 (GPT `<SEG>` 마킹, 점진적 컨텍스트 번역, COMET 평가) |
 | `meaning_segmentator/autoseg/` | 분절 프롬프트 자동 생성 에이전트 루프. 코드가 하는 일 @meaning_segmentator/autoseg/AUTOSEG_SIMPLIFY.md, 사용법 @meaning_segmentator/autoseg/README.md |
 | ⤷ 근거·기각 기록 | 왜 이 지표 조합인가, 무엇을 검토하고 버렸나, 순위 축 진단, 참조 기반 평가 프로토콜 @meaning_segmentator/autoseg/AUTOSEG_DETAILS.md |
@@ -20,10 +19,8 @@
 
 ## 규칙
 
-- `modules.py`에는 추상 시그니처만 — 구현 추가 금지.
 - 학습/실험 코드는 `research/` 아래에만. 런타임 파일 옆에 두지 말 것.
-- 런타임 경로(`types.py`, `modules.py`, `correct_and_trans.py`, `llm_corrector/`) 의존성은 stdlib, `numpy`, `openai`만. 연구 스크립트는 각자 `requirements.txt`를 갖는다 (예: `meaning_segmentator/requirements.txt`).
+- 런타임 경로(`translator/`) 의존성은 GPT 쪽이 stdlib + `openai`, 로컬 번역기가 `transformers`/`torch` 다. 둘은 서로를 요구하지 않으며, `translator/__init__.py` 가 이름을 쓸 때 가져오는 것도 그래서다 — 로컬 번역 서버는 `openai` 없이 뜬다. 연구 스크립트는 각자 `requirements.txt`를 갖는다 (예: `meaning_segmentator/requirements.txt`).
 - `autoseg/`는 Letsur AI Gateway / OpenAI / OpenAI 호환 로컬 서버를 쓴다 — 상대는 **`--provider {letsur,openai,local}`** 가 정하고(기본 `letsur`), 키는 그 프로바이더의 환경변수 하나만 본다 (`letsur`→`LETSUR_API_KEY`, `openai`→`OPENAI_API_KEY`, `local`→키 불필요). 환경변수를 순서대로 뒤지거나 `sk-` 접두사로 추측하던 종전 방식은 없앴다 — `.env` 에 키가 둘이면 명령줄만 봐서 어디로 갔는지 알 수 없었고 런 기록에도 안 남았다. 프로바이더와 해석된 `api_base_url` 은 런의 `config.json` 에 기록된다. 기본 모델은 `gpt-5-mini` (실측 근거 @meaning_segmentator/autoseg/AUTOSEG_DETAILS.md '순위 축 진단'). 에이전트 호출은 `httpx`만 있으면 되지만, 지표 백엔드(COMET/CometKiwi)는 `unbabel-comet` + GPU가 필요하다. CometKiwi는 HF 게이트 모델이라 라이선스 동의 + `hf auth login` 선행 (구버전은 `huggingface-cli login`).
 - **관문을 먼저 통과시킨다.** consistency 백엔드를 바꾸면 `validity_check.py`, adequacy 백엔드를 바꾸면 `adequacy_check.py`, 판정자 모델이나 `JUDGE_SYSTEM`을 바꾸면 `judge_check.py`. 지표는 틀리면 숫자로 드러나지만 판정자는 조용히 루프를 발산시킨다. NLI contradiction 의 잡음 바닥·순위 정렬 재검은 `noise_floor.py`.
 - 언어별 자원(형태소 분석기·의존 파서)을 `autoseg/`에 넣지 말 것. 언어 지식은 `measured_profile.json`(측정)과 `language_profile.json`(LLM)으로만 들어간다.
-- `types.py`의 단계를 추가·변경하면 `modules.py` 시그니처와 `Qwen3-ASR/examples/streaming_websocket_server.py` 핸들러도 같이 고칠 것.
