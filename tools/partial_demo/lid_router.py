@@ -196,6 +196,7 @@ class VerdictTracker:
         self._offset = 0.0          # 잘라낸 앞부분의 길이(초)
         self._audio_sec = 0.0       # 지금까지 받은 전체 오디오 길이(초)
         self._last_run = -1.0
+        self._last_segments: list[tuple] = []   # 마지막 VAD 스캔 결과 (재사용용)
         self.verdicts: list[list] = []   # [시작초, 끝초 또는 None, 언어]
 
     @property
@@ -255,7 +256,8 @@ class VerdictTracker:
         return None
 
     def _update_sync(self) -> None:
-        for start, end, closed in self._segments_sync():
+        self._last_segments = self._segments_sync()
+        for start, end, closed in self._last_segments:
             if (end - start) <= self.MIN_SPEECH_SEC:
                 continue          # 숨소리·잡음 조각. 여기서 나온 판정은 못 믿는다.
             existing = self._find_overlap(start, end)
@@ -275,12 +277,40 @@ class VerdictTracker:
                 existing[2] = lang
         self.verdicts.sort(key=lambda v: v[0])
 
-    async def update(self) -> None:
-        """새 오디오가 `step_sec` 만큼 쌓였을 때만 실제로 돌린다."""
-        if self._audio_sec - self._last_run < self.step_sec:
+    async def update(self, force: bool = False) -> None:
+        """새 오디오가 `step_sec` 만큼 쌓였을 때만 실제로 돌린다.
+
+        `force` 는 판정을 기다리는 쪽에서 쓴다 — 오디오가 더 안 들어와도 이미 닫힌
+        구간을 지금 판정해야 대기가 풀린다.
+        """
+        if not force and self._audio_sec - self._last_run < self.step_sec:
             return
         self._last_run = self._audio_sec
         await asyncio.to_thread(self._update_sync)
+
+    def settled(self, end: Optional[float]) -> bool:
+        """`end` 이전에 끝난 발화가 전부 판정됐나.
+
+        **"end 를 품는 판정이 있나" 로 물으면 안 된다.** end 는 커밋 경계라 발화
+        사이 침묵에 떨어지는 일이 흔하고, 그러면 어떤 발화 구간도 그걸 품지 않아
+        조건이 영영 참이 되지 않는다. 실제로 그렇게 물었더니 거의 모든 final 이
+        1초 타임아웃을 그대로 물었다.
+
+        정작 막아야 하는 건 **아직 판정 안 된 발화가 앞에 있는데 먼저 도착한 final
+        이 그보다 더 앞선 판정을 타고 나가는 것**이다. 그래서 end 이전에 닫힌 발화
+        구간이 모두 판정을 가졌는지만 본다. 너무 짧아 애초에 판정하지 않는 조각은
+        기다려도 안 생기므로 제외한다.
+        """
+        if end is None:
+            return True
+        for start, seg_end, closed in self._last_segments:
+            if not closed or seg_end > end:
+                continue
+            if (seg_end - start) <= self.MIN_SPEECH_SEC:
+                continue
+            if self._find_overlap(start, seg_end) is None:
+                return False
+        return True
 
     def lang_at(self, t: Optional[float]) -> Optional[str]:
         """시각 t 에 유효한 판정. t 가 None 이면 가장 최근 판정."""
@@ -288,7 +318,61 @@ class VerdictTracker:
             return None
         if t is None:
             return self.verdicts[-1][2]
-        # t 보다 앞에서 시작한 구간 중 가장 늦은 것. 커밋은 발화보다 뒤에 오므로
-        # 약간의 여유를 둔다.
-        picked = [v for v in self.verdicts if v[0] <= t + 0.5]
-        return (picked[-1] if picked else self.verdicts[0])[2]
+        return self.lang_for_end(t)
+
+    def lang_for_range(self, start: Optional[float], end: Optional[float]):
+        """구간 [start, end] 를 가장 많이 덮는 판정.
+
+        **끝점 하나로는 못 가른다.** 커밋 경계는 발화가 끝난 한참 뒤에 찍힐 수 있고,
+        앞뒤 발화 사이 침묵이 서버 VAD 기준(800ms)보다 짧으면 아예 다음 발화 한복판에
+        떨어진다. 실제로 영어 발화의 커밋이 7.0초에 찍혔는데 그 시각은 5.8초에 시작한
+        한국어 구간 안이라, 영어 서버 결과가 한국어 판정으로 몰려 버려졌다. 같은
+        발화를 낸 한국어 서버 것도 (영어 판정이라) 버려져 발화가 통째로 사라졌다.
+
+        서버가 start 를 안 채우므로(항상 0.0) 호출하는 쪽에서 **직전 final 의 end**
+        를 시작점으로 넘겨 준다. 그 구간과 가장 많이 겹치는 판정을 고른다.
+        """
+        if not self.verdicts:
+            return None
+        if end is None:
+            return self.verdicts[-1][2]
+        a = 0.0 if start is None else min(start, end)
+        best, best_overlap = None, 0.0
+        for v in self.verdicts:
+            v_end = v[1] if v[1] is not None else self._audio_sec
+            overlap = min(end, v_end) - max(a, v[0])
+            if overlap > best_overlap:
+                best, best_overlap = v, overlap
+        if best is not None:
+            return best[2]
+        return self.lang_for_end(end)
+
+    def lang_for_end(self, end: Optional[float]):
+        """커밋 경계 `end` 로 그 발화의 판정을 찾는다.
+
+        **이 서버는 final.start 를 안 채운다** — segment_start_time 이 0 으로
+        초기화된 뒤 갱신되지 않아 항상 0.0 이 온다. 그래서 구간이 아니라 끝점
+        하나로 골라야 한다.
+
+        **앞쪽으로만 본다.** 종전에는 `v[0] <= end + 0.5` 로 뒤쪽 여유를 뒀는데,
+        커밋 경계는 발화가 끝난 뒤 침묵까지 밀리므로 앞 발화의 final 이 다음 발화의
+        판정에 걸렸다. 한국어가 3.6초에 끝나고 영어가 4.5초에 시작할 때 한국어
+        final 의 end 가 4.4 면 영어 판정으로 잡혀 **버려지고**, 같은 자리에서 영어
+        서버가 낸 엉뚱한 문장이 대신 통과한다. 유실과 중첩이 한꺼번에 생긴다.
+
+        순서: end 를 품는 구간이 있으면 그것, 없으면(침묵에서 끊긴 커밋) end 이전에
+        **끝난** 구간 중 마지막.
+        """
+        if not self.verdicts:
+            return None
+        if end is None:
+            return self.verdicts[-1][2]
+
+        for v in self.verdicts:
+            v_end = v[1] if v[1] is not None else self._audio_sec
+            if v[0] <= end <= v_end:
+                return v[2]
+
+        ended = [v for v in self.verdicts
+                 if (v[1] if v[1] is not None else self._audio_sec) <= end]
+        return (ended[-1] if ended else self.verdicts[0])[2]

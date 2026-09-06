@@ -44,6 +44,7 @@ import logging
 import mimetypes
 import pathlib
 import sys
+import time
 
 import websockets
 from websockets.asyncio.server import serve
@@ -53,6 +54,7 @@ from websockets.http11 import Response
 ROOT = pathlib.Path(__file__).resolve().parent / "web"
 ROUTES: dict[str, str] = {}
 DUAL = False          # --dual. 모든 서버에 보내고 발화마다 고른다.
+TRANSLATE_URL = None  # --translate-url. 번역 방향을 바로잡을 때 쓴다.
 DEFAULT_UPSTREAM = "ws://127.0.0.1:8766"
 PORT = 8080
 LID = None            # LidRouter. --lid 를 켰을 때만 채워진다.
@@ -166,6 +168,79 @@ def _secs(v):
         return None
 
 
+async def wait_for_verdict(tracker, end, timeout: float = 1.0, step: float = 0.1):
+    """그 구간 판정이 생길 때까지 잠깐 기다린다.
+
+    **기다리지 않으면 전환 지점에서 중첩이 난다.** 판정이 아직 없으면 lang_for_end
+    는 직전 판정으로 되돌아가는데, 언어가 막 바뀐 자리에서는 그 추측이 구조적으로
+    틀린다. 실제로 영어를 말하다 '안녕하세요' 로 넘어갈 때, 먼저 도착한 영어 서버의
+    'Hello,' 가 직전 영어 판정을 타고 통과했고, 잠시 뒤 한국어 판정이 생기면서
+    한국어 서버의 '안녕하세요.' 도 통과해 같은 발화가 두 번 나왔다.
+
+    판정은 발화 구간이 닫힌 뒤에 붙으므로 보통 수백 ms 안에 선다. 그때까지만
+    붙들었다가, 안 서면 종전처럼 추측으로 넘어간다.
+    """
+    if end is None or tracker.settled(end):
+        return 0.0
+    # 진입할 때 한 번 강제로 돌린다. 이미 닫힌 구간이면 여기서 바로 판정이 붙는다.
+    # 그 뒤로는 폴링만 한다 — _update_sync 는 silero 를 버퍼 전체에 돌리고 GPU 락을
+    # 잡으므로, 50ms 마다 강제로 부르면 그 자체가 지연이 된다.
+    t0 = time.perf_counter()
+    await tracker.update(force=True)
+    while not tracker.settled(end):
+        waited = time.perf_counter() - t0
+        if waited >= timeout:
+            break
+        await asyncio.sleep(step)
+        if waited > 0.3:                  # 오래 걸리면 한 번 더 밀어 준다
+            await tracker.update(force=True)
+    return time.perf_counter() - t0
+
+
+async def fix_direction(data, verdict_lang, lang_map, target_lang):
+    """ASR 서버가 언어를 잘못 신고해 뒤집힌 번역을 판정 언어 기준으로 다시 한다.
+
+    **모델은 프록시가 고르는데 번역 방향은 서버가 정한다.** 서버는 자기 전사에
+    붙은 `language` 로 소스를 판단하는데, 그 신고는 2초 창 실측에서 영어 파인튜닝
+    53% 로 못 믿을 값이다. 게다가 VAD 컷 없이 한 slot 안에서 언어가 바뀌면 slot
+    전체가 앞 언어로 디코딩돼, 한국어 문장이 `language English` 를 달고 나온다.
+    그러면 소스를 영어로 보고 목표를 한국어로 잡아, 이미 한국어인 문장을 한국어로
+    "번역" 해 원문이 그대로 나온다. 실제로 `Oh, 반갑습니다.` 가 `오, 안녕하세요.` 로
+    나왔다.
+
+    판정은 오디오를 보고 낸 값이므로 이쪽이 옳다. 신고가 판정과 다를 때만 다시 번역한다.
+    """
+    declared = (data.get("language") or "").lower()
+    if not TRANSLATE_URL or not verdict_lang or declared == verdict_lang:
+        return data, False
+    text = (data.get("original") or "").strip()
+    if not text:
+        return data, False
+    target = (lang_map or {}).get(verdict_lang) or target_lang
+    if not target or target == verdict_lang:
+        return data, False
+    try:
+        import aiohttp
+
+        async with aiohttp.ClientSession(
+                timeout=aiohttp.ClientTimeout(total=10)) as sess:
+            async with sess.post(f"{TRANSLATE_URL.rstrip('/')}/translate",
+                                 json={"text": text, "target": target,
+                                       "source": verdict_lang}) as resp:
+                resp.raise_for_status()
+                body = await resp.json()
+    except Exception as e:
+        print(f"retranslate failed: {e!r}", flush=True)
+        return data, False
+    fixed = body.get("translation") or ""
+    if not fixed:
+        return data, False
+    data = dict(data)
+    data["language"] = verdict_lang
+    data["translation"] = fixed
+    return data, True
+
+
 async def run_dual(client, start_raw, pending_binary):
     """라우팅 표의 모든 서버에 같은 오디오를 보내고, 발화 구간마다 한쪽만 통과시킨다.
 
@@ -180,6 +255,12 @@ async def run_dual(client, start_raw, pending_binary):
 
     langs = list(ROUTES)                       # 예: ["ko", "en"]
     primary = langs[0]
+    try:
+        _start = json.loads(start_raw)
+    except Exception:
+        _start = {}
+    lang_map = _start.get("langMap") if isinstance(_start.get("langMap"), dict) else {}
+    target_lang = _start.get("targetLang") or ""
     tracker = VerdictTracker(LID)
     for chunk in pending_binary:
         tracker.feed(chunk)
@@ -204,6 +285,9 @@ async def run_dual(client, start_raw, pending_binary):
                     await up.send(msg)
 
         async def pump_upstream(lang):
+            # 이 서버가 마지막으로 확정한 오디오 지점. 다음 final 의 시작점으로 쓴다 —
+            # 서버가 final.start 를 안 채우기 때문이다.
+            group_start = 0.0
             async for msg in ups[lang].__aiter__():
                 if not isinstance(msg, str):
                     continue                   # 위쪽이 이진을 보낼 일은 없다
@@ -218,10 +302,34 @@ async def run_dual(client, start_raw, pending_binary):
                     if lang == primary:        # ready 등은 한 벌만
                         await client.send(msg)
                     continue
-                # final 은 자기 오디오 끝 시각으로, partial 은 지금 시각으로 본다.
-                at = _secs(data.get("end")) if kind == "final" else None
-                if tracker.lang_at(at) == lang:
+                # final 은 자기 오디오 구간으로, partial 은 지금 시각으로 본다.
+                # final 은 커밋 경계로 그 발화의 판정을 찾는다. start 는 이 서버가
+                # 안 채워서(항상 0.0) 쓸 수 없다.
+                b = _secs(data.get("end")) if kind == "final" else None
+                if kind == "final":
+                    waited = await wait_for_verdict(tracker, b)
+                    span = (group_start, b)
+                    pick = tracker.lang_for_range(*span)
+                    if waited > 0.05:
+                        print(f"wait {waited:.2f}s for end={b} ({lang})", flush=True)
+                    if b is not None and b > group_start:
+                        # 같은 경계에서 여러 final 이 나오면 같은 구간을 공유한다.
+                        group_start = b
+                else:
+                    pick = tracker.lang_at(None)
+                if pick == lang:
+                    if kind == "final":
+                        data, fixed = await fix_direction(
+                            data, pick, lang_map, target_lang)
+                        if fixed:
+                            print(f"fix dir end={b} {lang}: "
+                                  f"{(data.get('original') or '')[:30]!r} -> "
+                                  f"{(data.get('translation') or '')[:30]!r}", flush=True)
+                            msg = json.dumps(data, ensure_ascii=False)
                     await client.send(msg)
+                elif kind == "final":
+                    print(f"drop {lang} [{span[0]:.1f}~{span[1]}] -> {pick}: "
+                          f"{(data.get('original') or '')[:40]!r}", flush=True)
 
         tasks = [asyncio.create_task(pump_client())]
         tasks += [asyncio.create_task(pump_upstream(l)) for l in langs]
@@ -324,6 +432,8 @@ async def main():
     if LID is not None:
         mode = "양쪽 동시 전송 후 발화별 선택" if DUAL else "스트림당 1회 라우팅"
         print(f"  음성 판정: {LID.model_name}, 창 {LID.window_sec}s — {mode}", flush=True)
+    if TRANSLATE_URL:
+        print(f"  번역 방향 교정: {TRANSLATE_URL}", flush=True)
     async with serve(handler, "0.0.0.0", PORT, process_request=process_request,
                      ping_interval=None, max_size=None):
         await asyncio.Future()
@@ -348,6 +458,10 @@ if __name__ == "__main__":
     ap.add_argument("--lid-max-wait", type=float, default=5.0,
                     help="이만큼 들어도 판정이 안 서면 start.lang 규칙으로 되돌아간다")
     ap.add_argument("--lid-device", default="cuda")
+    ap.add_argument("--translate-url", default=None,
+                    help="단독 번역 서버 주소(예: http://127.0.0.1:8770). 주면 ASR "
+                         "서버가 언어를 잘못 신고해 번역 방향이 뒤집힌 final 을 "
+                         "판정 언어 기준으로 다시 번역한다")
     args = ap.parse_args()
 
     logging.basicConfig(level=logging.INFO,
@@ -359,6 +473,7 @@ if __name__ == "__main__":
                         else f"ws://127.0.0.1:{args.default_upstream}")
 
     DUAL = args.dual
+    TRANSLATE_URL = args.translate_url
     if args.lid or args.dual:
         sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
         from lid_router import LidRouter

@@ -137,6 +137,44 @@ re-cuts the same utterance slightly differently as audio accumulates, which grew
 verdicts before the fix and 10 after. And spans of 0.5s or less are not judged at all, since that is where
 accuracy falls to 82.5%; a 0.4s sliver at the head of a Korean utterance had been coming back `en`.
 
+**Locating a `final` on the verdict timeline is the delicate part**, because this server never fills
+`final.start` — `segment_start_time` is initialised to 0.0 and never updated, so every final claims to start
+at 0.0. Matching on `end` alone fails in both directions, and each failure was observed:
+
+- With forward slack (`verdict.start <= end + 0.5`), the final of the *previous* utterance lands on the
+  *next* utterance's verdict, because a commit boundary runs past the speech into the following silence. The
+  correct output was dropped and the other server's rendering of the same audio passed in its place — one bug
+  producing both a gap and a duplicate.
+- With no span at all, a commit boundary that slides into the *middle* of the next utterance (when the pause
+  is shorter than the server's 800ms VAD threshold) matches the wrong verdict, and since the other server's
+  copy is dropped for being the wrong language, the whole utterance disappears.
+
+So the proxy reconstructs the span itself: a final covers `(previous final's end from that same server, this
+final's end)`, and the verdict with the largest overlap wins. Several finals sharing one boundary share the
+span.
+
+Deciding also has to wait for the verdict to exist. When it does not, falling back to the previous verdict is
+wrong precisely at a language switch — the en server's `Hello,` rode the preceding English verdict out to the
+client, and moments later the ko verdict arrived and let `안녕하세요.` through as well. `wait_for_verdict`
+holds the message, but its condition must be **"is every speech segment that closed before this `end` judged
+yet"**, not "does a verdict contain `end`": commit boundaries routinely land in silence, where no verdict will
+ever contain them, and asking the wrong question made every final pay the full 1s timeout (median latency
+1.16s instead of 0.22s).
+
+**Routing the audio is not enough — the translation direction still comes from the ASR's self-report.** The
+server derives its target from `client_lang_map[detected_source]`, and `detected` is the same label measured
+at 53% for the en finetune. When a slot mixes languages (no VAD cut between them), the whole slot decodes
+under the earlier language, so Korean speech arrives tagged `language English`, the target resolves to `ko`,
+and the sentence is "translated" from Korean into Korean — `Oh, 반갑습니다.` came out as `오, 안녕하세요.`.
+`--translate-url` lets the proxy re-translate against the verdict when the two disagree.
+
+The root fix is to stop the slot from mixing languages at all: `init_streaming_state` already accepts
+`language=` and turns it into the `language X<asr_text>` prompt prefix, but `_new_stream_slot` never passes it.
+Cutting the slot on a language change and forcing the language there would fix the transcript, not just the
+direction — forcing alone would not, since the previous language's text stays in the prefix. That work touches
+the slot-switch path, which is the most exception-heavy code in the server, so it is deliberately left
+separate from this change.
+
 `--vad-min-silence` sets how much silence ends an utterance (default 800ms). Measured against 400ms on the
 same audio: English segmentation identical (13), Korean **less** fragmented at 400 (16 → 14), latency within
 0.05s either way, and en→ko chrF/BLEU identical at 34.0/13.9. Nothing recommends the change, so 800 stands.
