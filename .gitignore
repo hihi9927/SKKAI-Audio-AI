@@ -6,7 +6,14 @@ weights/
 .venv-autoseg/
 # StreamLAAL 평가용 venv (161MB)
 .venv-streamlaal/
+# OS·IDE 부스러기 — 저장소 전역. STiTy-Mobile/.gitignore 에만 있던 것을 올렸다
+# (거기 있으면 그 폴더 밖에서는 아무것도 안 막힌다).
 .DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
 *.pt
 !*cif.pt
 *.pth

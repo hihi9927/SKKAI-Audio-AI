@@ -4,6 +4,7 @@ ios/
 .expo/
 
 # Dependencies
+# 루트도 덮지만, 이 앱을 별도 저장소로 떼어도 그대로 동작하게 남긴다.
 node_modules/
 
 # Build artifacts
@@ -16,12 +17,4 @@ dist/
 npm-debug.log*
 yarn-error.log*
 
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
+# IDE·OS 부스러기는 루트 .gitignore 에 있다 (저장소 전역).
