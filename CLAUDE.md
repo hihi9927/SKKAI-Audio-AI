@@ -175,6 +175,29 @@ direction — forcing alone would not, since the previous language's text stays 
 the slot-switch path, which is the most exception-heavy code in the server, so it is deliberately left
 separate from this change.
 
+**Confidence buys time.** whisper returns a distribution over its language tokens, and taking only the argmax
+throws away the part that says how sure it is. Measured over the same 166 clips (whisper-base, VAD-trimmed),
+keeping only predictions above 0.8 turns short windows from unusable into decisive:
+
+| window | argmax | at confidence ≥ 0.8 |
+|---|---|---|
+| 0.3s | 71.1% | 28.3% of clips, 97.9% correct |
+| 0.5s | 82.5% | 45.8% of clips, 100% correct |
+| 0.7s | 88.0% | 60.8% of clips, 98.0% correct |
+| 1.0s | 92.8% | 76.5% of clips, 99.2% correct |
+
+So `VerdictTracker.EARLY_STEPS` walks 0.3s@0.90 → 0.5s@0.85 → 0.7s@0.80 and settles as soon as one clears,
+falling back to a 1.0s argmax otherwise. Over the 166 clips that rule scores **92.8% — identical to the fixed
+1.0s window — while listening for a median of 0.70s**. It costs nothing extra to try several windows because
+whisper pads every input to 30s, so a 0.3s clip and a 3s clip take the same 9ms. Ten of the twelve errors are
+clips that never cleared a threshold and went the full 1.0s, which is the filter working as intended.
+
+An early verdict is locked so a later, longer look cannot overturn it — but **only when the language is one
+the route table knows**. Without that condition a Korean utterance was locked to `zh` at 0.5s and stayed
+there. And a verdict outside the route table must fall back to the default server rather than matching
+nothing: `zh` matched neither the ko nor the en upstream, so both copies were dropped and the utterance
+vanished from the transcript entirely.
+
 `--vad-min-silence` sets how much silence ends an utterance (default 800ms). Measured against 400ms on the
 same audio: English segmentation identical (13), Korean **less** fragmented at 400 (16 → 14), latency within
 0.05s either way, and en→ko chrF/BLEU identical at 34.0/13.9. Nothing recommends the change, so 800 stands.

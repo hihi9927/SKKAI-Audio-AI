@@ -50,8 +50,10 @@ class LidRouter:
 
     def __init__(self, model_name: str = "openai/whisper-base",
                  window_sec: float = 1.0, max_wait_sec: float = 5.0,
-                 device: str = "cuda"):
+                 device: str = "cuda", known_langs=None):
         self.model_name = model_name
+        # 라우팅 표에 있는 언어들. 조기 확정을 잠글지 판단하는 데 쓴다.
+        self.known_langs = set(known_langs or ())
         self.window_sec = window_sec
         self.max_wait_sec = max_wait_sec
         self.device = device
@@ -94,7 +96,20 @@ class LidRouter:
         closed = len(ts) > 1 or (len(audio) - first["end"]) >= SR * 0.3
         return first["start"], first["end"], closed
 
-    def _classify(self, audio: np.ndarray) -> str:
+    def _classify(self, audio: np.ndarray, with_conf: bool = False):
+        """언어 코드. `with_conf` 면 (언어, 확신도) 를 준다.
+
+        확신도는 언어 토큰들 안에서만 정규화한 확률이다. argmax 만 쓰면 짧은 창을
+        못 쓰지만, 확신도로 거르면 쓸 수 있다 — 166개 실측(whisper-base):
+
+            창     argmax     확신 0.8 이상만
+            0.3s   71.1%      28.3% 를 97.9% 로
+            0.5s   82.5%      45.8% 를 100% 로
+            0.7s   88.0%      60.8% 를 98.0% 로
+            1.0s   92.8%      76.5% 를 99.2% 로
+
+        0.5초에 절반 가까이가 확정된다는 뜻이다. 나머지만 더 들으면 된다.
+        """
         torch = self._torch
         feats = self.proc.feature_extractor(
             audio, sampling_rate=SR, return_tensors="pt").input_features
@@ -103,7 +118,11 @@ class LidRouter:
         with torch.inference_mode():
             logits = self.model(feats, decoder_input_ids=dec).logits[0, -1]
         ids = list(self.lang_ids)
-        return self.lang_ids[ids[int(torch.argmax(logits[ids]))]]
+        sub = logits[ids].float()
+        probs = torch.softmax(sub, dim=-1)
+        k = int(torch.argmax(probs))
+        lang = self.lang_ids[ids[k]]
+        return (lang, float(probs[k])) if with_conf else lang
 
     def _decide_sync(self, audio: np.ndarray, flush: bool = False):
         """(언어코드 또는 None, 사유). None 이면 아직 더 들어야 한다.
@@ -228,15 +247,35 @@ class VerdictTracker:
             out.append((start, end, closed))
         return out
 
-    def _classify_span(self, start: float, end: float) -> Optional[str]:
+    # 발화 시작 후 이만큼 들었을 때 이 확신도를 넘으면 그 자리에서 확정한다.
+    # 위 실측표에서 오답이 없거나 1건 수준인 조합만 골랐다. 어느 단계도 못 넘기면
+    # 창(window_sec)을 다 채운 뒤 argmax 로 확정한다.
+    EARLY_STEPS = ((0.3, 0.90), (0.5, 0.85), (0.7, 0.80))
+
+    def _classify_span(self, start: float, end: float, early: bool = True):
+        """(언어, 얼마나 듣고 정했나) 또는 (None, None).
+
+        짧은 창부터 올라가며 확신도가 임계를 넘으면 즉시 확정한다. whisper 는 입력을
+        30초로 패딩하므로 창을 줄여도 추론 시간이 같다(9ms) — 여러 창을 시도해도
+        비용이 거의 안 는다.
+        """
         a = int((start - self._offset) * SR)
         b = int((end - self._offset) * SR)
         span = self._buf[max(0, a):max(0, b)]
         if len(span) < SR * 0.2:
-            return None
-        span = span[: int(SR * self.router.window_sec)]
+            return None, None
+        avail = len(span) / SR
         with self.router._gpu_lock:
-            return self.router._classify(span)
+            if early:
+                for secs, need in self.EARLY_STEPS:
+                    if secs > avail or secs >= self.router.window_sec:
+                        continue
+                    lang, conf = self.router._classify(
+                        span[: int(SR * secs)], with_conf=True)
+                    if conf >= need:
+                        return lang, secs
+            lang = self.router._classify(span[: int(SR * self.router.window_sec)])
+        return lang, min(avail, self.router.window_sec)
 
     # 0.5초 창 정확도가 whisper-base 기준 82.5% 다. 그보다 짧은 조각의 판정은
     # 못 믿는다 — 실제로 한국어 발화 앞머리 0.4초가 en 으로 잘못 찍혔다.
@@ -262,19 +301,42 @@ class VerdictTracker:
                 continue          # 숨소리·잡음 조각. 여기서 나온 판정은 못 믿는다.
             existing = self._find_overlap(start, end)
             if existing is not None and existing[1] is not None:
-                continue                      # 이미 확정된 구간
-            # 창을 채웠거나 구간이 닫혔을 때만 판정한다. 그 전에는 근거가 모자란다.
-            if not closed and (end - start) < self.router.window_sec:
+                continue                      # 이미 닫힌 구간
+            if existing is not None and len(existing) > 3 and existing[3]:
+                # 확신도로 일찍 확정한 값은 다시 뒤집지 않는다. 더 긴 창이 늘 더
+                # 정확하지는 않다 — 1.0초 argmax 는 92.8% 인데, 0.5초에서 확신
+                # 0.85 를 넘긴 부분집합은 이 표본에서 오답이 없었다.
+                existing[1] = end if closed else None
                 continue
-            lang = self._classify_span(start, end)
+            # 창을 채웠거나 구간이 닫혔으면 판정한다. 아직 말하는 중이라도 조기
+            # 확정 단계의 최소 길이(EARLY_STEPS 의 첫 값)를 넘겼으면 시도한다 —
+            # 확신도가 임계를 넘으면 창을 다 안 채워도 확정된다.
+            earliest = min((step for step, _ in self.EARLY_STEPS),
+                           default=self.router.window_sec)
+            if not closed and (end - start) < min(earliest, self.router.window_sec):
+                continue
+            lang, used = self._classify_span(start, end)
             if lang is None:
                 continue
+            # 창을 다 안 채우고 정해졌다면 확신도로 일찍 확정된 것이다.
+            # 다만 라우팅 표에 없는 언어로 나왔으면 잠그지 않는다 — 한국어 발화가
+            # 0.5초 만에 zh 로 확정돼 그대로 굳는 일이 실제로 있었다. 그런 값은
+            # 더 들으면 바뀔 여지를 남긴다.
+            locked = (used is not None and used < self.router.window_sec
+                      and (not self.router.known_langs
+                           or lang in self.router.known_langs))
             if existing is None:
-                self.verdicts.append([start, end if closed else None, lang])
+                self.verdicts.append([start, end if closed else None, lang, locked])
+                logger.debug(f"[verdict] {start:.1f}s {lang} ({used:.2f}s 듣고"
+                             f"{', 확정' if locked else ''})")
             else:
                 existing[0] = min(existing[0], start)
                 existing[1] = end if closed else None
                 existing[2] = lang
+                if len(existing) > 3:
+                    existing[3] = locked
+                else:
+                    existing.append(locked)
         self.verdicts.sort(key=lambda v: v[0])
 
     async def update(self, force: bool = False) -> None:

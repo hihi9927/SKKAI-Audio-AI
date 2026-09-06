@@ -255,6 +255,8 @@ async def run_dual(client, start_raw, pending_binary):
 
     langs = list(ROUTES)                       # 예: ["ko", "en"]
     primary = langs[0]
+    # 기본 서버가 맡은 언어. 판정이 표에 없는 언어로 나왔을 때 이쪽으로 돌린다.
+    fallback = next((l for l in langs if ROUTES[l] == DEFAULT_UPSTREAM), primary)
     try:
         _start = json.loads(start_raw)
     except Exception:
@@ -310,6 +312,10 @@ async def run_dual(client, start_raw, pending_binary):
                     waited = await wait_for_verdict(tracker, b)
                     span = (group_start, b)
                     pick = tracker.lang_for_range(*span)
+                    # ko/en 두 대만 띄워 두었는데 판정이 zh·ja 로 나오는 일이 있다.
+                    # 그대로 두면 어느 서버도 안 맞아 발화가 통째로 사라진다.
+                    if pick is not None and pick not in ROUTES:
+                        pick = fallback
                     if waited > 0.05:
                         print(f"wait {waited:.2f}s for end={b} ({lang})", flush=True)
                     if b is not None and b > group_start:
@@ -343,7 +349,8 @@ async def run_dual(client, start_raw, pending_binary):
         print(f"dual relay ended: {e!r}", flush=True)
     finally:
         if tracker.verdicts:
-            spans = ", ".join(f"{v[0]:.1f}-{'' if v[1] is None else f'{v[1]:.1f}'}:{v[2]}"
+            spans = ", ".join(f"{v[0]:.1f}-{'' if v[1] is None else f'{v[1]:.1f}'}"
+                              f":{v[2]}{'*' if len(v) > 3 and v[3] else ''}"
                               for v in tracker.verdicts)
             print(f"dual verdicts: {spans}", flush=True)
         for up in ups.values():
@@ -479,6 +486,7 @@ if __name__ == "__main__":
         from lid_router import LidRouter
 
         LID = LidRouter(model_name=args.lid_model, window_sec=args.lid_window,
-                        max_wait_sec=args.lid_max_wait, device=args.lid_device)
+                        max_wait_sec=args.lid_max_wait, device=args.lid_device,
+                        known_langs=ROUTES.keys())
 
     asyncio.run(main())
