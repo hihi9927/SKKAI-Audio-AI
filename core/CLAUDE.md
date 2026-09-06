@@ -11,8 +11,8 @@
 | `meaning_segmentator/autoseg/` | 분절 프롬프트 자동 생성 에이전트 루프. 코드가 하는 일 @meaning_segmentator/autoseg/AUTOSEG_SIMPLIFY.md, 사용법 @meaning_segmentator/autoseg/README.md |
 | ⤷ 근거·기각 기록 | 왜 이 지표 조합인가, 무엇을 검토하고 버렸나, 순위 축 진단, 참조 기반 평가 프로토콜 @meaning_segmentator/autoseg/AUTOSEG_DETAILS.md |
 | `meaning_segmentator/autoseg/baselines/` | Table 1a 타 정책 구현(`punct`/`syntax`/`causal_align`/`alignatt`/`mu_prefix`) + 강제정렬 타임스탬프 빌더 |
-| `meaning_segmentator/MULTI2EN_DATASET.md` | {de,ja,zh}→en 트랙 데이터셋 구축 기록. 소스 언어별 단위·`T` 환산과 오염 방지 구간 배분 |
-| ⤷ 문헌 대조 | @meaning_segmentator/SEGMENTATION_CRITERIA_RELATED_WORK.md |
+| `meaning_segmentator/docs/X2EN_DATASET.md` | {de,ja,zh}→en 트랙 데이터셋 구축 기록. 소스 언어별 단위·`T` 환산과 오염 방지 구간 배분 |
+| ⤷ 문헌 대조 | @meaning_segmentator/docs/SEGMENTATION_CRITERIA_RELATED_WORK.md |
 | `research/cif`, `research/context_scoring` | CIF·컨텍스트 스코어링 실험. 런타임 경로 아님 |
 
 두 GPT 모듈 모두 기본 모델은 `gpt-5.4-mini` (런타임 경로. `autoseg/`의 모델과 무관하다). 두 플래그 모두 꺼져 있으면 서버는 Google Translate로 번역하므로 `core/`의 GPT 경로를 아예 타지 않는다.

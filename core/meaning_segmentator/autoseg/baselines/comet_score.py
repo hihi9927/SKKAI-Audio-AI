@@ -6,7 +6,7 @@
 BLEU 는 토크나이저가 타깃마다 달라 언어 간 비교가 원천적으로 불가능한데, COMET 은
 다국어 인코더 하나로 재므로 그 제약이 훨씬 약하다 — 그것이 이 축을 붙이는 이유다.
 다만 **참조 기반**이라 어순을 단조화한 좋은 분절을 감점하는 편향은 BLEU 와 공유한다
-(SEGMENTATION_CRITERIA_RELATED_WORK.md §3).
+(docs/SEGMENTATION_CRITERIA_RELATED_WORK.md §3).
 
     python -m core.meaning_segmentator.autoseg.baselines.comet_score \\
         --run-id en-multi/clean500 --targets de ja

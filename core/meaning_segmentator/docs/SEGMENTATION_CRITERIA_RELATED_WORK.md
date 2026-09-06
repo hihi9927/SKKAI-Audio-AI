@@ -3,8 +3,8 @@
 SimulST/StreamST 문헌이 품질과 지연을 어떻게 비교하는지 정리하고, autoseg 의 선택과
 대조한 것이다. 대상 논문 7편 + 지표 원논문(AP/AL/LAAL/ATD)을 원문에서 확인해 작성했다.
 
-현행 설계는 [autoseg/AUTOSEG_SIMPLIFY.md](autoseg/AUTOSEG_SIMPLIFY.md),
-그 근거와 기각 기록은 [autoseg/AUTOSEG_DETAILS.md](autoseg/AUTOSEG_DETAILS.md).
+현행 설계는 [../autoseg/AUTOSEG_SIMPLIFY.md](../autoseg/AUTOSEG_SIMPLIFY.md),
+그 근거와 기각 기록은 [../autoseg/AUTOSEG_DETAILS.md](../autoseg/AUTOSEG_DETAILS.md).
 
 > **읽는 법.** 문헌 정리(§1~§5)와 출처는 그대로 유효하다. 다만 이 문서는 설계 v1 시절에
 > 쓰였고, 그때의 지표 이름(`Q` = 합본과 전체번역의 유사도, `gain` = 1−L, `Q_floor`,
