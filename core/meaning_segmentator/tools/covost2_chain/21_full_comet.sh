@@ -24,7 +24,7 @@ echo "===== 그래프 $(ts) ====="
 $PY core/meaning_segmentator/autoseg/baselines/plot_tradeoff.py \
   --run-id covost2/full --targets zh de ja --metric comet \
   --out tradeoff_covost2_full_comet \
-  --title "CoVoST2 en->X test 15430 (min_gap=1)" 2>&1 | tail -2
+  --title "CoVoST2 EN->X test 15430 (min_gap=1)" --no-header 2>&1 | tail -2
 
 mark full_eval.done "31조건 × 3타깃, COMET 포함"
 echo "===== 전체 완료 $(ts) ====="

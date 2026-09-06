@@ -27,17 +27,17 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.ticker import FixedLocator, MaxNLocator
 
-SURFACE = "#fcfcfb"
+SURFACE = "#ffffff"   # 순백 배경 — 논문 지면/슬라이드에서 회색 판이 보이지 않게
 INK, INK2, GRID = "#0b0b0b", "#52514e", "#e6e5e1"
 BLUE, ORANGE, AQUA, VIOLET = "#2a78d6", "#eb6834", "#1baf7a", "#4a3aa7"
 MAGENTA, BROWN = "#c9268f", "#8a4b1a"
 
 SERIES = [
     ("auto",         BLUE,    "-",  "o", "Multi-agent loop (ours)"),
-    ("causal_align", AQUA,    "-",  "s", "Causal align (TransLLaMa)"),
-    ("alignatt",     ORANGE,  "-",  "^", "AlignAtt (Papi 2023)"),
-    ("syntax",       VIOLET,  "-",  "D", "SASST"),
-    ("mu_prefix",    MAGENTA, "-",  "v", "Prefix-match MU (Zhang 2020)"),
+    ("causal_align", AQUA,    "-",  "s", "Causal align (TransLLaMa; Koshkin et al., 2024)"),
+    ("alignatt",     ORANGE,  "-",  "^", "AlignAtt (Papi et al., 2023)"),
+    ("syntax",       VIOLET,  "-",  "D", "SASST (Yang et al., 2026)"),
+    ("mu_prefix",    MAGENTA, "-",  "v", "Prefix-match MU (Zhang et al., 2020)"),
 ]
 # **`punct` 는 곡선이 아니라 점 하나다.** `coarsen` 은 경계를 *지우기만* 하므로 정책이
 # 예산보다 적게 찍으면 T 를 바꿔도 산출이 그대로다. 구두점은 원래 성기게 찍어서
@@ -51,7 +51,7 @@ SINGLE = [("punct", BROWN, "X", "Punctuation (no latency knob)")]
 # 달라지므로 f 마다 라벨을 새로 만들어야 하고 사후 병합으로는 못 만든다.
 # (조건 이름, 노브 값). 조건이 하나도 없으면 그냥 안 그린다.
 NATIVE = [
-    ("alignatt_native", ORANGE, "--", "^", "AlignAtt native f-sweep (Papi 2023)",
+    ("alignatt_native", ORANGE, "--", "^", "AlignAtt native f-sweep (Papi et al., 2023)",
      [("alignatt", 2), ("alignatt_f4", 4), ("alignatt_f6", 6), ("alignatt_f8", 8)]),
 ]
 T_GRID = [4, 6, 8, 12]   # 기본값. 실제로는 아래에서 blob 의 조건 이름으로 덮어쓴다
@@ -114,6 +114,9 @@ _ap.add_argument("--point-labels", default="ours",
                       "native=네이티브 f 만. 어느 모드든 네이티브 f 는 항상 적는다")
 _ap.add_argument("--no-native", action="store_true",
                  help="네이티브 노브 곡선을 안 그린다")
+_ap.add_argument("--no-header", action="store_true",
+                 help="상단 제목·설명 문단을 안 그린다. 논문/슬라이드에 캡션이 따로 붙는 "
+                      "경우 그림 안의 제목은 중복이고 패널 높이만 먹는다")
 _ap.add_argument("--ceiling-in-ylim", action="store_true",
                  help="offline 상한을 y 범위에 포함시킨다. 기본은 제외 — 상한이 높아서 "
                       "포함하면 곡선이 아래로 눌려 점 간격이 안 보인다")
@@ -130,11 +133,16 @@ missing = [t for t, b in blobs.items()
 if missing:
     raise SystemExit(f"{missing} 에 `{M}` 값이 없다 — comet_score.py 를 먼저 돌릴 것")
 
+# 글씨는 전부 잉크색 볼드다 — 회색(INK2) 라벨은 축소 인쇄와 빔프로젝터에서 먼저
+# 사라진다. INK2 는 이제 보조 선(상한 파선·절단 표시)에만 남는다.
 plt.rcParams.update({
-    "font.family": "DejaVu Sans", "font.size": 9,
+    "font.family": "DejaVu Sans", "font.size": 11,
     "figure.facecolor": SURFACE, "axes.facecolor": SURFACE,
-    "text.color": INK, "axes.labelcolor": INK2, "axes.edgecolor": GRID,
-    "xtick.color": INK2, "ytick.color": INK2, "axes.linewidth": 0.8,
+    "text.color": INK, "axes.labelcolor": INK, "axes.edgecolor": GRID,
+    "xtick.color": INK, "ytick.color": INK, "axes.linewidth": 1.0,
+    "axes.labelweight": "bold", "axes.titleweight": "bold",
+    "xtick.labelsize": 11, "ytick.labelsize": 11,
+    "font.weight": "bold",
 })
 fig, axes = plt.subplots(
     1, len(TARGETS), squeeze=False,
@@ -142,8 +150,8 @@ fig, axes = plt.subplots(
 axes = axes[0]
 _L = (0.095 if M == "comet" else 0.075) if len(TARGETS) > 1 else \
      (0.085 if M == "comet" else 0.070)
-fig.subplots_adjust(left=_L, right=0.985,
-                    top=0.815 if M == "comet" else 0.845, bottom=0.255,
+_TOP = 0.90 if ARGS.no_header else (0.815 if M == "comet" else 0.845)
+fig.subplots_adjust(left=_L, right=0.985, top=_TOP, bottom=0.235,
                     wspace=0.22)
 
 
@@ -173,9 +181,11 @@ def native_curve(C, entries):
 
 
 def label_points(ax, pts, color, prefix, dy):
+    """노브 값 라벨. **색은 안 쓴다** — 계열 색으로 적으면 축소 시 글자가 뭉개진다.
+    계열 구분은 마커가 하고 글자는 읽히는 것이 우선이다."""
     for x, y, v in pts:
         ax.annotate(f"{prefix}{v}", (x, y), textcoords="offset points",
-                    xytext=(0, dy), fontsize=5.6, color=color,
+                    xytext=(0, dy), fontsize=9.5, color=INK, fontweight="bold",
                     ha="center", va="bottom" if dy > 0 else "top", zorder=7)
 
 
@@ -194,7 +204,7 @@ for ax, tgt in zip(axes, TARGETS):
     fmt = (lambda v: f"{v:.1f}") if M == "bleu" else (lambda v: f"{v:.3f}")
     pad = 1.3 if M == "bleu" else 0.012
 
-    ax.grid(True, color=GRID, linewidth=0.8, zorder=0)
+    ax.grid(True, color=GRID, linewidth=1.0, zorder=0)
     ax.set_axisbelow(True)
     for s in ("right", "top"):
         ax.spines[s].set_visible(False)
@@ -204,10 +214,10 @@ for ax, tgt in zip(axes, TARGETS):
         if not pts:
             continue
         ax.plot([p[0] for p in pts], [p[1] for p in pts], ls, marker=mk,
-                color=color, lw=1.7, ms=4.2, mew=0, zorder=5,
+                color=color, lw=2.3, ms=6.5, mew=0, zorder=5,
                 label=label)
         # 곡선이 겹치는 패널(en→de)에서 라벨끼리 붙지 않게 위/아래를 번갈아 둔다.
-        _dy = 6 if si % 2 == 0 else -7
+        _dy = 9 if si % 2 == 0 else -10
         if ARGS.point_labels == "all" or (ARGS.point_labels == "ours"
                                           and prefix == "auto"):
             label_points(ax, pts, color, "T", _dy)
@@ -220,17 +230,17 @@ for ax, tgt in zip(axes, TARGETS):
         if len(pts) < 2:
             continue
         ax.plot([p[0] for p in pts], [p[1] for p in pts], ls, marker=mk,
-                color=color, lw=1.7, ms=4.6, mfc="none", mew=1.2, zorder=6,
+                color=color, lw=2.3, ms=7.0, mfc="none", mew=1.6, zorder=6,
                 label=label)
         if ARGS.point_labels != "none":
-            label_points(ax, pts, color, "f=", -8)
+            label_points(ax, pts, color, "f=", -11)
 
     for prefix, color, mk, label in SINGLE:
         c = C.get(prefix)
         if not c or c.get("laal_ms") is None:
             continue
         ax.plot([c["laal_ms"]], [c[M]], marker=mk, ls="none", color=color,
-                ms=6, mew=0, zorder=5, label=label)
+                ms=9, mew=0, zorder=5, label=label)
 
     single = [C[p] for p, *_ in SINGLE
               if p in C and C[p].get("laal_ms") is not None]
@@ -257,13 +267,13 @@ for ax, tgt in zip(axes, TARGETS):
     ax.set_ylim(ylo, yhi)
 
     if _show_ceil:
-        ax.axhline(_ceil, color=INK2, lw=1.4, ls=(0, (5, 3)), zorder=3,
+        ax.axhline(_ceil, color=INK, lw=1.8, ls=(0, (5, 3)), zorder=3,
                    label="Full-sentence offline (ceiling)")
         ax.annotate(f"offline ceiling {fmt(_ceil)} @ {unseg['laal_ms'] / 1000:.1f}s "
                     f"(no segmentation)",
                     (0.015, _ceil), xycoords=("axes fraction", "data"),
-                    textcoords="offset points", xytext=(0, -12),
-                    color=INK2, fontsize=7.5, zorder=6)
+                    textcoords="offset points", xytext=(0, -15),
+                    color=INK, fontsize=9, fontweight="bold", zorder=6)
     span = max(xs) - min(xs)
     xlo, xhi = min(xs) - span * 0.06, max(xs) + span * 0.11
 
@@ -291,14 +301,14 @@ for ax, tgt in zip(axes, TARGETS):
                 ax.plot([fr + dx - 0.007, fr + dx + 0.007], [-0.013, 0.013],
                         transform=ax.transAxes, color=INK2, lw=1.1,
                         clip_on=False, zorder=10)
-    ax.set_xlabel("LAAL (ms of source audio)",
-                  labelpad=6)
-    ylab = (f"BLEU  (en→{tgt}, {blobs[tgt]['tokenize']})" if M == "bleu"
-            else f"COMET  (en→{tgt}, wmt22-comet-da)")
-    ax.set_ylabel(ylab)
+    ax.set_xlabel("LAAL (ms of source audio)", fontsize=12, labelpad=8)
+    ylab = (f"BLEU  (EN→{tgt.upper()}, {blobs[tgt]['tokenize']})" if M == "bleu"
+            else f"COMET  (EN→{tgt.upper()}, wmt22-comet-da)")
+    ax.set_ylabel(ylab, fontsize=12)
     ax.yaxis.set_label_coords((-0.135 if M == "comet" else -0.085)
                               * (1.0 if len(TARGETS) > 1 else 0.72), 0.5)
-    ax.set_title(f"en→{tgt}", loc="left", fontsize=11, fontweight="bold", pad=6)
+    ax.set_title(f"EN→{tgt.upper()}", loc="left", fontsize=14, fontweight="bold", pad=8)
+    ax.tick_params(length=4, width=1.0)
 
 # 상한을 못 그린 패널이 첫 칸일 수 있으므로 범례는 전 패널에서 모아 중복만 뺀다.
 h, l = [], []
@@ -312,37 +322,42 @@ if _CEIL_LBL in l:   # 상한은 종전대로 맨 앞에 둔다
     _i = l.index(_CEIL_LBL)
     h.insert(0, h.pop(_i))
     l.insert(0, l.pop(_i))
-fig.legend(h, l, loc="lower center", ncol=3, frameon=False, fontsize=7.8,
-           handletextpad=0.5, columnspacing=1.4, labelspacing=0.55,
-           bbox_to_anchor=(0.5, 0.005))
+_leg = fig.legend(h, l, loc="lower center", ncol=3 if len(TARGETS) < 3 else 4,
+                  frameon=False, fontsize=11.5, handlelength=2.6,
+                  handletextpad=0.7, columnspacing=2.0, labelspacing=0.7,
+                  bbox_to_anchor=(0.5, 0.005))
+for _t in _leg.get_texts():
+    _t.set_fontweight("bold")
+    _t.set_color(INK)
 # **번역기 이름을 결과에서 읽는다.** 종전에는 "gtx" 가 제목에 박혀 있어서, madlad 로 잰
 # 그림이 스스로를 gtx 라고 말했다 (`bleu_eval` 리포트에 있던 것과 같은 종류의 사고다).
 _trs = sorted({b.get("translator", "?").split(":")[1] if b.get("translator", "").startswith("local:")
                else b.get("translator", "?").split(":")[0] for b in blobs.values()})
 _MT = "/".join(t.split("/")[-1] for t in _trs)
-fig.text(0.008, 0.985, f"{'BLEU' if M == 'bleu' else 'COMET'}–latency trade-off on "
-         f"{ARGS.title}"
-         + ((f" (same translator, {_MT}; T = {_TSTR} per curve)")
-            if len(TARGETS) > 1 else f"  ·  {_MT}, T = {_TSTR}"),
-         ha="left", va="top", fontweight="bold",
-         fontsize=12.5 if len(TARGETS) > 1 else 12.0)
-fig.text(0.008, 0.945,
-         "Upper-left is better. LAAL is forced-aligned (Qwen3-ForcedAligner; wav2vec2 CTC "
-         "agrees within 22 ms). Empty x ranges are compressed (break marks on the axis)."
-         "\nPunctuation has no latency knob (it segments below the T budget), so it is one "
-         "point; it and prefix-match MU sit in a slower band — shown, not matched.\n"
-         + ("BLEU is NOT comparable across panels (de 13a, ja ja-mecab)."
-            if M == "bleu" else
-            "COMET uses one multilingual encoder, so panels are far more comparable "
-            "than under BLEU — but it stays reference-based.")
-         if len(TARGETS) > 1 else
-         ("Punctuation has no latency knob (it segments below the T budget), so it is one "
-          "point, not a curve.\nIt and prefix-match MU sit in a slower latency band — shown, "
-          "but not matched head-to-head.\nEmpty x ranges are compressed (break marks on the "
-          "axis). "
-          + ("BLEU tokenisation: " + blobs[TARGETS[0]]["tokenize"] if M == "bleu"
-             else "COMET: wmt22-comet-da (reference-based).")),
-         ha="left", va="top", fontsize=7.5, color=INK2, linespacing=1.6)
+if not ARGS.no_header:
+    fig.text(0.008, 0.985, f"{'BLEU' if M == 'bleu' else 'COMET'}–latency trade-off on "
+             f"{ARGS.title}"
+             + ((f" (same translator, {_MT}; T = {_TSTR} per curve)")
+                if len(TARGETS) > 1 else f"  ·  {_MT}, T = {_TSTR}"),
+             ha="left", va="top", fontweight="bold",
+             fontsize=12.5 if len(TARGETS) > 1 else 12.0)
+    fig.text(0.008, 0.945,
+             "Upper-left is better. LAAL is forced-aligned (Qwen3-ForcedAligner; wav2vec2 CTC "
+             "agrees within 22 ms). Empty x ranges are compressed (break marks on the axis)."
+             "\nPunctuation has no latency knob (it segments below the T budget), so it is one "
+             "point; it and prefix-match MU sit in a slower band — shown, not matched.\n"
+             + ("BLEU is NOT comparable across panels (de 13a, ja ja-mecab)."
+                if M == "bleu" else
+                "COMET uses one multilingual encoder, so panels are far more comparable "
+                "than under BLEU — but it stays reference-based.")
+             if len(TARGETS) > 1 else
+             ("Punctuation has no latency knob (it segments below the T budget), so it is one "
+              "point, not a curve.\nIt and prefix-match MU sit in a slower latency band — shown, "
+              "but not matched head-to-head.\nEmpty x ranges are compressed (break marks on the "
+              "axis). "
+              + ("BLEU tokenisation: " + blobs[TARGETS[0]]["tokenize"] if M == "bleu"
+                 else "COMET: wmt22-comet-da (reference-based).")),
+             ha="left", va="top", fontsize=7.5, color=INK2, linespacing=1.6)
 fig.savefig(d / f"{STEM}.png", dpi=200, facecolor=SURFACE)
 fig.savefig(d / f"{STEM}.pdf", facecolor=SURFACE)
 print("saved", d / f"{STEM}.png")
