@@ -3026,6 +3026,14 @@ def parse_args():
         help="로컬 번역 모델을 올릴 장치 (cuda / cpu). 미지정 시 자동",
     )
     parser.add_argument(
+        "--local-translation-url", type=str, default=None,
+        help=(
+            "단독 번역 서버(tools/local_translation_server.py) 주소. 주면 이 "
+            "프로세스에 번역 모델을 올리지 않고 HTTP 로 부른다 — ASR 서버를 "
+            "여러 개 띄울 때 번역 모델이 복제되는 걸 막는다. 예: http://127.0.0.1:8770"
+        ),
+    )
+    parser.add_argument(
         "--no-idle-shutdown", action="store_true",
         help="Disable idle shutdown (use this when running tests)",
     )
@@ -3168,9 +3176,19 @@ def parse_args():
 def main():
     args = parse_args()
     _configure_logging(use_json=args.log_json, log_file=args.log_file)
-    set_google_translate_api_key(args.google_api_key, local_translation=args.local_translation)
+    set_google_translate_api_key(
+        args.google_api_key,
+        local_translation=args.local_translation or bool(args.local_translation_url),
+    )
 
-    if args.local_translation:
+    if args.local_translation_url:
+        # 원격이 먼저다. 주소를 준 건 "이 프로세스에 모델을 올리지 말라"는 뜻이므로
+        # --local-translation 이 함께 켜져 있어도 모델을 올리지 않는다.
+        from core.local_translator import RemoteTranslator
+
+        set_local_translator(RemoteTranslator(args.local_translation_url))
+        logger.info(f"Remote translator enabled ({args.local_translation_url})")
+    elif args.local_translation:
         try:
             from core.local_translator import make_translator
             # 모델 이름으로 백엔드를 고른다 — madlad 가 들어가면 MADLAD, 아니면 NLLB.

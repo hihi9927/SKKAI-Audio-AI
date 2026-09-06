@@ -45,8 +45,86 @@ Translation is **Google Translate by default** (`translate.googleapis.com` gtx e
 | `--gpt-translation` | `core/correct_and_trans.py` `GPTTranslator` — correction + translation in one call, `--context-window` sentences of history (default 5) |
 | `--correction` | `core/llm_corrector/gpt_corrector.py` `GPTCorrector` — correction only, translation still Google |
 | `--google-context` | Keeps Google Translate but feeds it prior sentences as context |
+| `--local-translation` | Loads a local seq2seq translator (`core/local_translator.py`) **into this process** — `--local-translation-model` picks MADLAD (`google/madlad400-3b-mt`) or NLLB |
+| `--local-translation-url` | Calls a standalone translation server over HTTP instead of loading a model here (see below). Wins over `--local-translation` — giving a URL means "do not load a model in this process" |
 
 Pipeline dataclasses: [core/types.py](core/types.py) (`AudioSegment → RecognizedToken → CommittedSentence → ValidatedSentence → TranslationResult`). Abstract interfaces: [core/modules.py](core/modules.py) — signatures only, no implementations.
+
+### Running several servers on one GPU
+
+Every translation call goes through `google_translate_async`, which delegates to the object set by
+`set_local_translator`. `RemoteTranslator` in [core/local_translator.py](core/local_translator.py)
+implements the same `translate(text, target, source) -> (translation, source_code)` interface over
+HTTP, so `--local-translation-url` swaps it in at that one seam.
+
+Keep the translation model in **one** process. With `--local-translation`, every ASR server loads its
+own copy, and madlad400-3b costs about 7.1 GiB each — two ASR servers plus two translators do not fit
+in 24 GiB.
+
+```bash
+# 1) translator once (about 7.1 GiB)
+python tools/local_translation_server.py --port 8770 --model google/madlad400-3b-mt
+
+# 2) one ASR server per language, each pointing at it
+PYTHONPATH=$PWD/Qwen3-ASR python Qwen3-ASR/examples/streaming_websocket_server.py \
+  --model models/Qwen3-ASR-1.7B-ko-silence-v4c900-merged --port 8766 \
+  --gpu-memory-utilization 0.25 --enforce-eager --no-idle-shutdown \
+  --local-translation-url http://127.0.0.1:8770
+```
+
+**vLLM's `--gpu-memory-utilization` is a fraction of the whole GPU claimed by that one process, and it
+ignores what other processes already hold.** So the budget is simply
+`translator + Σ(utilization × total) ≤ total` — you must leave room by hand; vLLM will not do it for you.
+Measured on a 24564 MiB RTX 4090 with Qwen3-ASR-1.7B finetuned weights:
+
+| Process | `--gpu-memory-utilization` | VRAM |
+|---|---|---|
+| `tools/local_translation_server.py` (madlad400-3b, fp16) | — | 7172 MiB |
+| ASR (ko finetuned) | 0.25 | 6214 MiB — 3.87 GiB weights, 0.89 GiB KV cache (8288 tokens) |
+| ASR (en finetuned) | 0.25 | 6214 MiB |
+| **total** | | **19729 / 24564 MiB**, about 4.8 GiB spare |
+
+0.25 is roughly the floor: the weights alone take 3.87 GiB, so anything below ~0.20 leaves no KV cache.
+Going the other way, 0.55 gave one ASR server 13596 MiB and left no room for a second one.
+
+One server is one model, and nothing in the pipeline picks a model by language — the client chooses
+by which port it connects to. [tools/partial_demo/demo_proxy.py](tools/partial_demo/demo_proxy.py) does
+that choosing for the web demo: it holds the upstream connection until the client's first `start`
+arrives, routes on `start.lang` (falling back to a single-key `langMap`, then to `--default`), and sends
+the `hello` itself so the handshake order the client expects is unchanged.
+
+```bash
+python tools/partial_demo/demo_proxy.py 8080 --route ko=8766,en=8767 --default 8766
+```
+
+The route is fixed for the life of the stream — `start.lang` *is* the model choice. A later `config`
+changes translation direction only. So a stream that leaves `lang` as `auto` to detect several
+languages gets one model for all of them; per-utterance model switching needs a different design.
+
+**`--lid` routes on the voice, not on what the client declared.** VAD finds where speech starts, then
+whisper-base classifies the next `--lid-window` seconds, and that answer picks the upstream — so one
+microphone carrying two languages still reaches the right model.
+[tools/partial_demo/lid_router.py](tools/partial_demo/lid_router.py) holds the model and the measured
+numbers behind those choices; the two that decide the design:
+
+- **VAD first, always.** Feeding leading silence to a language classifier does not merely add noise, it
+  inverts the answer — voxlingua107-ecapa scored 1.2% on 0.5s windows with the silence left in (chance
+  is 50%) and 30.7% with it trimmed, because silence maps to one confident wrong label.
+- **The ASR's own `language` field is not a routing signal.** On the same 166 clips at a 2s window,
+  whisper-base got 100%, the ko finetune 93.4%, and the en finetune **53.0%** — finetuning wrecked its
+  language ID, and it reports `en` while correctly transcribing Korean.
+
+Waiting for the verdict costs nothing measurable: buffered audio is replayed to the upstream in full, ASR
+catches up faster than realtime, and the first commit boundary lands later than the decision anyway
+(first-subtitle latency 0.20s through the proxy vs 0.30s connecting directly). Short utterances do not
+stall — once VAD sees the speech segment close, the router classifies what it has instead of waiting out
+`--lid-max-wait` (a 0.6s "그렇지." routes at 1.6s).
+
+**`PYTHONPATH` matters in a worktree.** `pip install -e ./Qwen3-ASR` pins `qwen_asr` to whichever
+worktree it was installed from, so a second worktree's server silently imports the *other* tree's
+package. The symptom is a type error rather than an import error, e.g.
+`streaming_transcribe() got an unexpected keyword argument 'on_partial'`. Put this worktree's
+`Qwen3-ASR/` on `PYTHONPATH` ahead of it.
 
 ### Backend Key Files
 
@@ -54,6 +132,8 @@ Pipeline dataclasses: [core/types.py](core/types.py) (`AudioSegment → Recogniz
 |---|---|
 | `core/correct_and_trans.py` | `GPTTranslator` — correction + translation in one call (`--gpt-translation`) |
 | `core/llm_corrector/gpt_corrector.py` | `GPTCorrector` — correction only, async with retry/backoff (`--correction`) |
+| `core/local_translator.py` | Local seq2seq translators (MADLAD / NLLB) plus `RemoteTranslator`, the HTTP client for the standalone server |
+| `tools/local_translation_server.py` | Standalone translation server — loads the model once, serves `POST /translate` and `GET /health` |
 | `core/types.py` / `core/modules.py` | Dataclasses / abstract base classes |
 | `core/meaning_segmentator/utils/` | Research scripts: GPT `<SEG>` marking, context translation, COMET eval |
 | `core/research/` | CIF & context-scoring experiments (not on the runtime path) |

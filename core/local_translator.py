@@ -226,3 +226,49 @@ def make_translator(model_name: str = DEFAULT_MODEL, **kwargs) -> _Seq2SeqTransl
     """모델 이름으로 백엔드를 고른다."""
     cls = MADLADTranslator if "madlad" in model_name.lower() else NLLBTranslator
     return cls(model_name=model_name, **kwargs)
+
+
+# ── 원격 번역기 ────────────────────────────────────────────────────────────────
+# 번역 모델을 ASR 서버와 같은 프로세스에 올리면, ASR 서버를 여러 개 띄울 때
+# 번역 모델도 그 수만큼 복제되어 VRAM 을 잡아먹는다(madlad400-3b 는 인스턴스당
+# 약 7.1GiB). 번역기를 한 프로세스에 한 번만 올려 두고 나머지는 HTTP 로 부르게
+# 한다. 인터페이스를 _Seq2SeqTranslator.translate 와 똑같이 맞췄으므로
+# set_local_translator 에 그대로 꽂힌다.
+
+class RemoteTranslator:
+    """단독 번역 서버(tools/local_translation_server.py)를 HTTP 로 부르는 클라이언트."""
+
+    def __init__(self, url: str, timeout: float = 20.0):
+        self.url = url.rstrip("/") + "/translate"
+        self.timeout = timeout
+        self._session = None
+
+    def load(self) -> None:
+        """로컬 번역기와 호출 형태를 맞추기 위한 자리. 원격이라 올릴 게 없다."""
+        return None
+
+    async def _get_session(self):
+        import aiohttp
+
+        if self._session is None or self._session.closed:
+            self._session = aiohttp.ClientSession(
+                timeout=aiohttp.ClientTimeout(total=self.timeout)
+            )
+        return self._session
+
+    async def translate(
+        self, text: str, target_code: str, source_code: Optional[str] = None
+    ) -> tuple[str, str]:
+        if not text.strip() or not target_code:
+            return "", ""
+        src = (source_code or "").strip() or guess_lang_code(text)
+        try:
+            session = await self._get_session()
+            payload = {"text": text, "target": target_code, "source": src}
+            async with session.post(self.url, json=payload) as resp:
+                resp.raise_for_status()
+                data = await resp.json()
+            return data.get("translation", ""), data.get("source", src)
+        except Exception as e:
+            logger.warning(f"[remote-translate] failed: {e!r}")
+            return "", src
