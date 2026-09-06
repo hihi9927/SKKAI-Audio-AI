@@ -30,7 +30,6 @@ python evaluation/KsponSpeech/test_qwen3_kspon.py \
 | `sample_data/eval_clean/` | PCM 20개. 웹 데모의 한국어 샘플 — `STiTy-Mobile/demo-web/partial_demo/make_demo_wavs.py` 가 읽는다 |
 | `sample_data/KsponSpeech_0001/` | PCM 20개. 참조 없음 — 형식 확인용 표본 |
 | `utils/extract_trn_to_json.py` | 원본 `.trn` → JSON |
-| `send_one.py` | 오디오 한 개를 서버에 보내 응답을 보는 디버깅 도구 |
 
 `transcribe/train.trn`(87MB)은 2026-09-06 에 지웠다. `.gitignore:56` 에 이미 규칙이 있었는데도
 추적되고 있었다 — **ignore 규칙은 이미 추적 중인 파일에는 걸리지 않는다.** 코드가 실제로 읽는
@@ -73,6 +72,9 @@ CER 은 `metric.json` 의 `overall.corpus_cer`, FTL/FSL 은 각각 첫 토큰 �
 - `results/verify(*)` 10개 — 3~12발화짜리 디버깅 런(`miss`, `orderfix`, `maxtok128`). 위 표의
   order-fix 를 잡던 흔적이고, 지표로서의 의미는 없다
 - `transcribe/eval_other.trn`, `transcribe/verify_subset.json` — 참조 0
+- `send_one.py` — 오디오 한 개를 실시간 속도로 서버에 흘려보내 partial/final 을 찍어보던 도구.
+  기본 오디오 경로가 `/home/ubuntu/...` 라는 옛 EC2 절대경로였고 그 아래 `data/` 는 이 트리에
+  없어서, 인자 없이는 어느 머신에서도 돌지 않았다
 
 `results/` 는 `.gitignore` 에 넣고 추적에서 뺐다. 다른 데이터셋과 같은 정책이다 —
 발화 단위 결과(`raw_results`)를 담은 `metric.json` 이 실행마다 수 MB 씩 쌓인다.
