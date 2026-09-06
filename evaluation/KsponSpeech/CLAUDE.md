@@ -7,7 +7,7 @@
 
 ```bash
 # 터미널 1 — 공유 평가 서버
-python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py --no-idle-shutdown
+python evaluation/streaming_websocket_server_ast.py --no-idle-shutdown
 
 # 터미널 2
 python evaluation/KsponSpeech/test_qwen3_kspon.py \

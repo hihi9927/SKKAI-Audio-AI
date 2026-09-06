@@ -167,19 +167,20 @@ tmux가 없으면 `conda install -y -n tools -c conda-forge tmux`로 설치 — 
 `PYTHONPATH=`를 비워서 파이썬을 호출하므로, paper mode는 활성화 없이 `bash` 호출만으로도 동작한다.
 
 **데이터셋과 관계없이 서버 스크립트는 공통:**
-`evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py`
+`evaluation/streaming_websocket_server_ast.py` (FSL 서버를 상속한다. AST 전용 동작은
+기본이 꺼져 있어 인자를 안 주면 FSL 서버와 같게 돈다)
 
 **모델별 서버 명령:**
 
 ```bash
 # baseline
-python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py \
+python evaluation/streaming_websocket_server_ast.py \
   --chunk-size <n> \
   --no-idle-shutdown \
   --log-file "evaluation/{Dataset}/results/{model_label}/{scope}/{tag}/logs/server.log"
 
 # finetuned-merged (영어는 en-silence, 한국어는 ko-silence 가중치를 쓸 것)
-python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py \
+python evaluation/streaming_websocket_server_ast.py \
   --model ~/STiTy/models/Qwen3-ASR-1.7B-en-silence-c80-merged \
   --chunk-size <n> \
   --enforce-eager \

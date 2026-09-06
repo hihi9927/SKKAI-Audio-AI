@@ -8,7 +8,7 @@
 
 | 경로 | 역할 |
 |---|---|
-| `servers/` | 평가 서버 `streaming_websocket_server_fsl.py` + 클라이언트 `test_qwen3_librispeech.py` |
+| `servers/` | `streaming_websocket_server_fsl.py`(평가 서버의 base — 띄우는 것은 `evaluation/streaming_websocket_server_ast.py` 다) + 클라이언트 `test_qwen3_librispeech.py` |
 | `LibriSpeech/{test-other,test-clean,dev-clean,dev-other}/` | 오디오. git 미포함(`.gitignore`), OpenSLR 에서 받는다 |
 | `paper_result/ASR/` | 논문용 mode2/3/4 측정. **git 추적 대상** |
 | `results/` | 그 밖의 벤치마크 출력. git 추적하지 않는다 |
@@ -18,7 +18,7 @@
 
 ```bash
 # 터미널 1
-python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py --no-idle-shutdown
+python evaluation/streaming_websocket_server_ast.py --no-idle-shutdown
 
 # 터미널 2
 python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \

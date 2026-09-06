@@ -53,6 +53,11 @@ evaluation/{Dataset}/results/
 
 ### 3.1 서버 실행 (공통)
 
+**모든 벤치마크가 같은 서버를 띄운다** — `evaluation/streaming_websocket_server_ast.py`.
+FSL 서버를 상속해 LAAL 필드와 번역 계측을 얹은 것이고, AST 전용 동작은 기본이 꺼져 있어
+인자를 안 주면 FSL 서버와 같게 동작한다. AST 축 비교를 할 때만 `--ast-hide-seg` 를 준다
+(`evaluation/ast/run_*.sh` 가 이미 그렇게 띄운다).
+
 서버 로그를 결과 폴더(`logs/server.log`)에 저장하려면 `--log-file`을 지정해야 합니다.  
 run 폴더 이름은 테스트 스크립트 실행 시 결정되므로, **`--tag`로 폴더명을 미리 고정**한 뒤 서버와 테스트 스크립트에 같은 경로를 맞춰줍니다.  
 
@@ -63,12 +68,12 @@ baseline 서버는 `dot commit`이 기본으로 켜지므로 별도 인자를 �
 cd ~/STiTy && git pull
 
 # Baseline 모델
-python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py \
+python evaluation/streaming_websocket_server_ast.py \
   --no-idle-shutdown \
   --log-file "evaluation/LibriSpeech/results/baseline(1.0.0)/sample/run_01/logs/server.log"
 
 # Finetuned 모델
-python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py \
+python evaluation/streaming_websocket_server_ast.py \
   --model models/Qwen3-ASR-1.7B-en-silence-c80-merged \
   --no-idle-shutdown \
   --enforce-eager \
@@ -148,7 +153,7 @@ KsponSpeech eval_clean 클립으로 구성됩니다.
 
 ```bash
 # 1) 서버 시작 (별도 터미널)
-python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py \
+python evaluation/streaming_websocket_server_ast.py \
   --no-idle-shutdown \
   --log-file "evaluation/KsponSpeech/results/baseline(1.0.0)/sample/run_01/logs/server.log"
 

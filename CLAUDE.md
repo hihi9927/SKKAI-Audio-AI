@@ -17,7 +17,7 @@ pip install -e "./Qwen3-ASR[vllm]"      # with vLLM
 python Qwen3-ASR/examples/streaming_websocket_server.py
 
 # Evaluation server + benchmark client (see evaluation/TESTING_MANUAL.md)
-python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py --no-idle-shutdown
+python evaluation/streaming_websocket_server_ast.py --no-idle-shutdown
 python evaluation/LibriSpeech/servers/test_qwen3_librispeech.py \
   --test-dir evaluation/LibriSpeech/LibriSpeech/test-other --model "baseline(1.0.0)" --scope sample
 
@@ -322,7 +322,8 @@ package. The symptom is a type error rather than an import error, e.g.
 | `core/meaning_segmentator/utils/` | Research scripts: GPT `<SEG>` marking, context translation, COMET eval |
 | `core/research/` | CIF & context-scoring experiments (not on the runtime path) |
 | `Qwen3-ASR/examples/streaming_websocket_server.py` | Production WebSocket server |
-| `evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py` | Eval server (wraps the above, adds FSL timing) |
+| `evaluation/streaming_websocket_server_ast.py` | Eval server — the one to launch for every benchmark |
+| `evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py` | Its base: adds FSL timing to the production server |
 
 `Qwen3-ASR/` is vendored upstream code (QwenLM/Qwen3-ASR) tracked directly — **not** a submodule. See [Qwen3-ASR/CLAUDE.md](Qwen3-ASR/CLAUDE.md).
 

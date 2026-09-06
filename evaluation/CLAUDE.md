@@ -2,14 +2,21 @@
 
 STiTy ASR+번역 파이프라인의 벤치마킹 하네스. 모든 평가는 별도로 실행 중인 WebSocket 서버에 연결해 진행한다.
 
-트랙이 둘이다. **ASR 트랙**(WER/CER + FSL)은 아래 공통 패턴을 쓰고, **AST 트랙**(LAAL + BLEU)은
-서버·클라이언트가 따로다 — @ast/README.md 참조.
+트랙이 둘이다. **ASR 트랙**(WER/CER + FSL)과 **AST 트랙**(LAAL + BLEU). **서버는 하나를 공유하고**
+(`evaluation/streaming_websocket_server_ast.py`) 클라이언트만 트랙·데이터셋마다 다르다 —
+AST 쪽은 @ast/README.md 참조.
+
+상속은 `Qwen3-ASR/examples/streaming_websocket_server.py`(프로덕션) →
+`LibriSpeech/servers/streaming_websocket_server_fsl.py`(FSL 타이밍) →
+`streaming_websocket_server_ast.py`(LAAL 필드 + 번역 계측) 순이다. 맨 아래만 띄우면 위 둘의
+기능이 다 따라온다. AST 전용 동작은 기본이 꺼져 있어(`--ast-hide-seg`) 인자를 안 주면 FSL 서버와
+같게 돈다.
 
 ## 공통 실행 패턴 (ASR 트랙)
 
 ```bash
 # 터미널 1 — 평가 서버 (모든 데이터셋에서 공유)
-python evaluation/LibriSpeech/servers/streaming_websocket_server_fsl.py --no-idle-shutdown
+python evaluation/streaming_websocket_server_ast.py --no-idle-shutdown
 
 # 터미널 2 — 벤치마크 클라이언트
 python evaluation/{Dataset}/test_qwen3_{dataset}.py \
