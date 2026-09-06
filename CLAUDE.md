@@ -333,11 +333,11 @@ package. The symptom is a type error rather than an import error, e.g.
 
 React Native 0.81 + Expo 54 (managed), TypeScript strict. Path alias `@/*` → `src/*`.
 
-- **Screens:** `HomeScreen` (language/mode select) → `ConversationScreen` (live feed). Connection state is handled in-place, not by a separate loading screen.
-- **`src/context/WebSocketContext.tsx`** holds the shared WS session; **`src/hooks/useWebSocket.ts`** owns the socket lifecycle and message parsing. `SERVER_URL` is hardcoded at the top of that hook — update it when changing environments.
+- **Screens:** `HomeScreen` is the only one registered in `App.tsx` — it carries both the language/mode picker and the live feed. Connection state is handled in-place, not by a separate loading screen.
+- **`src/context/WebSocketContext.tsx`** owns the whole WS session: socket lifecycle, message parsing, and the hardcoded `RUNPOD_SERVER_URL` (`getServerUrl()` swaps in `<host>/asr` when `EXPO_PUBLIC_USE_LOCAL_ASR=1` on web). Update it there when changing environments.
 - **Audio:** `react-native-live-audio-stream` → binary PCM frames → server → JSON `final` messages back. `useAudioRecording.web.ts` / `tts.web.ts` are web variants.
 - **Languages** (`src/constants/languages.ts`): ko, ja, zh, es, en. Conversation modes `mode-1` (speaker), `mode-2` (one earphone), `mode-3` (both) — unrelated to the eval mode2/3/4 below.
-- **Colors** (`src/constants/theme.ts`): gradient Purple `#8B5CF6` → Blue `#3B82F6` → Cyan `#06B6D4`; language labels reuse the same three.
+- **Colors:** `HomeScreen` defines `LANG_COLORS` inline; there is no shared theme module.
 
 ## Key Configuration
 
