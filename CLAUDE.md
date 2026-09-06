@@ -225,6 +225,22 @@ Running the translation server on `facebook/nllb-200-distilled-600M` instead cos
 lands at **21624 / 24564 MiB**. That trade is a memory decision, not a quality one: the repo's own CometKiwi
 numbers are 0.8712 for Google and 0.8554 for madlad-3b, and NLLB-600M has never been measured here.
 
+**Judge twice: once to route, once to be right.** The early thresholds settle on less than a second of audio,
+which is enough to pick a server but not enough to be sure — a Spanish `Mi nombre es Daniel.` came back `ko`,
+so the baseline and en servers both had the sentence right and both were dropped while the ko server's
+`이름은 다니엘.` went out. Extending the evaluation set to 226 clips (60 Spanish added; every earlier number
+here was ko/en only) shows where the accuracy actually is:
+
+| audio heard | accuracy | errors |
+|---|---|---|
+| first 1.0s | 96.9% | ko→en 5, en→ko 1, es→ko 1 |
+| first 2.0s | **98.7%** | ko→en 3 |
+| 3s / 5s / whole segment | 98.7% | ko→en 3 |
+
+Two seconds is where the gain stops, and it is free: a `final` only arrives after its segment has closed, so
+by then the audio exists. `CONFIRM_SEC` re-judges every closed segment on its first 2s and overwrites the
+early guess, and `settled()` now waits for that confirmation rather than the provisional value.
+
 `--vad-min-silence` sets how much silence ends an utterance (default 800ms). Measured against 400ms on the
 same audio: English segmentation identical (13), Korean **less** fragmented at 400 (16 → 14), latency within
 0.05s either way, and en→ko chrF/BLEU identical at 34.0/13.9. Nothing recommends the change, so 800 stands.

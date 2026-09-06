@@ -274,7 +274,15 @@ class VerdictTracker:
     # 창(window_sec)을 다 채운 뒤 argmax 로 확정한다.
     EARLY_STEPS = ((0.3, 0.90), (0.5, 0.85), (0.7, 0.80))
 
-    def _classify_span(self, start: float, end: float, early: bool = True):
+    # 발화가 닫히면 이만큼 다시 듣고 확정한다. 조기 판정은 라우팅을 빨리 정하려는
+    # 것이고, final 은 어차피 발화가 닫힌 뒤에 오므로 그때는 더 들을 수 있다.
+    # 실측(226개, 후보 ko/en/es): 앞 1.0초 96.9% -> 앞 2.0초 98.7%. 2초를 넘겨
+    # 더 들어도(3초·5초·구간 전체) 98.7% 그대로라 2초가 이득이 멈추는 지점이다.
+    # 1.0초에서 나던 스페인어 오답(es -> ko)이 2.0초에서는 사라진다.
+    CONFIRM_SEC = 2.0
+
+    def _classify_span(self, start: float, end: float, early: bool = True,
+                       secs: Optional[float] = None):
         """(언어, 얼마나 듣고 정했나) 또는 (None, None).
 
         짧은 창부터 올라가며 확신도가 임계를 넘으면 즉시 확정한다. whisper 는 입력을
@@ -287,6 +295,10 @@ class VerdictTracker:
         if len(span) < SR * 0.2:
             return None, None
         avail = len(span) / SR
+        if secs is not None:                  # 확정 판정: 정해진 길이로 한 번만
+            with self.router._gpu_lock:
+                return self.router._classify(span[: int(SR * secs)],
+                                             allowed=self.allowed), min(avail, secs)
         with self.router._gpu_lock:
             if early:
                 for secs, need in self.EARLY_STEPS:
@@ -323,8 +335,23 @@ class VerdictTracker:
             if (end - start) <= self.MIN_SPEECH_SEC:
                 continue          # 숨소리·잡음 조각. 여기서 나온 판정은 못 믿는다.
             existing = self._find_overlap(start, end)
+            if existing is not None and len(existing) > 4 and existing[4]:
+                continue                      # 이미 확정 판정까지 끝난 구간
+            if closed and existing is not None:
+                # **발화가 닫혔으면 더 듣고 다시 정한다.** 조기 판정은 앞 1초 안쪽만
+                # 보므로 짧은 근거로 정해진 값이다. final 은 발화가 닫힌 뒤에 오니
+                # 여기서 고쳐도 늦지 않다.
+                lang, used = self._classify_span(start, end, secs=self.CONFIRM_SEC)
+                if lang is not None:
+                    existing[0] = min(existing[0], start)
+                    existing[1] = end
+                    existing[2] = lang
+                    while len(existing) < 5:
+                        existing.append(False)
+                    existing[4] = True
+                continue
             if existing is not None and existing[1] is not None:
-                continue                      # 이미 닫힌 구간
+                continue                      # 닫혔는데 판정도 못 한 구간
             if existing is not None and len(existing) > 3 and existing[3]:
                 # 확신도로 일찍 확정한 값은 다시 뒤집지 않는다. 더 긴 창이 늘 더
                 # 정확하지는 않다 — 1.0초 argmax 는 92.8% 인데, 0.5초에서 확신
@@ -393,8 +420,11 @@ class VerdictTracker:
                 continue
             if (seg_end - start) <= self.MIN_SPEECH_SEC:
                 continue
-            if self._find_overlap(start, seg_end) is None:
+            v = self._find_overlap(start, seg_end)
+            if v is None:
                 return False
+            if len(v) < 5 or not v[4]:
+                return False                  # 확정 판정이 아직이다
         return True
 
     def lang_at(self, t: Optional[float]) -> Optional[str]:

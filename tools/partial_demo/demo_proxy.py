@@ -371,6 +371,7 @@ async def run_dual(client, start_raw, pending_binary):
         if tracker.verdicts:
             spans = ", ".join(f"{v[0]:.1f}-{'' if v[1] is None else f'{v[1]:.1f}'}"
                               f":{v[2]}{'*' if len(v) > 3 and v[3] else ''}"
+                              f"{'!' if len(v) > 4 and v[4] else ''}"
                               for v in tracker.verdicts)
             print(f"dual verdicts: {spans}", flush=True)
         for up in ups.values():
