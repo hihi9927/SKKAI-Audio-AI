@@ -7,7 +7,7 @@
 
 - 무엇을 하는가 — [AUTOSEG_SIMPLIFY.md](AUTOSEG_SIMPLIFY.md) (A0~A11 각 단계)
 - 왜 그렇게 됐나 · 무엇을 버렸나 — [AUTOSEG_DETAILS.md](AUTOSEG_DETAILS.md)
-- 문헌 대조 — [../SEGMENTATION_CRITERIA_RELATED_WORK.md](../SEGMENTATION_CRITERIA_RELATED_WORK.md)
+- 문헌 대조 — [../docs/SEGMENTATION_CRITERIA_RELATED_WORK.md](../docs/SEGMENTATION_CRITERIA_RELATED_WORK.md)
 
 ## 한 장 요약
 
@@ -183,7 +183,7 @@ PYTHONPATH=. python -m core.meaning_segmentator.autoseg.infra.cost_report --run-
 | 옵션 | 기본 | 설명 |
 |---|---|---|
 | `--dataset` | `kspon` | 등록된 이름(`data.DATASETS`) 또는 매니페스트 경로(`.jsonl`) |
-| `--pair-id` | 언어명에서 생성 | 런 디렉토리 이름 (`runs/{pair-id}/{run-id}/`) |
+| `--pair-id` | 언어명에서 생성 | 런 디렉토리 이름 (`experiment/artifacts/{pair-id}/{run-id}/`) |
 | `--model` | `gpt-5-mini` | 분절·에이전트 모델. en-de test 100문장 실측에서 `gpt-5.4-mini` 대비 **비용 1/3.9 에 품질 차이 검출 안 됨**(쌍체 t=−1.0~0.0). `gpt-5-nano` 는 지시를 못 따라 커버리지 1/15 로 실격 |
 | `--judge-model` | `--model` | 판정자. **분절기와 다른 모델을 쓰면 순환이 준다** |
 | `--min-gap` | **코퍼스에서 유도** | 절단 시 경계 간 최소 간격 = 조각 길이의 절대 하한. 미지정 시 `1200ms × 발화속도`(단위/초)로 환산한다 — 발화속도는 강제정렬 산출물에서 읽고, 없으면 `--units-per-sec` 로 준다. `0` = 끔. 아래 표 참조 |
@@ -254,9 +254,9 @@ PYTHONPATH=. python -m core.meaning_segmentator.autoseg.loop \
 재서** 한다 — 같은 런 디렉토리에 두 프롬프트를 넣으면 분할·캐시·백엔드가 전부 같아진다.
 
 ```bash
-for L in agnostic:runs/en-multi/run09/best_prompt.txt aware:runs/en-de-aware/run01/best_prompt.txt; do
+for L in agnostic:<런A>/best_prompt.txt aware:<런B>/best_prompt.txt; do
   PYTHONPATH=. python -m core.meaning_segmentator.autoseg.scoring.eval_prompt \
-      --run-id en-multi/run09 --tgt-lang German --split test \
+      --run-id <기준 런 ID> --tgt-lang German --split test \
       --prompt "${L#*:}" --label "${L%%:*}_de"
 done
 ```
@@ -267,8 +267,7 @@ done
 
 **검출력 주의.** 단일 타깃 `effective` 의 test 100문장 se 는 ~0.017 인데 예상 격차는 0.005
 수준이다 — test 100 만으로는 "차이 없음"과 "못 잼"이 구분되지 않는다. 주 근거는 500문장
-홀드아웃(`runs/en-multi/clean500/`)에 두 프롬프트를 넣고 `bleu_eval` 의 쌍체 부트스트랩으로
-잡는 쪽이다.
+홀드아웃에 두 프롬프트를 넣고 `bleu_eval` 의 쌍체 부트스트랩으로 잡는 쪽이다.
 
 ## 구성
 
@@ -283,7 +282,7 @@ autoseg/
 └── baselines/     Table 1a 비교군 정책 + 강제정렬 타임스탬프 빌더
 ```
 
-**경로를 파일 깊이로 세지 않는다.** 저장소 루트와 `runs/` 는 `paths.py` 한 곳에서만
+**경로를 파일 깊이로 세지 않는다.** 저장소 루트와 산출물 루트(`experiment/artifacts/`)는 `paths.py` 한 곳에서만
 정한다 — 종전에는 19개 파일이 각자 `parents[N]` 을 세었고 N 이 2·3·4 로 갈려서, 파일을
 옮기면 `ImportError` 가 아니라 *산출물이 엉뚱한 데 쌓이는* 방식으로 조용히 어긋났다.
 
@@ -333,7 +332,7 @@ LLM 판단이 들어가는 곳은 `runtime/agents.py` 네 곳뿐이다. 포맷 �
 ## 산출물
 
 ```
-runs/{pair_id}/{run_id}/
+experiment/artifacts/{pair_id}/{run_id}/
   config.json  data/{train,dev,test}.json
   measured_profile.json    language_profile.json    prompt_v0_cand*.txt
   contra_floor.json        z_baseline.json
@@ -365,14 +364,14 @@ runs/{pair_id}/{run_id}/
 }
 ```
 
-`runs/**/cache/` 와 `runs/**/*_rows.json` 은 `.gitignore` 처리했다.
+`experiment/artifacts/**/cache/` 와 `**/*_rows.json` 은 `.gitignore` 처리했다.
 
 **런 사이의 비교 가능성 — 세 번 끊겼다.** 오래된 런의 숫자를 표에 같이 올리기 전에 확인할 것.
 
 | 언제 | 무엇이 바뀌었나 | 결과 |
 |---|---|---|
-| v1 → v2 | 목적함수가 `Q`·`gain` 에서 `effective` 로 | v1 런은 아예 비교 불가. 산출물도 정리하면서 지웠다 |
-| 구 집계 → 경계 평균 | `contradiction` 의 문장 값이 조각 가중 평균 → **경계 평균**, `consistency` 가 COMET → 양방향 NLI | `runs/ko-en/run01`~`run03` 이 해당. 재집계는 `*_rows.json` 의 `pieces_contra` 로 오프라인 가능(재번역 불필요) |
+| v1 → v2 | 목적함수가 `Q`·`gain` 에서 `effective` 로 | v1 런은 아예 비교 불가 |
+| 구 집계 → 경계 평균 | `contradiction` 의 문장 값이 조각 가중 평균 → **경계 평균**, `consistency` 가 COMET → 양방향 NLI | 그 이전 ko-en 런이 해당. 재집계는 `*_rows.json` 의 `pieces_contra` 로 오프라인 가능(재번역 불필요) |
 | gtx → v2 번역 | 번역 백엔드 자체가 다른 문장을 낸다 (재번역 대조 일치 0/18) | **gtx 로 잰 기존 26개 런의 점수는 v2 런과 비교할 수 없다.** 캐시는 `translator_id` 로 분리돼 섞이지는 않는다 |
 
 격자를 바꾼 경우도 마찬가지다 — `score` 가 T 격자 평균이라 격자가 다르면 다른 수다.
@@ -409,13 +408,13 @@ MANIFESTS = {
 | `gates/judge_check.py` | 판정자 (모델 + 프롬프트) | `safe`/`not-safe` 오분류 0건 **+ 반복 실행 동일** |
 | `gates/judge_check.py --skip-judge` | **NLI contradiction 백엔드** | 케이스마다 `min(premature) > max(safe)` |
 
-adequacy 관문 실측 (`runs/adequacy_validity/`): 부정 뒤집힘·의미 변경·무관 문장은 전
+adequacy 관문 실측: 부정 뒤집힘·의미 변경·무관 문장은 전
 케이스 정상 검출. 위반 2건은 관용구 조각("밀려 썼던") 하나에 국한 — 특히 **source_echo
 (원문 그대로 반환)를 정답 번역보다 높게** 주는 복사 편향. **현재 이 실패에 방어가 없다** —
 번역 층의 에코 재시도는 LLM 번역기와 함께 사라졌다. 관용구 밀도가 높은 데이터에서는
 adequacy 를 과신하지 말 것.
 
-양방향 NLI 관문 실측 (`runs/validity_nli/`): **en 타깃 4케이스 위반 0** (두 모델 모두),
+양방향 NLI 관문 실측: **en 타깃 4케이스 위반 0** (두 모델 모두),
 soft 위반(재서술 편향) comet 12건 → nli 0건. 위반은 전부 ja-ko 케이스 — mdeberta 가
 고유명사 음역 교체(병십→헤이주)를 다른 개체로 읽는다. 비영어 타깃에서 nli consistency 를
 쓰려면 이 맹점을 감수하든지 comet 을 유지할 것 (comet 도 같은 케이스에서 role_swap 위반).
@@ -424,7 +423,6 @@ soft 위반(재서술 편향) comet 12건 → nli 0건. 위반은 전부 ja-ko �
 학습 헤드를 얹은 bi-encoder, 소스만 보는 future-dependency, 표현 급변점, SummaC 식 창
 집계, MiniCheck, `retrans` premise, prefix 고정점 — 실측 결과와 각각의 탈락 사유는
 [AUTOSEG_DETAILS.md](AUTOSEG_DETAILS.md) '검토했으나 채택하지 않은 것' 에 있다.
-실험 코드(`metric_probes/`)는 정리하면서 지웠다 — 결론만 남기고 git 이력에 둔다.
 
 그중 다시 볼 값어치가 있는 둘만 여기 옮겨 둔다.
 
@@ -474,6 +472,5 @@ NLI 는 판정자와 달리 **목적함수에 직접 들어가므로** 관문이
   출력 중 사고 97.6%, 본문은 콜당 133토큰뿐). 손잡이 우선순위는
   **모델 > `--seg-reasoning-effort` > 그 외**이고, 프롬프트 길이는 무의미하다(입력 76% 캐시).
   부분 순위(상위 N 개만 번호)로 순위 계산을 75% 줄여 봤으나 **사고가 오히려 17% 늘었다** —
-  상위 N 개를 고르려면 전부 평가해야 하므로 정렬 생략이 평가 생략이 아니다. **배선은
-  제거했다** — 되살리려면 `validate` / `evaluate` / `eval_prompt` 세 곳에 다시 넣어야 한다.
+  상위 N 개를 고르려면 전부 평가해야 하므로 정렬 생략이 평가 생략이 아니다.
 - 프롬프트 캐싱이 걸리지 않는다 (`cached_tokens: 0`). 입력 토큰 전액 과금.

@@ -143,15 +143,13 @@ FLEURS `ar_eg`→en 283발화, 베이스 모델, 16클라이언트, 번역 MADLA
 | 2 | FLEURS `ar_eg` MSA 기준선 283발화 | WER 정규화 9.77% / CER 3.95% | `67c8e73` |
 | 3 | 방언 열화 폭 산출 | WER 31.2%p(4.2배), CER 3.25배 | `67c8e73` |
 | 4 | 모델 출력 부호 분포 848 확정 | `.` 728 / `،` 108 / `؟` 97, 종결 767/848 | `67c8e73` |
-| 5 | dot-commit 경계에 `؟` 추가 (서버 2곳) | 구어 경계 +13.3%, MSA +0 | `1bae6fc` |
+| 5 | dot-commit 경계에 `؟` 추가 | 구어 경계 +13.3%, MSA +0 | `1bae6fc` |
 | 6 | AST 지연 측정 (`run_fleurs_ar.sh`) | punct 10.41초/34.70, 커밋 324건 전부 `dot` | `e18191f` |
 | 7 | static 청크 스윕 2~9초 | 8초 평탄, static@8s 4.67초/28.74 | `a675edc`, `4ef4c47` |
 
-**5번 상세.** `sentence_boundary.py` 의 `DOT_COMMIT_BOUNDARY_RE`·`SENTENCE_SPLIT_RE` 와,
-당시 존재하던 `streaming_websocket_server_dualbase.py` 의 인라인 정규식에 `؟`(U+061F)·
-`۔`(U+06D4) 를 넣었다. 한쪽만 고치면 두 서버 동작이 갈렸기 때문이다 — 그 서버는 2026-09-06
-에 삭제됐고, 지금 부호를 쥔 곳은 `sentence_boundary.py` 하나뿐이다. 아랍 문자는 RTL 이라 정규식 리터럴로 박으면
-소스 줄이 시각적으로 뒤섞이므로 `\u` 이스케이프로 넣었다. 라틴/CJK/약어(`Mr.`)/소수점(3.14)
+**5번 상세.** `sentence_boundary.py` 의 `DOT_COMMIT_BOUNDARY_RE`·`SENTENCE_SPLIT_RE` 에
+`؟`(U+061F)·`۔`(U+06D4) 를 넣었다. 부호를 쥔 곳은 이 파일 하나뿐이다. 아랍 문자는 RTL 이라
+정규식 리터럴로 박으면 소스 줄이 시각적으로 뒤섞이므로 `\u` 이스케이프로 넣었다. 라틴/CJK/약어(`Mr.`)/소수점(3.14)
 회귀 없음을 확인했다.
 
 **추가한 코드.**

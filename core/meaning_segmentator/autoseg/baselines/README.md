@@ -3,8 +3,6 @@
 제안 루프(멀티에이전트)와 붙일 **타 정책** 구현. 모든 정책이 소스 조각 리스트만 내놓고,
 번역·BLEU·chrF2·쌍체 부트스트랩·지연은 `bleu_eval` 이 그대로 쓴다.
 
-**결과와 판독은 [`runs/en-multi/clean500/bleu/BASELINE_COMPARISON.md`](../../runs/en-multi/clean500/bleu/BASELINE_COMPARISON.md) 에 있다.**
-
 | 정책 | 출처 | 경계 기준 | 외부 의존 | 타깃별 | 온라인 |
 |---|---|---|---|---|---|
 | `punct` | — | 문장 내부 구두점 | 없음 | 아니오 | ⚠️ |

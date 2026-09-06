@@ -22,9 +22,8 @@ experiment/
 └── ENVIRONMENT.md
 ```
 
-**종전 `core/meaning_segmentator/runs/` 를 없애고 여기로 옮겼다.** 논문에 쓰지 않은
-예전 런(clean500, covost2/n3000, run01~run12, smoke, 관문 리포트)은 그때 지웠다 —
-git 히스토리에는 남아 있다. 런 ID 구조(`covost2/full`, `en-multi/run13`)는 그대로라
+**종전 `core/meaning_segmentator/runs/` 를 없애고 여기로 옮겼다.** 런 ID 구조
+(`covost2/full`, `en-multi/run13`)는 그대로라
 `--run-id` 값은 하나도 바뀌지 않았고, 뿌리는 `autoseg/paths.py` 의 `RUNS_DIR` 하나가 정한다.
 
 **논문 그림·`bleu/*.json`·`prompt_eval/*.json` 은 git 이 추적하지 않는다** (`.gitignore`).

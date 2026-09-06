@@ -94,7 +94,7 @@ python evaluation/DailyTalk/utils/generate_split_test.py --no-resume
 | `transcribe/test(1008).json`, `toy(200).json` | ASR 평가 드라이버 |
 | `results/train2_seg_en.json` | `generate_split_data.py` 의 입력. LLM 라벨 + 구글 번역이라 공짜로 못 만든다 |
 | `results/eval_dailytalk_*.json` (4개) | `core/research/context_scoring/`, `Qwen3-ASR/finetuning/utils/convert_to_jsonl.py` 가 읽는다 |
-| `results/dailytalk_test_merged{,_pad1s}.json` | `transcribe_finetuned.py --pad_silence` 실측의 대조쌍(각 10문장, 무음 없이 / 뒤에 1초 붙여 `Qwen3-ASR-1.7B-en-merged` 로 전사). 10건 중 4건이 달라지고 그중 2건은 무음을 붙였을 때만 `<SEG>` 가 나온다 — 모델이 문장 끝을 오디오가 끝났다는 사실이 아니라 뒤따르는 무음으로 판단한다는 근거다(커밋 `394fdf3`). 다시 만들려면 지금은 없는 en-merged 가중치가 필요하다. `data[].file` 은 다른 머신의 절대경로다 |
+| `results/dailytalk_test_merged{,_pad1s}.json` | `transcribe_finetuned.py --pad_silence` 실측의 대조쌍(각 10문장, 무음 없이 / 뒤에 1초 붙여 `Qwen3-ASR-1.7B-en-merged` 로 전사). 10건 중 4건이 달라지고 그중 2건은 무음을 붙였을 때만 `<SEG>` 가 나온다 — 모델이 문장 끝을 오디오가 끝났다는 사실이 아니라 뒤따르는 무음으로 판단한다는 근거다(커밋 `394fdf3`). `data[].file` 은 다른 머신의 절대경로다 |
 
 ## `results/` 구조 주의
 

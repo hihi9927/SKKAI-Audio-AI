@@ -54,13 +54,11 @@ evaluation/{Dataset}/results/{model}/{scope}/{tag}/
 |---|---|---|---|
 | A | **LibriSpeech** | 영어 | WER + FSL 타이밍, GPT 번역/교정 옵션 있음 |
 | B | **DailyTalk** | 한국어 | CER, GPT 옵션 없음 |
-| C | **KtelSpeech** | 한국어 | CER, 전화 품질 음성 |
-| D | **AMI** | 영어 | WER, 다화자 회의, ami-dir/words-dir 별도 지정 |
-| E | **Paper mode (mode2/3/4)** | 영어 | LibriSpeech 고정, `paper_result/ASR/scripts/` 재현 스크립트 사용 |
+| C | **Paper mode (mode2/3/4)** | 영어 | LibriSpeech 고정, `paper_result/ASR/scripts/` 재현 스크립트 사용 |
 
 A를 선택한 경우, 이어서 물어봐줘:
 - **일반 실행** → 4번(실험 설정)부터 진행
-- **Paper mode 재현** → E와 동일하게 아래 "2-1. Paper mode" 절차로 이동
+- **Paper mode 재현** → C와 동일하게 아래 "2-1. Paper mode" 절차로 이동
 
 ### 2-1. Paper mode (mode2/3/4)
 
@@ -294,38 +292,6 @@ ssh <host_alias> "cd <remote_dir> && tmux new-session -d -s eval_test \
   2>&1 | tee /tmp/eval_test.log \
   && git add -A \
   && git commit -m \"eval: <model_label> DailyTalk 결과 추가\" \
-  && git push' \
-  && echo TEST_STARTED"
-```
-
-**KtelSpeech:**
-```bash
-ssh <host_alias> "cd <remote_dir> && tmux new-session -d -s eval_test \
-  '{ [ -x ~/STiTy/.venv/bin/python ] && . ~/STiTy/.venv/bin/activate || { . ~/miniforge3/etc/profile.d/conda.sh && conda activate stity; }; } && \
-  python evaluation/KtelSpeech/test_qwen3_ktelspeech.py \
-    --data-dir evaluation/KtelSpeech \
-    --model \"<model_label>\" --scope <scope> [--tag <tag>] \
-    --description \"<auto_generated>\" [--limit <n>] \
-    --host localhost --port 8765 --trailing-silence-ms 5000 \
-  2>&1 | tee /tmp/eval_test.log \
-  && git add -A \
-  && git commit -m \"eval: <model_label> KtelSpeech <scope> <tag> 결과 추가\" \
-  && git push' \
-  && echo TEST_STARTED"
-```
-
-**AMI:**
-```bash
-ssh <host_alias> "cd <remote_dir> && tmux new-session -d -s eval_test \
-  '{ [ -x ~/STiTy/.venv/bin/python ] && . ~/STiTy/.venv/bin/activate || { . ~/miniforge3/etc/profile.d/conda.sh && conda activate stity; }; } && \
-  python evaluation/AMI/test_qwen3_ami.py \
-    --ami-dir evaluation/AMI/AMI --words-dir evaluation/AMI/words \
-    --model \"<model_label>\" --scope <scope> [--tag <tag>] \
-    --description \"<auto_generated>\" [--limit <n>] \
-    --host localhost --port 8765 --trailing-silence-ms 5000 \
-  2>&1 | tee /tmp/eval_test.log \
-  && git add -A \
-  && git commit -m \"eval: <model_label> AMI <scope> <tag> 결과 추가\" \
   && git push' \
   && echo TEST_STARTED"
 ```

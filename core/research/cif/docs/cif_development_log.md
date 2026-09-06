@@ -504,7 +504,7 @@ python research/cif/train_causal.py \
 
 ## 현재 최종 상태
 
-**최선 모델**: curriculum (100+100) — `research/cif/causal_results/curriculum/d30_pw1_epoch/causal_gru.pkl`
+**최선 모델**: curriculum (100+100) — 학습 로그와 그림은 `core/research/cif/causal_results/curriculum/d30_pw1_epoch/` (가중치 `.pkl` 은 리포에 두지 않는다)
 
 pos1 GRU 대비 개선:
 - PR-AUC: 0.880 → **0.884**
