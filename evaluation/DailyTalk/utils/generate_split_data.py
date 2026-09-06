@@ -1,12 +1,29 @@
 """
 generate_split_data.py  (DailyTalk)
 
-DailyTalk train2_seg_en.json 기반으로 문장 중간에 잘린(partial) 오디오-텍스트 쌍을 생성합니다.
+문장 중간에서 잘린(partial) 오디오-텍스트 쌍을 만든다. forced aligner 로 cut 지점의
+시각을 찾아 wav 를 자르고, 그에 맞춰 자른 텍스트를 함께 낸다.
 
-- 입력: evaluation/DailyTalk/results/train2_seg_en.json
+**현행(2세대) 사용법.** 기본값은 아래 1세대 경로를 가리키므로 인자를 반드시 넘긴다:
+
+    python evaluation/DailyTalk/utils/generate_split_data.py \
+        --input  evaluation/DailyTalk/transcribe/partial_input.json \
+        --output evaluation/DailyTalk/transcribe/partial_all.json
+
+  build_splits.py 가 고른 partial 대상만 처리하고, 결과를 assemble_dailytalk.py 가
+  train/val/test.jsonl 로 조립한다.
+
+**1세대(2026-08-24) 경로 — 아래 기본값이 이것이다.**
+
+- 입력: evaluation/DailyTalk/results/train2_seg_en.json  (train2 분할 시절의 라벨)
+- 출력 JSON: evaluation/DailyTalk/transcribe/split_train2.json
+- 그 뒤: Qwen3-ASR/finetuning/utils/convert_split_to_jsonl.py → split_train.jsonl
+
+  인자 없이 돌리면 현행 데이터가 아니라 1세대를 다시 만든다. 기본값을 그대로 두는 것은
+  1세대 산출물(split_train2.json 등)이 아직 남아 있어 재현 경로를 보존하기 위해서다.
+
 - 오디오 소스: finetuning/data/DailyTalk/audio/{file}.wav
 - 출력 오디오: finetuning/data/DailyTalk/split_audio/split_{file}.wav
-- 출력 JSON: evaluation/DailyTalk/transcribe/split_train2.json
 
 cut 규칙:
   - 전체 단어 수 3개 이상인 utterance만 처리
@@ -32,6 +49,8 @@ _EVAL_BASE   = _SCRIPT_DIR.parent.parent
 _STiTy_BASE  = _EVAL_BASE.parent
 _FT_BASE     = _STiTy_BASE / "Qwen3-ASR" / "finetuning"
 
+# 1세대 기본값이다. 2세대는 --input / --output 으로 partial_input.json →
+# partial_all.json 을 넘긴다 (docstring 참조).
 INPUT_JSON   = _EVAL_BASE / "DailyTalk" / "results" / "train2_seg_en.json"
 AUDIO_DIR    = _FT_BASE / "data" / "DailyTalk" / "audio"
 SPLIT_DIR    = _FT_BASE / "data" / "DailyTalk" / "split_audio"
