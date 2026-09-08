@@ -340,6 +340,8 @@ class Dispatcher:
         self._locks: list = []      # [시작, 끝, 언어] — 구간마다 한 번 정한 담당
         self._checked: set = set()  # 확정 판정과 대조를 끝낸 잠금 (id)
         self.revoked = {n: [] for n in self.names}   # 교정으로 무효가 된 (시작, 끝)
+        # (서버, 구간 시작) 에 대한 final 이 이미 화면으로 나갔는지. run_dual 이 Reorder 로 잇는다.
+        self.final_sent = lambda name, key: False
 
     def feed(self, pcm: bytes) -> None:
         x = np.frombuffer(pcm, dtype="<i2")
@@ -507,14 +509,24 @@ class Dispatcher:
             if id(lock) in self._checked:
                 continue
             v = self.tracker._find_overlap(lock[0], max(lock[1], lock[0] + 0.1))
+            if v is not None and abs(v[0] - lock[0]) > 0.5:
+                v = None                       # 이웃 구간의 판정이다. 이 구간 것이 아니다
             if v is None or len(v) < 5 or not v[4]:
-                continue                       # 아직 확정 판정 전
+                # 아직 확정 판정 전. 0.5초 이하 조각은 판정 자체가 없으니 오래 지나면 접는다.
+                if self.audio_sec - lock[1] > 4.0:
+                    self._checked.add(id(lock))
+                continue
             self._checked.add(id(lock))
             new_lang = v[2]
             if new_lang == lock[2]:
                 continue
-            new_owner = self.route_of(new_lang) or self.fallback
             old_owner = self.route_of(lock[2]) or self.fallback
+            if self.final_sent(old_owner, lock[0] - PRE_ROLL):
+                # 옛 담당의 final 이 이미 화면에 나갔다. 지금 다시 보내면 같은 말이 두 번
+                # 뜬다(실측: `Sure.` 가 10초 뒤 영어 칸에 한 번 더). 틀린 채로 둔다.
+                print(f"correct {lock[0]:.2f}s skipped: {old_owner} already shown", flush=True)
+                continue
+            new_owner = self.route_of(new_lang) or self.fallback
             if new_owner == old_owner or new_owner not in self.spans:
                 continue
             a = max(self._offset, lock[0] - PRE_ROLL)
@@ -727,6 +739,7 @@ async def run_dual(client, start_raw, pending_binary):
 
         disp = Dispatcher(tracker, live, route_of, fallback)
         reorder = Reorder(disp, live, client)
+        disp.final_sent = lambda name, key: reorder.done.get(name, -1.0) >= key - 0.3
         print(f"dual -> {', '.join(f'{k}:{servers[k]}' for k in live)} "
               f"| LID 후보 {sorted(allowed)} | 담당 서버에만 오디오 전달, 나머지는 무음",
               flush=True)
