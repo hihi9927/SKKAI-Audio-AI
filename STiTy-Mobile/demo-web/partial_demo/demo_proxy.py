@@ -15,7 +15,7 @@ ASR 서버(8766)를 따로 열면 두 번 포워딩해야 한다. 이 프록시�
 보기에 핸드셰이크 순서(hello -> start -> ready)는 그대로다.
 
 **`--lid` 를 켜면 음성으로 판정한다.** `start.lang` 을 믿지 않고, VAD 가 발화
-시작을 잡은 뒤 whisper-base 로 언어를 보고 그 결과로 고른다. 한 마이크에 두
+시작을 잡은 뒤 whisper-small 로 언어를 보고 그 결과로 고른다. 한 마이크에 두
 언어가 섞여 들어오는 화면에서도 맞는 모델로 간다. 근거와 실측값은
 [lid_router.py](lid_router.py) 문서를 보라.
 
@@ -31,7 +31,7 @@ ASR 서버(8766)를 따로 열면 두 번 포워딩해야 한다. 이 프록시�
 **선택은 전사가 아니라 오디오로 한다.** 전사 글자(한글/라틴)로 고르면 깨진다 —
 한국어 모델이 영어 발화를 `헬로 나이스 미트 유.` 처럼 한글로 받아쓰면 그 글자는
 한국어로 보이므로 두 서버 결과가 모두 통과한다. VAD 로 찾은 발화 구간의 음성을
-whisper-base 에 직접 넣어 판정하면 전사 내용과 무관하게 갈린다.
+whisper-small 에 직접 넣어 판정하면 전사 내용과 무관하게 갈린다.
 
 비용은 ASR 연산 2배다. 두 모델은 어차피 GPU 에 함께 올라가 있고, 실측에서 지연의
 대부분은 번역이 차지하므로(전체 중앙 0.20초 중 번역만 0.19초) 감당할 만하다.
@@ -57,6 +57,7 @@ DUAL = False          # --dual. 모든 서버에 보내고 발화마다 고른�
 REST_UPSTREAM = None  # --rest. 라우팅 표에 없는 언어를 맡는 서버(보통 베이스라인).
 REST_KEY = "*"        # 그 서버를 가리키는 이름
 TRANSLATE_URL = None  # --translate-url. 번역 방향을 바로잡을 때 쓴다.
+AUDIENCE: list[str] = []   # --targets. 발화 하나를 이 언어들로 모두 번역한다.
 LANG_HINT = False     # --lang-hint. 판정 언어를 서버에 알린다.
 LANG_HINT_FORCE = False  # --lang-hint-force. 바이어스 대신 force_language 로.
 # 슬롯을 자르는 지점을 판정 시작보다 이만큼 앞으로 당긴다. 전환 지점 추정은
@@ -253,11 +254,60 @@ async def fix_direction(data, verdict_lang, lang_map, target_lang):
     return data, True
 
 
+async def _translate_to(text: str, target: str, source: str) -> str:
+    """단독 번역 서버에 한 줄 번역을 요청한다. 실패는 빈 문자열이다."""
+    import aiohttp
+
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as sess:
+        async with sess.post(f"{TRANSLATE_URL.rstrip('/')}/translate",
+                             json={"text": text, "target": target, "source": source}) as resp:
+            resp.raise_for_status()
+            return (await resp.json()).get("translation") or ""
+
+
+async def add_audience_translations(data, src_lang: str, primary_target: str):
+    """청중 언어마다 번역을 붙여 ``translations`` 로 실어 보낸다.
+
+    **서버는 발화 하나당 목표 하나만 낸다.** `langMap` 이 소스 → 목표 1:1 이라
+    한국어를 말하면 영어만 나오고, 같이 켜 둔 스페인어 자막은 만들어지지 않는다.
+    화면(`web/show.html`)은 이미 목표별 딕셔너리 `translations` 를 읽으므로
+    (배치 3·4 가 그걸 기다린다), 모자란 목표를 여기서 채운다.
+
+    서버가 이미 낸 번역은 다시 부르지 않고 그 목표 자리에 그대로 넣는다. 나머지는
+    한꺼번에 병렬로 부르므로, 언어가 몇 개든 지연은 한 번 분량이다. 옛 화면과 앱을
+    위해 ``translation`` 도 그대로 남긴다.
+    """
+    if not TRANSLATE_URL or not AUDIENCE:
+        return data
+    text = (data.get("original") or "").strip()
+    if not text:
+        return data
+    out = {}
+    if primary_target and data.get("translation"):
+        out[primary_target] = data["translation"]
+    todo = [t for t in AUDIENCE if t != src_lang and t not in out]
+    if todo:
+        got = await asyncio.gather(*(_translate_to(text, t, src_lang) for t in todo),
+                                   return_exceptions=True)
+        for tgt, res in zip(todo, got):
+            if isinstance(res, Exception):
+                print(f"fanout {src_lang}->{tgt} failed: {res!r}", flush=True)
+            elif res:
+                out[tgt] = res
+    if not out:
+        return data
+    data = dict(data)
+    data["translations"] = out
+    if not data.get("translation"):
+        data["translation"] = next(iter(out.values()), "")
+    return data
+
+
 async def run_dual(client, start_raw, pending_binary):
     """라우팅 표의 모든 서버에 같은 오디오를 보내고, 발화 구간마다 한쪽만 통과시킨다.
 
     통과 기준은 전사가 아니라 **오디오 판정**이다. VerdictTracker 가 VAD 로 찾은
-    발화 구간의 음성을 whisper-base 에 넣어 언어를 정하고, 그 구간의 결과를 낸
+    발화 구간의 음성을 whisper-small 에 넣어 언어를 정하고, 그 구간의 결과를 낸
     서버가 그 언어를 맡은 서버일 때만 클라이언트로 넘긴다.
 
     핸드셰이크 응답(ready 등)은 한 서버 것만 넘긴다. 두 벌이 가면 클라이언트가
@@ -454,6 +504,11 @@ async def run_dual(client, start_raw, pending_binary):
                             print(f"fix dir end={b} {lang}: "
                                   f"{(data.get('original') or '')[:30]!r} -> "
                                   f"{(data.get('translation') or '')[:30]!r}", flush=True)
+                        src = (verdict_lang or data.get("language") or "").lower()
+                        before = data.get("translations")
+                        data = await add_audience_translations(
+                            data, src, (lang_map or {}).get(src) or target_lang)
+                        if fixed or data.get("translations") is not before:
                             msg = json.dumps(data, ensure_ascii=False)
                     await client.send(msg)
                 elif kind == "final":
@@ -594,10 +649,10 @@ if __name__ == "__main__":
     ap.add_argument("--dual", action="store_true",
                     help="라우팅 표의 모든 서버에 동시에 보내고 발화마다 고른다. "
                          "--lid 를 함께 켠 것으로 친다")
-    ap.add_argument("--lid-model", default="openai/whisper-base")
+    ap.add_argument("--lid-model", default="openai/whisper-small")
     ap.add_argument("--lid-window", type=float, default=1.0,
                     help="발화 시작 후 몇 초를 듣고 판정할지. 실측 정확도 "
-                         "1.0s=96.9%%, 2.0s=98.7%% (whisper-base, ko/en/es 226클립)")
+                         "1.0s=98.2%%, 2.0s=99.1%% (whisper-small, ko/en/es 226클립)")
     ap.add_argument("--lid-max-wait", type=float, default=5.0,
                     help="이만큼 들어도 판정이 안 서면 start.lang 규칙으로 되돌아간다")
     ap.add_argument("--lid-device", default="cuda")
@@ -622,6 +677,10 @@ if __name__ == "__main__":
                     help="lang_hint 를 바이어스 대신 force_language 로 적용한다. "
                          "프롬프트에 언어를 박아 넣는 방식이라 출력 형식이 바뀌고 "
                          "커밋 판정이 달라진다 — 실측에서 짧은 발화가 뭉개졌다")
+    ap.add_argument("--targets", default=None,
+                    help="청중 언어 목록(예: ko,en,es). 발화 하나를 이 언어들로 모두 "
+                         "번역해 translations 로 보낸다. 서버는 발화당 목표 하나만 "
+                         "내므로 나머지는 프록시가 --translate-url 로 채운다")
     ap.add_argument("--translate-url", default=None,
                     help="단독 번역 서버 주소(예: http://127.0.0.1:8770). 주면 ASR "
                          "서버가 언어를 잘못 신고해 번역 방향이 뒤집힌 final 을 "
@@ -641,6 +700,8 @@ if __name__ == "__main__":
 
     DUAL = args.dual
     TRANSLATE_URL = args.translate_url
+    if args.targets:
+        AUDIENCE = [c.strip().lower() for c in args.targets.split(",") if c.strip()]
     LANG_HINT = args.lang_hint or args.lang_hint_force
     LANG_HINT_FORCE = args.lang_hint_force
     if args.lid_scan:
