@@ -20,7 +20,7 @@ profiling, so three started together die with `No available memory for the cache
 PYTHONPATH=$PWD/Qwen3-ASR python Qwen3-ASR/examples/streaming_websocket_server.py \
   --model models/Qwen3-ASR-1.7B-ko-silence-v4c900-merged --port 8766 \
   --gpu-memory-utilization 0.25 --enforce-eager --no-idle-shutdown \
-  --local-translation-url http://127.0.0.1:8770 --local-translation-context 1
+  --local-translation-url http://127.0.0.1:8770 --local-translation-context 1 --chunk-size 1.0
 #    en: --model models/Qwen3-ASR-1.7B-en-silence-c80-merged --port 8767 | baseline: Qwen/Qwen3-ASR-1.7B 8768
 
 # 2) the translator, after the ASR servers so its allocator sees the space that is left
@@ -33,6 +33,11 @@ python STiTy-Mobile/demo-web/partial_demo/demo_proxy.py 8080 \
   --route ko=8766,en=8767 --default 8766 --rest 8768 --dual --lid-scan \
   --lid-model openai/whisper-small --targets ko,en,es --translate-url http://127.0.0.1:8770
 ```
+
+`--chunk-size 1.0` (server default 2.0) shows the first partial about 0.4s sooner and doubles the partial
+updates. It also makes the en finetune write a second `language English` header right after a `<SEG>` and
+stop there; the server now cuts the slot on that pattern (`SEG-HEADER-RESET`) and re-decodes from the chunk
+where the sentence began, so on the 143s test the two chunk sizes deliver the same sentences.
 
 Use the **silence** finetune for en, not `en-dailytalk-seg`: that one is trained to mark `<SEG>`, so it
 commits far more often — 41% of its finals in one live session were two words or fewer, and a fragment

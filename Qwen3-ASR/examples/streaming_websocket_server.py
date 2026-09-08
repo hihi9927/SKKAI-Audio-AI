@@ -786,6 +786,8 @@ class Qwen3ASRStreamingHandler:
             "committed_display": "",
             "committed_seg_count": 0,
             "audio_anchor_sec": self.current_time,
+            "tail_trim_samples": 0,  # finish 전에 잘라 낸 무음 꼬리 (재시도가 두 번 자르지 않게)
+            "real_audio": False,  # 0 이 아닌 샘플을 받은 적이 있나 (디지털 무음만 온 슬롯은 디코딩하지 않는다)
             "committed_asr_set": set(),  # 세그먼트 내 커밋된 문장 전체 (공백 정규화 후)
             "committed_fuzzy_keys": [],  # 위와 같은 문장의 유사도 비교용 키 (_fuzzy_key)
         }
@@ -1225,9 +1227,42 @@ class Qwen3ASRStreamingHandler:
         _s = self._slot(slot_key)
         # SEG/dot commit 발생 시, 추론 결과 text가 <SEG>로 끝나면 uncommitted 없음 → 슬롯 리셋.
         any_commit = _s.get("committed_display", "") != committed_display_before
+        _latest_decoded = self._strip_asr_text((_s["state"].text or "").strip())
+        header_tail = bool(self._SEG_HEADER_TAIL_RE.search(_latest_decoded))
         if any_commit:
-            _latest_decoded = self._strip_asr_text((_s["state"].text or "").strip())
-            ends_with_seg = _latest_decoded.endswith("<SEG>")
+            # 이 커밋의 <SEG> 가 든 청크의 시작. 헤더 리셋 때 여기서부터 다시 디코딩한다.
+            _s["seg_chunk_accum"] = _accum_len_before
+        if not any_commit and header_tail:
+            # 커밋 없이 헤더 꼬리만 붙은 경우. 이 청크에서 모델이 앞 청크의 본문 시작
+            # ('The')을 헤더로 고쳐 썼다. 그 문장이 시작된 청크부터 새 슬롯에 넘겨 다시
+            # 디코딩한다. 마지막 청크만 넘기면 앞머리가 잘려 `My name is Ben` 이
+            # `Right.` 로 나왔다.
+            chunk_samples = int(round(self.config.chunk_size_sec * SAMPLING_RATE))
+            old_accum = _s["state"].audio_accum
+            # 직전 커밋의 <SEG> 가 든 청크 시작부터 넘긴다. 다음 문장은 그 청크 안에서
+            # 시작했다('That's' 가 거기서 디코딩됐다). 앞 문장 꼬리도 같이 들어가지만
+            # 그건 seg-boundary-dedup 이 첫 문장으로 걸러 낸다.
+            since = _s.get("seg_chunk_accum")
+            if since is None or since >= old_accum.shape[0] or old_accum.shape[0] - since > 3 * chunk_samples:
+                since = max(0, old_accum.shape[0] - chunk_samples)
+            carry_audio = old_accum[since:].copy()
+            last_committed = _s.get("committed_display", "")
+            self._reset_stream_slot(slot_key)
+            self._slot(slot_key)["state"].audio_accum = carry_audio
+            self._slot(slot_key)["real_audio"] = True
+            if last_committed:
+                self._slot(slot_key)["seg_reset_last_committed"] = last_committed
+                self._slot(slot_key)["header_reset_last_committed"] = last_committed
+            if slot_key == self.active_slot:
+                self.state = self.stream_slots[self.active_slot]["state"]
+            self.log.info(
+                f"[SEG-HEADER-RESET] slot={slot_key} tail={_latest_decoded[-40:]!r} "
+                f"carry={carry_audio.shape[0] / SAMPLING_RATE:.2f}s"
+            )
+            await self._emit_partial(slot_key, force=True)
+            return
+        if any_commit:
+            ends_with_seg = _latest_decoded.endswith("<SEG>") or header_tail
             remaining = "" if ends_with_seg else self._slot_uncommitted_display(slot_key, text_snapshot=_committed_text_snapshot)
             audio_sec = _s["state"].audio_accum.shape[0] / SAMPLING_RATE
             force_reset = audio_sec > MAX_AUDIO_ACCUM_SEC
@@ -1246,6 +1281,11 @@ class Qwen3ASRStreamingHandler:
                     # 리셋 후 즉시 삭제하면 VAD 발동에 필요한 침묵 구간이 사라져 발화 누락이 발생함.
                     _accum_now = _s["state"].audio_accum.shape[0]
                     _carry_samples = _accum_now - _accum_size_pre_gpt
+                    if header_tail:
+                        # 헤더가 본문 시작을 덮어썼으니 그 오디오(마지막 청크)를 같이 넘긴다.
+                        _carry_samples = max(
+                            _carry_samples, int(round(self.config.chunk_size_sec * SAMPLING_RATE)))
+                        _carry_samples = min(_carry_samples, _accum_now)
                     carry_audio = (
                         _s["state"].audio_accum[-_carry_samples:].copy()
                         if _carry_samples > 0 else None
@@ -1257,6 +1297,8 @@ class Qwen3ASRStreamingHandler:
                         self.log.info(f"[SEG-CARRY-AUDIO] slot={slot_key} carry={carry_sec}s")
                     if last_committed:
                         self._slot(slot_key)["seg_reset_last_committed"] = last_committed
+                        if header_tail:
+                            self._slot(slot_key)["header_reset_last_committed"] = last_committed
                     if slot_key == self.active_slot:
                         self.state = self.stream_slots[self.active_slot]["state"]
                     self.log.info(f"[SEG-SLOT-RESET] slot={slot_key} audio_sec={audio_sec:.1f}s")
@@ -1667,6 +1709,11 @@ class Qwen3ASRStreamingHandler:
         # 문장이 finish로 재방출됐다(3538-142836-0017 등).
         "cross-dedup": ("commit", "flush"),
         "cross-dedup-fuzzy": ("commit", "flush"),
+        # 헤더 리셋은 앞 문장이 든 청크부터 다시 디코딩하므로 그 꼬리가 짧은 문장으로
+        # 한 번 더 나온다(`It's my first time.`, `A cake.`, `For me.`). 이 조각은 대개
+        # VAD 커밋(flush)으로 나가므로 flush 에도 건다. 리셋 뒤 첫 문장에만, 그것도
+        # 5어절 이하이고 직전 커밋 끝 어절들과 절반 이상 겹칠 때만 버린다.
+        "header-reset-tail-dedup": ("extract", "commit", "flush"),
     }
 
     def _commit_skip_reason(self, slot: dict, sentence_display: str, *, stage: str,
@@ -1703,12 +1750,36 @@ class Qwen3ASRStreamingHandler:
         # 모드2의 측정 대상 그 자체라 그대로 노출한다.
         if _applies("seg-boundary-dedup") and "seg_reset_last_committed" in slot and not self.always_commit:
             seg_reset_last = slot.pop("seg_reset_last_committed")
-            _strip_p = lambda w: re.sub(r'[.,!?;:。？！]+$', '', w)
+            _strip_p = lambda w: re.sub(r'[.,!?;:。？！]+$', '', w).lower()
             words = sentence_display.split()
             first_word = _strip_p(words[0]) if words else ""
             last_word = _strip_p(seg_reset_last.split()[-1]) if seg_reset_last.split() else ""
             if first_word and last_word and (first_word == last_word or last_word.endswith(first_word)):
                 return "seg-boundary-dedup"
+            # 헤더 리셋은 앞 문장이 든 청크부터 다시 디코딩하므로 앞 문장 꼬리가 짧은
+            # 문장으로 한 번 더 나온다 — `Yes, this is my first time.` 뒤에 `It's my first
+            # time.`, `we say cake.` 뒤에 `A cake.`. 첫 어절만 봐서는 못 잡는다. 새 문장이
+            # 짧고 직전 커밋의 끝 어절들과 절반 이상 겹치면 같은 꼬리로 본다.
+            prev_words = [_strip_p(w) for w in seg_reset_last.split()]
+            new_words = [_strip_p(w) for w in words]
+            if 1 <= len(new_words) <= 5 and prev_words:
+                tail = prev_words[-len(new_words):]
+                hits = sum(1 for a, b in zip(tail, new_words)
+                           if a and b and (a == b or a.endswith(b) or b.endswith(a)))
+                if hits >= max(1, (len(new_words) + 1) // 2):
+                    return "seg-boundary-dedup"
+
+        if _applies("header-reset-tail-dedup") and "header_reset_last_committed" in slot:
+            prev = slot.pop("header_reset_last_committed")
+            _strip_p2 = lambda w: re.sub(r'[.,!?;:。？！]+$', '', w).lower()
+            prev_words = [_strip_p2(w) for w in prev.split()]
+            new_words = [_strip_p2(w) for w in sentence_display.split()]
+            if 1 <= len(new_words) <= 5 and prev_words:
+                tail = prev_words[-len(new_words):]
+                hits = sum(1 for a, b in zip(tail, new_words)
+                           if a and b and (a == b or a.endswith(b) or b.endswith(a)))
+                if hits >= max(1, (len(new_words) + 1) // 2):
+                    return "header-reset-tail-dedup"
 
         # DOT-SLOT-SWITCH 직후: 이전 슬롯 커밋의 접미사가 통째로 다시 나옴
         if _applies("dot-suffix-dedup"):
@@ -2367,6 +2438,7 @@ class Qwen3ASRStreamingHandler:
                 f"short={_is_short_utterance} has_buf={_has_buffered_audio}"
             )
             if _pre_text or _has_buffered_audio:
+                self._trim_tail_silence(old_active)
                 await self._asr_finish_streaming(old_active)
                 _finish_text = (self.stream_slots[old_active]["state"].text or "").strip()
                 self.log.info(f"[VAD-FINISH] slot={old_active} text={_finish_text!r}")
@@ -2396,6 +2468,17 @@ class Qwen3ASRStreamingHandler:
 
         tail_chunk = chunk[seg_start:]
         if tail_chunk.size > 0:
+            # **디지털 무음만 받은 슬롯은 디코딩하지 않는다.** 데모 프록시는 다른 언어의
+            # 발화 구간 동안 이 서버에 같은 길이의 0 을 보내 시간축을 맞춘다. 그 0 을
+            # 2초마다 디코딩하면 파인튜닝 모델은 무음에서도 `I'm sorry, but I can't help
+            # you.` 를 지어낸다(실측: 143초 세션에서 영어 서버가 2초마다 한 번씩, 70건).
+            # 실제 샘플이 하나라도 섞인 청크는 그대로 디코딩하고, 슬롯이 한 번이라도
+            # 실제 오디오를 받았으면 그 뒤의 0 도 넣는다 — 발화 끝의 침묵이 있어야
+            # VAD 커밋과 꼬리 디코딩이 돈다.
+            slot = self.stream_slots[self.active_slot]
+            if not slot.get("real_audio") and not np.any(tail_chunk):
+                return
+            slot["real_audio"] = True
             await self._asr_streaming_transcribe(tail_chunk, self.active_slot)
 
     async def finish_streaming(self):
@@ -2511,6 +2594,9 @@ class Qwen3ASRStreamingHandler:
         Returns:
             (corrected_text, translation, detected_lang_code, extra)
         """
+        # 문장 안에 남은 `language X` 헤더는 번역기에 넣기 전에 뗀다. 넣으면 번역이
+        # 헤더까지 옮기거나(`언어 영어`) 문맥으로 삼아 엉뚱한 문장을 만든다.
+        text = self._strip_lang_headers(text) or text
         src_code = lang_to_code(current_lang) if current_lang else ""
 
         # ASR이 언어 감지 실패 시 GPT로 텍스트 기반 언어 감지
@@ -2576,6 +2662,42 @@ class Qwen3ASRStreamingHandler:
         """flush 시 사용할 오디오 종료 시각(초). 서브클래스에서 오버라이드 가능."""
         return self.current_time
 
+    def _trim_tail_silence(self, slot_key: str) -> int:
+        """VAD 종료 판정 뒤에 남은 무음 꼬리를 finish 디코딩 **전에** 잘라낸다.
+
+        VAD 는 침묵이 VAD_MIN_SILENCE_MS 만큼 이어진 뒤에야 speech_end 를 낸다. 그래서
+        판정 시점 슬롯 오디오의 끝에는 늘 그만큼의 무음이 붙어 있고, finish 디코딩은
+        그 무음까지 함께 읽는다. 모델은 무음에도 무언가를 써야 하니 학습에서 본 정형문을
+        지어낸다 (실측: "I'm sorry, but I can't hear you." 등 한 세션 42건).
+
+        잘라낼 길이는 `_retry_vad_short_utterance` 가 쓰는 값과 같다 — 침묵 기준에서
+        100ms 만 남긴다. 여기서 자른 만큼을 슬롯에 적어 두어 재시도 경로가 같은 구간을
+        두 번 자르지 않게 한다. 자르면 오디오가 통째로 사라지는 경우(무음뿐인 슬롯)에는
+        손대지 않고 기존 경로에 맡긴다.
+        """
+        slot = self._slot(slot_key)
+        state = slot["state"]
+        cut = int(max(0.0, (VAD_MIN_SILENCE_MS - 100) / 1000.0) * SAMPLING_RATE)
+        if cut <= 0:
+            return 0
+        _empty = np.zeros((0,), dtype=np.float32)
+        buf = state.buffer if state.buffer is not None else _empty
+        accum = state.audio_accum if state.audio_accum is not None else _empty
+        if buf.shape[0] + accum.shape[0] <= cut:
+            return 0
+        from_buf = min(cut, buf.shape[0])
+        state.buffer = buf[: buf.shape[0] - from_buf]
+        from_accum = cut - from_buf
+        if from_accum > 0:
+            state.audio_accum = accum[: accum.shape[0] - from_accum]
+        slot["tail_trim_samples"] = slot.get("tail_trim_samples", 0) + cut
+        self.log.info(
+            f"[VAD-TAIL-TRIM] slot={slot_key} cut={cut} ({cut / SAMPLING_RATE:.2f}s) "
+            f"buf={buf.shape[0]}->{state.buffer.shape[0]} "
+            f"accum={accum.shape[0]}->{state.audio_accum.shape[0]}"
+        )
+        return cut
+
     async def _retry_vad_short_utterance(self, slot_key: str) -> None:
         """finish_streaming이 빈 결과를 반환했을 때, VAD 구간 기준으로 오디오를 트림하여 재시도.
 
@@ -2596,7 +2718,9 @@ class Qwen3ASRStreamingHandler:
         speech_start = self.vad_last_speech_start_sample - slot_anchor_samples - int(0.2 * SAMPLING_RATE)
         speech_start = max(0, speech_start)
         tail_trim = max(0.0, (VAD_MIN_SILENCE_MS - 100) / 1000.0)
-        speech_end = full_audio.shape[0] - int(tail_trim * SAMPLING_RATE)
+        # finish 앞에서 이미 자른 몫은 빼고 자른다. 두 번 자르면 발화 끝이 날아간다.
+        tail_cut = max(0, int(tail_trim * SAMPLING_RATE) - int(slot.get("tail_trim_samples", 0)))
+        speech_end = full_audio.shape[0] - tail_cut
 
         if speech_end <= speech_start:
             self.log.info(f"[VAD-RETRY] slot={slot_key} skip: empty range start={speech_start} end={speech_end}")
@@ -2666,9 +2790,54 @@ class Qwen3ASRStreamingHandler:
     # 직전 문장의 번역이 붙어 더 헷갈린다).
     _HEADER_ONLY = re.compile(r"^\s*language\s+[A-Z][A-Za-z]*\s*[.!?]?\s*$")
 
+    # 디코딩 텍스트가 `<SEG>language English` 로 끝나는 꼴. 모델이 문장 경계 뒤에 헤더를
+    # 새로 쓰기 시작한 것인데, 그 뒤로는 본문을 이어 쓰지 않는다 — 다음 문장이 통째로
+    # 사라진다. 청크 1초에서 자주 난다(실측 143초에서 5문장). 슬롯을 잘라 새로 시작해야
+    # 하는데, 리셋 판정이 커밋이 있을 때만 돌아 이 꼴을 못 본다.
+    _SEG_HEADER_TAIL_RE = re.compile(r"<SEG>\s*language(?:\s+[A-Za-z]*)?[.,!?]?\s*$")
+
+    # 슬롯 안에서 언어가 바뀌면 모델은 `<SEG>` 뒤에 헤더를 **한 번 더** 쓴다
+    # (`… <SEG>language English 저는 지윤이에요.`). `_strip_asr_text` 는 맨 앞 헤더만
+    # 떼므로 두 번째 것은 문장 앞에 붙은 채 커밋된다. 실측 한 세션에서 네 줄이
+    # `language None 스페인어랑 비슷하지 않아요?` 꼴로 나갔다. 헤더 뒤에 `<asr_text>`
+    # 가 남아 있는 경우도 같이 지운다.
+    # 문장 맨 앞에만 반응한다. 커밋 단위는 `<SEG>` 로 자른 문장이라 헤더는 늘 그
+    # 앞에 온다. 아무 데나 지우면 `The language Korean is hard.` 가 잘린다.
+    _LANG_HEADER_INLINE = re.compile(
+        r"^\s*language\s+(?:None|[A-Z][A-Za-z]*)\s*(?:<asr_text>)?[.,!?;:]?\s*",
+    )
+
+    @classmethod
+    def _strip_lang_headers(cls, text: str) -> str:
+        """문장 어디에 있든 `language X` 헤더 조각을 지운다."""
+        if not text or "language" not in text:
+            return text or ""
+        return cls._LANG_HEADER_INLINE.sub("", text).strip()
+
+    # 파인튜닝 모델이 무음·잡음에서 지어내는 정형문. VAD 겹침 검사(_is_silence_hallucination)
+    # 는 "직전 커밋 뒤 이번 커밋까지" 를 보는데, 앞 발화의 꼬리가 아직 커밋되지 않은
+    # 채 무음으로 들어가면 그 꼬리가 겹침으로 잡혀 통과한다. 실측(143초 3개 국어 세션)
+    # 에서 `I'm sorry, but I can't hear you.` 두 줄과 `I want to know the weather in
+    # Beijing.` 한 줄이 그렇게 화면까지 갔다. 실제 대화에서 이 문장들이 그대로 나올
+    # 확률보다 지어낼 확률이 훨씬 높다.
+    # 한국어 파인튜닝은 발화 뒤 무음 꼬리에서 `그리고 그거` 를 낸다 (실측 한 세션 3건,
+    # 전부 VAD 커밋이고 문장 부호 없이 그 두 어절뿐).
+    _KNOWN_SILENCE_RE = re.compile(
+        r"^\s*(?:"
+        r"i'?m sorry,? but i can'?t (?:hear|help|understand) you\b.*"
+        r"|i'?m sorry,(?:\s*(?:i'?m|i|but))?"
+        r"|i want to (?:see the movie|know (?:the weather|how to make))\b.*"
+        r"|그리고 그거"
+        r")\s*$",
+        re.IGNORECASE,
+    )
+
     def _is_header_only(self, original: str) -> bool:
         """전사 없이 언어 헤더만 나온 커밋인가."""
         return bool(self._HEADER_ONLY.match(original or ""))
+
+    def _is_known_silence_phrase(self, original: str) -> bool:
+        return bool(self._KNOWN_SILENCE_RE.match(original or ""))
 
     def _is_silence_hallucination(self, original: str, reason: str,
                                   audio_end_sec: float) -> bool:
@@ -2705,6 +2874,24 @@ class Qwen3ASRStreamingHandler:
         """최종 세그먼트 전송 훅. 서브클래스에서 오버라이드해 FSL 메타데이터 등 추가 가능."""
         if self._is_header_only(original):
             self.log.info(f"[HEADER-ONLY-DROP] reason={reason} text={original!r}")
+            return
+        stripped = self._strip_lang_headers(original)
+        if stripped != original:
+            self.log.info(f"[HEADER-STRIP] reason={reason} text={original!r} -> {stripped!r}")
+            original = stripped
+            if not original:
+                return
+        if self._is_known_silence_phrase(original):
+            self.log.info(f"[HALLUC-DROP] reason={reason} text={original!r}")
+            return
+        if not re.search(r"[^\W_]", original):
+            # 문장 부호뿐인 커밋(`,`). 청크가 짧을수록 경계에서 이런 조각이 나온다.
+            self.log.info(f"[EMPTY-DROP] reason={reason} text={original!r}")
+            return
+        if reason in ("vad", "finish") and re.fullmatch(r"\S+,", original.strip()):
+            # 발화가 닫힐 때 한 어절에 쉼표만 달린 채 나온 것(`아니,`)은 앞 발화 꼬리나
+            # 무음에서 지어낸 조각이다. 진짜 한 마디 대답은 마침표로 끝난다.
+            self.log.info(f"[TAIL-DROP] reason={reason} text={original!r}")
             return
         if self._is_silence_hallucination(original, reason, audio_end_sec):
             return
