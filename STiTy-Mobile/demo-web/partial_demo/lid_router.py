@@ -10,13 +10,20 @@
 ECAPA 의 1.2% 는 우연(50%)보다 낮다. 무음을 주면 엉뚱한 언어를 일관되게 뱉기
 때문이다. 그래서 VAD 가 발화 시작을 잡은 뒤부터 창을 센다.
 
-**왜 whisper-base 인가.** 같은 조건에서 창 길이별 정확도(VAD 로 무음 제거):
+**왜 whisper 인가.** 같은 조건에서 창 길이별 정확도(VAD 로 무음 제거):
 
     모델                크기   0.5초   1초    2초    3초   추론
     whisper-base        74M   82.5%  92.8%  100%   99.4%  9.1ms
     whisper-tiny        39M   73.5%  90.4%  96.4%  98.2%  8.4ms
     mms-lid-126        300M   38.6%  80.1%  95.8%  98.8% 10.3ms
     voxlingua107-ecapa   7M   30.7%  68.7%  94.0%  98.2%  3.4ms
+
+**왜 base 가 아니라 small 이 기본값인가.** ko/en/es 226클립에서 small 은 1초 98.2%,
+2초 99.1% 로 base 의 96.9% / 98.7% 보다 낫다. 원어민 음성에서의 차이는 이렇게 작고,
+값을 치르는 이유는 억양 있는 제2언어 발화다 — 한국인이 말한 스페인어가 base 에서
+ko 로 찍혀 엉뚱한 서버로 갔다. 대신 VRAM 이 536MiB 에서 884MiB 로 는다. 위 창 길이
+표와 아래 확신도 임계값은 전부 base 로 잰 값이다. `--lid-model openai/whisper-base`
+로 되돌릴 수 있다.
 
 추론 시간은 전부 10ms 안쪽이라 변수가 아니다. 지연을 정하는 건 오직 **판정에
 필요한 오디오 길이**다. whisper 는 입력을 30초로 패딩하는 구조라 창을 줄여도
@@ -48,7 +55,7 @@ class LidRouter:
     `Session` 이 자기 버퍼를 갖는다.
     """
 
-    def __init__(self, model_name: str = "openai/whisper-base",
+    def __init__(self, model_name: str = "openai/whisper-small",
                  window_sec: float = 1.0, max_wait_sec: float = 5.0,
                  device: str = "cuda", known_langs=None):
         self.model_name = model_name
