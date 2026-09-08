@@ -181,6 +181,9 @@ core/meaning_segmentator/experiment/artifacts/**/*_rows.json
 # 경계별 판정 원본. 리포트(final_report.md)와 curve.json 만 추적한다
 core/meaning_segmentator/experiment/artifacts/**/judgements.json
 core/meaning_segmentator/experiment/artifacts/**/test_judgements.json
+# 종전 경로 `runs/` 는 로컬 작업 디렉터리로만 남긴다 (experiment/README.md 가 여기로
+# 심링크를 건다). 내용이 캐시·중간 rows 라 위 규칙과 같은 이유로 추적하지 않는다.
+core/meaning_segmentator/runs/
 
 # CoVoST2 평가 산출물 (402MB). bleu/*.json 하나가 45MB 라 저장소에 담지 않는다.
 # 재현에 필요한 것은 core/meaning_segmentator/tools/covost2_chain/ 스크립트다. 매니페스트는
