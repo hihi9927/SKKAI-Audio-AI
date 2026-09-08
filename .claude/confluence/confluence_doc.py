@@ -64,26 +64,52 @@ class Confluence:
         된다. 반면 '계획 문서' / '보고 문서' 는 차수마다 같은 이름으로 반복되므로
         부모를 좁히지 않으면 다른 차수의 폴더를 집는다.
         """
+        for item in self._folders_under(parent_id):
+            if item.get("title") == title:
+                return item["content"]["id"]
+        return None
+
+    def _folders_under(self, parent_id: str | None) -> list[dict]:
+        """폴더 목록. parent_id 를 주면 그 아래만."""
         cql = f'space={CONFIG["space_key"]} and type=folder'
         if parent_id:
             cql += f" and parent={parent_id}"
         r = self.client.get(f"{self.base}/rest/api/search", params={
             "cql": cql, "limit": 100,
         })
-        for item in self._check(r).get("results", []):
-            if item.get("title") == title:
-                return item["content"]["id"]
-        return None
+        return self._check(r).get("results", [])
 
-    def resolve_folder(self, parent_id: str, title: str) -> str:
-        """부모 아래에서 폴더를 찾고 없으면 만든다."""
-        return self.find_folder(title, parent_id=parent_id) or \
-            self.create_folder(parent_id, title)
+    def resolve_folder(self, parent_id: str, title: str,
+                       aliases: tuple[str, ...] = ()) -> str:
+        """부모 아래에서 폴더를 찾고 없으면 title 로 만든다.
 
-    def create_folder(self, parent_id: str, title: str) -> str:
-        r = self.client.post(f"{self.base}/api/v2/folders", json={
-            "spaceId": CONFIG["space_id"], "title": title, "parentId": parent_id,
-        })
+        폴더 제목은 스페이스 전체에서 유일해야 한다. 차수를 이름에 넣은
+        '2차 계획 문서' 는 그 자체로 유일하지만, 예전에 쓰던 '계획 문서' 는
+        차수마다 겹쳐서 '계획 문서_2' 처럼 꼬리가 붙어 있다. aliases 로 옛 이름을
+        넘기면 그것과 꼬리 번호가 붙은 형태까지 찾는다. 이름을 아직 안 바꾼
+        폴더가 남아 있어도 새 폴더를 잘못 만들지 않게 하기 위해서다.
+        """
+        under = self._folders_under(parent_id)
+        for name in (title, *aliases):
+            pat = re.compile(rf"^{re.escape(name)}(_\d+)?$")
+            for item in under:
+                if pat.match(item.get("title", "")):
+                    return item["content"]["id"]
+        return self.create_folder(parent_id, title, unique=True)
+
+    def create_folder(self, parent_id: str, title: str,
+                      unique: bool = False) -> str:
+        """폴더를 만든다. unique 면 제목이 이미 쓰였을 때 꼬리 번호를 붙여 다시 시도한다."""
+        for candidate in ([title] + [f"{title}_{n}" for n in range(2, 21)]
+                          if unique else [title]):
+            r = self.client.post(f"{self.base}/api/v2/folders", json={
+                "spaceId": CONFIG["space_id"], "title": candidate,
+                "parentId": parent_id,
+            })
+            if r.status_code < 400:
+                return r.json()["id"]
+            if "same title" not in r.text:
+                break
         return self._check(r)["id"]
 
     def get_storage(self, page_id: str) -> str:
@@ -676,7 +702,10 @@ def main() -> None:
     # 문서는 두 단계 아래에 들어간다 — 문서 정리 > <n>차 업무 분담 > 계획|보고 문서.
     # 차수 폴더에 계획과 보고를 섞어 두면 늘어날수록 찾기 어렵다.
     round_folder = f'{d["round"]}차 업무 분담'
-    kind_folder = f"{kind_ko} 문서"
+    # 폴더 제목은 스페이스 전체에서 유일해야 하므로 차수를 이름에 넣는다.
+    # 예전 이름('계획 문서', '계획 문서_2')도 계속 찾을 수 있게 alias 로 넘긴다.
+    kind_folder = f'{d["round"]}차 {kind_ko} 문서'
+    kind_folder_alias = f"{kind_ko} 문서"
     folder_path = f"{round_folder} > {kind_folder}"
 
     template = cf.get_storage(CONFIG["guide"][kind])
@@ -726,7 +755,8 @@ def main() -> None:
 
     round_id = cf.find_folder(round_folder) or cf.create_folder(
         CONFIG["docs_folder_id"], round_folder)
-    folder_id = cf.resolve_folder(round_id, kind_folder)
+    folder_id = cf.resolve_folder(round_id, kind_folder,
+                                  aliases=(kind_folder_alias,))
     page = cf.create_page(folder_id, title, body)
     cf.add_labels(page["id"], labels)
 
