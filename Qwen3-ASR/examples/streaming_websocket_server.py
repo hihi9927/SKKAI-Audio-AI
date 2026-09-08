@@ -323,11 +323,20 @@ def parse_lang_map(raw: object) -> dict[str, str]:
 class SessionLogger:
     """앱에서 수신한 로그를 세션별 JSON 파일로 저장"""
 
-    def __init__(self, client_id: int = 0, logs_dir: str = os.path.join(_SERVER_DIR, "../logs/asr_logs")):
+    def __init__(self, client_id: int = 0, logs_dir: str = os.path.join(_SERVER_DIR, "../logs/asr_logs"),
+                 tag: str = ""):
+        """``tag`` 는 서버를 구분하는 꼬리표다(보통 포트).
+
+        **없으면 세 서버가 서로의 로그를 덮어쓴다.** demo_proxy 의 --dual 은 같은
+        오디오를 여러 서버에 동시에 보내므로 셋이 같은 초에 접속하고, 접속 시각만으로
+        이름을 지으면 파일 하나만 남는다(실측: 세 서버 중 한 벌만 남았다). 오디오는
+        어느 서버가 써도 같지만 전사·번역 기록은 서버마다 다르다.
+        """
         os.makedirs(logs_dir, exist_ok=True)
         ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
         self.client_id = client_id
-        self.path = os.path.join(logs_dir, f"session_{ts}.json")
+        suffix = f"_{tag}" if tag else ""
+        self.path = os.path.join(logs_dir, f"session_{ts}{suffix}.json")
         self._entries: list[dict] = []
         self._lock = asyncio.Lock()
         logger.info(f"[C{client_id}] [session-log] log file: {self.path}")
@@ -634,6 +643,11 @@ class Qwen3ASRStreamingHandler:
         self.standby_slot = "B"
         self.stream_slots: dict[str, dict] = {}
         self.vad_last_speech_start_sample: int = 0  # 마지막 VAD speech_start 글로벌 샘플 위치
+        # VAD 가 찾은 발화 구간 (시작초, 끝초). 끝이 None 이면 아직 말하는 중이다.
+        # 침묵 위에서 나온 커밋을 걸러내는 데 쓴다(_emit_final_payload).
+        self.vad_speech_spans: list = []
+        # 직전에 내보낸 final 의 오디오 끝 시각. 다음 final 의 구간 시작이 된다.
+        self._last_final_end_sec: float = 0.0
 
         # partial(토큰 단위 미확정 가설) 스트리밍 상태
         self._last_partial_text: Optional[str] = None
@@ -2249,6 +2263,8 @@ class Qwen3ASRStreamingHandler:
                     window_end_sample = self.sample_cursor - (chunk.size - offset - VAD_WINDOW_SIZE_SAMPLES)
                     if "start" in speech_dict:
                         self.vad_last_speech_start_sample = int(window_end_sample)
+                        self.vad_speech_spans.append(
+                            [window_end_sample / SAMPLING_RATE, None])
                         self.log.info(f"[VAD-DETECT] speech_start target_samples={window_end_sample}")
                     if "end" in speech_dict:
                         end_sample = window_end_sample
@@ -2256,6 +2272,8 @@ class Qwen3ASRStreamingHandler:
                         local_idx = max(0, min(int(chunk.size), local_idx))
                         if not vad_end_local_indices or local_idx > vad_end_local_indices[-1]:
                             vad_end_local_indices.append(local_idx)
+                        if self.vad_speech_spans and self.vad_speech_spans[-1][1] is None:
+                            self.vad_speech_spans[-1][1] = end_sample / SAMPLING_RATE
                         self.log.info(f"[VAD-DETECT] speech_end target_samples={end_sample}")
                 offset += VAD_WINDOW_SIZE_SAMPLES
         except Exception as e:
@@ -2615,6 +2633,52 @@ class Qwen3ASRStreamingHandler:
         """
         pass
 
+    # 침묵 위에서 만들어진 커밋은 내보내지 않는다.
+    #
+    # 모델은 무음 구간에서도 문장을 지어내고 <SEG> 까지 찍는다. 실측(39초 녹음을
+    # 그대로 다시 넣어 재현): final 17건 중 8건이 "I'm sorry, but I can't hear you."
+    # 계열이었고 전부 침묵 구간이었다. 커밋 사유가 대부분 seg 라 VAD 커밋 경로만
+    # 막아서는 걸러지지 않는다.
+    #
+    # **판정 기준은 "커밋 시점이 침묵인가" 가 아니라 "이 커밋이 덮는 구간에 음성이
+    # 있었나" 다.** 앞의 기준으로 재 봤더니 디코딩 지연까지 함께 재는 셈이라
+    # 진짜 발화(`My nombre is Daniel.`, `오늘은 치킨이 먹고 싶습니다.`)가 1.9~3.3초
+    # 뒤에 커밋됐다는 이유로 잘려 나갔다.
+    #
+    # 구간은 프록시와 같은 방식으로 복원한다 — (직전 final 의 끝, 이번 final 의 끝).
+    MIN_SPEECH_OVERLAP_SEC = 0.05
+
+    # `<asr_text>` 가 나오기 전에 커밋이 걸리면 모델이 만든 것은 헤더뿐이고,
+    # 파서는 태그가 없으면 그 헤더를 전사로 되돌려준다. 그대로 두면 자막에
+    # `language English` 가 뜬다(실측: 녹음 재생에서 두 번 나갔고, 번역 자리에는
+    # 직전 문장의 번역이 붙어 더 헷갈린다).
+    _HEADER_ONLY = re.compile(r"^\s*language\s+[A-Z][A-Za-z]*\s*[.!?]?\s*$")
+
+    def _is_header_only(self, original: str) -> bool:
+        """전사 없이 언어 헤더만 나온 커밋인가."""
+        return bool(self._HEADER_ONLY.match(original or ""))
+
+    def _is_silence_hallucination(self, original: str, reason: str,
+                                  audio_end_sec: float) -> bool:
+        """이 커밋이 덮는 구간에 VAD 가 본 음성이 없으면 True."""
+        if not original.strip():
+            return False
+        # VAD 가 꺼져 있으면 판단 근거가 없다 — 그때는 통과시킨다.
+        if not self.vad_enabled or self.vad_iterator is None or not self.vad_speech_spans:
+            return False
+        a, b = self._last_final_end_sec, audio_end_sec
+        if b <= a:
+            return False
+        now = self.sample_cursor / SAMPLING_RATE
+        for s0, s1 in self.vad_speech_spans:
+            # 아직 안 끝난 구간은 현재까지 말하는 중으로 본다.
+            overlap = min(b, s1 if s1 is not None else now) - max(a, s0)
+            if overlap > self.MIN_SPEECH_OVERLAP_SEC:
+                return False
+        self.log.info(
+            f"[SILENCE-DROP] reason={reason} span=({a:.1f}~{b:.1f}) text={original[:40]!r}")
+        return True
+
     async def _emit_final_payload(
         self,
         *,
@@ -2627,6 +2691,12 @@ class Qwen3ASRStreamingHandler:
         extra: Optional[dict] = None,  # noqa: ARG002
     ) -> None:
         """최종 세그먼트 전송 훅. 서브클래스에서 오버라이드해 FSL 메타데이터 등 추가 가능."""
+        if self._is_header_only(original):
+            self.log.info(f"[HEADER-ONLY-DROP] reason={reason} text={original!r}")
+            return
+        if self._is_silence_hallucination(original, reason, audio_end_sec):
+            return
+        self._last_final_end_sec = audio_end_sec
         await self.send_message(
             "final",
             start=format_time(self.segment_start_time),
@@ -2685,7 +2755,9 @@ class Qwen3ASRStreamingHandler:
                             if self._get_streaming_id is not None:
                                 streaming_id = await self._get_streaming_id()
                                 self.log.extra["cid"] = streaming_id
-                            self.session_logger = SessionLogger(client_id=self.log.extra["cid"])
+                            self.session_logger = SessionLogger(
+                                client_id=self.log.extra["cid"],
+                                tag=str(self.config.port))
                             if self.config.record_audio:
                                 if self.recorder is not None:
                                     self.recorder.close()
