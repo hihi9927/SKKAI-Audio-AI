@@ -300,6 +300,12 @@ class Qwen3ASRModel:
                 "vLLM is not available. Install with: pip install qwen-asr[vllm]"
             ) from e
 
+        # 헤더의 언어 이름을 허용 집합으로 묶는 처리기를 기본으로 건다. 요청이
+        # extra_args 로 허용 언어를 주지 않으면 아무 일도 하지 않으므로, 제한이
+        # 필요 없는 경로(평가 서버 등)는 그대로 지나간다. 등록은 "모듈:클래스"
+        # 형식이어야 한다 — 점으로 쓰면 엔진이 기동 중에 죽는다.
+        kwargs.setdefault("logits_processors",
+                          ["qwen_asr.inference.lang_header_lock:LanguageHeaderProcessor"])
         engine_args = AsyncEngineArgs(model=model, **kwargs)
         llm = AsyncLLMEngine.from_engine_args(engine_args)
 
@@ -705,27 +711,6 @@ class Qwen3ASRModel:
             allowed_languages=allowed_languages or None,
         )
 
-    def _make_language_logit_bias(self, allowed_languages: List[str]) -> dict:
-        """허용 언어 외의 언어 이름 토큰에 -100 bias를 적용하는 dict 반환.
-
-        모델은 "language " 뒤에 언어명을 생성하므로 space-prefixed variant(" Korean" 등)를 기준으로 차단.
-        standalone variant("Korean" 등)가 다중 토큰으로 분리되는 경우(예: [42, 45195]),
-        첫 토큰이 다른 단어와 공유되는 일반 prefix일 수 있으므로 단일 토큰인 경우에만 차단.
-        """
-        tokenizer = self.processor.tokenizer
-        bias: dict = {}
-        for lang in SUPPORTED_LANGUAGES:
-            if lang not in allowed_languages:
-                # space-prefixed: 모델이 실제 생성하는 형태 — 항상 차단
-                space_ids = tokenizer.encode(" " + lang, add_special_tokens=False)
-                if space_ids:
-                    bias[space_ids[0]] = -100.0
-                # standalone: 단일 토큰일 때만 차단 (다중 토큰이면 첫 토큰이 범용 prefix라 과잉 차단 위험)
-                plain_ids = tokenizer.encode(lang, add_special_tokens=False)
-                if len(plain_ids) == 1:
-                    bias[plain_ids[0]] = -100.0
-        return bias
-
     def _build_streaming_prefix(self, state: ASRStreamingState) -> str:
         """마지막 <SEG> 경계까지 롤백하여 SEG 이후 불완전한 tail을 prefix에서 제거한다.
         이렇게 하면 모델이 misheard prefix를 revision하면서 발생하는 중복 아티팩트를 예방한다.
@@ -835,11 +820,11 @@ class Qwen3ASRModel:
             prompt = state.prompt_raw + prefix
             inp = {"prompt": prompt, "multi_modal_data": {"audio": [state.audio_accum]}}
 
-            # 허용 언어 제한: force_language 없을 때만 bias 적용
+            # 허용 언어 제한: force_language 없을 때만 건다(둘 중 하나만).
             if state.allowed_languages and not state.force_language:
                 from copy import copy
                 sp = copy(self.sampling_params)
-                sp.logit_bias = self._make_language_logit_bias(state.allowed_languages)
+                sp.extra_args = {"allowed_languages": list(state.allowed_languages)}
             else:
                 sp = self.sampling_params
 
@@ -978,7 +963,7 @@ class Qwen3ASRModel:
         if state.allowed_languages and not state.force_language:
             from copy import copy
             sp = copy(self.sampling_params)
-            sp.logit_bias = self._make_language_logit_bias(state.allowed_languages)
+            sp.extra_args = {"allowed_languages": list(state.allowed_languages)}
         else:
             sp = self.sampling_params
 
