@@ -371,6 +371,64 @@ Bias keeps everything the off case got right and fixes the split sentence and th
 two junk fragments and a lost backchannel for one better line. So `--lang-hint` biases by default and
 `--lang-hint-force` is the opt-in.
 
+**A verdict per VAD segment cannot see a switch inside one.** The tracker judges the head of each speech
+segment and never looks again, so a speaker who changes language without pausing gets one label for the whole
+span — and the half that label does not fit disappears. Measured: Spanish followed with no gap by 4s of Korean
+produced a single `final` carrying only the Spanish; the Korean never reached the client.
+
+`--lid-scan` walks an absolute-time grid instead. Every `--lid-scan-hop` it classifies the preceding
+`--lid-scan-window` of audio, and when the answer differs from the current language for `--lid-scan-confirm`
+consecutive windows it splits the verdict there. VAD does not go away — it becomes the mask that keeps a
+window from straddling silence, since silence still maps to one confident wrong label. Defaults are
+1.5s / 0.25s / 2, and the flag is **off by default**: a spurious cut breaks a sentence in two, which is worse
+than missing a switch, and natural (non-read) speech is unmeasured.
+
+Measured over 120 synthetic switches (ko/en/es, all six orderings, VAD-trimmed halves butt-joined with a 30ms
+crossfade). "Clean" means the label sequence changed exactly once; latency is from the true switch to the
+first confirmed window ending:
+
+| window | hop | confirm | clean | false flips/pair | latency median | \|error\| p90 |
+|---|---|---|---|---|---|---|
+| 1.0s | 0.25 | 2 | 72.5% | 0.47 | 0.77s | 0.57s |
+| **1.5s** | **0.25** | **2** | **92.5%** | **0.12** | **1.07s** | **0.62s** |
+| 1.5s | 0.25 | 3 | 95.8% | 0.07 | 1.32s | 0.88s |
+| 2.0s | 0.25 | 2 | 95.8% | 0.04 | 1.35s | 0.79s |
+| 2.0s | 0.50 | 2 | 100% | 0.00 | 1.68s | 1.09s |
+
+Detection itself never failed (≥98.3% everywhere), so the choice is between how clean the label sequence is
+and how fast it settles. 1.5s beats 2.0s on both latency and localisation and loses only 7.5 points of
+cleanliness; 2.0s/0.25/2 is the conservative alternative. Requiring consecutive agreement is the cheap lever —
+at 1.5s/0.25 it cuts false flips from 0.32 to 0.12 per pair for 0.27s. A shorter hop makes that confirmation
+cheaper, so 0.25 beats 0.5 once confirmation is on; the raw "clean" figure looks worse at 0.25 only because
+twice as many windows give a stray label twice as many chances to appear.
+
+The precondition holds: a window taken from the middle of an utterance is as accurate as one from its head.
+Over 180 clips (ko/en/es, 60 each, VAD span ≥3.5s, offsets stepped 0.5s), narrowed to the client's languages,
+a 2.0s window scored 100% at the head and 99.9% elsewhere, and 1.5s scored 100% against 99.2%. Accuracy is
+flat across offset, so there is no reason to prefer the head other than that it arrives first.
+
+**Routing on the split is not enough — the slot has to be cut, and the cut has three ways to go wrong.**
+The proxy sends `lang_hint` to the upstream owning the new verdict, now with `"cut": true` when the verdict
+came from a mid-segment split.
+
+- **Commit the old language first, but only on a `cut`.** Resetting the slot throws away text already decoded
+  under the previous language. Doing it on every hint is worse: at an utterance boundary the uncommitted text
+  is the *new* utterance just starting, so committing it emits a fragment and then the whole sentence again
+  (`Una bomba fue.` followed by the full line). Only the proxy knows which case it is.
+- **Read `audio_anchor_sec` before the flush.** `flush_uncommitted` advances the anchor to the commit's end
+  while leaving `audio_accum` alone, so reading it afterwards put the anchor 4s past the accumulator's start,
+  drove the offset negative, and carried the entire Spanish half into the new slot — the same sentence came
+  out twice.
+- **Cut `state.buffer` by `fromSec` too.** When the cut point lands past the accumulator and inside the
+  buffer, moving the buffer whole leaks that much of the previous language forward.
+
+`fromSec` is pulled 0.3s earlier than the verdict start. Localisation error is 0.29s median and 0.62s p90, so
+cutting exactly on the estimate clips the new language's onset — `재입국` came out as `입국` and `Esto` as
+`esto`. Leaking a little of the previous language is the cheaper mistake, and a bias-mode hint absorbs it.
+
+Every figure here is read speech (FLEURS), and the synthetic switches change speaker at the join, which real
+mid-utterance switching does not. Both make these numbers optimistic.
+
 `--vad-min-silence` sets how much silence ends an utterance (default 800ms). Measured against 400ms on the
 same audio: English segmentation identical (13), Korean **less** fragmented at 400 (16 → 14), latency within
 0.05s either way, and en→ko chrF/BLEU identical at 34.0/13.9. Nothing recommends the change, so 800 stands.
