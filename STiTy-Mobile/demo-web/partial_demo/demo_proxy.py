@@ -59,6 +59,14 @@ REST_KEY = "*"        # 그 서버를 가리키는 이름
 TRANSLATE_URL = None  # --translate-url. 번역 방향을 바로잡을 때 쓴다.
 LANG_HINT = False     # --lang-hint. 판정 언어를 서버에 알린다.
 LANG_HINT_FORCE = False  # --lang-hint-force. 바이어스 대신 force_language 로.
+# 슬롯을 자르는 지점을 판정 시작보다 이만큼 앞으로 당긴다. 전환 지점 추정은
+# 실측 오차 중앙 0.29초·p90 0.62초라 정확히 그 자리를 자르면 새 언어의 첫 음절이
+# 날아간다 — '재입국' 이 '입국' 으로, 'Esto' 가 'esto' 로 나왔다. 앞 언어가 조금
+# 새는 쪽이 낫다. 바이어스 힌트는 그 앞부분을 대체로 흡수한다.
+HINT_BACKOFF_SEC = 0.3
+LID_SCAN_WIN = 0.0    # --lid-scan. 0 이면 구간 앞머리에서 한 번만 판정한다.
+LID_SCAN_HOP = 0.25
+LID_SCAN_CONFIRM = 2
 DEFAULT_UPSTREAM = "ws://127.0.0.1:8766"
 PORT = 8080
 LID = None            # LidRouter. --lid 를 켰을 때만 채워진다.
@@ -315,7 +323,8 @@ async def run_dual(client, start_raw, pending_binary):
     allowed = set(lang_map) or {c for c in [_start.get("lang")] if c and c != "auto"}
     if not allowed:
         allowed = set(ROUTES)
-    tracker = VerdictTracker(LID, allowed=allowed)
+    tracker = VerdictTracker(LID, allowed=allowed, scan_win=LID_SCAN_WIN,
+                             scan_hop=LID_SCAN_HOP, scan_confirm=LID_SCAN_CONFIRM)
     for chunk in pending_binary:
         tracker.feed(chunk)
 
@@ -350,10 +359,16 @@ async def run_dual(client, start_raw, pending_binary):
                 if target is None or target not in ups:
                     continue
                 hinted[key] = v[2]
+                # 발화 한복판을 쪼갠 판정에만 cut 을 붙인다. 서버는 이때만 옛 슬롯의
+                # 미커밋 텍스트를 커밋한다 — 발화 경계에서 오는 보통 힌트에는 앞
+                # 언어 텍스트가 없어서, 커밋하면 새 발화의 앞부분이 조각으로 먼저
+                # 나가고 같은 문장이 다시 한 번 나온다('Una bomba fue.' 뒤에 전체 문장).
+                mid = len(v) > 5 and v[5]
                 try:
                     await ups[target].send(json.dumps(
-                        {"type": "lang_hint", "lang": v[2], "fromSec": v[0],
-                         "force": LANG_HINT_FORCE}))
+                        {"type": "lang_hint", "lang": v[2],
+                         "fromSec": max(0.0, v[0] - HINT_BACKOFF_SEC),
+                         "cut": bool(mid), "force": LANG_HINT_FORCE}))
                 except Exception as e:
                     print(f"lang_hint 실패: {e!r}", flush=True)
 
@@ -552,6 +567,9 @@ async def main():
         print(f"  음성 판정: {LID.model_name}, 창 {LID.window_sec}s — {mode}", flush=True)
     if TRANSLATE_URL:
         print(f"  번역 방향 교정: {TRANSLATE_URL}", flush=True)
+    if LID_SCAN_WIN:
+        print(f"  구간 안 스캔: 창 {LID_SCAN_WIN}s, 홉 {LID_SCAN_HOP}s, "
+              f"연속 {LID_SCAN_CONFIRM}회 확인", flush=True)
     if LANG_HINT:
         how = "force_language" if LANG_HINT_FORCE else "로짓 바이어스"
         print(f"  판정 언어를 서버에 통보(lang_hint) — {how} + 슬롯 자르기", flush=True)
@@ -583,6 +601,19 @@ if __name__ == "__main__":
     ap.add_argument("--lid-max-wait", type=float, default=5.0,
                     help="이만큼 들어도 판정이 안 서면 start.lang 규칙으로 되돌아간다")
     ap.add_argument("--lid-device", default="cuda")
+    ap.add_argument("--lid-scan", action="store_true",
+                    help="발화 구간 안을 창으로 계속 훑어 구간 한복판의 언어 전환도 "
+                         "잡는다. 끄면 구간 앞머리에서 한 번 정하고 그 구간 내내 "
+                         "그 값을 쓴다 — 숨 안 쉬고 언어를 바꾸면 못 따라간다")
+    ap.add_argument("--lid-scan-window", type=float, default=1.5,
+                    help="스캔 한 번이 보는 오디오 길이. 실측(합성 전환 120쌍) "
+                         "1.5s 는 지연 중앙 1.07s·지점오차 p90 0.62s, "
+                         "2.0s 는 헛플립이 0 에 가까운 대신 1.68s·1.09s")
+    ap.add_argument("--lid-scan-hop", type=float, default=0.25,
+                    help="스캔을 얼마마다 도는지. 짧을수록 연속 확인이 싸다")
+    ap.add_argument("--lid-scan-confirm", type=int, default=2,
+                    help="새 언어를 몇 번 연속 봐야 전환으로 인정할지. 1 이면 즉시 "
+                         "인정해 헛플립이 쌍당 0.32건까지 는다")
     ap.add_argument("--lang-hint", action="store_true",
                     help="판정 언어를 lang_hint 로 서버에 보낸다. 서버는 그 언어만 "
                          "허용(로짓 바이어스)하고 슬롯을 잘라 앞 언어의 프리픽스를 "
@@ -612,6 +643,10 @@ if __name__ == "__main__":
     TRANSLATE_URL = args.translate_url
     LANG_HINT = args.lang_hint or args.lang_hint_force
     LANG_HINT_FORCE = args.lang_hint_force
+    if args.lid_scan:
+        LID_SCAN_WIN = args.lid_scan_window
+        LID_SCAN_HOP = args.lid_scan_hop
+        LID_SCAN_CONFIRM = args.lid_scan_confirm
     if args.lid or args.dual:
         sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
         from lid_router import LidRouter

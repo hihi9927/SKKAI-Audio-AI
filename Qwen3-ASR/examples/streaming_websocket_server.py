@@ -769,7 +769,7 @@ class Qwen3ASRStreamingHandler:
 
     async def _apply_lang_hint(self, code: Optional[str],
                                from_sec: Optional[float] = None,
-                               force: bool = False) -> None:
+                               force: bool = False, cut: bool = False) -> None:
         """밖에서 판정한 언어로 디코딩 언어를 못박고, 활성 슬롯을 잘라 낸다.
 
         **못박기만 해서는 모자란다.** force_language 를 바꿔도 슬롯의 누적 텍스트가
@@ -800,8 +800,28 @@ class Qwen3ASRStreamingHandler:
             self.forced_language = None
 
         slot_key = self.active_slot
-        old_state = self._slot(slot_key)["state"]
+        # **앵커는 flush 전에 읽어야 한다.** flush_uncommitted 는 커밋을 내보내면서
+        # audio_anchor_sec 을 커밋 끝으로 밀어 놓는데, audio_accum 은 그대로 둔다.
+        # flush 뒤에 읽으면 앵커가 accum 의 시작과 어긋나 오프셋이 통째로 틀어진다 —
+        # 실측에서 앵커가 4초 늦게 잡혀 offset 이 음수가 되고, 앞 언어 오디오가
+        # 통째로 새 슬롯에 실려 가 같은 문장이 두 번 나왔다.
         anchor = self._slot(slot_key)["audio_anchor_sec"]
+        # **발화 한복판을 자를 때는 옛 슬롯의 미커밋 텍스트를 먼저 커밋한다.** 그냥
+        # 비우면 앞 언어로 이미 디코딩해 둔 문장이 커밋되지 못한 채 사라진다 —
+        # 실측에서 스페인어 절반이 통째로 없어졌다. 환각 컷 경로가 같은 순서
+        # (flush 후 reset)로 처리한다.
+        #
+        # **발화 경계에서 오는 보통 힌트에는 하면 안 된다.** 그 자리의 미커밋
+        # 텍스트는 앞 언어가 아니라 이제 막 시작한 새 발화라, 커밋하면 조각이 먼저
+        # 나가고 같은 문장이 한 번 더 나온다. 어느 쪽인지는 판정을 낸 쪽만 알므로
+        # 프록시가 cut 으로 알려 준다.
+        if cut:
+            if self._pending_gpt_tasks:
+                self._spawn_gpt_flush()
+            await self.flush_uncommitted(force=True, reason="vad", slot_key=slot_key)
+        # 오디오는 flush 뒤에 다시 읽는다. flush 가 손대지 않는 데다, 기다리는 동안
+        # 들어온 만큼까지 가져갈 수 있다 — 시작점은 그대로라 위 앵커와 맞는다.
+        old_state = self._slot(slot_key)["state"]
         accum = old_state.audio_accum
         # **buffer 도 같이 옮겨야 한다.** audio_accum 은 청크로 소비된 오디오만
         # 담고, 아직 한 청크를 못 채운 꼬리는 buffer 에 있다. accum 만 보고
@@ -809,12 +829,22 @@ class Qwen3ASRStreamingHandler:
         # 있는 일도 흔해서, 실제로 발화 앞부분('Esto parece')이 사라졌다.
         tail = old_state.buffer
         carry = None
+        accum_sec = 0.0 if accum is None else accum.shape[0] / SAMPLING_RATE
         if accum is not None and accum.shape[0] > 0:
             offset = 0
             if from_sec is not None:
                 offset = int(max(0.0, float(from_sec) - anchor) * SAMPLING_RATE)
             if offset < accum.shape[0]:
                 carry = accum[offset:].copy()
+        # **꼬리도 자를 자리가 있으면 자른다.** 자를 지점이 accum 을 지나 buffer
+        # 안에 떨어지면, buffer 를 통째로 옮기는 동안 앞 언어가 그만큼 새 슬롯에
+        # 실려 간다. 발화가 닫힌 뒤에 자르던 때는 그 앞이 이미 커밋돼 있어 문제가
+        # 없었지만, 구간 한복판에서 자르면 매번 샌다.
+        if (tail is not None and tail.shape[0] > 0 and from_sec is not None
+                and carry is None):
+            drop = int(max(0.0, float(from_sec) - (anchor + accum_sec)) * SAMPLING_RATE)
+            if 0 < drop < tail.shape[0]:
+                tail = tail[drop:]
 
         self._reset_stream_slot(slot_key)
         new_slot = self._slot(slot_key)
@@ -822,6 +852,12 @@ class Qwen3ASRStreamingHandler:
             new_slot["state"].audio_accum = carry
             new_slot["audio_anchor_sec"] = (
                 float(from_sec) if from_sec is not None else anchor)
+        elif tail is not None and tail.shape[0] > 0:
+            # accum 을 안 옮기고 buffer 만 넘어가는 경우다. 그 오디오는 지금 시각에서
+            # buffer 길이만큼 앞에서 시작하므로, 앵커를 지금으로 두면 다음 힌트의
+            # 오프셋이 그만큼 틀어진다.
+            new_slot["audio_anchor_sec"] = (
+                self.current_time - tail.shape[0] / SAMPLING_RATE)
         if tail is not None and tail.shape[0] > 0:
             new_slot["state"].buffer = tail.copy()
         if slot_key == self.active_slot:
@@ -829,9 +865,11 @@ class Qwen3ASRStreamingHandler:
         self.log.info(
             f"[LANG-HINT] slot={slot_key} {prev or '-'} -> {name} "
             f"mode={'force' if force else 'bias'} "
-            f"from={from_sec} "
+            f"from={from_sec} anchor={round(anchor, 2)} "
+            f"accum={0 if accum is None else round(accum.shape[0] / SAMPLING_RATE, 2)}s "
             f"carry={0 if carry is None else round(carry.shape[0] / SAMPLING_RATE, 2)}s "
-            f"tail={0 if tail is None else round(tail.shape[0] / SAMPLING_RATE, 2)}s"
+            f"tail={0 if tail is None else round(tail.shape[0] / SAMPLING_RATE, 2)}s "
+            f"now={round(self.current_time, 2)}"
         )
 
     def _slot(self, slot_key: Optional[str] = None) -> dict:
@@ -2673,7 +2711,8 @@ class Qwen3ASRStreamingHandler:
                         elif msg_type == "lang_hint":
                             await self._apply_lang_hint(
                                 data.get("lang"), data.get("fromSec"),
-                                force=bool(data.get("force")))
+                                force=bool(data.get("force")),
+                                cut=bool(data.get("cut")))
                         elif msg_type == "config":
                             # 시연 중 번역 방향을 바꾼다. 스트림은 그대로 둔다 —
                             # 다음에 확정되는 문장부터 새 설정으로 번역된다.
