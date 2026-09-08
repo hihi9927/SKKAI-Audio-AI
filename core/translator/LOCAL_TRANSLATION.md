@@ -39,6 +39,33 @@ identical to fp32 at half the memory. `_shrink_t5_wo` in `local_translator.py` d
 already hold their share and 4.4 GiB on an empty card — PyTorch reserves more when there is room. Start
 the translation server *after* the ASR servers and give it `PYTORCH_ALLOC_CONF=expandable_segments:True`.
 
+## Measured again on the demo conversation (Korean speakers, ko/en/es)
+
+The parallel set above is native, written text. The demo is Korean speakers switching between Korean,
+English and Spanish, and there Qwen3-4B's Korean came out wrong in ways the set did not show: idioms
+translated literally (`Nice to meet you` → `잘 알아가요`, `Please sit down` → `자리를 잡아주세요`,
+`Mucho gusto` → `재미있게 보셨어요`), and Korean targets dropping to plain or written register
+(`나는 루시아야. 메시코 출신이야`, `한국어는 나에게 어렵다`) while ko→es and es→en stayed natural.
+Measured on the demo script — 42 sentences × 2 targets = 84 pairs, references written by hand, no
+context, the prompt unchanged, GPU shared with nothing:
+
+| model | COMET-DA | chrF | →ko | →en | →es | median | p90 | peak VRAM |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| `Qwen/Qwen3-4B-Instruct-2507` 4bit | 0.912 | 61.6 | 0.906 | 0.951 | 0.877 | 144 ms | 225 ms | 3.75 GiB |
+| `Qwen/Qwen3-4B-Instruct-2507` 8bit | 0.922 | 63.2 | 0.913 | 0.954 | 0.899 | 557 ms | 884 ms | 4.21 GiB |
+| **`unsloth/gemma-3-4b-it` 4bit** | 0.920 | **67.3** | 0.917 | **0.958** | 0.885 | 172 ms | 249 ms | 4.00 GiB |
+| `google/madlad400-3b-mt` bf16 | 0.921 | 64.9 | **0.932** | 0.929 | **0.902** | 146 ms | 234 ms | 6.53 GiB |
+| `facebook/nllb-200-3.3B` fp16 | 0.911 | 61.9 | 0.916 | 0.932 | 0.885 | 84 ms | 112 ms | 6.28 GiB |
+
+**The demo stack runs `unsloth/gemma-3-4b-it` at 4bit** (`google/gemma-3-4b-it` is the same weights
+behind a gated download; the unsloth mirror is what is cached here). It is the best of the models that
+fit the translator's slot (~3.5 GiB next to three ASR servers), and it is the only one that fixes the
+register: 해요체 with 저 throughout (`제 이름은 루시아이고, 저는 멕시코에서 왔어요`, `저는 캐나다에서
+왔어요`), `만나서 반갑습니다`, `케이크는 한국어로 어떻게 말해요?`. MADLAD scores higher into Korean but
+needs 6.5 GiB and cannot take context; Qwen 8bit gains little and is 4× slower. Qwen3-8B and
+Hunyuan-MT-7B are not measured yet — they need about 5.5 GiB at 4bit, which means lowering the ASR
+servers' `--gpu-memory-utilization`, and their downloads run at ~1 MB/s on this line.
+
 ## Feeding the translator context
 
 `--local-translation-context N` hands the previous N committed originals (same detected language only)
@@ -66,6 +93,16 @@ VRAM grows 34 MiB over the same range. The gain lands almost entirely on English
 (+0.019 vs +0.002~0.004 for ko/ja/zh) because ko/ja/zh drop subjects and objects that English must
 supply, and the answer is only in the previous turn: `はい、どうぞ。` is "Yes, go ahead." alone and
 "Yes, please sit." after `この席、空いていますか？`.
+
+**In the demo stack the context is the same speaker's previous line, and there it hurts.** The +0.0076
+above comes from a dialogue set where the previous turn is the *other* speaker. Behind the demo proxy
+each ASR server hears one language, so `--local-translation-context 1` hands the translator the same
+speaker's previous sentence — usually unrelated. Replaying the 143s demo recording with gemma, context
+1 vs 0 changed 16 of 50 lines, and every difference that mattered was the context bleeding in: a
+junk fragment `All` came back as the previous line's translation, `케이크에요.` became `The cake is
+delicious.` after `여기 케이크도 맛있어요.`, `See you then.` became `그럼, 그래요.`. With 0 those are
+`모든`, `It's cake.`, `그럼 그때 봐요.`. So the translation server runs with `--context-window 0` for
+the demo until context comes from the proxy, which sees every speaker in order.
 
 **Score context experiments with reference-based COMET, not CometKiwi.** Kiwi sees only source and
 translation, so information pulled from a previous turn reads as invented — the same runs scored

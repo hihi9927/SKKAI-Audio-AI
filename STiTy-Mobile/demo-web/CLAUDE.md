@@ -20,13 +20,13 @@ profiling, so three started together die with `No available memory for the cache
 PYTHONPATH=$PWD/Qwen3-ASR python Qwen3-ASR/examples/streaming_websocket_server.py \
   --model models/Qwen3-ASR-1.7B-ko-silence-v4c900-merged --port 8766 \
   --gpu-memory-utilization 0.25 --enforce-eager --no-idle-shutdown \
-  --local-translation-url http://127.0.0.1:8770 --local-translation-context 1 --chunk-size 1.0
+  --local-translation-url http://127.0.0.1:8770 --local-translation-context 0 --chunk-size 1.0
 #    en: --model models/Qwen3-ASR-1.7B-en-silence-c80-merged --port 8767 | baseline: Qwen/Qwen3-ASR-1.7B 8768
 
 # 2) the translator, after the ASR servers so its allocator sees the space that is left
 PYTORCH_ALLOC_CONF=expandable_segments:True \
 python STiTy-Mobile/demo-web/local_translation_server.py --port 8770 \
-  --model Qwen/Qwen3-4B-Instruct-2507 --quant 4bit --context-window 1
+  --model unsloth/gemma-3-4b-it --quant 4bit --context-window 0
 
 # 3) the proxy last — it holds the LID model
 python STiTy-Mobile/demo-web/partial_demo/demo_proxy.py 8080 \
@@ -44,8 +44,13 @@ commits far more often — 41% of its finals in one live session were two words 
 translated alone comes out wrong (`Three days` → `세일`).
 
 Open <http://localhost:8080> (dev) or `/show.html` (demo); forward port 8080 only. The stack is
-**22.7 / 24.5 GiB** — 6.2 each for the ASR servers, 3.1 translator, 0.9 LID. 0.25 is roughly the
+**23.0 / 24.5 GiB** — 6.1 each for the ASR servers, 3.5 translator, 0.9 LID. 0.25 is roughly the
 utilization floor, and the budget is yours to keep: vLLM leaves room for nothing else.
+
+The translator is gemma-3-4b-it with no context: on the demo script it is the best model that fits the
+slot and the only one that keeps Korean in 해요체, and the one-line same-speaker context this stack can
+offer made translations worse — both measured in
+[core/translator/LOCAL_TRANSLATION.md](../../core/translator/LOCAL_TRANSLATION.md).
 
 ## The flags a multilingual demo needs
 
