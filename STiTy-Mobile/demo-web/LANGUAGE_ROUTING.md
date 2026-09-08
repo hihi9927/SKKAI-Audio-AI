@@ -39,45 +39,89 @@ stall — once VAD sees the speech segment close, the router classifies what it 
 **`--dual` decides per utterance instead of per stream.** `--lid` picks one server when the stream opens,
 so a speaker who switches language mid-stream keeps the wrong model — the ko finetune writes English as
 `헬로 나이스 미트 유.`, and the en finetune reports Korean as `en` so the translation comes back unchanged.
-`--dual` sends the same audio to every server in the route table and lets `VerdictTracker` keep judging as
-audio arrives, forwarding only the messages from the server that owns the language of that span.
+`--dual` stays connected to every server in the route table, lets `VerdictTracker` keep judging as audio
+arrives, and sends each speech span **only to the server that owns its language** — the others receive the
+same number of samples as digital silence, so every server's clock stays the proxy's clock.
 
-**Select on the audio, never on the transcript.** Picking by script (Hangul vs Latin) breaks exactly where
-it matters: when the ko model renders English in Hangul, its output *looks* Korean, so both servers' output
-passes and the client sees the utterance twice. Judging the audio itself is independent of what either
-model wrote. In a single stream alternating ko/en/ko/en, all eight committed segments came from the right
-model with no duplicates.
+**Judge on the audio, never on the transcript.** Picking by script (Hangul vs Latin) breaks exactly where
+it matters: when the ko model renders English in Hangul, its output *looks* Korean. Judging the audio itself
+is independent of what either model wrote.
 
 Two guards keep the verdict list honest. Segments are matched by **overlap**, not by start time — silero
 re-cuts the same utterance slightly differently as audio accumulates, which grew a 4-utterance stream to 29
 verdicts before the fix and 10 after. And spans of 0.5s or less are not judged at all, since that is where
 accuracy falls to 82.5%; a 0.4s sliver at the head of a Korean utterance had been coming back `en`.
 
-## Putting a `final` on the verdict timeline
+## Feeding each server only its language
 
-**Locating a `final` on the verdict timeline is the delicate part**, because this server never fills
-`final.start` — `segment_start_time` is initialised to 0.0 and never updated, so every final claims to start
-at 0.0. Matching on `end` alone fails in both directions, and each failure was observed:
+**Gate the input; do not pick among the outputs.** The first `--dual` sent every server all the audio and
+chose, per `final`, which server's message to forward. That needs each `final` placed on the verdict
+timeline, and the server only reports the commit time (`end`; `start` is always 0.0). The proxy took
+`(previous final's end from that server, this end)` as the span, which is wrong whenever a commit is late
+or several sentences commit at once. Measured on a 143s ko/en/es conversation through that design:
 
-- With forward slack (`verdict.start <= end + 0.5`), the final of the *previous* utterance lands on the
-  *next* utterance's verdict, because a commit boundary runs past the speech into the following silence. The
-  correct output was dropped and the other server's rendering of the same audio passed in its place — one bug
-  producing both a gap and a duplicate.
-- With no span at all, a commit boundary that slides into the *middle* of the next utterance (when the pause
-  is shorter than the server's 800ms VAD threshold) matches the wrong verdict, and since the other server's
-  copy is dropped for being the wrong language, the whole utterance disappears.
+- 11 of about 40 utterances reached the screen in no correct form. `만나서 반갑습니다` committed with
+  `end=17.54`, inside the following English verdict, so the ko copy was dropped — and the en copy was
+  dropped for being Korean. `Hola, ¿puedo sentarme aquí?`, `My name is Ben`, `¿Es tu primera vez aquí?`,
+  `In English we say cake` and `El coreano es difícil para mí` went the same way.
+- The en server committed seven sentences in one burst at 46–48s; they shared one span, matched one
+  English verdict, and all passed — `저는 지윤이에요`, `May I have Lucia?` (Me llamo Lucia), `So we're in
+  Mexico.` (Soy de México) — while the baseline's correct Spanish was dropped.
+- Servers hearing languages they were not tuned for produced the rest of the noise: the ko server wrote
+  `메`, `홀라`, `아`, `올라면`, `암호 2분,` for Spanish; the en server, once a slot mixed Korean into English,
+  wrote a second `language English` header and lost everything after it (55–63s, 71–74s).
 
-So the proxy reconstructs the span itself: a final covers `(previous final's end from that same server, this
-final's end)`, and the verdict with the largest overlap wins. Several finals sharing one boundary share the
-span.
+Every one of those needs a server to hear audio that is not its language. `Dispatcher` in
+[partial_demo/demo_proxy.py](partial_demo/demo_proxy.py) removes that: each 0.1s piece of audio goes to
+the server that owns the language of its speech segment and to nobody else. Selection disappears — a
+`final` from the ko server is Korean because the ko server heard nothing else.
 
-Deciding also has to wait for the verdict to exist. When it does not, falling back to the previous verdict is
-wrong precisely at a language switch — the en server's `Hello,` rode the preceding English verdict out to the
-client, and moments later the ko verdict arrived and let `안녕하세요.` through as well. `wait_for_verdict`
-holds the message, but its condition must be **"is every speech segment that closed before this `end` judged
-yet"**, not "does a verdict contain `end`": commit boundaries routinely land in silence, where no verdict will
-ever contain them, and asking the wrong question made every final pay the full 1s timeout (median latency
-1.16s instead of 0.22s).
+**Dispatch runs 0.6s behind the microphone in silence** (`DISPATCH_DELAY`), 0.1s inside an utterance whose
+owner is decided (`LIVE_DELAY`). The speech onset is known only after silero sees it and the tracker runs
+(every 0.25s of audio), about 0.35s after the onset; to send the 0.25s before the onset (`PRE_ROLL`) as real
+audio rather than silence, that time must not have been sent yet. Once the owner is locked there is nothing
+left to learn, so the gap closes to 0.1s. The verdict
+needs `--lid-window` of speech, so the cursor **holds** at the onset until it exists, then flushes — ASR
+catches up faster than realtime. One second after the window should have filled it stops waiting and uses
+the previous language; at `finish` it flushes everything.
+
+**The first verdict is the only one that matters now, so it hears 1.5s, not 0.3–1.0s.** The early-confidence
+steps (`EARLY_STEPS`) and the 1.0s window were measured on native read speech. On the 143s conversation —
+three languages, Korean speakers — whisper-small narrowed to ko/en/es scores this on the head of each of
+the 35 utterances (CPU, fp32, silero-cut):
+
+| window | 0.5s | 0.7s | 1.0s | 1.5s | 2.0s |
+|---|---|---|---|---|---|
+| correct | 60% | 69% | 83% | **91%** | 89% |
+
+So `--dual` decides on the full window (`--lid-early` turns the confidence steps back on) and the window
+defaults to 1.5s. The cost is about 1.5s of hold at every utterance start. What 1.5s still gets wrong is
+the accent itself: `Nice to meet you` and `Hola, me llamo Daniel` from a Korean speaker come back `ko` at
+every window. Replaying the same file through `VerdictTracker` offline (CPU fp32, GPU fp16 and fp32 agree
+to the verdict) reproduces the table, so a live run that routes worse than this is a proxy bug, not the
+model — two were found that way: a lock that matched segments by overlap inherited the previous
+utterance's language once the open segment's end grew, and the pre-roll piece looked up the verdict at a
+time before the segment and fell back to the previous verdict.
+
+**One owner per speech segment.** Sent audio cannot be recalled, so the language chosen at the first piece of
+a segment stays for that segment. The 2s confirmation (`CONFIRM_SEC`) still runs in the tracker and shows in
+the verdict log, but it cannot move audio: letting it redirect the remainder would split one sentence across
+two servers, and two fragments are worse than one whole sentence from the wrong server. Only a `--lid-scan`
+split inside the segment changes the owner mid-segment, because that is a real language change.
+
+**A scan split arrives about a second late**, so that second already went to the old owner. The new owner
+gets the audio from `SPLIT_BACKOFF` (0.3s) before the split point up to the cursor as an extra send; the
+proxy records the extra length per server and subtracts it when reading that server's `end`. The old owner
+keeps its leaked second — its sentence may end with a foreign fragment.
+
+**Silence hallucinations are filtered with what the proxy knows it sent.** A `final` is dropped when the
+proxy sent *that* server no speech in the 8s before the final's `end`. The tighter span
+`(previous final's end, this end)` was tried first and threw away real sentences: a slot's sentences commit
+at nearly the same boundary (a dot commit at 79.0, the VAD commit at 79.2), so the second one covered no
+speech. The server side does the rest — a slot that has received only digital zeros is not decoded at all
+(`real_audio` in the slot), so hallucinations can only come from the tail of real speech, where the known
+silence phrases are dropped by name. Spans of 0.5s or less that the tracker never judges go to the
+previous owner when the previous speech ended within 2s, otherwise to the default server.
 
 ## Translation direction (`--translate-url`)
 
@@ -155,9 +199,10 @@ here was ko/en only) shows where the accuracy actually is:
 | first 2.0s | **98.7%** | ko→en 3 |
 | 3s / 5s / whole segment | 98.7% | ko→en 3 |
 
-Two seconds is where the gain stops, and it is free: a `final` only arrives after its segment has closed, so
-by then the audio exists. `CONFIRM_SEC` re-judges every closed segment on its first 2s and overwrites the
-early guess, and `settled()` now waits for that confirmation rather than the provisional value.
+Two seconds is where the gain stops. `CONFIRM_SEC` re-judges every closed segment on its first 2s and
+overwrites the early guess in the verdict list. Since audio is now dispatched on the early guess and cannot
+be recalled, the confirmation no longer changes where an utterance goes (see "One owner per speech segment"
+above); it remains the number to read when judging whether the early thresholds are good enough.
 
 **The client's language selection is the whole pool — do not add the route table back.** An earlier version
 unioned `ROUTES` into the allowed set "so a language with a server always stays available", which quietly
@@ -203,10 +248,12 @@ detection entirely, so there is no header left for the commit and SEG logic to r
 not be enough for a mid-stream switch anyway: the slot's accumulated text stays in the prefix, so the model
 would be told to continue an English sentence in Spanish. The slot has to be cut at the same time.
 
-`--lang-hint` does exactly that, and is **off by default** because the trade is not one-sided. The proxy
-sends `{"type": "lang_hint", "lang": "es", "fromSec": 13.1}` to whichever upstream owns a new verdict;
-`_apply_lang_hint` sets `forced_language`, cuts the active slot so the previous language leaves the prefix,
-and moves the audio from `fromSec` into the fresh slot. **Move `state.buffer` too, not just
+`--lang-hint` does that, and is **off by default** because the trade is not one-sided. The proxy sends
+`{"type": "lang_hint", "lang": "es", "fromSec": 13.1, "cut": false}` to whichever upstream owns a new
+verdict; `_apply_lang_hint` sets `forced_language` (or the bias, by default). The proxy no longer asks for a
+slot cut: since a server only hears its own language, the previous language is never in its prefix, and the
+audio that stops at a language change closes its slot through VAD. When the server does cut (`cut: true`),
+it moves the audio from `fromSec` into the fresh slot. **Move `state.buffer` too, not just
 `state.audio_accum`** — the accumulator only holds audio already consumed into chunks, and right after a
 verdict it is routinely empty while the whole utterance sits in the buffer. Carrying only the accumulator
 turned `Esto parece tener sentido…` into `de tener sentido…`.
@@ -271,4 +318,6 @@ Over 180 clips (ko/en/es, 60 each, VAD span ≥3.5s, offsets stepped 0.5s), narr
 a 2.0s window scored 100% at the head and 99.9% elsewhere, and 1.5s scored 100% against 99.2%. Accuracy is
 flat across offset, so there is no reason to prefer the head other than that it arrives first.
 
-**Routing on the split is not enough — the slot has to be cut, and the cut has three ways to go wrong.**
+**A split moves the audio, not just the label.** From the confirmed split point the pieces go to the new
+owner, and the ~1s that already went to the old owner is re-sent to the new one from 0.3s before the
+estimated point (see "A scan split arrives about a second late" above).

@@ -21,20 +21,19 @@ ASR 서버(8766)를 따로 열면 두 번 포워딩해야 한다. 이 프록시�
 
     python demo_proxy.py 8080 --route ko=8766,en=8767 --lid --lid-window 1.0
 
-**`--dual` 은 두 서버에 동시에 보내고 발화마다 고른다.** `--lid` 는 스트림이
-열릴 때 한 번만 판정해서, 화자가 도중에 언어를 바꾸면 모델이 안 따라간다.
-`--dual` 은 ko/en 서버에 같은 오디오를 다 보내 놓고, 발화 구간마다 판정을
-갱신해 그 구간의 결과를 낸 서버만 통과시킨다.
+**`--dual` 은 모든 서버에 붙어 두고, 발화 구간마다 그 언어의 서버에만 오디오를
+보낸다.** `--lid` 는 스트림이 열릴 때 한 번만 판정해서, 화자가 도중에 언어를
+바꾸면 모델이 안 따라간다. `--dual` 은 발화 구간마다 판정을 갱신하고, 그 구간의
+오디오를 담당 서버에만 흘린다. 나머지 서버는 같은 길이의 무음을 받아 시간축만
+맞춘다. 각 서버는 자기 언어만 들으므로 결과를 고를 일이 없다 — 왜 출력을 고르지
+않고 입력을 가르는지는 `Dispatcher` 문서에 있다.
 
-    python demo_proxy.py 8080 --route ko=8766,en=8767 --dual
+    python demo_proxy.py 8080 --route ko=8766,en=8767 --rest 8768 --dual
 
-**선택은 전사가 아니라 오디오로 한다.** 전사 글자(한글/라틴)로 고르면 깨진다 —
+**판정은 전사가 아니라 오디오로 한다.** 전사 글자(한글/라틴)로 고르면 깨진다 —
 한국어 모델이 영어 발화를 `헬로 나이스 미트 유.` 처럼 한글로 받아쓰면 그 글자는
-한국어로 보이므로 두 서버 결과가 모두 통과한다. VAD 로 찾은 발화 구간의 음성을
-whisper-small 에 직접 넣어 판정하면 전사 내용과 무관하게 갈린다.
-
-비용은 ASR 연산 2배다. 두 모델은 어차피 GPU 에 함께 올라가 있고, 실측에서 지연의
-대부분은 번역이 차지하므로(전체 중앙 0.20초 중 번역만 0.19초) 감당할 만하다.
+한국어로 보인다. VAD 로 찾은 발화 구간의 음성을 whisper-small 에 직접 넣어
+판정하면 전사 내용과 무관하게 갈린다.
 """
 import argparse
 import asyncio
@@ -45,12 +44,15 @@ import mimetypes
 import pathlib
 import sys
 import time
+from typing import Optional
 
+import numpy as np
 import websockets
 from websockets.asyncio.server import serve
 from websockets.datastructures import Headers
 from websockets.http11 import Response
 
+SR = 16000
 ROOT = pathlib.Path(__file__).resolve().parent / "web"
 ROUTES: dict[str, str] = {}
 DUAL = False          # --dual. 모든 서버에 보내고 발화마다 고른다.
@@ -68,6 +70,7 @@ HINT_BACKOFF_SEC = 0.3
 LID_SCAN_WIN = 0.0    # --lid-scan. 0 이면 구간 앞머리에서 한 번만 판정한다.
 LID_SCAN_HOP = 0.25
 LID_SCAN_CONFIRM = 2
+LID_EARLY = False     # --lid-early. 창을 다 듣기 전에 확신도로 조기 확정한다.
 DEFAULT_UPSTREAM = "ws://127.0.0.1:8766"
 PORT = 8080
 LID = None            # LidRouter. --lid 를 켰을 때만 채워진다.
@@ -181,35 +184,6 @@ def _secs(v):
         return None
 
 
-async def wait_for_verdict(tracker, end, timeout: float = 1.0, step: float = 0.1):
-    """그 구간 판정이 생길 때까지 잠깐 기다린다.
-
-    **기다리지 않으면 전환 지점에서 중첩이 난다.** 판정이 아직 없으면 lang_for_end
-    는 직전 판정으로 되돌아가는데, 언어가 막 바뀐 자리에서는 그 추측이 구조적으로
-    틀린다. 실제로 영어를 말하다 '안녕하세요' 로 넘어갈 때, 먼저 도착한 영어 서버의
-    'Hello,' 가 직전 영어 판정을 타고 통과했고, 잠시 뒤 한국어 판정이 생기면서
-    한국어 서버의 '안녕하세요.' 도 통과해 같은 발화가 두 번 나왔다.
-
-    판정은 발화 구간이 닫힌 뒤에 붙으므로 보통 수백 ms 안에 선다. 그때까지만
-    붙들었다가, 안 서면 종전처럼 추측으로 넘어간다.
-    """
-    if end is None or tracker.settled(end):
-        return 0.0
-    # 진입할 때 한 번 강제로 돌린다. 이미 닫힌 구간이면 여기서 바로 판정이 붙는다.
-    # 그 뒤로는 폴링만 한다 — _update_sync 는 silero 를 버퍼 전체에 돌리고 GPU 락을
-    # 잡으므로, 50ms 마다 강제로 부르면 그 자체가 지연이 된다.
-    t0 = time.perf_counter()
-    await tracker.update(force=True)
-    while not tracker.settled(end):
-        waited = time.perf_counter() - t0
-        if waited >= timeout:
-            break
-        await asyncio.sleep(step)
-        if waited > 0.3:                  # 오래 걸리면 한 번 더 밀어 준다
-            await tracker.update(force=True)
-    return time.perf_counter() - t0
-
-
 async def fix_direction(data, verdict_lang, lang_map, target_lang):
     """ASR 서버가 언어를 잘못 신고해 뒤집힌 번역을 판정 언어 기준으로 다시 한다.
 
@@ -303,12 +277,322 @@ async def add_audience_translations(data, src_lang: str, primary_target: str):
     return data
 
 
-async def run_dual(client, start_raw, pending_binary):
-    """라우팅 표의 모든 서버에 같은 오디오를 보내고, 발화 구간마다 한쪽만 통과시킨다.
+# 오디오를 담당 서버에만 보내기 위한 상수. 값의 근거는 Dispatcher 문서를 보라.
+DISPATCH_DELAY = 0.6   # 무음 구간에서 이만큼 뒤에서 보낸다. 발화 시작·판정을 먼저 알기 위한 여유
+LIVE_DELAY = 0.1       # 담당이 정해진 발화 안에서는 이만큼만 뒤에서 보낸다
+PRE_ROLL = 0.25        # 발화 구간 앞에 붙여 보내는 실제 오디오
+POST_ROLL = 0.25       # 발화 구간 뒤에 붙여 보내는 실제 오디오
+SILENCE_LOOKBACK = 8.0 # final 의 end 앞 이만큼 안에 이 서버로 보낸 음성이 없으면 환각으로 본다
+MAX_HOLD_AFTER_WINDOW = 1.0   # 판정 창을 채우고도 이만큼 지나면 붙들기를 그만둔다
+PIECE = 0.1            # 보내는 조각 길이
+SPLIT_BACKOFF = 0.3    # 발화 한복판 전환을 새 담당에게 되돌려 줄 때 앞으로 당기는 폭
 
-    통과 기준은 전사가 아니라 **오디오 판정**이다. VerdictTracker 가 VAD 로 찾은
-    발화 구간의 음성을 whisper-small 에 넣어 언어를 정하고, 그 구간의 결과를 낸
-    서버가 그 언어를 맡은 서버일 때만 클라이언트로 넘긴다.
+
+class Dispatcher:
+    """판정에 따라 오디오를 **담당 서버에만** 보낸다. 나머지 서버에는 같은 길이의 무음.
+
+    **왜 출력을 고르지 않고 입력을 가르나.** 종전에는 세 서버에 같은 오디오를 다 주고
+    final 이 오면 그 구간의 판정으로 한쪽만 통과시켰다. 그러려면 final 이 어느 오디오
+    구간에서 나왔는지 알아야 하는데 서버는 커밋 시각(end)만 준다. 커밋이 늦거나 여러
+    문장이 한꺼번에 나오면 엉뚱한 판정에 걸려, 맞는 문장이 버려지고(143초 세션에서
+    발화 40개 중 11개 소실) 다른 서버가 낸 엉뚱한 언어의 문장이 대신 나갔다. 게다가
+    한국어 서버는 스페인어를 듣고 `메`·`홀라` 같은 한글 조각을 계속 냈고, 영어 서버는
+    한 슬롯에 언어가 섞이면 두 번째 헤더를 찍고 그 뒤를 통째로 잃었다.
+
+    서버가 자기 언어만 들으면 이 문제들이 생길 자리가 없다. 남는 문제는 "어느 오디오를
+    누구에게" 인데, 그건 판정 시각의 문제라 시간축 위에서 풀 수 있다.
+
+    **시간축.** 모든 서버는 같은 수의 샘플을 받는다(담당이 아니면 0). 그래서 서버가
+    주는 `end` 는 프록시의 오디오 시각과 같고, 어느 서버가 실제 음성을 받은 구간을
+    프록시가 정확히 알고 있으므로 무음 환각을 여기서 다시 거를 수 있다.
+
+    **왜 DISPATCH_DELAY 만큼 늦게 보내나.** 발화 시작은 silero 가 잡은 뒤에야 알고
+    (판정 갱신 주기 0.25초 포함 시작 후 약 0.35초), 그 앞 PRE_ROLL 을 실제 오디오로
+    보내려면 그 시각을 아직 안 보냈어야 한다. 0.6초면 둘 다 만족한다. 판정 자체는
+    발화 시작 후 0.3~1.0초(중앙 0.7초)에 서므로, 그때까지는 커서를 세워 두었다가
+    (hold) 판정이 서면 한꺼번에 흘린다. ASR 은 실시간보다 빨리 따라잡는다.
+
+    **발화 한복판 전환(`--lid-scan`)** 은 전환 후 약 1초 뒤에 확인되므로 그 사이 오디오는
+    이미 옛 담당에게 갔다. 새 담당에게는 전환 지점부터 지금까지를 따로 보내 준다
+    (SPLIT_BACKOFF 만큼 앞에서부터 — 지점 추정 오차 p90 0.62초라 첫 음절을 잃는 쪽이
+    더 나쁘다). 옛 담당에게 이미 간 1초는 되돌릴 수 없어 그쪽 문장 끝에 낯선 말이
+    한 조각 붙을 수 있다. 이 추가 전송만큼 그 서버의 시간축이 앞서므로 `extra` 로
+    적어 두고 `end` 를 읽을 때 뺀다.
+    """
+
+    def __init__(self, tracker, names, route_of, fallback):
+        self.tracker = tracker
+        self.names = list(names)
+        self.route_of = route_of
+        self.fallback = fallback
+        self._buf = np.zeros(0, dtype=np.int16)
+        self._offset = 0.0          # _buf[0] 의 프록시 시각
+        self.keep_sec = 30.0
+        self.audio_sec = 0.0        # 받은 오디오 길이
+        self.cursor = 0.0           # 여기까지 보냈다
+        self.spans = {n: [] for n in self.names}   # [시작, 끝, 언어] — 실제 음성을 보낸 구간
+        self.extra = {n: 0.0 for n in self.names}  # 공통 시간축 밖으로 더 보낸 길이
+        self.last_owner = None
+        self.last_lang = None
+        self._last_speech_end = -1e9
+        self.hold_since = None
+        self._seen_splits = set()
+        self._locks: list = []      # [시작, 끝, 언어] — 구간마다 한 번 정한 담당
+
+    def feed(self, pcm: bytes) -> None:
+        x = np.frombuffer(pcm, dtype="<i2")
+        self._buf = np.concatenate([self._buf, x])
+        self.audio_sec += len(x) / SR
+        keep = int(SR * self.keep_sec)
+        if len(self._buf) > keep:
+            drop = len(self._buf) - keep
+            self._offset += drop / SR
+            self._buf = self._buf[drop:]
+
+    def _slice(self, a: float, b: float) -> bytes:
+        i = max(0, int(round((a - self._offset) * SR)))
+        j = max(i, min(int(round((b - self._offset) * SR)), len(self._buf)))
+        return self._buf[i:j].tobytes()
+
+    def _segment_at(self, t: float):
+        """t 가 (앞뒤 여유를 포함한) 어느 발화 구간에 드는지."""
+        for s, e, closed in self.tracker._last_segments:
+            e_eff = e if closed else self.tracker.audio_sec
+            if s - PRE_ROLL <= t < e_eff + POST_ROLL:
+                return s, e_eff, closed
+        return None
+
+    def _note(self, name: str, a: float, b: float, lang) -> None:
+        spans = self.spans[name]
+        if spans and spans[-1][2] == lang and spans[-1][1] >= a - 1e-3:
+            spans[-1][1] = max(spans[-1][1], b)
+        else:
+            spans.append([a, b, lang])
+
+    def _lock_for(self, s: float, e: float):
+        """이 발화 구간에 이미 정해 둔 담당 언어.
+
+        **시작점으로 찾는다, 겹침이 아니라.** 열린 구간의 끝은 "지금까지 받은 오디오"
+        라서, 겹침으로 찾으면서 끝을 늘려 두면 다음 발화가 앞 발화의 잠금을 물려받는다.
+        실측에서 그렇게 `How long have you studied Spanish?` 가 앞 한국어 발화의 ko 를
+        물려받아 한국어 서버로 갔다. silero 가 경계를 조금씩 다르게 잡는 폭은 0.1초
+        안쪽이라 시작점 0.4초 허용이면 같은 구간으로 모인다.
+        """
+        for lock in self._locks:
+            if abs(lock[0] - s) < 0.4:
+                lock[1] = max(lock[1], e if e < self.tracker.audio_sec else lock[1])
+                return lock
+        return None
+
+    def _decide(self, s: float, e: float, t: float, lang):
+        """구간의 담당 언어를 한 번 정하면 그 구간이 끝날 때까지 지킨다.
+
+        **보낸 오디오는 되돌릴 수 없다.** 확정 판정(CONFIRM_SEC, 구간이 닫힌 뒤 2초를
+        다시 듣는 것)이 조기 판정을 뒤집어도 앞부분은 이미 옛 담당에게 갔다. 그때
+        뒷부분만 새 담당에게 보내면 한 문장이 두 서버에 반씩 갈려 둘 다 조각을 낸다.
+        틀린 서버가 한 문장을 통째로 받는 쪽이 낫다. 예외는 `--lid-scan` 이 발화
+        한복판에서 잡은 전환뿐이다 — 그건 실제로 언어가 바뀐 자리다.
+        """
+        lock = self._lock_for(s, e)
+        if lock is None:
+            lock = [s, e, lang]
+            self._locks.append(lock)
+            if len(self._locks) > 50:
+                del self._locks[0]
+            print(f"lock {s:.2f}s -> {lang} (heard {self.audio_sec - s:.2f}s)", flush=True)
+        lang = lock[2]
+        splits = [v for v in self.tracker.verdicts
+                  if len(v) > 5 and v[5] and lock[0] - 0.5 <= v[0] <= t]
+        if splits:
+            lang = splits[-1][2]
+        return self.route_of(lang) or self.fallback, lang
+
+    def _owner_for(self, t: float, end: float, final: bool):
+        """(담당 서버, 언어) 또는 None(무음), 또는 "hold"."""
+        seg = self._segment_at(t)
+        if seg is None:
+            return None
+        s, e, closed = seg
+        if self._lock_for(s, e) is not None:
+            return self._decide(s, e, t, None)
+        v = self.tracker._find_overlap(s, e)
+        if v is not None:
+            # **구간의 판정을 그대로 쓴다.** 첫 조각은 PRE_ROLL 만큼 발화 시작보다
+            # 앞이라, 그 시각으로 판정을 찾으면(lang_for_range) 이 구간과 안 겹쳐
+            # "그 앞에서 끝난 마지막 판정" 으로 떨어진다 — 실측에서 오판 17건이 전부
+            # 직전 발화의 언어였다.
+            return self._decide(s, e, t, v[2])
+        too_short = closed and (e - s) <= self.tracker.MIN_SPEECH_SEC
+        if too_short:
+            # 판정하지 않는 짧은 조각. 직전 발화가 가까우면 그 담당에게 (짧은 대답이
+            # 흔하다), 아니면 기본 서버에.
+            if self.last_lang and (s - self._last_speech_end) < 2.0:
+                return self._decide(s, e, t, self.last_lang)
+            return self._decide(s, e, t, None)
+        max_hold = self.tracker.router.window_sec + MAX_HOLD_AFTER_WINDOW
+        if final or (self.audio_sec - t) >= max_hold:
+            if self.hold_since is not None:
+                print(f"hold timeout at {t:.2f}s -> {self.last_lang or self.fallback}", flush=True)
+            return self._decide(s, e, t, self.last_lang)
+        return "hold"
+
+    async def dispatch(self, send, final: bool = False) -> None:
+        while True:
+            t = self.cursor
+            # **여유는 무음에서만 둔다.** 0.6초 뒤에서 보내는 이유는 발화 시작을 미리
+            # 알고 PRE_ROLL 을 실제 오디오로 보내기 위해서다. 담당이 이미 정해진 발화
+            # 안에서는 알 것이 없으므로 바로 보낸다 — 첫 partial 이 0.5초 빨라진다.
+            seg = None if final else self._segment_at(t)
+            in_locked = seg is not None and self._lock_for(seg[0], seg[1]) is not None
+            delay = 0.0 if final else (LIVE_DELAY if in_locked else DISPATCH_DELAY)
+            target = self.audio_sec - delay
+            if t >= target - 1e-6:
+                break
+            end = min(target, t + PIECE)
+            got = self._owner_for(t, end, final)
+            if got == "hold":
+                if self.hold_since is None:
+                    self.hold_since = t
+                break
+            self.hold_since = None
+            owner, lang = got if got else (None, None)
+            piece = self._slice(t, end)
+            for name in self.names:
+                await send(name, piece if name == owner else bytes(len(piece)))
+            if owner is not None and owner in self.spans:
+                self._note(owner, t, end, lang)
+                self.last_owner = owner
+                if lang:
+                    self.last_lang = lang
+                self._last_speech_end = end
+            self.cursor = end
+
+    async def catch_up_splits(self, send) -> None:
+        """발화 한복판에서 언어가 바뀐 판정이 새로 생겼으면 새 담당에게 그 뒤를 보낸다."""
+        for v in self.tracker.verdicts:
+            if len(v) < 6 or not v[5]:
+                continue
+            key = round(v[0], 2)
+            if key in self._seen_splits:
+                continue
+            self._seen_splits.add(key)
+            owner = self.route_of(v[2]) or self.fallback
+            if owner not in self.spans:
+                continue
+            a = max(self._offset, v[0] - SPLIT_BACKOFF)
+            b = self.cursor
+            if b <= a:
+                continue
+            already = any(s <= a and b <= e for s, e, _l in self.spans[owner])
+            if already:
+                continue
+            piece = self._slice(a, b)
+            await send(owner, piece)
+            self.extra[owner] += len(piece) / 2 / SR
+            self._note(owner, a, b, v[2])
+            print(f"split {v[0]:.2f}s -> {v[2]}: resend {a:.2f}~{b:.2f} to {owner}", flush=True)
+
+    def to_proxy_time(self, name: str, server_sec) -> Optional[float]:
+        if server_sec is None:
+            return None
+        return server_sec - self.extra.get(name, 0.0)
+
+    def speech_in(self, name: str, a: float, b: float):
+        """[a, b] 안에서 이 서버가 받은 실제 음성 길이와 그중 가장 긴 구간의 언어."""
+        total, best, best_lang = 0.0, 0.0, None
+        for s, e, lang in self.spans.get(name, ()):
+            ov = min(b, e) - max(a, s)
+            if ov > 0:
+                total += ov
+                if ov > best:
+                    best, best_lang = ov, lang
+        return total, best_lang
+
+
+class Reorder:
+    """언어 서버마다 커밋 시점이 달라 뒤집히는 final 순서를 바로잡는다.
+
+    en 서버는 `<SEG>` 를 보자마자 커밋하고 베이스라인은 VAD 가 닫힌 뒤(800ms) 커밋한다.
+    그래서 스페인어 뒤에 영어가 오면 영어 final 이 먼저 도착한다 — 실측에서 `Sure,` 가
+    그보다 먼저 말한 `Hola, puedo sentarme aquí.` 위에 떴다.
+
+    **기다리는 건 정말 앞선 발화가 있을 때만이다.** final 을 무조건 몇백 ms 붙들면 전부
+    그만큼 늦어진다. 대신 이 final 이 속한 발화(그 서버에 보낸 음성 구간)의 시작 시각을
+    키로 잡고, 다른 서버에 그보다 먼저 시작했는데 아직 final 을 내지 않은 구간이 있을
+    때만 붙든다. 그 서버의 final 이 오거나 1.5초가 지나면 내보낸다. 구간이 있어도
+    final 이 영영 안 올 수 있으므로(무음 환각으로 걸러짐, 조각) 시한이 있어야 한다.
+    """
+
+    WAIT_SEC = 1.5
+
+    def __init__(self, disp, names, client):
+        self.disp = disp
+        self.client = client
+        self.done = {n: -1.0 for n in names}   # 서버별로 마지막에 내보낸 final 의 키
+        self.queue: list = []                   # [키, 순번, 서버, 메시지, 시한]
+        self.seq = 0
+
+    def key_for(self, name: str, b) -> float:
+        """이 final 이 속한 발화의 시작 — 그 서버에 보낸 음성 구간 중 end 앞의 마지막 것."""
+        if b is None:
+            b = self.disp.cursor
+        starts = [sp[0] for sp in self.disp.spans.get(name, ()) if sp[0] <= b + 0.05]
+        return starts[-1] if starts else b
+
+    def blocker(self, name: str, key: float):
+        now = self.disp.audio_sec
+        for other, spans in self.disp.spans.items():
+            if other == name:
+                continue
+            for s0, s1, _lang in spans:
+                if (s0 < key - 0.05 and s0 > self.done[other] + 1e-3
+                        and (s1 - s0) >= 0.5 and (now - s1) < 3.0):
+                    return other
+        return None
+
+    async def _forward(self, name: str, key: float, msg: str) -> None:
+        self.done[name] = max(self.done[name], key)
+        await self.client.send(msg)
+
+    async def submit(self, name: str, key: float, msg: str) -> None:
+        self.seq += 1
+        other = self.blocker(name, key)
+        if other is None and not self.queue:
+            await self._forward(name, key, msg)
+            return
+        if other is not None:
+            print(f"reorder: hold {name} key={key:.2f} behind {other}", flush=True)
+        self.queue.append([key, self.seq, name, msg, time.monotonic() + self.WAIT_SEC])
+        await self.drain()
+
+    async def drain(self) -> None:
+        """키 순서로, 막는 서버가 없어졌거나 시한이 지난 것부터 내보낸다."""
+        while self.queue:
+            self.queue.sort(key=lambda q: (q[0], q[1]))
+            key, _seq, name, msg, deadline = self.queue[0]
+            other = self.blocker(name, key)
+            if other is not None and time.monotonic() < deadline:
+                return
+            self.queue.pop(0)
+            if other is not None:
+                print(f"reorder: timeout {name} key={key:.2f}", flush=True)
+            await self._forward(name, key, msg)
+
+    async def ticker(self) -> None:
+        while True:
+            await asyncio.sleep(0.1)
+            if self.queue:
+                await self.drain()
+
+
+async def run_dual(client, start_raw, pending_binary):
+    """라우팅 표의 모든 서버에 붙되, 오디오는 **판정 언어의 담당 서버에만** 보낸다.
+
+    판정은 전사가 아니라 **오디오**로 한다. VerdictTracker 가 VAD 로 찾은 발화 구간의
+    음성을 whisper-small 에 넣어 언어를 정하고, Dispatcher 가 그 구간의 오디오를 그
+    언어의 서버에만 흘린다. 나머지 서버는 같은 길이의 무음을 받아 시간축을 맞춘다.
+    각 서버는 자기 언어만 들으므로 final 을 고를 일이 없다 — 프록시가 보낸 음성이
+    없는 구간의 final(무음 환각)만 거른다.
 
     핸드셰이크 응답(ready 등)은 한 서버 것만 넘긴다. 두 벌이 가면 클라이언트가
     같은 신호를 두 번 본다.
@@ -320,10 +604,6 @@ async def run_dual(client, start_raw, pending_binary):
     if REST_UPSTREAM:
         servers[REST_KEY] = REST_UPSTREAM
     langs = list(servers)
-    primary = langs[0]
-    # 판정이 아무 데도 안 맞을 때. rest 가 있으면 그쪽, 없으면 기본 서버의 언어.
-    fallback = REST_KEY if REST_UPSTREAM else next(
-        (l for l in ROUTES if ROUTES[l] == DEFAULT_UPSTREAM), primary)
 
     def narrow(msg_obj, server):
         """서버마다 자기가 맡은 언어만 담은 start/config 를 만든다.
@@ -351,13 +631,6 @@ async def run_dual(client, start_raw, pending_binary):
         out["langMap"] = {k: lm[k] for k in keys}
         return json.dumps(out, ensure_ascii=False)
 
-    def route_of(verdict):
-        """판정 언어를 붙을 서버 이름으로 바꾼다."""
-        if verdict is None:
-            return None
-        if verdict in ROUTES:
-            return verdict
-        return fallback
     try:
         _start = json.loads(start_raw)
     except Exception:
@@ -373,33 +646,72 @@ async def run_dual(client, start_raw, pending_binary):
     allowed = set(lang_map) or {c for c in [_start.get("lang")] if c and c != "auto"}
     if not allowed:
         allowed = set(ROUTES)
-    tracker = VerdictTracker(LID, allowed=allowed, scan_win=LID_SCAN_WIN,
-                             scan_hop=LID_SCAN_HOP, scan_confirm=LID_SCAN_CONFIRM)
-    for chunk in pending_binary:
-        tracker.feed(chunk)
+    # step_sec 0.25: Dispatcher 가 발화 시작을 DISPATCH_DELAY 안에 알아야 한다.
+    tracker = VerdictTracker(LID, allowed=allowed, step_sec=0.25, scan_win=LID_SCAN_WIN,
+                             scan_hop=LID_SCAN_HOP, scan_confirm=LID_SCAN_CONFIRM,
+                             early=LID_EARLY)
 
     ups = {}
     try:
+        # **서버 하나가 죽어 있어도 세션은 연다.** 종전에는 --rest 가 안 떠 있으면
+        # ConnectionRefusedError 로 세션이 통째로 끊겨 ready 조차 안 갔다.
         for lang in langs:
-            ups[lang] = await websockets.connect(servers[lang], ping_interval=None,
-                                                 max_size=None)
-            await ups[lang].recv()             # 위쪽 hello 는 프록시가 이미 보냈다
-            await ups[lang].send(narrow(_start, lang) or start_raw)
-            for chunk in pending_binary:
-                await ups[lang].send(chunk)
-        print(f"dual -> {', '.join(f'{k}:{servers[k]}' for k in langs)} "
-              f"| LID 후보 {sorted(allowed)}", flush=True)
+            try:
+                ups[lang] = await websockets.connect(servers[lang], ping_interval=None,
+                                                     max_size=None)
+                await ups[lang].recv()         # 위쪽 hello 는 프록시가 이미 보냈다
+                await ups[lang].send(narrow(_start, lang) or start_raw)
+            except Exception as e:
+                print(f"upstream {lang} ({servers[lang]}) 연결 실패: {e!r} — 없이 간다",
+                      flush=True)
+                ups.pop(lang, None)
+        if not ups:
+            print("붙을 서버가 하나도 없다", flush=True)
+            return
+        live = [l for l in langs if l in ups]
+        primary = live[0]
+        dead: set = set()
+        # 판정이 아무 데도 안 맞을 때. rest 가 살아 있으면 그쪽, 없으면 기본 서버의 언어.
+        fallback = REST_KEY if REST_KEY in ups else next(
+            (l for l in live if ROUTES.get(l) == DEFAULT_UPSTREAM), primary)
+
+        def route_of(verdict):
+            """판정 언어를 붙을 서버 이름으로 바꾼다. 죽은 서버면 fallback."""
+            if verdict is None:
+                return None
+            if verdict in ups and verdict not in dead:
+                return verdict
+            return fallback if fallback not in dead else next(
+                (l for l in live if l not in dead), fallback)
+
+        disp = Dispatcher(tracker, live, route_of, fallback)
+        reorder = Reorder(disp, live, client)
+        print(f"dual -> {', '.join(f'{k}:{servers[k]}' for k in live)} "
+              f"| LID 후보 {sorted(allowed)} | 담당 서버에만 오디오 전달, 나머지는 무음",
+              flush=True)
+
+        async def send_to(name, data):
+            if name in dead:
+                return
+            try:
+                await ups[name].send(data)
+            except Exception as e:
+                dead.add(name)
+                print(f"upstream {name} 전송 실패: {e!r}", flush=True)
+
+        for chunk in pending_binary:
+            tracker.feed(chunk)
+            disp.feed(chunk)
 
         # 서버에 이미 알린 판정. 같은 구간을 두 번 알리지 않으려고 들고 있는다.
         hinted: dict = {}
 
         async def push_hints():
-            """새로 선 판정을 담당 서버에 알린다.
+            """새로 선 판정을 담당 서버에 알린다 (--lang-hint).
 
-            **모델을 고르는 것만으로는 모자란다.** 베이스라인이 스페인어를 ko 로 보고
-            한글로 받아쓰는 것처럼, 담당 서버가 스스로 언어를 틀릴 수 있다. 판정은
-            오디오를 보고 낸 값이므로 그걸로 못박게 한다. 구간 시작 시각을 같이 보내
-            서버가 그 지점부터의 오디오를 새 슬롯에 옮겨 담게 한다.
+            오디오를 담당에게만 보내는 지금 구조에서는 슬롯 자르기가 필요 없다 —
+            언어가 바뀌면 옛 담당의 오디오가 무음으로 바뀌어 VAD 가 알아서 닫는다.
+            남는 효과는 언어 태그를 판정으로 못박는 것뿐이라 cut 은 보내지 않는다.
             """
             for v in tracker.verdicts:
                 key = round(v[0], 1)
@@ -409,60 +721,71 @@ async def run_dual(client, start_raw, pending_binary):
                 if target is None or target not in ups:
                     continue
                 hinted[key] = v[2]
-                # 발화 한복판을 쪼갠 판정에만 cut 을 붙인다. 서버는 이때만 옛 슬롯의
-                # 미커밋 텍스트를 커밋한다 — 발화 경계에서 오는 보통 힌트에는 앞
-                # 언어 텍스트가 없어서, 커밋하면 새 발화의 앞부분이 조각으로 먼저
-                # 나가고 같은 문장이 다시 한 번 나온다('Una bomba fue.' 뒤에 전체 문장).
-                mid = len(v) > 5 and v[5]
-                try:
-                    await ups[target].send(json.dumps(
-                        {"type": "lang_hint", "lang": v[2],
-                         "fromSec": max(0.0, v[0] - HINT_BACKOFF_SEC),
-                         "cut": bool(mid), "force": LANG_HINT_FORCE}))
-                except Exception as e:
-                    print(f"lang_hint 실패: {e!r}", flush=True)
+                await send_to(target, json.dumps(
+                    {"type": "lang_hint", "lang": v[2],
+                     "fromSec": max(0.0, v[0] - HINT_BACKOFF_SEC),
+                     "cut": False, "force": LANG_HINT_FORCE}))
 
         async def pump_client():
             nonlocal lang_map, target_lang
             async for msg in client:
                 data = None
                 if isinstance(msg, (bytes, bytearray)):
-                    tracker.feed(bytes(msg))
+                    raw = bytes(msg)
+                    tracker.feed(raw)
+                    disp.feed(raw)
                     await tracker.update()
                     if LANG_HINT:
                         await push_hints()
-                else:
-                    # **흐르는 중에 언어를 바꾸면 LID 후보도 따라가야 한다.**
-                    # 서버는 config 를 받아 로짓 바이어스를 갈지만(다음 슬롯부터),
-                    # 프록시는 start 만 보고 후보를 정해 두면 그대로 굳는다. 시연 중
-                    # 언어를 켜고 끄면 ASR 만 따라가고 판정은 안 따라가는 셈이다.
-                    try:
-                        data = json.loads(msg)
-                    except Exception:
-                        data = None
-                    if isinstance(data, dict) and data.get("type") == "config":
-                        if isinstance(data.get("langMap"), dict):
-                            lang_map = data["langMap"]
-                        if data.get("targetLang"):
-                            target_lang = data["targetLang"]
-                        new_allowed = set(lang_map) or {
-                            c for c in [data.get("lang")] if c and c != "auto"}
-                        if new_allowed and new_allowed != tracker.allowed:
-                            print(f"config: LID 후보 {sorted(tracker.allowed)} -> "
-                                  f"{sorted(new_allowed)}", flush=True)
-                            tracker.allowed = new_allowed
-                for _lang, up in ups.items():
-                    if (not isinstance(msg, (bytes, bytearray))
-                            and isinstance(data, dict)
-                            and data.get("type") in ("start", "config")):
-                        await up.send(narrow(data, _lang) or msg)
+                    await disp.catch_up_splits(send_to)
+                    await disp.dispatch(send_to)
+                    continue
+                # **흐르는 중에 언어를 바꾸면 LID 후보도 따라가야 한다.**
+                # 서버는 config 를 받아 로짓 바이어스를 갈지만(다음 슬롯부터),
+                # 프록시는 start 만 보고 후보를 정해 두면 그대로 굳는다. 시연 중
+                # 언어를 켜고 끄면 ASR 만 따라가고 판정은 안 따라가는 셈이다.
+                try:
+                    data = json.loads(msg)
+                except Exception:
+                    data = None
+                kind = data.get("type") if isinstance(data, dict) else None
+                if kind == "config":
+                    if isinstance(data.get("langMap"), dict):
+                        lang_map = data["langMap"]
+                    if data.get("targetLang"):
+                        target_lang = data["targetLang"]
+                    new_allowed = set(lang_map) or {
+                        c for c in [data.get("lang")] if c and c != "auto"}
+                    if new_allowed and new_allowed != tracker.allowed:
+                        print(f"config: LID 후보 {sorted(tracker.allowed)} -> "
+                              f"{sorted(new_allowed)}", flush=True)
+                        tracker.allowed = new_allowed
+                if kind in ("finish", "stop"):
+                    # 붙들어 둔 꼬리를 다 흘린 뒤에 끝내야 마지막 문장이 산다.
+                    await tracker.update(force=True)
+                    await disp.catch_up_splits(send_to)
+                    await disp.dispatch(send_to, final=True)
+                for _lang in list(ups):
+                    if kind in ("start", "config"):
+                        await send_to(_lang, narrow(data, _lang) or msg)
                     else:
-                        await up.send(msg)
+                        await send_to(_lang, msg)
 
         async def pump_upstream(lang):
+            try:
+                await _pump_upstream(lang)
+            except Exception as e:
+                # 서버 하나가 죽어도 세션은 유지한다. 그 서버 몫의 언어는 route_of 가
+                # fallback 으로 돌린다.
+                dead.add(lang)
+                print(f"upstream {lang} 끊김: {e!r} — 나머지로 계속", flush=True)
+                await asyncio.Event().wait()
+
+        async def _pump_upstream(lang):
             # 이 서버가 마지막으로 확정한 오디오 지점. 다음 final 의 시작점으로 쓴다 —
             # 서버가 final.start 를 안 채우기 때문이다.
             group_start = 0.0
+            last_span = (0.0, 0.0)
             async for msg in ups[lang].__aiter__():
                 if not isinstance(msg, str):
                     continue                   # 위쪽이 이진을 보낼 일은 없다
@@ -477,46 +800,55 @@ async def run_dual(client, start_raw, pending_binary):
                     if lang == primary:        # ready 등은 한 벌만
                         await client.send(msg)
                     continue
-                # final 은 자기 오디오 구간으로, partial 은 지금 시각으로 본다.
-                # final 은 커밋 경계로 그 발화의 판정을 찾는다. start 는 이 서버가
-                # 안 채워서(항상 0.0) 쓸 수 없다.
-                b = _secs(data.get("end")) if kind == "final" else None
-                if kind == "final":
-                    waited = await wait_for_verdict(tracker, b)
+                if kind == "partial":
+                    # 지금 담당이 아닌 서버의 partial 은 옛 슬롯의 찌꺼기다.
+                    if disp.last_owner == lang:
+                        await client.send(msg)
+                    continue
+                b = disp.to_proxy_time(lang, _secs(data.get("end")))
+                if b is not None and b > group_start:
+                    # 같은 경계에서 여러 final 이 나오면(한 슬롯의 문장들) 같은 구간을
+                    # 공유한다. 빈 구간으로 보면 두 번째 문장부터 전부 "무음" 으로 버려진다
+                    # — 실측에서 `서울에 살아요`, `See you then` 이 그렇게 사라졌다.
                     span = (group_start, b)
-                    # 판정 언어를 서버 이름으로 바꾼다. ko/en 밖의 언어는 --rest
-                    # (베이스라인) 로 간다. 그대로 두면 어느 서버도 안 맞아 발화가
-                    # 통째로 사라진다.
-                    pick = route_of(tracker.lang_for_range(*span))
-                    if waited > 0.05:
-                        print(f"wait {waited:.2f}s for end={b} ({lang})", flush=True)
-                    if b is not None and b > group_start:
-                        # 같은 경계에서 여러 final 이 나오면 같은 구간을 공유한다.
-                        group_start = b
+                    group_start = b
+                    last_span = span
+                elif b is None:
+                    span = (group_start, disp.cursor)
                 else:
-                    pick = route_of(tracker.lang_at(None))
-                if pick == lang:
-                    if kind == "final":
-                        verdict_lang = tracker.lang_for_range(*span)
-                        data, fixed = await fix_direction(
-                            data, verdict_lang, lang_map, target_lang)
-                        if fixed:
-                            print(f"fix dir end={b} {lang}: "
-                                  f"{(data.get('original') or '')[:30]!r} -> "
-                                  f"{(data.get('translation') or '')[:30]!r}", flush=True)
-                        src = (verdict_lang or data.get("language") or "").lower()
-                        before = data.get("translations")
-                        data = await add_audience_translations(
-                            data, src, (lang_map or {}).get(src) or target_lang)
-                        if fixed or data.get("translations") is not before:
-                            msg = json.dumps(data, ensure_ascii=False)
-                    await client.send(msg)
-                elif kind == "final":
-                    print(f"drop {lang} [{span[0]:.1f}~{span[1]}] -> {pick}: "
+                    span = last_span
+                heard, verdict_lang = disp.speech_in(lang, *span)
+                if heard <= 0.05:
+                    # 커밋 경계는 발화가 끝난 뒤에 찍히고, 한 슬롯의 문장들은 경계를
+                    # 거의 같이 찍는다(dot 커밋 79.0, 그 뒤 VAD 커밋 79.2). 그 사이만 보면
+                    # 진짜 문장도 "음성 없음" 이 된다 — 실측에서 `El coreano es difícil
+                    # para mí.` 가 그렇게 버려졌다. 서버는 0 만 받은 슬롯을 디코딩하지
+                    # 않으므로 환각은 실제 음성 뒤 꼬리에서만 나온다. 그래서 몇 초 안에
+                    # 이 서버로 간 음성이 하나도 없을 때만 버린다.
+                    b_eff = span[1]
+                    heard, verdict_lang = disp.speech_in(lang, b_eff - SILENCE_LOOKBACK, b_eff)
+                if heard <= 0.05:
+                    print(f"drop {lang} [{span[0]:.1f}~{span[1]:.1f}] silence: "
                           f"{(data.get('original') or '')[:40]!r}", flush=True)
+                    continue
+                if lang in ROUTES:
+                    verdict_lang = lang        # 이 서버는 자기 언어만 듣는다
+                data, fixed = await fix_direction(data, verdict_lang, lang_map, target_lang)
+                if fixed:
+                    print(f"fix dir end={b} {lang}: "
+                          f"{(data.get('original') or '')[:30]!r} -> "
+                          f"{(data.get('translation') or '')[:30]!r}", flush=True)
+                src = (verdict_lang or data.get("language") or "").lower()
+                before = data.get("translations")
+                data = await add_audience_translations(
+                    data, src, (lang_map or {}).get(src) or target_lang)
+                if fixed or data.get("translations") is not before:
+                    msg = json.dumps(data, ensure_ascii=False)
+                await reorder.submit(lang, reorder.key_for(lang, b), msg)
 
         tasks = [asyncio.create_task(pump_client())]
-        tasks += [asyncio.create_task(pump_upstream(l)) for l in langs]
+        tasks += [asyncio.create_task(pump_upstream(l)) for l in live]
+        tasks.append(asyncio.create_task(reorder.ticker()))
         done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
         for t in pending:
             t.cancel()
@@ -618,7 +950,7 @@ async def main():
         print(f"  그 밖 언어 -> {REST_UPSTREAM} (베이스라인)", flush=True)
     print(f"  판정 실패 -> {DEFAULT_UPSTREAM}", flush=True)
     if LID is not None:
-        mode = "양쪽 동시 전송 후 발화별 선택" if DUAL else "스트림당 1회 라우팅"
+        mode = "발화별 담당 서버에만 전달" if DUAL else "스트림당 1회 라우팅"
         print(f"  음성 판정: {LID.model_name}, 창 {LID.window_sec}s — {mode}", flush=True)
     if TRANSLATE_URL:
         print(f"  번역 방향 교정: {TRANSLATE_URL}", flush=True)
@@ -650,9 +982,15 @@ if __name__ == "__main__":
                     help="라우팅 표의 모든 서버에 동시에 보내고 발화마다 고른다. "
                          "--lid 를 함께 켠 것으로 친다")
     ap.add_argument("--lid-model", default="openai/whisper-small")
-    ap.add_argument("--lid-window", type=float, default=1.0,
-                    help="발화 시작 후 몇 초를 듣고 판정할지. 실측 정확도 "
-                         "1.0s=98.2%%, 2.0s=99.1%% (whisper-small, ko/en/es 226클립)")
+    ap.add_argument("--lid-window", type=float, default=1.5,
+                    help="발화 시작 후 몇 초를 듣고 판정할지. 원어민 낭독(226클립)은 "
+                         "1.0s=98.2%%, 2.0s=99.1%% 지만 한국인 화자의 3개 국어 대화 "
+                         "35발화에서는 0.5s=60%%, 1.0s=83%%, 1.5s=91%%, 2.0s=89%% 다. "
+                         "오디오는 첫 판정의 서버로만 가므로 1.5s 를 기본으로 둔다")
+    ap.add_argument("--lid-early", action="store_true",
+                    help="발화 시작 0.3초부터 확신도가 높으면 창을 다 듣지 않고 확정한다. "
+                         "끄면(기본) --lid-window 만큼 듣고 정한다 — 오디오는 첫 판정의 "
+                         "서버로만 가므로 0.4초 더 듣는 쪽이 억양 있는 화자에게 안전하다")
     ap.add_argument("--lid-max-wait", type=float, default=5.0,
                     help="이만큼 들어도 판정이 안 서면 start.lang 규칙으로 되돌아간다")
     ap.add_argument("--lid-device", default="cuda")
@@ -702,6 +1040,7 @@ if __name__ == "__main__":
     TRANSLATE_URL = args.translate_url
     if args.targets:
         AUDIENCE = [c.strip().lower() for c in args.targets.split(",") if c.strip()]
+    LID_EARLY = args.lid_early
     LANG_HINT = args.lang_hint or args.lang_hint_force
     LANG_HINT_FORCE = args.lang_hint_force
     if args.lid_scan:

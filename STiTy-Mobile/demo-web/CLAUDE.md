@@ -1,7 +1,7 @@
 # STiTy-Mobile/demo-web/
 
 A translation server holding one model for the whole machine, and a proxy that puts several ASR
-servers behind one port and picks per utterance which one the client hears.
+servers behind one port and sends each utterance's audio to the server for its language.
 
 - **Why the routing defaults are what they are — [LANGUAGE_ROUTING.md](LANGUAGE_ROUTING.md).** Read it
   before changing a default, a threshold, or the order of the decisions.
@@ -55,11 +55,12 @@ leaving one out does not degrade gracefully — it drops utterances.
 | Flag | What breaks without it |
 |---|---|
 | `--dual` | The model is chosen when the stream opens and keeps the whole session |
-| `--rest 8768` | A verdict outside the route table matches no upstream, **both** copies are dropped, and the utterance vanishes |
-| `--lid-scan` | One verdict covers a whole VAD segment; the half it does not fit disappears |
+| `--rest 8768` | A verdict outside the route table (Spanish) has no server of its own and goes to `--default`'s finetune, which writes it in Hangul |
+| `--lid-scan` | One verdict covers a whole VAD segment; the half after a mid-utterance switch goes to the wrong server |
 | `--lid-model openai/whisper-small` | base is accurate on native speech only — a Korean speaker's English routes to `ko`. small costs ~350 MiB more |
+| `--lid-window 1.5` (default) | At 1.0s the verdict is 83% on Korean speakers' three-language talk, 91% at 1.5s; the utterance goes only where the first verdict says |
 | `--targets ko,en,es` | One translation per utterance, whatever else is on screen |
-| `--translate-url` | Direction stays whatever the ASR server declared, and the en finetune's declaration is a coin flip |
+| `--translate-url` | Direction stays whatever the ASR server declared; the baseline behind `--rest` still mislabels Spanish |
 
 Every figure behind these defaults is native read speech; **accented L2 speech is unmeasured**, and
 that is where this fails in practice.

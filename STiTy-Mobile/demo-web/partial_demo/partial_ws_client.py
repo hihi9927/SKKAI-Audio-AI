@@ -21,6 +21,9 @@ async def main():
     ap.add_argument("--wav", required=True)
     ap.add_argument("--lang", default="en")
     ap.add_argument("--target", default="ko")
+    ap.add_argument("--lang-map", default=None,
+                    help="소스=목표 쌍 목록(예: ko=en,en=ko,es=ko). 웹 화면이 보내는 "
+                         "langMap 과 같다 — 프록시의 LID 후보가 이 키로 정해진다")
     ap.add_argument("--frame-ms", type=int, default=100)
     ap.add_argument("--tail-sec", type=float, default=20.0, help="finish 후 대기 시간")
     ap.add_argument("--expect-silence", action="store_true",
@@ -51,8 +54,13 @@ async def main():
         hello = json.loads(await ws.recv())
         log(hello.get("type", "?"), hello)
 
-        await ws.send(json.dumps({"type": "start", "lang": args.lang,
-                                  "targetLang": args.target, "displayMode": "mode-1"}))
+        start = {"type": "start", "lang": args.lang,
+                 "targetLang": args.target, "displayMode": "mode-1"}
+        if args.lang_map:
+            start["langMap"] = dict(
+                pair.split("=", 1) for pair in args.lang_map.split(",") if "=" in pair)
+            start["lang"] = "auto"
+        await ws.send(json.dumps(start))
         ready = json.loads(await ws.recv())
         log(ready.get("type", "?"), ready)
 

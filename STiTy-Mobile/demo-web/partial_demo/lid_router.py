@@ -236,8 +236,12 @@ class VerdictTracker:
     def __init__(self, router: "LidRouter", keep_sec: float = 20.0,
                  step_sec: float = 0.4, allowed=None,
                  scan_win: float = 0.0, scan_hop: float = 0.25,
-                 scan_confirm: int = 2):
+                 scan_confirm: int = 2, early: bool = True):
         self.router = router
+        # EARLY_STEPS(0.3초부터 확신도로 조기 확정)를 쓸지. 오디오를 담당 서버에만
+        # 보내는 구조에서는 첫 판정이 그 발화의 운명이라, 창(window_sec)을 다 듣고
+        # 정하는 쪽이 낫다. 억양 있는 화자의 첫 0.5초는 native 실측값보다 못 믿는다.
+        self.early = early
         # 이 스트림에서 나올 수 있는 언어. 클라이언트가 고른 소스 언어를 받는다.
         self.allowed = set(allowed or ())
         self.keep_sec = keep_sec
@@ -475,7 +479,9 @@ class VerdictTracker:
                            default=self.router.window_sec)
             if not closed and (end - start) < min(earliest, self.router.window_sec):
                 continue
-            lang, used = self._classify_span(start, end)
+            if not self.early and not closed and (end - start) < self.router.window_sec:
+                continue          # 창을 채울 때까지 기다린다
+            lang, used = self._classify_span(start, end, early=self.early)
             if lang is None:
                 continue
             # 창을 다 안 채우고 정해졌다면 확신도로 일찍 확정된 것이다.
