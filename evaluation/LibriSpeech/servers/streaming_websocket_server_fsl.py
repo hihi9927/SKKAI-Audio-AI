@@ -269,7 +269,12 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         self,
         text: str,
         target_lang: str,
+        context: Optional[list] = None,  # noqa: ARG002
     ) -> tuple[str, str, dict[str, Any]]:
+        # context 는 받기만 하고 쓰지 않는다. 베이스가 --local-translation-context 를
+        # 위해 넘기지만, 평가 경로의 번역은 trans_guard 가 갈아끼운 _guarded_translate
+        # 가 맡고 그쪽은 (session, text, target_lang) 만 받는다. 넘기면 TypeError 로
+        # 모든 벤치마크가 죽는다.
         t0 = self._stream_elapsed_sec()
         translation, detected_lang = await base_server.google_translate_async(
             self.http_session,
@@ -294,14 +299,15 @@ class FSLStreamingHandler(base_server.Qwen3ASRStreamingHandler):
         await super().send_message(msg_type, **kwargs)
 
     async def _translate(
-        self, text: str, target_lang: str, audio_end_sec: Optional[float] = None
+        self, text: str, target_lang: str, audio_end_sec: Optional[float] = None,
+        context: Optional[list] = None,
     ) -> tuple[str, str, dict]:
         if self.pending_audio_end_sec is not None:
             # VAD/finish: pending_audio_end_sec = speech_end (accurate)
             self._effective_audio_end_sec = self.pending_audio_end_sec
         # SEG path: _effective_audio_end_sec는 None으로 유지 → _emit_final_payload에서 current_time
         # 사용. 실제 audio_end는 _flush_deferred_seg_emits에서 token ratio로 확정.
-        return await self._translate_with_metadata(text, target_lang)
+        return await self._translate_with_metadata(text, target_lang, context=context)
 
     async def _correct_and_translate(self, text: str, current_lang: str, audio_end_sec: float):
         if not self.gpt_translator:

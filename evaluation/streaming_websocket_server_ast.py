@@ -183,12 +183,12 @@ class ASTStreamingHandler(fsl_server.FSLStreamingHandler):
         extra["transRetries"] = local.get("retries", 0)
         extra["transFailed"] = bool(local.get("failed", 0))
 
-    async def _translate(self, text, target_lang, audio_end_sec=None):
+    async def _translate(self, text, target_lang, audio_end_sec=None, context=None):
         utt_id = self._ast_utt_id
         tok = trans_guard.begin_local()
         try:
             translation, lang, extra = await super()._translate(
-                text, target_lang, audio_end_sec
+                text, target_lang, audio_end_sec, context=context
             )
         finally:
             local = trans_guard.end_local(tok)
