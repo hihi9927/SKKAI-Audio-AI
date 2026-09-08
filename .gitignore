@@ -49,6 +49,7 @@ Qwen3-ASR/finetuning/data/KSponSpeech/split_audio/
 Qwen3-ASR/finetuning/data/DailyTalk/split_audio/
 Qwen3-ASR/finetuning/data/DailyTalk/split_audio_test/
 Qwen3-ASR/finetuning/data/KSponSpeech/split_audio_test/
+Qwen3-ASR/finetuning/data/DailyTalk_win/
 evaluation/LibriSpeech/test-other.tar.gz
 evaluation/LibriSpeech/test-other
 
@@ -188,3 +189,8 @@ core/meaning_segmentator/experiment/artifacts/**/test_judgements.json
 core/meaning_segmentator/experiment/artifacts/covost2/**
 !core/meaning_segmentator/experiment/artifacts/covost2/**/
 !core/meaning_segmentator/experiment/artifacts/covost2/**/*.md
+
+# DailyTalk 창 SEG 학습 산출물 (체크포인트 대용량)
+Qwen3-ASR/finetuning/finetuning-out-en-win/
+# AST 샘플 오디오 (저장소는 wav 를 추적하지 않는다)
+evaluation/ast/samples/
