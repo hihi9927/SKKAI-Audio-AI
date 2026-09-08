@@ -80,6 +80,9 @@ class LidRouter:
             self.model_name, dtype=dtype).to(self.device).eval()
         tok = self.proc.tokenizer
         self.sot = tok.convert_tokens_to_ids("<|startoftranscript|>")
+        self.transcribe_id = tok.convert_tokens_to_ids("<|transcribe|>")
+        self.notimestamps_id = tok.convert_tokens_to_ids("<|notimestamps|>")
+        self.eot = tok.convert_tokens_to_ids("<|endoftext|>")
         # 언어 토큰은 <|xx|> 꼴이다. 이 집합 안에서만 argmax 를 잡는다.
         self.lang_ids = {
             tok.convert_tokens_to_ids(t): t.strip("<|>")
@@ -150,6 +153,58 @@ class LidRouter:
         k = pos[int(torch.argmax(probs[pos]))]
         lang = self.lang_ids[all_ids[k]]
         return (lang, float(probs[k])) if with_conf else lang
+
+    # 강제 디코딩 로그확률 판정이 한 후보당 읽는 토큰 수. 12개면 문장 하나 분량이고
+    # 그 뒤는 점수에 거의 안 더해진다.
+    LP_MAX_TOKENS = 12
+
+    def _classify_lp(self, audio: np.ndarray, allowed=None, with_scores: bool = False):
+        """언어 코드. 후보 언어마다 그 언어로 **강제 디코딩**해 토큰 평균 로그확률이
+        가장 높은 쪽을 고른다.
+
+        **언어 토큰 argmax 는 억양 있는 화자에서 무너진다.** 한국인이 말한 스페인어·영어를
+        whisper-small 의 언어 토큰으로 판정하면 실제 녹음 3개(94발화)에서 1.5초 창 93.6%,
+        어려운 30개만 추리면 80% 다 — `Tres meses` 는 en, `Nice to meet you` 는 ko 로 간다.
+        medium 은 77%, large-v3-turbo 도 87% 라 모델을 키워도 안 풀린다.
+
+        대신 각 후보 언어로 짧게 받아쓰게 하고 그 확률을 비교하면, 같은 30개에서 1.5초
+        93.3%, 구간 전체 100% 다. 언어 토큰 하나의 분포보다 "이 언어의 문장으로 읽힐 수
+        있는가" 가 억양에 훨씬 덜 흔들린다. 값은 인코더 한 번 + 후보당 최대 12토큰
+        greedy 디코딩이라 GPU 에서 100~200ms 다. 스캔(0.25초마다)에는 비싸서 안 쓰고,
+        발화당 한 번인 잠금 판정과 확정 판정에만 쓴다.
+        """
+        import time as _time
+        _t0 = _time.perf_counter()
+        torch = self._torch
+        codes = sorted(allowed) if allowed else sorted(self.known_langs) or ["en"]
+        feats = self.proc.feature_extractor(
+            audio, sampling_rate=SR, return_tensors="pt").input_features
+        feats = feats.to(self.device, self.model.dtype)
+        tok = self.proc.tokenizer
+        scores = {}
+        with torch.inference_mode():
+            enc = self.model.model.encoder(feats)
+            for code in codes:
+                lang_id = tok.convert_tokens_to_ids(f"<|{code}|>")
+                dec = torch.tensor([[self.sot, lang_id, self.transcribe_id,
+                                     self.notimestamps_id]], device=self.device)
+                total, n = 0.0, 0
+                for _ in range(self.LP_MAX_TOKENS):
+                    logits = self.model(encoder_outputs=enc,
+                                        decoder_input_ids=dec).logits[0, -1].float()
+                    logp = torch.log_softmax(logits, -1)
+                    nxt = int(torch.argmax(logp))
+                    if nxt == self.eot:
+                        break
+                    total += float(logp[nxt])
+                    n += 1
+                    dec = torch.cat([dec, torch.tensor([[nxt]], device=self.device)], dim=1)
+                scores[code] = total / n if n else -99.0
+        best = max(scores, key=scores.get)
+        logger.info(f"[lid-lp] {len(audio)/SR:.1f}s -> {best} "
+                    f"{' '.join(f'{k}={v:.2f}' for k, v in scores.items())} "
+                    f"({(_time.perf_counter() - _t0) * 1000:.0f}ms)")
+        return (best, scores) if with_scores else best
 
     def _decide_sync(self, audio: np.ndarray, flush: bool = False):
         """(언어코드 또는 None, 사유). None 이면 아직 더 들어야 한다.
@@ -294,12 +349,12 @@ class VerdictTracker:
     # 창(window_sec)을 다 채운 뒤 argmax 로 확정한다.
     EARLY_STEPS = ((0.3, 0.90), (0.5, 0.85), (0.7, 0.80))
 
-    # 발화가 닫히면 이만큼 다시 듣고 확정한다. 조기 판정은 라우팅을 빨리 정하려는
-    # 것이고, final 은 어차피 발화가 닫힌 뒤에 오므로 그때는 더 들을 수 있다.
-    # 실측(226개, 후보 ko/en/es): 앞 1.0초 96.9% -> 앞 2.0초 98.7%. 2초를 넘겨
-    # 더 들어도(3초·5초·구간 전체) 98.7% 그대로라 2초가 이득이 멈추는 지점이다.
-    # 1.0초에서 나던 스페인어 오답(es -> ko)이 2.0초에서는 사라진다.
-    CONFIRM_SEC = 2.0
+    # 발화가 닫히면 구간 전체(최대 이 길이)를 강제 디코딩 로그확률로 다시 판정한다.
+    # 잠금 판정은 1.5초만 듣고 정한 값이라 실제 녹음(어려운 30발화)에서 93.3% 인데,
+    # 구간 전체를 들으면 100% 였다. 오디오는 이미 잠금 쪽으로 갔으므로 이 값은
+    # 라우팅을 바꾸지 못하고, Dispatcher 가 이 값과 잠금이 다를 때 그 발화를 맞는
+    # 서버로 다시 보내는 교정(correction)에 쓴다.
+    CONFIRM_SEC = 6.0
 
     def _classify_span(self, start: float, end: float, early: bool = True,
                        secs: Optional[float] = None):
@@ -317,8 +372,8 @@ class VerdictTracker:
         avail = len(span) / SR
         if secs is not None:                  # 확정 판정: 정해진 길이로 한 번만
             with self.router._gpu_lock:
-                return self.router._classify(span[: int(SR * secs)],
-                                             allowed=self.allowed), min(avail, secs)
+                return self.router._classify_lp(span[: int(SR * secs)],
+                                                allowed=self.allowed), min(avail, secs)
         with self.router._gpu_lock:
             if early:
                 for secs, need in self.EARLY_STEPS:
@@ -328,8 +383,8 @@ class VerdictTracker:
                         span[: int(SR * secs)], with_conf=True, allowed=self.allowed)
                     if conf >= need:
                         return lang, secs
-            lang = self.router._classify(span[: int(SR * self.router.window_sec)],
-                                         allowed=self.allowed)
+            lang = self.router._classify_lp(span[: int(SR * self.router.window_sec)],
+                                            allowed=self.allowed)
         return lang, min(avail, self.router.window_sec)
 
     # 0.5초 창 정확도가 whisper-base 기준 82.5% 다. 그보다 짧은 조각의 판정은
@@ -455,6 +510,10 @@ class VerdictTracker:
                 # 보므로 짧은 근거로 정해진 값이다. final 은 발화가 닫힌 뒤에 오니
                 # 여기서 고쳐도 늦지 않다.
                 lang, used = self._classify_span(start, end, secs=self.CONFIRM_SEC)
+                if lang is not None and existing[2] != lang:
+                    # 잠금은 이미 오디오를 보냈으니 못 바꾼다. 교정은 Dispatcher 몫이다.
+                    existing_prev = existing[2]
+                    logger.info(f"[confirm] {start:.1f}s {existing_prev} -> {lang}")
                 if lang is not None:
                     existing[0] = min(existing[0], start)
                     # 스캔이 이 구간을 쪼갰으면 뒤쪽 판정 시작을 넘겨 늘리지 않는다.
@@ -491,6 +550,11 @@ class VerdictTracker:
             known = self.allowed or self.router.known_langs
             locked = (used is not None and used < self.router.window_sec
                       and (not known or lang in known))
+            # 창을 다 듣고 로그확률로 정한 값(early 꺼짐)은 그대로 잠근다. 갱신마다
+            # 다시 돌리면 발화가 이어지는 동안 0.25초마다 200ms 를 GPU 에 쓴다 —
+            # 어차피 오디오는 첫 판정으로 갔고, 다시 보는 건 확정 판정 몫이다.
+            if not self.early:
+                locked = True
             if existing is None:
                 self.verdicts.append([start, end if closed else None, lang, locked])
                 logger.debug(f"[verdict] {start:.1f}s {lang} ({used:.2f}s 듣고"

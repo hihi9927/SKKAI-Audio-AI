@@ -95,13 +95,47 @@ the 35 utterances (CPU, fp32, silero-cut):
 | correct | 60% | 69% | 83% | **91%** | 89% |
 
 So `--dual` decides on the full window (`--lid-early` turns the confidence steps back on) and the window
-defaults to 1.5s. The cost is about 1.5s of hold at every utterance start. What 1.5s still gets wrong is
-the accent itself: `Nice to meet you` and `Hola, me llamo Daniel` from a Korean speaker come back `ko` at
-every window. Replaying the same file through `VerdictTracker` offline (CPU fp32, GPU fp16 and fp32 agree
-to the verdict) reproduces the table, so a live run that routes worse than this is a proxy bug, not the
-model — two were found that way: a lock that matched segments by overlap inherited the previous
-utterance's language once the open segment's end grew, and the pre-roll piece looked up the verdict at a
-time before the segment and fell back to the previous verdict.
+defaults to 1.5s. The cost is about 1.5s of hold at every utterance start. Replaying the same file through
+`VerdictTracker` offline (CPU fp32, GPU fp16 and fp32 agree to the verdict) reproduces the table, so a live
+run that routes worse than this is a proxy bug, not the model — two were found that way: a lock that
+matched segments by overlap inherited the previous utterance's language once the open segment's end grew,
+and the pre-roll piece looked up the verdict at a time before the segment and fell back to the previous
+verdict.
+
+**What the window cannot fix is the accent, and a bigger model does not fix it either.** With three live
+recordings (94 utterances, Korean speakers, ko/en/es) the language-token argmax of whisper-small reads
+93.6% at 1.5s and stays there on the whole segment: `Nice to meet you` and `Hola, me llamo Daniel` come
+back `ko`, `Tres meses` and `Sí, es fácil` come back `en`, at every window. On the 30 hardest of those
+(13 the argmax gets wrong plus 17 controls) medium scores 77% and large-v3-turbo 87% against small's
+80% — and turbo needs 2 GiB the stack does not have.
+
+**Ask which language the audio reads as a sentence, not which language token comes first.**
+`LidRouter._classify_lp` runs the encoder once, then for each candidate language forces the decoder to
+transcribe in that language for up to 12 tokens and takes the mean token log-probability; the highest
+language wins. The single language token only carries the acoustic guess, which an accent shifts; twelve
+tokens of forced transcription also carry whether the words make a sentence in that language —
+`Tres meses` forced into English becomes `Thrice messes` and scores −0.83 against −0.30 for Spanish.
+Measured on the same recordings:
+
+| whisper-small, ko/en/es | argmax | forced log-prob |
+|---|---|---|
+| 30 hard utterances, first 1.5s | 80% | **93%** |
+| 30 hard utterances, whole segment | 80% | **100%** |
+| all 94, first 1.5s | 93.6% | 91.5% |
+| all 94, whole segment | 93.6% | **100%** |
+
+At 1.5s the two methods miss different utterances — the log-probability loses the ones a window cuts
+mid-sentence (`Es tu primera vez` heard as `This is your first time`) — but only the log-probability
+reaches 100% on the whole segment, which is what makes the correction below possible. It costs one encoder
+pass and 3×12 decoder steps: median 123ms, at most 339ms on the live GPU, 71 MiB peak. The 0.25s scan keeps
+the argmax; the log-probability is used only where a decision is made once per utterance — the lock and the
+confirmation.
+
+**The confirmation now corrects the route.** When a segment closes, the tracker re-judges the whole segment
+(`CONFIRM_SEC` caps it at 6s) with the log-probability. If that disagrees with the lock, `Dispatcher.correct_locks`
+sends the utterance's audio (pre-roll to post-roll) to the right server as an extra send and marks the span
+revoked for the old owner, whose `final` for it is dropped. The right subtitle appears one or two seconds
+after the utterance instead of never; the wrong-language one never appears.
 
 **One owner per speech segment.** Sent audio cannot be recalled, so the language chosen at the first piece of
 a segment stays for that segment. The 2s confirmation (`CONFIRM_SEC`) still runs in the tracker and shows in
@@ -113,6 +147,13 @@ split inside the segment changes the owner mid-segment, because that is a real l
 gets the audio from `SPLIT_BACKOFF` (0.3s) before the split point up to the cursor as an extra send; the
 proxy records the extra length per server and subtracts it when reading that server's `end`. The old owner
 keeps its leaked second — its sentence may end with a foreign fragment.
+
+**Finals are released in the order the utterances were spoken, not the order the servers commit.** The en
+finetune commits on `<SEG>` the moment it appears; the baseline commits when VAD closes, 800ms later. So a
+Spanish sentence followed by English produced `Sure,` above `Hola, ¿puedo sentarme aquí?`. `Reorder` keys
+each `final` by the start of the speech span the proxy sent to that server, and holds it only while another
+server has an earlier span with no `final` yet — released when that `final` arrives or after 1.5s. Nothing is
+delayed when nothing earlier is pending.
 
 **Silence hallucinations are filtered with what the proxy knows it sent.** A `final` is dropped when the
 proxy sent *that* server no speech in the 8s before the final's `end`. The tighter span
@@ -199,10 +240,10 @@ here was ko/en only) shows where the accuracy actually is:
 | first 2.0s | **98.7%** | ko→en 3 |
 | 3s / 5s / whole segment | 98.7% | ko→en 3 |
 
-Two seconds is where the gain stops. `CONFIRM_SEC` re-judges every closed segment on its first 2s and
-overwrites the early guess in the verdict list. Since audio is now dispatched on the early guess and cannot
-be recalled, the confirmation no longer changes where an utterance goes (see "One owner per speech segment"
-above); it remains the number to read when judging whether the early thresholds are good enough.
+Those numbers are native speech and the language-token argmax. The confirmation now runs on the whole
+closed segment (`CONFIRM_SEC` = 6s cap) with the forced-transcription log-probability, where it reaches
+100% on the accented recordings, and feeds the correction described under "Feeding each server only its
+language" — it cannot recall audio already sent, but it can resend it to the right server.
 
 **The client's language selection is the whole pool — do not add the route table back.** An earlier version
 unioned `ROUTES` into the allowed set "so a language with a server always stays available", which quietly

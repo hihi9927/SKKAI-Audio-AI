@@ -338,6 +338,8 @@ class Dispatcher:
         self.hold_since = None
         self._seen_splits = set()
         self._locks: list = []      # [시작, 끝, 언어] — 구간마다 한 번 정한 담당
+        self._checked: set = set()  # 확정 판정과 대조를 끝낸 잠금 (id)
+        self.revoked = {n: [] for n in self.names}   # 교정으로 무효가 된 (시작, 끝)
 
     def feed(self, pcm: bytes) -> None:
         x = np.frombuffer(pcm, dtype="<i2")
@@ -491,6 +493,45 @@ class Dispatcher:
             self.extra[owner] += len(piece) / 2 / SR
             self._note(owner, a, b, v[2])
             print(f"split {v[0]:.2f}s -> {v[2]}: resend {a:.2f}~{b:.2f} to {owner}", flush=True)
+
+    async def correct_locks(self, send) -> None:
+        """확정 판정(구간 전체 로그확률)이 잠금과 다르면 그 발화를 맞는 서버로 다시 보낸다.
+
+        **잠금은 1.5초만 듣고 정한 값이다.** 실제 녹음에서 7% 는 틀리고, 그 대부분이
+        한국인 화자의 스페인어가 en 으로 가는 경우다. 구간이 닫힌 뒤 전체를 다시
+        판정하면 그 오답이 사라지므로(30발화에서 100%), 다르면 발화 전체를 맞는 담당에게
+        추가로 보내고 옛 담당의 그 구간 final 은 버리게 표시한다(`revoked`). 맞는 자막이
+        발화 끝난 뒤 1~2초 늦게 뜨는 대신, 엉뚱한 언어의 자막은 안 뜬다.
+        """
+        for lock in self._locks:
+            if id(lock) in self._checked:
+                continue
+            v = self.tracker._find_overlap(lock[0], max(lock[1], lock[0] + 0.1))
+            if v is None or len(v) < 5 or not v[4]:
+                continue                       # 아직 확정 판정 전
+            self._checked.add(id(lock))
+            new_lang = v[2]
+            if new_lang == lock[2]:
+                continue
+            new_owner = self.route_of(new_lang) or self.fallback
+            old_owner = self.route_of(lock[2]) or self.fallback
+            if new_owner == old_owner or new_owner not in self.spans:
+                continue
+            a = max(self._offset, lock[0] - PRE_ROLL)
+            b = min(self.cursor, (v[1] if v[1] is not None else lock[1]) + POST_ROLL)
+            if b <= a:
+                continue
+            piece = self._slice(a, b)
+            await send(new_owner, piece)
+            self.extra[new_owner] += len(piece) / 2 / SR
+            self._note(new_owner, a, b, new_lang)
+            self.revoked[old_owner].append((a, b))
+            lock[2] = new_lang
+            print(f"correct {lock[0]:.2f}s {old_owner} -> {new_owner} ({new_lang}), "
+                  f"resend {a:.2f}~{b:.2f}", flush=True)
+
+    def is_revoked(self, name: str, key: float) -> bool:
+        return any(a - 0.5 <= key <= b for a, b in self.revoked.get(name, ()))
 
     def to_proxy_time(self, name: str, server_sec) -> Optional[float]:
         if server_sec is None:
@@ -738,6 +779,7 @@ async def run_dual(client, start_raw, pending_binary):
                     if LANG_HINT:
                         await push_hints()
                     await disp.catch_up_splits(send_to)
+                    await disp.correct_locks(send_to)
                     await disp.dispatch(send_to)
                     continue
                 # **흐르는 중에 언어를 바꾸면 LID 후보도 따라가야 한다.**
@@ -831,6 +873,11 @@ async def run_dual(client, start_raw, pending_binary):
                     print(f"drop {lang} [{span[0]:.1f}~{span[1]:.1f}] silence: "
                           f"{(data.get('original') or '')[:40]!r}", flush=True)
                     continue
+                key = reorder.key_for(lang, b)
+                if disp.is_revoked(lang, key):
+                    print(f"drop {lang} key={key:.2f} revoked: "
+                          f"{(data.get('original') or '')[:40]!r}", flush=True)
+                    continue
                 if lang in ROUTES:
                     verdict_lang = lang        # 이 서버는 자기 언어만 듣는다
                 data, fixed = await fix_direction(data, verdict_lang, lang_map, target_lang)
@@ -844,7 +891,7 @@ async def run_dual(client, start_raw, pending_binary):
                     data, src, (lang_map or {}).get(src) or target_lang)
                 if fixed or data.get("translations") is not before:
                     msg = json.dumps(data, ensure_ascii=False)
-                await reorder.submit(lang, reorder.key_for(lang, b), msg)
+                await reorder.submit(lang, key, msg)
 
         tasks = [asyncio.create_task(pump_client())]
         tasks += [asyncio.create_task(pump_upstream(l)) for l in live]
