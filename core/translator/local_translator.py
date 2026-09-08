@@ -279,10 +279,17 @@ class LLMTranslator:
         "vi": "Vietnamese", "th": "Thai", "id": "Indonesian", "hi": "Hindi", "ar": "Arabic",
         "tr": "Turkish", "nl": "Dutch", "pl": "Polish",
     }
-    SYSTEM = ("You are a translation engine for a live conversation. Use the earlier "
-              "turns only to resolve pronouns, omitted subjects, gender agreement and "
-              "politeness level. Output only the translation of the final line, with "
-              "no explanation and no quotes.")
+    # **현재 줄을 명시적으로 표시해야 한다.** 앞 발화를 그냥 붙여 두고 "마지막 줄만
+    # 옮겨라" 라고 하면, 현재 줄이 ASR 잡음일 때 모델이 문맥 줄을 대신 옮긴다.
+    # 실측: 문맥 없이 '메야무 다니엘 이뚜?' → 'Maya Daniel I-tzu?' 로 맞게 나오는데,
+    # 앞 발화 '마이 나이미스 다현정.' 을 문맥으로 주면 'Mai Naimi Dae Hyunjeong?'
+    # (= 앞 문장의 번역) 이 나왔다. 줄 수 검사로는 못 잡는다 — 한 줄이라서다.
+    SYSTEM = ("You are a translation engine for a live conversation. The earlier turns are "
+              "context only: never translate them, and never repeat their translation. Use "
+              "them only to resolve pronouns, omitted subjects, gender agreement and "
+              "politeness level in the CURRENT line. Translate the CURRENT line and nothing "
+              "else, even if it looks garbled or incomplete. Output only that translation, "
+              "with no explanation and no quotes.")
 
     def __init__(
         self,
@@ -355,9 +362,11 @@ class LLMTranslator:
         tok = self._tokenizer
         if context:
             ctx_block = "\n".join(f"- {c}" for c in context)
-            user = (f"Earlier turns in {self._name(source_code)}:\n{ctx_block}\n\n"
-                    f"Translate this {self._name(source_code)} line into "
-                    f"{self._name(target_code)}:\n{text}")
+            user = (f"Earlier turns in {self._name(source_code)} (context only, do NOT "
+                    f"translate these, do NOT repeat their translation):\n{ctx_block}\n\n"
+                    f"Translate ONLY the line below into {self._name(target_code)}. It may be "
+                    f"garbled or incomplete — translate it as it is, do not replace it with "
+                    f"anything from the context.\n\n{text}")
         else:
             user = (f"Translate the following {self._name(source_code)} sentence into "
                     f"{self._name(target_code)}.\n\n{text}")
