@@ -5,7 +5,7 @@
 <style>
   :root { color-scheme: light;
           --tagw: 132px;    /* 태그 칸 너비. 글자 길이와 무관하게 고정이다 */
-          --tagh: 26px;
+          --tagh: 30px;
           --lanew: 132px; }  /* 칸 배치에서 왼쪽에 고정으로 두는 칸 이름 너비 */
   * { box-sizing: border-box; }
   html, body { height:100%; }
@@ -55,25 +55,72 @@
      칸은 두 줄로 고정한다 — 위가 번역, 아래가 원문(태그가 그 왼쪽에 붙는다).
      전사는 처음부터 아래 칸에 뜨고 번역은 위 칸이 비워 둔 자리에 들어오므로,
      번역이 도착해도 이미 떠 있던 글자가 움직이지 않는다. */
-  .line { font-size:clamp(21px, 2.9vw, 40px); width:min(1100px, 88vw); padding:.3em 0;
+  .line { font-size:clamp(21px, 2.9vw, 40px); width:min(1500px, 93vw); padding:.3em 0;
           display:grid; align-items:center;
           grid-template-columns:var(--tagw) minmax(0, 1fr);
           grid-template-rows:minmax(1.32em, auto) minmax(var(--tagh), auto);
           column-gap:14px; row-gap:.18em;
-          opacity:0; transform:translateY(12px);
+          opacity:0; transform:translateY(var(--enter, 12px));
           transition:opacity .45s ease, transform .45s ease; }
+  /* 버전 1: 태그가 왼쪽 칸을 쓰므로 오른쪽에도 같은 폭의 빈 칸을 둔다. 그래야 문장의
+     가운데가 화면 가운데에 온다 — 안 그러면 태그 폭만큼 오른쪽으로 밀린 채 놓인다. */
+  .stage.tag .line { grid-template-columns:var(--tagw) minmax(0, 1fr) var(--tagw); }
+  .stage.tag .main, .stage.tag .sub { text-align:center; }
+  /* 번역만 한 단계 줄인다. 원문(.sub)은 줄 크기를 따르므로 그대로다. */
+  .stage.tag .main { font-size:.86em; }
   .stage.lane .line { font-size:clamp(17px, 2.0vw, 28px);
                       grid-template-columns:0 minmax(0, 1fr); column-gap:0; }
   /* 목표별 칸: 칸 하나가 언어 하나다. 태그를 붙이지 않는다 — 칸이 곧 언어라 할 말이 없고,
      원문과 번역도 구분하지 않고 같은 글씨로 쭉 흘린다. 줄 간격을 줄여 한 칸에 더 담는다. */
+  /* 발화 한 칸의 높이. 줄바꿈이 생겨도 칸 높이는 그대로라 칸끼리 줄이 어긋나지 않는다.
+     넘치는 만큼은 잘린다 — 슬롯을 늘리려면 --slot 을 키운다. */
+  .stage.laneT .line, .stage.laneV .line {
+                       height:calc(var(--slot) * 1.32em + .3em); overflow:hidden;
+                       align-content:center; }
+  .stage.laneT .line { --slot:2; }
+  .stage.laneV .line { --slot:3; }
   .stage.laneT .line { font-size:clamp(15px, 1.75vw, 25px); padding:.12em 0;
                        grid-template-columns:0 minmax(0, 1fr); column-gap:0;
                        grid-template-rows:minmax(1.32em, auto); }
   .stage.laneT .line > .main { grid-row:1; }
   .stage.laneT .tagChip { display:none; }
-  /* 그 칸 언어로 말한 문장(전사)만 칸 색으로 굵게 둔다. 나머지는 번역이라 흰 글씨다.
-     칸 이름과 같은 색이라 "이 칸이 원래 말한 언어"가 한눈에 잡힌다. */
-  .stage.laneT .line.orig > .main { color:inherit; font-weight:800; }
+  /* 그 칸 언어로 말한 문장(전사)은 칸 색을 흰색과 섞어 파스텔로 둔다. 글씨체와 굵기는
+     번역과 같다 — 굵기까지 다르면 두 줄이 다른 글처럼 보인다. 색만 다르고 번역과 나란히
+     읽힌다. opacity 를 쓰지 않는 것은 줄 자체의 opacity(타이핑 중 .72)와 곱해져
+     말하는 동안 더 흐려지기 때문이다. */
+  .stage.laneT .line.orig > .main, .stage.laneV .line.orig > .main {
+                                    color:inherit;
+                                    color:color-mix(in srgb, currentColor 85%, #fff); }
+
+  /* ── 5 · 목표별 세로 칸 ───────────────────────────────────────────────────
+     언어마다 세로 기둥 하나. 칸 이름이 기둥 위에 붙고 글은 그 아래로 내려온다 —
+     새 문장이 늘 이름 바로 밑에 뜨므로 눈이 이름과 새 글 사이만 오간다.
+     가로 배치(laneT)와 채우는 규칙은 같고 기하만 다르다. */
+  .stage.laneV { flex-direction:row; align-items:stretch; gap:0;
+                 padding:98px 3vw 4vh; }
+  .stage.laneV > .lane { flex:1 1 0; min-width:0; display:flex; flex-direction:column;
+                         justify-content:flex-start; gap:10px; padding:0 1.1vw;
+                         border-left:1px solid rgba(0,0,0,.12); }
+  .stage.laneV > .lane:first-child { border-left:0; }
+  .stage.laneV .laneLabel { flex:0 0 auto; width:auto; text-align:center;
+                            font-size:clamp(15px, 1.4vw, 22px); letter-spacing:2px;
+                            margin-top:4vh;            /* 로고와 붙지 않게 한 칸 내린다 */
+                            padding-bottom:8px; border-bottom:1px solid rgba(0,0,0,.12); }
+  /* 글은 위에서 아래로 내려온다. column-reverse 는 마지막(가장 새) 줄을 맨 위에 놓고,
+     그 축에서 flex-end 가 위쪽 정렬이다. 앞선 줄은 그 아래로 밀린다. */
+  .stage.laneV > .lane > .feed { flex:1 1 auto; min-height:0; height:auto; width:100%;
+                                 flex-direction:column-reverse;
+                                 justify-content:flex-end; align-items:stretch; }
+  /* 등장도 같은 방향으로 — 위에서 내려온다. transform 을 직접 잡으면 깊이 클래스의
+     transform:none 을 이겨 버려 줄이 영영 밀린 채로 남는다. 그래서 변수만 바꾼다. */
+  .stage.laneV .line { --enter:-12px; }
+  .stage.laneV .line { width:100%; font-size:clamp(13px, 1.45vw, 21px); padding:.18em 0;
+                       grid-template-columns:0 minmax(0, 1fr); column-gap:0;
+                       grid-template-rows:minmax(1.32em, auto); }
+  .stage.laneV .line > .main { grid-row:1; text-align:center; }
+  .stage.laneV .tagChip { display:none; }
+  /* 표는 문장 옆에 붙는다(가로 배치와 같다). 기둥이 좁아 그만큼 줄이 접히므로
+     글자를 한 단계 줄여 잡았다. */
   /* 번역 줄 앞에 붙는 작은 표. 누가 말한 문장인지 알려 준다 — 번역만 보면 이 줄이
      어느 화자의 말이었는지 알 길이 없다. 말한 언어의 칸에는 붙이지 않는다(칸 이름이 곧 그것). */
   .srcTag { display:inline-block; font-size:.52em; font-weight:800; letter-spacing:.5px;
@@ -102,10 +149,10 @@
   /* 태그는 줄 글자 크기와 무관하게 늘 같은 자리·같은 크기다. 넘치면 잘라 쓴다.
      세로로는 줄 전체(번역+원문)를 가로질러 그 가운데에 놓는다 — 한 줄짜리든 여러 줄짜리든
      태그와 문장 뭉치의 중심이 늘 같은 높이에 온다. */
+  /* 테두리 없이 글씨만 둔다 — 목표별 칸의 칸 이름과 같은 결이다. */
   .tagChip { grid-column:1; grid-row:1 / -1; align-self:center; width:100%; height:var(--tagh);
-             font-size:13px; font-weight:800; letter-spacing:1.5px; line-height:calc(var(--tagh) - 2px);
-             padding:0 8px; border-radius:999px; text-align:center;
-             border:1px solid currentColor; opacity:.95;
+             font-size:20px; font-weight:800; letter-spacing:2px; line-height:var(--tagh);
+             text-align:center;
              white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .stage.lane .tagChip { display:none; }
   /* 쌓기: 번역 줄마다 왼쪽에 목표 언어 코드가 붙는다. 태그와 같은 칸이라 폭이 같다. */
@@ -226,8 +273,8 @@
   </div>
   <div class="panelTitle">사용할 소스 언어</div>
   <div class="chips" id="srcChips"></div>
-  <div class="panelTitle uiOff">소스 언어별 번역 목표</div>
-  <div id="langRows" class="uiOff"></div>
+  <div class="panelTitle">소스 언어별 번역 목표</div>
+  <div id="langRows"></div>
   <div class="panelTitle">태그 글자</div>
   <div id="tagRows"></div>
   <div class="panelTitle uiOff">표시 목표</div>
@@ -246,7 +293,7 @@
   <div class="panelNote uiOff" id="panelNote"></div>
 </div>
 
-<div class="hint" id="hint">Ctrl+Space 마이크 시작·정지 · Ctrl+Enter 대본 리허설 · R 화면 비우기 · C 설정</div>
+<div class="hint" id="hint">Ctrl+Space 마이크 · Ctrl+Enter 대본 리허설 · V 버전 1/2 · Ctrl+L 가로/세로 칸 · R 화면 비우기 · C 설정</div>
 
 <script>
 // ── 설정 ──────────────────────────────────────────────────────────────────────
@@ -286,8 +333,16 @@ function autoDepth() {
     // 칸을 언어 수만큼 나눠 갖는다. 라벨과 칸 여백을 뺀 높이에 몇 줄이 들어가는지 센다.
     const em = Math.min(25, Math.max(15, innerWidth * 0.0175));
     const laneH = innerHeight * (ANCHOR_CENTER ? 0.5 : 0.9) / Math.max(1, laneCodes().length);
-    const rowH = em * 1.32 + em * 0.24;          // 글자 한 줄 + 위아래 여백
+    const rowH = em * 1.32 * 2 + em * 0.3;       // CSS 의 --slot:2 와 같은 높이
     return Math.max(1, Math.min(DEPTH_MAX, Math.floor((laneH - 20) / rowH)));
+  }
+  if (M.layout === 'laneV') {
+    // 세로 기둥은 화면 높이를 통째로 쓴다. 대신 폭이 언어 수만큼 좁아져 한 문장이
+    // 여러 줄로 접히므로, 한 발화가 차지하는 높이를 두 줄로 잡고 센다.
+    const em = Math.min(21, Math.max(13, innerWidth * 0.0145));
+    const colH = innerHeight * 0.78 - 40;        // 칸 이름 아래부터 기둥 끝까지
+    const rowH = em * 1.32 * 3 + em * 0.3;       // CSS 의 --slot:3 과 같은 높이
+    return Math.max(1, Math.min(DEPTH_MAX, Math.floor(colH / rowH)));
   }
   if (M.layout === 'stack') {
     // 한 발화가 목표 수만큼 줄을 차지한다. 화면 높이에 몇 개가 들어가는지 재서 정한다.
@@ -319,10 +374,11 @@ const TGT_LANG = Q.get('tgt') || 'en';
 // 쌍 규칙은 세 언어 이상을 각각 다른 곳으로 보내지 못한다(ja 는 무조건 src 로 되돌아간다).
 // 그래서 감지 언어별 목표를 따로 준다 — 서버가 langMap 을 받으면 쌍 규칙보다 먼저 본다.
 // 설정 패널에서 고른 값이 곧바로 config 메시지로 나가므로 재연결하지 않아도 된다.
-const UI_LANGS = ['ko', 'en', 'ja', 'zh', 'es'];   // 앱 languages.ts 와 같은 집합
-const LANG_LABELS = { ko:'한국어', en:'English', ja:'日本語', zh:'中文', es:'Español' };
+const UI_LANGS = ['ko', 'en', 'ja', 'zh', 'es', 'ar'];   // 앱 languages.ts 와 같은 집합 + 아랍어
+const LANG_LABELS = { ko:'한국어', en:'English', ja:'日本語', zh:'中文', es:'Español',
+                     ar:'العربية' };
 // 목표 언어는 소스 언어마다 기억해 둔다. 소스를 껐다 켜도 고르던 값이 그대로 돌아온다.
-const DEFAULT_TARGETS = { ko:'en', en:'ko', ja:'ko', zh:'ko', es:'ko' };
+const DEFAULT_TARGETS = { ko:'en', en:'ko', ja:'ko', zh:'ko', es:'ko', ar:'en' };
 // 말할 언어. 이게 곧 ASR 허용 언어이기도 하다 — 넓힐수록 오감지가 는다.
 // 기본값은 테스트 음성이 있는 셋(EN/JA/KO, MIX 는 이 셋을 섞은 것)이다.
 const DEFAULT_SRC_LANGS = ['ko', 'en', 'ja'];
@@ -400,19 +456,21 @@ function refreshLangMap() {
 const WS_URL = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
 const SR = 16000, FRAME_MS = 100;
 
-// 흰 바탕에서 읽히도록 어둡힌 팔레트. 앱 HomeScreen 의 LANG_COLORS 와 같은 언어 집합이고
-// 색상(hue)도 같다 — 밝기만 바탕에 맞춰 낮췄다.
+// 흰 바탕용 팔레트. 앱 HomeScreen 의 LANG_COLORS 와 같은 언어 집합이고 색상(hue)도 같다 —
+// 밝기만 바탕에 맞춰 잡았다. 검은 바탕용 원본보다는 어둡고, 글씨가 무거워 보이지 않을
+// 만큼은 연하다. 멀리서 읽는 화면이므로 이보다 더 연하게 가면 전사 문장이 흐려진다.
 const LANG_COLORS = {
-  en:'#2F63C7', ko:'#5C8A16', ja:'#C2492A', zh:'#7B3FC7', es:'#9A6E00',
-  fr:'#0E7B8C', id:'#0B7F55', vi:'#C2352F', th:'#2A63B8', de:'#96601A',
+  en:'#5A8BE0', ko:'#84B043', ja:'#E07A5A', zh:'#A87BE0', es:'#C99A33',
+  fr:'#3FAFC0', id:'#3EB489', vi:'#E0736C', th:'#5A93DB', de:'#C79A4A',
+  ar:'#C56BA8',
 };
 const NAME_TO_CODE = {
   Korean:'ko', English:'en', Japanese:'ja', Chinese:'zh',
   Indonesian:'id', Vietnamese:'vi', Thai:'th',
-  French:'fr', German:'de', Spanish:'es',
+  French:'fr', German:'de', Spanish:'es', Arabic:'ar',
 };
 const langToCode = l => NAME_TO_CODE[l] || (l || 'en').toLowerCase().slice(0, 2);
-const colorOf = code => LANG_COLORS[code] || '#555555';
+const colorOf = code => LANG_COLORS[code] || '#8a8a8a';
 
 // 앱 HomeScreen 의 hasSpeechEnergy 와 같은 임계값.
 const SPEECH_RMS_THRESHOLD = 0.018;
@@ -447,8 +505,12 @@ const panelNote = document.getElementById('panelNote');
 //   lane   2 · 언어별 칸   말한 언어마다 가로 띠
 //   stack  3 · 목표 쌓기   목표마다 한 줄씩 쌓고 원문을 맨 아래
 //   laneT  4 · 목표별 칸   언어마다 가로 띠
-const LAYOUTS = ['tag', 'lane', 'stack', 'laneT'];
-const MULTI = new Set(['stack', 'laneT']);           // 목표를 여럿 띄우는 배치
+//   laneV  5 · 목표별 세로 칸  언어마다 세로 기둥. 태그가 아래, 글이 아래에서 위로 쌓인다
+const LAYOUTS = ['tag', 'lane', 'stack', 'laneT', 'laneV'];
+const MULTI = new Set(['stack', 'laneT', 'laneV']);  // 목표를 여럿 띄우는 배치
+// 목표별 칸은 가로(laneT)와 세로(laneV) 둘뿐이고, 칸을 채우는 규칙은 똑같다.
+// 다른 것은 CSS 의 기하뿐이라 아래 판정은 전부 이 하나를 본다.
+const isLaneTarget = () => M.layout === 'laneT' || M.layout === 'laneV';
 
 // 줄 하나 = {id, lang(말한 언어), orig(원문), trans({목표 코드: 번역})}.
 // 번역이 여럿일 수 있으므로 문자열 하나가 아니라 목표별 맵으로 들고 있는다.
@@ -541,9 +603,14 @@ function laneCodes() {
   return out;
 }
 
-// 태그·언어별 칸 배치는 목표 하나만 쓴다. 번역이 이미 온 목표를 먼저 고른다.
+// 태그·언어별 칸 배치는 목표 하나만 쓴다. 설정에서 이 소스 언어에 지정한 목표가 먼저다 —
+// 서버가 목표를 여럿 실어 보내면 목록의 첫 언어가 늘 이겨서, 목표를 바꿔도 화면이
+// 안 바뀌는 것처럼 보였다. 표시 목표를 '하나 고정'·'자동 순환' 으로 둔 경우는 그쪽이
+// 명시적인 선택이므로 건드리지 않는다.
 function primaryTarget(item) {
   const list = targetsFor(item);
+  const want = targets[item.lang];
+  if (showMode === 'all' && want && want !== item.lang && item.trans[want]) return want;
   for (const c of list) if (item.trans[c]) return c;
   return list[0] || '';
 }
@@ -555,15 +622,16 @@ const textOf = (item, code) => (code === item.lang ? (item.orig || '') : (item.t
 
 // 목표별 칸에서는 글자가 있는 칸만 만든다. 빈 칸을 끼워 넣어 칸끼리 높이를 맞추면
 // 칸마다 빈 줄이 생겨 읽을 것보다 여백이 많아진다 — 그냥 자기 문장만 쭉 잇는다.
+// 발화 하나가 칸마다 자리를 하나씩 갖는다. 그 칸에 띄울 글이 없어도 빈 자리를 남긴다 —
+// 자리를 건너뛰면 칸마다 줄 번호가 어긋나, 같은 발화가 칸마다 다른 높이에 뜬다.
 function partsOf(item) {
-  if (M.layout !== 'laneT') return [{ key: item.id, code: null }];
-  return laneCodes().filter(c => textOf(item, c))
-                    .map(c => ({ key: item.id + '@' + c, code: c }));
+  if (!isLaneTarget()) return [{ key: item.id, code: null }];
+  return laneCodes().map(c => ({ key: item.id + '@' + c, code: c }));
 }
 
 function laneKeys() {
   if (M.layout === 'lane') return laneOrder.slice();
-  if (M.layout === 'laneT') return laneCodes();
+  if (isLaneTarget()) return laneCodes();
   return [];
 }
 
@@ -611,7 +679,7 @@ function refreshLaneLabels() {
 }
 
 function feedFor(key) {
-  if (M.layout === 'lane' || M.layout === 'laneT') {
+  if (M.layout === 'lane' || isLaneTarget()) {
     const lane = stage.querySelector(`:scope > .lane[data-lang="${key}"]`);
     return lane ? lane.querySelector('.feed') : null;
   }
@@ -628,23 +696,24 @@ function buildNode(el, item, part) {
     const rows = tg.length ? tg : [item.lang];
     el.innerHTML = rows.map((c, i) =>
         `<span class="tCode" style="grid-row:${i + 1};color:${colorOf(c)}">${c}</span>`
-      + `<span class="main" data-code="${c}" style="grid-row:${i + 1};color:${colorOf(c)}"></span>`).join('')
+      + `<span class="main" data-code="${c}" dir="auto" style="grid-row:${i + 1};color:${colorOf(c)}"></span>`).join('')
       // 쌓기 배치는 왼쪽 칸을 줄마다 목표 언어 코드가 쓰고 있다. 태그가 줄을 가로지르면
       // 그 코드들과 겹치므로 여기서는 원문 줄에 그대로 둔다.
       + `<span class="tagChip" style="grid-row:${rows.length + 1}"></span>`
-      + `<span class="sub" style="grid-row:${rows.length + 1}"></span>`;
+      + `<span class="sub" dir="auto" style="grid-row:${rows.length + 1}"></span>`;
     // 번역이 아직 없어도 목표 수만큼 줄 자리를 잡아 둔다.
     el.style.gridTemplateRows =
       `repeat(${rows.length}, minmax(1.32em, auto)) minmax(var(--tagh), auto)`;
-  } else if (M.layout === 'laneT') {
-    el.innerHTML = '<span class="main"></span>';
+  } else if (isLaneTarget()) {
+    el.innerHTML = '<span class="main" dir="auto"></span>';
   } else {
-    el.innerHTML = '<span class="main"></span><span class="tagChip"></span><span class="sub"></span>';
+    el.innerHTML = '<span class="main" dir="auto"></span><span class="tagChip"></span>'
+                 + '<span class="sub" dir="auto"></span>';
   }
 }
 
 function nodeFor(item, part) {
-  const codes = M.layout === 'laneT' ? laneCodes() : targetsFor(item);
+  const codes = isLaneTarget() ? laneCodes() : targetsFor(item);
   const sig = M.layout + '|' + (part.code || '') + '|' + codes.join(',');
   let el = nodes.get(part.key);
   if (el && el.dataset.sig === sig) return el;
@@ -672,7 +741,7 @@ function paintItem(item, { caret = false } = {}) {
     // 말한 언어의 칸에는 원문이 들어간다. 그 칸을 보는 사람에게는 그게 읽을 문장이다.
     const textFor = code => textOf(item, code);
 
-    if (M.layout === 'laneT') {
+    if (isLaneTarget()) {
       // 칸이 곧 언어라서 태그가 할 말이 없다. 원문이든 번역이든 같은 글씨로 쭉 흐른다.
       el.style.color = colorOf(part.code);
       const main = el.querySelector('.main');
@@ -719,9 +788,9 @@ function render() {
 
   const all = [...M.lines, ...(M.active ? [M.active] : [])];
   const buckets = new Map();
-  if (M.layout === 'laneT') {
-    // 칸마다 따로 센다. 칸에 글자가 있는 발화만 그 칸의 줄이 된다.
-    for (const code of laneCodes()) buckets.set(code, all.filter(it => textOf(it, code)));
+  if (isLaneTarget()) {
+    // 칸마다 같은 발화 목록을 센다. 글이 없는 칸도 자리는 차지하므로 줄 번호가 같다.
+    for (const code of laneCodes()) buckets.set(code, all);
   } else {
     for (const item of all) {
       const key = M.layout === 'lane' ? item.lang : '*';
@@ -737,8 +806,8 @@ function render() {
       const depth = shown.length - 1 - i;   // 0 = 맨 아래
       const live = item === M.active;
       for (const part of partsOf(item)) {
-        if (M.layout === 'laneT' && part.code !== key) continue;   // 이 칸 몫만 놓는다
-        const feed = feedFor(M.layout === 'lane' || M.layout === 'laneT' ? key : part.code);
+        if (isLaneTarget() && part.code !== key) continue;   // 이 칸 몫만 놓는다
+        const feed = feedFor(M.layout === 'lane' || isLaneTarget() ? key : part.code);
         if (!feed) continue;
         const el = nodeFor(item, part);
         if (el.parentNode !== feed) feed.appendChild(el);
@@ -746,7 +815,7 @@ function render() {
         // 새로 붙은 줄은 다음 프레임에 클래스를 줘야 등장 전환이 돈다.
         // 그 사이 다시 render 가 돌 수 있으므로 최신 값을 노드에 적어 두고 읽는다.
         // 이 칸 언어로 말한 줄이면 전사다. CSS 가 번역과 다른 색으로 그린다.
-        const isOrig = M.layout === 'laneT' && part.code === item.lang;
+        const isOrig = isLaneTarget() && part.code === item.lang;
         el.dataset.cls = 'line' + (isOrig ? ' orig' : '')
                        + (live ? ' live' : ` d${Math.min(depth, maxDepth() - 1)}`);
         if (!el.dataset.mounted) {
@@ -1171,6 +1240,11 @@ async function streamMic() {
 
 // ── 조작부 ────────────────────────────────────────────────────────────────────
 const LAYOUT_BTN = { tag: btnTag, lane: btnLane, stack: btnStack, laneT: btnLaneT };
+// 시연에 쓰는 두 화면. 버전 1 은 목표 하나만 큰 글씨로 쓰는 처음 화면이고,
+// 버전 2 는 언어마다 칸을 나눈 지금 화면이다(Ctrl+L 로 가로·세로를 오간다).
+const VERSION_LAYOUT = { v1: 'tag', v2: 'laneT' };
+// 버전 2 로 돌아올 때 마지막으로 보던 방향(가로/세로)을 그대로 되살린다.
+let lastLaneLayout = VERSION_LAYOUT.v2;
 
 function syncLayoutButtons() {
   for (const [name, btn] of Object.entries(LAYOUT_BTN)) btn.classList.toggle('on', M.layout === name);
@@ -1179,6 +1253,7 @@ function syncLayoutButtons() {
 function setLayout(next) {
   if (!LAYOUTS.includes(next) || M.layout === next) return;
   M.layout = next;
+  if (isLaneTarget()) lastLaneLayout = next;
   localStorage.setItem('stity_show_layout', next);
   syncLayoutButtons();
   redrawAll();
@@ -1334,7 +1409,7 @@ function buildPanel() {
   // 목표별 칸 배치에서는 칸 이름이 곧 이 글자다. 칸이 소스 언어보다 많을 수 있으므로
   // 그 배치에서는 칸 목록을 그대로 쓴다 — 안 그러면 이름 붙일 수 없는 칸이 생긴다.
   tagRows.innerHTML = '';
-  for (const src of (M.layout === 'laneT' ? laneCodes() : srcLangs)) {
+  for (const src of (isLaneTarget() ? laneCodes() : srcLangs)) {
     const row = document.createElement('div');
     row.className = 'row';
     const label = document.createElement('span');
@@ -1410,12 +1485,24 @@ async function playScript() {
     console.warn('mock_script.json 을 못 읽었다 — 대본 리허설을 건너뛴다', e);
     return;
   }
+  // 설정에서 켜 둔 소스 언어의 발화만 흘린다. 대본에는 없는 언어를 골라 둔 경우
+  // 아무것도 안 뜨면 고장으로 보이므로, 그때는 대본을 그대로 다 흘린다.
+  const wanted = new Set(srcLangs);
+  let picked = new Set(script.filter(e => wanted.has(langToCode(e.msg.language))));
+  if (!picked.size) {
+    console.warn('고른 소스 언어의 발화가 대본에 없다 — 대본을 그대로 흘린다');
+    picked = new Set(script);
+  }
+
   resetFeed();
   rehearsing = true;
-  for (const { wait, msg } of script) {
-    await new Promise(r => setTimeout(r, (wait || 0) * 1000));
+  let carried = 0;                    // 걸러낸 발화가 비운 시간. 그만큼만 쉬고 넘어간다.
+  for (const e of script) {
+    if (!picked.has(e)) { carried = Math.min(1.2, carried + (e.wait || 0)); continue; }
+    await new Promise(r => setTimeout(r, ((e.wait || 0) + carried) * 1000));
+    carried = 0;
     if (!rehearsing) return;          // 도중에 껐다
-    onMessage(msg);
+    onMessage(e.msg);
   }
   rehearsing = false;
 }
@@ -1435,15 +1522,25 @@ addEventListener('keydown', e => {
   if (e.ctrlKey || e.metaKey) {
     if (e.key === 'Enter') { e.preventDefault(); rehearsing ? stopScript() : playScript(); }
     else if (e.code === 'Space') { e.preventDefault(); toggleMic(); }
+    // 가로 칸(laneT) 과 세로 칸(laneV) 을 오간다. 주소창 포커스를 가로채므로
+    // preventDefault 를 건다 — 시연 중에 주소창으로 갈 일은 없다.
+    else if (e.key === 'l' || e.key === 'L') {
+      e.preventDefault();
+      setLayout(lastLaneLayout === 'laneV' ? 'laneT' : 'laneV');
+    }
     return;   // 나머지 Ctrl 조합은 브라우저 몫이다(Ctrl+R 새로고침 등)
   }
   // 셀렉트 박스나 태그 입력칸을 만지는 중이면 단축키가 가로채지 않게 둔다.
   const tag = e.target && e.target.tagName;
   if (tag === 'SELECT' || tag === 'INPUT') return;
-  if (e.key >= '1' && e.key <= '4') setLayout(LAYOUTS[Number(e.key) - 1]);
+  if (e.key >= '1' && e.key <= '5') setLayout(LAYOUTS[Number(e.key) - 1]);
   else if (e.key === 't' || e.key === 'T') {
     const order = ['all', 'one', 'rotate'];
     setShowMode(order[(order.indexOf(showMode) + 1) % order.length]);
+  }
+  // 버전 전환. 버전 2 로 돌아올 때는 마지막으로 보던 방향(가로/세로)을 되살린다.
+  else if (e.key === 'v' || e.key === 'V') {
+    setLayout(M.layout === VERSION_LAYOUT.v1 ? lastLaneLayout : VERSION_LAYOUT.v1);
   }
   else if (e.key === 'r' || e.key === 'R') resetFeed();
   else if (e.key === 'c' || e.key === 'C') togglePanel();
@@ -1462,6 +1559,7 @@ if (ANCHOR_CENTER) document.body.classList.add('anchorCenter');
 if (FADE) document.body.classList.add('fade');
 setSound(soundOn);
 
+if (isLaneTarget()) lastLaneLayout = M.layout;
 syncLayoutButtons();
 
 // 표시 목표: 기본값 < 지난 선택 < 쿼리스트링(?pick=ja 는 그 언어 하나로 고정한다)
