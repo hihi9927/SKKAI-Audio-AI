@@ -98,6 +98,11 @@
      확정되면 그 자리에 번역이 들어오고 전사는 있던 자리에 그대로 남는다. */
   .line.live { opacity:.72; transform:none; }
   .line.live .sub { opacity:1; }
+  /* 묶으면 한 줄에 '확정된 앞부분 + 아직 흐르는 꼬리' 가 같이 있다. 줄 전체를
+     흐리면 확정된 글자까지 흐려지므로 꼬리만 흐린다. 확정 조각이 아직 없는 줄은
+     .live 로 이미 줄째 흐리니 꼬리를 더 흐리지 않는다. */
+  .line .tail { opacity:.72; }
+  .line.live .tail { opacity:1; }
 
   /* 태그는 줄 글자 크기와 무관하게 늘 같은 자리·같은 크기다. 넘치면 잘라 쓴다.
      세로로는 줄 전체(번역+원문)를 가로질러 그 가운데에 놓는다 — 한 줄짜리든 여러 줄짜리든
@@ -303,6 +308,13 @@ const maxDepth = () => depthPick || autoDepth();
 const FIRM_MS = 140;                          // 확정될 때 흐림을 걷는 시간
 // 전사를 다 친 뒤 번역으로 넘어가기까지 두는 시간. order=strict 에서만 쓴다.
 const TRANSCRIPT_HOLD_MS = num('trans', 500);
+
+// 말풍선 하나에 <SEG> 커밋을 몇 개까지 담을지. 커밋 하나는 대화체에서 평균 19자,
+// 3.2초에 하나꼴이라(KsponSpeech 실측) 하나씩 띄우면 너무 빨리 지나간다. 셋을 묶으면
+// 평균 59자 / 9.7초가 되어 읽을 시간이 생긴다. 글자수 상한을 같이 두는 이유는 조각이
+// 2~54자로 흩어지기 때문이다 — 개수만 쓰면 묶음 크기가 몇 배씩 벌어진다.
+const GROUP_N = num('group', 3);
+const GROUP_MAX_CHARS = num('groupchars', 70);
 // 기본은 지연 우선이다. final 이 오면 전사를 끝까지 기다리지 않고 곧바로 확정한다.
 // 전사가 사라지는 것은 아니다 — 번역이 큰 글씨로 올라오고 원문이 그 아래 작은 줄로
 // 남는다. order=strict 면 전사를 완주시킨 뒤 trans 만큼 두고 번역으로 넘어간다.
@@ -551,6 +563,100 @@ function primaryTarget(item) {
 // ── 렌더 ──────────────────────────────────────────────────────────────────────
 // 한 줄이 화면에서 몇 개의 노드가 되는가. 목표별 칸 배치에서만 칸마다 갈라진다.
 // 그 칸에 띄울 글자가 있나. 말한 언어의 칸에는 원문이, 나머지 칸에는 번역이 들어간다.
+// 조각을 이을 때는 공백 한 칸. 대화체 조각은 문장부호로 끝나기도 하고
+// ('맞는 거 같애.') 안 끝나기도 해서('...밥 먹다 보면은') 공백이 양쪽 다 자연스럽다.
+const joinText = (a, b) => (a ? (b ? a + ' ' + b : a) : (b || ''));
+
+// Qwen3-ASR 이 <SEG> 뒤에 헤더를 본문에 다시 붙인다. 태그가 없으면 서버가
+// 못 잘라서 원문이 `language Korean 내 말이…` 이 되고, 라틴 접두사 때문에
+// 영어 칸으로 간다.
+const LANG_HEADER_RE = /\blanguage\s*:?\s*(chinese|english|cantonese|arabic|german|french|spanish|portuguese|indonesian|italian|korean|russian|thai|vietnamese|japanese|turkish|hindi|malay|dutch|swedish|danish|finnish|polish|czech|filipino|none)\b/gi;
+
+function cleanAsr(text) {
+  LANG_HEADER_RE.lastIndex = 0;
+  return String(text || '')
+    .replace(/<asr_text>/g, ' ')
+    .replace(LANG_HEADER_RE, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// LID 가 짧은 창에서 틀리면 같은 말이 KO / EN 칸에 같이 뜬다. 글자 종류가
+// 분명하면 그걸 따른다. (영어 ASR 이 한글을 원문으로 내는 경우가 있다.)
+function scriptLang(text) {
+  const s = String(text || '').replace(/\s+/g, '');
+  if (!s) return null;
+  let hang = 0, latin = 0, kana = 0;
+  for (const ch of s) {
+    const c = ch.codePointAt(0);
+    if (c >= 0xac00 && c <= 0xd7a3) hang++;
+    else if ((c >= 0x3040 && c <= 0x30ff) || (c >= 0x31f0 && c <= 0x31ff)) kana++;
+    else if ((c >= 0x41 && c <= 0x5a) || (c >= 0x61 && c <= 0x7a)) latin++;
+  }
+  const n = hang + latin + kana;
+  if (n < 2) return null;
+  // 헤더가 안 잘려도 한글 문장이면 한국어. `language Korean` 접두사는 라틴이 더 많다.
+  if (hang >= 4) return 'ko';
+  if (hang / n >= 0.5) return 'ko';
+  if (kana / n >= 0.4) return 'ja';
+  if (latin / n >= 0.6) return 'en';
+  return null;
+}
+
+function looksLike(code, text) {
+  const s = scriptLang(text);
+  if (!s) return true;
+  if (code === 'en' || code === 'ko' || code === 'ja') return s === code;
+  return true;
+}
+
+function normShown(s) {
+  return String(s || '').replace(/\s+/g, '').toLowerCase();
+}
+
+function tooSimilar(a, b) {
+  const x = normShown(a);
+  const y = normShown(b);
+  if (!x || !y) return false;
+  if (x === y) return true;
+  if (x.length >= 8 && y.includes(x)) return true;
+  if (y.length >= 8 && x.includes(y)) return true;
+  return false;
+}
+
+function keepTrans(original, srcCode, code, text) {
+  if (!code || !text || code === srcCode || text === original) return false;
+  if (scriptLang(text) && scriptLang(text) === scriptLang(original)) return false;
+  return looksLike(code, text);
+}
+
+function absorbDuplicate(original, trans) {
+  const items = M.lines.concat(M.active ? [M.active] : []);
+  for (const it of items.slice(-6)) {
+    const origHit = tooSimilar(original, it.orig) || tooSimilar(original, it.baseOrig);
+    const transHit = Object.values(it.trans || {}).some(t => tooSimilar(original, t))
+      || Object.values(it.baseTrans || {}).some(t => tooSimilar(original, t));
+    if (!origHit && !transHit) continue;
+    if (origHit) {
+      let added = false;
+      for (const [c, t] of Object.entries(trans || {})) {
+        if (!t || it.baseTrans[c]) continue;
+        if (tooSimilar(t, it.orig) || tooSimilar(t, it.baseOrig)) continue;
+        it.baseTrans[c] = t;
+        it.trans[c] = joinText(it.trans[c], t);
+        added = true;
+      }
+      if (added) { paintItem(it); render(); }
+    }
+    return true;
+  }
+  return false;
+}
+
+// 아직 확정 조각이 하나도 없이 전사만 흐르는 말풍선인가. 이때만 흐리게 그린다
+// (.line.live 는 opacity .72). 확정 조각이 담긴 뒤에는 흐리면 읽을 글자가 흐려진다.
+const isTyping = item => item === M.active && !item.count;
+
 const textOf = (item, code) => (code === item.lang ? (item.orig || '') : (item.trans[code] || ''));
 
 // 목표별 칸에서는 글자가 있는 칸만 만든다. 빈 칸을 끼워 넣어 칸끼리 높이를 맞추면
@@ -660,10 +766,25 @@ function nodeFor(item, part) {
 
 const addCaret = el => { el.appendChild(document.createElement('span')).className = 'caret'; };
 
+// 확정된 앞부분(baseOrig)과 그 뒤에 흐르는 꼬리를 갈라 붙인다. 호출 쪽이 노드를
+// 비운 뒤에 부른다 — 목표별 칸의 번역 줄은 앞에 srcTag 를 먼저 붙이기 때문이다.
+function appendOrig(node, item, text, caret) {
+  const base = item === M.active ? (item.baseOrig || '') : text;
+  const head = text.startsWith(base) ? base : text;
+  const tail = text.slice(head.length);
+  if (head) node.appendChild(document.createTextNode(head));
+  if (tail) {
+    const sp = node.appendChild(document.createElement('span'));
+    sp.className = 'tail';
+    sp.textContent = tail;
+  }
+  if (caret) addCaret(node);
+}
+
 // 칸은 늘 자리를 지킨다(CSS 의 grid-template-rows). 비어 있어도 감추지 않는다 —
 // 감추면 칸이 접히고, 번역이 도착할 때 그만큼 화면이 덜컹인다.
 function paintItem(item, { caret = false } = {}) {
-  const live = item === M.active;
+  const live = isTyping(item);
   for (const part of partsOf(item)) {
     const el = nodeFor(item, part);
     const chip = el.querySelector('.tagChip');
@@ -682,9 +803,10 @@ function paintItem(item, { caret = false } = {}) {
         tag.className = 'srcTag';
         tag.textContent = tagTextOf(item.lang);
         tag.style.color = colorOf(item.lang);
+        main.appendChild(document.createTextNode(textFor(part.code)));
+      } else {
+        appendOrig(main, item, textFor(part.code), caret);
       }
-      main.appendChild(document.createTextNode(textFor(part.code)));
-      if (caret && part.code === item.lang) addCaret(main);
       continue;
     }
 
@@ -692,8 +814,8 @@ function paintItem(item, { caret = false } = {}) {
     const sub = el.querySelector('.sub');
     if (M.layout === 'stack') {
       for (const m of el.querySelectorAll('.main[data-code]')) m.textContent = textFor(m.dataset.code);
-      sub.textContent = item.orig || '';
-      if (caret) addCaret(sub);
+      sub.textContent = '';
+      appendOrig(sub, item, item.orig || '', caret);
       continue;
     }
 
@@ -702,8 +824,8 @@ function paintItem(item, { caret = false } = {}) {
     const t = item.trans[primaryTarget(item)] || '';
     const bare = !live && !t;
     el.querySelector('.main').textContent = bare ? (item.orig || '') : t;
-    sub.textContent = bare ? '' : (item.orig || '');
-    if (caret) addCaret(sub);
+    sub.textContent = '';
+    appendOrig(sub, item, bare ? '' : (item.orig || ''), caret);
   }
 }
 
@@ -735,7 +857,7 @@ function render() {
     const shown = items.slice(-maxDepth());
     shown.forEach((item, i) => {
       const depth = shown.length - 1 - i;   // 0 = 맨 아래
-      const live = item === M.active;
+      const live = isTyping(item);
       for (const part of partsOf(item)) {
         if (M.layout === 'laneT' && part.code !== key) continue;   // 이 칸 몫만 놓는다
         const feed = feedFor(M.layout === 'lane' || M.layout === 'laneT' ? key : part.code);
@@ -816,7 +938,7 @@ function finishTyping() {
 // 전사는 처음부터 원문 칸(아래)에 친다. 번역이 오면 위 칸이 채워질 뿐이라 글자가 안 움직인다.
 function paintActive() {
   if (!M.active) return;
-  M.active.orig = typeShown;
+  M.active.orig = joinText(M.active.baseOrig, typeShown);
   paintItem(M.active, { caret: typeShown !== typeTarget });
 }
 
@@ -834,7 +956,10 @@ const busy = () => holding() || pendingFinal !== null;
 function openActive(lang) {
   seenSources.add(lang);
   M.seq += 1;
-  M.active = { id: 'a' + M.seq, lang, orig: '', trans: {} };
+  // baseOrig/baseTrans 는 확정된 조각들, orig/trans 는 거기에 흐르는 전사를 더한
+  // 그리기용 값이다. 둘을 나누지 않으면 타이핑이 확정분을 덮어쓴다.
+  M.active = { id: 'a' + M.seq, lang, orig: '', trans: {},
+               baseOrig: '', baseTrans: {}, count: 0 };
   typeShown = '';
   render();
 }
@@ -848,7 +973,19 @@ function setPartial(text, lang) {
   if (!text) { dropActive(); return; }
   setPending(false);
   if (!M.active) openActive(lang);
-  else if (M.active.lang !== lang) { M.active.lang = lang; render(); }
+  else if (M.active.lang !== lang) {
+    // 언어가 바뀌면 말한 칸도 바뀐다. 확정 조각이 담긴 줄은 언어를 덮어쓰지 말고
+    // 그대로 닫고 새로 열어야 한다 — 덮어쓰면 서로 다른 언어의 문장이 한 줄에
+    // 섞이고, firmUp 의 언어 마감 조건도 같이 무력해진다.
+    if (M.active.count) { closeActive(); openActive(lang); }
+    else { M.active.lang = lang; render(); }
+  } else if (groupSealed(M.active)) {
+    // 이미 찬 줄에 다음 문장의 전사를 얹으면, 그 문장이 확정되는 순간 글자가
+    // 새 줄로 튄다(실측: '그치? 원' 뒤에 '원래는…' 이 다음 줄에서 다시 시작).
+    // 확정될 때 어차피 새 줄로 갈 전사라면 처음부터 거기에 그린다.
+    closeActive();
+    openActive(lang);
+  }
   // 모델이 뒤를 고쳐 쓰면(롤백 재디코딩) 보이던 글자를 공통 앞부분까지 되감는다.
   const keep = commonPrefixLen(typeShown, text);
   if (keep < typeShown.length) typeShown = text.slice(0, keep);
@@ -860,8 +997,15 @@ function setPartial(text, lang) {
 
 function dropActive() {
   cancelTyping();
-  M.active = null;
   typeTarget = typeShown = '';
+  // 확정 조각이 담긴 줄은 전사가 비었다고 버리면 안 된다. 흐르던 꼬리만 지운다.
+  if (M.active && M.active.count) {
+    M.active.orig = M.active.baseOrig;
+    paintItem(M.active);
+    render();
+    return;
+  }
+  M.active = null;
   render();
 }
 
@@ -905,19 +1049,55 @@ function presentFinal(f) {
 }
 
 // 전사가 다 찍혔다. 번역으로 갈아 끼우고 흐림을 걷는다.
+// 이 커밋까지 담으면 줄이 찬다. 담긴 게 없으면 조건과 무관하게 담는다 —
+// <SEG> 는 모델이 찍은 의미 경계라 그 안을 글자수로 자르면 문장 중간이 끊긴다.
+// 커밋은 절대 쪼개지 않고, 넘칠 커밋은 통째로 다음 줄의 첫 조각이 된다.
+// 들어올 문장과 무관하게 이 줄은 이미 닫혔는가. 전사 길이를 보면 전사가 길어지다가
+// 도중에 상한을 넘겨 그때 글자가 튄다 — 튀는 시점만 늦춘 셈이다. 그래서 확정분만 본다.
+function groupSealed(item) {
+  if (!item || !item.count) return false;
+  if (GROUP_N <= 1) return true;
+  if (item.count >= GROUP_N) return true;
+  return GROUP_MAX_CHARS > 0 && (item.baseOrig || '').length >= GROUP_MAX_CHARS;
+}
+
+function groupFull(item, f) {
+  if (!item || !item.count) return false;
+  if (GROUP_N <= 1) return true;
+  if (item.lang !== f.language) return true;          // 언어가 바뀌면 칸도 바뀐다
+  if (item.count >= GROUP_N) return true;
+  if (GROUP_MAX_CHARS <= 0) return false;
+  return joinText(item.baseOrig, f.original).length > GROUP_MAX_CHARS;
+}
+
+// 지금 줄을 확정 줄로 넘긴다. orig 는 타이핑 꼬리까지 그린 값이라 그대로 밀면
+// 다음 커밋 문장이 이 줄 끝과 다음 줄 앞에 둘 다 남는다.
+function closeActive() {
+  if (!M.active) return;
+  M.active.orig = M.active.baseOrig;
+  M.active.trans = Object.assign({}, M.active.baseTrans);
+  M.lines.push(M.active);
+  M.active = null;
+  typeTarget = typeShown = '';
+}
+
 function firmUp(f) {
   firmTimer = null;
   pendingFinal = null;
   cancelTyping();
+  if (groupFull(M.active, f)) closeActive();
   if (!M.active) openActive(f.language);
   M.active.lang = f.language;
-  M.active.orig = f.original;
-  M.active.trans = f.trans;
+  M.active.baseOrig = joinText(M.active.baseOrig, f.original);
+  for (const code of Object.keys(f.trans || {})) {
+    M.active.baseTrans[code] = joinText(M.active.baseTrans[code], f.trans[code]);
+  }
+  M.active.count += 1;
+  M.active.orig = M.active.baseOrig;
+  M.active.trans = Object.assign({}, M.active.baseTrans);
   // 목표가 새로 나타났으면 칸이 하나 늘어난다. 그릇부터 맞춘다.
   ensureContainers();
   const done = M.active;
-  M.lines.push(done);
-  M.active = null;
   typeTarget = typeShown = '';
   paintItem(done);
   render();
@@ -963,20 +1143,21 @@ function release() {
 // 서버는 아직 목표 하나(translation)만 보내므로 그 경우도 받는다. 목표가 여럿인
 // 화면은 목 서버(mock_show_server.py)가 보내는 translations 를 읽는다.
 function transOf(m, srcCode) {
-  const original = (m.original || '').trim();
+  const original = cleanAsr(m.original || '');
   const out = {};
   const raw = m.translations && typeof m.translations === 'object' ? m.translations : null;
   if (raw) {
     for (const [k, v] of Object.entries(raw)) {
       const code = langToCode(k);
-      const text = String(v || '').trim();
+      const text = cleanAsr(v);
       // 입력 언어와 목표가 같으면 서버가 원문을 그대로 돌려준다. 그건 번역이 아니다.
-      if (code && text && code !== srcCode && text !== original) out[code] = text;
+      // 원문과 번역이 같은 글자 종류면 MADLAD 가 잘못 메아리친 것이다.
+      if (keepTrans(original, srcCode, code, text)) out[code] = text;
     }
   } else {
-    const text = (m.translation || '').trim();
+    const text = cleanAsr(m.translation || '');
     const code = targets[srcCode] || TGT_LANG;
-    if (text && code && code !== srcCode && text !== original) out[code] = text;
+    if (keepTrans(original, srcCode, code, text)) out[code] = text;
   }
   for (const c of Object.keys(out)) seenTargets.add(c);
   return out;
@@ -984,13 +1165,21 @@ function transOf(m, srcCode) {
 
 function onMessage(m) {
   if (m.type === 'partial') {
-    setPartial((m.text || '').trim(), langToCode(m.language || SRC_LANG));
+    const text = cleanAsr(m.text || '');
+    let language = langToCode(m.language || SRC_LANG);
+    const seen = scriptLang(text);
+    if (seen) language = seen;
+    setPartial(text, language);
   } else if (m.type === 'final') {
-    const original = (m.original || '').trim();
+    const original = cleanAsr(m.original || '');
     if (!original) return;
-    const language = langToCode(m.language || SRC_LANG);
+    let language = langToCode(m.language || SRC_LANG);
+    const seen = scriptLang(original);
+    if (seen) language = seen;
+    const trans = transOf(m, language);
+    if (absorbDuplicate(original, trans)) return;
     seenSources.add(language);
-    commitFinal({ original, language, trans: transOf(m, language) });
+    commitFinal({ original, language, trans });
   }
 }
 
