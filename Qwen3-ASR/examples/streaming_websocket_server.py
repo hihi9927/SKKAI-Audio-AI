@@ -627,6 +627,9 @@ class Qwen3ASRStreamingHandler:
                 else config.local_translation_context if config.local_translation_context
                 else 5)
         self._segment_history: deque[tuple[str, str, str]] = deque(maxlen=_ctx)
+        # 쉼표로 끝난 SEG 커밋을 다음 커밋과 합쳐 번역하려고 슬롯별로 미뤄 둔 원문.
+        # 슬롯 dict 는 SEG 리셋마다 새로 만들어지므로 핸들러에 둔다.
+        self._deferred_fragment: dict[str, str] = {}
         # 첫 번째 발화는 Google Translate, 두 번째부터 GPT로 전환
         self._committed_utterance_count: int = 0
 
@@ -1450,6 +1453,12 @@ class Qwen3ASRStreamingHandler:
             # 미커밋 누적분은 스트리밍 커밋 경로의 rep-dedup/cross-dedup을 거치지 않고
             # 여기서 통째로 나간다. 반복 루프가 그대로 실리지 않도록 flush 직전에 접는다.
             uncommitted_display = self._collapse_repetition(uncommitted_display)
+            # 쉼표로 끝나 미뤄 둔 앞 조각이 있으면 여기서 이어 붙여 함께 나간다.
+            _deferred = self.__dict__.setdefault("_deferred_fragment", {}).pop(slot_key or self.active_slot, None)
+            if _deferred:
+                uncommitted_display = (_deferred + " " + uncommitted_display).strip()
+                self.log.info(f"[FRAGMENT-JOIN] slot={slot_key or self.active_slot} "
+                              f"{_deferred!r} + flush")
             # 이미 커밋된 문장의 재방출도 여기서 걸러야 한다. flush는 committed_asr_set을
             # 보지 않으므로, dot으로 확정·커밋된 문장을 모델이 철자만 바꿔 다시 내놓으면
             # finish flush가 그대로 또 커밋한다 (실측: 3538-142836-0017, 7105-2340-0005 등
@@ -1623,6 +1632,41 @@ class Qwen3ASRStreamingHandler:
     def _fuzzy_key(text: str) -> str:
         """유사도 비교용 키 — 대소문자·구두점을 전부 버리고 단어 시퀀스만 남긴다."""
         return ' '.join(re.sub(r"[^a-z' ]", ' ', text.lower()).split())
+
+    # 쉼표(또는 세미콜론)로 끝난 커밋. 청크 1초에서 모델이 `Sure, <SEG> please sit down.`
+    # 처럼 쉼표 뒤에 <SEG> 를 찍어, 조각이 따로 번역된다(`Sure,` → `물론입니다.`,
+    # `this is my first time.` → `이게 제 첫 번째입니다.`).
+    _FRAGMENT_TAIL_RE = re.compile(r"[,;、，]\s*$")
+
+    def _merge_comma_fragments(self, slot_key: Optional[str], items: list, closing: bool) -> list:
+        """쉼표로 끝난 커밋을 다음 커밋과 합쳐 한 번에 번역하게 한다.
+
+        원문 커서·중복 판정은 그대로 두고 **번역과 전송만** 미룬다. 화면에는 partial 로
+        이미 보이므로 잃는 것은 조각 번역 하나뿐이다. 슬롯이 닫힐 때(`closing`, VAD·finish)
+        는 미루지 않고, 남아 있던 조각은 flush 가 앞에 붙여 내보낸다.
+        """
+        key = slot_key or self.active_slot
+        store = self.__dict__.setdefault("_deferred_fragment", {})
+        out = [(t, r) for t, r in items]
+        prev = store.pop(key, None)
+        if prev:
+            if out:
+                text, trig = out[0]
+                out[0] = (prev + " " + text, trig)
+                self.log.info(f"[FRAGMENT-JOIN] slot={key} {prev!r} + {text!r}")
+            else:
+                out = [(prev, "seg")]
+        merged: list = []
+        for text, trig in out:
+            if merged and self._FRAGMENT_TAIL_RE.search(merged[-1][0]):
+                merged[-1] = (merged[-1][0] + " " + text, trig)
+            else:
+                merged.append((text, trig))
+        if not closing and merged and self._FRAGMENT_TAIL_RE.search(merged[-1][0]):
+            text, _trig = merged.pop()
+            store[key] = text
+            self.log.info(f"[FRAGMENT-DEFER] slot={key} text={text!r}")
+        return merged
 
     def _strip_committed_prefix(self, slot: dict, sentence_display: str) -> str:
         """이미 커밋된 문장을 접두사로 포함하면 그 부분만 잘라낸다.
@@ -2287,6 +2331,11 @@ class Qwen3ASRStreamingHandler:
 
         if not committed_items:
             return None
+
+        committed_items = self._merge_comma_fragments(
+            slot_key, committed_items, closing=bool(force_reason))
+        if not committed_items:
+            return self._strip_asr_text(latest_text) if latest_text is not None else None
 
         # ── Phase 2: GPT 번역 ─────────────────────────────────────────────────
         if self._in_generate_loop:

@@ -37,7 +37,10 @@ python STiTy-Mobile/demo-web/partial_demo/demo_proxy.py 8080 \
 `--chunk-size 1.0` (server default 2.0) shows the first partial about 0.4s sooner and doubles the partial
 updates. It also makes the en finetune write a second `language English` header right after a `<SEG>` and
 stop there; the server now cuts the slot on that pattern (`SEG-HEADER-RESET`) and re-decodes from the chunk
-where the sentence began, so on the 143s test the two chunk sizes deliver the same sentences.
+where the sentence began, so on the 143s test the two chunk sizes deliver the same sentences. It also
+commits on commas more often (`Sure, <SEG> please sit down.`), and a comma fragment translated alone is
+wrong (`Sure,` → `물론입니다.`); the server now holds a commit that ends in a comma and translates it
+together with the next one (`FRAGMENT-DEFER` / `FRAGMENT-JOIN`), or alone when the slot closes first.
 
 Use the **silence** finetune for en, not `en-dailytalk-seg`: that one is trained to mark `<SEG>`, so it
 commits far more often — 41% of its finals in one live session were two words or fewer, and a fragment
