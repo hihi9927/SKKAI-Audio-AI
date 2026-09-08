@@ -213,6 +213,10 @@ class StreamingConfig:
     # Google Translate 컨텍스트 활성화 (--google-context 플래그, 문장 수는 context_window 공유)
     google_context: bool = False
 
+    # 로컬 LLM 번역기에 넘길 앞 발화 수 (--local-translation-context, 0이면 끔).
+    # LLM 백엔드에서만 쓰인다 — NLLB·MADLAD 는 문맥을 넣을 자리가 없다.
+    local_translation_context: int = 0
+
     # 오디오 녹음 설정 (로그 분석용)
     record_audio: bool = False  # True면 수신 PCM을 세션별 WAV로 저장
 
@@ -483,7 +487,7 @@ def set_local_translator(translator) -> None:
 
 async def google_translate_async(
     session: aiohttp.ClientSession, text: str, target_lang: str,
-    source_lang: Optional[str] = None,
+    source_lang: Optional[str] = None, context: Optional[list] = None,
 ) -> tuple[str, str]:
     """Async Google Translate call.
     Returns: (translated_text, detected_source_lang_code)
@@ -494,11 +498,15 @@ async def google_translate_async(
     --local-translation 으로 로컬 번역기가 켜져 있으면 외부 호출 없이 그걸 쓴다.
     source_lang 은 ASR 이 감지한 소스 언어 코드로, 로컬 번역기에만 쓰인다
     (Google 은 소스를 스스로 감지한다).
+
+    context 는 앞 발화 원문 리스트로, 로컬 번역기 중 LLM 백엔드만 쓴다. Google 경로의
+    문맥은 google_translate_with_context_async 가 따로 담당한다 — 그쪽은 문장을
+    이어붙여 보내는 방식이고, 로컬 seq2seq 모델에서는 그 방식이 통하지 않는다.
     """
     if not text.strip() or not target_lang:
         return "", ""
     if LOCAL_TRANSLATOR is not None:
-        return await LOCAL_TRANSLATOR.translate(text, target_lang, source_lang)
+        return await LOCAL_TRANSLATOR.translate(text, target_lang, source_lang, context=context)
     call = _translate_v2 if GOOGLE_TRANSLATE_API_KEY else _translate_gtx
     last_err: Optional[Exception] = None
     for attempt in range(2):
@@ -595,6 +603,7 @@ class Qwen3ASRStreamingHandler:
         # 번역 컨텍스트: 최근 N 세그먼트의 (corrected_original, translation) 보관
         _ctx = (gpt_translator.max_context if gpt_translator
                 else config.context_window if config.google_context
+                else config.local_translation_context if config.local_translation_context
                 else 5)
         self._segment_history: deque[tuple[str, str, str]] = deque(maxlen=_ctx)
         # 첫 번째 발화는 Google Translate, 두 번째부터 GPT로 전환
@@ -2363,7 +2372,8 @@ class Qwen3ASRStreamingHandler:
         return
 
     async def _translate(
-        self, text: str, target_lang: str, audio_end_sec: Optional[float] = None  # noqa: ARG002
+        self, text: str, target_lang: str, audio_end_sec: Optional[float] = None,  # noqa: ARG002
+        context: Optional[list] = None,
     ) -> tuple[str, str, dict]:
         """번역 훅. 서브클래스에서 오버라이드해 타이밍 등 추가 데이터 수집 가능.
 
@@ -2375,9 +2385,25 @@ class Qwen3ASRStreamingHandler:
         # 같이 넘긴다. Google 경로에서는 이 인자가 무시된다.
         source_lang = lang_to_code(self._slot(self.active_slot).get("last_text_lang", ""))
         translation, detected_lang = await google_translate_async(
-            self.http_session, text, target_lang, source_lang
+            self.http_session, text, target_lang, source_lang, context=context
         )
         return translation, detected_lang or source_lang, {}
+
+    def _local_context_originals(self, src_code: str) -> list:
+        """로컬 LLM 번역기에 넘길 앞 발화 원문. --local-translation-context 로 켠다.
+
+        같은 언어의 발화만 고른다. 언어가 섞인 스트림에서 앞 턴이 다른 언어면
+        모델이 그 언어로 이어 쓰려 하기 때문이다.
+        """
+        n = self.config.local_translation_context
+        if not n or not self._segment_history:
+            return []
+        # _segment_history 의 언어는 _correct_and_translate 가 돌려준 코드다
+        # (google_context 경로도 같은 형태로 비교한다). lang_to_code 를 다시 씌우면
+        # 코드가 이름 표에 없어 빈 문자열이 되고 경고만 쌓인다.
+        history = [orig for orig, _, lang in self._segment_history
+                   if orig and (not src_code or lang == src_code)]
+        return history[-n:]
 
     def _maybe_fix_direction(self, detected: str, used_target: str) -> Optional[str]:
         """양방향(non-auto) 모드에서 감지된 소스 언어가 번역 target과 같으면(= 같은 언어로
@@ -2465,11 +2491,16 @@ class Qwen3ASRStreamingHandler:
             )
             extra = {}
         else:
-            translation, detected_lang, extra = await self._translate(text, target, audio_end_sec)
+            # 로컬 LLM 번역기는 앞 발화를 문맥으로 받는다. Google 경로에서는 무시된다.
+            ctx = self._local_context_originals(src_code)
+            translation, detected_lang, extra = await self._translate(
+                text, target, audio_end_sec, context=ctx)
         # 방향 자가교정: 감지 소스가 번역 target과 같으면 반대 앱 언어로 재번역
         fixed_target = self._maybe_fix_direction(detected_lang or src_code, target)
         if fixed_target:
-            translation, detected_lang, extra = await self._translate(text, fixed_target, audio_end_sec)
+            translation, detected_lang, extra = await self._translate(
+                text, fixed_target, audio_end_sec,
+                context=self._local_context_originals(detected_lang or src_code))
         effective = detected_lang or src_code
         return text, translation, effective, extra
 
@@ -2574,7 +2605,8 @@ class Qwen3ASRStreamingHandler:
                 translation=translation,
             )
         self._committed_utterance_count += 1
-        if original and translation and (self.gpt_translator or self.config.google_context):
+        if original and translation and (self.gpt_translator or self.config.google_context
+                                         or self.config.local_translation_context):
             self._segment_history.append((original, translation, language))
 
     async def handle(self):
@@ -2980,6 +3012,15 @@ def parse_args():
         ),
     )
     parser.add_argument(
+        "--local-translation-context", type=int, default=0,
+        help=(
+            "로컬 번역기에 앞 발화를 몇 개 넘길지 (기본 0 = 끔). **LLM 백엔드에서만 쓰인다** — "
+            "NLLB·MADLAD 는 문장 단위 모델이라 문맥을 넣을 자리가 없고 이어붙이면 번역이 "
+            "망가진다. 5개 언어 병렬 대화셋 600 방향쌍 실측(Qwen3-4B-Instruct 4bit, COMET-DA): "
+            "1턴 +0.0076, 2턴 이상은 더 얻는 게 없다. 지연은 깊이와 무관하다"
+        ),
+    )
+    parser.add_argument(
         "--no-idle-shutdown", action="store_true",
         help="Disable idle shutdown (use this when running tests)",
     )
@@ -3142,10 +3183,12 @@ def main():
     elif args.local_translation:
         try:
             from core.translator.local_translator import make_translator
-            # 모델 이름으로 백엔드를 고른다 — madlad 가 들어가면 MADLAD, 아니면 NLLB.
+            # 모델 이름으로 백엔드를 고른다 — madlad 면 MADLAD, 지시형 LLM 이면
+            # LLMTranslator(문맥 가능), 아니면 NLLB.
             _local = make_translator(
                 model_name=args.local_translation_model,
                 device=args.local_translation_device,
+                context_window=args.local_translation_context or 1,
             )
             _local.load()   # 첫 번역에서 로딩 지연이 나지 않게 미리 올린다
             set_local_translator(_local)
@@ -3186,6 +3229,7 @@ def main():
         translation_model=args.translation_model,
         context_window=args.context_window,
         google_context=args.google_context,
+        local_translation_context=args.local_translation_context,
         record_audio=args.record_audio,
     )
 

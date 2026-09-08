@@ -113,6 +113,7 @@ class _Seq2SeqTranslator:
         self._model = None
         self._lock = threading.Lock()
         self._load_lock = threading.Lock()
+        self._context_warned = False
 
     # ── 로딩 ──────────────────────────────────────────────────────────────────
     def _ensure_loaded(self) -> None:
@@ -182,11 +183,22 @@ class _Seq2SeqTranslator:
             return tok.batch_decode(out, skip_special_tokens=True)[0].strip()
 
     async def translate(
-        self, text: str, target_code: str, source_code: Optional[str] = None
+        self, text: str, target_code: str, source_code: Optional[str] = None,
+        context: Optional[list] = None,
     ) -> tuple[str, str]:
-        """(번역문, 소스 언어 코드) 를 돌려준다. Google 경로와 반환 형태를 맞췄다."""
+        """(번역문, 소스 언어 코드) 를 돌려준다. Google 경로와 반환 형태를 맞췄다.
+
+        ``context`` 는 받되 쓰지 않는다. 이 백엔드는 문장 단위 모델이라 문맥을 넣을
+        자리가 없고, 이어붙여 넣으면 번역이 망가진다(LLMTranslator 주석의 실측 참고).
+        조용히 버리면 문맥이 반영되는 줄 알기 쉬우므로 한 번은 알린다.
+        """
         if not text.strip() or not target_code:
             return "", ""
+        if context and not self._context_warned:
+            self._context_warned = True
+            logger.warning(
+                f"[local-translate] {self.model_name} 은 문맥을 쓸 수 없어 무시한다 — "
+                "문맥이 필요하면 LLM 백엔드(예: Qwen/Qwen3-4B-Instruct-2507)를 쓸 것")
         src = (source_code or "").strip() or guess_lang_code(text)
         try:
             translated = await asyncio.to_thread(self._translate_sync, text, target_code, src)
@@ -222,10 +234,202 @@ class MADLADTranslator(_Seq2SeqTranslator):
         return f"{tag} {text}", {}
 
 
-def make_translator(model_name: str = DEFAULT_MODEL, **kwargs) -> _Seq2SeqTranslator:
-    """모델 이름으로 백엔드를 고른다."""
-    cls = MADLADTranslator if "madlad" in model_name.lower() else NLLBTranslator
-    return cls(model_name=model_name, **kwargs)
+class LLMTranslator:
+    """지시형 LLM 을 번역기로 쓴다. **앞 문장을 문맥으로 받을 수 있는 유일한 백엔드다.**
+
+    seq2seq 번역기(NLLB·MADLAD)는 문맥을 받는 자리가 없다. 서버의 ``--google-context``
+    가 쓰는 이어붙이기(앞 문장들을 줄바꿈으로 붙여 한 번에 번역하고 마지막 줄만 취함)를
+    로컬 모델에 얹어 봤지만 둘 다 실패했다 — Google 이 줄바꿈을 보존해 주기 때문에
+    되는 트릭이지 일반적으로 통하는 게 아니다. 실측(대화 20건):
+
+    - NLLB-1.3B: 줄 수 불일치 16/16. 문맥이 1줄일 땐 현재 문장을 빼먹고 문맥 문장만
+      돌려줬고, 3줄일 땐 전부 한 줄로 합쳐 "마지막 줄"이 문맥 덩어리 전체가 됐다.
+    - MADLAD-3B: 번역 대신 영어 잡음을 뱉고 지연이 2.4초까지 늘었다.
+
+    그래서 문맥이 필요하면 LLM 을 쓴다. Qwen3-4B-Instruct 4bit 를 5개 언어 병렬
+    대화셋(600 방향쌍, COMET-DA)으로 잰 결과:
+
+    ====== ========= ============== ==========
+    문맥    COMET-DA  문맥 없음 대비  지연 p50
+    ====== ========= ============== ==========
+    0턴     0.8827    —              170ms
+    1턴     0.8903    +0.0076        170ms
+    2턴     0.8899    +0.0073        167ms
+    3턴     0.8899    +0.0072        170ms
+    4턴     0.8890    +0.0063        170ms
+    ====== ========= ============== ==========
+
+    **이득은 1턴에서 포화한다.** 2턴 이상은 더 얻는 게 없다(95% CI 가 겹친다). 그래서
+    ``context_window`` 기본값이 1이다. 지연은 문맥 깊이와 무관하다 — 프롬프트가 76에서
+    99 토큰으로 늘어도 생성 시간이 지배해서 묻힌다(16턴/266토큰에서도 193ms).
+
+    이득은 타깃이 영어일 때 가장 크다(+0.019~0.022). 한국어·일본어·중국어가 비워 둔
+    주어와 목적어를 영어는 반드시 채워야 하는데 그 답이 앞 턴에만 있기 때문이다.
+    ko/ja/zh 타깃은 +0.002~0.004 로 미미하다.
+
+    VRAM 은 4bit 로 약 3.3GiB 다. 단 **카드가 비어 있을 때 올리면 4.4GiB 를 예약한다** —
+    캐싱 할당자가 여유가 많으면 더 잡아 둔다. ASR 서버들이 자리를 잡은 뒤에 띄우고
+    ``PYTORCH_ALLOC_CONF=expandable_segments:True`` 를 주는 편이 안전하다.
+    """
+
+    DEFAULT_LLM = "Qwen/Qwen3-4B-Instruct-2507"
+    LANG_NAME = {
+        "en": "English", "ko": "Korean", "ja": "Japanese", "zh": "Chinese", "es": "Spanish",
+        "fr": "French", "de": "German", "pt": "Portuguese", "it": "Italian", "ru": "Russian",
+        "vi": "Vietnamese", "th": "Thai", "id": "Indonesian", "hi": "Hindi", "ar": "Arabic",
+        "tr": "Turkish", "nl": "Dutch", "pl": "Polish",
+    }
+    SYSTEM = ("You are a translation engine for a live conversation. Use the earlier "
+              "turns only to resolve pronouns, omitted subjects, gender agreement and "
+              "politeness level. Output only the translation of the final line, with "
+              "no explanation and no quotes.")
+
+    def __init__(
+        self,
+        model_name: str = DEFAULT_LLM,
+        device: Optional[str] = None,
+        quant: str = "4bit",
+        max_new_tokens: int = 200,
+        context_window: int = 1,
+        num_beams: int = 1,          # noqa: ARG002 — seq2seq 쪽과 인자 형태를 맞추기 위해 받는다
+        **_ignored,
+    ):
+        self.model_name = model_name
+        self.quant = quant
+        self.max_new_tokens = max_new_tokens
+        self.context_window = context_window
+        self._device = device
+        self._tokenizer = None
+        self._model = None
+        self._lock = threading.Lock()
+        self._load_lock = threading.Lock()
+
+    def _ensure_loaded(self) -> None:
+        if self._model is not None:
+            return
+        with self._load_lock:
+            if self._model is not None:
+                return
+            import gc
+
+            import torch
+            from transformers import AutoModelForCausalLM, AutoTokenizer
+
+            device = self._device or ("cuda" if torch.cuda.is_available() else "cpu")
+            logger.info(f"[local-translate] loading {self.model_name} on {device} ({self.quant})")
+            self._tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+            if self.quant in ("4bit", "8bit") and device.startswith("cuda"):
+                from transformers import BitsAndBytesConfig
+
+                if self.quant == "4bit":
+                    qc = BitsAndBytesConfig(
+                        load_in_4bit=True, bnb_4bit_quant_type="nf4",
+                        bnb_4bit_compute_dtype=torch.bfloat16, bnb_4bit_use_double_quant=True)
+                else:
+                    qc = BitsAndBytesConfig(load_in_8bit=True)
+                model = AutoModelForCausalLM.from_pretrained(
+                    self.model_name, quantization_config=qc, device_map=device,
+                    dtype=torch.bfloat16)
+            else:
+                dtype = torch.float16 if device.startswith("cuda") else torch.float32
+                model = AutoModelForCausalLM.from_pretrained(self.model_name, dtype=dtype)
+                model.to(device)
+            model.eval()
+            self._model, self._device = model, device
+            # 로딩 중 잡았다 놓은 블록을 반납한다. nvidia-smi 는 예약만 해 둔 것도
+            # 사용량으로 보고하므로, 안 부르면 실제보다 1GiB 가까이 크게 잡힌다.
+            gc.collect()
+            if device.startswith("cuda"):
+                torch.cuda.empty_cache()
+            logger.info("[local-translate] ready")
+
+    def load(self) -> None:
+        """서버 기동 시 미리 로드해 첫 번역의 지연을 없앤다."""
+        self._ensure_loaded()
+
+    def _name(self, code: str) -> str:
+        return self.LANG_NAME.get(code, code)
+
+    def _build_prompt(self, text: str, target_code: str, source_code: str,
+                      context: Optional[list] = None) -> str:
+        tok = self._tokenizer
+        if context:
+            ctx_block = "\n".join(f"- {c}" for c in context)
+            user = (f"Earlier turns in {self._name(source_code)}:\n{ctx_block}\n\n"
+                    f"Translate this {self._name(source_code)} line into "
+                    f"{self._name(target_code)}:\n{text}")
+        else:
+            user = (f"Translate the following {self._name(source_code)} sentence into "
+                    f"{self._name(target_code)}.\n\n{text}")
+        msgs = [{"role": "system", "content": self.SYSTEM}, {"role": "user", "content": user}]
+        try:
+            # Qwen3 계열은 생각 모드를 끄지 않으면 출력이 길어져 자막 지연이 커진다.
+            return tok.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True,
+                                           enable_thinking=False)
+        except TypeError:
+            return tok.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
+
+    def _translate_sync(self, text: str, target_code: str, source_code: str,
+                        context: Optional[list] = None) -> str:
+        self._ensure_loaded()
+        if source_code == target_code:
+            return text
+        import torch
+
+        with self._lock:
+            tok, model = self._tokenizer, self._model
+            enc = tok(self._build_prompt(text, target_code, source_code, context),
+                      return_tensors="pt")
+            n_prompt = enc["input_ids"].shape[1]
+            enc = {k: v.to(self._device) for k, v in enc.items()}
+            with torch.inference_mode():
+                out = model.generate(**enc, max_new_tokens=self.max_new_tokens,
+                                     do_sample=False, num_beams=1,
+                                     pad_token_id=tok.eos_token_id)
+            s = tok.decode(out[0][n_prompt:], skip_special_tokens=True).strip()
+        if "</think>" in s:
+            s = s.split("</think>")[-1].strip()
+        s = s.strip().strip('"').strip()
+        # 지시를 어기고 문맥까지 통째로 옮겨 오면 줄이 여러 개가 된다. 마지막 줄이
+        # 현재 발화의 번역이다. (실측 600쌍에서는 한 번도 일어나지 않았다.)
+        lines = [ln.strip(" -") for ln in s.split("\n") if ln.strip()]
+        return lines[-1] if lines else s
+
+    async def translate(
+        self, text: str, target_code: str, source_code: Optional[str] = None,
+        context: Optional[list] = None,
+    ) -> tuple[str, str]:
+        """(번역문, 소스 언어 코드). ``context`` 는 앞 발화 원문 리스트(오래된 것부터)."""
+        if not text.strip() or not target_code:
+            return "", ""
+        src = (source_code or "").strip() or guess_lang_code(text)
+        ctx = list(context or [])[-self.context_window:] if self.context_window else []
+        try:
+            translated = await asyncio.to_thread(
+                self._translate_sync, text, target_code, src, ctx)
+        except Exception as e:
+            logger.warning(f"[local-translate] failed: {e!r}")
+            return "", src
+        return translated, src
+
+
+def make_translator(model_name: str = DEFAULT_MODEL, **kwargs):
+    """모델 이름으로 백엔드를 고른다.
+
+    이름에 ``madlad`` 가 들어가면 MADLAD, 지시형 LLM 으로 보이면 LLMTranslator,
+    나머지는 NLLB 로 친다. LLM 만 문맥을 쓸 수 있다(LLMTranslator 주석 참고).
+    """
+    lowered = model_name.lower()
+    if "madlad" in lowered:
+        return MADLADTranslator(model_name=model_name, **_seq2seq_kwargs(kwargs))
+    if any(k in lowered for k in ("qwen", "instruct", "gemma", "llama", "mistral", "-it")):
+        return LLMTranslator(model_name=model_name, **kwargs)
+    return NLLBTranslator(model_name=model_name, **_seq2seq_kwargs(kwargs))
+
+
+def _seq2seq_kwargs(kwargs: dict) -> dict:
+    """seq2seq 번역기가 모르는 LLM 전용 인자를 걷어낸다."""
+    return {k: v for k, v in kwargs.items() if k not in ("quant", "context_window")}
 
 
 # ── 원격 번역기 ────────────────────────────────────────────────────────────────
@@ -257,7 +461,8 @@ class RemoteTranslator:
         return self._session
 
     async def translate(
-        self, text: str, target_code: str, source_code: Optional[str] = None
+        self, text: str, target_code: str, source_code: Optional[str] = None,
+        context: Optional[list] = None,
     ) -> tuple[str, str]:
         if not text.strip() or not target_code:
             return "", ""
@@ -265,6 +470,10 @@ class RemoteTranslator:
         try:
             session = await self._get_session()
             payload = {"text": text, "target": target_code, "source": src}
+            # 문맥은 번역 서버가 LLM 백엔드일 때만 쓰인다. seq2seq 서버는 받아서
+            # 버리므로(경고 한 번) 여기서 조건을 걸 필요가 없다.
+            if context:
+                payload["context"] = list(context)
             async with session.post(self.url, json=payload) as resp:
                 resp.raise_for_status()
                 data = await resp.json()

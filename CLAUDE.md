@@ -45,30 +45,103 @@ Translation is **Google Translate by default** (`translate.googleapis.com` gtx e
 | `--gpt-translation` | `core/translator/correct_and_trans.py` `GPTTranslator` — correction + translation in one call, `--context-window` sentences of history (default 5) |
 | `--correction` | `core/translator/gpt_corrector.py` `GPTCorrector` — correction only, translation still Google |
 | `--google-context` | Keeps Google Translate but feeds it prior sentences as context |
-| `--local-translation` | Loads a local seq2seq translator (`core/translator/local_translator.py`) **into this process** — `--local-translation-model` picks MADLAD (`google/madlad400-3b-mt`) or NLLB |
+| `--local-translation` | Loads a local translator (`core/translator/local_translator.py`) **into this process** — `--local-translation-model` picks the backend by name: MADLAD, NLLB, or an instruction LLM (`Qwen/Qwen3-4B-Instruct-2507`) |
 | `--local-translation-url` | Calls a standalone translation server over HTTP instead of loading a model here (see below). Wins over `--local-translation` — giving a URL means "do not load a model in this process" |
+| `--local-translation-context` | Number of previous originals handed to the local translator (default 0 = off). **Only the LLM backend can use them** — see below |
+
+### Which local translator
+
+Measured on a 5-language parallel set (en/ko/ja/zh/es), 600 directed pairs per candidate, scored with
+`Unbabel/wmt22-comet-da` and `Unbabel/wmt22-cometkiwi-da`. VRAM is what nvidia-smi reports for the
+process; latency is the median of a single sentence at `num_beams=4` (1 for the LLM):
+
+| Model | VRAM | latency | COMET-DA | CometKiwi |
+|---|---:|---:|---:|---:|
+| `Qwen/Qwen3-4B-Instruct-2507` 4bit | 3.3 GiB | 170 ms | **0.8817** | **0.8377** |
+| `google/madlad400-3b-mt` 4bit | 3.9 GiB | 436 ms | 0.8764 | 0.8336 |
+| `facebook/nllb-200-distilled-1.3B` fp16 | 3.1 GiB | 124 ms | 0.8683 | 0.8254 |
+| `facebook/nllb-200-distilled-1.3B` 4bit | 2.4 GiB | 188 ms | 0.8662 | 0.8241 |
+| `facebook/nllb-200-distilled-600M` fp16 | 1.7 GiB | 80 ms | 0.8523 | 0.8136 |
+
+Three results decide the choice.
+
+**The distilled 1.3B beats the dense one** (0.8683 vs 0.8600) — picking `facebook/nllb-200-1.3B` by
+name costs quality at the same size. **NLLB-1.3B loses nothing to 4-bit** (−0.0020, CI crosses zero)
+but is 5× slower at 8-bit (887 ms), so 4-bit is the only quantization worth using there. And
+**`mbart-large-50` and SeamlessM4T-v2 must not be used**: they collapse on non-English pairs, leaving
+89 and 12 translations with none of the target script at all — Seamless renders
+`죄송한데 한 번만 다시 말씀해 주시겠어요?` as `ごめんだけど一回だけ再言って 주시겠어요?`. Read only the
+en column of a results table and they look fine.
+
+MADLAD needs two things or it does not fit: `PYTORCH_ALLOC_CONF=expandable_segments:True` (4.5 GiB
+without it) and keeping `DenseReluDense.wo` out of the quantization. transformers holds that layer in
+fp32 against fp16 overflow, which is 2 GiB on madlad-3b; quantizing it to 4-bit destroys the model
+(every output becomes noise like `basis scal потреб …`), while casting it to bf16 gives output
+identical to fp32 at half the memory. `_shrink_t5_wo` in `local_translator.py` does that.
+
+**Allocator reservation depends on free VRAM.** The same LLM measures 3.3 GiB when the ASR servers
+already hold their share and 4.4 GiB on an empty card — PyTorch reserves more when there is room. Start
+the translation server *after* the ASR servers and give it `PYTORCH_ALLOC_CONF=expandable_segments:True`.
+
+### Feeding the translator context
+
+`--local-translation-context N` hands the previous N committed originals (same detected language only)
+to the local translator. **Only the LLM backend can use them.** The concatenation trick behind
+`--google-context` — join the previous lines with newlines, translate once, keep the last line — works
+because Google preserves line breaks. Local seq2seq models do not: NLLB-1.3B mismatched the line count
+16 times out of 16, dropping the current sentence entirely when given one context line and merging
+everything into a single line when given three, so "the last line" becomes the whole context blob.
+MADLAD emitted English noise instead of a translation and took 2.4 s. Both are accepted and ignored,
+with one warning.
+
+Depth measured on a 6-dialogue × 5-turn parallel set (600 directed pairs, Qwen3-4B-Instruct 4bit):
+
+| context | COMET-DA | vs none | latency p50 | prompt tokens |
+|---:|---:|---:|---:|---:|
+| 0 turns | 0.8827 | — | 170 ms | 76 |
+| **1 turn** | **0.8903** | **+0.0076** [+0.003, +0.013] | 170 ms | 90 |
+| 2 turns | 0.8899 | +0.0073 | 167 ms | 98 |
+| 3 turns | 0.8899 | +0.0072 | 170 ms | 99 |
+| 4 turns | 0.8890 | +0.0063 | 170 ms | 99 |
+
+**The gain saturates at one turn**, which is why `--context-window` on the translation server defaults
+to 1. Depth is not limited by cost: latency is flat (193 ms even at 16 turns / 266 prompt tokens) and
+VRAM grows 34 MiB over the same range. The gain lands almost entirely on English targets
+(+0.019 vs +0.002~0.004 for ko/ja/zh) because ko/ja/zh drop subjects and objects that English must
+supply, and the answer is only in the previous turn: `はい、どうぞ。` is "Yes, go ahead." alone and
+"Yes, please sit." after `この席、空いていますか？`.
+
+**Score context experiments with reference-based COMET, not CometKiwi.** Kiwi sees only source and
+translation, so information pulled from a previous turn reads as invented — the same runs scored
++0.0066 on COMET-DA and −0.0009 on CometKiwi.
 
 ### Running several servers on one GPU
 
 Every translation call goes through `google_translate_async`, which delegates to the object set by
 `set_local_translator`. `RemoteTranslator` in [core/translator/local_translator.py](core/translator/local_translator.py)
-implements the same `translate(text, target, source) -> (translation, source_code)` interface over
-HTTP, so `--local-translation-url` swaps it in at that one seam.
+implements the same `translate(text, target, source, context=None) -> (translation, source_code)`
+interface over HTTP, so `--local-translation-url` swaps it in at that one seam.
 
 Keep the translation model in **one** process. With `--local-translation`, every ASR server loads its
 own copy, and madlad400-3b costs about 7.1 GiB each — two ASR servers plus two translators do not fit
 in 24 GiB.
 
 ```bash
-# 1) translator once (about 7.1 GiB)
-python STiTy-Mobile/demo-web/local_translation_server.py --port 8770 --model google/madlad400-3b-mt
-
-# 2) one ASR server per language, each pointing at it
+# 1) ASR servers first, so the translator's allocator sees the space that is actually left
 PYTHONPATH=$PWD/Qwen3-ASR python Qwen3-ASR/examples/streaming_websocket_server.py \
   --model models/Qwen3-ASR-1.7B-ko-silence-v4c900-merged --port 8766 \
   --gpu-memory-utilization 0.25 --enforce-eager --no-idle-shutdown \
-  --local-translation-url http://127.0.0.1:8770
+  --local-translation-url http://127.0.0.1:8770 --local-translation-context 1
+
+# 2) the translator once (about 3.3 GiB)
+PYTORCH_ALLOC_CONF=expandable_segments:True \
+python STiTy-Mobile/demo-web/local_translation_server.py --port 8770 \
+  --model Qwen/Qwen3-4B-Instruct-2507 --quant 4bit --context-window 1
 ```
+
+`GET /health` on the translation server reports which backend it loaded and whether context is on, so
+a client can tell whether sending context is worth anything:
+`{"status": "ok", "model": "...", "context": true, "context_window": 1}`.
 
 **vLLM's `--gpu-memory-utilization` is a fraction of the whole GPU claimed by that one process, and it
 ignores what other processes already hold.** So the budget is simply
@@ -77,10 +150,10 @@ Measured on a 24564 MiB RTX 4090 with Qwen3-ASR-1.7B finetuned weights:
 
 | Process | `--gpu-memory-utilization` | VRAM |
 |---|---|---|
-| `STiTy-Mobile/demo-web/local_translation_server.py` (madlad400-3b, fp16) | — | 7172 MiB |
+| `STiTy-Mobile/demo-web/local_translation_server.py` (Qwen3-4B-Instruct, 4bit) | — | 3270 MiB |
 | ASR (ko finetuned) | 0.25 | 6214 MiB — 3.87 GiB weights, 0.89 GiB KV cache (8288 tokens) |
 | ASR (en finetuned) | 0.25 | 6214 MiB |
-| **total** | | **19729 / 24564 MiB**, about 4.8 GiB spare |
+| **total** | | **15698 / 24564 MiB**, about 8.7 GiB spare |
 
 0.25 is roughly the floor: the weights alone take 3.87 GiB, so anything below ~0.20 leaves no KV cache.
 Going the other way, 0.55 gave one ASR server 13596 MiB and left no room for a second one.
@@ -216,12 +289,12 @@ python STiTy-Mobile/demo-web/partial_demo/demo_proxy.py 8080 \
 ```
 
 Three ASR servers fit on the 24GiB card only if the translator shrinks. Measured: ko 6214MiB + en 6214MiB +
-baseline 6830MiB + whisper-base 656MiB leaves no room for madlad400-3b's 7304MiB — the total overshoots by
-213MiB, and dropping every server to `--gpu-memory-utilization 0.21` to compensate fails outright with
-`Available KV cache memory: -0.05 GiB` (KV reaches zero at about 0.213, so 0.23 is the practical floor).
-Running the translation server on `facebook/nllb-200-distilled-600M` instead costs 1570MiB and the whole set
-lands at **21624 / 24564 MiB**. That trade is a memory decision, not a quality one: the repo's own CometKiwi
-numbers are 0.8712 for Google and 0.8554 for madlad-3b, and NLLB-600M has never been measured here.
+baseline 6830MiB + whisper-base 656MiB leaves no room for madlad400-3b at fp16 (7304MiB) — the total
+overshoots by 213MiB, and dropping every server to `--gpu-memory-utilization 0.21` to compensate fails
+outright with `Available KV cache memory: -0.05 GiB` (KV reaches zero at about 0.213, so 0.23 is the
+practical floor). `Qwen/Qwen3-4B-Instruct-2507` at 4bit costs 3270MiB and the whole set lands at
+**23184 / 24564 MiB** while scoring higher than madlad and carrying context — see *Which local translator*.
+With `--lid-model openai/whisper-small` (884MiB) instead of base it is **23412 / 24564 MiB**.
 
 **Judge twice: once to route, once to be right.** The early thresholds settle on less than a second of audio,
 which is enough to pick a server but not enough to be sure — a Spanish `Mi nombre es Daniel.` came back `ko`,
@@ -317,8 +390,8 @@ package. The symptom is a type error rather than an import error, e.g.
 |---|---|
 | `core/translator/correct_and_trans.py` | `GPTTranslator` — correction + translation in one call (`--gpt-translation`) |
 | `core/translator/gpt_corrector.py` | `GPTCorrector` — correction only, async with retry/backoff (`--correction`) |
-| `core/translator/local_translator.py` | Local seq2seq translators (MADLAD / NLLB) plus `RemoteTranslator`, the HTTP client for the standalone server |
-| `STiTy-Mobile/demo-web/local_translation_server.py` | Standalone translation server — loads the model once, serves `POST /translate` and `GET /health` |
+| `core/translator/local_translator.py` | Local translators — seq2seq (MADLAD / NLLB) and `LLMTranslator`, the only backend that can use context — plus `RemoteTranslator`, the HTTP client for the standalone server |
+| `STiTy-Mobile/demo-web/local_translation_server.py` | Standalone translation server — loads the model once, serves `POST /translate` (optional `context`) and `GET /health` |
 | `core/meaning_segmentator/utils/` | Research scripts: GPT `<SEG>` marking, context translation, COMET eval |
 | `core/research/` | CIF & context-scoring experiments (not on the runtime path) |
 | `Qwen3-ASR/examples/streaming_websocket_server.py` | Production WebSocket server |
