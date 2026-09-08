@@ -76,6 +76,17 @@ _SERVER_DIR = os.path.dirname(os.path.abspath(__file__))
 _LOG_FILE = os.path.join(_SERVER_DIR, "../logs/asr_server.log")
 
 
+def _default_log_file(port: Optional[int] = None) -> str:
+    """포트별 로그 파일 경로.
+
+    한 대에 여러 서버를 띄우는 구성(언어별 포트)에서 파일 하나를 공유하면 세 프로세스의
+    [C{id}] 태그가 겹쳐 어느 서버 줄인지 구분할 수 없다. 포트를 파일 이름에 넣어 나눈다.
+    """
+    if port is None:
+        return _LOG_FILE
+    return os.path.join(_SERVER_DIR, f"../logs/asr_server_{port}.log")
+
+
 _BASELINE_MODEL_IDS = {
     "qwen/qwen3-asr-1.7b",
     "qwen3-asr-1.7b",
@@ -98,12 +109,13 @@ class _JsonFormatter(logging.Formatter):
         return json.dumps(entry, ensure_ascii=False)
 
 
-def _configure_logging(use_json: bool = False, log_file: Optional[str] = None) -> None:
+def _configure_logging(use_json: bool = False, log_file: Optional[str] = None,
+                       port: Optional[int] = None) -> None:
     fmt: logging.Formatter = (
         _JsonFormatter() if use_json
         else logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
     )
-    target_log_file = log_file or _LOG_FILE
+    target_log_file = log_file or _default_log_file(port)
     os.makedirs(os.path.dirname(os.path.abspath(target_log_file)), exist_ok=True)
     handlers: list[logging.Handler] = [
         logging.StreamHandler(),
@@ -3273,7 +3285,7 @@ def parse_args():
 
 def main():
     args = parse_args()
-    _configure_logging(use_json=args.log_json, log_file=args.log_file)
+    _configure_logging(use_json=args.log_json, log_file=args.log_file, port=args.port)
 
     # VADIterator 생성과 꼬리 트림이 모두 이 전역을 읽으므로 여기서 한 번 덮는다.
     if args.vad_min_silence != VAD_MIN_SILENCE_MS:
