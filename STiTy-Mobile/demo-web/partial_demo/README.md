@@ -18,7 +18,8 @@ STiTy-Mobile/demo-web/partial_demo/
 ├── make_test_wav.py       LibriSpeech 로 테스트 음성 만들기 (index.html 용)
 ├── make_demo_wavs.py      en/ja/ko 테스트 음성 만들기 (show.html 용)
 ├── mock_show_server.py    ASR 없이 show.html 만 확인하는 목 서버
-└── partial_ws_client.py   CLI 검증 클라이언트 (자동 판정 포함)
+└── partial_ws_client.py   CLI 검증 클라이언트 (자동 판정 포함). 프록시에 붙일 때는
+                           --url ws://127.0.0.1:8080/ws --lang-map ko=en,en=ko,es=ko
 ```
 
 ## 띄우기
@@ -118,17 +119,25 @@ tmux new-session -d -s partialweb  -c . "python -u STiTy-Mobile/demo-web/partial
 `?aud=ko,en,ja,zh` 로 청중 언어를 미리 정해 두면 첫 문장부터 칸을 다 잡고 시작한다.
 그러지 않으면 새 목표가 처음 올 때마다 칸이 하나씩 늘면서 화면이 한 번씩 덜컹인다.
 
-`R` 은 화면 초기화, `C`(또는 `⚙ 설정`)는 설정 패널. `EN`/`JA`/`KO`/`MIX` 버튼은 해당 테스트 음성을 흘린다.
-`MIX` 는 ko/en/ja 를 번갈아 붙인 것이라 **언어별 칸 배치를 확인할 때 쓴다** — 한 언어만
-들어오면 칸이 하나뿐이라 배치 2 가 배치 1 과 구분되지 않는다.
-음성 언어와 무관하게 세션 언어쌍(`src`/`tgt`)은 그대로 쓴다 — 아래 참고.
+### 단축키
 
-`🔊 소리`(또는 `S` 키)를 켜면 테스트 음성을 스피커로도 재생한다. 소리와 자막을 같이 보면
-자막이 얼마나 빨리 뜨는지 체감할 수 있다. 전송과 같은 시점에 재생하므로 대략 맞물린다.
-브라우저가 자동 재생을 막으면 화면을 한 번 클릭하고 다시 누르면 된다. 설정은
-localStorage 에 남는다. 마이크 경로에서는 쓰지 않는다(에코).
+시연 화면에는 버튼이 없다. 조작은 키로 한다.
 
-### 설정 패널 (`⚙ 설정` / `C`)
+| 키 | 하는 일 |
+|---|---|
+| `Ctrl+Space` | 마이크 시작·정지 |
+| `Ctrl+Enter` | 대본 리허설 재생·정지 (`web/mock_script.json`, 서버 없이 돈다) |
+| `C` | 설정 패널 |
+| `R` | 화면 비우기. **스트림은 계속 돈다** — 끊는 건 `Ctrl+Space` 다 |
+| `1`~`4` | 배치 전환 |
+| `T` | 표시 목표 방식 순환 |
+
+`Ctrl` 조합은 위 둘만 잡고 나머지는 브라우저에 넘긴다. 안 그러면 `Ctrl+R` 새로고침과
+`Ctrl+C` 복사를 페이지가 가로챈다.
+
+소리는 내지 않는다. 화면에 글만 띄운다.
+
+### 설정 패널 (`C`)
 
 시연 도중에 바꿔야 하는 값 둘을 셀렉트 박스로 뺐다. 고르는 즉시 적용된다.
 
@@ -203,7 +212,7 @@ ASR 자체의 언어 제한은 별개다. `--no-restrict-languages` 로 띄우�
 | `map` | `ko:en,en:ko,ja:ko,zh:ko,es:ko` | 소스 언어별 번역 목표. 쌍 규칙보다 먼저다 |
 | `depth` | (배치 기본) | 화면에 남기는 줄 수(1~8). `0` 이면 자동 |
 | `anchor` | (없음) | `center` 면 최신 문장이 화면 세로 한가운데 뜬다 |
-| `layout` | `tag` | 배치. `tag` `lane` `stack` `laneT` |
+| `layout` | `laneT` | 배치. `tag` `lane` `stack` `laneT` |
 | `aud` | (없음) | 청중 언어. 목표 칸을 첫 문장 전에 다 잡아 둔다 |
 | `show` | `all` | 표시 목표 방식. `all` `one` `rotate` |
 | `pick` | (없음) | 그 목표 하나만 띄운다(`show=one` 과 같다) |
@@ -212,17 +221,22 @@ ASR 자체의 언어 제한은 별개다. `--no-restrict-languages` 로 띄우�
 
 ### ASR 없이 화면만 보기
 
-GPU 없이 배치와 페이싱만 볼 때 쓴다. 대본을 실제 발화 속도로 흘리고, 뒷부분 세 문장은
-0.2~0.3초 간격으로 몰아쳐 유지 시간과 대기열이 도는지 보여 준다.
+GPU 없이 배치와 페이싱만 볼 때 쓴다. 대본은 `web/mock_script.json` 에 있다. 실제 발화
+속도로 흐르고, 뒷부분 세 문장은 0.2~0.3초 간격으로 몰아쳐 유지 시간과 대기열이 도는지
+보여 준다.
+
+**서버 없이 보려면 어느 포트에서 열든 `Ctrl+Enter`.** show.html 이 같은 대본을 직접 읽어
+서버가 보내 온 것처럼 화면에 흘린다. 프록시(8080)에 붙은 채로도 되고, 마이크·WebSocket 을
+쓰지 않는다. 아래 목 서버는 WebSocket 을 타는 경로까지 같이 볼 때 쓴다.
 
 ```bash
 tmux new-session -d -s showmock -c . \
   "python -u STiTy-Mobile/demo-web/partial_demo/mock_show_server.py 8090 --loop"
 ```
 
-<http://localhost:8090/show.html> 를 열고 `EN`/`JA`/`KO` 중 아무거나 누르면 시작한다
-(목 서버는 무음 wav 를 내주므로 테스트 음성 파일이 없어도 된다). `?auto=ko` 를 붙이면
-누르지 않아도 열자마자 시작한다.
+<http://localhost:8090/show.html> 를 열고 `Ctrl+Space` 를 누르면 시작한다(목 서버는 무음
+wav 를 내주므로 테스트 음성 파일이 없어도 된다). `?auto=ko` 를 붙이면 누르지 않아도 열자마자
+시작한다.
 
 **목 서버의 `final` 은 목표별 번역을 다 실어 보낸다.** 대본은 ko·en·ja 세 언어로 말하고
 청중도 그 셋이라, 발화마다 나머지 두 언어 번역이 함께 나간다(`translations`). 서버는 아직

@@ -1,0 +1,378 @@
+[
+ {
+  "wait": 0.8,
+  "msg": {
+   "type": "partial",
+   "text": "안녕하세요",
+   "language": "Korean"
+  }
+ },
+ {
+  "wait": 0.7,
+  "msg": {
+   "type": "partial",
+   "text": "안녕하세요 오늘 발표를",
+   "language": "Korean"
+  }
+ },
+ {
+  "wait": 0.7,
+  "msg": {
+   "type": "partial",
+   "text": "안녕하세요 오늘 발표를 맡은",
+   "language": "Korean"
+  }
+ },
+ {
+  "wait": 0.9,
+  "msg": {
+   "type": "final",
+   "original": "안녕하세요, 오늘 발표를 맡은 김하나입니다.",
+   "translations": {
+    "en": "Hello, I'm Hana Kim, presenting today.",
+    "ja": "こんにちは、本日の発表を担当するキム・ハナです。"
+   },
+   "translation": "Hello, I'm Hana Kim, presenting today.",
+   "language": "Korean",
+   "commitReason": "seg"
+  }
+ },
+ {
+  "wait": 1.0,
+  "msg": {
+   "type": "partial",
+   "text": "저희가 만든 것은",
+   "language": "Korean"
+  }
+ },
+ {
+  "wait": 0.9,
+  "msg": {
+   "type": "partial",
+   "text": "저희가 만든 것은 실시간 음성",
+   "language": "Korean"
+  }
+ },
+ {
+  "wait": 0.9,
+  "msg": {
+   "type": "final",
+   "original": "저희가 만든 것은 실시간 음성 번역 시스템입니다.",
+   "translations": {
+    "en": "What we built is a real-time speech translation system.",
+    "ja": "私たちが作ったのはリアルタイム音声翻訳システムです。"
+   },
+   "translation": "What we built is a real-time speech translation system.",
+   "language": "Korean",
+   "commitReason": "seg"
+  }
+ },
+ {
+  "wait": 1.1,
+  "msg": {
+   "type": "partial",
+   "text": "thank you for",
+   "language": "English"
+  }
+ },
+ {
+  "wait": 0.8,
+  "msg": {
+   "type": "partial",
+   "text": "thank you for having me here",
+   "language": "English"
+  }
+ },
+ {
+  "wait": 0.9,
+  "msg": {
+   "type": "final",
+   "original": "Thank you for having me here today.",
+   "translations": {
+    "ko": "오늘 이 자리에 초대해 주셔서 감사합니다.",
+    "ja": "本日はお招きいただきありがとうございます。"
+   },
+   "translation": "오늘 이 자리에 초대해 주셔서 감사합니다.",
+   "language": "English",
+   "commitReason": "seg"
+  }
+ },
+ {
+  "wait": 1.0,
+  "msg": {
+   "type": "partial",
+   "text": "could you explain",
+   "language": "English"
+  }
+ },
+ {
+  "wait": 0.9,
+  "msg": {
+   "type": "partial",
+   "text": "could you explain how the delay",
+   "language": "English"
+  }
+ },
+ {
+  "wait": 0.9,
+  "msg": {
+   "type": "final",
+   "original": "Could you explain how the delay is measured?",
+   "translations": {
+    "ko": "지연 시간을 어떻게 재는지 설명해 주시겠어요?",
+    "ja": "遅延はどのように測定しているのか説明していただけますか。"
+   },
+   "translation": "지연 시간을 어떻게 재는지 설명해 주시겠어요?",
+   "language": "English",
+   "commitReason": "dot"
+  }
+ },
+ {
+  "wait": 1.0,
+  "msg": {
+   "type": "partial",
+   "text": "말이 끝난 순간부터",
+   "language": "Korean"
+  }
+ },
+ {
+  "wait": 0.9,
+  "msg": {
+   "type": "final",
+   "original": "말이 끝난 순간부터 자막이 뜰 때까지를 잽니다.",
+   "translations": {
+    "en": "We measure from the moment the speech ends until the subtitle appears.",
+    "ja": "話し終わった瞬間から字幕が出るまでを測ります。"
+   },
+   "translation": "We measure from the moment the speech ends until the subtitle appears.",
+   "language": "Korean",
+   "commitReason": "seg"
+  }
+ },
+ {
+  "wait": 1.2,
+  "msg": {
+   "type": "partial",
+   "text": "この",
+   "language": "Japanese"
+  }
+ },
+ {
+  "wait": 0.8,
+  "msg": {
+   "type": "partial",
+   "text": "このシステムは",
+   "language": "Japanese"
+  }
+ },
+ {
+  "wait": 0.9,
+  "msg": {
+   "type": "final",
+   "original": "このシステムはリアルタイムで翻訳します。",
+   "translations": {
+    "ko": "이 시스템은 실시간으로 번역합니다.",
+    "en": "This system translates in real time."
+   },
+   "translation": "이 시스템은 실시간으로 번역합니다.",
+   "language": "Japanese",
+   "commitReason": "vad"
+  }
+ },
+ {
+  "wait": 1.0,
+  "msg": {
+   "type": "partial",
+   "text": "会場の",
+   "language": "Japanese"
+  }
+ },
+ {
+  "wait": 0.9,
+  "msg": {
+   "type": "final",
+   "original": "会場の全員が同じ画面を見ています。",
+   "translations": {
+    "ko": "행사장에 있는 모두가 같은 화면을 보고 있습니다.",
+    "en": "Everyone in the room is looking at the same screen."
+   },
+   "translation": "행사장에 있는 모두가 같은 화면을 보고 있습니다.",
+   "language": "Japanese",
+   "commitReason": "seg"
+  }
+ },
+ {
+  "wait": 1.0,
+  "msg": {
+   "type": "partial",
+   "text": "화면은 언어마다",
+   "language": "Korean"
+  }
+ },
+ {
+  "wait": 0.9,
+  "msg": {
+   "type": "final",
+   "original": "화면은 언어마다 칸을 나눠서 보여 줍니다.",
+   "translations": {
+    "en": "The screen splits into one lane per language.",
+    "ja": "画面は言語ごとに欄を分けて表示します。"
+   },
+   "translation": "The screen splits into one lane per language.",
+   "language": "Korean",
+   "commitReason": "seg"
+  }
+ },
+ {
+  "wait": 1.0,
+  "msg": {
+   "type": "partial",
+   "text": "so each guest reads",
+   "language": "English"
+  }
+ },
+ {
+  "wait": 0.9,
+  "msg": {
+   "type": "final",
+   "original": "So each guest only reads their own lane.",
+   "translations": {
+    "ko": "그래서 참석자는 자기 칸만 읽으면 됩니다.",
+    "ja": "ですから参加者は自分の欄だけを読めば済みます。"
+   },
+   "translation": "그래서 참석자는 자기 칸만 읽으면 됩니다.",
+   "language": "English",
+   "commitReason": "seg"
+  }
+ },
+ {
+  "wait": 1.1,
+  "msg": {
+   "type": "partial",
+   "text": "翻訳はどのくらい",
+   "language": "Japanese"
+  }
+ },
+ {
+  "wait": 0.9,
+  "msg": {
+   "type": "final",
+   "original": "翻訳はどのくらい遅れますか。",
+   "translations": {
+    "ko": "번역은 얼마나 늦게 나오나요?",
+    "en": "How much does the translation lag?"
+   },
+   "translation": "번역은 얼마나 늦게 나오나요?",
+   "language": "Japanese",
+   "commitReason": "dot"
+  }
+ },
+ {
+  "wait": 1.0,
+  "msg": {
+   "type": "partial",
+   "text": "문장이 끝나면",
+   "language": "Korean"
+  }
+ },
+ {
+  "wait": 0.9,
+  "msg": {
+   "type": "final",
+   "original": "문장이 끝나면 대개 1초 안에 올라옵니다.",
+   "translations": {
+    "en": "Once a sentence ends, it usually shows up within a second.",
+    "ja": "文が終われば、たいてい一秒以内に出ます。"
+   },
+   "translation": "Once a sentence ends, it usually shows up within a second.",
+   "language": "Korean",
+   "commitReason": "seg"
+  }
+ },
+ {
+  "wait": 1.0,
+  "msg": {
+   "type": "partial",
+   "text": "한 사람이 여러 언어를",
+   "language": "Korean"
+  }
+ },
+ {
+  "wait": 0.9,
+  "msg": {
+   "type": "final",
+   "original": "한 사람이 여러 언어를 섞어 말해도 그대로 따라갑니다.",
+   "translations": {
+    "en": "It keeps up even when one speaker mixes several languages.",
+    "ja": "一人が複数の言語を混ぜて話しても、そのままついていきます。"
+   },
+   "translation": "It keeps up even when one speaker mixes several languages.",
+   "language": "Korean",
+   "commitReason": "seg"
+  }
+ },
+ {
+  "wait": 1.1,
+  "msg": {
+   "type": "partial",
+   "text": "that is useful for",
+   "language": "English"
+  }
+ },
+ {
+  "wait": 0.9,
+  "msg": {
+   "type": "final",
+   "original": "That is useful for a panel discussion.",
+   "translations": {
+    "ko": "그건 패널 토론에 쓸모가 있습니다.",
+    "ja": "それはパネルディスカッションで役に立ちます。"
+   },
+   "translation": "그건 패널 토론에 쓸모가 있습니다.",
+   "language": "English",
+   "commitReason": "seg"
+  }
+ },
+ {
+  "wait": 0.3,
+  "msg": {
+   "type": "final",
+   "original": "질문 있으시면 언제든지 말씀해 주세요.",
+   "translations": {
+    "en": "Please ask any questions at any time.",
+    "ja": "ご質問があればいつでもおっしゃってください。"
+   },
+   "translation": "Please ask any questions at any time.",
+   "language": "Korean",
+   "commitReason": "dot"
+  }
+ },
+ {
+  "wait": 0.2,
+  "msg": {
+   "type": "final",
+   "original": "We support ten languages.",
+   "translations": {
+    "ko": "저희는 열 개 언어를 지원합니다.",
+    "ja": "私たちは十の言語に対応しています。"
+   },
+   "translation": "저희는 열 개 언어를 지원합니다.",
+   "language": "English",
+   "commitReason": "dot"
+  }
+ },
+ {
+  "wait": 0.2,
+  "msg": {
+   "type": "final",
+   "original": "最後までご覧いただきありがとうございました。",
+   "translations": {
+    "ko": "끝까지 봐 주셔서 감사합니다.",
+    "en": "Thank you for watching to the end."
+   },
+   "translation": "끝까지 봐 주셔서 감사합니다.",
+   "language": "Japanese",
+   "commitReason": "seg"
+  }
+ }
+]

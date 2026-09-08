@@ -196,7 +196,7 @@
 
 <div class="pending" id="pending" hidden><div class="pendingDot">●●●</div></div>
 
-<div class="controls" id="controls">
+<div class="controls uiOff" id="controls">
   <div class="ctlGroup uiOff">
     <button class="ctl on" id="btnTag">1 · 언어 태그</button>
     <button class="ctl" id="btnLane">2 · 언어별 칸</button>
@@ -210,7 +210,7 @@
     <button class="ctl uiOff" data-wav="en">EN</button>
     <button class="ctl uiOff" data-wav="ja">JA</button>
     <button class="ctl uiOff" data-wav="ko">KO</button>
-    <button class="ctl uiOff" data-wav="mix">MIX</button>
+    <button class="ctl" data-wav="mix">▶ MIX</button>
     <button class="ctl uiOff" id="btnSound">🔊 소리</button>
     <button class="ctl" id="btnMic">마이크</button>
     <button class="ctl" id="btnStop" disabled>정지</button>
@@ -246,7 +246,7 @@
   <div class="panelNote uiOff" id="panelNote"></div>
 </div>
 
-<div class="hint" id="hint">EN/JA/KO/MIX 테스트 음성 · S 소리 · 1~4 배치 전환 · T 표시 목표 · R 초기화 · C 설정</div>
+<div class="hint" id="hint">Ctrl+Space 마이크 시작·정지 · Ctrl+Enter 대본 리허설 · R 화면 비우기 · C 설정</div>
 
 <script>
 // ── 설정 ──────────────────────────────────────────────────────────────────────
@@ -470,7 +470,9 @@ let micCtx = null, micStream = null;
 // <audio src=...> 로 틀면 그 순간 네트워크 재요청과 디코딩이 일어나 몇백 ms 늦는다.
 // 그러면 체감 지연에 재생 지연이 섞여 들어가 눈금이 틀어진다. 그래서 이미 받아 둔
 // 버퍼를 WebAudio 로 **미리 디코딩해 두고**, 첫 프레임을 보내는 바로 그 순간에 튼다.
-let soundOn = localStorage.getItem('stity_show_sound') === '1';
+// 화면에 글만 띄운다. 지난 선택을 잇지 않고 늘 꺼진 채로 연다 — 켤 수단이 없으므로
+// 한 번 켜진 값이 남아 있으면 스피커로 소리가 나가 버린다.
+let soundOn = false;
 let playCtx = null;          // 재생용 AudioContext (마이크용과 별개)
 let playSrc = null;          // 지금 울리고 있는 소스
 
@@ -1393,8 +1395,48 @@ const AUTO = (Q.get('auto') || '').trim().toLowerCase();
 if (AUTO === 'mic') addEventListener('load', () => start('mic'));
 else if (['ko', 'en', 'ja', 'mix'].includes(AUTO)) addEventListener('load', () => start('wav', AUTO));
 
+// Ctrl+Enter 는 대본 리허설이다. mock_show_server.py 가 쓰는 것과 같은 대본
+// (web/mock_script.json) 을 페이지가 직접 읽어, 서버가 보내 온 것처럼 onMessage 에
+// 흘려 넣는다. ASR·GPU·마이크 없이 화면만 보므로 어느 포트에서 열든 똑같이 돈다.
+let rehearsing = false;
+
+async function playScript() {
+  let script;
+  try {
+    const res = await fetch('mock_script.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error(res.status);
+    script = await res.json();
+  } catch (e) {
+    console.warn('mock_script.json 을 못 읽었다 — 대본 리허설을 건너뛴다', e);
+    return;
+  }
+  resetFeed();
+  rehearsing = true;
+  for (const { wait, msg } of script) {
+    await new Promise(r => setTimeout(r, (wait || 0) * 1000));
+    if (!rehearsing) return;          // 도중에 껐다
+    onMessage(msg);
+  }
+  rehearsing = false;
+}
+
+function stopScript() {
+  rehearsing = false;
+}
+
+// Ctrl+Space 로 마이크를 켠다. 다시 누르면 멈춘다.
+function toggleMic() {
+  if (running) { doStop(); return; }
+  start('mic');
+}
+
 addEventListener('keydown', e => {
-  // 셀렉트 박스를 고르는 중이면 단축키가 가로채지 않게 둔다.
+  // Ctrl 조합은 입력칸에서도 받는다. 태그 글자를 고치다가 바로 틀 수 있어야 한다.
+  if (e.ctrlKey || e.metaKey) {
+    if (e.key === 'Enter') { e.preventDefault(); rehearsing ? stopScript() : playScript(); }
+    else if (e.code === 'Space') { e.preventDefault(); toggleMic(); }
+    return;   // 나머지 Ctrl 조합은 브라우저 몫이다(Ctrl+R 새로고침 등)
+  }
   // 셀렉트 박스나 태그 입력칸을 만지는 중이면 단축키가 가로채지 않게 둔다.
   const tag = e.target && e.target.tagName;
   if (tag === 'SELECT' || tag === 'INPUT') return;
@@ -1404,7 +1446,6 @@ addEventListener('keydown', e => {
     setShowMode(order[(order.indexOf(showMode) + 1) % order.length]);
   }
   else if (e.key === 'r' || e.key === 'R') resetFeed();
-  else if (e.key === 's' || e.key === 'S') setSound(!soundOn);
   else if (e.key === 'c' || e.key === 'C') togglePanel();
 });
 
