@@ -1027,6 +1027,17 @@ class Qwen3ASRStreamingHandler:
             return self.lora_request_ko
         return None
 
+    # <SEG> 뒤에 태그가 빠진 헤더가 본문으로 붙을 때. 언어 이름만 골라서
+    # 영어 문장의 "language" 는 건드리지 않는다.
+    _LEAKED_HEADER = re.compile(
+        r"(?:^|(?<=<SEG>))\s*language\s+"
+        r"(?:Chinese|English|Cantonese|Arabic|German|French|Spanish|"
+        r"Portuguese|Indonesian|Italian|Korean|Russian|Thai|Vietnamese|"
+        r"Japanese|Turkish|Hindi|Malay|Dutch|Swedish|Danish|Finnish|"
+        r"Polish|Czech|Filipino|None)\s*",
+        re.IGNORECASE,
+    )
+
     @staticmethod
     def _strip_asr_text(text: str) -> str:
         """state.text에서 <asr_text> 태그를 제거한다.
@@ -1042,6 +1053,10 @@ class Qwen3ASRStreamingHandler:
             if re.match(r'^\s*language\s+\w', first, re.IGNORECASE):
                 text = rest
             result = re.sub(r'\s*<asr_text>\s*', ' ', text).strip()
+        # <SEG> 다음에 헤더가 본문으로 다시 붙는 경우가 있다. 태그가 없으면
+        # 위의 분기가 못 자르고 `language Korean 내 말이…` 이 자막으로 나간다.
+        result = Qwen3ASRStreamingHandler._LEAKED_HEADER.sub(" ", result)
+        result = re.sub(r"\s+", " ", result).strip()
         return Qwen3ASRStreamingHandler._cut_repeats(result)
 
     @staticmethod
