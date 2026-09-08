@@ -648,77 +648,6 @@ function cleanAsr(text) {
     .trim();
 }
 
-// LID 가 짧은 창에서 틀리면 같은 말이 KO / EN 칸에 같이 뜬다. 글자 종류가
-// 분명하면 그걸 따른다. (영어 ASR 이 한글을 원문으로 내는 경우가 있다.)
-function scriptLang(text) {
-  const s = String(text || '').replace(/\s+/g, '');
-  if (!s) return null;
-  let hang = 0, latin = 0, kana = 0;
-  for (const ch of s) {
-    const c = ch.codePointAt(0);
-    if (c >= 0xac00 && c <= 0xd7a3) hang++;
-    else if ((c >= 0x3040 && c <= 0x30ff) || (c >= 0x31f0 && c <= 0x31ff)) kana++;
-    else if ((c >= 0x41 && c <= 0x5a) || (c >= 0x61 && c <= 0x7a)) latin++;
-  }
-  const n = hang + latin + kana;
-  if (n < 2) return null;
-  // 헤더가 안 잘려도 한글 문장이면 한국어. `language Korean` 접두사는 라틴이 더 많다.
-  if (hang >= 4) return 'ko';
-  if (hang / n >= 0.5) return 'ko';
-  if (kana / n >= 0.4) return 'ja';
-  if (latin / n >= 0.6) return 'en';
-  return null;
-}
-
-function looksLike(code, text) {
-  const s = scriptLang(text);
-  if (!s) return true;
-  if (code === 'en' || code === 'ko' || code === 'ja') return s === code;
-  return true;
-}
-
-function normShown(s) {
-  return String(s || '').replace(/\s+/g, '').toLowerCase();
-}
-
-function tooSimilar(a, b) {
-  const x = normShown(a);
-  const y = normShown(b);
-  if (!x || !y) return false;
-  if (x === y) return true;
-  if (x.length >= 8 && y.includes(x)) return true;
-  if (y.length >= 8 && x.includes(y)) return true;
-  return false;
-}
-
-function keepTrans(original, srcCode, code, text) {
-  if (!code || !text || code === srcCode || text === original) return false;
-  if (scriptLang(text) && scriptLang(text) === scriptLang(original)) return false;
-  return looksLike(code, text);
-}
-
-function absorbDuplicate(original, trans) {
-  const items = M.lines.concat(M.active ? [M.active] : []);
-  for (const it of items.slice(-6)) {
-    const origHit = tooSimilar(original, it.orig) || tooSimilar(original, it.baseOrig);
-    const transHit = Object.values(it.trans || {}).some(t => tooSimilar(original, t))
-      || Object.values(it.baseTrans || {}).some(t => tooSimilar(original, t));
-    if (!origHit && !transHit) continue;
-    if (origHit) {
-      let added = false;
-      for (const [c, t] of Object.entries(trans || {})) {
-        if (!t || it.baseTrans[c]) continue;
-        if (tooSimilar(t, it.orig) || tooSimilar(t, it.baseOrig)) continue;
-        it.baseTrans[c] = t;
-        it.trans[c] = joinText(it.trans[c], t);
-        added = true;
-      }
-      if (added) { paintItem(it); render(); }
-    }
-    return true;
-  }
-  return false;
-}
 
 // 아직 확정 조각이 하나도 없이 전사만 흐르는 말풍선인가. 이때만 흐리게 그린다
 // (.line.live 는 opacity .72). 확정 조각이 담긴 뒤에는 흐리면 읽을 글자가 흐려진다.
@@ -1220,13 +1149,12 @@ function transOf(m, srcCode) {
       const code = langToCode(k);
       const text = cleanAsr(v);
       // 입력 언어와 목표가 같으면 서버가 원문을 그대로 돌려준다. 그건 번역이 아니다.
-      // 원문과 번역이 같은 글자 종류면 MADLAD 가 잘못 메아리친 것이다.
-      if (keepTrans(original, srcCode, code, text)) out[code] = text;
+      if (code && text && code !== srcCode && text !== original) out[code] = text;
     }
   } else {
     const text = cleanAsr(m.translation || '');
     const code = targets[srcCode] || TGT_LANG;
-    if (keepTrans(original, srcCode, code, text)) out[code] = text;
+    if (code && text && code !== srcCode && text !== original) out[code] = text;
   }
   for (const c of Object.keys(out)) seenTargets.add(c);
   return out;
@@ -1234,19 +1162,14 @@ function transOf(m, srcCode) {
 
 function onMessage(m) {
   if (m.type === 'partial') {
-    const text = cleanAsr(m.text || '');
-    let language = langToCode(m.language || SRC_LANG);
-    const seen = scriptLang(text);
-    if (seen) language = seen;
-    setPartial(text, language);
+    // language 는 프록시가 오디오로 판정해 채운 값이다. 글자 종류로 고쳐 쓰면
+    // 스페인어(라틴)가 en 이 되어 EN 칸에 들어가고 언어 마감 조건도 안 걸린다.
+    setPartial(cleanAsr(m.text || ''), langToCode(m.language || SRC_LANG));
   } else if (m.type === 'final') {
     const original = cleanAsr(m.original || '');
     if (!original) return;
-    let language = langToCode(m.language || SRC_LANG);
-    const seen = scriptLang(original);
-    if (seen) language = seen;
+    const language = langToCode(m.language || SRC_LANG);
     const trans = transOf(m, language);
-    if (absorbDuplicate(original, trans)) return;
     seenSources.add(language);
     commitFinal({ original, language, trans });
   }
