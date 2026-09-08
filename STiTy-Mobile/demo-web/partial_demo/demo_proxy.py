@@ -604,6 +604,13 @@ class Reorder:
         return None
 
     async def _forward(self, name: str, key: float, msg: str) -> None:
+        # 붙들려 있는 동안 교정이 이 구간을 무효로 만들었을 수 있다. 큐에 넣기 전의
+        # 검사만으로는 놓친다 — 실측에서 en 의 `Como se dice pastel en coreano?` 가
+        # 앞선 스페인어 final 을 기다리는 사이 교정이 걸렸고, 풀리면서 그대로 나가
+        # 베이스라인의 같은 문장과 두 번 떴다.
+        if self.disp.is_revoked(name, key):
+            print(f"drop {name} key={key:.2f} revoked (queued): {msg[:60]!r}", flush=True)
+            return
         self.done[name] = max(self.done[name], key)
         await self.client.send(msg)
 

@@ -2820,14 +2820,15 @@ class Qwen3ASRStreamingHandler:
     # 에서 `I'm sorry, but I can't hear you.` 두 줄과 `I want to know the weather in
     # Beijing.` 한 줄이 그렇게 화면까지 갔다. 실제 대화에서 이 문장들이 그대로 나올
     # 확률보다 지어낼 확률이 훨씬 높다.
-    # 한국어 파인튜닝은 발화 뒤 무음 꼬리에서 `그리고 그거` 를 낸다 (실측 한 세션 3건,
-    # 전부 VAD 커밋이고 문장 부호 없이 그 두 어절뿐).
+    # 한국어 파인튜닝은 발화 뒤 무음 꼬리에서 `그리고 그거`·`그러니까` 를 낸다 (실측
+    # 세션당 3~7건, 전부 VAD 커밋이고 문장 부호 없이 그 어절뿐).
     _KNOWN_SILENCE_RE = re.compile(
         r"^\s*(?:"
         r"i'?m sorry,? but i can'?t (?:hear|help|understand) you\b.*"
         r"|i'?m sorry,(?:\s*(?:i'?m|i|but))?"
         r"|i want to (?:see the movie|know (?:the weather|how to make))\b.*"
         r"|그리고 그거"
+        r"|그러니까"
         r")\s*$",
         re.IGNORECASE,
     )
