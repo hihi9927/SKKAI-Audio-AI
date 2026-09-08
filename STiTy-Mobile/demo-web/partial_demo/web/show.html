@@ -3,13 +3,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>STiTy — 시연</title>
 <style>
-  :root { color-scheme: dark;
+  :root { color-scheme: light;
           --tagw: 132px;    /* 태그 칸 너비. 글자 길이와 무관하게 고정이다 */
           --tagh: 26px;
           --lanew: 132px; }  /* 칸 배치에서 왼쪽에 고정으로 두는 칸 이름 너비 */
   * { box-sizing: border-box; }
   html, body { height:100%; }
-  body { margin:0; background:#000; color:#f2f2f2; overflow:hidden;
+  body { margin:0; background:#fff; color:#111; overflow:hidden;
          font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",
               "Helvetica Neue",sans-serif; }
 
@@ -23,7 +23,7 @@
   body.anchorCenter .stage.tag { padding-bottom:50vh; }
   .stage.lane, .stage.laneT { justify-content:stretch; gap:0; }
   /* 칸이 여럿이라 아래 여백을 크게 둘 이유가 없다. 그만큼 한 칸에 줄이 더 들어간다. */
-  .stage.laneT { padding-bottom:5vh; }
+  .stage.laneT { padding-top:98px; padding-bottom:5vh; }
 
   .feed { display:flex; flex-direction:column; justify-content:flex-end;
           align-items:center; overflow:hidden; min-height:0; }
@@ -33,14 +33,22 @@
   .stage.lane > .lane, .stage.laneT > .lane {
                         flex:1; min-height:0; display:flex; flex-direction:row;
                         align-items:center; justify-content:flex-start; gap:14px;
-                        border-top:1px solid rgba(255,255,255,.09); padding:1.2vh 0 1.0vh; }
+                        border-top:1px solid rgba(0,0,0,.12); padding:1.2vh 0 1.0vh; }
+  /* 칸 이름은 왼쪽에 고정이라 글 뭉치가 그만큼 오른쪽으로 밀린다. 오른쪽에도 같은 폭의
+     빈 자리를 둬서 글 뭉치의 가운데를 화면 가운데에 맞춘다. */
+  .stage.lane > .lane::after, .stage.laneT > .lane::after {
+                        content:''; flex:0 0 var(--lanew); }
   .stage.lane > .lane:first-child, .stage.laneT > .lane:first-child { border-top:0; }
   .laneLabel { flex:0 0 var(--lanew); font-size:clamp(20px, 1.9vw, 30px); font-weight:800;
                letter-spacing:3px; text-transform:uppercase; opacity:.9; text-align:left; }
+  /* 태그 글자를 직접 넣은 칸. 사람 이름이라 대문자로 바꾸거나 자간을 벌리지 않는다. */
+  .laneLabel.named { letter-spacing:0; text-transform:none; }
   /* 글 뭉치는 칸 이름과 같은 높이에 온다. 아래에 붙이면 줄이 적을 때 이름과 어긋난다. */
   .lane > .feed { flex:1 1 auto; min-width:0; height:100%; align-items:stretch;
                   justify-content:center; }
   .stage.lane .line, .stage.laneT .line { width:100%; }
+  .stage.lane .main, .stage.lane .sub,
+  .stage.laneT .main { text-align:center; }
 
   /* ── 한 줄 ────────────────────────────────────────────────────────────── */
   /* 기준 크기는 .line 이 갖는다. 원문은 여기에 비례하고, 태그만 고정 크기다.
@@ -63,6 +71,15 @@
                        grid-template-rows:minmax(1.32em, auto); }
   .stage.laneT .line > .main { grid-row:1; }
   .stage.laneT .tagChip { display:none; }
+  /* 그 칸 언어로 말한 문장(전사)만 칸 색으로 굵게 둔다. 나머지는 번역이라 흰 글씨다.
+     칸 이름과 같은 색이라 "이 칸이 원래 말한 언어"가 한눈에 잡힌다. */
+  .stage.laneT .line.orig > .main { color:inherit; font-weight:800; }
+  /* 번역 줄 앞에 붙는 작은 표. 누가 말한 문장인지 알려 준다 — 번역만 보면 이 줄이
+     어느 화자의 말이었는지 알 길이 없다. 말한 언어의 칸에는 붙이지 않는다(칸 이름이 곧 그것). */
+  .srcTag { display:inline-block; font-size:.52em; font-weight:800; letter-spacing:.5px;
+            line-height:1.7; padding:0 .55em; margin-right:.5em; border-radius:999px;
+            border:1px solid currentColor; opacity:.85; vertical-align:.16em;
+            white-space:nowrap; }
   /* 앞선 문장도 흐리지 않다. 밀려 올라가도 계속 읽히므로 최신 문장을 붙잡아 둘
      이유가 없다 — 그래서 hold 가 기본 0 이고 문장이 곧바로 뜬다.
      fade=1 을 주면 깊이만큼 흐려지는 대신 hold 로 붙잡아 둬야 읽을 수 있다. */
@@ -98,9 +115,9 @@
   .stage.stack .line > .main { font-size:.86em; }
   .stage.stack .line > .main + .main { margin-top:0; }
 
-  .main { grid-column:2; grid-row:1; min-width:0; color:#f2f2f2; text-align:left;
+  .main { grid-column:2; grid-row:1; min-width:0; color:#111; text-align:left;
           font-weight:600; line-height:1.32; letter-spacing:-.01em; }
-  .sub  { grid-column:2; grid-row:2; min-width:0; color:#f2f2f2; text-align:left;
+  .sub  { grid-column:2; grid-row:2; min-width:0; color:#111; text-align:left;
           font-size:.4em; opacity:.62; font-weight:400; line-height:1.35; }
   .caret { display:inline-block; width:.06em; height:.95em; margin-left:.06em;
            background:currentColor; vertical-align:-.09em;
@@ -117,12 +134,13 @@
      글자는 ● 다 — • 은 같은 글자 크기에서 지름이 3분의 1밖에 안 돼 멀리서 안 보인다. */
   .pendingDot { font-size:clamp(30px, 3.4vw, 46px);
                 letter-spacing:.34em; padding-left:.34em;   /* 자간이 오른쪽에 남는 만큼 되민다 */
-                line-height:1; color:#fff;
+                line-height:1; color:#111;
                 animation:breathe 1.6s ease-in-out infinite; }
   @keyframes breathe { 0%,100%{opacity:.8} 50%{opacity:1} }
 
   /* ── 로고. 조작부가 사라져도 남는다 ───────────────────────────────────── */
-  .brand { position:absolute; top:14px; left:18px; height:38px; width:auto; z-index:6;
+  .brand { position:absolute; top:18px; left:50%; transform:translateX(-50%);
+           height:64px; width:auto; z-index:6;
            opacity:.95; pointer-events:none; user-select:none; }
 
   /* ── 조작부. 마우스를 멈추면 사라진다 ─────────────────────────────────── */
@@ -131,44 +149,45 @@
               opacity:1; transition:opacity .4s ease; }
   .controls.hidden { opacity:0; pointer-events:none; }
   .ctlGroup { display:flex; gap:6px; }
-  .ctl { font:inherit; font-size:12px; font-weight:600; color:#bbb; cursor:pointer;
-         background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14);
+  .ctl { font:inherit; font-size:12px; font-weight:600; color:#555; cursor:pointer;
+         background:rgba(0,0,0,.04); border:1px solid rgba(0,0,0,.16);
          border-radius:999px; padding:7px 14px; }
-  .ctl:hover { color:#fff; border-color:rgba(255,255,255,.3); }
-  .ctl.on { color:#000; background:#e8e8e8; border-color:#e8e8e8; }
+  .ctl:hover { color:#000; border-color:rgba(0,0,0,.34); }
+  .ctl.on { color:#fff; background:#1a1a1a; border-color:#1a1a1a; }
   .pairLabel { font-size:11px; font-weight:700; letter-spacing:2px; color:#666;
                text-transform:uppercase; padding-right:6px; }
   .ctl:disabled { opacity:.35; cursor:default; }
-  .hint { position:absolute; left:16px; bottom:10px; font-size:11px; color:#4a4a4a;
+  .hint { position:absolute; left:16px; bottom:10px; font-size:11px; color:#b0b0b0;
           transition:opacity .4s ease; }
   .controls.hidden ~ .hint { opacity:0; }
 
   /* ── 설정 패널 ────────────────────────────────────────────────────────────
      시연 중에 열어 바로 바꾼다. 조작부와 같이 떠 있으면 자막을 가리므로 접어 둔다. */
   .panel { position:absolute; top:56px; right:16px; width:280px; z-index:5;
-           background:rgba(18,18,18,.96); border:1px solid rgba(255,255,255,.16);
+           background:rgba(255,255,255,.97); border:1px solid rgba(0,0,0,.16);
            border-radius:14px; padding:14px 16px 16px;
-           box-shadow:0 18px 40px rgba(0,0,0,.6); }
+           box-shadow:0 18px 40px rgba(0,0,0,.18); }
   .panel[hidden] { display:none; }
-  .panelTitle { font-size:11px; font-weight:800; letter-spacing:2px; color:#777;
+  .uiOff { display:none !important; }
+  .panelTitle { font-size:11px; font-weight:800; letter-spacing:2px; color:#888;
                 text-transform:uppercase; margin:2px 0 10px; }
   .panelTitle + .panelTitle { margin-top:16px; }
   .row { display:flex; align-items:center; justify-content:space-between; gap:10px;
          padding:3px 0; }
   .rowLabel { font-size:13px; font-weight:700; letter-spacing:1px; text-transform:uppercase; }
   .panel select, .panel input[type=text] {
-                  font:inherit; font-size:12px; color:#eee; background:#242424;
-                  border:1px solid rgba(255,255,255,.18); border-radius:8px;
+                  font:inherit; font-size:12px; color:#111; background:#f2f2f2;
+                  border:1px solid rgba(0,0,0,.2); border-radius:8px;
                   padding:5px 8px; min-width:130px; width:130px; }
-  .panel input[type=text]::placeholder { color:#666; }
+  .panel input[type=text]::placeholder { color:#aaa; }
   .chips { display:flex; flex-wrap:wrap; gap:6px; }
   .chip { font:inherit; font-size:12px; font-weight:700; letter-spacing:1px;
-          text-transform:uppercase; cursor:pointer; color:#888;
-          background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.14);
+          text-transform:uppercase; cursor:pointer; color:#666;
+          background:rgba(0,0,0,.04); border:1px solid rgba(0,0,0,.16);
           border-radius:999px; padding:5px 12px; }
   /* 켜진 칩은 그 언어 색으로 칠한다. 아래 목표 목록의 라벨 색과 같아 짝이 보인다. */
-  .chip.on { color:#111; font-weight:800; }
-  .panelNote { font-size:11px; color:#6a6a6a; line-height:1.45; margin-top:12px; }
+  .chip.on { color:#fff; font-weight:800; }
+  .panelNote { font-size:11px; color:#8a8a8a; line-height:1.45; margin-top:12px; }
 </style>
 
 <div class="stage tag" id="stage"></div>
@@ -178,21 +197,21 @@
 <div class="pending" id="pending" hidden><div class="pendingDot">●●●</div></div>
 
 <div class="controls" id="controls">
-  <div class="ctlGroup">
+  <div class="ctlGroup uiOff">
     <button class="ctl on" id="btnTag">1 · 언어 태그</button>
     <button class="ctl" id="btnLane">2 · 언어별 칸</button>
     <button class="ctl" id="btnStack">3 · 목표 쌓기</button>
     <button class="ctl" id="btnLaneT">4 · 목표별 칸</button>
   </div>
-  <div class="ctlGroup">
+  <div class="ctlGroup uiOff">
     <span class="pairLabel" id="pairLabel"></span>
   </div>
   <div class="ctlGroup">
-    <button class="ctl" data-wav="en">EN</button>
-    <button class="ctl" data-wav="ja">JA</button>
-    <button class="ctl" data-wav="ko">KO</button>
-    <button class="ctl" data-wav="mix">MIX</button>
-    <button class="ctl" id="btnSound">🔊 소리</button>
+    <button class="ctl uiOff" data-wav="en">EN</button>
+    <button class="ctl uiOff" data-wav="ja">JA</button>
+    <button class="ctl uiOff" data-wav="ko">KO</button>
+    <button class="ctl uiOff" data-wav="mix">MIX</button>
+    <button class="ctl uiOff" id="btnSound">🔊 소리</button>
     <button class="ctl" id="btnMic">마이크</button>
     <button class="ctl" id="btnStop" disabled>정지</button>
     <button class="ctl" id="btnPanel">⚙ 설정</button>
@@ -207,12 +226,12 @@
   </div>
   <div class="panelTitle">사용할 소스 언어</div>
   <div class="chips" id="srcChips"></div>
-  <div class="panelTitle">소스 언어별 번역 목표</div>
-  <div id="langRows"></div>
+  <div class="panelTitle uiOff">소스 언어별 번역 목표</div>
+  <div id="langRows" class="uiOff"></div>
   <div class="panelTitle">태그 글자</div>
   <div id="tagRows"></div>
-  <div class="panelTitle">표시 목표</div>
-  <div class="row">
+  <div class="panelTitle uiOff">표시 목표</div>
+  <div class="row uiOff">
     <span class="rowLabel">방식</span>
     <select id="selShow">
       <option value="all">전부</option>
@@ -220,11 +239,11 @@
       <option value="rotate">자동 순환</option>
     </select>
   </div>
-  <div class="row" id="rowPick">
+  <div class="row uiOff" id="rowPick">
     <span class="rowLabel">언어</span>
     <select id="selPick"></select>
   </div>
-  <div class="panelNote" id="panelNote"></div>
+  <div class="panelNote uiOff" id="panelNote"></div>
 </div>
 
 <div class="hint" id="hint">EN/JA/KO/MIX 테스트 음성 · S 소리 · 1~4 배치 전환 · T 표시 목표 · R 초기화 · C 설정</div>
@@ -381,10 +400,11 @@ function refreshLangMap() {
 const WS_URL = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
 const SR = 16000, FRAME_MS = 100;
 
-// 검은 바탕에서 읽히도록 밝힌 팔레트. 앱 HomeScreen 의 LANG_COLORS 와 같은 언어 집합이다.
+// 흰 바탕에서 읽히도록 어둡힌 팔레트. 앱 HomeScreen 의 LANG_COLORS 와 같은 언어 집합이고
+// 색상(hue)도 같다 — 밝기만 바탕에 맞춰 낮췄다.
 const LANG_COLORS = {
-  en:'#7FA8FF', ko:'#A8D45A', ja:'#FF9A80', zh:'#C08CFF', es:'#FFD166',
-  fr:'#5AD1E0', id:'#4FD8A0', vi:'#FF8080', th:'#7FB6FF', de:'#FFC061',
+  en:'#2F63C7', ko:'#5C8A16', ja:'#C2492A', zh:'#7B3FC7', es:'#9A6E00',
+  fr:'#0E7B8C', id:'#0B7F55', vi:'#C2352F', th:'#2A63B8', de:'#96601A',
 };
 const NAME_TO_CODE = {
   Korean:'ko', English:'en', Japanese:'ja', Chinese:'zh',
@@ -392,7 +412,7 @@ const NAME_TO_CODE = {
   French:'fr', German:'de', Spanish:'es',
 };
 const langToCode = l => NAME_TO_CODE[l] || (l || 'en').toLowerCase().slice(0, 2);
-const colorOf = code => LANG_COLORS[code] || '#c8c8c8';
+const colorOf = code => LANG_COLORS[code] || '#555555';
 
 // 앱 HomeScreen 의 hasSpeechEnergy 와 같은 임계값.
 const SPEECH_RMS_THRESHOLD = 0.018;
@@ -433,7 +453,7 @@ const MULTI = new Set(['stack', 'laneT']);           // 목표를 여럿 띄우�
 // 줄 하나 = {id, lang(말한 언어), orig(원문), trans({목표 코드: 번역})}.
 // 번역이 여럿일 수 있으므로 문자열 하나가 아니라 목표별 맵으로 들고 있는다.
 const M = {
-  layout: LAYOUTS.includes(Q.get('layout')) ? Q.get('layout') : 'tag',
+  layout: LAYOUTS.includes(Q.get('layout')) ? Q.get('layout') : 'laneT',
   lines: [],          // 확정된 줄
   active: null,       // 타이핑 중인 줄
   seq: 0,
@@ -560,12 +580,13 @@ function ensureContainers() {
       lane.style.color = colorOf(code);
       const label = document.createElement('div');
       label.className = 'laneLabel';
-      label.textContent = code;
+      label.dataset.lang = code;
       const feed = document.createElement('div');
       feed.className = 'feed';
       lane.appendChild(label); lane.appendChild(feed);
       stage.appendChild(lane);
     }
+    refreshLaneLabels();
     return;
   }
   // 한 칸짜리 배치들.
@@ -575,6 +596,16 @@ function ensureContainers() {
   const feed = document.createElement('div');
   feed.className = 'feed';
   stage.appendChild(feed);
+}
+
+// 칸 이름은 그 언어의 태그 글자를 쓴다. 설정에서 고치면 그 자리에서 바뀌어야 하는데
+// ensureContainers 는 칸 목록이 같으면 아무것도 다시 만들지 않으므로 여기서 따로 쓴다.
+function refreshLaneLabels() {
+  for (const label of stage.querySelectorAll('.laneLabel')) {
+    const code = label.dataset.lang;
+    label.textContent = tagTextOf(code);
+    label.classList.toggle('named', !!(tagTexts[code] || '').trim());
+  }
 }
 
 function feedFor(key) {
@@ -643,7 +674,14 @@ function paintItem(item, { caret = false } = {}) {
       // 칸이 곧 언어라서 태그가 할 말이 없다. 원문이든 번역이든 같은 글씨로 쭉 흐른다.
       el.style.color = colorOf(part.code);
       const main = el.querySelector('.main');
-      main.textContent = textFor(part.code);
+      main.textContent = '';
+      if (part.code !== item.lang) {
+        const tag = main.appendChild(document.createElement('span'));
+        tag.className = 'srcTag';
+        tag.textContent = tagTextOf(item.lang);
+        tag.style.color = colorOf(item.lang);
+      }
+      main.appendChild(document.createTextNode(textFor(part.code)));
       if (caret && part.code === item.lang) addCaret(main);
       continue;
     }
@@ -705,7 +743,10 @@ function render() {
         alive.add(part.key);
         // 새로 붙은 줄은 다음 프레임에 클래스를 줘야 등장 전환이 돈다.
         // 그 사이 다시 render 가 돌 수 있으므로 최신 값을 노드에 적어 두고 읽는다.
-        el.dataset.cls = 'line' + (live ? ' live' : ` d${Math.min(depth, maxDepth() - 1)}`);
+        // 이 칸 언어로 말한 줄이면 전사다. CSS 가 번역과 다른 색으로 그린다.
+        const isOrig = M.layout === 'laneT' && part.code === item.lang;
+        el.dataset.cls = 'line' + (isOrig ? ' orig' : '')
+                       + (live ? ' live' : ` d${Math.min(depth, maxDepth() - 1)}`);
         if (!el.dataset.mounted) {
           el.dataset.mounted = '1';
           requestAnimationFrame(() => { el.className = el.dataset.cls; });
@@ -1198,6 +1239,7 @@ function setTagText(code, text) {
   const t = (text || '').trim().slice(0, TAG_MAXLEN);
   if (t) tagTexts[code] = t; else delete tagTexts[code];
   localStorage.setItem('stity_show_tags', JSON.stringify(tagTexts));
+  refreshLaneLabels();
   paintAll();
 }
 
@@ -1287,8 +1329,10 @@ function buildPanel() {
   }
 
   // 언어별 태그 글자. 비우면 다시 언어 코드가 뜬다.
+  // 목표별 칸 배치에서는 칸 이름이 곧 이 글자다. 칸이 소스 언어보다 많을 수 있으므로
+  // 그 배치에서는 칸 목록을 그대로 쓴다 — 안 그러면 이름 붙일 수 없는 칸이 생긴다.
   tagRows.innerHTML = '';
-  for (const src of srcLangs) {
+  for (const src of (M.layout === 'laneT' ? laneCodes() : srcLangs)) {
     const row = document.createElement('div');
     row.className = 'row';
     const label = document.createElement('span');
@@ -1327,6 +1371,9 @@ function buildPanel() {
 
 function togglePanel(on) {
   const next = on === undefined ? panel.hidden : on;
+  // 열 때마다 다시 짓는다. 새 소스 언어가 들어오면 칸이 늘어나는데, 그때 패널을
+  // 그대로 두면 그 칸의 태그 글자를 넣을 줄이 없다.
+  if (next) buildPanel();
   panel.hidden = !next;
   btnPanel.classList.toggle('on', next);
 }
@@ -1374,8 +1421,6 @@ if (ANCHOR_CENTER) document.body.classList.add('anchorCenter');
 if (FADE) document.body.classList.add('fade');
 setSound(soundOn);
 
-const saved = localStorage.getItem('stity_show_layout');
-if (!Q.get('layout') && LAYOUTS.includes(saved)) M.layout = saved;
 syncLayoutButtons();
 
 // 표시 목표: 기본값 < 지난 선택 < 쿼리스트링(?pick=ja 는 그 언어 하나로 고정한다)
