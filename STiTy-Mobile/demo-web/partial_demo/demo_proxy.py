@@ -1125,8 +1125,10 @@ async def run_dual(client, start_raw, pending_binary):
                     # 서버 신고가 1.5초 판정보다 낫다. 판정이 ja 인데 텍스트가 `español.`
                     # 이면 es 로, `أرابيك.` 이면 ar 로 간다. 파인튜닝 서버가 있는 언어(ko·en)
                     # 로는 안 바꾼다 — 그건 판정이 맡은 언어다.
-                    said = script_lang(data.get("original") or "") or \
-                        ((data.get("language") or "").lower() or None)
+                    # 서버 신고 언어는 믿지 않는다 — 영어 `or even Arabic.` 을 ar 로
+                    # 신고해 아랍어→영어 번역이 `أنا أحب القهوة` 가 됐다. 글자로 확실한
+                    # 언어(아랍 문자·가나·한자)만 쓰고, 라틴 문자는 판정을 따른다.
+                    said = script_lang(data.get("original") or "")
                     if (said and said in (lang_map or {}) and said not in ROUTES
                             and said != verdict_lang):
                         print(f"rest lang {verdict_lang} -> {said} by text: "
