@@ -2958,7 +2958,15 @@ class Qwen3ASRStreamingHandler:
         if reason in ("vad", "finish") and re.fullmatch(r"\S+,", text.strip()):
             self.log.info(f"[TAIL-DROP] reason={reason} text={text!r}")
             return True
+        # 발화가 닫힐 때 한국어 파인튜닝이 꼬리 무음에서 내는 군말 한 마디(`그리고`, `그게`,
+        # `어.`, `뭐`). 시연에서 말하지 않은 줄로 계속 떴다. SEG 로 나온 것은 실제 발화일
+        # 수 있으니 VAD·finish 커밋만 본다.
+        if reason in ("vad", "finish") and self._KO_TAIL_FILLER.fullmatch(text.strip()):
+            self.log.info(f"[TAIL-DROP] reason={reason} text={text!r}")
+            return True
         return False
+
+    _KO_TAIL_FILLER = re.compile(r"(?:그리고|그게|그|어|뭐|자|이|아|음|네|그니까)[.,!?…]?")
 
     def _is_header_only(self, original: str) -> bool:
         """전사 없이 언어 헤더만 나온 커밋인가."""
