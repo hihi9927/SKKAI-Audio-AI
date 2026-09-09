@@ -370,7 +370,8 @@ def script_lang(text: str):
 # `Please translate this sentence into Korean`, `Okay, I understand. Please provide…`.
 _TRANSLATOR_META = re.compile(
     r"^\s*(?:please (?:translate|provide)|sure[,!.]|okay,? i understand|"
-    r"here(?:'s| is) the translation|i can help|i'm sorry,? but i)\b", re.I)
+    r"here(?:'s| is) the translation|i can help|i'm sorry,? but i|"
+    r"you are a translation engine|translate (?:the following|only)|earlier turns)\b", re.I)
 
 
 async def _translate_to(text: str, target: str, source: str, context=None) -> str:
