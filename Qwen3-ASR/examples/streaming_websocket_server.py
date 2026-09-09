@@ -1645,6 +1645,15 @@ class Qwen3ASRStreamingHandler:
     # 처럼 쉼표 뒤에 <SEG> 를 찍어, 조각이 따로 번역된다(`Sure,` → `물론입니다.`,
     # `this is my first time.` → `이게 제 첫 번째입니다.`).
     _FRAGMENT_TAIL_RE = re.compile(r"[,;、，]\s*$")
+    # 이 어절 수 이하의 짧은 조각(`Sure,`, `Yes,`)만 미룬다. 절 단위 커밋(`Furthermore,
+    # we support any languages such as Japanese, Spanish or even Arabic,`)까지 미루면
+    # 쉼표가 이어지는 동안 문장 전체가 마침표까지 붙들려 SEG 단위 자막이 사라진다.
+    _FRAGMENT_MAX_WORDS = 3
+
+    @classmethod
+    def _is_short_fragment(cls, text: str) -> bool:
+        return (bool(cls._FRAGMENT_TAIL_RE.search(text))
+                and len(text.split()) <= cls._FRAGMENT_MAX_WORDS)
 
     def _merge_comma_fragments(self, slot_key: Optional[str], items: list, closing: bool) -> list:
         """쉼표로 끝난 커밋을 다음 커밋과 합쳐 한 번에 번역하게 한다.
@@ -1666,11 +1675,11 @@ class Qwen3ASRStreamingHandler:
                 out = [(prev, "seg")]
         merged: list = []
         for text, trig in out:
-            if merged and self._FRAGMENT_TAIL_RE.search(merged[-1][0]):
+            if merged and self._is_short_fragment(merged[-1][0]):
                 merged[-1] = (merged[-1][0] + " " + text, trig)
             else:
                 merged.append((text, trig))
-        if not closing and merged and self._FRAGMENT_TAIL_RE.search(merged[-1][0]):
+        if not closing and merged and self._is_short_fragment(merged[-1][0]):
             text, _trig = merged.pop()
             store[key] = text
             self.log.info(f"[FRAGMENT-DEFER] slot={key} text={text!r}")

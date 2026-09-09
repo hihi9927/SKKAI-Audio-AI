@@ -40,8 +40,10 @@ updates. It also makes the en finetune write a second `language English` header 
 stop there; the server now cuts the slot on that pattern (`SEG-HEADER-RESET`) and re-decodes from the chunk
 where the sentence began, so on the 143s test the two chunk sizes deliver the same sentences. It also
 commits on commas more often (`Sure, <SEG> please sit down.`), and a comma fragment translated alone is
-wrong (`Sure,` → `물론입니다.`); the server now holds a commit that ends in a comma and translates it
+wrong (`Sure,` → `물론입니다.`); the server now holds a commit of up to three words that ends in a comma and translates it
 together with the next one (`FRAGMENT-DEFER` / `FRAGMENT-JOIN`), or alone when the slot closes first.
+Longer clause commits (`Furthermore, we support any languages such as Japanese, Spanish or even
+Arabic,`) go out at their `<SEG>` — holding those chained a whole sentence until its period.
 
 Use the **silence** finetune for en, not `en-dailytalk-seg`: that one is trained to mark `<SEG>`, so it
 commits far more often — 41% of its finals in one live session were two words or fewer, and a fragment
