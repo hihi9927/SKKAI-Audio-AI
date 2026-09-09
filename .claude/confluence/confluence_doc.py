@@ -562,8 +562,9 @@ def render(template: str, fields: dict, jira_keys: list[str]) -> tuple[str, list
             missing.append(name)
             filled = "<p />"
         else:
-            # 항목 이름이 h4 이므로 그 안의 소제목은 h5 부터.
-            filled = cell(spec.get("value"), spec.get("type", "text"), base=4)
+            # 줄글 항목 안의 소제목은 항목 이름과 같은 h4 부터. 한 단계 아래(h5)로 두면
+            # 본문 갈래가 너무 작게 보인다.
+            filled = cell(spec.get("value"), spec.get("type", "text"), base=3)
         pos = list(root).index(el) + 1
         inserted = 0
         for node in parse_storage(filled):
