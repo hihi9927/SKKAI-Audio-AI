@@ -101,8 +101,31 @@ speaker's previous sentence — usually unrelated. Replaying the 143s demo recor
 1 vs 0 changed 16 of 50 lines, and every difference that mattered was the context bleeding in: a
 junk fragment `All` came back as the previous line's translation, `케이크에요.` became `The cake is
 delicious.` after `여기 케이크도 맛있어요.`, `See you then.` became `그럼, 그래요.`. With 0 those are
-`모든`, `It's cake.`, `그럼 그때 봐요.`. So the translation server runs with `--context-window 0` for
-the demo until context comes from the proxy, which sees every speaker in order.
+`모든`, `It's cake.`, `그럼 그때 봐요.`. So the ASR servers hand the translator no context
+(`--local-translation-context 0`).
+
+**Context from the proxy, which sees every speaker in order, helps again.** `demo_proxy.py --context N`
+keeps the last N finals across all servers — original, language, and the translation already made into
+the target — and sends them as `{text, lang, translation}` items; `LLMTranslator._build_prompt` renders
+those with their language and translation, and the proxy re-translates every target itself so the server's
+context-free translation is replaced. Replaying the demo script in conversation order through gemma with
+the model's own previous outputs as context:
+
+| context (cross-speaker) | COMET-DA | →ko | →en | →es | median |
+|---:|---:|---:|---:|---:|---:|
+| 0 | 0.915 | 0.910 | 0.956 | 0.881 | 162 ms |
+| **1** | **0.929** | **0.928** | **0.959** | **0.900** | 162 ms |
+| 2 | 0.922 | 0.927 | 0.957 | 0.883 | 150 ms |
+| 3 | 0.923 | 0.929 | 0.957 | 0.885 | 151 ms |
+
+One turn is the whole gain, as before, and it is the previous *speaker's* turn that carries it:
+`Mucho gusto.` → `만나서 반갑습니다` instead of `안녕하세요` (+0.41), `저는 자주 와요` → `Vengo a menudo`
+instead of `Yo voy a menudo` (+0.28), `In English, we say cake` → `케이크라고 해요` instead of
+`케이크가 있어요` (+0.14, also on the live recording). The losses are small register shifts
+(`See you then` → `Hasta luego`, −0.15). So the demo runs `--context 1` on the proxy and
+`--context-window 1` on the translation server. One guard came out of the live replay: with a garbled
+source the model imitated the context line's `원문 → 번역` shape (`Eso primero, besaki? → 어서, 좋아해요?`),
+so `_translate_sync` keeps only what follows the last `→`.
 
 **Score context experiments with reference-based COMET, not CometKiwi.** Kiwi sees only source and
 translation, so information pulled from a previous turn reads as invented — the same runs scored

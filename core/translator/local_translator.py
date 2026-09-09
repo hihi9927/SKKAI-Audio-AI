@@ -361,12 +361,27 @@ class LLMTranslator:
                       context: Optional[list] = None) -> str:
         tok = self._tokenizer
         if context:
-            ctx_block = "\n".join(f"- {c}" for c in context)
-            user = (f"Earlier turns in {self._name(source_code)} (context only, do NOT "
-                    f"translate these, do NOT repeat their translation):\n{ctx_block}\n\n"
-                    f"Translate ONLY the line below into {self._name(target_code)}. It may be "
-                    f"garbled or incomplete — translate it as it is, do not replace it with "
-                    f"anything from the context.\n\n{text}")
+            # 문맥 항목은 원문 문자열이거나 {text, lang, translation} 딕셔너리다. 딕셔너리는
+            # 프록시가 화자·언어 무관하게 시간순으로 모은 앞 턴이라 언어를 같이 적고,
+            # 번역이 있으면 함께 보여 용어(pastel=케이크)와 격식의 기준점으로 삼는다.
+            lines = []
+            for c in context:
+                if isinstance(c, dict):
+                    lang = self._name(c.get("lang") or "") or "unknown language"
+                    line = f"- [{lang}] {c.get('text', '')}"
+                    tr = c.get("translation")
+                    if tr:
+                        line += f"  →  [{self._name(target_code)}] {tr}"
+                    lines.append(line)
+                else:
+                    lines.append(f"- {c}")
+            ctx_block = "\n".join(lines)
+            user = (f"Earlier turns of the conversation, oldest first (context only — they may "
+                    f"be other speakers and other languages; do NOT translate these, do NOT "
+                    f"repeat their translation):\n{ctx_block}\n\n"
+                    f"Translate ONLY the line below, which is in {self._name(source_code)}, into "
+                    f"{self._name(target_code)}. It may be garbled or incomplete — translate it "
+                    f"as it is, do not replace it with anything from the context.\n\n{text}")
         else:
             user = (f"Translate the following {self._name(source_code)} sentence into "
                     f"{self._name(target_code)}.\n\n{text}")
@@ -399,6 +414,11 @@ class LLMTranslator:
         if "</think>" in s:
             s = s.split("</think>")[-1].strip()
         s = s.strip().strip('"').strip()
+        # 문맥 줄의 `원문 → 번역` 꼴을 흉내 내 `Eso primero? → 어서, 좋아해요?` 처럼
+        # 원문을 앞에 달고 나오는 일이 있다(잡음 입력에서 실측). 화살표 뒤만 남긴다.
+        if "→" in s:
+            s = s.split("→")[-1].strip()
+        s = re.sub(r"^\[[A-Za-z ]+\]\s*", "", s)
         # 지시를 어기고 문맥까지 통째로 옮겨 오면 줄이 여러 개가 된다. 마지막 줄이
         # 현재 발화의 번역이다. (실측 600쌍에서는 한 번도 일어나지 않았다.)
         lines = [ln.strip(" -") for ln in s.split("\n") if ln.strip()]

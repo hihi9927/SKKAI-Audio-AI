@@ -60,6 +60,10 @@ REST_UPSTREAM = None  # --rest. 라우팅 표에 없는 언어를 맡는 서버(
 REST_KEY = "*"        # 그 서버를 가리키는 이름
 TRANSLATE_URL = None  # --translate-url. 번역 방향을 바로잡을 때 쓴다.
 AUDIENCE: list[str] = []   # --targets. 발화 하나를 이 언어들로 모두 번역한다.
+# --context N. 화자·언어 무관 최근 final N 개를 번역 문맥으로 붙인다. 0 이면 끔.
+# 켜면 서버가 낸 번역도 버리고 목표 전부를 프록시가 문맥과 함께 다시 번역한다 —
+# 서버는 자기 언어(=같은 화자)만 들어서 상대 화자 문맥을 줄 수 없기 때문이다.
+CONTEXT_N = 0
 LANG_HINT = False     # --lang-hint. 판정 언어를 서버에 알린다.
 LANG_HINT_FORCE = False  # --lang-hint-force. 바이어스 대신 force_language 로.
 # 슬롯을 자르는 지점을 판정 시작보다 이만큼 앞으로 당긴다. 전환 지점 추정은
@@ -228,18 +232,33 @@ async def fix_direction(data, verdict_lang, lang_map, target_lang):
     return data, True
 
 
-async def _translate_to(text: str, target: str, source: str) -> str:
+async def _translate_to(text: str, target: str, source: str, context=None) -> str:
     """단독 번역 서버에 한 줄 번역을 요청한다. 실패는 빈 문자열이다."""
     import aiohttp
 
+    payload = {"text": text, "target": target, "source": source}
+    if context:
+        payload["context"] = list(context)
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as sess:
-        async with sess.post(f"{TRANSLATE_URL.rstrip('/')}/translate",
-                             json={"text": text, "target": target, "source": source}) as resp:
+        async with sess.post(f"{TRANSLATE_URL.rstrip('/')}/translate", json=payload) as resp:
             resp.raise_for_status()
             return (await resp.json()).get("translation") or ""
 
 
-async def add_audience_translations(data, src_lang: str, primary_target: str):
+def _context_for(recent, target: str):
+    """최근 final 들을 번역 문맥으로. 목표 언어 번역이 있으면 같이 붙인다."""
+    out = []
+    for lang, original, translations in recent:
+        item = {"text": original, "lang": lang}
+        if target in translations:
+            item["translation"] = translations[target]
+        elif lang == target:
+            item["translation"] = original
+        out.append(item)
+    return out
+
+
+async def add_audience_translations(data, src_lang: str, primary_target: str, recent=None):
     """청중 언어마다 번역을 붙여 ``translations`` 로 실어 보낸다.
 
     **서버는 발화 하나당 목표 하나만 낸다.** `langMap` 이 소스 → 목표 1:1 이라
@@ -257,17 +276,21 @@ async def add_audience_translations(data, src_lang: str, primary_target: str):
     if not text:
         return data
     out = {}
-    if primary_target and data.get("translation"):
+    if primary_target and data.get("translation") and not (CONTEXT_N and recent is not None):
         out[primary_target] = data["translation"]
     todo = [t for t in AUDIENCE if t != src_lang and t not in out]
     if todo:
-        got = await asyncio.gather(*(_translate_to(text, t, src_lang) for t in todo),
-                                   return_exceptions=True)
+        ctx = list(recent)[-CONTEXT_N:] if (CONTEXT_N and recent) else []
+        got = await asyncio.gather(
+            *(_translate_to(text, t, src_lang, _context_for(ctx, t)) for t in todo),
+            return_exceptions=True)
         for tgt, res in zip(todo, got):
             if isinstance(res, Exception):
                 print(f"fanout {src_lang}->{tgt} failed: {res!r}", flush=True)
             elif res:
                 out[tgt] = res
+                print(f"translate {src_lang}->{tgt} ctx={len(ctx)}: {text[:40]!r} -> {res[:40]!r}",
+                      flush=True)
     if not out:
         return data
     data = dict(data)
@@ -747,6 +770,9 @@ async def run_dual(client, start_raw, pending_binary):
         disp = Dispatcher(tracker, live, route_of, fallback)
         reorder = Reorder(disp, live, client)
         disp.final_sent = lambda name, key: reorder.done.get(name, -1.0) >= key - 0.3
+        # 화자·언어 무관 최근 final. 번역 문맥용 (--context).
+        from collections import deque
+        recent: deque = deque(maxlen=max(CONTEXT_N, 1))
         print(f"dual -> {', '.join(f'{k}:{servers[k]}' for k in live)} "
               f"| LID 후보 {sorted(allowed)} | 담당 서버에만 오디오 전달, 나머지는 무음",
               flush=True)
@@ -908,9 +934,17 @@ async def run_dual(client, start_raw, pending_binary):
                 src = (verdict_lang or data.get("language") or "").lower()
                 before = data.get("translations")
                 data = await add_audience_translations(
-                    data, src, (lang_map or {}).get(src) or target_lang)
+                    data, src, (lang_map or {}).get(src) or target_lang,
+                    recent if CONTEXT_N else None)
+                if CONTEXT_N and data.get("translations"):
+                    # 문맥 번역이 서버 번역을 대신한다. 옛 화면·앱용 translation 도 맞춘다.
+                    primary_tgt = (lang_map or {}).get(src) or target_lang
+                    if primary_tgt in data["translations"]:
+                        data["translation"] = data["translations"][primary_tgt]
                 if fixed or data.get("translations") is not before:
                     msg = json.dumps(data, ensure_ascii=False)
+                if CONTEXT_N:
+                    recent.append((src, data.get("original") or "", dict(data.get("translations") or {})))
                 await reorder.submit(lang, key, msg)
 
         tasks = [asyncio.create_task(pump_client())]
@@ -1082,6 +1116,10 @@ if __name__ == "__main__":
                     help="lang_hint 를 바이어스 대신 force_language 로 적용한다. "
                          "프롬프트에 언어를 박아 넣는 방식이라 출력 형식이 바뀌고 "
                          "커밋 판정이 달라진다 — 실측에서 짧은 발화가 뭉개졌다")
+    ap.add_argument("--context", type=int, default=0,
+                    help="번역 문맥으로 붙일 최근 final 수 (화자·언어 무관). 켜면 서버 번역 "
+                         "대신 프록시가 목표 전부를 문맥과 함께 다시 번역한다. 번역 서버의 "
+                         "--context-window 가 이 값 이상이어야 한다")
     ap.add_argument("--targets", default=None,
                     help="청중 언어 목록(예: ko,en,es). 발화 하나를 이 언어들로 모두 "
                          "번역해 translations 로 보낸다. 서버는 발화당 목표 하나만 "
@@ -1107,6 +1145,7 @@ if __name__ == "__main__":
     TRANSLATE_URL = args.translate_url
     if args.targets:
         AUDIENCE = [c.strip().lower() for c in args.targets.split(",") if c.strip()]
+    CONTEXT_N = max(0, args.context)
     LID_EARLY = args.lid_early
     LANG_HINT = args.lang_hint or args.lang_hint_force
     LANG_HINT_FORCE = args.lang_hint_force

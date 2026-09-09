@@ -20,7 +20,8 @@ Translate when `OPENAI_API_KEY` is missing:
 | `--local-translation-context` | Number of previous originals handed to the local translator (default 0 = off). **Only the LLM backend can use them** |
 
 `Qwen/Qwen3-4B-Instruct-2507` at 4bit with one turn of context is the local translator for a
-two-speaker stream; the multilingual demo stack runs `unsloth/gemma-3-4b-it` at 4bit with no context —
+two-speaker stream; the multilingual demo stack runs `unsloth/gemma-3-4b-it` at 4bit with one turn of
+cross-speaker context supplied by the proxy (`demo_proxy.py --context 1`), none from the ASR servers —
 the measurements behind both are in [core/translator/LOCAL_TRANSLATION.md](../core/translator/LOCAL_TRANSLATION.md).
 
 ## One translation model for the whole machine

@@ -1507,6 +1507,8 @@ class Qwen3ASRStreamingHandler:
         # 분할은 반드시 DOT_COMMIT_BOUNDARY_RE로 한다. 순진하게 [.!?]로 자르면 약어에서
         # 깨진다(실측: 'returned Mr.' + 'Lilburn.'). 이 정규식은 Mr./Mrs./Dr./St./Jr./Sr./
         # vs./No.를 경계에서 제외하므로 dot 커밋 경로와 같은 기준이 유지된다.
+        if self._drop_before_translate(uncommitted_display, reason):
+            return
         _parts = [uncommitted_display]
         if not self.always_commit:
             _split, _rem = [], uncommitted_display
@@ -2334,6 +2336,10 @@ class Qwen3ASRStreamingHandler:
 
         committed_items = self._merge_comma_fragments(
             slot_key, committed_items, closing=bool(force_reason))
+        # 번역을 부르기 전에 거른다. _emit_final_payload 에서 거르면 헤더·환각 한 줄마다
+        # 번역 호출을 한 번씩 버리고, 그 문장이 _segment_history(문맥)에도 들어간다.
+        committed_items = [(t, r) for t, r in committed_items
+                           if not self._drop_before_translate(t, force_reason or r)]
         if not committed_items:
             return self._strip_asr_text(latest_text) if latest_text is not None else None
 
@@ -2881,6 +2887,23 @@ class Qwen3ASRStreamingHandler:
         r")\s*$",
         re.IGNORECASE,
     )
+
+    def _drop_before_translate(self, original: str, reason: str) -> bool:
+        """번역 전에 버릴 커밋인가 — 헤더뿐, 알려진 무음 정형문, 문장 부호뿐, 쉼표 한 어절."""
+        text = self._strip_lang_headers(original or "")
+        if not text:
+            self.log.info(f"[HEADER-ONLY-DROP] reason={reason} text={original!r}")
+            return True
+        if self._is_known_silence_phrase(text):
+            self.log.info(f"[HALLUC-DROP] reason={reason} text={text!r}")
+            return True
+        if not re.search(r"[^\W_]", text):
+            self.log.info(f"[EMPTY-DROP] reason={reason} text={text!r}")
+            return True
+        if reason in ("vad", "finish") and re.fullmatch(r"\S+,", text.strip()):
+            self.log.info(f"[TAIL-DROP] reason={reason} text={text!r}")
+            return True
+        return False
 
     def _is_header_only(self, original: str) -> bool:
         """전사 없이 언어 헤더만 나온 커밋인가."""

@@ -26,12 +26,12 @@ PYTHONPATH=$PWD/Qwen3-ASR python Qwen3-ASR/examples/streaming_websocket_server.p
 # 2) the translator, after the ASR servers so its allocator sees the space that is left
 PYTORCH_ALLOC_CONF=expandable_segments:True \
 python STiTy-Mobile/demo-web/local_translation_server.py --port 8770 \
-  --model unsloth/gemma-3-4b-it --quant 4bit --context-window 0
+  --model unsloth/gemma-3-4b-it --quant 4bit --context-window 1
 
 # 3) the proxy last — it holds the LID model
 python STiTy-Mobile/demo-web/partial_demo/demo_proxy.py 8080 \
   --route ko=8766,en=8767 --default 8766 --rest 8768 --dual --lid-scan \
-  --lid-model openai/whisper-small --targets ko,en,es --translate-url http://127.0.0.1:8770
+  --lid-model openai/whisper-small --targets ko,en,es --translate-url http://127.0.0.1:8770 --context 1
 ```
 
 `--chunk-size 1.0` (server default 2.0) shows the first partial about 0.4s sooner and doubles the partial
@@ -50,9 +50,10 @@ Open <http://localhost:8080> (dev) or `/show.html` (demo); forward port 8080 onl
 **23.0 / 24.5 GiB** — 6.1 each for the ASR servers, 3.5 translator, 0.9 LID. 0.25 is roughly the
 utilization floor, and the budget is yours to keep: vLLM leaves room for nothing else.
 
-The translator is gemma-3-4b-it with no context: on the demo script it is the best model that fits the
-slot and the only one that keeps Korean in 해요체, and the one-line same-speaker context this stack can
-offer made translations worse — both measured in
+The translator is gemma-3-4b-it: on the demo script it is the best model that fits the slot and the only
+one that keeps Korean in 해요체. Context comes from the proxy (`--context 1`, the previous final of *any*
+speaker, with its translation), not from the ASR servers — same-speaker context made translations worse,
+cross-speaker context is +0.014 COMET — both measured in
 [core/translator/LOCAL_TRANSLATION.md](../../core/translator/LOCAL_TRANSLATION.md).
 
 ## The flags a multilingual demo needs
@@ -69,6 +70,7 @@ leaving one out does not degrade gracefully — it drops utterances.
 | `--lid-window 1.5` (default) | At 1.0s the verdict is 83% on Korean speakers' three-language talk, 91% at 1.5s; the utterance goes only where the first verdict says |
 | `--targets ko,en,es` | One translation per utterance, whatever else is on screen |
 | `--translate-url` | Direction stays whatever the ASR server declared; the baseline behind `--rest` still mislabels Spanish |
+| `--context 1` | Every target is translated without the previous speaker's turn; `Mucho gusto` comes back `안녕하세요`, `In English, we say cake` as `케이크가 있어요` |
 
 Every figure behind these defaults is native read speech; **accented L2 speech is unmeasured**, and
 that is where this fails in practice.

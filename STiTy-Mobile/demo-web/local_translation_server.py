@@ -53,6 +53,8 @@ async def handle_translate(request: web.Request) -> web.Response:
 
     translator = request.app["translator"]
     translated, src = await translator.translate(text, target, source, context=context)
+    logger.info(f"[translate] {src or '?'}->{target} ctx={len(context) if context else 0} "
+                f"{text[:60]!r} -> {translated[:60]!r}")
     return web.json_response({"translation": translated, "source": src})
 
 
