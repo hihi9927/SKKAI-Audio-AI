@@ -149,6 +149,35 @@ class Confluence:
         })
         return self._check(r)
 
+    def set_owner(self, page_id: str, account_id: str) -> dict:
+        """페이지 소유자를 바꾼다. 스크립트는 관리 계정(스티티)으로 올리므로 그대로 두면
+        소유자가 전부 스티티가 된다 — 작성자로 적힌 사람을 소유자로 돌린다.
+
+        v2 는 소유자만 따로 바꾸는 끝점이 없어서, 본문·제목을 그대로 둔 채 버전을 +1 하고
+        `ownerId` 를 실어 PUT 한다. 판 하나가 더 생기지만 내용은 같다.
+        """
+        r = self.client.get(f"{self.base}/api/v2/pages/{page_id}",
+                            params={"body-format": "storage"})
+        cur = self._check(r)
+        if cur.get("ownerId") == account_id:
+            return cur
+        r = self.client.put(f"{self.base}/api/v2/pages/{page_id}", json={
+            "id": page_id, "status": "current", "title": cur["title"],
+            "body": {"representation": "storage", "value": cur["body"]["storage"]["value"]},
+            "version": {"number": cur["version"]["number"] + 1,
+                        "message": "confluence_doc.py: 작성자를 소유자로"},
+            "ownerId": account_id,
+        })
+        return self._check(r)
+
+    def find_user(self, name: str) -> str | None:
+        """표시 이름이 정확히 같은 Atlassian 계정 하나의 accountId. 없거나 여럿이면 None."""
+        r = self.client.get(f"{CONFIG['base_url'].rsplit('/wiki', 1)[0]}/rest/api/3/user/search",
+                            params={"query": name, "maxResults": 20})
+        hits = [u for u in self._check(r)
+                if u.get("accountType") == "atlassian" and u.get("displayName") == name]
+        return hits[0]["accountId"] if len(hits) == 1 else None
+
     def add_labels(self, page_id: str, labels: list[str]) -> None:
         if not labels:
             return
@@ -365,7 +394,7 @@ def take_list(lines: list[str], i: int) -> tuple[str, int]:
     return build_list(items, 0, items[0][0])[0], i
 
 
-def markdown(text: str) -> str:
+def markdown(text: str, base: int = 3) -> str:
     """md 로 쓴 업무 내용을 storage 형식으로 바꾼다.
 
     소제목(#), 목록(- / 1.), 표(| a | b |), 코드블록(```), 문단, 인라인 `코드`·**굵게**
@@ -394,7 +423,7 @@ def markdown(text: str) -> str:
         if m:
             flush()
             # 가이드의 절 제목이 h3 이라 칸 안의 소제목은 그 아래 단계부터 쓴다.
-            lv = min(len(m.group(1)) + 3, 6)
+            lv = min(len(m.group(1)) + base, 6)
             out.append(f"<h{lv}>{inline(m.group(2))}</h{lv}>")
             i += 1
             continue
@@ -425,7 +454,7 @@ def markdown(text: str) -> str:
     return "".join(out) or "<p />"
 
 
-def cell(value, kind: str) -> str:
+def cell(value, kind: str, base: int = 3) -> str:
     """JSON 의 값 하나를 storage 형식 칸 내용으로 바꾼다."""
     if kind == "list":
         if not value:
@@ -440,7 +469,7 @@ def cell(value, kind: str) -> str:
     if kind == "pagelink":
         return f"<p>{page_link(value)}</p>" if value else "<p />"
     if kind == "markdown":
-        return markdown(value)
+        return markdown(value, base)
     if kind == "jira":
         return f"<p>{jira_macro(value)}</p>" if value else "<p />"
     return f"<p>{esc(value)}</p>"
@@ -466,6 +495,17 @@ def row_labels(root: ET.Element) -> list[str]:
             if name:
                 names.append(name)
     return names
+
+
+def prose_labels(root: ET.Element) -> list[str]:
+    """표 밖의 항목 — h4 소제목 하나가 항목 하나다. 보고 문서의 `요약`·`업무 내용 정리` 처럼
+    칸에 가두지 않고 줄글로 쓰는 항목이 이 꼴이다."""
+    return ["".join(h.itertext()).strip() for h in root.iter("h4")
+            if "".join(h.itertext()).strip()]
+
+
+def field_labels(root: ET.Element) -> list[str]:
+    return row_labels(root) + prose_labels(root)
 
 
 def headings(root: ET.Element) -> list[str]:
@@ -502,6 +542,37 @@ def render(template: str, fields: dict, jira_keys: list[str]) -> tuple[str, list
         td.text = None
         for node in parse_storage(filled):
             td.append(node)
+
+    # h4 항목: 소제목 다음부터 다음 소제목(h1~h4) 전까지가 그 항목의 자리다. 가이드의
+    # 안내 문단을 걷어내고 값을 끼운다.
+    children = list(root)
+    i = 0
+    while i < len(children):
+        el = children[i]
+        if el.tag != "h4":
+            i += 1
+            continue
+        name = "".join(el.itertext()).strip()
+        j = i + 1
+        while j < len(children) and children[j].tag not in ("h1", "h2", "h3", "h4"):
+            root.remove(children[j])
+            j += 1
+        spec = fields.get(name)
+        if spec is None:
+            missing.append(name)
+            filled = "<p />"
+        else:
+            # 항목 이름이 h4 이므로 그 안의 소제목은 h5 부터.
+            filled = cell(spec.get("value"), spec.get("type", "text"), base=4)
+        pos = list(root).index(el) + 1
+        inserted = 0
+        for node in parse_storage(filled):
+            root.insert(pos, node)
+            pos += 1
+            inserted += 1
+        children = list(root)
+        # 끼워 넣은 값 안의 소제목(markdown 의 `#`)은 항목이 아니다. 건너뛴다.
+        i = children.index(el) + 1 + inserted
 
     body = "".join(ET.tostring(child, encoding="unicode") for child in root)
     body = re.sub(r"\sxmlns:(ac|ri)=\"[^\"]*\"", "", body)
@@ -645,6 +716,27 @@ def resolve_jira(spec, fields: dict, major: str, dry_run: bool) -> tuple[list[st
     return new_keys + keys, made
 
 
+def assign_owner(cf: "Confluence", page_id: str, fields: dict) -> None:
+    """`작성자` 칸의 이름이 Atlassian 계정과 정확히 맞으면 그 사람을 소유자로 만든다.
+
+    이름이 없거나 둘 이상 맞으면 건드리지 않고 알려만 준다 — 엉뚱한 사람을 소유자로
+    만드는 것보다 관리 계정으로 남는 쪽이 낫다.
+    """
+    spec = fields.get("작성자") or {}
+    name = str(spec.get("value") or "").strip()
+    if not name:
+        return
+    account = cf.find_user(name)
+    if not account:
+        print(f"소유자: '{name}' 과 정확히 같은 계정이 하나가 아니라 바꾸지 않았다")
+        return
+    try:
+        cf.set_owner(page_id, account)
+        print(f"소유자: {name}")
+    except SystemExit as e:
+        print(f"소유자 변경 실패: {e}")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(
         description="업무 계획/보고 문서를 Confluence 에 만든다. 형식은 가이드 문서에서 그때그때 읽는다.")
@@ -675,7 +767,7 @@ def main() -> None:
         print(f"가이드 페이지: {guide_id}")
         print("절 구성 :", " / ".join(headings(root)) or "(없음)")
         print("채워야 하는 항목 (이 이름을 JSON 의 fields 키로 그대로 쓸 것):")
-        for name in row_labels(root):
+        for name in field_labels(root):
             print(f"  - {name}")
         return
 
@@ -718,7 +810,7 @@ def main() -> None:
             print(f"  {line}")
     body, missing = render(template, fields, jira_keys)
 
-    unused = [k for k in d.get("fields", {}) if k not in row_labels(parse_storage(template))]
+    unused = [k for k in d.get("fields", {}) if k not in field_labels(parse_storage(template))]
     if unused:
         print(f"경고: 가이드에 없는 항목이라 무시됨 — {', '.join(unused)}", file=sys.stderr)
     if missing:
@@ -746,6 +838,7 @@ def main() -> None:
     if existing:
         page = cf.update_page(existing, title, body)
         cf.add_labels(existing, labels)       # 라벨은 중복 추가해도 그대로다
+        assign_owner(cf, existing, fields)
         print(f"갱신됨: {title}")
         print(f"버전  : {page['version']['number']}")
         print(f"라벨  : {', '.join(labels)}")
@@ -759,6 +852,7 @@ def main() -> None:
                                   aliases=(kind_folder_alias,))
     page = cf.create_page(folder_id, title, body)
     cf.add_labels(page["id"], labels)
+    assign_owner(cf, page["id"], fields)
 
     print(f"만들어짐: {title}")
     print(f"폴더    : {folder_path} ({folder_id})")

@@ -53,7 +53,15 @@ curl -s -u "$ATLASSIAN_EMAIL:$ATLASSIAN_API_TOKEN" -H "Accept: application/json"
 `fields` 값의 `type` 은 계획 스킬과 같고(`text` / `list` / `links` / `pagelink`),
 보고 전용으로 `markdown` 이 하나 더 있다. 계획 문서 링크처럼 문서 하나만 걸 때는 `pagelink`.
 
+### `요약` 은 두세 문장
+
+`2. 보고 내용` 맨 위에 온다. 무엇을 바꿨고 결과가 무엇인지만. 읽는 사람이 이 문단만 보고
+넘어가도 되게 쓴다 (`text` 로 한 문단, 또는 `markdown` 으로 글머리 두셋).
+
 ### 업무 내용 정리는 `markdown` 으로 쓴다
+
+표 안이 아니라 소제목(`요약`, `업무 내용 정리`) 아래 줄글로 들어간다. 그래서 md 표
+(`| a | b |`)도 쓸 수 있다 — 실측값 비교는 표가 읽기 좋다.
 
 한 문단으로 뭉쳐 쓰지 말고 **md 쓰듯 소제목으로 내용을 갈라서** 써줘. 소제목은 배경 /
 한 일 / 결과 / 남은 것처럼 실제 업무 흐름에 맞게 정하면 된다 — 정해진 이름은 없다.
@@ -84,6 +92,7 @@ curl -s -u "$ATLASSIAN_EMAIL:$ATLASSIAN_API_TOKEN" -H "Accept: application/json"
     "작성자": {"type": "text", "value": "정다현"},
     "업무 카테고리": {"type": "text", "value": "범용"},
     "파생된 계획 문서": {"type": "pagelink", "value": "[1차][시연 대비][아랍어 지원] 계획 문서"},
+    "요약": {"type": "text", "value": "아랍어 문장부호를 dot commit 경계에 넣어 FSL 을 0.42초 줄였다."},
     "업무 내용 정리": {"type": "markdown", "value": "# 배경\n아랍어는 문장부호가 `؟` 라서 기존 dot commit 이 안 걸린다.\n\n# 한 일\n- `--enable-dot-commit` 에 아랍어 부호 추가\n  - `؟` 물음표\n  - `۔` 마침표\n- 회귀 테스트 12건 통과\n\n# 결과\n1. FSL 평균 **0.42초** 단축\n2. 잘못 끊긴 문장 3건이 0건\n\n# 남은 것\n분절 품질 평가는 다음 차수로 넘긴다."}
   }
 }
@@ -99,6 +108,14 @@ PYTHONPATH= .venv/bin/python .claude/confluence/confluence_doc.py --json <경로
 동작 규칙은 계획 스킬과 같다 — 폴더 자동 생성, 비워둔 칸은 경고, 같은 제목이 이미 있으면
 마지막 태그(보고 문서는 세분화 업무명) 옆에 `[2]` 처럼 번호를 붙여 새 문서로 만든다
 (`seq` 로 직접 지정, `--no-autonumber` 로 끔).
+
+## 4.1 소유자
+
+스크립트는 관리 계정(스티티)으로 올리므로 그대로 두면 문서 소유자가 전부 스티티가 된다.
+그래서 올린 뒤 `작성자` 칸의 이름과 **표시 이름이 정확히 같은** Atlassian 계정이 하나 있으면
+그 사람을 소유자로 바꾼다(판 하나가 더 생기지만 내용은 같다). 이름이 안 맞거나 둘 이상이면
+바꾸지 않고 알려만 주므로, `작성자` 는 Confluence 표시 이름 그대로 적어야 한다 — 헷갈리면
+`--list-users` 로 확인.
 
 ## 5. 마무리
 
