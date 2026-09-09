@@ -740,7 +740,17 @@ class Dispatcher:
                 continue
             a = max(self._offset, lock[0] - PRE_ROLL)
             b = min(self.cursor, (v[1] if v[1] is not None else lock[1]) + POST_ROLL)
+            # 스캔 전환(split)이 이미 이 발화의 뒷부분을 새 담당에게 보냈으면 그 앞까지만
+            # 보낸다. 통째로 다시 보내면 뒷부분 오디오가 새 담당에게 두 번 들어가 같은
+            # 말이 두 줄(하나는 뭉개진 채)로 나오고, 앞부분 final 이 뒷부분보다 늦게 떠
+            # 순서가 뒤집힌다 — `제가 아랍어 발음이 좋진 않지만` 이 `자르 한마디
+            # 해보겠습니다.` 뒤에 왔다.
+            for sv in self.tracker.verdicts:
+                if (len(sv) > 5 and sv[5] and sv[2] == new_lang
+                        and lock[0] < sv[0] <= b):
+                    b = min(b, sv[0] - SPLIT_BACKOFF + 0.1)
             if b <= a:
+                self._checked.add(id(lock))
                 continue
             piece = self._slice(a, b)
             await send(new_owner, piece)
