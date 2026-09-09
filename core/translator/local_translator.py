@@ -424,6 +424,11 @@ class LLMTranslator:
         lines = [ln.strip(" -") for ln in s.split("\n") if ln.strip()]
         return lines[-1] if lines else s
 
+    @staticmethod
+    def _is_fragment(text: str) -> bool:
+        """문장 부호로 끝나지 않으면 문장 도중에 잘린 절로 본다."""
+        return not re.search(r"[.!?。？！]\s*[\"'」』)]*\s*$", text.strip())
+
     async def translate(
         self, text: str, target_code: str, source_code: Optional[str] = None,
         context: Optional[list] = None,
@@ -433,6 +438,16 @@ class LLMTranslator:
             return "", ""
         src = (source_code or "").strip() or guess_lang_code(text)
         ctx = list(context or [])[-self.context_window:] if self.context_window else []
+        if ctx and self._is_fragment(text):
+            # 문장 도중에 잘린 절에는 문맥을 주지 않는다. 스트리밍 ASR 은 절 경계
+            # (`…되시면`, `…에서도`)에서 커밋하는데, 그 조각에 앞 턴을 보여 주면 모델이
+            # 빠진 동사를 앞 턴에서 빌려 문장을 완성한다 — 실측 `지금 제 핸드폰처럼 폰
+            # 화면에서도` 가 앞 줄의 `QR코드를 찍게 되시면` 을 보고 `Now, you can scan QR
+            # codes on your phone screen too.` 가 됐다. "조각이니 완성하지 말라" 는
+            # 지시를 넣어 봐도 4B 모델은 여전히 빌려 오거나 원문을 그대로 돌려줬다.
+            # 문맥 없이 번역하면 `like the phone screen like my phone now` 로 어색해도
+            # 없는 말은 안 만든다.
+            ctx = []
         try:
             translated = await asyncio.to_thread(
                 self._translate_sync, text, target_code, src, ctx)

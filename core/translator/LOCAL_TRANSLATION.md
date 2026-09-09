@@ -68,6 +68,14 @@ servers' `--gpu-memory-utilization`, and their downloads run at ~1 MB/s on this 
 
 ## Feeding the translator context
 
+**Unfinished clauses get no context.** The streaming ASR commits at clause boundaries
+(`…되시면`, `…에서도`), and a clause without a sentence-final mark is translated without the
+earlier turns. Shown the previous line, gemma-3-4b-it borrows its verb to finish the sentence —
+`지금 제 핸드폰처럼 폰 화면에서도` after `QR코드를 찍게 되시면` came out as `Now, you can scan QR
+codes on your phone screen too.` Telling the model the line is a fragment did not help (it still
+borrowed, or echoed the Korean back). Without context it is awkward but invents nothing: `like
+the phone screen like my phone now`. The check is `LLMTranslator._is_fragment`.
+
 `--local-translation-context N` hands the previous N committed originals (same detected language only)
 to the local translator. **Only the LLM backend can use them.** The concatenation trick behind
 `--google-context` — join the previous lines with newlines, translate once, keep the last line — works
