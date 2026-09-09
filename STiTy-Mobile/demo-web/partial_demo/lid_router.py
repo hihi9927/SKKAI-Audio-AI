@@ -453,6 +453,8 @@ class VerdictTracker:
     # AMBIG_MARGIN(0.4) 을 그대로 쓰면 0.31 짜리 `¿Es tu primera vez aquí?` 가 en 으로
     # 남았다가 2초 뒤 교정으로 바뀐다.
     JOIN_ACCEPT_MARGIN = 0.25
+    # 붙인 답의 여유가 이 이상이면 다음 발화 단독 판정과 달라도 받아들인다.
+    JOIN_STRONG_MARGIN = 1.0
     # 말하는 중인 발화의 첫 창이 애매하면 이만큼 더 듣고 잠근다. 창을 채우는 판정은
     # 창 길이(window_sec)까지만 보므로, 여기서 늘린 만큼이 실제로 더 들리는 길이다.
     AMBIG_EXTRA_SEC = 1.0
@@ -467,7 +469,7 @@ class VerdictTracker:
         return None
 
     def _join_range(self, start: float, end: float):
-        """짧게 닫힌 조각 [start, end] 뒤에 이어 붙일 다음 발화의 끝 시각, 또는 None.
+        """짧게 닫힌 조각 [start, end] 뒤에 이어 붙일 다음 발화의 (시작, 끝), 또는 None.
 
         다음 발화가 JOIN_GAP 안에 시작하지 않으면 None 이다. 아직 그만큼 시간이
         안 지났으면 "wait" 를 돌려 판정을 미루게 한다.
@@ -482,7 +484,7 @@ class VerdictTracker:
             take = min(e, s + self.router.window_sec)
             if take - s < self.JOIN_NEXT_SEC:
                 return "wait"                 # 다음 발화가 아직 너무 짧다
-            return take
+            return (s, take)
         if self._audio_sec - end < self.JOIN_GAP + 0.3:
             return "wait"
         return None
@@ -625,12 +627,13 @@ class VerdictTracker:
                 # 여기서 고쳐도 늦지 않다.
                 # 첫 판정이 애매했던 조각만 다음 발화를 붙여 본다. 확신 있던 짧은
                 # 발화("네.")까지 기다리면 그 final 이 1초씩 늦어진다.
-                join_end = (self._join_range(start, end)
-                            if id(existing) in self._ambiguous else None)
-                if join_end == "wait":
+                joined = (self._join_range(start, end)
+                          if id(existing) in self._ambiguous else None)
+                if joined == "wait":
                     continue              # 짧은 조각. 다음 발화를 붙일 수 있는지 기다린다
                 lang, used, margin = self._classify_span(
-                    start, end, secs=self.CONFIRM_SEC, join_end=join_end)
+                    start, end, secs=self.CONFIRM_SEC,
+                    join_end=joined[1] if joined else None)
                 if (lang is not None and existing[2] != lang
                         and margin is not None and margin < self.AMBIG_MARGIN):
                     # 애매한 값으로 잠금을 뒤집으면 맞는 final 이 교정에 버려진다 —
@@ -684,9 +687,9 @@ class VerdictTracker:
                                 f"listening up to {self.router.window_sec + self.AMBIG_EXTRA_SEC:.1f}s")
                 continue
             if closed and ambiguous:
-                join_end = self._join_range(start, end)
+                joined = self._join_range(start, end)
                 key = round(start, 1)
-                if join_end == "wait":
+                if joined == "wait":
                     self._pending[key] = lang
                     if key not in self._waiting:
                         self._waiting.add(key)
@@ -694,7 +697,8 @@ class VerdictTracker:
                                     f"waiting for the next segment")
                     continue
                 self._pending.pop(key, None)
-                if join_end is not None:
+                if joined is not None:
+                    next_s, join_end = joined
                     lang2, used, margin2 = self._classify_span(
                         start, end, secs=self.CONFIRM_SEC, join_end=join_end)
                     # **붙인 결과도 애매하면 조각만 본 값을 지킨다.** 다음 발화가 다른
@@ -702,11 +706,21 @@ class VerdictTracker:
                     # — `El sábado a las dos` + `Saturday works for me` 가 여유 0.08 로
                     # en 이 돼 스페인어가 영어 서버로 갔다. 붙여서 확실해질 때만
                     # (아랍어 조각: 0.21 → 1.31, 0.05 → 0.48) 그 값을 쓴다.
+                    # **그리고 붙인 답은 다음 발화 자체의 답과 같아야 한다.** 섞인 오디오는
+                    # 제3의 언어로도 튄다 — `こんにちは`(ja) + `Bienvenidos a Corea`(es) 가
+                    # 여유 0.31 로 en 이 돼 일본어가 영어 서버로 가 `Onigiri와` 가 나왔다.
+                    lang3, _u3, _m3 = self._classify_span(next_s, join_end, secs=self.CONFIRM_SEC)
+                    # 다음 발화 앞머리 0.8초만 따로 본 값은 그 자체로 약해서(아랍어
+                    # `وين ساكن` 앞 0.8초가 ko), 붙인 답이 아주 확실하면(여유 1.0 이상)
+                    # 그 확인 없이 받아들인다.
                     accept = (lang2 is not None and margin2 is not None
-                              and margin2 >= self.JOIN_ACCEPT_MARGIN)
+                              and (margin2 >= self.JOIN_STRONG_MARGIN
+                                   or (margin2 >= self.JOIN_ACCEPT_MARGIN
+                                       and (lang2 == lang or lang2 == lang3))))
                     logger.info(f"[lid-join] {start:.1f}s {lang} (margin {margin:.2f}) "
                                 f"+ next to {join_end:.1f}s -> {lang2} "
-                                f"(margin {margin2:.2f}){'' if accept else ', kept ' + lang}")
+                                f"(margin {margin2:.2f}, next alone {lang3})"
+                                f"{'' if accept else ', kept ' + lang}")
                     if accept:
                         lang, margin = lang2, margin2
                 # 직전 발화의 언어를 물려받는 쪽도 해 봤는데, 두 사람이 문장마다 언어를

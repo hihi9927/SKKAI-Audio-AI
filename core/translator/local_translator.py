@@ -419,10 +419,16 @@ class LLMTranslator:
         if "→" in s:
             s = s.split("→")[-1].strip()
         s = re.sub(r"^\[[A-Za-z ]+\]\s*", "", s)
-        # 지시를 어기고 문맥까지 통째로 옮겨 오면 줄이 여러 개가 된다. 마지막 줄이
-        # 현재 발화의 번역이다. (실측 600쌍에서는 한 번도 일어나지 않았다.)
-        lines = [ln.strip(" -") for ln in s.split("\n") if ln.strip()]
-        return lines[-1] if lines else s
+        # 지시를 어기고 문맥까지 통째로 옮겨 오면 줄이 여러 개가 된다. 문맥 줄 꼴
+        # (`- [Korean] …`, `… → …`)을 걷어내고 가장 긴 줄을 현재 발화의 번역으로 본다.
+        # 종전에는 마지막 줄을 골랐는데, 긴 영어 문장 뒤에 `Thank you.` 같은 인사를
+        # 한 줄 더 붙이는 일이 있어 그 인사만 남았다.
+        raw_lines = [ln for ln in s.split("\n") if ln.strip()]
+        if len(raw_lines) > 1:
+            logger.info(f"[local-translate] multi-line output: {s[:200]!r}")
+        lines = [ln.strip(" -") for ln in raw_lines
+                 if not ln.lstrip().startswith("- [") and "→" not in ln]
+        return max(lines, key=len) if lines else s
 
     @staticmethod
     def _is_fragment(text: str) -> bool:
@@ -451,6 +457,14 @@ class LLMTranslator:
         try:
             translated = await asyncio.to_thread(
                 self._translate_sync, text, target_code, src, ctx)
+            if ctx and len(text) > 30 and len(translated) < 0.3 * len(text):
+                # 문맥을 주면 긴 문장이 `Thank you.` 한 마디로 나오는 일이 있다(실측:
+                # 앞 턴 `그리고 → and` 뒤의 영어 한 문장이 네 목표 모두 `Thank you.`).
+                # 원문 대비 터무니없이 짧으면 문맥 없이 한 번 더 한다.
+                logger.info(f"[local-translate] suspiciously short with context "
+                            f"({translated[:40]!r} for {len(text)} chars); retrying without")
+                translated = await asyncio.to_thread(
+                    self._translate_sync, text, target_code, src, [])
         except Exception as e:
             logger.warning(f"[local-translate] failed: {e!r}")
             return "", src
