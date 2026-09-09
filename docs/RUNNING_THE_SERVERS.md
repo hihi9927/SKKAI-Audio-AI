@@ -18,6 +18,7 @@ Translate when `OPENAI_API_KEY` is missing:
 | `--local-translation` | Loads a local translator (`core/translator/local_translator.py`) **into this process** — `--local-translation-model` picks the backend by name |
 | `--local-translation-url` | Calls a standalone translation server over HTTP instead of loading a model here. Wins over `--local-translation` — giving a URL means "do not load a model in this process" |
 | `--local-translation-context` | Number of previous originals handed to the local translator (default 0 = off). **Only the LLM backend can use them** |
+| `--no-translation` | `final.translation` stays empty; the server never calls a translator. For the demo proxy, which translates every target itself with cross-speaker context (`demo_proxy.py --context`) |
 
 `Qwen/Qwen3-4B-Instruct-2507` at 4bit with one turn of context is the local translator for a
 two-speaker stream; the multilingual demo stack runs `unsloth/gemma-3-4b-it` at 4bit with one turn of

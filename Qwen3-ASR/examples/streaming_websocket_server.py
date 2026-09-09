@@ -229,6 +229,11 @@ class StreamingConfig:
     # LLM 백엔드에서만 쓰인다 — NLLB·MADLAD 는 문맥을 넣을 자리가 없다.
     local_translation_context: int = 0
 
+    # --no-translation. final 에 번역을 싣지 않는다. 데모 프록시가 화자 무관 문맥을 붙여
+    # 목표 전부를 직접 번역할 때(`demo_proxy.py --context`) 서버 번역은 버려지므로,
+    # 여기서 부르는 한 번이 순수 낭비다 — 번역기 호출 1/3 과 final 지연 약 170ms.
+    no_translation: bool = False
+
     # 오디오 녹음 설정 (로그 분석용)
     record_audio: bool = False  # True면 수신 PCM을 세션별 WAV로 저장
 
@@ -2672,6 +2677,10 @@ class Qwen3ASRStreamingHandler:
         else:
             target = self.client_target_lang        # ASR 감지 실패 → targetLang으로
 
+        if self.config.no_translation:
+            # 번역은 프록시 몫이다. 언어 판정만 돌려준다.
+            return text, "", src_code, {}
+
         if self.gpt_translator and self._committed_utterance_count > 0:
             if self._segment_history and src_code:
                 ctx_pairs = [(o, t) for o, t, l in self._segment_history if l == src_code]
@@ -3395,6 +3404,14 @@ def parse_args():
         ),
     )
     parser.add_argument(
+        "--no-translation", action="store_true", default=False,
+        help=(
+            "final 에 번역을 싣지 않는다 (translation 은 빈 문자열). 프록시가 목표 전부를 "
+            "문맥과 함께 직접 번역하는 데모 구성(demo_proxy.py --context)에서 쓴다 — "
+            "서버 번역은 어차피 버려지므로 호출 한 번과 final 지연 약 170ms 를 아낀다"
+        ),
+    )
+    parser.add_argument(
         "--local-translation-context", type=int, default=0,
         help=(
             "로컬 번역기에 앞 발화를 몇 개 넘길지 (기본 0 = 끔). **LLM 백엔드에서만 쓰인다** — "
@@ -3613,6 +3630,7 @@ def main():
         context_window=args.context_window,
         google_context=args.google_context,
         local_translation_context=args.local_translation_context,
+        no_translation=args.no_translation,
         record_audio=args.record_audio,
     )
 

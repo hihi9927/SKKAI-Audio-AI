@@ -20,7 +20,7 @@ profiling, so three started together die with `No available memory for the cache
 PYTHONPATH=$PWD/Qwen3-ASR python Qwen3-ASR/examples/streaming_websocket_server.py \
   --model models/Qwen3-ASR-1.7B-ko-silence-v4c900-merged --port 8766 \
   --gpu-memory-utilization 0.25 --enforce-eager --no-idle-shutdown \
-  --local-translation-url http://127.0.0.1:8770 --local-translation-context 0 --chunk-size 1.0
+  --local-translation-url http://127.0.0.1:8770 --no-translation --chunk-size 1.0
 #    en: --model models/Qwen3-ASR-1.7B-en-silence-c80-merged --port 8767 | baseline: Qwen/Qwen3-ASR-1.7B 8768
 
 # 2) the translator, after the ASR servers so its allocator sees the space that is left
@@ -71,6 +71,7 @@ leaving one out does not degrade gracefully — it drops utterances.
 | `--targets ko,en,es` | One translation per utterance, whatever else is on screen |
 | `--translate-url` | Direction stays whatever the ASR server declared; the baseline behind `--rest` still mislabels Spanish |
 | `--context 1` | Every target is translated without the previous speaker's turn; `Mucho gusto` comes back `안녕하세요`, `In English, we say cake` as `케이크가 있어요` |
+| ASR `--no-translation` | Each server translates once more without context, the proxy throws that away — one wasted translator call per sentence and ~170 ms on every `final` |
 
 Every figure behind these defaults is native read speech; **accented L2 speech is unmeasured**, and
 that is where this fails in practice.
