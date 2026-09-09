@@ -668,6 +668,7 @@ class Qwen3ASRStreamingHandler:
         self.vad_speech_spans: list = []
         # 직전에 내보낸 final 의 오디오 끝 시각. 다음 final 의 구간 시작이 된다.
         self._last_final_end_sec: float = 0.0
+        self._last_final_text: str = ""     # 마지막으로 내보낸 final 원문 (꼬리 중복 판정용)
 
         # partial(토큰 단위 미확정 가설) 스트리밍 상태
         self._last_partial_text: Optional[str] = None
@@ -1765,6 +1766,12 @@ class Qwen3ASRStreamingHandler:
         # VAD 커밋(flush)으로 나가므로 flush 에도 건다. 리셋 뒤 첫 문장에만, 그것도
         # 5어절 이하이고 직전 커밋 끝 어절들과 절반 이상 겹칠 때만 버린다.
         "header-reset-tail-dedup": ("extract", "commit", "flush"),
+        # 커밋된 문장 뒤에 `language English,` 헤더를 다시 쓰고 그 문장의 꼬리를 한 번
+        # 더 내는 경우 — `In English we say cake. <SEG>language English, we say cake. <SEG>`.
+        # 리셋 마커가 없는 자리라 위 가드들이 못 보고, cross-dedup 은 헤더가 붙은 채
+        # 비교해 못 잡는다(실측: 시연 화면에 `we say cake.` 가 한 줄 더 떴다). 헤더를
+        # 떼고 이 슬롯의 커밋 전체 끝과 견줘 접미사면 버린다.
+        "committed-suffix-dedup": ("extract", "commit", "flush"),
     }
 
     def _commit_skip_reason(self, slot: dict, sentence_display: str, *, stage: str,
@@ -1840,6 +1847,27 @@ class Qwen3ASRStreamingHandler:
                 _norm = lambda s: re.sub(r'[.,!?;:。？！\s]+', '', s)
                 if _norm(prev_committed).endswith(_norm(sentence_display)):
                     return "dot-suffix-dedup"
+
+        # 헤더를 뗀 문장이 이 슬롯 커밋 전체의 끝과 같으면 이미 낸 꼬리다.
+        # 두 어절 이상만 본다 — 한 어절(`Yes.`)은 실제로 되풀이하는 대답이 흔하다.
+        if _applies("committed-suffix-dedup") and not self.always_commit:
+            _bare = self._strip_lang_headers(sentence_display)
+            # 슬롯이 바뀐 직후면 이 슬롯의 커밋은 비어 있다. DOT-SLOT-SWITCH 가 남긴 직전
+            # 문장(`저희 대학교에 방문하신 것을 환영합니다.` 뒤에 새 슬롯이 `신 것을
+            # 환영합니다.` 를 SEG 로 냈다 — dot-suffix-dedup 은 dot 트리거에만 걸린다)과
+            # 마지막으로 내보낸 final 도 같이 본다. 마커는 소비하지 않는다(peek).
+            _prevs = [slot.get("committed_display", ""),
+                      slot.get("dot_switch_prev_committed", ""),
+                      slot.get("seg_reset_last_committed", ""),
+                      slot.get("header_reset_last_committed", ""),
+                      getattr(self, "_last_final_text", "")]
+            if _bare and len(_bare.split()) >= 2:
+                _norm2 = lambda s: re.sub(r'[.,!?;:。？！\s]+', '', s).lower()
+                _key = _norm2(_bare)
+                for _prev in _prevs:
+                    _prev_n = _norm2(self._strip_lang_headers(_prev or ""))
+                    if _key and _prev_n and _prev_n.endswith(_key):
+                        return "committed-suffix-dedup"
 
         # 이 발화에서 이미 커밋된 문장 (완전 일치)
         if _applies("cross-dedup"):
@@ -2870,13 +2898,22 @@ class Qwen3ASRStreamingHandler:
     _LANG_HEADER_INLINE = re.compile(
         r"^\s*language\s+(?:None|[A-Z][A-Za-z]*)\s*(?:<asr_text>)?[.,!?;:]?\s*",
     )
+    # 문장 중간이라도 **문장 부호 바로 뒤** 에 오는 헤더는 지운다. 미커밋 앞부분이
+    # 재디코딩된 뒤쪽과 합쳐질 때 그 사이에 헤더가 낀다 — 실측 `So if you say in
+    # Arabic, language English I can understand in my language.` 부호 뒤라는 조건이
+    # `The language Korean is hard.` 같은 진짜 문장을 지킨다(그 앞은 관사).
+    _LANG_HEADER_AFTER_PUNCT = re.compile(
+        r"(?<=[.,!?;:])\s+language\s+(?:None|[A-Z][A-Za-z]*)(?=[\s.,!?;:]|$)[.,!?;:]?\s*",
+    )
 
     @classmethod
     def _strip_lang_headers(cls, text: str) -> str:
-        """문장 어디에 있든 `language X` 헤더 조각을 지운다."""
+        """문장 앞, 또는 문장 부호 뒤의 `language X` 헤더 조각을 지운다."""
         if not text or "language" not in text:
             return text or ""
-        return cls._LANG_HEADER_INLINE.sub("", text).strip()
+        text = cls._LANG_HEADER_INLINE.sub("", text)
+        text = cls._LANG_HEADER_AFTER_PUNCT.sub(" ", text)
+        return re.sub(r"\s{2,}", " ", text).strip()
 
     # 파인튜닝 모델이 무음·잡음에서 지어내는 정형문. VAD 겹침 검사(_is_silence_hallucination)
     # 는 "직전 커밋 뒤 이번 커밋까지" 를 보는데, 앞 발화의 꼬리가 아직 커밋되지 않은
@@ -2978,6 +3015,7 @@ class Qwen3ASRStreamingHandler:
         if self._is_silence_hallucination(original, reason, audio_end_sec):
             return
         self._last_final_end_sec = audio_end_sec
+        self._last_final_text = original
         await self.send_message(
             "final",
             start=format_time(self.segment_start_time),
