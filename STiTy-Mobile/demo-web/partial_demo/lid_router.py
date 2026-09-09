@@ -74,6 +74,13 @@ class LidRouter:
 
         self._torch = torch
         dtype = torch.float16 if self.device.startswith("cuda") else torch.float32
+        if self.device.startswith("cuda"):
+            # 같은 GPU 에 ASR 서버 셋(각 0.25)과 번역기가 함께 산다. 이 프로세스가 캐시
+            # 할당자로 자라면 여유(약 0.4~0.9GB)를 먹고 vLLM 엔진이 죽는다 — 실측에서
+            # 후보 6개 배치 디코딩을 넣은 뒤 ko 서버 EngineCore 가 세그폴트로 죽었다
+            # (프록시 1.3GB 시점). 상한을 두면 초과 시 이 프로세스가 OOM 을 받지,
+            # 이웃이 죽지 않는다.
+            torch.cuda.set_per_process_memory_fraction(self.GPU_MEM_FRACTION)
         logger.info(f"[lid] loading {self.model_name} on {self.device} ({dtype})")
         self.proc = WhisperProcessor.from_pretrained(self.model_name)
         self.model = WhisperForConditionalGeneration.from_pretrained(
@@ -119,6 +126,16 @@ class LidRouter:
         ids = [i for i, code in self.lang_ids.items() if code in allowed]
         return ids or list(self.lang_ids)
 
+    @staticmethod
+    def _normalize(audio: np.ndarray) -> np.ndarray:
+        """판정 창의 음량을 맞춘다(피크 0.5). 멀리서 작게 말하면 판정이 무너진다 —
+        아랍어·한국어 녹음 23구간을 -20dB 로 낮추면 후보 4개에서 16/23 이 13/23 으로,
+        후보 2개에서 22/23 이 21/23 으로 떨어지는데, 정규화하면 둘 다 원래 값으로
+        돌아온다(16/23, 22/23). whisper 의 log-mel 이 최댓값 기준이라 크게 흔들리진
+        않지만 낮은 음량에서 후보 간 로그확률 차이가 좁아진다."""
+        peak = float(np.abs(audio).max()) if len(audio) else 0.0
+        return audio / peak * 0.5 if peak > 1e-4 else audio
+
     def _classify(self, audio: np.ndarray, with_conf: bool = False, allowed=None):
         """언어 코드. `with_conf` 면 (언어, 확신도) 를 준다.
 
@@ -135,7 +152,7 @@ class LidRouter:
         """
         torch = self._torch
         feats = self.proc.feature_extractor(
-            audio, sampling_rate=SR, return_tensors="pt").input_features
+            self._normalize(audio), sampling_rate=SR, return_tensors="pt").input_features
         feats = feats.to(self.device, self.model.dtype)
         dec = torch.tensor([[self.sot]], device=self.device)
         with torch.inference_mode():
@@ -157,6 +174,9 @@ class LidRouter:
     # 강제 디코딩 로그확률 판정이 한 후보당 읽는 토큰 수. 12개면 문장 하나 분량이고
     # 그 뒤는 점수에 거의 안 더해진다.
     LP_MAX_TOKENS = 12
+    # 이 프로세스가 쓸 수 있는 GPU 메모리 비율. whisper-small fp16 + 판정 활성화로
+    # 0.9GB 안팎이 실측이라 24GB 카드에서 0.06(1.47GB)이면 넉넉하다.
+    GPU_MEM_FRACTION = 0.06
 
     def _classify_lp(self, audio: np.ndarray, allowed=None, with_scores: bool = False):
         """언어 코드. 후보 언어마다 그 언어로 **강제 디코딩**해 토큰 평균 로그확률이
@@ -178,12 +198,17 @@ class LidRouter:
         torch = self._torch
         codes = sorted(allowed) if allowed else sorted(self.known_langs) or ["en"]
         feats = self.proc.feature_extractor(
-            audio, sampling_rate=SR, return_tensors="pt").input_features
+            self._normalize(audio), sampling_rate=SR, return_tensors="pt").input_features
         feats = feats.to(self.device, self.model.dtype)
         tok = self.proc.tokenizer
         scores = {}
         with torch.inference_mode():
             enc = self.model.model.encoder(feats)
+            # 후보마다 따로 강제 디코딩한다. 후보를 한 배치로 묶으면 6개 후보에서 224ms 가
+            # 129ms 로 줄지만, 디코더가 cross-attention K/V 를 행마다 다시 만들어 호출당
+            # 약 300MB 를 더 잡는다. ASR 서버 셋과 번역기가 카드를 거의 다 쓰는 상태라
+            # 그 300MB 가 없어 프록시가 OOM 으로 세션을 끊었다(14:49). 느려도 메모리가
+            # 일정한 쪽을 택한다.
             for code in codes:
                 lang_id = tok.convert_tokens_to_ids(f"<|{code}|>")
                 dec = torch.tensor([[self.sot, lang_id, self.transcribe_id,
@@ -200,6 +225,8 @@ class LidRouter:
                     n += 1
                     dec = torch.cat([dec, torch.tensor([[nxt]], device=self.device)], dim=1)
                 scores[code] = total / n if n else -99.0
+        if self.device.startswith("cuda"):
+            torch.cuda.empty_cache()      # 배치 크기가 호출마다 달라 예약 메모리가 자란다
         best = max(scores, key=scores.get)
         logger.info(f"[lid-lp] {len(audio)/SR:.1f}s -> {best} "
                     f"{' '.join(f'{k}={v:.2f}' for k, v in scores.items())} "
@@ -314,6 +341,9 @@ class VerdictTracker:
         self._last_run = -1.0
         self._last_segments: list[tuple] = []   # 마지막 VAD 스캔 결과 (재사용용)
         self.verdicts: list[list] = []   # [시작초, 끝초 또는 None, 언어]
+        self._ambiguous: set = set()     # 첫 판정이 애매했던 verdict 의 id
+        self._waiting: set = set()       # 다음 발화를 기다린다고 이미 적은 조각의 시작
+        self._pending: dict = {}         # 기다리는 조각의 시작 -> 지금까지의 최선 언어
 
     @property
     def audio_sec(self) -> float:
@@ -357,8 +387,12 @@ class VerdictTracker:
     CONFIRM_SEC = 6.0
 
     def _classify_span(self, start: float, end: float, early: bool = True,
-                       secs: Optional[float] = None):
-        """(언어, 얼마나 듣고 정했나) 또는 (None, None).
+                       secs: Optional[float] = None, join_end: Optional[float] = None):
+        """(언어, 얼마나 듣고 정했나, 여유) 또는 (None, None, None).
+
+        여유는 로그확률 판정에서 1등과 2등의 차이다. 확신도로 조기 확정한 값은
+        여유가 없으므로 None 이다. `join_end` 가 있으면 그 시각까지의 다음 발화
+        음성을 이 구간 뒤에 이어 붙여 판정한다(`_join_range` 참고).
 
         짧은 창부터 올라가며 확신도가 임계를 넘으면 즉시 확정한다. whisper 는 입력을
         30초로 패딩하므로 창을 줄여도 추론 시간이 같다(9ms) — 여러 창을 시도해도
@@ -368,12 +402,17 @@ class VerdictTracker:
         b = int((end - self._offset) * SR)
         span = self._buf[max(0, a):max(0, b)]
         if len(span) < SR * 0.2:
-            return None, None
+            return None, None, None
+        if join_end is not None:
+            c = int((join_end - self._offset) * SR)
+            span = np.concatenate([span, self._buf[max(0, b):max(0, c)]])
         avail = len(span) / SR
         if secs is not None:                  # 확정 판정: 정해진 길이로 한 번만
             with self.router._gpu_lock:
-                return self.router._classify_lp(span[: int(SR * secs)],
-                                                allowed=self.allowed), min(avail, secs)
+                lang, scores = self.router._classify_lp(span[: int(SR * secs)],
+                                                        allowed=self.allowed,
+                                                        with_scores=True)
+            return lang, min(avail, secs), self._margin(scores)
         with self.router._gpu_lock:
             if early:
                 for secs, need in self.EARLY_STEPS:
@@ -382,10 +421,71 @@ class VerdictTracker:
                     lang, conf = self.router._classify(
                         span[: int(SR * secs)], with_conf=True, allowed=self.allowed)
                     if conf >= need:
-                        return lang, secs
-            lang = self.router._classify_lp(span[: int(SR * self.router.window_sec)],
-                                            allowed=self.allowed)
-        return lang, min(avail, self.router.window_sec)
+                        return lang, secs, None
+            take = self.router.window_sec + (self.AMBIG_EXTRA_SEC if avail > self.router.window_sec + 0.2 else 0.0)
+            lang, scores = self.router._classify_lp(
+                span[: int(SR * take)], allowed=self.allowed, with_scores=True)
+        return lang, min(avail, take), self._margin(scores)
+
+    @staticmethod
+    def _margin(scores: dict) -> float:
+        vals = sorted(scores.values(), reverse=True)
+        return (vals[0] - vals[1]) if len(vals) > 1 else 99.0
+
+    # 로그확률 판정에서 1등과 2등의 차이가 이보다 작으면 못 믿는다. 아랍어·한국어
+    # 실측에서 오답 3건의 여유는 0.05·0.21·0.32 였고, 정답의 대부분은 0.5 이상이었다.
+    # 정답 중에도 0.12~0.35 가 몇 건 있어 여유만으로는 못 가르므로, 이 아래에서는
+    # 더 들어서(다음 발화를 이어 붙여) 다시 판정한다. 0.4 로 두니 실제 마이크
+    # 세션에서 판정의 77% 가 애매로 잡혀 대부분의 발화가 1초씩 더 기다렸다(6개 언어
+    # 세션 89발화 중 61건). 0.25 면 알려진 오답(0.04~0.21)은 다 잡고 대기는 줄어든다.
+    AMBIG_MARGIN = 0.25
+
+    # 창(window_sec)보다 짧게 닫힌 조각이 애매하면, 이만큼 안에 다음 발화가
+    # 시작하는지 기다렸다가 그 앞머리를 이어 붙여 판정한다. silero 는 한 문장의
+    # 숨 고르는 자리에서도 끊는다 — `إنت ساكن فين؟` 의 앞 1.1초가 그렇게 홀로
+    # 떨어져 ko 로 갔다(여유 0.21). 이어 붙이면 아랍어로 읽힌다.
+    JOIN_GAP = 1.0
+    # 이어 붙일 다음 발화의 최소 길이. 0.4초만 붙이면 여전히 애매했고(0.21 → 0.22),
+    # 1.5초를 붙인 확정 판정은 여유 1.3 으로 갈렸다.
+    JOIN_NEXT_SEC = 0.8
+    # 붙여서 나온 값이 조각만 본 값과 다를 때 받아들이는 최소 여유. 실측 5건: 틀린 뒤집기
+    # (`El sábado` + `Saturday works` → en) 는 0.08·0.11, 맞는 뒤집기는 0.31·1.00·1.31.
+    # AMBIG_MARGIN(0.4) 을 그대로 쓰면 0.31 짜리 `¿Es tu primera vez aquí?` 가 en 으로
+    # 남았다가 2초 뒤 교정으로 바뀐다.
+    JOIN_ACCEPT_MARGIN = 0.25
+    # 말하는 중인 발화의 첫 창이 애매하면 이만큼 더 듣고 잠근다. 창을 채우는 판정은
+    # 창 길이(window_sec)까지만 보므로, 여기서 늘린 만큼이 실제로 더 들리는 길이다.
+    AMBIG_EXTRA_SEC = 1.0
+
+    def pending_lang(self, start: float) -> Optional[str]:
+        """다음 발화를 기다리는 중인 조각의 지금까지 최선 언어. Dispatcher 가 더 못
+        기다릴 때(hold timeout) 직전 발화 언어 대신 이걸 쓴다 — `Saturday works for
+        me` 가 앞 스페인어를 물려받아 베이스 서버로 가서 사라진 일이 있다."""
+        for key, lang in self._pending.items():
+            if abs(key - start) < 0.4:
+                return lang
+        return None
+
+    def _join_range(self, start: float, end: float):
+        """짧게 닫힌 조각 [start, end] 뒤에 이어 붙일 다음 발화의 끝 시각, 또는 None.
+
+        다음 발화가 JOIN_GAP 안에 시작하지 않으면 None 이다. 아직 그만큼 시간이
+        안 지났으면 "wait" 를 돌려 판정을 미루게 한다.
+        """
+        if (end - start) >= self.router.window_sec:
+            return None
+        for s, e, _closed in self._last_segments:
+            if s <= end:
+                continue
+            if s - end > self.JOIN_GAP:
+                return None
+            take = min(e, s + self.router.window_sec)
+            if take - s < self.JOIN_NEXT_SEC:
+                return "wait"                 # 다음 발화가 아직 너무 짧다
+            return take
+        if self._audio_sec - end < self.JOIN_GAP + 0.3:
+            return "wait"
+        return None
 
     # 0.5초 창 정확도가 whisper-base 기준 82.5% 다. 그보다 짧은 조각의 판정은
     # 못 믿는다 — 실제로 한국어 발화 앞머리 0.4초가 en 으로 잘못 찍혔다.
@@ -480,6 +580,20 @@ class VerdictTracker:
             else:
                 self._scan_run += 1
                 if self._scan_run >= K:
+                    # 언어 토큰 argmax 두 번으로는 부족하다. 아랍어 `ببطء ممكن` 한복판이
+                    # 그렇게 ko 로 잘려 ko 서버가 `알람이 빛을` 을 냈다. 자르기 전에
+                    # 같은 창을 강제 디코딩 로그확률로 한 번 더 본다.
+                    with self.router._gpu_lock:
+                        lp, scores = self.router._classify_lp(
+                            self._buf[a:a + int(W * SR)], allowed=self.allowed,
+                            with_scores=True)
+                    margin = self._margin(scores)
+                    if lp != lang or margin < self.AMBIG_MARGIN:
+                        logger.info(f"[scan] {t + W / 2:.2f}s {cur} -> {lang} rejected "
+                                    f"(lp says {lp}, margin {margin:.2f})")
+                        self._scan_run = 0
+                        self._scan_pos += 1
+                        continue
                     # 추정식은 실측에 쓴 것과 같다 — 마지막 옛 언어 창과 첫 새 언어
                     # 창의 중심을 잇는 중간점. 확인이 K 회면 그 사이가 홉 하나다.
                     self._split_at(t + W / 2 - H / 2, lang, seg[1])
@@ -509,7 +623,21 @@ class VerdictTracker:
                 # **발화가 닫혔으면 더 듣고 다시 정한다.** 조기 판정은 앞 1초 안쪽만
                 # 보므로 짧은 근거로 정해진 값이다. final 은 발화가 닫힌 뒤에 오니
                 # 여기서 고쳐도 늦지 않다.
-                lang, used = self._classify_span(start, end, secs=self.CONFIRM_SEC)
+                # 첫 판정이 애매했던 조각만 다음 발화를 붙여 본다. 확신 있던 짧은
+                # 발화("네.")까지 기다리면 그 final 이 1초씩 늦어진다.
+                join_end = (self._join_range(start, end)
+                            if id(existing) in self._ambiguous else None)
+                if join_end == "wait":
+                    continue              # 짧은 조각. 다음 발화를 붙일 수 있는지 기다린다
+                lang, used, margin = self._classify_span(
+                    start, end, secs=self.CONFIRM_SEC, join_end=join_end)
+                if (lang is not None and existing[2] != lang
+                        and margin is not None and margin < self.AMBIG_MARGIN):
+                    # 애매한 값으로 잠금을 뒤집으면 맞는 final 이 교정에 버려진다 —
+                    # 실측에서 `وين ساكن؟` 이 여유 0.05 짜리 ko 확정에 지워졌다.
+                    logger.info(f"[confirm] {start:.1f}s keep {existing[2]} "
+                                f"(ambiguous {lang}, margin {margin:.2f})")
+                    lang = existing[2]
                 if lang is not None and existing[2] != lang:
                     # 잠금은 이미 오디오를 보냈으니 못 바꾼다. 교정은 Dispatcher 몫이다.
                     existing_prev = existing[2]
@@ -540,9 +668,50 @@ class VerdictTracker:
                 continue
             if not self.early and not closed and (end - start) < self.router.window_sec:
                 continue          # 창을 채울 때까지 기다린다
-            lang, used = self._classify_span(start, end, early=self.early)
+            lang, used, margin = self._classify_span(start, end, early=self.early)
             if lang is None:
                 continue
+            ambiguous = margin is not None and margin < self.AMBIG_MARGIN
+            if (ambiguous and not closed
+                    and (end - start) < self.router.window_sec + self.AMBIG_EXTRA_SEC):
+                # 말하는 중인데 첫 창(1.5초)이 애매하다. 조금 더 듣고 정한다 — 한국어
+                # `안녕하세요. 저희 대학교에…` 의 앞 1.5초가 여유 0.08 로 en 에 잠겨
+                # 영어 서버가 문장 전체를, 스캔 전환으로 한국어 서버가 꼬리를 한 번 더 냈다.
+                key = round(start, 1)
+                if key not in self._waiting:
+                    self._waiting.add(key)
+                    logger.info(f"[lid-ambig] {start:.1f}s {lang} margin {margin:.2f}, "
+                                f"listening up to {self.router.window_sec + self.AMBIG_EXTRA_SEC:.1f}s")
+                continue
+            if closed and ambiguous:
+                join_end = self._join_range(start, end)
+                key = round(start, 1)
+                if join_end == "wait":
+                    self._pending[key] = lang
+                    if key not in self._waiting:
+                        self._waiting.add(key)
+                        logger.info(f"[lid-ambig] {start:.1f}s {lang} margin {margin:.2f}, "
+                                    f"waiting for the next segment")
+                    continue
+                self._pending.pop(key, None)
+                if join_end is not None:
+                    lang2, used, margin2 = self._classify_span(
+                        start, end, secs=self.CONFIRM_SEC, join_end=join_end)
+                    # **붙인 결과도 애매하면 조각만 본 값을 지킨다.** 다음 발화가 다른
+                    # 언어면 붙인 오디오는 두 언어가 섞인 것이라 답이 뒤쪽 언어로 넘어간다
+                    # — `El sábado a las dos` + `Saturday works for me` 가 여유 0.08 로
+                    # en 이 돼 스페인어가 영어 서버로 갔다. 붙여서 확실해질 때만
+                    # (아랍어 조각: 0.21 → 1.31, 0.05 → 0.48) 그 값을 쓴다.
+                    accept = (lang2 is not None and margin2 is not None
+                              and margin2 >= self.JOIN_ACCEPT_MARGIN)
+                    logger.info(f"[lid-join] {start:.1f}s {lang} (margin {margin:.2f}) "
+                                f"+ next to {join_end:.1f}s -> {lang2} "
+                                f"(margin {margin2:.2f}){'' if accept else ', kept ' + lang}")
+                    if accept:
+                        lang, margin = lang2, margin2
+                # 직전 발화의 언어를 물려받는 쪽도 해 봤는데, 두 사람이 문장마다 언어를
+                # 바꾸는 대화에서 `El sábado a las dos` 가 앞 한국어를 물려받아 ko 서버로
+                # 갔다(4건 오답). 애매하면 조각 자체의 값을 쓴다.
             # 창을 다 안 채우고 정해졌다면 확신도로 일찍 확정된 것이다.
             # 다만 라우팅 표에 없는 언어로 나왔으면 잠그지 않는다 — 한국어 발화가
             # 0.5초 만에 zh 로 확정돼 그대로 굳는 일이 실제로 있었다. 그런 값은
@@ -557,6 +726,8 @@ class VerdictTracker:
                 locked = True
             if existing is None:
                 self.verdicts.append([start, end if closed else None, lang, locked])
+                if ambiguous:
+                    self._ambiguous.add(id(self.verdicts[-1]))
                 logger.debug(f"[verdict] {start:.1f}s {lang} ({used:.2f}s 듣고"
                              f"{', 확정' if locked else ''})")
             else:

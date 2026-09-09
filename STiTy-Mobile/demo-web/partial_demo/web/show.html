@@ -195,6 +195,11 @@
            height:64px; width:auto; z-index:6;
            opacity:.95; pointer-events:none; user-select:none; }
 
+  /* ── 폰 접속용 QR. 왼쪽 위에 고정. 보기 전용 화면(폰)에는 띄우지 않는다 ── */
+  .qr { position:absolute; top:16px; left:16px; width:120px; height:120px; z-index:6;
+        border-radius:8px; pointer-events:none; user-select:none; }
+  body.view .qr { display:none; }
+
   /* ── 조작부. 마우스를 멈추면 사라진다 ─────────────────────────────────── */
   .controls { position:absolute; top:0; left:0; right:0; display:flex; gap:8px;
               padding:14px 16px; justify-content:flex-end; align-items:center;
@@ -212,6 +217,45 @@
   .hint { position:absolute; left:16px; bottom:10px; font-size:11px; color:#b0b0b0;
           transition:opacity .4s ease; }
   .controls.hidden ~ .hint { opacity:0; }
+
+  /* ── 보기 전용 + 좁은 화면(폰) ─────────────────────────────────────────────
+     ?view=1 로 연 화면이 폰 폭일 때만 건다. 노트북의 마이크 화면은 body.view 가
+     없으므로 어느 규칙도 닿지 않는다. 글자 크기의 clamp 하한은 큰 화면 기준이라
+     폰에서는 몇 줄 안 들어가고, 태그·칸 이름 칸(132px)이 폭의 1/3 을 먹는다. */
+  @media (max-width: 760px) {
+    body.view { --tagw:52px; --tagh:22px; --lanew:52px; }
+    /* 위는 로고(36px + 10px) 아래로 확실히 내리고, 아래는 바닥에 가깝게 붙인다. */
+    body.view .stage { padding:72px 3vw 2vh; }
+    body.view .stage.laneT { padding-top:72px; padding-bottom:2vh; }
+    body.view .stage.laneV { padding:72px 1vw 2vh; }
+    body.view .stage.laneV .laneLabel { margin-top:1vh; font-size:13px; letter-spacing:1px; }
+    body.view .brand { height:36px; top:10px; }
+    body.view .line { font-size:19px; width:96vw; padding:.22em 0; column-gap:8px; }
+    body.view .stage.tag .line { grid-template-columns:var(--tagw) minmax(0, 1fr); }
+    body.view .stage.tag .main, body.view .stage.tag .sub { text-align:left; }
+    /* 칸 배치의 줄은 칸 폭을 따른다. 위의 96vw 가 이기면 오른쪽이 잘린다. */
+    body.view .stage.lane .line, body.view .stage.laneT .line,
+    body.view .stage.laneV .line { width:100%; }
+    body.view .stage.lane .line { font-size:16px; }
+    body.view .stage.laneT .line { font-size:16px; }
+    /* 세로 기둥은 폰에서 손가락 폭이라 문장이 서너 줄로 접힌다. 슬롯을 늘린다. */
+    body.view .stage.laneV .line { font-size:14px; --slot:5; }
+    body.view .sub { font-size:.55em; }
+    body.view .tagChip { font-size:11px; letter-spacing:1px; }
+    body.view .tCode { font-size:10px; letter-spacing:1px; }
+    body.view .laneLabel { font-size:13px; letter-spacing:1px; }
+    body.view .stage.lane > .lane, body.view .stage.laneT > .lane { gap:8px; }
+    body.view .stage.lane > .lane::after, body.view .stage.laneT > .lane::after { flex:0 0 0; }
+    body.view .stage.laneV > .lane { padding:0 1.5vw; gap:6px; }
+    body.view .pendingDot { font-size:24px; }
+    body.view .pending { bottom:3vh; }
+    body.view .controls { flex-wrap:wrap; justify-content:flex-start; gap:6px; padding:10px 8px;
+                          background:rgba(255,255,255,.92); }
+    body.view .ctl { font-size:11px; padding:6px 10px; }
+    body.view .panel { top:auto; bottom:12px; left:12px; right:12px; width:auto;
+                       max-height:70vh; overflow-y:auto; }
+    body.view .hint { display:none; }
+  }
 
   /* ── 설정 패널 ────────────────────────────────────────────────────────────
      시연 중에 열어 바로 바꾼다. 조작부와 같이 떠 있으면 자막을 가리므로 접어 둔다. */
@@ -245,6 +289,7 @@
 <div class="stage tag" id="stage"></div>
 
 <img class="brand" src="stity_logo.png" alt="STiTy">
+<img class="qr" src="qr_code.png" alt="폰으로 보기">
 
 <div class="pending" id="pending" hidden><div class="pendingDot">●●●</div></div>
 
@@ -466,6 +511,13 @@ function refreshLangMap() {
 }
 
 const WS_URL = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
+// ?view=1 — 보기 전용. 마이크를 잡은 화면(/ws)이 받는 메시지를 프록시가 /view 로
+// 복사해 주므로, 폰 같은 다른 기기에서 같은 자막을 그대로 본다. 이 화면은 오디오를
+// 보내지 않고, 언어 설정도 마이크 화면 것을 따라간다.
+const VIEW = Q.get('view') === '1' || Q.get('view') === 'on';
+// 새로고침하면 빈 화면이다. ?replay=1 을 더하면 최근 문장 몇 개를 먼저 받는다.
+const VIEW_URL = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/view'
+               + (Q.get('replay') === '1' ? '?replay=1' : '');
 const SR = 16000, FRAME_MS = 100;
 
 // 흰 바탕용 팔레트. 앱 HomeScreen 의 LANG_COLORS 와 같은 언어 집합이고 색상(hue)도 같다 —
@@ -1160,7 +1212,22 @@ function transOf(m, srcCode) {
   return out;
 }
 
+// 보기 전용 화면이 받는 설정. 마이크 화면이 켠 언어와 목표를 그대로 옮긴다.
+function applyViewConfig(m) {
+  const map = sanitizeMap(m.langMap);
+  if (!Object.keys(map).length) return;
+  targets = { ...targets, ...map };
+  srcLangs = UI_LANGS.filter(c => c in map);
+  refreshLangMap();
+  ensureContainers();
+  refreshLaneLabels();
+  updateNote();
+  redrawAll();
+}
+
 function onMessage(m) {
+  if (VIEW && m.type === 'config') { applyViewConfig(m); return; }
+  if (VIEW && m.type === 'reset') { resetFeed(); return; }
   if (m.type === 'partial') {
     // language 는 프록시가 오디오로 판정해 채운 값이다. 글자 종류로 고쳐 쓰면
     // 스페인어(라틴)가 en 이 되어 EN 칸에 들어가고 언어 마감 조건도 안 걸린다.
@@ -1223,6 +1290,10 @@ const idleForPending = () => !M.active && !holding();
 
 // ── 전송 ──────────────────────────────────────────────────────────────────────
 async function openWs(srcLang) {
+  // 앞 세션의 소켓이 열려 있으면 닫는다. 정지 뒤 다시 시작하면 새 소켓을 여는데,
+  // 옛 소켓을 그대로 두면 프록시와 ASR 서버 셋에 세션이 하나씩 계속 쌓인다
+  // (실측: 10분 시연에서 서버마다 8개).
+  if (ws && ws.readyState <= 1) { try { ws.close(); } catch (e) {} }
   ws = new WebSocket(WS_URL);
   ws.binaryType = 'arraybuffer';
   await new Promise((res, rej) => {
@@ -1254,7 +1325,12 @@ function doStop() {
   stopFlag = true;
   running = false;
   stopSound();
-  if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: 'finish' }));
+  if (ws && ws.readyState === 1) {
+    ws.send(JSON.stringify({ type: 'finish' }));
+    // finish 로 흘러나오는 마지막 문장을 받은 뒤 닫는다. 파일 재생 경로와 같은 8초.
+    const sock = ws;
+    setTimeout(() => { if (sock.readyState === 1) sock.close(); }, 8000);
+  }
   cleanupMic();
   syncButtons();
 }
@@ -1395,6 +1471,14 @@ function syncButtons() {
   for (const b of wavBtns) b.disabled = running;
   btnMic.disabled = running;
   btnStop.disabled = !running;
+}
+
+// 보기 전용 소켓. 끊기면 잠시 뒤 다시 붙는다 — 프록시를 재시작해도 폰은 그대로 둔다.
+function openView() {
+  const sock = new WebSocket(VIEW_URL);
+  sock.onmessage = e => { if (typeof e.data === 'string') onMessage(JSON.parse(e.data)); };
+  sock.onclose = () => { setPending(false); setTimeout(openView, 1500); };
+  sock.onerror = () => { try { sock.close(); } catch (e) {} };
 }
 
 function setSound(on) {
@@ -1623,8 +1707,9 @@ function stopScript() {
   rehearsing = false;
 }
 
-// Ctrl+Space 로 마이크를 켠다. 다시 누르면 멈춘다.
+// Ctrl+Space 로 마이크를 켠다. 다시 누르면 멈춘다. 보기 전용 화면에서는 아무것도 않는다.
 function toggleMic() {
+  if (VIEW) return;
   if (running) { doStop(); return; }
   start('mic');
 }
@@ -1632,7 +1717,7 @@ function toggleMic() {
 addEventListener('keydown', e => {
   // Ctrl 조합은 입력칸에서도 받는다. 태그 글자를 고치다가 바로 틀 수 있어야 한다.
   if (e.ctrlKey || e.metaKey) {
-    if (e.key === 'Enter') { e.preventDefault(); rehearsing ? stopScript() : playScript(); }
+    if (e.key === 'Enter') { e.preventDefault(); if (!VIEW) rehearsing ? stopScript() : playScript(); }
     else if (e.code === 'Space') { e.preventDefault(); toggleMic(); }
     // 가로 칸(laneT) 과 세로 칸(laneV) 을 오간다. 주소창 포커스를 가로채므로
     // preventDefault 를 건다 — 시연 중에 주소창으로 갈 일은 없다.
@@ -1654,7 +1739,11 @@ addEventListener('keydown', e => {
   else if (e.key === 'v' || e.key === 'V') {
     setLayout(M.layout === VERSION_LAYOUT.v1 ? lastLaneLayout : VERSION_LAYOUT.v1);
   }
-  else if (e.key === 'r' || e.key === 'R') resetFeed();
+  else if (e.key === 'r' || e.key === 'R') {
+    resetFeed();
+    // 보기 전용 화면(폰)도 같이 비운다. 프록시가 이 메시지를 서버로는 안 보낸다.
+    if (!VIEW && ws && ws.readyState === 1) ws.send(JSON.stringify({ type: 'reset' }));
+  }
   else if (e.key === 'c' || e.key === 'C') togglePanel();
 });
 
@@ -1709,4 +1798,13 @@ buildPanel();
 render();
 syncButtons();
 pokeControls();
+
+if (VIEW) {
+  document.body.classList.add('view');            // 폰 폭에서만 위 @media 가 잡는다
+  // 입력 쪽 버튼은 전부 감춘다. 배치·줄 수·설정 패널은 기기마다 달라도 되므로 남긴다.
+  for (const b of [...wavBtns, btnMic, btnStop, btnSound]) b.hidden = true;
+  document.getElementById('hint').textContent = '보기 전용 · 1~4 배치 · V 버전 · C 설정';
+  addEventListener('touchstart', pokeControls, { passive: true });
+  openView();
+}
 </script>

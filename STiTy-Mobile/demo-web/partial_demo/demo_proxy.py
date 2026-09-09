@@ -39,6 +39,7 @@ import argparse
 import asyncio
 import http
 import json
+import re
 import logging
 import mimetypes
 import pathlib
@@ -59,11 +60,33 @@ DUAL = False          # --dual. 모든 서버에 보내고 발화마다 고른�
 REST_UPSTREAM = None  # --rest. 라우팅 표에 없는 언어를 맡는 서버(보통 베이스라인).
 REST_KEY = "*"        # 그 서버를 가리키는 이름
 TRANSLATE_URL = None  # --translate-url. 번역 방향을 바로잡을 때 쓴다.
-AUDIENCE: list[str] = []   # --targets. 발화 하나를 이 언어들로 모두 번역한다.
+AUDIENCE: list[str] = []   # --targets. 화면이 언어를 안 고르면 이 언어들로 번역한다.
+
+
+def audience_for(lang_map: dict, target_lang: str) -> list[str]:
+    """이 세션의 청중 언어. 화면이 켠 소스 언어와 그 목표, 전체 목표를 합친다.
+
+    **--targets 를 그대로 쓰면 화면이 끄지 않은 언어가 자막으로 뜬다.** 아랍어·한국어
+    시연에서 화면은 ko→en 만 켰는데 프록시가 `--targets ko,en,es` 로 스페인어까지 만들어
+    스페인어 칸이 생겼다. 소스 언어도 넣는 이유는 그 화자가 상대 말을 자기 언어로
+    읽어야 해서다(한국어 화자는 아랍어 발화의 한국어 자막을 본다).
+    """
+    wanted: list[str] = []
+    for code in list(lang_map or {}) + list((lang_map or {}).values()) + [target_lang]:
+        code = (code or "").strip().lower()
+        if code and code != "auto" and code not in wanted:
+            wanted.append(code)
+    return wanted or list(AUDIENCE)
 # --context N. 화자·언어 무관 최근 final N 개를 번역 문맥으로 붙인다. 0 이면 끔.
 # 켜면 서버가 낸 번역도 버리고 목표 전부를 프록시가 문맥과 함께 다시 번역한다 —
 # 서버는 자기 언어(=같은 화자)만 들어서 상대 화자 문맥을 줄 수 없기 때문이다.
 CONTEXT_N = 0
+# --pivot-via-en ar,... 이 소스 언어들은 영어로 먼저 번역하고, 나머지 목표는 그 영어에서
+# 번역한다. gemma-3-4b-it 4bit 는 ar→en 은 잘하는데(chrF 61) ar→ko 는 원문을 그대로
+# 뱉거나 엉뚱한 문장을 지어낸다(224문장 중 7건·8건). 경유하면 COMET 0.816 → 0.831,
+# 파국 8 → 4, 대신 ko 자막이 en→ko 한 번(약 0.55초) 늦는다. 실측:
+# evaluation/ast/results/fleurs_ar-ko_pivot_20260909/. ko 만 잰 값이다 — es 는 안 쟀다.
+PIVOT_SOURCES: set[str] = set()
 LANG_HINT = False     # --lang-hint. 판정 언어를 서버에 알린다.
 LANG_HINT_FORCE = False  # --lang-hint-force. 바이어스 대신 force_language 로.
 # 슬롯을 자르는 지점을 판정 시작보다 이만큼 앞으로 당긴다. 전환 지점 추정은
@@ -104,6 +127,103 @@ def process_request(connection, request):
 async def relay(src, dst):
     async for msg in src:
         await dst.send(msg)
+
+
+# ── 보기 전용 화면(/view) ─────────────────────────────────────────────────────
+# 마이크를 잡은 화면은 하나(/ws)고, 같은 화면을 다른 기기(폰 등)에서 보기만 하려는
+# 접속이 /view 로 붙는다. /ws 로 나가는 문자 메시지를 그대로 복사해 보내고, /view 가
+# 보내는 것은 전부 버린다 — 오디오도, config 도 받지 않는다.
+#
+# 늦게 붙은 화면이 빈 채로 시작하지 않도록 최근 final 몇 개와 마지막 설정
+# (langMap 등)을 기억해 두었다가 붙는 순간 먼저 보낸다.
+VIEWERS: set = set()
+VIEW_RECENT_N = 8
+VIEW_RECENT: "deque" = None    # 최근 final 원문(str). 새 세션이 열리면 비운다.
+VIEW_CONFIG: dict = {}         # 마지막 start/config 에서 뽑은 langMap·targetLang·lang
+
+
+def _view_config_from(data: dict) -> None:
+    if isinstance(data.get("langMap"), dict):
+        VIEW_CONFIG["langMap"] = data["langMap"]
+    for k in ("targetLang", "lang"):
+        if data.get(k):
+            VIEW_CONFIG[k] = data[k]
+
+
+async def broadcast_viewers(msg: str) -> None:
+    for v in list(VIEWERS):
+        try:
+            await v.send(msg)
+        except Exception:
+            VIEWERS.discard(v)
+
+
+class Mirrored:
+    """클라이언트 소켓을 감싸, 내보내는 문자 메시지를 /view 에도 복사한다.
+
+    받는 쪽(__aiter__)도 감싸서 start/config 를 엿본다 — 보기 전용 화면이 어느
+    언어 칸을 그릴지는 이 값으로 정해지기 때문이다. 그 밖의 속성은 그대로 넘긴다.
+    """
+
+    def __init__(self, client):
+        self._c = client
+
+    def __getattr__(self, name):
+        return getattr(self._c, name)
+
+    def __aiter__(self):
+        return self._pump()
+
+    async def _pump(self):
+        async for msg in self._c:
+            if isinstance(msg, str):
+                try:
+                    data = json.loads(msg)
+                except Exception:
+                    data = None
+                # 마이크 화면의 R(화면 비우기). 서버로는 안 보내고 보기 화면에만 알린다.
+                if isinstance(data, dict) and data.get("type") == "reset":
+                    VIEW_RECENT.clear()
+                    await broadcast_viewers(json.dumps({"type": "reset"}))
+                    continue
+                if isinstance(data, dict) and data.get("type") in ("start", "config"):
+                    _view_config_from(data)
+                    if data["type"] == "start":
+                        VIEW_RECENT.clear()
+                        await broadcast_viewers(json.dumps({"type": "reset"}))
+                    await broadcast_viewers(json.dumps(
+                        {"type": "config", **VIEW_CONFIG}, ensure_ascii=False))
+            yield msg
+
+    async def send(self, msg):
+        await self._c.send(msg)
+        if isinstance(msg, str):
+            try:
+                if json.loads(msg).get("type") == "final":
+                    VIEW_RECENT.append(msg)
+            except Exception:
+                pass
+            await broadcast_viewers(msg)
+
+
+async def viewer(client, replay: bool = False):
+    """replay 는 /view?replay=1 로 붙었을 때만. 기본은 빈 화면에서 시작한다 —
+    폰에서 새로고침하면 그 화면만 비워지는 게 자연스럽다."""
+    VIEWERS.add(client)
+    print(f"viewer + ({len(VIEWERS)}){' replay' if replay else ''}", flush=True)
+    try:
+        await client.send(json.dumps({"type": "hello", "message": "proxy view"}))
+        if VIEW_CONFIG:
+            await client.send(json.dumps({"type": "config", **VIEW_CONFIG}, ensure_ascii=False))
+        for msg in (list(VIEW_RECENT) if replay else []):
+            await client.send(msg)
+        async for _ in client:          # 보기 전용 — 무엇을 보내든 버린다
+            pass
+    except Exception as e:
+        print(f"viewer gone: {e!r}", flush=True)
+    finally:
+        VIEWERS.discard(client)
+        print(f"viewer - ({len(VIEWERS)})", flush=True)
 
 
 def pick_upstream(start_msg):
@@ -232,6 +352,27 @@ async def fix_direction(data, verdict_lang, lang_map, target_lang):
     return data, True
 
 
+def script_lang(text: str):
+    """글자 종류로 확실한 언어. 한글 ko, 아랍 문자 ar, 가나 ja, 한자만 있으면 zh.
+    라틴 문자는 en·es 를 못 가르므로 None."""
+    if re.search(r"[가-힣]", text):
+        return "ko"
+    if re.search(r"[\u0600-\u06FF]", text):
+        return "ar"
+    if re.search(r"[\u3040-\u30FF]", text):
+        return "ja"
+    if re.search(r"[\u4E00-\u9FFF]", text):
+        return "zh"
+    return None
+
+
+# 번역기가 번역 대신 지시문에 답한 것. 두 어절짜리 조각(`Or even`)에서 실측 —
+# `Please translate this sentence into Korean`, `Okay, I understand. Please provide…`.
+_TRANSLATOR_META = re.compile(
+    r"^\s*(?:please (?:translate|provide)|sure[,!.]|okay,? i understand|"
+    r"here(?:'s| is) the translation|i can help|i'm sorry,? but i)\b", re.I)
+
+
 async def _translate_to(text: str, target: str, source: str, context=None) -> str:
     """단독 번역 서버에 한 줄 번역을 요청한다. 실패는 빈 문자열이다."""
     import aiohttp
@@ -242,7 +383,27 @@ async def _translate_to(text: str, target: str, source: str, context=None) -> st
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as sess:
         async with sess.post(f"{TRANSLATE_URL.rstrip('/')}/translate", json=payload) as resp:
             resp.raise_for_status()
-            return (await resp.json()).get("translation") or ""
+            out = (await resp.json()).get("translation") or ""
+    if _TRANSLATOR_META.match(out) and not _TRANSLATOR_META.match(text):
+        print(f"translate {source}->{target} dropped meta answer: {out[:50]!r}", flush=True)
+        return ""
+    return out
+
+
+async def _translate_many(text: str, targets: list, source: str, ctx) -> dict:
+    """여러 목표를 한꺼번에 부른다. 번역 서버는 요청을 하나씩 처리하므로 목표 수만큼
+    걸린다(5개: 중앙값 0.85초). 프롬프트를 묶어 한 번에 생성하는 것도 재 봤는데 4bit
+    gemma 에서는 5개 묶음이 따로 부른 것과 같은 시간(0.87초 대 0.89초)이라 넣지 않았다."""
+    out = {}
+    got = await asyncio.gather(
+        *(_translate_to(text, t, source, _context_for(ctx, t)) for t in targets),
+        return_exceptions=True)
+    for tgt, res in zip(targets, got):
+        if isinstance(res, Exception):
+            print(f"fanout {source}->{tgt} failed: {res!r}", flush=True)
+        elif res:
+            out[tgt] = res
+    return out
 
 
 def _context_for(recent, target: str):
@@ -258,7 +419,8 @@ def _context_for(recent, target: str):
     return out
 
 
-async def add_audience_translations(data, src_lang: str, primary_target: str, recent=None):
+async def add_audience_translations(data, src_lang: str, primary_target: str, recent=None,
+                                    audience: Optional[list] = None):
     """청중 언어마다 번역을 붙여 ``translations`` 로 실어 보낸다.
 
     **서버는 발화 하나당 목표 하나만 낸다.** `langMap` 이 소스 → 목표 1:1 이라
@@ -270,26 +432,44 @@ async def add_audience_translations(data, src_lang: str, primary_target: str, re
     한꺼번에 병렬로 부르므로, 언어가 몇 개든 지연은 한 번 분량이다. 옛 화면과 앱을
     위해 ``translation`` 도 그대로 남긴다.
     """
-    if not TRANSLATE_URL or not AUDIENCE:
+    audience = audience if audience is not None else AUDIENCE
+    if not TRANSLATE_URL or not audience:
         return data
     text = (data.get("original") or "").strip()
     if not text:
         return data
     out = {}
-    if primary_target and data.get("translation") and not (CONTEXT_N and recent is not None):
+    pivot = src_lang in PIVOT_SOURCES and src_lang != "en"
+    if (primary_target and data.get("translation") and not (CONTEXT_N and recent is not None)
+            and not (pivot and primary_target != "en")):
         out[primary_target] = data["translation"]
-    todo = [t for t in AUDIENCE if t != src_lang and t not in out]
+    todo = [t for t in audience if t != src_lang and t not in out]
+    ctx = list(recent)[-CONTEXT_N:] if (CONTEXT_N and recent) else []
+    hop_src, hop_text = src_lang, text
+    if pivot and todo:
+        # 영어 먼저. 실패하면 직접 번역으로 돌아간다 — 자막이 비는 것보다 낫다.
+        if "en" in out:
+            hop_src, hop_text = "en", out["en"]
+        else:
+            try:
+                en = await _translate_to(text, "en", src_lang, _context_for(ctx, "en"))
+            except Exception as e:
+                print(f"pivot {src_lang}->en failed: {e!r}", flush=True)
+                en = ""
+            if en:
+                out["en"] = en
+                hop_src, hop_text = "en", en
+                print(f"translate {src_lang}->en ctx={len(ctx)}: {text[:40]!r} -> {en[:40]!r}",
+                      flush=True)
+        todo = [t for t in todo if t not in out]
     if todo:
-        ctx = list(recent)[-CONTEXT_N:] if (CONTEXT_N and recent) else []
-        got = await asyncio.gather(
-            *(_translate_to(text, t, src_lang, _context_for(ctx, t)) for t in todo),
-            return_exceptions=True)
-        for tgt, res in zip(todo, got):
-            if isinstance(res, Exception):
-                print(f"fanout {src_lang}->{tgt} failed: {res!r}", flush=True)
-            elif res:
+        got = await _translate_many(hop_text, todo, hop_src, ctx)
+        via = f"{src_lang}->en->" if hop_src != src_lang else f"{src_lang}->"
+        for tgt in todo:
+            res = got.get(tgt)
+            if res:
                 out[tgt] = res
-                print(f"translate {src_lang}->{tgt} ctx={len(ctx)}: {text[:40]!r} -> {res[:40]!r}",
+                print(f"translate {via}{tgt} ctx={len(ctx)}: {hop_text[:40]!r} -> {res[:40]!r}",
                       flush=True)
     if not out:
         return data
@@ -306,7 +486,9 @@ LIVE_DELAY = 0.1       # 담당이 정해진 발화 안에서는 이만큼만 �
 PRE_ROLL = 0.25        # 발화 구간 앞에 붙여 보내는 실제 오디오
 POST_ROLL = 0.25       # 발화 구간 뒤에 붙여 보내는 실제 오디오
 SILENCE_LOOKBACK = 8.0 # final 의 end 앞 이만큼 안에 이 서버로 보낸 음성이 없으면 환각으로 본다
-MAX_HOLD_AFTER_WINDOW = 1.0   # 판정 창을 채우고도 이만큼 지나면 붙들기를 그만둔다
+MAX_HOLD_AFTER_WINDOW = 2.5   # 판정 창을 채우고도 이만큼 지나면 붙들기를 그만둔다.
+                              # 애매한 짧은 조각은 다음 발화를 기다린다(JOIN_GAP 1.0초 +
+                              # JOIN_NEXT_SEC 0.8초 + VAD 지연)라 그만큼 더 둔다
 PIECE = 0.1            # 보내는 조각 길이
 SPLIT_BACKOFF = 0.3    # 발화 한복판 전환을 새 담당에게 되돌려 줄 때 앞으로 당기는 폭
 
@@ -458,9 +640,12 @@ class Dispatcher:
             return self._decide(s, e, t, None)
         max_hold = self.tracker.router.window_sec + MAX_HOLD_AFTER_WINDOW
         if final or (self.audio_sec - t) >= max_hold:
+            # 기다리던 조각이면 그 조각의 지금까지 최선을 쓴다. 직전 발화 언어는
+            # 화자가 바뀌는 대화에서 틀린다.
+            lang = self.tracker.pending_lang(s) or self.last_lang
             if self.hold_since is not None:
-                print(f"hold timeout at {t:.2f}s -> {self.last_lang or self.fallback}", flush=True)
-            return self._decide(s, e, t, self.last_lang)
+                print(f"hold timeout at {t:.2f}s -> {lang or self.fallback}", flush=True)
+            return self._decide(s, e, t, lang)
         return "hold"
 
     async def dispatch(self, send, final: bool = False) -> None:
@@ -705,6 +890,9 @@ async def run_dual(client, start_raw, pending_binary):
         if not isinstance(lm, dict) or not lm:
             return None
         if server == REST_KEY:
+            # 베이스라인에 화면의 모든 언어를 허용하는 것도 해 봤다. 영어 조각이 잘못
+            # 오면 영어로 받아쓰는 장점은 있는데, 아랍어 조각을 ko 로 골라 `나 탓구닌.`
+            # 을 내는 일이 생겼다(한국어 서버가 따로 있는데도). 자기 몫 언어만 준다.
             keys = [k for k in lm if k not in ROUTES]
         else:
             keys = [k for k in lm if k == server]
@@ -720,6 +908,7 @@ async def run_dual(client, start_raw, pending_binary):
         _start = {}
     lang_map = _start.get("langMap") if isinstance(_start.get("langMap"), dict) else {}
     target_lang = _start.get("targetLang") or ""
+    audience = audience_for(lang_map, target_lang)
     # 웹이 고른 소스 언어가 곧 LID 후보다. **여기에 라우팅 표를 더하면 안 된다.**
     # 종전에는 "서버가 있는 언어는 언제나 후보에 남긴다" 며 ko·en 을 강제로 넣었는데,
     # 그러면 사용자가 한국어를 꺼도 한국어가 답으로 나올 수 있다. 실제로 스페인어
@@ -774,7 +963,7 @@ async def run_dual(client, start_raw, pending_binary):
         from collections import deque
         recent: deque = deque(maxlen=max(CONTEXT_N, 1))
         print(f"dual -> {', '.join(f'{k}:{servers[k]}' for k in live)} "
-              f"| LID 후보 {sorted(allowed)} | 담당 서버에만 오디오 전달, 나머지는 무음",
+              f"| LID 후보 {sorted(allowed)} | 청중 {audience} | 담당 서버에만 오디오 전달, 나머지는 무음",
               flush=True)
 
         async def send_to(name, data):
@@ -814,7 +1003,7 @@ async def run_dual(client, start_raw, pending_binary):
                      "cut": False, "force": LANG_HINT_FORCE}))
 
         async def pump_client():
-            nonlocal lang_map, target_lang
+            nonlocal lang_map, target_lang, audience
             async for msg in client:
                 data = None
                 if isinstance(msg, (bytes, bytearray)):
@@ -842,6 +1031,10 @@ async def run_dual(client, start_raw, pending_binary):
                         lang_map = data["langMap"]
                     if data.get("targetLang"):
                         target_lang = data["targetLang"]
+                    new_audience = audience_for(lang_map, target_lang)
+                    if new_audience != audience:
+                        print(f"config: 청중 {audience} -> {new_audience}", flush=True)
+                        audience = new_audience
                     new_allowed = set(lang_map) or {
                         c for c in [data.get("lang")] if c and c != "auto"}
                     if new_allowed and new_allowed != tracker.allowed:
@@ -926,6 +1119,18 @@ async def run_dual(client, start_raw, pending_binary):
                     continue
                 if lang in ROUTES:
                     verdict_lang = lang        # 이 서버는 자기 언어만 듣는다
+                else:
+                    # 베이스라인 몫 언어들(ja·es·ar…) 사이에서는 문자로 드러나는 언어와
+                    # 서버 신고가 1.5초 판정보다 낫다. 판정이 ja 인데 텍스트가 `español.`
+                    # 이면 es 로, `أرابيك.` 이면 ar 로 간다. 파인튜닝 서버가 있는 언어(ko·en)
+                    # 로는 안 바꾼다 — 그건 판정이 맡은 언어다.
+                    said = script_lang(data.get("original") or "") or \
+                        ((data.get("language") or "").lower() or None)
+                    if (said and said in (lang_map or {}) and said not in ROUTES
+                            and said != verdict_lang):
+                        print(f"rest lang {verdict_lang} -> {said} by text: "
+                              f"{(data.get('original') or '')[:30]!r}", flush=True)
+                        verdict_lang = said
                 data, fixed = await fix_direction(data, verdict_lang, lang_map, target_lang)
                 if fixed:
                     print(f"fix dir end={b} {lang}: "
@@ -935,7 +1140,7 @@ async def run_dual(client, start_raw, pending_binary):
                 before = data.get("translations")
                 data = await add_audience_translations(
                     data, src, (lang_map or {}).get(src) or target_lang,
-                    recent if CONTEXT_N else None)
+                    recent if CONTEXT_N else None, audience)
                 if CONTEXT_N and data.get("translations"):
                     # 문맥 번역이 서버 번역을 대신한다. 옛 화면·앱용 translation 도 맞춘다.
                     primary_tgt = (lang_map or {}).get(src) or target_lang
@@ -973,6 +1178,12 @@ async def run_dual(client, start_raw, pending_binary):
 
 
 async def handler(client):
+    full = getattr(getattr(client, "request", None), "path", "") or ""
+    path, _, query = full.partition("?")
+    if path.rstrip("/") == "/view":
+        await viewer(client, replay="replay=1" in query)
+        return
+    client = Mirrored(client)
     # 업스트림을 고르려면 start 를 먼저 봐야 하는데, 클라이언트는 연결 직후 hello
     # 를 기다린다. 그래서 hello 만 여기서 먼저 내보내고 위쪽 hello 는 버린다.
     await client.send(json.dumps({"type": "hello", "message": "proxy ready"}))
@@ -1044,7 +1255,11 @@ def parse_routes(raw):
 
 
 async def main():
+    global VIEW_RECENT
+    from collections import deque
+    VIEW_RECENT = deque(maxlen=VIEW_RECENT_N)
     print(f"serving {ROOT} on http://0.0.0.0:{PORT}", flush=True)
+    print(f"  보기 전용 화면: /show.html?view=1 (소켓 /view)", flush=True)
     for lang, target in ROUTES.items():
         print(f"  {lang} -> {target}", flush=True)
     if REST_UPSTREAM:
@@ -1055,6 +1270,8 @@ async def main():
         print(f"  음성 판정: {LID.model_name}, 창 {LID.window_sec}s — {mode}", flush=True)
     if TRANSLATE_URL:
         print(f"  번역 방향 교정: {TRANSLATE_URL}", flush=True)
+    if PIVOT_SOURCES:
+        print(f"  영어 경유 번역: {sorted(PIVOT_SOURCES)} -> en -> 나머지", flush=True)
     if LID_SCAN_WIN:
         print(f"  구간 안 스캔: 창 {LID_SCAN_WIN}s, 홉 {LID_SCAN_HOP}s, "
               f"연속 {LID_SCAN_CONFIRM}회 확인", flush=True)
@@ -1121,9 +1338,14 @@ if __name__ == "__main__":
                          "대신 프록시가 목표 전부를 문맥과 함께 다시 번역한다. 번역 서버의 "
                          "--context-window 가 이 값 이상이어야 한다")
     ap.add_argument("--targets", default=None,
-                    help="청중 언어 목록(예: ko,en,es). 발화 하나를 이 언어들로 모두 "
-                         "번역해 translations 로 보낸다. 서버는 발화당 목표 하나만 "
-                         "내므로 나머지는 프록시가 --translate-url 로 채운다")
+                    help="화면이 언어를 안 골랐을 때의 청중 언어 목록(예: ko,en,es). "
+                         "화면이 langMap 을 보내면 그 소스·목표·targetLang 의 합이 청중이다. "
+                         "발화 하나를 청중 언어 모두로 번역해 translations 로 보낸다")
+    ap.add_argument("--pivot-via-en", default=None,
+                    help="영어를 거쳐 번역할 소스 언어 목록(예: ar). 이 언어의 발화는 먼저 "
+                         "영어로 번역하고 나머지 목표는 그 영어에서 번역한다. 4B 번역기가 "
+                         "ar→ko 를 직접 하면 원문을 그대로 뱉거나 지어내는 일이 잦아서다 "
+                         "(FLEURS 224문장 COMET 0.816 → 0.831). 목표당 약 0.55초 늦어진다")
     ap.add_argument("--translate-url", default=None,
                     help="단독 번역 서버 주소(예: http://127.0.0.1:8770). 주면 ASR "
                          "서버가 언어를 잘못 신고해 번역 방향이 뒤집힌 final 을 "
@@ -1146,6 +1368,8 @@ if __name__ == "__main__":
     if args.targets:
         AUDIENCE = [c.strip().lower() for c in args.targets.split(",") if c.strip()]
     CONTEXT_N = max(0, args.context)
+    if args.pivot_via_en:
+        PIVOT_SOURCES = {c.strip().lower() for c in args.pivot_via_en.split(",") if c.strip()}
     LID_EARLY = args.lid_early
     LANG_HINT = args.lang_hint or args.lang_hint_force
     LANG_HINT_FORCE = args.lang_hint_force

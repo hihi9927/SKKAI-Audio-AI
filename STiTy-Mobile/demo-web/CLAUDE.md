@@ -31,7 +31,8 @@ python STiTy-Mobile/demo-web/local_translation_server.py --port 8770 \
 # 3) the proxy last — it holds the LID model
 python STiTy-Mobile/demo-web/partial_demo/demo_proxy.py 8080 \
   --route ko=8766,en=8767 --default 8766 --rest 8768 --dual --lid-scan \
-  --lid-model openai/whisper-small --targets ko,en,es --translate-url http://127.0.0.1:8770 --context 1
+  --lid-model openai/whisper-small --targets ko,en,es --translate-url http://127.0.0.1:8770 --context 1 \
+  --pivot-via-en ar
 ```
 
 `--chunk-size 1.0` (server default 2.0) shows the first partial about 0.4s sooner and doubles the partial
@@ -46,7 +47,10 @@ Use the **silence** finetune for en, not `en-dailytalk-seg`: that one is trained
 commits far more often — 41% of its finals in one live session were two words or fewer, and a fragment
 translated alone comes out wrong (`Three days` → `세일`).
 
-Open <http://localhost:8080> (dev) or `/show.html` (demo); forward port 8080 only. The stack is
+Open <http://localhost:8080> (dev) or `/show.html` (demo); forward port 8080 only. Another device
+(a phone) mirrors the same subtitles with `/show.html?view=1`: it opens the `/view` socket, which the
+proxy feeds with a copy of everything the microphone page receives, sends no audio, and takes its
+language settings from the microphone page. A viewer starts blank; add `&replay=1` to get the last 8 finals first. The stack is
 **23.0 / 24.5 GiB** — 6.1 each for the ASR servers, 3.5 translator, 0.9 LID. 0.25 is roughly the
 utilization floor, and the budget is yours to keep: vLLM leaves room for nothing else.
 
@@ -68,9 +72,10 @@ leaving one out does not degrade gracefully — it drops utterances.
 | `--lid-scan` | One verdict covers a whole VAD segment; the half after a mid-utterance switch goes to the wrong server |
 | `--lid-model openai/whisper-small` | base is accurate on native speech only — a Korean speaker's English routes to `ko`. small costs ~350 MiB more |
 | `--lid-window 1.5` (default) | At 1.0s the verdict is 83% on Korean speakers' three-language talk, 91% at 1.5s; the utterance goes only where the first verdict says |
-| `--targets ko,en,es` | One translation per utterance, whatever else is on screen |
+| `--targets ko,en,es` | Fallback audience when the page has not picked languages. Once the page sends `langMap`, the audience is its sources + targets + `targetLang` — a ko↔ar page gets ko and ar subtitles only, not the es column that a fixed `--targets` used to add |
 | `--translate-url` | Direction stays whatever the ASR server declared; the baseline behind `--rest` still mislabels Spanish |
 | `--context 1` | Every target is translated without the previous speaker's turn; `Mucho gusto` comes back `안녕하세요`, `In English, we say cake` as `케이크가 있어요` |
+| `--pivot-via-en ar` | Arabic goes to Korean directly, and the 4B translator copies the Arabic through or invents a sentence in 15 of 224 FLEURS sentences (COMET 0.816); via English it is 0.831 and the copies are gone, for +0.55 s on the Korean subtitle. Measured for ko only — [results](../../evaluation/ast/results/fleurs_ar-ko_pivot_20260909/) |
 | ASR `--no-translation` | Each server translates once more without context, the proxy throws that away — one wasted translator call per sentence and ~170 ms on every `final` |
 
 Every figure behind these defaults is native read speech; **accented L2 speech is unmeasured**, and
