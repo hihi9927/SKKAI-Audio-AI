@@ -1130,6 +1130,22 @@ async def run_dual(client, start_raw, pending_binary):
                     continue
                 if lang in ROUTES:
                     verdict_lang = lang        # 이 서버는 자기 언어만 듣는다
+                    # 단, 글자가 그 서버 언어가 아니면 판정이 틀려 잘못 온 오디오다.
+                    # 영어 파인튜닝이 한국어를 받아 `다음과 같은 화면을 모바일에서도` 를
+                    # en 태그로 냈다. 글자대로 언어를 고치고, 같은 구간이 스캔 전환·교정으로
+                    # 원래 담당에게도 갔을 테니 그쪽 final(뭉개진 꼬리 `을 모바일에서도
+                    # 구실 수 있습니다.`)은 버린다.
+                    _orig = data.get("original") or ""
+                    _said = script_lang(_orig)
+                    if _said is None and lang == "ko" and re.search(r"[A-Za-z]{3,}", _orig):
+                        _said = "en"
+                    if _said and _said != lang and _said in ROUTES:
+                        print(f"misrouted {lang} final is {_said} by text: {_orig[:30]!r}",
+                              flush=True)
+                        verdict_lang = _said
+                        data = dict(data)
+                        data["language"] = _said
+                        disp.revoked[_said].append((span[0] - 0.5, span[1] + 0.5))
                 else:
                     # 베이스라인 몫 언어들(ja·es·ar…) 사이에서는 문자로 드러나는 언어와
                     # 서버 신고가 1.5초 판정보다 낫다. 판정이 ja 인데 텍스트가 `español.`
